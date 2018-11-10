@@ -31,9 +31,9 @@
     \brief Computes T3-dependent terms needed in cclambda and
     ccdensity for (T) contributions to the CCSD(T) energy gradient.
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"

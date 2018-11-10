@@ -102,7 +102,7 @@ void DFCoupledCluster::T1Fock() {
         if (rowsize == 1) break;
     }
     long int lastrowsize = nQ_scf - (nrows - 1L) * rowsize;
-    long int* rowdims = new long int[nrows];
+    auto* rowdims = new long int[nrows];
     for (long int i = 0; i < nrows - 1; i++) rowdims[i] = rowsize;
     rowdims[nrows - 1] = lastrowsize;
     for (long int row = 0; row < nrows; row++) {
@@ -273,7 +273,7 @@ void DFCoupledCluster::T1Integrals() {
         if (rowsize == 1) break;
     }
     long int lastrowsize = nQ - (nrows - 1L) * rowsize;
-    long int* rowdims = new long int[nrows];
+    auto* rowdims = new long int[nrows];
     for (long int i = 0; i < nrows - 1; i++) rowdims[i] = rowsize;
     rowdims[nrows - 1] = lastrowsize;
     for (long int row = 0; row < nrows; row++) {

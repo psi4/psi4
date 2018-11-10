@@ -42,7 +42,7 @@ import numpy as np
 from psi4 import extras
 from psi4.driver import p4util
 from psi4.driver import qcdb
-from psi4.driver import constants
+from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
 # never import driver, wrappers, or aliases into this file
@@ -50,7 +50,7 @@ from psi4.driver.molutil import *
 from .roa import *
 from . import proc_util
 from . import empirical_dispersion
-from . import dft_funcs
+from . import dft
 from . import mcscf
 from . import response
 
@@ -987,17 +987,19 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def scf_wavefunction_factory(name, ref_wfn, reference):
-    """Builds the correct wavefunction from the provided information
-    """
+def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
+    """Builds the correct (R/U/RO/CU HF/KS) wavefunction from the
+    provided information, sets relevant auxiliary basis sets on it,
+    and prepares any empirical dispersion.
 
+    """
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
     else:
         modified_disp_params = None
 
     # Figure out functional
-    superfunc, disp_type = dft_funcs.build_superfunctional(name, (reference in ["RKS", "RHF"]))
+    superfunc, disp_type = dft.build_superfunctional(name, (reference in ["RKS", "RHF"]))
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
@@ -1013,20 +1015,33 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
     if disp_type:
-        if isinstance(disp_type, dict):
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(superfunc.name(),
-                disp_type["type"], dashparams=disp_type["params"],
-                citation=disp_type["citation"], tuple_params=modified_disp_params)
+        if isinstance(name, dict):
+            # user dft_functional={} spec - type for lookup, dict val for param defs,
+            #   name & citation discarded so only param matches to existing defs will print labels
+            wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
+                name_hint='',
+                level_hint=disp_type["type"],
+                param_tweaks=disp_type["params"],
+                engine=kwargs.get('engine', None))
         else:
-            wfn._disp_functor = empirical_dispersion.EmpericalDispersion(
-                disp_type[0], disp_type[1], tuple_params=modified_disp_params)
+            # dft/*functionals.py spec - name & type for lookup, option val for param tweaks
+            wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
+                name_hint=superfunc.name(),
+                level_hint=disp_type["type"],
+                param_tweaks=modified_disp_params,
+                engine=kwargs.get('engine', None))
+
+        # [Aug 2018] there once was a breed of `disp_type` that quacked
+        #   like a list rather than the more common dict handled above. if
+        #   ever again sighted, make an issue so this code can accommodate.
+
         wfn._disp_functor.print_out()
-        if (disp_type["type"] == 'nl'):
+        if disp_type["type"] == 'nl':
             del wfn._disp_functor
 
     # Set the DF basis sets
-    if ("DF" in core.get_global_option("SCF_TYPE")) or \
-       (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_global_option("SCF_TYPE") == "DIRECT")):
+    if (("DF" in core.get_global_option("SCF_TYPE")) or
+            (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_global_option("SCF_TYPE") == "DIRECT"))):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
                                         "JKFIT", core.get_global_option('BASIS'),
@@ -1230,7 +1245,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             core.print_out("         " + banner.center(58));
         if cast:
             core.print_out("         " + "SCF Castup computation".center(58));
-        ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
+        ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
@@ -1268,7 +1283,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("\n         ---------------------------------------------------------\n");
         core.print_out("         " + banner.center(58));
 
-    scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
+    scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
@@ -1390,29 +1405,30 @@ def scf_helper(name, post_scf=True, **kwargs):
                  scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
                  scf_wfn.occupation_b(), dovirt)
 
-    # Write out orbitals and basis
-    fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
-    write_filename = os.path.join(psi_scratch, fname + ".180.npz")
-    data = {}
-    data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
-    data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
+    # Write out orbitals and basis; Can be disabled, e.g., for findif displacements
+    if kwargs.get('write_orbitals', True):
+        fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
+        write_filename = os.path.join(psi_scratch, fname + ".180.npz")
+        data = {}
+        data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
+        data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
 
-    Ca_occ = scf_wfn.Ca_subset("SO", "OCC")
-    data.update(Ca_occ.np_write(None, prefix="Ca_occ"))
+        Ca_occ = scf_wfn.Ca_subset("SO", "OCC")
+        data.update(Ca_occ.np_write(None, prefix="Ca_occ"))
 
-    Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
-    data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
+        Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
+        data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
 
-    data["reference"] = core.get_option('SCF', 'REFERENCE')
-    data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
-    data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
-    data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
-    data["nbetapi"] = scf_wfn.nbetapi().to_tuple()
-    data["symmetry"] = scf_molecule.schoenflies_symbol()
-    data["BasisSet"] = scf_wfn.basisset().name()
-    data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
-    np.savez(write_filename, **data)
-    extras.register_numpy_file(write_filename)
+        data["reference"] = core.get_option('SCF', 'REFERENCE')
+        data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
+        data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
+        data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
+        data["nbetapi"] = scf_wfn.nbetapi().to_tuple()
+        data["symmetry"] = scf_molecule.schoenflies_symbol()
+        data["BasisSet"] = scf_wfn.basisset().name()
+        data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
+        np.savez(write_filename, **data)
+        extras.register_numpy_file(write_filename)
 
     if do_timer:
         core.tstop()
@@ -3375,8 +3391,8 @@ def run_sapt(name, **kwargs):
     core.set_global_option('DF_INTS_IO', df_ints_io)
 
     if core.get_option('SCF', 'REFERENCE') == 'RHF':
-        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     core.IO.set_default_namespace('dimer')
     core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
@@ -3577,16 +3593,16 @@ def run_sapt_ct(name, **kwargs):
     core.print_out('\n')
     p4util.banner('Dimer Basis SAPT')
     core.print_out('\n')
-    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+    core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
     e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
     CTd = core.get_variable('SAPT CT ENERGY')
 
     core.print_out('\n')
     p4util.banner('Monomer Basis SAPT')
     core.print_out('\n')
-    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
-    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
+    core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
+    core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
     e_sapt = core.sapt(dimer_wfn, monomerAm_wfn, monomerBm_wfn)
     CTm = core.get_variable('SAPT CT ENERGY')
     CT = CTd - CTm

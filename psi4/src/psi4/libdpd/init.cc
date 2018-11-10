@@ -76,12 +76,12 @@ extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, in
 extern int dpd_close(int dpd_num) {
     if (dpd_list[dpd_num] == 0) throw PSIEXCEPTION("Attempting to close a non-existent DPD instance.");
     delete dpd_list[dpd_num];
-    dpd_list[dpd_num] = 0;
+    dpd_list[dpd_num] = nullptr;
 
     return 0;
 }
 
-extern long int dpd_memfree(void) {
+extern long int dpd_memfree() {
     return dpd_main.memory - (dpd_main.memused - dpd_main.memcache + dpd_main.memlocked);
 }
 
@@ -91,17 +91,17 @@ DPD::DPD()
     : nirreps(0),
       num_subspaces(0),
       num_pairs(0),
-      numorbs(0),
-      orboff(0),
-      pairtot(0),
-      orbspi(0),
-      orbsym(0),
-      orbidx2(0),
-      pairidx(0),
-      orbs2(0),
-      pairorb(0),
-      params2(0),
-      params4(0) {}
+      numorbs(nullptr),
+      orboff(nullptr),
+      pairtot(nullptr),
+      orbspi(nullptr),
+      orbsym(nullptr),
+      orbidx2(nullptr),
+      pairidx(nullptr),
+      orbs2(nullptr),
+      pairorb(nullptr),
+      params2(nullptr),
+      params4(nullptr) {}
 
 DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype, int *cachefiles, int **cachelist,
          dpd_file4_cache_entry *priority, int num_subspaces, std::vector<int *> &spaceArrays) {

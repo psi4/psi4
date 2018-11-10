@@ -53,7 +53,7 @@ class NablaInt : public OneBodyAOInt {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     //! Computes the dipole between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell&, const GaussianShell&) override;
     //! Computes the dipole derivative between two gaussian shells.
     //    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
 
@@ -61,10 +61,10 @@ class NablaInt : public OneBodyAOInt {
     //! Constructor. Do not call directly use an IntegralFactory.
     NablaInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     //! Virtual destructor
-    virtual ~NablaInt();
+    ~NablaInt() override;
 
     //! Does the method provide first derivatives?
-    bool has_deriv1() { return true; }
+    bool has_deriv1() override { return true; }
 };
 
 }  // namespace psi

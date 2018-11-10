@@ -146,7 +146,7 @@ void CCBLAS::process_reduce_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
     }
 
     if (index_label_size == 2) {
-        short* pq = new short[2];
+        auto* pq = new short[2];
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (size_t i = 0; i < out_Matrix->get_left_pairpi(h); ++i) {
                 for (size_t j = 0; j < out_Matrix->get_right_pairpi(h); ++j) {
@@ -157,7 +157,7 @@ void CCBLAS::process_reduce_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
         }
         delete[] pq;
     } else if (index_label_size == 4) {
-        short* pqrs = new short[4];
+        auto* pqrs = new short[4];
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (size_t i = 0; i < out_Matrix->get_left_pairpi(h); ++i) {
                 for (size_t j = 0; j < out_Matrix->get_right_pairpi(h); ++j) {
@@ -216,7 +216,7 @@ void CCBLAS::process_expand_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
     }
 
     if (index_label_size == 2) {
-        short* pq = new short[2];
+        auto* pq = new short[2];
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (size_t i = 0; i < out_Matrix->get_left_pairpi(h); ++i) {
@@ -229,7 +229,7 @@ void CCBLAS::process_expand_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
 
         delete[] pq;
     } else if (index_label_size == 4) {
-        short* pqrs = new short[4];
+        auto* pqrs = new short[4];
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (size_t i = 0; i < out_Matrix->get_left_pairpi(h); ++i) {
                 for (size_t j = 0; j < out_Matrix->get_right_pairpi(h); ++j) {

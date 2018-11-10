@@ -51,19 +51,13 @@ PRAGMA_WARNING_POP
 namespace psi {
 namespace detci {
 
-CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn) : Wavefunction(Process::environment.options) {
-    // Copy the wavefuntion then update
-    shallow_copy(ref_wfn);
-    set_reference_wavefunction(ref_wfn);
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
+    : Wavefunction{ref_wfn, options} {
     common_init();
 }
 
-CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn, Options& options) : Wavefunction(options) {
-    // Copy the wavefuntion then update
-    shallow_copy(ref_wfn);
-    set_reference_wavefunction(ref_wfn);
-    common_init();
-}
+CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn)
+    : CIWavefunction{ref_wfn, Process::environment.options} {}
 
 CIWavefunction::~CIWavefunction() {
     cleanup_ci();
@@ -264,12 +258,12 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, 
 
 SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
     /// Figure out orbital positions
-    int* start = new int[nirrep_];
-    int* end = new int[nirrep_];
+    auto* start = new int[nirrep_];
+    auto* end = new int[nirrep_];
 
     orbital_locations(orbital_name, start, end);
 
-    int* spread = new int[nirrep_];
+    auto* spread = new int[nirrep_];
     for (int h = 0; h < nirrep_; h++) {
         spread[h] = end[h] - start[h];
     }
@@ -292,12 +286,12 @@ SharedMatrix CIWavefunction::get_orbitals(const std::string& orbital_name) {
 
 void CIWavefunction::set_orbitals(const std::string& orbital_name, SharedMatrix orbitals) {
     /// Figure out orbital positions
-    int* start = new int[nirrep_];
-    int* end = new int[nirrep_];
+    auto* start = new int[nirrep_];
+    auto* end = new int[nirrep_];
 
     orbital_locations(orbital_name, start, end);
 
-    int* spread = new int[nirrep_];
+    auto* spread = new int[nirrep_];
     for (int h = 0; h < nirrep_; h++) {
         spread[h] = end[h] - start[h];
     }
@@ -317,8 +311,8 @@ void CIWavefunction::set_orbitals(const std::string& orbital_name, SharedMatrix 
 
 Dimension CIWavefunction::get_dimension(const std::string& orbital_name) {
     /// Figure out orbital positions
-    int* start = new int[nirrep_];
-    int* end = new int[nirrep_];
+    auto* start = new int[nirrep_];
+    auto* end = new int[nirrep_];
     orbital_locations(orbital_name, start, end);
 
     Dimension dim = Dimension(nirrep_);
@@ -448,7 +442,7 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize) 
 /*
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */
-void CIWavefunction::cleanup_ci(void) {
+void CIWavefunction::cleanup_ci() {
     // Make sure we dont double clean
     if (!cleaned_up_ci_) {
         // Free Bendazzoli OV arrays
@@ -481,7 +475,7 @@ void CIWavefunction::cleanup_ci(void) {
         cleaned_up_ci_ = true;
     }
 }
-void CIWavefunction::cleanup_dpd(void) {
+void CIWavefunction::cleanup_dpd() {
     if (ints_init_) {
         ints_.reset();
         ints_init_ = false;

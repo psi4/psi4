@@ -121,7 +121,7 @@ CIvect::CIvect(int incor, int maxvect, int nunits, int funit, struct ci_blks *CI
     }
 }
 
-void CIvect::common_init(void) {
+void CIvect::common_init() {
     vectlen_ = 0;
     num_blocks_ = 0;
     icore_ = 1;
@@ -458,7 +458,7 @@ CIvect::~CIvect() {
 ** Returns:
 **    pointer to memory buffer (double *)
 */
-double *CIvect::buf_malloc(void) {
+double *CIvect::buf_malloc() {
     double *tmp;
 
     tmp = init_array(buffer_size_);
@@ -1597,7 +1597,7 @@ void CIvect::buf_lock(double *a) {
 ** Parameters: none
 ** Returns: none
 */
-void CIvect::buf_unlock(void) {
+void CIvect::buf_unlock() {
     buf_locked_ = 0;
     blocks_[0][0] = nullptr;
     buffer_ = nullptr;
@@ -2058,7 +2058,7 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec, int source_vec,
 ** Parameters: none
 ** Returns: none
 **/
-void CIvect::zero(void) { zero_arr(buffer_, (int)buffer_size_); }
+void CIvect::zero() { zero_arr(buffer_, (int)buffer_size_); }
 
 /*
 ** CIvect::sigma_renorm()
@@ -2689,7 +2689,7 @@ void CIvect::transp_block(int iblock, double **tmparr) {
 ** Return the maximum RAS subblock size as a long size_teger
 **
 */
-size_t CIvect::get_max_blk_size(void) {
+size_t CIvect::get_max_blk_size() {
     int i;
     size_t blksize, maxblksize = 0;
 
@@ -2706,7 +2706,7 @@ size_t CIvect::get_max_blk_size(void) {
 **
 ** Check the norm of a CI vector
 */
-double CIvect::checknorm(void) {
+double CIvect::checknorm() {
     double tval, dotprod = 0.0;
 
     for (int buf = 0; buf < buf_per_vect_; buf++) {
@@ -2853,7 +2853,7 @@ void CIvect::print_fptrs() {
 ** Initialize H0block stuff pertaining to buffers
 **
 */
-void CIvect::h0block_buf_init(void) {
+void CIvect::h0block_buf_init() {
     int i, cnt, irrep, buf, blk;
     int *tmparr;
 
@@ -3167,7 +3167,7 @@ void CIvect::set_zero_block(int blocknum, int value) {
     zero_blocks_[blocknum] = value;
 }
 
-void CIvect::set_zero_blocks_all(void) {
+void CIvect::set_zero_blocks_all() {
     int i;
 
     for (i = 0; i < num_blocks_; i++) zero_blocks_[i] = 1;
@@ -3182,7 +3182,7 @@ void CIvect::copy_zero_blocks(CIvect &src) {
     }
 }
 
-void CIvect::print_zero_blocks(void) {
+void CIvect::print_zero_blocks() {
     int i;
 
     for (i = 0; i < num_blocks_; i++) {
@@ -3302,7 +3302,7 @@ double CIvect::dcalc_evangelisti(int rootnum, int num_vecs, double lambda, CIvec
 ** changed so that it is a little easier to deal with two logical CIvectors
 ** which point to the same physical CIvector (as happens if nodfile).
 */
-void CIvect::write_new_first_buf(void) {
+void CIvect::write_new_first_buf() {
     int unit;
 
     unit = first_unit_;
@@ -3317,7 +3317,7 @@ void CIvect::write_new_first_buf(void) {
 ** which point to the same physical CIvector (as happens if nodfile).
 ** Return -1 if "New First Buffer" is not stored in the file yet.
 */
-int CIvect::read_new_first_buf(void) {
+int CIvect::read_new_first_buf() {
     int unit;
     int nfb;
 
@@ -3340,7 +3340,7 @@ void CIvect::set_new_first_buf(int nfb) { new_first_buf_ = nfb; }
 ** Read the number of valid vectors in this object.  That will be stored
 ** in the first unit.
 */
-int CIvect::read_num_vecs(void) {
+int CIvect::read_num_vecs() {
     int unit;
     int nv;
 
@@ -3369,7 +3369,7 @@ void CIvect::write_num_vecs(int nv) {
 ** done filling it up, it will be wiped out by the next write but written
 ** again at the new end of file next time we call this function.
 */
-void CIvect::write_toc(void) {
+void CIvect::write_toc() {
     int i, unit;
 
     for (i = 0; i < nunits_; i++) {
@@ -3380,7 +3380,7 @@ void CIvect::write_toc(void) {
 /*
 ** Print libpsio debug info
 */
-void CIvect::civect_psio_debug(void) {
+void CIvect::civect_psio_debug() {
     int i, unit;
 
     /* psio_tocprint not available right now in PSI4; re-enable it if you

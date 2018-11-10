@@ -257,7 +257,7 @@ void DiskDFJK::print_header() const {
         if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
         outfile->Printf("    OpenMP threads:    %11d\n", omp_nthread_);
         outfile->Printf("    Integrals threads: %11d\n", df_ints_num_threads_);
-        outfile->Printf("    Memory (MB):       %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+        outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ * 8L) / (1024L * 1024L));
         outfile->Printf("    Algorithm:         %11s\n", (is_core_ ? "Core" : "Disk"));
         outfile->Printf("    Integral Cache:    %11s\n", df_ints_io_.c_str());
         outfile->Printf("    Schwarz Cutoff:    %11.0E\n", cutoff_);
@@ -478,7 +478,7 @@ void DiskDFJK::initialize_JK_core() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const double** buffer = new const double*[nthread];
+    const auto** buffer = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     buffer[0] = eri[0]->buffer();
@@ -865,7 +865,7 @@ void DiskDFJK::initialize_JK_disk() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const double** buffer = new const double*[nthread];
+    const auto** buffer = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
     for (int Q = 0; Q < nthread; Q++) {
         eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
@@ -996,7 +996,7 @@ void DiskDFJK::initialize_wK_core() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const double** buffer = new const double*[nthread];
+    const auto** buffer = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
     for (int Q = 0; Q < nthread; Q++) {
         eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
@@ -1067,7 +1067,7 @@ void DiskDFJK::initialize_wK_core() {
 
     // => Right Integrals <= //
 
-    const double** buffer2 = new const double*[nthread];
+    const auto** buffer2 = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
     for (int Q = 0; Q < nthread; Q++) {
         eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
@@ -1358,7 +1358,7 @@ void DiskDFJK::initialize_wK_disk() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const double** buffer = new const double*[nthread];
+    const auto** buffer = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
     for (int Q = 0; Q < nthread; Q++) {
         eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
@@ -1444,7 +1444,7 @@ void DiskDFJK::initialize_wK_disk() {
 
     // => Right Integrals <= //
 
-    const double** buffer2 = new const double*[nthread];
+    const auto** buffer2 = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
     for (int Q = 0; Q < nthread; Q++) {
         eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
@@ -1567,7 +1567,7 @@ void DiskDFJK::rebuild_wK_disk() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const double** buffer2 = new const double*[nthread];
+    const auto** buffer2 = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
     for (int Q = 0; Q < nthread; Q++) {
         eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));

@@ -50,8 +50,8 @@ class OCCWave : public Wavefunction
 public:
     OCCWave(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
 
-    virtual ~OCCWave();
-    virtual double compute_energy();
+    ~OCCWave() override;
+    double compute_energy() override;
 
 protected:
     // General

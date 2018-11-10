@@ -51,20 +51,20 @@ class ElectricFieldInt : public OneBodyAOInt {
     int natom_;
 
     //! Computes the electric field between two gaussian shells.
-    void compute_pair(const GaussianShell &, const GaussianShell &);
+    void compute_pair(const GaussianShell &, const GaussianShell &) override;
 
     //! Computes the electric field gradient between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &);
+    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &) override;
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     ElectricFieldInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                      int deriv = 0);
     //! Virtual destructor
-    virtual ~ElectricFieldInt();
+    ~ElectricFieldInt() override;
 
     //! Does the method provide first derivatives?
-    bool has_deriv1() { return false; }
+    bool has_deriv1() override { return false; }
 
     static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
     static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);

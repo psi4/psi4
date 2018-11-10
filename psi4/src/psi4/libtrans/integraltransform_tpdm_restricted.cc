@@ -38,9 +38,9 @@
 #include "psi4/psifiles.h"
 #include "psi4/libdpd/dpd.h"
 
-#include <math.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cmath>
+#include <cctype>
+#include <cstdio>
 
 using namespace psi;
 

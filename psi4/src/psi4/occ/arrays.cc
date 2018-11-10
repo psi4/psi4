@@ -34,7 +34,7 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <cmath>
 
 using namespace psi;
@@ -263,7 +263,7 @@ void Array1d::gemv(bool transa, double alpha, const Array2d* a, const Array1d* b
 double Array1d::xay(const Array2d *a, const Array1d *y)
 {
   double value = 0.0;
-  Array1d *ay = new Array1d(a->dim1_);
+  auto *ay = new Array1d(a->dim1_);
   ay->zero();
   ay->gemv(false, 1.0, a, y, 0.0);
   value = dot(ay);
@@ -690,7 +690,7 @@ double Array2d::trace()
 
 void Array2d::transform(const Array2d* a, const Array2d* transformer)
 {
-    Array2d *temp = new Array2d(a->dim1_, transformer->dim2_);
+    auto *temp = new Array2d(a->dim1_, transformer->dim2_);
     temp->zero();
     temp->gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, temp, 0.0);
@@ -700,7 +700,7 @@ void Array2d::transform(const Array2d* a, const Array2d* transformer)
 
 void Array2d::back_transform(const Array2d* a, const Array2d* transformer)
 {
-    Array2d *temp = new Array2d(a->dim1_, transformer->dim2_);
+    auto *temp = new Array2d(a->dim1_, transformer->dim2_);
     temp->zero();
     temp->gemm(false, true, 1.0, a, transformer, 0.0);
     gemm(false, false, 1.0, transformer, temp, 0.0);
@@ -710,7 +710,7 @@ void Array2d::back_transform(const Array2d* a, const Array2d* transformer)
 
 void Array2d::pseudo_transform(const Array2d* a, const Array2d* transformer)
 {
-    Array2d *temp = new Array2d(a->dim1_, transformer->dim2_);
+    auto *temp = new Array2d(a->dim1_, transformer->dim2_);
     temp->zero();
     temp->gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(false, false, 1.0, transformer, temp, 0.0);
@@ -721,7 +721,7 @@ void Array2d::pseudo_transform(const Array2d* a, const Array2d* transformer)
 void Array2d::triple_gemm(const Array2d* a, const Array2d* b, const Array2d* c)
 {
   if (a->dim2_ == b->dim1_ && b->dim2_ == c->dim1_ && a->dim1_ == dim1_ && c->dim2_ == dim2_) {
-    Array2d *bc = new Array2d(b->dim1_, c->dim2_);
+    auto *bc = new Array2d(b->dim1_, c->dim2_);
     bc->zero();
     bc->gemm(false, false, 1.0, b, c, 0.0);
     gemm(false, false, 1.0, a, bc, 0.0);
@@ -845,7 +845,7 @@ double *Array2d::to_lower_triangle()
 {
     if (dim1_ != dim2_) return nullptr;
     int ntri = 0.5 * dim1_ * (dim1_ + 1);
-    double *tri = new double[ntri];
+    auto *tri = new double[ntri];
     double **temp = to_block_matrix();
     sq_to_tri(temp, tri, dim1_);
     free_block(temp);
@@ -893,7 +893,7 @@ void Array2d::gs()
 
 double *Array2d::row_vector(int n)
 {
-  double *temp = new double[dim2_];
+  auto *temp = new double[dim2_];
   memset(temp, 0, dim2_ * sizeof(double));
   for (int i=0; i<dim2_; i++) temp[i] = A2d_[n][i];
   return temp;
@@ -901,7 +901,7 @@ double *Array2d::row_vector(int n)
 
 double *Array2d::column_vector(int n)
 {
-  double *temp = new double[dim1_];
+  auto *temp = new double[dim1_];
   memset(temp, 0, dim1_ * sizeof(double));
   for (int i=0; i<dim1_; i++) temp[i] = A2d_[i][n];
   return temp;

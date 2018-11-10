@@ -36,7 +36,7 @@
 #include <iomanip>
 #include <sstream>
 #include <numeric>
-#include <assert.h>
+#include <cassert>
 
 #include "liboptions.h"
 #include "liboptions_python.h"
@@ -632,7 +632,7 @@ DataType* Options::set_global_array_entry(const std::string& key, DataType* entr
         data.assign(entry);
     } else {
         // We're adding to an existing entry
-        ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
+        auto* arrptr(dynamic_cast<ArrayType*>(loc));
         arrptr->assign(entry);
     }
     return entry;
@@ -661,7 +661,7 @@ DataType* Options::set_local_array_entry(const std::string& module, const std::s
         locals_[module][key].assign(entry);
     } else {
         // We're adding to an existing entry
-        ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
+        auto* arrptr(dynamic_cast<ArrayType*>(loc));
         arrptr->assign(entry);
     }
     return entry;
@@ -684,7 +684,7 @@ DataType* Options::set_local_array_array(const std::string& module, const std::s
     return set_local_array_entry(module, key, new ArrayType(), entry);
 }
 
-void Options::clear(void) {
+void Options::clear() {
     globals_.clear();
     locals_.clear();
 }

@@ -30,7 +30,7 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <stdio.h>
+#include <cstdio>
 #include "psi4/libiwl/iwl.h"
 #include "MOInfo.h"
 #include "Params.h"

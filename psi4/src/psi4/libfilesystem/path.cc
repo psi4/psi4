@@ -69,7 +69,7 @@ static int SYSTEM_TRUNCATE(const char *path, off_t length) {
 #define PATH_SEPARATOR "/"
 #endif
 #include <sys/stat.h>
-#include <limits.h>
+#include <climits>
 
 namespace psi {
 namespace filesystem {
@@ -86,7 +86,7 @@ path path::make_absolute() const {
     if (path_max <= 0) path_max = 4096;
 #endif
 
-    char *temp = new char[path_max];
+    auto *temp = new char[path_max];
     if (SYSTEM_REALPATH(str().c_str(), temp) == nullptr) {
         // Ignore errors relating to a file or directory component not existing
         if (errno != (int)std::errc::no_such_file_or_directory && errno != (int)std::errc::not_a_directory) {

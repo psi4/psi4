@@ -102,7 +102,7 @@ class PSI_API TwoBodyAOInt {
      *
      * Default implementation
      */
-    void create_blocks(void);
+    void create_blocks();
 
     void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
@@ -156,10 +156,10 @@ class PSI_API TwoBodyAOInt {
     virtual size_t compute_shell(int, int, int, int) = 0;
 
     //! Get optimal blocks of shell pairs for centers 1 & 2
-    std::vector<ShellPairBlock> get_blocks12(void) const;
+    std::vector<ShellPairBlock> get_blocks12() const;
 
     //! Get optimal blocks of shell pairs for centers 3 & 4
-    std::vector<ShellPairBlock> get_blocks34(void) const;
+    std::vector<ShellPairBlock> get_blocks34() const;
 
     /*! Compute integrals for two blocks
      *

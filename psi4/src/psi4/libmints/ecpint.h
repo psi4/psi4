@@ -340,7 +340,7 @@ class ECPInt : public OneBodyAOInt {
                ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values);
 
     /// Overridden shell-pair integral calculation over all ECP centers
-    void compute_pair(const GaussianShell &shellA, const GaussianShell &shellB);
+    void compute_pair(const GaussianShell &shellA, const GaussianShell &shellB) override;
 
     /// Computes the overall ECP integrals over the given ECP center and shell pair
     void compute_shell_pair(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB,
@@ -353,7 +353,7 @@ class ECPInt : public OneBodyAOInt {
      * @paramm maxLB - the maximum angular momentum in the orbital basis
      */
     ECPInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
-    virtual ~ECPInt();
+    ~ECPInt() override;
 };
 
 class ECPSOInt : public OneBodySOInt {

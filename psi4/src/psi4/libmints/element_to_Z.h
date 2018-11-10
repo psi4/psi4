@@ -55,7 +55,7 @@ class Element_to_Z {
         return element_to_Z[elem_sym];
     }
 
-    void load_values(void) {
+    void load_values() {
         loaded = true;
         element_to_Z["G"] = element_to_Z["GHOST"] = 0.0;
         element_to_Z["H"] = element_to_Z["HYDROGEN"] = 1.0;

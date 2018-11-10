@@ -72,11 +72,11 @@ namespace detci {
 
 class CIWavefunction : public Wavefunction {
    public:
-    CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
     CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
-    virtual ~CIWavefunction();
+    explicit CIWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction);
+    ~CIWavefunction() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
     /// Simple accessors
     size_t ndet();
@@ -107,7 +107,7 @@ class CIWavefunction : public Wavefunction {
     /**!
      * Transform the one and two electron integrals for a CI computation.
      */
-    void transform_ci_integrals(void);
+    void transform_ci_integrals();
 
     /**!
      * Transform the one and two electron integrals for a MCSCF computation.
@@ -378,16 +378,16 @@ class CIWavefunction : public Wavefunction {
 
     /// => H0block functions <= //
     void H0block_init(size_t size);
-    void H0block_free(void);
-    void H0block_print(void);
+    void H0block_free();
+    void H0block_print();
     int H0block_calc(double E);
     void H0block_gather(double **mat, int al, int bl, int cscode, int mscode, int phase);
     void H0block_xy(double *x, double *y, double E);
     void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code);
     void H0block_pairup(int guess);
-    void H0block_spin_cpl_chk(void);
-    void H0block_filter_setup(void);
-    void H0block_fill(void);
+    void H0block_spin_cpl_chk();
+    void H0block_filter_setup();
+    void H0block_fill();
     void H0block_coupling_calc(double E);
     std::string print_config(int nbf, int num_alp_el, int num_bet_el, struct stringwr *stralp, struct stringwr *strbet,
                              int num_drc_orbs);
@@ -422,7 +422,7 @@ class CIWavefunction : public Wavefunction {
     /// => Sigma Calculations <= //
     struct sigma_data *SigmaData_;
     void sigma_init(CIvect &C, CIvect &S);
-    void sigma_free(void);
+    void sigma_free();
     void sigma(CIvect &C, CIvect &S, double *oei, double *tei, int ivec);
 
     void sigma_a(struct stringwr **alplist, struct stringwr **betlist, CIvect &C, CIvect &S, double *oei, double *tei,

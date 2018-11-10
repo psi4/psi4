@@ -164,7 +164,7 @@ void CCSort::form_fock_out_of_core(CCMatrix* Matrix, int h) {
     if (Matrix->is_fock()) {
         std::string label = Matrix->get_label();
         double*** matrix = Matrix->get_matrix();
-        short* pq = new short[2];
+        auto* pq = new short[2];
         const intvec& oa2p = moinfo->get_occ_to_mo();
 
         bool alpha = true;
@@ -208,7 +208,7 @@ void CCSort::form_fock_out_of_core(CCMatrix* Matrix, int h) {
 
 void CCSort::form_two_electron_integrals_out_of_core(CCMatrix* Matrix, int h) {
     if (Matrix->is_integral()) {
-        short* pqrs = new short[4];
+        auto* pqrs = new short[4];
         double*** matrix = Matrix->get_matrix();
         bool antisymmetric = Matrix->is_antisymmetric();
         if (Matrix->is_chemist()) {

@@ -38,7 +38,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-void DPD::file4_cache_init(void) {
+void DPD::file4_cache_init() {
     dpd_main.file4_cache = nullptr;
     dpd_main.file4_cache_most_recent = 0;
     dpd_main.file4_cache_least_recent = 1;
@@ -46,7 +46,7 @@ void DPD::file4_cache_init(void) {
     dpd_main.file4_cache_low_del = 0;
 }
 
-void DPD::file4_cache_close(void) {
+void DPD::file4_cache_close() {
     int dpdnum;
     dpd_file4_cache_entry *this_entry, *next_entry;
     dpdfile4 Outfile;
@@ -110,7 +110,7 @@ dpd_file4_cache_entry *DPD::file4_cache_scan(int filenum, int irrep, int pqnum, 
     return (this_entry);
 }
 
-dpd_file4_cache_entry *DPD::file4_cache_last(void) {
+dpd_file4_cache_entry *DPD::file4_cache_last() {
     dpd_file4_cache_entry *this_entry;
 
     this_entry = dpd_main.file4_cache;
@@ -247,7 +247,7 @@ int DPD::file4_cache_del(dpdfile4 *File) {
     return 0;
 }
 
-void DPD::file4_cache_print_screen(void) {
+void DPD::file4_cache_print_screen() {
     int total_size = 0;
     dpd_file4_cache_entry *this_entry;
 
@@ -310,7 +310,7 @@ void DPD::file4_cache_print(std::string out) {
     printer->Printf("Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
 }
 
-dpd_file4_cache_entry *DPD::file4_cache_find_lru(void) {
+dpd_file4_cache_entry *DPD::file4_cache_find_lru() {
     dpd_file4_cache_entry *this_entry;
 
     this_entry = dpd_main.file4_cache;
@@ -342,7 +342,7 @@ dpd_file4_cache_entry *DPD::file4_cache_find_lru(void) {
     return (nullptr);
 }
 
-int DPD::file4_cache_del_lru(void) {
+int DPD::file4_cache_del_lru() {
     int dpdnum;
     dpdfile4 File;
     dpd_file4_cache_entry *this_entry;
@@ -420,7 +420,7 @@ int DPD::file4_cache_get_priority(dpdfile4 *File) {
     return (0);
 }
 
-dpd_file4_cache_entry *dpd_file4_cache_find_low(void) {
+dpd_file4_cache_entry *dpd_file4_cache_find_low() {
     dpd_file4_cache_entry *this_entry, *low_entry;
 
     this_entry = dpd_main.file4_cache;
@@ -445,7 +445,7 @@ dpd_file4_cache_entry *dpd_file4_cache_find_low(void) {
     return low_entry;
 }
 
-int DPD::file4_cache_del_low(void) {
+int DPD::file4_cache_del_low() {
     int dpdnum;
     dpdfile4 File;
     dpd_file4_cache_entry *this_entry;

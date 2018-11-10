@@ -182,11 +182,11 @@ class DFCorrGrad : public CorrGrad {
 
    public:
     DFCorrGrad(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
-    virtual ~DFCorrGrad();
+    ~DFCorrGrad() override;
 
-    void compute_gradient();
+    void compute_gradient() override;
 
-    void print_header() const;
+    void print_header() const override;
 
     /**
      * Minimum relative eigenvalue to retain in fitting inverse

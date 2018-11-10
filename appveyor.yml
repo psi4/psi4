@@ -26,6 +26,8 @@ install:
                  python=3.6
   - conda clean --all
   - activate %CONDA_ENV%
+  - conda install --channel psi4
+                 qcelemental
   - conda list
 
 before_build:
@@ -56,7 +58,9 @@ after_build:
 
 before_test:
   - set PYTHONPATH=%INSTALL_FOLDER%\lib
-  - python -c "import psi4; print(psi4)"
+  - python -c "import sys, psi4; print(sys.path); print(psi4)"
+  - dir %BUILD_FOLDER%\stage\lib
+  - dir %INSTALL_FOLDER%\lib
   # TODO create psi4.bat and set PATH
   - python %INSTALL_FOLDER%\bin\psi4 --version
 
@@ -74,8 +78,11 @@ test_script:
   # Failling tests:
   #     ci-property
   #
+  # Tests requiring AM > 5:
+  #     opt-full-hess-every
+  #
   - ctest --build-config %CONFIGURATION%
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1|ci-property)$"
+          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1|ci-property|opt-full-hess-every)$"
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%

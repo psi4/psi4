@@ -27,7 +27,7 @@
  */
 
 #include <cstdlib>
-#include <string.h>
+#include <cstring>
 #include "psi4/libqt/qt.h"
 #include "matrix.h"
 #include "vector.h"
@@ -178,7 +178,7 @@ int *IntVector::to_block_vector() {
     size_t size = 0;
     for (int h = 0; h < nirrep_; ++h) size += dimpi_[h];
 
-    int *temp = new int[size];
+    auto *temp = new int[size];
     size_t offset = 0;
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < dimpi_[h]; ++i) {

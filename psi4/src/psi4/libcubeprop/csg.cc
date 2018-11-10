@@ -190,7 +190,7 @@ void CubicScalarGrid::populate_grid() {
                         }
                     }
                 }
-                blocks_.push_back(std::make_shared<BlockOPoints>(block_size, xp, yp, zp, wp, extents_));
+                blocks_.push_back(std::make_shared<BlockOPoints>(0, block_size, xp, yp, zp, wp, extents_));
             }
         }
     }

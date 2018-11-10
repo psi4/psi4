@@ -72,14 +72,14 @@ def scf_compute_energy(self):
             try:
                 self.iterations()
             except SCFConvergenceError:
-                self.finalize() 
+                self.finalize()
                 raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self, 0, 0)
         core.print_out("\n  DF guess converged.\n\n")
 
         # reset the DIIS & JK objects in prep for DIRECT
         if self.initialized_diis_manager_:
             self.diis_manager().reset_subspace()
-        self.integrals()
+        self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()
 
@@ -104,13 +104,58 @@ def scf_compute_energy(self):
 def scf_initialize(self):
     """Specialized initialization, compute integrals and does everything to prepare for iterations"""
 
-    self.iteration_ = 0
-    efp_enabled = hasattr(self.molecule(), 'EFP')
+    # Figure out memory distributions
 
+    # Get memory in terms of doubles
+    total_memory = (core.get_memory() / 8) * core.get_global_option("SCF_MEM_SAFETY_FACTOR")
+
+    # Figure out how large the DFT collocation matrices are
+    vbase = self.V_potential()
+    if vbase:
+        collocation_size = vbase.grid().collocation_size()
+        if vbase.functional().ansatz() == 1:
+            collocation_size *= 4 # First derivs
+        elif vbase.functional().ansatz() == 2:
+            collocation_size *= 10 # Second derivs
+    else:
+        collocation_size = 0
+
+
+    # Change allocation for collocation matrices based on DFT type
+    scf_type = core.get_global_option('SCF_TYPE').upper()
+    nbf = self.get_basisset("ORBITAL").nbf()
+    naux = self.get_basisset("DF_BASIS_SCF").nbf()
+    if "DIRECT" == scf_type:
+        jk_size = total_memory * 0.1
+    elif scf_type.endswith('DF'):
+        jk_size = naux * nbf * nbf
+    else:
+        jk_size = nbf ** 4
+
+    # Give remaining to collocation
+    if total_memory > jk_size:
+        collocation_memory = total_memory - jk_size
+    # Give up to 10% to collocation
+    elif (total_memory * 0.1) > collocation_size:
+        collocation_memory = collocation_size
+    else:
+        collocation_memory = total_memory * 0.1
+
+    if collocation_memory > collocation_size:
+        collocation_memory = collocation_size
+
+    # Set constants
+    self.iteration_ = 0
+    self.memory_jk_ = int(total_memory - collocation_memory)
+    self.memory_collocation_ = int(collocation_memory)
+
+    # Print out initial docc/socc/etc data
     if core.get_option('SCF', "PRINT") > 0:
         core.print_out("  ==> Pre-Iterations <==\n\n")
         self.print_preiterations()
 
+    # Initialize EFP
+    efp_enabled = hasattr(self.molecule(), 'EFP')
     if efp_enabled:
         # EFP: Set QM system, options, and callback. Display efp geom in [A]
         efpobj = self.molecule().EFP
@@ -123,13 +168,16 @@ def scf_initialize(self):
 
         efpobj.set_electron_density_field_fn(field_fn)
 
+    # Initilize all integratals and perform the first guess
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
         if core.get_global_option('RELATIVISTIC') in ['X2C', 'DKH']:
             mints.set_rel_basisset(self.get_basisset('BASIS_RELATIVISTIC'))
 
         mints.one_electron_integrals()
-        self.integrals()
+        self.initialize_jk(self.memory_jk_)
+        if self.V_potential():
+            self.V_potential().build_collocation_cache(self.memory_collocation_)
 
         core.timer_on("HF: Form core H")
         self.form_H()
@@ -381,6 +429,11 @@ def scf_finalize_energy(self):
     # Perform wavefunction stability analysis before doing
     # anything on a wavefunction that may not be truly converged.
     if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE":
+
+        # Don't bother computing needed integrals if we can't do anything with them.
+        if self.functional().needs_xc():
+            raise ValidationError("Stability analysis not yet supported for XC functionals.")
+
         # We need the integral file, make sure it is written and
         # compute it if needed
         if core.get_option('SCF', 'REFERENCE') != "UHF":
@@ -507,6 +560,8 @@ def scf_finalize_energy(self):
         core.set_variable(k, v)
 
     self.finalize()
+    if self.V_potential():
+        self.V_potential().clear_collocation_cache()
 
     core.print_out("\nComputation Completed\n")
 
@@ -519,6 +574,7 @@ def scf_print_energies(self):
     e2 = self.get_energies('Two-Electron')
     exc = self.get_energies('XC')
     ed = self.get_energies('-D')
+    #self.del_variable('-D Energy')
     evv10 = self.get_energies('VV10')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
@@ -548,15 +604,24 @@ def scf_print_energies(self):
         self.set_variable('DFT XC ENERGY', exc)
         self.set_variable('DFT VV10 ENERGY', evv10)
         self.set_variable('DFT FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
-        self.set_variable('DFT TOTAL ENERGY', dft_energy)
+        #self.set_variable(self.functional().name() + ' FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
+        self.set_variable('DFT TOTAL ENERGY', dft_energy)  # overwritten later for DH
     else:
         self.set_variable('HF TOTAL ENERGY', hf_energy)
     if hasattr(self, "_disp_functor"):
         self.set_variable('DISPERSION CORRECTION ENERGY', ed)
+    #if abs(ed) > 1.0e-14:
+    #    for pv, pvv in self.variables().items():
+    #        if abs(pvv - ed) < 1.0e-14:
+    #            if pv.endswith('DISPERSION CORRECTION ENERGY') and pv.startswith(self.functional().name()):
+    #                fctl_plus_disp_name = pv.split()[0]
+    #                self.set_variable(fctl_plus_disp_name + ' TOTAL ENERGY', dft_energy)  # overwritten later for DH
+    #else:
+    #    self.set_variable(self.functional().name() + ' TOTAL ENERGY', dft_energy)  # overwritten later for DH
 
     self.set_variable('SCF ITERATIONS', self.iteration_)
 
-
+# Bind functions to core.HF class
 core.HF.initialize = scf_initialize
 core.HF.iterations = scf_iterate
 core.HF.compute_energy = scf_compute_energy

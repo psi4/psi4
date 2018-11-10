@@ -9,6 +9,7 @@ foreach(dir pybind11
             libint
             pcmsolver
             pylibefp
+            qcelemental
             simint
             libxc
 )

@@ -113,7 +113,7 @@ void DFCorrGrad::print_header() const {
 
         outfile->Printf("    OpenMP threads:    %11d\n", nthreads_);
         outfile->Printf("    Integrals threads: %11d\n", df_ints_num_threads_);
-        outfile->Printf("    Memory (MB):       %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+        outfile->Printf("    Memory [GiB]:      %11.3f\n", ((double) memory_ * 8.0) / (1024.0 * 1024.0 * 1024.0));
         outfile->Printf("    Schwarz Cutoff:    %11.0E\n", cutoff_);
         outfile->Printf("    Fitting Condition: %11.0E\n\n", condition_);
 

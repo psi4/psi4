@@ -240,11 +240,11 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     psio_address ijak2_addr = PSIO_ZERO;
     psio_address abci2_addr = PSIO_ZERO;
 
-    psio_address *abci1_addr = new psio_address[ov3nfiles];
-    psio_address *abci3_addr = new psio_address[ov3nfiles];
-    psio_address *abci5_addr = new psio_address[ov3nfiles];
-    psio_address *abcd1_addr = new psio_address[nfiles];
-    psio_address *abcd2_addr = new psio_address[nfiles];
+    auto *abci1_addr = new psio_address[ov3nfiles];
+    auto *abci3_addr = new psio_address[ov3nfiles];
+    auto *abci5_addr = new psio_address[ov3nfiles];
+    auto *abcd1_addr = new psio_address[nfiles];
+    auto *abcd2_addr = new psio_address[nfiles];
     for (size_t k = 0; k < ov3nfiles; k++) {
         abci1_addr[k] = PSIO_ZERO;
         abci3_addr[k] = PSIO_ZERO;
@@ -285,16 +285,16 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     size_t totalnklcd = 0;
     size_t nakjc = 0;
     size_t totalnakjc = 0;
-    size_t *nabci1 = new size_t[ov3nfiles];
-    size_t *totalnabci1 = new size_t[ov3nfiles];
-    size_t *nabci3 = new size_t[ov3nfiles];
-    size_t *totalnabci3 = new size_t[ov3nfiles];
-    size_t *nabci5 = new size_t[ov3nfiles];
-    size_t *totalnabci5 = new size_t[ov3nfiles];
-    size_t *nabcd1 = new size_t[nfiles];
-    size_t *totalnabcd1 = new size_t[nfiles];
-    size_t *nabcd2 = new size_t[nfiles];
-    size_t *totalnabcd2 = new size_t[nfiles];
+    auto *nabci1 = new size_t[ov3nfiles];
+    auto *totalnabci1 = new size_t[ov3nfiles];
+    auto *nabci3 = new size_t[ov3nfiles];
+    auto *totalnabci3 = new size_t[ov3nfiles];
+    auto *nabci5 = new size_t[ov3nfiles];
+    auto *totalnabci5 = new size_t[ov3nfiles];
+    auto *nabcd1 = new size_t[nfiles];
+    auto *totalnabcd1 = new size_t[nfiles];
+    auto *nabcd2 = new size_t[nfiles];
+    auto *totalnabcd2 = new size_t[nfiles];
     for (size_t k = 0; k < ov3nfiles; k++) {
         nabci1[k] = 0;
         nabci3[k] = 0;
@@ -645,7 +645,7 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
 
     delete[] integralbuffer;
 
-    struct integral *integralbuffer2 = new integral[maxelem];
+    auto *integralbuffer2 = new integral[maxelem];
 
     outfile->Printf("        Sort (IA|BC) 1/3....");
     // SortBlock(totalnabci1,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI,"E2abci",maxelem);
@@ -2046,7 +2046,7 @@ void SortBlockNew(size_t nelem, size_t blockdim, struct integral *buffer, double
         // total elements from buffer2 written to disk
         size_t *buffer2_total = (size_t *)malloc(nbins * sizeof(long int));
         // array of addresses
-        psio_address *addr = new psio_address[nbins];
+        auto *addr = new psio_address[nbins];
         // bucketsize is binsize / nbins
         size_t bucketsize = binsize / nbins;
         if (bucketsize * nbins < binsize) bucketsize++;
@@ -2281,8 +2281,8 @@ void Sort_OV3_LowMemory(long int memory, long int o, long int v) {
     outfile->Printf("\n");
 
     long int maxelem = memory / 8 / 2;
-    double *tmp = new double[maxelem];
-    double *tmp2 = new double[maxelem];
+    auto *tmp = new double[maxelem];
+    auto *tmp2 = new double[maxelem];
 
     // in the interest of diskspace, get rid of PSIF_DCC_ABCI
     auto psio = std::make_shared<PSIO>();
@@ -2358,7 +2358,7 @@ void SortOVOV(struct iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, i
         throw PsiException("out of memory: o^2v^2 won't fit in core.", __FILE__, __LINE__);
     }
 
-    double *klcd = new double[o * o * v * v];
+    auto *klcd = new double[o * o * v * v];
     memset((void *)klcd, '\0', o * o * v * v * sizeof(double));
 
     outfile->Printf("        Sort (IA|JB)........");

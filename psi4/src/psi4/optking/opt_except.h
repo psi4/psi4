@@ -69,7 +69,7 @@ class INTCO_EXCEPT {
       //try_other_intcos = t;
     }
 
-    void increment_dynamic_level(void) {
+    void increment_dynamic_level() {
       if (dynamic_level == 0) // turning 'on' dynamic
         dynamic_level = 1;
 
@@ -79,8 +79,8 @@ class INTCO_EXCEPT {
     ~INTCO_EXCEPT() {};
 
     //bool try_again() { return try_other_intcos; }
-    const char *g_message(void) { return message; }
-    bool g_really_quit(void) { return really_quit; }
+    const char *g_message() { return message; }
+    bool g_really_quit() { return really_quit; }
 };
 
 class BAD_STEP_EXCEPT {
@@ -92,7 +92,7 @@ class BAD_STEP_EXCEPT {
 
     ~BAD_STEP_EXCEPT() {};
 
-    const char *g_message(void) { return message; }
+    const char *g_message() { return message; }
 };
 
 class BROKEN_SYMMETRY_EXCEPT {
@@ -104,7 +104,7 @@ class BROKEN_SYMMETRY_EXCEPT {
 
     ~BROKEN_SYMMETRY_EXCEPT() {};
 
-    const char *g_message(void) { return message; }
+    const char *g_message() { return message; }
 };
 
 }

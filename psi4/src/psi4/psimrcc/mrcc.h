@@ -42,7 +42,7 @@ class CCMRCC : public CCManyBody {
    public:
     // Constructor and destructor
     CCMRCC(SharedWavefunction ref_wfn, Options &options);
-    virtual ~CCMRCC();
+    ~CCMRCC() override;
 
     // CCSD
     void compute_energy(Updater *updater);

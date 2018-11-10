@@ -46,7 +46,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -58,7 +58,7 @@ Dispersion::Dispersion() {}
 
 Dispersion::~Dispersion() {}
 
-std::shared_ptr<Dispersion> Dispersion::build(const std::string &name, double s6, double p1, double p2, double p3) {
+std::shared_ptr<Dispersion> Dispersion::build(const std::string &name, double s6, double alpha6, double sr6) {
     // Options &options = Process::environment.options;
     // if (options["DFT_DISPERSION_PARAMETERS"].has_changed()) {
     //     int temp = options["DFT_DISPERSION_PARAMETERS"].size();
@@ -71,7 +71,7 @@ std::shared_ptr<Dispersion> Dispersion::build(const std::string &name, double s6
     //     }
     // }
 
-    if (to_upper_copy(name) == "-D1") {
+    if (to_upper_copy(name) == "D1") {
         auto disp = std::make_shared<Dispersion>();
         disp->name_ = "-D1";
         disp->description_ = "    Grimme's -D1 Dispersion Correction\n";
@@ -84,20 +84,21 @@ std::shared_ptr<Dispersion> Dispersion::build(const std::string &name, double s6
         disp->C6_type_ = C6_arit;
         disp->Damping_type_ = Damping_D1;
         return disp;
-    } else if (to_upper_copy(name) == "-D2") {
+    } else if (to_upper_copy(name) == "D2") {
         auto disp = std::make_shared<Dispersion>();
         disp->name_ = "-D2";
         disp->description_ = "    Grimme's -D2 Dispersion Correction\n";
         disp->citation_ = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799\n";
         disp->bibtex_ = "Grimme:2006:1787";
         disp->s6_ = s6;
-        disp->d_ = 20.0;
+        disp->d_ = alpha6;  // 20.0
+        disp->sr6_ = sr6;  // 1.1
         disp->C6_ = C6_D2_;
         disp->RvdW_ = RvdW_D2_;
         disp->C6_type_ = C6_geom;
         disp->Damping_type_ = Damping_D1;
         return disp;
-    } else if (to_upper_copy(name) == "-CHG") {
+    } else if (to_upper_copy(name) == "CHG") {
         auto disp = std::make_shared<Dispersion>();
         disp->name_ = "-CHG";
         disp->description_ = "    Chai and Head-Gordon Dispersion Correction\n";
@@ -110,7 +111,7 @@ std::shared_ptr<Dispersion> Dispersion::build(const std::string &name, double s6
         disp->C6_type_ = C6_geom;
         disp->Damping_type_ = Damping_CHG;
         return disp;
-    } else if (to_upper_copy(name) == "-DAS2009") {
+    } else if (to_upper_copy(name) == "DAS2009") {
         auto disp = std::make_shared<Dispersion>();
         disp->name_ = "-DAS2009";
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
@@ -127,7 +128,7 @@ std::shared_ptr<Dispersion> Dispersion::build(const std::string &name, double s6
         disp->Damping_type_ = Damping_TT;
         disp->Spherical_type_ = Spherical_Das;
         return disp;
-    } else if (to_upper_copy(name) == "-DAS2010") {
+    } else if (to_upper_copy(name) == "DAS2010") {
         auto disp = std::make_shared<Dispersion>();
         disp->name_ = "-DAS2010";
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
@@ -144,7 +145,7 @@ std::shared_ptr<Dispersion> Dispersion::build(const std::string &name, double s6
         disp->Spherical_type_ = Spherical_zero;
         return disp;
     } else {
-        printf("cant find %s", to_upper_copy(name).c_str());
+        printf("can't find %s", to_upper_copy(name).c_str());
         throw PSIEXCEPTION("Dispersion: Unknown -D type specified");
     }
 }
@@ -345,8 +346,8 @@ double Dispersion::compute_energy(std::shared_ptr<Molecule> m) {
                 }
 
                 if (Damping_type_ == Damping_D1) {
-                    double RvdW = RvdW_[(int)atom_list_p[i]] + RvdW_[(int)atom_list_p[j]];
-                    f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1)));
+                    double RvdW = (RvdW_[(int) atom_list_p[i]] + RvdW_[(int) atom_list_p[j]]) / 1.1;
+                    f = 1.0 / (1.0 + exp(-d_ * (R / (sr6_ * RvdW) - 1)));
                 } else if (Damping_type_ == Damping_CHG) {
                     double RvdW = RvdW_[(int)atom_list_p[i]] + RvdW_[(int)atom_list_p[j]];
                     f = 1.0 / (1.0 + d_ * pow((R / RvdW), -12.0));

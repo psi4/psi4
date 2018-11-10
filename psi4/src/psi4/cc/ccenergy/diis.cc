@@ -70,8 +70,6 @@ void CCEnergyWavefunction::diis(int iter) {
         diis_ROHF(iter);
     else if (params_.ref == 2)
         diis_UHF(iter);
-
-    return;
 }
 
 void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, double tolerance) {
@@ -79,8 +77,8 @@ void CCEnergyWavefunction::diis_invert_B(double** B, double* C, int dimension, d
     double** Bp = B2->pointer();
     ::memcpy((void*)Bp[0], B[0], sizeof(double) * dimension * dimension);
 
-    double* Sp = new double[dimension];
-    double* Tp = new double[dimension];
+    auto* Sp = new double[dimension];
+    auto* Tp = new double[dimension];
 
     bool is_zero = false;
     for (int i = 0; i < dimension - 1; i++) {

@@ -44,8 +44,8 @@ namespace psi {
 namespace fnocc {
 
 PsiReturnType CoupledCluster::lowmemory_triples() {
-    char *name = new char[10];
-    char *space = new char[10];
+    auto *name = new char[10];
+    auto *space = new char[10];
     double fac;
     if (ccmethod == 0) {
         sprintf(name, "CCSD");
@@ -147,7 +147,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
         }
 
         long int mem_leftover = memory - min_memory_reqd;
-        int extra_threads = (int)(mem_leftover / 5L * ooo);
+        auto extra_threads = (int)(mem_leftover / 5L * ooo);
         nthreads = 1 + extra_threads;
         outfile->Printf("        Attempting to proceed with %d threads\n", nthreads);
     }

@@ -157,9 +157,9 @@ class SAPT0 : public SAPT {
    public:
     SAPT0(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
           std::shared_ptr<PSIO> psio);
-    virtual ~SAPT0();
+    ~SAPT0() override;
 
-    virtual double compute_energy();
+    double compute_energy() override;
 
     void elst10();
     void exch10();

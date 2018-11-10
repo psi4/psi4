@@ -908,7 +908,7 @@ void DLRSolver::subspaceHamiltonian()
 {
     int n = s_.size();
     int nirrep = diag_->nirrep();
-    int* npi = new int[nirrep];
+    auto* npi = new int[nirrep];
     for (int h = 0; h < nirrep; ++h) {
         npi[h] = n;
     }
@@ -1707,7 +1707,7 @@ void DLRXSolver::subspaceHamiltonian()
 {
     int n = s_.size();
     int nirrep = diag_->nirrep();
-    int* npi = new int[nirrep];
+    auto* npi = new int[nirrep];
     for (int h = 0; h < nirrep; ++h) {
         npi[h] = 2*n;
     }
@@ -1784,8 +1784,8 @@ void DLRXSolver::subspaceDiagonalization()
         int info;
         double dwork;
         info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, nullptr, 1, &dwork, -1);
-        int lwork = (int) dwork;
-        double* work = new double[lwork];
+        auto lwork = (int) dwork;
+        auto* work = new double[lwork];
         info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, nullptr, 1, work, lwork);
         delete[] work;
 

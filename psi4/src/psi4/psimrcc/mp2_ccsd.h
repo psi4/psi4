@@ -40,7 +40,7 @@ namespace psimrcc {
 class MP2_CCSD : public CCManyBody {
    public:
     MP2_CCSD(SharedWavefunction ref_wfn, Options &options);
-    virtual ~MP2_CCSD();
+    ~MP2_CCSD() override;
     void compute_mp2_ccsd_energy();
 
    private:

@@ -175,7 +175,7 @@ void DCFTSolver::init() {
     }
 
     // Store the AO overlap matrix
-    double *sArray = new double[ntriso_];
+    auto *sArray = new double[ntriso_];
     IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, "outfile");
     ao_s_->set(sArray);
     delete[] sArray;
@@ -202,7 +202,7 @@ void DCFTSolver::init() {
  * Frees up the memory sequestered by the init_moinfo() and read_checkpoint() routines.
  */
 void DCFTSolver::finalize() {
-    psio_->close(PSIF_DCFT_DPD, 1);
+    psio_->close(PSIF_DCFT_DPD, 0);
     delete _ints;
 
     aocc_c_.reset();

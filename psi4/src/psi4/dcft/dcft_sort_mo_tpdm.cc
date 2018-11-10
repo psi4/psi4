@@ -157,11 +157,11 @@ void DCFTSolver::presort_mo_tpdm_AB() {
                 int q = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
                 int r = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
                 int s = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
-                double value = (double)valptr[index];
+                auto value = (double)valptr[index];
                 dpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirrep_; ++h) {
@@ -310,12 +310,12 @@ void DCFTSolver::presort_mo_tpdm_AA() {
                 int q = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
                 int r = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
                 int s = _ints->alpha_corr_to_pitzer()[(int)lblptr[labelIndex++]];
-                double value = (double)valptr[index];
+                auto value = (double)valptr[index];
                 dpdFiller(p, q, r, s, value);
 
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirrep_; ++h) {

@@ -285,12 +285,12 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
     //   dx = Bt (B Bt)^-1 dq
     //   dx = Bt G^-1 dq, where G = B B^t.
     compute_B(B,0,0);
-    opt_matrix_mult(B, 0, B, 1, G, 0, Nints, Ncarts, Nints, 0);
+    opt_matrix_mult(B, false, B, true, G, false, Nints, Ncarts, Nints, false);
 
     // u B^t (G_inv dq) = dx
     G_inv = symm_matrix_inv(G, Nints, true);
-    opt_matrix_mult(G_inv, 0, &dq, 1, &tmp_v_Nints, 1, Nints, Nints, 1, 0);
-    opt_matrix_mult(B, 1, &tmp_v_Nints, 1, &dx, 1, Ncarts, Nints, 1, 0);
+    opt_matrix_mult(G_inv, false, &dq, true, &tmp_v_Nints, true, Nints, Nints, 1, false);
+    opt_matrix_mult(B, true, &tmp_v_Nints, true, &dx, true, Ncarts, Nints, 1, false);
     free_matrix(G_inv);
 
     for (i=0; i<Ncarts; ++i)

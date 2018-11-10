@@ -193,7 +193,7 @@ Taylor_Fjt::Taylor_Fjt(size_t mmax, double accuracy)
 Taylor_Fjt::~Taylor_Fjt() {
     delete[] F_;
     delete[] T_crit_;
-    T_crit_ = 0;
+    T_crit_ = nullptr;
     free_block(grid_);
     grid_ = nullptr;
 }

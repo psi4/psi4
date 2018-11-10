@@ -55,13 +55,6 @@
 #include <cstring>
 #include <cmath>
 
-namespace psi {
-namespace ccenergy {
-
-#define IOFF_MAX 32641
-}
-}  // namespace psi
-
 // Forward declaration to call cctriples
 namespace psi {
 namespace cctriples {
@@ -76,38 +69,29 @@ CCEnergyWavefunction::CCEnergyWavefunction(std::shared_ptr<Wavefunction> referen
     : Wavefunction(options) {
     set_reference_wavefunction(reference_wavefunction);
     init();
-#define NUM_ENTRIES 113
-    cache_priority_list_ = new dpd_file4_cache_entry[NUM_ENTRIES];
 }
 
-CCEnergyWavefunction::~CCEnergyWavefunction() {
-    if (cache_priority_list_) delete[] cache_priority_list_;
-}
+CCEnergyWavefunction::~CCEnergyWavefunction() {}
 
 void CCEnergyWavefunction::init() { shallow_copy(reference_wavefunction_); }
 
 double CCEnergyWavefunction::compute_energy() {
-    int done = 0, brueckner_done = 0;
-    int h, i, j, a, b, row, col, natom;
-    double **geom, *zvals, value;
-    FILE *efile;
-    int **cachelist, *cachefiles;
-    double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab, tval;
+    int done = 0;
+    int **cachelist;
+    double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab;
 
     moinfo_.iter = 0;
 
     init_io();
-    init_ioff();
     title();
 
     get_moinfo();
     get_params(options_);
 
-    cachefiles = init_int_array(PSIO_MAXUNIT);
+    auto cachefiles = std::vector<int>(PSIO_MAXUNIT);
 
     if (params_.ref == 2) { /** UHF **/
-        cachelist = cacheprep_uhf(params_.cachelev, cachefiles);
-
+        cachelist = cacheprep_uhf(params_.cachelev, cachefiles.data());
         std::vector<int *> spaces;
         spaces.push_back(moinfo_.aoccpi);
         spaces.push_back(moinfo_.aocc_sym);
@@ -118,11 +102,11 @@ double CCEnergyWavefunction::compute_energy() {
         spaces.push_back(moinfo_.bvirtpi);
         spaces.push_back(moinfo_.bvir_sym);
         delete[] dpd_list[0];
-        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
+        dpd_list[0] = new DPD(0, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, spaces);
         dpd_set_default(0);
 
         if (params_.df) {
-            form_df_ints(options_, cachelist, cachefiles, cache_priority_list_);
+            form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD's for AO-basis algorithm */
             std::vector<int *> aospaces;
             aospaces.push_back(moinfo_.aoccpi);
@@ -133,13 +117,12 @@ double CCEnergyWavefunction::compute_energy() {
             aospaces.push_back(moinfo_.bocc_sym);
             aospaces.push_back(moinfo_.sopi);
             aospaces.push_back(moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, 4, aospaces);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 4, aospaces);
             dpd_set_default(0);
         }
 
     } else { /** RHF or ROHF **/
-        cachelist = cacheprep_rhf(params_.cachelev, cachefiles);
-
+        cachelist = cacheprep_rhf(params_.cachelev, cachefiles.data());
         init_priority_list();
         std::vector<int *> spaces;
         spaces.push_back(moinfo_.occpi);
@@ -147,18 +130,18 @@ double CCEnergyWavefunction::compute_energy() {
         spaces.push_back(moinfo_.virtpi);
         spaces.push_back(moinfo_.vir_sym);
 
-        dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles, cachelist, cache_priority_list_, 2,
-                 spaces);
+        dpd_init(0, moinfo_.nirreps, params_.memory, params_.cachetype, cachefiles.data(), cachelist,
+                 cache_priority_list_.data(), 2, spaces);
 
         if (params_.df) {
-            form_df_ints(options_, cachelist, cachefiles, cache_priority_list_);
+            form_df_ints(options_, cachelist, cachefiles.data());
         } else if (params_.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
             std::vector<int *> aospaces;
             aospaces.push_back(moinfo_.occpi);
             aospaces.push_back(moinfo_.occ_sym);
             aospaces.push_back(moinfo_.sopi);
             aospaces.push_back(moinfo_.sosym);
-            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles, cachelist, nullptr, 2, aospaces);
+            dpd_init(1, moinfo_.nirreps, params_.memory, 0, cachefiles.data(), cachelist, nullptr, 2, aospaces);
             dpd_set_default(0);
         }
     }
@@ -169,9 +152,7 @@ double CCEnergyWavefunction::compute_energy() {
             cachedone_uhf(cachelist);
         else
             cachedone_rhf(cachelist);
-        free(cachefiles);
         cleanup();
-        free(ioff_);
         exit_io();
         return Success;
     }
@@ -322,7 +303,6 @@ double CCEnergyWavefunction::compute_energy() {
         dpd_close(0);
         cleanup();
         timer_off("ccenergy");
-        free(ioff_);
         exit_io();
         return Failure;
     }
@@ -473,7 +453,6 @@ double CCEnergyWavefunction::compute_energy() {
         cachedone_uhf(cachelist);
     else
         cachedone_rhf(cachelist);
-    free(cachefiles);
 
     cleanup();
 
@@ -484,7 +463,6 @@ double CCEnergyWavefunction::compute_energy() {
     // Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;
     // Process::environment.globals["CC CORRELATION ENERGY"] = moinfo.ecc;
 
-    free(ioff_);
     exit_io();
     //  if(params.brueckner && brueckner_done)
     //     throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
@@ -517,25 +495,15 @@ void CCEnergyWavefunction::title() {
 }
 
 void CCEnergyWavefunction::exit_io() {
-    int i;
-    for (i = PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i, 1);
-    for (i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* delete CC_TMP files */
-    for (i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
+    for (int i = PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i, 1);
+    for (int i = PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i, 0); /* delete CC_TMP files */
+    for (int i = PSIF_CC_TMP11 + 1; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
     timer_off("ccenergy");
 }
 
-void CCEnergyWavefunction::init_ioff() {
-    int i;
-    ioff_ = init_int_array(IOFF_MAX);
-    ioff_[0] = 0;
-    for (i = 1; i < IOFF_MAX; i++) ioff_[i] = ioff_[i - 1] + i;
-}
-
 void CCEnergyWavefunction::checkpoint() {
-    int i;
-
-    for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
-    for (i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
+    for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i, 1);
+    for (int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 }
 
 /* just use T's on disk and don't iterate */
@@ -606,7 +574,6 @@ void CCEnergyWavefunction::one_step() {
             global_dpd_->buf4_close(&t2);
         }
     }
-    return;
 }
 
 }  // namespace ccenergy

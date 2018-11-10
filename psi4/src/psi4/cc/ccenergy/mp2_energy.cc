@@ -58,7 +58,7 @@ double CCEnergyWavefunction::rhf_mp2_energy() {
     dpdfile2 F, T1, D1;
     dpdbuf4 T2, D;
     dpdbuf4 S;
-    double os_energy, ss_energy, scs_energy;
+    double os_energy, ss_energy;
 
     /* Initialize MP2 T1 Amps (zero for true HF references) */
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");

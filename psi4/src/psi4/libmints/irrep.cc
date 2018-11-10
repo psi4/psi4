@@ -78,22 +78,22 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace psi;
 
 /////////////////////////////////////////////////////////////////////////
 
 IrreducibleRepresentation::IrreducibleRepresentation()
-    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), csymb(0), rep(0) {}
+    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr), rep(nullptr) {}
 
 IrreducibleRepresentation::IrreducibleRepresentation(int order, int d, const char *lab, const char *clab)
-    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), csymb(0), rep(0) {
+    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr), rep(nullptr) {
     init(order, d, lab, clab);
 }
 
 IrreducibleRepresentation::IrreducibleRepresentation(const IrreducibleRepresentation &ir)
-    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(0), csymb(0), rep(0) {
+    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr), rep(nullptr) {
     *this = ir;
 }
 
@@ -126,11 +126,11 @@ void IrreducibleRepresentation::init(int order, int d, const char *lab, const ch
     if (clab)
         csymb = strdup(clab);
     else
-        csymb = 0;
+        csymb = nullptr;
 
     if (rep) {
         delete[] rep;
-        rep = 0;
+        rep = nullptr;
     }
 
     if (g) {

@@ -58,7 +58,7 @@ size_t PSIO::get_numvols(size_t unit) {
     abort();
 }
 
-size_t psio_get_numvols_default(void) {
+size_t psio_get_numvols_default() {
     std::string charnum;
 
     charnum = _default_psio_lib_->filecfg_kwd("PSI", "NVOLUME", -1);

@@ -168,7 +168,7 @@ void LaplaceDenominator::decompose() {
     int nR = 99;
 
     // Read in the R available
-    double *R_availp = new double[nR];
+    auto *R_availp = new double[nR];
     R_avail_file.read((char *)R_availp, nR * sizeof(double));
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
@@ -238,8 +238,8 @@ void LaplaceDenominator::decompose() {
     outfile->Printf("  Quadrature rule read from file %s.\n\n", quadfile.c_str());
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
-    double *alpha = new double[nvector_];
-    double *omega = new double[nvector_];
+    auto *alpha = new double[nvector_];
+    auto *omega = new double[nvector_];
 
     std::vector<std::string> lines;
     std::string text;
@@ -371,7 +371,7 @@ void CholeskyDenominator::decompose() {
     int nvir = eps_vir_->dimpi()[0];
     int nspan = nocc * nvir;
 
-    double *diagonal = new double[nspan];
+    auto *diagonal = new double[nspan];
 
     for (int i = 0; i < nocc; i++) {
         for (int a = 0; a < nvir; a++) {

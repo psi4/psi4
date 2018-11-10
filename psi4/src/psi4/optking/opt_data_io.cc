@@ -60,7 +60,7 @@ namespace opt_io {
 namespace opt {
 
 // returns true if the binary file exists and is not empty
-bool opt_io_is_present(void) {
+bool opt_io_is_present() {
   bool file_present = false;
 
 #if defined(OPTKING_PACKAGE_PSI)
@@ -102,11 +102,11 @@ void opt_io_remove(bool force) {
 #endif
 }
 
-void opt_intco_dat_remove(void) {
+void opt_intco_dat_remove() {
   std::remove(FILENAME_INTCO_DAT); // rm intco definitions
 }
 
-void opt_clean(void) {
+void opt_clean() {
   opt_io_remove();        // remove file1
   if (!Opt_params.keep_intcos)
     opt_intco_dat_remove(); // remove intco.dat

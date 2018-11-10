@@ -324,7 +324,7 @@ void IntegralTransform::generate_oei() {
                                aFzcOp, bFzcOp, aD, bD, aFock, bFock);
         } /* end loop through current buffer */
     } /* end loop over reading buffers */
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     double *moInts = init_array(nTriMo_);

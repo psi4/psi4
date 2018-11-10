@@ -33,7 +33,7 @@
 #include "bend.h"
 
 #include <sstream>
-#include <math.h>
+#include <cmath>
 
 #include "v3d.h"
 #include "psi4/optking/physconst.h"

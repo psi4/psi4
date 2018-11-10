@@ -80,9 +80,9 @@ class CUHF : public HF {
     SharedVector No_;
 
     void form_initialF();
-    double compute_initial_E();
+    double compute_initial_E() override;
 
-    void compute_spin_contamination();
+    void compute_spin_contamination() override;
 
     void common_init();
 
@@ -90,21 +90,21 @@ class CUHF : public HF {
     CUHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
     CUHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
          std::shared_ptr<PSIO> psio);
-    virtual ~CUHF();
+    ~CUHF() override;
 
-    bool diis();
-    void save_density_and_energy();
-    double compute_orbital_gradient(bool save_diis, int max_diis_vectors);
+    bool diis() override;
+    void save_density_and_energy() override;
+    double compute_orbital_gradient(bool save_diis, int max_diis_vectors) override;
 
-    void form_C();
-    void form_D();
-    void form_F();
-    void form_G();
-    double compute_E();
-    void finalize();
+    void form_C() override;
+    void form_D() override;
+    void form_F() override;
+    void form_G() override;
+    double compute_E() override;
+    void finalize() override;
 
-    void damping_update(double);
-    bool stability_analysis();
+    void damping_update(double) override;
+    bool stability_analysis() override;
 
     std::shared_ptr<CUHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };

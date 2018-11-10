@@ -47,7 +47,7 @@ class SBlockMatrix {
     SBlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size);
     ~SBlockMatrix() {
         if (block_matrix_)
-            if (block_matrix_->subtract_reference()) block_matrix_ = 0;
+            if (block_matrix_->subtract_reference()) block_matrix_ = nullptr;
     }
 
     // Manual allocation
@@ -57,7 +57,7 @@ class SBlockMatrix {
 
     void subtract_reference() {
         if (block_matrix_) {
-            if (block_matrix_->subtract_reference()) block_matrix_ = 0;
+            if (block_matrix_->subtract_reference()) block_matrix_ = nullptr;
         }
     }
 

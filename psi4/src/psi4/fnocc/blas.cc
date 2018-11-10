@@ -27,7 +27,7 @@
  */
 
 #include "blas.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "psi4/pragma.h"
 

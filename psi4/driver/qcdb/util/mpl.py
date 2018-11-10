@@ -38,7 +38,7 @@ def plot_coord(ref, cand=None, orig=None, comment=None):
     try:
         from matplotlib import pyplot
     except ImportError:
-        raise ImportError("""Install matplotlib. `conda install matplotlib` or https://matplotlib.org/faq/installing_faq.html""")
+        raise ImportError("""Python module matplotlib not found. Solve by installing it: `conda install matplotlib` or https://matplotlib.org/faq/installing_faq.html""")
     from mpl_toolkits.mplot3d import Axes3D
 
     fig = pyplot.figure()

@@ -188,7 +188,7 @@ void USAPT0::print_header() const {
 
     outfile->Printf("   => Resources <=\n\n");
 
-    outfile->Printf("    Memory (MB):       %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+    outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ * 8L) / (1024L * 1024L));
     outfile->Printf("\n");
 
     outfile->Printf("   => Orbital Ranges <=\n\n");

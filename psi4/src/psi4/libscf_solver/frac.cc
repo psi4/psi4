@@ -227,8 +227,8 @@ void HF::compute_spin_contamination() {
           options_.get_str("REFERENCE") == "CUHF"))
         return;
 
-    double nalpha = (double)nalpha_;
-    double nbeta = (double)nbeta_;
+    auto nalpha = (double)nalpha_;
+    auto nbeta = (double)nbeta_;
 
     // Adjust for fractional occupation
     if (frac_performed_) {

@@ -43,9 +43,6 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::t2_build() {
-    dpdbuf4 tIjAb;
-    double dotval;
-
     DT2();
     if (params_.print & 2) status("<ij||ab> -> T2", "outfile");
 

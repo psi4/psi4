@@ -980,7 +980,7 @@ bool empty_parallel() {
 **
 ** \ingroup QT
 */
-void timer_init(void) {
+void timer_init() {
     omp_init_lock(&lock_timer);
     omp_set_lock(&lock_timer);
     extern time_t timer_start;
@@ -999,7 +999,7 @@ void timer_init(void) {
 **
 ** \ingroup QT
 */
-void timer_done(void) {
+void timer_done() {
     extern time_t timer_start, timer_end;
     omp_set_lock(&lock_timer);
     extern Timer_Structure root_timer;
@@ -1021,17 +1021,21 @@ void timer_done(void) {
     printer->Printf("Timers Off: %s", ctime(&timer_end));
     printer->Printf("\nWall Time:  %10.2f seconds\n\n",
                     std::chrono::duration_cast<std::chrono::duration<double>>(root_timer.get_total_wtime()).count());
+    printer->Printf("                                                       Time (seconds)\n");
+    printer->Printf("Module                               %12s%12s%12s%13s\n",
+                    "User", "System", "Wall", "Calls");
+
 
     const std::list<Timer_Structure> timer_list = root_timer.summarize();
     for (auto timer_iter = timer_list.begin(), end_iter = timer_list.end(); timer_iter != end_iter; ++timer_iter) {
         print_timer(*timer_iter, printer, 36);
     }
 
-    printer->Printf("\n-----------------------------------------------------------\n");
+    printer->Printf("\n--------------------------------------------------------------------------------------\n");
 
     print_nested_timer(root_timer, printer, "");
 
-    printer->Printf("\n***********************************************************\n");
+    printer->Printf("\n**************************************************************************************\n");
 
     omp_unset_lock(&lock_timer);
     omp_destroy_lock(&lock_timer);

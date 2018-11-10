@@ -201,7 +201,7 @@ void SAPT2::print_header() {
     outfile->Printf("    NVIR B     = %9d\n", nvirB_);
     outfile->Printf("\n");
 
-    long int mem = (long int)memory_;
+    auto mem = (long int)memory_;
     mem /= 8L;
     long int occ = noccA_;
     if (noccB_ > noccA_) occ = noccB_;
@@ -436,7 +436,7 @@ void SAPT2::df_integrals() {
     int rank = 0;
 
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
-    const double **buffer = new const double *[nthreads];
+    const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[i] = eri[i]->buffer();

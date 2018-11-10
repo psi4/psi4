@@ -560,7 +560,7 @@ void SAPT0::df_integrals() {
     int rank = 0;
 
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
-    const double **buffer = new const double *[nthreads];
+    const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[i] = eri[i]->buffer();
@@ -1028,7 +1028,7 @@ void SAPT0::df_integrals_aio() {
     int rank = 0;
 
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
-    const double **buffer = new const double *[nthreads];
+    const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[i] = eri[i]->buffer();
@@ -1526,7 +1526,7 @@ void SAPT0::oo_df_integrals() {
     int rank = 0;
 
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
-    const double **buffer = new const double *[nthreads];
+    const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[i] = eri[i]->buffer();

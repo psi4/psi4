@@ -116,7 +116,7 @@ static inline double Rcov(double ZA, double ZB) {
 }
 
 // This function generates various diagonal Hessian guesses.
-double ** FRAG::H_guess(void) {
+double ** FRAG::H_guess() {
 
   double **R = init_matrix(natom, natom);
   for (int i=0; i<natom; ++i)

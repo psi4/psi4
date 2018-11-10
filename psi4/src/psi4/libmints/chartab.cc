@@ -82,27 +82,27 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include <ctype.h>
+#include <cctype>
 
 using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////
 
 CharacterTable::CharacterTable()
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(), bits_(0) {}
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(nullptr), symop(nullptr), _inv(nullptr), symb(), bits_(0) {}
 
 CharacterTable::CharacterTable(const CharacterTable& ct)
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(), bits_(0) {
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(nullptr), symop(nullptr), _inv(nullptr), symb(), bits_(0) {
     *this = ct;
 }
 
 CharacterTable::~CharacterTable() {
     if (gamma_) delete[] gamma_;
-    gamma_ = 0;
+    gamma_ = nullptr;
     if (symop) delete[] symop;
-    symop = 0;
+    symop = nullptr;
     if (_inv) delete[] _inv;
-    _inv = 0;
+    _inv = nullptr;
     nt = nirrep_ = 0;
 }
 
@@ -114,7 +114,7 @@ CharacterTable& CharacterTable::operator=(const CharacterTable& ct) {
     symb = ct.symb;
 
     if (gamma_) delete[] gamma_;
-    gamma_ = 0;
+    gamma_ = nullptr;
     if (ct.gamma_) {
         gamma_ = new IrreducibleRepresentation[nirrep_];
         for (int i = 0; i < nirrep_; i++) {
@@ -124,7 +124,7 @@ CharacterTable& CharacterTable::operator=(const CharacterTable& ct) {
     }
 
     if (symop) delete[] symop;
-    symop = 0;
+    symop = nullptr;
 
     if (ct.symop) {
         symop = new SymmetryOperation[nirrep_];
@@ -134,7 +134,7 @@ CharacterTable& CharacterTable::operator=(const CharacterTable& ct) {
     }
 
     if (_inv) delete[] _inv;
-    _inv = 0;
+    _inv = nullptr;
 
     if (ct._inv) {
         _inv = new int[nirrep_];
@@ -179,7 +179,7 @@ void CharacterTable::common_init() {
 }
 
 CharacterTable::CharacterTable(const std::string& cpg)
-    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(cpg), bits_(0) {
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(nullptr), symop(nullptr), _inv(nullptr), symb(cpg), bits_(0) {
     // Check the symbol coming in
     if (!PointGroup::full_name_to_bits(cpg, bits_)) {
         outfile->Printf("CharacterTable: Invalid point group name: %s\n", cpg.c_str());

@@ -49,8 +49,7 @@
 namespace psi {
 namespace ccenergy {
 
-void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *cachefiles,
-                                        dpd_file4_cache_entry *priority) {
+void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *cachefiles) {
     /*
      * Set up the DF tensor machinery
      */
@@ -81,7 +80,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
     // We're done with the original AO basis integrals now
     Qao.reset();
 
-    double *htints = new double[nbf2];
+    auto *htints = new double[nbf2];
 
     /*
      * Set up the DPD machinery
@@ -108,8 +107,8 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
         aospaces.push_back(moinfo_.virtpi);
         aospaces.push_back(moinfo_.vir_sym);
     }
-    int *dforbspi = new int[moinfo_.nirreps];
-    int *dummyorbspi = new int[moinfo_.nirreps];
+    auto *dforbspi = new int[moinfo_.nirreps];
+    auto *dummyorbspi = new int[moinfo_.nirreps];
     int count = 0;
     for (int h = 0; h < moinfo_.nirreps; ++h) {
         dummyorbspi[h] = 0;
@@ -118,8 +117,8 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
         count += norb;
     }
     dummyorbspi[0] = 1;
-    int *dforbsym = new int[count];
-    int *dummyorbsym = new int[1];
+    auto *dforbsym = new int[count];
+    auto *dummyorbsym = new int[1];
     dummyorbsym[0] = 0;
     count = 0;
     for (int h = 0; h < moinfo_.nirreps; ++h)

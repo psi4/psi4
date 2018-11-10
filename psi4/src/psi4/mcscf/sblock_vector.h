@@ -44,7 +44,7 @@ class SBlockVector {
     SBlockVector(std::string label, int nirreps, vecint& rows_size);
     ~SBlockVector() {
         if (block_vector_)
-            if (block_vector_->subtract_reference()) block_vector_ = 0;
+            if (block_vector_->subtract_reference()) block_vector_ = nullptr;
     }
 
     // Manual allocation
@@ -53,7 +53,7 @@ class SBlockVector {
 
     void subtract_reference() {
         if (block_vector_) {
-            if (block_vector_->subtract_reference()) block_vector_ = 0;
+            if (block_vector_->subtract_reference()) block_vector_ = nullptr;
         }
     }
 

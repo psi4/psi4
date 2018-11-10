@@ -27,3 +27,6 @@ except ConvergenceError:
 # The key question is just whether or not the computation fails.
 compare_values(refenergy, get_variable("DFT TOTAL ENERGY"), 2, "Reference energy") #TEST
 
+# clean up scratch since optimization ended abruptly
+psi4_io.set_specific_retention(1, False)
+clean()

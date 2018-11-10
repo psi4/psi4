@@ -42,8 +42,6 @@ namespace psi {
 namespace ccenergy {
 
 void CCEnergyWavefunction::cc2_WabeiT2() {
-    int rowx, colx, rowz, colz, ab;
-    int GX, GZ, Ge, Gi, Gj, hxbuf, hzbuf;
     dpdfile2 t1, tia, tIA;
     dpdbuf4 Z, W, X;
     dpdbuf4 t2, t2a, t2b, tIJAB, tijab, tIjAb;

@@ -27,9 +27,9 @@
  */
 
 #include <ctime>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -168,11 +168,9 @@ void UHF::form_V() {
 }
 void UHF::form_G() {
     if (functional_->needs_xc()) {
-        timer_on("RKS: Form V");
         form_V();
         Ga_->copy(Va_);
         Gb_->copy(Vb_);
-        timer_off("RKS: Form V");
     } else {
         Ga_->zero();
         Gb_->zero();

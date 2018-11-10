@@ -114,7 +114,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
         // Write evecs to Dvec
         evals = init_array(nroots);
-        double *tmp_buff = new double[size];
+        auto *tmp_buff = new double[size];
         double **evecsp = evecs->pointer();
         double *evals_vp = evals_v->pointer();
         for (size_t root = 0; root < nroots; root++) {

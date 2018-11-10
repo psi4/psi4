@@ -77,7 +77,7 @@ void og_print(struct olsen_graph *Graph);
 **    graph for every irrep * (num el in RAS I) * (num el in RAS III)
 **
 */
-void CIWavefunction::form_strings(void) {
+void CIWavefunction::form_strings() {
     int i, nlists, nirreps, ncodes;
     int irrep, code, listnum;
     int *occs;

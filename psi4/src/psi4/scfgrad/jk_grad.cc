@@ -156,7 +156,7 @@ void DFJKGrad::print_header() const
             outfile->Printf( "    Omega:             %11.3E\n", omega_);
         outfile->Printf( "    OpenMP threads:    %11d\n", omp_num_threads_);
         outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
-        outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
         outfile->Printf( "    Fitting Condition: %11.0E\n\n", condition_);
 
@@ -1622,7 +1622,7 @@ void DFJKGrad::compute_hessian()
                 //
                 // T[p][m,j] <- (p|mn) C[n][j]
                 // dAij[x][p,i,j] <- C[m][i] T[p][m,j]
-                double *ptr = const_cast<double*>(buffer);
+                auto *ptr = const_cast<double*>(buffer);
                 C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+0*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
                 #pragma omp parallel for
                 for(int p = 0; p < nP; ++p)
@@ -1706,7 +1706,7 @@ void DFJKGrad::compute_hessian()
             }
             // K term intermediates
             // deij[x][A,i,j] <- (A|B)^x Bij[B,i,j]
-            double *ptr = const_cast<double*>(buffer);
+            auto *ptr = const_cast<double*>(buffer);
             C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+0*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Px][oP*na*na], na*na);
             C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+1*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Py][oP*na*na], na*na);
             C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+2*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Pz][oP*na*na], na*na);

@@ -33,7 +33,7 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/dimension.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <vector>
 #include <array>
 #include <memory>
@@ -254,6 +254,17 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Constructor for an entirely new wavefunction with an existing basis and global options
     Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis);
+
+    /// Constructor for a wavefunction deserialized from a file and initialized in the form of maps to all member variables
+    Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, 
+                               std::map<std::string, std::shared_ptr<Matrix>> matrices,
+                               std::map<std::string, std::shared_ptr<Vector>> vectors,
+                               std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints, 
+                               std::map<std::string, std::string> strings, std::map<std::string, bool> booleans, 
+                               std::map<std::string, double> floats);
+
+    /// Blank constructor for derived classes
+    Wavefunction(SharedWavefunction reference_wavefunction, Options& options);
 
     /// Blank constructor for derived classes
     Wavefunction(Options& options);
@@ -639,12 +650,12 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Get and set variables dictionary
     double get_variable(const std::string key);
     void set_variable(const std::string key, double value) { variables_[key] = value; }
-    std::map<std::string, double> variables(void) { return variables_; }
+    std::map<std::string, double> variables() { return variables_; }
 
     /// Get and set arrays dictionary
     SharedMatrix get_array(const std::string key);
     void set_array(const std::string key, SharedMatrix value) { arrays_[key] = value; }
-    std::map<std::string, SharedMatrix> arrays(void) { return arrays_; }
+    std::map<std::string, SharedMatrix> arrays() { return arrays_; }
 
     /// Set PCM object
     void set_PCM(const std::shared_ptr<PCM>& pcm);

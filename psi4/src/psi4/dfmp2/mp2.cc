@@ -87,7 +87,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     // Now, copy over the full matrix, whenever nonzero columns are
     for (int h = 0; h < nirrep_; ++h) {
         if (nsopi_[h] == 0) continue;
-        double* CStemp = new double[nsopi_[h]];
+        auto* CStemp = new double[nsopi_[h]];
         double** pC1 = SO_c1NO->pointer(h);
         double** Smat = S_->pointer(h);
         int symcol = 0;

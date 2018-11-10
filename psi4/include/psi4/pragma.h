@@ -155,4 +155,24 @@
 #define PSI_API PSI_HELPER_SO_EXPORT
 #define PSI_LOCAL PSI_HELPER_SO_LOCAL
 
+// Use in the header file as follows:
+// PSI_DEPRECATED("extremely unsafe, use 'combust' instead!!!") void explode(void);
+// will produce this kind output when compiling:
+//    warning: 'explode' is deprecated: extremely unsafe, use 'combust' instead!!!
+// The macro can similarly be used to deprecate variables.
+// The implementation uses the standard attribute if C++14 available, falling back
+// to compiler extensions if C++11 is used.
+#if __cplusplus >= 201402L
+#define PSI_DEPRECATED(msg) [[deprecated(msg)]]
+#else
+#if defined(__GNUC__) || defined(__clang__)
+#define PSI_DEPRECATED(msg) __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER)
+#define PSI_DEPRECATED(msg) __declspec(deprecated(msg))
+#else
+#pragma message("WARNING: You need to implement PSI_DEPRECATED for this compiler")
+#define PSI_DEPRECATED
+#endif
+#endif
+
 #endif

@@ -333,8 +333,8 @@ void DCFTSolver::form_idps() {
     ::memset(lookup_orbitals_, '\0', sizeof(int) * dim_orbitals_);
 
     // Temporary vectors containing gradient value and diagonal part of the Hessian for each IDP
-    double *grad = new double[dim_];
-    double *Hd = new double[dim_];
+    auto *grad = new double[dim_];
+    auto *Hd = new double[dim_];
 
     // Count the number of IDPs for orbital rotations (Alpha spin)
     // The minus sign in the gradient takes into account the sign of the g vector in the N-R equations: dX H = -g
@@ -1427,7 +1427,7 @@ void DCFTSolver::compute_sigma_vector_cum_orb() {
     // DI_IJ = (IJ|KC) D_KC
     global_dpd_->file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
     global_dpd_->file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), 0,
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O>=O]+"), ID("[O,V]"), 0,
                            "MO Ints (OO|OV)");
     global_dpd_->contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -1459,7 +1459,7 @@ void DCFTSolver::compute_sigma_vector_cum_orb() {
     // DI_ij = (ij|kc) D_kc
     global_dpd_->file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
     global_dpd_->file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"), ID("[o,o]"), ID("[o,v]"), 0,
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"), ID("[o>=o]+"), ID("[o,v]"), 0,
                            "MO Ints (oo|ov)");
     global_dpd_->contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -2072,7 +2072,7 @@ void DCFTSolver::run_davidson() {
         G->diagonalize(Evecs, Evals, ascending);
 
         // Define the eigenvectors to be positive to make sure the phase doesn't change
-        double *ones = new double[b_dim_];
+        auto *ones = new double[b_dim_];
         for (int i = 0; i < b_dim_; ++i) ones[i] = 1.0;
         double **Evecs_p = Evecs->pointer();
         for (int k = 0; k < b_dim_; ++k) {
@@ -2166,8 +2166,8 @@ void DCFTSolver::run_davidson() {
         double value = Evals->get(k);
         outfile->Printf("\t %10.6f \n", value);
         if (value < 0.0) {
-            double *max_values = new double[values_to_print + 1];
-            int *max_values_idp = new int[values_to_print + 1];
+            auto *max_values = new double[values_to_print + 1];
+            auto *max_values_idp = new int[values_to_print + 1];
             int stored = 0;
 
             double norm = 0.0;

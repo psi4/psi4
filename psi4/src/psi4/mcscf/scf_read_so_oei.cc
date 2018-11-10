@@ -50,7 +50,7 @@ namespace mcscf {
 
 void SCF::read_so_oei() {
     // Read all the SO one electron integrals in Pitzer order
-    double* buffer = new double[nso * (nso + 1) / 2];
+    auto* buffer = new double[nso * (nso + 1) / 2];
 
     // Read the kinetic energy integrals
     for (int k = 0; k < nso * (nso + 1) / 2; ++k) buffer[k] = 0.0;

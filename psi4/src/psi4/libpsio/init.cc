@@ -114,7 +114,7 @@ PSIO::PSIO() {
 
 std::shared_ptr<PSIO> PSIO::shared_object() { return _default_psio_lib_; }
 
-int psio_init(void) {
+int psio_init() {
     if (_default_psio_lib_.get() == 0) {
         auto temp = std::make_shared<PSIO>();
         _default_psio_lib_ = temp;

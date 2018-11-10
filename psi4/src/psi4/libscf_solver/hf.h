@@ -227,7 +227,7 @@ class HF : public Wavefunction {
     HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct, Options& options,
        std::shared_ptr<PSIO> psio);
 
-    virtual ~HF();
+    ~HF() override;
 
     /// Get and set current iteration
     int iteration() const { return iteration_; }
@@ -345,8 +345,8 @@ class HF : public Wavefunction {
     // potentials.  TDC, 5/23/12.
     virtual void form_H();
 
-    /// Do any needed integral setup
-    virtual void integrals();
+    /// Do any needed integral JK setup
+    virtual void initialize_jk(size_t effective_memory_doubles);
 
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();

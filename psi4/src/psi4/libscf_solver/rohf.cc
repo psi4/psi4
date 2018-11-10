@@ -27,9 +27,9 @@
  */
 
 #include <ctime>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 #include <algorithm>
 #include <vector>
 #include <utility>
@@ -1274,7 +1274,7 @@ bool ROHF::stability_analysis() {
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, A.matrix[h][0], npairs, U[0], npairs, 0.0, temp[0], npairs);
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, U[0], npairs, temp[0], npairs, 0.0, A.matrix[h][0], npairs);
 
-            double* evals = new double[rank];
+            auto* evals = new double[rank];
             double** evecs = block_matrix(rank, rank);
 
             sq_rsp(rank, rank, A.matrix[h], evals, 1, evecs, 1e-12);

@@ -57,7 +57,7 @@ inline double DE_nr_energy(double step, double grad, double hess) {
   return (step * grad + 0.5 * step * step * hess);
 }
 
-void MOLECULE::nr_step(void) {
+void MOLECULE::nr_step() {
   int Nintco = Ncoord();
   double **H_inv;
 
@@ -74,8 +74,8 @@ void MOLECULE::nr_step(void) {
   oprintf_out("\tTaking NR optimization step.\n");
 
   // Hinv fq = dq
-  H_inv = symm_matrix_inv(H, Nintco, 1);
-  opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
+  H_inv = symm_matrix_inv(H, Nintco, true);
+  opt_matrix_mult(H_inv, false, &fq, true, &dq, true, Nintco, Nintco, 1, false);
   free_matrix(H_inv);
 
   // Zero steps for frozen fragment

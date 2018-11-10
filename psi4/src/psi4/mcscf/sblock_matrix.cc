@@ -38,19 +38,19 @@
 namespace psi {
 namespace mcscf {
 
-SBlockMatrix::SBlockMatrix() : block_matrix_(0) {}
+SBlockMatrix::SBlockMatrix() : block_matrix_(nullptr) {}
 
-SBlockMatrix::SBlockMatrix(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size) : block_matrix_(0) {
+SBlockMatrix::SBlockMatrix(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size) : block_matrix_(nullptr) {
     block_matrix_ = new BlockMatrix(label, nirreps, rows_size, cols_size);
     block_matrix_->add_reference();
 }
 
-SBlockMatrix::SBlockMatrix(std::string label, int nirreps, int*& rows_size, int*& cols_size) : block_matrix_(0) {
+SBlockMatrix::SBlockMatrix(std::string label, int nirreps, int*& rows_size, int*& cols_size) : block_matrix_(nullptr) {
     block_matrix_ = new BlockMatrix(label, nirreps, rows_size, cols_size);
     block_matrix_->add_reference();
 }
 
-SBlockMatrix::SBlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size) : block_matrix_(0) {
+SBlockMatrix::SBlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size) : block_matrix_(nullptr) {
     block_matrix_ = new BlockMatrix(label, nirreps, rows_size, cols_size);
     block_matrix_->add_reference();
 }

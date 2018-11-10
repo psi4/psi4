@@ -38,7 +38,6 @@
 #include "cclambda.h"
 
 namespace psi {
-extern FILE *outfile;
 namespace cclambda {
 
 void cache_abcd_rhf(int **cachelist);

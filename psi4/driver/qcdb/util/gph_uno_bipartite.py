@@ -17,7 +17,7 @@ from __future__ import print_function
 try:
     import networkx as nx
 except ImportError:
-    raise ImportError("""Install python module networkx. `conda install networkx` or `pip install networkx`""")
+    raise ImportError("""Python module networkx not found. Solve by installing it: `conda install networkx` or `pip install networkx`""")
 from networkx import bipartite
 import numpy as np
 

@@ -54,7 +54,7 @@ namespace opt {
 
 // test the analytic B matrix (and displacement code) by comparing
 // analytic DqDx to finite-difference DqDx
-void MOLECULE::test_B(void) {
+void MOLECULE::test_B() {
   int Natom = g_natom();
   int Nintco = Ncoord();
   const double disp_size = 0.01;
@@ -147,7 +147,7 @@ void MOLECULE::test_B(void) {
   return;
 }
 
-void MOLECULE::test_derivative_B(void) {
+void MOLECULE::test_derivative_B() {
   int Natom = g_natom();
   int Nintco = Ncoord();
   const double disp_size = 0.01;

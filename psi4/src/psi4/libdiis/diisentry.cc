@@ -32,7 +32,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.hpp"
 #include "diisentry.h"
-#include <math.h>
+#include <cmath>
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include <sstream>

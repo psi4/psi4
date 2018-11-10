@@ -31,7 +31,7 @@
 namespace psi {
 namespace cctransort {
 
-void a_spinad(void) {
+void a_spinad() {
     dpdbuf4 A;
 
     global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");

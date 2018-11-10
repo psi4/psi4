@@ -189,7 +189,7 @@ class MRCCRestrictedReader {
 
    public:
     MRCCRestrictedReader(FILE *ccdensities, const double tolerance, SharedMatrix one_particle)
-        : ccdensities_(ccdensities), tolerance_(tolerance), batch_(0), one_particle_(one_particle) {
+        : ccdensities_(ccdensities), tolerance_(tolerance), batch_(nullptr), one_particle_(one_particle) {
         batch_ = new char[line_length * 1000 + 1];
 
         const Dimension &nmopi = one_particle_->rowspi();
@@ -220,7 +220,7 @@ class MRCCRestrictedReader {
 
         // each line in CCDENSITIES is 45 characters long.
         // read in a batch of 1000 lines; add one for '\0'.
-        char *batch = new char[line_length * 1000 + 1];
+        auto *batch = new char[line_length * 1000 + 1];
 
         double value;
         int p, q, r, s;

@@ -31,9 +31,9 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
-#include <math.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cmath>
+#include <cctype>
+#include <cstdio>
 #include "psi4/psifiles.h"
 #include "mospace.h"
 

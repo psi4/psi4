@@ -401,7 +401,7 @@ private:
     /// Internal buffer index
     size_t buf_;
 
-    virtual void initialize_task();
+    void initialize_task() override;
 
 public:
     /// Constructor
@@ -409,23 +409,23 @@ public:
                 std::shared_ptr<AIOHandler> AIO, int target_file,
                 size_t buffer_size, size_t nbuffer);
     /// Destructor
-    ~PKWrkrReord();
+    ~PKWrkrReord() override;
 
     /// Reallocating memory for wK
     /// We make sure the deallocated buffers have been written to disk
-    virtual void allocate_wK(size_t buf_size, size_t buf_per_thread);
+    void allocate_wK(size_t buf_size, size_t buf_per_thread) override;
 
     /// Filling integral values in relevant buffer
-    virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
+    void fill_values(double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Filling wK integrals in relevant buffer
-    virtual void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l);
+    void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) override;
 
     /// Writing values in the appropriate PK file entry
-    virtual void write(std::vector<size_t> min_ind,
-                       std::vector<size_t> max_ind, size_t pk_pairs);
+    void write(std::vector<size_t> min_ind,
+                       std::vector<size_t> max_ind, size_t pk_pairs) override;
     /// Writing wK values in the appropriate PK file entry
-    virtual void write_wK(std::vector<size_t> min_ind,
-                       std::vector<size_t> max_ind, size_t pk_pairs);
+    void write_wK(std::vector<size_t> min_ind,
+                       std::vector<size_t> max_ind, size_t pk_pairs) override;
 };
 
 /** class PKWrkInCore: Computes all integrals for PK supermatrix
@@ -453,7 +453,7 @@ private:
     double* K_bufp_;
     double* wK_bufp_;
 
-    virtual void initialize_task();
+    void initialize_task() override;
 
 public:
     PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
@@ -461,17 +461,17 @@ public:
                  double* Kbuf, double* wKbuf, int nworkers);
 
     /// Filling values in the relevant part of the buffer
-    virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
+    void fill_values(double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Filling values in the relevant part of the buffer for wK
-    virtual void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l);
+    void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) override;
 
     /// Finalize the buffer: divide by two diagonal elements
-    virtual void finalize_ints(size_t pk_pairs);
+    void finalize_ints(size_t pk_pairs) override;
     /// Finalize the buffer for wK: divide by two diagonal elements
-    virtual void finalize_ints_wK(size_t pk_pairs);
+    void finalize_ints_wK(size_t pk_pairs) override;
 
     /// Function write is never used
-    virtual void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) {
+    void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) override {
         throw PSIEXCEPTION("Function not implemented for in-core");
     }
 };
@@ -506,34 +506,34 @@ public:
               size_t buf_size, std::vector< int > &bufforpq,
               std::shared_ptr<std::vector<size_t>> pos);
     /// Destructor
-    ~PKWrkrIWL();
+    ~PKWrkrIWL() override;
 
     /// Preparing for wK pre-sorting to file
-    virtual void allocate_wK(std::shared_ptr<std::vector<size_t>> pos, int wKfile);
+    void allocate_wK(std::shared_ptr<std::vector<size_t>> pos, int wKfile) override;
 
     /// Filling integrals in the appropriate buffers
-    virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
+    void fill_values(double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Filling wK integrals in the appropriate buffers
-    virtual void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l);
+    void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Popping a value from a buffer to finalize writing
-    virtual bool pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
+    bool pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) override;
     /// Inserting a value back into a buffer
-    virtual void insert_value(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l);
+    void insert_value(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Popping a wK value from a buffer to finalize writing
-    virtual bool pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
+    bool pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) override;
     /// Inserting a wK value back into a buffer
-    virtual void insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l);
+    void insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Flushing all buffers for current worker
-    virtual void flush();
+    void flush() override;
     /// Flushing all wK buffers for current worker
-    virtual void flush_wK();
+    void flush_wK() override;
 
     /// Functions that are not used here
-    virtual void initialize_task() {
+    void initialize_task() override {
         throw PSIEXCEPTION("initialize_task not implemented for this class\n");
     }
-    virtual void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind,
-                       size_t pk_pairs) {
+    void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind,
+                       size_t pk_pairs) override {
         throw PSIEXCEPTION("write not implemented for this class\n");
     }
 };

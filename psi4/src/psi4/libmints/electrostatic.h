@@ -46,13 +46,13 @@ class Vector3;
  * Use an IntegralFactory to create this object.
  */
 class ElectrostaticInt : public PotentialInt {
-    void compute_pair(const GaussianShell&, const GaussianShell&) {}
+    void compute_pair(const GaussianShell&, const GaussianShell&) override {}
 
    public:
     /// Constructor
     ElectrostaticInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                      int deriv = 0);
-    ~ElectrostaticInt();
+    ~ElectrostaticInt() override;
 
 // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
 // The following line is to shut it up.
@@ -69,7 +69,7 @@ class ElectrostaticInt : public PotentialInt {
     PRAGMA_WARNING_POP
 
     /// Does the method provide first derivatives?
-    bool has_deriv1() { return false; }
+    bool has_deriv1() override { return false; }
 
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol);
 };

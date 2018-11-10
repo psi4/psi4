@@ -344,9 +344,9 @@ void FCHKWriter::write(const std::string &filename) {
     double to_bohr = mol->units() == Molecule::Angstrom ? 1.0 / pc_bohr2angstroms : 1.0;
     for (int atom = 0; atom < natoms; ++atom) {
         double Z = mol->Z(atom);
-        int intZ = static_cast<int>(Z);
+        auto intZ = static_cast<int>(Z);
         double mass = an2masses[intZ];
-        int intmass = static_cast<int>(mass);
+        auto intmass = static_cast<int>(mass);
         atomic_weights.push_back(mass);
         int_atomic_weights.push_back(intmass);
         nuc_charges.push_back(Z);
@@ -571,7 +571,7 @@ void FCHKWriter::write(const std::string &filename) {
     write_matrix(wavefunction_->epsilon_b()->name().c_str(), wavefunction_->epsilon_b_subset("AO"));
     // write_matrix("Beta MO coefficients", reorderedCb);
     write_matrix(wavefunction_->Cb()->name().c_str(), reorderedCb);
-    char *label = new char[256];
+    auto *label = new char[256];
     std::string type = name == "DFT" ? "SCF" : name;
     sprintf(label, "Total %s Density", type.c_str());
     write_sym_matrix(label, reorderedDt);
@@ -962,7 +962,7 @@ void MOWriter::write() {
     nmo = mos.sum();
 
     map = new int[nmo];
-    bool *skip = new bool[nmo];
+    auto *skip = new bool[nmo];
     for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
     for (int orb = 0; orb < nmo; orb++) {
         int count = 0;

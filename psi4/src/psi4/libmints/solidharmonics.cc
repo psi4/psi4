@@ -29,7 +29,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <stdint.h>
+#include <cstdint>
 
 #include "matrix.h"
 #include "integral.h"

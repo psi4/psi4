@@ -85,7 +85,7 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <ctype.h>
+#include <cctype>
 #include <cmath>
 
 namespace psi {

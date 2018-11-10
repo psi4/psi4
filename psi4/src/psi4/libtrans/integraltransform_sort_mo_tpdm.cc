@@ -157,13 +157,13 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
                 int q = aCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int r = aCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int s = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                double value = (double)valptr[index];
+                auto value = (double)valptr[index];
                 // Check:
                 //                outfile->Printf("\t%4d %4d %4d %4d = %20.10f\n", p, q, r, s, value);
                 dpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {
@@ -309,11 +309,11 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
                 int q = aCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int r = aCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int s = aCorrToPitzer_[(int)lblptr[labelIndex++]];
-                double value = (double)valptr[index];
+                auto value = (double)valptr[index];
                 aaDpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {
@@ -355,13 +355,13 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
                 int q = aCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int r = bCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int s = bCorrToPitzer_[(int)lblptr[labelIndex++]];
-                double value = (double)valptr[index];
+                auto value = (double)valptr[index];
                 // Check:
                 //                outfile->Printf("\t%4d %4d %4d %4d = %20.10f\n", p, q, r, s, value);
                 abDpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {
@@ -403,11 +403,11 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
                 int q = bCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int r = bCorrToPitzer_[(int)lblptr[labelIndex++]];
                 int s = bCorrToPitzer_[(int)lblptr[labelIndex++]];
-                double value = (double)valptr[index];
+                auto value = (double)valptr[index];
                 bbDpdFiller(p, q, r, s, value);
             }               /* end loop through current buffer */
         } while (!lastbuf); /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+        iwl->set_keep_flag(true);
         delete iwl;
 
         for (int h = 0; h < nirreps_; ++h) {

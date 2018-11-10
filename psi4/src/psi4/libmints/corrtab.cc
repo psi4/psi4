@@ -65,11 +65,11 @@ using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////
 
-CorrelationTable::CorrelationTable() : n_(0), ngamma_(0), gamma_(0) {}
+CorrelationTable::CorrelationTable() : n_(0), ngamma_(nullptr), gamma_(nullptr) {}
 
 CorrelationTable::CorrelationTable(const std::shared_ptr<PointGroup>& group,
                                    const std::shared_ptr<PointGroup>& subgroup)
-    : n_(0), ngamma_(0), gamma_(0) {
+    : n_(0), ngamma_(nullptr), gamma_(nullptr) {
     int rc = initialize_table(group, subgroup);
     if (rc != 0) {
         // ExEnv::err0()
@@ -104,12 +104,12 @@ int CorrelationTable::initialize_table(const std::shared_ptr<PointGroup>& group,
 
     for (i = 0; i < n_; i++) {
         ngamma_[i] = 0;
-        gamma_[i] = 0;
+        gamma_[i] = nullptr;
     }
 
     // map the ops in the high order to low order groups
-    int* so_to_subso = new int[ct.order()];
-    int* subso_to_so = new int[subct.order()];
+    auto* so_to_subso = new int[ct.order()];
+    auto* subso_to_so = new int[subct.order()];
     for (i = 0; i < subct.order(); i++) subso_to_so[i] = -1;
     for (i = 0; i < ct.order(); i++) {
         SymmetryOperation so = ct.symm_operation(i);
@@ -158,14 +158,14 @@ int CorrelationTable::initialize_table(const std::shared_ptr<PointGroup>& group,
                 }
             }
             nmatch /= subct.order();
-            int inmatch = (int)(nmatch + 0.5);
+            auto inmatch = (int)(nmatch + 0.5);
             if (std::fabs(nmatch - inmatch) > 1.0e-6) {
                 delete[] so_to_subso;
                 delete[] subso_to_so;
                 return -4;
             }
             if (inmatch > 0) {
-                int* newgamma = new int[ngamma_[i] + inmatch];
+                auto* newgamma = new int[ngamma_[i] + inmatch];
                 memcpy(newgamma, gamma_[i], ngamma_[i] * sizeof(int));
                 for (k = 0; k < inmatch; k++) newgamma[ngamma_[i] + k] = j;
                 ngamma_[i] += inmatch;

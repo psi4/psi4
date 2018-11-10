@@ -66,3 +66,47 @@ class QCAspect(collections.namedtuple('QCAspect', 'lbl units data comment doi gl
             dicary['data'] = [self.data.real, self.data.imag]
 
         return dicary
+
+
+def print_variables(qcvars=None):
+    """Form a printable representation of qcvariables.
+
+    Parameters
+    ----------
+    qcvars : dict of QCAspect, optional
+        Group of QCAspect objects to print. If `None`, will use `qcdb.pe.active_qcvars`.
+
+    Returns
+    -------
+    str
+        Printable string representation of label, data, and unit in QCAspect-s.
+
+    """
+    text = []
+    text.append('\n  Variable Map:')
+    text.append('  ----------------------------------------------------------------------------')
+
+    if qcvars is None:
+        qcvars = pe.active_qcvars
+
+    if len(qcvars) == 0:
+        text.append('  (none)')
+        return '\n'.join(text)
+
+    largest_key = max(len(k) for k in qcvars) + 2  # for quotation marks
+    for k, qca in sorted(qcvars.items()):
+        if k != qca.lbl:
+            raise ValidationError('Huh? {} != {}'.format(k, qca.label))
+
+        if isinstance(qca.data, np.ndarray):
+            data = np.array_str(qca.data, max_line_width=120, precision=8, suppress_small=True)
+            data = '\n'.join('        ' + ln for ln in data.splitlines())
+            text.append("""  {:{keywidth}} => {:{width}} [{}]""".format(
+                '"' + k + '"', '', qca.units, keywidth=largest_key, width=20))
+            text.append(data)
+        else:
+            text.append("""  {:{keywidth}} => {:{width}.{prec}f} [{}]""".format(
+                '"' + k + '"', qca.data, qca.units, keywidth=largest_key, width=20, prec=12))
+
+    text.append('')
+    return '\n'.join(text)

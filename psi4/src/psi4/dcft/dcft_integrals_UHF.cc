@@ -359,7 +359,7 @@ void DCFTSolver::sort_OOOV_integrals() {
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O>=O]+"), 0,
                            "MO Ints (VO|OO)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[O,O]"), ID("[O,V]"), "MO Ints (OO|OV)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[O>=O]+"), ID("[O,V]"), "MO Ints (OO|OV)");
     global_dpd_->buf4_close(&I);
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), 0,
@@ -419,7 +419,7 @@ void DCFTSolver::sort_OOOV_integrals() {
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"), ID("[v,o]"), ID("[o>=o]+"), 0,
                            "MO Ints (vo|oo)");
-    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[o,o]"), ID("[o,v]"), "MO Ints (oo|ov)");
+    global_dpd_->buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[o>=o]+"), ID("[o,v]"), "MO Ints (oo|ov)");
     global_dpd_->buf4_close(&I);
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"), ID("[v,o]"), ID("[o,o]"), 0,
@@ -585,10 +585,10 @@ void DCFTSolver::build_denominators() {
     dpdbuf4 D;
     dpdfile2 F;
 
-    double *aOccEvals = new double[nalpha_];
-    double *bOccEvals = new double[nbeta_];
-    double *aVirEvals = new double[navir_];
-    double *bVirEvals = new double[nbvir_];
+    auto *aOccEvals = new double[nalpha_];
+    auto *bOccEvals = new double[nbeta_];
+    auto *aVirEvals = new double[navir_];
+    auto *bVirEvals = new double[nbvir_];
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;

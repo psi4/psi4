@@ -46,7 +46,7 @@ using namespace psi;
 SOTransform::SOTransform() {
     naoshell_allocated = 0;
     naoshell = 0;
-    aoshell = 0;
+    aoshell = nullptr;
 }
 
 SOTransform::~SOTransform() { delete[] aoshell; }
@@ -92,7 +92,7 @@ void AOTransform::add_transform(int irrep, double coef, int aofunc, int sofunc) 
 
 SOTransformShell::SOTransformShell() {
     nfunc = 0;
-    func = 0;
+    func = nullptr;
 }
 
 SOTransformShell::~SOTransformShell() {
@@ -100,7 +100,7 @@ SOTransformShell::~SOTransformShell() {
 }
 
 void SOTransformShell::add_func(int irrep, double coef, int aofunc, int sofunc) {
-    SOTransformFunction *newfunc = new SOTransformFunction[nfunc + 1];
+    auto *newfunc = new SOTransformFunction[nfunc + 1];
     for (int i = 0; i < nfunc; i++) newfunc[i] = func[i];
     delete[] func;
     func = newfunc;
@@ -146,7 +146,7 @@ void SOBasisSet::init() {
     ushell_am_ = new int[nshell_];
 
     // map each ao shell to an so shell
-    int *aoshell_to_soshell = new int[basis_->nshell()];
+    auto *aoshell_to_soshell = new int[basis_->nshell()];
     int soshell = 0;
     for (i = 0; i < mol->nunique(); i++) {
         for (j = 0; j < basis_->nshell_on_center(mol->unique(i)); j++) {

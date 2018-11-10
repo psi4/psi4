@@ -162,7 +162,7 @@ class CdSalcList {
     std::string salc_name(int index) const;
 
     char needed_irreps() const { return needed_irreps_; }
-    int nirrep(void) const { return nirrep_; }
+    int nirrep() const { return nirrep_; }
     int cdsalcpi(int h) const { return cdsalcpi_[h]; }
     bool project_out_translations() const { return project_out_translations_; }
     bool project_out_rotations() const { return project_out_rotations_; }

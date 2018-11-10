@@ -25,260 +25,243 @@
 #
 # @END LICENSE
 #
-"""
-Module to provide lightweight definitions of emperical dispersion terms.
-"""
+
+import collections
+
+import numpy as np
+
 from psi4 import core
-from psi4.driver.qcdb import interface_dftd3 as dftd3
-from psi4.driver.qcdb import interface_gcp as gcp
-from psi4.driver.qcdb.dashparam import get_dispersion_aliases
-from psi4.driver.qcdb.dashparam import get_default_dashparams
 from psi4.driver import p4util
 from psi4.driver import driver_findif
-#import numpy as np
+from psi4.driver.p4util.exceptions import ValidationError
+from psi4.driver.qcdb import intf_dftd3
+from psi4.driver.qcdb import interface_gcp as gcp
 
-class EmpericalDispersion(object):
-    def __init__(self, alias, dtype, **kwargs):
-        # 1) Functional name processing:
-        # 1a) Cleave out base functional from alias:
-        for dash in ["-" + name.lower() for name in get_dispersion_aliases()]:
-            if dash == alias.lower()[-len(dash):]:
-                alias = alias[:-len(dash)]
+_engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
+                                          ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
+                                          ('nl', ['nl'])]) # yapf: disable
 
-        # 1b) Alias must be lowercase
-        self.alias = alias.lower()
+_capable_engines_for_disp = collections.defaultdict(list)
+for eng, disps in _engine_can_do.items():
+    for disp in disps:
+        _capable_engines_for_disp[disp].append(eng)
 
-        # 2) Figure out dispersion type:
-        # 2a) Strip "-" from dtype
-        if dtype[0] == "-":
-            dtype = dtype[1:]
 
-        # 2b) Un-alias and capitalise dtype for printing
-        if dtype.lower() in get_dispersion_aliases():
-            self.dtype = "-" + get_dispersion_aliases()[dtype.lower()]
+class EmpiricalDispersion(object):
+    """Lightweight unification of empirical dispersion calculation modes.
+
+    Attributes
+    ----------
+    dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl'}
+        Name of dispersion correction to be applied. Resolved
+        from `name_hint` and/or `level_hint` into a key of
+        `dashparam.dashcoeff`.
+    dashparams : dict
+        Complete (number and parameter names vary by `dashlevel`)
+        set of parameter values defining the flexible parts
+        of `dashlevel`. Resolved into a complete set (keys of
+        dashcoeff[dashlevel]['default']) from `name_hint` and/or
+        `dashcoeff_supplement` and/or user `param_tweaks`.
+    fctldash : str
+        If `dashparams` for `dashlevel` corresponds to a defined,
+        named, untweaked "functional-dashlevel" set, then that
+        functional. Otherwise, empty string.
+    description : str
+        Tagline for dispersion `dashlevel`.
+    dashlevel_citation : str
+        Literature reference for dispersion `dashlevel` in general,
+        *not necessarily* for `dashparams`.
+    dashparams_citation : str
+        Literature reference for dispersion parameters, if `dashparams`
+        corresponds to a defined, named, untweaked "functional-dashlevel"
+        set with a citation. Otherwise, empty string.
+    dashcoeff_supplement : dict
+        See description in `qcdb.intf_dftd3.dashparam.from_arrays`. Used
+        here to "bless" the dispersion definitions attached to
+        the procedures/dft/*_functionals-defined dictionaries
+        as legit, non-custom, and of equal validity to
+        `qcdb.intf_dftd3.dashparam.dashcoeff` itself for purposes of
+        validating `fctldash`.
+    engine : {'libdisp', 'dftd3', 'nl'}
+        Compute engine for dispersion. One of Psi4's internal libdisp
+        library, Grimme's DFTD3 executable, or nl.
+    disp : psi4.core.Dispersion
+        Only present for `engine=libdisp`. Psi4 class instance prepared
+        to compute dispersion.
+    ordered_params : list
+        Fixed-order list of relevant parameters for `dashlevel`. Matches
+        DFT_DISPERSION_PARAMETERS ordering. Used for printing.
+
+    Parameters
+    ----------
+    name_hint : str, optional
+        Name of functional (func only, func & disp, or disp only) for
+        which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
+        blyp-d3(bj), hf+d). Any or all parameters initialized from
+        `dashcoeff[dashlevel][functional-without-dashlevel]` or
+        `dashcoeff_supplement[dashlevel][functional-with-dashlevel]
+        can be overwritten via `param_tweaks`.
+    level_hint : str, optional
+        Name of dispersion correction to be applied (e.g., d, D2,
+        d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
+        "formal" to one.
+    param_tweaks : list or dict, optional
+        Values for the same keys as `dashcoeff[dashlevel]['default']`
+        (and same order if list) used to override any or all values
+        initialized by `name_hint`.  Extra parameters will error.
+    engine : str, optional
+        Override which code computes dispersion. See above for allowed
+        values. Really only relevant for -D2, which can be computed by
+        libdisp or dftd3.
+
+    """
+
+    def __init__(self, name_hint=None, level_hint=None, param_tweaks=None, **kwargs):
+        from .dft import dashcoeff_supplement
+        self.dashcoeff_supplement = dashcoeff_supplement
+
+        resolved = intf_dftd3.from_arrays(
+            name_hint=name_hint,
+            level_hint=level_hint,
+            param_tweaks=param_tweaks,
+            dashcoeff_supplement=self.dashcoeff_supplement)
+        self.fctldash = resolved['fctldash']
+        self.dashlevel = resolved['dashlevel']
+        self.dashparams = resolved['dashparams']
+        self.description = intf_dftd3.dashcoeff[self.dashlevel]['description']
+        self.ordered_params = intf_dftd3.dashcoeff[self.dashlevel]['default'].keys()
+        self.dashlevel_citation = intf_dftd3.dashcoeff[self.dashlevel]['citation']
+        self.dashparams_citation = resolved['dashparams_citation']
+
+        engine = kwargs.pop('engine', None)
+        if engine is None:
+            self.engine = _capable_engines_for_disp[self.dashlevel][0]
         else:
-            self.dtype = "-" + dtype.lower()
+            if self.dashlevel in _engine_can_do[engine]:
+                self.engine = engine
+            else:
+                raise ValidationError("""This little engine ({}) can't ({})""".format(engine, self.dashlevel))
 
-        # 3) Get dispersion parameters:
-        # 3a) Set defaults
-        self.dash_params = get_default_dashparams(dtype)
+        if self.engine == 'libdisp':
+            self.disp = core.Dispersion.build(self.dashlevel, **resolved['dashparams'])
 
-        # 3b) Load passed variables from dictionary or from functional type
-        tuple_params = kwargs.pop('tuple_params', None)
-        if "dashparams" in kwargs:
-            self.dash_params.update(kwargs.pop("dashparams"))
-        elif dtype in dftd3.dashcoeff:
-            self.dash_params.update(dftd3.dash_server(alias, dtype))
-        else:
-            self.dash_params = {'s6': 1.0}
+    def print_out(self):
+        """Format dispersion parameters of `self` for output file."""
 
-        # 4) Dispersion class build process:
-        # 4a) Build coefficients for dftd3
-        if self.dtype in ["-d2gr", "-d3zero", "-d3bj", "-d3mzero", "-d3mbj"]:
-            self.dtype = self.dtype.replace('-d2gr', '-d2')
-            self.disp_type = 'gr'
+        text = []
+        text.append("   => %s: Empirical Dispersion <=" % (self.fctldash.upper() if self.fctldash.upper() else 'Custom'))
+        text.append('')
+        text.append(self.description)
+        text.append(self.dashlevel_citation.rstrip())
+        if self.dashparams_citation:
+            text.append("    Parametrisation from:{}".format(self.dashparams_citation.rstrip()))
+        text.append('')
+        for op in self.ordered_params:
+            text.append("    %6s = %14.6f" % (op, self.dashparams[op]))
+        text.append('\n')
 
-            # Odd tuple syntax favored by psi
-            if (tuple_params is not None):
-                self.tuple_params = None
-                self.dash_params['s6'] = tuple_params[0]
-
-                if len(tuple_params) > 1:
-                    if "d2" in self.dtype:
-                        self.dash_params["alpha6"] = tuple_params[1]
-                    elif ("zero" in self.dtype) or ("bj" in self.dtype):
-                        self.dash_params["s8"] = tuple_params[1]
-
-                if len(tuple_params) > 2:
-                    if "zero" in self.dtype:
-                        self.dash_params["sr6"] = tuple_params[2]
-                    elif "bj" in self.dtype:
-                        self.dash_params["a1"] = tuple_params[2]
-
-                if len(tuple_params) > 3:
-                    if "zero" in self.dtype:
-                        self.dash_params["alpha6"] = tuple_params[3]
-                    elif "bj" in self.dtype:
-                        self.dash_params["a2"] = tuple_params[3]
-
-                if len(tuple_params) > 4:
-                    raise Exception("Too many parameter in input tuple param.")
-
-        # DFT-NL dispersion. 
-        elif self.dtype in ["-nl"]:
-             self.disp_type = 'nl'
-
-
-        # 4b) Build coefficients for psi4
-        else:
-            self.dtype = self.dtype.replace('-d2p4', '-d2')
-            self.disp_type = 'p4'
-            if tuple_params is not None:
-                self.dash_params = {}
-                for k, v in zip(['s6', 'p1', 'p2', 'p3'], tuple_params):
-                    self.dash_params[k] = v
-
-        # 4c) Build the C++ dispersion class for psi4
-        if self.disp_type == 'p4':
-            self.disp = core.Dispersion.build(self.dtype, **self.dash_params)
-        else:
-            self.disp = None
-
-        # 5) Override parameters from user input
-        # 5a) pop citation if present
-        if "citation" in kwargs:
-            custom_citation = kwargs.pop("citation")
-        else:
-            custom_citation = False
-
-        # 5b) process other kwargs
-        for k, v in kwargs.keys():
-            if k in self.dash_params.keys():
-                self.dash_params[k] = kwargs.pop(k)
-
-        if len(kwargs):
-            raise Exception("The following parameters in empirical_dispersion.py were not understood for %s dispersion type: %s" %
-                            (dtype, ', '.join(kwargs.keys())))
-
-        # 6) Process citations
-        # 6a) Set default citations for method
-        if self.dtype == "-d1":
-            self.description = "    Grimme's -D1 Dispersion Correction"
-            self.citation = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473"
-            self.bibtex = "Grimme:2004:1463"
-
-        elif self.dtype == "-d2":
-            self.description = "    Grimme's -D2 Dispersion Correction"
-            self.citation = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799"
-            self.bibtex = "Grimme:2006:1787"
-
-        elif self.dtype == "-chg":
-            self.description = "    Chai and Head-Gordon Dispersion Correction"
-            self.citation = "    Chai, J.-D.; Head-Gordon, M. (2010), J. Chem. Phys., 132: 6615-6620"
-            self.bibtex = "Chai:2010:6615"
-
-        elif self.dtype == "-das2009":
-            self.description = "    Podeszwa and Szalewicz Dispersion Correction"
-            self.citation = "    Pernal, K.; Podeszwa, R.; Patkowski, K.; Szalewicz, K. (2009), Phys. Rev. Lett., 103: 263201"
-            self.bibtex = "Pernal:2009:263201"
-
-        elif self.dtype == "-das2010":
-            self.description = "    Podeszwa and Szalewicz Dispersion Correction"
-            self.citation = "    Podeszwa, R.; Pernal, K.; Patkowski, K.; Szalewicz, K. (2010), J. Phys. Chem. Lett., 1: 550"
-            self.bibtex = "Podeszwa:2010:550"
-
-        elif self.dtype == "-d2gr":
-            self.description = "    Grimme's -D2 Dispersion Correction"
-            self.citation = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799"
-            self.bibtex = "Grimme:2006:1787"
-
-        elif self.dtype == "-d3zero":
-            self.description = "    Grimme's -D3 (zero-damping) Dispersion Correction"
-            self.citation = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104"
-            self.bibtex = "Grimme:2010:154104"
-
-        elif self.dtype == "-d3bj":
-            self.description = "    Grimme's -D3 (BJ-damping) Dispersion Correction"
-            self.citation = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456"
-            self.bibtex = "Grimme:2011:1456"
-
-        elif self.dtype == "-d3mzero":
-            self.description = "    Grimme's -D3 (zero-damping, short-range refitted) Dispersion Correction"
-            self.citation = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n"
-            self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
-            self.bibtex = "Grimme:2010:154104"
-
-        elif self.dtype == "-d3mbj":
-            self.description = "    Grimme's -D3 (BJ-damping, short-range refitted) Dispersion Correction"
-            self.citation = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456\n"
-            self.citation += "    Smith, D. G. A.; Burns, L. A.; Patkowski, K.; Sherrill, C. D. (2016), J. Phys. Chem. Lett.; 7: 2197"
-            self.bibtex = "Grimme:2011:1456"
-
-        elif self.dtype == "-nl":
-            self.description = "    Grimme's -NL (DFT plus  VV10 correlation) "
-            self.citation = "    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 \n"
-            self.bibtex = "Grimme:2011:3866"
-
-        else:
-            raise Exception("Empirical Dispersion type %s not understood." % self.dtype)
-
-        # 6b) add custom citations if available
-        if custom_citation:
-            self.citation += "\n    Parametrisation from: \n" + custom_citation
-
-    def print_out(self, level=1):
-
-        core.print_out("   => %s: Empirical Dispersion <=\n\n" % self.dtype.upper())
-        core.print_out(self.description + "\n")
-
-        core.print_out(self.citation + "\n\n")
-       
-        if self.disp_type=='nl':
-           return
-
-        core.print_out("        S6 = %14.6E\n" % self.dash_params["s6"])
-        if "s8" in self.dash_params.keys():
-            core.print_out("        S8 = %14.6E\n" % self.dash_params["s8"])
-
-        for k, v in self.dash_params.items():
-            if k in ["s6", "s8"]: continue
-
-            core.print_out("    %6s = %14.6E\n" % (k.upper(), v))
-
-        # Psi auto sets this with no change of deviation
-        if (self.disp_type == 'p4') and (self.dtype == "-D2"):
-            core.print_out("    %6s = %14.6E\n" % ("A6", 20.0))
-
-        core.print_out("\n")
+        core.print_out('\n'.join(text))
 
     def compute_energy(self, molecule):
-        if self.disp_type == 'gr':
-            if self.alias in ['hf3c', 'pbeh3c']:
-                dashd_part = dftd3.run_dftd3(
-                    molecule,
-                    dashlvl=self.dtype.lower().replace('-', ''),
-                    dashparam=self.dash_params,
-                    verbose=False,
-                    dertype=0)
-                gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=0)
-                return dashd_part + gcp_part
-            else:
-                return dftd3.run_dftd3(
-                    molecule,
-                    dashlvl=self.dtype.lower().replace('-', ''),
-                    dashparam=self.dash_params,
-                    verbose=False,
-                    dertype=0)
+        """Compute dispersion energy based on engine, dispersion level, and parameters in `self`.
+
+        Parameters
+        ----------
+        molecule : psi4.core.Molecule
+            System for which to compute empirical dispersion correction.
+
+        Returns
+        -------
+        float
+            Dispersion energy [Eh].
+
+        Notes
+        -----
+        DISPERSION CORRECTION ENERGY
+            Disp always set. Overridden in SCF finalization, but that only changes for "-3C" methods.
+        self.fctldash + DISPERSION CORRECTION ENERGY
+            Set if `fctldash` nonempty.
+
+        """
+        if self.engine == 'dftd3':
+            jobrec = intf_dftd3.run_dftd3_from_arrays(
+                molrec=molecule.to_dict(np_out=False),
+                name_hint=self.fctldash,
+                level_hint=self.dashlevel,
+                param_tweaks=self.dashparams,
+                dashcoeff_supplement=self.dashcoeff_supplement,
+                ptype='energy',
+                verbose=1)
+
+            dashd_part = float(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'].data)
+            for k, qca in jobrec['qcvars'].items():
+                if not isinstance(qca.data, np.ndarray):
+                    core.set_variable(k, qca.data)
+
+            if self.fctldash in ['hf3c', 'pbeh3c']:
+                gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
+                dashd_part += gcp_part
+
+            return dashd_part
         else:
-            return self.disp.compute_energy(molecule)
+            ene = self.disp.compute_energy(molecule)
+            core.set_variable('DISPERSION CORRECTION ENERGY', ene)
+            if self.fctldash:
+                core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(self.fctldash), ene)
+            return ene
 
     def compute_gradient(self, molecule):
-        if self.disp_type == 'gr':
-            if self.alias in ['hf3c', 'pbeh3c']:
-                dashd_part = dftd3.run_dftd3(
-                    molecule,
-                    dashlvl=self.dtype.lower().replace('-', ''),
-                    dashparam=self.dash_params,
-                    verbose=False,
-                    dertype=1)
-                gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=1)
+        """Compute dispersion gradient based on engine, dispersion level, and parameters in `self`.
+
+        Parameters
+        ----------
+        molecule : psi4.core.Molecule
+            System for which to compute empirical dispersion correction.
+
+        Returns
+        -------
+        psi4.core.Matrix
+            (nat, 3) dispersion gradient [Eh/a0].
+
+        """
+        if self.engine == 'dftd3':
+            jobrec = intf_dftd3.run_dftd3_from_arrays(
+                molrec=molecule.to_dict(np_out=False),
+                name_hint=self.fctldash,
+                level_hint=self.dashlevel,
+                param_tweaks=self.dashparams,
+                dashcoeff_supplement=self.dashcoeff_supplement,
+                ptype='gradient',
+                verbose=1)
+
+            dashd_part = core.Matrix.from_array(jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data)
+            for k, qca in jobrec['qcvars'].items():
+                if not isinstance(qca.data, np.ndarray):
+                    core.set_variable(k, qca.data)
+
+            if self.fctldash in ['hf3c', 'pbeh3c']:
+                gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)
                 dashd_part.add(gcp_part)
-                return dashd_part
-            else:
-                return dftd3.run_dftd3(
-                    molecule,
-                    dashlvl=self.dtype.lower().replace('-', ''),
-                    dashparam=self.dash_params,
-                    verbose=False,
-                    dertype=1)
+
+            return dashd_part
         else:
             return self.disp.compute_gradient(molecule)
 
     def compute_hessian(self, molecule):
-        """
-        #magic (if magic was easy)
-        """
+        """Compute dispersion Hessian based on engine, dispersion level, and parameters in `self`.
+        Uses finite difference, as no dispersion engine has analytic second derivatives.
 
+        Parameters
+        ----------
+        molecule : psi4.core.Molecule
+            System for which to compute empirical dispersion correction.
+
+        Returns
+        -------
+        psi4.core.Matrix
+            (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
+
+        """
         optstash = p4util.OptionsState(['PRINT'])
         core.set_global_option('PRINT', 0)
 
@@ -294,12 +277,13 @@ class EmpericalDispersion(object):
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
-        gradients = []
-        for geom in driver_findif.hessian_from_gradient_geometries(molecule, -1):
-            molclone.set_geometry(geom)
+        findif_meta_dict = driver_findif.hessian_from_gradient_geometries(molclone, -1)
+        for displacement in findif_meta_dict["displacements"].values():
+            geom_array = np.reshape(displacement["geometry"], (-1, 3))
+            molclone.set_geometry(core.Matrix.from_array(geom_array))
             molclone.update_geometry()
-            gradients.append(self.compute_gradient(molclone))
+            displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
-        H = driver_findif.compute_hessian_from_gradient(molecule, gradients, -1)
+        H = driver_findif.compute_hessian_from_gradient(findif_meta_dict, -1)
         optstash.restore()
         return core.Matrix.from_array(H)

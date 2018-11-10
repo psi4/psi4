@@ -70,33 +70,33 @@ class MOLECULE {
 
   // if you have one fragment - make sure all atoms are bonded
   // if not, break up into multiple fragments
-  void fragmentize(void);
+  void fragmentize();
 
-  void add_interfragment(void);
+  void add_interfragment();
 
   // Determine trivial, simple coordinate combinations.
-  int form_trivial_coord_combinations(void);
+  int form_trivial_coord_combinations();
 
   // Determine initial delocalized coordinate coefficients.
-  int form_delocalized_coord_combinations(void);
+  int form_delocalized_coord_combinations();
 
   // Determine Pulay natural coordinate combinations.
-  int form_natural_coord_combinations(void);
+  int form_natural_coord_combinations();
 
-  int add_cartesians(void);
+  int add_cartesians();
 
-  int g_nfragment(void) const { return fragments.size(); };
+  int g_nfragment() const { return fragments.size(); };
 
-  int g_nfb_fragment(void) const { return fb_fragments.size(); };
+  int g_nfb_fragment() const { return fb_fragments.size(); };
 
-  int g_natom(void) const { // excludes atoms in fb fragments
+  int g_natom() const { // excludes atoms in fb fragments
     int n = 0;
     for (std::size_t f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_natom();
     return n;
   }
 
-  int Ncoord(void) const {
+  int Ncoord() const {
     int n=0;
     for (std::size_t f=0; f<fragments.size(); ++f)
       n += fragments[f]->Ncoord();
@@ -107,21 +107,21 @@ class MOLECULE {
     return n;
   }
 
-  int Ncoord_intrafragment(void) const {
+  int Ncoord_intrafragment() const {
     int n=0;
     for (std::size_t f=0; f<fragments.size(); ++f)
       n += fragments[f]->Ncoord();
     return n;
   }
 
-  int Ncoord_interfragment(void) const {
+  int Ncoord_interfragment() const {
     int n=0;
     for (std::size_t f=0; f<interfragments.size(); ++f)
       n += interfragments[f]->Ncoord();
     return n;
   }
 
-  int Ncoord_fb_fragment(void) const {
+  int Ncoord_fb_fragment() const {
     int n=0;
     for (std::size_t f=0; f<fb_fragments.size(); ++f)
       n += fb_fragments[f]->Ncoord();
@@ -163,14 +163,14 @@ class MOLECULE {
     return n;
   }
 
-  double g_energy(void) const { return energy; }
+  double g_energy() const { return energy; }
 
-  void update_connectivity_by_distances(void) {
+  void update_connectivity_by_distances() {
     for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->update_connectivity_by_distances();
   }
 
-  void update_connectivity_by_bonds(void) {
+  void update_connectivity_by_bonds() {
     for (std::size_t i=0; i<fragments.size(); ++i)
       fragments[i]->update_connectivity_by_bonds();
   }
@@ -199,25 +199,25 @@ class MOLECULE {
   // print definition of an internal coordinate from global index
   std::string get_coord_definition_from_global_index(int coord_index) const;
 
-  void update_fb_values(void);
+  void update_fb_values();
 
   void print_intco_dat(std::string psi_fp_coord, FILE *qc_fp);
 
-  int add_intrafragment_simples_by_connectivity(void) {
+  int add_intrafragment_simples_by_connectivity() {
     int n=0;
     for (std::size_t i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_simples_by_connectivity();
     return n;
   }
 
-  int add_intrafragment_hbonds(void) {
+  int add_intrafragment_hbonds() {
     int n=0;
     for (std::size_t i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_hbonds();
     return n;
   }
 
-  int add_intrafragment_auxiliary_bonds(void) {
+  int add_intrafragment_auxiliary_bonds() {
     int n=0;
     for (std::size_t i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_auxiliary_bonds();
@@ -225,7 +225,7 @@ class MOLECULE {
   }
 
   // compute coord values from frag member geometries
-  double * coord_values(void) const {
+  double * coord_values() const {
     GeomType x = g_geom_2D();
     double *q = coord_values(x);
     return q;
@@ -261,17 +261,17 @@ class MOLECULE {
     return q;
   }
 
-  void write_geom(void);
+  void write_geom();
   void symmetrize_geom(bool flexible=false);
-  void print_geom_out(void);
-  void print_geom_out_irc(void);
+  void print_geom_out();
+  void print_geom_out_irc();
 
-  double ** compute_B(void) const;
+  double ** compute_B() const;
   double ** compute_derivative_B(int coord_index) const ;
 
   double ** compute_G(bool use_masses=false) const;
 
-  double * g_grad_array(void) const {
+  double * g_grad_array() const {
     double *g, *g_frag;
 
     g = init_array(3*g_natom());
@@ -284,11 +284,11 @@ class MOLECULE {
     return g;
   }
 
-  double * g_masses(void) const;
-  double * g_Z(void) const;
-  double * g_u_vector(void) const; // reciprocal masses in vector
+  double * g_masses() const;
+  double * g_Z() const;
+  double * g_u_vector() const; // reciprocal masses in vector
 
-  double * g_geom_array(void) {
+  double * g_geom_array() {
     double *g, *g_frag;
 
     g = init_array(3*g_natom());
@@ -301,7 +301,7 @@ class MOLECULE {
     return g;
   }
 
-  double ** g_geom_2D(void) const {
+  double ** g_geom_2D() const {
     double **g_frag;
     double **g = init_matrix(g_natom(),3);
 
@@ -315,7 +315,7 @@ class MOLECULE {
     return g;
   }
 
-  double ** g_grad_2D(void) const {
+  double ** g_grad_2D() const {
     double **g, *g_frag;
 
     g = init_matrix(g_natom(),3);
@@ -330,22 +330,22 @@ class MOLECULE {
     return g;
   }
 
-  void H_guess(void) const;
-  double **Lindh_guess(void) const;
+  void H_guess() const;
+  double **Lindh_guess() const;
 
-  void forces(void);
-  void apply_constraint_forces(void);
-  bool has_fixed_eq_vals(void);
-  void project_f_and_H(void);
+  void forces();
+  void apply_constraint_forces();
+  bool has_fixed_eq_vals();
+  void project_f_and_H();
   void project_dq(double *);
-  void irc_step(void);
-  void nr_step(void);
-  void rfo_step(void);
-  void prfo_step(void);
-  void backstep(void);
-  void sd_step(void);
+  void irc_step();
+  void nr_step();
+  void rfo_step();
+  void prfo_step();
+  void backstep();
+  void sd_step();
   //void sd_step_cartesians(void); now obsolete
-  void linesearch_step(void);
+  void linesearch_step();
 
   void apply_intrafragment_step_limit(double * & dq);
   std::vector<int> validate_angles(double const * const dq);
@@ -355,27 +355,27 @@ class MOLECULE {
       fragments[f]->set_geom_array( &(array_in[3*g_atom_offset(f)]) );
   }
 
-  void fix_tors_near_180(void) {
+  void fix_tors_near_180() {
     for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->fix_tors_near_180();
     for (std::size_t I=0; I<interfragments.size(); ++I)
       interfragments[I]->fix_tors_near_180();
   }
 
-  void fix_bend_axes(void) {
+  void fix_bend_axes() {
     for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->fix_bend_axes();
     for (std::size_t I=0; I<interfragments.size(); ++I)
       interfragments[I]->fix_bend_axes();
   }
-  void unfix_bend_axes(void) {
+  void unfix_bend_axes() {
     for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->unfix_bend_axes();
     for (std::size_t I=0; I<interfragments.size(); ++I)
       interfragments[I]->unfix_bend_axes();
   }
 
-  void fix_oofp_near_180(void) {
+  void fix_oofp_near_180() {
     for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->fix_oofp_near_180();
     for (std::size_t I=0; I<interfragments.size(); ++I)
@@ -391,33 +391,33 @@ class MOLECULE {
   }
 */
 
-  void test_B(void);
-  void test_derivative_B(void);
+  void test_B();
+  void test_derivative_B();
 
   bool cartesian_H_to_internals(double **H_cart) const;
 
-  void set_masses(void) {
+  void set_masses() {
     for (std::size_t f=0; f<fragments.size(); ++f)
       fragments[f]->set_masses();
   }
 
   bool read_coords(std::ifstream & fin);
   // function to obtain geometry and gradient
-  void read_geom_grad(void);
+  void read_geom_grad();
 
   // Compute constraint matrix
-  double ** compute_constraints(void);
+  double ** compute_constraints();
 
-  void add_fb_fragments(void);
+  void add_fb_fragments();
 
   // freeze interfragment modes that break symmetry
-  void freeze_interfragment_asymm(void);
+  void freeze_interfragment_asymm();
 
   // freeze all fragments in molecule
-  void freeze_intrafragments(void);
+  void freeze_intrafragments();
 
   // Freeze all coordinates within fragments
-  void freeze_intrafragment_coords(void);
+  void freeze_intrafragment_coords();
 
   // determine whether a linear combination of coords breaks symmetry
   bool coord_combo_is_symmetric(double *coord_combo, int dim);

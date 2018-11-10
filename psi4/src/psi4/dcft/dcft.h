@@ -59,9 +59,9 @@ namespace dcft {
 class DCFTSolver : public Wavefunction {
    public:
     DCFTSolver(SharedWavefunction ref_wfn, Options &options);
-    ~DCFTSolver();
+    ~DCFTSolver() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
    protected:
     IntegralTransform *_ints;
@@ -114,7 +114,7 @@ class DCFTSolver : public Wavefunction {
     void run_simult_dcft();
     void run_simult_dcft_oo();
     // DCFT analytic gradient subroutines
-    virtual SharedMatrix compute_gradient();
+    SharedMatrix compute_gradient() override;
     void compute_gradient_dc();
     void compute_gradient_odc();
     void response_guess();

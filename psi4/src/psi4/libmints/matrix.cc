@@ -317,8 +317,8 @@ void Matrix::copy(const Matrix *cp) {
 #pragma omp parallel for
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] != 0 && colspi_[h ^ symmetry_] != 0)
-            memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]),
-                   rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double));
+            memmove(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]),
+                    rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double));
     }
 }
 
@@ -756,7 +756,7 @@ double *Matrix::to_lower_triangle() const {
     }
     if (sizer != sizec) return nullptr;
 
-    double *tri = new double[ioff[sizer]];
+    auto *tri = new double[ioff[sizer]];
     double **temp = to_block_matrix();
     sq_to_tri(temp, tri, sizer);
     free_block(temp);
@@ -770,7 +770,7 @@ double **Matrix::to_block_matrix() const {
         sizec += colspi_[h ^ symmetry_];
     }
 
-    int *col_offset = new int[nirrep_];
+    auto *col_offset = new int[nirrep_];
     col_offset[0] = 0;
     for (int h = 1; h < nirrep_; ++h) {
         col_offset[h] = col_offset[h - 1] + colspi_[h - 1];
@@ -810,7 +810,7 @@ void Matrix::print_mat(const double *const *const a, int m, int n, std::string o
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
 
     const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
-    int num_frames = int(n / print_ncol);
+    auto num_frames = int(n / print_ncol);
     int num_frames_rem = n % print_ncol;  // adding one for changing 0->1 start
     int num_frame_counter = 0;
     // for each frame
@@ -1198,7 +1198,7 @@ void Matrix::apply_denominator(const Matrix *const plus) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
 
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
+#if _OPENMP >= 201307  // OpenMP 4.0 or newer
 #pragma omp parallel for simd
 #else
 #pragma omp parallel for
@@ -1251,11 +1251,11 @@ double Matrix::rms() {
     double sum = (double)0.0;
     long terms = 0;
     for (int h = 0; h < nirrep_; ++h) {
+        terms += rowspi_[h] * colspi_[h ^ symmetry_];
 #pragma omp parallel for reduction(+ : sum)
         for (int i = 0; i < rowspi_[h]; ++i) {
             for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
-                terms++;
             }
         }
     }
@@ -2552,7 +2552,7 @@ void Matrix::zero_row(int h, int i) {
     if (i >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::zero_row: index is out of bounds.");
     }
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
+#if _OPENMP >= 201307  // OpenMP 4.0 or newer
 #pragma omp parallel for simd
 #else
 #pragma omp parallel for

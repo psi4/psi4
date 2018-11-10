@@ -158,7 +158,7 @@ void CDJK::print_header() const
         }
         outfile->Printf( "    OpenMP threads:       %11d\n", omp_nthread_);
         outfile->Printf( "    Integrals threads:    %11d\n", df_ints_num_threads_);
-        outfile->Printf( "    Memory (MB):          %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Memory [MiB]:         %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Algorithm:            %11s\n",  (is_core_ ? "Core" : "Disk"));
         outfile->Printf( "    Integral Cache:       %11s\n",  df_ints_io_.c_str());
         outfile->Printf( "    Schwarz Cutoff:       %11.0E\n", cutoff_);

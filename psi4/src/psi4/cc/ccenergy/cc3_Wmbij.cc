@@ -481,33 +481,26 @@ void CCEnergyWavefunction::cc3_Wmbij() {
 
 void CCEnergyWavefunction::purge_Wmbij() {
     dpdfile4 W;
-    int *occpi, *virtpi;
-    int h, a, b, e, f, i, j, m, n;
-    int A, B, E, F, I, J, M, N;
-    int mn, ei, ma, ef, me, jb, mb, ij, ab;
-    int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
-    int *occ_off, *vir_off;
-    int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
+    int b, i, j, m;
+    int B, I, J, M;
+    int bsym, isym, jsym, msym;
 
-    nirreps = moinfo_.nirreps;
-    occpi = moinfo_.occpi;
-    virtpi = moinfo_.virtpi;
-    occ_off = moinfo_.occ_off;
-    vir_off = moinfo_.vir_off;
-    occ_sym = moinfo_.occ_sym;
-    vir_sym = moinfo_.vir_sym;
-    openpi = moinfo_.openpi;
+    auto nirreps = moinfo_.nirreps;
+    auto occpi = moinfo_.occpi;
+    auto virtpi = moinfo_.virtpi;
+    auto occ_off = moinfo_.occ_off;
+    auto vir_off = moinfo_.vir_off;
+    auto openpi = moinfo_.openpi;
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 10, 2, "CC3 WMBIJ (MB,I>J)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mb = 0; mb < W.params->rowtot[h]; mb++) {
+        for (int mb = 0; mb < W.params->rowtot[h]; mb++) {
             b = W.params->roworb[h][mb][1];
             bsym = W.params->qsym[b];
             B = b - vir_off[bsym];
-            for (ij = 0; ij < W.params->coltot[h]; ij++) {
+            for (int ij = 0; ij < W.params->coltot[h]; ij++) {
                 if (B >= (virtpi[bsym] - openpi[bsym])) W.matrix[h][mb][ij] = 0.0;
             }
         }
@@ -517,14 +510,14 @@ void CCEnergyWavefunction::purge_Wmbij() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 10, 2, "CC3 Wmbij (mb,i>j)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mb = 0; mb < W.params->rowtot[h]; mb++) {
+        for (int mb = 0; mb < W.params->rowtot[h]; mb++) {
             m = W.params->roworb[h][mb][0];
             msym = W.params->psym[m];
             M = m - occ_off[msym];
-            for (ij = 0; ij < W.params->coltot[h]; ij++) {
+            for (int ij = 0; ij < W.params->coltot[h]; ij++) {
                 i = W.params->colorb[h][ij][0];
                 j = W.params->colorb[h][ij][1];
                 isym = W.params->rsym[i];
@@ -542,11 +535,11 @@ void CCEnergyWavefunction::purge_Wmbij() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 10, 0, "CC3 WMbIj (Mb,Ij)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mb = 0; mb < W.params->rowtot[h]; mb++) {
-            for (ij = 0; ij < W.params->coltot[h]; ij++) {
+        for (int mb = 0; mb < W.params->rowtot[h]; mb++) {
+            for (int ij = 0; ij < W.params->coltot[h]; ij++) {
                 j = W.params->colorb[h][ij][1];
                 jsym = W.params->ssym[j];
                 J = j - occ_off[jsym];
@@ -559,17 +552,17 @@ void CCEnergyWavefunction::purge_Wmbij() {
     global_dpd_->file4_close(&W);
 
     global_dpd_->file4_init(&W, PSIF_CC3_HET1, 0, 10, 0, "CC3 WmBiJ (mB,iJ)");
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         global_dpd_->file4_mat_irrep_init(&W, h);
         global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (mb = 0; mb < W.params->rowtot[h]; mb++) {
+        for (int mb = 0; mb < W.params->rowtot[h]; mb++) {
             m = W.params->roworb[h][mb][0];
             b = W.params->roworb[h][mb][1];
             msym = W.params->psym[m];
             bsym = W.params->qsym[b];
             M = m - occ_off[msym];
             B = b - vir_off[bsym];
-            for (ij = 0; ij < W.params->coltot[h]; ij++) {
+            for (int ij = 0; ij < W.params->coltot[h]; ij++) {
                 i = W.params->colorb[h][ij][0];
                 isym = W.params->rsym[i];
                 I = i - occ_off[isym];

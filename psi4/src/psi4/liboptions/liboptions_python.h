@@ -41,9 +41,9 @@ class PythonDataType : public DataType {
    public:
     PythonDataType();
     PythonDataType(const py::object& p);
-    virtual ~PythonDataType();
+    ~PythonDataType() override;
 
-    virtual std::string type() const;
+    std::string type() const override;
 
     const py::object& to_python() const;
 

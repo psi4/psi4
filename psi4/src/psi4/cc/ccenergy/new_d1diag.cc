@@ -48,14 +48,13 @@ namespace ccenergy {
  * */
 
 double CCEnergyWavefunction::new_d1diag_t1_rohf() {
-    int h, nirreps, i, j;
     int nclsd, nuocc, nopen;
     double **T1_hp, **T1_hx, **T1_xp, **T1_sq;
     double *E, **C;
     double max_hp = 0.0, max_xp = 0.0, max_hx = 0.0, max;
     dpdfile2 T1_a, T1_b;
 
-    nirreps = moinfo_.nirreps;
+    auto nirreps = moinfo_.nirreps;
 
     global_dpd_->file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_mat_init(&T1_a);
@@ -65,15 +64,15 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
     global_dpd_->file2_mat_init(&T1_b);
     global_dpd_->file2_mat_rd(&T1_b);
 
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         nclsd = moinfo_.clsdpi[h];
         nuocc = moinfo_.uoccpi[h];
         nopen = moinfo_.openpi[h];
 
         if (nclsd && nuocc) {
             T1_hp = block_matrix(nclsd, nuocc);
-            for (i = 0; i < nclsd; i++)
-                for (j = 0; j < nuocc; j++) T1_hp[i][j] = (T1_a.matrix[h][i][j] + T1_b.matrix[h][i][j]) / 2.;
+            for (int i = 0; i < nclsd; i++)
+                for (int j = 0; j < nuocc; j++) T1_hp[i][j] = (T1_a.matrix[h][i][j] + T1_b.matrix[h][i][j]) / 2.;
 
             T1_sq = block_matrix(nclsd, nclsd);
             C_DGEMM('n', 't', nclsd, nclsd, nuocc, 1.0, &(T1_hp[0][0]), nuocc, &(T1_hp[0][0]), nuocc, 0.0,
@@ -82,7 +81,7 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
             E = init_array(nclsd);
             C = block_matrix(nclsd, nclsd);
             sq_rsp(nclsd, nclsd, T1_sq, E, 0, C, 1e-12);
-            for (i = 0; i < nclsd; i++)
+            for (int i = 0; i < nclsd; i++)
                 if (E[i] > max_hp) max_hp = E[i];
             free(E);
             free_block(C);
@@ -92,8 +91,8 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
 
         if (nclsd && nopen) {
             T1_hx = block_matrix(nclsd, nopen);
-            for (i = 0; i < nclsd; i++)
-                for (j = 0; j < nopen; j++) T1_hx[i][j] = T1_b.matrix[h][i][nuocc + j] / sqrt(2.);
+            for (int i = 0; i < nclsd; i++)
+                for (int j = 0; j < nopen; j++) T1_hx[i][j] = T1_b.matrix[h][i][nuocc + j] / sqrt(2.);
 
             T1_sq = block_matrix(nclsd, nclsd);
             C_DGEMM('n', 't', nclsd, nclsd, nopen, 1.0, &(T1_hx[0][0]), nopen, &(T1_hx[0][0]), nopen, 0.0,
@@ -102,7 +101,7 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
             E = init_array(nclsd);
             C = block_matrix(nclsd, nclsd);
             sq_rsp(nclsd, nclsd, T1_sq, E, 0, C, 1e-12);
-            for (i = 0; i < nclsd; i++)
+            for (int i = 0; i < nclsd; i++)
                 if (E[i] > max_hx) max_hx = E[i];
             free(E);
             free_block(C);
@@ -112,8 +111,8 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
 
         if (nopen && nuocc) {
             T1_xp = block_matrix(nopen, nuocc);
-            for (i = 0; i < nopen; i++)
-                for (j = 0; j < nuocc; j++) T1_xp[i][j] = T1_a.matrix[h][nclsd + i][j] / sqrt(2.);
+            for (int i = 0; i < nopen; i++)
+                for (int j = 0; j < nuocc; j++) T1_xp[i][j] = T1_a.matrix[h][nclsd + i][j] / sqrt(2.);
 
             T1_sq = block_matrix(nopen, nopen);
             C_DGEMM('n', 't', nopen, nopen, nuocc, 1.0, &(T1_xp[0][0]), nuocc, &(T1_xp[0][0]), nuocc, 0.0,
@@ -122,7 +121,7 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
             E = init_array(nopen);
             C = block_matrix(nopen, nopen);
             sq_rsp(nopen, nopen, T1_sq, E, 0, C, 1e-12);
-            for (i = 0; i < nopen; i++)
+            for (int i = 0; i < nopen; i++)
                 if (E[i] > max_xp) max_xp = E[i];
             free(E);
             free_block(C);

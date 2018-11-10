@@ -85,19 +85,19 @@ SAPT::~SAPT() {
 }
 
 void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
-    evalsA_ = NULL;
-    evalsB_ = NULL;
-    diagAA_ = NULL;
-    diagBB_ = NULL;
-    CA_ = NULL;
-    CB_ = NULL;
-    CHFA_ = NULL;
-    CHFB_ = NULL;
-    sAB_ = NULL;
-    vABB_ = NULL;
-    vBAA_ = NULL;
-    vAAB_ = NULL;
-    vBAB_ = NULL;
+    evalsA_ = nullptr;
+    evalsB_ = nullptr;
+    diagAA_ = nullptr;
+    diagBB_ = nullptr;
+    CA_ = nullptr;
+    CB_ = nullptr;
+    CHFA_ = nullptr;
+    CHFB_ = nullptr;
+    sAB_ = nullptr;
+    vABB_ = nullptr;
+    vBAA_ = nullptr;
+    vAAB_ = nullptr;
+    vBAB_ = nullptr;
 
     // We inherit from the dimer basis
     ribasis_ = get_basisset("DF_BASIS_SAPT");
@@ -105,9 +105,9 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 
     // Compare pointers
     if (ribasis_ == elstbasis_) {
-        elst_basis_ = 0;
+        elst_basis_ = false;
     } else {
-        elst_basis_ = 1;
+        elst_basis_ = true;
     }
 
     zero_ = std::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());

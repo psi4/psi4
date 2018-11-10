@@ -67,6 +67,8 @@ protected:
     int npoints_;
     int max_points_;
     int max_functions_;
+    // The total collocation size
+    size_t collocation_size_;
     double* x_;
     double* y_;
     double* z_;
@@ -86,6 +88,7 @@ public:
     int npoints() const { return npoints_; }
     int max_points() const { return max_points_; }
     int max_functions() const { return max_functions_; }
+    int collocation_size() const { return collocation_size_; }
     double* x() const { return x_; }
     double* y() const { return y_; }
     double* z() const { return z_; }
@@ -109,9 +112,9 @@ public:
     NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
         std::shared_ptr<BasisExtents> extents);
-    virtual ~NaiveGridBlocker();
+    ~NaiveGridBlocker() override;
 
-    virtual void block();
+    void block() override;
 };
 
 /**
@@ -124,9 +127,9 @@ public:
     OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
         std::shared_ptr<BasisExtents> extents);
-    virtual ~OctreeGridBlocker();
+    ~OctreeGridBlocker() override;
 
-    virtual void block();
+    void block() override;
 };
 
 }

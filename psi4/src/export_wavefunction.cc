@@ -31,6 +31,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/extern.h"
@@ -73,13 +74,17 @@ void export_wavefunction(py::module& m) {
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, std::map<std::string, std::shared_ptr<Matrix>>,
+                      std::map<std::string, std::shared_ptr<Vector>>, std::map<std::string, Dimension>,
+                      std::map<std::string, int>, std::map<std::string, std::string>, std::map<std::string, bool>,
+                      std::map<std::string, double>>())
         .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
         .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.")
         .def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "Deep copies the internal data.")
         .def("c1_deep_copy", &Wavefunction::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
-             "BasisSet *basis",
+             "BasisSet `basis`",
              py::arg("basis"))
         .def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "Returns true if the alpha and beta orbitals are the same.")
         .def("same_a_b_dens", &Wavefunction::same_a_b_dens,
@@ -90,6 +95,7 @@ void export_wavefunction(py::module& m) {
         .def("nso", &Wavefunction::nso, "Number of symmetry orbitals.")
         .def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.")
         .def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.")
+        .def("efzc", &Wavefunction::efzc, "Returns the frozen-core energy")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
         .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership,
@@ -142,6 +148,7 @@ void export_wavefunction(py::module& m) {
         .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
              "Returns the number of doubly occupied orbitals per irrep.")
+        .def("density_fitted", &Wavefunction::density_fitted, "Returns whether this wavefunction was obtained using density fitting or not.")
         .def("force_doccpi", &Wavefunction::force_doccpi, "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy,
              "Returns the number of singly occupied orbitals per irrep.")
@@ -185,7 +192,7 @@ void export_wavefunction(py::module& m) {
         .def("form_H", &scf::HF::form_H, "Forms the core Hamiltonian")
         .def("form_Shalf", &scf::HF::form_Shalf, "Forms the S^1/2 matrix")
         .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
-        .def("integrals", &scf::HF::integrals, "Sets up the JK object")
+        .def("initialize_jk", &scf::HF::initialize_jk, "Sets up the JK object")
         .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
         .def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products")
         .def("cphf_Hx", &scf::HF::cphf_Hx, "CPHF Hessian-vector prodcuts (4 * J - K - K.T).")
@@ -225,9 +232,9 @@ void export_wavefunction(py::module& m) {
         .def("print_header", &scf::HF::print_header, "docstring")
         .def("get_energies", &scf::HF::get_energies, "docstring")
         .def("set_energies", &scf::HF::set_energies, "docstring")
-        .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear external_potentials_ list")
+        .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
-             "Add an external potential to the external_potentials_ list", py::arg("V"))
+             "Add an external potential to the private external_potentials list", py::arg("V"))
         .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
         .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
         .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")

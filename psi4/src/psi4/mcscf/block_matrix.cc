@@ -42,20 +42,20 @@ namespace mcscf {
 extern MemoryManager* memory_manager;
 
 BlockMatrix::BlockMatrix()
-    : nirreps_(0), ref_(0), matrix_base_(0), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {}
+    : nirreps_(0), ref_(0), matrix_base_(nullptr), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {}
 
 BlockMatrix::BlockMatrix(std::string label, int nirreps, size_t*& rows_size, size_t*& cols_size)
-    : ref_(0), matrix_base_(0), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {
+    : ref_(0), matrix_base_(nullptr), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {
     startup(label, nirreps, rows_size, cols_size);
 }
 
 BlockMatrix::BlockMatrix(std::string label, int nirreps, int*& rows_size, int*& cols_size)
-    : ref_(0), matrix_base_(0), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {
+    : ref_(0), matrix_base_(nullptr), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {
     startup(label, nirreps, rows_size, cols_size);
 }
 
 BlockMatrix::BlockMatrix(std::string label, int nirreps, vecint& rows_size, vecint& cols_size)
-    : ref_(0), matrix_base_(0), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {
+    : ref_(0), matrix_base_(nullptr), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0) {
     startup(label, nirreps, rows_size, cols_size);
 }
 
@@ -154,7 +154,7 @@ void BlockMatrix::cleanup() {
             delete matrix_base_[h];
         }
         delete[] matrix_base_;
-        matrix_base_ = 0;
+        matrix_base_ = nullptr;
     }
     release1(rows_size_);
     release1(cols_size_);
