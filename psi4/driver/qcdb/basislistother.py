@@ -514,9 +514,18 @@ def load_basfam_other():
     basis_6zapa_nr = BasisFamily('6zapa-nr',zeta=6)
     basis_7zapa_nr = BasisFamily('7zapa-nr',zeta=7)
 
-    # unverified fitting sets for nZaPa-NR
+    # fitting sets for nZaPa-NR
     # Dunnings zeta+1 to be safe, tested on water dimer
     # the full aug-JKFIT is possibly too much
+    #--------SCF-JKFIT error for nZaPa-NR 
+    # results for GS energies of water dimer:
+    # delta_jk = E_conv - E_DFJK
+    # ZaPa zeta 2 : delta_jk = -0.000009 
+    # ZaPa zeta 3 : delta_jk = -0.000002 
+    # ZaPa zeta 4 : delta_jk = -0.000002 
+    # ZaPa zeta 5 : delta_jk = -0.000002 
+    # ZaPa zeta 6 : delta_jk =  0.000000 
+    # ZaPa zeta 7 : delta_jk =  0.000000 
     basis_2zapa_nr.add_jkfit('aug-cc-pvtz-jkfit')
     basis_3zapa_nr.add_jkfit('aug-cc-pvqz-jkfit')
     basis_4zapa_nr.add_jkfit('aug-cc-pv5z-jkfit')
@@ -527,9 +536,9 @@ def load_basfam_other():
     basis_2zapa_nr.add_rifit('aug-cc-pvtz-ri')
     basis_3zapa_nr.add_rifit('aug-cc-pvqz-ri')
     basis_4zapa_nr.add_rifit('aug-cc-pv5z-ri')
-    basis_5zapa_nr.add_rifit('aug-cc-pv5z-ri')
-    basis_5zapa_nr.add_rifit('aug-cc-pv5z-ri')
+    basis_5zapa_nr.add_rifit('aug-cc-pv6z-ri')
     basis_6zapa_nr.add_rifit('aug-cc-pv6z-ri')
+    basis_7zapa_nr.add_rifit('aug-cc-pv6z-ri')
 
     basisfamily_list.append(basis_2zapa_nr)
     basisfamily_list.append(basis_3zapa_nr)
