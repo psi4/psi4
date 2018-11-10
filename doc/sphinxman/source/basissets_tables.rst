@@ -40,6 +40,7 @@ Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
 :ref:`Karlsruhe <table:basisKarlsruhe>`,
 :ref:`Jensen <table:basisJensen>`,
+:ref:`Peterson` <table:basisPeterson>`,
 and :ref:`Other <table:basisOther>` summarize the orbital basis sets available in
 |PSIfour|.  These tables are arranged so that columns indicate degree of
 augmentation by diffuse functions (generally necessary for anions, excited
@@ -300,6 +301,22 @@ Appendix :ref:`apdx:basisElement`.
 
 |
 |
+
+.. _`table:basisPeterson`:
+
+.. table:: Summary of (other) Peterson orbital basis sets available in |PSIfour|
+
+    +---------------+--------------+-----------+-------+
+    | basis set     | no diffuse   | augmented, tight  |
+    +===============+==============+===========+=======+
+    | cc-pVXZ-F12   | 234          |                   |
+    +---------------+--------------+-----------+-------+
+    | nZaPa-NR      |              |  1234567          |
+    +---------------+--------------+-----------+-------+
+
+|
+|
+
 
 .. _`table:basisOther`:
 

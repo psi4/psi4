@@ -507,7 +507,7 @@ def load_basfam_other():
     basis_6311ppg_3df_3pd_.add_rifit('aug-cc-pvtz-ri')
 
     # Peterson's nZaPa-NR basis sets
-    basis_2zapa_nr = BasisFamily('3zapa-nr',zeta=2)
+    basis_2zapa_nr = BasisFamily('2zapa-nr',zeta=2)
     basis_3zapa_nr = BasisFamily('3zapa-nr',zeta=3)
     basis_4zapa_nr = BasisFamily('4zapa-nr',zeta=4)
     basis_5zapa_nr = BasisFamily('5zapa-nr',zeta=5)
@@ -521,8 +521,8 @@ def load_basfam_other():
     basis_3zapa_nr.add_jkfit('aug-cc-pvqz-jkfit')
     basis_4zapa_nr.add_jkfit('aug-cc-pv5z-jkfit')
     basis_5zapa_nr.add_jkfit('aug-cc-pv5z-jkfit')
-    basis_5zapa_nr.add_jkfit('aug-cc-pv5z-jkfit')
     basis_6zapa_nr.add_jkfit('aug-cc-pv6z-ri')
+    basis_7zapa_nr.add_jkfit('aug-cc-pv6z-ri') 
 
     basis_2zapa_nr.add_rifit('aug-cc-pvtz-ri')
     basis_3zapa_nr.add_rifit('aug-cc-pvqz-ri')
