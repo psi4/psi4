@@ -93,7 +93,7 @@ class SCFProducts:
         H1 (Orbital Hessian)
         """
         matvec = core.Matrix.from_array(vector.reshape(self.alpha_shape))
-        ret = np.array(wfn.cphf_Hx([matvec])[0]).ravel()
+        ret = np.array(self.wfn.cphf_Hx([matvec])[0]).ravel()
 
         return ret
 
