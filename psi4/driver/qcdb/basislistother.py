@@ -506,7 +506,7 @@ def load_basfam_other():
     basis_6311ppg_3df_2pd_.add_rifit('aug-cc-pvtz-ri')
     basis_6311ppg_3df_3pd_.add_rifit('aug-cc-pvtz-ri')
 
-    # Peterson's nZaPa-NR basis sets
+    # Petersson's nZaPa-NR basis sets
     basis_2zapa_nr = BasisFamily('2zapa-nr',zeta=2)
     basis_3zapa_nr = BasisFamily('3zapa-nr',zeta=3)
     basis_4zapa_nr = BasisFamily('4zapa-nr',zeta=4)
@@ -554,14 +554,14 @@ def load_basfam_other():
     basis_cc_pvqz_f12 = BasisFamily('cc-pvqz-f12',zeta=4)
     # basis_cc_pv5z_f12 = BasisFamily('cc-pV5Z-F12')
 
-    # Neese's suggestions is for F12 basis sets is Dunning's zeta+1
+    # ORCA manual suggests for F12 basis sets Dunning's zeta+1
     basis_cc_pvdz_f12.add_jkfit('cc-pvtz-jkfit')
     basis_cc_pvtz_f12.add_jkfit('cc-pvqz-jkfit')
     basis_cc_pvqz_f12.add_jkfit('cc-pv5z-jkfit')
 
-    basis_cc_pvdz_f12.add_rifit('cc-pvtz-jkfit')
-    basis_cc_pvtz_f12.add_rifit('cc-pvqz-jkfit')
-    basis_cc_pvqz_f12.add_rifit('cc-pv5z-jkfit')
+    basis_cc_pvdz_f12.add_rifit('cc-pvtz-ri')
+    basis_cc_pvtz_f12.add_rifit('cc-pvqz-ri')
+    basis_cc_pvqz_f12.add_rifit('cc-pv5z-ri')
 
     basisfamily_list.append(basis_cc_pvqz_f12)
     basisfamily_list.append(basis_cc_pvtz_f12)
