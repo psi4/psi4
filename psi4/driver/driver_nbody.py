@@ -824,6 +824,10 @@ class NBodyComputer(BaseTask):
         else:
             self.max_nbody = min(self.max_nbody, self.max_frag)
 
+        if not self.return_total_data:
+            if self.embedding_charges or self.charge_method:
+                raise Exception('Cannot return interaction data when using embedding scheme.')
+
     #     # Get compute list
         self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
 
@@ -873,6 +877,7 @@ class NBodyComputer(BaseTask):
                 return True
             else:
                 return False
+
 
     def build_tasks(self, obj, bsse_type="all", **kwargs):
 
