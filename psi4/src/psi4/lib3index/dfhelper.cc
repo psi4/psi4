@@ -2197,9 +2197,7 @@ void DFHelper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t>
 #pragma omp parallel for num_threads(nthreads_)
         for (size_t i = 0; i < A0; i++) {
             for (size_t j = 0; j < A1; j++) {
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
-#endif
                 for (size_t k = 0; k < A2; k++) {
                     Mp[i * A1 * A2 + j * A2 + k] = Fp[(sta0 + i) * a1 * a2 + (sta1 + j) * a2 + (sta2 + k)];
                 }
@@ -2287,9 +2285,7 @@ SharedMatrix DFHelper::get_tensor(std::string name, std::vector<size_t> t0, std:
 #pragma omp parallel for num_threads(nthreads_)
         for (size_t i = 0; i < A0; i++) {
             for (size_t j = 0; j < A1; j++) {
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
-#endif
                 for (size_t k = 0; k < A2; k++) {
                     Mp[i * A1 * A2 + j * A2 + k] = Fp[(sta0 + i) * a1 * a2 + (sta1 + j) * a2 + (sta2 + k)];
                 }
@@ -2535,9 +2531,7 @@ void DFHelper::transpose_core(std::string name, std::tuple<size_t, size_t, size_
 #pragma omp parallel for num_threads(nthreads_)
             for (size_t i = 0; i < M0; i++) {
                 for (size_t j = 0; j < M1; j++) {
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
-#endif
                     for (size_t k = 0; k < M2; k++) {
                         Fp[j * M0 * M2 + i * M2 + k] = Mp[i * M1 * M2 + j * M2 + k];
                     }
@@ -2677,9 +2671,7 @@ void DFHelper::transpose_disk(std::string name, std::tuple<size_t, size_t, size_
 #pragma omp parallel for num_threads(nthreads_)
                 for (size_t i = 0; i < M0; i++) {
                     for (size_t j = 0; j < M1; j++) {
-#if _OPENMP >= 201307 // OpenMP 4.0 or newer
 #pragma omp simd
-#endif
                         for (size_t k = 0; k < M2; k++) {
                             Fp[j * M0 * M2 + i * M2 + k] = Mp[i * M1 * M2 + j * M2 + k];
                         }
@@ -2963,11 +2955,7 @@ void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMat
     }
 }
 void DFHelper::fill(double* b, size_t count, double value) {
-    #if _OPENMP >= 201307 // OpenMP 4.0 or newer
     #pragma omp parallel for simd num_threads(nthreads_) schedule(static)
-    #else
-    #pragma omp parallel for num_threads(nthreads_) schedule(static)
-    #endif
     for (size_t i = 0; i < count; i++){
         b[i] = value;
     }
@@ -2990,7 +2978,7 @@ void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> 
             size_t sp_size = small_skips_[k];
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
 
-        int rank = 0;
+            int rank = 0;
         #ifdef _OPENMP
             rank = omp_get_thread_num();
         #endif
