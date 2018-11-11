@@ -751,7 +751,7 @@ Vector3 OEProp::get_origin_from_environment() const {
             std::vector<double> property(natoms);
             std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
             if (str == "COM") {
-                for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->mass(atom);
+                for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->mass(atom, false);
             } else if (str == "NUCLEAR_CHARGE") {
                 for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->charge(atom);
             } else {
@@ -1057,7 +1057,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
         for (int iat = 0; iat < natom; iat++) {
             Vector3 dR = origin - mol->xyz(iat);
             double r = dR.norm();
-            if (r > 1.0E-8) Vnuc += mol->Z(iat) / r;
+            if (r > 1.0E-8) Vnuc += mol->Z(iat, true) / r;
         }
         double Vtot = Velec + Vnuc;
         (*output)[i] = Vtot;

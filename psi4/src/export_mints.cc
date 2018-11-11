@@ -175,7 +175,7 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     // Modify the nuclear charges, to account for the ECP.
     if (totalncore) {
         for (int atom = 0; atom < mol->natom(); ++atom) {
-            if (mol->Z(atom) > 0) {
+            if (mol->Z(atom, true) > 0) {
                 const std::string& basis = mol->basis_on_atom(atom);
                 const std::string& label = mol->label(atom);
                 int ncore = basis_atom_ncore[basis][label];

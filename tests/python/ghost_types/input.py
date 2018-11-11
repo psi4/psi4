@@ -7,7 +7,7 @@ m_Gh = 0.0               #TEST
 Z_H = 1.0                #TEST
 Z_He = 2.0               #TEST
 Z_Gh = 0.0               #TEST
-NRE_real = 1.05835441718 #TEST
+NRE_real = 1.05835442134 #TEST
 NRE_Gh = 0.0             #TEST
 
 frag = psi4.geometry("""
