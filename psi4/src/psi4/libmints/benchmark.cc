@@ -1129,7 +1129,7 @@ void benchmark_blas3(int N, double min_time, int max_threads) {
             qq = new Timer();
             while (T < min_time) {
                 C_DCOPY(full_dim, C, 1, A, 1);
-                C_DGETRI(dim, A, dim, ipiv, work, lwork);
+                C_DGETRI(dim, A, dim, ipiv);
                 T = qq->get();
                 rounds++;
             }
@@ -1165,7 +1165,7 @@ void benchmark_blas3(int N, double min_time, int max_threads) {
             qq = new Timer();
             while (T < min_time) {
                 C_DCOPY(full_dim, Aback, 1, A, 1);
-                C_DSYEV('n', 'u', dim, A, dim, eig, work, lwork);
+                C_DSYEV('n', 'u', dim, A, dim, eig);
                 T = qq->get();
                 rounds++;
             }
@@ -1182,7 +1182,7 @@ void benchmark_blas3(int N, double min_time, int max_threads) {
             qq = new Timer();
             while (T < min_time) {
                 C_DCOPY(full_dim, Aback, 1, A, 1);
-                C_DSYEV('v', 'u', dim, A, dim, eig, work, lwork);
+                C_DSYEV('v', 'u', dim, A, dim, eig);
                 T = qq->get();
                 rounds++;
             }

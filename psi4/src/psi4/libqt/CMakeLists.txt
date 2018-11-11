@@ -1,28 +1,28 @@
 set(sources_list
-  lapack_intfc.cc
-  dx_write.cc
-  dirprd_block.cc
-  pople.cc
-  schmidt_add.cc
-  mat_print.cc
-  ras_set.cc
-  fill_sym_matrix.cc
-  cc_excited.cc
-  probabil.cc
-  dot_block.cc
-  timer.cc
-  dx_read.cc
+  3d_array.cc
   blas_level1.cc
   blas_level2.cc
   blas_level3.cc
-  normalize.cc
+  cc_excited.cc
+  david.cc
+  dirprd_block.cc
+  dot_block.cc
+  dx_read.cc
+  dx_write.cc
+  fill_sym_matrix.cc
+  invert.cc
+  lapack.cc
+  mat_print.cc
   newmm_rking.cc
-  3d_array.cc
+  normalize.cc
+  pople.cc
+  probabil.cc
+  ras_set.cc
   reorder_qt.cc
   schmidt.cc
-  invert.cc
+  schmidt_add.cc
   solve_pep.cc
-  david.cc
+  timer.cc
 )
 add_definitions("-DFC_SYMBOL=${FC_SYMBOL}")
 

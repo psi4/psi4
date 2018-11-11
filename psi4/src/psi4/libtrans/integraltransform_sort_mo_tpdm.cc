@@ -59,16 +59,16 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
         outfile->Printf("\tPresorting MO-basis TPDM.\n");
     }
 
-    dpdfile4 I;
+    dpdfile4 Ints;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    global_dpd_->file4_init(&Ints, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
     int nump = 0, numq = 0;
     for (int h = 0; h < nirreps_; ++h) {
-        nump += I.params->ppi[h];
-        numq += I.params->qpi[h];
+        nump += Ints.params->ppi[h];
+        numq += Ints.params->qpi[h];
     }
     int **bucketMap = init_int_matrix(nump, numq);
 
@@ -85,8 +85,8 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
     size_t coreLeft = memoryd;
     psio_address next;
     for (int h = 0; h < nirreps_; ++h) {
-        size_t rowLength = (size_t)I.params->coltot[h ^ (I.my_irrep)];
-        for (int row = 0; row < I.params->rowtot[h]; ++row) {
+        size_t rowLength = (size_t)Ints.params->coltot[h ^ (Ints.my_irrep)];
+        for (int row = 0; row < Ints.params->rowtot[h]; ++row) {
             if (coreLeft >= rowLength) {
                 coreLeft -= rowLength;
                 bucketRowDim[nBuckets - 1][h]++;
@@ -124,25 +124,25 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
                 bucketSize[nBuckets - 1] = init_int_array(nirreps_);
                 bucketSize[nBuckets - 1][h] = rowLength;
             }
-            int p = I.params->roworb[h][row][0];
-            int q = I.params->roworb[h][row][1];
+            int p = Ints.params->roworb[h][row][0];
+            int q = Ints.params->roworb[h][row][1];
             bucketMap[p][q] = nBuckets - 1;
         }
     }
 
     if (print_) {
-        outfile->Printf("\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        outfile->Printf("\tSorting File: %s nbuckets = %d\n", Ints.label, nBuckets);
     }
 
     next = PSIO_ZERO;
     for (int n = 0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
         for (int h = 0; h < nirreps_; h++) {
-            I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
+            Ints.matrix[h] = block_matrix(bucketRowDim[n][h], Ints.params->coltot[h]);
         }
 
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_TPDM, tolerance_, 1, 0);
-        DPDFillerFunctor dpdFiller(&I, n, bucketMap, bucketOffset, true, true);
+        DPDFillerFunctor dpdFiller(&Ints, n, bucketMap, bucketOffset, true, true);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -168,9 +168,9 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
-                psio_->write(I.filenum, I.label, (char *)I.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
+                psio_->write(Ints.filenum, Ints.label, (char *)Ints.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
                              next, &next);
-            free_block(I.matrix[h]);
+            free_block(Ints.matrix[h]);
         }
     } /* end loop over buckets/passes */
 
@@ -193,7 +193,7 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
 
     tpdmAlreadyPresorted_ = true;
 
-    global_dpd_->file4_close(&I);
+    global_dpd_->file4_close(&Ints);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }
 
@@ -211,16 +211,16 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
         outfile->Printf("\tPresorting MO-basis TPDMs.\n");
     }
 
-    dpdfile4 I;
+    dpdfile4 Ints;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    global_dpd_->file4_init(&Ints, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
     int nump = 0, numq = 0;
     for (int h = 0; h < nirreps_; ++h) {
-        nump += I.params->ppi[h];
-        numq += I.params->qpi[h];
+        nump += Ints.params->ppi[h];
+        numq += Ints.params->qpi[h];
     }
     int **bucketMap = init_int_matrix(nump, numq);
 
@@ -237,8 +237,8 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
     size_t coreLeft = memoryd;
     psio_address next;
     for (int h = 0; h < nirreps_; ++h) {
-        size_t rowLength = (size_t)I.params->coltot[h ^ (I.my_irrep)];
-        for (int row = 0; row < I.params->rowtot[h]; ++row) {
+        size_t rowLength = (size_t)Ints.params->coltot[h ^ (Ints.my_irrep)];
+        for (int row = 0; row < Ints.params->rowtot[h]; ++row) {
             if (coreLeft >= rowLength) {
                 coreLeft -= rowLength;
                 bucketRowDim[nBuckets - 1][h]++;
@@ -276,14 +276,14 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
                 bucketSize[nBuckets - 1] = init_int_array(nirreps_);
                 bucketSize[nBuckets - 1][h] = rowLength;
             }
-            int p = I.params->roworb[h][row][0];
-            int q = I.params->roworb[h][row][1];
+            int p = Ints.params->roworb[h][row][0];
+            int q = Ints.params->roworb[h][row][1];
             bucketMap[p][q] = nBuckets - 1;
         }
     }
 
     if (print_) {
-        outfile->Printf("\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        outfile->Printf("\tSorting File: %s nbuckets = %d\n", Ints.label, nBuckets);
     }
 
     // The alpha - alpha spin case
@@ -291,10 +291,10 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
     for (int n = 0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
         for (int h = 0; h < nirreps_; h++) {
-            I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
+            Ints.matrix[h] = block_matrix(bucketRowDim[n][h], Ints.params->coltot[h]);
         }
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_AA_TPDM, tolerance_, 1, 0);
-        DPDFillerFunctor aaDpdFiller(&I, n, bucketMap, bucketOffset, true, true);
+        DPDFillerFunctor aaDpdFiller(&Ints, n, bucketMap, bucketOffset, true, true);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -318,9 +318,9 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
-                psio_->write(I.filenum, I.label, (char *)I.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
+                psio_->write(Ints.filenum, Ints.label, (char *)Ints.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
                              next, &next);
-            free_block(I.matrix[h]);
+            free_block(Ints.matrix[h]);
         }
     } /* end loop over buckets/passes */
 
@@ -329,18 +329,18 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
     psio_->close(PSIF_MO_AA_TPDM, keepIwlMoTpdm_);
 
     // The alpha - beta spin case
-    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
+    global_dpd_->file4_init(&Ints, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
     if (print_) {
-        outfile->Printf("\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        outfile->Printf("\tSorting File: %s nbuckets = %d\n", Ints.label, nBuckets);
     }
     next = PSIO_ZERO;
     for (int n = 0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
         for (int h = 0; h < nirreps_; h++) {
-            I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
+            Ints.matrix[h] = block_matrix(bucketRowDim[n][h], Ints.params->coltot[h]);
         }
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_AB_TPDM, tolerance_, 1, 0);
-        DPDFillerFunctor abDpdFiller(&I, n, bucketMap, bucketOffset, true, false);
+        DPDFillerFunctor abDpdFiller(&Ints, n, bucketMap, bucketOffset, true, false);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -366,9 +366,9 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
-                psio_->write(I.filenum, I.label, (char *)I.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
+                psio_->write(Ints.filenum, Ints.label, (char *)Ints.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
                              next, &next);
-            free_block(I.matrix[h]);
+            free_block(Ints.matrix[h]);
         }
     } /* end loop over buckets/passes */
 
@@ -377,18 +377,18 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
     psio_->close(PSIF_MO_AB_TPDM, keepIwlMoTpdm_);
 
     // The beta - beta spin case
-    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
+    global_dpd_->file4_init(&Ints, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
     if (print_) {
-        outfile->Printf("\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        outfile->Printf("\tSorting File: %s nbuckets = %d\n", Ints.label, nBuckets);
     }
     next = PSIO_ZERO;
     for (int n = 0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
         for (int h = 0; h < nirreps_; h++) {
-            I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
+            Ints.matrix[h] = block_matrix(bucketRowDim[n][h], Ints.params->coltot[h]);
         }
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_BB_TPDM, tolerance_, 1, 0);
-        DPDFillerFunctor bbDpdFiller(&I, n, bucketMap, bucketOffset, true, true);
+        DPDFillerFunctor bbDpdFiller(&Ints, n, bucketMap, bucketOffset, true, true);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -412,9 +412,9 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
-                psio_->write(I.filenum, I.label, (char *)I.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
+                psio_->write(Ints.filenum, Ints.label, (char *)Ints.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
                              next, &next);
-            free_block(I.matrix[h]);
+            free_block(Ints.matrix[h]);
         }
     } /* end loop over buckets/passes */
 
@@ -437,6 +437,6 @@ void IntegralTransform::presort_mo_tpdm_unrestricted() {
 
     tpdmAlreadyPresorted_ = true;
 
-    global_dpd_->file4_close(&I);
+    global_dpd_->file4_close(&Ints);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }

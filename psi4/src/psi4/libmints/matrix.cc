@@ -1622,47 +1622,45 @@ bool Matrix::add_and_orthogonalize_row(const SharedVector v) {
     return ret;
 }
 
-bool Matrix::schmidt_add_row(int h, int rows, Vector &v) throw() {
+bool Matrix::schmidt_add_row(int h, int rows, Vector &v) {
     if (v.nirrep() > 1)
-        throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
+        throw PSIEXCEPTION("Matrix::schmidt_add_row: This function needs to be adapted to handle symmetry blocks.");
 
     double dotval, normval;
-    int i, I;
 
-    for (i = 0; i < rows; ++i) {
+    for (int i = 0; i < rows; ++i) {
         dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v.pointer(), 1);
-        for (I = 0; I < coldim(h); ++I) v(I) -= dotval * matrix_[h][i][I];
+        for (int P = 0; P < coldim(h); ++P) v(P) -= dotval * matrix_[h][i][P];
     }
 
     normval = C_DDOT(coldim(h), v.pointer(), 1, v.pointer(), 1);
     normval = sqrt(normval);
 
     if (normval > 1.0e-5) {
-        for (I = 0; I < coldim(h); ++I) matrix_[h][rows][I] = v(I) / normval;
+        for (int P = 0; P < coldim(h); ++P) matrix_[h][rows][P] = v(P) / normval;
         return true;
     } else
         return false;
 }
 
-bool Matrix::schmidt_add_row(int h, int rows, double *v) throw() {
+bool Matrix::schmidt_add_row(int h, int rows, double *v) noexcept {
     double dotval, normval;
-    int i, I;
 
     //    outfile->Printf( "in schmidt_add\n");
     //    for (i=0; i<coldim(h); ++i)
     //        outfile->Printf( "%lf ", v[i]);
     //    outfile->Printf( "\n");
 
-    for (i = 0; i < rows; ++i) {
+    for (int i = 0; i < rows; ++i) {
         dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v, 1);
-        for (I = 0; I < coldim(h); ++I) v[I] -= dotval * matrix_[h][i][I];
+        for (int P = 0; P < coldim(h); ++P) v[P] -= dotval * matrix_[h][i][P];
     }
 
     normval = C_DDOT(coldim(h), v, 1, v, 1);
     normval = sqrt(normval);
 
     if (normval > 1.0e-5) {
-        for (I = 0; I < coldim(h); ++I) matrix_[h][rows][I] = v[I] / normval;
+        for (int P = 0; P < coldim(h); ++P) matrix_[h][rows][P] = v[P] / normval;
 
         //        for (i=0; i<coldim(h); ++i)
         //            outfile->Printf( "%lf ", matrix_[h][rows][i]);
@@ -1711,7 +1709,7 @@ void Matrix::project_out(Matrix &constraints) {
                 //                outfile->Printf( "\n");
                 //                double dotval = C_DDOT(coldim(h), &(temp[h][i][0]), 1, &(constraints[0][j][0]), 1);
                 //                outfile->Printf( "dotval = %lf\n", dotval);
-                for (int I = 0; I < coldim(h); ++I) v[I] -= dotval * constraints[0][j][I];
+                for (int P = 0; P < coldim(h); ++P) v[P] -= dotval * constraints[0][j][P];
             }
 
             //            outfile->Printf( "after removing constraints v[] ", h);
@@ -1791,14 +1789,11 @@ void Matrix::diagonalize(SharedMatrix &metric, SharedMatrix & /*eigvectors*/, st
     Matrix t(*this);
     Matrix m(metric);
 
-    int lwork = 3 * max_nrow();
-    double *work = new double[lwork];
-
     for (int h = 0; h < nirrep_; ++h) {
         if (!rowspi_[h] && !colspi_[h]) continue;
 
-        int err = C_DSYGV(1, 'V', 'U', rowspi_[h], t.matrix_[h][0], rowspi_[h], m.matrix_[h][0], rowspi_[h],
-                          eigvalues->pointer(h), work, lwork);
+        auto err = C_DSYGV(1, 'V', 'U', rowspi_[h], t.matrix_[h][0], rowspi_[h], m.matrix_[h][0], rowspi_[h],
+                           eigvalues->pointer(h));
 
         if (err != 0) {
             if (err < 0) {
@@ -1815,7 +1810,6 @@ void Matrix::diagonalize(SharedMatrix &metric, SharedMatrix & /*eigvectors*/, st
 
         // TODO: Sort the data according to eigenvalues.
     }
-    delete[] work;
 }
 
 std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps() {
@@ -1861,19 +1855,8 @@ void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
         double **Up = U->pointer(h);
         double **Vp = V->pointer(h ^ symmetry_);
 
-        int *iwork = new int[8L * k];
-
-        // Workspace Query
-        double lwork;
-        int info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, &lwork, -1, iwork);
-
-        double *work = new double[(int)lwork];
-
         // SVD
-        info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, work, (int)lwork, iwork);
-
-        delete[] work;
-        delete[] iwork;
+        auto info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k);
 
         if (info != 0) {
             if (info < 0) {
@@ -1906,19 +1889,8 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
             double **Up = U->pointer(h);
             double **Vp = V->pointer(h ^ symmetry_);
 
-            int *iwork = new int[8L * k];
-
-            // Workspace Query
-            double lwork;
-            int info = C_DGESDD('A', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], m, &lwork, -1, iwork);
-
-            double *work = new double[(int)lwork];
-
             // SVD
-            info = C_DGESDD('A', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], m, work, (int)lwork, iwork);
-
-            delete[] work;
-            delete[] iwork;
+            auto info = C_DGESDD('A', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], m);
 
             if (info != 0) {
                 if (info < 0) {
@@ -2256,13 +2228,11 @@ void Matrix::general_invert() {
         throw PSIEXCEPTION("Matrix::invert: Matrix is non-totally symmetric.");
     }
 
-    int lwork = max_nrow() * max_ncol();
-    double *work = new double[lwork];
     int *ipiv = new int[max_nrow()];
 
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] && colspi_[h]) {
-            int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
+            auto err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
             if (err != 0) {
                 if (err < 0) {
                     outfile->Printf("invert: C_DGETRF: argument %d has invalid parameter.\n", -err);
@@ -2279,7 +2249,7 @@ void Matrix::general_invert() {
                 }
             }
 
-            err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
+            err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
             if (err != 0) {
                 if (err < 0) {
                     outfile->Printf("invert: C_DGETRI: argument %d has invalid parameter.\n", -err);
@@ -2298,7 +2268,6 @@ void Matrix::general_invert() {
         }
     }
     delete[] ipiv;
-    delete[] work;
 }
 
 Dimension Matrix::power(double alpha, double cutoff) {
@@ -2321,11 +2290,7 @@ Dimension Matrix::power(double alpha, double cutoff) {
         memcpy(static_cast<void *>(A1[0]), static_cast<void *>(A[0]), sizeof(double) * n * n);
 
         // Eigendecomposition
-        double lwork;
-        int stat = C_DSYEV('V', 'U', n, A1[0], n, a, &lwork, -1);
-        double *work = new double[(int)lwork];
-        stat = C_DSYEV('V', 'U', n, A1[0], n, a, work, (int)lwork);
-        delete[] work;
+        auto stat = C_DSYEV('V', 'U', n, A1[0], n, a);
 
         if (stat) throw PSIEXCEPTION("Matrix::power: C_DSYEV failed");
 

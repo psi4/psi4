@@ -378,16 +378,7 @@ void FittingMetric::form_QR_inverse(double tol)
 
         // QR Decomposition
         double* tau = new double[n];
-
-        // First, find out how much workspace to provide
-        double work_size;
-        C_DGEQRF(n,n,Rp[0],n,tau,&work_size, -1);
-
-        // Now, do the QR decomposition
-        int lwork = (int)work_size;
-        double *work = new double[lwork];
-        C_DGEQRF(n,n,Rp[0],n,tau,work,lwork);
-        delete[] work;
+        auto info = C_DGEQRF(n,n,Rp[0],n,tau);
 
         // Copy Jcopy to Q (actually Q')
         auto Q = std::make_shared<Matrix>("Q", n, n);
@@ -400,14 +391,8 @@ void FittingMetric::form_QR_inverse(double tol)
                 Rp[j][i] = 0.0;
             }
 
-        // First, find out how much workspace to provide
-        C_DORGQR(n,n,n,Qp[0],n,tau,&work_size,-1);
-
-        // Now, form Q
-        lwork = (int)work_size;
-        work = new double[lwork];
-        C_DORGQR(n,n,n,Qp[0],n,tau,work,lwork);
-        delete[] work;
+        // Form Q
+        info = C_DORGQR(n,n,n,Qp[0],n,tau);
 
         //Q->print();
         //R->print();
@@ -464,10 +449,7 @@ void FittingMetric::form_eig_inverse(double tol)
         C_DCOPY(n*(size_t)n,J[0],1,Wp[0],1);
 
         double* eigval = new double[n];
-        int lwork = n * 3;
-        double* work = new double[lwork];
-        int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
-        delete[] work;
+        auto stat = C_DSYEV('v','u',n,Wp[0],n,eigval);
 
         auto Jcopy = std::make_shared<Matrix>("Jcopy", n, n);
         double** Jcopyp = Jcopy->pointer();
@@ -519,10 +501,7 @@ void FittingMetric::form_full_eig_inverse(double tol)
         C_DCOPY(n*(size_t)n,J[0],1,Wp[0],1);
 
         double* eigval = new double[n];
-        int lwork = n * 3;
-        double* work = new double[lwork];
-        int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
-        delete[] work;
+        auto stat = C_DSYEV('v','u',n,Wp[0],n,eigval);
 
         auto Jcopy = std::make_shared<Matrix>("Jcopy", n, n);
         double** Jcopyp = Jcopy->pointer();

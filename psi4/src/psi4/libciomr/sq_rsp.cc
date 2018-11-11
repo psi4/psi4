@@ -93,12 +93,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
         // print_mat(e_vecs,n,n,outfile);
         // printf("%d",n);
 
-        // Get scratch vector and call DSYEV
-        // The eigenvectors are placed in e_vecs in ascending order
-        int lwork_sqrsp = 3 * n;
-        double* work_sqrsp = init_array(lwork_sqrsp);
-        C_DSYEV('V', 'U', n, &Temp_sqrsp[0][0], n, &e_vals[0], &work_sqrsp[0], lwork_sqrsp);
-        free(work_sqrsp);
+        C_DSYEV('V', 'U', n, &Temp_sqrsp[0][0], n, &e_vals[0]);
 
         // outfile->Printf("  Eigenvectors:\n");
         // print_mat(e_vecs,n,n,outfile);
@@ -160,10 +155,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
         //'N' in parameter 1 to DSYEV terminates
         // the algorithm after eigenvectors are found
         // Canonical order is ascending in LAPACK
-        int lwork_sqrsp = 3 * n;
-        double* work_sqrsp = init_array(lwork_sqrsp);
-        C_DSYEV('N', 'U', n, &Temp_sqrsp[0][0], n, &e_vals[0], &work_sqrsp[0], lwork_sqrsp);
-        free(work_sqrsp);
+        C_DSYEV('N', 'U', n, &Temp_sqrsp[0][0], n, &e_vals[0]);
         free_block(Temp_sqrsp);
 
         // If descending is required, the canonical order must be reversed

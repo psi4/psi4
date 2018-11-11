@@ -252,16 +252,16 @@ void IntegralTransform::presort_so_tei() {
         outfile->Printf("\tPresorting SO-basis two-electron integrals.\n");
     }
 
-    dpdfile4 I;
+    dpdfile4 Ints;
     psio_->open(PSIF_SO_PRESORT, PSIO_OPEN_NEW);
-    global_dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), "SO Ints (nn|nn)");
+    global_dpd_->file4_init(&Ints, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), "SO Ints (nn|nn)");
 
     size_t memoryd = memory_ / sizeof(double);
 
     int nump = 0, numq = 0;
     for (int h = 0; h < nirreps_; ++h) {
-        nump += I.params->ppi[h];
-        numq += I.params->qpi[h];
+        nump += Ints.params->ppi[h];
+        numq += Ints.params->qpi[h];
     }
     int **bucketMap = init_int_matrix(nump, numq);
 
@@ -278,8 +278,8 @@ void IntegralTransform::presort_so_tei() {
     size_t coreLeft = memoryd;
     psio_address next;
     for (int h = 0; h < nirreps_; ++h) {
-        size_t rowLength = (size_t)I.params->coltot[h ^ (I.my_irrep)];
-        for (int row = 0; row < I.params->rowtot[h]; ++row) {
+        size_t rowLength = (size_t)Ints.params->coltot[h ^ (Ints.my_irrep)];
+        for (int row = 0; row < Ints.params->rowtot[h]; ++row) {
             if (coreLeft >= rowLength) {
                 coreLeft -= rowLength;
                 bucketRowDim[nBuckets - 1][h]++;
@@ -318,24 +318,24 @@ void IntegralTransform::presort_so_tei() {
                 bucketSize[nBuckets - 1] = init_long_int_array(nirreps_);
                 bucketSize[nBuckets - 1][h] = rowLength;
             }
-            int p = I.params->roworb[h][row][0];
-            int q = I.params->roworb[h][row][1];
+            int p = Ints.params->roworb[h][row][0];
+            int q = Ints.params->roworb[h][row][1];
             bucketMap[p][q] = nBuckets - 1;
         }
     }
 
     if (print_) {
-        outfile->Printf("\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        outfile->Printf("\tSorting File: %s nbuckets = %d\n", Ints.label, nBuckets);
     }
 
     next = PSIO_ZERO;
     for (int n = 0; n < nBuckets; ++n) { /* nbuckets = number of passes */
         /* Prepare target matrix */
         for (int h = 0; h < nirreps_; h++) {
-            I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
+            Ints.matrix[h] = block_matrix(bucketRowDim[n][h], Ints.params->coltot[h]);
         }
 
-        DPDFillerFunctor dpdfiller(&I, n, bucketMap, bucketOffset, false, true);
+        DPDFillerFunctor dpdfiller(&Ints, n, bucketMap, bucketOffset, false, true);
         NullFunctor null;
         IWL *iwl = new IWL(psio_.get(), soIntTEIFile_, tolerance_, 1, 1);
         // In the functors below, we only want to build the Fock matrix on the first pass
@@ -356,9 +356,9 @@ void IntegralTransform::presort_so_tei() {
 
         for (int h = 0; h < nirreps_; ++h) {
             if (bucketSize[n][h])
-                psio_->write(I.filenum, I.label, (char *)I.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
+                psio_->write(Ints.filenum, Ints.label, (char *)Ints.matrix[h][0], bucketSize[n][h] * ((long int)sizeof(double)),
                              next, &next);
-            free_block(I.matrix[h]);
+            free_block(Ints.matrix[h]);
         }
     } /* end loop over buckets/passes */
 
@@ -531,6 +531,6 @@ void IntegralTransform::presort_so_tei() {
 
     alreadyPresorted_ = true;
 
-    global_dpd_->file4_close(&I);
+    global_dpd_->file4_close(&Ints);
     psio_->close(PSIF_SO_PRESORT, 1);
 }

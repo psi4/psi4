@@ -1781,13 +1781,7 @@ void DLRXSolver::subspaceDiagonalization()
         double*  evalp = l_->pointer(h);
 
         // Workspace (never throws)
-        int info;
-        double dwork;
-        info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, nullptr, 1, &dwork, -1);
-        auto lwork = (int) dwork;
-        auto* work = new double[lwork];
-        info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, nullptr, 1, work, lwork);
-        delete[] work;
+        auto info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, nullptr, 1);
 
         if (info != 0) {
             throw PSIEXCEPTION("DLXSolver: Subspace DGEEV failed");

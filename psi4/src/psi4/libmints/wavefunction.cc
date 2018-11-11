@@ -93,11 +93,11 @@ Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &o
 }
 
 // TODO: pass Options object to constructor instead of relying on globals
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, 
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset,
                            std::map<std::string, std::shared_ptr<Matrix>> matrices,
                            std::map<std::string, std::shared_ptr<Vector>> vectors,
-                           std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints, 
-                           std::map<std::string, std::string> strings, std::map<std::string, bool> booleans, 
+                           std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints,
+                           std::map<std::string, std::string> strings, std::map<std::string, bool> booleans,
                            std::map<std::string, double> floats)
     : options_(Process::environment.options),
       basisset_(basisset),
@@ -141,7 +141,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nbetapi_ = dimensions["nbetapi"];
     nmopi_ = dimensions["nmopi"];
     nsopi_ = dimensions["nsopi"];
-     
+
     // set integers
     nalpha_ = ints["nalpha"];
     nbeta_ = ints["nbeta"];
@@ -150,7 +150,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nmo_ = ints["nmo"];
     nso_ = ints["nso"];
     print_ = ints["print"];
-    
+
     // set strings
     name_ = strings["name"];
 
@@ -1185,14 +1185,11 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
         // First, diagonalize T
         // the C_DSYEV call replaces the original matrix T with its eigenvectors
         double *eigval = init_array(nocc);
-        int lwork = nocc * 3;
-        double *work = init_array(lwork);
-        int stat = C_DSYEV('v', 'u', nocc, T[0], nocc, eigval, work, lwork);
+        auto stat = C_DSYEV('v', 'u', nocc, T[0], nocc, eigval);
         if (stat != 0) {
             outfile->Printf("C_DSYEV failed\n");
             exit(PSI_RETURN_FAILURE);
         }
-        free(work);
 
         // Now T contains the eigenvectors of the original T
         // Copy T to T_copy
