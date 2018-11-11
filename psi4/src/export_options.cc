@@ -33,30 +33,28 @@
 
 using namespace psi;
 
-
-void export_options(py::module& m)
-{
+void export_options(py::module& m) {
     py::class_<Options>(m, "Options", "docstring", py::dynamic_attr())
-            .def("add_bool", &Options::add_bool, "add bool option")
-            .def("add_int", &Options::add_int, "add int option")
-            .def("add_str", &Options::add_str, "add string option")
-            .def("add_str_i", &Options::add_str_i, "add string option")
-            .def("add_array", &Options::add_array, "add array option")
-            .def("get_bool", &Options::get_bool, "get boolean option")
-            .def("get_int", &Options::get_int, "get integer option")
-            .def("get_double", &Options::get_double, "get double option")
-            .def("get_str", &Options::get_str, "get string option")
-            .def("get_str", &Options::get_str, "get string option")
-            .def("get_int_vector", &Options::get_int_vector, "get int vector option")
-            .def("set_bool", &Options::set_bool, "set bool option")
-            .def("set_int", &Options::set_int, "set int option")
-            .def("set_double", &Options::set_double, "set double option")
-            .def("set_str", &Options::set_str, "set string option")
-            .def("set_str_i", &Options::set_str_i, "set string option")
-            .def("set_array", &Options::set_array, "set array option")
-            .def("read_globals", &Options::read_globals, "expert")
-            .def("set_read_globals", &Options::set_read_globals, "expert")
-            .def("set_current_module", &Options::set_current_module, "sets *arg0* (all CAPS) as current module")
-            .def("get_current_module", &Options::get_current_module, "gets current module")
-            .def("validate_options", &Options::validate_options, "validate options for *arg0* module");
+        .def("add_bool", &Options::add_bool, "add bool option")
+        .def("add_int", &Options::add_int, "add int option")
+        .def("add_str", &Options::add_str, "add string option")
+        .def("add_str_i", &Options::add_str_i, "add string option")
+        .def("add_array", &Options::add_array, "add array option")
+        .def("get_bool", &Options::get_bool, "get boolean option")
+        .def("get_int", &Options::get_int, "get integer option")
+        .def("get_double", &Options::get_double, "get double option")
+        .def("get_str", &Options::get_str, "get string option")
+        .def("get_str", &Options::get_str, "get string option")
+        .def("get_int_vector", &Options::get_int_vector, "get int vector option")
+        .def("set_bool", &Options::set_bool, "set bool option")
+        .def("set_int", &Options::set_int, "set int option")
+        .def("set_double", &Options::set_double, "set double option")
+        .def("set_str", &Options::set_str, "set string option")
+        .def("set_str_i", &Options::set_str_i, "set string option")
+        .def("set_array", &Options::set_array, "set array option")
+        .def("read_globals", &Options::read_globals, "expert")
+        .def("set_read_globals", &Options::set_read_globals, "expert")
+        .def("set_current_module", &Options::set_current_module, "sets *arg0* (all CAPS) as current module")
+        .def("get_current_module", &Options::get_current_module, "gets current module")
+        .def("validate_options", &Options::validate_options, "validate options for *arg0* module");
 }
