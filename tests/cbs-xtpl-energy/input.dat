@@ -11,7 +11,7 @@ mp2_addz_ref  = -76.261216702741    #TEST
 mp2_atz_ref   = -76.341088480148    #TEST
 mp2_adtz_ref  = -76.3667778886      #TEST
 mp2_atqz_ref  = -76.4038500042      #TEST
-scf_zapa_ref  = -76.06304504        #TEST
+scf_zapa_ref  = -76.063049097037    #TEST
 
 molecule h2o {
     O
