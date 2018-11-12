@@ -541,8 +541,8 @@ bool py_psi_set_local_option_int(std::string const& module, std::string const& k
     std::string nonconst_key = to_upper(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if (data.type() == "double" && specifies_convergence(nonconst_key)) {
-        double val = pow(10.0, -value);
+    if (data.type() == "double") {
+        double val = (specifies_convergence(nonconst_key)) ? pow(10.0, -value) : double(value);
         Process::environment.options.set_double(module, nonconst_key, val);
     } else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
@@ -582,8 +582,8 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
     std::string nonconst_key = to_upper(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if (data.type() == "double" && specifies_convergence(nonconst_key)) {
-        double val = pow(10.0, -value);
+    if (data.type() == "double") {
+        double val = (specifies_convergence(nonconst_key)) ? pow(10.0, -value) : double(value);
         Process::environment.options.set_global_double(nonconst_key, val);
     } else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
