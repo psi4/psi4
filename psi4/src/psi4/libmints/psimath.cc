@@ -188,8 +188,7 @@ int PSI_DGETRF(int irrep, int m, int n, SharedMatrix a, int lda, std::shared_ptr
     return C_DGETRF(m, n, a->pointer(irrep)[0], lda, ipiv->pointer(irrep));
 }
 /// PSI_DGETRI, a wrapper to return C_DGETRI using objects
-int PSI_DGETRI(int irrep, int n, SharedMatrix a, int lda, std::shared_ptr<IntVector> ipiv, std::shared_ptr<Vector> work,
-               int lwork) {
+int PSI_DGETRI(int irrep, int n, SharedMatrix a, int lda, std::shared_ptr<IntVector> ipiv) {
     return C_DGETRI(n, a->pointer(irrep)[0], lda, ipiv->pointer(irrep));
 }
 /// PSI_DGETRS, a wrapper to return C_DGETRS using objects

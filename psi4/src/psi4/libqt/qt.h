@@ -41,6 +41,7 @@
 #include <cstddef>
 #include <string>
 
+#include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
 
 #include "blas_level1.h"

@@ -34,15 +34,16 @@
 
 #pragma once
 
-// This fixes the complex types and avoids clashes with <complex.h> which
-// reserves I as the imaginary unit
-#include <complex>
-#define lapack_complex_float std::complex<float>
-#define lapack_complex_double std::complex<double>
+#include <algorithm>
 
 #ifdef USING_LAPACK_MKL
 #include <mkl_lapacke.h>
 #else
+// This fixes complex types and avoids clashes with <complex.h> which
+// reserves I as the imaginary unit
+#include <complex>
+#define lapack_complex_float std::complex<float>
+#define lapack_complex_double std::complex<double>
 #include <lapacke.h>
 #endif
 
