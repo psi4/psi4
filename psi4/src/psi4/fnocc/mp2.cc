@@ -41,7 +41,7 @@
 #define omp_get_wtime() 0.0
 #endif
 
-#include "blas.h"
+#include "linear_algebra.h"
 #include "ccsd.h"
 
 using namespace psi;

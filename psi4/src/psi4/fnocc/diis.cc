@@ -27,7 +27,7 @@
  */
 
 #include "ccsd.h"
-#include "blas.h"
+#include "linear_algebra.h"
 #include "psi4/libqt/qt.h"
 
 using namespace psi;
@@ -42,11 +42,11 @@ namespace psi {
 namespace fnocc {
 
 void CoupledCluster::DIIS(double* c, long int nvec, long int n, int replace_diis_iter) {
-    integer nvar = nvec + 1;
-    integer* ipiv = (integer*)malloc(nvar * sizeof(integer));
-    doublereal* temp = (doublereal*)malloc(sizeof(doublereal) * maxdiis * maxdiis);
-    doublereal* A = (doublereal*)malloc(sizeof(doublereal) * nvar * nvar);
-    doublereal* B = (doublereal*)malloc(sizeof(doublereal) * nvar);
+    long int nvar = nvec + 1;
+    auto ipiv = (int*)malloc(nvar * sizeof(int));
+    double* temp = (double*)malloc(sizeof(double) * maxdiis * maxdiis);
+    double* A = (double*)malloc(sizeof(double) * nvar * nvar);
+    double* B = (double*)malloc(sizeof(double) * nvar);
     memset((void*)A, '\0', nvar * nvar * sizeof(double));
     memset((void*)B, '\0', nvar * sizeof(double));
     B[nvec] = -1.;
@@ -112,11 +112,10 @@ void CoupledCluster::DIIS(double* c, long int nvec, long int n, int replace_diis
     psio->close(PSIF_DCC_EVEC, 1);
     free(evector);
 
-    integer nrhs, lda, ldb, info;
-    nrhs = 1;
+    long int lda, ldb;
+    auto nrhs = 1;
     lda = ldb = nvar;
-    info = 0;
-    DGESV(nvar, nrhs, A, lda, ipiv, B, ldb, info);
+    auto info = C_DGESV(nvar, nrhs, A, lda, ipiv, B, ldb);
     C_DCOPY(nvec, B, 1, c, 1);
 
     free(A);

@@ -26,13 +26,39 @@
  * @END LICENSE
  */
 
-#pragma once
+#include "psi4/libqt/lapack.h"
 
 namespace psi {
-namespace psimrcc {
-void C_DGEMM_12(int m, int n, int k, double alpha, double *A, int nra, double *B, int ncb, double beta, double *C,
-                int ncc);
-void C_DGEMM_22(int m, int n, int k, double alpha, double *A, int nca, double *B, int ncb, double beta, double *C,
-                int ncc);
-}  // namespace psimrcc
+namespace fnocc {
+long int Position(long int i, long int j) {
+    if (i < j) {
+        return ((j * (j + 1)) >> 1) + i;
+    }
+    return ((i * (i + 1)) >> 1) + j;
+}
+
+void Diagonalize(long int N, double* A, double* W) {
+    char JOBZ = 'V';
+    char UPLO = 'U';
+    long int LDA = N;
+    auto info = C_DSYEV(JOBZ, UPLO, N, A, LDA, W);
+}
+
+void Diagonalize2(long int N, double* AP, double* W, double* Z) {
+    char JOBZ = 'V';
+    char UPLO = 'U';
+    long int LDZ = N;
+    auto info = C_DSPEV(JOBZ, UPLO, N, AP, W, Z, LDZ);
+}
+
+void SVD(long int M, long int N, double* A, double* U, double* VT, double* S) {
+    char JOBU = 'S';   // all M columns of U are returned in array U
+    char JOBVT = 'A';  // all N rows of V**T are returned in the array VT
+    long int LDA = M;
+    long int LDU = M;
+    long int LDVT = N;
+
+    auto info = C_DGESVD(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT);
+}
+}  // namespace fnocc
 }  // namespace psi

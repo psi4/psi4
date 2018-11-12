@@ -31,6 +31,7 @@
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libqt/lapack.h"
 
 #include "scf.h"
 #include "algebra_interface.h"
@@ -97,10 +98,9 @@ void SCF::diis(int cycle) {
         }
 
         // Solve B x = A
-        auto* IPIV = new int[matrix_size];
+        auto IPIV = new int[matrix_size];
         int nrhs = 1;
-        int info = 0;
-        F_DGESV(&matrix_size, &nrhs, &(diis_B[0][0]), &matrix_size, &(IPIV[0]), &(diis_A[0]), &matrix_size, &info);
+        auto info = C_DGESV(matrix_size, nrhs, &(diis_B[0][0]), matrix_size, IPIV, diis_A, matrix_size);
         delete[] IPIV;
 
         // Update F = sum diis_F(i) * A(i);

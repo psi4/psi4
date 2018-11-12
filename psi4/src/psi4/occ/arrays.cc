@@ -551,11 +551,7 @@ void Array2d::diagonalize(Array2d* eigvectors, Array1d* eigvalues, double cutoff
 void Array2d::cdsyev(char jobz, char uplo, Array2d* eigvectors, Array1d* eigvalues)
 {
       if (dim1_) {
-	int lwork=3*dim2_;
-	double **work = block_matrix(dim1_,lwork);
-	memset(work[0],0.0,sizeof(double)*dim1_*lwork);
-        C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_, &(work[0][0]), lwork);
-	free_block(work);
+    auto info = C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_);
       }
 }//
 
@@ -1276,4 +1272,3 @@ int Array3i::get(int h, int i, int j)
 /********************************************************************************************/
 /********************************************************************************************/
 }} // End Namespaces
-

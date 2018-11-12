@@ -24,22 +24,20 @@ set(sources_list
   solve_pep.cc
   timer.cc
 )
-add_definitions("-DFC_SYMBOL=${FC_SYMBOL}")
 
-if(WIN32)
-  set(_has_dggsvd3 TRUE)
-  set(_has_dggsvp3 TRUE)
+include(CheckSymbolExists)
+if(${isMKL} MATCHES "MKL")
+  set(_include "mkl_lapacke.h")
 else()
-  if(Fortran_ENABLED)
-    include(CheckFortranFunctionExists)
-    set(CMAKE_REQUIRED_LIBRARIES tgt::lapk)
-    # Check whether DGGSVD3 is available
-    check_fortran_function_exists(DGGSVD3 _has_dggsvd3)
-    # Check whether DGGSVP3 is available
-    check_fortran_function_exists(DGGSVP3 _has_dggsvp3)
-    unset(CMAKE_REQUIRED_LIBRARIES)
-  endif()
+  set(_include "lapacke.h")
 endif()
+set(CMAKE_REQUIRED_LIBRARIES tgt::lapk tgt::blas)
+# Check whether LAPACKE_dggsvd3 is available
+check_symbol_exists(LAPACKE_dggsvd3 ${_include} _has_dggsvd3)
+# Check whether LAPACKE_dggsvp3 is available
+check_symbol_exists(LAPACKE_dggsvp3 ${_include} _has_dggsvp3)
+unset(CMAKE_REQUIRED_LIBRARIES)
+unset(_include)
 
 psi4_add_module(lib qt sources_list psio ciomr mints)
 target_compile_definitions(qt

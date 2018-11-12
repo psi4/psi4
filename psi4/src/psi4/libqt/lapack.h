@@ -3851,6 +3851,14 @@ int C_DGERQF(int m, int n, double* a, int lda, double* tau);
 PSI_API
 int C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt);
 
+PSI_API
+int C_DGESVD(char jobu, char jobvt, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt,
+             int ldvt, double* superb);
+
+PSI_API
+int C_DGESVD(char jobu, char jobvt, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt,
+             int ldvt);
+
 /**
  *  Purpose
  *  =======

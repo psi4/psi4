@@ -1665,11 +1665,7 @@ void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1
 
 void Tensor2d::cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues) {
     if (dim1_) {
-        int lwork = 3 * dim2_;
-        double **work = block_matrix(dim1_, lwork);
-        memset(work[0], 0.0, sizeof(double) * dim1_ * lwork);
-        C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_, &(work[0][0]), lwork);
-        free_block(work);
+        auto info = C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_);
     }
 }  //
 

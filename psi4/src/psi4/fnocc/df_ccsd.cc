@@ -43,7 +43,7 @@
 #define omp_get_wtime() 0.0
 #endif
 
-#include "blas.h"
+#include "linear_algebra.h"
 #include "ccsd.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/3index.h"
@@ -125,7 +125,7 @@ double DFCoupledCluster::compute_energy() {
                         tempq[q * v + b] = Qov[q * o * v + i * v + b];
                     }
                 }
-                F_DGEMM('n', 't', v, v * v, nQ, 1.0, tempq, v, Qvv, v * v, 0.0, &Z[0], v);
+                C_DGEMM('n', 't', v, v * v, nQ, 1.0, tempq, v, Qvv, v * v, 0.0, &Z[0], v);
 #pragma omp parallel for schedule(static)
                 for (long int a = 0; a < v; a++) {
                     for (long int b = 0; b < v; b++) {
@@ -153,7 +153,7 @@ double DFCoupledCluster::compute_energy() {
                         temp1[q * v + c] = Qvv[q * v * v + a * v + c];
                     }
                 }
-                F_DGEMM('n', 't', o * v, v, nQ, 1.0, Qov, o * v, temp1, v, 0.0, temp2, o * v);
+                C_DGEMM('n', 't', o * v, v, nQ, 1.0, Qov, o * v, temp1, v, 0.0, temp2, o * v);
 #pragma omp parallel for schedule(static)
                 for (long int b = 0; b < v; b++) {
                     for (long int i = 0; i < o; i++) {
@@ -174,7 +174,7 @@ double DFCoupledCluster::compute_energy() {
         double *temp2 = (double *)malloc(o * o * v * v * sizeof(double));
 
         // write (oo|ov) integrals, formerly E2ijak, for (t)
-        F_DGEMM('n', 't', o * o, o * v, nQ, 1.0, Qoo, o * o, Qov, o * v, 0.0, temp1, o * o);
+        C_DGEMM('n', 't', o * o, o * v, nQ, 1.0, Qoo, o * o, Qov, o * v, 0.0, temp1, o * o);
         for (long int i = 0; i < o; i++) {
             for (long int j = 0; j < o; j++) {
                 for (long int k = 0; k < o; k++) {
@@ -190,7 +190,7 @@ double DFCoupledCluster::compute_energy() {
         psio->close(PSIF_DCC_IJAK, 1);
 
         // df (ov|ov) integrals, formerly E2klcd
-        F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, temp1, o * v);
+        C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, temp1, o * v);
         psio->open(PSIF_DCC_IAJB, PSIO_OPEN_NEW);
         psio->write_entry(PSIF_DCC_IAJB, "E2iajb", (char *)&temp1[0], o * o * v * v * sizeof(double));
         psio->close(PSIF_DCC_IAJB, 1);
@@ -511,7 +511,7 @@ double DFCoupledCluster::CheckEnergy() {
     long int o = ndoccact;
 
     // df (ia|bj) formerly E2klcd
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
 
     if (t2_on_disk) {
         auto psio = std::make_shared<PSIO>();
@@ -758,7 +758,7 @@ void DFCoupledCluster::UpdateT2() {
     psio->open(PSIF_DCC_QSO, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_QSO, "qvo", (char *)&tempv[0], nQ * o * v * sizeof(double));
     psio->close(PSIF_DCC_QSO, 1);
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, tempv, o * v, tempv, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, tempv, o * v, tempv, o * v, 0.0, integrals, o * v);
 
     // we still have the residual in memory in tempv
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);
@@ -856,7 +856,7 @@ void DFCoupledCluster::Vabcd1() {
     for (long int a = 0; a < v; a++) {
         double start1 = omp_get_wtime();
         int nb = v - a;
-        F_DGEMM('t', 'n', v, v * nb, nQ, 1.0, Qvv + a * v * nQ, nQ, Qvv + a * v * nQ, nQ, 0.0, Vcdb, v);
+        C_DGEMM('t', 'n', v, v * nb, nQ, 1.0, Qvv + a * v * nQ, nQ, Qvv + a * v * nQ, nQ, 0.0, Vcdb, v);
 
 #pragma omp parallel for schedule(static)
         for (long int b = a; b < v; b++) {
@@ -874,7 +874,7 @@ void DFCoupledCluster::Vabcd1() {
         double end1 = omp_get_wtime();
 
         double start2 = omp_get_wtime();
-        F_DGEMM('n', 'n', otri, nb, vtri, 0.5, tempt, otri, Vp, vtri, 0.0, Abij, otri);
+        C_DGEMM('n', 'n', otri, nb, vtri, 0.5, tempt, otri, Vp, vtri, 0.0, Abij, otri);
 #pragma omp parallel for schedule(static)
         for (long int b = a; b < v; b++) {
             long int cd = 0;
@@ -888,7 +888,7 @@ void DFCoupledCluster::Vabcd1() {
                 }
             }
         }
-        F_DGEMM('n', 'n', otri, nb, vtri, 0.5, tempt + otri * vtri, otri, Vm, vtri, 0.0, Sbij, otri);
+        C_DGEMM('n', 'n', otri, nb, vtri, 0.5, tempt + otri * vtri, otri, Vm, vtri, 0.0, Sbij, otri);
         double end2 = omp_get_wtime();
 
         // contribute to residual

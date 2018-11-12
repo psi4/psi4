@@ -218,6 +218,17 @@ int C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, 
     return LAPACKE_dgesdd(LAPACK_ROW_MAJOR, jobz, m, n, a, lda, s, u, ldu, vt, ldvt);
 }
 
+int C_DGESVD(char jobu, char jobvt, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt,
+             int ldvt, double* superb) {
+    return LAPACKE_dgesvd(LAPACK_ROW_MAJOR, jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, superb);
+}
+
+int C_DGESVD(char jobu, char jobvt, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt,
+             int ldvt) {
+    double superb[std::min(m, n) - 1];
+    return LAPACKE_dgesvd(LAPACK_ROW_MAJOR, jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, superb);
+}
+
 int C_DGESV(int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb) {
     return LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, a, lda, ipiv, b, ldb);
 }

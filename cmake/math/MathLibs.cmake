@@ -23,8 +23,8 @@ set(SYSTEM_NATIVE_LAPACK_HEADERS lapacke.h)
 set(SYSTEM_NATIVE_BLAS_LIBRARY_PATH_SUFFIXES)
 set(SYSTEM_NATIVE_LAPACK_LIBRARY_PATH_SUFFIXES)
 
-set(SYSTEM_NATIVE_BLAS_LIBS   blas cblas)
-set(SYSTEM_NATIVE_LAPACK_LIBS lapack lapacke)
+set(SYSTEM_NATIVE_BLAS_LIBS   cblas blas)
+set(SYSTEM_NATIVE_LAPACK_LIBS lapacke lapack)
 
 #-------------------------------------------------------------------------------
 # ESSL

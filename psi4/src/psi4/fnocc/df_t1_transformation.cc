@@ -38,7 +38,7 @@
 #define omp_get_wtime() 0.0
 #endif
 
-#include "blas.h"
+#include "linear_algebra.h"
 #include "ccsd.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/3index.h"
@@ -108,13 +108,13 @@ void DFCoupledCluster::T1Fock() {
     for (long int row = 0; row < nrows; row++) {
         psio->read(PSIF_DCC_QSO, "Qso SCF", (char*)&integrals[0], rowdims[row] * nso * nso * sizeof(double), addr1,
                    &addr1);
-        F_DGEMM('n', 'n', full, nso * rowdims[row], nso, 1.0, Ca_L, full, integrals, nso, 0.0, tempv, full);
+        C_DGEMM('n', 'n', full, nso * rowdims[row], nso, 1.0, Ca_L, full, integrals, nso, 0.0, tempv, full);
         for (long int q = 0; q < rowdims[row]; q++) {
             for (long int mu = 0; mu < nso; mu++) {
                 C_DCOPY(full, tempv + q * nso * full + mu * full, 1, integrals + q * nso * full + mu, nso);
             }
         }
-        F_DGEMM('n', 'n', full, full * rowdims[row], nso, 1.0, Ca_R, full, integrals, nso, 0.0, tempv, full);
+        C_DGEMM('n', 'n', full, full * rowdims[row], nso, 1.0, Ca_R, full, integrals, nso, 0.0, tempv, full);
         // full Qmo
         psio->write(PSIF_DCC_QSO, "Qmo SCF", (char*)&tempv[0], rowdims[row] * full * full * sizeof(double), addr2,
                     &addr2);
@@ -171,7 +171,7 @@ void DFCoupledCluster::T1Fock() {
                    &addr);
         for (long int q = 0; q < rowdims[row]; q++) {
             // sum k (q|rk) (q|ks)
-            F_DGEMM('n', 'n', full, full, ndocc, -1.0, integrals + q * full * full, full, integrals + q * full * full,
+            C_DGEMM('n', 'n', full, full, ndocc, -1.0, integrals + q * full * full, full, integrals + q * full * full,
                     full, 1.0, temp3, full);
 
             // sum k (q|kk) (q|rs)
@@ -279,13 +279,13 @@ void DFCoupledCluster::T1Integrals() {
     for (long int row = 0; row < nrows; row++) {
         psio->read(PSIF_DCC_QSO, "Qso CC", (char*)&integrals[0], rowdims[row] * nso * nso * sizeof(double), addr1,
                    &addr1);
-        F_DGEMM('n', 'n', full, nso * rowdims[row], nso, 1.0, Ca_L, full, integrals, nso, 0.0, tempv, full);
+        C_DGEMM('n', 'n', full, nso * rowdims[row], nso, 1.0, Ca_L, full, integrals, nso, 0.0, tempv, full);
         for (long int q = 0; q < rowdims[row]; q++) {
             for (long int mu = 0; mu < nso; mu++) {
                 C_DCOPY(full, tempv + q * nso * full + mu * full, 1, integrals + q * nso * full + mu, nso);
             }
         }
-        F_DGEMM('n', 'n', full, full * rowdims[row], nso, 1.0, Ca_R, full, integrals, nso, 0.0, tempv, full);
+        C_DGEMM('n', 'n', full, full * rowdims[row], nso, 1.0, Ca_R, full, integrals, nso, 0.0, tempv, full);
 
 // Qoo
 #pragma omp parallel for schedule(static)

@@ -175,14 +175,11 @@ void DCFTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<B
     }
 
     // First, diagonalize J(P,Q)
-    int lwork = nQ_ * 3;
     double* eigval = init_array(nQ_);
-    double* work = init_array(lwork);
-    int status = C_DSYEV('v', 'u', nQ_, J[0], nQ_, eigval, work, lwork);
+    auto status = C_DSYEV('v', 'u', nQ_, J[0], nQ_, eigval);
     if (status) {
         throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
     }
-    free(work);
 
     // Now J contains eigenvectors of the original J
     double** J_copy = block_matrix(nQ_, nQ_);
@@ -2629,14 +2626,11 @@ void DCFTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_p
     }
 
     // First, diagonalize J(P,Q)
-    int lwork = nQ_scf_ * 3;
     double* eigval = init_array(nQ_scf_);
-    double* work = init_array(lwork);
-    int status = C_DSYEV('v', 'u', nQ_scf_, J[0], nQ_scf_, eigval, work, lwork);
+    auto status = C_DSYEV('v', 'u', nQ_scf_, J[0], nQ_scf_, eigval);
     if (status) {
         throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
     }
-    free(work);
 
     // Now J contains eigenvectors of the original J
     double** J_copy = block_matrix(nQ_scf_, nQ_scf_);

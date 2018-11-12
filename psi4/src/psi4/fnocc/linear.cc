@@ -36,7 +36,7 @@
 #include <omp.h>
 #endif
 
-#include "blas.h"
+#include "linear_algebra.h"
 #include "ccsd.h"
 
 using namespace psi;
@@ -61,7 +61,7 @@ void CoupledCluster::CPU_t1_vmeai_linear(CCTaskParams params) {
     for (i = 0; i < o; i++) {
         C_DCOPY(v, t1 + i, o, tempt + i * v, 1);
     }
-    F_DGEMV('n', o * v, o * v, -1.0, tempv, o * v, tempt, 1, 0.0, integrals, 1);
+    C_DGEMV('n', o * v, o * v, -1.0, tempv, o * v, tempt, 1, 0.0, integrals, 1);
     for (a = 0; a < v; a++) {
         C_DAXPY(o, 1.0, integrals + a, v, w1 + a * o, 1);
     }
@@ -95,7 +95,7 @@ void CoupledCluster::CPU_t1_vmeni_linear(CCTaskParams params) {
     psio->open(PSIF_DCC_IJAK, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_IJAK, "E2ijak", (char*)&tempv[0], o * o * o * v * sizeof(double));
     psio->close(PSIF_DCC_IJAK, 1);
-    F_DGEMM('t', 'n', o, v, o * o * v, -1.0, tempv, o * o * v, tempt, o * o * v, 1.0, w1, o);
+    C_DGEMM('t', 'n', o, v, o * o * v, -1.0, tempv, o * o * v, tempt, o * o * v, 1.0, w1, o);
     psio.reset();
 }
 
@@ -144,11 +144,11 @@ void CoupledCluster::CPU_t1_vmaef_linear(CCTaskParams params) {
 
     for (i = 0; i < ntiles - 1; i++) {
         psio->read(PSIF_DCC_ABCI3, "E2abci3", (char*)&integrals[0], tilesize * ov2 * sizeof(double), addr, &addr);
-        F_DGEMM('n', 'n', o, tilesize, ov2, 1.0, tempt, o, integrals, ov2, 1.0, w1 + i * tilesize * o, o);
+        C_DGEMM('n', 'n', o, tilesize, ov2, 1.0, tempt, o, integrals, ov2, 1.0, w1 + i * tilesize * o, o);
     }
     i = ntiles - 1;
     psio->read(PSIF_DCC_ABCI3, "E2abci3", (char*)&integrals[0], lasttile * ov2 * sizeof(double), addr, &addr);
-    F_DGEMM('n', 'n', o, lasttile, ov2, 1.0, tempt, o, integrals, ov2, 1.0, w1 + i * tilesize * o, o);
+    C_DGEMM('n', 'n', o, lasttile, ov2, 1.0, tempt, o, integrals, ov2, 1.0, w1 + i * tilesize * o, o);
     psio->close(PSIF_DCC_ABCI3, 1);
     psio.reset();
 }
@@ -168,11 +168,11 @@ void CoupledCluster::CPU_I2p_abci_refactored_term1_linear(CCTaskParams params) {
 
     for (i = 0; i < nov2tiles - 1; i++) {
         psio->read(PSIF_DCC_ABCI5, "E2abci5", (char*)&integrals[0], v * ov2tilesize * sizeof(double), addr, &addr);
-        F_DGEMM('n', 'n', o, ov2tilesize, v, 1.0, t1, o, integrals, v, 0.0, tempt + i * ov2tilesize * o, o);
+        C_DGEMM('n', 'n', o, ov2tilesize, v, 1.0, t1, o, integrals, v, 0.0, tempt + i * ov2tilesize * o, o);
     }
     i = nov2tiles - 1;
     psio->read(PSIF_DCC_ABCI5, "E2abci5", (char*)&integrals[0], v * lastov2tile * sizeof(double), addr, &addr);
-    F_DGEMM('n', 'n', o, lastov2tile, v, 1.0, t1, o, integrals, v, 0.0, tempt + i * ov2tilesize * o, o);
+    C_DGEMM('n', 'n', o, lastov2tile, v, 1.0, t1, o, integrals, v, 0.0, tempt + i * ov2tilesize * o, o);
     psio->close(PSIF_DCC_ABCI5, 1);
 
     // contribute to residual
@@ -394,7 +394,7 @@ void CoupledCluster::I2ijkl_linear(CCTaskParams params) {
     psio->read_entry(PSIF_DCC_IJKL, "E2ijkl", (char*)&integrals[0], o * o * o * o * sizeof(double));
     psio->close(PSIF_DCC_IJKL, 1);
 
-    F_DGEMM('n', 'n', o * o, v * v, o * o, 0.5, integrals, o * o, tempt, o * o, 0.0, tempv, o * o);
+    C_DGEMM('n', 'n', o * o, v * v, o * o, 0.5, integrals, o * o, tempt, o * o, 0.0, tempv, o * o);
 
     // contribute to residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);
@@ -425,7 +425,7 @@ void CoupledCluster::I2piajk_linear(CCTaskParams params) {
     psio->read_entry(PSIF_DCC_IJAK2, "E2ijak2", (char*)&tempv[0], o * o * o * v * sizeof(double));
     psio->close(PSIF_DCC_IJAK2, 1);
 
-    F_DGEMM('n', 'n', o * o * v, v, o, -1.0, tempv, o * o * v, t1, o, 0.0, tempt, o * o * v);
+    C_DGEMM('n', 'n', o * o * v, v, o, -1.0, tempv, o * o * v, t1, o, 0.0, tempt, o * o * v);
 
     // contribute to residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);
@@ -474,13 +474,13 @@ void CoupledCluster::Vabcd1_linear(CCTaskParams params) {
     for (j = 0; j < ntiles - 1; j++) {
         psio->read(PSIF_DCC_ABCD1, "E2abcd1", (char*)&integrals[0], tilesize * v * (v + 1) / 2 * sizeof(double), addr,
                    &addr);
-        F_DGEMM('n', 'n', o * (o + 1) / 2, tilesize, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
+        C_DGEMM('n', 'n', o * (o + 1) / 2, tilesize, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
                 v * (v + 1) / 2, 0.0, tempt + j * tilesize * o * (o + 1) / 2, o * (o + 1) / 2);
     }
     j = ntiles - 1;
     psio->read(PSIF_DCC_ABCD1, "E2abcd1", (char*)&integrals[0], lasttile * v * (v + 1) / 2 * sizeof(double), addr,
                &addr);
-    F_DGEMM('n', 'n', o * (o + 1) / 2, lasttile, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
+    C_DGEMM('n', 'n', o * (o + 1) / 2, lasttile, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
             v * (v + 1) / 2, 0.0, tempt + j * tilesize * o * (o + 1) / 2, o * (o + 1) / 2);
     psio->close(PSIF_DCC_ABCD1, 1);
 
@@ -533,13 +533,13 @@ void CoupledCluster::Vabcd2_linear(CCTaskParams params) {
     for (j = 0; j < ntiles - 1; j++) {
         psio->read(PSIF_DCC_ABCD2, "E2abcd2", (char*)&integrals[0], tilesize * v * (v + 1) / 2 * sizeof(double), addr,
                    &addr);
-        F_DGEMM('n', 'n', o * (o + 1) / 2, tilesize, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
+        C_DGEMM('n', 'n', o * (o + 1) / 2, tilesize, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
                 v * (v + 1) / 2, 0.0, tempt + j * tilesize * o * (o + 1) / 2, o * (o + 1) / 2);
     }
     j = ntiles - 1;
     psio->read(PSIF_DCC_ABCD2, "E2abcd2", (char*)&integrals[0], lasttile * v * (v + 1) / 2 * sizeof(double), addr,
                &addr);
-    F_DGEMM('n', 'n', o * (o + 1) / 2, lasttile, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
+    C_DGEMM('n', 'n', o * (o + 1) / 2, lasttile, v * (v + 1) / 2, 1.0, tempv, o * (o + 1) / 2, integrals,
             v * (v + 1) / 2, 0.0, tempt + j * tilesize * o * (o + 1) / 2, o * (o + 1) / 2);
     psio->close(PSIF_DCC_ABCD2, 1);
 
@@ -601,7 +601,7 @@ void CoupledCluster::I2iabj_linear(CCTaskParams params) {
         }
     }
 
-    F_DGEMM('n', 'n', o * v, o * v, o * v, 1.0, tempv, o * v, tempt, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 'n', o * v, o * v, o * v, 1.0, tempv, o * v, tempt, o * v, 0.0, integrals, o * v);
 
     // contribute to residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);
@@ -655,7 +655,7 @@ void CoupledCluster::I2iajb_linear(CCTaskParams params) {
         }
     }
 
-    F_DGEMM('n', 'n', o * v, o * v, o * v, -1.0, tempt, o * v, integrals, o * v, 0.0, tempv, o * v);
+    C_DGEMM('n', 'n', o * v, o * v, o * v, -1.0, tempt, o * v, integrals, o * v, 0.0, tempv, o * v);
 
     // contribute to residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);
@@ -691,7 +691,7 @@ void CoupledCluster::I2iajb_linear(CCTaskParams params) {
         }
     }
 
-    F_DGEMM('n', 'n', o * v, o * v, o * v, -1.0, tempt, o * v, tempv, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 'n', o * v, o * v, o * v, -1.0, tempt, o * v, tempv, o * v, 0.0, integrals, o * v);
 
     // contribute to residual
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);

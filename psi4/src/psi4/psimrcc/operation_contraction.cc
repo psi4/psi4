@@ -33,6 +33,7 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/blas_level3.h"
 
 #include "algebra_interface.h"
 #include "blas.h"
@@ -261,8 +262,8 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
             k = rows_C;
         }
         if (k != 0) {
-            F_DGEMM("n", "t", &n, &m, &k, &factor, &(C_matrix[(B_on_disk ? offset : 0)][0]), &n,
-                    &(B_matrix[(C_on_disk ? offset : 0)][0]), &m, &beta, &(A_matrix[0][0]), &n);
+            C_DGEMM('n', 't', n, m, k, factor, &(C_matrix[(B_on_disk ? offset : 0)][0]), n,
+                    &(B_matrix[(C_on_disk ? offset : 0)][0]), m, beta, &(A_matrix[0][0]), n);
         }
         DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
                          A_matrix[i][j] +=
@@ -288,8 +289,8 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
         if (m * n == 0) return;
         k = rows_B;
         if (k != 0) {
-            F_DGEMM("t", "t", &n, &m, &k, &factor, &(C_matrix[0][(B_on_disk ? offset : 0)]), &cols_C, &(B_matrix[0][0]),
-                    &m, &beta, &(A_matrix[0][(C_on_disk ? offset : 0)]), &cols_A);
+            C_DGEMM('t', 't', n, m, k, factor, &(C_matrix[0][(B_on_disk ? offset : 0)]), cols_C, &(B_matrix[0][0]),
+                    m, beta, &(A_matrix[0][(C_on_disk ? offset : 0)]), cols_A);
         }
         DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
                          A_matrix[i][(C_on_disk ? offset + j : j)] +=
@@ -311,8 +312,8 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
         if (m * n == 0) return;
         double beta = 1.0;
         if (k != 0) {
-            F_DGEMM("n", "n", &n, &m, &k, &factor, &(C_matrix[0][0]), &n, &(B_matrix[0][(C_on_disk ? offset : 0)]),
-                    &cols_B, &beta, &(A_matrix[(B_on_disk ? offset : 0)][0]), &n);
+            C_DGEMM('n', 'n', n, m, k, factor, &(C_matrix[0][0]), n, &(B_matrix[0][(C_on_disk ? offset : 0)]),
+                    cols_B, beta, &(A_matrix[(B_on_disk ? offset : 0)][0]), n);
         }
         DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
                          A_matrix[(B_on_disk ? offset + i : i)][j] +=
@@ -335,8 +336,8 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
         if (m * n == 0) return;
         double beta = 1.0;
         if (k != 0) {
-            F_DGEMM("t", "n", &n, &m, &k, &factor, &(C_matrix[0][0]), &k, &(B_matrix[0][0]), &k, &beta,
-                    &(A_matrix[(B_on_disk ? offset : 0)][(C_on_disk ? offset : 0)]), &cols_A);
+            C_DGEMM('t', 'n', n, m, k, factor, &(C_matrix[0][0]), k, &(B_matrix[0][0]), k, beta,
+                    &(A_matrix[(B_on_disk ? offset : 0)][(C_on_disk ? offset : 0)]), cols_A);
         }
         DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
                          A_matrix[(B_on_disk ? offset + i : i)][(C_on_disk ? offset + j : j)] +=

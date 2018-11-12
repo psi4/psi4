@@ -26,17 +26,18 @@
  * @END LICENSE
  */
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <functional>
+#include <utility>
+
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/memory_manager.h"
+#include "psi4/libqt/lapack.h"
 
 #include "algebra_interface.h"
 #include "heff.h"
-
-#include <algorithm>
-#include <functional>
-#include <utility>
 
 namespace psi {
 
@@ -54,8 +55,6 @@ double Hamiltonian::diagonalize(int root) {
     double** right;
     double** H;
 
-    int lwork = 6 * ndets * ndets;
-    allocate1(double, work, lwork);
     allocate1(double, real, ndets);
     allocate1(double, imaginary, ndets);
 
@@ -66,10 +65,8 @@ double Hamiltonian::diagonalize(int root) {
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) H[j][i] = matrix[i][j];
 
-    int info;
-
-    F_DGEEV("V", "V", &ndets, &(H[0][0]), &ndets, &(real[0]), &(imaginary[0]), &(left[0][0]), &ndets, &(right[0][0]),
-            &ndets, &(work[0]), &lwork, &info);
+    auto info =
+        C_DGEEV('V', 'V', ndets, &(H[0][0]), ndets, real, imaginary, &(left[0][0]), ndets, &(right[0][0]), ndets);
 
     sort_eigensystem(ndets, real, imaginary, left, right);
 
@@ -160,7 +157,6 @@ double Hamiltonian::diagonalize(int root) {
         left_eigenvector[m] = left_eigenvector[m] / lnorm;
     }
 
-    release1(work);
     release1(real);
     release1(imaginary);
     release2(H);

@@ -29,46 +29,49 @@
 #include "psi4/pybind11.h"
 
 #include "psi4/libmints/psimath.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+
+using namespace psi;
 
 void export_blas_lapack(py::module& m)
 {
     // BLAS Static Wrappers
-    m.def("DGBMV", &psi::PSI_DGBMV, "docstring");
-    m.def("DGEMM", &psi::PSI_DGEMM, "docstring");
-    m.def("DGEMV", &psi::PSI_DGEMV, "docstring");
-    m.def("DGER", &psi::PSI_DGER, "docstring");
-    m.def("DSBMV", &psi::PSI_DSBMV, "docstring");
-    m.def("DSYMM", &psi::PSI_DSYMM, "docstring");
-    m.def("DSYMV", &psi::PSI_DSYMV, "docstring");
-    m.def("DSYR", &psi::PSI_DSYR, "docstring");
-    m.def("DSYR2", &psi::PSI_DSYR2, "docstring");
-    m.def("DSYR2K", &psi::PSI_DSYR2K, "docstring");
-    m.def("DSYRK", &psi::PSI_DSYRK, "docstring");
-    m.def("DTBMV", &psi::PSI_DTBMV, "docstring");
-    m.def("DTBSV", &psi::PSI_DTBSV, "docstring");
-    m.def("DTRMM", &psi::PSI_DTRMM, "docstring");
-    m.def("DTRMV", &psi::PSI_DTRMV, "docstring");
-    m.def("DTRSM", &psi::PSI_DTRSM, "docstring");
-    m.def("DTRSV", &psi::PSI_DTRSV, "docstring");
-    m.def("DROT", &psi::PSI_DROT, "docstring");
-    m.def("DSWAP", &psi::PSI_DSWAP, "docstring");
-    m.def("DSCAL", &psi::PSI_DSCAL, "docstring");
-    m.def("DAXPY", &psi::PSI_DAXPY, "docstring");
-    m.def("DCOPY", &psi::PSI_DCOPY, "docstring");
-    m.def("DDOT", &psi::PSI_DDOT, "docstring");
-    m.def("DNRM2", &psi::PSI_DNRM2, "docstring");
-    m.def("DASUM", &psi::PSI_DASUM, "docstring");
-    m.def("IDAMAX", &psi::PSI_IDAMAX, "docstring");
+    m.def("DGBMV", &PSI_DGBMV, "docstring");
+    m.def("DGEMM", &PSI_DGEMM, "docstring");
+    m.def("DGEMV", &PSI_DGEMV, "docstring");
+    m.def("DGER", &PSI_DGER, "docstring");
+    m.def("DSBMV", &PSI_DSBMV, "docstring");
+    m.def("DSYMM", &PSI_DSYMM, "docstring");
+    m.def("DSYMV", &PSI_DSYMV, "docstring");
+    m.def("DSYR", &PSI_DSYR, "docstring");
+    m.def("DSYR2", &PSI_DSYR2, "docstring");
+    m.def("DSYR2K", &PSI_DSYR2K, "docstring");
+    m.def("DSYRK", &PSI_DSYRK, "docstring");
+    m.def("DTBMV", &PSI_DTBMV, "docstring");
+    m.def("DTBSV", &PSI_DTBSV, "docstring");
+    m.def("DTRMM", &PSI_DTRMM, "docstring");
+    m.def("DTRMV", &PSI_DTRMV, "docstring");
+    m.def("DTRSM", &PSI_DTRSM, "docstring");
+    m.def("DTRSV", &PSI_DTRSV, "docstring");
+    m.def("DROT", &PSI_DROT, "docstring");
+    m.def("DSWAP", &PSI_DSWAP, "docstring");
+    m.def("DSCAL", &PSI_DSCAL, "docstring");
+    m.def("DAXPY", &PSI_DAXPY, "docstring");
+    m.def("DCOPY", &PSI_DCOPY, "docstring");
+    m.def("DDOT", &PSI_DDOT, "docstring");
+    m.def("DNRM2", &PSI_DNRM2, "docstring");
+    m.def("DASUM", &PSI_DASUM, "docstring");
+    m.def("IDAMAX", &PSI_IDAMAX, "docstring");
 
     // LAPACK static wrappers
-
-    m.def("DGEEV", &psi::PSI_DGEEV, "docstring");
-    m.def("DSYEV", &psi::PSI_DSYEV, "docstring");
-    m.def("DSYSV", &psi::PSI_DSYSV, "docstring");
-    m.def("DGETRF", &psi::PSI_DGETRF, "docstring");
-    m.def("DGETRS", &psi::PSI_DGETRS, "docstring");
-    m.def("DGETRI", &psi::PSI_DGETRI, "docstring");
-    m.def("DPOTRF", &psi::PSI_DPOTRF, "docstring");
-    m.def("DPOTRS", &psi::PSI_DPOTRS, "docstring");
-    m.def("DPOTRI", &psi::PSI_DPOTRI, "docstring");
+    m.def("DGEEV", &PSI_DGEEV, "docstring");
+    m.def("DSYEV", &PSI_DSYEV, "docstring");
+    m.def("DSYSV", &PSI_DSYSV, "docstring");
+    m.def("DGETRF", &PSI_DGETRF, "docstring");
+    m.def("DGETRS", &PSI_DGETRS, "docstring");
+    m.def("DGETRI", &PSI_DGETRI, "docstring");
+    m.def("DPOTRF", &PSI_DPOTRF, "docstring");
+    m.def("DPOTRS", &PSI_DPOTRS, "docstring");
+    m.def("DPOTRI", &PSI_DPOTRI, "docstring");
 }

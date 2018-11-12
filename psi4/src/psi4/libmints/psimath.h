@@ -26,21 +26,24 @@
  * @END LICENSE
  */
 
-#ifndef LIBMINTS_PSIMATH
-#define LIBMINTS_PSIMATH
+#pragma once
 
-#include "typedefs.h"
+#include <memory>
 
 /**
  * psimath.h
  * A set of wrappers to BLAS and LAPACK for use with Matrix, Vector, and IntVector
  * Rob Parrish 1/25/2010
- **/
+ */
 
 namespace psi {
 
+class Matrix;
 class Vector;
 class IntVector;
+using SharedMatrix = std::shared_ptr<Matrix>;
+using SharedVector = std::shared_ptr<Vector>;
+using SharedIntVector = std::shared_ptr<IntVector>;
 
 /// PSI_DGBMV, a wrapper to C_DGBMV using objects
 void PSI_DGBMV(int irrep, char trans, int m, int n, int kl, int ku, double alpha, SharedMatrix a, int lda,
@@ -136,4 +139,3 @@ int PSI_DPOTRI(int irrep, char uplo, int n, SharedMatrix a, int lda);
 /// PSI_DPOTRS, a wrapper to return C_DPOTRS using objects
 int PSI_DPOTRS(int irrep, char uplo, int n, int nrhs, SharedMatrix a, int lda, SharedMatrix b, int ldb);
 }  // namespace psi
-#endif

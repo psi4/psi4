@@ -160,10 +160,10 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                                 int dx = 1;
                                 int lenght = block_sizepi;
                                 if (block_sizepi < static_cast<size_t>(std::numeric_limits<int>::max())) {
-                                    diis_B[i][j] += F_DDOT(&lenght, i_matrix, &dx, j_matrix, &dx);
+                                    diis_B[i][j] += C_DDOT(lenght, i_matrix, dx, j_matrix, dx);
                                     diis_B[j][i] = diis_B[i][j];
                                 } else {
-                                    throw PSIEXCEPTION("The numeric limits for int was reached for F_DDOT");
+                                    throw PSIEXCEPTION("The numeric limits for int was reached for C_DDOT");
                                 }
                             }
                         }
@@ -176,9 +176,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                 int matrix_size = options_.get_int("DIIS_MAX_VECS") + 1;
                 int* IPIV = new int[matrix_size];
                 int nrhs = 1;
-                int info = 0;
-                F_DGESV(&matrix_size, &nrhs, &(diis_B[0][0]), &matrix_size, &(IPIV[0]), &(diis_A[0]), &matrix_size,
-                        &info);
+                auto info = C_DGESV(matrix_size, nrhs, &(diis_B[0][0]), matrix_size, IPIV, diis_A, matrix_size);
                 delete[] IPIV;
 
                 // Update T = sum t(i) * A(i);

@@ -26,18 +26,19 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/psimath.h"
+#include "psimath.h"
+
+#include <memory>
 
 #include "psi4/libqt/blas_level1.h"
 #include "psi4/libqt/blas_level2.h"
 #include "psi4/libqt/blas_level3.h"
 #include "psi4/libqt/lapack.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/psi4-dec.h"
+
+#include "matrix.h"
+#include "vector.h"
 
 namespace psi {
-
 /// PSI_DGBMV, a wrapper to C_DGBMV using objects
 void PSI_DGBMV(int irrep, char trans, int m, int n, int kl, int ku, double alpha, SharedMatrix a, int lda,
                std::shared_ptr<Vector> x, int incx, double beta, std::shared_ptr<Vector> y, int incy) {

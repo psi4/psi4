@@ -29,10 +29,25 @@
 #pragma once
 
 namespace psi {
-namespace psimrcc {
-void C_DGEMM_12(int m, int n, int k, double alpha, double *A, int nra, double *B, int ncb, double beta, double *C,
-                int ncc);
-void C_DGEMM_22(int m, int n, int k, double alpha, double *A, int nca, double *B, int ncb, double beta, double *C,
-                int ncc);
-}  // namespace psimrcc
+namespace fnocc {
+/**
+ * position in a symmetric packed matrix
+ */
+long int Position(long int i, long int j);
+
+/**
+ * diagonalize a real symmetric matrix
+ */
+void Diagonalize(long int N, double *A, double *W);
+
+/**
+ * diagonalize a real symmetric packed matrix
+ */
+void Diagonalize2(long int N, double *AP, double *W, double *Z);
+
+/**
+ *  General SVD
+ */
+void SVD(long int M, long int N, double *A, double *U, double *VT, double *S);
+}  // namespace fnocc
 }  // namespace psi

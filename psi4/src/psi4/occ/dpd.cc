@@ -549,10 +549,7 @@ void SymBlockMatrix::cdsyev(char jobz, char uplo, SymBlockMatrix* eigvectors, Sy
 {
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h]) {
-	int lwork=3*rowspi_[h];
-	double **work = block_matrix(nirreps_,lwork);
-	memset(work[0],0.0,sizeof(double)*nirreps_*lwork);
-        C_DSYEV(jobz, uplo, rowspi_[h], &(matrix_[h][0][0]), colspi_[h], eigvalues->vector_[h], &(work[h][0]), lwork);
+          auto info = C_DSYEV(jobz, uplo, rowspi_[h], &(matrix_[h][0][0]), colspi_[h], eigvalues->vector_[h]);
       }
     }
 }//

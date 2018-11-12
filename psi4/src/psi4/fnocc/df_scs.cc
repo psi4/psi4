@@ -38,7 +38,7 @@
 #define omp_get_wtime() 0.0
 #endif
 
-#include "blas.h"
+#include "linear_algebra.h"
 #include "ccsd.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/3index.h"
@@ -57,7 +57,7 @@ void DFCoupledCluster::SCS_CCSD() {
     double osenergy = 0.0;
 
     // df (ia|bj) formerly E2klcd
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
 
     if (t2_on_disk) {
         auto psio = std::make_shared<PSIO>();
@@ -97,7 +97,7 @@ void DFCoupledCluster::SCS_MP2() {
     double osenergy = 0.0;
 
     // df (ia|bj) formerly E2klcd
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
 
     if (t2_on_disk) {
         auto psio = std::make_shared<PSIO>();

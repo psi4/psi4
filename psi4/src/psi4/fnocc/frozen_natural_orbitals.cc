@@ -43,7 +43,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "ccsd.h"
-#include "blas.h"
+#include "linear_algebra.h"
 #include "frozen_natural_orbitals.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/lib3index/dftensor.h"
@@ -662,8 +662,8 @@ void DFFrozenNO::FourIndexIntegrals() {
     psio->open(PSIF_DCC_QSO, PSIO_OPEN_OLD);
     for (int q = 0; q < nQ; q++) {
         psio->read(PSIF_DCC_QSO, "Qso CC", (char*)&buf1[0], nso * nso * sizeof(double), addr1, &addr1);
-        F_DGEMM('n', 'n', nmo, nso, nso, 1.0, &Cap[0][0], nmo, buf1, nso, 0.0, buf2, nmo);
-        F_DGEMM('n', 't', nmo, nmo, nso, 1.0, &Cap[0][0], nmo, buf2, nmo, 0.0, buf1, nmo);
+        C_DGEMM('n', 'n', nmo, nso, nso, 1.0, &Cap[0][0], nmo, buf1, nso, 0.0, buf2, nmo);
+        C_DGEMM('n', 't', nmo, nmo, nso, 1.0, &Cap[0][0], nmo, buf2, nmo, 0.0, buf1, nmo);
         for (int p = 0; p < nmo; p++) {
             for (int q = p; q < nmo; q++) {
                 buf2[Position(p, q)] = buf1[p * nmo + q];
@@ -744,7 +744,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     double* amps2 = (double*)malloc(o * o * v * v * sizeof(double));
 
     // build (ia|jb) integrals
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, amps2, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, amps2, o * v);
     free(Qov);
 
     if (memory < 16L * o * o * v * v) {
@@ -809,7 +809,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     }
 
     // build ab block of the density:
-    F_DGEMM('t', 'n', v, v, v * o * o, 2.0, amps1, v * o * o, amps2, v * o * o, 0.0, Dab, v);
+    C_DGEMM('t', 'n', v, v, v * o * o, 2.0, amps1, v * o * o, amps2, v * o * o, 0.0, Dab, v);
 
     // diagonalize Dab
     double* eigvalDab = (double*)malloc(v * sizeof(double));
@@ -890,14 +890,14 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     // transform Fock matrix to MP2 NO basis
     memset((void*)newFock, '\0', v * v * sizeof(double));
     C_DCOPY(v, F + ndoccact, 1, newFock, v + 1);
-    F_DGEMM('n', 'n', v, nvirt_no, v, 1.0, newFock, v, temp, v, 0.0, Dab, v);
-    F_DGEMM('t', 'n', nvirt_no, nvirt_no, v, 1.0, temp, v, Dab, v, 0.0, newFock, nvirt_no);
+    C_DGEMM('n', 'n', v, nvirt_no, v, 1.0, newFock, v, temp, v, 0.0, Dab, v);
+    C_DGEMM('t', 'n', nvirt_no, nvirt_no, v, 1.0, temp, v, Dab, v, 0.0, newFock, nvirt_no);
 
     // diagonalize new Fock matrix for semi-canonical orbitals
     Diagonalize(nvirt_no, newFock, neweps);
 
     // construct full mo -> no transformation matrix
-    F_DGEMM('n', 'n', v, nvirt_no, nvirt_no, 1.0, temp, v, newFock, nvirt_no, 0.0, Dab, v);
+    C_DGEMM('n', 'n', v, nvirt_no, nvirt_no, 1.0, temp, v, newFock, nvirt_no, 0.0, Dab, v);
 
     // put orbital energies back in F - doesn't matter in this implementation
     C_DCOPY(nvirt_no, neweps, 1, F + ndoccact, 1);
@@ -1013,14 +1013,14 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
     // Transform Qso to MO basis:
     double* tmp = (double*)malloc(nso * nso * nQ * sizeof(double));
     C_DCOPY(nso * nso * nQ, Qso, 1, tmp, 1);
-    F_DGEMM('n', 'n', nmo, nso * nQ, nso, 1.0, &Cap[0][0], nmo, tmp, nso, 0.0, Qso, nmo);
+    C_DGEMM('n', 'n', nmo, nso * nQ, nso, 1.0, &Cap[0][0], nmo, tmp, nso, 0.0, Qso, nmo);
 #pragma omp parallel for schedule(static)
     for (long int q = 0; q < nQ; q++) {
         for (long int mu = 0; mu < nso; mu++) {
             C_DCOPY(nmo, Qso + q * nso * nmo + mu * nmo, 1, tmp + q * nso * nmo + mu, nmo);
         }
     }
-    F_DGEMM('n', 'n', nmo, nmo * nQ, nso, 1.0, &Cap[0][0], nmo, tmp, nso, 0.0, Qso, nmo);
+    C_DGEMM('n', 'n', nmo, nmo * nQ, nso, 1.0, &Cap[0][0], nmo, tmp, nso, 0.0, Qso, nmo);
 
     // build Fock matrix:
 
@@ -1036,8 +1036,8 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
     double* h = (double*)malloc(nmo * nmo * sizeof(double));
     double** hp = H->pointer();
 
-    F_DGEMM('n', 't', nso, nmo, nso, 1.0, &hp[0][0], nso, &Cap[0][0], nmo, 0.0, temp2, nso);
-    F_DGEMM('n', 'n', nmo, nmo, nso, 1.0, &Cap[0][0], nmo, temp2, nso, 0.0, h, nmo);
+    C_DGEMM('n', 't', nso, nmo, nso, 1.0, &hp[0][0], nso, &Cap[0][0], nmo, 0.0, temp2, nso);
+    C_DGEMM('n', 'n', nmo, nmo, nso, 1.0, &Cap[0][0], nmo, temp2, nso, 0.0, h, nmo);
 
 // build Fock matrix:  sum_k (Q|kk)
 #pragma omp parallel for schedule(static)
@@ -1059,7 +1059,7 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
         }
     }
     // I(r,s) = sum q k (q|ks)(q|rk)
-    F_DGEMM('n', 't', nmo, nmo, nQ * ndocc, 1.0, tmp, nmo, tmp, nmo, 0.0, temp3, nmo);
+    C_DGEMM('n', 't', nmo, nmo, nQ * ndocc, 1.0, tmp, nmo, tmp, nmo, 0.0, temp3, nmo);
 
 // Fock matrix
 #pragma omp parallel for schedule(static)

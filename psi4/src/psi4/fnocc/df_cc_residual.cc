@@ -26,7 +26,7 @@
  * @END LICENSE
  */
 
-#include "blas.h"
+#include "linear_algebra.h"
 #include "ccsd.h"
 
 #include "psi4/psi4-dec.h"
@@ -62,7 +62,7 @@ void DFCoupledCluster::CCResidual() {
     // C2 = -1/2 t(bc,kj) [ (ki|ac) - 1/2 t(ad,li) (kd|lc) ]
     //      +    t(bc,ki) [ (kj|ac) - 1/2 t(ad,lj) (kd|lc) ]
     if (timer) start = omp_get_wtime();
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
     if (t2_on_disk) {
         psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DCC_T2, "t2", (char*)&tempv[0], o * o * v * v * sizeof(double));
@@ -89,8 +89,8 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('n', 'n', o * v, o * v, o * v, -0.5, tempv, o * v, tempt, o * v, 0.0, integrals, o * v);
-    F_DGEMM('n', 't', v * v, o * o, nQ, 1.0, Qvv, v * v, Qoo, o * o, 0.0, tempv, v * v);
+    C_DGEMM('n', 'n', o * v, o * v, o * v, -0.5, tempv, o * v, tempt, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', v * v, o * o, nQ, 1.0, Qvv, v * v, Qoo, o * o, 0.0, tempv, v * v);
 #pragma omp parallel for schedule(static)
     for (int a = 0; a < v; a++) {
         for (int i = 0; i < o; i++) {
@@ -117,7 +117,7 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('t', 'n', o * v, o * v, o * v, -1.0, integrals, o * v, tempt, o * v, 0.0, tempv, o * v);
+    C_DGEMM('t', 'n', o * v, o * v, o * v, -1.0, integrals, o * v, tempt, o * v, 0.0, tempv, o * v);
 #pragma omp parallel for schedule(static)
     for (int a = 0; a < v; a++) {
         for (int b = 0; b < v; b++) {
@@ -143,7 +143,7 @@ void DFCoupledCluster::CCResidual() {
     }
 
     // D2: 1/2 U(b,c,j,k) [ L(a,i,k,c) + 1/2 U(a,d,i,l) L(l,d,k,c) ]
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
     C_DCOPY(o * o * v * v, integrals, 1, tempv, 1);
 #pragma omp parallel for schedule(static)
     for (int l = 0; l < o; l++) {
@@ -173,12 +173,12 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('n', 't', o * v, o * v, o * v, 1.0, tempv, o * v, tempt, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, o * v, 1.0, tempv, o * v, tempt, o * v, 0.0, integrals, o * v);
     psio->open(PSIF_DCC_QSO, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_QSO, "qvo", (char*)&tempv[0], nQ * o * v * sizeof(double));
     psio->close(PSIF_DCC_QSO, 1);
-    F_DGEMM('n', 't', o * v, o * v, nQ, 2.0, Qov, o * v, tempv, o * v, 1.0, integrals, o * v);
-    F_DGEMM('n', 't', o * o, v * v, nQ, -1.0, Qoo, o * o, Qvv, v * v, 0.0, tempv, o * o);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 2.0, Qov, o * v, tempv, o * v, 1.0, integrals, o * v);
+    C_DGEMM('n', 't', o * o, v * v, nQ, -1.0, Qoo, o * o, Qvv, v * v, 0.0, tempv, o * o);
 #pragma omp parallel for schedule(static)
     for (int a = 0; a < v; a++) {
         for (int i = 0; i < o; i++) {
@@ -206,7 +206,7 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('n', 'n', o * v, o * v, o * v, 0.5, tempt, o * v, integrals, o * v, 0.0, tempv, o * v);
+    C_DGEMM('n', 'n', o * v, o * v, o * v, 0.5, tempt, o * v, integrals, o * v, 0.0, tempv, o * v);
 #pragma omp parallel for schedule(static)
     for (int a = 0; a < v; a++) {
         for (int b = 0; b < v; b++) {
@@ -244,7 +244,7 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
 #pragma omp parallel for schedule(static)
     for (int c = 0; c < v; c++) {
         for (int d = 0; d < v; d++) {
@@ -256,7 +256,7 @@ void DFCoupledCluster::CCResidual() {
         }
     }
     // overwriting Fab here, but it gets rebuilt every iteration anyway.
-    F_DGEMM('t', 'n', v, v, o * o * v, -2.0, tempv, o * o * v, tempt, o * o * v, 1.0, Fab, v);
+    C_DGEMM('t', 'n', v, v, o * o * v, -2.0, tempv, o * o * v, tempt, o * o * v, 1.0, Fab, v);
     if (t2_on_disk) {
         psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DCC_T2, "t2", (char*)&tempv[0], o * o * v * v * sizeof(double));
@@ -273,7 +273,7 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('n', 'n', o * o * v, v, v, 1.0, tempt, o * o * v, Fab, v, 0.0, tempv, o * o * v);
+    C_DGEMM('n', 'n', o * o * v, v, v, 1.0, tempt, o * o * v, Fab, v, 0.0, tempv, o * o * v);
 #pragma omp parallel for schedule(static)
     for (int a = 0; a < v; a++) {
         for (int b = 0; b < v; b++) {
@@ -315,11 +315,11 @@ void DFCoupledCluster::CCResidual() {
         }
     }
     // overwriting Fij here, but it gets rebuilt every iteration anyway.
-    F_DGEMM('t', 'n', o, o, o * v * v, 1.0, tempt, o * v * v, integrals, o * v * v, 1.0, Fij, o);
+    C_DGEMM('t', 'n', o, o, o * v * v, 1.0, tempt, o * v * v, integrals, o * v * v, 1.0, Fij, o);
 
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_R2, "residual", (char*)&tempt[0], o * o * v * v * sizeof(double));
-    F_DGEMM('n', 'n', o, o * v * v, o, -1.0, Fij, o, tb, o, 1.0, tempt, o);
+    C_DGEMM('n', 'n', o, o * v * v, o, -1.0, Fij, o, tb, o, 1.0, tempt, o);
 
     // R2 = R2 + P(ia,jb) R2
     C_DCOPY(o * o * v * v, tempt, 1, integrals, 1);
@@ -342,7 +342,7 @@ void DFCoupledCluster::CCResidual() {
     }
 
     // B2 = t(ab,kl) [ (ki|lj) + t(cd,ij) (kc|ld) ]
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
 #pragma omp parallel for schedule(static)
     for (int k = 0; k < o; k++) {
         for (int l = 0; l < o; l++) {
@@ -353,7 +353,7 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('n', 't', o * o, o * o, nQ, 1.0, Qoo, o * o, Qoo, o * o, 0.0, integrals, o * o);
+    C_DGEMM('n', 't', o * o, o * o, nQ, 1.0, Qoo, o * o, Qoo, o * o, 0.0, integrals, o * o);
 #pragma omp parallel for schedule(static)
     for (int k = 0; k < o; k++) {
         for (int i = 0; i < o; i++) {
@@ -370,14 +370,14 @@ void DFCoupledCluster::CCResidual() {
         psio->close(PSIF_DCC_T2, 1);
         tb = integrals;
     }
-    F_DGEMM('n', 'n', o * o, o * o, v * v, 1.0, tb, o * o, tempv, v * v, 1.0, tempt, o * o);
+    C_DGEMM('n', 'n', o * o, o * o, v * v, 1.0, tb, o * o, tempv, v * v, 1.0, tempt, o * o);
     if (t2_on_disk) {
         psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DCC_T2, "t2", (char*)&tempv[0], o * o * v * v * sizeof(double));
         psio->close(PSIF_DCC_T2, 1);
         tb = tempv;
     }
-    F_DGEMM('n', 'n', o * o, v * v, o * o, 1.0, tempt, o * o, tb, o * o, 0.0, integrals, o * o);
+    C_DGEMM('n', 'n', o * o, v * v, o * o, 1.0, tempt, o * o, tb, o * o, 0.0, integrals, o * o);
 
     psio->open(PSIF_DCC_R2, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_R2, "residual", (char*)&tempt[0], o * o * v * v * sizeof(double));
@@ -408,14 +408,14 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('t', 'n', o * v, nQ, o * v, 1.0, tempt, o * v, Qov, o * v, 0.0, tempv, o * v);
+    C_DGEMM('t', 'n', o * v, nQ, o * v, 1.0, tempt, o * v, Qov, o * v, 0.0, tempv, o * v);
 #pragma omp parallel for schedule(static)
     for (int q = 0; q < nQ; q++) {
         for (int a = 0; a < v; a++) {
             C_DCOPY(v, Qvv + q * v * v + a * v, 1, integrals + q * v * v + a, v);
         }
     }
-    F_DGEMM('n', 't', o, v, v * nQ, 1.0, tempv, o, integrals, v, 1.0, w1, o);
+    C_DGEMM('n', 't', o, v, v * nQ, 1.0, tempv, o, integrals, v, 1.0, w1, o);
 
     if (timer) {
         outfile->Printf("        A1 =      U(c,d,k,l) (ad|kc)                                    %6.2lf\n",
@@ -424,7 +424,7 @@ void DFCoupledCluster::CCResidual() {
     }
 
     // B1 (H): -U(a,c,k,l) (ki|lc)
-    F_DGEMM('n', 't', o * v, o * o, nQ, 1.0, Qov, o * v, Qoo, o * o, 0.0, integrals, o * v);
+    C_DGEMM('n', 't', o * v, o * o, nQ, 1.0, Qov, o * v, Qoo, o * o, 0.0, integrals, o * v);
 #pragma omp parallel for schedule(static)
     for (int i = 0; i < o; i++) {
         for (int c = 0; c < v; c++) {
@@ -450,7 +450,7 @@ void DFCoupledCluster::CCResidual() {
             }
         }
     }
-    F_DGEMM('t', 'n', o, v, o * o * v, -2.0, tempv, o * o * v, tempt, o * o * v, 1.0, w1, o);
+    C_DGEMM('t', 'n', o, v, o * o * v, -2.0, tempv, o * o * v, tempt, o * o * v, 1.0, w1, o);
 
     if (timer) {
         outfile->Printf("        B1 =    - U(a,c,k,l) (ki|lc)                                    %6.2lf\n",

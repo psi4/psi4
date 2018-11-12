@@ -226,14 +226,11 @@ void DFOCC::formJ(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet
 
     // First, diagonalize J
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
-    int lwork = nQ * 3;
     double* eigval = init_array(nQ);
-    double* work = init_array(lwork);
-    int status = C_DSYEV('v', 'u', nQ, J[0], nQ, eigval, work, lwork);
+    auto status = C_DSYEV('v', 'u', nQ, J[0], nQ, eigval);
     if (status) {
         throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
     }
-    free(work);
 
     // Now J contains the eigenvectors of the original J
     // Copy J to J_copy

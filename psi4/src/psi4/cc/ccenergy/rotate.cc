@@ -64,7 +64,7 @@ namespace ccenergy {
 int CCEnergyWavefunction::rotate() {
     dpdfile2 T1;
     double **U, **S, **X;
-    double *evals, *work, **MO_S;
+    double *evals, **MO_S;
     double **scf, **scf_new, **scf_a, **scf_b;
     double **scf_orig, **scf_a_orig, **scf_b_orig;
     double **D, **D_a, **D_b;          /* SCF densities */
@@ -175,8 +175,7 @@ int CCEnergyWavefunction::rotate() {
 
         /* build S^-1/2 for this basis */
         evals = init_array(nmo);
-        work = init_array(nmo * 3);
-        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals, work, nmo * 3))) {
+        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals))) {
             outfile->Printf("rotate(): Error in overlap diagonalization. stat = %d\n", stat);
             throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
         }
@@ -188,7 +187,6 @@ int CCEnergyWavefunction::rotate() {
                 S[i][i] = 0.0;
         }
         free(evals);
-        free(work);
         X = block_matrix(nmo, nmo);
         C_DGEMM('t', 'n', nmo, nmo, nmo, 1, &(MO_S[0][0]), nso, &(S[0][0]), nmo, 0, &(X[0][0]), nmo);
         C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso, 0, &(S[0][0]), nmo);
@@ -266,14 +264,11 @@ int CCEnergyWavefunction::rotate() {
 
             if (moinfo_.occpi[h]) {
                 evals = init_array(moinfo_.occpi[h]);
-                work = init_array(3 * moinfo_.occpi[h]);
-                if ((stat = C_DSYEV('v', 'u', moinfo_.occpi[h], &(Foo[h][0][0]), moinfo_.occpi[h], evals, work,
-                                    moinfo_.occpi[h] * 3))) {
+                if ((stat = C_DSYEV('v', 'u', moinfo_.occpi[h], &(Foo[h][0][0]), moinfo_.occpi[h], evals))) {
                     outfile->Printf("rotate(): Error in Foo[%1d] diagonalization. stat = %d\n", h, stat);
                     throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
                 }
                 free(evals);
-                free(work);
 
                 /*
     outfile->Printf( "\n    Eigenfunctions of Occ-occ Fock matrix for irrep %1d:\n", h);
@@ -289,14 +284,11 @@ int CCEnergyWavefunction::rotate() {
 
             if (moinfo_.virtpi[h]) {
                 evals = init_array(moinfo_.virtpi[h]);
-                work = init_array(3 * moinfo_.virtpi[h]);
-                if ((stat = C_DSYEV('v', 'u', moinfo_.virtpi[h], &(Fvv[h][0][0]), moinfo_.virtpi[h], evals, work,
-                                    moinfo_.virtpi[h] * 3))) {
+                if ((stat = C_DSYEV('v', 'u', moinfo_.virtpi[h], &(Fvv[h][0][0]), moinfo_.virtpi[h], evals))) {
                     outfile->Printf("rotate(): Error in Fvv[%1d] diagonalization. stat = %d\n", h, stat);
                     throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
                 }
                 free(evals);
-                free(work);
 
                 /*
     outfile->Printf( "\n    Eigenfunctions of Vir-vir Fock matrix for irrep %1d:\n", h);
@@ -415,8 +407,7 @@ int CCEnergyWavefunction::rotate() {
         free_block(X);
 
         evals = init_array(nmo);
-        work = init_array(nmo * 3);
-        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals, work, nmo * 3))) {
+        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals))) {
             outfile->Printf("rotate(): Error in overlap diagonalization. stat = %d\n", stat);
             throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
         }
@@ -430,7 +421,6 @@ int CCEnergyWavefunction::rotate() {
                 S[i][i] = 0.0;
         }
         free(evals);
-        free(work);
         X = block_matrix(nmo, nmo);
         C_DGEMM('t', 'n', nmo, nmo, nmo, 1, &(MO_S[0][0]), nso, &(S[0][0]), nmo, 0, &(X[0][0]), nmo);
         C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso, 0, &(S[0][0]), nmo);
@@ -481,8 +471,7 @@ int CCEnergyWavefunction::rotate() {
         free_block(X);
 
         evals = init_array(nmo);
-        work = init_array(nmo * 3);
-        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals, work, nmo * 3))) {
+        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals))) {
             outfile->Printf("rotate(): Error in overlap diagonalization. stat = %d\n", stat);
             throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
         }
@@ -496,7 +485,6 @@ int CCEnergyWavefunction::rotate() {
                 S[i][i] = 0.0;
         }
         free(evals);
-        free(work);
         X = block_matrix(nmo, nmo);
         C_DGEMM('t', 'n', nmo, nmo, nmo, 1, &(MO_S[0][0]), nso, &(S[0][0]), nmo, 0, &(X[0][0]), nmo);
         C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso, 0, &(S[0][0]), nmo);
@@ -566,14 +554,11 @@ int CCEnergyWavefunction::rotate() {
 
             if (moinfo_.aoccpi[h]) {
                 evals = init_array(moinfo_.aoccpi[h]);
-                work = init_array(3 * moinfo_.aoccpi[h]);
-                if ((stat = C_DSYEV('v', 'u', moinfo_.aoccpi[h], &(Foo[h][0][0]), moinfo_.aoccpi[h], evals, work,
-                                    moinfo_.aoccpi[h] * 3))) {
+                if ((stat = C_DSYEV('v', 'u', moinfo_.aoccpi[h], &(Foo[h][0][0]), moinfo_.aoccpi[h], evals))) {
                     outfile->Printf("rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", h, stat);
                     throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
                 }
                 free(evals);
-                free(work);
 
                 for (int i = offset[h] + moinfo_.frdocc[h], I = 0;
                      i < offset[h] + moinfo_.frdocc[h] + moinfo_.aoccpi[h]; i++, I++)
@@ -584,14 +569,11 @@ int CCEnergyWavefunction::rotate() {
 
             if (moinfo_.avirtpi[h]) {
                 evals = init_array(moinfo_.avirtpi[h]);
-                work = init_array(3 * moinfo_.avirtpi[h]);
-                if ((stat = C_DSYEV('v', 'u', moinfo_.avirtpi[h], &(Fvv[h][0][0]), moinfo_.avirtpi[h], evals, work,
-                                    moinfo_.avirtpi[h] * 3))) {
+                if ((stat = C_DSYEV('v', 'u', moinfo_.avirtpi[h], &(Fvv[h][0][0]), moinfo_.avirtpi[h], evals))) {
                     outfile->Printf("rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
                     throw PsiException("rotate(): Error in alpha Fvv diagonalization.", __FILE__, __LINE__);
                 }
                 free(evals);
-                free(work);
 
                 for (int a = offset[h] + moinfo_.frdocc[h] + moinfo_.aoccpi[h], A = 0;
                      a < offset[h] + moinfo_.orbspi[h]; a++, A++)
@@ -671,14 +653,11 @@ int CCEnergyWavefunction::rotate() {
 
             if (moinfo_.boccpi[h]) {
                 evals = init_array(moinfo_.boccpi[h]);
-                work = init_array(3 * moinfo_.boccpi[h]);
-                if ((stat = C_DSYEV('v', 'u', moinfo_.boccpi[h], &(Foo[h][0][0]), moinfo_.boccpi[h], evals, work,
-                                    moinfo_.boccpi[h] * 3))) {
+                if ((stat = C_DSYEV('v', 'u', moinfo_.boccpi[h], &(Foo[h][0][0]), moinfo_.boccpi[h], evals))) {
                     outfile->Printf("rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", h, stat);
                     throw PsiException("rotate(): Error in alpha Foo diagonalization.", __FILE__, __LINE__);
                 }
                 free(evals);
-                free(work);
 
                 for (int i = offset[h] + moinfo_.frdocc[h], I = 0;
                      i < offset[h] + moinfo_.frdocc[h] + moinfo_.boccpi[h]; i++, I++)
@@ -689,14 +668,11 @@ int CCEnergyWavefunction::rotate() {
 
             if (moinfo_.bvirtpi[h]) {
                 evals = init_array(moinfo_.bvirtpi[h]);
-                work = init_array(3 * moinfo_.bvirtpi[h]);
-                if ((stat = C_DSYEV('v', 'u', moinfo_.bvirtpi[h], &(Fvv[h][0][0]), moinfo_.bvirtpi[h], evals, work,
-                                    moinfo_.bvirtpi[h] * 3))) {
+                if ((stat = C_DSYEV('v', 'u', moinfo_.bvirtpi[h], &(Fvv[h][0][0]), moinfo_.bvirtpi[h], evals))) {
                     outfile->Printf("rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
                     throw PsiException("rotate(): Error in alpha Fvv diagonalization.", __FILE__, __LINE__);
                 }
                 free(evals);
-                free(work);
 
                 for (int a = offset[h] + moinfo_.frdocc[h] + moinfo_.boccpi[h], A = 0;
                      a < offset[h] + moinfo_.orbspi[h]; a++, A++)

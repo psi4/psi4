@@ -27,7 +27,7 @@
  */
 
 #include "ccsd.h"
-#include "blas.h"
+#include "linear_algebra.h"
 
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
@@ -193,13 +193,13 @@ PsiReturnType CoupledCluster::triples() {
 
         psio_address addr = psio_get_address(PSIO_ZERO, k * vvv * sizeof(double));
         mypsio->read(PSIF_DCC_ABCI, "E2abci", (char *)&E2abci[thread][0], vvv * sizeof(double), addr, &addr);
-        F_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + j * vvo + i * vv, v, 0.0, Z[thread], v * v);
-        F_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + j * o * o * v + k * o * v, v, tempt + i * vvo, vv, 1.0, Z[thread],
+        C_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + j * vvo + i * vv, v, 0.0, Z[thread], v * v);
+        C_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + j * o * o * v + k * o * v, v, tempt + i * vvo, vv, 1.0, Z[thread],
                 v);
 
         //(ab)(ij)
-        F_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + i * vvo + j * vv, v, 0.0, Z2[thread], v * v);
-        F_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + i * o * o * v + k * o * v, v, tempt + j * vvo, vv, 1.0, Z2[thread],
+        C_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + i * vvo + j * vv, v, 0.0, Z2[thread], v * v);
+        C_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + i * o * o * v + k * o * v, v, tempt + j * vvo, vv, 1.0, Z2[thread],
                 v);
         for (long int a = 0; a < v; a++) {
             for (long int b = 0; b < v; b++) {
@@ -210,9 +210,9 @@ PsiReturnType CoupledCluster::triples() {
         //(bc)(jk)
         addr = psio_get_address(PSIO_ZERO, (long int)j * vvv * sizeof(double));
         mypsio->read(PSIF_DCC_ABCI, "E2abci", (char *)&E2abci[thread][0], vvv * sizeof(double), addr, &addr);
-        F_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + k * v * v * o + i * v * v, v, 0.0, Z2[thread],
+        C_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + k * v * v * o + i * v * v, v, 0.0, Z2[thread],
                 v * v);
-        F_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + k * voo + j * vo, v, tempt + i * vvo, vv, 1.0, Z2[thread], v);
+        C_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + k * voo + j * vo, v, tempt + i * vvo, vv, 1.0, Z2[thread], v);
         for (long int a = 0; a < v; a++) {
             for (long int b = 0; b < v; b++) {
                 C_DAXPY(v, 1.0, Z2[thread] + a * vv + b, v, Z[thread] + a * vv + b * v, 1);
@@ -220,8 +220,8 @@ PsiReturnType CoupledCluster::triples() {
         }
 
         //(ikj)(acb)
-        F_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + i * vvo + k * vv, v, 0.0, Z2[thread], vv);
-        F_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + i * voo + j * vo, v, tempt + k * vvo, vv, 1.0, Z2[thread], v);
+        C_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + i * vvo + k * vv, v, 0.0, Z2[thread], vv);
+        C_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + i * voo + j * vo, v, tempt + k * vvo, vv, 1.0, Z2[thread], v);
         for (long int a = 0; a < v; a++) {
             for (long int b = 0; b < v; b++) {
                 C_DAXPY(v, 1.0, Z2[thread] + a * v + b, vv, Z[thread] + a * vv + b * v, 1);
@@ -231,8 +231,8 @@ PsiReturnType CoupledCluster::triples() {
         //(ac)(ik)
         addr = psio_get_address(PSIO_ZERO, i * vvv * sizeof(double));
         mypsio->read(PSIF_DCC_ABCI, "E2abci", (char *)&E2abci[thread][0], vvv * sizeof(double), addr, &addr);
-        F_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + j * vvo + k * vv, v, 0.0, Z2[thread], vv);
-        F_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + j * voo + i * vo, v, tempt + k * vvo, vv, 1.0, Z2[thread], v);
+        C_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + j * vvo + k * vv, v, 0.0, Z2[thread], vv);
+        C_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + j * voo + i * vo, v, tempt + k * vvo, vv, 1.0, Z2[thread], v);
         for (long int a = 0; a < v; a++) {
             for (long int b = 0; b < v; b++) {
                 C_DAXPY(v, 1.0, Z2[thread] + b * v + a, vv, Z[thread] + a * vv + b * v, 1);
@@ -240,8 +240,8 @@ PsiReturnType CoupledCluster::triples() {
         }
 
         //(ijk)(abc)
-        F_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + k * vvo + j * vv, v, 0.0, Z2[thread], vv);
-        F_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + k * voo + i * vo, v, tempt + j * vvo, vv, 1.0, Z2[thread], v);
+        C_DGEMM('t', 't', vv, v, v, 1.0, E2abci[thread], v, tempt + k * vvo + j * vv, v, 0.0, Z2[thread], vv);
+        C_DGEMM('n', 't', v, vv, o, -1.0, E2ijak + k * voo + i * vo, v, tempt + j * vvo, vv, 1.0, Z2[thread], v);
         for (long int a = 0; a < v; a++) {
             for (long int b = 0; b < v; b++) {
                 C_DAXPY(v, 1.0, Z2[thread] + b * vv + a, v, Z[thread] + a * vv + b * v, 1);

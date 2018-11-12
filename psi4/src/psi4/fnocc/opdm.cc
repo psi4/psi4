@@ -28,7 +28,7 @@
 
 #include "psi4/psifiles.h"
 #include "psi4/libqt/qt.h"
-#include "blas.h"
+#include "linear_algebra.h"
 #include "ccsd.h"
 #include "psi4/libmints/matrix.h"
 
@@ -173,9 +173,9 @@ void BuildD1(long int nfzc, long int o, long int v, long int nfzv, double* t1, d
     }
 
     // D(a,b)
-    F_DGEMM('t', 'n', v, v, o * o * v, 1.0, tb, o * o * v, tb, o * o * v, 0.0, tempd, v);
-    F_DGEMM('t', 'n', v, v, o * o * v, 0.5, ta, o * o * v, ta, o * o * v, 1.0, tempd, v);
-    F_DGEMM('t', 'n', v, v, o, 1, t1, o, t1, o, 1.0, tempd, v);
+    C_DGEMM('t', 'n', v, v, o * o * v, 1.0, tb, o * o * v, tb, o * o * v, 0.0, tempd, v);
+    C_DGEMM('t', 'n', v, v, o * o * v, 0.5, ta, o * o * v, ta, o * o * v, 1.0, tempd, v);
+    C_DGEMM('t', 'n', v, v, o, 1, t1, o, t1, o, 1.0, tempd, v);
     for (a = 0; a < v; a++) {
         for (b = 0; b < v; b++) {
             D1[(a + o + nfzc) * nmo + (b + o + nfzc)] = tempd[a * v + b];
@@ -183,9 +183,9 @@ void BuildD1(long int nfzc, long int o, long int v, long int nfzv, double* t1, d
     }
 
     // D(i,j)
-    F_DGEMM('n', 't', o, o, o * v * v, -1.0, tb, o, tb, o, 0.0, tempd, o);
-    F_DGEMM('n', 't', o, o, o * v * v, -0.5, ta, o, ta, o, 1.0, tempd, o);
-    F_DGEMM('n', 't', o, o, v, -1.0, t1, o, t1, o, 1.0, tempd, o);
+    C_DGEMM('n', 't', o, o, o * v * v, -1.0, tb, o, tb, o, 0.0, tempd, o);
+    C_DGEMM('n', 't', o, o, o * v * v, -0.5, ta, o, ta, o, 1.0, tempd, o);
+    C_DGEMM('n', 't', o, o, v, -1.0, t1, o, t1, o, 1.0, tempd, o);
     for (i = 0; i < o; i++) {
         for (j = 0; j < o; j++) {
             D1[(i + nfzc) * nmo + j + nfzc] = tempd[i * o + j];

@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#include "blas.h"
 #include "ccsd.h"
+#include "linear_algebra.h"
 
 #include "psi4/psi4-dec.h"
 #include "psi4/times.h"
@@ -47,8 +47,6 @@
 #else
 #define omp_get_wtime() 0.0
 #endif
-
-using namespace psi;
 
 namespace psi {
 namespace fnocc {
