@@ -40,15 +40,12 @@ void formInvSqrtJ(double **&J_mhalf, shared_ptr<BasisSet> basis,
 
     // First, diagonalize J
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
-    int lwork = ribasis->nbf() * 3;
     double* eigval = init_array(ribasis->nbf());
-    double* work = init_array(lwork);
-    int status = C_DSYEV('v', 'u', ribasis->nbf(), J[0],
-                        ribasis->nbf(), eigval, work, lwork);
+    auto status = C_DSYEV('V', 'U', ribasis->nbf(), J[0],
+                        ribasis->nbf(), eigval);
     if(status){
         throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
     }
-    free(work);
 
     // Now J contains the eigenvectors of the original J
     // Copy J to J_copy

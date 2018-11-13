@@ -48,78 +48,78 @@
 namespace psi {
 int C_DBDSDC(char uplo, char compq, int n, double* d, double* e, double* u, int ldu, double* vt, int ldvt, double* q,
              int* iq) {
-    return LAPACKE_dbdsdc(LAPACK_ROW_MAJOR, uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq);
+    return LAPACKE_dbdsdc(LAPACK_COL_MAJOR, uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq);
 }
 
 int C_DBDSQR(char uplo, int n, int ncvt, int nru, int ncc, double* d, double* e, double* vt, int ldvt, double* u,
              int ldu, double* c, int ldc) {
-    return LAPACKE_dbdsqr(LAPACK_ROW_MAJOR, uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u, ldu, c, ldc);
+    return LAPACKE_dbdsqr(LAPACK_COL_MAJOR, uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u, ldu, c, ldc);
 }
 
 int C_DDISNA(char job, int m, int n, double* d, double* sep) { return LAPACKE_ddisna(job, m, n, d, sep); }
 
 int C_DGBBRD(char vect, int m, int n, int ncc, int kl, int ku, double* ab, int ldab, double* d, double* e, double* q,
              int ldq, double* pt, int ldpt, double* c, int ldc) {
-    return LAPACKE_dgbbrd(LAPACK_ROW_MAJOR, vect, m, n, ncc, kl, ku, ab, ldab, d, e, q, ldq, pt, ldpt, c, ldc);
+    return LAPACKE_dgbbrd(LAPACK_COL_MAJOR, vect, m, n, ncc, kl, ku, ab, ldab, d, e, q, ldq, pt, ldpt, c, ldc);
 }
 
 int C_DGBCON(char norm, int n, int kl, int ku, double* ab, int ldab, int* ipiv, double anorm, double* rcond) {
-    return LAPACKE_dgbcon(LAPACK_ROW_MAJOR, norm, n, kl, ku, ab, ldab, ipiv, anorm, rcond);
+    return LAPACKE_dgbcon(LAPACK_COL_MAJOR, norm, n, kl, ku, ab, ldab, ipiv, anorm, rcond);
 }
 
 int C_DGBEQU(int m, int n, int kl, int ku, double* ab, int ldab, double* r, double* c, double* rowcnd, double* colcnd,
              double* amax) {
-    return LAPACKE_dgbequ(LAPACK_ROW_MAJOR, m, n, kl, ku, ab, ldab, r, c, rowcnd, colcnd, amax);
+    return LAPACKE_dgbequ(LAPACK_COL_MAJOR, m, n, kl, ku, ab, ldab, r, c, rowcnd, colcnd, amax);
 }
 
 int C_DGBRFS(char trans, int n, int kl, int ku, int nrhs, double* ab, int ldab, double* afb, int ldafb, int* ipiv,
              double* b, int ldb, double* x, int ldx, double* ferr, double* berr) {
-    return LAPACKE_dgbrfs(LAPACK_ROW_MAJOR, trans, n, kl, ku, nrhs, ab, ldab, afb, ldafb, ipiv, b, ldb, x, ldx, ferr,
+    return LAPACKE_dgbrfs(LAPACK_COL_MAJOR, trans, n, kl, ku, nrhs, ab, ldab, afb, ldafb, ipiv, b, ldb, x, ldx, ferr,
                           berr);
 }
 
 int C_DGBSV(int n, int kl, int ku, int nrhs, double* ab, int ldab, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dgbsv(LAPACK_ROW_MAJOR, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    return LAPACKE_dgbsv(LAPACK_COL_MAJOR, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
 }
 
 int C_DGBSVX(char fact, char trans, int n, int kl, int ku, int nrhs, double* ab, int ldab, double* afb, int ldafb,
              int* ipiv, char* equed, double* r, double* c, double* b, int ldb, double* x, int ldx, double* rcond,
              double* ferr, double* berr, double* rpivot) {
-    return LAPACKE_dgbsvx(LAPACK_ROW_MAJOR, fact, trans, n, kl, ku, nrhs, ab, ldab, afb, ldafb, ipiv, equed, r, c, b,
+    return LAPACKE_dgbsvx(LAPACK_COL_MAJOR, fact, trans, n, kl, ku, nrhs, ab, ldab, afb, ldafb, ipiv, equed, r, c, b,
                           ldb, x, ldx, rcond, ferr, berr, rpivot);
 }
 
 int C_DGBTRF(int m, int n, int kl, int ku, double* ab, int ldab, int* ipiv) {
-    return LAPACKE_dgbtrf(LAPACK_ROW_MAJOR, m, n, kl, ku, ab, ldab, ipiv);
+    return LAPACKE_dgbtrf(LAPACK_COL_MAJOR, m, n, kl, ku, ab, ldab, ipiv);
 }
 
 int C_DGBTRS(char trans, int n, int kl, int ku, int nrhs, double* ab, int ldab, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dgbtrs(LAPACK_ROW_MAJOR, trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    return LAPACKE_dgbtrs(LAPACK_COL_MAJOR, trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
 }
 
 int C_DGEBAK(char job, char side, int n, int ilo, int ihi, double* scale, int m, double* v, int ldv) {
-    return LAPACKE_dgebak(LAPACK_ROW_MAJOR, job, side, n, ilo, ihi, scale, m, v, ldv);
+    return LAPACKE_dgebak(LAPACK_COL_MAJOR, job, side, n, ilo, ihi, scale, m, v, ldv);
 }
 
 int C_DGEBAL(char job, int n, double* a, int lda, int* ilo, int* ihi, double* scale) {
-    return LAPACKE_dgebal(LAPACK_ROW_MAJOR, job, n, a, lda, ilo, ihi, scale);
+    return LAPACKE_dgebal(LAPACK_COL_MAJOR, job, n, a, lda, ilo, ihi, scale);
 }
 
 int C_DGEBRD(int m, int n, double* a, int lda, double* d, double* e, double* tauq, double* taup) {
-    return LAPACKE_dgebrd(LAPACK_ROW_MAJOR, m, n, a, lda, d, e, tauq, taup);
+    return LAPACKE_dgebrd(LAPACK_COL_MAJOR, m, n, a, lda, d, e, tauq, taup);
 }
 
 int C_DGECON(char norm, int n, double* a, int lda, double anorm, double* rcond) {
-    return LAPACKE_dgecon(LAPACK_ROW_MAJOR, norm, n, a, lda, anorm, rcond);
+    return LAPACKE_dgecon(LAPACK_COL_MAJOR, norm, n, a, lda, anorm, rcond);
 }
 
 int C_DGEEQU(int m, int n, double* a, int lda, double* r, double* c, double* rowcnd, double* colcnd, double* amax) {
-    return LAPACKE_dgeequ(LAPACK_ROW_MAJOR, m, n, a, lda, r, c, rowcnd, colcnd, amax);
+    return LAPACKE_dgeequ(LAPACK_COL_MAJOR, m, n, a, lda, r, c, rowcnd, colcnd, amax);
 }
 
 int C_DGEES(char jobvs, char sort, LAPACK_D_SELECT2 select, int n, double* a, int lda, int* sdim, double* wr,
             double* wi, double* vs, int ldvs) {
-    return LAPACKE_dgees(LAPACK_ROW_MAJOR, jobvs, sort, select, n, a, lda, sdim, wr, wi, vs, ldvs);
+    return LAPACKE_dgees(LAPACK_COL_MAJOR, jobvs, sort, select, n, a, lda, sdim, wr, wi, vs, ldvs);
 }
 
 int C_DGEES(char jobvs, int n, double* a, int lda, int* sdim, double* wr, double* wi, double* vs, int ldvs) {
@@ -128,7 +128,7 @@ int C_DGEES(char jobvs, int n, double* a, int lda, int* sdim, double* wr, double
 
 int C_DGEESX(char jobvs, char sort, LAPACK_D_SELECT2 select, char sense, int n, double* a, int lda, int* sdim,
              double* wr, double* wi, double* vs, int ldvs, double* rconde, double* rcondv) {
-    return LAPACKE_dgeesx(LAPACK_ROW_MAJOR, jobvs, sort, select, sense, n, a, lda, sdim, wr, wi, vs, ldvs, rconde,
+    return LAPACKE_dgeesx(LAPACK_COL_MAJOR, jobvs, sort, select, sense, n, a, lda, sdim, wr, wi, vs, ldvs, rconde,
                           rcondv);
 }
 
@@ -139,13 +139,13 @@ int C_DGEESX(char jobvs, char sense, int n, double* a, int lda, int* sdim, doubl
 
 int C_DGEEV(char jobvl, char jobvr, int n, double* a, int lda, double* wr, double* wi, double* vl, int ldvl, double* vr,
             int ldvr) {
-    return LAPACKE_dgeev(LAPACK_ROW_MAJOR, jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr);
+    return LAPACKE_dgeev(LAPACK_COL_MAJOR, jobvl, jobvr, n, a, lda, wr, wi, vl, ldvl, vr, ldvr);
 }
 
 int C_DGEEVX(char balanc, char jobvl, char jobvr, char sense, int n, double* a, int lda, double* wr, double* wi,
              double* vl, int ldvl, double* vr, int ldvr, int* ilo, int* ihi, double* scale, double* abnrm,
              double* rconde, double* rcondv) {
-    return LAPACKE_dgeevx(LAPACK_ROW_MAJOR, balanc, jobvl, jobvr, sense, n, a, lda, wr, wi, vl, ldvl, vr, ldvr, ilo,
+    return LAPACKE_dgeevx(LAPACK_COL_MAJOR, balanc, jobvl, jobvr, sense, n, a, lda, wr, wi, vl, ldvl, vr, ldvr, ilo,
                           ihi, scale, abnrm, rconde, rcondv);
 }
 
@@ -161,107 +161,107 @@ int C_DGEGV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ld
 }
 
 int C_DGEHRD(int n, int ilo, int ihi, double* a, int lda, double* tau) {
-    return LAPACKE_dgehrd(LAPACK_ROW_MAJOR, n, ilo, ihi, a, lda, tau);
+    return LAPACKE_dgehrd(LAPACK_COL_MAJOR, n, ilo, ihi, a, lda, tau);
 }
 
 int C_DGELQF(int m, int n, double* a, int lda, double* tau) {
-    return LAPACKE_dgelqf(LAPACK_ROW_MAJOR, m, n, a, lda, tau);
+    return LAPACKE_dgelqf(LAPACK_COL_MAJOR, m, n, a, lda, tau);
 }
 
 int C_DGELS(char trans, int m, int n, int nrhs, double* a, int lda, double* b, int ldb) {
-    return LAPACKE_dgels(LAPACK_ROW_MAJOR, trans, m, n, nrhs, a, lda, b, ldb);
+    return LAPACKE_dgels(LAPACK_COL_MAJOR, trans, m, n, nrhs, a, lda, b, ldb);
 }
 
 int C_DGELSD(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* s, double rcond, int* rank) {
-    return LAPACKE_dgelsd(LAPACK_ROW_MAJOR, m, n, nrhs, a, lda, b, ldb, s, rcond, rank);
+    return LAPACKE_dgelsd(LAPACK_COL_MAJOR, m, n, nrhs, a, lda, b, ldb, s, rcond, rank);
 }
 
 int C_DGELSS(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* s, double rcond, int* rank) {
-    return LAPACKE_dgelss(LAPACK_ROW_MAJOR, m, n, nrhs, a, lda, b, ldb, s, rcond, rank);
+    return LAPACKE_dgelss(LAPACK_COL_MAJOR, m, n, nrhs, a, lda, b, ldb, s, rcond, rank);
 }
 
 int C_DGELSX(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int* jpvt, double rcond, int* rank) {
-    return LAPACKE_dgelsy(LAPACK_ROW_MAJOR, m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank);
+    return LAPACKE_dgelsy(LAPACK_COL_MAJOR, m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank);
 }
 
 int C_DGELSY(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int* jpvt, double rcond, int* rank) {
-    return LAPACKE_dgelsy(LAPACK_ROW_MAJOR, m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank);
+    return LAPACKE_dgelsy(LAPACK_COL_MAJOR, m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank);
 }
 
 int C_DGEQLF(int m, int n, double* a, int lda, double* tau) {
-    return LAPACKE_dgeqlf(LAPACK_ROW_MAJOR, m, n, a, lda, tau);
+    return LAPACKE_dgeqlf(LAPACK_COL_MAJOR, m, n, a, lda, tau);
 }
 
 int C_DGEQP3(int m, int n, double* a, int lda, int* jpvt, double* tau) {
-    return LAPACKE_dgeqp3(LAPACK_ROW_MAJOR, m, n, a, lda, jpvt, tau);
+    return LAPACKE_dgeqp3(LAPACK_COL_MAJOR, m, n, a, lda, jpvt, tau);
 }
 
 int C_DGEQPF(int m, int n, double* a, int lda, int* jpvt, double* tau) {
     int lwork = 3 * n;
-    return LAPACKE_dgeqp3(LAPACK_ROW_MAJOR, m, n, a, lda, jpvt, tau);
+    return LAPACKE_dgeqp3(LAPACK_COL_MAJOR, m, n, a, lda, jpvt, tau);
 }
 
 int C_DGEQRF(int m, int n, double* a, int lda, double* tau) {
-    return LAPACKE_dgeqrf(LAPACK_ROW_MAJOR, m, n, a, lda, tau);
+    return LAPACKE_dgeqrf(LAPACK_COL_MAJOR, m, n, a, lda, tau);
 }
 
 int C_DGERFS(char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr) {
-    return LAPACKE_dgerfs(LAPACK_ROW_MAJOR, trans, n, nrhs, a, lda, af, ldaf, ipiv, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dgerfs(LAPACK_COL_MAJOR, trans, n, nrhs, a, lda, af, ldaf, ipiv, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DGERQF(int m, int n, double* a, int lda, double* tau) {
-    return LAPACKE_dgerqf(LAPACK_ROW_MAJOR, m, n, a, lda, tau);
+    return LAPACKE_dgerqf(LAPACK_COL_MAJOR, m, n, a, lda, tau);
 }
 
 int C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt) {
-    return LAPACKE_dgesdd(LAPACK_ROW_MAJOR, jobz, m, n, a, lda, s, u, ldu, vt, ldvt);
+    return LAPACKE_dgesdd(LAPACK_COL_MAJOR, jobz, m, n, a, lda, s, u, ldu, vt, ldvt);
 }
 
 int C_DGESVD(char jobu, char jobvt, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt,
              int ldvt, double* superb) {
-    return LAPACKE_dgesvd(LAPACK_ROW_MAJOR, jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, superb);
+    return LAPACKE_dgesvd(LAPACK_COL_MAJOR, jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, superb);
 }
 
 int C_DGESVD(char jobu, char jobvt, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt,
              int ldvt) {
     double superb[std::min(m, n) - 1];
-    return LAPACKE_dgesvd(LAPACK_ROW_MAJOR, jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, superb);
+    return LAPACKE_dgesvd(LAPACK_COL_MAJOR, jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, superb);
 }
 
 int C_DGESV(int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, a, lda, ipiv, b, ldb);
+    return LAPACKE_dgesv(LAPACK_COL_MAJOR, n, nrhs, a, lda, ipiv, b, ldb);
 }
 
 int C_DGESVX(char fact, char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, char* equed,
              double* r, double* c, double* b, int ldb, double* x, int ldx, double* rcond, double* ferr, double* berr,
              double* rpivot) {
-    return LAPACKE_dgesvx(LAPACK_ROW_MAJOR, fact, trans, n, nrhs, a, lda, af, ldaf, ipiv, equed, r, c, b, ldb, x, ldx,
+    return LAPACKE_dgesvx(LAPACK_COL_MAJOR, fact, trans, n, nrhs, a, lda, af, ldaf, ipiv, equed, r, c, b, ldb, x, ldx,
                           rcond, ferr, berr, rpivot);
 }
 
 int C_DGETRF(int m, int n, double* a, int lda, int* ipiv) {
-    return LAPACKE_dgetrf(LAPACK_ROW_MAJOR, m, n, a, lda, ipiv);
+    return LAPACKE_dgetrf(LAPACK_COL_MAJOR, m, n, a, lda, ipiv);
 }
 
-int C_DGETRI(int n, double* a, int lda, int* ipiv) { return LAPACKE_dgetri(LAPACK_ROW_MAJOR, n, a, lda, ipiv); }
+int C_DGETRI(int n, double* a, int lda, int* ipiv) { return LAPACKE_dgetri(LAPACK_COL_MAJOR, n, a, lda, ipiv); }
 
 int C_DGETRS(char trans, int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dgetrs(LAPACK_ROW_MAJOR, trans, n, nrhs, a, lda, ipiv, b, ldb);
+    return LAPACKE_dgetrs(LAPACK_COL_MAJOR, trans, n, nrhs, a, lda, ipiv, b, ldb);
 }
 
 int C_DGGBAK(char job, char side, int n, int ilo, int ihi, double* lscale, double* rscale, int m, double* v, int ldv) {
-    return LAPACKE_dggbak(LAPACK_ROW_MAJOR, job, side, n, ilo, ihi, lscale, rscale, m, v, ldv);
+    return LAPACKE_dggbak(LAPACK_COL_MAJOR, job, side, n, ilo, ihi, lscale, rscale, m, v, ldv);
 }
 
 int C_DGGBAL(char job, int n, double* a, int lda, double* b, int ldb, int* ilo, int* ihi, double* lscale,
              double* rscale) {
-    return LAPACKE_dggbal(LAPACK_ROW_MAJOR, job, n, a, lda, b, ldb, ilo, ihi, lscale, rscale);
+    return LAPACKE_dggbal(LAPACK_COL_MAJOR, job, n, a, lda, b, ldb, ilo, ihi, lscale, rscale);
 }
 
 int C_DGGES(char jobvsl, char jobvsr, char sort, LAPACK_D_SELECT3 selctg, int n, double* a, int lda, double* b, int ldb,
             int* sdim, double* alphar, double* alphai, double* beta, double* vsl, int ldvsl, double* vsr, int ldvsr) {
-    return LAPACKE_dgges(LAPACK_ROW_MAJOR, jobvsl, jobvsr, sort, selctg, n, a, lda, b, ldb, sdim, alphar, alphai, beta,
+    return LAPACKE_dgges(LAPACK_COL_MAJOR, jobvsl, jobvsr, sort, selctg, n, a, lda, b, ldb, sdim, alphar, alphai, beta,
                          vsl, ldvsl, vsr, ldvsr);
 }
 
@@ -273,7 +273,7 @@ int C_DGGES(char jobvsl, char jobvsr, int n, double* a, int lda, double* b, int 
 int C_DGGESX(char jobvsl, char jobvsr, char sort, LAPACK_D_SELECT3 selctg, char sense, int n, double* a, int lda,
              double* b, int ldb, int* sdim, double* alphar, double* alphai, double* beta, double* vsl, int ldvsl,
              double* vsr, int ldvsr, double* rconde, double* rcondv) {
-    return LAPACKE_dggesx(LAPACK_ROW_MAJOR, jobvsl, jobvsr, sort, selctg, sense, n, a, lda, b, ldb, sdim, alphar,
+    return LAPACKE_dggesx(LAPACK_COL_MAJOR, jobvsl, jobvsr, sort, selctg, sense, n, a, lda, b, ldb, sdim, alphar,
                           alphai, beta, vsl, ldvsl, vsr, ldvsr, rconde, rcondv);
 }
 
@@ -286,35 +286,35 @@ int C_DGGESX(char jobvsl, char jobvsr, int n, double* a, int lda, double* b, int
 
 int C_DGGEV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ldb, double* alphar, double* alphai,
             double* beta, double* vl, int ldvl, double* vr, int ldvr) {
-    return LAPACKE_dggev(LAPACK_ROW_MAJOR, jobvl, jobvr, n, a, lda, b, ldb, alphar, alphai, beta, vl, ldvl, vr, ldvr);
+    return LAPACKE_dggev(LAPACK_COL_MAJOR, jobvl, jobvr, n, a, lda, b, ldb, alphar, alphai, beta, vl, ldvl, vr, ldvr);
 }
 
 int C_DGGEVX(char balanc, char jobvl, char jobvr, char sense, int n, double* a, int lda, double* b, int ldb,
              double* alphar, double* alphai, double* beta, double* vl, int ldvl, double* vr, int ldvr, int* ilo,
              int* ihi, double* lscale, double* rscale, double* abnrm, double* bbnrm, double* rconde, double* rcondv) {
-    return LAPACKE_dggevx(LAPACK_ROW_MAJOR, balanc, jobvl, jobvr, sense, n, a, lda, b, ldb, alphar, alphai, beta, vl,
+    return LAPACKE_dggevx(LAPACK_COL_MAJOR, balanc, jobvl, jobvr, sense, n, a, lda, b, ldb, alphar, alphai, beta, vl,
                           ldvl, vr, ldvr, ilo, ihi, lscale, rscale, abnrm, bbnrm, rconde, rcondv);
 }
 
 int C_DGGGLM(int n, int m, int p, double* a, int lda, double* b, int ldb, double* d, double* x, double* y) {
-    return LAPACKE_dggglm(LAPACK_ROW_MAJOR, n, m, p, a, lda, b, ldb, d, x, y);
+    return LAPACKE_dggglm(LAPACK_COL_MAJOR, n, m, p, a, lda, b, ldb, d, x, y);
 }
 
 int C_DGGHRD(char compq, char compz, int n, int ilo, int ihi, double* a, int lda, double* b, int ldb, double* q,
              int ldq, double* z, int ldz) {
-    return LAPACKE_dgghrd(LAPACK_ROW_MAJOR, compq, compz, n, ilo, ihi, a, lda, b, ldb, q, ldq, z, ldz);
+    return LAPACKE_dgghrd(LAPACK_COL_MAJOR, compq, compz, n, ilo, ihi, a, lda, b, ldb, q, ldq, z, ldz);
 }
 
 int C_DGGLSE(int m, int n, int p, double* a, int lda, double* b, int ldb, double* c, double* d, double* x) {
-    return LAPACKE_dgglse(LAPACK_ROW_MAJOR, m, n, p, a, lda, b, ldb, c, d, x);
+    return LAPACKE_dgglse(LAPACK_COL_MAJOR, m, n, p, a, lda, b, ldb, c, d, x);
 }
 
 int C_DGGQRF(int n, int m, int p, double* a, int lda, double* taua, double* b, int ldb, double* taub) {
-    return LAPACKE_dggqrf(LAPACK_ROW_MAJOR, n, m, p, a, lda, taua, b, ldb, taub);
+    return LAPACKE_dggqrf(LAPACK_COL_MAJOR, n, m, p, a, lda, taua, b, ldb, taub);
 }
 
 int C_DGGRQF(int m, int p, int n, double* a, int lda, double* taua, double* b, int ldb, double* taub) {
-    return LAPACKE_dggrqf(LAPACK_ROW_MAJOR, m, p, n, a, lda, taua, b, ldb, taub);
+    return LAPACKE_dggrqf(LAPACK_COL_MAJOR, m, p, n, a, lda, taua, b, ldb, taub);
 }
 
 int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
@@ -323,7 +323,7 @@ int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* 
 #ifdef LAPACK_HAS_DGGSVD3
     return C_DGGSVD3(jobu, jobv, jobq, m, n, p, k, l, a, lda, b, ldb, alpha, beta, u, ldu, v, ldv, q, ldq, iwork);
 #else
-    return LAPACKE_dggsvd(LAPACK_ROW_MAJOR, jobu, jobv, jobq, m, n, p, k, l, a, lda, b, ldb, alpha, beta, u, ldu, v,
+    return LAPACKE_dggsvd(LAPACK_COL_MAJOR, jobu, jobv, jobq, m, n, p, k, l, a, lda, b, ldb, alpha, beta, u, ldu, v,
                           ldv, q, ldq, iwork);
 #endif
 }
@@ -332,7 +332,7 @@ int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* 
 int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
               int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
               int* iwork) {
-    return LAPACKE_dggsvd3(LAPACK_ROW_MAJOR, jobu, jobv, jobq, m, n, p, k, l, a, lda, b, ldb, alpha, beta, u, ldu, v,
+    return LAPACKE_dggsvd3(LAPACK_COL_MAJOR, jobu, jobv, jobq, m, n, p, k, l, a, lda, b, ldb, alpha, beta, u, ldu, v,
                            ldv, q, ldq, iwork);
 }
 #endif
@@ -340,10 +340,10 @@ int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int*
 int C_DGGSVP(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
              double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq) {
 #ifdef LAPACK_HAS_DGGSVP3
-    return LAPACKE_dggsvp3(LAPACK_ROW_MAJOR, jobu, jobv, jobq, m, p, n, a, lda, b, ldb, tola, tolb, k, l, u, ldu, v,
+    return LAPACKE_dggsvp3(LAPACK_COL_MAJOR, jobu, jobv, jobq, m, p, n, a, lda, b, ldb, tola, tolb, k, l, u, ldu, v,
                            ldv, q, ldq);
 #else
-    return LAPACKE_dggsvp(LAPACK_ROW_MAJOR, jobu, jobv, jobq, m, p, n, a, lda, b, ldb, tola, tolb, k, l, u, ldu, v, ldv,
+    return LAPACKE_dggsvp(LAPACK_COL_MAJOR, jobu, jobv, jobq, m, p, n, a, lda, b, ldb, tola, tolb, k, l, u, ldu, v, ldv,
                           q, ldq);
 #endif
 }
@@ -351,7 +351,7 @@ int C_DGGSVP(char jobu, char jobv, char jobq, int m, int p, int n, double* a, in
 #ifdef LAPACK_HAS_DGGSVP3
 int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
               double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq) {
-    return LAPACKE_dggsvp3(LAPACK_ROW_MAJOR, jobu, jobv, jobq, m, p, n, a, lda, b, ldb, tola, tolb, k, l, u, ldu, v,
+    return LAPACKE_dggsvp3(LAPACK_COL_MAJOR, jobu, jobv, jobq, m, p, n, a, lda, b, ldb, tola, tolb, k, l, u, ldu, v,
                            ldv, q, ldq);
 }
 #endif
@@ -362,18 +362,18 @@ int C_DGTCON(char norm, int n, double* dl, double* d, double* du, double* du2, i
 
 int C_DGTRFS(char trans, int n, int nrhs, double* dl, double* d, double* du, double* dlf, double* df, double* duf,
              double* du2, int* ipiv, double* b, int ldb, double* x, int ldx, double* ferr, double* berr) {
-    return LAPACKE_dgtrfs(LAPACK_ROW_MAJOR, trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv, b, ldb, x, ldx, ferr,
+    return LAPACKE_dgtrfs(LAPACK_COL_MAJOR, trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv, b, ldb, x, ldx, ferr,
                           berr);
 }
 
 int C_DGTSV(int n, int nrhs, double* dl, double* d, double* du, double* b, int ldb) {
-    return LAPACKE_dgtsv(LAPACK_ROW_MAJOR, n, nrhs, dl, d, du, b, ldb);
+    return LAPACKE_dgtsv(LAPACK_COL_MAJOR, n, nrhs, dl, d, du, b, ldb);
 }
 
 int C_DGTSVX(char fact, char trans, int n, int nrhs, double* dl, double* d, double* du, double* dlf, double* df,
              double* duf, double* du2, int* ipiv, double* b, int ldb, double* x, int ldx, double* rcond, double* ferr,
              double* berr) {
-    return LAPACKE_dgtsvx(LAPACK_ROW_MAJOR, fact, trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv, b, ldb, x, ldx,
+    return LAPACKE_dgtsvx(LAPACK_COL_MAJOR, fact, trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv, b, ldb, x, ldx,
                           rcond, ferr, berr);
 }
 
@@ -383,322 +383,322 @@ int C_DGTTRF(int n, double* dl, double* d, double* du, double* du2, int* ipiv) {
 
 int C_DGTTRS(char trans, int n, int nrhs, double* dl, double* d, double* du, double* du2, int* ipiv, double* b,
              int ldb) {
-    return LAPACKE_dgttrs(LAPACK_ROW_MAJOR, trans, n, nrhs, dl, d, du, du2, ipiv, b, ldb);
+    return LAPACKE_dgttrs(LAPACK_COL_MAJOR, trans, n, nrhs, dl, d, du, du2, ipiv, b, ldb);
 }
 
 int C_DHGEQZ(char job, char compq, char compz, int n, int ilo, int ihi, double* h, int ldh, double* t, int ldt,
              double* alphar, double* alphai, double* beta, double* q, int ldq, double* z, int ldz) {
-    return LAPACKE_dhgeqz(LAPACK_ROW_MAJOR, job, compq, compz, n, ilo, ihi, h, ldh, t, ldt, alphar, alphai, beta, q,
+    return LAPACKE_dhgeqz(LAPACK_COL_MAJOR, job, compq, compz, n, ilo, ihi, h, ldh, t, ldt, alphar, alphai, beta, q,
                           ldq, z, ldz);
 }
 
 int C_DHSEIN(char job, char eigsrc, char initv, lapack_logical* select, int n, double* h, int ldh, double* wr,
              double* wi, double* vl, int ldvl, double* vr, int ldvr, int mm, int* m, int* ifaill, int* ifailr) {
-    return LAPACKE_dhsein(LAPACK_ROW_MAJOR, job, eigsrc, initv, select, n, h, ldh, wr, wi, vl, ldvl, vr, ldvr, mm, m,
+    return LAPACKE_dhsein(LAPACK_COL_MAJOR, job, eigsrc, initv, select, n, h, ldh, wr, wi, vl, ldvl, vr, ldvr, mm, m,
                           ifaill, ifailr);
 }
 
 int C_DHSEQR(char job, char compz, int n, int ilo, int ihi, double* h, int ldh, double* wr, double* wi, double* z,
              int ldz) {
-    return LAPACKE_dhseqr(LAPACK_ROW_MAJOR, job, compz, n, ilo, ihi, h, ldh, wr, wi, z, ldz);
+    return LAPACKE_dhseqr(LAPACK_COL_MAJOR, job, compz, n, ilo, ihi, h, ldh, wr, wi, z, ldz);
 }
 
 int C_DOPGTR(char uplo, int n, double* ap, double* tau, double* q, int ldq) {
-    return LAPACKE_dopgtr(LAPACK_ROW_MAJOR, uplo, n, ap, tau, q, ldq);
+    return LAPACKE_dopgtr(LAPACK_COL_MAJOR, uplo, n, ap, tau, q, ldq);
 }
 
 int C_DOPMTR(char side, char uplo, char trans, int m, int n, double* ap, double* tau, double* c, int ldc) {
-    return LAPACKE_dopmtr(LAPACK_ROW_MAJOR, side, uplo, trans, m, n, ap, tau, c, ldc);
+    return LAPACKE_dopmtr(LAPACK_COL_MAJOR, side, uplo, trans, m, n, ap, tau, c, ldc);
 }
 
 int C_DORGBR(char vect, int m, int n, int k, double* a, int lda, double* tau) {
-    return LAPACKE_dorgbr(LAPACK_ROW_MAJOR, vect, m, n, k, a, lda, tau);
+    return LAPACKE_dorgbr(LAPACK_COL_MAJOR, vect, m, n, k, a, lda, tau);
 }
 
 int C_DORGHR(int n, int ilo, int ihi, double* a, int lda, double* tau) {
-    return LAPACKE_dorghr(LAPACK_ROW_MAJOR, n, ilo, ihi, a, lda, tau);
+    return LAPACKE_dorghr(LAPACK_COL_MAJOR, n, ilo, ihi, a, lda, tau);
 }
 
 int C_DORGLQ(int m, int n, int k, double* a, int lda, double* tau) {
-    return LAPACKE_dorglq(LAPACK_ROW_MAJOR, m, n, k, a, lda, tau);
+    return LAPACKE_dorglq(LAPACK_COL_MAJOR, m, n, k, a, lda, tau);
 }
 
 int C_DORGQL(int m, int n, int k, double* a, int lda, double* tau) {
-    return LAPACKE_dorgql(LAPACK_ROW_MAJOR, m, n, k, a, lda, tau);
+    return LAPACKE_dorgql(LAPACK_COL_MAJOR, m, n, k, a, lda, tau);
 }
 
 int C_DORGQR(int m, int n, int k, double* a, int lda, double* tau) {
-    return LAPACKE_dorgqr(LAPACK_ROW_MAJOR, m, n, k, a, lda, tau);
+    return LAPACKE_dorgqr(LAPACK_COL_MAJOR, m, n, k, a, lda, tau);
 }
 
 int C_DORGRQ(int m, int n, int k, double* a, int lda, double* tau) {
-    return LAPACKE_dorgrq(LAPACK_ROW_MAJOR, m, n, k, a, lda, tau);
+    return LAPACKE_dorgrq(LAPACK_COL_MAJOR, m, n, k, a, lda, tau);
 }
 
 int C_DORGTR(char uplo, int n, double* a, int lda, double* tau) {
-    return LAPACKE_dorgtr(LAPACK_ROW_MAJOR, uplo, n, a, lda, tau);
+    return LAPACKE_dorgtr(LAPACK_COL_MAJOR, uplo, n, a, lda, tau);
 }
 
 int C_DORMBR(char vect, char side, char trans, int m, int n, int k, double* a, int lda, double* tau, double* c,
              int ldc) {
-    return LAPACKE_dormbr(LAPACK_ROW_MAJOR, vect, side, trans, m, n, k, a, lda, tau, c, ldc);
+    return LAPACKE_dormbr(LAPACK_COL_MAJOR, vect, side, trans, m, n, k, a, lda, tau, c, ldc);
 }
 
 int C_DORMHR(char side, char trans, int m, int n, int ilo, int ihi, double* a, int lda, double* tau, double* c,
              int ldc) {
-    return LAPACKE_dormhr(LAPACK_ROW_MAJOR, side, trans, m, n, ilo, ihi, a, lda, tau, c, ldc);
+    return LAPACKE_dormhr(LAPACK_COL_MAJOR, side, trans, m, n, ilo, ihi, a, lda, tau, c, ldc);
 }
 
 int C_DORMLQ(char side, char trans, int m, int n, int k, double* a, int lda, double* tau, double* c, int ldc) {
-    return LAPACKE_dormlq(LAPACK_ROW_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
+    return LAPACKE_dormlq(LAPACK_COL_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
 }
 
 int C_DORMQL(char side, char trans, int m, int n, int k, double* a, int lda, double* tau, double* c, int ldc) {
-    return LAPACKE_dormql(LAPACK_ROW_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
+    return LAPACKE_dormql(LAPACK_COL_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
 }
 
 int C_DORMQR(char side, char trans, int m, int n, int k, double* a, int lda, double* tau, double* c, int ldc) {
-    return LAPACKE_dormqr(LAPACK_ROW_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
+    return LAPACKE_dormqr(LAPACK_COL_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
 }
 
 int C_DORMRQ(char side, char trans, int m, int n, int k, double* a, int lda, double* tau, double* c, int ldc) {
-    return LAPACKE_dormrq(LAPACK_ROW_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
+    return LAPACKE_dormrq(LAPACK_COL_MAJOR, side, trans, m, n, k, a, lda, tau, c, ldc);
 }
 
 int C_DORMRZ(char side, char trans, int m, int n, int k, int l, double* a, int lda, double* tau, double* c, int ldc) {
-    return LAPACKE_dormrz(LAPACK_ROW_MAJOR, side, trans, m, n, k, l, a, lda, tau, c, ldc);
+    return LAPACKE_dormrz(LAPACK_COL_MAJOR, side, trans, m, n, k, l, a, lda, tau, c, ldc);
 }
 
 int C_DORMTR(char side, char uplo, char trans, int m, int n, double* a, int lda, double* tau, double* c, int ldc) {
-    return LAPACKE_dormtr(LAPACK_ROW_MAJOR, side, uplo, trans, m, n, a, lda, tau, c, ldc);
+    return LAPACKE_dormtr(LAPACK_COL_MAJOR, side, uplo, trans, m, n, a, lda, tau, c, ldc);
 }
 
 int C_DPBCON(char uplo, int n, int kd, double* ab, int ldab, double anorm, double* rcond) {
-    return LAPACKE_dpbcon(LAPACK_ROW_MAJOR, uplo, n, kd, ab, ldab, anorm, rcond);
+    return LAPACKE_dpbcon(LAPACK_COL_MAJOR, uplo, n, kd, ab, ldab, anorm, rcond);
 }
 
 int C_DPBEQU(char uplo, int n, int kd, double* ab, int ldab, double* s, double* scond, double* amax) {
-    return LAPACKE_dpbequ(LAPACK_ROW_MAJOR, uplo, n, kd, ab, ldab, s, scond, amax);
+    return LAPACKE_dpbequ(LAPACK_COL_MAJOR, uplo, n, kd, ab, ldab, s, scond, amax);
 }
 
 int C_DPBRFS(char uplo, int n, int kd, int nrhs, double* ab, int ldab, double* afb, int ldafb, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr) {
-    return LAPACKE_dpbrfs(LAPACK_ROW_MAJOR, uplo, n, kd, nrhs, ab, ldab, afb, ldafb, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dpbrfs(LAPACK_COL_MAJOR, uplo, n, kd, nrhs, ab, ldab, afb, ldafb, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DPBSTF(char uplo, int n, int kd, double* ab, int ldab) {
-    return LAPACKE_dpbstf(LAPACK_ROW_MAJOR, uplo, n, kd, ab, ldab);
+    return LAPACKE_dpbstf(LAPACK_COL_MAJOR, uplo, n, kd, ab, ldab);
 }
 
 int C_DPBSV(char uplo, int n, int kd, int nrhs, double* ab, int ldab, double* b, int ldb) {
-    return LAPACKE_dpbsv(LAPACK_ROW_MAJOR, uplo, n, kd, nrhs, ab, ldab, b, ldb);
+    return LAPACKE_dpbsv(LAPACK_COL_MAJOR, uplo, n, kd, nrhs, ab, ldab, b, ldb);
 }
 
 int C_DPBSVX(char fact, char uplo, int n, int kd, int nrhs, double* ab, int ldab, double* afb, int ldafb, char* equed,
              double* s, double* b, int ldb, double* x, int ldx, double* rcond, double* ferr, double* berr) {
-    return LAPACKE_dpbsvx(LAPACK_ROW_MAJOR, fact, uplo, n, kd, nrhs, ab, ldab, afb, ldafb, equed, s, b, ldb, x, ldx,
+    return LAPACKE_dpbsvx(LAPACK_COL_MAJOR, fact, uplo, n, kd, nrhs, ab, ldab, afb, ldafb, equed, s, b, ldb, x, ldx,
                           rcond, ferr, berr);
 }
 
 int C_DPBTRF(char uplo, int n, int kd, double* ab, int ldab) {
-    return LAPACKE_dpbtrf(LAPACK_ROW_MAJOR, uplo, n, kd, ab, ldab);
+    return LAPACKE_dpbtrf(LAPACK_COL_MAJOR, uplo, n, kd, ab, ldab);
 }
 
 int C_DPBTRS(char uplo, int n, int kd, int nrhs, double* ab, int ldab, double* b, int ldb) {
-    return LAPACKE_dpbtrs(LAPACK_ROW_MAJOR, uplo, n, kd, nrhs, ab, ldab, b, ldb);
+    return LAPACKE_dpbtrs(LAPACK_COL_MAJOR, uplo, n, kd, nrhs, ab, ldab, b, ldb);
 }
 
 int C_DPOCON(char uplo, int n, double* a, int lda, double anorm, double* rcond) {
-    return LAPACKE_dpocon(LAPACK_ROW_MAJOR, uplo, n, a, lda, anorm, rcond);
+    return LAPACKE_dpocon(LAPACK_COL_MAJOR, uplo, n, a, lda, anorm, rcond);
 }
 
 int C_DPOEQU(int n, double* a, int lda, double* s, double* scond, double* amax) {
-    return LAPACKE_dpoequ(LAPACK_ROW_MAJOR, n, a, lda, s, scond, amax);
+    return LAPACKE_dpoequ(LAPACK_COL_MAJOR, n, a, lda, s, scond, amax);
 }
 
 int C_DPORFS(char uplo, int n, int nrhs, double* a, int lda, double* af, int ldaf, double* b, int ldb, double* x,
              int ldx, double* ferr, double* berr) {
-    return LAPACKE_dporfs(LAPACK_ROW_MAJOR, uplo, n, nrhs, a, lda, af, ldaf, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dporfs(LAPACK_COL_MAJOR, uplo, n, nrhs, a, lda, af, ldaf, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DPOSV(char uplo, int n, int nrhs, double* a, int lda, double* b, int ldb) {
-    return LAPACKE_dposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, a, lda, b, ldb);
+    return LAPACKE_dposv(LAPACK_COL_MAJOR, uplo, n, nrhs, a, lda, b, ldb);
 }
 
 int C_DPOSVX(char fact, char uplo, int n, int nrhs, double* a, int lda, double* af, int ldaf, char* equed, double* s,
              double* b, int ldb, double* x, int ldx, double* rcond, double* ferr, double* berr) {
-    return LAPACKE_dposvx(LAPACK_ROW_MAJOR, fact, uplo, n, nrhs, a, lda, af, ldaf, equed, s, b, ldb, x, ldx, rcond,
+    return LAPACKE_dposvx(LAPACK_COL_MAJOR, fact, uplo, n, nrhs, a, lda, af, ldaf, equed, s, b, ldb, x, ldx, rcond,
                           ferr, berr);
 }
 
-int C_DPOTRF(char uplo, int n, double* a, int lda) { return LAPACKE_dpotrf(LAPACK_ROW_MAJOR, uplo, n, a, lda); }
+int C_DPOTRF(char uplo, int n, double* a, int lda) { return LAPACKE_dpotrf(LAPACK_COL_MAJOR, uplo, n, a, lda); }
 
-int C_DPOTRI(char uplo, int n, double* a, int lda) { return LAPACKE_dpotri(LAPACK_ROW_MAJOR, uplo, n, a, lda); }
+int C_DPOTRI(char uplo, int n, double* a, int lda) { return LAPACKE_dpotri(LAPACK_COL_MAJOR, uplo, n, a, lda); }
 
 int C_DPOTRS(char uplo, int n, int nrhs, double* a, int lda, double* b, int ldb) {
-    return LAPACKE_dpotrs(LAPACK_ROW_MAJOR, uplo, n, nrhs, a, lda, b, ldb);
+    return LAPACKE_dpotrs(LAPACK_COL_MAJOR, uplo, n, nrhs, a, lda, b, ldb);
 }
 
 int C_DPPCON(char uplo, int n, double* ap, double anorm, double* rcond) {
-    return LAPACKE_dppcon(LAPACK_ROW_MAJOR, uplo, n, ap, anorm, rcond);
+    return LAPACKE_dppcon(LAPACK_COL_MAJOR, uplo, n, ap, anorm, rcond);
 }
 
 int C_DPPEQU(char uplo, int n, double* ap, double* s, double* scond, double* amax) {
-    return LAPACKE_dppequ(LAPACK_ROW_MAJOR, uplo, n, ap, s, scond, amax);
+    return LAPACKE_dppequ(LAPACK_COL_MAJOR, uplo, n, ap, s, scond, amax);
 }
 
 int C_DPPRFS(char uplo, int n, int nrhs, double* ap, double* afp, double* b, int ldb, double* x, int ldx, double* ferr,
              double* berr) {
-    return LAPACKE_dpprfs(LAPACK_ROW_MAJOR, uplo, n, nrhs, ap, afp, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dpprfs(LAPACK_COL_MAJOR, uplo, n, nrhs, ap, afp, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DPPSV(char uplo, int n, int nrhs, double* ap, double* b, int ldb) {
-    return LAPACKE_dppsv(LAPACK_ROW_MAJOR, uplo, n, nrhs, ap, b, ldb);
+    return LAPACKE_dppsv(LAPACK_COL_MAJOR, uplo, n, nrhs, ap, b, ldb);
 }
 
 int C_DPPSVX(char fact, char uplo, int n, int nrhs, double* ap, double* afp, char* equed, double* s, double* b, int ldb,
              double* x, int ldx, double* rcond, double* ferr, double* berr) {
-    return LAPACKE_dppsvx(LAPACK_ROW_MAJOR, fact, uplo, n, nrhs, ap, afp, equed, s, b, ldb, x, ldx, rcond, ferr, berr);
+    return LAPACKE_dppsvx(LAPACK_COL_MAJOR, fact, uplo, n, nrhs, ap, afp, equed, s, b, ldb, x, ldx, rcond, ferr, berr);
 }
 
-int C_DPPTRF(char uplo, int n, double* ap) { return LAPACKE_dpptrf(LAPACK_ROW_MAJOR, uplo, n, ap); }
+int C_DPPTRF(char uplo, int n, double* ap) { return LAPACKE_dpptrf(LAPACK_COL_MAJOR, uplo, n, ap); }
 
-int C_DPPTRI(char uplo, int n, double* ap) { return LAPACKE_dpptri(LAPACK_ROW_MAJOR, uplo, n, ap); }
+int C_DPPTRI(char uplo, int n, double* ap) { return LAPACKE_dpptri(LAPACK_COL_MAJOR, uplo, n, ap); }
 
 int C_DPPTRS(char uplo, int n, int nrhs, double* ap, double* b, int ldb) {
-    return LAPACKE_dpptrs(LAPACK_ROW_MAJOR, uplo, n, nrhs, ap, b, ldb);
+    return LAPACKE_dpptrs(LAPACK_COL_MAJOR, uplo, n, nrhs, ap, b, ldb);
 }
 
 int C_DPTCON(int n, double* d, double* e, double anorm, double* rcond) { return LAPACKE_dptcon(n, d, e, anorm, rcond); }
 
 int C_DPTEQR(char compz, int n, double* d, double* e, double* z, int ldz) {
-    return LAPACKE_dpteqr(LAPACK_ROW_MAJOR, compz, n, d, e, z, ldz);
+    return LAPACKE_dpteqr(LAPACK_COL_MAJOR, compz, n, d, e, z, ldz);
 }
 
 int C_DPTRFS(int n, int nrhs, double* d, double* e, double* df, double* ef, double* b, int ldb, double* x, int ldx,
              double* ferr, double* berr) {
-    return LAPACKE_dptrfs(LAPACK_ROW_MAJOR, n, nrhs, d, e, df, ef, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dptrfs(LAPACK_COL_MAJOR, n, nrhs, d, e, df, ef, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DPTSV(int n, int nrhs, double* d, double* e, double* b, int ldb) {
-    return LAPACKE_dptsv(LAPACK_ROW_MAJOR, n, nrhs, d, e, b, ldb);
+    return LAPACKE_dptsv(LAPACK_COL_MAJOR, n, nrhs, d, e, b, ldb);
 }
 
 int C_DPTSVX(char fact, int n, int nrhs, double* d, double* e, double* df, double* ef, double* b, int ldb, double* x,
              int ldx, double* rcond, double* ferr, double* berr) {
-    return LAPACKE_dptsvx(LAPACK_ROW_MAJOR, fact, n, nrhs, d, e, df, ef, b, ldb, x, ldx, rcond, ferr, berr);
+    return LAPACKE_dptsvx(LAPACK_COL_MAJOR, fact, n, nrhs, d, e, df, ef, b, ldb, x, ldx, rcond, ferr, berr);
 }
 
 int C_DPTTRF(int n, double* d, double* e) { return LAPACKE_dpttrf(n, d, e); }
 
 int C_DPTTRS(int n, int nrhs, double* d, double* e, double* b, int ldb) {
-    return LAPACKE_dpttrs(LAPACK_ROW_MAJOR, n, nrhs, d, e, b, ldb);
+    return LAPACKE_dpttrs(LAPACK_COL_MAJOR, n, nrhs, d, e, b, ldb);
 }
 
 int C_DSBEV(char jobz, char uplo, int n, int kd, double* ab, int ldab, double* w, double* z, int ldz) {
-    return LAPACKE_dsbev(LAPACK_ROW_MAJOR, jobz, uplo, n, kd, ab, ldab, w, z, ldz);
+    return LAPACKE_dsbev(LAPACK_COL_MAJOR, jobz, uplo, n, kd, ab, ldab, w, z, ldz);
 }
 
 int C_DSBEVD(char jobz, char uplo, int n, int kd, double* ab, int ldab, double* w, double* z, int ldz, int liwork) {
-    return LAPACKE_dsbevd(LAPACK_ROW_MAJOR, jobz, uplo, n, kd, ab, ldab, w, z, ldz);
+    return LAPACKE_dsbevd(LAPACK_COL_MAJOR, jobz, uplo, n, kd, ab, ldab, w, z, ldz);
 }
 
 int C_DSBEVX(char jobz, char range, char uplo, int n, int kd, double* ab, int ldab, double* q, int ldq, double vl,
              double vu, int il, int iu, double abstol, int* m, double* w, double* z, int ldz, int* ifail) {
-    return LAPACKE_dsbevx(LAPACK_ROW_MAJOR, jobz, range, uplo, n, kd, ab, ldab, q, ldq, vl, vu, il, iu, abstol, m, w, z,
+    return LAPACKE_dsbevx(LAPACK_COL_MAJOR, jobz, range, uplo, n, kd, ab, ldab, q, ldq, vl, vu, il, iu, abstol, m, w, z,
                           ldz, ifail);
 }
 
 int C_DSBGST(char vect, char uplo, int n, int ka, int kb, double* ab, int ldab, double* bb, int ldbb, double* x,
              int ldx) {
-    return LAPACKE_dsbgst(LAPACK_ROW_MAJOR, vect, uplo, n, ka, kb, ab, ldab, bb, ldbb, x, ldx);
+    return LAPACKE_dsbgst(LAPACK_COL_MAJOR, vect, uplo, n, ka, kb, ab, ldab, bb, ldbb, x, ldx);
 }
 
 int C_DSBGV(char jobz, char uplo, int n, int ka, int kb, double* ab, int ldab, double* bb, int ldbb, double* w,
             double* z, int ldz) {
-    return LAPACKE_dsbgv(LAPACK_ROW_MAJOR, jobz, uplo, n, ka, kb, ab, ldab, bb, ldbb, w, z, ldz);
+    return LAPACKE_dsbgv(LAPACK_COL_MAJOR, jobz, uplo, n, ka, kb, ab, ldab, bb, ldbb, w, z, ldz);
 }
 
 int C_DSBGVD(char jobz, char uplo, int n, int ka, int kb, double* ab, int ldab, double* bb, int ldbb, double* w,
              double* z, int ldz, int liwork) {
-    return LAPACKE_dsbgvd(LAPACK_ROW_MAJOR, jobz, uplo, n, ka, kb, ab, ldab, bb, ldbb, w, z, ldz);
+    return LAPACKE_dsbgvd(LAPACK_COL_MAJOR, jobz, uplo, n, ka, kb, ab, ldab, bb, ldbb, w, z, ldz);
 }
 
 int C_DSBGVX(char jobz, char range, char uplo, int n, int ka, int kb, double* ab, int ldab, double* bb, int ldbb,
              double* q, int ldq, double vl, double vu, int il, int iu, double abstol, int* m, double* w, double* z,
              int ldz, int* ifail) {
-    return LAPACKE_dsbgvx(LAPACK_ROW_MAJOR, jobz, range, uplo, n, ka, kb, ab, ldab, bb, ldbb, q, ldq, vl, vu, il, iu,
+    return LAPACKE_dsbgvx(LAPACK_COL_MAJOR, jobz, range, uplo, n, ka, kb, ab, ldab, bb, ldbb, q, ldq, vl, vu, il, iu,
                           abstol, m, w, z, ldz, ifail);
 }
 
 int C_DSBTRD(char vect, char uplo, int n, int kd, double* ab, int ldab, double* d, double* e, double* q, int ldq) {
-    return LAPACKE_dsbtrd(LAPACK_ROW_MAJOR, vect, uplo, n, kd, ab, ldab, d, e, q, ldq);
+    return LAPACKE_dsbtrd(LAPACK_COL_MAJOR, vect, uplo, n, kd, ab, ldab, d, e, q, ldq);
 }
 
 int C_DSGESV(int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb, double* x, int ldx, int* iter) {
-    return LAPACKE_dsgesv(LAPACK_ROW_MAJOR, n, nrhs, a, lda, ipiv, b, ldb, x, ldx, iter);
+    return LAPACKE_dsgesv(LAPACK_COL_MAJOR, n, nrhs, a, lda, ipiv, b, ldb, x, ldx, iter);
 }
 
 int C_DSPCON(char uplo, int n, double* ap, int* ipiv, double anorm, double* rcond) {
-    return LAPACKE_dspcon(LAPACK_ROW_MAJOR, uplo, n, ap, ipiv, anorm, rcond);
+    return LAPACKE_dspcon(LAPACK_COL_MAJOR, uplo, n, ap, ipiv, anorm, rcond);
 }
 
 int C_DSPEV(char jobz, char uplo, int n, double* ap, double* w, double* z, int ldz) {
-    return LAPACKE_dspev(LAPACK_ROW_MAJOR, jobz, uplo, n, ap, w, z, ldz);
+    return LAPACKE_dspev(LAPACK_COL_MAJOR, jobz, uplo, n, ap, w, z, ldz);
 }
 
 int C_DSPEVD(char jobz, char uplo, int n, double* ap, double* w, double* z, int ldz) {
-    return LAPACKE_dspevd(LAPACK_ROW_MAJOR, jobz, uplo, n, ap, w, z, ldz);
+    return LAPACKE_dspevd(LAPACK_COL_MAJOR, jobz, uplo, n, ap, w, z, ldz);
 }
 
 int C_DSPEVX(char jobz, char range, char uplo, int n, double* ap, double vl, double vu, int il, int iu, double abstol,
              int* m, double* w, double* z, int ldz, int* ifail) {
-    return LAPACKE_dspevx(LAPACK_ROW_MAJOR, jobz, range, uplo, n, ap, vl, vu, il, iu, abstol, m, w, z, ldz, ifail);
+    return LAPACKE_dspevx(LAPACK_COL_MAJOR, jobz, range, uplo, n, ap, vl, vu, il, iu, abstol, m, w, z, ldz, ifail);
 }
 
 int C_DSPGST(int itype, char uplo, int n, double* ap, double* bp) {
-    return LAPACKE_dspgst(LAPACK_ROW_MAJOR, itype, uplo, n, ap, bp);
+    return LAPACKE_dspgst(LAPACK_COL_MAJOR, itype, uplo, n, ap, bp);
 }
 
 int C_DSPGV(int itype, char jobz, char uplo, int n, double* ap, double* bp, double* w, double* z, int ldz) {
-    return LAPACKE_dspgv(LAPACK_ROW_MAJOR, itype, jobz, uplo, n, ap, bp, w, z, ldz);
+    return LAPACKE_dspgv(LAPACK_COL_MAJOR, itype, jobz, uplo, n, ap, bp, w, z, ldz);
 }
 
 int C_DSPGVD(int itype, char jobz, char uplo, int n, double* ap, double* bp, double* w, double* z, int ldz,
              int liwork) {
-    return LAPACKE_dspgvd(LAPACK_ROW_MAJOR, itype, jobz, uplo, n, ap, bp, w, z, ldz);
+    return LAPACKE_dspgvd(LAPACK_COL_MAJOR, itype, jobz, uplo, n, ap, bp, w, z, ldz);
 }
 
 int C_DSPGVX(int itype, char jobz, char range, char uplo, int n, double* ap, double* bp, double vl, double vu, int il,
              int iu, double abstol, int* m, double* w, double* z, int ldz, int* ifail) {
-    return LAPACKE_dspgvx(LAPACK_ROW_MAJOR, itype, jobz, range, uplo, n, ap, bp, vl, vu, il, iu, abstol, m, w, z, ldz,
+    return LAPACKE_dspgvx(LAPACK_COL_MAJOR, itype, jobz, range, uplo, n, ap, bp, vl, vu, il, iu, abstol, m, w, z, ldz,
                           ifail);
 }
 
 int C_DSPRFS(char uplo, int n, int nrhs, double* ap, double* afp, int* ipiv, double* b, int ldb, double* x, int ldx,
              double* ferr, double* berr) {
-    return LAPACKE_dsprfs(LAPACK_ROW_MAJOR, uplo, n, nrhs, ap, afp, ipiv, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dsprfs(LAPACK_COL_MAJOR, uplo, n, nrhs, ap, afp, ipiv, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DSPSV(char uplo, int n, int nrhs, double* ap, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dspsv(LAPACK_ROW_MAJOR, uplo, n, nrhs, ap, ipiv, b, ldb);
+    return LAPACKE_dspsv(LAPACK_COL_MAJOR, uplo, n, nrhs, ap, ipiv, b, ldb);
 }
 
 int C_DSPSVX(char fact, char uplo, int n, int nrhs, double* ap, double* afp, int* ipiv, double* b, int ldb, double* x,
              int ldx, double* rcond, double* ferr, double* berr) {
-    return LAPACKE_dspsvx(LAPACK_ROW_MAJOR, fact, uplo, n, nrhs, ap, afp, ipiv, b, ldb, x, ldx, rcond, ferr, berr);
+    return LAPACKE_dspsvx(LAPACK_COL_MAJOR, fact, uplo, n, nrhs, ap, afp, ipiv, b, ldb, x, ldx, rcond, ferr, berr);
 }
 
 int C_DSPTRD(char uplo, int n, double* ap, double* d, double* e, double* tau) {
-    return LAPACKE_dsptrd(LAPACK_ROW_MAJOR, uplo, n, ap, d, e, tau);
+    return LAPACKE_dsptrd(LAPACK_COL_MAJOR, uplo, n, ap, d, e, tau);
 }
 
-int C_DSPTRF(char uplo, int n, double* ap, int* ipiv) { return LAPACKE_dsptrf(LAPACK_ROW_MAJOR, uplo, n, ap, ipiv); }
+int C_DSPTRF(char uplo, int n, double* ap, int* ipiv) { return LAPACKE_dsptrf(LAPACK_COL_MAJOR, uplo, n, ap, ipiv); }
 
-int C_DSPTRI(char uplo, int n, double* ap, int* ipiv) { return LAPACKE_dsptri(LAPACK_ROW_MAJOR, uplo, n, ap, ipiv); }
+int C_DSPTRI(char uplo, int n, double* ap, int* ipiv) { return LAPACKE_dsptri(LAPACK_COL_MAJOR, uplo, n, ap, ipiv); }
 
 int C_DSPTRS(char uplo, int n, int nrhs, double* ap, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dsptrs(LAPACK_ROW_MAJOR, uplo, n, nrhs, ap, ipiv, b, ldb);
+    return LAPACKE_dsptrs(LAPACK_COL_MAJOR, uplo, n, nrhs, ap, ipiv, b, ldb);
 }
 
 int C_DSTEBZ(char range, char order, int n, double vl, double vu, int il, int iu, double abstol, double* d, double* e,
@@ -707,222 +707,222 @@ int C_DSTEBZ(char range, char order, int n, double vl, double vu, int il, int iu
 }
 
 int C_DSTEDC(char compz, int n, double* d, double* e, double* z, int ldz, int liwork) {
-    return LAPACKE_dstedc(LAPACK_ROW_MAJOR, compz, n, d, e, z, ldz);
+    return LAPACKE_dstedc(LAPACK_COL_MAJOR, compz, n, d, e, z, ldz);
 }
 
 int C_DSTEGR(char jobz, char range, int n, double* d, double* e, double vl, double vu, int il, int iu, double abstol,
              int* m, double* w, double* z, int ldz, int* isuppz, int liwork) {
-    return LAPACKE_dstegr(LAPACK_ROW_MAJOR, jobz, range, n, d, e, vl, vu, il, iu, abstol, m, w, z, ldz, isuppz);
+    return LAPACKE_dstegr(LAPACK_COL_MAJOR, jobz, range, n, d, e, vl, vu, il, iu, abstol, m, w, z, ldz, isuppz);
 }
 
 int C_DSTEIN(int n, double* d, double* e, int m, double* w, int* iblock, int* isplit, double* z, int ldz, int* ifail) {
-    return LAPACKE_dstein(LAPACK_ROW_MAJOR, n, d, e, m, w, iblock, isplit, z, ldz, ifail);
+    return LAPACKE_dstein(LAPACK_COL_MAJOR, n, d, e, m, w, iblock, isplit, z, ldz, ifail);
 }
 
 int C_DSTEQR(char compz, int n, double* d, double* e, double* z, int ldz) {
-    return LAPACKE_dsteqr(LAPACK_ROW_MAJOR, compz, n, d, e, z, ldz);
+    return LAPACKE_dsteqr(LAPACK_COL_MAJOR, compz, n, d, e, z, ldz);
 }
 
 int C_DSTERF(int n, double* d, double* e) { return LAPACKE_dsterf(n, d, e); }
 
 int C_DSTEV(char jobz, int n, double* d, double* e, double* z, int ldz) {
-    return LAPACKE_dstev(LAPACK_ROW_MAJOR, jobz, n, d, e, z, ldz);
+    return LAPACKE_dstev(LAPACK_COL_MAJOR, jobz, n, d, e, z, ldz);
 }
 
 int C_DSTEVD(char jobz, int n, double* d, double* e, double* z, int ldz, int liwork) {
-    return LAPACKE_dstevd(LAPACK_ROW_MAJOR, jobz, n, d, e, z, ldz);
+    return LAPACKE_dstevd(LAPACK_COL_MAJOR, jobz, n, d, e, z, ldz);
 }
 
 int C_DSTEVR(char jobz, char range, int n, double* d, double* e, double vl, double vu, int il, int iu, double abstol,
              int* m, double* w, double* z, int ldz, int* isuppz, int liwork) {
-    return LAPACKE_dstevr(LAPACK_ROW_MAJOR, jobz, range, n, d, e, vl, vu, il, iu, abstol, m, w, z, ldz, isuppz);
+    return LAPACKE_dstevr(LAPACK_COL_MAJOR, jobz, range, n, d, e, vl, vu, il, iu, abstol, m, w, z, ldz, isuppz);
 }
 
 int C_DSTEVX(char jobz, char range, int n, double* d, double* e, double vl, double vu, int il, int iu, double abstol,
              int* m, double* w, double* z, int ldz, int* ifail) {
-    return LAPACKE_dstevx(LAPACK_ROW_MAJOR, jobz, range, n, d, e, vl, vu, il, iu, abstol, m, w, z, ldz, ifail);
+    return LAPACKE_dstevx(LAPACK_COL_MAJOR, jobz, range, n, d, e, vl, vu, il, iu, abstol, m, w, z, ldz, ifail);
 }
 
 int C_DSYCON(char uplo, int n, double* a, int lda, int* ipiv, double anorm, double* rcond) {
-    return LAPACKE_dsycon(LAPACK_ROW_MAJOR, uplo, n, a, lda, ipiv, anorm, rcond);
+    return LAPACKE_dsycon(LAPACK_COL_MAJOR, uplo, n, a, lda, ipiv, anorm, rcond);
 }
 
 int C_DSYEV(char jobz, char uplo, int n, double* a, int lda, double* w) {
-    return LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, n, a, lda, w);
+    return LAPACKE_dsyev(LAPACK_COL_MAJOR, jobz, uplo, n, a, lda, w);
 }
 
 int C_DSYEVD(char jobz, char uplo, int n, double* a, int lda, double* w) {
-    return LAPACKE_dsyevd(LAPACK_ROW_MAJOR, jobz, uplo, n, a, lda, w);
+    return LAPACKE_dsyevd(LAPACK_COL_MAJOR, jobz, uplo, n, a, lda, w);
 }
 
 int C_DSYEVR(char jobz, char range, char uplo, int n, double* a, int lda, double vl, double vu, int il, int iu,
              double abstol, int* m, double* w, double* z, int ldz, int* isuppz) {
-    return LAPACKE_dsyevr(LAPACK_ROW_MAJOR, jobz, range, uplo, n, a, lda, vl, vu, il, iu, abstol, m, w, z, ldz, isuppz);
+    return LAPACKE_dsyevr(LAPACK_COL_MAJOR, jobz, range, uplo, n, a, lda, vl, vu, il, iu, abstol, m, w, z, ldz, isuppz);
 }
 
 int C_DSYEVX(char jobz, char range, char uplo, int n, double* a, int lda, double vl, double vu, int il, int iu,
              double abstol, int* m, double* w, double* z, int ldz, int* ifail) {
-    return LAPACKE_dsyevx(LAPACK_ROW_MAJOR, jobz, range, uplo, n, a, lda, vl, vu, il, iu, abstol, m, w, z, ldz, ifail);
+    return LAPACKE_dsyevx(LAPACK_COL_MAJOR, jobz, range, uplo, n, a, lda, vl, vu, il, iu, abstol, m, w, z, ldz, ifail);
 }
 
 int C_DSYGST(int itype, char uplo, int n, double* a, int lda, double* b, int ldb) {
-    return LAPACKE_dsygst(LAPACK_ROW_MAJOR, itype, uplo, n, a, lda, b, ldb);
+    return LAPACKE_dsygst(LAPACK_COL_MAJOR, itype, uplo, n, a, lda, b, ldb);
 }
 
 int C_DSYGV(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w) {
-    return LAPACKE_dsygv(LAPACK_ROW_MAJOR, itype, jobz, uplo, n, a, lda, b, ldb, w);
+    return LAPACKE_dsygv(LAPACK_COL_MAJOR, itype, jobz, uplo, n, a, lda, b, ldb, w);
 }
 
 int C_DSYGVD(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w, int liwork) {
-    return LAPACKE_dsygvd(LAPACK_ROW_MAJOR, itype, jobz, uplo, n, a, lda, b, ldb, w);
+    return LAPACKE_dsygvd(LAPACK_COL_MAJOR, itype, jobz, uplo, n, a, lda, b, ldb, w);
 }
 
 int C_DSYGVX(int itype, char jobz, char range, char uplo, int n, double* a, int lda, double* b, int ldb, double vl,
              double vu, int il, int iu, double abstol, int* m, double* w, double* z, int ldz, int* ifail) {
-    return LAPACKE_dsygvx(LAPACK_ROW_MAJOR, itype, jobz, range, uplo, n, a, lda, b, ldb, vl, vu, il, iu, abstol, m, w,
+    return LAPACKE_dsygvx(LAPACK_COL_MAJOR, itype, jobz, range, uplo, n, a, lda, b, ldb, vl, vu, il, iu, abstol, m, w,
                           z, ldz, ifail);
 }
 
 int C_DSYRFS(char uplo, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr) {
-    return LAPACKE_dsyrfs(LAPACK_ROW_MAJOR, uplo, n, nrhs, a, lda, af, ldaf, ipiv, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dsyrfs(LAPACK_COL_MAJOR, uplo, n, nrhs, a, lda, af, ldaf, ipiv, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DSYSV(char uplo, int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dsysv(LAPACK_ROW_MAJOR, uplo, n, nrhs, a, lda, ipiv, b, ldb);
+    return LAPACKE_dsysv(LAPACK_COL_MAJOR, uplo, n, nrhs, a, lda, ipiv, b, ldb);
 }
 
 int C_DSYSVX(char fact, char uplo, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, double* b,
              int ldb, double* x, int ldx, double* rcond, double* ferr, double* berr) {
-    return LAPACKE_dsysvx(LAPACK_ROW_MAJOR, fact, uplo, n, nrhs, a, lda, af, ldaf, ipiv, b, ldb, x, ldx, rcond, ferr,
+    return LAPACKE_dsysvx(LAPACK_COL_MAJOR, fact, uplo, n, nrhs, a, lda, af, ldaf, ipiv, b, ldb, x, ldx, rcond, ferr,
                           berr);
 }
 
 int C_DSYTRD(char uplo, int n, double* a, int lda, double* d, double* e, double* tau) {
-    return LAPACKE_dsytrd(LAPACK_ROW_MAJOR, uplo, n, a, lda, d, e, tau);
+    return LAPACKE_dsytrd(LAPACK_COL_MAJOR, uplo, n, a, lda, d, e, tau);
 }
 
 int C_DSYTRF(char uplo, int n, double* a, int lda, int* ipiv) {
-    return LAPACKE_dsytrf(LAPACK_ROW_MAJOR, uplo, n, a, lda, ipiv);
+    return LAPACKE_dsytrf(LAPACK_COL_MAJOR, uplo, n, a, lda, ipiv);
 }
 
 int C_DSYTRI(char uplo, int n, double* a, int lda, int* ipiv) {
-    return LAPACKE_dsytri(LAPACK_ROW_MAJOR, uplo, n, a, lda, ipiv);
+    return LAPACKE_dsytri(LAPACK_COL_MAJOR, uplo, n, a, lda, ipiv);
 }
 
 int C_DSYTRS(char uplo, int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb) {
-    return LAPACKE_dsytrs(LAPACK_ROW_MAJOR, uplo, n, nrhs, a, lda, ipiv, b, ldb);
+    return LAPACKE_dsytrs(LAPACK_COL_MAJOR, uplo, n, nrhs, a, lda, ipiv, b, ldb);
 }
 
 int C_DTBCON(char norm, char uplo, char diag, int n, int kd, double* ab, int ldab, double* rcond) {
-    return LAPACKE_dtbcon(LAPACK_ROW_MAJOR, norm, uplo, diag, n, kd, ab, ldab, rcond);
+    return LAPACKE_dtbcon(LAPACK_COL_MAJOR, norm, uplo, diag, n, kd, ab, ldab, rcond);
 }
 
 int C_DTBRFS(char uplo, char trans, char diag, int n, int kd, int nrhs, double* ab, int ldab, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr) {
-    return LAPACKE_dtbrfs(LAPACK_ROW_MAJOR, uplo, trans, diag, n, kd, nrhs, ab, ldab, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dtbrfs(LAPACK_COL_MAJOR, uplo, trans, diag, n, kd, nrhs, ab, ldab, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DTBTRS(char uplo, char trans, char diag, int n, int kd, int nrhs, double* ab, int ldab, double* b, int ldb) {
-    return LAPACKE_dtbtrs(LAPACK_ROW_MAJOR, uplo, trans, diag, n, kd, nrhs, ab, ldab, b, ldb);
+    return LAPACKE_dtbtrs(LAPACK_COL_MAJOR, uplo, trans, diag, n, kd, nrhs, ab, ldab, b, ldb);
 }
 
 int C_DTGEVC(char side, char howmny, const lapack_logical* select, int n, double* s, int lds, double* p, int ldp,
              double* vl, int ldvl, double* vr, int ldvr, int mm, int* m) {
-    return LAPACKE_dtgevc(LAPACK_ROW_MAJOR, side, howmny, select, n, s, lds, p, ldp, vl, ldvl, vr, ldvr, mm, m);
+    return LAPACKE_dtgevc(LAPACK_COL_MAJOR, side, howmny, select, n, s, lds, p, ldp, vl, ldvl, vr, ldvr, mm, m);
 }
 
 int C_DTGEXC(lapack_logical wantq, lapack_logical wantz, int n, double* a, int lda, double* b, int ldb, double* q,
              int ldq, double* z, int ldz, int* ifst, int* ilst) {
-    return LAPACKE_dtgexc(LAPACK_ROW_MAJOR, wantq, wantz, n, a, lda, b, ldb, q, ldq, z, ldz, ifst, ilst);
+    return LAPACKE_dtgexc(LAPACK_COL_MAJOR, wantq, wantz, n, a, lda, b, ldb, q, ldq, z, ldz, ifst, ilst);
 }
 
 int C_DTGSEN(int ijob, bool wantq, bool wantz, lapack_logical* select, int n, double* a, int lda, double* b, int ldb,
              double* alphar, double* alphai, double* beta, double* q, int ldq, double* z, int ldz, int* m, double* pl,
              double* pr, double* dif) {
-    return LAPACKE_dtgsen(LAPACK_ROW_MAJOR, ijob, wantq, wantz, select, n, a, lda, b, ldb, alphar, alphai, beta, q, ldq,
+    return LAPACKE_dtgsen(LAPACK_COL_MAJOR, ijob, wantq, wantz, select, n, a, lda, b, ldb, alphar, alphai, beta, q, ldq,
                           z, ldz, m, pl, pr, dif);
 }
 
 int C_DTGSJA(char jobu, char jobv, char jobq, int m, int p, int n, int k, int l, double* a, int lda, double* b, int ldb,
              double tola, double tolb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q,
              int ldq, int* ncycle) {
-    return LAPACKE_dtgsja(LAPACK_ROW_MAJOR, jobu, jobv, jobq, m, p, n, k, l, a, lda, b, ldb, tola, tolb, alpha, beta, u,
+    return LAPACKE_dtgsja(LAPACK_COL_MAJOR, jobu, jobv, jobq, m, p, n, k, l, a, lda, b, ldb, tola, tolb, alpha, beta, u,
                           ldu, v, ldv, q, ldq, ncycle);
 }
 
 int C_DTGSNA(char job, char howmny, const lapack_logical* select, int n, double* a, int lda, double* b, int ldb,
              double* vl, int ldvl, double* vr, int ldvr, double* s, double* dif, int mm, int* m) {
-    return LAPACKE_dtgsna(LAPACK_ROW_MAJOR, job, howmny, select, n, a, lda, b, ldb, vl, ldvl, vr, ldvr, s, dif, mm, m);
+    return LAPACKE_dtgsna(LAPACK_COL_MAJOR, job, howmny, select, n, a, lda, b, ldb, vl, ldvl, vr, ldvr, s, dif, mm, m);
 }
 
 int C_DTGSYL(char trans, int ijob, int m, int n, double* a, int lda, double* b, int ldb, double* c, int ldc, double* d,
              int ldd, double* e, int lde, double* f, int ldf, double* dif, double* scale) {
-    return LAPACKE_dtgsyl(LAPACK_ROW_MAJOR, trans, ijob, m, n, a, lda, b, ldb, c, ldc, d, ldd, e, lde, f, ldf, dif,
+    return LAPACKE_dtgsyl(LAPACK_COL_MAJOR, trans, ijob, m, n, a, lda, b, ldb, c, ldc, d, ldd, e, lde, f, ldf, dif,
                           scale);
 }
 
 int C_DTPCON(char norm, char uplo, char diag, int n, double* ap, double* rcond) {
-    return LAPACKE_dtpcon(LAPACK_ROW_MAJOR, norm, uplo, diag, n, ap, rcond);
+    return LAPACKE_dtpcon(LAPACK_COL_MAJOR, norm, uplo, diag, n, ap, rcond);
 }
 
 int C_DTPRFS(char uplo, char trans, char diag, int n, int nrhs, double* ap, double* b, int ldb, double* x, int ldx,
              double* ferr, double* berr) {
-    return LAPACKE_dtprfs(LAPACK_ROW_MAJOR, uplo, trans, diag, n, nrhs, ap, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dtprfs(LAPACK_COL_MAJOR, uplo, trans, diag, n, nrhs, ap, b, ldb, x, ldx, ferr, berr);
 }
 
-int C_DTPTRI(char uplo, char diag, int n, double* ap) { return LAPACKE_dtptri(LAPACK_ROW_MAJOR, uplo, diag, n, ap); }
+int C_DTPTRI(char uplo, char diag, int n, double* ap) { return LAPACKE_dtptri(LAPACK_COL_MAJOR, uplo, diag, n, ap); }
 
 int C_DTPTRS(char uplo, char trans, char diag, int n, int nrhs, double* ap, double* b, int ldb) {
-    return LAPACKE_dtptrs(LAPACK_ROW_MAJOR, uplo, trans, diag, n, nrhs, ap, b, ldb);
+    return LAPACKE_dtptrs(LAPACK_COL_MAJOR, uplo, trans, diag, n, nrhs, ap, b, ldb);
 }
 
 int C_DTRCON(char norm, char uplo, char diag, int n, double* a, int lda, double* rcond) {
-    return LAPACKE_dtrcon(LAPACK_ROW_MAJOR, norm, uplo, diag, n, a, lda, rcond);
+    return LAPACKE_dtrcon(LAPACK_COL_MAJOR, norm, uplo, diag, n, a, lda, rcond);
 }
 
 int C_DTREVC(char side, char howmny, lapack_logical* select, int n, double* t, int ldt, double* vl, int ldvl,
              double* vr, int ldvr, int mm, int* m) {
-    return LAPACKE_dtrevc(LAPACK_ROW_MAJOR, side, howmny, select, n, t, ldt, vl, ldvl, vr, ldvr, mm, m);
+    return LAPACKE_dtrevc(LAPACK_COL_MAJOR, side, howmny, select, n, t, ldt, vl, ldvl, vr, ldvr, mm, m);
 }
 
 int C_DTREXC(char compq, int n, double* t, int ldt, double* q, int ldq, int* ifst, int* ilst) {
-    return LAPACKE_dtrexc(LAPACK_ROW_MAJOR, compq, n, t, ldt, q, ldq, ifst, ilst);
+    return LAPACKE_dtrexc(LAPACK_COL_MAJOR, compq, n, t, ldt, q, ldq, ifst, ilst);
 }
 
 int C_DTRRFS(char uplo, char trans, char diag, int n, int nrhs, double* a, int lda, double* b, int ldb, double* x,
              int ldx, double* ferr, double* berr) {
-    return LAPACKE_dtrrfs(LAPACK_ROW_MAJOR, uplo, trans, diag, n, nrhs, a, lda, b, ldb, x, ldx, ferr, berr);
+    return LAPACKE_dtrrfs(LAPACK_COL_MAJOR, uplo, trans, diag, n, nrhs, a, lda, b, ldb, x, ldx, ferr, berr);
 }
 
 int C_DTRSEN(char job, char compq, const lapack_logical* select, int n, double* t, int ldt, double* q, int ldq,
              double* wr, double* wi, int* m, double* s, double* sep, int liwork) {
-    return LAPACKE_dtrsen(LAPACK_ROW_MAJOR, job, compq, select, n, t, ldt, q, ldq, wr, wi, m, s, sep);
+    return LAPACKE_dtrsen(LAPACK_COL_MAJOR, job, compq, select, n, t, ldt, q, ldq, wr, wi, m, s, sep);
 }
 
 int C_DTRSNA(char job, char howmny, const lapack_logical* select, int n, double* t, int ldt, double* vl, int ldvl,
              double* vr, int ldvr, double* s, double* sep, int mm, int* m) {
-    return LAPACKE_dtrsna(LAPACK_ROW_MAJOR, job, howmny, select, n, t, ldt, vl, ldvl, vr, ldvr, s, sep, mm, m);
+    return LAPACKE_dtrsna(LAPACK_COL_MAJOR, job, howmny, select, n, t, ldt, vl, ldvl, vr, ldvr, s, sep, mm, m);
 }
 
 int C_DTRSYL(char trana, char tranb, int isgn, int m, int n, double* a, int lda, double* b, int ldb, double* c, int ldc,
              double* scale) {
-    return LAPACKE_dtrsyl(LAPACK_ROW_MAJOR, trana, tranb, isgn, m, n, a, lda, b, ldb, c, ldc, scale);
+    return LAPACKE_dtrsyl(LAPACK_COL_MAJOR, trana, tranb, isgn, m, n, a, lda, b, ldb, c, ldc, scale);
 }
 
 int C_DTRTRI(char uplo, char diag, int n, double* a, int lda) {
-    return LAPACKE_dtrtri(LAPACK_ROW_MAJOR, uplo, diag, n, a, lda);
+    return LAPACKE_dtrtri(LAPACK_COL_MAJOR, uplo, diag, n, a, lda);
 }
 
 int C_DTRTRS(char uplo, char trans, char diag, int n, int nrhs, double* a, int lda, double* b, int ldb) {
-    return LAPACKE_dtrtrs(LAPACK_ROW_MAJOR, uplo, trans, diag, n, nrhs, a, lda, b, ldb);
+    return LAPACKE_dtrtrs(LAPACK_COL_MAJOR, uplo, trans, diag, n, nrhs, a, lda, b, ldb);
 }
 
 int C_DTZRQF(int m, int n, double* a, int lda, double* tau) {
-    return LAPACKE_dtzrzf(LAPACK_ROW_MAJOR, m, n, a, lda, tau);
+    return LAPACKE_dtzrzf(LAPACK_COL_MAJOR, m, n, a, lda, tau);
 }
 
 int C_DTZRZF(int m, int n, double* a, int lda, double* tau) {
-    return LAPACKE_dtzrzf(LAPACK_ROW_MAJOR, m, n, a, lda, tau);
+    return LAPACKE_dtzrzf(LAPACK_COL_MAJOR, m, n, a, lda, tau);
 }
 }  // namespace psi
