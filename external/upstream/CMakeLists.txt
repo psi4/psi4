@@ -3,6 +3,7 @@ foreach(dir
   pybind11
   ambit
   chemps2
+  cppe
   dkh
   libefp
   erd
