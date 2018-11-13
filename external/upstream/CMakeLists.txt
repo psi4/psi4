@@ -6,6 +6,7 @@ foreach(dir pybind11
             erd
             gau2grid
             gdma
+            helpme
             libint
             pcmsolver
             pylibefp

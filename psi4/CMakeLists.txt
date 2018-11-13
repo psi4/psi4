@@ -125,6 +125,17 @@ else()
     message(STATUS "Disabled gdma")
 endif()
 
+if(${ENABLE_helpme})
+    # helPME not actually needed c-side; runtime detection would do just as well.
+    #   included for completeness and so helpme_PYMOD can be hard-loaded into PYTHONPATH.
+    find_package(helpme 0.1 CONFIG REQUIRED)# COMPONENTS shallow)
+    get_property(_loc TARGET helpme::helpmecore PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using helpme${ColourReset}: ${_loc} (version ${helpme_VERSION})")
+else()
+    message(STATUS "Disabled helpme")
+endif()
+
 find_package(Libint 1.2.0 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
@@ -222,6 +233,7 @@ install(FILES ../tests/pytest/conftest.py
               ../tests/pytest/test_psi4.py
               ../tests/pytest/test_addons.py
               ../tests/pytest/test_molecule_to_string.py
+              ../tests/pytest/test_helpme.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>
