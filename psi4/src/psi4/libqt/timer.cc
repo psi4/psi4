@@ -74,13 +74,6 @@
 ** Tianyuan Zhang, June 2017
 */
 
-#include "psi4/times.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/exception.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/psifiles.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -93,13 +86,13 @@
 #include <unistd.h>
 #endif
 
+#include <algorithm>
 #include <chrono>
 #include <list>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
-#include <algorithm>
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -117,6 +110,14 @@ typedef int omp_lock_t;
     do {                               \
     } while (0)
 #endif
+
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
+#include "psi4/times.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 
 /* guess for HZ, if missing */
 #ifndef HZ
@@ -930,7 +931,7 @@ bool Timer_thread::merge_move(Timer_Structure *another) {
 Timer_Structure root_timer(nullptr, ""), parallel_timer(nullptr, "");
 std::list<Timer_Structure *> ser_on_timers;
 std::vector<std::list<Timer_Structure *>> par_on_timers;
-time_t timer_start, timer_end;
+std::time_t timer_start, timer_end;
 bool skip_timers;
 static omp_lock_t lock_timer;
 
@@ -983,9 +984,9 @@ bool empty_parallel() {
 void timer_init() {
     omp_init_lock(&lock_timer);
     omp_set_lock(&lock_timer);
-    extern time_t timer_start;
+    extern std::time_t timer_start;
     extern Timer_Structure root_timer;
-    timer_start = time(nullptr);
+    timer_start = std::time(nullptr);
     root_timer.turn_on();
     extern std::list<Timer_Structure *> ser_on_timers;
     ser_on_timers.push_back(&root_timer);
@@ -1000,7 +1001,7 @@ void timer_init() {
 ** \ingroup QT
 */
 void timer_done() {
-    extern time_t timer_start, timer_end;
+    extern std::time_t timer_start, timer_end;
     omp_set_lock(&lock_timer);
     extern Timer_Structure root_timer;
     root_timer.turn_off();
@@ -1017,14 +1018,12 @@ void timer_done() {
     free(host);
     printer->Printf("\n");
     printer->Printf("Timers On : %s", ctime(&timer_start));
-    timer_end = time(nullptr);
+    timer_end = std::time(nullptr);
     printer->Printf("Timers Off: %s", ctime(&timer_end));
     printer->Printf("\nWall Time:  %10.2f seconds\n\n",
                     std::chrono::duration_cast<std::chrono::duration<double>>(root_timer.get_total_wtime()).count());
     printer->Printf("                                                       Time (seconds)\n");
-    printer->Printf("Module                               %12s%12s%12s%13s\n",
-                    "User", "System", "Wall", "Calls");
-
+    printer->Printf("Module                               %12s%12s%12s%13s\n", "User", "System", "Wall", "Calls");
 
     const std::list<Timer_Structure> timer_list = root_timer.summarize();
     for (auto timer_iter = timer_list.begin(), end_iter = timer_list.end(); timer_iter != end_iter; ++timer_iter) {

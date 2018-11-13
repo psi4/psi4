@@ -1,3 +1,7 @@
+### >> Create core target, so we may link modules to it directly <<
+### >> This allow to propagate dependencies upwards sanely
+add_library(core SHARED "")
+
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
 
@@ -6,65 +10,69 @@ add_subdirectory(psi4)
 ### >> We also add in versioning, settings for plugins, and
 ### >> exports for Python here.
 
-set(sources_list
-        export_benchmarks.cc
-        export_blas_lapack.cc
-        export_cubeprop.cc
-        export_diis.cc
-        export_fock.cc
-        export_functional.cc
-        export_mints.cc
-        export_misc.cc
-        export_oeprop.cc
-        export_pcm.cc
-        export_plugins.cc
-        export_psio.cc
-        export_trans.cc
-        export_wavefunction.cc
-        export_options.cc
-        create_new_plugin.cc
-        read_options.cc
-        core.cc
-        )
+target_sources(core
+  PRIVATE
+    export_benchmarks.cc
+    export_blas_lapack.cc
+    export_cubeprop.cc
+    export_diis.cc
+    export_fock.cc
+    export_functional.cc
+    export_mints.cc
+    export_misc.cc
+    export_oeprop.cc
+    export_pcm.cc
+    export_plugins.cc
+    export_psio.cc
+    export_trans.cc
+    export_wavefunction.cc
+    export_options.cc
+    create_new_plugin.cc
+    read_options.cc
+    python_data_type.cc
+    core.cc
+  )
 
-add_library(core SHARED ${sources_list})
+set_target_properties(core
+  PROPERTIES
+    CXX_VISIBILITY_PRESET hidden
+    POSITION_INDEPENDENT_CODE 1
+    VISIBILITY_INLINES_HIDDEN 1
+  )
 
-get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
-target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd plugin qt ${POST_LIBRARY_OPTION})
-if(TARGET ambit::ambit)
-    target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} ambit_interface ${POST_LIBRARY_OPTION})
-endif()
-
-if(TARGET dkh::dkh)
-    target_compile_definitions(core PRIVATE $<TARGET_PROPERTY:dkh::dkh,INTERFACE_COMPILE_DEFINITIONS>)
-endif()
-if(TARGET PCMSolver::pcm)
-    target_compile_definitions(core PRIVATE $<TARGET_PROPERTY:PCMSolver::pcm,INTERFACE_COMPILE_DEFINITIONS>)
-endif()
-target_include_directories(core PRIVATE $<TARGET_PROPERTY:Libxc::xc,INTERFACE_INCLUDE_DIRECTORIES>)
-target_link_libraries(core PRIVATE ${psi4_binmodules})
-target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
-target_link_libraries(core PRIVATE tgt::lapack)  # OpenMP flags to core.cc
-target_link_libraries(core PUBLIC pybind11::module)
-if(MSVC)
-    target_link_libraries(core PRIVATE Ws2_32)
-endif()
+get_property(psi4_binmodules GLOBAL PROPERTY LINKBINLIST)
+get_property(psi4_libmodules GLOBAL PROPERTY LINKLIBLIST)
+target_link_libraries(core
+  PRIVATE
+    ${psi4_binmodules}
+    ${PRE_LIBRARY_OPTION}
+    ${psi4_libmodules}
+    ${POST_LIBRARY_OPTION}
+    ${LIBC_INTERJECT}
+    tgt::lapack # OpenMP flags to core.cc
+  PUBLIC
+    pybind11::module
+  )
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
   # Intel fortran compiler
-  target_compile_definitions(core PRIVATE -DINTEL_Fortran_ENABLED)
+  target_compile_definitions(core
+    PRIVATE
+      INTEL_Fortran_ENABLED
+    )
 endif()
 
 if(MSVC)
-    # Increase the number of addressable sections
-    target_compile_options(core PRIVATE "/bigobj")
+  target_link_libraries(core PRIVATE Ws2_32)
+  # Increase the number of addressable sections
+  target_compile_options(core PRIVATE "/bigobj")
 endif()
 
-# LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
-
-target_include_directories(core PRIVATE $<TARGET_PROPERTY:Libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
-target_include_directories(core INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_include_directories(core
+  INTERFACE
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
 
 install(TARGETS core
         EXPORT "psi4Targets"

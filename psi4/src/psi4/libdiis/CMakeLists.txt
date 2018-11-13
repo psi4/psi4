@@ -1,2 +1,5 @@
-set(sources_list diismanager.cc diisentry.cc )
-psi4_add_module(lib diis sources_list mints dpd)
+list(APPEND sources
+  diisentry.cc
+  diismanager.cc
+  )
+psi4_add_module(lib diis sources)

@@ -28,6 +28,8 @@
 
 #include "local.h"
 
+#include <algorithm>
+
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"

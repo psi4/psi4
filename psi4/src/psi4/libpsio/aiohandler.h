@@ -29,11 +29,16 @@
 #ifndef AIOHANDLER_H
 #define AIOHANDLER_H
 
-#include <thread>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <thread>
+
+#include "config.h"
 
 namespace psi {
+
+class PSIO;
 
 class AIOHandler {
    private:

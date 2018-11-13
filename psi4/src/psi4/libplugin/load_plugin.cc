@@ -27,13 +27,15 @@
  */
 
 #include "plugin.h"
-#include "psi4/libpsio/psio.hpp"
+
+#include <algorithm>
+#include <cctype>
+
 #include "psi4/libfilesystem/path.h"
+#include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/liboptions/liboptions.h"
-
-#include <regex>
+#include "psi4/libpsio/psio.hpp"
 
 namespace psi {
 #ifdef HAVE_DLFCN_H
@@ -63,9 +65,8 @@ plugin_info plugin_load(std::string &plugin_pathname) {
 
     // Modify info.name converting things that are allowed
     // filename characters to allowed C++ function names.
-    std::string format_underscore("_");
     // Replace all '-' with '_'
-    info.name = std::regex_replace(info.name, std::regex("\\-"), format_underscore);
+    std::transform(info.name.begin(), info.name.end(), info.name.begin(), [](char c) { return c == '_' ? '-' : c; });
 
     info.plugin = (plugin_t)dlsym(info.plugin_handle, info.name.c_str());
     const char *dlsym_error3 = dlerror();
@@ -77,8 +78,8 @@ plugin_info plugin_load(std::string &plugin_pathname) {
         throw PSIEXCEPTION(msg);
     }
 
-    // Store the name of the plugin for read_options
-    to_upper(info.name);
+    // Uppercase and store the name of the plugin for read_options
+    std::transform(info.name.begin(), info.name.end(), info.name.begin(), [](unsigned char c) { return std::toupper(c); });
 
     // Get the plugin's options into the global space
     Process::environment.options.set_read_globals(true);

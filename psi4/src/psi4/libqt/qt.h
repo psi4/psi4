@@ -38,29 +38,31 @@
 
 #pragma once
 
-#include <cstdio>
 #include <string>
+
+#include "psi4/pragma.h"
 #include "psi4/psi4-dec.h"
-// I think this is forward-declaring class Options -CDS
+
 namespace psi {
 class Options;
 class Wavefunction;
-}  // namespace psi
 
-namespace psi {
 void dx_write(std::shared_ptr<Wavefunction> wfn, Options& options, double** D);
 void dx_read(double** V_eff, double* phi_ao, double* phi_so, int nao, int nso, double** u);
 void fill_sym_matrix(double** A, int size);
 double combinations(int n, int k);
 double factorial(int n);
 void schmidt(double** A, int rows, int cols, std::string out_fname);
-PSI_API int schmidt_add(double** A, int rows, int cols, double* v);
+PSI_API
+int schmidt_add(double** A, int rows, int cols, double* v);
 void normalize(double** A, int rows, int cols);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
-PSI_API void reorder_qt(int* docc_in, int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order,
+PSI_API
+void reorder_qt(int* docc_in, int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order,
                         int* orbs_per_irrep, int nirreps);
-PSI_API void reorder_qt_uhf(int* docc, int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
+PSI_API
+void reorder_qt_uhf(int* docc, int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
                             int* orbspi, int nirreps);
 // int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
 //      int *docc, int *socc, int *frdocc, int *fruocc,
@@ -115,9 +117,11 @@ size_t C_IDAMAX(size_t n, double* X, int inc_x);
 // BLAS 2 Double routines
 void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx,
              double beta, double* y, int incy);
-PSI_API void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta,
+PSI_API
+void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta,
                      double* y, int incy);
-PSI_API void C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda);
+PSI_API
+void C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda);
 void C_DSBMV(char uplo, int n, int k, double alpha, double* a, int lda, double* x, int incx, double beta, double* y,
              int incy);
 void C_DSPMV(char uplo, int n, double alpha, double* ap, double* x, int incx, double beta, double* y, int incy);
@@ -135,7 +139,8 @@ void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double 
              int ldb);
 
 // BLAS 3 Double routines
-PSI_API void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b,
+PSI_API
+void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b,
                      int ldb, double beta, double* c, int ldc);
 void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int lda, double* b, int ldb, double beta,
              double* c, int ldc);
@@ -210,7 +215,8 @@ int C_DGERFS(char trans, int n, int nrhs, double* a, int lda, double* af, int ld
 int C_DGERQF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
 int C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt,
              double* work, int lwork, int* iwork);
-int PSI_API C_DGESV(int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb);
+PSI_API
+int C_DGESV(int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb);
 int C_DGESVX(char fact, char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, char equed,
              double* r, double* c, double* b, int ldb, double* x, int ldx, double* rcond, double* ferr, double* berr,
              double* work, int* iwork);
@@ -406,7 +412,8 @@ int C_DSTEVX(char jobz, char range, int n, double* d, double* e, double vl, doub
              int* m, double* w, double* z, int ldz, double* work, int* iwork, int* ifail);
 int C_DSYCON(char uplo, int n, double* a, int lda, int* ipiv, double anorm, double* rcond, double* work, int* iwork);
 int C_DSYEV(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork);
-int PSI_API C_DSYEVD(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork, int* iwork,
+PSI_API
+int C_DSYEVD(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork, int* iwork,
                      int liwork);
 int C_DSYEVR(char jobz, char range, char uplo, int n, double* a, int lda, double vl, double vu, int il, int iu,
              double abstol, int* m, double* w, double* z, int ldz, int* isuppz, double* work, int lwork, int* iwork,
@@ -414,7 +421,8 @@ int C_DSYEVR(char jobz, char range, char uplo, int n, double* a, int lda, double
 int C_DSYEVX(char jobz, char range, char uplo, int n, double* a, int lda, double vl, double vu, int il, int iu,
              double abstol, int* m, double* w, double* z, int ldz, double* work, int lwork, int* iwork, int* ifail);
 int C_DSYGST(int itype, char uplo, int n, double* a, int lda, double* b, int ldb);
-int PSI_API C_DSYGV(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w,
+PSI_API
+int C_DSYGV(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w,
                     double* work, int lwork);
 int C_DSYGVD(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w, double* work,
              int lwork, int* iwork, int liwork);
@@ -472,5 +480,4 @@ int C_DTRTRS(char uplo, char trans, char diag, int n, int nrhs, double* a, int l
 PSI_DEPRECATED("DTZRQF will soon be removed from LAPACK. Please use DTZRZF")
 int C_DTZRQF(int m, int n, double* a, int lda, double* tau);
 int C_DTZRZF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
-
 }  // namespace psi
