@@ -128,8 +128,8 @@ endif()
 if(${ENABLE_helpme})
     # helPME not actually needed c-side; runtime detection would do just as well.
     #   included for completeness and so helpme_PYMOD can be hard-loaded into PYTHONPATH.
-    find_package(helpme 0.1 CONFIG REQUIRED)# COMPONENTS shallow)
-    get_property(_loc TARGET helpme::helpmecore PROPERTY LOCATION)
+    find_package(helpme 0.1 CONFIG REQUIRED COMPONENTS Python)
+    get_property(_loc TARGET helpme::pymod PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using helpme${ColourReset}: ${_loc} (version ${helpme_VERSION})")
 else()

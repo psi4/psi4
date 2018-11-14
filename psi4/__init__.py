@@ -82,11 +82,11 @@ atexit.register(core.finalize)
 # * Note that this is a "battening down the hatches" for the many
 #   rather than letting PYTHONPATH rule for the few.
 import sys
-if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
     sys.path.insert(1, "@PCMSolver_PYMOD@")
-if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PylibEFP
     sys.path.insert(1, "@pylibefp_PYMOD@")
-if "@ENABLE_helpme@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+if "@ENABLE_helpme@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # helPME
     sys.path.insert(1, "@helpme_PYMOD@")
 
 # Make official plugins accessible in input
