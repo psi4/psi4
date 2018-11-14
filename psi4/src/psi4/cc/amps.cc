@@ -43,7 +43,12 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
     std::vector<DPDMOSpace> spaces;
     std::map<std::string, SharedMatrix> amps;
     if (dpd_list[0] == nullptr) {
-        if (ref != "RHF") {
+        if (ref == "RHF") {
+            Dimension occpi_ = nalphapi_;
+            Dimension virtpi_ = nmopi_ - nalphapi_;
+            cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
+            spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
+        } else /* UHF/ROHF */ {
             Dimension aoccpi_ = nalphapi_;
             Dimension boccpi_ = nbetapi_;
             Dimension avirtpi_ = nmopi_ - nalphapi_;
@@ -51,11 +56,6 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
             cachelist = cacheprep_uhf(options_.get_int("CACHELEVEL"), cachefiles.data());
             spaces = {DPDMOSpace('O', "IJKL", aoccpi_), DPDMOSpace('V', "ABCD", avirtpi_),
                       DPDMOSpace('o', "ijkl", boccpi_), DPDMOSpace('v', "abcd", bvirtpi_)};
-        } else /* RHF */ {
-            Dimension occpi_ = nalphapi_;
-            Dimension virtpi_ = nmopi_ - nalphapi_;
-            cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
-            spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
         }
         dpd_list[0] = new DPD(0, nirrep_, Process::environment.get_memory(), 0, cachefiles.data(), cachelist, nullptr,
                               (int)spaces.size(), spaces);
@@ -121,6 +121,11 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
         global_dpd_->buf4_close(&T2);
     }
     dpd_close(0);
+    if (ref == "RHF") {
+        cachedone_rhf(cachelist);
+    } else {
+        cachedone_uhf(cachelist);
+    }
     if (!oei_open) {
         psio_close(PSIF_CC_OEI, 1);
     }
