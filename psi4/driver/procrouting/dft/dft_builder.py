@@ -366,6 +366,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
             d_params["citation"] = False
         if "nlc" in d_params:
             sup.set_do_vv10(d_params["nlc"])
+            sup.set_vv10_b(-1.0) #
         if d_params["type"] == 'nl':
             sup.set_vv10_b(d_params["params"]["b"])
             sup.set_vv10_c(d_params["params"]["c"])

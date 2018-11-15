@@ -185,6 +185,23 @@ funcs.append({
     "citation": '    T.V. Voorhis, G.E. Scuseria, J. Chem. Phys. 109, 400, 1998\n',
 })
 
+funcs.append({
+    "name": "B97M-D3ZERO",
+    "xc_functionals": {
+        "MGGA_XC_B97M_V": {}
+    },
+    "dispersion": {
+        "type": "d3zero",
+        "vv10": False,
+        "params": {
+            's6': 1.0000,
+            's8': -0.2582,
+            'sr8': 1.0000,
+           'sr6': 0.9342,
+           'alpha6': 14.0
+        }
+    }
+})
 
 
 funcs.append({
@@ -208,8 +225,6 @@ funcs.append({
                 '    N. Mardirossian, M. Head-Gordon J. Chem. Phys. 142, 074111 (2015)\n',
 
 })
-
-
 
 functional_list = {}
 for functional in funcs:
