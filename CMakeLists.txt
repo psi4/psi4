@@ -136,7 +136,6 @@ option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly comp
                   "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
 option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals" 5)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
-option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
 option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
@@ -244,7 +243,6 @@ ExternalProject_Add(psi4-core
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
-              -DFC_SYMBOL=${FC_SYMBOL}
               -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
