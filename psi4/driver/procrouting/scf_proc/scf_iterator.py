@@ -210,7 +210,7 @@ def scf_initialize(self):
 
 
     # turn off VV10 for iterations
-    if core.get_option('SCF', "DFT_VV10_POSTSCF") and self.functional().vv10_b() > 0.0:
+    if core.get_option('SCF', "DFT_VV10_POSTSCF"):
         core.print_out("  VV10: post-SCF option active \n \n")
         self.functional().set_lock(False)
         self.functional().set_do_vv10(False)
