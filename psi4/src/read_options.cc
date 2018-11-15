@@ -260,6 +260,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
     }
 
+    /*- PE boolean for polarizable embedding module -*/
+    options.add_bool("PE", false);
+    if (name == "PE" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs polarizable embedding model (PE) computations. -*/
+
+        /*- Name of the potential file -*/
+        options.add_str_i("POTFILE", "potfile.pot");
+    }
+
     if (name == "DETCI" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs configuration interaction (CI)
         computations of various types, including restricted-active-space

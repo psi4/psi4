@@ -72,6 +72,10 @@
 #include "psi4/libpsipcm/psipcm.h"
 #endif
 
+#ifdef USING_cppe
+#include "psi4/libpsipe/psipe.h"
+#endif
+
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -207,7 +211,12 @@ void export_wavefunction(py::module& m) {
         .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
         .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
 #endif
-        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
+#ifdef USING_cppe
+        .def("set_PeState", &Wavefunction::set_PeState, "Set the PE object")
+        .def("get_PeState", &Wavefunction::get_PeState, "Get the PE object")
+#endif
+        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
+        .def("PE_enabled", &Wavefunction::PE_enabled, "Whether running a PE calculation");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")

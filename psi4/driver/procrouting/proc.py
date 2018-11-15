@@ -1372,6 +1372,21 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("""  PCM does not make use of molecular symmetry: """
                        """further calculations in C1 point group.\n""")
         use_c1 = True
+    
+    # PE preparation
+    if core.get_option('SCF', 'PE'):
+        pol_embed_options = core.PeOptions()
+        pol_embed_options.induced_thresh = core.get_local_option('PE', 'CONVERGENCE_INDUCED')
+        pol_embed_options.print_level = core.get_option('SCF', "PRINT")
+        
+        potfile_name = core.get_local_option('PE', 'POTFILE')
+        core.print_out(""" Using potential file {} for Polarizable Embedding
+                       calculation.\n""".format(potfile_name))
+        scf_wfn.set_PeState(core.PE(potfile_name, pol_embed_options,
+                                    scf_wfn.basisset()))
+        core.print_out("""  PE does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+        use_c1 = True
 
     e_scf = scf_wfn.compute_energy()
     for obj in [core, scf_wfn]:

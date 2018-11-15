@@ -52,6 +52,9 @@
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
 #endif
+#ifdef USING_cppe
+#include "psi4/libpsipe/psipe.h"
+#endif
 
 #include <typeinfo>
 #include <cstdlib>
@@ -1426,3 +1429,10 @@ void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
 }
 
 std::shared_ptr<PCM> Wavefunction::get_PCM() const { return PCM_; }
+
+void Wavefunction::set_PeState(const std::shared_ptr<PeState> &pe) {
+    PeState_ = pe;
+    PE_enabled_ = true;
+}
+
+std::shared_ptr<PeState> Wavefunction::get_PeState() const { return PeState_; }

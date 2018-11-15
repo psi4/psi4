@@ -107,6 +107,10 @@ if(TARGET PCMSolver::pcm)
     )
 endif()
 
+if(TARGET cppe::cppe)
+    target_link_libraries(mints PRIVATE psipe cppe::cppe)
+endif()
+
 if(TARGET erd::erd)
   target_link_libraries(mints
     PUBLIC
