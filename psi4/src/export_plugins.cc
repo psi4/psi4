@@ -57,8 +57,7 @@ std::map<std::string, plugin_info> plugins;
     @returns 0 if not loaded, 1 if loaded, 2 if already loaded.
 */
 
-int py_psi_plugin_load(std::string fullpathname)
-{
+int py_psi_plugin_load(std::string fullpathname) {
     int ret = 0;
 
     filesystem::path pluginPath(fullpathname);
@@ -67,10 +66,10 @@ int py_psi_plugin_load(std::string fullpathname)
     // Make sure the plugin isn't already loaded.
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
-        //outfile->Printf("%s loaded.\n", fullpathname.c_str());
+        // outfile->Printf("%s loaded.\n", fullpathname.c_str());
         ret = 1;
     } else {
-       ret = 2;
+        ret = 2;
     }
     return ret;
 }
@@ -84,8 +83,7 @@ int py_psi_plugin_load(std::string fullpathname)
     @param fullpathname Used to identity loaded plugin.
     @returns The result from the plugin.
 */
-SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction ref_wfn)
-{
+SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction ref_wfn) {
     filesystem::path pluginPath(fullpathname);
     std::string uc = to_upper_copy(pluginPath.stem());
     if (plugins.count(uc) == 0) {
@@ -108,9 +106,9 @@ SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction re
     if (ref_wfn) {
         return info.plugin(ref_wfn, Process::environment.options);
     } else if (Process::environment.legacy_wavefunction()) {
-        outfile->Printf("Using the legacy wavefunction call, please use conventional wavefunction passing in the future.");
-        return info.plugin(Process::environment.legacy_wavefunction(),
-                           Process::environment.options);
+        outfile->Printf(
+            "Using the legacy wavefunction call, please use conventional wavefunction passing in the future.");
+        return info.plugin(Process::environment.legacy_wavefunction(), Process::environment.options);
     } else {
         throw PSIEXCEPTION("Psi4::plugin: No wavefunction passed into the plugin, aborting");
     }
@@ -124,12 +122,11 @@ SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction re
 
     @param fullpathname Used to identity loaded plugin.
 */
-void py_psi_plugin_close(std::string fullpathname)
-{
+void py_psi_plugin_close(std::string fullpathname) {
     filesystem::path pluginPath(fullpathname);
     std::string uc = to_upper_copy(pluginPath.stem());
     if (plugins.count(uc) > 0) {
-        plugin_info& info = plugins[uc];
+        plugin_info &info = plugins[uc];
         plugin_close(info);
         plugins.erase(uc);
     }
@@ -141,12 +138,10 @@ void py_psi_plugin_close(std::string fullpathname)
         Python:
             plugin_close_all()
 */
-void py_psi_plugin_close_all()
-{
+void py_psi_plugin_close_all() {
     std::map<std::string, plugin_info>::const_iterator iter = plugins.begin();
 
-    for (; iter != plugins.end(); ++iter)
-        plugin_close(plugins[iter->first]);
+    for (; iter != plugins.end(); ++iter) plugin_close(plugins[iter->first]);
 
     plugins.clear();
 }
@@ -155,10 +150,10 @@ void py_psi_plugin_close_all()
  * End of Plug-In functions                                               *
  **************************************************************************/
 
-void export_plugins(py::module &m)
-{
+void export_plugins(py::module &m) {
     // plugins
-    m.def("plugin_load", py_psi_plugin_load, "Load the plugin of name arg0. Returns 0 if not loaded, 1 if loaded, 2 if already loaded");
+    m.def("plugin_load", py_psi_plugin_load,
+          "Load the plugin of name arg0. Returns 0 if not loaded, 1 if loaded, 2 if already loaded");
     m.def("plugin", py_psi_plugin, "Call the plugin of name arg0. Returns the plugin code result.");
     m.def("plugin_close", py_psi_plugin_close, "Close the plugin of name arg0.");
     m.def("plugin_close_all", py_psi_plugin_close_all, "Close all open plugins.");

@@ -41,8 +41,7 @@
 #define TOSTRING(x) STRINGIFY(x)
 
 namespace {
-std::string make_filename(const std::string &name)
-{
+std::string make_filename(const std::string &name) {
     // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
     std::string filename = name;
 
@@ -57,25 +56,23 @@ std::string make_filename(const std::string &name)
 
     return filename;
 }
-}
+}  // namespace
 
 namespace psi {
 
 /**
  *
  */
-class PluginFileManager
-{
-protected:
+class PluginFileManager {
+   protected:
     std::string plugin_name_;
     bool cd_into_directory_;
     std::vector<std::pair<std::string, std::string> > files_;
     std::vector<std::string> source_files_;
-public:
-    PluginFileManager(const std::string &plugin_name, bool cd_into_directory = true) :
-            plugin_name_(plugin_name), cd_into_directory_(cd_into_directory)
-    {
-    }
+
+   public:
+    PluginFileManager(const std::string &plugin_name, bool cd_into_directory = true)
+        : plugin_name_(plugin_name), cd_into_directory_(cd_into_directory) {}
 
     /*
      * Adds a file to be copied over from the psi4/lib/plugin directory to the target
@@ -83,27 +80,26 @@ public:
      * @param target_name: The name of the file as it will appear in the new directory.  If omitted,
      * defaults to the same name as provided for source_name.
      */
-    void add_file(const std::string &source_name, const std::string &target_name = "")
-    {
+    void add_file(const std::string &source_name, const std::string &target_name = "") {
         if (target_name == "")
             files_.push_back(std::make_pair(source_name, source_name));
         else
             files_.push_back(std::make_pair(source_name, target_name));
 
         std::string ext(filesystem::path(target_name).extension());
-        if (ext == "h" || ext == "cc")
-            source_files_.push_back(target_name);
+        if (ext == "h" || ext == "cc") source_files_.push_back(target_name);
     }
 
-    void process()
-    {
+    void process() {
         // The location of the plugin templates, in the Psi4 source
         std::string psiDataDirName = Process::environment.get_datadir();
         std::string psiDataDirWithPlugin = (filesystem::path(psiDataDirName) / filesystem::path("plugin")).str();
 
         if (!filesystem::path(psiDataDirWithPlugin).is_directory()) {
-            printf("Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"
-                           "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+            printf(
+                "Unable to read the Psi4 plugin folder - check the PSIDATADIR environmental variable\n"
+                "      Current value of PSIDATADIR is %s\n",
+                psiDataDirName.c_str());
             exit(1);
         }
 
@@ -113,8 +109,7 @@ public:
 
         // Formatted strings, to be substituted in later
         std::ostringstream imploded;
-        std::copy(source_files_.begin(), source_files_.end(),
-                  std::ostream_iterator<std::string>(imploded, " "));
+        std::copy(source_files_.begin(), source_files_.end(), std::ostream_iterator<std::string>(imploded, " "));
         std::string format_source_list = imploded.str();
         std::string format_plugin(plugin_name_);
         std::string format_PLUGIN = plugin_name_;
@@ -137,8 +132,7 @@ public:
             // Stupid way to read in entire file.
             char line[256];
             std::stringstream file;
-            while (fgets(line, sizeof(line), fp))
-                file << line;
+            while (fgets(line, sizeof(line), fp)) file << line;
             std::string filestring = file.str();
             fclose(fp);
 
@@ -159,13 +153,10 @@ public:
 
             printf("\tCreated: %s\n", iter->second.c_str());
         }
-
-
     }
 };
 
-void create_new_plugin(std::string name, const std::string &template_name)
-{
+void create_new_plugin(std::string name, const std::string &template_name) {
     std::string template_name_lower(template_name);
     // First make it lower case
     transform(name.begin(), name.end(), name.begin(), ::tolower);
@@ -179,16 +170,15 @@ void create_new_plugin(std::string name, const std::string &template_name)
     }
     // End == check to make sure the plugin name is valid
 
-
-    if (template_name_lower.empty())
-        template_name_lower = "plugin";
+    if (template_name_lower.empty()) template_name_lower = "plugin";
 
     // Make a directory with the name plugin_name
     if (!filesystem::create_directory(plugin_name)) {
         printf("Plugin directory %s already exists.\n", plugin_name.c_str());
         exit(1);
     }
-    printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(), template_name_lower.c_str());
+    printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),
+           template_name_lower.c_str());
 
     // Process the files
     PluginFileManager file_manager(plugin_name);
@@ -211,8 +201,7 @@ void create_new_plugin(std::string name, const std::string &template_name)
     file_manager.process();
 }
 
-void create_new_plugin_makefile()
-{
+void create_new_plugin_makefile() {
     printf("Creating new plugin Makefile in the current directory.\n");
 
     filesystem::path cwd = filesystem::path::getcwd();
@@ -222,4 +211,4 @@ void create_new_plugin_makefile()
     file_manager.process();
 }
 
-}
+}  // namespace psi

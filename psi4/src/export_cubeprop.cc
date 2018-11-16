@@ -40,5 +40,5 @@ void export_cubeprop(py::module& m) {
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("basisset", &CubeProperties::basisset, "Returns orbital/primary basis set associated with cubeprop.")
         .def("raw_compute_properties", &CubeProperties::raw_compute_properties,
-            "Compute all relevant properties from options object specifications");
+             "Compute all relevant properties from options object specifications");
 }

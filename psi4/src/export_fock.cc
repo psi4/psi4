@@ -78,15 +78,13 @@ void export_fock(py::module &m) {
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("print_header", &JK::print_header, "docstring");
 
-    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator",
-                                                                        "docstring")
+    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
         .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
         .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
 
     py::class_<DFTensor, std::shared_ptr<DFTensor>>(m, "DFTensor", "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>,
-                      int, int>())
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
         .def("Qso", &DFTensor::Qso, "doctsring")
         .def("Qmo", &DFTensor::Qmo, "doctsring")
         .def("Qoo", &DFTensor::Qoo, "doctsring")
@@ -112,8 +110,7 @@ void export_fock(py::module &m) {
     py::class_<SOMCSCF, std::shared_ptr<SOMCSCF>>(m, "SOMCSCF", "docstring")
         // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
         .def("Ck", &SOMCSCF::Ck)
-        .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, py::arg("x"),
-             py::arg("order") = 2)
+        .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, py::arg("x"), py::arg("order") = 2)
         .def("rhf_energy", &SOMCSCF::rhf_energy)
         .def("update", &SOMCSCF::update)
         .def("approx_solve", &SOMCSCF::approx_solve)
@@ -137,8 +134,8 @@ void export_fock(py::module &m) {
 
     // DF Helper
     typedef SharedMatrix (DFHelper::*take_string)(std::string);
-    typedef SharedMatrix (DFHelper::*tensor_access3)(
-        std::string, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>);
+    typedef SharedMatrix (DFHelper::*tensor_access3)(std::string, std::vector<size_t>, std::vector<size_t>,
+                                                     std::vector<size_t>);
 
     py::class_<DFHelper, std::shared_ptr<DFHelper>>(m, "DFHelper", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
@@ -158,8 +155,8 @@ void export_fock(py::module &m) {
         .def("add_space", &DFHelper::add_space)
         .def("initialize", &DFHelper::initialize)
         .def("print_header", &DFHelper::print_header)
-        .def("add_transformation", &DFHelper::add_transformation, py::arg("name"),
-             py::arg("key1"), py::arg("key2"), py::arg("order") = "Qpq")
+        .def("add_transformation", &DFHelper::add_transformation, py::arg("name"), py::arg("key1"), py::arg("key2"),
+             py::arg("order") = "Qpq")
         .def("transform", &DFHelper::transform)
         .def("clear_spaces", &DFHelper::clear_spaces)
         .def("clear_all", &DFHelper::clear_all)
@@ -172,10 +169,8 @@ void export_fock(py::module &m) {
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
-        [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int i, int j)
-        {
-           return scf::SADGuess(basis, atomic_bases, i, j, Process::environment.options);
-        })
+                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int i,
+                       int j) { return scf::SADGuess(basis, atomic_bases, i, j, Process::environment.options); })
         .def("compute_guess", &scf::SADGuess::compute_guess)
         .def("set_print", &scf::SADGuess::set_print)
         .def("set_debug", &scf::SADGuess::set_debug)

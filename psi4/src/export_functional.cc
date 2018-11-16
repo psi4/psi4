@@ -98,7 +98,8 @@ void export_functional(py::module &m) {
         .def("set_x_omega", &SuperFunctional::set_x_omega, "Sets the range-seperation exchange parameter.")
         .def("set_c_omega", &SuperFunctional::set_c_omega, "Sets the range-seperation correlation parameter.")
         .def("set_x_alpha", &SuperFunctional::set_x_alpha, "Sets the amount of exact global HF exchange.")
-        .def("set_x_beta", &SuperFunctional::set_x_beta, "Sets how much more long-range exchange than short-range exchange.")
+        .def("set_x_beta", &SuperFunctional::set_x_beta,
+             "Sets how much more long-range exchange than short-range exchange.")
         .def("set_c_alpha", &SuperFunctional::set_c_alpha, "Sets the amount of MP2 correlation.")
         .def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "Sets the amount of SS MP2 correlation.")
         .def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "Sets the amount of OS MP2 correlation.")
@@ -140,8 +141,7 @@ void export_functional(py::module &m) {
         .def("print_out", &Functional::py_print, "docstring")
         .def("print_detail", &Functional::py_print_detail, "docstring");
 
-    py::class_<LibXCFunctional, std::shared_ptr<LibXCFunctional>, Functional>(m, "LibXCFunctional",
-                                                                              "docstring")
+    py::class_<LibXCFunctional, std::shared_ptr<LibXCFunctional>, Functional>(m, "LibXCFunctional", "docstring")
         .def(py::init<std::string, bool>())
         .def("get_mix_data", &LibXCFunctional::get_mix_data, "docstring")
         .def("set_tweak", &LibXCFunctional::set_tweak, "docstring")
@@ -150,8 +150,7 @@ void export_functional(py::module &m) {
 
     py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "docstring")
         .def_static("build",
-                    [](std::shared_ptr<BasisSet> &basis, std::shared_ptr<SuperFunctional> &func,
-                       std::string type) {
+                    [](std::shared_ptr<BasisSet> &basis, std::shared_ptr<SuperFunctional> &func, std::string type) {
                         return VBase::build_V(basis, func, Process::environment.options, type);
                     })
         .def("initialize", &VBase::initialize, "doctsring")
@@ -163,16 +162,15 @@ void export_functional(py::module &m) {
         .def("get_block", &VBase::get_block, "Returns the requested BlockOPoints.")
         .def("nblocks", &VBase::nblocks, "Total number of blocks.")
         .def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.")
-        .def("build_collocation_cache", &VBase::build_collocation_cache, "Constructs a collocation cache to prevent recomputation.")
+        .def("build_collocation_cache", &VBase::build_collocation_cache,
+             "Constructs a collocation cache to prevent recomputation.")
         .def("clear_collocation_cache", &VBase::clear_collocation_cache, "Clears the collocation cache.")
         .def("set_D", &VBase::set_D, "Sets the internal density.")
         .def("Dao", &VBase::set_D, "Returns internal AO density.")
         .def("compute_V", &VBase::compute_V, "doctsring")
         .def("compute_Vx", &VBase::compute_Vx, "doctsring")
-        .def("compute_gradient", &VBase::compute_gradient,
-             "Compute the DFT nuclear gradient contribution.")
-        .def("compute_hessain", &VBase::compute_hessian,
-             "Compute the DFT nuclear Hessian contribution.")
+        .def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.")
+        .def("compute_hessain", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.")
 
         .def("set_print", &VBase::set_print, "Sets the print level of the object.")
         .def("set_debug", &VBase::set_debug, "Sets the debug level of the object.")
@@ -193,27 +191,25 @@ void export_functional(py::module &m) {
     typedef void (PointFunctions::*matrix_set1)(SharedMatrix);
     typedef void (PointFunctions::*matrix_set2)(SharedMatrix, SharedMatrix);
 
-    py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions",
-                                                                                "docstring")
-        .def("print_out", &PointFunctions::print, py::arg("out_fname") = "outfile",
-             py::arg("print") = 2, "docstring")
+    py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions", "docstring")
+        .def("print_out", &PointFunctions::print, py::arg("out_fname") = "outfile", py::arg("print") = 2, "docstring")
         .def("ansatz", &PointFunctions::ansatz, "docstring")
         .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
         .def("set_pointers", matrix_set1(&PointFunctions::set_pointers), "docstring")
         .def("set_pointers", matrix_set2(&PointFunctions::set_pointers), "docstring")
-        .def("compute_points", &PointFunctions::compute_points, py::arg("block"), py::arg("force_compute") = true, "docstring")
+        .def("compute_points", &PointFunctions::compute_points, py::arg("block"), py::arg("force_compute") = true,
+             "docstring")
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
-    py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(
-        m, "RKSFunctions", "docstring").def(py::init<std::shared_ptr<BasisSet>, int, int>());
+    py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(m, "RKSFunctions", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
-    py::class_<UKSFunctions, std::shared_ptr<UKSFunctions>, PointFunctions>(
-        m, "UKSFunctions", "docstring").def(py::init<std::shared_ptr<BasisSet>, int, int>());
+    py::class_<UKSFunctions, std::shared_ptr<UKSFunctions>, PointFunctions>(m, "UKSFunctions", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
     py::class_<BlockOPoints, std::shared_ptr<BlockOPoints>>(m, "BlockOPoints", "docstring")
-        .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector,
-                      std::shared_ptr<BasisExtents>>())
+        .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector, std::shared_ptr<BasisExtents>>())
         .def("x",
              [](BlockOPoints &grid) {
                  auto ret = std::make_shared<Vector>("X Grid points", grid.npoints());
@@ -240,8 +236,7 @@ void export_functional(py::module &m) {
              })
         .def("refresh", &BlockOPoints::refresh, "docstring")
         .def("npoints", &BlockOPoints::npoints, "docstring")
-        .def("print_out", &BlockOPoints::print, py::arg("out_fname") = "outfile",
-             py::arg("print") = 2, "docstring")
+        .def("print_out", &BlockOPoints::print, py::arg("out_fname") = "outfile", py::arg("print") = 2, "docstring")
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
 
@@ -257,12 +252,9 @@ void export_functional(py::module &m) {
         .def("print", &MolecularGrid::print, "Prints grid information.")
         .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
         .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
-        .def("max_points", &MolecularGrid::max_points,
-             "Returns the maximum number of points in a block.")
-        .def("max_functions", &MolecularGrid::max_functions,
-             "Returns the maximum number of functions in a block.")
-        .def("collocation_size", &MolecularGrid::collocation_size,
-            "Returns the total collocation size of all blocks.")
+        .def("max_points", &MolecularGrid::max_points, "Returns the maximum number of points in a block.")
+        .def("max_functions", &MolecularGrid::max_functions, "Returns the maximum number of functions in a block.")
+        .def("collocation_size", &MolecularGrid::collocation_size, "Returns the total collocation size of all blocks.")
         .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
 
     py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
@@ -276,9 +268,8 @@ void export_functional(py::module &m) {
         });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
-        .def_static("build", &Dispersion::build, py::arg("type"), py::arg("s6") = 0.0,
-                    py::arg("alpha6") = 0.0, py::arg("sr6") = 0.0,
-                    "Initialize instance capable of computing a dispersion correction of *type*")
+        .def_static("build", &Dispersion::build, py::arg("type"), py::arg("s6") = 0.0, py::arg("alpha6") = 0.0,
+                    py::arg("sr6") = 0.0, "Initialize instance capable of computing a dispersion correction of *type*")
         .def("name", &Dispersion::name, "docstring")
         .def("description", &Dispersion::description, "docstring")
         .def("citation", &Dispersion::citation, "docstring")
@@ -286,8 +277,7 @@ void export_functional(py::module &m) {
         .def("set_name", &Dispersion::set_name, "docstring")
         .def("set_description", &Dispersion::set_description, "docstring")
         .def("set_citation", &Dispersion::set_citation, "docstring")
-        .def("set_bibtex", &Dispersion::set_bibtex,
-             "Set the BibTeX key for the literature reference.")
+        .def("set_bibtex", &Dispersion::set_bibtex, "Set the BibTeX key for the literature reference.")
         .def("print_energy", &Dispersion::print_energy, "docstring")
         .def("print_gradient", &Dispersion::print_gradient, "docstring")
         .def("print_hessian", &Dispersion::print_hessian, "docstring")
@@ -302,10 +292,9 @@ void export_functional(py::module &m) {
         .def("a2", &Dispersion::get_a2, "docstring")
         .def("print_out", &Dispersion::py_print, "docstring");
 
-    py::class_<sapt::FDDS_Dispersion, std::shared_ptr<sapt::FDDS_Dispersion>>(m, "FDDS_Dispersion",
-                                                                              "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                      std::map<std::string, SharedMatrix>, std::map<std::string, SharedVector>>())
+    py::class_<sapt::FDDS_Dispersion, std::shared_ptr<sapt::FDDS_Dispersion>>(m, "FDDS_Dispersion", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::map<std::string, SharedMatrix>,
+                      std::map<std::string, SharedVector>>())
         .def("metric", &sapt::FDDS_Dispersion::metric, "Obtains the FDDS metric.")
         .def("metric_inv", &sapt::FDDS_Dispersion::metric_inv, "Obtains the FDDS metric_inv.")
         .def("aux_overlap", &sapt::FDDS_Dispersion::aux_overlap, "Obtains the FDDS aux_overlap.")
