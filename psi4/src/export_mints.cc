@@ -1248,7 +1248,8 @@ void export_mints(py::module& m) {
         .def("ftrue_atomic_number", &Molecule::ftrue_atomic_number, "Gets atomic number of "
              "*atom* from element (0-indexed including dummies)", py::arg("atom"))
         .def("center_of_mass", &Molecule::center_of_mass,
-             "Computes center of mass of molecule (does not translate molecule)")
+             "Computes center of mass of molecule (does not translate molecule), by default ghost atoms return non-zero mass",
+             py::arg("zero_ghost") = false)
         .def("translate", &Molecule::translate, "Translates molecule by arg0")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
         .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), by default ghost atoms return non-zero mass",
@@ -1349,7 +1350,8 @@ void export_mints(py::module& m) {
              "Finds the highest point Abelian point group within the specified tolerance, and "
              "forces the geometry to have that symmetry.")
         .def("inertia_tensor", &Molecule::inertia_tensor,
-             "Returns intertial tensor")
+             "Returns intertial tensor, by default ghost atoms return non-zero mass",
+             py::arg("zero_ghost") = false)
         .def("is_variable", &Molecule::is_variable,
              "Checks if variable arg0 is in the structural variables list")
         .def("set_variable", &Molecule::set_variable,
