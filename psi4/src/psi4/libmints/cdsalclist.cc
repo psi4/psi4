@@ -122,7 +122,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
         double atomx = molecule_->x(i);
         double atomy = molecule_->y(i);
         double atomz = molecule_->z(i);
-        double smass = sqrt(molecule_->mass(i));
+        double smass = sqrt(molecule_->mass(i, false));
 
         // COM constraints
         if (project_out_translations_) {
@@ -409,7 +409,7 @@ molecule_->inertia_tensor()->print();
         double atomx = molecule_->x(i);
         double atomy = molecule_->y(i);
         double atomz = molecule_->z(i);
-        double smass = sqrt(molecule_->mass(i));
+        double smass = sqrt(molecule_->mass(i, false));
 
         // COM constraints
         if (project_out_translations_) {

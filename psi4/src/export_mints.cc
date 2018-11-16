@@ -175,7 +175,7 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     // Modify the nuclear charges, to account for the ECP.
     if (totalncore) {
         for (int atom = 0; atom < mol->natom(); ++atom) {
-            if (mol->Z(atom) > 0) {
+            if (mol->Z(atom, true) > 0) {
                 const std::string& basis = mol->basis_on_atom(atom);
                 const std::string& label = mol->label(atom);
                 int ncore = basis_atom_ncore[basis][label];
@@ -1231,7 +1231,8 @@ void export_mints(py::module& m) {
         .def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2")
         .def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2")
         .def("Z", &Molecule::Z, py::return_value_policy::copy,
-             "Nuclear charge of atom arg0 (0-indexed without dummies)")
+             "Nuclear charge of atom arg0 (0-indexed without dummies), by default ghost atoms return zero nuclear charge",
+             py::arg("atom"), py::arg("zero_ghost") = true)
         .def("mass_number", &Molecule::mass_number, py::return_value_policy::copy, "Mass number (A) of atom if known, else -1")
         .def("x", &Molecule::x, "x position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("y", &Molecule::y, "y position [Bohr] of atom arg0 (0-indexed without dummies)")
@@ -1247,10 +1248,12 @@ void export_mints(py::module& m) {
         .def("ftrue_atomic_number", &Molecule::ftrue_atomic_number, "Gets atomic number of "
              "*atom* from element (0-indexed including dummies)", py::arg("atom"))
         .def("center_of_mass", &Molecule::center_of_mass,
-             "Computes center of mass of molecule (does not translate molecule)")
+             "Computes center of mass of molecule (does not translate molecule), by default ghost atoms return non-zero mass",
+             py::arg("zero_ghost") = false)
         .def("translate", &Molecule::translate, "Translates molecule by arg0")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
-        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed)", py::arg("atom"))
+        .def("mass", &Molecule::mass, "Returns mass of *atom* (0-indexed), by default ghost atoms return non-zero mass",
+             py::arg("atom"), py::arg("zero_ghost") = false)
         .def("set_mass", &Molecule::set_mass,
              "Sets mass of *atom* (0-indexed) to *mass* (good for isotopic substitutions)",
              py::arg("atom"), py::arg("mass"))
@@ -1347,7 +1350,8 @@ void export_mints(py::module& m) {
              "Finds the highest point Abelian point group within the specified tolerance, and "
              "forces the geometry to have that symmetry.")
         .def("inertia_tensor", &Molecule::inertia_tensor,
-             "Returns intertial tensor")
+             "Returns intertial tensor, by default ghost atoms return non-zero mass",
+             py::arg("zero_ghost") = false)
         .def("is_variable", &Molecule::is_variable,
              "Checks if variable arg0 is in the structural variables list")
         .def("set_variable", &Molecule::set_variable,

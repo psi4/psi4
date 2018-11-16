@@ -68,7 +68,7 @@ void SCF::init_integrals() {
     int charge = molecule_->molecular_charge();
     int nelec = 0;
     for (int i = 0; i < molecule_->natom(); ++i) {
-        nelec += (int)molecule_->Z(i);
+        nelec += (int)molecule_->Z(i, true);
     }
     nelec -= charge;
     if (nelec % 2) {

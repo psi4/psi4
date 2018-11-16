@@ -120,7 +120,7 @@ void SADGuess::form_D() {
     // Scale Da to true electron count
     double npair = 0.0;
     for (int A = 0; A < molecule_->natom(); A++) {
-        npair += 0.5 * molecule_->Z(A);
+        npair += 0.5 * molecule_->Z(A, true);
     }
     Da_->scale(((double)nalpha_) / npair);
 
@@ -184,7 +184,7 @@ SharedMatrix SADGuess::form_D_AO() {
     if (print_ > 1) outfile->Printf("  Determining Atomic Occupations\n");
 
     for (int A = 0; A < molecule_->natom(); A++) {
-        int Z = molecule_->Z(A);
+        int Z = molecule_->Z(A, true);
         if (Z > MAX_Z) {
             throw std::domain_error(" Only Atoms up to 86 (Rn) are currently supported with SAD Guess");
         }
@@ -212,7 +212,7 @@ SharedMatrix SADGuess::form_D_AO() {
     for (int l = 0; l < molecule_->natom() - 1; l++) {
         for (int m = l + 1; m < molecule_->natom(); m++) {
             if (unique_indices[m] != m) continue;  // Already assigned
-            if (molecule_->Z(l) != molecule_->Z(m)) continue;
+            if (molecule_->Z(l, true) != molecule_->Z(m, true)) continue;
             if (nalpha[l] != nalpha[m]) continue;
             if (nbeta[l] != nbeta[m]) continue;
             if (nhigh[l] != nhigh[m]) continue;
@@ -289,7 +289,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     int nalpha = nelec - nbeta;
     int natom = mol->natom();
     int norbs = bas->nbf();
-    int Z = bas->molecule()->Z(0);
+    int Z = bas->molecule()->Z(0, true);
 
     if (nalpha > norbs || nbeta > norbs) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
 

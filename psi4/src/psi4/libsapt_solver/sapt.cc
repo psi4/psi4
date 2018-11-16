@@ -144,9 +144,9 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     natomsB_ = 0;
 
     for (int n = 0; n < monomerA->natom(); n++)
-        if (monomerA->Z(n)) natomsA_++;
+        if (monomerA->Z(n, true)) natomsA_++;
     for (int n = 0; n < monomerB->natom(); n++)
-        if (monomerB->Z(n)) natomsB_++;
+        if (monomerB->Z(n, true)) natomsB_++;
 
     ndf_ = ribasis_->nbf();
 
@@ -227,8 +227,8 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     auto potA = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
     SharedMatrix ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
     for (int n = 0, p = 0; n < monomerA->natom(); n++) {
-        if (monomerA->Z(n)) {
-            double Z = (double)monomerA->Z(n);
+        if (monomerA->Z(n, true)) {
+            double Z = (double)monomerA->Z(n, true);
             double x = monomerA->x(n);
             double y = monomerA->y(n);
             double z = monomerA->z(n);
@@ -246,8 +246,8 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
     auto ZxyzB = std::make_shared<Matrix>("Charges B (Z,x,y,z)", natomsB_, 4);
     for (int n = 0, p = 0; n < monomerB->natom(); n++) {
-        if (monomerB->Z(n)) {
-            double Z = (double)monomerB->Z(n);
+        if (monomerB->Z(n, true)) {
+            double Z = (double)monomerB->Z(n, true);
             double x = monomerB->x(n);
             double y = monomerB->y(n);
             double z = monomerB->z(n);

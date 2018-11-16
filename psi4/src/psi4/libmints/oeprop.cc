@@ -751,7 +751,7 @@ Vector3 OEProp::get_origin_from_environment() const {
             std::vector<double> property(natoms);
             std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
             if (str == "COM") {
-                for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->mass(atom);
+                for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->mass(atom, false);
             } else if (str == "NUCLEAR_CHARGE") {
                 for (int atom = 0; atom < natoms; ++atom) property[atom] = mol->charge(atom);
             } else {
@@ -1010,7 +1010,7 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
         for (int i = 0; i < natom; i++) {
             Vector3 dR = origin - mol->xyz(i);
             double r = dR.norm();
-            if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
+            if (r > 1.0E-8) Vnuc += mol->Z(i, true) / r;
         }
         Vvals_.push_back(Velec + Vnuc);
         fprintf(gridout, "%16.10f\n", Velec + Vnuc);
@@ -1057,7 +1057,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
         for (int iat = 0; iat < natom; iat++) {
             Vector3 dR = origin - mol->xyz(iat);
             double r = dR.norm();
-            if (r > 1.0E-8) Vnuc += mol->Z(iat) / r;
+            if (r > 1.0E-8) Vnuc += mol->Z(iat, true) / r;
         }
         double Vtot = Velec + Vnuc;
         (*output)[i] = Vtot;
@@ -1162,7 +1162,7 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
         double nuc = 0.0;
         for (int atom2 = 0; atom2 < natoms; ++atom2) {
             if (atom1 == atom2) continue;
-            nuc += mol->Z(atom2) / dist[0][atom1][atom2];
+            nuc += mol->Z(atom2, true) / dist[0][atom1][atom2];
         }
         if (print_output) {
             outfile->Printf("  %3d %2s           %16.12f\n", atom1 + 1, mol->label(atom1).c_str(), nuc + elec);
@@ -1647,13 +1647,13 @@ PopulationAnalysisCalc::compute_mulliken_charges(bool print_output) {
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = (*Qa)[A] - (*Qb)[A];
-        double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
+        double Qt = mol->Z(A, true) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A] = Qt;
         if (print_output) {
             outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
                             (*Qb)[A], Qs, Qt);
         }
-        nuc += (double)mol->Z(A);
+        nuc += (double)mol->Z(A, true);
     }
 
     if (print_output) {
@@ -1748,13 +1748,13 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = (*Qa)[A] - (*Qb)[A];
-        double Qt = mol->Z(A) - ((*Qa)[A] + (*Qb)[A]);
+        double Qt = mol->Z(A, true) - ((*Qa)[A] + (*Qb)[A]);
         (*apcs)[A] = Qt;
         if (print_output) {
             outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A + 1, mol->label(A).c_str(), (*Qa)[A],
                             (*Qb)[A], Qs, Qt);
         }
-        nuc += (double)mol->Z(A);
+        nuc += (double)mol->Z(A, true);
     }
     if (print_output) {
         outfile->Printf("\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", suma, sumb,

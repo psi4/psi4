@@ -406,7 +406,7 @@ void optrot(std::shared_ptr<Molecule> molecule) {
             }
 
         /* compute the specific rotation */
-        for (j = 0, M = 0.0; j < moinfo.natom; j++) M += molecule->mass(j); /* amu */
+        for (j = 0, M = 0.0; j < moinfo.natom; j++) M += molecule->mass(j,true); /* amu */
         nu = params.omega[i];                                               /* hartree */
         bohr2a4 = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms;
         m2a = pc_bohr2angstroms * 1.0e-10;

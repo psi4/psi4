@@ -479,7 +479,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
     // => Nuclear Part <= //
 
     for (int A = 0; A < mol_->natom(); A++) {
-        double Z = mol_->Z(A) * (nuc_weights.size() ? nuc_weights[A] : 1.0);
+        double Z = mol_->Z(A, true) * (nuc_weights.size() ? nuc_weights[A] : 1.0);
         double x = mol_->x(A);
         double y = mol_->y(A);
         double z = mol_->z(A);

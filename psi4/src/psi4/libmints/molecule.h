@@ -232,8 +232,8 @@ class PSI_API Molecule {
     int natom() const;
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
-    /// Nuclear charge of atom
-    const double& Z(int atom) const;
+    /// Nuclear charge of atom, zero_ghost = true returns zero for ghost atoms, usually true
+    double Z(int atom, bool zero_ghost) const;
     /// Nuclear charge of atom
     double fZ(int atom) const;
     /// x position of atom
@@ -253,8 +253,8 @@ class PSI_API Molecule {
     Vector3 fxyz(int atom) const;
     /// Returns x, y, or z component of 'atom'
     double xyz(int atom, int _xyz) const;
-    /// Returns mass atom atom
-    double mass(int atom) const;
+    /// Returns mass of atom, zero_ghost = true returns 0 for ghost atoms, usually false
+    double mass(int atom, bool zero_ghost) const;
 
     /// Set the mass of a particular atom (good for isotopic substitutions)
     void set_mass(int atom, double mass);
@@ -344,8 +344,8 @@ class PSI_API Molecule {
      */
     void symmetrize_to_abelian_group(double tol);
 
-    /// Computes center of mass of molecule (does not translate molecule)
-    Vector3 center_of_mass() const;
+    /// Computes center of mass of molecule (does not translate molecule) (by default ghost atoms contribute non-zero mass)
+    Vector3 center_of_mass(bool zero_ghost = false) const;
     /// Computes nuclear repulsion energy
     /// The dipole field is a vector of length 3, containing the dipole field strength in the {x,y,z} directions.
     double nuclear_repulsion_energy(const std::array<double, 3>& dipole_field) const;
@@ -376,8 +376,8 @@ class PSI_API Molecule {
     /// Computes and returns a matrix depicting distances between atoms.
     Matrix distance_matrix() const;
 
-    /// Compute inertia tensor.
-    Matrix* inertia_tensor() const;
+    /// Compute inertia tensor (by default ghost atoms contribute non-zero mass)
+    Matrix* inertia_tensor(bool zero_ghost = false) const;
 
     /// Compute the rotational constants and return them in wavenumbers
     Vector rotational_constants(double tol = FULL_PG_TOL) const;

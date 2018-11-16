@@ -269,9 +269,9 @@ double Dispersion::compute_energy(std::shared_ptr<Molecule> m) {
         double *blist_p = blist->pointer();
 
         for (int i = 0; i < monoA->natom(); i++) {
-            if ((int)monoA->Z(i) == 0) continue;
+            if ((int)monoA->Z(i, true) == 0) continue;
             for (int j = 0; j < monoB->natom(); j++) {
-                if ((int)monoB->Z(j) == 0) continue;
+                if ((int)monoB->Z(j, true) == 0) continue;
 
                 double C6, C8, Rm6, Rm8, f_6, f_8, g, beta;
 
@@ -399,13 +399,13 @@ SharedMatrix Dispersion::compute_gradient(std::shared_ptr<Molecule> m) {
             Rm6 = 1.0 / R6;
             Rm6_R = -6.0 * Rm6 / R;
 
-            double RvdW = RvdW_[(int)m->Z(i)] + RvdW_[(int)m->Z(j)];
+            double RvdW = RvdW_[(int)m->Z(i, true)] + RvdW_[(int)m->Z(j, true)];
 
             if (C6_type_ == C6_arit) {
-                C6 = 2.0 * C6_[(int)m->Z(i)] * C6_[(int)m->Z(j)] / (C6_[(int)m->Z(i)] + C6_[(int)m->Z(j)]);
+                C6 = 2.0 * C6_[(int)m->Z(i, true)] * C6_[(int)m->Z(j, true)] / (C6_[(int)m->Z(i, true)] + C6_[(int)m->Z(j, true)]);
                 C6_R = 0.0;
             } else if (C6_type_ == C6_geom) {
-                C6 = sqrt(C6_[(int)m->Z(i)] * C6_[(int)m->Z(j)]);
+                C6 = sqrt(C6_[(int)m->Z(i, true)] * C6_[(int)m->Z(j, true)]);
                 C6_R = 0.0;
             } else {
                 throw PSIEXCEPTION("Unrecognized C6 Type");
@@ -447,7 +447,7 @@ std::shared_ptr<Vector> Dispersion::set_atom_list(std::shared_ptr<Molecule> mol)
 
     // look for hydrogens:
     for (int a = 0; a < mol->natom(); a++) {
-        atom_list_p[a] = mol->Z(a);
+        atom_list_p[a] = mol->Z(a, true);
         if (name_ != "-DAS2010") continue;
 
         if ((int)atom_list_p[a] > 54) {
@@ -476,7 +476,7 @@ std::shared_ptr<Vector> Dispersion::set_atom_list(std::shared_ptr<Molecule> mol)
             }
         }
         // what is the h bonded to?
-        int atom = (int)mol->Z(minb);
+        int atom = (int)mol->Z(minb, true);
         if (atom == 6)
             atom_list_p[a] = 55.0;
         else if (atom == 7)

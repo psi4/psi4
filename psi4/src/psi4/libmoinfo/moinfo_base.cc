@@ -82,7 +82,7 @@ void MOInfoBase::compute_number_of_electrons() {
     int natom = ref_wfn.molecule()->natom();
 
     for (int i = 0; i < natom; i++) {
-        nel += static_cast<int>(ref_wfn.molecule()->Z(i));
+        nel += static_cast<int>(ref_wfn.molecule()->Z(i, true));
     }
     nel -= charge;
 

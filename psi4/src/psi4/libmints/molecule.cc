@@ -323,9 +323,11 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
     }
 }
 
-double Molecule::mass(int atom) const {
+double Molecule::mass(int atom, bool zero_ghost) const {
     double ret = 0.0;
-    if (atoms_[atom]->mass() != 0.0)
+    if (zero_ghost && (atoms_[atom]->Z() == 0.0))
+        ret = 0.0;
+    else if (atoms_[atom]->mass() != 0.0)
         ret = atoms_[atom]->mass();
     else {
         if (std::fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
@@ -384,12 +386,12 @@ Vector3 Molecule::nuclear_dipole() const {
 Vector3 Molecule::nuclear_dipole(const Vector3 &origin) const {
     Vector3 dipole(0.0);
 
-    for (int i = 0; i < natom(); ++i) dipole += Z(i) * (xyz(i) - origin);
+    for (int i = 0; i < natom(); ++i) dipole += Z(i, true) * (xyz(i) - origin);
 
     return dipole;
 }
 
-Vector3 Molecule::center_of_mass() const {
+Vector3 Molecule::center_of_mass(bool zero_ghost) const {
     Vector3 ret;
     double total_m;
 
@@ -397,7 +399,7 @@ Vector3 Molecule::center_of_mass() const {
     total_m = 0.0;
 
     for (int i = 0; i < natom(); ++i) {
-        double m = mass(i);
+        double m = mass(i, zero_ghost);
         ret += m * xyz(i);
         total_m += m;
     }
@@ -423,8 +425,8 @@ double Molecule::pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> mB)
     double V = 0.0;
     for (int A = 0; A < natom(); A++) {
         for (int B = 0; B < mB->natom(); B++) {
-            if (Z(A) == 0.0 || mB->Z(B) == 0.0) continue;
-            V += Z(A) * mB->Z(B) / (xyz(A).distance(mB->xyz(B)));
+            if (Z(A, true) == 0.0 || mB->Z(B, true) == 0.0) continue;
+            V += Z(A, true) * mB->Z(B, true) / (xyz(A).distance(mB->xyz(B)));
         }
     }
     return V;
@@ -435,8 +437,8 @@ double Molecule::nuclear_repulsion_energy(const std::array<double, 3> &dipole_fi
 
     for (int i = 1; i < natom(); ++i) {
         for (int j = 0; j < i; ++j) {
-            double Zi = Z(i);
-            double Zj = Z(j);
+            double Zi = Z(i, true);
+            double Zj = Z(j, true);
             double distance = xyz(i).distance(xyz(j));
             e += Zi * Zj / distance;
         }
@@ -454,14 +456,14 @@ Matrix Molecule::nuclear_repulsion_energy_deriv1(const std::array<double, 3> &di
     Matrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
 
     for (int i = 0; i < natom(); ++i) {
-        double Zi = Z(i);
+        double Zi = Z(i, true);
         de(i, 0) += Zi * dipole_field[0];
         de(i, 1) += Zi * dipole_field[1];
         de(i, 2) += Zi * dipole_field[2];
         for (int j = 0; j < natom(); ++j) {
             if (i != j) {
                 double temp = pow((xyz(i).distance(xyz(j))), 3.0);
-                double Zj = Z(j);
+                double Zj = Z(j, true);
                 de(i, 0) -= (x(i) - x(j)) * Zi * Zj / temp;
                 de(i, 1) -= (y(i) - y(j)) * Zi * Zj / temp;
                 de(i, 2) -= (z(i) - z(j)) * Zi * Zj / temp;
@@ -499,7 +501,7 @@ Matrix Molecule::nuclear_repulsion_energy_deriv2() const {
             r2 = x2 + y2 + z2;
             r = sqrt(r2);
             r5 = r2 * r2 * r;
-            pfac = Z(i) * Z(j) / r5;
+            pfac = Z(i, true) * Z(j, true) / r5;
 
             hess.add(ix, ix, pfac * (3 * x2 - r2));
             hess.add(iy, iy, pfac * (3 * y2 - r2));
@@ -990,7 +992,7 @@ void Molecule::print_in_angstrom() const {
         outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
         for (int i = 0; i < natom(); ++i) {
-            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
+            outfile->Printf("      %3s%-7s ", Z(i, true) ? "" : "Gh(", (symbol(i) + (Z(i, true) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", xyz(i, j) * pc_bohr2angstroms);
             outfile->Printf("\n");
         }
@@ -1013,7 +1015,7 @@ void Molecule::print_in_bohr() const {
         outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
         for (int i = 0; i < natom(); ++i) {
-            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
+            outfile->Printf("      %3s%-7s ", Z(i, true) ? "" : "Gh(", (symbol(i) + (Z(i, true) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", xyz(i, j));
             outfile->Printf("\n");
         }
@@ -1064,9 +1066,9 @@ void Molecule::print() const {
 
         for (int i = 0; i < natom(); ++i) {
             Vector3 geom = atoms_[i]->compute();
-            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
+            outfile->Printf("      %3s%-7s ", Z(i, true) ? "" : "Gh(", (symbol(i) + (Z(i, true) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
-            outfile->Printf("  %17.12f", mass(i));
+            outfile->Printf("  %17.12f", mass(i, true));
             outfile->Printf("\n");
         }
         if (Process::environment.options.get_int("PRINT") > 2) {
@@ -1109,7 +1111,7 @@ void Molecule::print_cluster() const {
             }
 
             Vector3 geom = atoms_[i]->compute();
-            outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
+            outfile->Printf("      %3s%-7s ", Z(i, true) ? "" : "Gh(", (symbol(i) + (Z(i, true) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
             outfile->Printf("\n");
         }
@@ -1253,15 +1255,15 @@ void Molecule::save_xyz_file(const std::string &filename, bool save_ghosts) cons
     if (!save_ghosts) {
         N = 0;
         for (int i = 0; i < natom(); i++) {
-            if (Z(i)) N++;
+            if (Z(i, true)) N++;
         }
     }
     printer->Printf("%d\n\n", N);
 
     for (int i = 0; i < natom(); i++) {
         Vector3 geom = atoms_[i]->compute();
-        if (save_ghosts || Z(i))
-            printer->Printf("%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor * geom[0],
+        if (save_ghosts || Z(i, true))
+            printer->Printf("%2s %17.12f %17.12f %17.12f\n", (Z(i, true) ? symbol(i).c_str() : "Gh"), factor * geom[0],
                             factor * geom[1], factor * geom[2]);
     }
 }
@@ -1277,8 +1279,8 @@ std::string Molecule::save_string_xyz_file() const {
 
     for (int i = 0; i < natom(); i++) {
         Vector3 geom = atoms_[i]->compute();
-        if (Z(i)) {
-            snprintf(line, 100, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), (factor * geom[0]),
+        if (Z(i, true)) {
+            snprintf(line, 100, "%2s %17.12f %17.12f %17.12f\n", (Z(i, true) ? symbol(i).c_str() : "Gh"), (factor * geom[0]),
                      (factor * geom[1]), (factor * geom[2]));
             stream << line;
             //            stream << boost::format("%2s %17.12f %17.12f %17.12f\n") % (Z(i) ? symbol(i).c_str() : "Gh") %
@@ -1301,7 +1303,7 @@ std::string Molecule::save_string_xyz() const {
 
     for (int i = 0; i < natom(); i++) {
         Vector3 geom = atoms_[i]->compute();
-        sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor * geom[0],
+        sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i, true) ? symbol(i).c_str() : "Gh"), factor * geom[0],
                 factor * geom[1], factor * geom[2]);
         ss << buffer;
     }
@@ -1309,21 +1311,21 @@ std::string Molecule::save_string_xyz() const {
     return ss.str();
 }
 
-Matrix *Molecule::inertia_tensor() const {
+Matrix *Molecule::inertia_tensor(bool zero_ghost) const {
     int i;
     Matrix *tensor = new Matrix("Inertia Tensor", 3, 3);
     Matrix &temp = *tensor;
 
     for (i = 0; i < natom(); i++) {
         // I(alpha, alpha)
-        temp(0, 0) += mass(i) * (y(i) * y(i) + z(i) * z(i));
-        temp(1, 1) += mass(i) * (x(i) * x(i) + z(i) * z(i));
-        temp(2, 2) += mass(i) * (x(i) * x(i) + y(i) * y(i));
+        temp(0, 0) += mass(i, zero_ghost) * (y(i) * y(i) + z(i) * z(i));
+        temp(1, 1) += mass(i, zero_ghost) * (x(i) * x(i) + z(i) * z(i));
+        temp(2, 2) += mass(i, zero_ghost) * (x(i) * x(i) + y(i) * y(i));
 
         // I(alpha, beta)
-        temp(0, 1) -= mass(i) * x(i) * y(i);
-        temp(0, 2) -= mass(i) * x(i) * z(i);
-        temp(1, 2) -= mass(i) * y(i) * z(i);
+        temp(0, 1) -= mass(i, zero_ghost) * x(i) * y(i);
+        temp(0, 2) -= mass(i, zero_ghost) * x(i) * z(i);
+        temp(1, 2) -= mass(i, zero_ghost) * y(i) * z(i);
     }
 
     //    mirror
@@ -2141,7 +2143,7 @@ void Molecule::form_symmetry_information(double tol) {
             for (int j = 0; j < nunique_; ++j) {
                 int unique = equiv_[j][0];
                 Vector3 aj(xyz(unique));
-                if (np.distance(aj) < tol && Z(unique) == Z(i) && std::fabs(mass(unique) - mass(i)) < tol) {
+                if (np.distance(aj) < tol && Z(unique, true) == Z(i, true) && std::fabs(mass(unique, false) - mass(i, false)) < tol) {
                     i_is_unique = 0;
                     i_equiv = j;
                     break;
@@ -2211,7 +2213,15 @@ Vector3 Molecule::fxyz(int atom) const { return input_units_to_au_ * full_atoms_
 
 double Molecule::xyz(int atom, int _xyz) const { return input_units_to_au_ * atoms_[atom]->compute()[_xyz]; }
 
-const double &Molecule::Z(int atom) const { return atoms_[atom]->Z(); }
+double Molecule::Z(int atom, bool zero_ghost) const {
+    if (!zero_ghost && atoms_[atom]->Z() == 0.0) {
+        Element_to_Z z_list = Element_to_Z();
+        return z_list[atoms_[atom]->symbol()];
+    }
+    else {
+        return atoms_[atom]->Z();
+    }
+}
 
 double Molecule::fZ(int atom) const { return full_atoms_[atom]->Z(); }
 
@@ -2608,7 +2618,7 @@ void Molecule::set_full_point_group(double zero_tol) {
             Vector3 A(geom(i, 0), geom(i, 1), geom(i, 2));
             double AdotA = A.dot(A);
             for (int j = 0; j < i; ++j) {
-                if (Z(i) != Z(j)) continue;  // ensure same atomic number
+                if (Z(i, true) != Z(j, true)) continue;  // ensure same atomic number
 
                 Vector3 B(geom(j, 0), geom(j, 1), geom(j, 2));       // ensure same distance from com
                 if (std::fabs(AdotA - B.dot(B)) > 1.0e-6) continue;  // loose check
