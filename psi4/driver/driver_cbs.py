@@ -1419,7 +1419,6 @@ def cbs(func, label, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
-    molstr = molecule.create_psi4_string_from_molecule()
     natom = molecule.natom()
 
     if metadata[0]["wfn"] not in VARH.keys():
