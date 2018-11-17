@@ -207,6 +207,10 @@ ExternalProject_Add(psi4-core
            libxc_external
            mdi_external
            xtl_external
+           xsimd_external
+           xtensor_external
+           xtensor-blas_external
+           xtensor-python_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -258,6 +262,11 @@ ExternalProject_Add(psi4-core
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
+              -Dxtl_DIR=${xtl_DIR}
+              -Dxsimd_DIR=${xsimd_DIR}
+              -Dxtensor_DIR=${xtensor_DIR}
+              -Dxtensor-blas_DIR=${xtensor-blas_DIR}
+              -Dxtensor-python_DIR=${xtensor-python_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}

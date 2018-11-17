@@ -175,6 +175,31 @@ get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
 
+# <<< The whole xtensor stack >>>
+
+find_package(xtl 0.4.16 CONFIG REQUIRED)
+get_property(_loc TARGET xtl PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtl${ColourReset}: ${_loc} (version ${xtl_VERSION})")
+
+find_package(xsimd 7.1.0 CONFIG REQUIRED)
+get_property(_loc TARGET xsimd PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xsimd${ColourReset}: ${_loc} (version ${xsimd_VERSION})")
+
+find_package(xtensor 0.18.3 CONFIG REQUIRED)
+get_property(_loc TARGET xtensor PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtensor${ColourReset}: ${_loc} (version ${xtensor_VERSION})")
+
+find_package(xtensor-blas 0.14.0 CONFIG REQUIRED)
+message(STATUS "${Cyan}Using xtensor-blas${ColourReset}: ${_loc} (version ${xtensor-blas_VERSION})")
+
+find_package(xtensor-python 0.21.0 CONFIG REQUIRED)
+get_property(_loc TARGET xtensor-python PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtensor-python${ColourReset}: ${_loc} (version ${xtensor-python_VERSION})")
+
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
 elseif(UNIX)

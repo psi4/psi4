@@ -24,6 +24,7 @@ else()
       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
       -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
+      -DXTL_CMAKECONFIG_INSTALL_DIR=share/cmake/xtl # Wrong in upstream CMakeLists.txt
     )
 
   set(xtl_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/xtl CACHE PATH "path to internally built xtlConfig.cmake" FORCE)

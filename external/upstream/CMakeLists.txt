@@ -18,6 +18,10 @@ foreach(dir
   simint
   libxc
   xtl
+  xsimd
+  xtensor
+  xtensor-blas
+  xtensor-python
   )
   add_subdirectory(${dir})
 endforeach()
