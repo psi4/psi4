@@ -31,8 +31,7 @@
 #include "psi4/libmints/psimath.h"
 #include "psi4/pybind11.h"
 
-void export_blas_lapack(py::module& m)
-{
+void export_blas_lapack(py::module& m) {
     // BLAS Static Wrappers
     m.def("DGBMV", &psi::PSI_DGBMV, "docstring");
     m.def("DGEMM", &psi::PSI_DGEMM, "docstring");

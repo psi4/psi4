@@ -86,6 +86,7 @@ test_script:
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
+  - python %INSTALL_FOLDER%\bin\psi4 --test
 
 after_test:
   # Run failling tests, but their results are ignored
@@ -94,7 +95,6 @@ after_test:
           --tests-regex "^(ci-property)$"
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
-  - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
 
 cache:
   - C:\Miniconda3-x64\pkgs

@@ -77,9 +77,10 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     BSET = []
     ZSET = []
     legit_compound_basis = re.compile(
-        r'^(?P<pre>.*cc-.*|def2-|.*pcs+eg-)\[(?P<zeta>[dtq2345678,s1]*)\](?P<post>.*z.*|)$', re.IGNORECASE)
+        r'^(?P<pre>.*cc-.*|def2-|.*pcs+eg-|.*)\[(?P<zeta>[dtq2345678,s1]*)\](?P<post>.*z.*|)$', re.IGNORECASE)
     pc_basis = re.compile(r'.*pcs+eg-$', re.IGNORECASE)
     def2_basis = re.compile(r'def2-', re.IGNORECASE)
+    zapa_basis = re.compile(r'.*zapa.*',re.IGNORECASE)
 
     if legit_compound_basis.match(basisstring):
         basisname = legit_compound_basis.match(basisstring)
@@ -103,13 +104,17 @@ def _expand_bracketed_basis(basisstring, molecule=None):
             # reassemble pc-n basis sets properly
             elif pc_basis.match(basisname.group('pre')):
                 BSET.append(basisname.group('pre') + "{0:d}".format(zeta_sym2val[b] - 1))
+            # assemble nZaPa basis sets
+            elif zapa_basis.match(basisname.group('post')):
+                bzapa = b.replace("d","2").replace("t","3").replace("q","4")
+                BSET.append(basisname.group('pre') + bzapa + basisname.group('post'))
             else:
                 BSET.append(basisname.group('pre') + b + basisname.group('post'))
             ZSET.append(zeta_values.index(b) + 2)
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
         raise ValidationError(
             """Basis series '%s' invalid. Specify a basis series matching"""
-            """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*' or '*pcs[s]eg-[1234]'""" % (basisstring))
+            """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*' or '*pcs[s]eg-[1234]' or '[1234567]ZaPa' """ % (basisstring))
     else:
         BSET.append(basisstring)
         ZSET.append(0)
@@ -1419,7 +1424,6 @@ def cbs(func, label, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
-    molstr = molecule.create_psi4_string_from_molecule()
     natom = molecule.natom()
 
     if metadata[0]["wfn"] not in VARH.keys():
