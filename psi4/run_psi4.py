@@ -189,8 +189,8 @@ if args['plugin_name']:
     sys.exit()
 
 if args["test"]:
-    psi4.test('smoke')
-    sys.exit()
+    retcode = psi4.test('smoke')
+    sys.exit(retcode)
 
 if not os.path.isfile(args["input"]):
     raise KeyError("The file %s does not exist." % args["input"])
