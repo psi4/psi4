@@ -48,7 +48,7 @@ namespace psi {
   
   class PeIntegralHelper {
       public:
-          PeIntegralHelper(std::shared_ptr<BasisSet> basisset);
+          PeIntegralHelper(std::shared_ptr<BasisSet> basisset) : basisset_(basisset) {}
           /*! \brief computes the potential integrals at a site through k-th order
            *   
            */
@@ -67,33 +67,31 @@ namespace psi {
           
       private:
           std::shared_ptr<BasisSet> basisset_;
-          // std::shared_ptr<OneBodyAOInt> multipole_integrals_;
-          // std::shared_ptr<OneBodyAOInt> field_integrals_;
   };
 
   class PeState {
 
   public:
-    enum CalcType { total, electronic };
+    enum CalcType { total, electronic_only };
     PeState() = default;
-    PeState(const std::string &potfile, int print_level, std::shared_ptr<BasisSet> basisset);
+    PeState(const std::string &potfile, libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset);
     ~PeState() {}
     
     /*! \brief Compute PE energy and Fock matrix contribution
      *  \param[in] D density matrix
      *  \param[in] type (total Fock contribution or electronic contribution only)
      */
-    std::pair<double, SharedMatrix> compute_pe_contribution(const SharedMatrix &D, CalcType type = CalcType::total);
+    std::pair<double, SharedMatrix> compute_pe_contribution(const SharedMatrix &D, CalcType type = CalcType::total,
+                                                            bool subtract_scf_density = false);
 
-    // void print_energy();
+    /* \brief prints the summary table of PE energy contributions to the Psi4 output file
+    */
+    void print_energy_summary();
 
     // void calculate_fock_contribution(arma::mat& Ptot, const libqints::multi_array<double>& out, double* energy);
     // void calculate_excited_state_energy_correction(double* p_exc, double* energy, bool is_tdm);
 
-    // ~PeState() { if (m_have_input_section) delete calc_handler; }
-
   private:
-      int print_level_;
       std::string potfile_;
       std::shared_ptr<BasisSet> basisset_;
       
@@ -104,6 +102,9 @@ namespace psi {
       std::vector<libcppe::Potential> potentials_;
       libcppe::CppeState cppe_state_;
       PeIntegralHelper int_helper_;
+      
+      SharedMatrix V_es_;
+      SharedMatrix D_scf_;
       
       int iteration = 0;
   };

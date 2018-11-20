@@ -267,6 +267,30 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Name of the potential file -*/
         options.add_str_i("POTFILE", "potfile.pot");
+        /* - Use DIIS acceleration to obtain induced moments -*/
+        options.add_bool("DIIS", true);
+        /* - Threshold for induced moments convergence -*/
+        options.add_int("CONVERGENCE_INDUCED", 8);
+        /* - Maximum number of iterations for induced moments -*/
+        options.add_int("MAXITER", 50);
+        /* - Activate border options for sites in proximity to the QM/MM border -*/
+        options.add_bool("BORDER", false);
+        /* - border type, either remove or redistribute moments/polarizabilities -*/
+        options.add_str_i("BORDER_TYPE", "REMOVE", "REMOVE REDIST");
+        /* - minimum radius from QM atoms to MM sites to be taken into account
+        for removal/redistribution -*/
+        options.add_double("BORDER_RMIN", 2.2);
+        /* - unit of BORDER_RMIN, default is atomic units (AU) -*/
+        options.add_str_i("BORDER_RMIN_UNIT", "AU", "AU AA");
+        /* - order from which moments are removed, e.g.,
+        if set to 1 (default), only charges are redistributed and
+        all higher order moments are removed -*/
+        options.add_int("BORDER_REDIST_ORDER", 1);
+        /* - number of neighbor sites to redistribute to.
+        The default (-1) redistributes to all sites which are not in the border region -*/
+        options.add_int("BORDER_N_REDIST", -1);
+        /* - redistribute polarizabilities? If false, polarizabilities are removed (default) -*/
+        options.add_bool("BORDER_REDIST_POL", false);
     }
 
     if (name == "DETCI" || options.read_globals()) {

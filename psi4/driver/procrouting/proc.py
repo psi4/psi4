@@ -1376,8 +1376,28 @@ def scf_helper(name, post_scf=True, **kwargs):
     # PE preparation
     if core.get_option('SCF', 'PE'):
         pol_embed_options = core.PeOptions()
-        pol_embed_options.induced_thresh = core.get_local_option('PE', 'CONVERGENCE_INDUCED')
         pol_embed_options.print_level = core.get_option('SCF', "PRINT")
+        pol_embed_options.induced_thresh = core.get_local_option('PE', 'CONVERGENCE_INDUCED')
+        
+        pol_embed_options.do_diis = core.get_local_option('PE', 'DIIS')
+        pol_embed_options.diis_maxiter = core.get_local_option('PE', 'MAXITER')
+        pol_embed_options.pe_border = core.get_local_option('PE', 'BORDER')
+        
+        if pol_embed_options.pe_border:
+            pol_embed_border_options = core.PeBorderOptions()
+            pe_btype = core.get_local_option('PE', 'BORDER_TYPE').upper()
+            if pe_btype == "REMOVE":
+                pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.rem
+            elif pe_btype == "REDIST":
+                pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.redist
+            pol_embed_border_options.rmin = core.get_local_option('PE', 'BORDER_RMIN')
+            if core.get_local_option('PE', 'BORDER_RMIN_UNIT').upper() == "AA":
+                pol_embed_border_options.rmin *= 1.8897261246
+            pol_embed_border_options.redist_order = core.get_local_option('PE', 'BORDER_REDIST_ORDER')
+            pol_embed_border_options.nredist = core.get_local_option('PE', 'BORDER_N_REDIST')
+            pol_embed_border_options.redist_pol = core.get_local_option('PE', 'BORDER_REDIST_POL')
+            
+            pol_embed_options.border_options = pol_embed_border_options
         
         potfile_name = core.get_local_option('PE', 'POTFILE')
         core.print_out(""" Using potential file {} for Polarizable Embedding
@@ -2421,6 +2441,8 @@ def run_ccenergy(name, **kwargs):
 
 
     ccwfn = core.ccenergy(ref_wfn)
+    if core.get_global_option('PE'):
+        ccwfn.set_PeState(ref_wfn.get_PeState())
 
     if name == 'ccsd(at)':
         core.cchbar(ref_wfn)

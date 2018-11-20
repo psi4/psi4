@@ -46,6 +46,7 @@
 
 // #include <cppe/libcppe.hh>
 #include <cppe/utils/potfile_reader.hh>
+#include <cppe/utils/pot_manipulation.hh>
 #include <cppe/core/multipole_expansion.hh>
 
 
@@ -83,15 +84,16 @@ namespace {
 } // unnamed namespace
 
   
-PeState::PeState(const std::string &potfile, int print_level, std::shared_ptr<BasisSet> basisset) :
- 	  potfile_(potfile), basisset_(basisset), print_level_(print_level),
-      cppe_state_(libcppe::CppeState(libcppe::PeOptions())), int_helper_(PeIntegralHelper(basisset)) {
+PeState::PeState(const std::string &potfile, libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset) :
+ 	  potfile_(potfile), basisset_(basisset), cppe_state_(libcppe::CppeState(options, *(outfile->stream()))), int_helper_(PeIntegralHelper(basisset)) {
 	
-	libcppe::PotfileReader reader(potfile_);
-	potentials_ = reader.read();
-    
     std::shared_ptr<Molecule> molecule = basisset_->molecule();
     molecule_ = make_molecule(molecule);
+    
+	libcppe::PotfileReader reader(potfile_);
+	potentials_ = reader.read();
+    potentials_ = libcppe::PotManipulator(potentials_, molecule_, *(outfile->stream())).manipulate(options);
+    
     cppe_state_.set_molecule(molecule_);
     cppe_state_.set_potentials(potentials_);
     
@@ -99,68 +101,84 @@ PeState::PeState(const std::string &potfile, int print_level, std::shared_ptr<Ba
 }
 
 
-std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMatrix &D, CalcType type) {
-    // TODO: try to map SharedMatrix to arma::mat
-    *(outfile->stream()) << "compute_pe_contribution called!" << std::endl;
-    
-    auto V_es = std::make_shared<Matrix>("V_es", basisset_->nbf(), basisset_->nbf());
-    for (auto& p : potentials_) {
-        Vector3 site(p.m_x, p.m_y, p.m_z);
-        std::vector<double> moments;
-        for (auto& m : p.get_multipoles()) {
-            m.remove_trace();
-            for (auto d : m.get_values()) moments.push_back(d);
+std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMatrix &Dm, CalcType type, bool subtract_scf_density) {
+    // build the electrostatics operator only once!
+    if (!iteration && (type == PeState::CalcType::total)) {
+        V_es_ = std::make_shared<Matrix>("V_es", basisset_->nbf(), basisset_->nbf());
+        for (auto& p : potentials_) {
+            Vector3 site(p.m_x, p.m_y, p.m_z);
+            std::vector<double> moments;
+            for (auto& m : p.get_multipoles()) {
+                m.remove_trace();
+                for (auto d : m.get_values()) moments.push_back(d);
+            }
+            V_es_->add(int_helper_.compute_multipole_potential_integrals(site, 2, moments));
         }
-        V_es->add(int_helper_.compute_multipole_potential_integrals(site, 2, moments));
+        cppe_state_.set_es_operator(arma::mat(V_es_->get_pointer(), V_es_->nrow(), V_es_->ncol(), true));
+        cppe_state_.es_operator_copy().save("V_es_psi4.txt",  arma::raw_ascii);
     }
-    cppe_state_.set_es_operator(arma::mat(V_es->get_pointer(), V_es->nrow(), V_es->ncol(), true));
-    cppe_state_.es_operator_copy().save("V_es_psi4.txt",  arma::raw_ascii);
-    // cppe_state_.es_operator_copy().print();
+    
+    SharedMatrix D = Dm;
+    if (subtract_scf_density && type == PeState::CalcType::electronic_only) {
+        D->subtract(D_scf_);
+    }
     cppe_state_.update_energies(arma::mat(D->get_pointer(), D->nrow(), D->ncol(), true));
     
     size_t n_sitecoords = 3*cppe_state_.get_polarizable_site_number();
-    int current_polsite = 0;
-    arma::vec elec_fields(n_sitecoords, arma::fill::zeros);
-    for (auto& p : potentials_) {
-        if (!p.is_polarizable()) continue;
-        Vector3 site(p.m_x, p.m_y, p.m_z);
-        Vector elec_fields_s = int_helper_.compute_field(site, D);
-        elec_fields[current_polsite*3] = elec_fields_s.get(0);
-        elec_fields[current_polsite*3 + 1] = elec_fields_s.get(1);
-        elec_fields[current_polsite*3 + 2] = elec_fields_s.get(2);
-        current_polsite += 1;
-    }
-    std::cout << "elec fields : " << n_sitecoords << std::endl << elec_fields << std::endl;
-    cppe_state_.update_induced_moments(elec_fields, iteration);
-    arma::vec induced_moments = cppe_state_.get_induced_moments();
     
+    // induction operator
     auto V_ind = std::make_shared<Matrix>("V_ind", basisset_->nbf(), basisset_->nbf());
-    current_polsite = 0;
-    for (auto& p : potentials_) {
-        if (!p.is_polarizable()) continue;
-        Vector3 site(p.m_x, p.m_y, p.m_z);
-        SharedMatrix V_ind_s = int_helper_.compute_field_integrals(site,
-                                                                   induced_moments.subvec(3*current_polsite,
-                                                                                          3*current_polsite+2));
-        V_ind->add(V_ind_s);
-        current_polsite += 1;
+    if (n_sitecoords) {
+        int current_polsite = 0;
+        arma::vec elec_fields(n_sitecoords, arma::fill::zeros);
+        for (auto& p : potentials_) {
+            if (!p.is_polarizable()) continue;
+            Vector3 site(p.m_x, p.m_y, p.m_z);
+            Vector elec_fields_s = int_helper_.compute_field(site, D);
+            elec_fields[current_polsite*3] = elec_fields_s.get(0);
+            elec_fields[current_polsite*3 + 1] = elec_fields_s.get(1);
+            elec_fields[current_polsite*3 + 2] = elec_fields_s.get(2);
+            current_polsite += 1;
+        }
+        // std::cout << "elec fields : " << n_sitecoords << std::endl << elec_fields << std::endl;
+        cppe_state_.update_induced_moments(elec_fields, iteration, type == PeState::CalcType::electronic_only);
+        arma::vec induced_moments = cppe_state_.get_induced_moments();
+        
+        current_polsite = 0;
+        for (auto& p : potentials_) {
+            if (!p.is_polarizable()) continue;
+            Vector3 site(p.m_x, p.m_y, p.m_z);
+            SharedMatrix V_ind_s = int_helper_.compute_field_integrals(site,
+                                                                       induced_moments.subvec(3*current_polsite,
+                                                                                              3*current_polsite+2));
+            V_ind->add(V_ind_s);
+            current_polsite += 1;
+        }
     }
-    // Add the induction operator
-    V_es->add(V_ind);
-    cppe_state_.print_summary();
-    iteration++;
-    return std::pair<double, SharedMatrix>(cppe_state_.get_current_energies().get_total_energy(), V_es);
+    
+    if (type == PeState::CalcType::total) {
+        V_ind->add(V_es_);
+        D_scf_ = D;
+    }
+    // TODO: only for debugging
+    // cppe_state_.print_summary();
+    
+    if (type == PeState::CalcType::total) iteration++;
+    
+    double energy_result = (type == PeState::CalcType::total ? cppe_state_.get_current_energies().get_total_energy() :
+                                                              cppe_state_.get_current_energies().get("Polarization/Electronic"));
+    return std::pair<double, SharedMatrix>(energy_result, V_ind);
 }
 
-PeIntegralHelper::PeIntegralHelper(std::shared_ptr<BasisSet> basisset) : basisset_(basisset) {
-    // basisset_ = basisset;
-    // field_integrals_ = static_cast<std::shared_ptr<OneBodyAOInt>>(integrals->electric_field());
+void PeState::print_energy_summary() {
+    cppe_state_.print_summary();
 }
 
 SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 site, int order, std::vector<double>& moments) {
     auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
     std::shared_ptr<OneBodyAOInt> multipole_integrals = static_cast<std::shared_ptr<OneBodyAOInt>>(integrals->ao_efp_multipole_potential());
     
+    // TODO: only compute up to the needed order!
     std::vector<SharedMatrix> mult;
     mult.push_back(std::make_shared<Matrix>("AO EFP Charge 0", basisset_->nbf(), basisset_->nbf()));
 	mult.push_back(std::make_shared<Matrix>("AO EFP Dipole X", basisset_->nbf(), basisset_->nbf()));
@@ -241,32 +259,6 @@ Vector PeIntegralHelper::compute_field(Vector3 site, const SharedMatrix &D) {
     efields.set(2, D->vector_dot(fields[2]));
     return efields;
 }
-
-
-// *      0    |      0         |    1
-// *           | // Dipole      |
-// *      1    |      X         |    1
-// *      2    |      Y         |    1
-// *      3    |      Z         |    1
-// *           | // Quadrupole  |
-// *      4    |      XX        |    1/3
-// *      5    |      YY        |    1/3
-// *      6    |      ZZ        |    1/3
-// *      7    |      XY        |    2/3
-// *      8    |      XZ        |    2/3
-// *      9    |      YZ        |    2/3
-// *           | // Octupole    |
-// *     10    |      XXX       |    1/15
-// *     11    |      YYY       |    1/15
-// *     12    |      ZZZ       |    1/15
-// *     13    |      XXY       |    3/15
-// *     14    |      XXZ       |    3/15
-// *     15    |      XYY       |    3/15
-// *     16    |      YYZ       |    3/15
-// *     17    |      XZZ       |    3/15
-// *     18    |      YZZ       |    3/15
-// *     19    |      XYZ       |    6/15
-
 
 } // namespace psi
 

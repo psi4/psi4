@@ -36,13 +36,37 @@ using namespace psi;
 #ifdef USING_cppe
 
 void export_cppe(py::module& m) {
+    
+    py::class_<libcppe::BorderOptions, std::shared_ptr<libcppe::BorderOptions>> pe_border_options(m, "PeBorderOptions", "Border Options for PE library");
+    py::enum_<libcppe::BorderType>(pe_border_options, "BorderType")
+          .value("rem", libcppe::BorderType::rem)
+          .value("redist", libcppe::BorderType::redist);
+    pe_border_options.def(py::init<>())
+                     .def_readwrite("border_type", &libcppe::BorderOptions::border_type)
+                     .def_readwrite("rmin", &libcppe::BorderOptions::rmin)
+                     .def_readwrite("nredist", &libcppe::BorderOptions::nredist)
+                     .def_readwrite("redist_order", &libcppe::BorderOptions::redist_order)
+                     .def_readwrite("redist_pol", &libcppe::BorderOptions::redist_pol);
+
+    py::class_<libcppe::PeOptions, std::shared_ptr<libcppe::PeOptions>> pe_options(m, "PeOptions", "Options for PE library");
+    pe_options.def(py::init<>())
+              .def_readwrite("print_level", &libcppe::PeOptions::print_level)
+              
+              .def_readwrite("induced_thresh", &libcppe::PeOptions::induced_thresh)
+              .def_readwrite("do_diis", &libcppe::PeOptions::do_diis)
+              .def_readwrite("diis_maxiter", &libcppe::PeOptions::diis_maxiter)
+              
+              .def_readwrite("pe_border", &libcppe::PeOptions::pe_border)
+              .def_readwrite("border_options", &libcppe::PeOptions::border_options);
+    
     py::class_<PeState, std::shared_ptr<PeState>> pe(m, "PE", "Class interfacing with CPPE");
     py::enum_<PeState::CalcType>(pe, "CalcType")
         .value("total", PeState::CalcType::total)
-        .value("electronic", PeState::CalcType::electronic);
+        .value("electronic_only", PeState::CalcType::electronic_only);
 
-    pe.def(py::init<std::string, int, std::shared_ptr<BasisSet>>())
+    pe.def(py::init<std::string, libcppe::PeOptions, std::shared_ptr<BasisSet>>())
       .def("compute_pe_contribution", &PeState::compute_pe_contribution, "Compute PE contributions to energy and Fock matrix",
-             py::arg("D"), py::arg("type"));
+             py::arg("D"), py::arg("type"), py::arg("subtract_scf_density")=false)
+      .def("print_energy_summary", &PeState::print_energy_summary);
 }
 #endif
