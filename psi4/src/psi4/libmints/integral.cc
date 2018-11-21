@@ -57,7 +57,6 @@
 
 #include <libint/libint.h>
 
-;
 using namespace psi;
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -210,26 +209,32 @@ OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
 }
 
 TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
+    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
 #ifdef USING_simint
-    if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
-        return new SimintERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs);
 #endif
 #ifdef USING_erd
-    if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
-        return new ERDERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
-    return eri(deriv, use_shell_pairs);
+    if (deriv > 0) outfile->Printf("ERI derivative integrals only available using Libint");
+    if (integral_package == "SIMINT" || integral_package == "ERD")
+        outfile->Printf("Chosen integral package " + integral_package +
+                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
+    return new ERI(this, deriv, use_shell_pairs);
 }
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs) {
+    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
 #ifdef USING_simint
-    if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
-        return new SimintERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs);
 #endif
 #ifdef USING_erd
-    if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
-        return new ERDERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
+    if (deriv > 0) outfile->Printf("ERI derivative integrals only available using Libint");
+    if (integral_package == "SIMINT" || integral_package == "ERD")
+        outfile->Printf("Chosen integral package " + integral_package +
+                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
     return new ERI(this, deriv, use_shell_pairs);
 }
 

@@ -26,16 +26,18 @@
  * @END LICENSE
  */
 
-#include "psi4/pybind11.h"
-#include "psi4/libplugin/plugin.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libfilesystem/path.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/liboptions/liboptions.h"
-
 #include <string>
 #include <vector>
+
+#include "psi4/pybind11.h"
+
+#include "psi4/libfilesystem/path.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libplugin/plugin.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
 
 using namespace psi;
 

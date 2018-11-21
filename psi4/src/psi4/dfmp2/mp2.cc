@@ -27,37 +27,35 @@
  */
 
 #include "mp2.h"
-#include "corr_grad.h"
-
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/liboptions/liboptions_python.h"
-#include "psi4/lib3index/3index.h"
-#include "psi4/libfock/jk.h"
-#include "psi4/libfock/apps.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsio/psio.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
-#include "psi4/psifiles.h"
-
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/sieve.h"
-#include "psi4/libmints/extern.h"
-#include "psi4/libmints/twobody.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/mintshelper.h"
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-using namespace psi;
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
+#include "psi4/psifiles.h"
+
+#include "psi4/lib3index/3index.h"
+#include "psi4/libfock/apps.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/extern.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/oeprop.h"
+#include "psi4/libmints/sieve.h"
+#include "psi4/libmints/twobody.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "corr_grad.h"
 
 namespace psi {
 namespace dfmp2 {

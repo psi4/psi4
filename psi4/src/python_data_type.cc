@@ -26,8 +26,7 @@
  * @END LICENSE
  */
 
-#include "liboptions.h"
-#include "liboptions_python.h"
+#include "python_data_type.h"
 
 namespace psi {
 

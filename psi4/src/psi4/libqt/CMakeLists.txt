@@ -1,27 +1,28 @@
-set(sources_list lapack_intfc.cc
-                 dx_write.cc
-                 dirprd_block.cc
-                 pople.cc
-                 schmidt_add.cc
-                 mat_print.cc
-                 ras_set.cc
-                 fill_sym_matrix.cc
-                 cc_excited.cc
-                 probabil.cc
-                 dot_block.cc
-                 timer.cc
-                 dx_read.cc
-                 blas_intfc.cc
-                 normalize.cc
-                 newmm_rking.cc
-                 3d_array.cc
-                 blas_intfc23.cc
-                 reorder_qt.cc
-                 schmidt.cc
-                 invert.cc
-                 solve_pep.cc
-                 david.cc
-)
+list(APPEND sources
+  3d_array.cc
+  blas_intfc.cc
+  blas_intfc23.cc
+  cc_excited.cc
+  david.cc
+  dirprd_block.cc
+  dot_block.cc
+  dx_read.cc
+  dx_write.cc
+  fill_sym_matrix.cc
+  invert.cc
+  lapack_intfc.cc
+  mat_print.cc
+  newmm_rking.cc
+  normalize.cc
+  pople.cc
+  probabil.cc
+  ras_set.cc
+  reorder_qt.cc
+  schmidt.cc
+  schmidt_add.cc
+  solve_pep.cc
+  timer.cc
+  )
 add_definitions("-DFC_SYMBOL=${FC_SYMBOL}")
 
 if(WIN32)
@@ -39,7 +40,7 @@ else()
   endif()
 endif()
 
-psi4_add_module(lib qt sources_list psio ciomr mints)
+psi4_add_module(lib qt sources)
 target_compile_definitions(qt
   PRIVATE
     $<$<BOOL:${_has_dggsvd3}>:LAPACK_HAS_DGGSVD3>

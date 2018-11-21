@@ -27,23 +27,22 @@
  */
 
 #include "usapt0.h"
-#include "psi4/libfock/jk.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/physconst.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/lib3index/dfhelper.h"
+
 #include <ctime>
 
-using namespace psi;
-using namespace std;
+#include "psi4/physconst.h"
+
+#include "psi4/lib3index/dfhelper.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 namespace psi {
-
 namespace sapt {
 
 // TODO: ROHF orbitals for coupled induction
@@ -1405,10 +1404,10 @@ void CPKS_USAPT0::compute_cpks() {
     outfile->Printf("    Convergence = %11.3E\n", delta_);
     outfile->Printf("\n");
 
-    time_t start;
-    time_t stop;
+    std::time_t start;
+    std::time_t stop;
 
-    start = time(nullptr);
+    start = std::time(nullptr);
 
     outfile->Printf("    -----------------------------------------\n");
     outfile->Printf("    %-4s %11s  %11s  %10s\n", "Iter", "Monomer A", "Monomer B", "Time [s]");
@@ -1486,7 +1485,7 @@ void CPKS_USAPT0::compute_cpks() {
             r2B = sqrt(r2B) / b2B;
         }
 
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         outfile->Printf("    %-4d %11.3E%1s %11.3E%1s %10ld\n", iter + 1, r2A, (r2A < delta_ ? "*" : " "), r2B,
                         (r2B < delta_ ? "*" : " "), stop - start);
 
@@ -2198,7 +2197,7 @@ void USAPT0::mp2_terms() {
 
     // ==> Master Loop <== //
 
-    for (size_t aastart = 0, bastart = 0; aastart < max(naa, nba); aastart += maxa_a, bastart += maxb_a) {
+    for (size_t aastart = 0, bastart = 0; aastart < std::max(naa, nba); aastart += maxa_a, bastart += maxb_a) {
         size_t na_ablock = (aastart + maxa_a >= naa ? naa - aastart : maxa_a);
         size_t nb_ablock = (aastart + maxb_a >= nba ? nba - aastart : maxb_a);
 
@@ -2216,7 +2215,7 @@ void USAPT0::mp2_terms() {
             dfh->fill_tensor("Db_ar", Db_ar, {bastart, bastart + nb_ablock});
         }
 
-        for (size_t abstart = 0, bbstart = 0; abstart < max(nab, nbb); abstart += maxa_b, bbstart += maxb_b) {
+        for (size_t abstart = 0, bbstart = 0; abstart < std::max(nab, nbb); abstart += maxa_b, bbstart += maxb_b) {
             size_t na_bblock = (abstart + maxa_b >= nab ? nab - abstart : maxa_b);
             size_t nb_bblock = (abstart + maxb_b >= nbb ? nbb - abstart : maxb_b);
 

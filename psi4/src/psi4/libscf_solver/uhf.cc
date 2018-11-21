@@ -26,40 +26,42 @@
  * @END LICENSE
  */
 
-#include <ctime>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <algorithm>
-#include <functional>
-#include <vector>
-#include <utility>
-#include <tuple>
-
-#include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
-
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libfock/v.h"
-#include "psi4/libfock/jk.h"
-#include "psi4/physconst.h"
-#include "psi4/libtrans/integraltransform.h"
-#include "psi4/libdpd/dpd.h"
 #include "uhf.h"
-#include "stability.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/factory.h"
-#include "psi4/libmints/molecule.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <functional>
+#include <tuple>
+#include <utility>
+#include <vector>
+
+#include "psi4/physconst.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libdiis/diisentry.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libfock/v.h"
+#include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/factory.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libtrans/integraltransform.h"
+
+#include "stability.h"
 
 namespace psi {
 namespace scf {
@@ -558,8 +560,8 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
     }
 
-    time_t start, stop;
-    start = time(nullptr);
+    std::time_t start, stop;
+    start = std::time(nullptr);
     cphf_converged_ = false;
     cphf_nfock_builds_ = 0;
 
@@ -673,7 +675,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     mean_rms /= (double)nvecs;
     cphf_nfock_builds_ += nremain;
 
-    stop = time(nullptr);
+    stop = std::time(nullptr);
     if (print_lvl > 1) {
         outfile->Printf("    %5s %14.3e %12.3e %7d %9ld\n", "Guess", mean_rms, max_rms, nremain, stop - start);
     }
@@ -746,7 +748,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         nremain = new_remain;
         mean_rms /= (double)nvecs;
 
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (print_lvl) {
             outfile->Printf("    %5d %14.3e %12.3e %7d %9ld\n", cg_iter, mean_rms, max_rms, nremain, stop - start);
         }
@@ -796,8 +798,8 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     return ret_vec;
 }
 int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
-    time_t start, stop;
-    start = time(nullptr);
+    std::time_t start, stop;
+    start = std::time(nullptr);
 
     // => Build gradient and preconditioner <= //
 
