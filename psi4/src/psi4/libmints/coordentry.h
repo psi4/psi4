@@ -43,9 +43,6 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 
-/// masks for classes of fragments to be acted upon by molecule functions
-/// The next fragment type should be 4, and ALL should be 7.
-
 /**
  * An abstract class to handle storage of Cartesian coordinate values, which
  * may be defined in terms of other variables through this mechanism, greatly
@@ -134,10 +131,6 @@ class VariableValue : public CoordValue {
 };
 
 class CoordEntry {
-    template <class Archive>
-    friend void save(Archive& ar, const psi::Vector3& t, size_t /*version*/);
-    template <class Archive>
-    friend void load(Archive& ar, psi::Vector3& t, size_t /*version*/);
 
    protected:
     int entry_number_;
