@@ -57,7 +57,6 @@
 
 #include <libint/libint.h>
 
-;
 using namespace psi;
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -213,8 +212,7 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
 #ifdef USING_simint
     if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
         return new SimintERI(this, deriv, use_shell_pairs);
-#endif
-#ifdef USING_erd
+#elif USING_erd
     if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
         return new ERDERI(this, deriv, use_shell_pairs);
 #endif
@@ -225,8 +223,7 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs) {
 #ifdef USING_simint
     if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
         return new SimintERI(this, deriv, use_shell_pairs);
-#endif
-#ifdef USING_erd
+#elif USING_erd
     if (deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
         return new ERDERI(this, deriv, use_shell_pairs);
 #endif

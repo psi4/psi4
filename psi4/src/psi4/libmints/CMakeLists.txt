@@ -76,15 +76,23 @@ target_link_libraries(mints
     Libint::libint
   )
 
-# Conditional sources
+# Conditionally linked-to external projects
 if(TARGET simint::simint)
   target_sources(mints
     PRIVATE
       siminteri.cc
     )
+  # Add USING_simint definition, which is not in simint::simint
+  target_compile_definitions(mints
+    INTERFACE
+      USING_simint
+    )
+  target_link_libraries(mints
+    PUBLIC
+      simint::simint
+    )
 endif()
 
-# Conditionally linked-to external projects
 if(TARGET dkh::dkh)
   target_link_libraries(mints
     PUBLIC
@@ -106,9 +114,3 @@ if(TARGET erd::erd)
     )
 endif()
 
-if(TARGET simint::simint)
-  target_link_libraries(mints
-    PUBLIC
-      simint::simint
-    )
-endif()
