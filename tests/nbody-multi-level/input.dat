@@ -19,35 +19,35 @@ units bohr
 set cc_type df
 
 # Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
-levels = {1: 'ccsd(t)/aug-cc-pvtz', 2: 'mp2/aug-cc-pvdz'}
+levels = {1: 'mp2/sto-3g', 2: 'scf/sto-3g'}
 e, wfn = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_wfn=True, levels=levels)
 clean()
-comparison_dict = {'nocp': -229.095333693240, 'cp': -229.090649507945, 'vmfc': -229.090542127602} #TEST
+comparison_dict = {'nocp': -225.019408434635, 'cp': -225.000173661598, 'vmfc': -224.998744381484} #TEST
 for b, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.get_variable('2'+b), 6, b + '-corrected multi-level energy')            #TEST
 
 # Compute 1-body contribution with ccsd(t) and estimate all higher order contributions with scf
-levels = {1: 'ccsd(t)/aug-cc-pvtz', 'supersystem': 'scf/cc-pvdz'}
+levels = {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}
 e, wfn = energy('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
 clean()
-comparison_dict = {'1': -229.072352805163, '3': -229.100618464996}                                #TEST
+comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST  
     compare_values(v, wfn.get_variable(n+'nocp'), 6, 'Supersystem multi-level energy')            #TEST
 
 # Compute electrostatically embedded  many-body expansion energy.with Mulliken charges
-e, wfn = energy('mp2/aug-cc-pvdz', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
-                max_nbody=2, charge_method='scf/6-31g', charge_type='MULLIKEN_CHARGES')
+e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
+                max_nbody=2, charge_method='scf/sto-3g', charge_type='MULLIKEN_CHARGES')
 clean()
-comparison_dict = {'1': -228.853984715330, '2': -228.877850309122}                                #TEST
+comparison_dict = {'1': -224.911009557547, '2': -224.912828186182}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.get_variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST
 
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
 tip3p_charges = [-0.834, 0.417, 0.417]
 embedding_charges = {i: [j for j in tip3p_charges] for i in range(1, 4)}
-e, wfn = energy('mp2/aug-cc-pvdz', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
+e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
                 max_nbody=2, embedding_charges=embedding_charges)
 clean()
-comparison_dict = {'1': -228.857319084829, '2': -228.881454412752}                                #TEST
+comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.get_variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST
