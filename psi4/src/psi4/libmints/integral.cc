@@ -219,7 +219,7 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
     if (deriv > 0) outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT" || integral_package == "ERD")
         outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable. Recompile with the appropriate options.\n Falling back to Libint");
+                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
     return new ERI(this, deriv, use_shell_pairs);
 }
 
@@ -234,7 +234,7 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs) {
     if (deriv > 0) outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT" || integral_package == "ERD")
         outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable. Recompile with the appropriate options.\n Falling back to Libint");
+                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
     return new ERI(this, deriv, use_shell_pairs);
 }
 

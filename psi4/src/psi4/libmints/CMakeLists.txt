@@ -84,7 +84,7 @@ if(TARGET simint::simint)
     )
   # Add USING_simint definition, which is not in simint::simint
   target_compile_definitions(mints
-    INTERFACE
+    PUBLIC
       USING_simint
     )
   target_link_libraries(mints
@@ -113,4 +113,3 @@ if(TARGET erd::erd)
       erd::erd
     )
 endif()
-
