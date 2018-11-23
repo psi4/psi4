@@ -568,7 +568,7 @@ funcs.append({
     "dispersion": {
         "nlc":False,
         "type": "d3bj",
-        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n',
+        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n',
         "params": {
             's6': 1.000,
             's8': 0.3908,
@@ -577,7 +577,7 @@ funcs.append({
         },
     },
     "description": '    wB97M-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n'+
+    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n'+
                 '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
 })
 
@@ -589,7 +589,7 @@ funcs.append({
     "dispersion": {
         "nlc":False,
         "type": "d3bj",
-        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n',
+        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14 5725, 2018\n',
         "params": {
             's6': 1.000,
             's8': 0.2641,
@@ -598,8 +598,8 @@ funcs.append({
         },
     },
     "description": '    wB97X-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem. (10.1021/acs.jctc.8b00842)\n'+
-                '    ????\n'
+    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem., 14 5725, 2018)\n'+
+                '    N. Mardirossian, M. Head-Gordon, Phys. Chem. Chem. Phys, 16, 9904, 2014\n'
 })
 
 
