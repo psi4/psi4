@@ -84,19 +84,12 @@ namespace {
 } // unnamed namespace
 
   
-PeState::PeState(const std::string &potfile, libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset) :
- 	  potfile_(potfile), basisset_(basisset), cppe_state_(libcppe::CppeState(options, *(outfile->stream()))), int_helper_(PeIntegralHelper(basisset)) {
-	
-    std::shared_ptr<Molecule> molecule = basisset_->molecule();
-    molecule_ = make_molecule(molecule);
-    
-	libcppe::PotfileReader reader(potfile_);
-	potentials_ = reader.read();
-    potentials_ = libcppe::PotManipulator(potentials_, molecule_, *(outfile->stream())).manipulate(options);
-    
-    cppe_state_.set_molecule(molecule_);
-    cppe_state_.set_potentials(potentials_);
-    
+PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset) :
+      basisset_(basisset),
+      cppe_state_(libcppe::CppeState(options, make_molecule(basisset_->molecule()), *(outfile->stream()))),
+      int_helper_(PeIntegralHelper(basisset)) {
+
+    potentials_ = cppe_state_.get_potentials();
     cppe_state_.calculate_static_energies_and_fields();
 }
 
@@ -110,6 +103,7 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
             std::vector<double> moments;
             for (auto& m : p.get_multipoles()) {
                 m.remove_trace();
+                if (m.m_k > 2) throw std::runtime_error("PE is only implemented up to quadrupoles.");
                 for (auto d : m.get_values()) moments.push_back(d);
             }
             V_es_->add(int_helper_.compute_multipole_potential_integrals(site, 2, moments));

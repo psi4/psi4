@@ -50,6 +50,7 @@ void export_cppe(py::module& m) {
 
     py::class_<libcppe::PeOptions, std::shared_ptr<libcppe::PeOptions>> pe_options(m, "PeOptions", "Options for PE library");
     pe_options.def(py::init<>())
+              .def_readwrite("potfile", &libcppe::PeOptions::potfile)
               .def_readwrite("print_level", &libcppe::PeOptions::print_level)
               
               .def_readwrite("induced_thresh", &libcppe::PeOptions::induced_thresh)
@@ -64,7 +65,7 @@ void export_cppe(py::module& m) {
         .value("total", PeState::CalcType::total)
         .value("electronic_only", PeState::CalcType::electronic_only);
 
-    pe.def(py::init<std::string, libcppe::PeOptions, std::shared_ptr<BasisSet>>())
+    pe.def(py::init<libcppe::PeOptions, std::shared_ptr<BasisSet>>())
       .def("compute_pe_contribution", &PeState::compute_pe_contribution, "Compute PE contributions to energy and Fock matrix",
              py::arg("D"), py::arg("type"), py::arg("subtract_scf_density")=false)
       .def("print_energy_summary", &PeState::print_energy_summary);

@@ -14,17 +14,19 @@ if(${ENABLE_cppe})
         message(STATUS "Suitable cppe could not be located, ${Magenta}Building cppe${ColourReset} instead.")
         ExternalProject_Add(cppe_external
             GIT_REPOSITORY https://github.com/maxscheurer/cppe
-            GIT_TAG dev-psi4
-            UPDATE_COMMAND ""
+            GIT_TAG master
+            # UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}
+                       -DENABLE_PYTHON_INTERFFACE=OFF
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}

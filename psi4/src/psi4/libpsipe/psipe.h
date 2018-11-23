@@ -74,7 +74,7 @@ namespace psi {
   public:
     enum CalcType { total, electronic_only };
     PeState() = default;
-    PeState(const std::string &potfile, libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset);
+    PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset);
     ~PeState() {}
     
     /*! \brief Compute PE energy and Fock matrix contribution
@@ -92,13 +92,7 @@ namespace psi {
     // void calculate_excited_state_energy_correction(double* p_exc, double* energy, bool is_tdm);
 
   private:
-      std::string potfile_;
       std::shared_ptr<BasisSet> basisset_;
-      
-      bool m_have_input_section;
-      bool m_ready_for_calculation;
-      
-      libcppe::Molecule molecule_;
       std::vector<libcppe::Potential> potentials_;
       libcppe::CppeState cppe_state_;
       PeIntegralHelper int_helper_;
