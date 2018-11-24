@@ -33,10 +33,6 @@
 #   OpenMP_LIBRARY_DIRS - list of directories where OpenMP libraries may be found,
 #                         in preference to DEFAULT_PATHS
 #
-cmake_policy(PUSH)
-cmake_policy(SET CMP0057 NEW)  # support IN_LISTS
-
-
 set(PN TargetOpenMP)
 
 if(NOT ${PN}_FIND_COMPONENTS)
@@ -127,14 +123,12 @@ endif()
 
 add_library(OpenMP::OpenMP INTERFACE IMPORTED)
 set(${PN}_FOUND 1)
-foreach(_lang IN ITEMS C CXX Fortran)
-    if(_lang IN_LIST ${PN}_FIND_COMPONENTS)
-        if (TARGET OpenMP::OpenMP_${_lang})
-            set(${PN}_${_lang}_FOUND 1)
-            set_property(TARGET OpenMP::OpenMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_${_lang})
-        else()
-            unset(${PN}_FOUND)
-        endif()
+foreach(_lang ${${PN}_FIND_COMPONENTS})
+    if (TARGET OpenMP::OpenMP_${_lang})
+        set(${PN}_${_lang}_FOUND 1)
+        set_property(TARGET OpenMP::OpenMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_${_lang})
+    else()
+        unset(${PN}_FOUND)
     endif()
 endforeach()
 
@@ -147,4 +141,3 @@ find_package_handle_standard_args(${PN}
 #message("Targets after find_package(TargetOpenMP)")
 #cmake_print_properties(TARGETS OpenMP::OpenMP_C OpenMP::OpenMP_CXX OpenMP::OpenMP_Fortran OpenMP::OpenMP
 #                       PROPERTIES INTERFACE_COMPILE_DEFINITIONS INTERFACE_COMPILE_OPTIONS INTERFACE_INCLUDE_DIRS INTERFACE_LINK_LIBRARIES)
-cmake_policy(POP)
