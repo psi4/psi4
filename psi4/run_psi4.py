@@ -110,6 +110,7 @@ if args["inplace"]:
 
     import sysconfig
     core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core" + sysconfig.get_config_var("SO")
+    print(core_location)
     if not os.path.isfile(core_location):
         raise ImportError("A compiled Psi4 core{} needs to be symlinked to the {} folder".format(
             sysconfig.get_config_var("SO"), os.path.dirname(__file__)))
@@ -226,7 +227,7 @@ if args["json"]:
 
     psi4.extras._success_flag_ = True
     psi4.extras.exit_printing(start_time)
-    psi4.json_wrapper.run_json(json_data)
+    json_data = psi4.json_wrapper.run_json(json_data)
 
     with open(args["input"], 'w') as f:
         json.dump(json_data, f)
