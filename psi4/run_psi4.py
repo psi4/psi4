@@ -109,11 +109,10 @@ if args["inplace"]:
         raise ImportError("Cannot run inplace from an installed directory.")
 
     import sysconfig
-    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core" + sysconfig.get_config_var("SO")
-    print(core_location)
+    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core" + sysconfig.get_config_var("EXT_SUFFIX")
     if not os.path.isfile(core_location):
         raise ImportError("A compiled Psi4 core{} needs to be symlinked to the {} folder".format(
-            sysconfig.get_config_var("SO"), os.path.dirname(__file__)))
+            sysconfig.get_config_var("EXT_SUFFIX"), os.path.dirname(__file__)))
 
     lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
