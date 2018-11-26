@@ -57,6 +57,12 @@ macro(psi4_add_module binlib libname sources)
       VISIBILITY_INLINES_HIDDEN 1
     )
 
+  # This provides OpenMP flags and access to BLAS/LAPACK headers
+  target_link_libraries(${libname} 
+    PRIVATE 
+      tgt::lapack
+    )
+
   # library modules get their headers installed
   if(${binlib} MATCHES lib)
     install(
