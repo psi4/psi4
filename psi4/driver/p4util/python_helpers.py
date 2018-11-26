@@ -30,6 +30,8 @@ import os
 import re
 import sys
 import uuid
+import warnings
+
 import numpy as np
 import qcelemental as qcel
 
@@ -520,3 +522,10 @@ def py_psi_set_global_option_python(key, EXTERN):
 
 
 core.set_global_option_python = py_psi_set_global_option_python
+
+
+def core_get_variables():
+    warnings.warn("Using `psi4.core.get_variables` instead of `psi4.core.variables` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
+    return core.variables()
+
+core.get_variables = core_get_variables

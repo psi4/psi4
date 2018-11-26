@@ -1165,7 +1165,7 @@ PYBIND11_MODULE(core, core) {
     core.def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
     core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
     core.def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
-    core.def("get_variables", py_psi_return_variable_map,
+    core.def("variables", py_psi_return_variable_map,
              "Returns dictionary of the PSI variables set internally by the modules or python driver.");
     core.def("get_array_variable", py_psi_get_array_variable,
              "Returns one of the PSI variables set internally by the modules or python driver (see manual for full "
