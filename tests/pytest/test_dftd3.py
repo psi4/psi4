@@ -24,6 +24,10 @@ H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 """
 
+sne = """
+Ne 0 0 0
+"""
+
 db3lypd3bj = {
     'dashlevel': 'd3bj',
     'dashparams': {
@@ -114,28 +118,30 @@ def compute_key(pjrec):
     return pjrec['fctldash'].upper()
 
 
-# """dftd3/energy"""
-# ! Exercises the various DFT-D corrections, both through python directly and through c++
+ref = {}
+dmm = ['dimer', 'mA', 'mB', 'mAgB', 'gAmB']
+ref['eneyne'] = {}
+ref['eneyne']['B3LYP-D2'] = dict(zip(dmm, [-0.00390110, -0.00165271, -0.00058118, -0.00165271, -0.00058118]))
+ref['eneyne']['B3LYP-D3'] = dict(zip(dmm, [-0.00285088, -0.00084340, -0.00031923, -0.00084340, -0.00031923]))
+ref['eneyne']['B3LYP-D3(BJ)'] = dict(zip(dmm, [-0.00784595, -0.00394347, -0.00226683, -0.00394347, -0.00226683]))
+ref['eneyne']['PBE-D2'] = dict(zip(dmm, [-0.00278650, -0.00118051, -0.00041513, -0.00118051, -0.00041513]))
+ref['eneyne']['PBE-D3'] = dict(zip(dmm, [-0.00175474, -0.00045421, -0.00016839, -0.00045421, -0.00016839]))
+ref['eneyne']['PBE-D3(BJ)'] = dict(zip(dmm, [-0.00475937, -0.00235265, -0.00131239, -0.00235265, -0.00131239]))
+ref['ne'] = {}
+ref['ne']['B3LYP-D3(BJ)'] = {'atom': 0.0}
 
-ref_eneyne = {}
-dmm = ['dimer', 'mA', 'mB']
-ref_eneyne['B3LYP-D2'] = dict(zip(dmm, [-0.00390110, -0.00165271, -0.00058118]))
-ref_eneyne['B3LYP-D3'] = dict(zip(dmm, [-0.00285088, -0.00084340, -0.00031923]))
-ref_eneyne['B3LYP-D3(BJ)'] = dict(zip(dmm, [-0.00784595, -0.00394347, -0.00226683]))
-ref_eneyne['PBE-D2'] = dict(zip(dmm, [-0.00278650, -0.00118051, -0.00041513]))
-ref_eneyne['PBE-D3'] = dict(zip(dmm, [-0.00175474, -0.00045421, -0.00016839]))
-ref_eneyne['PBE-D3(BJ)'] = dict(zip(dmm, [-0.00475937, -0.00235265, -0.00131239]))
 
-
+@using_dftd3
 def test_10_qmol():
     #eneyne = qcdb.set_molecule(seneyne)
     #eneyne.update_geometry()
     eneyne = qcdb.Molecule(seneyne)
 
     E, G = eneyne.run_dftd3('b3lyp', 'd2')
-    assert compare_values(ref_eneyne['B3LYP-D2']['dimer'], E, 7, 'Q: Ethene-Ethyne -D2')
+    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], E, 7, 'Q: Ethene-Ethyne -D2')
 
 
+@using_dftd3
 @using_qcdb
 def test_10_pmol():
     import psi4
@@ -143,7 +149,7 @@ def test_10_pmol():
     eneyne.update_geometry()
 
     E, G = eneyne.run_dftd3('b3lyp', 'd2gr')
-    assert compare_values(ref_eneyne['B3LYP-D2']['dimer'], E, 7, 'P: Ethene-Ethyne -D2')
+    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], E, 7, 'P: Ethene-Ethyne -D2')
 
 
 @using_qcdb
@@ -152,42 +158,77 @@ def test_11_energy():
     eneyne.update_geometry()
 
     E, jrec = qcdb.energy('d3-b3lyp-d2', return_wfn=True)
-    assert compare_values(ref_eneyne['B3LYP-D2']['dimer'], E, 7, 'P: Ethene-Ethyne -D2')
-    assert compare_values(ref_eneyne['B3LYP-D2']['dimer'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-    assert compare_values(ref_eneyne['B3LYP-D2']['dimer'], jrec['qcvars']['B3LYP-D2 DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], E, 7, 'P: Ethene-Ethyne -D2')
+    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], jrec['qcvars']['B3LYP-D2 DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+
+@pytest.fixture
+def eneyne_ne_qmolecules():
+    eneyne = qcdb.Molecule(seneyne)
+    ne = qcdb.Molecule(sne)
+    mols = {
+        'eneyne': {
+            'dimer': eneyne,
+            'mA': eneyne.extract_subsets(1),
+            'mB': eneyne.extract_subsets(2),
+            'mAgB': eneyne.extract_subsets(1, 2),
+            'gAmB': eneyne.extract_subsets(2, 1),
+        },
+        'ne': {
+            'atom': ne,
+        }
+    }
+    return mols
+
+@pytest.fixture
+def eneyne_ne_pmolecules():
+    eneyne = psi4.core.Molecule.from_string(seneyne)
+    ne = psi4.core.Molecule.from_string(sne)
+    mols = {
+        'eneyne': {
+            'dimer': eneyne,
+            'mA': eneyne.extract_subsets(1),
+            'mB': eneyne.extract_subsets(2),
+            'mAgB': eneyne.extract_subsets(1, 2),
+            'gAmB': eneyne.extract_subsets(2, 1),
+        },
+        'ne': {
+            'atom': ne,
+        }
+    }
+    return mols
 
 
 _dftd3_paramset = [
-    ({'name': 'd3-b3lyp-d', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
-    ({'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
-    ({'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}),
+    ({'parent': 'eneyne', 'name': 'd3-b3lyp-d', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
+    ({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
+    ({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}),
+    ({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}),
+    ({'parent': 'eneyne', 'name': 'd3-PBE-D2', 'subject': 'mAgB', 'lbl': 'PBE-D2'}),
+    ({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}),
 ]
 
+@using_dftd3
 @pytest.mark.parametrize("inp", _dftd3_paramset)
-def test_11_dftd3_qmol(inp):
-    eneyne = qcdb.Molecule(seneyne)
-    subject = {'dimer': eneyne,
-               'mA': eneyne.extract_subsets(1),
-               'mB': eneyne.extract_subsets(2)}
-    expected = ref_eneyne[inp['lbl']][inp['subject']]
+def test_11_dftd3_qmol(inp, eneyne_ne_qmolecules):
+    subject = eneyne_ne_qmolecules[inp['parent']][inp['subject']]
+    expected = ref[inp['parent']][inp['lbl']][inp['subject']]
 
-    jrec = qcdb.intf_dftd3.run_dftd3(inp['name'], subject[inp['subject']], options={}, ptype='energy')
+    jrec = qcdb.intf_dftd3.run_dftd3(inp['name'], subject, options={}, ptype='energy')
     assert compare_values(expected, jrec['qcvars']['CURRENT ENERGY'].data, 7, tnm())
     assert compare_values(expected, jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
     assert compare_values(expected, jrec['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION ENERGY'].data, 7, tnm())
 
 
 
+@using_dftd3
 @using_psi4
 @pytest.mark.parametrize("inp", _dftd3_paramset)
-def test_11_dftd3_pmol(inp):
-    eneyne = psi4.core.Molecule.from_string(seneyne)
-    subject = {'dimer': eneyne,
-               'mA': eneyne.extract_subsets(1),
-               'mB': eneyne.extract_subsets(2)}
-    expected = ref_eneyne[inp['lbl']][inp['subject']]
+def test_11_dftd3_pmol(inp, eneyne_ne_pmolecules):
+    subject = eneyne_ne_pmolecules[inp['parent']][inp['subject']]
+    expected = ref[inp['parent']][inp['lbl']][inp['subject']]
 
-    jrec = qcdb.intf_dftd3.run_dftd3(inp['name'], subject[inp['subject']], options={}, ptype='energy')
+    jrec = qcdb.intf_dftd3.run_dftd3(inp['name'], subject, options={}, ptype='energy')
     assert compare_values(expected, jrec['qcvars']['CURRENT ENERGY'].data, 7, tnm())
     assert compare_values(expected, jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
     assert compare_values(expected, jrec['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION ENERGY'].data, 7, tnm())
@@ -195,6 +236,8 @@ def test_11_dftd3_pmol(inp):
     #assert compare_values(expected, psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, tnm())
     #assert compare_values(expected, psi4.get_variable(inp['lbl'] + ' DISPERSION CORRECTION ENERGY'), 7, tnm())
 
+
+# TODO test gradients, too, esp. ghost and single atom
 
 @using_qcdb
 def test_11_b():
@@ -204,6 +247,6 @@ def test_11_b():
     mB = eneyne.extract_subsets(2)
 
     E, jrec = qcdb.energy('d3-b3lyp-d3bj', return_wfn=True, molecule=mA)
-    assert compare_values(ref_eneyne['B3LYP-D3(BJ)']['mA'], E, 7, tnm())
-    assert compare_values(ref_eneyne['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-    assert compare_values(ref_eneyne['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['B3LYP-D3(BJ) DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], E, 7, tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['B3LYP-D3(BJ) DISPERSION CORRECTION ENERGY'].data, 7, tnm())
