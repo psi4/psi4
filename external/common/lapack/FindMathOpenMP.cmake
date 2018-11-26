@@ -102,7 +102,6 @@ endif()
 if (ENABLE_OPENMP)
     # *not* REQUIRED b/c some compilers don't support OpenMP and -DENABLE_OPENMP isn't a build-or-die-trying
     find_package(TargetOpenMP COMPONENTS ${TargetOpenMP_FIND_COMPONENTS})
-    set(PN MathOpenMP)
     if (TargetOpenMP_FOUND)
         set_property(TARGET tgt::${PN} APPEND PROPERTY INTERFACE_LINK_LIBRARIES OpenMP::OpenMP)
     else()

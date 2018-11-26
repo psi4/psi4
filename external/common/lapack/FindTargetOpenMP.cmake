@@ -33,6 +33,7 @@
 #   OpenMP_LIBRARY_DIRS - list of directories where OpenMP libraries may be found,
 #                         in preference to DEFAULT_PATHS
 #
+set(_TargetOpenMP_PN ${PN})
 set(PN TargetOpenMP)
 
 if(NOT ${PN}_FIND_COMPONENTS)
@@ -136,6 +137,9 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(${PN}
                                   REQUIRED_VARS ${PN}_FOUND
                                   HANDLE_COMPONENTS)
+
+set(PN ${_TargetOpenMP_PN})
+unset(_TargetOpenMP_PN)
 
 #include(CMakePrintHelpers)
 #message("Targets after find_package(TargetOpenMP)")
