@@ -427,6 +427,7 @@ class PSI_API IntegralFactory {
     virtual OneBodySOInt* so_potential(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the ECP integral.
+    virtual OneBodyAOInt* ao_ecp_from_libecpint(int deriv = 0);
     virtual OneBodyAOInt* ao_ecp(int deriv = 0);
     virtual OneBodySOInt* so_ecp(int deriv = 0);
 

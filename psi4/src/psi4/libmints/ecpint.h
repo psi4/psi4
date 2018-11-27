@@ -48,6 +48,9 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/bessel.h"
+#ifdef USING_libecpint
+#include "libecpint/ecp.hpp"
+#endif
 
 namespace psi {
 
@@ -312,6 +315,36 @@ class RadialIntegral {
     void type2(int lam, int l1start, int l1end, int l2start, int l2end, int N, const GaussianShell &U,
                const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values);
 };
+
+#ifdef USING_libecpint
+/**
+ * \ingroup MINTS
+ * \class ECPIntegral
+ * \brief Calculates ECP integrals.
+ *
+ * Given an ECP basis, and orbital bases, this will calculate the ECP integrals over all ECP centers.
+ * TODO: Implement derivatives (identical to normal integrals, but with shifted angular momenta)
+ */
+class ECPIntFromLibecpint : public OneBodyAOInt {
+   private:
+
+    /// Overridden shell-pair integral calculation over all ECP centers
+    void compute_pair(const GaussianShell &shellA, const GaussianShell &shellB);
+
+    /// Computes the overall ECP integrals over the given ECP center and shell pair
+    void compute_shell_pair(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB,
+                            TwoIndex<double> &values, int shiftA = 0, int shiftB = 0);
+
+   public:
+    /**
+     * Sets the reference to the ECP basis and initialises the radial and angular integrals
+     * @param basis - reference to the ECP basis set
+     * @paramm maxLB - the maximum angular momentum in the orbital basis
+     */
+    ECPIntFromLibecpint(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
+    virtual ~ECPIntFromLibecpint();
+};
+#endif
 
 /**
  * \ingroup MINTS

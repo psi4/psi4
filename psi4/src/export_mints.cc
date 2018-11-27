@@ -69,6 +69,9 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 
+#ifdef USING_libecpint
+#include "libecpint/ecp.hpp"
+#endif
 #include <string>
 
 using namespace psi;

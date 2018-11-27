@@ -86,7 +86,7 @@ psi4_component(dkh @ENABLE_dkh@)
 psi4_component(erd @ENABLE_erd@)
 psi4_component(gdma @ENABLE_gdma@)
 psi4_component(pcmsolver @ENABLE_PCMSolver@)
-psi4_component(libecpint @ENABLE_Libecpint@)
+psi4_component(libecpint @ENABLE_libecpint@)
 psi4_component(simint @ENABLE_simint@)
 
 foreach(_comp ${${PN}_FIND_COMPONENTS})

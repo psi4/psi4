@@ -47,7 +47,6 @@
 #include "wavefunction.h"
 #include "coordentry.h"
 #include "psi4/libpsi4util/process.h"
-
 #include <memory>
 #include <regex>
 #include <stdexcept>
@@ -56,6 +55,10 @@
 #include <cmath>
 #include <map>
 #include <list>
+
+#ifdef USING_libecpint
+#include "libecpint/ecp.hpp"
+#endif
 
 using namespace psi;
 
@@ -80,7 +83,8 @@ std::string to_upper_copy(const std::string &original) {
 }  // namespace
 
 // Constructs a zero AO basis set
-BasisSet::BasisSet() {
+BasisSet::BasisSet()
+      {
     initialize_singletons();
 
     // Add a dummy atom at the origin, to hold this basis function
@@ -570,7 +574,8 @@ std::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set() {
 BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &shell_map,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &ecp_shell_map)
-    : name_(basistype), molecule_(mol) {
+    : name_(basistype),
+      molecule_(mol) {
     // Singletons
     initialize_singletons();
 
@@ -795,6 +800,9 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             center_to_ecp_nshell_[n] = n_ecp_shells;
             center_to_ecp_shell_[n] = ecp_shell_count;
             int atom_nprim = 0;
+#ifdef USING_libecpint
+            libecpint::ECP this_atom_ecp;
+#endif
             for (int i = 0; i < n_ecp_shells; ++i) {
                 const ShellInfo &thisshell = ecp_shells[i];
                 ShellType shelltype = thisshell.shell_type();
@@ -809,9 +817,18 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                 } else {
                     throw PSIEXCEPTION("Unknown ECP shell type in BasisSet constructor!");
                 }
+#ifdef USING_libecpint
+                for(int prim = ustart+atom_nprim; prim < ustart+atom_nprim+ecp_shell_nprim; ++prim){
+                    this_atom_ecp.addPrimitive(uecpns_[prim], am, uecpexponents_[prim], uecpcoefficients_[prim]);
+                }
+#endif
                 atom_nprim += ecp_shell_nprim;
                 ecp_shell_count++;
             }
+#ifdef USING_libecpint
+            if(this_atom_ecp.getN()) ecp_basis_[n] = this_atom_ecp;
+#endif
+
             if (atom_nprim != uend - ustart) {
                 throw PSIEXCEPTION("Problem with nprimitive in ECP basis set construction!");
             }

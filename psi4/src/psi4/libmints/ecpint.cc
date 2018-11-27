@@ -636,6 +636,23 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 
 //***************************************** ECP INTEGRAL ***********************************************
 
+ECPIntFromLibecpint::ECPIntFromLibecpint(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+               int deriv)
+    : OneBodyAOInt(st, bs1, bs2, deriv) {
+   ///ACS TODO // Initialise angular and radial integrators
+   ///ACS TODO int maxam1 = bs1->max_am();
+   ///ACS TODO int maxam2 = bs2->max_am();
+   ///ACS TODO int maxLB = maxam1 > maxam2 ? maxam1 : maxam2;
+   ///ACS TODO int maxLU = bs1_->max_ecp_am();
+   ///ACS TODO angInts.init(maxLB + deriv, maxLU);
+   ///ACS TODO angInts.compute();
+   ///ACS TODO radInts.init(2 * (maxLB + deriv) + maxLU);
+
+   ///ACS TODO int maxnao1 = INT_NCART(maxam1);
+   ///ACS TODO int maxnao2 = INT_NCART(maxam2);
+   ///ACS TODO buffer_ = new double[maxnao1 * maxnao2];
+}
+
 ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv) {
@@ -912,6 +929,22 @@ void ECPInt::compute_shell_pair(const GaussianShell &U, const GaussianShell &she
     }
 }
 
+void ECPIntFromLibecpint::compute_pair(const GaussianShell &shellA, const GaussianShell &shellB) {
+    memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
+    TwoIndex<double> tempValues;
+    int ao12;
+    // TODO check that bs1 and bs2 ECPs are the same
+    for (int i = 0; i < bs1_->n_ecp_shell(); i++) {
+        const GaussianShell &ecpshell = bs1_->ecp_shell(i);
+        compute_shell_pair(ecpshell, shellA, shellB, tempValues);
+        ao12 = 0;
+        for (int a = 0; a < shellA.ncartesian(); a++) {
+            for (int b = 0; b < shellB.ncartesian(); b++) {
+                buffer_[ao12++] += tempValues(a, b);
+            }
+        }
+    }
+}
 void ECPInt::compute_pair(const GaussianShell &shellA, const GaussianShell &shellB) {
     memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
     TwoIndex<double> tempValues;

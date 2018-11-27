@@ -1,8 +1,8 @@
-    if(${ENABLE_libecpint})
-    find_package(Libecpint 0.9 CONFIG QUIET)
+if(${ENABLE_libecpint})
+    find_package(libecpint 0.9 CONFIG QUIET)
 
     if(${libecpint_FOUND})
-        get_property(_loc TARGET libecpint::ecp PROPERTY LOCATION)
+        get_property(_loc TARGET libecpint::ecpint PROPERTY LOCATION)
         message(STATUS "${Cyan}Found libecpint${ColourReset}: ${_loc} (found version ${Lib_VERSION})")
         add_library(libecpint_external INTERFACE)  # dummy
     else()
@@ -23,7 +23,7 @@
 
         ExternalProject_Add(libecpint_external
             GIT_REPOSITORY https://github.com/andysim/libecpint
-            GIT_TAG 837e321
+            GIT_TAG 609b52d665b6595bb2bcad61b58809e7c90b37a7
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

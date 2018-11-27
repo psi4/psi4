@@ -57,7 +57,6 @@
 
 #include <libint/libint.h>
 
-;
 using namespace psi;
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -119,6 +118,7 @@ OneBodySOInt* IntegralFactory::so_potential(int deriv) {
     return new PotentialSOInt(ao_int, this);
 }
 
+OneBodyAOInt* IntegralFactory::ao_ecp_from_libecpint(int deriv) { return new ECPIntFromLibecpint(spherical_transforms_, bs1_, bs2_, deriv); }
 OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) { return new ECPInt(spherical_transforms_, bs1_, bs2_, deriv); }
 
 OneBodySOInt* IntegralFactory::so_ecp(int deriv) {

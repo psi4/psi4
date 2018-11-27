@@ -35,6 +35,7 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/psi4-dec.h"
 
+
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -44,6 +45,11 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 
+#ifdef USING_libecpint
+namespace libecpint {
+    struct ECP;
+}
+#endif
 namespace psi {
 
 class Molecule;
@@ -71,6 +77,9 @@ class PSI_API BasisSet {
     std::string key_;
     std::string target_;
 
+#ifdef USING_libecpint
+    std::map<int,libecpint::ECP> ecp_basis_;
+#endif
     //! Array of gaussian shells
     GaussianShell *shells_;
     //! Array of ECP shells
@@ -87,7 +96,6 @@ class PSI_API BasisSet {
 
     // Has static information been initialized?
     static bool initialized_shared_;
-
     /*
      * Scalars
      */
