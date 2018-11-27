@@ -377,7 +377,6 @@ void FCHKWriter::write(const std::string &filename) {
     std::vector<int> atomic_numbers;
     std::vector<int> int_atomic_weights;
     std::vector<double> atomic_weights;
-    double to_bohr = mol->units() == Molecule::Angstrom ? 1.0 / pc_bohr2angstroms : 1.0;
     for (int atom = 0; atom < natoms; ++atom) {
         double Z = mol->Z(atom);
         auto intZ = static_cast<int>(Z);

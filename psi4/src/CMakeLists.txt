@@ -18,15 +18,16 @@ target_sources(core
     export_diis.cc
     export_fock.cc
     export_functional.cc
+    export_linalg.cc
     export_mints.cc
     export_misc.cc
     export_oeprop.cc
+    export_options.cc
     export_pcm.cc
     export_plugins.cc
     export_psio.cc
     export_trans.cc
     export_wavefunction.cc
-    export_options.cc
     create_new_plugin.cc
     read_options.cc
     python_data_type.cc
@@ -48,6 +49,7 @@ target_link_libraries(core
     ${psi4_libmodules}
     ${POST_LIBRARY_OPTION}
     ${LIBC_INTERJECT}
+    xtensor
     tgt::lapack # OpenMP flags to core.cc
   )
 

@@ -77,15 +77,16 @@ void export_cubeprop(py::module&);
 void export_diis(py::module&);
 void export_fock(py::module&);
 void export_functional(py::module&);
+void export_linalg(py::module&);
 void export_mints(py::module&);
 void export_misc(py::module&);
 void export_oeprop(py::module&);
+void export_options(py::module&);
 void export_pcm(py::module&);
 void export_plugins(py::module&);
 void export_psio(py::module&);
-void export_wavefunction(py::module&);
-void export_options(py::module&);
 void export_trans(py::module&);
+void export_wavefunction(py::module&);
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -1259,15 +1260,16 @@ PYBIND11_MODULE(core, core) {
     core.def("set_psi_file_prefix", [](std::string fprefix) { psi_file_prefix = strdup(fprefix.c_str()); });
 
     // Define library classes
-    export_psio(core);
     export_diis(core);
-    export_mints(core);
-    export_functional(core);
-    export_misc(core);
     export_fock(core);
+    export_functional(core);
+    export_linalg(core);
+    export_mints(core);
+    export_misc(core);
+    export_options(core);
+    export_psio(core);
     export_trans(core);
     export_wavefunction(core);
-    export_options(core);
 
     // ??
     // py::class_<Process::Environment>(core, "Environment")
