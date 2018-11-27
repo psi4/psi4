@@ -26,35 +26,33 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <fstream>
-#include <cmath>
 #include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
 #include <functional>
-#include <string>
+#include <iostream>
 #include <sstream>
-#include <vector>
+#include <string>
 #include <utility>
+#include <vector>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/liboptions/liboptions_python.h"
-#include "psi4/psifiles.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libdiis/diisentry.h"
-
-#ifdef USING_PCMSolver
-#include "psi4/libpsipcm/psipcm.h"
-#endif
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
@@ -66,13 +64,14 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/oeprop.h"
+
+#ifdef USING_PCMSolver
+#include "psi4/libpsipcm/psipcm.h"
+#endif
+
 #include "hf.h"
 
 #include "psi4/psi4-dec.h"
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 namespace psi {
 namespace scf {

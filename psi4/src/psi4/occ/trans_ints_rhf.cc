@@ -48,7 +48,7 @@ void OCCWave::trans_ints_rhf()
 /********************************************************************************************/
     ints->update_orbitals();
     ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
-    ints->set_keep_dpd_so_ints(1);
+    ints->set_keep_dpd_so_ints(true);
 
     // Trans (OO|OO)
     timer_on("Trans (OO|OO)");
@@ -196,8 +196,8 @@ void OCCWave::denominators_rhf()
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
 
-    double *aOccEvals = new double [nacooA];
-    double *aVirEvals = new double [nacvoA];
+    auto *aOccEvals = new double [nacooA];
+    auto *aVirEvals = new double [nacvoA];
 
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep

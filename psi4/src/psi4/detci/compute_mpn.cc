@@ -403,7 +403,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
             else {
                 std::string str = std::to_string(13);
                 str += " vector norm = ";
-                char *str2 = new char[25];
+                auto *str2 = new char[25];
                 sprintf(str2, "%20.15lf", cvec_norm[k - 1]);
                 str += str2;
                 str += " < ";
@@ -427,7 +427,7 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
                 else {
                     std::string str = std::to_string(13);
                     str += " vector norm = ";
-                    char *str2 = new char[25];
+                    auto *str2 = new char[25];
                     sprintf(str2, "%20.15lf", cvec_norm[k - 1]);
                     str += str2;
                     str += " < ";

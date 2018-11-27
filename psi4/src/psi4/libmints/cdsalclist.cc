@@ -171,7 +171,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
 
     // constraints_ortho.print();
 
-    double *salc = new double[ncd_];
+    auto *salc = new double[ncd_];
 
     // Obtain handy reference to point group.
     const PointGroup &pg = *molecule_->point_group().get();
@@ -184,7 +184,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     for (int i = 0; i < nirrep_; ++i) dim[i] = ncd_;
 
     Matrix salcs("Requested SALCs", dim, dim);
-    int *salcirrep = new int[ncd_];
+    auto *salcirrep = new int[ncd_];
 
     // We know how many atom_salcs_ we have.
     for (int i = 0; i < natom; ++i) atom_salcs_.push_back(CdSalcWRTAtom());

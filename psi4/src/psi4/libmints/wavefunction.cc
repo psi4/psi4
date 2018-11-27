@@ -92,6 +92,82 @@ Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &o
     set_reference_wavefunction(reference_wavefunction);
 }
 
+// TODO: pass Options object to constructor instead of relying on globals
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, 
+                           std::map<std::string, std::shared_ptr<Matrix>> matrices,
+                           std::map<std::string, std::shared_ptr<Vector>> vectors,
+                           std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints, 
+                           std::map<std::string, std::string> strings, std::map<std::string, bool> booleans, 
+                           std::map<std::string, double> floats)
+    : options_(Process::environment.options),
+      basisset_(basisset),
+      molecule_(molecule) {
+
+
+    // Check the point group of the molecule. If it is not set, set it.
+    if (!molecule_->point_group()) {
+        molecule_->set_point_group(molecule_->find_point_group());
+    }
+
+    // Create an SO basis...we need the point group for this part.
+    integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
+    sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
+
+    // set matrices
+    Ca_ = matrices["Ca"];
+    Cb_ = matrices["Cb"];
+    Da_ = matrices["Da"];
+    Db_ = matrices["Db"];
+    Fa_ = matrices["Fa"];
+    Fb_ = matrices["Fb"];
+    H_ = matrices["H"];
+    S_ = matrices["S"];
+    Lagrangian_ = matrices["X"];
+    AO2SO_ = matrices["aotoso"];
+    gradient_ = matrices["gradient"];
+    hessian_ = matrices["hessian"];
+
+    // set vectors
+    epsilon_a_ = vectors["epsilon_a"];
+    epsilon_b_ = vectors["epsilon_b"];
+    frequencies_ = vectors["frequencies"];
+
+    // set dimensions
+    doccpi_ = dimensions["doccpi"];
+    soccpi_ = dimensions["soccpi"];
+    frzcpi_ = dimensions["frzcpi"];
+    frzvpi_ = dimensions["frzvpi"];
+    nalphapi_ = dimensions["nalphapi"];
+    nbetapi_ = dimensions["nbetapi"];
+    nmopi_ = dimensions["nmopi"];
+    nsopi_ = dimensions["nsopi"];
+     
+    // set integers
+    nalpha_ = ints["nalpha"];
+    nbeta_ = ints["nbeta"];
+    nfrzc_ = ints["nfrzc"];
+    nirrep_ = ints["nirrep"];
+    nmo_ = ints["nmo"];
+    nso_ = ints["nso"];
+    print_ = ints["print"];
+    
+    // set strings
+    name_ = strings["name"];
+
+    // set booleans
+    PCM_enabled_ = booleans["PCM_enabled"];
+    same_a_b_dens_ = booleans["same_a_b_dens"];
+    same_a_b_orbs_ = booleans["same_a_b_orbs"];
+    density_fitted_ = booleans["density_fitted"];
+
+    // set floats
+    energy_ = floats["energy"];
+    efzc_ = floats["efzc"];
+    dipole_field_strength_[0] = floats["dipole_field_x"];
+    dipole_field_strength_[1] = floats["dipole_field_y"];
+    dipole_field_strength_[2] = floats["dipole_field_z"];
+}
+
 Wavefunction::Wavefunction(Options &options)
     : options_(options), dipole_field_strength_{{0.0, 0.0, 0.0}}, PCM_enabled_(false) {}
 

@@ -21,12 +21,13 @@ install:
                  networkx
                  ninja
                  numpy
-                 pint
                  pybind11
                  pytest
                  python=3.6
   - conda clean --all
   - activate %CONDA_ENV%
+  - conda install --channel psi4
+                 qcelemental
   - conda list
 
 before_build:
@@ -77,11 +78,15 @@ test_script:
   # Failling tests:
   #     ci-property
   #
+  # Tests requiring AM > 5:
+  #     opt-full-hess-every
+  #
   - ctest --build-config %CONFIGURATION%
-          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1|ci-property)$"
+          --exclude-regex "^(cbs-delta-energy|cbs-xtpl-gradient|dfmp2-ecp|fnocc2|mp2-module|scf5|psimrcc-sp1|pywrap-all|pywrap-cbs1|ci-property|opt-full-hess-every)$"
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
+  - python %INSTALL_FOLDER%\bin\psi4 --test
 
 after_test:
   # Run failling tests, but their results are ignored
@@ -90,7 +95,6 @@ after_test:
           --tests-regex "^(ci-property)$"
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
-  - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
 
 cache:
   - C:\Miniconda3-x64\pkgs

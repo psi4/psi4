@@ -42,7 +42,7 @@ class UHF : public HF {
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
     void form_initialF();
-    double compute_initial_E();
+    double compute_initial_E() override;
     bool stability_analysis_pk();
 
     void common_init();
@@ -65,34 +65,34 @@ class UHF : public HF {
     UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
     UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
         std::shared_ptr<PSIO> psio);
-    virtual ~UHF();
+    ~UHF() override;
 
     virtual bool same_a_b_orbs() const { return false; }
     virtual bool same_a_b_dens() const { return false; }
 
-    bool diis();
-    void save_density_and_energy();
-    double compute_orbital_gradient(bool save_diis, int max_diis_vectors);
+    bool diis() override;
+    void save_density_and_energy() override;
+    double compute_orbital_gradient(bool save_diis, int max_diis_vectors) override;
 
-    void form_C();
-    void form_D();
-    void form_F();
-    void form_G();
-    void form_V();
-    double compute_E();
-    void finalize();
+    void form_C() override;
+    void form_D() override;
+    void form_F() override;
+    void form_G() override;
+    void form_V() override;
+    double compute_E() override;
+    void finalize() override;
 
-    void damping_update(double);
-    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print);
-    bool stability_analysis();
+    void damping_update(double) override;
+    int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
+    bool stability_analysis() override;
 
     /// Hessian-vector computers and solvers
-    virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
-    virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
-                                               std::string return_basis = "MO");
-    virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
-    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol = 1.e-4,
-                                                 int max_iter = 10, int print_lvl = 1);
+    std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x) override;
+    std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
+                                               std::string return_basis = "MO") override;
+    std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x) override;
+    std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol = 1.e-4,
+                                                 int max_iter = 10, int print_lvl = 1) override;
 
     std::shared_ptr<UHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };

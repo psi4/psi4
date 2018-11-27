@@ -50,7 +50,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, double*** T_matrix, do
     // Setup reindexing_array
     // This assumes that the reindexing starts from 1 !!! This can cost you an headache
     if (reindexing.size() > 6) throw PSIEXCEPTION("CCOperation::sort() doesn't support more that six indices");
-    short* reindexing_array = new short[6];
+    auto* reindexing_array = new short[6];
     for (size_t i = 0; i < reindexing.size(); i++) reindexing_array[i] = to_integer(reindexing.substr(i, 1)) - 1;
 
     CCIndex* A_left = A_Matrix->get_left();
@@ -93,7 +93,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, double*** T_matrix, do
         if (reindexing.size() == 2) {
             int b_irrep;
             size_t b_left, b_right;
-            short* pq = new short[2];
+            auto* pq = new short[2];
             // A[x][x] <- T[x][x]
             if ((A_left_nelements == 1) && (T_left_nelements == 1)) {
                 int* T_left_one_index_to_irrep = T_left->get_one_index_to_irrep();
@@ -168,7 +168,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, double*** T_matrix, do
         } else if (reindexing.size() == 4) {
             int b_irrep;
             size_t b_left, b_right;
-            short* pqrs = new short[4];
+            auto* pqrs = new short[4];
             // A[x][xxx] <- B[x][xxx]
             if ((A_left_nelements == 1) && (T_left_nelements == 1)) {
                 int* T_left_one_index_to_irrep = T_left->get_one_index_to_irrep();
@@ -385,7 +385,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, double*** T_matrix, do
             // This is a fast 6-index sorting algorithm used by the active-space computations
             int b_irrep;
             size_t b_left, b_right;
-            short* pqrstu = new short[6];
+            auto* pqrstu = new short[6];
             // A[xxx][xxx] <- T[xxx][xxx]
             if ((A_left_nelements == 3) && (T_left_nelements == 3)) {
                 int*** T_left_three_index_to_irrep = T_left->get_three_index_to_irrep();
@@ -432,7 +432,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, double*** T_matrix, do
         short swap_temp;
         double sym_constant = constant * A_Matrix->get_symmetry();
         if (reindexing.size() == 4) {
-            short* pqrs = new short[4];
+            auto* pqrs = new short[4];
             // A[x][xxx] <- B[x][xxx]
             if ((A_left_nelements == 1) && (T_left_nelements == 1)) {
                 throw FeatureNotImplemented("PSIMRCC", "A[x][xxx] <- B[x][xxx] with expansion", __FILE__, __LINE__);

@@ -62,15 +62,17 @@ namespace psi {
 #define PSIO_ERROR_IDENTVOLPATH 19
 #define PSIO_ERROR_MAXUNIT 20
 
-typedef struct {
-    size_t page;   /* First page of entry */
-    size_t offset; /* Starting byte offset on fpage */
-} psio_address;
+struct psio_address {
+    /*! First page of entry */
+    size_t page;
+    /*! Starting byte offset on fpage */
+    size_t offset;
+};
 
-typedef struct {
+struct psio_vol {
     char *path;
     int stream;
-} psio_vol;
+};
 
 typedef struct psio_entry {
     char key[PSIO_KEYLEN];
@@ -80,12 +82,12 @@ typedef struct psio_entry {
     struct psio_entry *last;
 } psio_tocentry;
 
-typedef struct {
+struct psio_ud {
     size_t numvols;
     psio_vol vol[PSIO_MAXVOL];
     size_t toclen;
     psio_tocentry *toc;
-} psio_ud;
+};
 
 /** A convenient address initialization struct */
 extern PSI_API psio_address PSIO_ZERO;

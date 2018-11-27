@@ -93,12 +93,12 @@ set {
 
 energy('sapt0')
 
-compare_values(85.189064531275775, dimer.nuclear_repulsion_energy(), 9,    "Nuclear Repulsion Energy")
-compare_values(-0.00343130969, psi4.get_variable("SAPT ELST ENERGY"), 6,   "SAPT0 elst")
-compare_values( 0.00368418323, psi4.get_variable("SAPT EXCH ENERGY"), 6,   "SAPT0 exch")
-compare_values(-0.00093297498, psi4.get_variable("SAPT IND ENERGY"), 6,    "SAPT0 ind")
-compare_values(-0.00231534918, psi4.get_variable("SAPT DISP ENERGY"), 6,   "SAPT0 disp")
-compare_values(-0.00299545062, psi4.get_variable("SAPT0 TOTAL ENERGY"), 6, "SAPT0")
+compare_values(85.189064531275775, dimer.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy")
+compare_values(-0.00343130969, psi4.get_variable("SSAPT0 ELST ENERGY"), 6, "sSAPT0 elst")
+compare_values( 0.00368418323, psi4.get_variable("SSAPT0 EXCH ENERGY"), 6, "sSAPT0 exch")
+compare_values(-0.00093297498, psi4.get_variable("SSAPT0 IND ENERGY"), 6, "sSAPT0 ind")
+compare_values(-0.00231534918, psi4.get_variable("SSAPT0 DISP ENERGY"), 6, "sSAPT0 disp")
+compare_values(-0.00299545062, psi4.get_variable("SSAPT0 TOTAL ENERGY"), 6, "sSAPT0")
 """
 
     tfn = '_thread_test_input_psi4_yo'

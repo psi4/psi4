@@ -64,7 +64,7 @@ class PSI_API PsiException : public std::runtime_error {
     * Override default message for exception throw in what
     * @param msg The message for what to throw
     */
-    void rewrite_msg(std::string msg) throw();
+    void rewrite_msg(std::string msg) noexcept;
 
    public:
     /**
@@ -73,11 +73,11 @@ class PSI_API PsiException : public std::runtime_error {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    PsiException(std::string message, const char *file, int line) throw();
+    PsiException(std::string message, const char *file, int line) noexcept;
 
-    PsiException(const PsiException &copy) throw();
+    PsiException(const PsiException &copy) noexcept;
 
-    virtual ~PsiException() throw();
+    ~PsiException() noexcept override;
 
     PsiException &operator=(const PsiException &other) {
         if (this != &other) {
@@ -92,25 +92,25 @@ class PSI_API PsiException : public std::runtime_error {
     * Override of runtime_error's virtual what method
     * @return Description of exception
     */
-    const char *what() const throw();
+    const char *what() const noexcept override;
 
     /**
     * Accessor method
     * @return File that threw the exception
     */
-    const char *file() const throw();
+    const char *file() const noexcept;
 
     /**
     * Accessor method
     * @return A string description of line and file that threw exception
     */
-    const char *location() const throw();
+    const char *location() const noexcept;
 
     /**
     * Accessor method
     * @return The line number that threw the exception
     */
-    int line() const throw();
+    int line() const noexcept;
 };
 
 class NotImplementedException_ : public PsiException {
@@ -130,9 +130,9 @@ class PSI_API SanityCheckError : public PsiException {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    SanityCheckError(std::string message, const char *file, int line) throw();
+    SanityCheckError(std::string message, const char *file, int line) noexcept;
 
-    virtual ~SanityCheckError() throw();
+    ~SanityCheckError() noexcept override;
 };
 
 /**
@@ -146,9 +146,9 @@ class SystemError : public PsiException {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    SystemError(int eno, const char *file, int line) throw();
+    SystemError(int eno, const char *file, int line) noexcept;
 
-    virtual ~SystemError() throw();
+    ~SystemError() noexcept override;
 };
 
 /**
@@ -163,9 +163,9 @@ class FeatureNotImplemented : public PsiException {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    FeatureNotImplemented(std::string module, std::string feature, const char *file, int line) throw();
+    FeatureNotImplemented(std::string module, std::string feature, const char *file, int line) noexcept;
 
-    virtual ~FeatureNotImplemented() throw();
+    ~FeatureNotImplemented() noexcept override;
 };
 
 /**
@@ -183,7 +183,7 @@ class LimitExceeded : public PsiException {
     * Accessor method
     * @return A string description of the limit that was exceeded
     */
-    const char *description() const throw() {
+    const char *description() const noexcept {
         std::stringstream sstr;
         sstr << "value for " << resource_name_ << " exceeded.\n"
              << "allowed: " << maxval_ << " actual: " << errorval_;
@@ -199,16 +199,16 @@ class LimitExceeded : public PsiException {
     * @param f The file that threw the exception (use __FILE__ macro)
     * @param l The line number that threw the exception (use __LINE__ macro)
     */
-    LimitExceeded(std::string resource_name, T maxval, T errorval, const char *f, int l) throw()
+    LimitExceeded(std::string resource_name, T maxval, T errorval, const char *f, int l) noexcept
         : PsiException(resource_name, f, l), maxval_(maxval), errorval_(errorval), resource_name_(resource_name) {
         rewrite_msg(description());
     }
 
-    T max_value() const throw() { return maxval_; }
+    T max_value() const noexcept { return maxval_; }
 
-    T actual_value() const throw() { return errorval_; }
+    T actual_value() const noexcept { return errorval_; }
 
-    virtual ~LimitExceeded<T>() throw(){};
+    ~LimitExceeded<T>() noexcept override {};
 };
 
 /**
@@ -227,9 +227,9 @@ class StepSizeError : public LimitExceeded<T> {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    StepSizeError(std::string resource_name, T max, T actual, const char *file, int line) throw();
+    StepSizeError(std::string resource_name, T max, T actual, const char *file, int line) noexcept;
 
-    virtual ~StepSizeError() throw();
+    virtual ~StepSizeError() noexcept;
 };
 
 /**
@@ -247,9 +247,9 @@ class MaxIterationsExceeded : public LimitExceeded<T> {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    MaxIterationsExceeded(std::string routine_name, T max, const char *file, int line) throw();
+    MaxIterationsExceeded(std::string routine_name, T max, const char *file, int line) noexcept;
 
-    virtual ~MaxIterationsExceeded() throw();
+    ~MaxIterationsExceeded() noexcept override;
 };
 
 /**
@@ -268,19 +268,19 @@ class ConvergenceError : public MaxIterationsExceeded<T> {
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
     ConvergenceError(std::string routine_name, T max, double desired_accuracy, double actual_accuracy, const char *file,
-                     int line) throw();
+                     int line) noexcept;
 
     /** Accessor method
     *  @return The accuracy you wish to achieve
     */
-    double desired_accuracy() const throw();
+    double desired_accuracy() const noexcept;
 
     /** Accessor method
     *  @return The accuracy you actually got
     */
-    double actual_accuracy() const throw();
+    double actual_accuracy() const noexcept;
 
-    virtual ~ConvergenceError() throw();
+    ~ConvergenceError() noexcept override;
 
    private:
     double desired_acc_;
@@ -300,9 +300,9 @@ class ResourceAllocationError : public LimitExceeded<T> {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    ResourceAllocationError(std::string resource_name, T max, T actual, const char *file, int line) throw();
+    ResourceAllocationError(std::string resource_name, T max, T actual, const char *file, int line) noexcept;
 
-    virtual ~ResourceAllocationError() throw();
+    virtual ~ResourceAllocationError() noexcept;
 };
 
 /**
@@ -314,7 +314,7 @@ class InputException : public PsiException {
     * Template method for writing generic input exception message
     */
     template <class T>
-    void write_input_msg(std::string msg, std::string param_name, T val) throw();
+    void write_input_msg(std::string msg, std::string param_name, T val) noexcept;
 
    public:
     /**
@@ -325,7 +325,7 @@ class InputException : public PsiException {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    InputException(std::string msg, std::string param_name, int value, const char *file, int line) throw();
+    InputException(std::string msg, std::string param_name, int value, const char *file, int line) noexcept;
 
     /**
     * Constructor
@@ -335,7 +335,7 @@ class InputException : public PsiException {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    InputException(std::string msg, std::string param_name, double value, const char *file, int line) throw();
+    InputException(std::string msg, std::string param_name, double value, const char *file, int line) noexcept;
 
     /**
     * Constructor
@@ -345,7 +345,7 @@ class InputException : public PsiException {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    InputException(std::string msg, std::string param_name, std::string value, const char *file, int line) throw();
+    InputException(std::string msg, std::string param_name, std::string value, const char *file, int line) noexcept;
 
     /**
     * Constructor
@@ -354,7 +354,7 @@ class InputException : public PsiException {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    InputException(std::string msg, std::string param_name, const char *file, int line) throw();
+    InputException(std::string msg, std::string param_name, const char *file, int line) noexcept;
 };
 
 }  // end namespace psi exception

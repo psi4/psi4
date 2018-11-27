@@ -83,7 +83,7 @@ void get_eom_params(SharedWavefunction ref_wfn, Options &options) {
             size_t full_nirreps = old_pg->char_table().nirrep();
             if (options["ROOTS_PER_IRREP"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input ROOTS_PER_IRREP array has the wrong dimensions");
-            int *temp_docc = new int[full_nirreps];
+            auto *temp_docc = new int[full_nirreps];
             for (int h = 0; h < full_nirreps; ++h) temp_docc[h] = options["ROOTS_PER_IRREP"][h].to_integer();
             map_irreps(temp_docc, old_pg, ref_wfn->molecule()->point_group());
             eom_params.states_per_irrep = new int[moinfo.nirreps];

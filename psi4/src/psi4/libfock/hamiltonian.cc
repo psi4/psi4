@@ -378,7 +378,7 @@ void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
     const std::vector<SharedMatrix >& J = jk_->J();
     const std::vector<SharedMatrix >& K = jk_->K();
 
-    double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
+    auto* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (size_t N = 0; N < x.size(); ++N) {
@@ -587,7 +587,7 @@ void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
     const std::vector<SharedMatrix >& J = jk_->J();
     const std::vector<SharedMatrix >& K = jk_->K();
 
-    double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
+    auto* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (size_t N = 0; N < x.size(); ++N) {
@@ -813,7 +813,7 @@ void CPHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
     const std::vector<SharedMatrix >& J = jk_->J();
     const std::vector<SharedMatrix >& K = jk_->K();
 
-    double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
+    auto* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (size_t N = 0; N < x.size(); ++N) {
@@ -994,7 +994,7 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 //    const std::vector<SharedMatrix >& K = jk_->K();
 //    const std::vector<SharedMatrix >& V = v_->V();
 
-    double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
+    auto* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (size_t N = 0; N < x.size(); ++N) {
@@ -1163,7 +1163,7 @@ void TDDFTRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
     const std::vector<SharedMatrix >& J = jk_->J();
     const std::vector<SharedMatrix >& K = jk_->K();
 
-    double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
+    auto* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (size_t N = 0; N < x.size(); ++N) {
@@ -1337,7 +1337,7 @@ void CPKSRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
     const std::vector<SharedMatrix >& J = jk_->J();
     const std::vector<SharedMatrix >& K = jk_->K();
 
-    double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
+    auto* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (size_t N = 0; N < x.size(); ++N) {
@@ -1689,7 +1689,7 @@ void USTABHamiltonian::product(const std::vector<std::pair <std::shared_ptr<Vect
 
 //    Compute the alpha part of the b vector
 
-    double* Tp = new double[Cocca_->max_nrow() * Cocca_->max_ncol()];
+    auto* Tp = new double[Cocca_->max_nrow() * Cocca_->max_ncol()];
 
     for (int symm = 0; symm < nirrepa; ++symm) {
         for (size_t N = 0; N < x.size(); ++N) {

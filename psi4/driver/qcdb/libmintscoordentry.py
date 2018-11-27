@@ -487,15 +487,15 @@ class ZMatrixEntry(CoordEntry):
     def print_in_input_format(self):
         """Prints the updated geometry, in the format provided by the user"""
         text = ""
-        if self.rto == None and self.ato == None and self.dto == None:
+        if self.rto is None and self.ato is None and self.dto is None:
             # The first atom
             text += "\n"
-        elif self.ato == None and self.dto == None:
+        elif self.ato is None and self.dto is None:
             # The second atom
             now_rto = self.rto.entry_number() + 1
             now_rval = self.rval.variable_to_string(10)
             text += "  %5d %11s\n" % (now_rto, now_rval)
-        elif self.dto == None:
+        elif self.dto is None:
             # The third atom
             now_rto = self.rto.entry_number() + 1
             now_rval = self.rval.variable_to_string(10)
@@ -518,15 +518,15 @@ class ZMatrixEntry(CoordEntry):
     def print_in_input_format_cfour(self):
         """Prints the updated geometry, in the format provided by the user"""
         text = ""
-        if self.rto == None and self.ato == None and self.dto == None:
+        if self.rto is None and self.ato is None and self.dto is None:
             # The first atom
             text += "\n"
-        elif self.ato == None and self.dto == None:
+        elif self.ato is None and self.dto is None:
             # The second atom
             now_rto = self.rto.entry_number() + 1
             now_rval = self.rval.variable_to_string(10)
             text += " %d %s\n" % (now_rto, now_rval)
-        elif self.dto == None:
+        elif self.dto is None:
             # The third atom
             now_rto = self.rto.entry_number() + 1
             now_rval = self.rval.variable_to_string(10)
@@ -594,13 +594,13 @@ class ZMatrixEntry(CoordEntry):
             return self.coordinates
 
         # place first atom at the origin
-        if self.rto == None and self.ato == None and self.dto == None:
+        if self.rto is None and self.ato is None and self.dto is None:
             self.coordinates[0] = 0.0
             self.coordinates[1] = 0.0
             self.coordinates[2] = 0.0
 
         # place second atom directly above the first
-        elif self.ato == None and self.dto == None:
+        elif self.ato is None and self.dto is None:
             self.coordinates[0] = 0.0
             self.coordinates[1] = 0.0
             self.coordinates[2] = self.rval.compute()
@@ -608,7 +608,7 @@ class ZMatrixEntry(CoordEntry):
         # place third atom pointing upwards
         #    this       rTo   rVal  aTo  aVal
         #      A         B           C
-        elif self.dto == None:
+        elif self.dto is None:
             r = self.rval.compute()
             a = self.aval.compute() * math.pi / 180.0
             cosABC = math.cos(a)

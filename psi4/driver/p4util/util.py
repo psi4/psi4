@@ -392,6 +392,52 @@ def compare_cubes(expected, computed, label):
     success(label)
     return True
 
+
+def compare_wavefunctions(expected, computed, label):
+    """Function to compare two wavefunctions. Prints :py:func:`util.success`
+    when value *computed* matches value *expected*.
+    Performs a system exit on failure. Used in input files in the test suite.
+
+    """
+    if expected.Ca():       compare_matrices(expected.Ca(), computed.Ca(), 9, 'compare Ca') 
+    if expected.Cb():       compare_matrices(expected.Cb(), computed.Cb(), 9, 'compare Cb') 
+    if expected.Da():       compare_matrices(expected.Da(), computed.Da(), 9, 'compare Da') 
+    if expected.Db():       compare_matrices(expected.Db(), computed.Db(), 9, 'compare Db') 
+    if expected.Fa():       compare_matrices(expected.Fa(), computed.Fa(), 9, 'compare Fa') 
+    if expected.Fb():       compare_matrices(expected.Fb(), computed.Fb(), 9, 'compare Fb') 
+    if expected.H():        compare_matrices(expected.H(), computed.H(), 9, 'compare H') 
+    if expected.S():        compare_matrices(expected.S(), computed.S(), 9, 'compare S') 
+    if expected.X():        compare_matrices(expected.X(), computed.X(), 9, 'compare X') 
+    if expected.aotoso():   compare_matrices(expected.aotoso(), computed.aotoso(), 9, 'compare aotoso')
+    if expected.gradient(): compare_matrices(expected.gradient(), computed.gradient(), 9, 'compare gradient')
+    if expected.hessian():  compare_matrices(expected.hessian(), computed.hessian(), 9, 'compare hessian')
+    if expected.epsilon_a():   compare_vectors(expected.epsilon_a(), computed.epsilon_a(), 5, 'compare epsilon_a')
+    if expected.epsilon_b():   compare_vectors(expected.epsilon_b(), computed.epsilon_b(), 5, 'compare epsilon_b')
+    if expected.frequencies(): compare_vectors(expected.frequencies(), computed.frequencies(), 5, 'compare frequencies')
+    compare_integers(expected.nalpha(), computed.nalpha(), 'compare nalpha') 
+    compare_integers(expected.nbeta(), computed.nbeta(), 'compare nbeta') 
+    compare_integers(expected.nfrzc(), computed.nfrzc(), 'compare nfrzc') 
+    compare_integers(expected.nirrep(), computed.nirrep(), 'compare nirrep') 
+    compare_integers(expected.nmo(), computed.nmo(), 'compare nmo') 
+    compare_integers(expected.nso(), computed.nso(), 'compare nso') 
+    compare_strings(expected.name(), computed.name(), 'compare name') 
+    compare_values(expected.energy(), computed.energy(), 9, 'compare energy') 
+    compare_values(expected.efzc(), computed.efzc(), 9, 'compare frozen core energy') 
+    compare_values(expected.get_dipole_field_strength()[0], computed.get_dipole_field_strength()[0], 9, 'compare dipole field strength x') 
+    compare_values(expected.get_dipole_field_strength()[1], computed.get_dipole_field_strength()[1], 9, 'compare dipole field strength y') 
+    compare_values(expected.get_dipole_field_strength()[2], computed.get_dipole_field_strength()[2], 9, 'compare dipole field strength z') 
+    
+    compare_strings(expected.basisset().name(), computed.basisset().name(), 'compare basis set name') 
+    compare_integers(expected.basisset().nbf(), computed.basisset().nbf(), 'compare number of basis functions in set') 
+    compare_integers(expected.basisset().nprimitive(), computed.basisset().nprimitive(), 'compare total number of primitives in basis set') 
+    
+    compare_strings(expected.molecule().name(), computed.molecule().name(), 'compare molecule name')
+    compare_strings(expected.molecule().get_full_point_group(), computed.molecule().get_full_point_group(), 'compare molecule point group')
+    compare_matrices(expected.molecule().geometry(), computed.molecule().geometry(), 9, 'compare molecule geometry')
+
+    success(label)
+    return True
+
 # Uncomment and use if compare_arrays above is inadequate
 #def compare_lists(expected, computed, digits, label):
 #    """Function to compare two Python lists. Prints :py:func:`util.success`

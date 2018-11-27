@@ -110,7 +110,7 @@ void SO::reset_length(int l) {
 
     l = l + 10;
 
-    contribution *newcont = new contribution[l];
+    auto *newcont = new contribution[l];
 
     if (cont) {
         for (int i = 0; i < len; ++i) newcont[i] = cont[i];
@@ -161,7 +161,7 @@ void SO_block::set_length(int l) {
 void SO_block::reset_length(int l) {
     if (len == l) return;
 
-    SO *newso = new SO[l];
+    auto *newso = new SO[l];
 
     if (so) {
         for (int i = 0; i < len; i++) newso[i] = so[i];
@@ -442,7 +442,7 @@ void PetiteList::init(double tol) {
     group_ = ct.bits();
 
     // initialize private members
-    c1_ = 0;
+    c1_ = false;
     ng_ = ct.order();
     natom_ = mol.natom();
     nshell_ = gbs.nshell();  // full number of shells
@@ -450,7 +450,7 @@ void PetiteList::init(double tol) {
 
     // if point group is C1, then zero everything
     if (ng_ == 1) {
-        c1_ = 1;
+        c1_ = true;
         nblocks_ = 1;
 
         p1_ = nullptr;
@@ -585,7 +585,7 @@ void PetiteList::init(double tol) {
     }
 
     // form reducible representation of the basis functions
-    double *red_rep = new double[ng_];
+    auto *red_rep = new double[ng_];
     memset(red_rep, 0, sizeof(double) * ng_);
 
     for (i = 0; i < natom_; i++) {
@@ -718,12 +718,12 @@ SO_block *PetiteList::compute_aotoso_info() {
     int maxam = basis_->max_am();
     int **atom_map = compute_atom_map(mol);
     size_t functions_per_irrep[8];
-    SO_block *SOs = new SO_block[nirrep_];
+    auto *SOs = new SO_block[nirrep_];
     for (int h = 0; h < nirrep_; ++h) {
         SOs[h].set_length(nfunction(h));
         functions_per_irrep[h] = 0;
     }
-    double ***function_parities = new double **[nirrep_];
+    auto ***function_parities = new double **[nirrep_];
     for (int symop = 0; symop < nirrep_; ++symop) {
         function_parities[symop] = new double *[maxam + 1];
         SymmetryOperation so = ct.symm_operation(symop);

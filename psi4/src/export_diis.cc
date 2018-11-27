@@ -34,7 +34,6 @@
 using namespace psi;
 
 void export_diis(py::module &m) {
-
     py::class_<DIISManager, std::shared_ptr<DIISManager> >(m, "DIISManager", "docstring")
         .def(py::init<>())
         .def("reset_subspace", &DIISManager::reset_subspace, "docstring")

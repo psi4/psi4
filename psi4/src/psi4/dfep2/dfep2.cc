@@ -26,29 +26,27 @@
  * @END LICENSE
  */
 
-#include "psi4/dfep2/dfep2.h"
+#include "dfep2.h"
+
+#include <algorithm>
+#include <iomanip>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/psifiles.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/lib3index/dfhelper.h"
-
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iomanip>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 namespace psi {
 namespace dfep2 {

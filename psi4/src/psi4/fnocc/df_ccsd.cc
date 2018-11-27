@@ -26,29 +26,27 @@
  * @END LICENSE
  */
 
-#include "psi4/psi4-dec.h"
-#include "psi4/times.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/mintshelper.h"
-
 #include <ctime>
-
 #ifdef _OPENMP
 #include <omp.h>
 #else
 #define omp_get_wtime() 0.0
 #endif
 
+#include "psi4/psi4-dec.h"
+#include "psi4/times.h"
+
+#include "psi4/lib3index/3index.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libqt/qt.h"
+
 #include "blas.h"
 #include "ccsd.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/lib3index/3index.h"
-
-using namespace psi;
 
 namespace psi {
 namespace fnocc {
@@ -300,7 +298,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     struct tms total_tmstime;
     times(&total_tmstime);
 
-    time_t time_start = time(nullptr);
+    std::time_t time_start = std::time(nullptr);
     double user_start = ((double)total_tmstime.tms_utime) / clk_tck;
     double sys_start = ((double)total_tmstime.tms_stime) / clk_tck;
 
@@ -320,7 +318,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
     memset((void *)diisvec, '\0', (maxdiis + 1) * sizeof(double));
     while (iter < maxiter) {
-        time_t iter_start = time(nullptr);
+        std::time_t iter_start = std::time(nullptr);
 
         // evaluate cc diagrams
         memset((void *)w1, '\0', o * v * sizeof(double));
@@ -380,7 +378,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
         else
             replace_diis_iter = 1;
 
-        time_t iter_stop = time(nullptr);
+        std::time_t iter_stop = std::time(nullptr);
         outfile->Printf("  %5i   %i %i %15.10f %15.10f %15.10f %8d\n", iter, diis_iter - 1, replace_diis_iter, eccsd,
                         eccsd - Eold, nrm, (int)iter_stop - (int)iter_start);
 
@@ -395,7 +393,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     }
 
     times(&total_tmstime);
-    time_t time_stop = time(nullptr);
+    std::time_t time_stop = std::time(nullptr);
     double user_stop = ((double)total_tmstime.tms_utime) / clk_tck;
     double sys_stop = ((double)total_tmstime.tms_stime) / clk_tck;
 

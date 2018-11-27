@@ -98,7 +98,7 @@ class CorrelatedFunctor {
 
     void load_tpdm(size_t id) {
         // TODO, make this work with threads (each thread needs its own buffer)
-        char *toc = new char[40];
+        auto *toc = new char[40];
         sprintf(toc, "SO_TPDM_FOR_PAIR_%zd", id);
         size_t buffer_size = buffer_sizes_[id];
         psio_->read_entry(PSIF_AO_TPDM, toc, (char *)tpdm_buffer_, buffer_size * sizeof(double));
@@ -563,7 +563,7 @@ SharedMatrix Deriv::compute() {
     // Transform the SALCs back to cartesian space
     SharedMatrix st = cdsalcs_.matrix();
     double **B = st->pointer(0);
-    double *cart = new double[3 * natom_];
+    auto *cart = new double[3 * natom_];
 
     if (TPDM_ref_cont) {
         // B^t g_q^t = g_x^t -> g_q B = g_x

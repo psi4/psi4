@@ -47,30 +47,30 @@ class STRE : public SIMPLE_COORDINATE {
 
     STRE(int A_in, int B_in, bool freeze_in=false);
 
-    ~STRE() { } // also calls ~SIMPLE_COORDINATE()
+    ~STRE() override { } // also calls ~SIMPLE_COORDINATE()
 
-    double value(GeomType geom) const;
+    double value(GeomType geom) const override;
 
     // compute and return array of first derivative (B matrix elements)
     // returned matrix is [atom][x,y,z]
-    double **DqDx(GeomType geom) const;
+    double **DqDx(GeomType geom) const override;
 
     // compute and return array of second derivative (B' matrix elements)
     // returned matrix is order 3N cart by 3N cart
-    double **Dq2Dx2(GeomType geom) const;
+    double **Dq2Dx2(GeomType geom) const override;
 
-    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const;
-    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
-    void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
+    void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const override;
+    void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const override;
+    void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const override;
     void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
-      const double dq, const double new_q, int atom_offset = 0) const;
-    bool operator==(const SIMPLE_COORDINATE & s2) const;
-    std::string get_definition_string(int atom_offset=0) const;
+      const double dq, const double new_q, int atom_offset = 0) const override;
+    bool operator==(const SIMPLE_COORDINATE & s2) const override;
+    std::string get_definition_string(int atom_offset=0) const override;
 
-    void set_hbond(bool val) { hbond = val; }
-    bool is_hbond() const { return hbond; }
+    void set_hbond(bool val) override { hbond = val; }
+    bool is_hbond() const override { return hbond; }
     void make_inverse_stre() { inverse_stre = true; }
-    bool is_inverse_stre() const { return inverse_stre; }
+    bool is_inverse_stre() const override { return inverse_stre; }
 
 };
 

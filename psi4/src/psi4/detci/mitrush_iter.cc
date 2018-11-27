@@ -319,7 +319,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
         last = 0;
     }
 
-    while (1) {
+    while (true) {
         Cvec.buf_lock(buffer1);
         Sigma.buf_lock(buffer2);
         Cvec.read(curr, 0);

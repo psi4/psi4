@@ -1,4 +1,4 @@
- /*
+/*
  * @BEGIN LICENSE
  *
  * Psi4: an open-source quantum chemistry software package
@@ -26,11 +26,16 @@
  * @END LICENSE
  */
 
+#include <string>
+
+#include "psi4/pybind11.h"
+
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/extern.h"
@@ -65,14 +70,16 @@
 #include "psi4/libpsipcm/psipcm.h"
 #endif
 
-#include <string>
-
 using namespace psi;
 void export_wavefunction(py::module& m) {
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
+        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>,
+                      std::map<std::string, std::shared_ptr<Matrix>>, std::map<std::string, std::shared_ptr<Vector>>,
+                      std::map<std::string, Dimension>, std::map<std::string, int>, std::map<std::string, std::string>,
+                      std::map<std::string, bool>, std::map<std::string, double>>())
         .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
         .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.")
@@ -90,6 +97,7 @@ void export_wavefunction(py::module& m) {
         .def("nso", &Wavefunction::nso, "Number of symmetry orbitals.")
         .def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.")
         .def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.")
+        .def("efzc", &Wavefunction::efzc, "Returns the frozen-core energy")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
         .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership,
@@ -142,10 +150,16 @@ void export_wavefunction(py::module& m) {
         .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
              "Returns the number of doubly occupied orbitals per irrep.")
-        .def("force_doccpi", &Wavefunction::force_doccpi, "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
+        .def("density_fitted", &Wavefunction::density_fitted,
+             "Returns whether this wavefunction was obtained using density fitting or not.")
+        .def("force_doccpi", &Wavefunction::force_doccpi,
+             "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this "
+             "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy,
              "Returns the number of singly occupied orbitals per irrep.")
-        .def("force_soccpi", &Wavefunction::force_soccpi, "Specialized expert use only. Sets the number of singly occupied oribtals per irrep. Note that this results in inconsistent Wavefunction objects for SCF, so caution is advised.")
+        .def("force_soccpi", &Wavefunction::force_soccpi,
+             "Specialized expert use only. Sets the number of singly occupied oribtals per irrep. Note that this "
+             "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,
              "Returns the number of symmetry orbitals per irrep.")
         .def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy,
@@ -305,8 +319,7 @@ void export_wavefunction(py::module& m) {
         .def("elst", &fisapt::FISAPT::elst, "SAPT0 electrostatics.")
         .def("exch", &fisapt::FISAPT::exch, "SAPT0 exchange.")
         .def("ind", &fisapt::FISAPT::ind, "SAPT0 induction.")
-        .def("disp", &fisapt::FISAPT::disp,
-             "Computes the MP2-based DispE20 and Exch-DispE20 energy.")
+        .def("disp", &fisapt::FISAPT::disp, "Computes the MP2-based DispE20 and Exch-DispE20 energy.")
         .def("flocalize", &fisapt::FISAPT::flocalize, "F-SAPT0 localize.")
         .def("felst", &fisapt::FISAPT::felst, "F-SAPT0 electrostatics.")
         .def("fexch", &fisapt::FISAPT::fexch, "F-SAPT0 exchange.")

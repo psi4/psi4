@@ -155,8 +155,8 @@ def addons(request=None):
 
 
 # Testing
-def test(extent='smoke', extras=None):
-    """Runs a smoke test suite through pytest.
+def test(extent='full', extras=None):
+    """Runs a test suite through pytest.
 
     Parameters
     ----------
@@ -182,7 +182,13 @@ def test(extent='smoke', extras=None):
     abs_test_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "tests"])
 
     command = ['-rws', '-v']
-    if extent.lower() in ['smoke', 'quick', 'full', 'long']:
+    if extent.lower() == 'smoke':
+        command.extend(['-m', 'smoke'])
+    elif extent.lower() == 'quick':
+        command.extend(['-m', 'quick and smoke'])
+    elif extent.lower() == 'full':
+        command.extend(['-m', 'not long'])
+    elif extent.lower() == 'long':
         pass
     if extras is not None:
         command.extend(extras)

@@ -26,33 +26,23 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_liboptions_python_h
-#define _psi_src_lib_liboptions_python_h
-
-#include "liboptions.h"
-#include "psi4/pybind11.h"
-#include "psi4/pragma.h"
+#include "python_data_type.h"
 
 namespace psi {
 
-class PythonDataType : public DataType {
-    py::object python_object_;
+PythonDataType::PythonDataType() {}
 
-   public:
-    PythonDataType();
-    PythonDataType(const py::object& p);
-    virtual ~PythonDataType();
+PythonDataType::PythonDataType(const py::object &p) : python_object_(p) {}
 
-    virtual std::string type() const;
+PythonDataType::~PythonDataType() {}
 
-    const py::object& to_python() const;
+std::string PythonDataType::type() const { return std::string("python"); }
 
-    PRAGMA_WARNING_PUSH
-    PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
-    void assign(const py::object& p);
-    PRAGMA_WARNING_POP
-};
+void PythonDataType::assign(const py::object &p) {
+    python_object_ = p;
+    changed();
+}
+
+const py::object &PythonDataType::to_python() const { return python_object_; }
 
 }  // namespace psi
-
-#endif  // _psi_src_lib_liboptions_python_h

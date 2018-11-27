@@ -284,15 +284,15 @@ public:
     DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DFHelper> df, SharedMatrix AOTOSO,
             SharedMatrix H);
 
-    virtual ~DFSOMCSCF();
+    ~DFSOMCSCF() override;
 
 protected:
 
     std::shared_ptr<DFHelper> dfh_;
-    virtual void transform(bool approx_only);
-    virtual void set_act_MO();
-    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
+    void transform(bool approx_only) override;
+    void set_act_MO() override;
+    SharedMatrix compute_Q(SharedMatrix TPDM) override;
+    SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact) override;
 
 }; // DFSOMCSCF class
 
@@ -311,16 +311,16 @@ public:
      */
     DiskSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<IntegralTransform> ints, SharedMatrix AOTOSO, SharedMatrix H);
 
-    virtual ~DiskSOMCSCF();
+    ~DiskSOMCSCF() override;
 
 protected:
 
     std::shared_ptr<IntegralTransform> ints_;
     std::shared_ptr<PSIO>  psio_;
-    virtual void transform(bool approx_only);
-    virtual void set_act_MO();
-    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
+    void transform(bool approx_only) override;
+    void set_act_MO() override;
+    SharedMatrix compute_Q(SharedMatrix TPDM) override;
+    SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact) override;
 
 }; // DiskSOMCSCF class
 
@@ -340,14 +340,14 @@ public:
      */
     IncoreSOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
 
-    virtual ~IncoreSOMCSCF();
-    virtual void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);
+    ~IncoreSOMCSCF() override;
+    void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar) override;
 
 protected:
 
-    virtual void set_act_MO();
-    virtual SharedMatrix compute_Q(SharedMatrix TPDM);
-    virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
+    void set_act_MO() override;
+    SharedMatrix compute_Q(SharedMatrix TPDM) override;
+    SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact) override;
 
     bool eri_tensor_set_;
     SharedMatrix mo_aaaa_;

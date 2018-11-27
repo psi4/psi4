@@ -78,7 +78,7 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
     std::vector<double ***> arrays;
     arrays.push_back(tau_out->matrix);
     for (int thread = 1; thread < nthreadz; ++thread) {
-        double ***arr = new double **[tau_out->params->nirreps];
+        auto ***arr = new double **[tau_out->params->nirreps];
         for (int h = 0; h < tau_out->params->nirreps; ++h) {
             if (tau_out->params->rowtot[h] && tau_out->params->coltot[h])
                 arr[h] = block_matrix(tau_out->params->rowtot[h], tau_out->params->coltot[h]);

@@ -179,7 +179,7 @@ void PSIOManager::build_from_disk() {
     files_.clear();
     retained_files_.clear();
 
-    char* in = new char[1000];
+    auto* in = new char[1000];
 
     while (fgets(in, 1000, fh) != nullptr) {
         std::string str(in);

@@ -51,9 +51,9 @@ class SphericalTransform;
  */
 class PseudospectralInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell&, const GaussianShell&) override;
     /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
+    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
 
    protected:
     /// Use range-separation or not? Defaults to false. If so, produce <m|erf(\omega r) / r|n> integrals
@@ -73,10 +73,10 @@ class PseudospectralInt : public OneBodyAOInt {
     /// Constructor
     PseudospectralInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                       int deriv = 0);
-    ~PseudospectralInt();
+    ~PseudospectralInt() override;
 
     /// Computes integrals between two shells.
-    void compute_shell_deriv1(int, int);
+    void compute_shell_deriv1(int, int) override;
 
     /// Set integration point
     void set_point(double x, double y, double z) {
@@ -95,7 +95,7 @@ class PseudospectralInt : public OneBodyAOInt {
     void use_omega(bool yes) { use_omega_ = yes; }
 
     /// Does the method provide first derivatives?
-    bool has_deriv1() { return false; }
+    bool has_deriv1() override { return false; }
 };
 
 }  // namespace psi

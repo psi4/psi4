@@ -226,7 +226,7 @@ int FRAG::add_hbonds() {
 int FRAG::add_auxiliary_bonds() {
   int nadded = 0;
 
-  int *Zint = new int [natom];
+  auto *Zint = new int [natom];
   for (int i=0; i<natom; ++i)
     Zint[i] = (int) Z[i];
 

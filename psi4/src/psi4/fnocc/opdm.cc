@@ -130,7 +130,7 @@ void CoupledPair::OPDM() {
     int nirrep = opdm_a->nirrep();
     Da_->set_name("CEPA unrelaxed density");
 
-    double* temp = new double[Ca->max_ncol() * Ca->max_nrow()];
+    auto* temp = new double[Ca->max_ncol() * Ca->max_nrow()];
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca->colspi()[h];
         int nmor = Ca->colspi()[h ^ symm];

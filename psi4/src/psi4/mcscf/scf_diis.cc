@@ -97,7 +97,7 @@ void SCF::diis(int cycle) {
         }
 
         // Solve B x = A
-        int* IPIV = new int[matrix_size];
+        auto* IPIV = new int[matrix_size];
         int nrhs = 1;
         int info = 0;
         F_DGESV(&matrix_size, &nrhs, &(diis_B[0][0]), &matrix_size, &(IPIV[0]), &(diis_A[0]), &matrix_size, &info);

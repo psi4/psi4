@@ -27,7 +27,10 @@
  */
 
 #include "dcft.h"
-#include "defines.h"
+
+#include <algorithm>
+#include <cmath>
+#include <map>
 
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libdpd/dpd.h"
@@ -39,8 +42,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 
-#include <map>
-#include <cmath>
+#include "defines.h"
 
 namespace psi {
 namespace dcft {
@@ -233,8 +235,8 @@ void DCFTSolver::print_orbital_energies() {
             bPairs.push_back(std::make_pair(epsilon_b_->get(h, i), h));
         }
     }
-    sort(aPairs.begin(), aPairs.end());
-    sort(bPairs.begin(), bPairs.end());
+    std::sort(aPairs.begin(), aPairs.end());
+    std::sort(bPairs.begin(), bPairs.end());
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);
@@ -891,7 +893,7 @@ void DCFTSolver::process_so_ints() {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
     if (buildTensors) {
         if (print_ > 1) {
@@ -1289,7 +1291,7 @@ void DCFTSolver::build_AO_tensors() {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
     if (print_ > 1) {
         outfile->Printf("Processed %d SO integrals each for AA, BB, and AB\n", counter);
@@ -1715,7 +1717,7 @@ void DCFTSolver::build_G() {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     // Build the Fock matrices from the H and G matrices

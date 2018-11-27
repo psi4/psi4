@@ -104,7 +104,9 @@
 #define F_DGGQRF FC_GLOBAL(dggqrf, DGGQRF)
 #define F_DGGRQF FC_GLOBAL(dggrqf, DGGRQF)
 #define F_DGGSVD FC_GLOBAL(dggsvd, DGGSVD)
+#define F_DGGSVD3 FC_GLOBAL(dggsvd3, DGGSVD3)
 #define F_DGGSVP FC_GLOBAL(dggsvp, DGGSVP)
+#define F_DGGSVP3 FC_GLOBAL(dggsvp3, DGGSVP3)
 #define F_DGTCON FC_GLOBAL(dgtcon, DGTCON)
 #define F_DGTRFS FC_GLOBAL(dgtrfs, DGTRFS)
 #define F_DGTSV FC_GLOBAL(dgtsv, DGTSV)
@@ -301,7 +303,9 @@
 #define F_DGGQRF dggqrf_
 #define F_DGGRQF dggrqf_
 #define F_DGGSVD dggsvd_
+#define F_DGGSVD3 dggsvd3_
 #define F_DGGSVP dggsvp_
+#define F_DGGSVP3 dggsvp3_
 #define F_DGTCON dgtcon_
 #define F_DGTRFS dgtrfs_
 #define F_DGTSV dgtsv_
@@ -497,7 +501,9 @@
 #define F_DGGQRF dggqrf
 #define F_DGGRQF dggrqf
 #define F_DGGSVD dggsvd
+#define F_DGGSVD3 dggsvd3
 #define F_DGGSVP dggsvp
+#define F_DGGSVP3 dggsvp3
 #define F_DGTCON dgtcon
 #define F_DGTRFS dgtrfs
 #define F_DGTSV dgtsv
@@ -693,7 +699,9 @@
 #define F_DGGQRF DGGQRF
 #define F_DGGRQF DGGRQF
 #define F_DGGSVD DGGSVD
+#define F_DGGSVD3 DGGSVD3
 #define F_DGGSVP DGGSVP
+#define F_DGGSVP3 DGGSVP3
 #define F_DGTCON DGTCON
 #define F_DGTRFS DGTRFS
 #define F_DGTSV DGTSV
@@ -889,7 +897,9 @@
 #define F_DGGQRF DGGQRF_
 #define F_DGGRQF DGGRQF_
 #define F_DGGSVD DGGSVD_
+#define F_DGGSVD3 DGGSVD3_
 #define F_DGGSVP DGGSVP_
+#define F_DGGSVP3 DGGSVP3_
 #define F_DGTCON DGTCON_
 #define F_DGTRFS DGTRFS_
 #define F_DGTSV DGTSV_

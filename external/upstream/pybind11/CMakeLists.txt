@@ -1,4 +1,4 @@
-find_package(pybind11 2.2.3 EXACT CONFIG QUIET)
+find_package(pybind11 2.2.3 CONFIG QUIET)
 
 if(${pybind11_FOUND})
     message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
@@ -16,7 +16,6 @@ else()
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}  # unused, but needs working compiler
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}  # ditto
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}

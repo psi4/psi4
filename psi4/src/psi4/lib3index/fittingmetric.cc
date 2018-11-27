@@ -124,7 +124,7 @@ void FittingMetric::form_fitting_metric()
 
     // == (A|B) Block == //
     IntegralFactory rifactory_J(aux_, zero, aux_, zero);
-    const double **Jbuffer = new const double*[nthread];
+    const auto **Jbuffer = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt> *Jint = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
         if (omega_ > 0.0) {
@@ -168,7 +168,7 @@ void FittingMetric::form_fitting_metric()
     if (is_poisson_) {
         // == (AB) Block == //
         IntegralFactory rifactory_RP(pois_, aux_,  zero, zero);
-        const double **Obuffer = new const double*[nthread];
+        const auto **Obuffer = new const double*[nthread];
         std::shared_ptr<OneBodyAOInt> *Oint = new std::shared_ptr<OneBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
             Oint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_RP.ao_overlap());
@@ -205,7 +205,7 @@ void FittingMetric::form_fitting_metric()
 
         // == (A|T|B) Block == //
         IntegralFactory rifactory_P(pois_, pois_,  zero, zero);
-        const double **Tbuffer = new const double*[nthread];
+        const auto **Tbuffer = new const double*[nthread];
         std::shared_ptr<OneBodyAOInt> *Tint = new std::shared_ptr<OneBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
             Tint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_P.ao_kinetic());

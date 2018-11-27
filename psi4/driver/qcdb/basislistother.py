@@ -505,3 +505,65 @@ def load_basfam_other():
     basis_6311ppg_3df_2p_.add_rifit('aug-cc-pvtz-ri')
     basis_6311ppg_3df_2pd_.add_rifit('aug-cc-pvtz-ri')
     basis_6311ppg_3df_3pd_.add_rifit('aug-cc-pvtz-ri')
+
+    # Petersson's nZaPa-NR basis sets
+    basis_2zapa_nr = BasisFamily('2zapa-nr',zeta=2)
+    basis_3zapa_nr = BasisFamily('3zapa-nr',zeta=3)
+    basis_4zapa_nr = BasisFamily('4zapa-nr',zeta=4)
+    basis_5zapa_nr = BasisFamily('5zapa-nr',zeta=5)
+    basis_6zapa_nr = BasisFamily('6zapa-nr',zeta=6)
+    basis_7zapa_nr = BasisFamily('7zapa-nr',zeta=7)
+
+    # fitting sets for nZaPa-NR
+    # Dunnings zeta+1 to be safe, tested on water dimer
+    # the full aug-JKFIT is possibly too much
+    #--------SCF-JKFIT error for nZaPa-NR 
+    # results for GS energies of water dimer:
+    # delta_jk = E_conv - E_DFJK
+    # ZaPa zeta 2 : delta_jk = -0.000009 
+    # ZaPa zeta 3 : delta_jk = -0.000002 
+    # ZaPa zeta 4 : delta_jk = -0.000002 
+    # ZaPa zeta 5 : delta_jk = -0.000002 
+    # ZaPa zeta 6 : delta_jk =  0.000000 
+    # ZaPa zeta 7 : delta_jk =  0.000000 
+    basis_2zapa_nr.add_jkfit('aug-cc-pvtz-jkfit')
+    basis_3zapa_nr.add_jkfit('aug-cc-pvqz-jkfit')
+    basis_4zapa_nr.add_jkfit('aug-cc-pv5z-jkfit')
+    basis_5zapa_nr.add_jkfit('aug-cc-pv5z-jkfit')
+    basis_6zapa_nr.add_jkfit('aug-cc-pv6z-ri')
+    basis_7zapa_nr.add_jkfit('aug-cc-pv6z-ri') 
+
+    basis_2zapa_nr.add_rifit('aug-cc-pvtz-ri')
+    basis_3zapa_nr.add_rifit('aug-cc-pvqz-ri')
+    basis_4zapa_nr.add_rifit('aug-cc-pv5z-ri')
+    basis_5zapa_nr.add_rifit('aug-cc-pv6z-ri')
+    basis_6zapa_nr.add_rifit('aug-cc-pv6z-ri')
+    basis_7zapa_nr.add_rifit('aug-cc-pv6z-ri')
+
+    basisfamily_list.append(basis_2zapa_nr)
+    basisfamily_list.append(basis_3zapa_nr)
+    basisfamily_list.append(basis_4zapa_nr)
+    basisfamily_list.append(basis_5zapa_nr)
+    basisfamily_list.append(basis_6zapa_nr)
+    basisfamily_list.append(basis_7zapa_nr)
+
+
+    # F12 basis sets
+    basis_cc_pvdz_f12 = BasisFamily('cc-pvdz-f12',zeta=2)
+    basis_cc_pvtz_f12 = BasisFamily('cc-pvtz-f12',zeta=3)
+    basis_cc_pvqz_f12 = BasisFamily('cc-pvqz-f12',zeta=4)
+    # basis_cc_pv5z_f12 = BasisFamily('cc-pV5Z-F12')
+
+    # ORCA manual suggests for F12 basis sets Dunning's zeta+1
+    basis_cc_pvdz_f12.add_jkfit('cc-pvtz-jkfit')
+    basis_cc_pvtz_f12.add_jkfit('cc-pvqz-jkfit')
+    basis_cc_pvqz_f12.add_jkfit('cc-pv5z-jkfit')
+
+    basis_cc_pvdz_f12.add_rifit('cc-pvtz-ri')
+    basis_cc_pvtz_f12.add_rifit('cc-pvqz-ri')
+    basis_cc_pvqz_f12.add_rifit('cc-pv5z-ri')
+
+    basisfamily_list.append(basis_cc_pvqz_f12)
+    basisfamily_list.append(basis_cc_pvtz_f12)
+    basisfamily_list.append(basis_cc_pvqz_f12)
+    # basisfamily_list.append(basis_cc_pv5z_f12)

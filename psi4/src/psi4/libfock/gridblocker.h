@@ -112,9 +112,9 @@ public:
     NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
         std::shared_ptr<BasisExtents> extents);
-    virtual ~NaiveGridBlocker();
+    ~NaiveGridBlocker() override;
 
-    virtual void block();
+    void block() override;
 };
 
 /**
@@ -127,9 +127,9 @@ public:
     OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
         std::shared_ptr<BasisExtents> extents);
-    virtual ~OctreeGridBlocker();
+    ~OctreeGridBlocker() override;
 
-    virtual void block();
+    void block() override;
 };
 
 }

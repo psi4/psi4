@@ -411,7 +411,7 @@ void DCFTSolver::process_so_ints_RHF() {
         } /* end loop through current buffer */
         if (!lastBuffer) iwl->fetch();
     } while (!lastBuffer);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
     if (buildTensors) {
         if (print_ > 1) {

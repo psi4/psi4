@@ -30,6 +30,7 @@
 #define _psi_src_bin_psimrcc_mrcc_h_
 
 #include "psi4/liboptions/liboptions.h"
+
 #include "manybody.h"
 #include "heff.h"
 
@@ -42,7 +43,7 @@ class CCMRCC : public CCManyBody {
    public:
     // Constructor and destructor
     CCMRCC(SharedWavefunction ref_wfn, Options &options);
-    virtual ~CCMRCC();
+    ~CCMRCC() override;
 
     // CCSD
     void compute_energy(Updater *updater);

@@ -145,7 +145,7 @@ class SphericalTransform {
 class ISphericalTransform : public SphericalTransform {
    protected:
     ISphericalTransform();
-    virtual void init();
+    void init() override;
 
    public:
     ISphericalTransform(int l, int subl = -1);

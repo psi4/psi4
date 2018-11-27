@@ -32,11 +32,6 @@
 ** \ingroup CIOMR
 */
 
-#define EXTERN
-#include "psi4/psi4-dec.h"
-#include "psi4/times.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -50,10 +45,15 @@
 #include <unistd.h>
 #endif
 
+#include "psi4/psi4-dec.h"
+#include "psi4/times.h"
+
+#include "psi4/libpsi4util/PsiOutStream.h"
+
 namespace psi {
 
-time_t time_start, time_end;
-time_t time_start_overall;
+std::time_t time_start, time_end;
+std::time_t time_start_overall;
 int running = 0;
 double user_start, sys_start;
 double user_start_overall, sys_start_overall;
@@ -64,7 +64,7 @@ double user_stop, sys_stop;
 **
 ** \ingroup CIOMR
 */
-void PSI_API tstart() {
+void tstart() {
     int error;
     char *name;
     struct tms total_tmstime;
@@ -78,14 +78,14 @@ void PSI_API tstart() {
 
     /// start a global timer
     if (!running) {
-        time_start_overall = time(nullptr);
+        time_start_overall = std::time(nullptr);
         user_start_overall = ((double)total_tmstime.tms_utime) / clk_tck;
         sys_start_overall = ((double)total_tmstime.tms_stime) / clk_tck;
         running = 1;
     }
 
     /// start module timers
-    time_start = time(nullptr);
+    time_start = std::time(nullptr);
     user_start = ((double)total_tmstime.tms_utime) / clk_tck;
     sys_start = ((double)total_tmstime.tms_stime) / clk_tck;
 
@@ -100,10 +100,10 @@ void PSI_API tstart() {
 **
 ** \ingroup CIOMR
 */
-void PSI_API tstop() {
+void tstop() {
     int error;
-    time_t total_time;
-    time_t total_time_overall;
+    std::time_t total_time;
+    std::time_t total_time_overall;
     struct tms total_tmstime;
     char *name;
     double user_s, sys_s;
@@ -112,7 +112,7 @@ void PSI_API tstop() {
     error = gethostname(name, 40);
     if (error != 0) strncpy(name, "nohostname", 11);
 
-    time_end = time(nullptr);
+    time_end = std::time(nullptr);
     total_time = time_end - time_start;
     total_time_overall = time_end - time_start_overall;
 
@@ -144,4 +144,4 @@ void PSI_API tstop() {
 
     free(name);
 }
-}
+}  // namespace psi

@@ -429,6 +429,11 @@ def scf_finalize_energy(self):
     # Perform wavefunction stability analysis before doing
     # anything on a wavefunction that may not be truly converged.
     if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE":
+
+        # Don't bother computing needed integrals if we can't do anything with them.
+        if self.functional().needs_xc():
+            raise ValidationError("Stability analysis not yet supported for XC functionals.")
+
         # We need the integral file, make sure it is written and
         # compute it if needed
         if core.get_option('SCF', 'REFERENCE') != "UHF":

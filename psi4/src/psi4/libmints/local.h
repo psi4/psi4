@@ -131,11 +131,11 @@ class PSI_API BoysLocalizer : public Localizer {
    public:
     BoysLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C);
 
-    virtual ~BoysLocalizer();
+    ~BoysLocalizer() override;
 
-    virtual void print_header() const;
+    void print_header() const override;
 
-    virtual void localize();
+    void localize() override;
 };
 
 class PMLocalizer : public Localizer {
@@ -146,11 +146,11 @@ class PMLocalizer : public Localizer {
    public:
     PMLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<Matrix> C);
 
-    virtual ~PMLocalizer();
+    ~PMLocalizer() override;
 
-    virtual void print_header() const;
+    void print_header() const override;
 
-    virtual void localize();
+    void localize() override;
 };
 
 }  // Namespace psi

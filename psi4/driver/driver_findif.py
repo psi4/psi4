@@ -29,13 +29,15 @@
 import numpy as np
 from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.qcdb import molecule
 from psi4.driver.p4util import block_diagonal_array
+from psi4.driver import qcdb
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
 # _pi at the end of a variable name is short for "per irrep."
 # h is the index of an irrep.
+
+array_format = {"precision": 10}
 
 
 def _displace_cart(mol, geom, salc_list, i_m, step_size):
@@ -43,11 +45,11 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
+    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to displace
-    geom : psi4.core.Matrix
+    geom : ndarray
         The geometry of the molecule.
-    salc_list : psi4.core.CdSalcList
+    salc_list : :py:class:`~psi4.core.CdSalcList`
         A list of Cartesian displacement SALCs
     i_m : iterator of tuples
         An iterator containing tuples. Each tuple has the index of a salc in
@@ -58,19 +60,20 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
 
     Returns
     ------
-    None
+    label : str
+        The label for the displacement in the metadata dictionary.
     """
-    name = ""
+    label = ""
     # This for loop and tuple unpacking is why the function can handle
     # an arbitrary number of SALCs.
     for salc_index, disp_steps in i_m:
-        # We get rid of the initial ", " later.
-        name += ", Coord: {:d}, Disp: {:d}".format(salc_index, disp_steps)
         for component in salc_list[salc_index]:
-            geom.add(0, component.atom, component.xyz,
-                     disp_steps * step_size * component.coef / np.sqrt(mol.mass(component.atom)))
-    # Now let's get rid of that initial ", ".
-    geom.name = name[2:]
+            geom[component.atom, component.xyz] += (
+                disp_steps * step_size * component.coef / np.sqrt(mol.mass(component.atom)))
+        # salc_index is in descending order. We want the label in ascending order, so...
+        # ...add the new label part from the left of the string, not the right.
+        label = "{:d}: {:d}".format(salc_index, disp_steps) + (", " if label else "") + label
+    return label
 
 
 def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0):
@@ -78,7 +81,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
+    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to displace
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
@@ -95,7 +98,9 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
          Used so the information is printed only during geometry generation, and not
          during the derivative computation as well.
 
-    :returns: *dict*
+    Returns
+    -------
+    data : dict
         Miscellaneous information required by callers.
     """
 
@@ -212,7 +217,9 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
         "n_atom": n_atom,
         "salc_list": salc_list,
         "salc_indices_pi": salc_indices_pi,
-        "disps": disps
+        "disps": disps,
+        "project_translations": t_project,
+        "project_rotations": r_project
     })
 
     return data
@@ -227,7 +234,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
+    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to perform finite difference calculations on.
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
@@ -238,12 +245,71 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     Returns
     -------
-    disp_geoms : list of psi4.core.Matrix
-        A list of displaced geometries to compute quantities at.
-    """
+    findifrec : dict
+        Dictionary of finite difference data, specified below.
+        The dictionary makes findifrec _extensible_. If you need a new field
+        in the record, just add it.
+        All fields should be present at all times, with two exceptions:
+            1. Fields for computed quantities will not be available until
+               after they are computed.
+            2. Displacement specific overrides for globals will not be
+               available unless the user specified the overrides.
+               (Such overrides are not implemented at time of writing. An example
+               is giving a displacement its own step dict.)
 
-    # NOTE: While it would be nice if disp_geoms could be a list of ndarray,
-    # psi4.core.molecule needs geometries to be psi4.core.Matrix objects.
+    step : dict
+        A descriptor for the finite difference step.
+        In future, this can be overriden by step fields for individual displacements.
+
+        units : {'Bohr'}
+            The units for the displacement. The code currently assumes "bohr," per MolSSI standards.
+        size : float
+            The step size for the displacement.
+
+    stencil_size : {3, 5}
+        Number of points to evaluate at for each displacement basis vector. The count
+        includes the reference. Psi currently supports 3 and 5.
+
+    displacement_space : {'CdSalc'}
+        A string specifying the vector space in which displacements are performed.
+        Currently, only CdSalc is supported.
+
+    project_translations : bool
+        Whether translations are to be projected out of the displacements.
+
+    project_rotations : bool
+        Whether rotations are to be projected out of the displacements.
+
+    molecule : dict
+        The reference molecule, in MolSSI schema. See
+        https://molssi-qc-schema.readthedocs.io/en/latest/auto_topology.html
+
+    displacements : dict
+        A dictionary mapping labels specifying the displacement to data about
+        the geometry. Labels are of the form "A: a, B: b" where A and B index the
+        basis vector in displacement space and A < B, and a and b index the step
+        magnitude. For instance, "0: 1, 1: -1" specifies displacing +1 in
+        displacement vector 0 and -1 in displacement vector 1. "1: -1, 0: 1" is
+        forbidden for breaking ordering. Generalizes to arbitrary numbers of
+        simultaneous displacements in the obvious way.
+
+        The possible geometry data is as follows:
+
+        geometry: list of floats
+            (3 * natom) The molecular geometry as a flat list in bohr. All coordinates
+            are given for one atom before proceeding to the next atom.
+
+        energy: int
+            The last computed electronic energy at the geometry.
+
+        gradient: list of floats
+            (3 * natom) The last computed gradient of energy with respect to changes in
+            geometry at the geometry, as a flat list. All coordinates are given for
+            displacing one atom before proceeding to the next atom.
+
+    reference : dict
+         A geometry data dict, as described above, for the reference geometry.
+    """
 
     msg_dict = {
         "1_0":
@@ -266,22 +332,40 @@ def _geom_generator(mol, freq_irrep_only, mode):
                 "    Generating geometries for use with {:d}-point formula.\n"
                 "    Displacement size will be {:6.2e}.\n".format(print_msg, data["num_pts"], data["disp_size"]))
 
+    # Genuine support for qcdb molecules would be nice. But that requires qcdb CdSalc tech.
+    # Until then, silently swap the qcdb molecule out for a psi4.core.molecule.
+    if isinstance(mol, qcdb.Molecule):
+        mol = core.Molecule.from_dict(mol.to_dict())
+
     data = _initialize_findif(mol, freq_irrep_only, mode, init_string, 1)
 
     # We can finally start generating displacements.
-    ref_geom_temp = mol.geometry()
-    ref_geom = ref_geom_temp.clone()
-    ref_geom.name = "Reference geometry"
+    ref_geom = mol.geometry().clone()
 
-    disp_geoms = []
+    # Now we generate the metadata...
+    findifrec = {
+        "step": {
+            "units": "bohr",
+            "size": data["disp_size"]
+        },
+        "stencil_size": data["num_pts"],
+        "displacement_space": "CdSALC",
+        "project_translations": data["project_translations"],
+        "project_rotations": data["project_rotations"],
+        "molecule": mol.to_schema(dtype=1, units='Bohr'),
+        "displacements": {},
+        "reference": {}
+    }
 
     def append_geoms(indices, steps):
         """Given a list of indices and a list of steps to displace each, append the corresponding geometry to the list."""
-        new_geom = ref_geom.clone()
+        new_geom = ref_geom.clone().np
         # Next, to make this salc/magnitude composite.
         index_steps = zip(indices, steps)
-        _displace_cart(mol, new_geom, data["salc_list"], index_steps, data["disp_size"])
-        disp_geoms.append(new_geom)
+        label = _displace_cart(mol, new_geom, data["salc_list"], index_steps, data["disp_size"])
+        if data["print_lvl"] > 2:
+            core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(new_geom, **array_format)))
+        findifrec["displacements"][label] = {"geometry": new_geom.ravel().tolist()}
 
     for h in range(data["n_irrep"]):
         active_indices = data["salc_indices_pi"][h]
@@ -300,33 +384,32 @@ def _geom_generator(mol, freq_irrep_only, mode):
                     for val in data["disps"]["off"]:
                         append_geoms((index, index2), val)
 
-    disp_geoms.append(ref_geom)
-
     if data["print_lvl"] > 2:
-        for disp in disp_geoms:
-            disp.print_out()
+        core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom.np, **array_format)))
+    findifrec["reference"]["geometry"] = ref_geom.np.ravel().tolist()
 
     if data["print_lvl"] > 1:
         core.print_out("\n-------------------------------------------------------------\n")
 
-    return disp_geoms
+    return findifrec
 
 
-def compute_gradient_from_energy(mol, E):
+def compute_gradient_from_energy(findifrec):
     """Compute the gradient by finite difference of energies.
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
-        The molecule to compute the gradient of.
-    E : list of floats
-        A list of energies of the molecule at displaced geometries.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
 
     Returns
     -------
-    gradient : np.array
+    gradient : ndarray
         (nat, 3) Cartesian gradient [Eh/a0].
     """
+
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
 
     def init_string(data):
         return ("  Computing gradient from energies.\n"
@@ -334,38 +417,46 @@ def compute_gradient_from_energy(mol, E):
                 "    Energy without displacement: {:15.10f}\n"
                 "    Check energies below for precision!\n"
                 "    Forces are for mass-weighted, symmetry-adapted cartesians (in au).\n".format(
-                    data["num_pts"], E[-1]))
+                    findifrec["stencil_size"], findifrec["reference"]["energy"]))
 
     data = _initialize_findif(mol, -1, "1_0", init_string)
+    salc_indices = data["salc_indices_pi"][0]
 
-    n_disp = sum(data["n_disp_pi"]) + 1  # +1 for the reference
-    if len(E) != n_disp:
-        raise ValidationError("FINDIF: Received {} energies for {} geometries.".format(len(E), n_disp))
+    # Extract the energies, and turn then into an ndarray for easy manipulating
+    # E(i, j) := Energy on displacing the ith SALC we care about in the jth step
+    # Steps are ordered, for example, -2, -1, 1, 2
+    max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
+    e_per_salc = 2 * max_disp
+    E = np.zeros((len(salc_indices), e_per_salc))
 
-    # Discard the reference energy.
-    E = np.asarray(E[:-1])
-    if data["num_pts"] == 3:
-        g_q = (E[1::2] - E[::2]) / (2.0 * data["disp_size"])
-    elif data["num_pts"] == 5:
-        g_q = (E[0::4] - 8.0 * E[1::4] + 8.0 * E[2::4] - E[3::4]) / (12.0 * data["disp_size"])
+    for i, salc_index in enumerate(salc_indices):
+        for j in range(1, max_disp + 1):
+            key_string = "{:d}: {{:d}}".format(salc_index)
+            E[i, max_disp - j] = findifrec["displacements"][key_string.format(-j)]["energy"]
+            E[i, max_disp + j - 1] = findifrec["displacements"][key_string.format(j)]["energy"]
+
+    # Perform the finite difference.
+    if findifrec["stencil_size"] == 3:
+        g_q = (E[:, 1] - E[:, 0]) / (2.0 * findifrec["step"]["size"])
+    elif findifrec["stencil_size"] == 5:
+        g_q = (E[:, 0] - 8.0 * E[:, 1] + 8.0 * E[:, 2] - E[:, 3]) / (12.0 * findifrec["step"]["size"])
     else:  # This error SHOULD have already been caught, but just in case...
-        raise ValidationError("FINDIF: {} is an invalid number of points.".format(data["num_pts"]))
+        raise ValidationError("FINDIF: {} is an invalid number of points.".format(findifrec["stencil_size"]))
     g_q = np.asarray(g_q)
 
     if data["print_lvl"]:
-        max_disp = (data["num_pts"] - 1) // 2  # The numerator had better be divisible by two.
-        e_per_salc = 2 * max_disp
         energy_string = ""
         for i in range(1, max_disp + 1):
             energy_string = "Energy(-{})        ".format(i) + energy_string + "Energy(+{})        ".format(i)
         core.print_out("\n     Coord      " + energy_string + "    Force\n")
         for salc in range(data["n_salc"]):
             print_str = "    {:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}" + "\n"
-            energies = E[e_per_salc * salc:e_per_salc * (salc + 1)]
+            energies = E[salc]
             print_str = print_str.format(salc, force=g_q[salc], *energies)
             core.print_out(print_str)
         core.print_out("\n")
 
+    # Transform the gradient from mass-weighted SALCs to non-mass-weighted Cartesians
     B = data["salc_list"].matrix()
     g_cart = np.dot(g_q, B)
     g_cart = g_cart.reshape(data["n_atom"], 3)
@@ -384,13 +475,13 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     Parameters
     ---------
-    H_block : np.array
+    H_block : ndarray
         A block of the Hessian for an irrep, in mass-weighted salcs.
         Dimensions # cdsalcs by # cdsalcs.
-    B_block : np.array
+    B_block : ndarray
         A block of the B matrix for an irrep, which transforms CdSalcs to Cartesians.
         Dimensions # cdsalcs by # cartesians.
-    massweighter : np.array
+    massweighter : ndarray
         The mass associated with each atomic coordinate.
         Dimension # cartesians. Due to x, y, z, values appear in groups of three.
     irrep : str
@@ -400,20 +491,18 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     Returns
     -------
-    H_block : np.array
+    H_block : ndarray
         H_block, but made into an orthogonal array.
     """
 
     # Symmetrize our Hessian block.
     # The symmetric structure is lost due to errors in the computation
-    temp_hess = core.Matrix.from_array(H_block)
-    temp_hess.hermitize()
-    H_block = np.array(temp_hess)
+    H_block = (H_block + H_block.T) / 2.0
 
     if print_lvl >= 3:
         core.print_out("\n    Force Constants for irrep {} in mass-weighted, ".format(irrep))
         core.print_out("symmetry-adapted cartesian coordinates.\n")
-        core.Matrix.from_array(H_block).print_out()
+        core.print_out("\n{}\n".format(np.array_str(H_block, **array_format)))
 
     evals, evects = np.linalg.eigh(H_block)
     # Get our eigenvalues and eigenvectors in descending order.
@@ -425,7 +514,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     if print_lvl >= 2:
         core.print_out("\n    Normal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep))
-        core.Matrix.from_array(normal_irr).print_out()
+        core.print_out("\n{}\n".format(np.array_str(normal_irr, **array_format)))
 
     return H_block
 
@@ -436,13 +525,13 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     Parameters
     ---------
-    H_blocks : list of np.array
+    H_blocks : list of ndarray
         A list of blocks of the Hessian per irrep, in mass-weighted salcs.
         Each is dimension # cdsalcs-in-irrep by # cdsalcs-in-irrep.
-    B_blocks : list of np.array
+    B_blocks : list of ndarray
         A block of the B matrix per irrep, which transforms CdSalcs to Cartesians.
         Each is dimensions # cdsalcs-in-irrep by # cartesians.
-    massweighter : np.array
+    massweighter : ndarray
         The mass associated with each atomic coordinate.
         Dimension 3 * natom. Due to x, y, z, values appear in groups of three.
     print_lvl : int
@@ -450,7 +539,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     Returns
     -------
-    Hx : np.array
+    Hx : ndarray
         The Hessian in non-mass weighted cartesians.
     """
 
@@ -460,22 +549,23 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     if print_lvl >= 3:
         core.print_out("\n    Force constant matrix for all computed irreps in mass-weighted SALCS.\n")
-        core.Matrix.from_array(H).print_out()
+        core.print_out("\n{}\n".format(np.array_str(H, **array_format)))
 
     # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
     # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
     # As such, the change of basis is formula A' = Xt A X, no inverses!
+    # More conceptually, it's A'_kl = A_ij X_ik X_jl; Each index transforms linearly.
     Hx = np.dot(np.dot(B.T, H), B)
     if print_lvl >= 3:
         core.print_out("\n    Force constants in mass-weighted Cartesian coordinates.\n")
-        core.Matrix.from_array(Hx).print_out()
+        core.print_out("\n{}\n".format(np.array_str(Hx, **array_format)))
 
     # Un-massweight the Hessian.
     Hx = np.transpose(Hx / massweighter) / massweighter
 
     if print_lvl >= 3:
         core.print_out("\n    Force constants in Cartesian coordinates.\n")
-        core.Matrix.from_array(Hx).print_out()
+        core.print_out("\n{}\n".format(np.array_str(Hx, **array_format)))
 
     if print_lvl:
         core.print_out("\n-------------------------------------------------------------\n")
@@ -483,35 +573,34 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     return Hx
 
 
-def compute_hessian_from_gradient(mol, G, freq_irrep_only):
+def compute_hessian_from_gradient(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
-        The molecule to compute the Hessian of.
-    G : list of psi4.core.Matrix
-        A list of gradients of the molecule at displaced geometries
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
 
     Returns
     -------
-    hessian : np.array
+    hessian : ndarray
         (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
     """
+
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+
+    displacements = findifrec["displacements"]
 
     def init_string(data):
         return ("  Computing second-derivative from gradients using projected, \n"
                 "  symmetry-adapted, cartesian coordinates.\n\n"
-                "  {:d} gradients passed in, including the reference geometry.\n".format(len(G)))
+                "  {:d} gradients passed in, including the reference geometry.\n".format(len(displacements) + 1))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_1", init_string)
-
-    n_disp = sum(data["n_disp_pi"]) + 1  # +1 for the reference geometry
-    if len(G) != n_disp:
-        raise ValidationError("FINDIF: Received {} gradients for {} geometries.".format(len(G), n_disp))
 
     # For non-totally symmetric CdSALCs, a symmetry operation can convert + and - displacements.
     # Good News: By taking advantage of that, we (potentially) ran less computations.
@@ -526,7 +615,7 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
 
     # Determine what atoms map to what other atoms under the point group operations.
     # The py-side compute_atom_map will work whether mol is a Py-side or C-side object.
-    atom_map = molecule.compute_atom_map(mol)
+    atom_map = qcdb.compute_atom_map(mol)
     if data["print_lvl"] >= 3:
         core.print_out("    The atom map:\n")
         for atom, sym_image_list in enumerate(atom_map):
@@ -537,17 +626,21 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
         core.print_out("\n")
 
     # A list of lists of gradients, per irrep
-    gradients_pi = []
-    # Extract and print the symmetric gradients. This need no additional processing.
-    gradients_pi.append([np.array(grad) for grad in G[0:data["n_disp_pi"][0]]])
-    # Asymmetric gradients need additional processing. For future convenience, we discard the symmetric ones.
-    G = G[data["n_disp_pi"][0]:]
+    gradients_pi = [[]]
+    # Extract and print the symmetric gradients. These need no additional processing.
+    max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
+    for i in data["salc_indices_pi"][0]:
+        for n in range(-max_disp, 0):
+            grad_raw = displacements["{}: {}".format(i, n)]["gradient"]
+            gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
+        for n in range(1, max_disp + 1):
+            grad_raw = displacements["{}: {}".format(i, n)]["gradient"]
+            gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
 
     if data["print_lvl"] >= 3:
         core.print_out("    Symmetric gradients\n")
         for gradient in gradients_pi[0]:
-            core.Matrix.from_array(gradient).print_out()
-            #gradient.print_out()
+            core.print_out("\n{}\n".format(np.array_str(gradient, **array_format)))
 
     # Asymmetric gradient. There's always SOME operation that transforms a positive
     # into a negative displacement.By doing extra things here, we can find the
@@ -579,23 +672,21 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
         sym_op = np.array(ct.symm_operation(group_op).matrix())
         gradients = []
 
-        def recursive_gradients(n):
+        def recursive_gradients(i, n):
             """Populate gradients, with step -n, -n+1, ... -1, 1, ... n.
                Positive displacements are computed."""
-            gradients.append(np.array(G.pop(0)))
+            grad_raw = displacements["{}: {}".format(i, -n)]["gradient"]
+            gradients.append(np.reshape(grad_raw, (-1, 3)))
             new_grad = np.zeros((data["n_atom"], 3))
             for atom, image in enumerate(atom_map):
                 atom2 = image[group_op]
                 new_grad[atom2] = np.einsum("xy,y->x", sym_op, gradients[-1][atom])
             if n > 1:
-                recursive_gradients(n - 1)
+                recursive_gradients(i, n - 1)
             gradients.append(new_grad)
 
-        max_disp = (data["num_pts"] - 1) // 2  # The numerator had better be divisible by two.
-        # i is just for counting the number of times to run recursive_gradients.
-        # recursive_gradients "knows" due to the structure of G the number of computed gradients per CdSALC.
         for i in data["salc_indices_pi"][h]:
-            recursive_gradients(max_disp)
+            recursive_gradients(i, max_disp)
         gradients_pi.append(gradients)
 
     # Massweight all gradients.
@@ -607,7 +698,7 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
         core.print_out("    All mass-weighted gradients\n")
         for gradients in gradients_pi:
             for grad in gradients:
-                core.Matrix.from_array(grad).print_out()
+                core.print_out("\n{}\n".format(np.array_str(grad, **array_format)))
 
     # We have all our gradients generated now!
     # Next, time to get our Hessian.
@@ -643,11 +734,11 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
 
         H_pi.append(np.empty([Nindices, Nindices]))
 
-        if data["num_pts"] == 3:
-            H_pi[-1] = (grads_adapted[1::2] - grads_adapted[::2]) / (2.0 * data["disp_size"])
-        elif data["num_pts"] == 5:
+        if findifrec["stencil_size"] == 3:
+            H_pi[-1] = (grads_adapted[1::2] - grads_adapted[::2]) / (2.0 * findifrec["step"]["size"])
+        elif findifrec["stencil_size"] == 5:
             H_pi[-1] = (grads_adapted[::4] - 8 * grads_adapted[1::4] + 8 * grads_adapted[2::4] - grads_adapted[3::4]
-                        ) / (12.0 * data["disp_size"])
+                        ) / (12.0 * findifrec["step"]["size"])
 
         H_pi[-1] = _process_hessian_symmetry_block(H_pi[-1], B_pi[-1], massweighter, irrep_lbls[h], data["print_lvl"])
 
@@ -655,103 +746,101 @@ def compute_hessian_from_gradient(mol, G, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def compute_hessian_from_energy(mol, E, freq_irrep_only):
+def compute_hessian_from_energy(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of energies.
 
     Parameters
     ----------
-    mol : qcdb.molecule or psi4.core.Molecule
-        The molecule to compute the Hessian of.
-    G : list of psi4.core.Matrix
-        A list of energies of the molecule at displaced energies
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
 
     Returns
     -------
-    hessian : np.array
+    hessian : ndarray
         (3*nat, 3* nat) Cartesian hessian [Eh/a0^2]
     """
 
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+
+    displacements = findifrec["displacements"]
+    ref_energy = findifrec["reference"]["energy"]
+
     def init_string(data):
+        max_label_len = str(max([len(label) for label in displacements]))
         out_str = ""
-        for i, energy in enumerate(E[:-1], start=1):
-            out_str += "    {:5d} : {:20.10f}\n".format(i, energy)
+        for label, disp_data in displacements.items():
+            out_str += ("    {:" + max_label_len + "s} : {:20.10f}\n").format(label, disp_data["energy"])
         return ("  Computing second-derivative from energies using projected, \n"
                 "  symmetry-adapted, cartesian coordinates.\n\n"
                 "  {:d} energies passed in, including the reference geometry.\n"
                 "    Using {:d}-point formula.\n"
                 "    Energy without displacement: {:15.10f}\n"
-                "    Check energies below for precision!\n{}".format(len(E), data["num_pts"], E[-1], out_str))
+                "    Check energies below for precision!\n{}".format(
+                    len(displacements) + 1, findifrec["stencil_size"], ref_energy, out_str))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_0", init_string)
 
-    n_disp = sum(data["n_disp_pi"]) + 1
-    if len(E) != n_disp:
-        raise ValidationError("FINDIF: Received {} energies for {} geometries.".format(len(E), n_disp))
-
-    ref_energy = E[-1]
-    unused_energies = E[:-1]
     massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
     H_pi = []
     irrep_lbls = mol.irrep_labels()
+    max_disp = (findifrec["stencil_size"] - 1) // 2
+    e_per_diag = 2 * max_disp
 
     # Unlike in the gradient case, we have no symmetry transformations to worry about.
     # We get to the task directly: assembling the force constants in each irrep block.
     for h in range(data["n_irrep"]):
-        salcs = data["salc_indices_pi"][h]
-        if not salcs: continue
+        salc_indices = data["salc_indices_pi"][h]
+        if not salc_indices: continue
 
-        n_salcs = len(salcs)
-        n_disps = data["n_disp_pi"][h]
-        irrep_energies = unused_energies[:n_disps]
-        unused_energies = unused_energies[n_disps:]
+        n_salcs = len(salc_indices)
+        E = np.zeros((len(salc_indices), e_per_diag))
 
         # Step One: Diagonals
         # For asymmetric irreps, the energy at a + disp is the same as at a - disp
-        # We exploited this, so we only need half the displacements for asymmetrics
-        disps_per_diag = (data["num_pts"] - 1) // (2 if h else 1)
-        diag_disps = disps_per_diag * n_salcs
-        energies = np.asarray(irrep_energies[:diag_disps]).reshape((n_salcs, -1))
-        # For simplicity, convert the case of an asymmetric to the symmetric case.
-        if h:
-            energies = np.hstack((energies, np.fliplr(energies)))
+        # Just reuse the - disp energy for the + disp energy
+
+        for i, salc_index in enumerate(salc_indices):
+            for j in range(1, max_disp + 1):
+                key_string = "{:d}: {{:d}}".format(salc_index)
+                E[i, max_disp - j] = displacements[key_string.format(-j)]["energy"]
+                k = -j if h else j  # Because of the +- displacement trick
+                E[i, max_disp + j - 1] = displacements[key_string.format(k)]["energy"]
         # Now determine all diagonal force constants for this irrep.
-        if data["num_pts"] == 3:
-            diag_fcs = energies[:, 0] + energies[:, 1]
+        if findifrec["stencil_size"] == 3:
+            diag_fcs = E[:, 0] + E[:, 1]
             diag_fcs -= 2 * ref_energy
-            diag_fcs /= (data["disp_size"]**2)
-        elif data["num_pts"] == 5:
-            diag_fcs = -energies[:, 0] + 16 * energies[:, 1] + 16 * energies[:, 2] - energies[:, 3]
+            diag_fcs /= (findifrec["step"]["size"]**2)
+        elif findifrec["stencil_size"] == 5:
+            diag_fcs = -E[:, 0] + 16 * E[:, 1] + 16 * E[:, 2] - E[:, 3]
             diag_fcs -= 30 * ref_energy
-            diag_fcs /= (12 * data["disp_size"]**2)
+            diag_fcs /= (12 * findifrec["step"]["size"]**2)
         H_irr = np.diag(diag_fcs)
 
-        # Step Two: Off-diagonals
-        num_unique_off_elts = n_salcs * (n_salcs - 1) // 2
-        offdiag_energies = irrep_energies[diag_disps:]
-        # If offdiagonal elements exist, put them into groups per salc pairs
-        # ...if offdiagonal elements DON'T exist, reshaping would raise an error.
-        if offdiag_energies:
-            offdiag_energies = np.reshape(offdiag_energies, (num_unique_off_elts, -1))
-        offdiag_row_index = 0
+        # TODO: It's a bit ugly to use the salc indices to grab the off-diagonals but the indices
+        # within the irrep to grab the diagonals. Is there a better way to do this?
 
-        for i, salc in enumerate(salcs):
-            for j, salc2 in enumerate(salcs[:i]):
-                offdiag_row = offdiag_energies[offdiag_row_index]
-                if data["num_pts"] == 3:
-                    fc = (+offdiag_row[0] + offdiag_row[1] + 2 * ref_energy - energies[i][0] - energies[i][1] -
-                          energies[j][0] - energies[j][1]) / (2 * data["disp_size"]**2)
-                elif data["num_pts"] == 5:
-                    fc = (-offdiag_row[0] - offdiag_row[1] + 9 * offdiag_row[2] - offdiag_row[3] - offdiag_row[4] +
-                          9 * offdiag_row[5] - offdiag_row[6] - offdiag_row[7] + energies[i][0] - 7 * energies[i][1] -
-                          7 * energies[i][2] + energies[i][3] + energies[j][0] - 7 * energies[j][1] -
-                          7 * energies[j][2] + energies[j][3] + 12 * ref_energy) / (12 * data["disp_size"]**2)
+        # Step Two: Off-diagonals
+        # We need off-diagonal energies, diagonal energies, AND the reference energy
+        # Grabbing off-diagonal energies is a pain, so once we know our SALCs...
+        # ...define offdiag_en to do that for us.
+        for i, salc in enumerate(salc_indices):
+            for j, salc2 in enumerate(salc_indices[:i]):
+                offdiag_en = lambda index: displacements["{l}: {}, {k}: {}".format(k=salc, l=salc2, *data["disps"]["off"][index])]["energy"]
+                if findifrec["stencil_size"] == 3:
+                    fc = (+offdiag_en(0) + offdiag_en(1) + 2 * ref_energy - E[i][0] - E[i][1] - E[j][0] - E[j][1]) / (
+                        2 * findifrec["step"]["size"]**2)
+                elif findifrec["stencil_size"] == 5:
+                    fc = (-offdiag_en(0) - offdiag_en(1) + 9 * offdiag_en(2) - offdiag_en(3) - offdiag_en(4) +
+                          9 * offdiag_en(5) - offdiag_en(6) - offdiag_en(7) + E[i][0] - 7 * E[i][1] - 7 * E[i][2] +
+                          E[i][3] + E[j][0] - 7 * E[j][1] - 7 * E[j][2] + E[j][3] + 12 * ref_energy) / (
+                              12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
-                offdiag_row_index += 1
 
         B_pi.append(data["salc_list"].matrix_irrep(h))
         H_pi.append(_process_hessian_symmetry_block(H_irr, B_pi[-1], massweighter, irrep_lbls[h], data["print_lvl"]))
@@ -766,13 +855,13 @@ def gradient_from_energy_geometries(molecule):
     
     Parameters
     ----------
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to compute the gradient of.
 
     Returns
     -------
-    disp_geoms : list of psi4.core.Matrix
-        A list of displaced geometries to compute energies at.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
 
     Notes
     -----
@@ -788,7 +877,7 @@ def hessian_from_gradient_geometries(molecule, irrep):
     
     Parameters
     ----------
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to compute the frequencies of.
     irrep : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
@@ -796,8 +885,8 @@ def hessian_from_gradient_geometries(molecule, irrep):
 
     Returns
     -------
-    disp_geoms : list of psi4.core.Matrix
-        A list of displaced geometries to compute gradients at.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     """
     return _geom_generator(molecule, irrep, "2_1")
 
@@ -808,7 +897,7 @@ def hessian_from_energy_geometries(molecule, irrep):
     
     Parameters
     ----------
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to compute the frequencies of.
     irrep : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
@@ -816,7 +905,7 @@ def hessian_from_energy_geometries(molecule, irrep):
 
     Returns
     -------
-    disp_geoms : list of psi4.core.Matrix
-        A list of displaced geometries to compute energies at.
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
     """
     return _geom_generator(molecule, irrep, "2_0")

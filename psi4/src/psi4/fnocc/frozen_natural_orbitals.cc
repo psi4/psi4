@@ -135,10 +135,10 @@ void FrozenNO::ComputeNaturalOrbitals() {
     // orbital energies:
     int numAOcc = 0, numBOcc = 0, numAVir = 0, numBVir = 0;
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
-    int* aOccOrbsPI = new int[nirrep_];
-    int* bOccOrbsPI = new int[nirrep_];
-    int* aVirOrbsPI = new int[nirrep_];
-    int* bVirOrbsPI = new int[nirrep_];
+    auto* aOccOrbsPI = new int[nirrep_];
+    auto* bOccOrbsPI = new int[nirrep_];
+    auto* aVirOrbsPI = new int[nirrep_];
+    auto* bVirOrbsPI = new int[nirrep_];
     for (int h = 0; h < nirrep_; ++h) {
         aOccOrbsPI[h] = doccpi_[h] + soccpi_[h] - frzcpi_[h];
         bOccOrbsPI[h] = doccpi_[h] - frzcpi_[h];
@@ -149,10 +149,10 @@ void FrozenNO::ComputeNaturalOrbitals() {
         numAVir += aVirOrbsPI[h];
         numBVir += bVirOrbsPI[h];
     }
-    double* aOccEvals = new double[numAOcc];
-    double* bOccEvals = new double[numBOcc];
-    double* aVirEvals = new double[numAVir];
-    double* bVirEvals = new double[numBVir];
+    auto* aOccEvals = new double[numAOcc];
+    auto* bOccEvals = new double[numBOcc];
+    auto* aVirEvals = new double[numAVir];
+    auto* bVirEvals = new double[numBVir];
 
     std::shared_ptr<Vector> epsA = reference_wavefunction_->epsilon_a();
     std::shared_ptr<Vector> epsB = reference_wavefunction_->epsilon_b();
@@ -327,7 +327,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // determine how many orbitals will be retained
     double cutoff = options_.get_double("OCC_TOLERANCE");
-    int* newVirOrbsPI = new int[nirrep_];
+    auto* newVirOrbsPI = new int[nirrep_];
 
     if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
         if (!options_["OCC_PERCENTAGE"].has_changed()) {
@@ -699,7 +699,7 @@ void DFFrozenNO::FourIndexIntegrals() {
         }
     }
     iwl->flush(1);
-    iwl->set_keep_flag(1);
+    iwl->set_keep_flag(true);
     delete iwl;
 
     free(Qmo);

@@ -84,14 +84,14 @@ class EFPMultipolePotentialInt : public OneBodyAOInt {
     ObaraSaikaTwoCenterEFPRecursion mvi_recur_;
 
     //! Computes the electric field between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&);
+    void compute_pair(const GaussianShell&, const GaussianShell&) override;
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     EFPMultipolePotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                              int deriv = 0);
     //! Virtual destructor
-    virtual ~EFPMultipolePotentialInt();
+    ~EFPMultipolePotentialInt() override;
 };
 
 }  // namespace psi

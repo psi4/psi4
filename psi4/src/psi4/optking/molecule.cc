@@ -62,7 +62,7 @@ namespace opt {
 MOLECULE::MOLECULE(int num_atoms) {
 
   if (num_atoms > 0) {
-    FRAG *one_frag = new FRAG(num_atoms);
+    auto *one_frag = new FRAG(num_atoms);
     fragments.push_back(one_frag);
   }
 
@@ -105,7 +105,7 @@ void MOLECULE::forces() {
     oprint_matrix_out(B, Nintco, Ncart);
   }
   temp_arr = init_array(Nintco);
-  opt_matrix_mult(B, 0, &f_x, 1, &temp_arr, 1, Nintco, Ncart, 1, 0);
+  opt_matrix_mult(B, false, &f_x, true, &temp_arr, true, Nintco, Ncart, 1, false);
   free_array(f_x);
 
   // G^-1 = (BuBt)^-1
@@ -116,11 +116,11 @@ void MOLECULE::forces() {
         G[i][j] += B[i][k] * /* u[k] * */ B[j][k];
   free_matrix(B);
 
-  G_inv = symm_matrix_inv(G, Nintco, 1);
+  G_inv = symm_matrix_inv(G, Nintco, true);
   free_matrix(G);
 
   double * f_q = p_Opt_data->g_forces_pointer();
-  opt_matrix_mult(G_inv, 0, &temp_arr, 1, &f_q, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(G_inv, false, &temp_arr, true, &f_q, true, Nintco, Nintco, 1, false);
   free_matrix(G_inv);
   free_array(temp_arr);
 
@@ -227,9 +227,9 @@ void MOLECULE::project_f_and_H() {
       G[g_fb_fragment_coord_offset(I) + i][g_fb_fragment_coord_offset(I) + i] = 1.0;
 
   // compute P = G G^-1
-  double **G_inv = symm_matrix_inv(G, Nintco, 1);
+  double **G_inv = symm_matrix_inv(G, Nintco, true);
   double **P = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(G, 0, G_inv, 0, P, 0, Nintco, Nintco, Nintco, 0);
+  opt_matrix_mult(G, false, G_inv, false, P, false, Nintco, Nintco, Nintco, false);
   free_matrix(G);
   free_matrix(G_inv);
 
@@ -249,16 +249,16 @@ void MOLECULE::project_f_and_H() {
   // P = P' - P' C (CPC)^-1 C P'
   if (constraints_present) {
     double **T = init_matrix(Nintco,Nintco);
-    opt_matrix_mult(P, 0, C, 0,  T, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult(P, false, C, false,  T, false, Nintco, Nintco, Nintco, false);
     double **T2 = init_matrix(Nintco,Nintco);
-    opt_matrix_mult(C, 0, T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
-    double **T3 = symm_matrix_inv(T2, Nintco, 1);
+    opt_matrix_mult(C, false, T, false, T2, false, Nintco, Nintco, Nintco, false);
+    double **T3 = symm_matrix_inv(T2, Nintco, true);
 
-    opt_matrix_mult( C, 0,  P, 0,  T, 0, Nintco, Nintco, Nintco, 0);
-    opt_matrix_mult(T3, 0,  T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult( C, false,  P, false,  T, false, Nintco, Nintco, Nintco, false);
+    opt_matrix_mult(T3, false,  T, false, T2, false, Nintco, Nintco, Nintco, false);
     free_matrix(T);
-    opt_matrix_mult( C, 0, T2, 0, T3, 0, Nintco, Nintco, Nintco, 0);
-    opt_matrix_mult( P, 0, T3, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult( C, false, T2, false, T3, false, Nintco, Nintco, Nintco, false);
+    opt_matrix_mult( P, false, T3, false, T2, false, Nintco, Nintco, Nintco, false);
     free_matrix(T3);
     for (int i=0; i<Nintco; ++i)
       for (int j=0; j<Nintco; ++j)
@@ -273,7 +273,7 @@ void MOLECULE::project_f_and_H() {
   double *f_q = p_Opt_data->g_forces_pointer();
   // f_q~ = P f_q
   double * temp_arr = init_array(Nintco);
-  opt_matrix_mult(P, 0, &f_q, 1, &temp_arr, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(P, false, &f_q, true, &temp_arr, true, Nintco, Nintco, 1, false);
   array_copy(temp_arr, f_q, Ncoord());
   free_array(temp_arr);
 
@@ -291,8 +291,8 @@ void MOLECULE::project_f_and_H() {
 
   double **H = p_Opt_data->g_H_pointer();
   double **temp_mat = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(H, 0, P, 0, temp_mat, 0, Nintco, Nintco, Nintco, 0);
-  opt_matrix_mult(P, 0, temp_mat, 0, H, 0, Nintco, Nintco, Nintco, 0);
+  opt_matrix_mult(H, false, P, false, temp_mat, false, Nintco, Nintco, Nintco, false);
+  opt_matrix_mult(P, false, temp_mat, false, H, false, Nintco, Nintco, Nintco, false);
   free_matrix(temp_mat);
 
   /*for (int i=0; i<Nintco;++i)
@@ -327,7 +327,7 @@ void MOLECULE::project_dq(double *dq) {
 
   //double **G = compute_G(true);
   double **G = init_matrix(Ncart, Ncart);
-  opt_matrix_mult(B, 1, B, 0, G, 0, Ncart, Nintco, Ncart, 0);
+  opt_matrix_mult(B, true, B, false, G, false, Ncart, Nintco, Ncart, false);
 
 /*  will need fixed if this function ever helps
 #if defined (OPTKING_PACKAGE_QCHEM)
@@ -341,20 +341,20 @@ void MOLECULE::project_dq(double *dq) {
   // B dx = dq
   // B^t B dx = B^t dq
   // dx = (B^t B)^-1 B^t dq
-  double **G_inv = symm_matrix_inv(G, Ncart, 1);
+  double **G_inv = symm_matrix_inv(G, Ncart, true);
   free_matrix(G);
 
   double **B_inv = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(G_inv, 0, B, 1, B_inv, 0, Ncart, Ncart, Nintco, 0);
+  opt_matrix_mult(G_inv, false, B, true, B_inv, false, Ncart, Ncart, Nintco, false);
   free_matrix(G_inv);
 
   double **P = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(B, 0, B_inv, 0, P, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(B, false, B_inv, false, P, false, Nintco, Ncart, Nintco, false);
   free_matrix(B);
   free_matrix(B_inv);
 
   double * temp_arr = init_array(Nintco);
-  opt_matrix_mult(P, 0, &dq, 1, &temp_arr, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(P, false, &dq, true, &temp_arr, true, Nintco, Nintco, 1, false);
   array_copy(temp_arr, dq, Ncoord());
   free_array(temp_arr);
   free_matrix(P);
@@ -494,20 +494,20 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   // compute A = u B^t (B u B^t)^-1 where u=unit matrix and -1 is generalized inverse
   double **B = compute_B();
   double **G = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(B, false, B, true, G, false, Nintco, Ncart, Nintco, false);
 
   double **G_inv = symm_matrix_inv(G, Nintco, true);
   free_matrix(G);
 
   double **A = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(B, 1, G_inv, 0, A, 0, Ncart, Nintco, Nintco, 0);
+  opt_matrix_mult(B, true, G_inv, false, A, false, Ncart, Nintco, Nintco, false);
   free_matrix(G_inv);
   free_matrix(B);
 
   // compute gradient in internal coordinates, A^t g_x = g_q
   double *grad_x = g_grad_array();
   double *grad_q = init_array(Nintco);
-  opt_matrix_mult(A, 1, &grad_x, 1, &grad_q, 1, Nintco, Ncart, 1, 0);
+  opt_matrix_mult(A, true, &grad_x, true, &grad_q, true, Nintco, Ncart, 1, false);
   free_array(grad_x);
 
   // read in cartesian H
@@ -529,11 +529,11 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   free_array(grad_q);
 
   double **temp_mat = init_matrix(Ncart, Nintco);
-  opt_matrix_mult(H_cart, 0, A, 0, temp_mat, 0, Ncart, Ncart, Nintco, 0);
+  opt_matrix_mult(H_cart, false, A, false, temp_mat, false, Ncart, Ncart, Nintco, false);
   //free_matrix(H_cart);
 
   //double **H_int = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(A, 1, temp_mat, 0, H_int, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(A, true, temp_mat, false, H_int, false, Nintco, Ncart, Nintco, false);
   free_matrix(temp_mat);
 
   free_matrix(A);
@@ -726,7 +726,7 @@ double ** MOLECULE::compute_G(bool use_masses) const {
     free_array(u);
   }
 
-  opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
+  opt_matrix_mult(B, false, B, true, G, false, Nintco, Ncart, Nintco, false);
   free_matrix(B);
 
   //oprintf_out("G matrix\n");

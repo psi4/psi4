@@ -26,29 +26,30 @@
  * @END LICENSE
  */
 
-#include "psi4/psi4-dec.h"
-
-#include "psi4/libmints/sieve.h"
-#include "psi4/libfock/cubature.h"
-#include "psi4/libfock/points.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/potential.h"
-#include "psi4/libfilesystem/path.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/liboptions/liboptions.h"
-
 #include "csg.h"
 
+#include <algorithm>
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libpsi4util/process.h"
 #endif
+
+#include "psi4/psi4-dec.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libfilesystem/path.h"
+#include "psi4/libfock/cubature.h"
+#include "psi4/libfock/points.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/potential.h"
+#include "psi4/libmints/sieve.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -737,7 +738,7 @@ std::string CubicScalarGrid::ecp_header() {
                 ecp_ncore << primary_->n_ecp_core(mol_->label(A)) << ", ";
             }
         }
-        ecp_head << ecp_atoms.str().substr(0,ecp_atoms.str().length()-2) << ") electrons (" 
+        ecp_head << ecp_atoms.str().substr(0,ecp_atoms.str().length()-2) << ") electrons ("
                  << ecp_ncore.str().substr(0,ecp_ncore.str().length()-2) << ").";
     }
     return ecp_head.str();

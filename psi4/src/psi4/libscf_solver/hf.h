@@ -227,7 +227,7 @@ class HF : public Wavefunction {
     HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct, Options& options,
        std::shared_ptr<PSIO> psio);
 
-    virtual ~HF();
+    ~HF() override;
 
     /// Get and set current iteration
     int iteration() const { return iteration_; }

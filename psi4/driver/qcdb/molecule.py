@@ -1335,12 +1335,12 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
-    def to_schema(self, dtype, units='Angstrom', return_type='json'):
-        """Serializes instance into JSON or YAML according to schema `dtype`."""
+    def to_schema(self, dtype, units='Bohr'):
+        """Serializes instance into dictionary according to schema `dtype`."""
 
         molrec = self.to_dict(np_out=True)
-        jymol = qcel.molparse.to_schema(molrec, dtype=dtype, units=units, return_type=return_type)
-        return jymol
+        schmol = qcel.molparse.to_schema(molrec, dtype=dtype, units=units)
+        return schmol
 
     def to_dict(self, force_c1=False, force_units=False, np_out=True):
         """Serializes instance into Molecule dictionary."""
@@ -1853,8 +1853,6 @@ class Molecule(LibmintsMolecule):
 
 # Attach methods to qcdb.Molecule class
 from .parker import xyz2mol as _parker_xyz2mol_yo
-Molecule.format_molecule_for_mol2 = _parker_xyz2mol_yo
-from .parker import bond_profile as _parker_bondprofile_yo
-Molecule.bond_profile = _parker_bondprofile_yo
+Molecule.format_molecule_for_mol = _parker_xyz2mol_yo
 from .interface_gcp import run_gcp as _gcp_qcdb_yo
 Molecule.run_gcp = _gcp_qcdb_yo

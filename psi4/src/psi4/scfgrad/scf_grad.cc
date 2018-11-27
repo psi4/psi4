@@ -27,11 +27,15 @@
  */
 
 #include "scf_grad.h"
-#include "jk_grad.h"
+
+#include <algorithm>
+#include <sstream>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
@@ -45,18 +49,9 @@
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-
-#include <algorithm>
-
-#include <sstream>
-
-#ifdef _OPENMP
-#include <omp.h>
 #include "psi4/libpsi4util/process.h"
-#endif
 
-using namespace psi;
-
+#include "jk_grad.h"
 
 namespace psi {
 namespace scfgrad {
@@ -824,7 +819,7 @@ SharedMatrix SCFGrad::compute_hessian()
         double* eps_ap = eps_a->pointer();
         double* eps_bp = eps_b->pointer();
 
-        double* temp = new double[nso * (size_t) nalpha];
+        auto* temp = new double[nso * (size_t) nalpha];
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {

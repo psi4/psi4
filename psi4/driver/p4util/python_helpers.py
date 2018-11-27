@@ -124,6 +124,149 @@ def pybuild_wavefunction(mol, basis=None):
 
 core.Wavefunction.build = pybuild_wavefunction
 
+
+@staticmethod
+def pyread_wavefunction(wfn_data):
+
+    # load the wavefunction from file
+    if isinstance(wfn_data, str):
+        wfn_data = np.load(wfn_data + '.npy').item()
+    # otherwise a dictionary was passed in
+    else:
+        pass
+    
+    # variable type specific dictionaries to be passed into C++ constructor
+    wfn_matrix = wfn_data['matrix']
+    wfn_vector= wfn_data['vector']
+    wfn_dimension = wfn_data['dimension']
+    wfn_int = wfn_data['int']
+    wfn_string = wfn_data['string']
+    wfn_boolean = wfn_data['boolean']
+    wfn_float = wfn_data['float']
+    wfn_floatvar = wfn_data['floatvar']
+    wfn_matrixarr = wfn_data['matrixarr']
+
+    # reconstruct molecule from dictionary representation
+    wfn_molecule = wfn_data['molecule']
+    molecule = core.Molecule.from_dict(wfn_molecule)
+
+    # get basis set name and spherical harmonics boolean
+    basis_name = wfn_string['basisname']
+    if ".gbs" in basis_name:
+        basis_name = basis_name.split('/')[-1].replace('.gbs', '')
+
+    basis_puream = wfn_boolean['basispuream']
+    basisset = core.BasisSet.build(molecule, 'ORBITAL', basis_name, puream=basis_puream)
+
+    # change some variables to psi4 specific data types (Matrix, Vector, Dimension)
+    for label in wfn_matrix:
+        array = wfn_matrix[label]
+        wfn_matrix[label] = core.Matrix.from_array(array,name=label) if array is not None else None
+    
+    for label in wfn_vector:
+        array = wfn_vector[label]
+        wfn_vector[label] = core.Vector.from_array(array,name=label) if array else None
+
+    for label in wfn_dimension:
+        tup = wfn_dimension[label]
+        wfn_dimension[label] = core.Dimension.from_list(tup,name=label) if tup else None
+
+    for label in wfn_matrixarr:
+        array = wfn_dimension[label]
+        wfn_dimension[label] = core.Matrix.from_array(array,name=label) if array else None
+
+    # make the wavefunction 
+    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int,
+                            wfn_string, wfn_boolean, wfn_float)
+
+    # some of the wavefunction's variables can be changed directly
+    for k, v in wfn_floatvar.items():
+        wfn.set_variable(k,v)
+    for k, v in wfn_matrixarr.items():
+        wfn.set_array(k,v)
+
+    return wfn
+
+core.Wavefunction.from_file = pyread_wavefunction
+
+
+@staticmethod
+def pywrite_wavefunction(wfn, filename=None):
+    # collect the wavefunction's variables in a dictionary indexed by varaible type
+    # some of the data types have to be made numpy-friendly first
+
+    if wfn.basisset().name().startswith("anonymous"):
+        raise ValidationError("Cannot serialize wavefunction with custom basissets.")
+
+    wfn_data = {
+        'molecule' : wfn.molecule().to_dict(),
+        'matrix' : {
+            'Ca'       : wfn.Ca().to_array()       if wfn.Ca()       else None,
+            'Cb'       : wfn.Cb().to_array()       if wfn.Cb()       else None,
+            'Da'       : wfn.Da().to_array()       if wfn.Da()       else None,
+            'Db'       : wfn.Db().to_array()       if wfn.Db()       else None,
+            'Fa'       : wfn.Fa().to_array()       if wfn.Fa()       else None,
+            'Fb'       : wfn.Fb().to_array()       if wfn.Fb()       else None,
+            'H'        : wfn.H().to_array()        if wfn.H()        else None,
+            'S'        : wfn.S().to_array()        if wfn.S()       else None,
+            'X'        : wfn.X().to_array()        if wfn.X()        else None,
+            'aotoso'   : wfn.aotoso().to_array()   if wfn.aotoso()   else None,
+            'gradient' : wfn.gradient().to_array() if wfn.gradient() else None,
+            'hessian'  : wfn.hessian().to_array()  if wfn.hessian()  else None
+            },
+        'vector' : {
+            'epsilon_a'            : wfn.epsilon_a().to_array()   if wfn.epsilon_a() else None,
+            'epsilon_b'            : wfn.epsilon_b().to_array()   if wfn.epsilon_b() else None,
+            'frequencies'          : wfn.frequencies().to_array() if wfn.frequencies() else None
+            },
+        'dimension' : {
+            'doccpi'   : wfn.doccpi().to_tuple(),
+            'frzcpi'   : wfn.frzcpi().to_tuple(),  
+            'frzvpi'   : wfn.frzvpi().to_tuple(),  
+            'nalphapi' : wfn.nalphapi().to_tuple(),
+            'nbetapi'  : wfn.nbetapi().to_tuple(), 
+            'nmopi'    : wfn.nmopi().to_tuple(),   
+            'nsopi'    : wfn.nsopi().to_tuple(),   
+            'soccpi'   : wfn.soccpi().to_tuple()  
+            },
+        'int' : { 
+            'nalpha' : wfn.nalpha(),
+            'nbeta'  : wfn.nbeta(),
+            'nfrzc'  : wfn.nfrzc(),
+            'nirrep' : wfn.nirrep(),
+            'nmo'    : wfn.nmo(),
+            'nso'    : wfn.nso(),
+            'print'  : wfn.get_print(),
+            },
+        'string' : {
+            'name' : wfn.name(),
+            'basisname' : wfn.basisset().name()
+            },
+        'boolean' : {
+            'PCM_enabled'    : wfn.PCM_enabled(),
+            'same_a_b_dens'  : wfn.same_a_b_dens(),
+            'same_a_b_orbs'  : wfn.same_a_b_orbs(),
+            'density_fitted' : wfn.density_fitted(),
+            'basispuream'    : wfn.basisset().has_puream()
+            },
+        'float' : {
+            'energy' : wfn.energy(),
+            'efzc' : wfn.efzc(),
+            'dipole_field_x' : wfn.get_dipole_field_strength()[0],
+            'dipole_field_y' : wfn.get_dipole_field_strength()[1],
+            'dipole_field_z' : wfn.get_dipole_field_strength()[2]
+            },
+        'floatvar' : wfn.variables(),
+        'matrixarr' : {k: v.to_array() for k, v in wfn.arrays().items()}
+        }
+
+    if filename is not None:
+        np.save(filename,wfn_data)
+    else:
+        return wfn_data
+
+core.Wavefunction.to_file = pywrite_wavefunction
+
 ## Python JK helps
 
 
@@ -365,7 +508,7 @@ def py_psi_set_global_option_python(key, EXTERN):
     if (key != "EXTERN"):
         raise ValidationError("Options: set_global_option_python does not recognize keyword %s" % key)
 
-    if EXTERN == None:
+    if EXTERN is None:
         core.EXTERN = None
         core.set_global_option("EXTERN", False)
     elif isinstance(EXTERN, core.ExternalPotential):

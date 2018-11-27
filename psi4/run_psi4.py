@@ -109,10 +109,10 @@ if args["inplace"]:
         raise ImportError("Cannot run inplace from an installed directory.")
 
     import sysconfig
-    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core" + sysconfig.get_config_var("SO")
+    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core" + sysconfig.get_config_var("EXT_SUFFIX")
     if not os.path.isfile(core_location):
         raise ImportError("A compiled Psi4 core{} needs to be symlinked to the {} folder".format(
-            sysconfig.get_config_var("SO"), os.path.dirname(__file__)))
+            sysconfig.get_config_var("EXT_SUFFIX"), os.path.dirname(__file__)))
 
     lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
@@ -189,8 +189,8 @@ if args['plugin_name']:
     sys.exit()
 
 if args["test"]:
-    psi4.test()
-    sys.exit()
+    retcode = psi4.test('smoke')
+    sys.exit(retcode)
 
 if not os.path.isfile(args["input"]):
     raise KeyError("The file %s does not exist." % args["input"])
@@ -226,7 +226,7 @@ if args["json"]:
 
     psi4.extras._success_flag_ = True
     psi4.extras.exit_printing(start_time)
-    psi4.json_wrapper.run_json(json_data)
+    json_data = psi4.json_wrapper.run_json(json_data)
 
     with open(args["input"], 'w') as f:
         json.dump(json_data, f)

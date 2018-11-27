@@ -39,7 +39,7 @@
 
 namespace psi {
 
-PsiException::PsiException(std::string msg, const char *_file, int _line) throw() : runtime_error(msg) {
+PsiException::PsiException(std::string msg, const char *_file, int _line) noexcept : runtime_error(msg) {
     file_ = _file;
     line_ = _line;
 
@@ -85,12 +85,12 @@ PsiException::PsiException(std::string msg, const char *_file, int _line) throw(
     msg_ = message.str();
 }
 
-PsiException::PsiException(const PsiException &copy) throw()
+PsiException::PsiException(const PsiException &copy) noexcept
     : runtime_error(copy.msg_), msg_(copy.msg_), file_(strdup(copy.file_)), line_(copy.line_) {}
 
-void PsiException::rewrite_msg(std::string msg) throw() { msg_ = msg; }
+void PsiException::rewrite_msg(std::string msg) noexcept { msg_ = msg; }
 
-const char *PsiException::what() const throw() {
+const char *PsiException::what() const noexcept {
     // stringstream sstr;
     // sstr << msg_ << "\n";
     // sstr << location();
@@ -98,60 +98,60 @@ const char *PsiException::what() const throw() {
     return msg_.c_str();
 }
 
-const char *PsiException::file() const throw() { return file_; }
+const char *PsiException::file() const noexcept { return file_; }
 
-int PsiException::line() const throw() { return line_; }
+int PsiException::line() const noexcept { return line_; }
 
-const char *PsiException::location() const throw() {
+const char *PsiException::location() const noexcept {
     std::stringstream sstr;
     sstr << "file: " << file_ << "\n";
     sstr << "line: " << line_;
     return sstr.str().c_str();
 }
 
-PsiException::~PsiException() throw() {}
+PsiException::~PsiException() noexcept {}
 
-SanityCheckError::SanityCheckError(std::string message, const char *_file, int _line) throw()
+SanityCheckError::SanityCheckError(std::string message, const char *_file, int _line) noexcept
     : PsiException(message, _file, _line) {
     std::stringstream sstr;
     sstr << "sanity check failed! " << message;
     rewrite_msg(sstr.str());
 }
 
-SanityCheckError::~SanityCheckError() throw() {}
+SanityCheckError::~SanityCheckError() noexcept {}
 
-SystemError::SystemError(int eno, const char *_file, int _line) throw() : PsiException("", _file, _line) {
+SystemError::SystemError(int eno, const char *_file, int _line) noexcept : PsiException("", _file, _line) {
     std::stringstream sstr;
     sstr << "SystemError:  " << strerror(eno);
     rewrite_msg(sstr.str());
 }
 
-SystemError::~SystemError() throw() {}
+SystemError::~SystemError() noexcept {}
 
-InputException::InputException(std::string msg, std::string param_name, int value, const char *_file, int _line) throw()
+InputException::InputException(std::string msg, std::string param_name, int value, const char *_file, int _line) noexcept
     : PsiException(msg, _file, _line) {
     write_input_msg<int>(msg, param_name, value);
 }
 
 InputException::InputException(std::string msg, std::string param_name, std::string value, const char *_file,
-                               int _line) throw()
+                               int _line) noexcept
     : PsiException(msg, _file, _line) {
     write_input_msg<std::string>(msg, param_name, value);
 }
 
 InputException::InputException(std::string msg, std::string param_name, double value, const char *_file,
-                               int _line) throw()
+                               int _line) noexcept
     : PsiException(msg, _file, _line) {
     write_input_msg<double>(msg, param_name, value);
 }
 
-InputException::InputException(std::string msg, std::string param_name, const char *_file, int _line) throw()
+InputException::InputException(std::string msg, std::string param_name, const char *_file, int _line) noexcept
     : PsiException(msg, _file, _line) {
     write_input_msg<std::string>(msg, param_name, "in input");
 }
 
 template <class T>
-void InputException::write_input_msg(std::string msg, std::string param_name, T value) throw() {
+void InputException::write_input_msg(std::string msg, std::string param_name, T value) noexcept {
     std::stringstream sstr;
     sstr << msg << "\n";
     sstr << "value " << value << " is incorrect"
@@ -161,22 +161,22 @@ void InputException::write_input_msg(std::string msg, std::string param_name, T 
 }
 
 template <class T>
-StepSizeError<T>::StepSizeError(std::string value_name, T max, T actual, const char *_file, int _line) throw()
+StepSizeError<T>::StepSizeError(std::string value_name, T max, T actual, const char *_file, int _line) noexcept
     : LimitExceeded<T>(value_name + " step size", max, actual, _file, _line) {}
 
 template <class T>
-StepSizeError<T>::~StepSizeError() throw() {}
+StepSizeError<T>::~StepSizeError() noexcept {}
 
 template <class T>
-MaxIterationsExceeded<T>::MaxIterationsExceeded(std::string routine_name, T max, const char *_file, int _line) throw()
+MaxIterationsExceeded<T>::MaxIterationsExceeded(std::string routine_name, T max, const char *_file, int _line) noexcept
     : LimitExceeded<T>(routine_name + " iterations", max, max, _file, _line) {}
 
 template <class T>
-MaxIterationsExceeded<T>::~MaxIterationsExceeded() throw() {}
+MaxIterationsExceeded<T>::~MaxIterationsExceeded() noexcept {}
 
 template <class T>
 ConvergenceError<T>::ConvergenceError(std::string routine_name, T max, double _desired_accuracy,
-                                      double _actual_accuracy, const char *_file, int _line) throw()
+                                      double _actual_accuracy, const char *_file, int _line) noexcept
     : MaxIterationsExceeded<T>(routine_name + " iterations", max, _file, _line),
       desired_acc_(_desired_accuracy),
       actual_acc_(_actual_accuracy) {
@@ -188,15 +188,15 @@ ConvergenceError<T>::ConvergenceError(std::string routine_name, T max, double _d
 }
 
 template <class T>
-ConvergenceError<T>::~ConvergenceError() throw() {}
+ConvergenceError<T>::~ConvergenceError() noexcept {}
 
 template <class T>
-double ConvergenceError<T>::desired_accuracy() const throw() {
+double ConvergenceError<T>::desired_accuracy() const noexcept {
     return desired_acc_;
 }
 
 template <class T>
-double ConvergenceError<T>::actual_accuracy() const throw() {
+double ConvergenceError<T>::actual_accuracy() const noexcept {
     return actual_acc_;
 }
 

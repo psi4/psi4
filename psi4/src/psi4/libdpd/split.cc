@@ -31,6 +31,7 @@
     \brief String parsing code for orbital indices, taken from Justin Turney's AMBIT code.
 */
 
+#include <cctype>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -42,13 +43,13 @@ namespace psi {
 
 // trim from start
 static inline std::string &dpd_ltrim(std::string &s) {
-    s.erase(s.begin(), find_if(s.begin(), s.end(), not1(std::ptr_fun<int, int>(isspace))));
+    s.erase(s.begin(), find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c);}));
     return s;
 }
 
 // trim from end
 static inline std::string &dpd_rtrim(std::string &s) {
-    s.erase(find_if(s.rbegin(), s.rend(), not1(std::ptr_fun<int, int>(isspace))).base(), s.end());
+    s.erase(find_if(s.rbegin(), s.rend(), [](int c) {return !std::isspace(c);}).base(), s.end());
     return s;
 }
 

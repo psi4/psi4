@@ -254,7 +254,7 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance, 
             for (I = 0; I < dimen; I++) Bmat[L + 1][I] /= norm;
 
             /* check orthogonality of subspace */
-            if (0) {
+            if (false) {
                 for (i = 0; i <= L + 1; i++) {
                     for (j = 0; j <= i; j++) {
                         // dot_arr(Bmat[i], Bmat[j], dimen, &tval);

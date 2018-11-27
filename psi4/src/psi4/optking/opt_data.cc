@@ -109,7 +109,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double *f =  g_forces_pointer();
 
   if (Opt_params.opt_type == OPT_PARAMS::IRC)
-    if (!p_irc_data->go) { return 1; }
+    if (!p_irc_data->go) { return true; }
 
   // Save forces and put back in below.
   double *f_backup;
@@ -120,7 +120,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
   // for IRC only consider forces tangent to the hypersphere search surface
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
-    double **G = mol.compute_G(1);
+    double **G = mol.compute_G(true);
     double **Ginv = symm_matrix_inv(G, Nintco, Nintco); 
     free_matrix(G);
 
@@ -631,7 +631,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
       opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
       for (int i=0; i<iteration; ++i) {
-        STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+        auto *one_step = new STEP_DATA(Nintco, Ncart);
         one_step->read(i+1, Nintco, Ncart);
         steps.push_back(one_step);
       }
@@ -642,7 +642,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   ++iteration; // increment for current step
   ++steps_since_last_H;
   // create memory for this, current step
-  STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
+  auto *one_step = new STEP_DATA(Nintco, Ncart);
   steps.push_back(one_step);
 }
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -47,17 +47,17 @@ endif()
 #  <<  Pybind11 & Python  >>
 if(MSVC)
     # As for MSVC 14.0, it is not possible to set anything bellow C++14, so just use defaults
-    set(PYBIND11_CPP_STANDARD "")
+    set(PYBIND11_CPP_STANDARD "/std:c++14")
+    # FIXME Uncomment when we switch to C++14, since it will work also when selecting C++17
+    #set(PYBIND11_CPP_STANDARD "/std:c++${CMAKE_CXX_STANDARD}")
 else()
     set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 endif()
-find_package(pybind11 2.2.3 EXACT CONFIG REQUIRED)
+find_package(pybind11 2.2.3 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
 message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
 find_package(DL)
-
-set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
 if(${ENABLE_ambit})
     find_package(ambit CONFIG REQUIRED)
@@ -228,8 +228,10 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
 
 install(FILES ../tests/pytest/conftest.py
               ../tests/pytest/addons.py
+              ../tests/pytest/utils.py
               ../tests/pytest/test_psi4.py
               ../tests/pytest/test_addons.py
+              ../tests/pytest/test_molecule_to_string.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>
@@ -284,4 +286,3 @@ configure_package_config_file(
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-

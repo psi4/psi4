@@ -26,26 +26,25 @@
  * @END LICENSE
  */
 
-#include "ccsd.h"
-#include "blas.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/liboptions/liboptions.h"
-
 #include <ctime>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-using namespace psi;
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libqt/qt.h"
+
+#include "blas.h"
+#include "ccsd.h"
 
 namespace psi {
 namespace fnocc {
 
 PsiReturnType CoupledCluster::lowmemory_triples() {
-    char *name = new char[10];
-    char *space = new char[10];
+    auto *name = new char[10];
+    auto *space = new char[10];
     double fac;
     if (ccmethod == 0) {
         sprintf(name, "CCSD");
@@ -147,7 +146,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
         }
 
         long int mem_leftover = memory - min_memory_reqd;
-        int extra_threads = (int)(mem_leftover / 5L * ooo);
+        auto extra_threads = (int)(mem_leftover / 5L * ooo);
         nthreads = 1 + extra_threads;
         outfile->Printf("        Attempting to proceed with %d threads\n", nthreads);
     }
@@ -206,7 +205,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
     double *etrip = (double *)malloc(nthreads * sizeof(double));
     for (int i = 0; i < nthreads; i++) etrip[i] = 0.0;
 
-    time_t stop, start = time(nullptr);
+    std::time_t stop, start = std::time(nullptr);
     int pct10, pct20, pct30, pct40, pct50, pct60, pct70, pct80, pct90;
     pct10 = pct20 = pct30 = pct40 = pct50 = pct60 = pct70 = pct80 = pct90 = 0;
 
@@ -467,7 +466,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
             // print out update
             if (thread == 0) {
                 int print = 0;
-                stop = time(nullptr);
+                stop = std::time(nullptr);
                 if ((double)ind / nabc >= 0.1 && !pct10) {
                     pct10 = 1;
                     print = 1;

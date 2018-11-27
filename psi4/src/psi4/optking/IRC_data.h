@@ -112,8 +112,8 @@ class IRC_DATA {
 
     IRC_DATA() {
       sphere_step = 0;
-      go = 1;
-      in_min_range = 0;
+      go = true;
+      in_min_range = false;
       step_dist = 0;
       arc_dist = 0;
       line_dist = 0;
@@ -196,7 +196,7 @@ class IRC_DATA {
       step_dist = coord_in * step_length;
       arc_dist += arc_length;
       line_dist += line_length;
-      IRC_POINT *onepoint = new IRC_POINT(coord_in, q_p_in, x_p_in, q_in, x_in, f_q_in, f_x_in, E_in,
+      auto *onepoint = new IRC_POINT(coord_in, q_p_in, x_p_in, q_in, x_in, f_q_in, f_x_in, E_in,
                                           step_dist, arc_dist, line_dist);
       steps.push_back(onepoint);
     }

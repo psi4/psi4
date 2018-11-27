@@ -61,15 +61,15 @@ class Updater {
 class MkUpdater : public Updater {
    public:
     MkUpdater(Options &options);
-    virtual ~MkUpdater();
-    virtual void update(int cycle, Hamiltonian *heff);
+    ~MkUpdater() override;
+    void update(int cycle, Hamiltonian *heff) override;
 };
 
 class BWUpdater : public Updater {
    public:
     BWUpdater(Options &options);
-    virtual ~BWUpdater();
-    virtual void update(int cycle, Hamiltonian *heff);
+    ~BWUpdater() override;
+    void update(int cycle, Hamiltonian *heff) override;
 };
 
 }  // namespace psimrcc
