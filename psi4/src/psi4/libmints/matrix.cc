@@ -1444,9 +1444,9 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix &a, const
 }
 
 SharedMatrix Matrix::doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
-    if (A->symmetry() || B->symmetry()) {
-        throw PSIEXCEPTION("Matrix::doublet is not supported for this non-totally-symmetric thing.");
-    }
+    // if (A->symmetry() || B->symmetry()) {
+    //     throw PSIEXCEPTION("Matrix::doublet is not supported for this non-totally-symmetric thing.");
+    // }
 
     if (A->nirrep() != B->nirrep()) {
         throw PSIEXCEPTION("Matrix::doublet: Matrices do not have the same nirreps");
@@ -1455,17 +1455,19 @@ SharedMatrix Matrix::doublet(const SharedMatrix &A, const SharedMatrix &B, bool 
     Dimension m = (transA ? A->colspi() : A->rowspi());
     Dimension n = (transB ? B->rowspi() : B->colspi());
     Dimension k = (!transA ? A->colspi() : A->rowspi());
-    Dimension k2 = (!transB ? B->rowspi() : B->colspi());
-    if (k != k2) {
-        throw PSIEXCEPTION("Matrix::doublet: Dimension mismatch");
-    }
+    int symlink = (!transA ? A->symmetry() : 0);
 
-    auto T = std::make_shared<Matrix>("T", m, n);
+    auto T = std::make_shared<Matrix>("T", m, n, A->symmetry() ^ B->symmetry());
 
     for (int h = 0; h < A->nirrep(); h++) {
-        if (!k[h] || !m[h] || !n[h]) continue;
-        C_DGEMM((transA ? 'T' : 'N'), (transB ? 'T' : 'N'), m[h], n[h], k[h], 1.0, A->pointer(h)[0], A->colspi()[h],
-                B->pointer(h)[0], B->colspi()[h], 0.0, T->pointer(h)[0], T->colspi()[h]);
+        int Ha = h;
+        int Hb = Ha ^ (transA ? 0 : A->symmetry()) ^ (transB ? B->symmetry() : 0);
+        int Ht = Ha ^ (transA ? A->symmetry() : 0);
+        if (m[Ht] && n[Ht ^ T->symmetry()] && k[Ha ^ symlink]) {
+            C_DGEMM((transA ? 'T' : 'N'), (transB ? 'T' : 'N'), m[Ht], n[Ht ^ T->symmetry()], k[Ha ^ symlink], 1.0,
+                    A->pointer(Ha)[0], A->colspi()[Ha ^ A->symmetry()], B->pointer(Hb)[0],
+                    B->colspi()[Hb ^ B->symmetry()], 0.0, T->pointer(h)[0], T->colspi()[Ht ^ T->symmetry()]);
+        }
     }
 
     return T;
@@ -1483,8 +1485,8 @@ void Matrix::axpy(double a, SharedMatrix X) {
         throw PSIEXCEPTION("Matrix::axpy: Matrices do not have the same nirreps");
     }
     for (int h = 0; h < nirrep_; h++) {
-        size_t size = colspi_[h] * rowspi_[h];
-        if (size != (X->rowspi()[h] * X->colspi()[h])) {
+        size_t size = colspi_[h ^ symmetry()] * rowspi_[h];
+        if (size != (X->rowspi()[h] * X->colspi()[h ^ X->symmetry()])) {
             throw PSIEXCEPTION("Matrix::axpy: Matrices sizes do not match.");
         }
         if (size) {
