@@ -123,19 +123,19 @@ else()
 endif()
 
 add_library(OpenMP::OpenMP INTERFACE IMPORTED)
-set(${PN}_FOUND 1)
+set(_${PN}_REQUIRED 1)
 foreach(_lang ${${PN}_FIND_COMPONENTS})
     if (TARGET OpenMP::OpenMP_${_lang})
         set(${PN}_${_lang}_FOUND 1)
         set_property(TARGET OpenMP::OpenMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_${_lang})
     else()
-        unset(${PN}_FOUND)
+        unset(_${PN}_REQUIRED)
     endif()
 endforeach()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(${PN}
-                                  REQUIRED_VARS ${PN}_FOUND
+                                  REQUIRED_VARS _${PN}_REQUIRED
                                   HANDLE_COMPONENTS)
 
 set(PN ${_TargetOpenMP_PN})
