@@ -1373,9 +1373,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         use_c1 = True
 
     e_scf = scf_wfn.compute_energy()
-    core.set_variable("SCF TOTAL ENERGY", e_scf)
-    core.set_variable("CURRENT ENERGY", e_scf)
-    core.set_variable("CURRENT REFERENCE ENERGY", e_scf)
+    for obj in [core, scf_wfn]:
+        for pv in ["SCF TOTAL ENERGY", "CURRENT ENERGY", "CURRENT REFERENCE ENERGY"]:
+            obj.set_variable(pv, e_scf)
 
     # We always would like to print a little dipole information
     if kwargs.get('scf_do_dipole', True):
@@ -1383,9 +1383,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         oeprop.set_title("SCF")
         oeprop.add("DIPOLE")
         oeprop.compute()
-        core.set_variable("CURRENT DIPOLE X", core.get_variable("SCF DIPOLE X"))
-        core.set_variable("CURRENT DIPOLE Y", core.get_variable("SCF DIPOLE Y"))
-        core.set_variable("CURRENT DIPOLE Z", core.get_variable("SCF DIPOLE Z"))
+        for obj in [core, scf_wfn]:
+            for xyz in 'XYZ':
+                obj.set_variable('CURRENT DIPOLE ' + xyz, obj.variable('SCF DIPOLE ' + xyz))
 
     # Write out MO's
     if core.get_option("SCF", "PRINT_MOS"):
@@ -2020,7 +2020,7 @@ def run_scf(name, **kwargs):
 
 
     scf_wfn = scf_helper(name, post_scf=False, **kwargs)
-    returnvalue = core.get_variable('CURRENT ENERGY')
+    returnvalue = scf_wfn.energy()
 
     ssuper = scf_wfn.functional()
 
@@ -2037,29 +2037,43 @@ def run_scf(name, **kwargs):
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
 
-            vdh = core.get_variable('SCS-MP2 CORRELATION ENERGY')
+            vdh = dfmp2_wfn.variable('SCS-MP2 CORRELATION ENERGY')
 
         else:
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
-            vdh = ssuper.c_alpha() * core.get_variable('MP2 CORRELATION ENERGY')
+            vdh = ssuper.c_alpha() * dfmp2_wfn.variable('MP2 CORRELATION ENERGY')
 
-        # TODO: delete these variables, since they don't mean what they look to mean?
-        # 'MP2 TOTAL ENERGY',
-        # 'MP2 CORRELATION ENERGY',
-        # 'MP2 SAME-SPIN CORRELATION ENERGY']
+        # remove misleading MP2 psivars computed with DFT, not HF, reference
+        for var in dfmp2_wfn.variables():
+            if var.startswith('MP2 ') and ssuper.name() not in ['MP2D']:
+                scf_wfn.del_variable(var)
 
-        core.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
+        scf_wfn.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
+        scf_wfn.set_variable('{} DOUBLE-HYBRID CORRECTION ENERGY'.format(ssuper.name()), vdh)
         returnvalue += vdh
-        core.set_variable('DFT TOTAL ENERGY', returnvalue)
-        core.set_variable('CURRENT ENERGY', returnvalue)
+        scf_wfn.set_variable('DFT TOTAL ENERGY', returnvalue)
+        for pv, pvv in scf_wfn.variables().items():
+            if pv.endswith('DISPERSION CORRECTION ENERGY') and pv.startswith(ssuper.name()):
+                fctl_plus_disp_name = pv.split()[0]
+                scf_wfn.set_variable(fctl_plus_disp_name + ' TOTAL ENERGY', returnvalue)
+                break
+        else:
+            scf_wfn.set_variable('{} TOTAL ENERGY'.format(ssuper.name()), returnvalue)
+
+        scf_wfn.set_variable('CURRENT ENERGY', returnvalue)
+        scf_wfn.set_energy(returnvalue)
         core.print_out('\n\n')
         core.print_out('    %s Energy Summary\n' % (name.upper()))
-        core.print_out('    -------------------------\n')
+        core.print_out('    ' + '-' * (15 + len(name)) + '\n')
         core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
         core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
         core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
         core.tstop()
+
+    # Shove variables into global space
+    for k, v in scf_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash_scf.restore()
     optstash_mp2.restore()
@@ -2749,11 +2763,11 @@ def run_dfmp2_property(name, **kwargs):
     grad = dfmp2_wfn.compute_gradient()
 
     if name == 'scs-mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('SCS-MP2 TOTAL ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('SCS-MP2 CORRELATION ENERGY'))
     elif name == 'mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('MP2 TOTAL ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY'))
 
     # Run OEProp
     oe = core.OEProp(dfmp2_wfn)
@@ -2762,6 +2776,10 @@ def run_dfmp2_property(name, **kwargs):
         oe.add(prop.upper())
     oe.compute()
     dfmp2_wfn.oeprop = oe
+
+    # Shove variables into global space
+    for k, v in dfmp2_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return dfmp2_wfn
@@ -3111,15 +3129,21 @@ def run_dfmp2(name, **kwargs):
     dfmp2_wfn.compute_energy()
 
     if name == 'scs-mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('SCS-MP2 TOTAL ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('SCS-MP2 CORRELATION ENERGY'))
+
     elif name == 'mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('MP2 TOTAL ENERGY'))
+        dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in dfmp2_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     core.tstop()
     return dfmp2_wfn
+
 
 def run_dfep2(name, **kwargs):
     """Function encoding sequence of PSI module calls for

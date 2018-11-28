@@ -80,6 +80,8 @@ def test_core_has_del_variable(pe_qcvars):
 
     assert compare_integers(False, subject_d, tnm())
 
+    psi4.core.del_variable('var C')
+
 
 def test_wfn_has_del_variable(wfn_qcvars):
     subject_t = wfn_qcvars.has_variable('VAR a')
@@ -92,3 +94,5 @@ def test_wfn_has_del_variable(wfn_qcvars):
     subject_d = wfn_qcvars.has_variable('VAR a')
 
     assert compare_integers(False, subject_d, tnm())
+
+    wfn_qcvars.del_variable('var C')

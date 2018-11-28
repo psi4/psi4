@@ -373,7 +373,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_D()
         core.timer_off("HF: Form D")
 
-        core.set_variable("SCF ITERATION ENERGY", SCFE)
+        self.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
@@ -491,12 +491,12 @@ def scf_finalize_energy(self):
         self.set_energies("Total Energy", SCFE)
         core.print_out(efpobj.energy_summary(scfefp=SCFE, label='psi'))
 
-        core.set_variable('EFP ELST ENERGY', efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
-        core.set_variable('EFP IND ENERGY', efpene['polarization'])
-        core.set_variable('EFP DISP ENERGY', efpene['dispersion'])
-        core.set_variable('EFP EXCH ENERGY', efpene['exchange_repulsion'])
-        core.set_variable('EFP TOTAL ENERGY', efpene['total'])
-        core.set_variable('CURRENT ENERGY', efpene['total'])
+        self.set_variable('EFP ELST ENERGY', efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
+        self.set_variable('EFP IND ENERGY', efpene['polarization'])
+        self.set_variable('EFP DISP ENERGY', efpene['dispersion'])
+        self.set_variable('EFP EXCH ENERGY', efpene['exchange_repulsion'])
+        self.set_variable('EFP TOTAL ENERGY', efpene['total'])
+        self.set_variable('CURRENT ENERGY', efpene['total'])
 
     core.print_out("\n  ==> Post-Iterations <==\n\n")
 

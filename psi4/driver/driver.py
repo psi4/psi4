@@ -715,6 +715,7 @@ def gradient(name, **kwargs):
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
     optstash.restore()
 
@@ -1264,6 +1265,7 @@ def hessian(name, **kwargs):
 
         # TODO: check that current energy's being set to the right figure when this code is actually used
         core.set_variable('CURRENT ENERGY', wfn.energy())
+        wfn.set_variable('CURRENT ENERGY', wfn.energy())
 
     elif dertype == 1:
         core.print_out(
@@ -1299,6 +1301,7 @@ def hessian(name, **kwargs):
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
         core.set_parent_symmetry('')
         optstash.restore()
@@ -1341,6 +1344,7 @@ def hessian(name, **kwargs):
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
         core.set_parent_symmetry('')
         optstash.restore()
