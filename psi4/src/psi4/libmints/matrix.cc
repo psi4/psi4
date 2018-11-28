@@ -1402,27 +1402,24 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a,
         throw PSIEXCEPTION("Matrix::gemm error: Input symmetries will not result in target symmetry.");
     }
 
-    if (transa && a->symmetry_)
-        throw PSIEXCEPTION("Matrix::gemm error: a is non totally symmetric and you're trying to transpose it");
-    if (transb && b->symmetry_)
-        throw PSIEXCEPTION("Matrix::gemm error: b is non totally symmetric and you're trying to transpose it");
-
     char ta = transa ? 't' : 'n';
     char tb = transb ? 't' : 'n';
-    int h, m, n, k, lda, ldb, ldc;
+    int symlink = (!transa ? a->symmetry() : 0);
+    auto nlink = (!transa ? a->colspi() : a->rowspi());
 
-    for (h = 0; h < nirrep_; ++h) {
-        m = rowspi_[h];
-        n = colspi_[h ^ symmetry_];
-        k = transa ? a->rowspi_[h] : a->colspi_[h ^ a->symmetry_];
-
-        lda = a->colspi_[h ^ a->symmetry_];
-        ldb = b->colspi_[h ^ b->symmetry_];
-        ldc = colspi_[h ^ symmetry_];
+    for (int Ha = 0; Ha < nirrep_; ++Ha) {
+        int Hb = Ha ^ (transa ? 0 : a->symmetry()) ^ (transb ? b->symmetry() : 0);
+        int Hc = Ha ^ (transa ? a->symmetry() : 0);
+        int m = rowspi_[Hc];
+        int n = colspi_[Hc ^ symmetry_];
+        int k = nlink[Ha ^ symlink];
+        int lda = a->colspi_[Ha ^ a->symmetry_];
+        int ldb = b->colspi_[Hb ^ b->symmetry_];
+        int ldc = colspi_[Hc ^ symmetry_];
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, alpha, &(a->matrix_[h][0][0]), lda,
-                    &(b->matrix_[h ^ symmetry_ ^ b->symmetry_][0][0]), ldb, beta, &(matrix_[h][0][0]), ldc);
+            C_DGEMM(ta, tb, m, n, k, alpha, &(a->matrix_[Ha][0][0]), lda, &(b->matrix_[Hb][0][0]), ldb, beta,
+                    &(matrix_[Hc][0][0]), ldc);
         }
     }
 }
@@ -1444,31 +1441,15 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix &a, const
 }
 
 SharedMatrix Matrix::doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
-    // if (A->symmetry() || B->symmetry()) {
-    //     throw PSIEXCEPTION("Matrix::doublet is not supported for this non-totally-symmetric thing.");
-    // }
-
     if (A->nirrep() != B->nirrep()) {
         throw PSIEXCEPTION("Matrix::doublet: Matrices do not have the same nirreps");
     }
 
     Dimension m = (transA ? A->colspi() : A->rowspi());
     Dimension n = (transB ? B->rowspi() : B->colspi());
-    Dimension k = (!transA ? A->colspi() : A->rowspi());
-    int symlink = (!transA ? A->symmetry() : 0);
 
     auto T = std::make_shared<Matrix>("T", m, n, A->symmetry() ^ B->symmetry());
-
-    for (int h = 0; h < A->nirrep(); h++) {
-        int Ha = h;
-        int Hb = Ha ^ (transA ? 0 : A->symmetry()) ^ (transB ? B->symmetry() : 0);
-        int Ht = Ha ^ (transA ? A->symmetry() : 0);
-        if (m[Ht] && n[Ht ^ T->symmetry()] && k[Ha ^ symlink]) {
-            C_DGEMM((transA ? 'T' : 'N'), (transB ? 'T' : 'N'), m[Ht], n[Ht ^ T->symmetry()], k[Ha ^ symlink], 1.0,
-                    A->pointer(Ha)[0], A->colspi()[Ha ^ A->symmetry()], B->pointer(Hb)[0],
-                    B->colspi()[Hb ^ B->symmetry()], 0.0, T->pointer(h)[0], T->colspi()[Ht ^ T->symmetry()]);
-        }
-    }
+    T->gemm(transA, transB, 1.0, A, B, 0.0);
 
     return T;
 }
