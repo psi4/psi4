@@ -528,4 +528,21 @@ def core_get_variables():
     warnings.warn("Using `psi4.core.get_variables` instead of `psi4.core.variables` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
     return core.variables()
 
+
+def core_get_variable(key):
+    # setting stacklevel=1 so message right for promoted-namespace `psi4.get_variable`
+    warnings.warn("Using `psi4.core.get_variable` instead of `psi4.core.variable` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=1)
+    return core.variable(key)
+
+
 core.get_variables = core_get_variables
+core.get_variable = core_get_variable
+
+
+def wfn_get_variable(cls, key):
+    warnings.warn("Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
+    return cls.variable(key)
+
+
+core.Wavefunction.get_variable = wfn_get_variable
+

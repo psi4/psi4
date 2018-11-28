@@ -406,6 +406,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     int nirrep() const { return nirrep_; }
     /// Returns the reference energy
     double reference_energy() const { return energy_; }
+    /// Sets the energy
+    void set_energy(double ene) { energy_ = ene; }
     /// Returns the frozen-core energy
     double efzc() const { return efzc_; }
     /// Sets the frozen-core energy
@@ -648,8 +650,15 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
 
     /// Get and set variables dictionary
-    double get_variable(const std::string key);
-    void set_variable(const std::string key, double value) { variables_[key] = value; }
+    int has_variable(const std::string& key);
+    double variable(const std::string& key);
+    PSI_DEPRECATED(
+        "Using `Wavefunction.get_variable` instead of `Wavefunction.variable` is deprecated, and in 1.4 it will stop "
+        "working")
+    double get_variable(const std::string& key);
+    void set_variable(const std::string& key, double value);
+    int del_variable(const std::string& key);
+
     std::map<std::string, double> variables() { return variables_; }
 
     /// Get and set arrays dictionary

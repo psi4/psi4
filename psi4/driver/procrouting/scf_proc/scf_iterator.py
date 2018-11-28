@@ -574,7 +574,7 @@ def scf_print_energies(self):
     e2 = self.get_energies('Two-Electron')
     exc = self.get_energies('XC')
     ed = self.get_energies('-D')
-    #self.del_variable('-D Energy')
+    self.del_variable('-D Energy')
     evv10 = self.get_energies('VV10')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
