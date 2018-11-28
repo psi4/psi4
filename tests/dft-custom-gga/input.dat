@@ -104,5 +104,5 @@ set d_convergence 1e-5
 set basis cc-pvdz
 
 activate(ne)
-edft=energy("ft97")
+edft = energy("ft97")
 compare_values(-128.850056371480, edft, 4, "Ne: FT97")
