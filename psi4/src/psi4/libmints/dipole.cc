@@ -29,6 +29,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
@@ -72,6 +73,19 @@ SharedVector DipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, cons
         ret[0] += mol->Z(i) * geom[0];
         ret[1] += mol->Z(i) * geom[1];
         ret[2] += mol->Z(i) * geom[2];
+    }
+
+    return sret;
+}
+
+SharedMatrix DipoleInt::nuclear_gradient_contribution(std::shared_ptr<Molecule> mol) {
+    auto sret = std::make_shared<Matrix>("Nuclear dipole derivative (3Nx3)", 3 * mol->natom(), 3);
+    double **ret = sret->pointer();
+
+    for (int i = 0; i < mol->natom(); ++i) {
+        ret[3 * i + 0][0] = mol->Z(i);
+        ret[3 * i + 1][1] = mol->Z(i);
+        ret[3 * i + 2][2] = mol->Z(i);
     }
 
     return sret;

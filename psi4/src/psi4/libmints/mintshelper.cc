@@ -1814,6 +1814,7 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
 
     return perturb_grad(D, xlambda, ylambda, zlambda);
 }
+
 SharedMatrix MintsHelper::perturb_grad(SharedMatrix D, double xlambda, double ylambda, double zlambda) {
     double **Dp = D->pointer();
 
@@ -1988,6 +1989,171 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D, double xlambda, double yl
                     for (int q = 0; q < nQ; q++) {
                         Pp[aQ][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                     }
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
+    // Computes skeleton (Hellman-Feynman like) dipole derivatives for each perturbation
+    double **Dp = D->pointer();
+
+    int natom = molecule_->natom();
+    auto ret = std::make_shared<Matrix>("Dipole dervatives (pert*component, i.e. 3Nx3)", 3 * natom, 3);
+    double **Pp = ret->pointer();
+
+    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
+    const double *buffer = Dint->buffer();
+
+    for (int P = 0; P < basisset_->nshell(); P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            Dint->compute_shell_deriv1(P, Q);
+
+            int nP = basisset_->shell(P).nfunction();
+            int oP = basisset_->shell(P).function_index();
+            int aP = basisset_->shell(P).ncenter();
+
+            int nQ = basisset_->shell(Q).nfunction();
+            int oQ = basisset_->shell(Q).function_index();
+            int aQ = basisset_->shell(Q).ncenter();
+
+            const double *ref = buffer;
+            double prefac = (P == Q ? 1.0 : 2.0);
+
+            /*
+             * Mu X derivatives
+             */
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            /*
+             * Mu Y derivatives
+             */
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            /*
+             * Mu Z derivatives
+             */
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                }
+            }
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
         }

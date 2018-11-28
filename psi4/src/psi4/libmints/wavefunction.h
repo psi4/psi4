@@ -204,6 +204,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// gradient, if available, as natom_ x 3 SharedMatrix
     SharedMatrix gradient_;
 
+    /// derivative of dipole (atomic units), if available, stored as
+    /// degree-of-freedom by dipole component, i.e. 3 natom_ x 3 SharedMatrix
+    SharedMatrix dipole_gradient_;
+
     /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix (NOT mass-weighted!)
     SharedMatrix hessian_;
 
@@ -255,13 +259,13 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Constructor for an entirely new wavefunction with an existing basis and global options
     Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis);
 
-    /// Constructor for a wavefunction deserialized from a file and initialized in the form of maps to all member variables
-    Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, 
-                               std::map<std::string, std::shared_ptr<Matrix>> matrices,
-                               std::map<std::string, std::shared_ptr<Vector>> vectors,
-                               std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints, 
-                               std::map<std::string, std::string> strings, std::map<std::string, bool> booleans, 
-                               std::map<std::string, double> floats);
+    /// Constructor for a wavefunction deserialized from a file and initialized in the form of maps to all member
+    /// variables
+    Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset,
+                 std::map<std::string, std::shared_ptr<Matrix>> matrices,
+                 std::map<std::string, std::shared_ptr<Vector>> vectors, std::map<std::string, Dimension> dimensions,
+                 std::map<std::string, int> ints, std::map<std::string, std::string> strings,
+                 std::map<std::string, bool> booleans, std::map<std::string, double> floats);
 
     /// Blank constructor for derived classes
     Wavefunction(SharedWavefunction reference_wavefunction, Options& options);
@@ -579,15 +583,20 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
 
+    /// Returns the dipole derivative (3Nx3 matrix, in atomic units)
+    SharedMatrix dipole_gradient() const;
+    /// Set the dipole gradient (3Nx3 matrix, in atomic units)
+    void set_dipole_gradient(SharedMatrix grad);
+
     /// Returns the gradient
     SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
-    void set_gradient(SharedMatrix& grad);
+    void set_gradient(SharedMatrix grad);
 
     /// Returns the Hessian
     SharedMatrix hessian() const;
     /// Set the Hessian for the wavefunction
-    void set_hessian(SharedMatrix& hess);
+    void set_hessian(SharedMatrix hess);
 
     /// Returns electrostatic potentials at nuclei
     std::shared_ptr<std::vector<double>> esp_at_nuclei() const { return esp_at_nuclei_; }
@@ -629,7 +638,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Returns the frequencies
     SharedVector frequencies() const;
     /// Set the frequencies for the wavefunction
-    void set_frequencies(std::shared_ptr<Vector>& freqs);
+    void set_frequencies(std::shared_ptr<Vector> freqs);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }
