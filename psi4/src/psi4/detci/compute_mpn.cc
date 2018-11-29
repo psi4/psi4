@@ -354,13 +354,13 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
             /*- Process::environment.globals["MPn CORRELATION ENERGY"] -*/
             std::stringstream s;
             s << label << (2 * k) << " TOTAL ENERGY";
-            Process::environment.globals[s.str()] = Empn2;
+            set_variable(s.str(), Empn2);
             s.str(std::string());
             s << label << (2 * k) << " CORRELATION ENERGY";
-            Process::environment.globals[s.str()] = Empn2 - CalcInfo_->escf;
+            set_variable(s.str(), Empn2 - CalcInfo_->escf);
             // s.str(std::string());
             // s << label << (2*k) << " CORRECTION ENERGY";
-            // Process::environment.globals[s.str()] = mp2k_energy[2*k];
+            // set_variable(s.str(), mp2k_energy[2*k]);
 
             /* 25 November 2003 - JMT
              * Moified to save MP(2n-2) energy */
@@ -371,26 +371,26 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
 
             s.str(std::string());
             s << label << (2 * k + 1) << " TOTAL ENERGY";
-            Process::environment.globals[s.str()] = Empn2;
+            set_variable(s.str(), Empn2);
             s.str(std::string());
             s << label << (2 * k + 1) << " CORRELATION ENERGY";
-            Process::environment.globals[s.str()] = Empn2 - CalcInfo_->escf;
+            set_variable(s.str(), Empn2 - CalcInfo_->escf);
             // s.str(std::string());
             // s << label << (2*k+1) << " CORRECTION ENERGY";
-            // Process::environment.globals[s.str()] = mp2k_energy[2*k+1];
+            // set_variable(s.str(), mp2k_energy[2*k+1]);
 
         } else {
             outfile->Printf("\n");
 
             std::stringstream s;
             s << label << (k + 1) << " TOTAL ENERGY";
-            Process::environment.globals[s.str()] = Empn;
+            set_variable(s.str(), Empn);
             s.str(std::string());
             s << label << (k + 1) << " CORRELATION ENERGY";
-            Process::environment.globals[s.str()] = Empn - CalcInfo_->escf;
+            set_variable(s.str(), Empn - CalcInfo_->escf);
             // s.str(std::string());
             // s << label << (k+1) << " CORRECTION ENERGY";
-            // Process::environment.globals[s.str()] = mpk_energy[k+1];
+            // set_variable(s.str(), mpk_energy[k+1]);
         }
 
         if (k + 1 == Parameters_->maxnvect) break;
@@ -473,35 +473,35 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
      * Save the MPn or MP(2n-1) energy
      */
     if (Parameters_->save_mpn2 == 1 && Parameters_->wigner) {
-        Process::environment.globals["CURRENT ENERGY"] = Empn2;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] =
-            Empn2 - Process::environment.globals["CURRENT REFERENCE ENERGY"];
+        set_energy(Empn2);
+        set_variable("CURRENT ENERGY", Empn2);
+        set_variable("CURRENT CORRELATION ENERGY", Empn2 - variable("CURRENT REFERENCE ENERGY"));
 
         if (Parameters_->zaptn)
             outfile->Printf("\n    ZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
         else
             outfile->Printf("\n    MP%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
     } else if (Parameters_->save_mpn2 == 2 && Parameters_->wigner) {
-        Process::environment.globals["CURRENT ENERGY"] = Empn2a;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] =
-            Empn2a - Process::environment.globals["CURRENT REFERENCE ENERGY"];
+        set_energy(Empn2a);
+        set_variable("CURRENT ENERGY", Empn2a);
+        set_variable("CURRENT CORRELATION ENERGY", Empn2a - variable("CURRENT REFERENCE ENERGY"));
         if (Parameters_->zaptn)
             outfile->Printf("\n    ZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
         else
             outfile->Printf("\n    MP%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
     } else {
-        Process::environment.globals["CURRENT ENERGY"] = Empn;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] =
-            Empn - Process::environment.globals["CURRENT REFERENCE ENERGY"];
+        set_energy(Empn);
+        set_variable("CURRENT ENERGY", Empn);
+        set_variable("CURRENT CORRELATION ENERGY", Empn - variable("CURRENT REFERENCE ENERGY"));
         if (Parameters_->zaptn)
             outfile->Printf("\n    ZAPT%d energy saved\n", Parameters_->maxnvect);
         else
             outfile->Printf("\n    MP%d energy saved\n", Parameters_->maxnvect);
     }
     if (Parameters_->zaptn)
-        outfile->Printf("\n    EZAPTn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
+        outfile->Printf("\n    EZAPTn = %17.13lf\n", variable("CURRENT ENERGY"));
     else
-        outfile->Printf("\n    EMPn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
+        outfile->Printf("\n    EMPn = %17.13lf\n", variable("CURRENT ENERGY"));
 
     outfile->Printf("\n");
 }

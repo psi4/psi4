@@ -311,7 +311,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
     outfile->Printf("Iter  0  ROOT 1 ECI = %14.9lf", enuc + E);
     outfile->Printf("    Delta_E %10.3E   Delta_C %10.3E\n", E - E_last, c1norm);
-    Process::environment.globals["DETCI AVG DVEC NORM"] = c1norm;
+    set_variable("DETCI AVG DVEC NORM", c1norm);
 
     iter = 1;
     if (Parameters_->diag_method == METHOD_MITRUSHENKOV) {

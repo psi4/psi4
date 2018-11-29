@@ -85,22 +85,22 @@ void OCCWave::omp2_manager()
 	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
 	outfile->Printf("\t============================================================================== \n");
 
-	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+	variables_["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
-        Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+        variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
         Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-       Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-       Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
+    variables_["OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
 	omp2_response_pdms();
 	gfock();
@@ -209,17 +209,18 @@ void OCCWave::omp2_manager()
 
 
 	// Set the global variables with the energies
-	Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
+	variables_["OMP2 TOTAL ENERGY"] = Emp2L;
 	Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] =  Escsmp2;
 	Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] =  Esosmp2;
 	Process::environment.globals["SCSN-OMP2 TOTAL ENERGY"] = Escsnmp2;
 	Process::environment.globals["SCS-OMP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-OMP2 TOTAL ENERGY"] = Esospimp2;
-	Process::environment.globals["CURRENT ENERGY"] = Emp2L;
-	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2L-Escf;
+    energy_ = Emp2L;
+	variables_["CURRENT ENERGY"] = Emp2L;
+	variables_["CURRENT REFERENCE ENERGY"] = Escf;
+	variables_["CURRENT CORRELATION ENERGY"] = Emp2L-Escf;
 
-        Process::environment.globals["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
+    variables_["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
         Process::environment.globals["SCS-OMP2 CORRELATION ENERGY"] =  Escsmp2 - Escf;
         Process::environment.globals["SOS-OMP2 CORRELATION ENERGY"] =  Esosmp2 - Escf;
         Process::environment.globals["SCSN-OMP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
@@ -229,32 +230,37 @@ void OCCWave::omp2_manager()
         // if scs on
 	if (do_scs == "TRUE") {
 	    if (scs_type_ == "SCS") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
+           energy_ = Escsmp2;
+	       variables_["CURRENT ENERGY"] = Escsmp2;
+	       variables_["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
             }
 
 	    else if (scs_type_ == "SCSN") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp2;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
+           energy_ = Escsnmp2;
+	       variables_["CURRENT ENERGY"] = Escsnmp2;
+	       variables_["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
             }
 
 
 	    else if (scs_type_ == "SCSVDW") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2vdw;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp2vdw - Escf;
+           energy_ = Escsmp2vdw;
+	       variables_["CURRENT ENERGY"] = Escsmp2vdw;
+	       variables_["CURRENT CORRELATION ENERGY"] = Escsmp2vdw - Escf;
             }
 	}
 
         // else if sos on
 	else if (do_sos == "TRUE") {
 	     if (sos_type_ == "SOS") {
-	         Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
-  	         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
+             energy_ = Esosmp2;
+	         variables_["CURRENT ENERGY"] = Esosmp2;
+             variables_["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
              }
 
 	     else if (sos_type_ == "SOSPI") {
-	             Process::environment.globals["CURRENT ENERGY"] = Esospimp2;
-	             Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esospimp2 - Escf;
+                 energy_ = Esospimp2;
+	             variables_["CURRENT ENERGY"] = Esospimp2;
+	             variables_["CURRENT CORRELATION ENERGY"] = Esospimp2 - Escf;
              }
 	}
 
@@ -332,60 +338,72 @@ void OCCWave::mp2_manager()
 	outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
 	outfile->Printf("\t============================================================================== \n");
 
-	Process::environment.globals["CURRENT ENERGY"] = Emp2;
-	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
-	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
-	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
-	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
-
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
-        Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
-        Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
+    variables_["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["SCS-MP2 CORRELATION ENERGY"] = 6.0/5.0 * Emp2AB + 1.0/3.0 * (Emp2AA + Emp2BB) + Emp2_t1;
+    variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"] = os_scale * Emp2AB + ss_scale * (Emp2AA + Emp2BB) + Emp2_t1;
         Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
-    if (reference == "ROHF") Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
+    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+
+    energy_ = Emp2;
+	variables_["CURRENT ENERGY"] = Emp2;
+	variables_["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["SCS-MP2 TOTAL ENERGY"] =  Escf + variables_["SCS-MP2 CORRELATION ENERGY"];
+    variables_["CUSTOM SCS-MP2 TOTAL ENERGY"] =  Escf + variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"];
+	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
+	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
+
+//    variables_["MP2 CORRELATION ENERGY"] = variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+//                                           variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
+//                                           variables_["MP2 SINGLES ENERGY"];
+
+    //if (reference == "ROHF") Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
         // if scs on
 	if (do_scs == "TRUE") {
 	    if (scs_type_ == "SCS") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
+           energy_ = Escsmp2;
+	       variables_["CURRENT ENERGY"] = Escsmp2;
+	       variables_["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
             }
 
 	    else if (scs_type_ == "SCSN") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp2;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
+           energy_ = Escsnmp2;
+	       variables_["CURRENT ENERGY"] = Escsnmp2;
+	       variables_["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
             }
 
 	    else if (scs_type_ == "SCSVDW") {
-	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2vdw;
-	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp2vdw - Escf;
+           energy_ = Escsmp2vdw;
+	       variables_["CURRENT ENERGY"] = Escsmp2vdw;
+	       variables_["CURRENT CORRELATION ENERGY"] = Escsmp2vdw - Escf;
             }
 	}
 
         // else if sos on
 	else if (do_sos == "TRUE") {
 	     if (sos_type_ == "SOS") {
-	         Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
-  	         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
+             energy_ = Esosmp2;
+	         variables_["CURRENT ENERGY"] = Esosmp2;
+  	         variables_["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
              }
 
 	     else if (sos_type_ == "SOSPI") {
-	             Process::environment.globals["CURRENT ENERGY"] = Esospimp2;
-	             Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esospimp2 - Escf;
+                 energy_ = Esospimp2;
+	             variables_["CURRENT ENERGY"] = Esospimp2;
+	             variables_["CURRENT CORRELATION ENERGY"] = Esospimp2 - Escf;
              }
 	}
 
          /* updates the wavefunction for checkpointing */
-        energy_ = Process::environment.globals["MP2 TOTAL ENERGY"];
         name_ = "MP2";
 
 
@@ -785,6 +803,14 @@ void OCCWave::mp3_manager()
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
+//    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+//    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+//    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
+//    variables_["MP2 CORRELATION ENERGY"] = variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+//                                           variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
+//                                           variables_["MP2 SINGLES ENERGY"];
+//    variables_["MP2 TOTAL ENERGY"] = Emp2;
+
         timer_on("T2(2)");
 	t2_2nd_sc();
         timer_off("T2(2)");
@@ -837,6 +863,11 @@ void OCCWave::mp3_manager()
 	Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
 	Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
 	Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
+
+//    variables_["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3-Emp2);
+//    variables_["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
+//    variables_["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+//    variables_["MP3 TOTAL ENERGY"] = Emp3;
 
         // if scs on
 	if (do_scs == "TRUE") {

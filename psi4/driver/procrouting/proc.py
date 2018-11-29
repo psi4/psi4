@@ -1626,6 +1626,11 @@ def run_dfocc(name, **kwargs):
 
     dfocc_wfn = core.dfocc(ref_wfn)
 
+    # Shove variables into global space
+    if name in ['mp2', 'omp2']:
+        for k, v in dfocc_wfn.variables().items():
+            core.set_variable(k, v)
+
     optstash.restore()
     return dfocc_wfn
 
@@ -1701,6 +1706,11 @@ def run_dfocc_gradient(name, **kwargs):
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
 
+    # Shove variables into global space
+    if name in ['mp2', 'omp2']:
+        for k, v in dfocc_wfn.variables().items():
+            core.set_variable(k, v)
+
     optstash.restore()
     return dfocc_wfn
 
@@ -1757,6 +1767,11 @@ def run_dfocc_property(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
+
+    # Shove variables into global space
+    if name in ['mp2', 'omp2']:
+        for k, v in dfocc_wfn.variables().items():
+            core.set_variable(k, v)
 
     optstash.restore()
     return dfocc_wfn
@@ -1924,6 +1939,11 @@ def run_occ(name, **kwargs):
 
     occ_wfn = core.occ(ref_wfn)
 
+    # Shove variables into global space
+    if name in ['mp2', 'omp2', 'scs-omp2', 'scs(n)-omp2', 'scs-omp2-vdw', 'sos-omp2']:
+        for k, v in occ_wfn.variables().items():
+            core.set_variable(k, v)
+
     optstash.restore()
     return occ_wfn
 
@@ -1995,6 +2015,11 @@ def run_occ_gradient(name, **kwargs):
 
     occ_wfn.set_gradient(grad)
 
+    # Shove variables into global space
+    if name in ['mp2', 'omp2']:
+        for k, v in occ_wfn.variables().items():
+            core.set_variable(k, v)
+
     optstash.restore()
     return occ_wfn
 
@@ -2037,7 +2062,7 @@ def run_scf(name, **kwargs):
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
 
-            vdh = dfmp2_wfn.variable('SCS-MP2 CORRELATION ENERGY')
+            vdh = dfmp2_wfn.get_variable('CUSTOM SCS-MP2 CORRELATION ENERGY')
 
         else:
             dfmp2_wfn = core.dfmp2(scf_wfn)
@@ -2795,7 +2820,6 @@ def run_detci_property(name, **kwargs):
         ['OPDM'],
         ['TDM'])
 
-
     # Find valid properties
     valid_transition = ['TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE']
 
@@ -3063,12 +3087,16 @@ def run_detci(name, **kwargs):
 
     ciwfn = core.detci(ref_wfn)
 
+    # Shove variables into global space
+    for k, v in ciwfn.variables().items():
+        core.set_variable(k, v)
+
     print_nos = False
     if core.get_option("DETCI", "NAT_ORBS"):
         ciwfn.ci_nat_orbs()
         print_nos = True
 
-    proc_util.print_ci_results(ciwfn, name.upper(), core.get_variable("HF TOTAL ENERGY"), core.get_variable("CURRENT ENERGY"), print_nos)
+    proc_util.print_ci_results(ciwfn, name.upper(), ciwfn.get_variable("HF TOTAL ENERGY"), ciwfn.get_variable("CURRENT ENERGY"), print_nos)
 
     core.print_out("\t\t \"A good bug is a dead bug\" \n\n");
     core.print_out("\t\t\t - Starship Troopers\n\n");
@@ -4175,7 +4203,6 @@ def run_detcas(name, **kwargs):
     determinant-based multireference wavefuncations,
     namely CASSCF and RASSCF.
     """
-
     optstash = p4util.OptionsState(
         ['DETCI', 'WFN'],
         ['SCF_TYPE'],
@@ -4271,6 +4298,10 @@ def run_detcas(name, **kwargs):
     core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
     core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
     core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
+
+    # Shove variables into global space
+    for k, v in ciwfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return ciwfn

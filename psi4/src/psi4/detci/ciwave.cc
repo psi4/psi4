@@ -135,10 +135,10 @@ double CIWavefunction::compute_energy() {
     if (Parameters_->istop) { /* Print size of space, other stuff, only   */
         cleanup_ci();
         cleanup_dpd();
-        Process::environment.globals["CURRENT ENERGY"] = 0.0;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
-        Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
-        Process::environment.globals["CI CORRELATION ENERGY"] = 0.0;
+        set_variable("CURRENT ENERGY", 0.0);
+        set_variable("CURRENT CORRELATION ENERGY", 0.0);
+        set_variable("CI TOTAL ENERGY", 0.0);
+        set_variable("CI CORRELATION ENERGY", 0.0);
 
         return 0.0;
     }
@@ -165,7 +165,7 @@ double CIWavefunction::compute_energy() {
     // cleanup_ci();
     // cleanup_dpd();
 
-    return Process::environment.globals["CURRENT ENERGY"];
+    return variable("CURRENT ENERGY");
 }
 
 void CIWavefunction::orbital_locations(const std::string& orbitals, int* start, int* end) {

@@ -749,10 +749,14 @@ void DFMP2::print_energies() {
     //variables_["SCS-MP2 CORRELATION ENERGY"] = variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
     //                                           variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] +
     //                                           variables_["MP2 SINGLES ENERGY"];
-    variables_["SCS-MP2 CORRELATION ENERGY"] = oss_ * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
-                                               sss_ * variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
-                                               variables_["MP2 SINGLES ENERGY"];
+    variables_["SCS-MP2 CORRELATION ENERGY"] = 6.0/5.0 * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+                                               1.0/3.0 * variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
+                                                         variables_["MP2 SINGLES ENERGY"];
     variables_["SCS-MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] + variables_["SCS-MP2 CORRELATION ENERGY"];
+    variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"] = oss_ * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+                                                      sss_ * variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
+                                                             variables_["MP2 SINGLES ENERGY"];
+    variables_["CUSTOM SCS-MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] + variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"];
 
     outfile->Printf("\t-----------------------------------------------------------\n");
     outfile->Printf("\t ==================> DF-MP2 Energies <==================== \n");

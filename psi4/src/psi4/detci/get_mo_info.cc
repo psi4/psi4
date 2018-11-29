@@ -79,7 +79,8 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->docc = doccpi();
     CalcInfo_->socc = soccpi();
     CalcInfo_->enuc = molecule()->nuclear_repulsion_energy(dipole_field_strength_);
-    CalcInfo_->escf = reference_energy();
+    // with post-SCF Wfns (incl. RASCI) setting energy_, input wfns may not have HF energy in that slot
+    CalcInfo_->escf = variable("SCF TOTAL ENERGY");
     CalcInfo_->edrc = 0.0;
 
     if (CalcInfo_->iopen && Parameters_->opentype == PARM_OPENTYPE_NONE) {

@@ -172,6 +172,14 @@ double CoupledCluster::compute_energy() {
         Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
         Process::environment.globals["CURRENT ENERGY"] = emp2 + escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2;
+
+        energy_ = emp2 + escf;
+        set_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
+        set_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
+        set_variable("MP2 CORRELATION ENERGY", emp2);
+        set_variable("MP2 TOTAL ENERGY", emp2 + escf);
+        set_variable("CURRENT ENERGY", emp2 + escf);
+        set_variable("CURRENT CORRELATION ENERGY", emp2);
         tstop();
         return emp2 + escf;
     }
