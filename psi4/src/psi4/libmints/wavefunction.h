@@ -205,7 +205,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix gradient_;
 
     /// derivative of dipole (atomic units), if available, stored as
-    /// degree-of-freedom by dipole component, i.e. 3 natom_ x 3 SharedMatrix
+    /// degree-of-freedom by dipole component, i.e. 3 natom_ x 3
     SharedMatrix dipole_gradient_;
 
     /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix (NOT mass-weighted!)

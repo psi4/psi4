@@ -34,7 +34,6 @@ molecule {
     H       -2.3303912628        1.7258024530        0.0000000000
     H        2.3303912628        1.7258024530        0.0000000000
     units bohr
-    symmetry c1
 }
 
 set scf_type pk
