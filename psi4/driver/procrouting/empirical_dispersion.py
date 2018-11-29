@@ -285,6 +285,6 @@ class EmpiricalDispersion(object):
             molclone.update_geometry()
             displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
-        H = driver_findif.compute_hessian_from_gradient(findif_meta_dict, -1)
+        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, -1)
         optstash.restore()
         return core.Matrix.from_array(H)

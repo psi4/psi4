@@ -2288,6 +2288,12 @@ def run_dfmp2_gradient(name, **kwargs):
     grad = dfmp2_wfn.compute_gradient()
     dfmp2_wfn.set_gradient(grad)
 
+    # Shove variables into global space
+    dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('MP2 TOTAL ENERGY'))
+    dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY'))
+    for k, v in dfmp2_wfn.variables().items():
+        core.set_variable(k, v)
+
     optstash.restore()
     core.tstop()
     return dfmp2_wfn

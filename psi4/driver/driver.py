@@ -708,7 +708,7 @@ def gradient(name, **kwargs):
 
         # Compute the gradient
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = driver_findif.compute_gradient_from_energy(findif_meta_dict)
+        G = driver_findif.compute_gradient_from_energies(findif_meta_dict)
         grad_psi_matrix = core.Matrix.from_array(G)
         grad_psi_matrix.print_out()
         wfn.set_gradient(grad_psi_matrix)
@@ -1295,7 +1295,7 @@ def hessian(name, **kwargs):
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = driver_findif.compute_hessian_from_gradient(findif_meta_dict, irrep)  # TODO or moleculeclone?
+        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
@@ -1338,7 +1338,7 @@ def hessian(name, **kwargs):
                                     **kwargs)
 
         # Assemble Hessian from energies
-        H = driver_findif.compute_hessian_from_energy(findif_meta_dict, irrep)
+        H = driver_findif.compute_hessian_from_energies(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
