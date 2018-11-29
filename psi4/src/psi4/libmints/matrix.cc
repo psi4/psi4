@@ -1351,7 +1351,6 @@ void Matrix::back_transform(const Matrix *const transformer) {
 }
 
 void Matrix::back_transform(const SharedMatrix &transformer) { back_transform(transformer.get()); }
-
 void Matrix::gemm(const char &transa, const char &transb, const std::vector<int> &m, const std::vector<int> &n,
                   const std::vector<int> &k, const double &alpha, const SharedMatrix &a, const std::vector<int> &lda,
                   const SharedMatrix &b, const std::vector<int> &ldb, const double &beta, const std::vector<int> &ldc,
@@ -1441,10 +1440,6 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix &a, const
 }
 
 SharedMatrix Matrix::doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
-    if (A->nirrep() != B->nirrep()) {
-        throw PSIEXCEPTION("Matrix::doublet: Matrices do not have the same nirreps");
-    }
-
     Dimension m = (transA ? A->colspi() : A->rowspi());
     Dimension n = (transB ? B->rowspi() : B->colspi());
 
@@ -2024,10 +2019,10 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
     return X;
 }
 
-void Matrix::swap_rows(int h, int i, int j) { C_DSWAP(colspi_[h], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1); }
+void Matrix::swap_rows(int h, int i, int j) { C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1); }
 
 void Matrix::swap_columns(int h, int i, int j) {
-    C_DSWAP(rowspi_[h], &(matrix_[h][0][i]), colspi_[h], &(matrix_[h][0][j]), colspi_[h]);
+    C_DSWAP(rowspi_[h], &(matrix_[h][0][i]), colspi_[h ^ symmetry_], &(matrix_[h][0][j]), colspi_[h ^ symmetry_]);
 }
 
 void Matrix::cholesky_factorize() {
@@ -2537,7 +2532,7 @@ void Matrix::zero_row(int h, int i) {
 }
 
 void Matrix::zero_column(int h, int i) {
-    if (i >= colspi_[h]) {
+    if (i >= colspi_[h ^ symmetry_]) {
         throw PSIEXCEPTION("Matrix::zero_column: index is out of bounds.");
     }
 #pragma omp parallel for
