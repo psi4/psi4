@@ -38,6 +38,7 @@ import qcelemental as qcel
 from psi4 import core
 from psi4.driver import qcdb
 from . import optproc
+from .exceptions import *
 
 ## Python basis helps
 
@@ -524,6 +525,59 @@ def py_psi_set_global_option_python(key, EXTERN):
 core.set_global_option_python = py_psi_set_global_option_python
 
 
+def core_variable(key, np_out=False):
+    if core.has_scalar_variable(key):
+        return core.scalar_variable(key)
+    elif core.has_array_variable(key):
+        return core.array_variable(key)
+    else:
+        raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
+
+
+def core_has_variable(key):
+    return core.has_scalar_variable(key) or core.has_array_variable(key)
+
+
+def core_set_variable(key, val):
+    if isinstance(val, core.Matrix):
+        if core.has_scalar_variable(key):
+            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
+        else:
+            core.set_array_variable(key, val)
+    elif isinstance(val, np.ndarray):
+        if core.has_scalar_variable(key):
+            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
+        else:
+            core.set_array_variable(key, core.Matrix.from_array(val))
+    else:
+        if core.has_array_variable(key):
+            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already an array variable!")
+        else:
+            core.set_scalar_variable(key, val)
+
+
+def core_del_variable(key):
+    if core.has_scalar_variable(key):
+        core.del_scalar_variable(key)
+    elif core.has_array_variable(key):
+        core.del_array_variable(key)
+
+
+def core_variables():
+    #for itm, val in core.scalar_variables().items():
+    #    print('SCL --', itm, val)
+    #for itm, val in core.array_variables().items():
+    #    print('ARR --', itm, val)
+    return {**core.scalar_variables(), **core.array_variables()}
+
+
+core.variable = core_variable
+core.has_variable = core_has_variable
+core.set_variable = core_set_variable
+core.del_variable = core_del_variable
+core.variables = core_variables
+
+
 def core_get_variables():
     warnings.warn("Using `psi4.core.get_variables` instead of `psi4.core.variables` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
     return core.variables()
@@ -535,8 +589,19 @@ def core_get_variable(key):
     return core.variable(key)
 
 
+def core_get_array_variables():
+    warnings.warn("Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
+    return core.variables()
+
+
+def core_get_array_variable(key):
+    warnings.warn("Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
+    return core.variable(key)
+
 core.get_variables = core_get_variables
 core.get_variable = core_get_variable
+core.get_array_variables = core_get_array_variables
+core.get_array_variable = core_get_array_variable
 
 
 def wfn_get_variable(cls, key):
@@ -545,4 +610,3 @@ def wfn_get_variable(cls, key):
 
 
 core.Wavefunction.get_variable = wfn_get_variable
-

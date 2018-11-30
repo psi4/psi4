@@ -751,7 +751,7 @@ def return_energy_components():
                           'mp2.5': 'MP2.5 TOTAL ENERGY',
                             'mp3': 'MP3 TOTAL ENERGY',
                        'mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
-                            'mp4': 'MP4(SDTQ) TOTAL ENERGY'}
+                            'mp4': 'MP4 TOTAL ENERGY'}
     VARH['omp2'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',

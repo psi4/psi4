@@ -863,23 +863,6 @@ std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
     return empty;  // charges not added to process.h for environment - yet(?)
 }
 
-bool py_psi_has_variable(const std::string& key) { return Process::environment.globals.count(to_upper(key)); }
-
-double py_psi_get_variable(const std::string& key) { return Process::environment.globals[to_upper(key)]; }
-
-SharedMatrix py_psi_get_array_variable(const std::string& key) { return Process::environment.arrays[to_upper(key)]; }
-
-void py_psi_set_variable(const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; }
-
-void py_psi_set_array_variable(const std::string& key, SharedMatrix val) {
-    Process::environment.arrays[to_upper(key)] = val;
-}
-
-void py_psi_clean_variable_map() {
-    Process::environment.globals.clear();
-    Process::environment.arrays.clear();
-}
-
 void py_psi_set_memory(size_t mem, bool quiet) {
     Process::environment.set_memory(mem);
     if (!quiet) {
@@ -933,10 +916,6 @@ void py_psi_print_variable_map() {
     outfile->Printf("\n  ----------------------------------------------------------------------------\n");
     outfile->Printf("%s\n\n", line.str().c_str());
 }
-
-std::map<std::string, double> py_psi_return_variable_map() { return Process::environment.globals; }
-
-std::map<std::string, SharedMatrix> py_psi_return_array_variable_map() { return Process::environment.arrays; }
 
 std::string py_psi_top_srcdir() { return TOSTRING(PSI_TOP_SRCDIR); }
 
@@ -1158,22 +1137,31 @@ PYBIND11_MODULE(core, core) {
              "valid option for *arg0*.");
 
     // These return/set/print PSI variables found in Process::environment.globals
-    core.def("has_variable", py_psi_has_variable, "Returns true if the PSI variable exists/is set.");
-    core.def("variable", py_psi_get_variable,
+    core.def("has_scalar_variable", [](const std::string& key) { return Process::environment.globals.count(to_upper(key)); },
+             "Returns true if the PSI variable exists/is set.");
+    core.def("has_array_variable", [](const std::string& key) { return Process::environment.arrays.count(to_upper(key)); },
+             "Returns true if the PSI array variable exists/is set.");
+    core.def("scalar_variable", [](const std::string& key) { return Process::environment.globals[to_upper(key)]; },
              "Returns one of the PSI variables set internally by the modules or python driver (see manual for full "
              "listing of variables available).");
-    core.def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
-    core.def("del_variable", [](const std::string key) { Process::environment.globals.erase(to_upper(key)); }, "Deletes a PSI variable, by name");
+    core.def("array_variable", [](const std::string& key) { return Process::environment.arrays[to_upper(key)]->clone(); },
+             "Returns one of the PSI array variables set internally by the modules or python driver (see manual for full "
+             "listing of variables available).");
+    core.def("set_scalar_variable", [](const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; },
+             "Sets a PSI variable, by name.");
+    core.def("set_array_variable", [](const std::string& key, SharedMatrix val) { Process::environment.arrays[to_upper(key)] = val->clone(); },
+             "Sets a PSI array variable, by name.");
+    core.def("del_scalar_variable", [](const std::string key) { Process::environment.globals.erase(to_upper(key)); },
+             "Deletes a PSI variable, by name");
+    core.def("del_array_variable", [](const std::string key) { Process::environment.arrays.erase(to_upper(key)); },
+             "Deletes a PSI array variable, by name");
     core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
-    core.def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
-    core.def("variables", py_psi_return_variable_map,
+    core.def("clean_variables", []() { Process::environment.globals.clear(); Process::environment.arrays.clear(); },
+             "Empties all PSI scalar and array variables that have been set internally.");
+    core.def("scalar_variables", []() { return Process::environment.globals; },
              "Returns dictionary of the PSI variables set internally by the modules or python driver.");
-    core.def("get_array_variable", py_psi_get_array_variable,
-             "Returns one of the PSI variables set internally by the modules or python driver (see manual for full "
-             "listing of variables available).");
-    core.def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
-    core.def("get_array_variables", py_psi_return_array_variable_map,
-             "Returns dictionary of the PSI variables set internally by the modules or python driver.");
+    core.def("array_variables", []() { return Process::environment.arrays; },
+             "Returns dictionary of the PSI array variables set internally by the modules or python driver.");
 
     // Returns the location where the Psi4 source is located.
     core.def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");
