@@ -833,7 +833,7 @@ def return_energy_components():
     VARH['fno-ccsd(t)'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
-                           'ccsd': 'CCSD TOTAL ENERGY',
+                       'fno-ccsd': 'CCSD TOTAL ENERGY',
                     'fno-ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
     VARH['qcisd(t)'] = {
                              'hf': 'HF TOTAL ENERGY',

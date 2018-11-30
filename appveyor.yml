@@ -65,6 +65,8 @@ before_test:
   - python %INSTALL_FOLDER%\bin\psi4 --version
 
 test_script:
+  # Check if OpenMP config hadn't failed silently
+  - python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
   - python %INSTALL_FOLDER%\bin\psi4 %SOURCE_FOLDER%\tests\tu1-h2o-energy\input.dat
   #
   # Skipped long tests (not enough time to run all of them):

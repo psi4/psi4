@@ -28,13 +28,15 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <string>
+#include <ostream>
 #include <regex>
 #include <sstream>
-#include <ostream>
+#include <string>
 
 #include "psi4/psi4-dec.h"
+
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/process.h"
 
 #define STRINGIFY(x) #x

@@ -28,24 +28,7 @@
 
 #include "dfhelper.h"
 
-#include "psi4/psi4-dec.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/libfock/jk.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/twobody.h"
-#include "psi4/libmints/sieve.h"
-#include "psi4/lib3index/dftensor.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/aiohandler.h"
-
+#include <algorithm>
 #include <cstdlib>
 #ifdef _MSC_VER
 #include <process.h>
@@ -57,6 +40,24 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include "psi4/psi4-dec.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/twobody.h"
+#include "psi4/libmints/sieve.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/aiohandler.h"
+
+#include "dftensor.h"
 
 namespace psi {
 

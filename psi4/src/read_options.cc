@@ -30,12 +30,12 @@
     \defgroup PSI4
 */
 
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/liboptions/liboptions_python.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
+
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 

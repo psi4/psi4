@@ -31,10 +31,11 @@
  \ingroup PSIO
  */
 
+#include "aiohandler.h"
+
+#include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "aiohandler.h"
-#include "psi4/libpsi4util/exception.h"
 
 #include <cstdio>
 #include <memory>

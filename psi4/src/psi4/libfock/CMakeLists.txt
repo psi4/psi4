@@ -1,27 +1,33 @@
-set(sources_list apps.cc
-                 v.cc
-                 hamiltonian.cc
-                 points.cc
-                 cubature.cc
-                 solver.cc
-                 wrapper.cc
-                 jk.cc
-                 DiskJK.cc
-                 PKJK.cc
-                 DirectJK.cc
-                 DiskDFJK.cc
-                 CDJK.cc
-                 GTFockJK.cc
-                 soscf.cc
-                 PK_workers.cc
-                 PKmanagers.cc
-                 MemDFJK.cc
-)
-add_definitions("-Drestrict=${RESTRICT_KEYWORD}")
+list(APPEND sources
+  CDJK.cc
+  DirectJK.cc
+  DiskDFJK.cc
+  DiskJK.cc
+  GTFockJK.cc
+  MemDFJK.cc
+  PKJK.cc
+  PK_workers.cc
+  PKmanagers.cc
+  apps.cc
+  cubature.cc
+  hamiltonian.cc
+  jk.cc
+  points.cc
+  solver.cc
+  soscf.cc
+  v.cc
+  wrapper.cc
+  )
 
-if(ENABLE_GTFOCK)
-   add_definitions("-DENABLE_GTFOCK")
-endif()
+psi4_add_module(lib fock sources)
 
-psi4_add_module(lib fock sources_list mints functional 3index psio)
-target_link_libraries(fock PRIVATE gau2grid::gg)
+target_compile_definitions(fock
+  PRIVATE
+    "restrict=${RESTRICT_KEYWORD}"
+    $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
+  )
+
+target_link_libraries(fock
+  PRIVATE
+    gau2grid::gg
+  )

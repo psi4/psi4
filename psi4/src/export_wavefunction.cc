@@ -26,6 +26,10 @@
  * @END LICENSE
  */
 
+#include <string>
+
+#include "psi4/pybind11.h"
+
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/molecule.h"
@@ -65,8 +69,6 @@
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
 #endif
-
-#include <string>
 
 using namespace psi;
 void export_wavefunction(py::module& m) {

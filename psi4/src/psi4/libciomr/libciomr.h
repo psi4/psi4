@@ -84,7 +84,9 @@ void block_to_tri(double *a, double **b, int num_ir, int *num_so, int *ioff);
 void tri_to_sq(double *amat, double **bmat, int size);
 
 /* Functions under tstart.c */
+PSI_API
 void tstart();
+PSI_API
 void tstop();
 
 /* Functions in zero.c */
@@ -113,6 +115,6 @@ void free_block(double **array);
 
 /* Functions in fndcor */
 void fndcor(long int *maxcrb, std::string out_fname);
-}
+}  // namespace psi
 
 #endif /* header guard */

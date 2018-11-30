@@ -27,22 +27,23 @@
  */
 
 #include "soscf.h"
-#include "jk.h"
-
-#include "psi4/libqt/qt.h"
-#include "psi4/psi4-dec.h"
-
-#include "psi4/libdpd/dpd.h"
-#include "psi4/psifiles.h"
-#include "psi4/libtrans/integraltransform.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/lib3index/dfhelper.h"
 
 #include <cmath>
 #include <ctime>
+
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
+
+#include "psi4/lib3index/dfhelper.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libtrans/integraltransform.h"
+
+#include "jk.h"
 
 namespace psi {
 
@@ -683,9 +684,9 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print) {
         outfile->Printf("    ---------------------------------------\n");
     }
 
-    time_t start;
-    time_t stop;
-    start = time(nullptr);
+    std::time_t start;
+    std::time_t stop;
+    start = std::time(nullptr);
 
     // Initial guess
     SharedMatrix x = matrices_["Gradient"]->clone();
@@ -707,7 +708,7 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print) {
     r->subtract(Ap);
     if (print) {
         double rconv = r->rms();
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         outfile->Printf("    %-4d %11.3E %10ld\n", 0, rconv, stop - start);
     }
 
@@ -731,7 +732,7 @@ SharedMatrix SOMCSCF::solve(int max_iter, double conv, bool print) {
 
         // Get residual
         double rconv = r->rms();
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (print) {
             outfile->Printf("    %-4d %11.3E %10ld\n", iter + 1, rconv, stop - start);
         }
@@ -834,15 +835,15 @@ void DFSOMCSCF::transform(bool approx_only) {
 
     auto AO_R = std::make_shared<Matrix>("AO_R", nao, nrot);
     auto AO_a = std::make_shared<Matrix>("AO_a", nao, aoc_rowdim - nrot);
-    
+
     double** rp = AO_R->pointer();
     double** ap = AO_a->pointer();
-    
+
     for (int h = 0, offset = 0, offset_act = 0; h < nirrep_; h++) {
         int hnso = nsopi_[h];
         if (hnso == 0) continue;
         double** Up = matrices_["AOTOSO"]->pointer(h);
-    
+
         int noccpih = Cocc->colspi()[h];
         int nactpih = Cact->colspi()[h];
         int nvirpih = Cvir->colspi()[h];
@@ -857,7 +858,7 @@ void DFSOMCSCF::transform(bool approx_only) {
             double** CSOp = Cact->pointer(h);
             C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0, &rp[0][offset], nrot);
             offset += nactpih;
-    
+
             C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0], nactpih, 0.0, &ap[0][offset_act],
                     aoc_rowdim - nrot);
             offset_act += nactpih;
@@ -869,10 +870,10 @@ void DFSOMCSCF::transform(bool approx_only) {
             offset += nvirpih;
         }
     }
-   
+
     // safety check
     dfh_->clear_spaces();
- 
+
     dfh_->add_space("R", AO_R);
     dfh_->add_space("a", AO_a);
 

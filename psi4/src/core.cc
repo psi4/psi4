@@ -27,32 +27,34 @@
  */
 
 #include <cstdio>
-#include <sstream>
-#include <map>
 #include <iomanip>
+#include <map>
+#include <sstream>
 #include <sys/stat.h>
+
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
-#include "psi4/libmints/vector.h"
+
+#include "psi4/cc/cclambda/cclambda.h"
+#include "psi4/cc/ccwave.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libplugin/plugin.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/writer_file_prefix.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/liboptions/liboptions_python.h"
+#include "psi4/libplugin/plugin.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/process.h"
-
-#include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/cc/ccwave.h"
-#include "psi4/cc/cclambda/cclambda.h"
-#include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/psifiles.h"
-#include "psi4/libmints/writer_file_prefix.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "python_data_type.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)

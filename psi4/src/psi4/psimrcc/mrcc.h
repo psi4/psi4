@@ -30,6 +30,7 @@
 #define _psi_src_bin_psimrcc_mrcc_h_
 
 #include "psi4/liboptions/liboptions.h"
+
 #include "manybody.h"
 #include "heff.h"
 

@@ -26,31 +26,34 @@
  * @END LICENSE
  */
 
-#include "psi4/fisapt/fisapt.h"
-#include "psi4/fisapt/local2.h"
+#include "fisapt.h"
 
-#include "psi4/libfock/jk.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/physconst.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/potential.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/libcubeprop/csg.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/lib3index/dfhelper.h"
-
+#include <algorithm>
 #include <ctime>
 #include <functional>
-
+#include <set>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
+
+#include "psi4/lib3index/dfhelper.h"
+#include "psi4/libcubeprop/csg.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/potential.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libqt/qt.h"
+
+#include "local2.h"
 
 namespace psi {
 
@@ -4363,10 +4366,10 @@ void CPHF_FISAPT::compute_cphf() {
     outfile->Printf("    Convergence = %11.3E\n", delta_);
     outfile->Printf("\n");
 
-    time_t start;
-    time_t stop;
+    std::time_t start;
+    std::time_t stop;
 
-    start = time(nullptr);
+    start = std::time(nullptr);
 
     outfile->Printf("    -----------------------------------------\n");
     outfile->Printf("    %-4s %11s  %11s  %10s\n", "Iter", "Monomer A", "Monomer B", "Time [s]");
@@ -4419,7 +4422,7 @@ void CPHF_FISAPT::compute_cphf() {
             r2B = sqrt(C_DDOT(no * nv, rp[0], 1, rp[0], 1)) / b2B;
         }
 
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         outfile->Printf("    %-4d %11.3E%1s %11.3E%1s %10ld\n", iter + 1, r2A, (r2A < delta_ ? "*" : " "), r2B,
                         (r2B < delta_ ? "*" : " "), stop - start);
         // fflush(outfile);
