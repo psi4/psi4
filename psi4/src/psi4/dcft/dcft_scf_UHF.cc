@@ -27,7 +27,10 @@
  */
 
 #include "dcft.h"
-#include "defines.h"
+
+#include <algorithm>
+#include <cmath>
+#include <map>
 
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libdpd/dpd.h"
@@ -39,8 +42,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 
-#include <map>
-#include <cmath>
+#include "defines.h"
 
 namespace psi {
 namespace dcft {
@@ -233,8 +235,8 @@ void DCFTSolver::print_orbital_energies() {
             bPairs.push_back(std::make_pair(epsilon_b_->get(h, i), h));
         }
     }
-    sort(aPairs.begin(), aPairs.end());
-    sort(bPairs.begin(), bPairs.end());
+    std::sort(aPairs.begin(), aPairs.end());
+    std::sort(bPairs.begin(), bPairs.end());
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);

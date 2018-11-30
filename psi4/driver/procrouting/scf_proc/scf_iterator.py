@@ -452,6 +452,9 @@ def scf_finalize_energy(self):
             #   so forcibly recomputing for now until stability revamp
             core.print_out("    SO Integrals not on disk. Computing...")
             mints = core.MintsHelper(self.basisset())
+            #next 2 lines fix a bug that prohibits relativistic stability analysis
+            if core.get_global_option('RELATIVISTIC') in ['X2C', 'DKH']:
+                mints.set_rel_basisset(self.get_basisset('BASIS_RELATIVISTIC'))
             mints.integrals()
             core.print_out("done.\n")
 

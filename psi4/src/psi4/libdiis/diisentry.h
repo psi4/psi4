@@ -29,8 +29,9 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 
-#include <string>
 #include <map>
+#include <memory>
+#include <string>
 
 namespace psi {
 

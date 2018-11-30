@@ -27,32 +27,34 @@
  */
 
 #include <cstdio>
-#include <sstream>
-#include <map>
 #include <iomanip>
+#include <map>
+#include <sstream>
 #include <sys/stat.h>
+
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
-#include "psi4/libmints/vector.h"
+
+#include "psi4/cc/cclambda/cclambda.h"
+#include "psi4/cc/ccwave.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libplugin/plugin.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/writer_file_prefix.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/liboptions/liboptions_python.h"
+#include "psi4/libplugin/plugin.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/process.h"
-
-#include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/cc/ccwave.h"
-#include "psi4/cc/cclambda/cclambda.h"
-#include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/psifiles.h"
-#include "psi4/libmints/writer_file_prefix.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "python_data_type.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -91,7 +93,7 @@ extern std::map<std::string, plugin_info> plugins;
 namespace opt {
 psi::PsiReturnType optking(psi::Options&);
 void opt_clean();
-}
+}  // namespace opt
 // Forward declare /src/bin/ methods
 namespace psi {
 
@@ -162,7 +164,7 @@ SharedWavefunction dmrg(SharedWavefunction, Options&);
 namespace mrcc {
 PsiReturnType mrcc_generate_input(SharedWavefunction, Options&, const py::dict&);
 PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const py::dict&);
-}
+}  // namespace mrcc
 
 // Finite difference functions
 namespace findif {
@@ -175,7 +177,7 @@ SharedMatrix fd_1_0(std::shared_ptr<Molecule>, Options&, const py::list&);
 SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
 SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep);
 void displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
-}
+}  // namespace findif
 
 // CC functions
 namespace cctransort {
@@ -197,14 +199,14 @@ namespace ccresponse {
 PsiReturnType ccresponse(SharedWavefunction, Options&);
 void scatter(std::shared_ptr<Molecule> molecule, Options&, double step, std::vector<SharedMatrix> dip,
              std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
-}
+}  // namespace ccresponse
 namespace cceom {
 PsiReturnType cceom(SharedWavefunction, Options&);
 }
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
 // extern void print_version(std::string);
-}
+}  // namespace psi
 
 std::string to_upper(const std::string& key) {
     std::string nonconst_key = key;
@@ -224,7 +226,7 @@ void py_reopen_outfile() {
     if (outfile_name == "stdout") {
         // outfile = stdout;
     } else {
-        auto mode =  std::ostream::app;
+        auto mode = std::ostream::app;
         outfile = std::make_shared<PsiOutStream>(outfile_name, mode);
         if (!outfile) throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }
@@ -471,7 +473,6 @@ SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn) {
     return adc_wfn;
 }
 
-
 char const* py_psi_version() {
 #ifdef PSI_VERSION
     return PSI_VERSION;
@@ -500,7 +501,7 @@ void py_psi_clean_options() {
     Process::environment.options.clear();
     Process::environment.options.set_read_globals(true);
     read_options("", Process::environment.options, true);
-    for (std::map<std::string, plugin_info>::iterator it=plugins.begin(); it!=plugins.end(); ++it) {
+    for (std::map<std::string, plugin_info>::iterator it = plugins.begin(); it != plugins.end(); ++it) {
         // Get the plugin options back into the global space
         it->second.read_options(it->second.name, Process::environment.options);
     }
@@ -541,8 +542,8 @@ bool py_psi_set_local_option_int(std::string const& module, std::string const& k
     std::string nonconst_key = to_upper(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if (data.type() == "double" && specifies_convergence(nonconst_key)) {
-        double val = pow(10.0, -value);
+    if (data.type() == "double") {
+        double val = (specifies_convergence(nonconst_key)) ? pow(10.0, -value) : double(value);
         Process::environment.options.set_double(module, nonconst_key, val);
     } else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
@@ -582,8 +583,8 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
     std::string nonconst_key = to_upper(key);
     Data& data = Process::environment.options[nonconst_key];
 
-    if (data.type() == "double" && specifies_convergence(nonconst_key)) {
-        double val = pow(10.0, -value);
+    if (data.type() == "double") {
+        double val = (specifies_convergence(nonconst_key)) ? pow(10.0, -value) : double(value);
         Process::environment.options.set_global_double(nonconst_key, val);
     } else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);

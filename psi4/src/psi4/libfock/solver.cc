@@ -27,9 +27,14 @@
  */
 
 #include "solver.h"
-#include "points.h"
-#include "hamiltonian.h"
-#include "jk.h"
+
+#include <algorithm>
+#include <cmath>
+#include <sstream>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
@@ -38,12 +43,9 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
-#include <cmath>
-#include <sstream>
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+#include "points.h"
+#include "hamiltonian.h"
+#include "jk.h"
 
 namespace psi {
 

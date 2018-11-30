@@ -65,6 +65,8 @@ before_test:
   - python %INSTALL_FOLDER%\bin\psi4 --version
 
 test_script:
+  # Check if OpenMP config hadn't failed silently
+  - python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
   - python %INSTALL_FOLDER%\bin\psi4 %SOURCE_FOLDER%\tests\tu1-h2o-energy\input.dat
   #
   # Skipped long tests (not enough time to run all of them):
@@ -86,6 +88,7 @@ test_script:
           --label-regex quick
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS%
+  - python %INSTALL_FOLDER%\bin\psi4 --test
 
 after_test:
   # Run failling tests, but their results are ignored
@@ -94,7 +97,6 @@ after_test:
           --tests-regex "^(ci-property)$"
           --output-on-failure
           --parallel %NUMBER_OF_PROCESSORS% & exit 0
-  - python %INSTALL_FOLDER%\bin\psi4 --test & exit 0
 
 cache:
   - C:\Miniconda3-x64\pkgs

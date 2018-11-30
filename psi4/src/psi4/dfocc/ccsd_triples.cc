@@ -26,16 +26,15 @@
  * @END LICENSE
  */
 
-#include "psi4/libqt/qt.h"
-#include "defines.h"
-#include "dfocc.h"
-
 #include <ctime>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-using namespace psi;
+#include "psi4/libqt/qt.h"
+
+#include "defines.h"
+#include "dfocc.h"
 
 namespace psi {
 namespace dfoccwave {
@@ -1737,11 +1736,11 @@ void DFOCC::ccsd_canonic_triples_grad2() {
     Miabd = SharedTensor2d(new Tensor2d("M[I] <AB|D>", navirA * navirA, navirA));
 
     // progress counter
-    time_t stop,start = time(nullptr);
+    std::time_t stop,start = std::time(nullptr);
     long int ind =0;
     double step_print = 10.0;
     double next_print = step_print;
-    
+
     // main loop
     E_t = 0.0;
     double sum = 0.0;
@@ -2108,7 +2107,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 ind+=1;
                 double percent = static_cast<double>(ind)/static_cast<double>(Nijk)*100.0;
                 if (percent >= next_print){
-                    stop = time(nullptr);
+                    stop = std::time(nullptr);
                     next_print += step_print;
                     outfile->Printf("              %5.1lf  %8d s\n",percent,static_cast<int>(stop)-static_cast<int>(start));
                 }

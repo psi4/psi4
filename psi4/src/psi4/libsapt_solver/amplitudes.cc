@@ -593,8 +593,8 @@ void SAPT2::ijkl_to_ikjl(double *tARAR, int ilength, int jlength, int klength, i
 void SAPT2::symmetrize(double *tARAR, int nocc, int nvir) {
     for (int ar = 0; ar < nocc * nvir; ar++) {
         for (int a1r1 = 0; a1r1 <= ar; a1r1++) {
-            long int ara1r1 = ar * nocc * nvir + a1r1;
-            long int a1r1ar = a1r1 * nocc * nvir + ar;
+            long int ara1r1 = (long int)ar * nocc * nvir + a1r1;
+            long int a1r1ar = (long int)a1r1 * nocc * nvir + ar;
             tARAR[ara1r1] = tARAR[a1r1ar] = tARAR[ara1r1] + tARAR[a1r1ar];
         }
     }

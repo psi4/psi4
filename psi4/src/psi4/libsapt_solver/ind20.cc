@@ -26,17 +26,16 @@
  * @END LICENSE
  */
 
-#include "sapt0.h"
-#include "sapt2.h"
+#include <cmath>
+#include <ctime>
+#include <memory>
 
 #include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <memory>
-PRAGMA_WARNING_POP
+
 #include "psi4/libpsio/aiohandler.h"
 
-#include <cmath>
+#include "sapt0.h"
+#include "sapt2.h"
 
 namespace psi {
 namespace sapt {
@@ -109,8 +108,8 @@ void SAPT0::ind20r() {
 }
 
 void SAPT0::ind20rA_B() {
-    time_t start = time(nullptr);
-    time_t stop;
+    std::time_t start = std::time(nullptr);
+    std::time_t stop;
     int iter = 0;
     double E_old, E;
     double conv, dE;
@@ -266,7 +265,7 @@ void SAPT0::ind20rA_B() {
         dE = E_old - E;
 
         iter++;
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (print_) {
             outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
                             stop - start);
@@ -298,8 +297,8 @@ void SAPT0::ind20rA_B() {
 }
 
 void SAPT0::ind20rB_A() {
-    time_t start = time(nullptr);
-    time_t stop;
+    std::time_t start = std::time(nullptr);
+    std::time_t stop;
     int iter = 0;
     double E_old, E;
     double conv, dE;
@@ -455,7 +454,7 @@ void SAPT0::ind20rB_A() {
         dE = E_old - E;
 
         iter++;
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (print_) {
             outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
                             stop - start);
@@ -487,8 +486,8 @@ void SAPT0::ind20rB_A() {
 }
 
 void SAPT0::ind20rA_B_aio() {
-    time_t start = time(nullptr);
-    time_t stop;
+    std::time_t start = std::time(nullptr);
+    std::time_t stop;
     int iter = 0;
     double E_old, E;
     double conv, dE;
@@ -680,7 +679,7 @@ void SAPT0::ind20rA_B_aio() {
         dE = E_old - E;
 
         iter++;
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (print_) {
             outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
                             stop - start);
@@ -712,8 +711,8 @@ void SAPT0::ind20rA_B_aio() {
 }
 
 void SAPT0::ind20rB_A_aio() {
-    time_t start = time(nullptr);
-    time_t stop;
+    std::time_t start = std::time(nullptr);
+    std::time_t stop;
     int iter = 0;
     double E_old, E;
     double conv, dE;
@@ -905,7 +904,7 @@ void SAPT0::ind20rB_A_aio() {
         dE = E_old - E;
 
         iter++;
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (print_) {
             outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n", iter, E * 1000.0, dE * 1000.0, conv * 1000.0,
                             stop - start);

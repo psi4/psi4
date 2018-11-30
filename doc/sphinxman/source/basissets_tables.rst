@@ -38,8 +38,10 @@ Basis Sets by Family
 Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
 :ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
+:ref:`Dunning (F12) <table:basisDunningF12>`, 
 :ref:`Karlsruhe <table:basisKarlsruhe>`,
 :ref:`Jensen <table:basisJensen>`,
+:ref:`Petersson <table:basisPetersson>`,
 and :ref:`Other <table:basisOther>` summarize the orbital basis sets available in
 |PSIfour|.  These tables are arranged so that columns indicate degree of
 augmentation by diffuse functions (generally necessary for anions, excited
@@ -189,6 +191,19 @@ Appendix :ref:`apdx:basisElement`.
 |
 |
 
+.. _`table:basisDunningF12`:
+
+.. table:: Summary of Dunning F12 orbital basis sets available in |PSIfour|
+
+    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
+    | basis set        | no diffuse | feb | mar | apr | may | jun | heavy-aug [#f2]_ | aug    | d-aug |
+    +==================+============+=====+=====+=====+=====+=====+==================+========+=======+
+    | cc-pVXZ-F12      | DTQ        |     |     |     |     |     |                  |        |       |
+    +------------------+------------+-----+-----+-----+-----+-----+------------------+--------+-------+
+
+|
+|
+
 .. _`table:basisDunningJKFIT`:
 
 .. table:: Summary of Dunning JK-fitting basis sets available in |PSIfour|
@@ -300,6 +315,20 @@ Appendix :ref:`apdx:basisElement`.
 
 |
 |
+
+.. _`table:basisPetersson`:
+
+.. table:: Summary of Petersson orbital basis sets available in |PSIfour|
+
+    +---------------+--------------+-----+
+    | basis set     |  augmented, tight  |
+    +===============+==============+=====+
+    | nZaPa-NR      |    234567          |
+    +---------------+--------------+-----+
+
+|
+|
+
 
 .. _`table:basisOther`:
 

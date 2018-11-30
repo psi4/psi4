@@ -1,0 +1,14 @@
+# Configure LGTM for this package
+
+extraction:
+  python:  # Configure Python
+    python_setup:  # Configure the setup
+      version: 3  # Specify Version 3
+path_classifiers:
+  library:
+    - psi4/versioner.py
+    - samples/*
+    - conda/*
+  #generated:
+  #  - nist_data/*
+  #  - qcelemental/_version.py

@@ -26,36 +26,34 @@
  * @END LICENSE
  */
 
-#include <ctime>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include <algorithm>
-#include <vector>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #include <utility>
+#include <vector>
 
-#include "psi4/libfunctional/superfunctional.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
+
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.hpp"
+#include "psi4/libdiis/diisentry.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libfock/jk.h"
+#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libiwl/iwl.hpp"
-#include "psi4/libqt/qt.h"
+#include "psi4/libmints/factory.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
-
-#include "psi4/libfock/jk.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libdpd/dpd.h"
-#include "rohf.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/factory.h"
-#define _DEBUG
 
-using namespace psi;
+#include "rohf.h"
 
 namespace psi {
 namespace scf {
@@ -352,14 +350,12 @@ void ROHF::form_initialF() {
     Fa_->transform(X_);
     Fb_->copy(Fa_);
 
-#ifdef _DEBUG
     if (debug_) {
         outfile->Printf("Initial alpha Fock matrix:\n");
         Fa_->print("outfile");
         outfile->Printf("Initial beta Fock matrix:\n");
         Fb_->print("outfile");
     }
-#endif
 }
 
 void ROHF::form_F() {
@@ -791,8 +787,8 @@ void ROHF::damping_update(double damping_percentage) {
 }
 
 int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) {
-    time_t start, stop;
-    start = time(nullptr);
+    std::time_t start, stop;
+    start = std::time(nullptr);
 
     // => Build gradient and preconditioner <= //
 
@@ -875,7 +871,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
         grad_rms = 1.e-14;  // Prevent rel denom from being too small
     }
     double rms = sqrt(rconv / grad_rms);
-    stop = time(nullptr);
+    stop = std::time(nullptr);
     if (soscf_print) {
         outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop - start);
     }
@@ -906,7 +902,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
         // Get residual
         double rconv = r->sum_of_squares();
         double rms = sqrt(rconv / grad_rms);
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (soscf_print) {
             outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop - start);
         }

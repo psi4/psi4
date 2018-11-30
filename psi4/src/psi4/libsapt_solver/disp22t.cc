@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#include <ctime>
+
 #include "sapt2p.h"
 
 namespace psi {
@@ -276,8 +278,8 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel, co
     C_DGEMM('N', 'T', aoccA * nvirA, aoccA * aoccA, ndf_ + 3, 1.0, &(B_p_AR[0][0]), ndf_ + 3, &(B_p_AA[0][0]), ndf_ + 3,
             0.0, &(vARAA[0][0]), aoccA * aoccA);
 
-    time_t start = time(nullptr);
-    time_t stop;
+    std::time_t start = std::time(nullptr);
+    std::time_t stop;
 
     for (int b = 0, bs = 0; b < aoccB; b++) {
         for (int s = 0; s < nvirB; s++, bs++) {
@@ -324,7 +326,7 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel, co
                 }
             }
         }
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         if (print_) {
             outfile->Printf("    (i = %3d of %3d) %10ld seconds\n", b + 1, aoccB, stop - start);
         }
@@ -408,8 +410,8 @@ double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char
 
     psio_address next_BSAR;
 
-    time_t start = time(nullptr);
-    time_t stop;
+    std::time_t start = std::time(nullptr);
+    std::time_t stop;
 
     for (int b = 0, bs = 0; b < noccB; b++) {
         for (int s = 0; s < nvirB; s++, bs++) {
@@ -467,7 +469,7 @@ double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char
                 }
             }
         }
-        stop = time(nullptr);
+        stop = std::time(nullptr);
         outfile->Printf("    (i = %3d of %3d) %10ld seconds\n", b + 1, noccB, stop - start);
     }
 

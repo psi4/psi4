@@ -27,9 +27,13 @@
  */
 
 #include "stability.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/liboptions/liboptions.h"
 
+#include <algorithm>
+
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
+
+#include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libscf_solver/hf.h"
@@ -40,7 +44,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/physconst.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"

@@ -26,30 +26,29 @@
  * @END LICENSE
  */
 
+#include <algorithm>
+#include <fstream>
+#include <vector>
+
 #include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
-#include "psi4/liboptions/liboptions.h"
 
-#include "psi4/libscf_solver/rohf.h"
-
-#include "psi4/libpsio/psio.hpp"
+#include "psi4/fnocc/frozen_natural_orbitals.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libfock/apps.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libscf_solver/rohf.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"
-#include "psi4/libdpd/dpd.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libfock/apps.h"
-#include "psi4/libqt/qt.h"
-#include <vector>
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/fnocc/frozen_natural_orbitals.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/mintshelper.h"
-#include "psi4/psifiles.h"
-
-#include <fstream>
-#include <algorithm>
 
 namespace psi {
 namespace mrcc {

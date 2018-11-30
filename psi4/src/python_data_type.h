@@ -26,12 +26,12 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_liboptions_python_h
-#define _psi_src_lib_liboptions_python_h
+#pragma once
 
-#include "liboptions.h"
 #include "psi4/pybind11.h"
 #include "psi4/pragma.h"
+
+#include "psi4/liboptions/liboptions.h"
 
 namespace psi {
 
@@ -54,5 +54,3 @@ class PythonDataType : public DataType {
 };
 
 }  // namespace psi
-
-#endif  // _psi_src_lib_liboptions_python_h
