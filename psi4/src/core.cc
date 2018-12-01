@@ -1138,30 +1138,28 @@ PYBIND11_MODULE(core, core) {
 
     // These return/set/print PSI variables found in Process::environment.globals
     core.def("has_scalar_variable", [](const std::string& key) { return Process::environment.globals.count(to_upper(key)); },
-             "Returns true if the PSI variable exists/is set.");
+             "Is the double QC variable (case-insensitive) set?");
     core.def("has_array_variable", [](const std::string& key) { return Process::environment.arrays.count(to_upper(key)); },
-             "Returns true if the PSI array variable exists/is set.");
+             "Is the Matrix QC variable (case-insensitive) set?");
     core.def("scalar_variable", [](const std::string& key) { return Process::environment.globals[to_upper(key)]; },
-             "Returns one of the PSI variables set internally by the modules or python driver (see manual for full "
-             "listing of variables available).");
+             "Returns the requested (case-insensitive) double QC variable.");
     core.def("array_variable", [](const std::string& key) { return Process::environment.arrays[to_upper(key)]->clone(); },
-             "Returns one of the PSI array variables set internally by the modules or python driver (see manual for full "
-             "listing of variables available).");
+             "Returns copy of the requested (case-insensitive) Matrix QC variable.");
     core.def("set_scalar_variable", [](const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; },
-             "Sets a PSI variable, by name.");
+             "Sets the requested (case-insensitive) double QC variable.");
     core.def("set_array_variable", [](const std::string& key, SharedMatrix val) { Process::environment.arrays[to_upper(key)] = val->clone(); },
-             "Sets a PSI array variable, by name.");
+             "Sets the requested (case-insensitive) Matrix QC variable.");
     core.def("del_scalar_variable", [](const std::string key) { Process::environment.globals.erase(to_upper(key)); },
-             "Deletes a PSI variable, by name");
+             "Removes the requested (case-insensitive) double QC variable.");
     core.def("del_array_variable", [](const std::string key) { Process::environment.arrays.erase(to_upper(key)); },
-             "Deletes a PSI array variable, by name");
+             "Removes the requested (case-insensitive) Matrix QC variable.");
     core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
     core.def("clean_variables", []() { Process::environment.globals.clear(); Process::environment.arrays.clear(); },
              "Empties all PSI scalar and array variables that have been set internally.");
     core.def("scalar_variables", []() { return Process::environment.globals; },
-             "Returns dictionary of the PSI variables set internally by the modules or python driver.");
+             "Returns dictionary of all double QC variables.");
     core.def("array_variables", []() { return Process::environment.arrays; },
-             "Returns dictionary of the PSI array variables set internally by the modules or python driver.");
+             "Returns dictionary of all Matrix QC variables.");
 
     // Returns the location where the Psi4 source is located.
     core.def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");

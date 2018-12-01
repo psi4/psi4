@@ -993,7 +993,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             for (i = 0; i < nroots; i++) {
                 avg_vec_norm += dvecnorm[i] * Parameters_->average_weights[i];
             }
-            set_variable("DETCI AVG DVEC NORM", avg_vec_norm);
+            set_scalar_variable("DETCI AVG DVEC NORM", avg_vec_norm);
             Parameters_->diag_h_converged = true;
         }
 

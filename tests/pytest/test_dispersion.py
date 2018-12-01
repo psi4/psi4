@@ -66,8 +66,6 @@ dpbed3zero = {
     (({'name_hint': 'pbe', 'level_hint': 'd3zero'}, 'PBE-D3'), dpbed3zero),
     (({'name_hint': 'pbe', 'level_hint': 'd3'}, 'PBE-D3'), dpbed3zero),
     (({'name_hint': 'pbe-d3'}, 'PBE-D3'), dpbed3zero),
-    (({'name_hint': 'mp2-dmp2'}, 'MP2-DMP2'), dmp2dmp2),
-    (({'name_hint': 'MP2', 'level_hint': 'dmp2'}, 'MP2-DMP2'), dmp2dmp2),
 ])
 def test_intf_dftd3_from_arrays(inp, expected):
     res = intf_dftd3.from_arrays(**inp[0])
@@ -254,26 +252,3 @@ def test_11_b():
     assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], E, 7, tnm())
     assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
     assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['B3LYP-D3(BJ) DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-
-_mp2d_paramset = [
-    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'dimer', 'lbl': 'MP2-DMP2'}),
-    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'mA', 'lbl': 'MP2-DMP2'}),
-    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'mB', 'lbl': 'MP2-DMP2'}),
-    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'gAmB', 'lbl': 'MP2-DMP2'}),
-    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'mAgB', 'lbl': 'MP2-DMP2'}),
-    ({'parent': 'ne', 'name': 'mp2d-mp2-dmp2', 'subject': 'atom', 'lbl': 'MP2-DMP2'}),
-]
-
-@using_mp2d
-@pytest.mark.parametrize("inp", _mp2d_paramset)
-def test_11_mp2d_qmol(inp, eneyne_ne_qmolecules):
-    subject = eneyne_ne_qmolecules[inp['parent']][inp['subject']]
-    expected = ref[inp['parent']][inp['lbl']][inp['subject']]
-
-    jrec = qcdb.intf_mp2d.run_mp2d(inp['name'], subject, options={}, ptype='energy')
-    assert compare_values(expected, jrec['qcvars']['CURRENT ENERGY'].data, 7, tnm())
-    assert compare_values(expected, jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-    assert compare_values(expected, jrec['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-
-
-

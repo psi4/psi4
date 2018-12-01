@@ -75,10 +75,8 @@ def pybuild_basis(mol,
     # if a string, they search for a gbs file with that name.
     # if a function, it needs to apply a basis to each atom.
 
-    bs, basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(),
-                                              key, resolved_target, fitrole, other,
-                                              return_dict=True,
-                                              return_atomlist=return_atomlist)
+    bs, basisdict = qcdb.BasisSet.pyconstruct(
+        mol.to_dict(), key, resolved_target, fitrole, other, return_dict=True, return_atomlist=return_atomlist)
 
     if return_atomlist:
         atom_basis_list = []
@@ -137,10 +135,10 @@ def pyread_wavefunction(wfn_data):
     # otherwise a dictionary was passed in
     else:
         pass
-    
+
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
-    wfn_vector= wfn_data['vector']
+    wfn_vector = wfn_data['vector']
     wfn_dimension = wfn_data['dimension']
     wfn_int = wfn_data['int']
     wfn_string = wfn_data['string']
@@ -164,31 +162,32 @@ def pyread_wavefunction(wfn_data):
     # change some variables to psi4 specific data types (Matrix, Vector, Dimension)
     for label in wfn_matrix:
         array = wfn_matrix[label]
-        wfn_matrix[label] = core.Matrix.from_array(array,name=label) if array is not None else None
-    
+        wfn_matrix[label] = core.Matrix.from_array(array, name=label) if array is not None else None
+
     for label in wfn_vector:
         array = wfn_vector[label]
-        wfn_vector[label] = core.Vector.from_array(array,name=label) if array else None
+        wfn_vector[label] = core.Vector.from_array(array, name=label) if array else None
 
     for label in wfn_dimension:
         tup = wfn_dimension[label]
-        wfn_dimension[label] = core.Dimension.from_list(tup,name=label) if tup else None
+        wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup else None
 
     for label in wfn_matrixarr:
         array = wfn_dimension[label]
-        wfn_dimension[label] = core.Matrix.from_array(array,name=label) if array else None
+        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array else None
 
-    # make the wavefunction 
-    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int,
-                            wfn_string, wfn_boolean, wfn_float)
+    # make the wavefunction
+    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int, wfn_string,
+                            wfn_boolean, wfn_float)
 
     # some of the wavefunction's variables can be changed directly
     for k, v in wfn_floatvar.items():
-        wfn.set_variable(k,v)
+        wfn.set_variable(k, v)
     for k, v in wfn_matrixarr.items():
-        wfn.set_array(k,v)
+        wfn.set_array(k, v)
 
     return wfn
+
 
 core.Wavefunction.from_file = pyread_wavefunction
 
@@ -202,8 +201,8 @@ def pywrite_wavefunction(wfn, filename=None):
         raise ValidationError("Cannot serialize wavefunction with custom basissets.")
 
     wfn_data = {
-        'molecule' : wfn.molecule().to_dict(),
-        'matrix' : {
+        'molecule': wfn.molecule().to_dict(),
+        'matrix': {
             'Ca'       : wfn.Ca().to_array()       if wfn.Ca()       else None,
             'Cb'       : wfn.Cb().to_array()       if wfn.Cb()       else None,
             'Da'       : wfn.Da().to_array()       if wfn.Da()       else None,
@@ -211,28 +210,28 @@ def pywrite_wavefunction(wfn, filename=None):
             'Fa'       : wfn.Fa().to_array()       if wfn.Fa()       else None,
             'Fb'       : wfn.Fb().to_array()       if wfn.Fb()       else None,
             'H'        : wfn.H().to_array()        if wfn.H()        else None,
-            'S'        : wfn.S().to_array()        if wfn.S()       else None,
+            'S'        : wfn.S().to_array()        if wfn.S()        else None,
             'X'        : wfn.X().to_array()        if wfn.X()        else None,
             'aotoso'   : wfn.aotoso().to_array()   if wfn.aotoso()   else None,
             'gradient' : wfn.gradient().to_array() if wfn.gradient() else None,
             'hessian'  : wfn.hessian().to_array()  if wfn.hessian()  else None
-            },
-        'vector' : {
-            'epsilon_a'            : wfn.epsilon_a().to_array()   if wfn.epsilon_a() else None,
-            'epsilon_b'            : wfn.epsilon_b().to_array()   if wfn.epsilon_b() else None,
-            'frequencies'          : wfn.frequencies().to_array() if wfn.frequencies() else None
-            },
-        'dimension' : {
+        },
+        'vector': {
+            'epsilon_a': wfn.epsilon_a().to_array() if wfn.epsilon_a() else None,
+            'epsilon_b': wfn.epsilon_b().to_array() if wfn.epsilon_b() else None,
+            'frequencies': wfn.frequencies().to_array() if wfn.frequencies() else None
+        },
+        'dimension': {
             'doccpi'   : wfn.doccpi().to_tuple(),
-            'frzcpi'   : wfn.frzcpi().to_tuple(),  
-            'frzvpi'   : wfn.frzvpi().to_tuple(),  
+            'frzcpi'   : wfn.frzcpi().to_tuple(),
+            'frzvpi'   : wfn.frzvpi().to_tuple(),
             'nalphapi' : wfn.nalphapi().to_tuple(),
-            'nbetapi'  : wfn.nbetapi().to_tuple(), 
-            'nmopi'    : wfn.nmopi().to_tuple(),   
-            'nsopi'    : wfn.nsopi().to_tuple(),   
-            'soccpi'   : wfn.soccpi().to_tuple()  
-            },
-        'int' : { 
+            'nbetapi'  : wfn.nbetapi().to_tuple(),
+            'nmopi'    : wfn.nmopi().to_tuple(),
+            'nsopi'    : wfn.nsopi().to_tuple(),
+            'soccpi'   : wfn.soccpi().to_tuple()
+        },
+        'int': {
             'nalpha' : wfn.nalpha(),
             'nbeta'  : wfn.nbeta(),
             'nfrzc'  : wfn.nfrzc(),
@@ -240,33 +239,34 @@ def pywrite_wavefunction(wfn, filename=None):
             'nmo'    : wfn.nmo(),
             'nso'    : wfn.nso(),
             'print'  : wfn.get_print(),
-            },
-        'string' : {
-            'name' : wfn.name(),
-            'basisname' : wfn.basisset().name()
-            },
-        'boolean' : {
+        },
+        'string': {
+            'name': wfn.name(),
+            'basisname': wfn.basisset().name()
+        },
+        'boolean': {
             'PCM_enabled'    : wfn.PCM_enabled(),
             'same_a_b_dens'  : wfn.same_a_b_dens(),
             'same_a_b_orbs'  : wfn.same_a_b_orbs(),
             'density_fitted' : wfn.density_fitted(),
             'basispuream'    : wfn.basisset().has_puream()
-            },
-        'float' : {
-            'energy' : wfn.energy(),
-            'efzc' : wfn.efzc(),
+        },
+        'float': {
+            'energy': wfn.energy(),
+            'efzc': wfn.efzc(),
             'dipole_field_x' : wfn.get_dipole_field_strength()[0],
             'dipole_field_y' : wfn.get_dipole_field_strength()[1],
             'dipole_field_z' : wfn.get_dipole_field_strength()[2]
-            },
-        'floatvar' : wfn.variables(),
-        'matrixarr' : {k: v.to_array() for k, v in wfn.arrays().items()}
-        }
+        },
+        'floatvar': wfn.variables(),
+        'matrixarr': {k: v.to_array() for k, v in wfn.arrays().items()},
+    }
 
     if filename is not None:
-        np.save(filename,wfn_data)
+        np.save(filename, wfn_data)
     else:
         return wfn_data
+
 
 core.Wavefunction.to_file = pywrite_wavefunction
 
@@ -319,9 +319,8 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
 
     if aux is None:
         if core.get_global_option("SCF_TYPE") == "DF":
-            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
-                                      core.get_option("SCF", "DF_BASIS_SCF"), "JKFIT",
-                                      core.get_global_option('BASIS'), orbital_basis.has_puream())
+            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF", core.get_option("SCF", "DF_BASIS_SCF"),
+                                      "JKFIT", core.get_global_option('BASIS'), orbital_basis.has_puream())
         else:
             aux = core.BasisSet.zero_ao_basis_set()
 
@@ -525,6 +524,14 @@ def py_psi_set_global_option_python(key, EXTERN):
 core.set_global_option_python = py_psi_set_global_option_python
 
 
+def core_has_variable(key):
+    return core.has_scalar_variable(key) or core.has_array_variable(key)
+
+
+def wfn_has_variable(cls, key):
+    return cls.has_scalar_variable(key) or cls.has_array_variable(key)
+
+
 def core_variable(key, np_out=False):
     if core.has_scalar_variable(key):
         return core.scalar_variable(key)
@@ -534,8 +541,13 @@ def core_variable(key, np_out=False):
         raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
 
 
-def core_has_variable(key):
-    return core.has_scalar_variable(key) or core.has_array_variable(key)
+def wfn_variable(cls, key, np_out=False):
+    if cls.has_scalar_variable(key):
+        return cls.scalar_variable(key)
+    elif cls.has_array_variable(key):
+        return cls.array_variable(key)
+    else:
+        raise KeyError("psi4.core.Wavefunction.variable: Requested variable " + key + " was not set!\n")
 
 
 def core_set_variable(key, val):
@@ -556,6 +568,27 @@ def core_set_variable(key, val):
             core.set_scalar_variable(key, val)
 
 
+def wfn_set_variable(cls, key, val):
+    if isinstance(val, core.Matrix):
+        if cls.has_scalar_variable(key):
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
+                                  " already a scalar variable!")
+        else:
+            cls.set_array_variable(key, val)
+    elif isinstance(val, np.ndarray):
+        if cls.has_scalar_variable(key):
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
+                                  " already a scalar variable!")
+        else:
+            cls.set_array_variable(key, core.Matrix.from_array(val))
+    else:
+        if cls.has_array_variable(key):
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
+                                  " already an array variable!")
+        else:
+            cls.set_scalar_variable(key, val)
+
+
 def core_del_variable(key):
     if core.has_scalar_variable(key):
         core.del_scalar_variable(key)
@@ -563,50 +596,106 @@ def core_del_variable(key):
         core.del_array_variable(key)
 
 
+def wfn_del_variable(cls, key):
+    if cls.has_scalar_variable(key):
+        cls.del_scalar_variable(key)
+    elif cls.has_array_variable(key):
+        cls.del_array_variable(key)
+
+
 def core_variables():
-    #for itm, val in core.scalar_variables().items():
-    #    print('SCL --', itm, val)
-    #for itm, val in core.array_variables().items():
-    #    print('ARR --', itm, val)
     return {**core.scalar_variables(), **core.array_variables()}
 
 
-core.variable = core_variable
+def wfn_variables(cls):
+    return {**cls.scalar_variables(), **cls.array_variables()}
+
+
 core.has_variable = core_has_variable
+core.variable = core_variable
 core.set_variable = core_set_variable
 core.del_variable = core_del_variable
 core.variables = core_variables
 
-
-def core_get_variables():
-    warnings.warn("Using `psi4.core.get_variables` instead of `psi4.core.variables` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
-    return core.variables()
+core.Wavefunction.has_variable = wfn_has_variable
+core.Wavefunction.variable = wfn_variable
+core.Wavefunction.set_variable = wfn_set_variable
+core.Wavefunction.del_variable = wfn_del_variable
+core.Wavefunction.variables = wfn_variables
 
 
 def core_get_variable(key):
     # setting stacklevel=1 so message right for promoted-namespace `psi4.get_variable`
-    warnings.warn("Using `psi4.core.get_variable` instead of `psi4.core.variable` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=1)
-    return core.variable(key)
+    warnings.warn(
+        "Using `psi4.core.get_variable` instead of `psi4.core.variable` (or `psi4.core.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.scalar_variable(key)
 
 
-def core_get_array_variables():
-    warnings.warn("Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
-    return core.variables()
+def core_get_variables():
+    warnings.warn(
+        "Using `psi4.core.get_variables` instead of `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.scalar_variables()
 
 
 def core_get_array_variable(key):
-    warnings.warn("Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
-    return core.variable(key)
+    warnings.warn(
+        "Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.array_variable(key)
 
-core.get_variables = core_get_variables
+
+def core_get_array_variables():
+    warnings.warn(
+        "Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.array_variables()
+
+
 core.get_variable = core_get_variable
-core.get_array_variables = core_get_array_variables
+core.get_variables = core_get_variables
 core.get_array_variable = core_get_array_variable
+core.get_array_variables = core_get_array_variables
 
 
 def wfn_get_variable(cls, key):
-    warnings.warn("Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` is deprecated, and in 1.4 it will stop working\n", category=FutureWarning, stacklevel=2)
-    return cls.variable(key)
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.scalar_variable(key)
+
+
+def wfn_get_array(cls, key):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.get_array` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.array_variable(key)
+
+
+def wfn_set_array(cls, key, val):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.set_array` instead of `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.set_array_variable(key, val)
+
+
+def wfn_arrays(cls):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.arrays` instead of `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.array_variables()
 
 
 core.Wavefunction.get_variable = wfn_get_variable
+core.Wavefunction.get_array = wfn_get_array
+core.Wavefunction.set_array = wfn_set_array
+core.Wavefunction.arrays = wfn_arrays

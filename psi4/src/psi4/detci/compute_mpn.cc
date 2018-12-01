@@ -354,13 +354,13 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
             /*- Process::environment.globals["MPn CORRELATION ENERGY"] -*/
             std::stringstream s;
             s << label << (2 * k) << " TOTAL ENERGY";
-            set_variable(s.str(), Empn2);
+            set_scalar_variable(s.str(), Empn2);
             s.str(std::string());
             s << label << (2 * k) << " CORRELATION ENERGY";
-            set_variable(s.str(), Empn2 - CalcInfo_->escf);
+            set_scalar_variable(s.str(), Empn2 - CalcInfo_->escf);
             // s.str(std::string());
             // s << label << (2*k) << " CORRECTION ENERGY";
-            // set_variable(s.str(), mp2k_energy[2*k]);
+            // set_scalar_variable(s.str(), mp2k_energy[2*k]);
 
             /* 25 November 2003 - JMT
              * Moified to save MP(2n-2) energy */
@@ -371,26 +371,26 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
 
             s.str(std::string());
             s << label << (2 * k + 1) << " TOTAL ENERGY";
-            set_variable(s.str(), Empn2);
+            set_scalar_variable(s.str(), Empn2);
             s.str(std::string());
             s << label << (2 * k + 1) << " CORRELATION ENERGY";
-            set_variable(s.str(), Empn2 - CalcInfo_->escf);
+            set_scalar_variable(s.str(), Empn2 - CalcInfo_->escf);
             // s.str(std::string());
             // s << label << (2*k+1) << " CORRECTION ENERGY";
-            // set_variable(s.str(), mp2k_energy[2*k+1]);
+            // set_scalar_variable(s.str(), mp2k_energy[2*k+1]);
 
         } else {
             outfile->Printf("\n");
 
             std::stringstream s;
             s << label << (k + 1) << " TOTAL ENERGY";
-            set_variable(s.str(), Empn);
+            set_scalar_variable(s.str(), Empn);
             s.str(std::string());
             s << label << (k + 1) << " CORRELATION ENERGY";
-            set_variable(s.str(), Empn - CalcInfo_->escf);
+            set_scalar_variable(s.str(), Empn - CalcInfo_->escf);
             // s.str(std::string());
             // s << label << (k+1) << " CORRECTION ENERGY";
-            // set_variable(s.str(), mpk_energy[k+1]);
+            // set_scalar_variable(s.str(), mpk_energy[k+1]);
         }
 
         if (k + 1 == Parameters_->maxnvect) break;
@@ -474,8 +474,8 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
      */
     if (Parameters_->save_mpn2 == 1 && Parameters_->wigner) {
         set_energy(Empn2);
-        set_variable("CURRENT ENERGY", Empn2);
-        set_variable("CURRENT CORRELATION ENERGY", Empn2 - variable("CURRENT REFERENCE ENERGY"));
+        set_scalar_variable("CURRENT ENERGY", Empn2);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", Empn2 - scalar_variable("CURRENT REFERENCE ENERGY"));
 
         if (Parameters_->zaptn)
             outfile->Printf("\n    ZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
@@ -483,25 +483,25 @@ void CIWavefunction::mpn_generator(CIvect &Hd) {
             outfile->Printf("\n    MP%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
     } else if (Parameters_->save_mpn2 == 2 && Parameters_->wigner) {
         set_energy(Empn2a);
-        set_variable("CURRENT ENERGY", Empn2a);
-        set_variable("CURRENT CORRELATION ENERGY", Empn2a - variable("CURRENT REFERENCE ENERGY"));
+        set_scalar_variable("CURRENT ENERGY", Empn2a);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", Empn2a - scalar_variable("CURRENT REFERENCE ENERGY"));
         if (Parameters_->zaptn)
             outfile->Printf("\n    ZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
         else
             outfile->Printf("\n    MP%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
     } else {
         set_energy(Empn);
-        set_variable("CURRENT ENERGY", Empn);
-        set_variable("CURRENT CORRELATION ENERGY", Empn - variable("CURRENT REFERENCE ENERGY"));
+        set_scalar_variable("CURRENT ENERGY", Empn);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", Empn - scalar_variable("CURRENT REFERENCE ENERGY"));
         if (Parameters_->zaptn)
             outfile->Printf("\n    ZAPT%d energy saved\n", Parameters_->maxnvect);
         else
             outfile->Printf("\n    MP%d energy saved\n", Parameters_->maxnvect);
     }
     if (Parameters_->zaptn)
-        outfile->Printf("\n    EZAPTn = %17.13lf\n", variable("CURRENT ENERGY"));
+        outfile->Printf("\n    EZAPTn = %17.13lf\n", scalar_variable("CURRENT ENERGY"));
     else
-        outfile->Printf("\n    EMPn = %17.13lf\n", variable("CURRENT ENERGY"));
+        outfile->Printf("\n    EMPn = %17.13lf\n", scalar_variable("CURRENT ENERGY"));
 
     outfile->Printf("\n");
 }

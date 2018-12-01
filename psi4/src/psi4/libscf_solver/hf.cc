@@ -265,7 +265,7 @@ void HF::common_init() {
     }
 
     // -D is zero by default
-    set_variable("-D Energy", 0.0);
+    set_scalar_variable("-D Energy", 0.0);
     energies_["-D"] = 0.0;
 
     // CPHF info

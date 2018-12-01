@@ -65,7 +65,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     char e_label[PSIO_KEYLEN]; /* 80... */
 
     nroots = Parameters_->num_roots;
-    set_variable("DETCI AVG DVEC NORM", 0.0);
+    set_scalar_variable("DETCI AVG DVEC NORM", 0.0);
 
     if (print_) {
         outfile->Printf("\n   ==> Starting CI iterations <==\n\n");
@@ -473,32 +473,32 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     tval = evals[Parameters_->root] + edrc + nucrep;
 
     set_energy(tval);
-    set_variable("CURRENT ENERGY", tval);
-    set_variable("CURRENT CORRELATION ENERGY", tval - CalcInfo_->escf);
-    set_variable("CURRENT REFERENCE ENERGY", CalcInfo_->escf);
-    set_variable("CI TOTAL ENERGY", tval);
-    set_variable("CI CORRELATION ENERGY", tval - CalcInfo_->escf);
+    set_scalar_variable("CURRENT ENERGY", tval);
+    set_scalar_variable("CURRENT CORRELATION ENERGY", tval - CalcInfo_->escf);
+    set_scalar_variable("CURRENT REFERENCE ENERGY", CalcInfo_->escf);
+    set_scalar_variable("CI TOTAL ENERGY", tval);
+    set_scalar_variable("CI CORRELATION ENERGY", tval - CalcInfo_->escf);
 
     if (Parameters_->fci) {
-        set_variable("FCI TOTAL ENERGY", tval);
-        set_variable("FCI CORRELATION ENERGY", tval - CalcInfo_->escf);
+        set_scalar_variable("FCI TOTAL ENERGY", tval);
+        set_scalar_variable("FCI CORRELATION ENERGY", tval - CalcInfo_->escf);
     } else {
         if (Parameters_->ex_lvl == 2) {
-            set_variable("CISD TOTAL ENERGY", tval);
-            set_variable("CISD CORRELATION ENERGY", tval - CalcInfo_->escf);
+            set_scalar_variable("CISD TOTAL ENERGY", tval);
+            set_scalar_variable("CISD CORRELATION ENERGY", tval - CalcInfo_->escf);
         } else if (Parameters_->ex_lvl == 3) {
-            set_variable("CISDT TOTAL ENERGY", tval);
-            set_variable("CISDT CORRELATION ENERGY", tval - CalcInfo_->escf);
+            set_scalar_variable("CISDT TOTAL ENERGY", tval);
+            set_scalar_variable("CISDT CORRELATION ENERGY", tval - CalcInfo_->escf);
         } else if (Parameters_->ex_lvl == 4) {
-            set_variable("CISDTQ TOTAL ENERGY", tval);
-            set_variable("CISDTQ CORRELATION ENERGY", tval - CalcInfo_->escf);
+            set_scalar_variable("CISDTQ TOTAL ENERGY", tval);
+            set_scalar_variable("CISDTQ CORRELATION ENERGY", tval - CalcInfo_->escf);
         } else {
             std::stringstream s;
             s << "CI" << Parameters_->ex_lvl << " TOTAL ENERGY";
-            set_variable(s.str(), tval);
+            set_scalar_variable(s.str(), tval);
             s.str(std::string());
             s << "CI" << Parameters_->ex_lvl << " CORRELATION ENERGY";
-            set_variable(s.str(), tval - CalcInfo_->escf);
+            set_scalar_variable(s.str(), tval - CalcInfo_->escf);
         }
     }
 
@@ -508,10 +508,10 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
         std::stringstream s;
         s << "CI ROOT " << i << " TOTAL ENERGY";
-        set_variable(s.str(), tval);
+        set_scalar_variable(s.str(), tval);
         s.str(std::string());
         s << "CI ROOT " << i << " CORRELATION ENERGY";
-        set_variable(s.str(), tval - CalcInfo_->escf);
+        set_scalar_variable(s.str(), tval - CalcInfo_->escf);
     }
 
     if (Parameters_->average_num > 1) {
@@ -519,20 +519,20 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         for (i = 0; i < Parameters_->average_num; i++) {
             tval += Parameters_->average_weights[i] * (edrc + nucrep + evals[Parameters_->average_states[i]]);
         }
-        set_variable("CI STATE-AVERAGED TOTAL ENERGY", tval);
-        set_variable("CI STATE-AVERAGED CORRELATION ENERGY", tval - CalcInfo_->escf);
-        set_variable("CURRENT CORRELATION ENERGY", variable("CI STATE-AVERAGED CORRELATION ENERGY"));
+        set_scalar_variable("CI STATE-AVERAGED TOTAL ENERGY", tval);
+        set_scalar_variable("CI STATE-AVERAGED CORRELATION ENERGY", tval - CalcInfo_->escf);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", scalar_variable("CI STATE-AVERAGED CORRELATION ENERGY"));
     }
 
     // Set the energy as MCSCF would find it
     if (Parameters_->average_num > 1) {  // state average
-        set_variable("MCSCF TOTAL ENERGY", variable("CI STATE-AVERAGED TOTAL ENERGY"));
+        set_variable("MCSCF TOTAL ENERGY", scalar_variable("CI STATE-AVERAGED TOTAL ENERGY"));
     } else if (Parameters_->root != 0) {  // follow some specific root != lowest
         std::stringstream s;
         s << "CI ROOT " << Parameters_->root << " TOTAL ENERGY";
-        set_variable("MCSCF TOTAL ENERGY", variable(s.str()));
+        set_scalar_variable("MCSCF TOTAL ENERGY", scalar_variable(s.str()));
     } else {
-        set_variable("MCSCF TOTAL ENERGY", variable("CI TOTAL ENERGY"));
+        set_scalar_variable("MCSCF TOTAL ENERGY", scalar_variable("CI TOTAL ENERGY"));
     }
 
     return Parameters_->diag_iters_taken;
