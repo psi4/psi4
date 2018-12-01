@@ -130,6 +130,7 @@ _addons_ = {
     "libefp": _plugin_import("pylibefp"),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
+    "helpme": _plugin_import("helpme"),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
     "dftd3": _psi4_which("dftd3"),

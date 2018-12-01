@@ -78,6 +78,17 @@ atexit.register(core.clean_options)
 atexit.register(core.clean)
 atexit.register(core.finalize)
 
+# Python portions of compiled-in Add-Ons
+# * Note that this is a "battening down the hatches" for the many
+#   rather than letting PYTHONPATH rule for the few.
+import sys
+if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
+    sys.path.insert(1, "@PCMSolver_PYMOD@")
+if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PylibEFP
+    sys.path.insert(1, "@pylibefp_PYMOD@")
+if "@ENABLE_helpme@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # helPME
+    sys.path.insert(1, "@helpme_PYMOD@")
+
 # Make official plugins accessible in input
 from .driver import endorsed_plugins
 
@@ -91,12 +102,3 @@ from .metadata import __version__, version_formatter
 
 # A few extraneous functions
 from .extras import get_input_directory, addons, test
-
-# Python portions of compiled-in Add-Ons
-# * Note that this is a "battening down the hatches" for the many
-#   rather than letting PYTHONPATH rule for the few.
-import sys
-if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
-    sys.path.insert(1, "@PCMSolver_PYMOD@")
-if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
-    sys.path.insert(1, "@pylibefp_PYMOD@")
