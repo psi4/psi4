@@ -18,6 +18,7 @@ set {
   guess sad
   freeze_core true
   cc_type df
+  occ_tolerance 1e-4
   qc_module occ
 }
 

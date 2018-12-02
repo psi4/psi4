@@ -690,15 +690,15 @@ def select_fnoccsd(name, **kwargs):
             if module in ['', 'FNOCC']:
                 func = run_fnocc
         elif mtd_type == 'DF':
-            if module in ['', 'FNOCC']:
-                func = run_fnodfcc
-            elif module in ['', 'OCC']:
+            if module == 'OCC':
                 func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
         elif mtd_type == 'CD':
-            if module in ['', 'FNOCC']:
-                func = run_fnodfcc
-            elif module in ['', 'OCC']:
+            if module == 'OCC':
                 func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
 
     if func is None:
         raise ManagedMethodError(['select_fnoccsd', name, 'CC_TYPE', mtd_type, reference, module])
@@ -725,12 +725,12 @@ def select_fnomp3(name, **kwargs):
             if module in ['', 'FNOCC']:
                 func = run_fnocc
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
+            if module == 'OCC':
                 func = run_fnodfocc
             elif module in ['', 'FNOCC']:
                 func = run_fnocc
         elif mtd_type == 'CD':
-            if module in ['', 'OCC']:
+            if module == 'OCC':
                 func = run_fnodfocc
             elif module in ['', 'FNOCC']:
                 func = run_fnocc
@@ -760,12 +760,12 @@ def select_fnolccd(name, **kwargs):
             if module in ['', 'FNOCC']:
                 func = run_cepa
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
+            if module == 'OCC':
                 func = run_fnodfocc
             elif module in ['', 'FNOCC']:
                 func = run_cepa
         elif mtd_type == 'CD':
-            if module in ['', 'OCC']:
+            if module in 'OCC':
                 func = run_fnodfocc
             elif module in ['', 'FNOCC']:
                 func = run_cepa
@@ -876,15 +876,15 @@ def select_fnoccsd_t_(name, **kwargs):
             if module in ['', 'FNOCC']:
                 func = run_fnocc
         elif mtd_type == 'DF':
-            if module in ['', 'FNOCC']:
-                func = run_fnodfcc
-            elif module in ['', 'OCC']:
+            if module == 'OCC':
                 func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
         elif mtd_type == 'CD':
-            if module in ['', 'FNOCC']:
-                func = run_fnodfcc
-            elif module in ['', 'OCC']:
+            if module == 'OCC':
                 func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnodfcc
 
     if func is None:
         raise ManagedMethodError(['select_fnoccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
