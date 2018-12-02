@@ -43,8 +43,7 @@ class Vector3;
 class Options;
 
 class FittingMetric {
-
-protected:
+   protected:
     /// Pointer to the auxiliary basis set
     std::shared_ptr<BasisSet> aux_;
     /// Pointer to the poisson basis set
@@ -71,8 +70,7 @@ protected:
     /// Fully pivot the fitting metric
     void pivot();
 
-public:
-
+   public:
     /// DF Fitting Metric
     FittingMetric(std::shared_ptr<BasisSet> aux, bool force_C1 = false);
     /// DF Fitting Metric
@@ -84,23 +82,23 @@ public:
     ~FittingMetric();
 
     /// What algorithm to use for symmetric inverse?
-    std::string get_algorithm() const {return algorithm_; }
+    std::string get_algorithm() const { return algorithm_; }
     /// Are poisson functions used?
-    bool is_poisson() const {return is_poisson_; }
+    bool is_poisson() const { return is_poisson_; }
     /// Is the metric inverted?
-    bool is_inverted() const {return is_inverted_; }
+    bool is_inverted() const { return is_inverted_; }
 
     /// The fitting metric or symmetric inverse
-    SharedMatrix get_metric() const {return metric_; }
+    SharedMatrix get_metric() const { return metric_; }
     /// The vector of pivots (for stability) (pivoted->global)
-    std::shared_ptr<IntVector> get_pivots() const {return pivots_; }
+    std::shared_ptr<IntVector> get_pivots() const { return pivots_; }
     /// The vector of back pivots (for stability) (global->pivoted)
-    std::shared_ptr<IntVector> get_reverse_pivots() const {return rev_pivots_; }
+    std::shared_ptr<IntVector> get_reverse_pivots() const { return rev_pivots_; }
 
     /// The gaussian fitting basis
-    std::shared_ptr<BasisSet> get_auxiliary_basis() const {return aux_; }
+    std::shared_ptr<BasisSet> get_auxiliary_basis() const { return aux_; }
     /// The poisson fitting basis
-    std::shared_ptr<BasisSet> get_poisson_basis() const {return pois_; }
+    std::shared_ptr<BasisSet> get_poisson_basis() const { return pois_; }
 
     /// Build the raw fitting metric (sets up indices to canonical)
     void form_fitting_metric();
@@ -119,9 +117,7 @@ public:
 };
 
 class PSI_API DFTensor {
-
-protected:
-
+   protected:
     /// Debug level
     int debug_;
     /// Print level
@@ -171,24 +167,14 @@ protected:
     void build_metric();
     void print_header();
 
-public:
-
-    DFTensor(std::shared_ptr<BasisSet> primary,
-             std::shared_ptr<BasisSet> auxiliary,
-             SharedMatrix C,
-             int nocc,
-             int nvir,
-             int naocc,
-             int navir,
-             Options& options);
+   public:
+    DFTensor(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, SharedMatrix C, int nocc, int nvir,
+             int naocc, int navir, Options& options);
 
     /**
     * Assumes all orbitals are active and pull options from enviroment
     **/
-    DFTensor(std::shared_ptr<BasisSet> primary,
-             std::shared_ptr<BasisSet> auxiliary,
-             SharedMatrix C,
-             int nocc,
+    DFTensor(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, SharedMatrix C, int nocc,
              int nvir);
     ~DFTensor();
 
@@ -201,6 +187,5 @@ public:
     SharedMatrix Imo();
     SharedMatrix Idfmo();
 };
-
 }
 #endif
