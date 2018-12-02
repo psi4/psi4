@@ -25,22 +25,18 @@
 #
 # @END LICENSE
 #
-
 """Module with utility functions used by several Python functions."""
-from __future__ import print_function
 import os
 import ast
 import sys
 import pickle
 import inspect
+import warnings
 import collections
 
 from .exceptions import *
 from . import p4regex
 
-
-if sys.version_info[0] > 2:
-    basestring = str
 
 def kwargs_lower(kwargs):
     """Function to rebuild and return *kwargs* dictionary
@@ -74,6 +70,9 @@ def kwargs_lower(kwargs):
                 caseless_kwargs[lkey] = 2
             else:
                 raise KeyError('Derivative type key %s was not recognized' % str(key))
+
+        elif lvalue is None:
+            caseless_kwargs[lkey] = None
 
         elif p4regex.yes.match(str(lvalue)):
             caseless_kwargs[lkey] = True
@@ -110,7 +109,7 @@ def format_molecule_for_input(mol, name='', forcexyz=False):
 
     """
     # when mol is already a string
-    if isinstance(mol, basestring):
+    if isinstance(mol, str):
         mol_string = mol
         mol_name = name
     # when mol is core.Molecule or qcdb.Molecule object
@@ -126,8 +125,7 @@ def format_molecule_for_input(mol, name='', forcexyz=False):
             mol_string = mol.create_psi4_string_from_molecule()
         mol_name = mol.name() if name == '' else name
 
-    commands = """\nmolecule %s {\n%s%s\n}\n""" % (mol_name, mol_string,
-               '\nno_com\nno_reorient' if forcexyz else '')
+    commands = """\nmolecule %s {\n%s%s\n}\n""" % (mol_name, mol_string, '\nno_com\nno_reorient' if forcexyz else '')
     return commands
 
 
@@ -154,8 +152,10 @@ def format_options_for_input(molecule=None, **kwargs):
                     if symmetry in kwargs[chgdopt.lower()]:
                         chgdoptval = kwargs[chgdopt.lower()][symmetry]
 
-            if isinstance(chgdoptval, basestring):
+            if isinstance(chgdoptval, str):
                 commands += """core.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+
+
 # Next four lines were conflict between master and roa branches (TDC, 10/29/2014)
             elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
                 commands += """core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
@@ -173,6 +173,12 @@ def format_kwargs_for_input(filename, lmode=1, **kwargs):
     distributed (sow/reap) input files.
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.format_kwargs_for_input` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.get_legacy_gradient()
+
     if lmode == 2:
         kwargs['mode'] = 'reap'
         kwargs['linkage'] = os.getpid()
@@ -261,6 +267,11 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
     hessian).
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.extract_sowreap_from_output` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     E = 0.0
 
     try:
@@ -277,24 +288,28 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
             if not line:
                 if E == 0.0:
                     if allvital:
-                        raise ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
+                        raise ValidationError(
+                            'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
                     else:
-                        ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
+                        ValidationError(
+                            'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
                 break
             s = line.strip().split(None, 10)
             if (len(s) != 0) and (s[0:3] == [quantity, 'RESULT:', 'computation']):
                 if int(s[3]) != linkage:
-                    raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
-                        % (sowout, str(s[3]), str(linkage)))
+                    raise ValidationError(
+                        'Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' %
+                        (sowout, str(s[3]), str(linkage)))
                 if s[6] != str(sownum + 1):
-                    raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
-                        % (sowout, s[6], str(sownum + 1)))
+                    raise ValidationError(
+                        'Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.' %
+                        (sowout, s[6], str(sownum + 1)))
                 if label == 'electronic energy' and s[8:10] == ['electronic', 'energy']:
-                        E = float(s[10])
-                        core.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
+                    E = float(s[10])
+                    core.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
                 if label == 'electronic gradient' and s[8:10] == ['electronic', 'gradient']:
-                        E = ast.literal_eval(s[-1])
-                        core.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
+                    E = ast.literal_eval(s[-1])
+                    core.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
         freagent.close()
     return E
 
@@ -315,14 +330,41 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
     """
     modules = [
         # PSI4 Modules
-        "ADC", "CCENERGY", "CCEOM", "CCDENSITY", "CCLAMBDA", "CCHBAR",
-        "CCRESPONSE", "CCSORT", "CCTRIPLES", "CLAG", "CPHF", "CIS",
-        "DCFT", "DETCI", "DFMP2", "DFTSAPT", "FINDIF", "FNOCC", "LMP2",
-        "MCSCF", "MINTS", "MRCC", "OCC", "OPTKING", "PSIMRCC", "RESPONSE",
-        "SAPT", "SCF", "STABILITY", "THERMO", "TRANSQT", "TRANSQT2",
+        "ADC",
+        "CCENERGY",
+        "CCEOM",
+        "CCDENSITY",
+        "CCLAMBDA",
+        "CCHBAR",
+        "CCRESPONSE",
+        "CCSORT",
+        "CCTRIPLES",
+        "CLAG",
+        "CPHF",
+        "CIS",
+        "DCFT",
+        "DETCI",
+        "DFMP2",
+        "DFTSAPT",
+        "FINDIF",
+        "FNOCC",
+        "LMP2",
+        "MCSCF",
+        "MINTS",
+        "MRCC",
+        "OCC",
+        "OPTKING",
+        "PSIMRCC",
+        "RESPONSE",
+        "SAPT",
+        "SCF",
+        "STABILITY",
+        "THERMO",
+        "TRANSQT",
+        "TRANSQT2",
         # External Modules
         "CFOUR",
-        ]
+    ]
 
     options = collections.defaultdict(dict)
     commands = ''
@@ -331,9 +373,8 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
             if opt in ['DFT_CUSTOM_FUNCTIONAL', 'EXTERN']:  # Feb 2017 hack
                 continue
             val = core.get_global_option(opt)
-            options['GLOBALS'][opt] = {'value': val,
-                                       'has_changed': core.has_global_option_changed(opt)}
-            if isinstance(val, basestring):
+            options['GLOBALS'][opt] = {'value': val, 'has_changed': core.has_global_option_changed(opt)}
+            if isinstance(val, str):
                 commands += """core.set_global_option('%s', '%s')\n""" % (opt, val)
             else:
                 commands += """core.set_global_option('%s', %s)\n""" % (opt, val)
@@ -345,9 +386,8 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
                 hoc = core.has_option_changed(module, opt)
                 if hoc or not changedOnly:
                     val = core.get_option(module, opt)
-                    options[module][opt] = {'value': val,
-                                            'has_changed': hoc}
-                    if isinstance(val, basestring):
+                    options[module][opt] = {'value': val, 'has_changed': hoc}
+                    if isinstance(val, str):
                         commands += """core.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
                     else:
                         commands += """core.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
@@ -366,6 +406,11 @@ def mat2arr(mat):
     Expects core.Matrix to be flat with respect to symmetry.
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.mat2arr` instead of `MatrixInstance.to_array().tolist()` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     if mat.rowdim().n() != 1:
         raise ValidationError('Cannot convert Matrix with symmetry.')
     arr = []
@@ -383,6 +428,11 @@ def format_currentstate_for_input(func, name, allButMol=False, **kwargs):
     Used to write distributed (sow/reap) input files.
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.format_currentstate_for_input` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     commands = """\n# This is a psi4 input file auto-generated from the %s() wrapper.\n\n""" % (inspect.stack()[1][3])
     commands += """memory %d mb\n\n""" % (int(0.000001 * core.get_memory()))
     if not allButMol:
@@ -418,7 +468,7 @@ def expand_psivars(pvdefs):
         data_rich_args = []
 
         for pv in action['args']:
-            if isinstance(pv, basestring):
+            if isinstance(pv, str):
                 if pv in psivars:
                     data_rich_args.append(psivars[pv])
                 else:

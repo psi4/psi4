@@ -299,6 +299,7 @@ def _to_array(matrix, copy=True, dense=False):
     else:
         return _get_raw_views(matrix, copy=copy)[0]
 
+
 @property
 def _np_shape(self):
     """
@@ -482,12 +483,14 @@ def _chain_dot(*args, **kwargs):
 
     return ret
 
+
 def _irrep_access(self, *args, **kwargs):
     """
     Warns user when iterating/accessing an irreped object.
     """
     raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple"
                           "irreps. Please use .np or .nph explicitly.")
+
 
 # Matrix attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
@@ -588,6 +591,7 @@ def _dimension_iter(dim):
 core.Dimension.from_list = _dimension_from_list
 core.Dimension.to_tuple = _dimension_to_tuple
 core.Dimension.__iter__ = _dimension_iter
+
 
 # General functions for NumPy array manipulation
 def block_diagonal_array(*args):
