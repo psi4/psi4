@@ -44,7 +44,7 @@ void DFOCC::ccsd_F_intr() {
     FijA->gemv(true, bQijA, T1c, 1.0, 0.0);
 
     // F_mi +=  \sum_{Q,e} Tau"_ie^Q b_me^Q
-    Tau = SharedTensor2d(new Tensor2d("Tau2pp (Q|IA)", nQ, naoccA, navirA));
+    Tau = std::make_shared<Tensor2d>("Tau2pp (Q|IA)", nQ, naoccA, navirA);
     Tau->read(psio_, PSIF_DFOCC_AMPS);
     FijA->contract332(false, true, navirA, bQiaA, Tau, 1.0, 1.0);
     Tau.reset();
@@ -54,7 +54,7 @@ void DFOCC::ccsd_F_intr() {
     FabA->gemv(true, bQabA, T1c, 1.0, 0.0);
 
     // F_ae -=  \sum_{Q,m} Tau'_ma^Q b_me^Q
-    Tau = SharedTensor2d(new Tensor2d("Tau2p (Q|IA)", nQ, naoccA, navirA));
+    Tau = std::make_shared<Tensor2d>("Tau2p (Q|IA)", nQ, naoccA, navirA);
     Tau->read(psio_, PSIF_DFOCC_AMPS);
     FabA->contract(true, false, navirA, navirA, nQ * naoccA, Tau, bQiaA, -1.0, 1.0);
     Tau.reset();
@@ -64,7 +64,7 @@ void DFOCC::ccsd_F_intr() {
     FiaA->gemv(true, bQiaA, T1c, 1.0, 0.0);
 
     // F_me -=  \sum_{Q,n} t_nm^Q b_ne^Q
-    T = SharedTensor2d(new Tensor2d("T1 (Q|IJ)", nQ, naoccA, naoccA));
+    T = std::make_shared<Tensor2d>("T1 (Q|IJ)", nQ, naoccA, naoccA);
     T->read(psio_, PSIF_DFOCC_AMPS);
     FiaA->contract(true, false, naoccA, navirA, nQ * naoccA, T, bQiaA, -1.0, 1.0);
     T.reset();

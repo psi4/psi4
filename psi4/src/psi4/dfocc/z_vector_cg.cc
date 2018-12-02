@@ -43,19 +43,19 @@ void DFOCC::z_vector_cg() {
 
     if (reference_ == "RESTRICTED") {
         // Memalloc
-        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-        zvector = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-        zvec_newA = SharedTensor1d(new Tensor1d("Alpha New Z-Vector", noccA * nvirA));
-        Minv_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG M inverse", noccA * nvirA));
-        sigma_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG sigma", noccA * nvirA));
-        r_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG r", noccA * nvirA));
-        r_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new r", noccA * nvirA));
-        z_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG z", noccA * nvirA));
-        z_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new z", noccA * nvirA));
-        p_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG p", noccA * nvirA));
-        p_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new p", noccA * nvirA));
-        dr_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG dr", noccA * nvirA));
-        residualA = SharedTensor1d(new Tensor1d("Alpha Residual Vector", noccA * nvirA));
+        zvectorA = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
+        zvector = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
+        zvec_newA = std::make_shared<Tensor1d>("Alpha New Z-Vector", noccA * nvirA);
+        Minv_pcgA = std::make_shared<Tensor1d>("Alpha PCG M inverse", noccA * nvirA);
+        sigma_pcgA = std::make_shared<Tensor1d>("Alpha PCG sigma", noccA * nvirA);
+        r_pcgA = std::make_shared<Tensor1d>("Alpha PCG r", noccA * nvirA);
+        r_pcg_newA = std::make_shared<Tensor1d>("Alpha PCG new r", noccA * nvirA);
+        z_pcgA = std::make_shared<Tensor1d>("Alpha PCG z", noccA * nvirA);
+        z_pcg_newA = std::make_shared<Tensor1d>("Alpha PCG new z", noccA * nvirA);
+        p_pcgA = std::make_shared<Tensor1d>("Alpha PCG p", noccA * nvirA);
+        p_pcg_newA = std::make_shared<Tensor1d>("Alpha PCG new p", noccA * nvirA);
+        dr_pcgA = std::make_shared<Tensor1d>("Alpha PCG dr", noccA * nvirA);
+        residualA = std::make_shared<Tensor1d>("Alpha Residual Vector", noccA * nvirA);
 
         // Build kappa0 and M
         for (int a = 0, ai = 0; a < nvirA; a++) {
@@ -67,7 +67,7 @@ void DFOCC::z_vector_cg() {
         }
 
         // Build S = A kappa_0
-        Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
+        Aorb = std::make_shared<Tensor2d>("MO Hessian Matrix", nvirA, noccA, nvirA, noccA);
         build_rhf_mohess(Aorb);
         sigma_pcgA->gemv(false, Aorb, zvectorA, 1.0, 0.0);
         Aorb.reset();
@@ -106,7 +106,7 @@ void DFOCC::z_vector_cg() {
         zvector.reset();
 
         // Build Zvo
-        ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
+        ZvoA = std::make_shared<Tensor2d>("Zvector <V|O>", nvirA, noccA);
         for (int a = 0, ai = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++, ai++) {
                 ZvoA->set(a, i, zvectorA->get(ai));
@@ -115,7 +115,7 @@ void DFOCC::z_vector_cg() {
         // zvectorA->print();
 
         // Build Z_ia = Z_ai
-        ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
+        ZovA = std::make_shared<Tensor2d>("Zvector <O|V>", noccA, nvirA);
         ZovA = ZvoA->transpose();
 
         // If LINEQ FAILED!
@@ -133,20 +133,20 @@ void DFOCC::z_vector_cg() {
         nidp_tot = nidpA + nidpB;
 
         // Memalloc
-        zvector = SharedTensor1d(new Tensor1d("UHF Z-Vector", nidp_tot));
-        zvec_newA = SharedTensor1d(new Tensor1d("New UHF Z-Vector", nidp_tot));
-        Minv_pcgA = SharedTensor1d(new Tensor1d("PCG M inverse", nidp_tot));
-        sigma_pcgA = SharedTensor1d(new Tensor1d("PCG sigma", nidp_tot));
-        r_pcgA = SharedTensor1d(new Tensor1d("PCG r", nidp_tot));
-        r_pcg_newA = SharedTensor1d(new Tensor1d("PCG new r", nidp_tot));
-        z_pcgA = SharedTensor1d(new Tensor1d("PCG z", nidp_tot));
-        z_pcg_newA = SharedTensor1d(new Tensor1d("PCG new z", nidp_tot));
-        p_pcgA = SharedTensor1d(new Tensor1d("PCG p", nidp_tot));
-        p_pcg_newA = SharedTensor1d(new Tensor1d("PCG new p", nidp_tot));
-        dr_pcgA = SharedTensor1d(new Tensor1d("PCG dr", nidp_tot));
-        residualA = SharedTensor1d(new Tensor1d("Residual Vector", nidp_tot));
-        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-        zvectorB = SharedTensor1d(new Tensor1d("Beta Z-Vector", noccB * nvirB));
+        zvector = std::make_shared<Tensor1d>("UHF Z-Vector", nidp_tot));
+        zvec_newA = std::make_shared<Tensor1d>("New UHF Z-Vector", nidp_tot));
+        Minv_pcgA = std::make_shared<Tensor1d>("PCG M inverse", nidp_tot));
+        sigma_pcgA = std::make_shared<Tensor1d>("PCG sigma", nidp_tot));
+        r_pcgA = std::make_shared<Tensor1d>("PCG r", nidp_tot));
+        r_pcg_newA = std::make_shared<Tensor1d>("PCG new r", nidp_tot));
+        z_pcgA = std::make_shared<Tensor1d>("PCG z", nidp_tot));
+        z_pcg_newA = std::make_shared<Tensor1d>("PCG new z", nidp_tot));
+        p_pcgA = std::make_shared<Tensor1d>("PCG p", nidp_tot));
+        p_pcg_newA = std::make_shared<Tensor1d>("PCG new p", nidp_tot));
+        dr_pcgA = std::make_shared<Tensor1d>("PCG dr", nidp_tot));
+        residualA = std::make_shared<Tensor1d>("Residual Vector", nidp_tot));
+        zvectorA = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
+        zvectorB = std::make_shared<Tensor1d>("Beta Z-Vector", noccB * nvirB);
 
         // Build kappa0 and M
         // alpha
@@ -168,7 +168,7 @@ void DFOCC::z_vector_cg() {
         }
 
         // Build sigma
-        Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
+        Aorb = std::make_shared<Tensor2d>("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
         build_uhf_mohess(Aorb);
         sigma_pcgA->gemv(false, Aorb, zvector, 1.0, 0.0);
         Aorb.reset();
@@ -230,7 +230,7 @@ void DFOCC::z_vector_cg() {
 
         // Build Zvo
         // Alpha
-        ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
+        ZvoA = std::make_shared<Tensor2d>("Zvector <V|O>", nvirA, noccA);
         for (int a = 0, ai = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++, ai++) {
                 ZvoA->set(a, i, zvectorA->get(ai));
@@ -238,11 +238,11 @@ void DFOCC::z_vector_cg() {
         }
 
         // Build Z_ia = Z_ai
-        ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
+        ZovA = std::make_shared<Tensor2d>("Zvector <O|V>", noccA, nvirA);
         ZovA = ZvoA->transpose();
 
         // Beta
-        ZvoB = SharedTensor2d(new Tensor2d("Zvector <v|o>", nvirB, noccB));
+        ZvoB = std::make_shared<Tensor2d>("Zvector <v|o>", nvirB, noccB);
         for (int a = 0, ai = 0; a < nvirB; a++) {
             for (int i = 0; i < noccB; i++, ai++) {
                 ZvoB->set(a, i, zvectorB->get(ai));
@@ -250,7 +250,7 @@ void DFOCC::z_vector_cg() {
         }
 
         // Build Z_ia = Z_ai
-        ZovB = SharedTensor2d(new Tensor2d("Zvector <o|v>", noccB, nvirB));
+        ZovB = std::make_shared<Tensor2d>("Zvector <o|v>", noccB, nvirB);
         ZovB = ZvoB->transpose();
 
         // If LINEQ FAILED!
@@ -285,13 +285,13 @@ void DFOCC::cg_solver() {
         // outfile->Printf( "pcg iter: %3d \n", itr_pcg);
         // Build sigma
         if (reference_ == "RESTRICTED") {
-            Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
+            Aorb = std::make_shared<Tensor2d>("MO Hessian Matrix", nvirA, noccA, nvirA, noccA);
             build_rhf_mohess(Aorb);
             sigma_pcgA->gemv(false, Aorb, p_pcgA, 1.0, 0.0);
         }
 
         else if (reference_ == "UNRESTRICTED") {
-            Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
+            Aorb = std::make_shared<Tensor2d>("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
             build_uhf_mohess(Aorb);
             sigma_pcgA->gemv(false, Aorb, p_pcgA, 1.0, 0.0);
         }

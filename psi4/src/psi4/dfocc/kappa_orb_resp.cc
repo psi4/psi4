@@ -44,7 +44,7 @@ void DFOCC::kappa_orb_resp() {
 
     if (reference_ == "RESTRICTED") {
         // Set the kappa to -negative of the mo grad
-        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
+        zvectorA = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
         for (int a = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++) {
                 int ai = vo_idxAA->get(a, i);
@@ -54,7 +54,7 @@ void DFOCC::kappa_orb_resp() {
 
         // Build the MO Hessian
         timer_on("MO Hessian");
-        Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
+        Aorb = std::make_shared<Tensor2d>("MO Hessian Matrix", nvirA, noccA, nvirA, noccA);
 
 // A(ai,bj) = 2 \delta_{ij} f_ab
 #pragma omp parallel for
@@ -83,14 +83,14 @@ void DFOCC::kappa_orb_resp() {
         }
 
         // A(ai,bj) += 8(ai|bj) - 2(aj|bi)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA);
         tei_vovo_chem_ref_directAA(K);
         Aorb->sort(1432, K, -2.0, 1.0);
         Aorb->axpy(K, 8.0);
         K.reset();
 
         // A(ai,bj) += -2(ij|ab)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
         tei_oovv_chem_ref_directAA(K);
         Aorb->sort(3142, K, -2.0, 1.0);
         K.reset();
@@ -220,7 +220,7 @@ void DFOCC::kappa_orb_resp() {
         nidp_tot = (nvirA * noccA) + (nvirB * noccB);
 
         // Alpha-Alpha spin cae
-        AorbAA = SharedTensor2d(new Tensor2d("MO Hessian Matrix <VO|VO>", nvirA, noccA, nvirA, noccA));
+        AorbAA = std::make_shared<Tensor2d>("MO Hessian Matrix <VO|VO>", nvirA, noccA, nvirA, noccA);
 
 // A(ai,bj) = 2 \delta_{ij} f_ab
 #pragma omp parallel for
@@ -249,21 +249,21 @@ void DFOCC::kappa_orb_resp() {
         }
 
         // A(ai,bj) += 4(ai|bj) - 2(aj|bi)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA);
         tei_vovo_chem_ref_directAA(K);
         AorbAA->sort(1432, K, -2.0, 1.0);
         AorbAA->axpy(K, 4.0);
         K.reset();
 
         // A(ai,bj) += -2(ij|ab)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
         tei_oovv_chem_ref_directAA(K);
         AorbAA->sort(3142, K, -2.0, 1.0);
         K.reset();
         if (print_ > 3) AorbAA->print();
 
         // Build the UHF MO Hessian matrix
-        Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
+        Aorb = std::make_shared<Tensor2d>("UHF MO Hessian Matrix", nidp_tot, nidp_tot);
         // AAAA part
         for (int x = 0; x < nvoAA; x++) {
             for (int y = 0; y < nvoAA; y++) {
@@ -273,7 +273,7 @@ void DFOCC::kappa_orb_resp() {
         AorbAA.reset();
 
         // Beta-Beta spin case
-        AorbBB = SharedTensor2d(new Tensor2d("MO Hessian Matrix <vo|vo>", nvirB, noccB, nvirB, noccB));
+        AorbBB = std::make_shared<Tensor2d>("MO Hessian Matrix <vo|vo>", nvirB, noccB, nvirB, noccB);
 
 // A(ai,bj) = 2 \delta_{ij} f_ab
 #pragma omp parallel for
@@ -303,14 +303,14 @@ void DFOCC::kappa_orb_resp() {
         }
 
         // A(ai,bj) += 4(ai|bj) - 2(aj|bi)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (vo|vo)", nvirB, noccB, nvirB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (vo|vo)", nvirB, noccB, nvirB, noccB);
         tei_vovo_chem_ref_directBB(K);
         AorbBB->sort(1432, K, -2.0, 1.0);
         AorbBB->axpy(K, 4.0);
         K.reset();
 
         // A(ai,bj) += -2(ij|ab)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB);
         tei_oovv_chem_ref_directBB(K);
         AorbBB->sort(3142, K, -2.0, 1.0);
         K.reset();
@@ -326,10 +326,10 @@ void DFOCC::kappa_orb_resp() {
         AorbBB.reset();
 
         // Alpha-Beta spin cae
-        AorbAB = SharedTensor2d(new Tensor2d("MO Hessian Matrix <VO|vo>", nvirA, noccA, nvirB, noccB));
+        AorbAB = std::make_shared<Tensor2d>("MO Hessian Matrix <VO|vo>", nvirA, noccA, nvirB, noccB);
 
         // A(AI,bj) = 4(AI|bj)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|vo)", nvirA, noccA, nvirB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VO|vo)", nvirA, noccA, nvirB, noccB);
         tei_vovo_chem_ref_directAB(K);
         AorbAB->axpy(K, 4.0);
         K.reset();
@@ -365,7 +365,7 @@ void DFOCC::kappa_orb_resp() {
         */
 
         // Build total zvector
-        zvector = SharedTensor1d(new Tensor1d("UHF Z-Vector", nidp_tot));
+        zvector = std::make_shared<Tensor1d>("UHF Z-Vector", nidp_tot);
 #pragma omp parallel for
         for (int a = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++) {

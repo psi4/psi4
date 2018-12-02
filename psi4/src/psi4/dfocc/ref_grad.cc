@@ -63,12 +63,12 @@ void DFOCC::ref_grad() {
     timer_off("DF-SCF integrals");
 
     // Build SO-Basis OPDM
-    Dso = SharedTensor2d(new Tensor2d("SO-basis Density Matrix", nso_, nso_));
+    Dso = std::make_shared<Tensor2d>("SO-basis Density Matrix", nso_, nso_);
     Dso->gemm(false, true, CoccA, CoccA, 2.0, 0.0);
 
     // Build TPDM OO Blok in the MO Basis
     // G_ij^Q = 4*\delta_ij \sum_{k} c_kk^Q - 2*c_ij^Q
-    gQoo_ref = SharedTensor2d(new Tensor2d("DF_BASIS_SCF 3-Index TPDM <O|O>", nQ_ref, naoccA * naoccA));
+    gQoo_ref = std::make_shared<Tensor2d>("DF_BASIS_SCF 3-Index TPDM <O|O>", nQ_ref, naoccA * naoccA);
     gQoo_ref->copy(cQooA);
     gQoo_ref->scale(-2.0);
     for (int Q = 0; Q < nQ_ref; Q++) {
@@ -84,8 +84,8 @@ void DFOCC::ref_grad() {
     }
 
     // Backtransform MO basis 3-Index TPDM to SO-basis 3-index TPDM
-    gQso_ref = SharedTensor2d(new Tensor2d("3-Index TPDM", nQ_ref, nso2_));
-    gQon_ref = SharedTensor2d(new Tensor2d("DF_BASIS_SCF G_imu^Q", nQ_ref, nso_ * noccA));
+    gQso_ref = std::make_shared<Tensor2d>("3-Index TPDM", nQ_ref, nso2_);
+    gQon_ref = std::make_shared<Tensor2d>("DF_BASIS_SCF G_imu^Q", nQ_ref, nso_ * noccA);
     // G_im^Q = \sum_{j} G_ij^Q * Cnj
     gQon_ref->contract(false, true, nQ_ref * noccA, nso_, noccA, gQoo_ref, CoccA, 1.0, 0.0);
     // G_mn^Q = \sum_{i} Cmi * G_in^Q
@@ -93,7 +93,7 @@ void DFOCC::ref_grad() {
     // gQso_ref->print();
 
     // Build G(P,Q) : 2-Index TPDM
-    Gaux_ref = SharedTensor2d(new Tensor2d("2-Index TPDM", nQ_ref, nQ_ref));
+    Gaux_ref = std::make_shared<Tensor2d>("2-Index TPDM", nQ_ref, nQ_ref);
     // Gaux_ref->gemm(false, true, cQso, gQso_ref, 0.5, 0.0); // SO basis
     Gaux_ref->gemm(false, true, cQooA, gQoo_ref, 0.5, 0.0);  // MO basis
     // Gaux_ref->print();
@@ -101,7 +101,7 @@ void DFOCC::ref_grad() {
     // Build Wmn = 2*\sum_{i} e_i * Cmi Cni
     for (int i = 0; i < noccA; ++i) FockA->set(i, i, epsilon_a_->get(0, i));
     for (int a = 0; a < nvirA; ++a) FockA->set(a + noccA, a + noccA, epsilon_a_->get(0, a + noccA));
-    Wso = SharedTensor2d(new Tensor2d("SO-basis GFM", nso_, nso_));
+    Wso = std::make_shared<Tensor2d>("SO-basis GFM", nso_, nso_);
     for (int mu = 0; mu < nso_; mu++) {
         for (int nu = 0; nu < nso_; nu++) {
             double summ = 0.0;

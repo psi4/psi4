@@ -41,8 +41,8 @@ void DFOCC::omp2_opdm() {
     timer_on("opdm");
     if (reference_ == "RESTRICTED") {
         // Tensors
-        T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
-        U = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
+        T = std::make_shared<Tensor2d>("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+        U = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
         if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
             u2_rmp2_direct(T, U);
         } else {
@@ -85,8 +85,8 @@ void DFOCC::omp2_opdm() {
         SharedTensor2d t2, l2, l1A, l1B;
 
         // G_IJ = 1/2 \sum_{M,E,F} t_IM^EF t_JM^EF
-        t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-        l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        t2 = std::make_shared<Tensor2d>("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        l2 = std::make_shared<Tensor2d>("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
             t2AA_ump2_direct(t2);
         else
@@ -99,8 +99,8 @@ void DFOCC::omp2_opdm() {
         l2.reset();
 
         // G_IJ = \sum_{m,E,f} t_Im^Ef t_Jm^Ef
-        t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-        l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        t2 = std::make_shared<Tensor2d>("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        l2 = std::make_shared<Tensor2d>("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
             t2AB_ump2_direct(t2);
         else
@@ -117,8 +117,8 @@ void DFOCC::omp2_opdm() {
         l2.reset();
 
         // G_ij = 1/2 \sum_{m,e,f} t_im^ef t_jm^ef
-        t2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-        l2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+        t2 = std::make_shared<Tensor2d>("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        l2 = std::make_shared<Tensor2d>("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB);
         if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
             t2BB_ump2_direct(t2);
         else

@@ -425,3 +425,24 @@ preference to the default module, issue ``set qc_module occ``.
     |                         | Cholesky-Decomposed Lambda-CCSD(T)                           | RHF                  | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
 
+
+.. _`sec:occ_fno`:
+
+Frozen Natural Orbitals for Conventional (Non-OO) Coupled-Cluster and |MollerPlesset| Perturbation Theories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Frozen natural orbitals (FNOs) for non-orbital-optimized (standard) MPn and CC methods, such as MP2.5, MP3, LCCD, CCD, CCSD, CCSD(T), and CCSD(AT), are also
+available. For FNO-CC and FNO-MPn methods both DF and CD integral options are available.  
+
+Depending on efficiency considerations, the DFOCC modules may
+or may not be the default in |PSIfour| for available methods. (See
+:ref:`Cross-module Redundancies <table:managedmethods>` for gory
+details.) 
+
+Basic FNO Keywords for the DFOCC module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: /autodir_options_c/dfocc__nat_orbs.rst
+.. include:: /autodir_options_c/dfocc__occ_tolerance.rst
+
+

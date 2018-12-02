@@ -55,7 +55,7 @@ void DFOCC::ccd_iterations_low() {
 
     // DIIS
     if (do_diis_ == 1) {
-        std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+	auto T2 =  std::make_shared<Matrix>("T2", naoccA * navirA, naoccA * navirA);
         if (reference_ == "RESTRICTED") {
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));

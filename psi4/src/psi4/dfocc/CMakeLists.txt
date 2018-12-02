@@ -55,6 +55,8 @@ list(APPEND sources
   diis.cc
   effective_mograd.cc
   ekt.cc
+  fno.cc
+  fno_wrapper.cc
   fock.cc
   fock_so.cc
   get_moinfo.cc

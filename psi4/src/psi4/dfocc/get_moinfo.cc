@@ -100,20 +100,20 @@ void DFOCC::get_moinfo() {
         /********************************************************************************************/
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
-        eps_orbA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+        eps_orbA = std::make_shared<Tensor1d>("epsilon <P|Q>", nmo_);
         for (int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
 
         // Build Initial fock matrix
-        FockA = SharedTensor2d(new Tensor2d("MO-basis alpha Fock matrix", nmo_, nmo_));
+        FockA = std::make_shared<Tensor2d>("MO-basis alpha Fock matrix", nmo_, nmo_);
         for (int i = 0; i < noccA; ++i) FockA->set(i, i, epsilon_a_->get(0, i));
         for (int a = 0; a < nvirA; ++a) FockA->set(a + noccA, a + noccA, epsilon_a_->get(0, a + noccA));
         if (print_ > 2) FockA->print();
 
         // Fock Blocks
-        FooA = SharedTensor2d(new Tensor2d("Fock <O|O>", noccA, noccA));
-        FovA = SharedTensor2d(new Tensor2d("Fock <O|V>", noccA, nvirA));
-        FvoA = SharedTensor2d(new Tensor2d("Fock <V|O>", nvirA, noccA));
-        FvvA = SharedTensor2d(new Tensor2d("Fock <V|V>", nvirA, nvirA));
+        FooA = std::make_shared<Tensor2d>("Fock <O|O>", noccA, noccA);
+        FovA = std::make_shared<Tensor2d>("Fock <O|V>", noccA, nvirA);
+        FvoA = std::make_shared<Tensor2d>("Fock <V|O>", nvirA, noccA);
+        FvvA = std::make_shared<Tensor2d>("Fock <V|V>", nvirA, nvirA);
         FooA->form_oo(FockA);
         FvoA->form_vo(FockA);
         FovA = FvoA->transpose();
@@ -135,19 +135,19 @@ void DFOCC::get_moinfo() {
 
         // Read orbital coefficients from reference_wavefunction
         Ca_ = SharedMatrix(reference_wavefunction_->Ca());
-        CmoA = SharedTensor2d(new Tensor2d("Alpha MO Coefficients", nso_, nmo_));
+        CmoA = std::make_shared<Tensor2d>("Alpha MO Coefficients", nso_, nmo_);
         CmoA->set(Ca_);
-        if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
-            Cmo_refA = SharedTensor2d(new Tensor2d("Alpha Reference MO Coefficients", nso_, nmo_));
+        if (orb_opt_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
+            Cmo_refA = std::make_shared<Tensor2d>("Alpha Reference MO Coefficients", nso_, nmo_);
             Cmo_refA->copy(CmoA);
         }
         if (print_ > 2) CmoA->print();
 
         // build mo coeff blocks
-        CoccA = SharedTensor2d(new Tensor2d("Alpha C(mu,i)", nso_, noccA));
-        CvirA = SharedTensor2d(new Tensor2d("Alpha C(mu,a)", nso_, nvirA));
-        CaoccA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,i)", nso_, naoccA));
-        CavirA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,a)", nso_, navirA));
+        CoccA = std::make_shared<Tensor2d>("Alpha C(mu,i)", nso_, noccA);
+        CvirA = std::make_shared<Tensor2d>("Alpha C(mu,a)", nso_, nvirA);
+        CaoccA = std::make_shared<Tensor2d>("Alpha Active C(mu,i)", nso_, naoccA);
+        CavirA = std::make_shared<Tensor2d>("Alpha Active C(mu,a)", nso_, navirA);
         mo_coeff_blocks();
 
     }  // if (reference_ == "RESTRICTED")
@@ -244,31 +244,31 @@ void DFOCC::get_moinfo() {
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
         epsilon_b_ = reference_wavefunction_->epsilon_b();
-        eps_orbA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
-        eps_orbB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <p|q>", nmo_));
+        eps_orbA = std::make_shared<Tensor1d>("epsilon <P|Q>", nmo_);
+        eps_orbB = std::make_shared<Tensor1d>("epsilon <p|q>", nmo_);
         for (int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
         for (int p = 0; p < nmo_; ++p) eps_orbB->set(p, epsilon_b_->get(0, p));
 
         // Build Initial fock matrix
-        FockA = SharedTensor2d(new Tensor2d("MO-basis alpha Fock matrix", nmo_, nmo_));
+        FockA = std::make_shared<Tensor2d>("MO-basis alpha Fock matrix", nmo_, nmo_);
         for (int i = 0; i < noccA; ++i) FockA->set(i, i, epsilon_a_->get(0, i));
         for (int a = 0; a < nvirA; ++a) FockA->set(a + noccA, a + noccA, epsilon_a_->get(0, a + noccA));
         if (print_ > 2) FockA->print();
 
-        FockB = SharedTensor2d(new Tensor2d("MO-basis beta Fock matrix", nmo_, nmo_));
+        FockB = std::make_shared<Tensor2d>("MO-basis beta Fock matrix", nmo_, nmo_);
         for (int i = 0; i < noccB; ++i) FockB->set(i, i, epsilon_b_->get(0, i));
         for (int a = 0; a < nvirB; ++a) FockB->set(a + noccB, a + noccB, epsilon_b_->get(0, a + noccB));
         if (print_ > 2) FockB->print();
 
         // Fock Blocks
-        FooA = SharedTensor2d(new Tensor2d("Fock <O|O>", noccA, noccA));
-        FooB = SharedTensor2d(new Tensor2d("Fock <o|o>", noccB, noccB));
-        FovA = SharedTensor2d(new Tensor2d("Fock <O|V>", noccA, nvirA));
-        FovB = SharedTensor2d(new Tensor2d("Fock <o|v>", noccB, nvirB));
-        FvoA = SharedTensor2d(new Tensor2d("Fock <V|O>", nvirA, noccA));
-        FvoB = SharedTensor2d(new Tensor2d("Fock <v|o>", nvirB, noccB));
-        FvvA = SharedTensor2d(new Tensor2d("Fock <V|V>", nvirA, nvirA));
-        FvvB = SharedTensor2d(new Tensor2d("Fock <v|v>", nvirB, nvirB));
+        FooA = std::make_shared<Tensor2d>("Fock <O|O>", noccA, noccA);
+        FooB = std::make_shared<Tensor2d>("Fock <o|o>", noccB, noccB);
+        FovA = std::make_shared<Tensor2d>("Fock <O|V>", noccA, nvirA);
+        FovB = std::make_shared<Tensor2d>("Fock <o|v>", noccB, nvirB);
+        FvoA = std::make_shared<Tensor2d>("Fock <V|O>", nvirA, noccA);
+        FvoB = std::make_shared<Tensor2d>("Fock <v|o>", nvirB, noccB);
+        FvvA = std::make_shared<Tensor2d>("Fock <V|V>", nvirA, nvirA);
+        FvvB = std::make_shared<Tensor2d>("Fock <v|v>", nvirB, nvirB);
         FooA->form_oo(FockA);
         FooB->form_oo(FockB);
         FvoA->form_vo(FockA);
@@ -299,37 +299,37 @@ void DFOCC::get_moinfo() {
 
         // Read orbital coefficients from reference_wavefunction
         Ca_ = SharedMatrix(reference_wavefunction_->Ca());
-        CmoA = SharedTensor2d(new Tensor2d("Alpha MO Coefficients", nso_, nmo_));
+        CmoA = std::make_shared<Tensor2d>("Alpha MO Coefficients", nso_, nmo_);
         CmoA->set(Ca_);
         if (print_ > 2) CmoA->print();
 
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
-        CmoB = SharedTensor2d(new Tensor2d("Beta MO Coefficients", nso_, nmo_));
+        CmoB = std::make_shared<Tensor2d>("Beta MO Coefficients", nso_, nmo_);
         CmoB->set(Cb_);
         if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
-            Cmo_refA = SharedTensor2d(new Tensor2d("Alpha Reference MO Coefficients", nso_, nmo_));
-            Cmo_refB = SharedTensor2d(new Tensor2d("Beta Reference MO Coefficients", nso_, nmo_));
+            Cmo_refA = std::make_shared<Tensor2d>("Alpha Reference MO Coefficients", nso_, nmo_);
+            Cmo_refB = std::make_shared<Tensor2d>("Beta Reference MO Coefficients", nso_, nmo_);
             Cmo_refA->copy(CmoA);
             Cmo_refB->copy(CmoB);
         }
         if (print_ > 2) CmoB->print();
 
         // build mo coeff blocks
-        CoccA = SharedTensor2d(new Tensor2d("Alpha C(mu,i)", nso_, noccA));
-        CoccB = SharedTensor2d(new Tensor2d("Beta C(mu,i)", nso_, noccB));
-        CvirA = SharedTensor2d(new Tensor2d("Alpha C(mu,a)", nso_, nvirA));
-        CvirB = SharedTensor2d(new Tensor2d("Beta C(mu,a)", nso_, nvirB));
-        CaoccA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,i)", nso_, naoccA));
-        CaoccB = SharedTensor2d(new Tensor2d("Beta Active C(mu,i)", nso_, naoccB));
-        CavirA = SharedTensor2d(new Tensor2d("Alpha Active C(mu,a)", nso_, navirA));
-        CavirB = SharedTensor2d(new Tensor2d("Beta Active C(mu,a)", nso_, navirB));
+        CoccA = std::make_shared<Tensor2d>("Alpha C(mu,i)", nso_, noccA);
+        CoccB = std::make_shared<Tensor2d>("Beta C(mu,i)", nso_, noccB);
+        CvirA = std::make_shared<Tensor2d>("Alpha C(mu,a)", nso_, nvirA);
+        CvirB = std::make_shared<Tensor2d>("Beta C(mu,a)", nso_, nvirB);
+        CaoccA = std::make_shared<Tensor2d>("Alpha Active C(mu,i)", nso_, naoccA);
+        CaoccB = std::make_shared<Tensor2d>("Beta Active C(mu,i)", nso_, naoccB);
+        CavirA = std::make_shared<Tensor2d>("Alpha Active C(mu,a)", nso_, navirA);
+        CavirB = std::make_shared<Tensor2d>("Beta Active C(mu,a)", nso_, navirB);
         mo_coeff_blocks();
 
         if (reference == "ROHF") {
             Fa_ = SharedMatrix(reference_wavefunction_->Fa());
             Fb_ = SharedMatrix(reference_wavefunction_->Fb());
-            FsoA = SharedTensor2d(new Tensor2d("SO-basis Alpha Fock Matrix", nso_, nso_));
-            FsoB = SharedTensor2d(new Tensor2d("SO-basis Beta Fock Matrix", nso_, nso_));
+            FsoA = std::make_shared<Tensor2d>("SO-basis Alpha Fock Matrix", nso_, nso_);
+            FsoB = std::make_shared<Tensor2d>("SO-basis Beta Fock Matrix", nso_, nso_);
             FsoA->set(Fa_);
             FsoB->set(Fb_);
             FockA->transform(FsoA, CmoA);
@@ -365,9 +365,9 @@ void DFOCC::get_moinfo() {
     // Tso_.reset();
     // Vso_.reset();
     // CDS: Migrate these from disk reads to grabbing off Wavefunction
-    Hso = SharedTensor2d(new Tensor2d("SO-basis One-electron Ints", nso_, nso_));
+    Hso = std::make_shared<Tensor2d>("SO-basis One-electron Ints", nso_, nso_);
     Hso->set(H_);
-    Sso = SharedTensor2d(new Tensor2d("SO-basis Overlap Ints", nso_, nso_));
+    Sso = std::make_shared<Tensor2d>("SO-basis Overlap Ints", nso_, nso_);
     Sso->set(S_);
 
     // outfile->Printf("\n get_moinfo is done. \n");

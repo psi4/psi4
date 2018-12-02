@@ -692,12 +692,86 @@ def select_fnoccsd(name, **kwargs):
         elif mtd_type == 'DF':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            elif module in ['', 'OCC']:
+                func = run_fnodfocc
         elif mtd_type == 'CD':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            elif module in ['', 'OCC']:
+                func = run_fnodfocc
 
     if func is None:
         raise ManagedMethodError(['select_fnoccsd', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_fnomp3(name, **kwargs):
+    """Function selecting the algorithm for a FNO-MP3 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'FNOCC']:
+                func = run_fnocc
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_fnocc
+
+    if func is None:
+        raise ManagedMethodError(['select_fnomp3', name, 'MP_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_fnolccd(name, **kwargs):
+    """Function selecting the algorithm for a FNO-LCCD energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only fnocc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'FNOCC']:
+                func = run_cepa
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_cepa
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_fnodfocc
+            elif module in ['', 'FNOCC']:
+                func = run_cepa
+
+    if func is None:
+        raise ManagedMethodError(['select_fnolccd', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -804,9 +878,13 @@ def select_fnoccsd_t_(name, **kwargs):
         elif mtd_type == 'DF':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            elif module in ['', 'OCC']:
+                func = run_fnodfocc
         elif mtd_type == 'CD':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            elif module in ['', 'OCC']:
+                func = run_fnodfocc
 
     if func is None:
         raise ManagedMethodError(['select_fnoccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
@@ -1753,6 +1831,116 @@ def run_dfocc_property(name, **kwargs):
                                         core.get_global_option("DF_BASIS_CC"),
                                         "RIFIT", core.get_global_option("BASIS"))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
+
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+        ref_wfn.semicanonicalize()
+    dfocc_wfn = core.dfocc(ref_wfn)
+
+    optstash.restore()
+    return dfocc_wfn
+
+
+def run_fnodfocc(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-fitted or Cholesky-decomposed
+    (non-)orbital-optimized MPN or CC computation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'DF_INTS_IO'],
+        ['DFOCC', 'WFN_TYPE'],
+        ['DFOCC', 'ORB_OPT'],
+        ['DFOCC', 'DO_SCS'],
+        ['DFOCC', 'DO_SOS'],
+        ['DFOCC', 'READ_SCF_3INDEX'],
+        ['DFOCC', 'CHOLESKY'],
+        ['DFOCC', 'NAT_ORBS'],
+        ['DFOCC', 'CC_LAMBDA'])
+            
+    core.set_local_option('DFOCC', 'NAT_ORBS', 'TRUE')
+
+    def set_cholesky_from(mtd_type):
+        type_val = core.get_global_option(mtd_type)
+        if type_val == 'DF':
+            core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
+            # Alter default algorithm
+            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+                core.set_global_option('SCF_TYPE', 'DF')
+                core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+        elif type_val == 'CD':
+            core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
+            # Alter default algorithm
+            if not core.has_option_changed('SCF', 'SCF_TYPE'):
+                core.set_global_option('SCF_TYPE', 'CD')
+                core.print_out("""    SCF Algorithm Type (re)set to CD.\n""")
+            if core.get_option('SCF', 'SCF_TYPE') != 'CD':
+                core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
+        else:
+            raise ValidationError("""Invalid type '%s' for DFOCC""" % type_val)
+
+    if name in ['fno-mp2', 'fno-omp2']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+        set_cholesky_from('MP2_TYPE')
+    elif name in ['fno-mp2.5', 'fno-omp2.5']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+        set_cholesky_from('MP_TYPE')
+    elif name in ['fno-mp3', 'fno-omp3']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+        set_cholesky_from('MP_TYPE')
+    elif name in ['fno-lccd', 'fno-olccd']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
+        set_cholesky_from('CC_TYPE')
+
+    elif name == 'fno-ccd':
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+        set_cholesky_from('CC_TYPE')
+    elif name == 'fno-ccsd':
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
+        set_cholesky_from('CC_TYPE')
+    elif name == 'fno-ccsd(t)':
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
+        set_cholesky_from('CC_TYPE')
+    elif name == 'fno-ccsd(at)':
+        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
+        set_cholesky_from('CC_TYPE')
+    elif name == 'dfocc':
+        pass
+    else:
+        raise ValidationError('Unidentified method %s' % (name))
+
+    # conventional vs. optimized orbitals
+    if name in ['fno-mp2', 'fno-mp2.5', 'fno-mp3', 'fno-lccd',
+                     'fno-ccd', 'fno-ccsd', 'fno-ccsd(t)', 'fno-ccsd(at)']:
+        core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    elif name in ['fno-omp2', 'fno-omp2.5', 'fno-omp3', 'fno-olccd']:
+        core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+
+    core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
+    core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
+    core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    else:
+        if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+            raise ValidationError("""  DFOCC does not make use of molecular symmetry: """
+                                  """reference wavefunction must be C1.\n""")
+    if not core.get_local_option("DFOCC", "CHOLESKY"):
+        scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+                                           core.get_option("SCF", "DF_BASIS_SCF"),
+                                           "JKFIT", core.get_global_option('BASIS'),
+                                           puream=ref_wfn.basisset().has_puream())
+
+        ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
+
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
+                                            core.get_global_option("DF_BASIS_CC"),
+                                            "RIFIT", core.get_global_option("BASIS"))
+        ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()

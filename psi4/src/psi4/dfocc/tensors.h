@@ -207,6 +207,8 @@ class Tensor2d {
     double get_max_element();
     // diagonalize: diagonalize via rsp
     void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
+    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
+    void diagonalize(int dim, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
     // cdsyev: diagonalize via lapack
     void cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
     // davidson: diagonalize via davidson algorithm
@@ -288,6 +290,11 @@ class Tensor2d {
     void mgs();
     // gs: orthogonalize with a Classical Gram-Schmid algorithm
     void gs();
+    // gs_add(): Assume A is a orthogonal matrix.  This function Gram-Schmidt
+    // orthogonalizes a new vector v and adds it to matrix A.  A must contain
+    // a free row pointer for a new row.  Don't add orthogonalized v' if
+    // norm(v') < NORM_TOL.
+    int gs_add(int rows, SharedTensor1d v);
     // row_vector: return nth row as a vector
     double *row_vector(int n);
     // column_vector: return nth column as a vector

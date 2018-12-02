@@ -2779,6 +2779,24 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("REG_PARAM", 0.4);
         /*- tolerance for Cholesky decomposition of the ERI tensor -*/
         options.add_double("CHOLESKY_TOLERANCE", 1.0e-4);
+        /*- Cutoff for occupation of MP2 virtual NOs in FNO-CCSD/CCSD(T).
+        Virtual NOs with occupations less than |dfocc__occ_tolerance|
+        will be discarded. This option is only used if |dfocc__nat_orbs| =
+        true. -*/
+        options.add_double("OCC_TOLERANCE", 1.0e-4);
+        /*- Cutoff for occupation of MP2 virtual NOs in FNO-CCSD/CCSD(T).
+        The number of virtual NOs is chosen so the occupation of the
+        truncated virtual space is |dfocc__occ_percentage| percent of
+        occupation of the original MP2 virtual space. This option is only
+        used if |dfocc__nat_orbs| = true. This keyword overrides
+        |dfocc__occ_tolerance|. -*/
+        options.add_double("OCC_PERCENTAGE", 98.0);
+        /*- An array containing the number of virtual natural orbitals per irrep
+        (in Cotton order) so a user can specify the number of retained
+        natural orbitals rather than determining them with |dfocc__occ_tolerance|.
+        This keyword overrides |dfocc__occ_tolerance| and
+        |dfocc__occ_percentage|. -*/
+        options.add("ACTIVE_NAT_ORBS", new ArrayType());
 
         /*- The solver will be used for simultaneous linear equations. -*/
         options.add_str("LINEQ_SOLVER", "CDGESV", "CDGESV FLIN POPLE");
@@ -2816,7 +2834,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("TRIPLES_IABC_TYPE", "DISK", "INCORE AUTO DIRECT DISK");
 
         /*- Do compute natural orbitals? -*/
-        options.add_bool("NAT_ORBS", false);
+        options.add_bool("NBO", false);
         /*- Do apply level shifting? -*/
         options.add_bool("DO_LEVEL_SHIFT", true);
         /*- Do print OCC orbital energies? -*/
@@ -2854,6 +2872,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("MOLDEN_WRITE", false);
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
+        /*- Do use MP2 NOs to truncate virtual space for CCD/CCSD and (T)? -*/
+        options.add_bool("NAT_ORBS",false);
     }
     if (name == "MRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

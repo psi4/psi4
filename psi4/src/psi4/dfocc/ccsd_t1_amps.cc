@@ -46,7 +46,7 @@ void DFOCC::ccsd_t1_amps() {
     t1newA->gemm(true, false, FijA, t1A, -1.0, 1.0);
 
     // t_i^a <= \sum_{m,e} u_im^ae Fme
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     ccsd_u2_amps(U, t2);
     t1newA->gemv(false, U, FiaA, 1.0, 1.0);
     U.reset();
@@ -55,11 +55,11 @@ void DFOCC::ccsd_t1_amps() {
     t1newA->gemv(true, bQiaA, T1c, 1.0, 1.0);
 
     // t_i^a <= -\sum_{Q,m} (T_ma^Q + t_ma^Q) b_mi^Q -= \sum_{Q,m} B(Qm,i) X(Qm,a)
-    T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
-    T1 = SharedTensor2d(new Tensor2d("T1 (Q|IA)", nQ, naoccA, navirA));
+    T1 = std::make_shared<Tensor2d>("T1 (Q|IA)", nQ, naoccA, navirA);
     T1->read(psio_, PSIF_DFOCC_AMPS);
-    U = SharedTensor2d(new Tensor2d("T1+T2 (Q|IA)", nQ, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("T1+T2 (Q|IA)", nQ, naoccA, navirA);
     U->copy(T);
     T.reset();
     U->add(T1);
@@ -68,9 +68,9 @@ void DFOCC::ccsd_t1_amps() {
     U.reset();
 
     // t_i^a <= \sum_{Q,e} T_ie^Q b_ea^Q = \sum_{Qe} T^Q(i,e) B^Q(e,a)
-    T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
-    Tau = SharedTensor2d(new Tensor2d("Temp (Q|AI)", nQ, navirA, naoccA));
+    Tau = std::make_shared<Tensor2d>("Temp (Q|AI)", nQ, navirA, naoccA);
     Tau->swap_3index_col(T);
     T.reset();
     t1newA->contract(true, false, naoccA, navirA, nQ * navirA, Tau, bQabA, 1.0, 1.0);

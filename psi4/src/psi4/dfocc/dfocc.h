@@ -60,6 +60,8 @@ class DFOCC : public Wavefunction {
     void pt_title();
     void pat_title();
     void pdm_title();
+    void common_malloc();
+    void common_memfree();
     void ref_energy();
     void mp2_energy();
     void scs_mp2_energy();
@@ -387,6 +389,9 @@ class DFOCC : public Wavefunction {
     void cd_abcd_xints();
     void ldl_abcd_ints();
     void ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ);
+
+    // fno
+    void fno_wrapper();
 
     // OMP2
     void omp2_manager();
@@ -733,6 +738,8 @@ class DFOCC : public Wavefunction {
     double tol_t2;
     double tol_pcg;
     double tol_ldl;
+    double tol_fno;
+    double fno_percentage;
     double step_max;
     double mograd_max;
     double biggest_mograd;
@@ -848,6 +855,7 @@ class DFOCC : public Wavefunction {
     std::string conv_tei_type;
     std::string regularization;
     std::string do_cd;
+    std::string do_fno;
     std::string read_scf_3index;
     std::string freeze_core_;
     std::string oeprop_;
@@ -1289,6 +1297,11 @@ class DFOCC : public Wavefunction {
     SharedTensor2d AIoovvBB;  // <ij||ab> (all)
     SharedTensor2d AIovovAA;  // <ia||jb> (all)
     SharedTensor2d AIovovBB;  // <ia||jb> (all)
+
+    SharedTensor2d TfnoA;  // FNO T matrix
+    SharedTensor2d TfnoB;  // FNO T matrix
+    SharedTensor2d VfnoA;  // FNO V matrix
+    SharedTensor2d VfnoB;  // FNO V matrix
 
     // 1D-Tensors
     SharedTensor1d DQvecA;

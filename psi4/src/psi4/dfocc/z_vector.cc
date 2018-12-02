@@ -44,7 +44,7 @@ void DFOCC::z_vector() {
 
     if (reference_ == "RESTRICTED") {
         // Set the kappa to -negative of the mo grad
-        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
+        zvectorA = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
         for (int a = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++) {
                 int ai = vo_idxAA->get(a, i);
@@ -54,7 +54,7 @@ void DFOCC::z_vector() {
 
         // Build the MO Hessian
         timer_on("MO Hessian");
-        Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
+        Aorb = std::make_shared<Tensor2d>("MO Hessian Matrix", nvirA, noccA, nvirA, noccA);
         build_rhf_mohess(Aorb);
         timer_off("MO Hessian");
 
@@ -78,7 +78,7 @@ void DFOCC::z_vector() {
         timer_off("Orb Resp Solver");
 
         // Build Zvo
-        ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
+        ZvoA = std::make_shared<Tensor2d>("Zvector <V|O>", nvirA, noccA);
         for (int a = 0, ai = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++, ai++) {
                 ZvoA->set(a, i, zvectorA->get(ai));
@@ -87,7 +87,7 @@ void DFOCC::z_vector() {
         // zvectorA->print();
 
         // Build Z_ia = Z_ai
-        ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
+        ZovA = std::make_shared<Tensor2d>("Zvector <O|V>", noccA, nvirA);
         ZovA = ZvoA->transpose();
         // ZvoA->print();
         // ZovA->print();
@@ -103,11 +103,11 @@ void DFOCC::z_vector() {
     else if (reference_ == "UNRESTRICTED") {
         nidp_tot = nidpA + nidpB;
         // nidp_tot = (nvirA*noccA) + (nvirB*noccB);
-        Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
+        Aorb = std::make_shared<Tensor2d>("UHF MO Hessian Matrix", nidp_tot, nidp_tot);
         build_uhf_mohess(Aorb);
 
         // Build total zvector
-        zvector = SharedTensor1d(new Tensor1d("UHF Z-Vector", nidp_tot));
+        zvector = std::make_shared<Tensor1d>("UHF Z-Vector", nidp_tot);
 #pragma omp parallel for
         for (int a = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++) {
@@ -141,7 +141,7 @@ void DFOCC::z_vector() {
         Aorb.reset();
 
         // Build zvector for VO block
-        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
+        zvectorA = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
         for (int a = 0, ai = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++, ai++) {
                 zvectorA->set(ai, zvector->get(ai));
@@ -149,7 +149,7 @@ void DFOCC::z_vector() {
         }
 
         // Build zvector for vo block
-        zvectorB = SharedTensor1d(new Tensor1d("Beta Z-Vector", noccB * nvirB));
+        zvectorB = std::make_shared<Tensor1d>("Beta Z-Vector", noccB * nvirB);
         for (int a = 0, ai = 0; a < nvirB; a++) {
             for (int i = 0; i < noccB; i++, ai++) {
                 zvectorB->set(ai, zvector->get(ai + nidpA));
@@ -161,7 +161,7 @@ void DFOCC::z_vector() {
 
         // Build Zvo
         // Alpha
-        ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
+        ZvoA = std::make_shared<Tensor2d>("Zvector <V|O>", nvirA, noccA);
         for (int a = 0, ai = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++, ai++) {
                 ZvoA->set(a, i, zvectorA->get(ai));
@@ -169,11 +169,11 @@ void DFOCC::z_vector() {
         }
 
         // Build Z_ia = Z_ai
-        ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
+        ZovA = std::make_shared<Tensor2d>("Zvector <O|V>", noccA, nvirA);
         ZovA = ZvoA->transpose();
 
         // Beta
-        ZvoB = SharedTensor2d(new Tensor2d("Zvector <v|o>", nvirB, noccB));
+        ZvoB = std::make_shared<Tensor2d>("Zvector <v|o>", nvirB, noccB);
         for (int a = 0, ai = 0; a < nvirB; a++) {
             for (int i = 0; i < noccB; i++, ai++) {
                 ZvoB->set(a, i, zvectorB->get(ai));
@@ -181,7 +181,7 @@ void DFOCC::z_vector() {
         }
 
         // Build Z_ia = Z_ai
-        ZovB = SharedTensor2d(new Tensor2d("Zvector <o|v>", noccB, nvirB));
+        ZovB = std::make_shared<Tensor2d>("Zvector <o|v>", noccB, nvirB);
         ZovB = ZvoB->transpose();
 
         // If LINEQ FAILED!
@@ -226,14 +226,14 @@ void DFOCC::build_rhf_mohess(SharedTensor2d& Aorb_) {
     }
 
     // A(ai,bj) += 8(ai|bj) - 2(aj|bi)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA);
     tei_vovo_chem_ref_directAA(K);
     Aorb_->sort(1432, K, -2.0, 1.0);
     Aorb_->axpy(K, 8.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
     tei_oovv_chem_ref_directAA(K);
     Aorb_->sort(3142, K, -2.0, 1.0);
     K.reset();
@@ -261,7 +261,7 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_) {
     SharedTensor2d K;
 
     // Alpha-Alpha spin cae
-    AorbAA = SharedTensor2d(new Tensor2d("MO Hessian Matrix <VO|VO>", nvirA, noccA, nvirA, noccA));
+    AorbAA = std::make_shared<Tensor2d>("MO Hessian Matrix <VO|VO>", nvirA, noccA, nvirA, noccA);
 
 // A(ai,bj) = 2 \delta_{ij} f_ab => A(ai,bi) = 2 f_ab
 #pragma omp parallel for
@@ -290,14 +290,14 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_) {
     }
 
     // A(ai,bj) += 4(ai|bj) - 2(aj|bi)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA);
     tei_vovo_chem_ref_directAA(K);
     AorbAA->sort(1432, K, -2.0, 1.0);
     AorbAA->axpy(K, 4.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA);
     tei_oovv_chem_ref_directAA(K);
     AorbAA->sort(3142, K, -2.0, 1.0);
     K.reset();
@@ -313,7 +313,7 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_) {
     AorbAA.reset();
 
     // Beta-Beta spin case
-    AorbBB = SharedTensor2d(new Tensor2d("MO Hessian Matrix <vo|vo>", nvirB, noccB, nvirB, noccB));
+    AorbBB = std::make_shared<Tensor2d>("MO Hessian Matrix <vo|vo>", nvirB, noccB, nvirB, noccB);
 
 // A(ai,bj) = 2 \delta_{ij} f_ab => A(ai,bi) = 2 f_ab
 #pragma omp parallel for
@@ -342,14 +342,14 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_) {
     }
 
     // A(ai,bj) += 4(ai|bj) - 2(aj|bi)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (vo|vo)", nvirB, noccB, nvirB, noccB));
+    K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (vo|vo)", nvirB, noccB, nvirB, noccB);
     tei_vovo_chem_ref_directBB(K);
     AorbBB->sort(1432, K, -2.0, 1.0);
     AorbBB->axpy(K, 4.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
+    K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB);
     tei_oovv_chem_ref_directBB(K);
     AorbBB->sort(3142, K, -2.0, 1.0);
     K.reset();
@@ -365,10 +365,10 @@ void DFOCC::build_uhf_mohess(SharedTensor2d& Aorb_) {
     AorbBB.reset();
 
     // Alpha-Beta spin cae
-    AorbAB = SharedTensor2d(new Tensor2d("MO Hessian Matrix <VO|vo>", nvirA, noccA, nvirB, noccB));
+    AorbAB = std::make_shared<Tensor2d>("MO Hessian Matrix <VO|vo>", nvirA, noccA, nvirB, noccB);
 
     // A(AI,bj) = 4(AI|bj)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|vo)", nvirA, noccA, nvirB, noccB));
+    K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (VO|vo)", nvirA, noccA, nvirB, noccB);
     tei_vovo_chem_ref_directAB(K);
     AorbAB->axpy(K, 4.0);
     K.reset();

@@ -72,7 +72,7 @@ void DFOCC::tei_grad_corr() {
     //========================= Metric Gradient:Corr ============================================
     //===========================================================================================
     // Read Gaux
-    Gaux = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ_corr, nQ_corr));
+    Gaux = std::make_shared<Tensor2d>("2-Index Correlation TPDM (P|Q)", nQ_corr, nQ_corr);
     // Gaux->read(psio_, PSIF_DFOCC_DENS);
     Gaux->read_symm(psio_, PSIF_DFOCC_DENS);
 
@@ -178,7 +178,7 @@ void DFOCC::tei_grad_corr() {
     //========================= 3-Index Gradient:Corr ===========================================
     //===========================================================================================
     // Read gQso
-    gQso = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ_corr, nso_, nso_));
+    gQso = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|nn)", nQ_corr, nso_, nso_);
     gQso->read(psio_, PSIF_DFOCC_DENS, true, true);
 
     // (Q | mu nu)^X
