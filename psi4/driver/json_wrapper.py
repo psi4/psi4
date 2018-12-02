@@ -171,7 +171,7 @@ def run_json_qc_schema(json_data, clean):
     val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
 
     # Pull out a standard set of SCF properties
-    psi_props = psi4.core.get_variables()
+    psi_props = psi4.core.scalar_variables()
     json_data["psi4:qcvars"] = psi_props
 
     # Handle the return result
