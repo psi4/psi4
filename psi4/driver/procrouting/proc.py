@@ -1373,9 +1373,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         use_c1 = True
 
     e_scf = scf_wfn.compute_energy()
-    core.set_variable("SCF TOTAL ENERGY", e_scf)
-    core.set_variable("CURRENT ENERGY", e_scf)
-    core.set_variable("CURRENT REFERENCE ENERGY", e_scf)
+    for obj in [core]:
+        for pv in ["SCF TOTAL ENERGY", "CURRENT ENERGY", "CURRENT REFERENCE ENERGY"]:
+            obj.set_variable(pv, e_scf)
 
     # We always would like to print a little dipole information
     if kwargs.get('scf_do_dipole', True):
@@ -1383,9 +1383,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         oeprop.set_title("SCF")
         oeprop.add("DIPOLE")
         oeprop.compute()
-        core.set_variable("CURRENT DIPOLE X", core.get_variable("SCF DIPOLE X"))
-        core.set_variable("CURRENT DIPOLE Y", core.get_variable("SCF DIPOLE Y"))
-        core.set_variable("CURRENT DIPOLE Z", core.get_variable("SCF DIPOLE Z"))
+        for obj in [core]:
+            for xyz in 'XYZ':
+                obj.set_variable('CURRENT DIPOLE ' + xyz, obj.get_variable('SCF DIPOLE ' + xyz))
 
     # Write out MO's
     if core.get_option("SCF", "PRINT_MOS"):
@@ -2214,7 +2214,6 @@ def run_dfmp2_gradient(name, **kwargs):
     a DFMP2 gradient calculation.
 
     """
-    core.tstart()
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'],
@@ -2236,6 +2235,7 @@ def run_dfmp2_gradient(name, **kwargs):
     if ref_wfn.basisset().has_ECP():
         raise ValidationError('DF-MP2 gradients with an ECP are not yet available.  Use dertype=0 to select numerical gradients.')
 
+    core.tstart()
     core.print_out('\n')
     p4util.banner('DFMP2')
     core.print_out('\n')
@@ -2741,6 +2741,7 @@ def run_dfmp2_property(name, **kwargs):
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
+    core.tstart()
     core.print_out('\n')
     p4util.banner('DFMP2')
     core.print_out('\n')
@@ -2764,6 +2765,7 @@ def run_dfmp2_property(name, **kwargs):
     dfmp2_wfn.oeprop = oe
 
     optstash.restore()
+    core.tstop()
     return dfmp2_wfn
 
 

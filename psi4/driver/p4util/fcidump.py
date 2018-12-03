@@ -26,7 +26,6 @@
 # @END LICENSE
 #
 """Module with utility function for dumping the Hamiltonian to file in FCIDUMP format."""
-from __future__ import division
 
 from datetime import datetime
 

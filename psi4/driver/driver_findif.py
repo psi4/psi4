@@ -394,7 +394,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
     return findifrec
 
 
-def compute_gradient_from_energy(findifrec):
+def compute_gradient_from_energies(findifrec):
     """Compute the gradient by finite difference of energies.
 
     Parameters
@@ -573,7 +573,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     return Hx
 
 
-def compute_hessian_from_gradient(findifrec, freq_irrep_only):
+def compute_hessian_from_gradients(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
@@ -746,7 +746,7 @@ def compute_hessian_from_gradient(findifrec, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def compute_hessian_from_energy(findifrec, freq_irrep_only):
+def compute_hessian_from_energies(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of energies.
 
     Parameters

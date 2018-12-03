@@ -25,8 +25,6 @@
 #
 # @END LICENSE
 #
-
-from __future__ import print_function
 """
 Generalized iterative solvers for Psi4.
 

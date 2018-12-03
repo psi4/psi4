@@ -39,7 +39,8 @@ from psi4.driver.qcdb import interface_gcp as gcp
 
 _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
                                           ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
-                                          ('nl', ['nl'])]) # yapf: disable
+                                          ('nl', ['nl']),
+                                        ]) # yapf: disable
 
 _capable_engines_for_disp = collections.defaultdict(list)
 for eng, disps in _engine_can_do.items():
@@ -284,6 +285,6 @@ class EmpiricalDispersion(object):
             molclone.update_geometry()
             displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
-        H = driver_findif.compute_hessian_from_gradient(findif_meta_dict, -1)
+        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, -1)
         optstash.restore()
         return core.Matrix.from_array(H)

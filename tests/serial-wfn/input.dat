@@ -22,7 +22,7 @@ Wavefunction.to_file(wfn_old, 'my_wfn')
 # read wavefunction from file
 wfn_new = Wavefunction.from_file('my_wfn')
 
-compare_wavefunctions(wfn_old, wfn_new, 'Serialization Check 1') #TEST
+compare_wavefunctions(wfn_old, wfn_new, label='Serialization Check 1') #TEST
 
 # alternatively store the dict representation of the wavefunction in memory
 wfn_dict = Wavefunction.to_file(wfn_old)
@@ -30,7 +30,7 @@ wfn_dict = Wavefunction.to_file(wfn_old)
 # make a wavefunction from the dict
 wfn_new2 = Wavefunction.from_file(wfn_dict)
 
-compare_wavefunctions(wfn_old, wfn_new2, 'Serialization Check 2') #TEST
+compare_wavefunctions(wfn_old, wfn_new2, label='Serialization Check 2') #TEST
 
 
 

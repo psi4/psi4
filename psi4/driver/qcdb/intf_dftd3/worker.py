@@ -85,7 +85,7 @@ def dftd3_subprocess(dftd3rec):  # dftd3rec@i -> dftd3rec@io
     try:
         spcall = subprocess.Popen(dftd3rec['command'], stdout=subprocess.PIPE, env=lenv)
     except OSError as err:
-        raise OSError('Command (`{}`) failed with PATH ({})'.format(' '.join(command), lenv['PATH'])) from err
+        raise OSError('Command (`{}`) failed with PATH ({})'.format(' '.join(dftd3rec['command']), lenv['PATH'])) from err
 
     # recover output data
     out, err = spcall.communicate()
