@@ -42,9 +42,9 @@ struct xc_func_type;
 namespace psi {
 
 class LibXCFunctional : public Functional {
-// Wrapper to the LibXC library
+    // Wrapper to the LibXC library
 
-private:
+   private:
     std::string xc_func_name_;
     std::unique_ptr<xc_func_type> xc_functional_;
     int func_id_;
@@ -66,14 +66,12 @@ private:
     // User defined tweakers
     std::vector<double> user_tweakers_;
 
-public:
-
+   public:
     LibXCFunctional(std::string xc_name, bool unpolarized);
     ~LibXCFunctional() override;
 
     void compute_functional(const std::map<std::string, SharedVector>& in,
-                                    const std::map<std::string, SharedVector>& out, int npoints,
-                                    int deriv) override;
+                            const std::map<std::string, SharedVector>& out, int npoints, int deriv) override;
 
     // Clones a *worker* for the functional. This is not a complete functional
     std::shared_ptr<Functional> build_worker() override;
@@ -92,9 +90,7 @@ public:
     double needs_vv10() { return needs_vv10_; }
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
-
 };
-
 }
 
 #endif
