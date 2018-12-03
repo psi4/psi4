@@ -1736,8 +1736,8 @@ void DFOCC::ccsd_canonic_triples_grad2() {
     Miabd = SharedTensor2d(new Tensor2d("M[I] <AB|D>", navirA * navirA, navirA));
 
     // progress counter
-    std::time_t stop,start = std::time(nullptr);
-    long int ind =0;
+    std::time_t stop, start = std::time(nullptr);
+    long int ind = 0;
     double step_print = 10.0;
     double next_print = step_print;
 
@@ -2104,14 +2104,14 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                                 (j * naoccA * navirA * navirA) + (k * navirA * navirA), 1.0, 1.0);
 
                 // progress counter
-                ind+=1;
-                double percent = static_cast<double>(ind)/static_cast<double>(Nijk)*100.0;
-                if (percent >= next_print){
+                ind += 1;
+                double percent = static_cast<double>(ind) / static_cast<double>(Nijk) * 100.0;
+                if (percent >= next_print) {
                     stop = std::time(nullptr);
                     next_print += step_print;
-                    outfile->Printf("              %5.1lf  %8d s\n",percent,static_cast<int>(stop)-static_cast<int>(start));
+                    outfile->Printf("              %5.1lf  %8d s\n", percent,
+                                    static_cast<int>(stop) - static_cast<int>(start));
                 }
-
 
             }  // k
         }      // j

@@ -159,8 +159,7 @@ void DFOCC::ccsdl_iterations() {
         }
 
         // print
-        outfile->Printf(" %3d      %13.10f         %13.10f     %12.2e  %12.2e \n", itr_occ, EcorrL, DE, rms_t2,
-                        rms_t1);
+        outfile->Printf(" %3d      %13.10f         %13.10f     %12.2e  %12.2e \n", itr_occ, EcorrL, DE, rms_t2, rms_t1);
 
         if (itr_occ >= cc_maxiter) {
             conver = 0;  // means iterations were NOT converged

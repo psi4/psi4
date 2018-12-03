@@ -25,6 +25,8 @@
  *
  * @END LICENSE
  */
+
+// clang-format off
 #ifdef USING_CheMPS2
 
 //#include <libplugin/plugin.h>
@@ -1141,3 +1143,4 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
 }} // End Namespaces
 #endif
+// clang-format on
