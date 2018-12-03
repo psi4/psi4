@@ -93,6 +93,14 @@ jobs:
         displayName: "Install Psi4"
         workingDirectory: $(Build.BinariesDirectory)/build
 
+      # Test (OpenMP)
+      - script: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          # Check if OpenMP config hadn't failed silently
+          python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+        displayName: "Test Psi4 (OpenMP)"
+        workingDirectory: $(Build.BinariesDirectory)/install/lib
+
       # Test (ctest)
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
