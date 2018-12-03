@@ -202,78 +202,86 @@ void VBase::print_header() const {
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 void VBase::finalize() { grid_.reset(); }
-void VBase::build_collocation_cache(size_t memory){
-
+void VBase::build_collocation_cache(size_t memory) {
     // Figure out many blocks to skip
 
     size_t collocation_size = grid_->collocation_size();
-    if (functional_->ansatz() == 1){
-        collocation_size *= 4; // For gradients
+    if (functional_->ansatz() == 1) {
+        collocation_size *= 4;  // For gradients
     }
-    if (functional_->ansatz() == 2){
-        collocation_size *= 10; // For gradients and Hessians
+    if (functional_->ansatz() == 2) {
+        collocation_size *= 10;  // For gradients and Hessians
     }
 
     // Figure out stride as closest whole number to amount we need
-    size_t stride = (size_t) (1.0 / ((double)memory / collocation_size));
+    size_t stride = (size_t)(1.0 / ((double)memory / collocation_size));
 
     // More memory than needed
-    if (stride == 0){
+    if (stride == 0) {
         stride = 1;
     }
+    cache_map_.clear();
 
     // Effectively zero blocks saved.
     if (stride > grid_->blocks().size()) {
         return;
     }
 
-    cache_map_.clear();
     cache_map_deriv_ = point_workers_[0]->deriv();
-    int rank = 0;
-    size_t saved_size = 0;
-    size_t ncomputed = 0;
-    #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
-    for (size_t Q = 0; Q < grid_->blocks().size(); Q+=stride) {
+    auto saved_size_rank = std::vector<size_t>(num_threads_, 0);
+    auto ncomputed_rank = std::vector<size_t>(num_threads_, 0);
+
+// Loop over the blocks
+#pragma omp parallel for schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < grid_->blocks().size(); Q += stride) {
         // Get thread info
-        #ifdef _OPENMP
-                rank = omp_get_thread_num();
-        #endif
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
 
         // Compute a collocation block
         std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
         pworker->compute_functions(block);
 
+        // Build temps
         size_t nrows = block->npoints();
         size_t ncols = block->local_nbf();
         std::map<std::string, SharedMatrix> collocation_map;
+
+        // Loop over components PHI, PHI_X, PHI_Y, ...
         for (auto& kv : pworker->basis_values()) {
             auto coll = std::make_shared<Matrix>(kv.second->name(), nrows, ncols);
 
             double** sourcep = kv.second->pointer();
             double** collp = coll->pointer();
-            for (size_t i = 0; i < nrows; i++){
-                for (size_t j = 0; j < ncols; j++){
-                    collp[i][j] = sourcep[i][j];
-                }
+
+            // Matrices are packed in a upper left rectangle, cannot use pure DCOPY
+            for (size_t i = 0; i < nrows; i++) {
+                C_DCOPY(ncols, sourcep[i], 1, collp[i], 1);
             }
             collocation_map[kv.first] = coll;
 
-            saved_size += nrows * ncols;
+            saved_size_rank[rank] += nrows * ncols;
         }
-        ncomputed++;
+        ncomputed_rank[rank]++;
+#pragma omp critical
         cache_map_[block->index()] = collocation_map;
     }
 
-    size_t mib_saved = (size_t)(8 * (double)saved_size / 1024.0 / 1024.0);
-    double fraction = (double) ncomputed / grid_->blocks().size() * 100;
+    size_t saved_size = std::accumulate(saved_size_rank.begin(), saved_size_rank.end(), 0.0);
+    size_t ncomputed = std::accumulate(ncomputed_rank.begin(), ncomputed_rank.end(), 0.0);
+
+    double mib_saved = 8.0 * (double)saved_size / 1024.0 / 1024.0 / 1024.0;
+    double fraction = (double)ncomputed / grid_->blocks().size() * 100;
     if (print_) {
-        outfile->Printf("  Cached %.1lf%% of DFT collocation blocks in %d MiB.\n\n", fraction, mib_saved);
+        outfile->Printf("  Cached %.1lf%% of DFT collocation blocks in %.3lf [GiB].\n\n", fraction, mib_saved);
     }
-
 }
-void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D, std::vector<std::map<std::string, SharedVector>>& vv10_cache, std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers, int ansatz) {
-
+void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
+                               std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+                               std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers, int ansatz) {
     // Densities should be set by the calling functional
     int rank = 0;
 
@@ -350,7 +358,6 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D, std::vector<std:
 
         offset += csize;
     }
-
 }
 double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     timer_on("V: VV10");
@@ -385,8 +392,8 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
         V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
     }
 
-    // => Compute the kernel <=
-    // -11.948063
+// => Compute the kernel <=
+// -11.948063
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
 // Get thread info
@@ -530,11 +537,11 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
             // Gp[A][0] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_x[0][ml], max_functions);
             // Gp[A][1] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_y[0][ml], max_functions);
             Gp[A][2] += C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions);
-            // printf("Value %d %16.15lf\n", A, C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml], max_functions));
+            // printf("Value %d %16.15lf\n", A, C_DDOT(npoints, &Tp[0][ml], max_functions, &phi_z[0][ml],
+            // max_functions));
         }
 
         // printf("--\n");
-
 
         parallel_timer_off("V_xc gradient", rank);
     }
@@ -566,7 +573,6 @@ void RV::initialize() {
         point_tmp->set_cache_map(&cache_map_);
         point_workers_.push_back(point_tmp);
     }
-
 }
 void RV::finalize() { VBase::finalize(); }
 void RV::print_header() const { VBase::print_header(); }
@@ -642,7 +648,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         // => Compute quadrature <= //
         std::vector<double> qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
         functionalq[rank] += qvals[0];
-        rhoaq[rank]  += qvals[1];
+        rhoaq[rank] += qvals[1];
         rhoaxq[rank] += qvals[2];
         rhoayq[rank] += qvals[3];
         rhoazq[rank] += qvals[4];
@@ -863,10 +869,10 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
             parallel_timer_on("Derivative Properties", rank);
             // Rho_a = D^k_xy phi_xa phi_ya
-            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 0.0,
-                    Tp[0], max_functions);
-            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 1.0,
-                    Tp[0], max_functions);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 0.0, Tp[0],
+                    max_functions);
+            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 1.0, Tp[0],
+                    max_functions);
 
             for (int P = 0; P < npoints; P++) {
                 rho_k[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
@@ -927,8 +933,8 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
             // Put it all together
             // parallel_timer_on("LSDA", rank);
-            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0,
-                    Vx_localp[0], max_functions);
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, Vx_localp[0],
+                    max_functions);
             // parallel_timer_off("LSDA", rank);
 
             // Symmetrization (V is *always* Hermitian)
@@ -1040,7 +1046,7 @@ SharedMatrix RV::compute_gradient() {
         // => Compute quadrature <= //
         std::vector<double> qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
         functionalq[rank] += qvals[0];
-        rhoaq[rank]  += qvals[1];
+        rhoaq[rank] += qvals[1];
         rhoaxq[rank] += qvals[2];
         rhoayq[rank] += qvals[3];
         rhoazq[rank] += qvals[4];
@@ -1366,7 +1372,6 @@ void UV::initialize() {
         point_tmp->set_cache_map(&cache_map_);
         point_workers_.push_back(point_tmp);
     }
-
 }
 void UV::finalize() { VBase::finalize(); }
 void UV::print_header() const { VBase::print_header(); }
@@ -1609,7 +1614,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     if (functional_->needs_vv10()) {
         SharedMatrix Ds = D_AO_[0]->clone();
         Ds->axpy(1.0, D_AO_[1]);
-        Ds->scale(0.5); // Will be scaled by a factor of 2 in vv10_nlc
+        Ds->scale(0.5);  // Will be scaled by a factor of 2 in vv10_nlc
 
         SharedMatrix V_vv10 = Ds->clone();
         V_vv10->zero();
@@ -2462,5 +2467,4 @@ SharedMatrix UV::compute_gradient() {
 
     return G;
 }
-
 }
