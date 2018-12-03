@@ -151,7 +151,7 @@ before_script:
     -DCMAKE_C_COMPILER=${C_COMPILER}
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
-    -DPYTHON_EXECUTABLE="${HOME}/Deps/miniconda/envs/p4env/bin/python"
+    -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
     -DENABLE_CheMPS2=OFF
     -DENABLE_dkh=ON
     -DENABLE_libefp=ON
