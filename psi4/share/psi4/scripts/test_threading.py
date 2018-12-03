@@ -263,15 +263,14 @@ In --plugin-dfmp2 mode, name of dfmp2 module to load, e.g., 'plugdfmp2'.""")
 
 
 """
-PFX="usr/local/psi4"
 PLUG="plugdfmp2"
 THD=8
 # * build psi4 and test its threading
-PYTHONPATH=stage/$PFX/lib/ python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --ldd
-PATH=stage/$PFX/bin/:$PATH PYTHONPATH=stage/$PFX/lib/ python stage/$PFX/share/psi4/scripts/test_threading.py --passfail -n$THD
+PYTHONPATH=stage/lib/ python stage/share/psi4/scripts/test_threading.py --passfail --ldd
+PATH=stage/bin/:$PATH PYTHONPATH=stage/lib/ python stage/share/psi4/scripts/test_threading.py --passfail -n$THD
 # * build an OpenMP plugin and test its threading
-stage/$PFX/bin/psi4 --plugin-name $PLUG --plugin-template dfmp2
-cd $PLUG && `../stage/$PFX/bin/psi4 --plugin-compile` && make && cd ..
-PYTHONPATH=stage/$PFX/lib/:. python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --ldd --module="$PLUG/$PLUG"
-PATH=stage/$PFX/bin/:$PATH PYTHONPATH=stage/$PFX/lib/:. python stage/$PFX/share/psi4/scripts/test_threading.py --passfail --plugin-dfmp2 --module="$PLUG" -n$THD
+stage/bin/psi4 --plugin-name $PLUG --plugin-template dfmp2
+cd $PLUG && `../stage/bin/psi4 --plugin-compile` && make && cd ..
+PYTHONPATH=stage/lib/:. python stage/share/psi4/scripts/test_threading.py --passfail --ldd --module="$PLUG/$PLUG"
+PATH=stage/bin/:$PATH PYTHONPATH=stage/lib/:. python stage/share/psi4/scripts/test_threading.py --passfail --plugin-dfmp2 --module="$PLUG" -n$THD
 """

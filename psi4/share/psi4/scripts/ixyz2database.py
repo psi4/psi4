@@ -33,12 +33,11 @@ import re
 import os
 import glob
 
-sys.path.append(os.path.dirname(__file__) + '/../python')
-sys.path.append(os.environ.get('PSIDATADIR')+'/python')
+sys.path.append(os.path.dirname(__file__) + '/../../../driver')
 try:
     import qcdb
 except ImportError:
-    print("""Cannot load qcdb python module. Run this script in situ or append the psi4/share/psi4/python directory to $PYTHONPATH.""")
+    print("""Cannot load qcdb python module. Run this script in situ or append the psi4/share/psi4/scripts directory to $PYTHONPATH.""")
     exit(1)
 
 """
@@ -72,7 +71,7 @@ print("""
 """)
 user_obedient = False
 while not user_obedient:
-    dbse = raw_input('    dbse = ').strip()
+    dbse = input('    dbse = ').strip()
     if dbse.isalnum():
         user_obedient = True
 
@@ -82,7 +81,7 @@ print("""
     All files with this extension in the current directory will be processed
     Additionally, all files with extension p4m in the current dir will be processed as psi4 mol format
 """)
-fext = raw_input('    fext = [xyz] ').strip()
+fext = input('    fext = [xyz] ').strip()
 if fext == "":
     fext = 'xyz'
 
@@ -95,7 +94,7 @@ print("""
 """)
 user_obedient = False
 while not user_obedient:
-    line2 = raw_input('    line2 = [cgmp] ').strip().lower()
+    line2 = input('    line2 = [cgmp] ').strip().lower()
     if line2 == "":
         line2 = 'cgmp'
     if line2 == 'comment' or line2 == 'cgmp' or line2 == 'trash':
@@ -121,7 +120,7 @@ print("""
 """)
 user_obedient = False
 while not user_obedient:
-    route = raw_input('    route = ').strip().lower()
+    route = input('    route = ').strip().lower()
     if route.isdigit():
         route = int(route)
         if route == 1 or route == 2 or route == 3:
@@ -135,7 +134,7 @@ if route == 2:
 """)
     user_obedient = False
     while not user_obedient:
-        Nrxn = raw_input('    Nrxn = ').strip().lower()
+        Nrxn = input('    Nrxn = ').strip().lower()
         if Nrxn.isdigit():
             Nrxn = int(Nrxn)
             user_obedient = True
@@ -174,10 +173,7 @@ for xyzfile in (glob.glob('*.' + fext) + glob.glob('*.p4m')):
     f.close()
 
     # use Molecule object to read geometry in xyz file
-    if xyzfile.endswith(fext):
-        mol = qcdb.Molecule.init_with_xyz(xyzfile, no_com=True, no_reorient=True)
-    else:
-        mol = qcdb.Molecule(''.join(text))
+    mol = qcdb.Molecule.from_string(''.join(text), fix_com=True, fix_orientation=True)
     Nsyst = mol.natom()
 
     # alter second line
@@ -203,8 +199,7 @@ for xyzfile in (glob.glob('*.' + fext) + glob.glob('*.p4m')):
 
     if route == 3 and mol.nfragments() == 1:
 
-        frag_pattern = mol.BFS()
-        mol = mol.auto_fragments()
+        frag_pattern, mol = mol.BFS(return_molecule=True)
         Nmol1 = mol.fragments[0][1] - mol.fragments[0][0] + 1
         Nmol2 = mol.fragments[1][1] - mol.fragments[1][0] + 1
 
@@ -447,8 +442,7 @@ if route == 2:
 
 final += """
        *  Make sure the Psi4 driver can find your new database.
-          If running from an installed psi4, move %s.py into INSTALLED_DIRECTORY/share/psi4/databases .
-          If running from source, move %s.py into PSIDATADIR/databases .
+          M %s.py into INSTALLED_DIRECTORY/share/psi4/databases .
           Alternatively, add the directory containing %s.py into PYTHONPATH .
 """ % (dbse, dbse, dbse)
 

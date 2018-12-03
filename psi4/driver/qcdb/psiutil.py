@@ -291,7 +291,7 @@ def compare_arrays(expected, computed, digits, label, verbose=1):
 
 
 def query_yes_no(question, default=True):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """Ask a yes/no question via input() and return their answer.
 
     *question* is a string that is presented to the user.
     *default* is the presumed answer if the user just hits <Enter>.
@@ -316,7 +316,7 @@ def query_yes_no(question, default=True):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = raw_input().strip().lower()
+        choice = input().strip().lower()
         if default is not None and choice == '':
             return default
         elif yes.match(choice):
