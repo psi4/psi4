@@ -60,9 +60,7 @@ class BlockOPoints;
  *
  **/
 class SuperFunctional {
-
-protected:
-
+   protected:
     // => Meta-Data <= //
     std::string name_;
     std::string description_;
@@ -70,13 +68,13 @@ protected:
     bool locked_;
 
     // => Exchange-side DFA functionals <= //
-    std::vector<std::shared_ptr<Functional> > x_functionals_;
+    std::vector<std::shared_ptr<Functional>> x_functionals_;
     double x_alpha_;
     double x_beta_;
     double x_omega_;
 
     // => Correlation-side DFA functionals <= //
-    std::vector<std::shared_ptr<Functional> > c_functionals_;
+    std::vector<std::shared_ptr<Functional>> c_functionals_;
     double c_alpha_;
     double c_ss_alpha_;
     double c_os_alpha_;
@@ -110,8 +108,7 @@ protected:
     // Check if we can edit this Superfunctional
     void can_edit();
 
-public:
-
+   public:
     // => Constructors (Use the factory constructor, or really know what's up) <= //
 
     SuperFunctional();
@@ -129,24 +126,20 @@ public:
 
     // => Computers <= //
 
-    std::map<std::string, SharedVector>& compute_functional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
-    void test_functional(SharedVector rho_a,
-                         SharedVector rho_b,
-                         SharedVector gamma_aa,
-                         SharedVector gamma_ab,
-                         SharedVector gamma_bb,
-                         SharedVector tau_a,
-                         SharedVector tau_b);
+    std::map<std::string, SharedVector>& compute_functional(const std::map<std::string, SharedVector>& vals,
+                                                            int npoints = -1);
+    void test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa, SharedVector gamma_ab,
+                         SharedVector gamma_bb, SharedVector tau_a, SharedVector tau_b);
 
     // Compute the cache data for VV10 dispersion
-    std::map<std::string, SharedVector> compute_vv10_cache(
-        const std::map<std::string, SharedVector>& vals, std::shared_ptr<BlockOPoints> block,
-        double rho_thresh, int npoints = -1, bool internal = false);
+    std::map<std::string, SharedVector> compute_vv10_cache(const std::map<std::string, SharedVector>& vals,
+                                                           std::shared_ptr<BlockOPoints> block, double rho_thresh,
+                                                           int npoints = -1, bool internal = false);
 
     // Copmutes the Cache data for VV10 dispersion
     double compute_vv10_kernel(const std::map<std::string, SharedVector>& vals,
                                const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
-                               std::shared_ptr<BlockOPoints> block, int npoints = -1, bool do_grad=false);
+                               std::shared_ptr<BlockOPoints> block, int npoints = -1, bool do_grad = false);
 
     // => Input/Output <= //
 
@@ -154,8 +147,8 @@ public:
     SharedVector value(const std::string& key) { return values_[key]; }
     SharedVector vv_value(const std::string& key) { return vv_values_[key]; }
 
-    std::vector<std::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
-    std::vector<std::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
+    std::vector<std::shared_ptr<Functional>>& x_functionals() { return x_functionals_; }
+    std::vector<std::shared_ptr<Functional>>& c_functionals() { return c_functionals_; }
     std::shared_ptr<Functional> grac_x_functional() { return grac_x_functional_; }
     std::shared_ptr<Functional> grac_c_functional() { return grac_c_functional_; }
 
@@ -175,10 +168,10 @@ public:
     // => Setters <= //
 
     void set_lock(bool locked) { locked_ = locked; }
-    void set_do_vv10( bool do_vv10) { needs_vv10_ = do_vv10;}
-    void set_name(const std::string & name) { name_ = name; }
-    void set_description(const std::string & description) { description_ = description; }
-    void set_citation(const std::string & citation) { citation_ = citation; }
+    void set_do_vv10(bool do_vv10) { needs_vv10_ = do_vv10; }
+    void set_name(const std::string& name) { name_ = name; }
+    void set_description(const std::string& description) { description_ = description; }
+    void set_citation(const std::string& citation) { citation_ = citation; }
 
     void set_max_points(int max_points) { max_points_ = max_points; }
     void set_deriv(int deriv) { deriv_ = deriv; }
@@ -220,8 +213,8 @@ public:
     double grac_beta() const { return grac_beta_; }
 
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
-    bool needs_vv10() const {return needs_vv10_; };
-    bool needs_grac() const {return needs_grac_; };
+    bool needs_vv10() const { return needs_vv10_; };
+    bool needs_grac() const { return needs_grac_; };
     bool PSI_API is_unpolarized() const;
     bool PSI_API is_meta() const;
     bool PSI_API is_gga() const;
@@ -237,9 +230,7 @@ public:
     void print(std::string out_fname = "outfile", int print = 1) const;
     void py_print() const { print("outfile", 1); }
     void py_print_detail(int level) const { print("outfile", level); }
-
 };
-
 }
 
 #endif
