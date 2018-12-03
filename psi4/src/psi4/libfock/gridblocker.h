@@ -43,9 +43,7 @@ class BlockOPoints;
  * efficient sparse evaluation of density
  */
 class GridBlocker {
-
-protected:
-
+   protected:
     int debug_;
     int print_;
     int bench_;
@@ -76,11 +74,10 @@ protected:
     int* index_;
     std::vector<std::shared_ptr<BlockOPoints> > blocks_;
 
-public:
-
+   public:
     GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
-        std::shared_ptr<BasisExtents> extents);
+                double const* w_ref, int const* index_ref, const int max_points, const int min_points,
+                const double max_radius, std::shared_ptr<BasisExtents> extents);
     virtual ~GridBlocker();
 
     virtual void block() = 0;
@@ -99,19 +96,16 @@ public:
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
     void set_bench(int bench) { bench_ = bench; }
-
 };
 
 /**
  * Naive stride-based blocking
  */
 class NaiveGridBlocker : public GridBlocker {
-
-public:
-
+   public:
     NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
-        std::shared_ptr<BasisExtents> extents);
+                     double const* w_ref, int const* index_ref, const int max_points, const int min_points,
+                     const double max_radius, std::shared_ptr<BasisExtents> extents);
     ~NaiveGridBlocker() override;
 
     void block() override;
@@ -121,16 +115,13 @@ public:
  * Octree-based blocking
  */
 class OctreeGridBlocker : public GridBlocker {
-
-public:
-
+   public:
     OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, int const* index_ref, const int max_points, const int min_points, const double max_radius,
-        std::shared_ptr<BasisExtents> extents);
+                      double const* w_ref, int const* index_ref, const int max_points, const int min_points,
+                      const double max_radius, std::shared_ptr<BasisExtents> extents);
     ~OctreeGridBlocker() override;
 
     void block() override;
 };
-
 }
 #endif

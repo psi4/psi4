@@ -52,20 +52,11 @@ using namespace psi;
 
 namespace psi {
 
+PKJK::PKJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary), options_(options) { common_init(); }
 
-PKJK::PKJK(std::shared_ptr<BasisSet> primary, Options& options) :
-    JK(primary), options_(options)
-{
-    common_init();
-}
+PKJK::~PKJK() {}
 
-PKJK::~PKJK()
-{
-}
-
-
-void PKJK::common_init()
-{
+void PKJK::common_init() {
     pk_file_ = PSIF_SO_PK;
     nthreads_ = 1;
 #ifdef _OPENMP
@@ -73,30 +64,24 @@ void PKJK::common_init()
 #endif
 }
 
-bool PKJK::C1() const {
-    return true;
-}
+bool PKJK::C1() const { return true; }
 
-void PKJK::print_header() const
-{
+void PKJK::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");
+        outfile->Printf("  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");
 
-        outfile->Printf( "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        outfile->Printf( "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        outfile->Printf( "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_)
-            outfile->Printf( "    Omega:             %11.3E\n", omega_);
-        outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
-        outfile->Printf( "    OpenMP threads:    %11d\n\n", nthreads_);
+        outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
+        outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+        outfile->Printf("    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+        outfile->Printf("    OpenMP threads:    %11d\n\n", nthreads_);
     }
 }
 
-void PKJK::preiterations()
-{
-
-    //Build PKManager to get proper algorithm set up
+void PKJK::preiterations() {
+    // Build PKManager to get proper algorithm set up
     Options& options = Process::environment.options;
 
     psio_ = _default_psio_lib_;
@@ -106,53 +91,46 @@ void PKJK::preiterations()
     // PK file to disk. Also, do everything in the AO basis
     // like the modern JK algos, for adding sieving later
 
-    PKmanager_ = pk::PKManager::build_PKManager(psio_,primary_,memory_,options,do_wK_,omega_);
+    PKmanager_ = pk::PKManager::build_PKManager(psio_, primary_, memory_, options, do_wK_, omega_);
 
     PKmanager_->initialize();
 
     PKmanager_->form_PK();
 
     // If range-separated K needed, we redo all the above steps
-    if(do_wK_) {
+    if (do_wK_) {
         outfile->Printf("  Computing range-separated integrals for PK\n");
 
         PKmanager_->initialize_wK();
 
         PKmanager_->form_PK_wK();
-
     }
 
     // PK files are written at this point. We are done.
     timer_off("Total PK formation time");
-
 }
 
-void PKJK::compute_JK()
-{
+void PKJK::compute_JK() {
     timer_on("PK computes JK");
     // We form the vector containing the density matrix triangular elements
-    PKmanager_->prepare_JK(D_ao_,C_left_ao_,C_right_ao_);
+    PKmanager_->prepare_JK(D_ao_, C_left_ao_, C_right_ao_);
 
-    if(J_ao_.size()) {
+    if (J_ao_.size()) {
         // We can safely pass K here since its size is checked within
         // the routine
-        PKmanager_->form_J(J_ao_,"",K_ao_);
+        PKmanager_->form_J(J_ao_, "", K_ao_);
     }
-    if(K_ao_.size()) {
+    if (K_ao_.size()) {
         PKmanager_->form_K(K_ao_);
     }
-    if(wK_ao_.size()) {
+    if (wK_ao_.size()) {
         PKmanager_->form_wK(wK_ao_);
     }
 
     PKmanager_->finalize_JK();
 
     timer_off("PK computes JK");
-
 }
 
-void PKJK::postiterations()
-{
-}
-
+void PKJK::postiterations() {}
 }

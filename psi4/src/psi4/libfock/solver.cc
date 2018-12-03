@@ -49,15 +49,9 @@
 
 namespace psi {
 
-Solver::Solver()
-{
-    common_init();
-}
-Solver::~Solver()
-{
-}
-void Solver::common_init()
-{
+Solver::Solver() { common_init(); }
+Solver::~Solver() {}
+void Solver::common_init() {
     print_ = 2;
     debug_ = 0;
     bench_ = 0;
@@ -72,36 +66,18 @@ void Solver::common_init()
     name_ = "Solver";
 }
 
-RSolver::RSolver(std::shared_ptr<RHamiltonian> H) :
-    Solver(), H_(H)
-{
-    name_ = "RSolver";
-}
-RSolver::~RSolver()
-{
-}
+RSolver::RSolver(std::shared_ptr<RHamiltonian> H) : Solver(), H_(H) { name_ = "RSolver"; }
+RSolver::~RSolver() {}
 
-USolver::USolver(std::shared_ptr<UHamiltonian> H) :
-    Solver(), H_(H)
-{
-    name_ = "USolver";
-}
-USolver::~USolver()
-{
-}
+USolver::USolver(std::shared_ptr<UHamiltonian> H) : Solver(), H_(H) { name_ = "USolver"; }
+USolver::~USolver() {}
 
-CGRSolver::CGRSolver(std::shared_ptr<RHamiltonian> H) :
-    RSolver(H)
-{
+CGRSolver::CGRSolver(std::shared_ptr<RHamiltonian> H) : RSolver(H) {
     nguess_ = 0;
     name_ = "CGR";
 }
-CGRSolver::~CGRSolver()
-{
-}
-std::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options,
-    std::shared_ptr<RHamiltonian> H)
-{
+CGRSolver::~CGRSolver() {}
+std::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options, std::shared_ptr<RHamiltonian> H) {
     auto solver = std::make_shared<CGRSolver>(H);
 
     if (options["PRINT"].has_changed()) {
@@ -127,18 +103,16 @@ std::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options,
 
     return solver;
 }
-void CGRSolver::print_header() const
-{
+void CGRSolver::print_header() const {
     if (print_) {
-    	outfile->Printf( "  ==> CGRSolver (by Rob Parrish) <==\n\n");
-        outfile->Printf( "   Number of roots    = %9zu\n", b_.size());
-        outfile->Printf( "   Preconditioning    = %9s\n", precondition_.c_str());
-        outfile->Printf( "   Convergence cutoff = %9.0E\n", criteria_);
-        outfile->Printf( "   Maximum iterations = %9d\n\n", maxiter_);
+        outfile->Printf("  ==> CGRSolver (by Rob Parrish) <==\n\n");
+        outfile->Printf("   Number of roots    = %9zu\n", b_.size());
+        outfile->Printf("   Preconditioning    = %9s\n", precondition_.c_str());
+        outfile->Printf("   Convergence cutoff = %9.0E\n", criteria_);
+        outfile->Printf("   Maximum iterations = %9d\n\n", maxiter_);
     }
 }
-size_t CGRSolver::memory_estimate()
-{
+size_t CGRSolver::memory_estimate() {
     size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
@@ -146,27 +120,26 @@ size_t CGRSolver::memory_estimate()
     }
     return (6L * b_.size()) * dimension;
 }
-void CGRSolver::initialize()
-{
+void CGRSolver::initialize() {
     finalize();
 
     int nvec = b_.size();
     for (int N = 0; N < nvec; ++N) {
         std::stringstream xs;
-        xs << "Solution Vector " << N+1;
-        x_.push_back(std::make_shared<Vector>(xs.str(),b_[0]->dimpi()));
+        xs << "Solution Vector " << N + 1;
+        x_.push_back(std::make_shared<Vector>(xs.str(), b_[0]->dimpi()));
         std::stringstream Aps;
-        Aps << "Product Vector " << N+1;
-        Ap_.push_back(std::make_shared<Vector>(Aps.str(),b_[0]->dimpi()));
+        Aps << "Product Vector " << N + 1;
+        Ap_.push_back(std::make_shared<Vector>(Aps.str(), b_[0]->dimpi()));
         std::stringstream zs;
-        zs << "Z Vector " << N+1;
-        z_.push_back(std::make_shared<Vector>(zs.str(),b_[0]->dimpi()));
+        zs << "Z Vector " << N + 1;
+        z_.push_back(std::make_shared<Vector>(zs.str(), b_[0]->dimpi()));
         std::stringstream rs;
-        rs << "Residual Vector " << N+1;
-        r_.push_back(std::make_shared<Vector>(rs.str(),b_[0]->dimpi()));
+        rs << "Residual Vector " << N + 1;
+        r_.push_back(std::make_shared<Vector>(rs.str(), b_[0]->dimpi()));
         std::stringstream ps;
-        ps << "Conjugate Vector " << N+1;
-        p_.push_back(std::make_shared<Vector>(ps.str(),b_[0]->dimpi()));
+        ps << "Conjugate Vector " << N + 1;
+        p_.push_back(std::make_shared<Vector>(ps.str(), b_[0]->dimpi()));
         alpha_.push_back(0.0);
         beta_.push_back(0.0);
         r_nrm2_.push_back(0.0);
@@ -176,17 +149,15 @@ void CGRSolver::initialize()
 
     diag_ = H_->diagonal();
 }
-void CGRSolver::solve()
-{
+void CGRSolver::solve() {
     iteration_ = 0;
     converged_ = false;
     nconverged_ = 0;
     convergence_ = 0.0;
 
     if (print_ > 1) {
-        outfile->Printf( "  => Iterations <=\n\n");
-        outfile->Printf( "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Remaining", "Residual");
-
+        outfile->Printf("  => Iterations <=\n\n");
+        outfile->Printf("  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Remaining", "Residual");
     }
 
     setup();
@@ -205,9 +176,8 @@ void CGRSolver::solve()
         update_r();
         check_convergence();
         if (print_) {
-            outfile->Printf( "  %-10s %4d %10d %10zu %11.3E\n", name_.c_str(), iteration_, nconverged_,
-                b_.size() - nconverged_, convergence_);
-
+            outfile->Printf("  %-10s %4d %10d %10zu %11.3E\n", name_.c_str(), iteration_, nconverged_,
+                            b_.size() - nconverged_, convergence_);
         }
         update_z();
         beta();
@@ -216,17 +186,15 @@ void CGRSolver::solve()
     } while (iteration_ < maxiter_ && !converged_);
 
     if (print_ > 1) {
-        outfile->Printf( "\n");
+        outfile->Printf("\n");
         if (!converged_) {
-            outfile->Printf( "    %sSolver did not converge.\n\n", name_.c_str());
+            outfile->Printf("    %sSolver did not converge.\n\n", name_.c_str());
         } else {
-            outfile->Printf( "    %sSolver converged.\n\n", name_.c_str());
+            outfile->Printf("    %sSolver converged.\n\n", name_.c_str());
         }
-
     }
 }
-void CGRSolver::finalize()
-{
+void CGRSolver::finalize() {
     Ap_.clear();
     z_.clear();
     r_.clear();
@@ -238,8 +206,7 @@ void CGRSolver::finalize()
     r_converged_.clear();
     diag_.reset();
 }
-void CGRSolver::setup()
-{
+void CGRSolver::setup() {
     if (shifts_.size() == 0) {
         shifts_.resize(diag_->nirrep());
         for (int h = 0; h < diag_->nirrep(); h++) {
@@ -251,7 +218,6 @@ void CGRSolver::setup()
     }
 
     if ((precondition_ == "SUBSPACE") && !A_) {
-
         // Find the nguess strongest diagonals in the A matrix
         Dimension rank(diag_->nirrep());
         A_inds_.clear();
@@ -260,9 +226,9 @@ void CGRSolver::setup()
             int n = diag_->dimpi()[h];
             if (!n) continue;
 
-            std::vector<std::pair<double, int> > d;
+            std::vector<std::pair<double, int>> d;
             for (int i = 0; i < n; ++i) {
-                d.push_back(std::make_pair(diag_->get(h,i),i));
+                d.push_back(std::make_pair(diag_->get(h, i), i));
             }
             std::sort(d.begin(), d.end());
 
@@ -286,7 +252,7 @@ void CGRSolver::setup()
                 b_.push_back(std::make_shared<Vector>("Delta Sigma", diag_->dimpi()));
                 for (int h = 0; h < diag_->nirrep(); h++) {
                     if (k >= A_inds_[h].size()) continue;
-                    b_[j]->set(h,A_inds_[h][k],1.0);
+                    b_[j]->set(h, A_inds_[h][k], 1.0);
                 }
             }
 
@@ -298,7 +264,7 @@ void CGRSolver::setup()
                 for (int h = 0; h < diag_->nirrep(); h++) {
                     if (k >= A_inds_[h].size()) continue;
                     double** Ap = A_->pointer(h);
-                    double*  sp = Ap_[j]->pointer(h);
+                    double* sp = Ap_[j]->pointer(h);
                     for (int l = 0; l < rank[h]; l++) {
                         Ap[k][l] = sp[A_inds_[h][l]];
                     }
@@ -308,11 +274,9 @@ void CGRSolver::setup()
 
         Ap_.clear();
         x_.clear();
-
     }
 }
-void CGRSolver::guess()
-{
+void CGRSolver::guess() {
     for (size_t N = 0; N < b_.size(); ++N) {
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
             int n = b_[N]->dimpi()[h];
@@ -330,20 +294,20 @@ void CGRSolver::guess()
                 auto A2 = std::make_shared<Matrix>("A2", rank, rank);
                 double** A2p = A2->pointer();
                 double** Ap = A_->pointer(h);
-                ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
+                ::memcpy((void*)A2p[0], (void*)Ap[0], sizeof(double) * rank * rank);
                 for (int i = 0; i < rank; i++) {
                     A2p[i][i] -= lambda;
                 }
 
                 int* ipiv = new int[rank];
-                int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
+                int info = C_DGETRF(rank, rank, A2p[0], rank, ipiv);
                 // Only apply the improved preconditioner if nonsingular
                 if (!info) {
                     double* v = new double[rank];
                     for (int i = 0; i < rank; i++) {
                         v[i] = bp[A_inds_[h][i]];
                     }
-                    C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
+                    C_DGETRS('N', rank, 1, A2p[0], rank, ipiv, v, rank);
                     for (int i = 0; i < rank; i++) {
                         xp[A_inds_[h][i]] = v[i];
                     }
@@ -371,8 +335,7 @@ void CGRSolver::guess()
         }
     }
 }
-void CGRSolver::residual()
-{
+void CGRSolver::residual() {
     for (size_t N = 0; N < b_.size(); ++N) {
         r_[N]->copy(Ap_[N].get());
         r_[N]->scale(-1.0);
@@ -380,36 +343,34 @@ void CGRSolver::residual()
     }
 
     if (debug_) {
-        outfile->Printf( "  > Residuals x <\n\n");
+        outfile->Printf("  > Residuals x <\n\n");
         for (size_t N = 0; N < r_.size(); N++) {
             r_[N]->print();
         }
     }
 }
-void CGRSolver::products_x()
-{
-    H_->product(x_,Ap_);
+void CGRSolver::products_x() {
+    H_->product(x_, Ap_);
 
     for (int h = 0; h < diag_->nirrep(); h++) {
         for (size_t i = 0; i < x_.size(); i++) {
             if (shifts_[h][i] != 0.0) {
                 double lambda = shifts_[h][i];
-                C_DAXPY(diag_->dimpi()[h],-lambda,x_[i]->pointer(h),1,Ap_[i]->pointer(h),1);
+                C_DAXPY(diag_->dimpi()[h], -lambda, x_[i]->pointer(h), 1, Ap_[i]->pointer(h), 1);
             }
         }
     }
 
     if (debug_) {
-        outfile->Printf( "  > Products x <\n\n");
+        outfile->Printf("  > Products x <\n\n");
         for (size_t N = 0; N < Ap_.size(); N++) {
             Ap_[N]->print();
         }
     }
 }
-void CGRSolver::products_p()
-{
-    std::vector<std::shared_ptr<Vector> > p;
-    std::vector<std::shared_ptr<Vector> > Ap;
+void CGRSolver::products_p() {
+    std::vector<std::shared_ptr<Vector>> p;
+    std::vector<std::shared_ptr<Vector>> Ap;
 
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
@@ -417,27 +378,26 @@ void CGRSolver::products_p()
         Ap.push_back(Ap_[N]);
     }
 
-    H_->product(p,Ap);
+    H_->product(p, Ap);
 
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         for (int h = 0; h < diag_->nirrep(); h++) {
             if (shifts_[h][N] != 0.0) {
                 double lambda = shifts_[h][N];
-                C_DAXPY(diag_->dimpi()[h],-lambda,p_[N]->pointer(h),1,Ap_[N]->pointer(h),1);
+                C_DAXPY(diag_->dimpi()[h], -lambda, p_[N]->pointer(h), 1, Ap_[N]->pointer(h), 1);
             }
         }
     }
 
     if (debug_) {
-        outfile->Printf( "  > Products p <\n\n");
+        outfile->Printf("  > Products p <\n\n");
         for (size_t N = 0; N < Ap_.size(); N++) {
             Ap_[N]->print();
         }
     }
 }
-void CGRSolver::alpha()
-{
+void CGRSolver::alpha() {
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         z_r_[N] = 0.0;
@@ -449,21 +409,20 @@ void CGRSolver::alpha()
             double* zp = z_[N]->pointer(h);
             double* pp = p_[N]->pointer(h);
             double* App = Ap_[N]->pointer(h);
-            z_r_[N] += C_DDOT(n,rp,1,zp,1);
-            p_Ap += C_DDOT(n,pp,1,App,1);
+            z_r_[N] += C_DDOT(n, rp, 1, zp, 1);
+            p_Ap += C_DDOT(n, pp, 1, App, 1);
         }
         alpha_[N] = z_r_[N] / p_Ap;
     }
 
     if (debug_) {
-        outfile->Printf( "  > Alpha <\n\n");
+        outfile->Printf("  > Alpha <\n\n");
         for (size_t N = 0; N < alpha_.size(); N++) {
-            outfile->Printf( "Alpha %d = %24.16E\n", N+1, alpha_[N]);
+            outfile->Printf("Alpha %d = %24.16E\n", N + 1, alpha_[N]);
         }
     }
 }
-void CGRSolver::update_x()
-{
+void CGRSolver::update_x() {
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
@@ -471,19 +430,18 @@ void CGRSolver::update_x()
             if (!n) continue;
             double* xp = x_[N]->pointer(h);
             double* pp = p_[N]->pointer(h);
-            C_DAXPY(n,alpha_[N],pp,1,xp,1);
+            C_DAXPY(n, alpha_[N], pp, 1, xp, 1);
         }
     }
 
     if (debug_) {
-        outfile->Printf( "  > Update x <\n\n");
+        outfile->Printf("  > Update x <\n\n");
         for (size_t N = 0; N < x_.size(); N++) {
             x_[N]->print();
         }
     }
 }
-void CGRSolver::update_r()
-{
+void CGRSolver::update_r() {
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
@@ -491,19 +449,18 @@ void CGRSolver::update_r()
             if (!n) continue;
             double* rp = r_[N]->pointer(h);
             double* App = Ap_[N]->pointer(h);
-            C_DAXPY(n,-alpha_[N],App,1,rp,1);
+            C_DAXPY(n, -alpha_[N], App, 1, rp, 1);
         }
     }
 
     if (debug_) {
-        outfile->Printf( "  > Update r <\n\n");
+        outfile->Printf("  > Update r <\n\n");
         for (size_t N = 0; N < r_.size(); N++) {
             r_[N]->print();
         }
     }
 }
-void CGRSolver::check_convergence()
-{
+void CGRSolver::check_convergence() {
     convergence_ = 0.0;
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
@@ -514,10 +471,10 @@ void CGRSolver::check_convergence()
             if (!n) continue;
             double* rp = r_[N]->pointer(h);
             double* bp = b_[N]->pointer(h);
-            B2 += C_DDOT(n,bp,1,bp,1);
-            R2 += C_DDOT(n,rp,1,rp,1);
+            B2 += C_DDOT(n, bp, 1, bp, 1);
+            R2 += C_DDOT(n, rp, 1, rp, 1);
         }
-        r_nrm2_[N] = sqrt(R2/B2);
+        r_nrm2_[N] = sqrt(R2 / B2);
         if (convergence_ < r_nrm2_[N]) {
             convergence_ = r_nrm2_[N];
         }
@@ -530,8 +487,7 @@ void CGRSolver::check_convergence()
         converged_ = true;
     }
 }
-void CGRSolver::update_z()
-{
+void CGRSolver::update_z() {
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
@@ -550,20 +506,20 @@ void CGRSolver::update_z()
                 auto A2 = std::make_shared<Matrix>("A2", rank, rank);
                 double** A2p = A2->pointer();
                 double** Ap = A_->pointer(h);
-                ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
+                ::memcpy((void*)A2p[0], (void*)Ap[0], sizeof(double) * rank * rank);
                 for (int i = 0; i < rank; i++) {
                     A2p[i][i] -= lambda;
                 }
 
                 int* ipiv = new int[rank];
-                int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
+                int info = C_DGETRF(rank, rank, A2p[0], rank, ipiv);
                 // Only apply the improved preconditioner if nonsingular
                 if (!info) {
                     double* v = new double[rank];
                     for (int i = 0; i < rank; i++) {
                         v[i] = rp[A_inds_[h][i]];
                     }
-                    C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
+                    C_DGETRS('N', rank, 1, A2p[0], rank, ipiv, v, rank);
                     for (int i = 0; i < rank; i++) {
                         zp[A_inds_[h][i]] = v[i];
                     }
@@ -584,14 +540,13 @@ void CGRSolver::update_z()
     }
 
     if (debug_) {
-        outfile->Printf( "  > Update z <\n\n");
+        outfile->Printf("  > Update z <\n\n");
         for (size_t N = 0; N < z_.size(); N++) {
             z_[N]->print();
         }
     }
 }
-void CGRSolver::beta()
-{
+void CGRSolver::beta() {
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         double zr = 0.0;
@@ -600,20 +555,19 @@ void CGRSolver::beta()
             if (!n) continue;
             double* rp = r_[N]->pointer();
             double* zp = z_[N]->pointer();
-            zr += C_DDOT(n,rp,1,zp,1);
+            zr += C_DDOT(n, rp, 1, zp, 1);
         }
         beta_[N] = zr / z_r_[N];
     }
 
     if (debug_) {
-        outfile->Printf( "  > Beta <\n\n");
+        outfile->Printf("  > Beta <\n\n");
         for (size_t N = 0; N < beta_.size(); N++) {
-            outfile->Printf( "Beta %d = %24.16E\n", N+1, beta_[N]);
+            outfile->Printf("Beta %d = %24.16E\n", N + 1, beta_[N]);
         }
     }
 }
-void CGRSolver::update_p()
-{
+void CGRSolver::update_p() {
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         p_[N]->scale(beta_[N]);
@@ -621,31 +575,26 @@ void CGRSolver::update_p()
     }
 
     if (debug_) {
-        outfile->Printf( "  > Update p <\n\n");
+        outfile->Printf("  > Update p <\n\n");
         for (size_t N = 0; N < p_.size(); N++) {
             p_[N]->print();
         }
     }
 }
 
-DLRSolver::DLRSolver(std::shared_ptr<RHamiltonian> H) :
-    RSolver(H),
-    nroot_(1),
-    norm_(1.E-6),
-    max_subspace_(6),
-    min_subspace_(2),
-    nguess_(1),
-    nsubspace_(0),
-    nconverged_(0)
-{
+DLRSolver::DLRSolver(std::shared_ptr<RHamiltonian> H)
+    : RSolver(H),
+      nroot_(1),
+      norm_(1.E-6),
+      max_subspace_(6),
+      min_subspace_(2),
+      nguess_(1),
+      nsubspace_(0),
+      nconverged_(0) {
     name_ = "DLR";
 }
-DLRSolver::~DLRSolver()
-{
-}
-std::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options,
-    std::shared_ptr<RHamiltonian> H)
-{
+DLRSolver::~DLRSolver() {}
+std::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options, std::shared_ptr<RHamiltonian> H) {
     auto solver = std::make_shared<DLRSolver>(H);
 
     if (options["PRINT"].has_changed()) {
@@ -684,22 +633,20 @@ std::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options,
 
     return solver;
 }
-void DLRSolver::print_header() const
-{
+void DLRSolver::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> DLRSolver (by Rob Parrish) <== \n\n");
-        outfile->Printf( "   Number of roots         = %11d\n", nroot_);
-        outfile->Printf( "   Number of guess vectors = %11d\n", nguess_);
-        outfile->Printf( "   Maximum subspace size   = %11d\n", max_subspace_);
-        outfile->Printf( "   Minimum subspace size   = %11d\n", min_subspace_);
-        outfile->Printf( "   Subspace expansion norm = %11.0E\n", norm_);
-        outfile->Printf( "   Convergence cutoff      = %11.0E\n", criteria_);
-        outfile->Printf( "   Maximum iterations      = %11d\n", maxiter_);
-        outfile->Printf( "   Preconditioning         = %11s\n\n", precondition_.c_str());
+        outfile->Printf("  ==> DLRSolver (by Rob Parrish) <== \n\n");
+        outfile->Printf("   Number of roots         = %11d\n", nroot_);
+        outfile->Printf("   Number of guess vectors = %11d\n", nguess_);
+        outfile->Printf("   Maximum subspace size   = %11d\n", max_subspace_);
+        outfile->Printf("   Minimum subspace size   = %11d\n", min_subspace_);
+        outfile->Printf("   Subspace expansion norm = %11.0E\n", norm_);
+        outfile->Printf("   Convergence cutoff      = %11.0E\n", criteria_);
+        outfile->Printf("   Maximum iterations      = %11d\n", maxiter_);
+        outfile->Printf("   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
 }
-size_t DLRSolver::memory_estimate()
-{
+size_t DLRSolver::memory_estimate() {
     size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
@@ -707,8 +654,7 @@ size_t DLRSolver::memory_estimate()
     }
     return (2L * max_subspace_ + 3L * nroot_ + 1L) * dimension;
 }
-void DLRSolver::initialize()
-{
+void DLRSolver::initialize() {
     finalize();
 
     c_.clear();
@@ -716,17 +662,15 @@ void DLRSolver::initialize()
 
     diag_ = H_->diagonal();
 }
-void DLRSolver::solve()
-{
+void DLRSolver::solve() {
     iteration_ = 0;
     converged_ = false;
     nconverged_ = 0;
     convergence_ = 0.0;
 
     if (print_ > 1) {
-        outfile->Printf( "  => Iterations <=\n\n");
-        outfile->Printf( "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Subspace", "Residual");
-
+        outfile->Printf("  => Iterations <=\n\n");
+        outfile->Printf("  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Subspace", "Residual");
     }
 
     // Compute the first set of sigma vectors
@@ -748,9 +692,8 @@ void DLRSolver::solve()
         residuals();
 
         if (print_) {
-            outfile->Printf( "  %-10s %4d %10d %10d %11.3E\n", name_.c_str(), iteration_, nconverged_,
-                nsubspace_, convergence_);
-
+            outfile->Printf("  %-10s %4d %10d %10d %11.3E\n", name_.c_str(), iteration_, nconverged_, nsubspace_,
+                            convergence_);
         }
 
         // Check for convergence
@@ -768,17 +711,15 @@ void DLRSolver::solve()
     } while (true);
 
     if (print_ > 1) {
-        outfile->Printf( "\n");
+        outfile->Printf("\n");
         if (!converged_ && print_ > 1) {
-            outfile->Printf( "    %sSolver did not converge.\n\n", name_.c_str());
+            outfile->Printf("    %sSolver did not converge.\n\n", name_.c_str());
         } else if (print_ > 1) {
-            outfile->Printf( "    %sSolver converged.\n\n", name_.c_str());
+            outfile->Printf("    %sSolver converged.\n\n", name_.c_str());
         }
-
     }
 }
-void DLRSolver::finalize()
-{
+void DLRSolver::finalize() {
     b_.clear();
     s_.clear();
     G_.reset();
@@ -789,8 +730,7 @@ void DLRSolver::finalize()
     d_.clear();
     diag_.reset();
 }
-void DLRSolver::guess()
-{
+void DLRSolver::guess() {
     // Find the nguess strongest diagonals in the A matrix
     Dimension rank(diag_->nirrep());
     A_inds_.clear();
@@ -799,9 +739,9 @@ void DLRSolver::guess()
         int n = diag_->dimpi()[h];
         if (!n) continue;
 
-        std::vector<std::pair<double, int> > d;
+        std::vector<std::pair<double, int>> d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(std::make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h, i), i));
         }
         std::sort(d.begin(), d.end());
 
@@ -824,7 +764,7 @@ void DLRSolver::guess()
             b_.push_back(std::make_shared<Vector>("Delta Guess", diag_->dimpi()));
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
-                b_[j]->set(h,A_inds_[h][k],1.0);
+                b_[j]->set(h, A_inds_[h][k], 1.0);
             }
         }
 
@@ -836,7 +776,7 @@ void DLRSolver::guess()
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
                 double** Ap = A_->pointer(h);
-                double*  sp = s_[j]->pointer(h);
+                double* sp = s_[j]->pointer(h);
                 for (int l = 0; l < rank[h]; l++) {
                     Ap[k][l] = sp[A_inds_[h][l]];
                 }
@@ -848,10 +788,10 @@ void DLRSolver::guess()
     b_.clear();
 
     SharedMatrix A2(A_->clone());
-    auto U = std::make_shared<Matrix>("U",rank,rank);
-    auto L = std::make_shared<Vector>("L",rank);
+    auto U = std::make_shared<Matrix>("U", rank, rank);
+    auto L = std::make_shared<Vector>("L", rank);
 
-    A2->diagonalize(U,L);
+    A2->diagonalize(U, L);
 
     for (int i = 0; i < nroot_; i++) {
         std::stringstream ss;
@@ -859,7 +799,7 @@ void DLRSolver::guess()
         b_.push_back(std::make_shared<Vector>(ss.str(), diag_->dimpi()));
         for (int h = 0; h < diag_->nirrep(); h++) {
             double** Up = U->pointer(h);
-            double*  bp = b_[i]->pointer(h);
+            double* bp = b_[i]->pointer(h);
             for (int j = 0; j < rank[h]; j++) {
                 bp[A_inds_[h][j]] = Up[j][i];
             }
@@ -869,17 +809,15 @@ void DLRSolver::guess()
     nsubspace_ = nroot_;
 
     if (debug_) {
-        outfile->Printf( "   > Guess <\n\n");
+        outfile->Printf("   > Guess <\n\n");
         diag_->print();
         A_->print();
         for (size_t i = 0; i < b_.size(); ++i) {
             b_[i]->print();
         }
-
     }
 }
-void DLRSolver::sigma()
-{
+void DLRSolver::sigma() {
     int n = b_.size() - s_.size();
     int offset = s_.size();
     for (int i = 0; i < n; i++) {
@@ -888,26 +826,24 @@ void DLRSolver::sigma()
         s_.push_back(std::make_shared<Vector>(s.str(), diag_->dimpi()));
     }
 
-    std::vector<std::shared_ptr<Vector> > x;
-    std::vector<std::shared_ptr<Vector> > b;
+    std::vector<std::shared_ptr<Vector>> x;
+    std::vector<std::shared_ptr<Vector>> b;
 
     for (int i = offset; i < offset + n; i++) {
         x.push_back(b_[i]);
         b.push_back(s_[i]);
     }
 
-    H_->product(x,b);
+    H_->product(x, b);
 
     if (debug_) {
-        outfile->Printf( "   > Sigma <\n\n");
+        outfile->Printf("   > Sigma <\n\n");
         for (size_t i = 0; i < s_.size(); i++) {
             s_[i]->print();
         }
-
     }
 }
-void DLRSolver::subspaceHamiltonian()
-{
+void DLRSolver::subspaceHamiltonian() {
     int n = s_.size();
     int nirrep = diag_->nirrep();
     auto* npi = new int[nirrep];
@@ -915,11 +851,10 @@ void DLRSolver::subspaceHamiltonian()
         npi[h] = n;
     }
 
-    G_ = std::make_shared<Matrix>("Subspace Hamiltonian",nirrep,npi,npi);
+    G_ = std::make_shared<Matrix>("Subspace Hamiltonian", nirrep, npi, npi);
     delete[] npi;
 
     for (int h = 0; h < nirrep; ++h) {
-
         int dimension = diag_->dimpi()[h];
 
         if (!dimension) continue;
@@ -927,19 +862,17 @@ void DLRSolver::subspaceHamiltonian()
         double** Gp = G_->pointer(h);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j <= i; j++) {
-                Gp[i][j] = Gp[j][i] = C_DDOT(dimension,b_[i]->pointer(h),1,s_[j]->pointer(h),1);
+                Gp[i][j] = Gp[j][i] = C_DDOT(dimension, b_[i]->pointer(h), 1, s_[j]->pointer(h), 1);
             }
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceHamiltonian <\n\n");
+        outfile->Printf("   > SubspaceHamiltonian <\n\n");
         G_->print();
-
     }
 }
-void DLRSolver::subspaceDiagonalization()
-{
+void DLRSolver::subspaceDiagonalization() {
     int n = s_.size();
     int nirrep = diag_->nirrep();
     Dimension npi(nirrep);
@@ -948,14 +881,13 @@ void DLRSolver::subspaceDiagonalization()
     }
 
     SharedMatrix G2(G_->clone());
-    a_ = std::make_shared<Matrix>("Subspace Eigenvectors",npi,npi);
-    l_ = std::make_shared<Vector>("Subspace Eigenvalues",npi);
+    a_ = std::make_shared<Matrix>("Subspace Eigenvectors", npi, npi);
+    l_ = std::make_shared<Vector>("Subspace Eigenvalues", npi);
 
-    G2->diagonalize(a_,l_);
+    G2->diagonalize(a_, l_);
 
     // Resort to remove false zeros for cases with too small of irreps
     for (int h = 0; h < nirrep; h++) {
-
         int dim = diag_->dimpi()[h];
 
         int nfalse = n - dim;
@@ -963,29 +895,26 @@ void DLRSolver::subspaceDiagonalization()
         if (nfalse <= 0) continue;
 
         double** ap = a_->pointer(h);
-        double*  lp = l_->pointer(h);
+        double* lp = l_->pointer(h);
 
         for (int m = 0; m < n - nfalse; m++) {
             lp[m] = lp[m + nfalse];
-            C_DCOPY(n,&ap[0][m + nfalse], n, &ap[0][m], n);
+            C_DCOPY(n, &ap[0][m + nfalse], n, &ap[0][m], n);
         }
 
         for (int m = 0; m < nfalse; m++) {
             lp[n - m - 1] = 0;
-            C_DSCAL(n,0.0,&ap[0][n - m - 1], n);
+            C_DSCAL(n, 0.0, &ap[0][n - m - 1], n);
         }
-
     }
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceDiagonalize <\n\n");
+        outfile->Printf("   > SubspaceDiagonalize <\n\n");
         a_->print();
         l_->print();
-
     }
 }
-void DLRSolver::eigenvecs()
-{
+void DLRSolver::eigenvecs() {
     if (c_.size() != (size_t)nroot_) {
         c_.clear();
         for (int m = 0; m < nroot_; ++m) {
@@ -997,7 +926,6 @@ void DLRSolver::eigenvecs()
     }
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
         int dimension = diag_->dimpi()[h];
 
         if (!dimension) continue;
@@ -1005,46 +933,42 @@ void DLRSolver::eigenvecs()
         double** ap = a_->pointer(h);
         for (int m = 0; m < nroot_; m++) {
             double* cp = c_[m]->pointer(h);
-            ::memset((void*) cp, '\0', dimension*sizeof(double));
+            ::memset((void*)cp, '\0', dimension * sizeof(double));
             for (size_t i = 0; i < b_.size(); i++) {
                 double* bp = b_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][m],bp,1,cp,1);
+                C_DAXPY(dimension, ap[i][m], bp, 1, cp, 1);
             }
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > Eigenvectors <\n\n");
+        outfile->Printf("   > Eigenvectors <\n\n");
         for (size_t m = 0; m < c_.size(); m++) {
             c_[m]->print();
         }
-
     }
 }
-void DLRSolver::eigenvals()
-{
+void DLRSolver::eigenvals() {
     E_.clear();
     E_.resize(nroot_);
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
         for (int k = 0; k < nroot_; k++) {
-            E_[k].push_back(l_->get(h,k));
+            E_[k].push_back(l_->get(h, k));
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > Eigenvalues <\n\n");
+        outfile->Printf("   > Eigenvalues <\n\n");
         for (size_t m = 0; m < E_.size(); m++) {
             for (size_t h = 0; h < E_[0].size(); ++h) {
-                outfile->Printf( "    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf("    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
             }
         }
-        outfile->Printf( "\n");
-
+        outfile->Printf("\n");
     }
 }
-void DLRSolver::residuals()
-{
+void DLRSolver::residuals() {
     n_.resize(nroot_);
     nconverged_ = 0;
 
@@ -1059,36 +983,33 @@ void DLRSolver::residuals()
     }
 
     for (int k = 0; k < nroot_; k++) {
-
         double R2 = 0.0;
         double S2 = 0.0;
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
-
-        int dimension = diag_->dimpi()[h];
-        if (!dimension) continue;
+            int dimension = diag_->dimpi()[h];
+            if (!dimension) continue;
 
             double** ap = a_->pointer(h);
-            double*  lp = l_->pointer(h);
-            double*  rp = r_[k]->pointer(h);
-            double*  cp = c_[k]->pointer(h);
+            double* lp = l_->pointer(h);
+            double* rp = r_[k]->pointer(h);
+            double* cp = c_[k]->pointer(h);
 
-            ::memset((void*)rp, '\0', dimension*sizeof(double));
+            ::memset((void*)rp, '\0', dimension * sizeof(double));
 
             for (size_t i = 0; i < b_.size(); i++) {
                 double* sp = s_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][k],sp,1,rp,1);
+                C_DAXPY(dimension, ap[i][k], sp, 1, rp, 1);
             }
-            S2 += C_DDOT(dimension,rp,1,rp,1);
+            S2 += C_DDOT(dimension, rp, 1, rp, 1);
 
-            C_DAXPY(dimension,-lp[k],cp,1,rp,1);
+            C_DAXPY(dimension, -lp[k], cp, 1, rp, 1);
 
-            R2 += C_DDOT(dimension,rp,1,rp,1);
-
+            R2 += C_DDOT(dimension, rp, 1, rp, 1);
         }
 
         // Residual norm k
-        double rnorm = sqrt(R2/S2);
+        double rnorm = sqrt(R2 / S2);
         n_[k] = rnorm;
         if (rnorm < criteria_) {
             nconverged_++;
@@ -1098,32 +1019,28 @@ void DLRSolver::residuals()
     // Global convergence check
     convergence_ = 0.0;
     for (int k = 0; k < nroot_; k++) {
-        if (convergence_ < n_[k])
-            convergence_ = n_[k];
+        if (convergence_ < n_[k]) convergence_ = n_[k];
     }
 
     if (nconverged_ == nroot_) converged_ = true;
     if (debug_) {
-        outfile->Printf( "   > Residuals <\n\n");
+        outfile->Printf("   > Residuals <\n\n");
         for (size_t i = 0; i < r_.size(); i++) {
             r_[i]->print();
         }
         for (size_t i = 0; i < n_.size(); i++) {
-            outfile->Printf( "    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf("    Residual %d = %24.16E\n", i, n_[i]);
         }
         outfile->Printf("\n");
-        outfile->Printf("    %d of %d roots converged, we are %s\n\n",
-            nconverged_, nroot_, (converged_ ? "converged": "not converged"));
-
+        outfile->Printf("    %d of %d roots converged, we are %s\n\n", nconverged_, nroot_,
+                        (converged_ ? "converged" : "not converged"));
     }
 }
-void DLRSolver::correctors()
-{
+void DLRSolver::correctors() {
     // Only add correctors for roots that are not converged
     d_.clear();
 
     for (int k = 0; k < nroot_; k++) {
-
         // Do not attempt to add a corrector if root is already converged
         if (n_[k] < criteria_) continue;
 
@@ -1132,7 +1049,6 @@ void DLRSolver::correctors()
         auto d = std::make_shared<Vector>(s.str().c_str(), diag_->dimpi());
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
-
             int dimension = diag_->dimpi()[h];
             if (!dimension) continue;
 
@@ -1152,20 +1068,20 @@ void DLRSolver::correctors()
                     auto A2 = std::make_shared<Matrix>("A2", rank, rank);
                     double** A2p = A2->pointer();
                     double** Ap = A_->pointer(h);
-                    ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
+                    ::memcpy((void*)A2p[0], (void*)Ap[0], sizeof(double) * rank * rank);
                     for (int i = 0; i < rank; i++) {
                         A2p[i][i] -= lambda;
                     }
 
                     int* ipiv = new int[rank];
-                    int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
+                    int info = C_DGETRF(rank, rank, A2p[0], rank, ipiv);
                     // Only apply the improved preconditioner if nonsingular
                     if (!info) {
                         double* v = new double[rank];
                         for (int i = 0; i < rank; i++) {
                             v[i] = rp[A_inds_[h][i]];
                         }
-                        C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
+                        C_DGETRS('N', rank, 1, A2p[0], rank, ipiv, v, rank);
                         for (int i = 0; i < rank; i++) {
                             dp[A_inds_[h][i]] = v[i];
                         }
@@ -1179,13 +1095,13 @@ void DLRSolver::correctors()
                     dp[m] = rp[m] / (lambda - hp[m]);
                 }
             } else {
-                C_DCOPY(dimension,rp,1,dp,1);
+                C_DCOPY(dimension, rp, 1, dp, 1);
             }
 
             // Substitute r for this vector, if norm is bad
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             if (norm != norm || std::isinf(norm)) {
-                C_DCOPY(dimension,rp,1,dp,1);
+                C_DCOPY(dimension, rp, 1, dp, 1);
                 norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             }
 
@@ -1201,17 +1117,15 @@ void DLRSolver::correctors()
         d_.push_back(d);
     }
     if (debug_) {
-        outfile->Printf( "   > Correctors <\n\n");
+        outfile->Printf("   > Correctors <\n\n");
         for (size_t i = 0; i < d_.size(); i++) {
             d_[i]->print();
         }
-
     }
 }
-void DLRSolver::subspaceExpansion()
-{
+void DLRSolver::subspaceExpansion() {
     if (debug_) {
-        outfile->Printf( "   > SubspaceExpansion <\n\n");
+        outfile->Printf("   > SubspaceExpansion <\n\n");
     }
 
     // Which vectors are significant?
@@ -1222,7 +1136,6 @@ void DLRSolver::subspaceExpansion()
 
     // Orthonormalize d_ via Modified Gram-Schmidt
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
         int dimension = diag_->dimpi()[h];
         if (!dimension) continue;
 
@@ -1232,20 +1145,20 @@ void DLRSolver::subspaceExpansion()
                 double* dp = d_[i]->pointer(h);
                 double* bp = b_[j]->pointer(h);
 
-                double r_ji = C_DDOT(dimension,dp,1,bp,1);
-                C_DAXPY(dimension,-r_ji,bp,1,dp,1);
+                double r_ji = C_DDOT(dimension, dp, 1, bp, 1);
+                C_DAXPY(dimension, -r_ji, bp, 1, dp, 1);
             }
         }
 
         // Remove the self-projection of d on d from d
         for (size_t i = 0; i < d_.size(); ++i) {
             double* dip = d_[i]->pointer(h);
-            double r_ii = sqrt(C_DDOT(dimension,dip,1,dip,1));
-            C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
+            double r_ii = sqrt(C_DDOT(dimension, dip, 1, dip, 1));
+            C_DSCAL(dimension, (r_ii > norm_ ? 1.0 / r_ii : 0.0), dip, 1);
             for (size_t j = i + 1; j < d_.size(); ++j) {
                 double* djp = d_[j]->pointer(h);
-                double r_ij = C_DDOT(dimension,djp,1,dip,1);
-                C_DAXPY(dimension,-r_ij,dip,1,djp,1);
+                double r_ij = C_DDOT(dimension, djp, 1, dip, 1);
+                C_DAXPY(dimension, -r_ij, dip, 1, djp, 1);
             }
             if (r_ii > norm_) {
                 sig[i] = sig[i] | true;
@@ -1263,19 +1176,17 @@ void DLRSolver::subspaceExpansion()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        outfile->Printf( "Final subspace after addition\n\n");
+        outfile->Printf("Final subspace after addition\n\n");
         for (size_t i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
-
     }
 }
-void DLRSolver::subspaceCollapse()
-{
+void DLRSolver::subspaceCollapse() {
     if (nsubspace_ <= max_subspace_) return;
 
-    std::vector<std::shared_ptr<Vector> > s2;
-    std::vector<std::shared_ptr<Vector> > b2;
+    std::vector<std::shared_ptr<Vector>> s2;
+    std::vector<std::shared_ptr<Vector>> b2;
 
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
@@ -1293,14 +1204,14 @@ void DLRSolver::subspaceCollapse()
             if (!dimension) continue;
 
             double** ap = a_->pointer(h);
-            double*  b2p = b2[k]->pointer(h);
-            double*  s2p = s2[k]->pointer(h);
+            double* b2p = b2[k]->pointer(h);
+            double* s2p = s2[k]->pointer(h);
 
             for (int i = 0; i < n; ++i) {
-                double*  bp = b_[i]->pointer(h);
-                double*  sp = s_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][k],sp,1,s2p,1);
-                C_DAXPY(dimension,ap[i][k],bp,1,b2p,1);
+                double* bp = b_[i]->pointer(h);
+                double* sp = s_[i]->pointer(h);
+                C_DAXPY(dimension, ap[i][k], sp, 1, s2p, 1);
+                C_DAXPY(dimension, ap[i][k], bp, 1, b2p, 1);
             }
         }
     }
@@ -1310,7 +1221,7 @@ void DLRSolver::subspaceCollapse()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceCollapse <\n\n");
+        outfile->Printf("   > SubspaceCollapse <\n\n");
         for (size_t i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
@@ -1320,20 +1231,14 @@ void DLRSolver::subspaceCollapse()
     }
 }
 
-RayleighRSolver::RayleighRSolver(std::shared_ptr<RHamiltonian> H) :
-    DLRSolver(H)
-{
+RayleighRSolver::RayleighRSolver(std::shared_ptr<RHamiltonian> H) : DLRSolver(H) {
     name_ = "RayleighR";
     precondition_maxiter_ = 1;
     precondition_steps_ = "TRIANGULAR";
     quantity_ = "RESIDUAL";
 }
-RayleighRSolver::~RayleighRSolver()
-{
-}
-std::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& options,
-    std::shared_ptr<RHamiltonian> H)
-{
+RayleighRSolver::~RayleighRSolver() {}
+std::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& options, std::shared_ptr<RHamiltonian> H) {
     auto solver = std::make_shared<RayleighRSolver>(H);
 
     if (options["PRINT"].has_changed()) {
@@ -1381,42 +1286,38 @@ std::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& options,
 
     return solver;
 }
-void RayleighRSolver::print_header() const
-{
+void RayleighRSolver::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> RayleighRSolver (by Rob Parrish) <== \n\n");
-        outfile->Printf( "   Number of roots         = %11d\n", nroot_);
-        outfile->Printf( "   Number of guess vectors = %11d\n", nguess_);
-        outfile->Printf( "   Expansion quantity      = %11s\n", quantity_.c_str());
+        outfile->Printf("  ==> RayleighRSolver (by Rob Parrish) <== \n\n");
+        outfile->Printf("   Number of roots         = %11d\n", nroot_);
+        outfile->Printf("   Number of guess vectors = %11d\n", nguess_);
+        outfile->Printf("   Expansion quantity      = %11s\n", quantity_.c_str());
         if (quantity_ == "RESIDUAL") {
-            outfile->Printf( "   Maximum subspace size   = %11d\n", max_subspace_);
-            outfile->Printf( "   Minimum subspace size   = %11d\n", min_subspace_);
+            outfile->Printf("   Maximum subspace size   = %11d\n", max_subspace_);
+            outfile->Printf("   Minimum subspace size   = %11d\n", min_subspace_);
         }
-        outfile->Printf( "   Convergence cutoff      = %11.0E\n", criteria_);
-        outfile->Printf( "   Maximum iterations      = %11d\n", maxiter_);
-        outfile->Printf( "   Rayleigh step type      = %11s\n", precondition_steps_.c_str());
+        outfile->Printf("   Convergence cutoff      = %11.0E\n", criteria_);
+        outfile->Printf("   Maximum iterations      = %11d\n", maxiter_);
+        outfile->Printf("   Rayleigh step type      = %11s\n", precondition_steps_.c_str());
         if (precondition_steps_ == "CONSTANT") {
-            outfile->Printf( "   Rayleigh step maxiter   = %11d\n", precondition_maxiter_);
+            outfile->Printf("   Rayleigh step maxiter   = %11d\n", precondition_maxiter_);
         } else {
-            outfile->Printf( "   Rayleigh step factor    = %11d\n", precondition_maxiter_);
+            outfile->Printf("   Rayleigh step factor    = %11d\n", precondition_maxiter_);
         }
-        outfile->Printf( "   Preconditioning         = %11s\n\n", precondition_.c_str());
+        outfile->Printf("   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
 }
-void RayleighRSolver::initialize()
-{
+void RayleighRSolver::initialize() {
     DLRSolver::initialize();
     cg_ = CGRSolver::build_solver(Process::environment.options, H_);
     cg_->set_print(1);
 }
-void RayleighRSolver::finalize()
-{
+void RayleighRSolver::finalize() {
     DLRSolver::finalize();
     cg_.reset();
 }
-void RayleighRSolver::correctors()
-{
-    cg_->set_A(A_,A_inds_);
+void RayleighRSolver::correctors() {
+    cg_->set_A(A_, A_inds_);
     if (precondition_ == "SUBSPACE") {
         if (iteration_ <= 1) {
             cg_->set_precondition("JACOBI");
@@ -1444,7 +1345,7 @@ void RayleighRSolver::correctors()
     }
 
     std::vector<int> sig_inds;
-    std::vector<std::vector<double> > shifts(diag_->nirrep());
+    std::vector<std::vector<double>> shifts(diag_->nirrep());
     for (int i = 0; i < nroot_; i++) {
         if (n_[i] > criteria_) {
             for (int h = 0; h < diag_->nirrep(); h++) {
@@ -1464,16 +1365,15 @@ void RayleighRSolver::correctors()
     for (size_t i = 0; i < b.size(); i++) {
         d_.push_back(x[i]);
         for (int h = 0; h < diag_->nirrep(); h++) {
-
             int dimension = diag_->dimpi()[h];
             if (!dimension) continue;
 
             double* dp = d_[i]->pointer(h);
-            //if (quantity_ == "EIGENVECTOR") {
-//                int i_abs = sig_inds[i];
-                double* cp = c_[i]->pointer(h);
-                double S = C_DDOT(dimension, dp, 1, cp, 1);
-                C_DAXPY(dimension,-S,cp,1,dp,1);
+            // if (quantity_ == "EIGENVECTOR") {
+            //                int i_abs = sig_inds[i];
+            double* cp = c_[i]->pointer(h);
+            double S = C_DDOT(dimension, dp, 1, cp, 1);
+            C_DAXPY(dimension, -S, cp, 1, dp, 1);
             //}
 
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
@@ -1490,23 +1390,17 @@ void RayleighRSolver::correctors()
     cg_->finalize();
 }
 
-DLRXSolver::DLRXSolver(std::shared_ptr<RHamiltonian> H) :
-    RSolver(H),
-    nroot_(1),
-    norm_(1.E-6),
-    max_subspace_(6),
-    min_subspace_(2),
-    nguess_(1),
-    nsubspace_(0),
-    nconverged_(0)
-{
-}
-DLRXSolver::~DLRXSolver()
-{
-}
-std::shared_ptr<DLRXSolver> DLRXSolver::build_solver(Options& options,
-    std::shared_ptr<RHamiltonian> H)
-{
+DLRXSolver::DLRXSolver(std::shared_ptr<RHamiltonian> H)
+    : RSolver(H),
+      nroot_(1),
+      norm_(1.E-6),
+      max_subspace_(6),
+      min_subspace_(2),
+      nguess_(1),
+      nsubspace_(0),
+      nconverged_(0) {}
+DLRXSolver::~DLRXSolver() {}
+std::shared_ptr<DLRXSolver> DLRXSolver::build_solver(Options& options, std::shared_ptr<RHamiltonian> H) {
     auto solver = std::make_shared<DLRXSolver>(H);
 
     if (options["PRINT"].has_changed()) {
@@ -1539,21 +1433,19 @@ std::shared_ptr<DLRXSolver> DLRXSolver::build_solver(Options& options,
 
     return solver;
 }
-void DLRXSolver::print_header() const
-{
+void DLRXSolver::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> DLRXSolver (by Rob Parrish) <== \n\n");
-        outfile->Printf( "   Number of roots         = %11d\n", nroot_);
-        outfile->Printf( "   Number of guess vectors = %11d\n", nguess_);
-        outfile->Printf( "   Maximum subspace size   = %11d\n", max_subspace_);
-        outfile->Printf( "   Minimum subspace size   = %11d\n", min_subspace_);
-        outfile->Printf( "   Subspace expansion norm = %11.0E\n", norm_);
-        outfile->Printf( "   Convergence cutoff      = %11.0E\n", criteria_);
-        outfile->Printf( "   Maximum iterations      = %11d\n\n", maxiter_);
+        outfile->Printf("  ==> DLRXSolver (by Rob Parrish) <== \n\n");
+        outfile->Printf("   Number of roots         = %11d\n", nroot_);
+        outfile->Printf("   Number of guess vectors = %11d\n", nguess_);
+        outfile->Printf("   Maximum subspace size   = %11d\n", max_subspace_);
+        outfile->Printf("   Minimum subspace size   = %11d\n", min_subspace_);
+        outfile->Printf("   Subspace expansion norm = %11.0E\n", norm_);
+        outfile->Printf("   Convergence cutoff      = %11.0E\n", criteria_);
+        outfile->Printf("   Maximum iterations      = %11d\n\n", maxiter_);
     }
 }
-size_t DLRXSolver::memory_estimate()
-{
+size_t DLRXSolver::memory_estimate() {
     size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
@@ -1561,8 +1453,7 @@ size_t DLRXSolver::memory_estimate()
     }
     return (2L * max_subspace_ + 3L * nroot_ + 1L) * dimension;
 }
-void DLRXSolver::initialize()
-{
+void DLRXSolver::initialize() {
     finalize();
 
     c_.clear();
@@ -1570,17 +1461,15 @@ void DLRXSolver::initialize()
 
     diag_ = H_->diagonal();
 }
-void DLRXSolver::solve()
-{
+void DLRXSolver::solve() {
     iteration_ = 0;
     converged_ = false;
     nconverged_ = 0;
     convergence_ = 0.0;
 
     if (print_) {
-        outfile->Printf( "  => Iterations <=\n\n");
-        outfile->Printf( "   %4s  %10s  %10s  %11s\n", "Iter", "NConverged", "NSubspace", "Residual");
-
+        outfile->Printf("  => Iterations <=\n\n");
+        outfile->Printf("   %4s  %10s  %10s  %11s\n", "Iter", "NConverged", "NSubspace", "Residual");
     }
 
     // Compute the first set of sigma vectors
@@ -1601,9 +1490,7 @@ void DLRXSolver::solve()
         // Find residuals, update convergence
         residuals();
 
-        outfile->Printf( "   %4d  %10d  %10d  %11.3E\n", iteration_, nconverged_,
-            nsubspace_, convergence_);
-
+        outfile->Printf("   %4d  %10d  %10d  %11.3E\n", iteration_, nconverged_, nsubspace_, convergence_);
 
         // Check for convergence
         if (converged_) break;
@@ -1620,19 +1507,16 @@ void DLRXSolver::solve()
     } while (iteration_ < maxiter_ && !converged_);
 
     if (print_) {
-        outfile->Printf( "\n");
+        outfile->Printf("\n");
     }
 
     if (!converged_) {
         throw PSIEXCEPTION("DLRXSolver did not converge");
     } else if (print_) {
-        outfile->Printf( "    DLRXSolver converged.\n\n");
+        outfile->Printf("    DLRXSolver converged.\n\n");
     }
-
-
 }
-void DLRXSolver::finalize()
-{
+void DLRXSolver::finalize() {
     b_.clear();
     s_.clear();
     G_.reset();
@@ -1643,8 +1527,7 @@ void DLRXSolver::finalize()
     d_.clear();
     diag_.reset();
 }
-void DLRXSolver::guess()
-{
+void DLRXSolver::guess() {
     for (int i = 0; i < nguess_; ++i) {
         std::stringstream ss;
         ss << "Subspace Vector " << i;
@@ -1655,30 +1538,28 @@ void DLRXSolver::guess()
         int n = diag_->dimpi()[h] / 2;
         if (!n) continue;
 
-        std::vector<std::pair<double, int> > d;
+        std::vector<std::pair<double, int>> d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(std::make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h, i), i));
         }
         std::sort(d.begin(), d.end());
 
         for (int i = 0; (i < nguess_) && (i < n); ++i) {
-            b_[i]->set(h,d[i].second,1.0);
+            b_[i]->set(h, d[i].second, 1.0);
         }
     }
 
     nsubspace_ = nguess_;
 
     if (debug_) {
-        outfile->Printf( "   > Guess <\n\n");
+        outfile->Printf("   > Guess <\n\n");
         diag_->print();
         for (size_t i = 0; i < b_.size(); ++i) {
             b_[i]->print();
         }
-
     }
 }
-void DLRXSolver::sigma()
-{
+void DLRXSolver::sigma() {
     int n = b_.size() - s_.size();
     int offset = s_.size();
     for (int i = 0; i < n; i++) {
@@ -1687,38 +1568,35 @@ void DLRXSolver::sigma()
         s_.push_back(std::make_shared<Vector>(s.str(), diag_->dimpi()));
     }
 
-    std::vector<std::shared_ptr<Vector> > x;
-    std::vector<std::shared_ptr<Vector> > b;
+    std::vector<std::shared_ptr<Vector>> x;
+    std::vector<std::shared_ptr<Vector>> b;
 
     for (int i = offset; i < offset + n; i++) {
         x.push_back(b_[i]);
         b.push_back(s_[i]);
     }
 
-    H_->product(x,b);
+    H_->product(x, b);
 
     if (debug_) {
-        outfile->Printf( "   > Sigma <\n\n");
+        outfile->Printf("   > Sigma <\n\n");
         for (size_t i = 0; i < s_.size(); i++) {
             s_[i]->print();
         }
-
     }
 }
-void DLRXSolver::subspaceHamiltonian()
-{
+void DLRXSolver::subspaceHamiltonian() {
     int n = s_.size();
     int nirrep = diag_->nirrep();
     auto* npi = new int[nirrep];
     for (int h = 0; h < nirrep; ++h) {
-        npi[h] = 2*n;
+        npi[h] = 2 * n;
     }
 
-    G_ = std::make_shared<Matrix>("Subspace Hamiltonian",nirrep,npi,npi);
+    G_ = std::make_shared<Matrix>("Subspace Hamiltonian", nirrep, npi, npi);
     delete[] npi;
 
     for (int h = 0; h < nirrep; ++h) {
-
         int dimension = diag_->dimpi()[h] / 2;
 
         if (!dimension) continue;
@@ -1728,7 +1606,7 @@ void DLRXSolver::subspaceHamiltonian()
         // (b_+)' H (b_+) and (b_-)' H (b_-)
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                Gp[i][j] = C_DDOT(2*dimension,b_[i]->pointer(h),1,s_[j]->pointer(h),1);
+                Gp[i][j] = C_DDOT(2 * dimension, b_[i]->pointer(h), 1, s_[j]->pointer(h), 1);
                 Gp[i + n][j + n] = -Gp[i][j];
             }
         }
@@ -1736,8 +1614,8 @@ void DLRXSolver::subspaceHamiltonian()
         // (b_+)' H (b_-) and (b_-)'
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                Gp[i][j + n] = -C_DDOT(dimension,&b_[i]->pointer(h)[0],1,&s_[j]->pointer(h)[dimension],1)
-                               -C_DDOT(dimension,&b_[i]->pointer(h)[dimension],1,&s_[j]->pointer(h)[0],1);
+                Gp[i][j + n] = -C_DDOT(dimension, &b_[i]->pointer(h)[0], 1, &s_[j]->pointer(h)[dimension], 1) -
+                               C_DDOT(dimension, &b_[i]->pointer(h)[dimension], 1, &s_[j]->pointer(h)[0], 1);
 
                 Gp[i + n][j] = -Gp[i][j + n];
             }
@@ -1745,33 +1623,30 @@ void DLRXSolver::subspaceHamiltonian()
     }
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceHamiltonian <\n\n");
+        outfile->Printf("   > SubspaceHamiltonian <\n\n");
         G_->print();
-
     }
 }
-void DLRXSolver::subspaceDiagonalization()
-{
+void DLRXSolver::subspaceDiagonalization() {
     int n = s_.size();
     int nirrep = diag_->nirrep();
     Dimension npi(nirrep);
     for (int h = 0; h < nirrep; ++h) {
-        npi[h] = 2*n;
+        npi[h] = 2 * n;
     }
 
     // Reals
-    a_ = std::make_shared<Matrix>("Subspace Right Eigenvectors",npi,npi);
-    l_ = std::make_shared<Vector>("Real Subspace Eigenvalues",npi);
+    a_ = std::make_shared<Matrix>("Subspace Right Eigenvectors", npi, npi);
+    l_ = std::make_shared<Vector>("Real Subspace Eigenvalues", npi);
 
     // Temps
     SharedMatrix G2(G_->clone());
-    auto atemp = std::make_shared<Matrix>("Right Eigenvectors Temp", 2*n, 2*n);
-    auto lrtemp = std::make_shared<Vector>("Real Eigenvalue Temp", 2*n);
-    auto litemp = std::make_shared<Vector>("Imaginary Eigenvalue Temp", 2*n);
+    auto atemp = std::make_shared<Matrix>("Right Eigenvectors Temp", 2 * n, 2 * n);
+    auto lrtemp = std::make_shared<Vector>("Real Eigenvalue Temp", 2 * n);
+    auto litemp = std::make_shared<Vector>("Imaginary Eigenvalue Temp", 2 * n);
 
     // Diagonalize
     for (int h = 0; h < nirrep; h++) {
-
         // Temp pointers
         double** gp = G2->pointer(h);
         double** ap = atemp->pointer();
@@ -1780,15 +1655,15 @@ void DLRXSolver::subspaceDiagonalization()
 
         // Real pointers
         double** evecp = a_->pointer(h);
-        double*  evalp = l_->pointer(h);
+        double* evalp = l_->pointer(h);
 
         // Workspace (never throws)
         int info;
         double dwork;
-        info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, nullptr, 1, &dwork, -1);
-        auto lwork = (int) dwork;
+        info = C_DGEEV('V', 'N', 2 * n, gp[0], 2 * n, lrp, lip, ap[0], 2 * n, nullptr, 1, &dwork, -1);
+        auto lwork = (int)dwork;
         auto* work = new double[lwork];
-        info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, nullptr, 1, work, lwork);
+        info = C_DGEEV('V', 'N', 2 * n, gp[0], 2 * n, lrp, lip, ap[0], 2 * n, nullptr, 1, work, lwork);
         delete[] work;
 
         if (info != 0) {
@@ -1796,7 +1671,7 @@ void DLRXSolver::subspaceDiagonalization()
         }
 
         // Check for imaginary eigenvalues
-        for (int i = 0; i < 2*n; i++) {
+        for (int i = 0; i < 2 * n; i++) {
             if (lip[i] != 0.0) {
                 std::cout << lip[i];
                 throw PSIEXCEPTION("DLXSolver: Imaginary eigenvalue found. Result is physically meaningless.");
@@ -1804,8 +1679,8 @@ void DLRXSolver::subspaceDiagonalization()
         }
 
         // Sort to order as -/+, -/+, ....
-        std::vector<std::pair<double, int> > pass1;
-        for (int i = 0; i < 2*n; i++) {
+        std::vector<std::pair<double, int>> pass1;
+        for (int i = 0; i < 2 * n; i++) {
             pass1.push_back(std::make_pair(std::fabs(lrp[i]), i));
         }
 
@@ -1815,25 +1690,24 @@ void DLRXSolver::subspaceDiagonalization()
         // Methinks we should explicitly lock the - subspace coefs based on the + subspace coefs
         std::vector<int> pass2;
         for (int i = 0; i < n; i++) {
-            if (lrp[pass1[2*i].second] < lrp[pass1[2*i+1].second]) {
-                pass2.push_back(pass1[2*i].second);
-                pass2.push_back(pass1[2*i+1].second);
-            }  else {
-                pass2.push_back(pass1[2*i+1].second);
-                pass2.push_back(pass1[2*i].second);
+            if (lrp[pass1[2 * i].second] < lrp[pass1[2 * i + 1].second]) {
+                pass2.push_back(pass1[2 * i].second);
+                pass2.push_back(pass1[2 * i + 1].second);
+            } else {
+                pass2.push_back(pass1[2 * i + 1].second);
+                pass2.push_back(pass1[2 * i].second);
             }
         }
 
-        for (int i = 0; i < 2*n; i++) {
+        for (int i = 0; i < 2 * n; i++) {
             int index = pass2[i];
             evalp[i] = lrp[index];
-            C_DCOPY(2*n, ap[index], 1, &evecp[0][i], 2*n);
+            C_DCOPY(2 * n, ap[index], 1, &evecp[0][i], 2 * n);
         }
     }
 
     //// Resort to remove false zeros for cases with too small of irreps
     for (int h = 0; h < nirrep; h++) {
-
         int dim = diag_->dimpi()[h] / 2;
 
         int nfalse = n - dim;
@@ -1841,28 +1715,26 @@ void DLRXSolver::subspaceDiagonalization()
         if (nfalse <= 0) continue;
 
         double** ap = a_->pointer(h);
-        double*  lp = l_->pointer(h);
+        double* lp = l_->pointer(h);
 
-        for (int m = 0; m < 2*(n - nfalse); m++) {
-            lp[m] = lp[m + 2*nfalse];
-            C_DCOPY(n,&ap[0][m + 2*nfalse], n, &ap[0][m], n);
+        for (int m = 0; m < 2 * (n - nfalse); m++) {
+            lp[m] = lp[m + 2 * nfalse];
+            C_DCOPY(n, &ap[0][m + 2 * nfalse], n, &ap[0][m], n);
         }
 
-        for (int m = 0; m < 2*nfalse; m++) {
+        for (int m = 0; m < 2 * nfalse; m++) {
             lp[n - m - 1] = 0;
-            C_DSCAL(n,0.0,&ap[0][n - m - 1], n);
+            C_DSCAL(n, 0.0, &ap[0][n - m - 1], n);
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceDiagonalize <\n\n");
+        outfile->Printf("   > SubspaceDiagonalize <\n\n");
         a_->print();
         l_->print();
-
     }
 }
-void DLRXSolver::eigenvecs()
-{
+void DLRXSolver::eigenvecs() {
     if (c_.size() != (size_t)nroot_) {
         c_.clear();
         for (int m = 0; m < nroot_; ++m) {
@@ -1874,7 +1746,6 @@ void DLRXSolver::eigenvecs()
     }
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
         int dimension = diag_->dimpi()[h] / 2;
 
         if (!dimension) continue;
@@ -1882,51 +1753,46 @@ void DLRXSolver::eigenvecs()
         double** ap = a_->pointer(h);
         for (int m = 0; m < nroot_; m++) {
             double* cp = c_[m]->pointer(h);
-            ::memset((void*) cp, '\0', 2L*dimension*sizeof(double));
+            ::memset((void*)cp, '\0', 2L * dimension * sizeof(double));
 
             for (size_t i = 0; i < b_.size(); i++) {
                 double* bp = b_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][2*m+1],&bp[0],1,&cp[0],1);
-                C_DAXPY(dimension,ap[i][2*m+1],&bp[dimension],1,&cp[dimension],1);
-                C_DAXPY(dimension,ap[i+b_.size()][2*m+1],&bp[dimension],1,&cp[0],1);
-                C_DAXPY(dimension,ap[i+b_.size()][2*m+1],&bp[0],1,&cp[dimension],1);
+                C_DAXPY(dimension, ap[i][2 * m + 1], &bp[0], 1, &cp[0], 1);
+                C_DAXPY(dimension, ap[i][2 * m + 1], &bp[dimension], 1, &cp[dimension], 1);
+                C_DAXPY(dimension, ap[i + b_.size()][2 * m + 1], &bp[dimension], 1, &cp[0], 1);
+                C_DAXPY(dimension, ap[i + b_.size()][2 * m + 1], &bp[0], 1, &cp[dimension], 1);
             }
-
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > Eigenvectors <\n\n");
+        outfile->Printf("   > Eigenvectors <\n\n");
         for (size_t m = 0; m < c_.size(); m++) {
             c_[m]->print();
         }
-
     }
 }
-void DLRXSolver::eigenvals()
-{
+void DLRXSolver::eigenvals() {
     E_.clear();
     E_.resize(nroot_);
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
         for (int k = 0; k < nroot_; k++) {
-            E_[k].push_back(l_->get(h,2*k+1));
+            E_[k].push_back(l_->get(h, 2 * k + 1));
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > Eigenvalues <\n\n");
+        outfile->Printf("   > Eigenvalues <\n\n");
         for (size_t m = 0; m < E_.size(); m++) {
             for (size_t h = 0; h < E_[0].size(); ++h) {
-                outfile->Printf( "    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf("    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
             }
         }
-        outfile->Printf( "\n");
-
+        outfile->Printf("\n");
     }
 }
-void DLRXSolver::residuals()
-{
+void DLRXSolver::residuals() {
     n_.resize(nroot_);
     nconverged_ = 0;
 
@@ -1941,33 +1807,30 @@ void DLRXSolver::residuals()
     }
 
     for (int k = 0; k < nroot_; k++) {
-
         double R2 = 0.0;
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
-
-        int dimension = diag_->dimpi()[h]/2;
-        if (!dimension) continue;
+            int dimension = diag_->dimpi()[h] / 2;
+            if (!dimension) continue;
 
             double** ap = a_->pointer(h);
-            double*  lp = l_->pointer(h);
-            double*  rp = r_[k]->pointer(h);
-            double*  cp = c_[k]->pointer(h);
+            double* lp = l_->pointer(h);
+            double* rp = r_[k]->pointer(h);
+            double* cp = c_[k]->pointer(h);
 
-            ::memset((void*)rp, '\0', 2L*dimension*sizeof(double));
+            ::memset((void*)rp, '\0', 2L * dimension * sizeof(double));
 
             for (size_t i = 0; i < b_.size(); i++) {
                 double* sp = s_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][2*k+1],&sp[0],1,&rp[0],1);
-                C_DAXPY(dimension,ap[i][2*k+1],&sp[dimension],1,&rp[dimension],1);
-                C_DAXPY(dimension,-ap[i+b_.size()][2*k+1],&sp[dimension],1,&rp[0],1);
-                C_DAXPY(dimension,-ap[i+b_.size()][2*k+1],&sp[0],1,&rp[dimension],1);
+                C_DAXPY(dimension, ap[i][2 * k + 1], &sp[0], 1, &rp[0], 1);
+                C_DAXPY(dimension, ap[i][2 * k + 1], &sp[dimension], 1, &rp[dimension], 1);
+                C_DAXPY(dimension, -ap[i + b_.size()][2 * k + 1], &sp[dimension], 1, &rp[0], 1);
+                C_DAXPY(dimension, -ap[i + b_.size()][2 * k + 1], &sp[0], 1, &rp[dimension], 1);
             }
 
-            C_DAXPY(dimension*2L,-lp[2*k+1],cp,1,rp,1);
+            C_DAXPY(dimension * 2L, -lp[2 * k + 1], cp, 1, rp, 1);
 
-            R2 += C_DDOT(dimension*2L,rp,1,rp,1);
-
+            R2 += C_DDOT(dimension * 2L, rp, 1, rp, 1);
         }
 
         // Residual norm k
@@ -1981,32 +1844,28 @@ void DLRXSolver::residuals()
     // Global convergence check
     convergence_ = 0.0;
     for (int k = 0; k < nroot_; k++) {
-        if (convergence_ < n_[k])
-            convergence_ = n_[k];
+        if (convergence_ < n_[k]) convergence_ = n_[k];
     }
 
     if (nconverged_ == nroot_) converged_ = true;
     if (debug_) {
-        outfile->Printf( "   > Residuals <\n\n");
+        outfile->Printf("   > Residuals <\n\n");
         for (size_t i = 0; i < r_.size(); i++) {
             r_[i]->print();
         }
         for (size_t i = 0; i < n_.size(); i++) {
-            outfile->Printf( "    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf("    Residual %d = %24.16E\n", i, n_[i]);
         }
         outfile->Printf("\n");
-        outfile->Printf("    %d of %d roots converged, we are %s\n\n",
-            nconverged_, nroot_, (converged_ ? "converged": "not converged"));
-
+        outfile->Printf("    %d of %d roots converged, we are %s\n\n", nconverged_, nroot_,
+                        (converged_ ? "converged" : "not converged"));
     }
 }
-void DLRXSolver::correctors()
-{
+void DLRXSolver::correctors() {
     // Only add correctors for roots that are not converged
     d_.clear();
 
     for (int k = 0; k < nroot_; k++) {
-
         // Do not attempt to add a corrector if root is already converged
         if (n_[k] < criteria_) continue;
 
@@ -2015,7 +1874,6 @@ void DLRXSolver::correctors()
         auto d = std::make_shared<Vector>(s.str().c_str(), diag_->dimpi());
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
-
             int dimension = diag_->dimpi()[h];
             if (!dimension) continue;
 
@@ -2024,17 +1882,17 @@ void DLRXSolver::correctors()
             double* dp = d->pointer(h);
             double* rp = r_[k]->pointer(h);
 
-            for (int m = 0; m < dimension/2; m++) {
+            for (int m = 0; m < dimension / 2; m++) {
                 dp[m] = rp[m] / (lambda - hp[m]);
             }
-            for (int m = dimension/2+1; m < dimension; m++) {
+            for (int m = dimension / 2 + 1; m < dimension; m++) {
                 dp[m] = rp[m] / (lambda + hp[m]);
             }
 
             // Substitute r for this vector, if norm is bad
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             if (norm != norm || std::isinf(norm) || norm < criteria_) {
-                C_DCOPY(dimension,rp,1,dp,1);
+                C_DCOPY(dimension, rp, 1, dp, 1);
                 norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             }
 
@@ -2050,17 +1908,15 @@ void DLRXSolver::correctors()
         d_.push_back(d);
     }
     if (debug_) {
-        outfile->Printf( "   > Correctors <\n\n");
+        outfile->Printf("   > Correctors <\n\n");
         for (size_t i = 0; i < d_.size(); i++) {
             d_[i]->print();
         }
-
     }
 }
-void DLRXSolver::subspaceExpansion()
-{
+void DLRXSolver::subspaceExpansion() {
     if (debug_) {
-        outfile->Printf( "   > SubspaceExpansion <\n\n");
+        outfile->Printf("   > SubspaceExpansion <\n\n");
     }
 
     // Which vectors are significant?
@@ -2071,8 +1927,7 @@ void DLRXSolver::subspaceExpansion()
 
     // Orthonormalize d_ via Modified Gram-Schmidt
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
-        int dimension = diag_->dimpi()[h]/2;
+        int dimension = diag_->dimpi()[h] / 2;
         if (!dimension) continue;
 
         // Remove the projection of d+ on b+ from d+
@@ -2081,8 +1936,8 @@ void DLRXSolver::subspaceExpansion()
                 double* dp = d_[i]->pointer(h);
                 double* bp = b_[j]->pointer(h);
 
-                double r_ji = C_DDOT(2*dimension,dp,1,bp,1);
-                C_DAXPY(2*dimension,-r_ji,bp,1,dp,1);
+                double r_ji = C_DDOT(2 * dimension, dp, 1, bp, 1);
+                C_DAXPY(2 * dimension, -r_ji, bp, 1, dp, 1);
             }
         }
         // Remove the projection of d+ on b- from d+
@@ -2091,9 +1946,9 @@ void DLRXSolver::subspaceExpansion()
                 double* dp = d_[i]->pointer(h);
                 double* bp = b_[j]->pointer(h);
 
-                double r_ji = C_DDOT(dimension,dp,1,&bp[dimension],1)+C_DDOT(dimension,&dp[dimension],1,bp,1);
-                C_DAXPY(dimension,-r_ji,&bp[dimension],1,dp,1);
-                C_DAXPY(dimension,-r_ji,bp,1,&dp[dimension],1);
+                double r_ji = C_DDOT(dimension, dp, 1, &bp[dimension], 1) + C_DDOT(dimension, &dp[dimension], 1, bp, 1);
+                C_DAXPY(dimension, -r_ji, &bp[dimension], 1, dp, 1);
+                C_DAXPY(dimension, -r_ji, bp, 1, &dp[dimension], 1);
             }
         }
 
@@ -2101,8 +1956,8 @@ void DLRXSolver::subspaceExpansion()
         std::vector<int> sigfigs;
         for (size_t i = 0; i < d_.size(); ++i) {
             double* dip = d_[i]->pointer(h);
-            double r_ii = sqrt(C_DDOT(2L*dimension,dip,1,dip,1));
-            C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
+            double r_ii = sqrt(C_DDOT(2L * dimension, dip, 1, dip, 1));
+            C_DSCAL(dimension, (r_ii > norm_ ? 1.0 / r_ii : 0.0), dip, 1);
             if (r_ii > norm_) {
                 sig[i] = sig[i] | true;
                 sigfigs.push_back(i);
@@ -2110,26 +1965,24 @@ void DLRXSolver::subspaceExpansion()
         }
 
         int neff = sigfigs.size();
-        auto S = std::make_shared<Matrix>("Overlap", 2*neff,2*neff);
+        auto S = std::make_shared<Matrix>("Overlap", 2 * neff, 2 * neff);
 
         // TODO build S
 
-        S->power(-1.0/2.0,0.0);
+        S->power(-1.0 / 2.0, 0.0);
 
         std::vector<SharedVector> dtemp;
         for (int i = 0; i < neff; i++) {
-            dtemp.push_back(std::make_shared<Vector>("d temp", 2L*dimension));
+            dtemp.push_back(std::make_shared<Vector>("d temp", 2L * dimension));
         }
 
         // TODO build contributions to d2
         for (int i = 0; i < neff; i++) {
-
         }
 
         for (int i = 0; i < neff; i++) {
-            ::memcpy((void*) d_[sigfigs[i]]->pointer(h), (void*) dtemp[i]->pointer(), sizeof(double)*2L*dimension);
+            ::memcpy((void*)d_[sigfigs[i]]->pointer(h), (void*)dtemp[i]->pointer(), sizeof(double) * 2L * dimension);
         }
-
     }
 
     // Add significant vectors
@@ -2142,19 +1995,17 @@ void DLRXSolver::subspaceExpansion()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        outfile->Printf( "Final subspace after addition\n\n");
+        outfile->Printf("Final subspace after addition\n\n");
         for (size_t i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
-
     }
 }
-void DLRXSolver::subspaceCollapse()
-{
+void DLRXSolver::subspaceCollapse() {
     if (nsubspace_ <= max_subspace_) return;
 
-    std::vector<std::shared_ptr<Vector> > s2;
-    std::vector<std::shared_ptr<Vector> > b2;
+    std::vector<std::shared_ptr<Vector>> s2;
+    std::vector<std::shared_ptr<Vector>> b2;
 
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
@@ -2165,30 +2016,30 @@ void DLRXSolver::subspaceCollapse()
         s2.push_back(std::make_shared<Vector>(ss.str(), diag_->dimpi()));
     }
 
-    int n = a_->rowspi()[0]/2;
+    int n = a_->rowspi()[0] / 2;
     for (int k = 0; k < min_subspace_; ++k) {
         for (int h = 0; h < diag_->nirrep(); ++h) {
-            int dimension = diag_->dimpi()[h]/2;
+            int dimension = diag_->dimpi()[h] / 2;
             if (!dimension) continue;
 
             double** ap = a_->pointer(h);
-            double*  b2p = b2[k]->pointer(h);
-            double*  s2p = s2[k]->pointer(h);
+            double* b2p = b2[k]->pointer(h);
+            double* s2p = s2[k]->pointer(h);
 
             for (int i = 0; i < n; ++i) {
-                double*  bp = b_[i]->pointer(h);
-                double*  sp = s_[i]->pointer(h);
+                double* bp = b_[i]->pointer(h);
+                double* sp = s_[i]->pointer(h);
 
                 // This is cumulative. Han Solo would say "She'll hold together"
-                C_DAXPY(dimension,ap[i][2*k+1],&sp[0],1,&s2p[0],1);
-                C_DAXPY(dimension,ap[i][2*k+1],&sp[dimension],1,&s2p[dimension],1);
-                C_DAXPY(dimension,-ap[i+n][2*k+1],&sp[dimension],1,&s2p[0],1);
-                C_DAXPY(dimension,-ap[i+n][2*k+1],&sp[0],1,&s2p[dimension],1);
+                C_DAXPY(dimension, ap[i][2 * k + 1], &sp[0], 1, &s2p[0], 1);
+                C_DAXPY(dimension, ap[i][2 * k + 1], &sp[dimension], 1, &s2p[dimension], 1);
+                C_DAXPY(dimension, -ap[i + n][2 * k + 1], &sp[dimension], 1, &s2p[0], 1);
+                C_DAXPY(dimension, -ap[i + n][2 * k + 1], &sp[0], 1, &s2p[dimension], 1);
 
-                C_DAXPY(dimension,ap[i][2*k+1],&bp[0],1,&b2p[0],1);
-                C_DAXPY(dimension,ap[i][2*k+1],&bp[dimension],1,&b2p[dimension],1);
-                C_DAXPY(dimension,ap[i+n][2*k+1],&bp[dimension],1,&b2p[0],1);
-                C_DAXPY(dimension,ap[i+n][2*k+1],&bp[0],1,&b2p[dimension],1);
+                C_DAXPY(dimension, ap[i][2 * k + 1], &bp[0], 1, &b2p[0], 1);
+                C_DAXPY(dimension, ap[i][2 * k + 1], &bp[dimension], 1, &b2p[dimension], 1);
+                C_DAXPY(dimension, ap[i + n][2 * k + 1], &bp[dimension], 1, &b2p[0], 1);
+                C_DAXPY(dimension, ap[i + n][2 * k + 1], &bp[0], 1, &b2p[dimension], 1);
             }
         }
     }
@@ -2198,7 +2049,7 @@ void DLRXSolver::subspaceCollapse()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceCollapse <\n\n");
+        outfile->Printf("   > SubspaceCollapse <\n\n");
         for (size_t i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
@@ -2208,26 +2059,21 @@ void DLRXSolver::subspaceCollapse()
     }
 }
 
-DLUSolver::DLUSolver(std::shared_ptr<UHamiltonian> H) :
-    USolver(H),
-    nroot_(1),
-    norm_(1.E-6),
-    max_subspace_(6),
-    min_subspace_(2),
-    nguess_(1),
-    nsubspace_(0),
-    nconverged_(0)
-{
+DLUSolver::DLUSolver(std::shared_ptr<UHamiltonian> H)
+    : USolver(H),
+      nroot_(1),
+      norm_(1.E-6),
+      max_subspace_(6),
+      min_subspace_(2),
+      nguess_(1),
+      nsubspace_(0),
+      nconverged_(0) {
     name_ = "DLU";
 }
 
-DLUSolver::~DLUSolver()
-{
-};
+DLUSolver::~DLUSolver(){};
 
-std::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options,
-    std::shared_ptr<UHamiltonian> H)
-{
+std::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options, std::shared_ptr<UHamiltonian> H) {
     auto solver = std::make_shared<DLUSolver>(H);
 
     if (options["PRINT"].has_changed()) {
@@ -2250,7 +2096,7 @@ std::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options,
     }
     if (options["SOLVER_N_GUESS"].has_changed()) {
         solver->set_nguess(options.get_int("SOLVER_N_GUESS"));
-    }else {
+    } else {
         solver->set_nguess(3);
     }
     if (options["SOLVER_MIN_SUBSPACE"].has_changed()) {
@@ -2271,19 +2117,18 @@ std::shared_ptr<DLUSolver> DLUSolver::build_solver(Options& options,
     return solver;
 }
 
-void DLUSolver::print_header() const
-{
+void DLUSolver::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> DLUSolver (by Jerome Gonthier) <== \n");
-        outfile->Printf( " ==> (Basically a copy-paste from R.Parrish DLR Solver) <== \n\n");
-        outfile->Printf( "   Number of roots         = %11d\n", nroot_);
-        outfile->Printf( "   Number of guess vectors = %11d\n", nguess_);
-        outfile->Printf( "   Maximum subspace size   = %11d\n", max_subspace_);
-        outfile->Printf( "   Minimum subspace size   = %11d\n", min_subspace_);
-        outfile->Printf( "   Subspace expansion norm = %11.0E\n", norm_);
-        outfile->Printf( "   Convergence cutoff      = %11.0E\n", criteria_);
-        outfile->Printf( "   Maximum iterations      = %11d\n", maxiter_);
-        outfile->Printf( "   Preconditioning         = %11s\n\n", precondition_.c_str());
+        outfile->Printf("  ==> DLUSolver (by Jerome Gonthier) <== \n");
+        outfile->Printf(" ==> (Basically a copy-paste from R.Parrish DLR Solver) <== \n\n");
+        outfile->Printf("   Number of roots         = %11d\n", nroot_);
+        outfile->Printf("   Number of guess vectors = %11d\n", nguess_);
+        outfile->Printf("   Maximum subspace size   = %11d\n", max_subspace_);
+        outfile->Printf("   Minimum subspace size   = %11d\n", min_subspace_);
+        outfile->Printf("   Subspace expansion norm = %11.0E\n", norm_);
+        outfile->Printf("   Convergence cutoff      = %11.0E\n", criteria_);
+        outfile->Printf("   Maximum iterations      = %11d\n", maxiter_);
+        outfile->Printf("   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
 }
 
@@ -2300,8 +2145,7 @@ size_t DLUSolver::memory_estimate()
 }
 */
 
-void DLUSolver::initialize()
-{
+void DLUSolver::initialize() {
     finalize();
 
     c_.clear();
@@ -2318,10 +2162,10 @@ void DLUSolver::initialize()
 
     int nirrep = diag_->nirrep();
     const Dimension& dim = diag_->dimpi();
-    int mindim=dim[0];
+    int mindim = dim[0];
 
     for (int symm = 1; symm < nirrep; ++symm) {
-        if ( dim[symm] < mindim ) mindim = dim[symm];
+        if (dim[symm] < mindim) mindim = dim[symm];
     }
 
     // The maximum subspace dimension should never be larger than
@@ -2330,21 +2174,20 @@ void DLUSolver::initialize()
 
     int new_sub = mindim - nroot_;
 
-    if ( max_subspace_ > new_sub ) {
+    if (max_subspace_ > new_sub) {
         outfile->Printf("  SOLVER_MAX_SUBSPACE should not be larger than the dimension \n");
         outfile->Printf("  of the smallest irrep - SOLVER_N_ROOT.\n");
-        outfile->Printf("  Setting SOLVER_MAX_SUBSPACE to %4i.\n\n",new_sub);
+        outfile->Printf("  Setting SOLVER_MAX_SUBSPACE to %4i.\n\n", new_sub);
         max_subspace_ = new_sub;
     }
 }
 
 // Contract an alpha/beta pair into a new vector. Each irrep is separately contracted.
 std::shared_ptr<Vector> DLUSolver::contract_pair(
-        std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > components)
-{
+    std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>> components) {
     int nirrepa = components.first->nirrep();
     int nirrepb = components.second->nirrep();
-    if (nirrepa != nirrepb ) {
+    if (nirrepa != nirrepb) {
         throw PSIEXCEPTION("Alpha and Beta should have same number of irreps.\n");
     }
 
@@ -2360,12 +2203,12 @@ std::shared_ptr<Vector> DLUSolver::contract_pair(
     double val = 0;
     for (int symm = 0; symm < nirrepa; ++symm) {
         for (int i = 0; i < dima[symm]; ++i) {
-            val = components.first->get(symm,i);
-            vec->set(symm,i,val);
+            val = components.first->get(symm, i);
+            vec->set(symm, i, val);
         }
         for (int i = 0; i < dimb[symm]; ++i) {
-            val = components.second->get(symm,i);
-            vec->set(symm,dima[symm] + i,val);
+            val = components.second->get(symm, i);
+            vec->set(symm, dima[symm] + i, val);
         }
     }
 
@@ -2374,10 +2217,8 @@ std::shared_ptr<Vector> DLUSolver::contract_pair(
 
 // Contract an alpha/beta pair into a result vector. It must have the dimension of
 // alpah + beta in each irrep.
-void DLUSolver::contract_pair(
-        std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > components,
-        std::shared_ptr<Vector> result)
-{
+void DLUSolver::contract_pair(std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>> components,
+                              std::shared_ptr<Vector> result) {
     int nirrepa = components.first->nirrep();
     int nirrepb = components.second->nirrep();
 
@@ -2389,7 +2230,7 @@ void DLUSolver::contract_pair(
     const Dimension& dimb = components.second->dimpi();
     const Dimension& dims = result->dimpi();
     for (int symm = 0; symm < nirrepa; ++symm) {
-        if (dims[symm] != dima[symm] + dimb[symm] ) {
+        if (dims[symm] != dima[symm] + dimb[symm]) {
             throw PSIEXCEPTION("Result vector dimpi should be the sum of alpha and beta.\n");
         }
     }
@@ -2397,27 +2238,23 @@ void DLUSolver::contract_pair(
     double val = 0;
     for (int symm = 0; symm < nirrepa; ++symm) {
         for (int i = 0; i < dima[symm]; ++i) {
-            val = components.first->get(symm,i);
-            result->set(symm,i,val);
+            val = components.first->get(symm, i);
+            result->set(symm, i, val);
         }
         for (int i = 0; i < dimb[symm]; ++i) {
-            val = components.second->get(symm,i);
-            result->set(symm,dima[symm] + i,val);
+            val = components.second->get(symm, i);
+            result->set(symm, dima[symm] + i, val);
         }
     }
-
 }
 
 // Expand a vector into a pair of alpha/beta, created in the routine.
-std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_pair(
-        std::shared_ptr<Vector> vec)
-{
+std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>> DLUSolver::expand_pair(std::shared_ptr<Vector> vec) {
     int nirrepa = diag_components.first->nirrep();
     int nirrepb = diag_components.second->nirrep();
     int nirrep = vec->nirrep();
 
-    if ( (nirrep != nirrepa) || (nirrep != nirrepb) )
-    {
+    if ((nirrep != nirrepa) || (nirrep != nirrepb)) {
         throw PSIEXCEPTION("Full vector irrep does not correspond to alpha or beta.\n");
     }
 
@@ -2426,7 +2263,7 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_p
     const Dimension& dims = vec->dimpi();
 
     for (int symm = 0; symm < nirrep; ++symm) {
-        if ( dims[symm] != dima[symm] + dimb[symm]) {
+        if (dims[symm] != dima[symm] + dimb[symm]) {
             throw PSIEXCEPTION("Wrong irrep dimension of input vector.\n");
         }
     }
@@ -2437,30 +2274,27 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_p
     double val = 0;
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int i = 0; i < dima[symm]; ++i) {
-            val = vec->get(symm,i);
-            pairalpha->set(symm,i,val);
+            val = vec->get(symm, i);
+            pairalpha->set(symm, i, val);
         }
         for (int i = 0; i < dimb[symm]; ++i) {
-            val = vec->get(symm,dima[symm] + i);
-            pairbeta->set(symm,i,val);
+            val = vec->get(symm, dima[symm] + i);
+            pairbeta->set(symm, i, val);
         }
     }
 
     return std::make_pair(pairalpha, pairbeta);
-
 }
 
 // Expand a vector into an alpha/beta pair result, whose dimensions must match the sum
 // of alpha and beta in the input vector for each irrep.
 void DLUSolver::expand_pair(std::shared_ptr<Vector> vec,
-                 std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>> result)
-{
+                            std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>> result) {
     int nirrepa = result.first->nirrep();
     int nirrepb = result.second->nirrep();
     int nirrep = vec->nirrep();
 
-    if ( (nirrep != nirrepa) || (nirrep != nirrepb) )
-    {
+    if ((nirrep != nirrepa) || (nirrep != nirrepb)) {
         throw PSIEXCEPTION("Full vector irrep does not correspond to alpha or beta.\n");
     }
 
@@ -2469,7 +2303,7 @@ void DLUSolver::expand_pair(std::shared_ptr<Vector> vec,
     const Dimension& dims = vec->dimpi();
 
     for (int symm = 0; symm < nirrep; ++symm) {
-        if ( dims[symm] != dima[symm] + dimb[symm]) {
+        if (dims[symm] != dima[symm] + dimb[symm]) {
             throw PSIEXCEPTION("Wrong irrep dimension of input vector.\n");
         }
     }
@@ -2477,29 +2311,25 @@ void DLUSolver::expand_pair(std::shared_ptr<Vector> vec,
     double val = 0;
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int i = 0; i < dima[symm]; ++i) {
-            val = vec->get(symm,i);
-            result.first->set(symm,i,val);
+            val = vec->get(symm, i);
+            result.first->set(symm, i, val);
         }
         for (int i = 0; i < dimb[symm]; ++i) {
-            val = vec->get(symm,dima[symm] + i);
-            result.second->set(symm,i,val);
+            val = vec->get(symm, dima[symm] + i);
+            result.second->set(symm, i, val);
         }
     }
-
 }
 
-
-void DLUSolver::solve()
-{
+void DLUSolver::solve() {
     iteration_ = 0;
     converged_ = false;
     nconverged_ = 0;
     convergence_ = 0.0;
 
     if (print_ > 1) {
-        outfile->Printf( "  => Iterations <=\n\n");
-        outfile->Printf( "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Subspace", "Residual");
-
+        outfile->Printf("  => Iterations <=\n\n");
+        outfile->Printf("  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Subspace", "Residual");
     }
 
     // Compute the first set of sigma vectors
@@ -2521,9 +2351,8 @@ void DLUSolver::solve()
         residuals();
 
         if (print_) {
-            outfile->Printf( "  %-10s %4d %10d %10d %11.3E\n", name_.c_str(), iteration_, nconverged_,
-                nsubspace_, convergence_);
-
+            outfile->Printf("  %-10s %4d %10d %10d %11.3E\n", name_.c_str(), iteration_, nconverged_, nsubspace_,
+                            convergence_);
         }
 
         // Check for convergence
@@ -2541,18 +2370,16 @@ void DLUSolver::solve()
     } while (true);
 
     if (print_ > 1) {
-        outfile->Printf( "\n");
-        if (!converged_ ) {
-            outfile->Printf( "    %sSolver did not converge.\n\n", name_.c_str());
+        outfile->Printf("\n");
+        if (!converged_) {
+            outfile->Printf("    %sSolver did not converge.\n\n", name_.c_str());
         } else {
-            outfile->Printf( "    %sSolver converged.\n\n", name_.c_str());
+            outfile->Printf("    %sSolver converged.\n\n", name_.c_str());
         }
-
     }
 }
 
-void DLUSolver::finalize()
-{
+void DLUSolver::finalize() {
     b_.clear();
     s_.clear();
     G_.reset();
@@ -2564,8 +2391,7 @@ void DLUSolver::finalize()
     diag_.reset();
 }
 
-void DLUSolver::guess()
-{
+void DLUSolver::guess() {
     // Find the nguess strongest diagonals in the A matrix
     Dimension rank(diag_->nirrep());
     A_inds_.clear();
@@ -2574,9 +2400,9 @@ void DLUSolver::guess()
         int n = diag_->dimpi()[h];
         if (!n) continue;
 
-        std::vector<std::pair<double, int> > d;
+        std::vector<std::pair<double, int>> d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(std::make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h, i), i));
         }
         std::sort(d.begin(), d.end());
 
@@ -2599,7 +2425,7 @@ void DLUSolver::guess()
             b_.push_back(std::make_shared<Vector>("Delta Guess", diag_->dimpi()));
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
-                b_[j]->set(h,A_inds_[h][k],1.0);
+                b_[j]->set(h, A_inds_[h][k], 1.0);
             }
         }
 
@@ -2611,7 +2437,7 @@ void DLUSolver::guess()
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
                 double** Ap = A_->pointer(h);
-                double*  sp = s_[j]->pointer(h);
+                double* sp = s_[j]->pointer(h);
                 for (int l = 0; l < rank[h]; l++) {
                     Ap[k][l] = sp[A_inds_[h][l]];
                 }
@@ -2623,10 +2449,10 @@ void DLUSolver::guess()
     b_.clear();
 
     SharedMatrix A2(A_->clone());
-    auto U = std::make_shared<Matrix>("U",rank,rank);
-    auto L = std::make_shared<Vector>("L",rank);
+    auto U = std::make_shared<Matrix>("U", rank, rank);
+    auto L = std::make_shared<Vector>("L", rank);
 
-    A2->diagonalize(U,L);
+    A2->diagonalize(U, L);
 
     for (int i = 0; i < nroot_; i++) {
         std::stringstream ss;
@@ -2634,7 +2460,7 @@ void DLUSolver::guess()
         b_.push_back(std::make_shared<Vector>(ss.str(), diag_->dimpi()));
         for (int h = 0; h < diag_->nirrep(); h++) {
             double** Up = U->pointer(h);
-            double*  bp = b_[i]->pointer(h);
+            double* bp = b_[i]->pointer(h);
             for (int j = 0; j < rank[h]; j++) {
                 bp[A_inds_[h][j]] = Up[j][i];
             }
@@ -2644,17 +2470,15 @@ void DLUSolver::guess()
     nsubspace_ = nroot_;
 
     if (debug_) {
-        outfile->Printf( "   > Guess <\n\n");
+        outfile->Printf("   > Guess <\n\n");
         diag_->print();
         A_->print();
         for (size_t i = 0; i < b_.size(); ++i) {
             b_[i]->print();
         }
-
     }
 }
-void DLUSolver::sigma()
-{
+void DLUSolver::sigma() {
     int n = b_.size() - s_.size();
     int offset = s_.size();
     for (int i = 0; i < n; i++) {
@@ -2663,44 +2487,41 @@ void DLUSolver::sigma()
         s_.push_back(std::make_shared<Vector>(s.str(), diag_->dimpi()));
     }
 
-    std::vector<std::shared_ptr<Vector> > x;
-    std::vector<std::shared_ptr<Vector> > b;
+    std::vector<std::shared_ptr<Vector>> x;
+    std::vector<std::shared_ptr<Vector>> b;
 
     for (int i = offset; i < offset + n; i++) {
         x.push_back(b_[i]);
         b.push_back(s_[i]);
     }
 
-    std::vector< std::pair < std::shared_ptr<Vector>, std::shared_ptr<Vector> > > xpair;
-    std::vector< std::pair < std::shared_ptr<Vector>, std::shared_ptr<Vector> > > bpair;
+    std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>>> xpair;
+    std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>>> bpair;
 
-// Get the big concatenated alpha/beta vectors into individual pair components.
+    // Get the big concatenated alpha/beta vectors into individual pair components.
 
     for (int i = 0; i < n; i++) {
         xpair.push_back(expand_pair(x[i]));
         bpair.push_back(expand_pair(b[i]));
     }
 
-    H_->product(xpair,bpair);
+    H_->product(xpair, bpair);
 
-// Concatenate the pair back into single vectors
-
+    // Concatenate the pair back into single vectors
 
     for (int i = 0; i < n; i++) {
-        contract_pair(xpair[i],x[i]);
-        contract_pair(bpair[i],b[i]);
+        contract_pair(xpair[i], x[i]);
+        contract_pair(bpair[i], b[i]);
     }
 
     if (debug_) {
-        outfile->Printf( "   > Sigma <\n\n");
+        outfile->Printf("   > Sigma <\n\n");
         for (size_t i = 0; i < s_.size(); i++) {
             s_[i]->print();
         }
-
     }
 }
-void DLUSolver::subspaceHamiltonian()
-{
+void DLUSolver::subspaceHamiltonian() {
     int n = s_.size();
     int nirrep = diag_->nirrep();
     int* npi = new int[nirrep];
@@ -2708,11 +2529,10 @@ void DLUSolver::subspaceHamiltonian()
         npi[h] = n;
     }
 
-    G_ = std::make_shared<Matrix>("Subspace Hamiltonian",nirrep,npi,npi);
+    G_ = std::make_shared<Matrix>("Subspace Hamiltonian", nirrep, npi, npi);
     delete[] npi;
 
     for (int h = 0; h < nirrep; ++h) {
-
         int dimension = diag_->dimpi()[h];
 
         if (!dimension) continue;
@@ -2720,19 +2540,17 @@ void DLUSolver::subspaceHamiltonian()
         double** Gp = G_->pointer(h);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j <= i; j++) {
-                Gp[i][j] = Gp[j][i] = C_DDOT(dimension,b_[i]->pointer(h),1,s_[j]->pointer(h),1);
+                Gp[i][j] = Gp[j][i] = C_DDOT(dimension, b_[i]->pointer(h), 1, s_[j]->pointer(h), 1);
             }
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceHamiltonian <\n\n");
+        outfile->Printf("   > SubspaceHamiltonian <\n\n");
         G_->print();
-
     }
 }
-void DLUSolver::subspaceDiagonalization()
-{
+void DLUSolver::subspaceDiagonalization() {
     int n = s_.size();
     int nirrep = diag_->nirrep();
     Dimension npi(nirrep);
@@ -2741,14 +2559,13 @@ void DLUSolver::subspaceDiagonalization()
     }
 
     SharedMatrix G2(G_->clone());
-    a_ = std::make_shared<Matrix>("Subspace Eigenvectors",npi,npi);
-    l_ = std::make_shared<Vector>("Subspace Eigenvalues",npi);
+    a_ = std::make_shared<Matrix>("Subspace Eigenvectors", npi, npi);
+    l_ = std::make_shared<Vector>("Subspace Eigenvalues", npi);
 
-    G2->diagonalize(a_,l_);
+    G2->diagonalize(a_, l_);
 
     // Resort to remove false zeros for cases with too small of irreps
     for (int h = 0; h < nirrep; h++) {
-
         int dim = diag_->dimpi()[h];
 
         int nfalse = n - dim;
@@ -2756,30 +2573,27 @@ void DLUSolver::subspaceDiagonalization()
         if (nfalse <= 0) continue;
 
         double** ap = a_->pointer(h);
-        double*  lp = l_->pointer(h);
+        double* lp = l_->pointer(h);
 
         for (int m = 0; m < n - nfalse; m++) {
             lp[m] = lp[m + nfalse];
-            C_DCOPY(n,&ap[0][m + nfalse], n, &ap[0][m], n);
+            C_DCOPY(n, &ap[0][m + nfalse], n, &ap[0][m], n);
         }
 
         for (int m = 0; m < nfalse; m++) {
             lp[n - m - 1] = 0;
-            C_DSCAL(n,0.0,&ap[0][n - m - 1], n);
+            C_DSCAL(n, 0.0, &ap[0][n - m - 1], n);
         }
-
     }
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceDiagonalize <\n\n");
+        outfile->Printf("   > SubspaceDiagonalize <\n\n");
         a_->print();
         l_->print();
-
     }
 }
 
-void DLUSolver::eigenvecs()
-{
+void DLUSolver::eigenvecs() {
     if (c_.size() != (size_t)nroot_) {
         c_.clear();
         for (int m = 0; m < nroot_; ++m) {
@@ -2791,7 +2605,6 @@ void DLUSolver::eigenvecs()
     }
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
         int dimension = diag_->dimpi()[h];
 
         if (!dimension) continue;
@@ -2799,48 +2612,44 @@ void DLUSolver::eigenvecs()
         double** ap = a_->pointer(h);
         for (int m = 0; m < nroot_; m++) {
             double* cp = c_[m]->pointer(h);
-            ::memset((void*) cp, '\0', dimension*sizeof(double));
+            ::memset((void*)cp, '\0', dimension * sizeof(double));
             for (size_t i = 0; i < b_.size(); i++) {
                 double* bp = b_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][m],bp,1,cp,1);
+                C_DAXPY(dimension, ap[i][m], bp, 1, cp, 1);
             }
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > Eigenvectors <\n\n");
+        outfile->Printf("   > Eigenvectors <\n\n");
         for (size_t m = 0; m < c_.size(); m++) {
             c_[m]->print();
         }
-
     }
 }
 
-void DLUSolver::eigenvals()
-{
+void DLUSolver::eigenvals() {
     E_.clear();
     E_.resize(nroot_);
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
         for (int k = 0; k < nroot_; k++) {
-            E_[k].push_back(l_->get(h,k));
+            E_[k].push_back(l_->get(h, k));
         }
     }
 
     if (debug_) {
-        outfile->Printf( "   > Eigenvalues <\n\n");
+        outfile->Printf("   > Eigenvalues <\n\n");
         for (size_t m = 0; m < E_.size(); m++) {
             for (size_t h = 0; h < E_[0].size(); ++h) {
-                outfile->Printf( "    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf("    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
             }
         }
-        outfile->Printf( "\n");
-
+        outfile->Printf("\n");
     }
 }
 
-void DLUSolver::residuals()
-{
+void DLUSolver::residuals() {
     n_.resize(nroot_);
     nconverged_ = 0;
 
@@ -2855,36 +2664,33 @@ void DLUSolver::residuals()
     }
 
     for (int k = 0; k < nroot_; k++) {
-
         double R2 = 0.0;
         double S2 = 0.0;
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
-
-        int dimension = diag_->dimpi()[h];
-        if (!dimension) continue;
+            int dimension = diag_->dimpi()[h];
+            if (!dimension) continue;
 
             double** ap = a_->pointer(h);
-            double*  lp = l_->pointer(h);
-            double*  rp = r_[k]->pointer(h);
-            double*  cp = c_[k]->pointer(h);
+            double* lp = l_->pointer(h);
+            double* rp = r_[k]->pointer(h);
+            double* cp = c_[k]->pointer(h);
 
-            ::memset((void*)rp, '\0', dimension*sizeof(double));
+            ::memset((void*)rp, '\0', dimension * sizeof(double));
 
             for (size_t i = 0; i < b_.size(); i++) {
                 double* sp = s_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][k],sp,1,rp,1);
+                C_DAXPY(dimension, ap[i][k], sp, 1, rp, 1);
             }
-            S2 += C_DDOT(dimension,rp,1,rp,1);
+            S2 += C_DDOT(dimension, rp, 1, rp, 1);
 
-            C_DAXPY(dimension,-lp[k],cp,1,rp,1);
+            C_DAXPY(dimension, -lp[k], cp, 1, rp, 1);
 
-            R2 += C_DDOT(dimension,rp,1,rp,1);
-
+            R2 += C_DDOT(dimension, rp, 1, rp, 1);
         }
 
         // Residual norm k
-        double rnorm = sqrt(R2/S2);
+        double rnorm = sqrt(R2 / S2);
         n_[k] = rnorm;
         if (rnorm < criteria_) {
             nconverged_++;
@@ -2894,33 +2700,29 @@ void DLUSolver::residuals()
     // Global convergence check
     convergence_ = 0.0;
     for (int k = 0; k < nroot_; k++) {
-        if (convergence_ < n_[k])
-            convergence_ = n_[k];
+        if (convergence_ < n_[k]) convergence_ = n_[k];
     }
 
     if (nconverged_ == nroot_) converged_ = true;
     if (debug_) {
-        outfile->Printf( "   > Residuals <\n\n");
+        outfile->Printf("   > Residuals <\n\n");
         for (size_t i = 0; i < r_.size(); i++) {
             r_[i]->print();
         }
         for (size_t i = 0; i < n_.size(); i++) {
-            outfile->Printf( "    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf("    Residual %d = %24.16E\n", i, n_[i]);
         }
         outfile->Printf("\n");
-        outfile->Printf("    %d of %d roots converged, we are %s\n\n",
-            nconverged_, nroot_, (converged_ ? "converged": "not converged"));
-
-   }
+        outfile->Printf("    %d of %d roots converged, we are %s\n\n", nconverged_, nroot_,
+                        (converged_ ? "converged" : "not converged"));
+    }
 }
 
-void DLUSolver::correctors()
-{
+void DLUSolver::correctors() {
     // Only add correctors for roots that are not converged
     d_.clear();
 
     for (int k = 0; k < nroot_; k++) {
-
         // Do not attempt to add a corrector if root is already converged
         if (n_[k] < criteria_) continue;
 
@@ -2929,7 +2731,6 @@ void DLUSolver::correctors()
         auto d = std::make_shared<Vector>(s.str().c_str(), diag_->dimpi());
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
-
             int dimension = diag_->dimpi()[h];
             if (!dimension) continue;
 
@@ -2949,20 +2750,20 @@ void DLUSolver::correctors()
                     auto A2 = std::make_shared<Matrix>("A2", rank, rank);
                     double** A2p = A2->pointer();
                     double** Ap = A_->pointer(h);
-                    ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
+                    ::memcpy((void*)A2p[0], (void*)Ap[0], sizeof(double) * rank * rank);
                     for (int i = 0; i < rank; i++) {
                         A2p[i][i] -= lambda;
                     }
 
                     int* ipiv = new int[rank];
-                    int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
+                    int info = C_DGETRF(rank, rank, A2p[0], rank, ipiv);
                     // Only apply the improved preconditioner if nonsingular
                     if (!info) {
                         double* v = new double[rank];
                         for (int i = 0; i < rank; i++) {
                             v[i] = rp[A_inds_[h][i]];
                         }
-                        C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
+                        C_DGETRS('N', rank, 1, A2p[0], rank, ipiv, v, rank);
                         for (int i = 0; i < rank; i++) {
                             dp[A_inds_[h][i]] = v[i];
                         }
@@ -2976,13 +2777,13 @@ void DLUSolver::correctors()
                     dp[m] = rp[m] / (lambda - hp[m]);
                 }
             } else {
-                C_DCOPY(dimension,rp,1,dp,1);
+                C_DCOPY(dimension, rp, 1, dp, 1);
             }
 
             // Substitute r for this vector, if norm is bad
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             if (norm != norm || std::isinf(norm)) {
-                C_DCOPY(dimension,rp,1,dp,1);
+                C_DCOPY(dimension, rp, 1, dp, 1);
                 norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             }
 
@@ -2998,18 +2799,16 @@ void DLUSolver::correctors()
         d_.push_back(d);
     }
     if (debug_) {
-        outfile->Printf( "   > Correctors <\n\n");
+        outfile->Printf("   > Correctors <\n\n");
         for (size_t i = 0; i < d_.size(); i++) {
             d_[i]->print();
         }
-
     }
 }
 
-void DLUSolver::subspaceExpansion()
-{
+void DLUSolver::subspaceExpansion() {
     if (debug_) {
-        outfile->Printf( "   > SubspaceExpansion <\n\n");
+        outfile->Printf("   > SubspaceExpansion <\n\n");
     }
 
     // Which vectors are significant?
@@ -3020,7 +2819,6 @@ void DLUSolver::subspaceExpansion()
 
     // Orthonormalize d_ via Modified Gram-Schmidt
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
         int dimension = diag_->dimpi()[h];
         if (!dimension) continue;
 
@@ -3030,20 +2828,20 @@ void DLUSolver::subspaceExpansion()
                 double* dp = d_[i]->pointer(h);
                 double* bp = b_[j]->pointer(h);
 
-                double r_ji = C_DDOT(dimension,dp,1,bp,1);
-                C_DAXPY(dimension,-r_ji,bp,1,dp,1);
+                double r_ji = C_DDOT(dimension, dp, 1, bp, 1);
+                C_DAXPY(dimension, -r_ji, bp, 1, dp, 1);
             }
         }
 
         // Remove the self-projection of d on d from d
         for (size_t i = 0; i < d_.size(); ++i) {
             double* dip = d_[i]->pointer(h);
-            double r_ii = sqrt(C_DDOT(dimension,dip,1,dip,1));
-            C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
+            double r_ii = sqrt(C_DDOT(dimension, dip, 1, dip, 1));
+            C_DSCAL(dimension, (r_ii > norm_ ? 1.0 / r_ii : 0.0), dip, 1);
             for (size_t j = i + 1; j < d_.size(); ++j) {
                 double* djp = d_[j]->pointer(h);
-                double r_ij = C_DDOT(dimension,djp,1,dip,1);
-                C_DAXPY(dimension,-r_ij,dip,1,djp,1);
+                double r_ij = C_DDOT(dimension, djp, 1, dip, 1);
+                C_DAXPY(dimension, -r_ij, dip, 1, djp, 1);
             }
             if (r_ii > norm_) {
                 sig[i] = sig[i] | true;
@@ -3061,20 +2859,18 @@ void DLUSolver::subspaceExpansion()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        outfile->Printf( "Final subspace after addition\n\n");
+        outfile->Printf("Final subspace after addition\n\n");
         for (size_t i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
-
     }
 }
 
-void DLUSolver::subspaceCollapse()
-{
+void DLUSolver::subspaceCollapse() {
     if (nsubspace_ <= max_subspace_) return;
 
-    std::vector<std::shared_ptr<Vector> > s2;
-    std::vector<std::shared_ptr<Vector> > b2;
+    std::vector<std::shared_ptr<Vector>> s2;
+    std::vector<std::shared_ptr<Vector>> b2;
 
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
@@ -3092,14 +2888,14 @@ void DLUSolver::subspaceCollapse()
             if (!dimension) continue;
 
             double** ap = a_->pointer(h);
-            double*  b2p = b2[k]->pointer(h);
-            double*  s2p = s2[k]->pointer(h);
+            double* b2p = b2[k]->pointer(h);
+            double* s2p = s2[k]->pointer(h);
 
             for (int i = 0; i < n; ++i) {
-                double*  bp = b_[i]->pointer(h);
-                double*  sp = s_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][k],sp,1,s2p,1);
-                C_DAXPY(dimension,ap[i][k],bp,1,b2p,1);
+                double* bp = b_[i]->pointer(h);
+                double* sp = s_[i]->pointer(h);
+                C_DAXPY(dimension, ap[i][k], sp, 1, s2p, 1);
+                C_DAXPY(dimension, ap[i][k], bp, 1, b2p, 1);
             }
         }
     }
@@ -3109,7 +2905,7 @@ void DLUSolver::subspaceCollapse()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        outfile->Printf( "   > SubspaceCollapse <\n\n");
+        outfile->Printf("   > SubspaceCollapse <\n\n");
         for (size_t i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
@@ -3118,6 +2914,4 @@ void DLUSolver::subspaceCollapse()
         }
     }
 }
-
-
 }

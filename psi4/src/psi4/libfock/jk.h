@@ -362,7 +362,7 @@ class PSI_API JK {
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                         Options& options, std::string jk_type);
     static std::shared_ptr<JK> build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                                 Options& options, bool do_wK, size_t doubles);
+                                        Options& options, bool do_wK, size_t doubles);
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;
@@ -956,7 +956,6 @@ class CDJK : public DiskDFJK {
  * wraps lib3index/DFHelper class
  */
 class MemDFJK : public JK {
-
    protected:
     // => DF-Specific stuff <= //
 
@@ -986,8 +985,7 @@ class MemDFJK : public JK {
     /// Common initialization
     void common_init();
 
-
-  public:
+   public:
     // => Constructors < = //
 
     /**
@@ -998,8 +996,7 @@ class MemDFJK : public JK {
 
     /// Destructor
     ~MemDFJK() override;
-    
-    
+
     // => Knobs <= //
 
     /**
@@ -1010,14 +1007,13 @@ class MemDFJK : public JK {
      *        defaults to 1.0E-12
      */
     void set_condition(double condition) { condition_ = condition; }
-    
+
     /**
      * What number of threads to compute integrals on
      * @param val a positive integer
      */
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
-    
-    
+
     // => Accessors <= //
 
     /**

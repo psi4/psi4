@@ -45,10 +45,8 @@ class BasisSet;
 class Vector;
 class BlockOPoints;
 
-
 class PSI_API BasisFunctions {
-
-protected:
+   protected:
     /// Basis set for this BasisFunctions
     std::shared_ptr<BasisSet> primary_;
     /// Pure AM or not
@@ -60,13 +58,13 @@ protected:
     /// Maximum derivative to compute
     int deriv_;
     /// Map of value names to Matrices containing values
-    std::map<std::string, SharedMatrix > basis_values_;
+    std::map<std::string, SharedMatrix> basis_values_;
     /// Map of temp names to Matrices containing temps
-    std::map<std::string, SharedMatrix > basis_temps_;
+    std::map<std::string, SharedMatrix> basis_temps_;
     /// Allocate registers
     virtual void allocate();
 
-public:
+   public:
     // => Constructors <= //
 
     BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
@@ -89,43 +87,53 @@ public:
 
     // => Setters <= //
 
-    void set_deriv(int deriv) { deriv_ = deriv; allocate(); }
-    void set_max_functions(int max_functions) { max_functions_ = max_functions; allocate(); }
-    void set_max_points(int max_points) { max_points_ = max_points; allocate(); }
+    void set_deriv(int deriv) {
+        deriv_ = deriv;
+        allocate();
+    }
+    void set_max_functions(int max_functions) {
+        max_functions_ = max_functions;
+        allocate();
+    }
+    void set_max_points(int max_points) {
+        max_points_ = max_points;
+        allocate();
+    }
 };
 
 class PointFunctions : public BasisFunctions {
-
-protected:
+   protected:
     // => Indices <= //
 
     /// The index of the current referenced block.
     size_t block_index_;
 
     // Contains a map to the cache the global basis_values
-    std::unordered_map<size_t, std::map<std::string, SharedMatrix>> *cache_map_ = nullptr;
+    std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map_ = nullptr;
 
     // Contains a pointer to the current map to use for basis_values
-    std::map<std::string, SharedMatrix> *current_basis_map_ = nullptr;
+    std::map<std::string, SharedMatrix>* current_basis_map_ = nullptr;
 
     /// Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
     int ansatz_;
     /// Map of value names to Vectors containing values
-    std::map<std::string, std::shared_ptr<Vector> > point_values_;
+    std::map<std::string, std::shared_ptr<Vector>> point_values_;
 
     // => Orbital Collocation <= //
 
     /// Map of value names to Matrices containing values
-    std::map<std::string, std::shared_ptr<Matrix> > orbital_values_;
+    std::map<std::string, std::shared_ptr<Matrix>> orbital_values_;
 
-public:
+   public:
     // => Constructors <= //
 
     PointFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     ~PointFunctions() override;
 
     // => Setters <= //
-    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) { cache_map_ = cache_map; }
+    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) {
+        cache_map_ = cache_map;
+    }
 
     // => Computers <= //
 
@@ -146,7 +154,11 @@ public:
 
     // => Setters <= //
 
-    void set_ansatz(int ansatz) { ansatz_ = ansatz; deriv_ = ansatz; allocate(); }
+    void set_ansatz(int ansatz) {
+        ansatz_ = ansatz;
+        deriv_ = ansatz;
+        allocate();
+    }
     virtual void set_pointers(SharedMatrix Da_occ_AO) = 0;
     virtual void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) = 0;
 
@@ -161,8 +173,7 @@ public:
 };
 
 class RKSFunctions : public PointFunctions {
-
-protected:
+   protected:
     // => Pointers <= //
 
     /// Density matrix, AO
@@ -187,7 +198,7 @@ protected:
     /// Orbital coefficeints, local AO
     SharedMatrix C_local_;
 
-public:
+   public:
     RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     ~RKSFunctions() override;
 
@@ -208,8 +219,7 @@ public:
 };
 
 class UKSFunctions : public PointFunctions {
-
-protected:
+   protected:
     // => Pointers <= //
 
     /// Density matrix, AO
@@ -244,13 +254,15 @@ protected:
     /// Orbital coefficeints, local AO
     SharedMatrix Cb_local_;
 
-public:
+   public:
     UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     ~UKSFunctions() override;
 
     void set_pointers(SharedMatrix Da_occ_AO) override;
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) override;
-    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) { cache_map_ = cache_map; }
+    void set_cache_map(std::unordered_map<size_t, std::map<std::string, SharedMatrix>>* cache_map) {
+        cache_map_ = cache_map;
+    }
 
     void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) override;
 
@@ -264,7 +276,5 @@ public:
     void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc) override;
     size_t block_index() { return block_index_; }
 };
-
-
 }
 #endif
