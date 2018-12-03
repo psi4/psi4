@@ -28,145 +28,143 @@
 
 #include "occwave.h"
 
-
 using namespace psi;
 
-namespace psi{ namespace occwave{
+namespace psi {
+namespace occwave {
 
-void OCCWave::idp2()
-{
-     int dim;
+void OCCWave::idp2() {
+    int dim;
 
-if (reference_ == "RESTRICTED") {
-    // Form IDPs
-    nidpA=0;
+    if (reference_ == "RESTRICTED") {
+        // Form IDPs
+        nidpA = 0;
 
-    // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
-    for(int h = 0; h < nirrep_; h++){
-      nidpA += virtpiA[h] * occpiA[h];
-    }
+        // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
+        for (int h = 0; h < nirrep_; h++) {
+            nidpA += virtpiA[h] * occpiA[h];
+        }
 
-    outfile->Printf("\tNumber of independent-pairs: %3d\n", nidpA);
+        outfile->Printf("\tNumber of independent-pairs: %3d\n", nidpA);
 
+        if (nidpA != 0) {
+            wogA = new Array1d("Alpha MO grad vector", nidpA);
+            wogA->zero();
+        }
 
-    if (nidpA != 0) {
-      wogA = new Array1d("Alpha MO grad vector", nidpA);
-      wogA->zero();
-    }
+        // allocate memory
+        idprowA = new int[nidpA];
+        idpcolA = new int[nidpA];
+        idpirrA = new int[nidpA];
 
-    // allocate memory
-    idprowA = new int[nidpA];
-    idpcolA = new int[nidpA];
-    idpirrA = new int[nidpA];
+        // initialize
+        memset(idprowA, 0, sizeof(int) * nidpA);
+        memset(idpcolA, 0, sizeof(int) * nidpA);
+        memset(idpirrA, 0, sizeof(int) * nidpA);
 
-    // initialize
-    memset(idprowA,0, sizeof(int)*nidpA);
-    memset(idpcolA,0, sizeof(int)*nidpA);
-    memset(idpirrA,0, sizeof(int)*nidpA);
+        // set idpA
+        dim = 0;
+        for (int h = 0; h < nirrep_; h++) {
+            for (int a = 0; a < virtpiA[h]; a++) {
+                for (int i = 0; i < occpiA[h]; i++) {
+                    idprowA[dim] = a;
+                    idpcolA[dim] = i;
+                    idpirrA[dim] = h;
+                    dim++;
+                }
+            }
+        }
 
-    // set idpA
-    dim=0;
-    for(int h = 0; h < nirrep_; h++){
-      for(int a = 0; a < virtpiA[h]; a++){
-	for(int i = 0; i < occpiA[h]; i++){
-	  idprowA[dim]=a;
-	  idpcolA[dim]=i;
-	  idpirrA[dim]=h;
-	  dim++;
-	}
-      }
-    }
+        if (print_ > 2) {
+            for (int i = 0; i < nidpA; i++) {
+                outfile->Printf("\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],
+                                idpcolA[i]);
+            }
+        }
 
-    if (print_ > 2){
-     for(int i = 0; i < nidpA; i++){
-        outfile->Printf("\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+    }  // end if (reference_ == "RESTRICTED")
 
-      }
-    }
+    else if (reference_ == "UNRESTRICTED") {
+        // Form IDPs
+        nidpA = 0;
+        nidpB = 0;
 
-}// end if (reference_ == "RESTRICTED")
+        // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
+        for (int h = 0; h < nirrep_; h++) {
+            nidpA += virtpiA[h] * occpiA[h];
+            nidpB += virtpiB[h] * occpiB[h];
+        }
 
-else if (reference_ == "UNRESTRICTED") {
-    // Form IDPs
-    nidpA=0;
-    nidpB=0;
+        outfile->Printf("\tNumber of alpha independent-pairs:%3d\n", nidpA);
+        outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
 
-    // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
-    for(int h = 0; h < nirrep_; h++){
-      nidpA += virtpiA[h] * occpiA[h];
-      nidpB += virtpiB[h] * occpiB[h];
-    }
+        if (nidpA != 0) {
+            idp_returnA = 1;
+            wogA = new Array1d("Alpha MO grad vector", nidpA);
+            wogA->zero();
+        }
 
-    outfile->Printf("\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
+        if (nidpB != 0) {
+            idp_returnB = 1;
+            wogB = new Array1d("Beta MO grad vector", nidpB);
+            wogB->zero();
+        }
 
+        // allocate memory
+        idprowA = new int[nidpA];
+        idpcolA = new int[nidpA];
+        idpirrA = new int[nidpA];
+        idprowB = new int[nidpB];
+        idpcolB = new int[nidpB];
+        idpirrB = new int[nidpB];
 
-    if (nidpA != 0) {
-      idp_returnA = 1;
-      wogA = new Array1d("Alpha MO grad vector", nidpA);
-      wogA->zero();
-    }
+        // initialize
+        memset(idprowA, 0, sizeof(int) * nidpA);
+        memset(idpcolA, 0, sizeof(int) * nidpA);
+        memset(idpirrA, 0, sizeof(int) * nidpA);
+        memset(idprowB, 0, sizeof(int) * nidpB);
+        memset(idpcolB, 0, sizeof(int) * nidpB);
+        memset(idpirrB, 0, sizeof(int) * nidpB);
 
-    if (nidpB != 0) {
-      idp_returnB = 1;
-      wogB = new Array1d("Beta MO grad vector", nidpB);
-      wogB->zero();
-    }
+        // set idpA
+        dim = 0;
+        for (int h = 0; h < nirrep_; h++) {
+            for (int a = 0; a < virtpiA[h]; a++) {
+                for (int i = 0; i < occpiA[h]; i++) {
+                    idprowA[dim] = a;
+                    idpcolA[dim] = i;
+                    idpirrA[dim] = h;
+                    dim++;
+                }
+            }
+        }
 
-    // allocate memory
-    idprowA = new int[nidpA];
-    idpcolA = new int[nidpA];
-    idpirrA = new int[nidpA];
-    idprowB = new int[nidpB];
-    idpcolB = new int[nidpB];
-    idpirrB = new int[nidpB];
+        // set idpB
+        dim = 0;
+        for (int h = 0; h < nirrep_; h++) {
+            for (int a = 0; a < virtpiB[h]; a++) {
+                for (int i = 0; i < occpiB[h]; i++) {
+                    idprowB[dim] = a;
+                    idpcolB[dim] = i;
+                    idpirrB[dim] = h;
+                    dim++;
+                }
+            }
+        }
 
-    // initialize
-    memset(idprowA,0, sizeof(int)*nidpA);
-    memset(idpcolA,0, sizeof(int)*nidpA);
-    memset(idpirrA,0, sizeof(int)*nidpA);
-    memset(idprowB,0, sizeof(int)*nidpB);
-    memset(idpcolB,0, sizeof(int)*nidpB);
-    memset(idpirrB,0, sizeof(int)*nidpB);
+        if (print_ > 2) {
+            for (int i = 0; i < nidpA; i++) {
+                outfile->Printf("\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],
+                                idpcolA[i]);
+            }
 
-    // set idpA
-    dim=0;
-    for(int h = 0; h < nirrep_; h++){
-      for(int a = 0; a < virtpiA[h]; a++){
-	for(int i = 0; i < occpiA[h]; i++){
-	  idprowA[dim]=a;
-	  idpcolA[dim]=i;
-	  idpirrA[dim]=h;
-	  dim++;
-	}
-      }
-    }
+            for (int i = 0; i < nidpB; i++) {
+                outfile->Printf("\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],
+                                idpcolB[i]);
+            }
+        }
 
-    // set idpB
-    dim=0;
-    for(int h = 0; h < nirrep_; h++){
-      for(int a = 0; a < virtpiB[h]; a++){
-	for(int i = 0; i < occpiB[h]; i++){
-	  idprowB[dim]=a;
-	  idpcolB[dim]=i;
-	  idpirrB[dim]=h;
-	  dim++;
-	}
-      }
-    }
-
-    if(print_ > 2){
-     for(int i = 0; i < nidpA; i++){
-        outfile->Printf("\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
-
-      }
-
-      for(int i = 0; i < nidpB; i++){
-        outfile->Printf("\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],idpcolB[i]);
-
-      }
-    }
-
-}// end if (reference_ == "UNRESTRICTED")
-}// end of main
-}} // End Namespaces
+    }  // end if (reference_ == "UNRESTRICTED")
+}  // end of main
+}
+}  // End Namespaces

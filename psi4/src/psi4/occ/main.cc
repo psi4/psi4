@@ -28,12 +28,10 @@
 
 #include "occwave.h"
 
+namespace psi {
+namespace occwave {
 
-
-namespace psi{ namespace occwave {
-
-SharedWavefunction occwave(SharedWavefunction ref_wfn, Options &options)
-{
+SharedWavefunction occwave(SharedWavefunction ref_wfn, Options &options) {
     // Start the timers
     tstart();
 
@@ -45,4 +43,5 @@ SharedWavefunction occwave(SharedWavefunction ref_wfn, Options &options)
 
     return occ;
 }
-}} // End Namespaces
+}
+}  // End Namespaces

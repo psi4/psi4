@@ -31,96 +31,90 @@
 #include "occwave.h"
 #include "defines.h"
 
-
 using namespace psi;
 
-namespace psi{ namespace occwave{
+namespace psi {
+namespace occwave {
 
-void OCCWave::tei_sort_iabc()
-{
-    //outfile->Printf("\n tei_sort_iabc is starting... \n");
-/********************************************************************************************/
-/************************** sort chem -> phys ***********************************************/
-/********************************************************************************************/
-        struct iwlbuf AA;
-        iwl_buf_init(&AA, PSIF_OCC_IABC, cutoff, 0, 0);
+void OCCWave::tei_sort_iabc() {
+    // outfile->Printf("\n tei_sort_iabc is starting... \n");
+    /********************************************************************************************/
+    /************************** sort chem -> phys ***********************************************/
+    /********************************************************************************************/
+    struct iwlbuf AA;
+    iwl_buf_init(&AA, PSIF_OCC_IABC, cutoff, 0, 0);
 
-	IWL ERIIN(psio_.get(), PSIF_MO_TEI, 0.0, 1, 1);
-	int ilsti,nbuf,index,fi;
-	double value = 0;
+    IWL ERIIN(psio_.get(), PSIF_MO_TEI, 0.0, 1, 1);
+    int ilsti, nbuf, index, fi;
+    double value = 0;
 
-        if (print_ > 2) outfile->Printf("\n writing <ia|bc>... \n");
- do
- {
+    if (print_ > 2) outfile->Printf("\n writing <ia|bc>... \n");
+    do {
         ilsti = ERIIN.last_buffer();
         nbuf = ERIIN.buffer_count();
 
-   fi = 0;
-   for (int idx=0; idx < nbuf; idx++ )
-   {
-
-        int i = ERIIN.labels()[fi];
+        fi = 0;
+        for (int idx = 0; idx < nbuf; idx++) {
+            int i = ERIIN.labels()[fi];
             i = std::abs(i);
-        int j = ERIIN.labels()[fi+1];
-        int k = ERIIN.labels()[fi+2];
-        int l = ERIIN.labels()[fi+3];
-        value = ERIIN.values()[idx];
-        fi += 4;
+            int j = ERIIN.labels()[fi + 1];
+            int k = ERIIN.labels()[fi + 2];
+            int l = ERIIN.labels()[fi + 3];
+            value = ERIIN.values()[idx];
+            fi += 4;
 
-        // Make sure we are dealing with the (ia|bc) type integrals
-        if (i < nooA && j >= nooA && k>= nooA && l >= nooA) {
-            iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "outfile", 0);
-            if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "outfile", 0);
+            // Make sure we are dealing with the (ia|bc) type integrals
+            if (i < nooA && j >= nooA && k >= nooA && l >= nooA) {
+                iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "outfile", 0);
+                if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "outfile", 0);
+            }
         }
+        if (!ilsti) ERIIN.fetch();
 
-   }
-        if(!ilsti)
-	  ERIIN.fetch();
+    } while (!ilsti);
 
- } while(!ilsti);
+    iwl_buf_flush(&AA, 1);
+    iwl_buf_close(&AA, 1);
 
+    /*
+            // Test reading
+            dpdbuf4 K;
+            //psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+            dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
+                      ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
+            dpd_buf4_print(&K, outfile, 1);
+            dpd_buf4_close(&K);
+            //psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-  iwl_buf_flush(&AA, 1);
-  iwl_buf_close(&AA, 1);
+            outfile->Printf("\n reading <ia|bc>... \n");
+            IWL ERIIN2(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
+     do
+     {
+            ilsti = ERIIN2.last_buffer();
+            nbuf = ERIIN2.buffer_count();
 
-/*
-        // Test reading
-        dpdbuf4 K;
-        //psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
-                  ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
-        dpd_buf4_print(&K, outfile, 1);
-	dpd_buf4_close(&K);
-	//psio_->close(PSIF_LIBTRANS_DPD, 1);
+       fi = 0;
+       for (int idx=0; idx < nbuf; idx++ )
+       {
 
-        outfile->Printf("\n reading <ia|bc>... \n");
-	IWL ERIIN2(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
- do
- {
-        ilsti = ERIIN2.last_buffer();
-        nbuf = ERIIN2.buffer_count();
+            int i = ERIIN2.labels()[fi];
+                i = std::abs(i);
+            int j = ERIIN2.labels()[fi+1];
+            int k = ERIIN2.labels()[fi+2];
+            int l = ERIIN2.labels()[fi+3];
+            value = ERIIN2.values()[idx];
+            fi += 4;
 
-   fi = 0;
-   for (int idx=0; idx < nbuf; idx++ )
-   {
-
-        int i = ERIIN2.labels()[fi];
-            i = std::abs(i);
-        int j = ERIIN2.labels()[fi+1];
-        int k = ERIIN2.labels()[fi+2];
-        int l = ERIIN2.labels()[fi+3];
-        value = ERIIN2.values()[idx];
-        fi += 4;
-
-	outfile->Printf("%3d %3d %3d %3d %20.14f\n",i,j,k,l,value);
+            outfile->Printf("%3d %3d %3d %3d %20.14f\n",i,j,k,l,value);
 
 
-   }
-        if(!ilsti)
-	  ERIIN2.fetch();
+       }
+            if(!ilsti)
+              ERIIN2.fetch();
 
- } while(!ilsti);
- */
-  //outfile->Printf("tei_sort_iabc done. \n");
-}// end sort_iabc
-}} // End Namespaces
+     } while(!ilsti);
+     */
+    // outfile->Printf("tei_sort_iabc done. \n");
+}  // end sort_iabc
+}
+}  // End Namespaces
