@@ -19,7 +19,7 @@ end
 
 # Check code style with clang-format
 code_style_validation.check validator: 'clang-format-3.6',
-                            file_extensions: ['.h', '.cc'],
+                            file_extensions: ['.h', '.cc', '.hpp', '.cpp', '.c', '.i'],
                             ignore_file_patterns: [/^external\//]
 
 # Check code style with YAPF
