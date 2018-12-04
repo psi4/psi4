@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR) # 3.8: CXX_STANDARD recognizes C
                                               # 3.2: continue()
                                               # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
 project(psi4
-	LANGUAGES C CXX Fortran)
+	LANGUAGES C CXX)
 set(psi4_URL "http://www.psicode.org/")
 set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
 set(psi4_LICENSE "GNU Lesser General Public License, version 3 (LGPL-3.0)")
@@ -87,9 +87,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ############################  Options: Build What?  ############################
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
+option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
-option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
 option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)

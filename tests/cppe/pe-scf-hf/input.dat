@@ -38,8 +38,7 @@ set {
 }
 
 set pe {
- #TODO: this is just a temporary hack to make the test run...
- potfile ../../../../tests/cppe/scf-hf/pna_6w.pot
+ potfile pna_6w.pot
 }
 
 scf_energy, wfn = energy('scf', return_wfn=True)
