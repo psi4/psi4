@@ -189,13 +189,13 @@ struct SAPTDFInts {
 
     SharedMatrix BpMat_;
     SharedMatrix BdMat_;
-    double **B_p_ = nullptr;
-    double **B_d_ = nullptr;
+    double **B_p_{nullptr};
+    double **B_d_{nullptr};
 
     int filenum_;
     const char *label_;
 
-    psio_address next_DF_ = PSIO_ZERO;
+    psio_address next_DF_{PSIO_ZERO};
 
     SAPTDFInts() {
         next_DF_ = PSIO_ZERO;

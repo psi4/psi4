@@ -566,10 +566,10 @@ void SAPT0::df_integrals() {
 #endif
     int rank = 0;
 
-    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthreads];
-    const auto **buffer = new const double *[nthreads];
+    auto eri = std::make_unique<TwoBodyAOInt *[]>(nthreads);
+    auto buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
-        eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[i] = rifactory->eri();
         buffer[i] = eri[i]->buffer();
     }
 
@@ -864,7 +864,7 @@ void SAPT0::df_integrals() {
     free(PQ_stop);
     free(block_length);
 
-    for (int i = 0; i < nthreads; ++i) eri[i].reset();
+    delete[] buffer;
 
     psio_->close(PSIF_SAPT_TEMP, 0);
 }
@@ -1034,10 +1034,10 @@ void SAPT0::df_integrals_aio() {
 #endif
     int rank = 0;
 
-    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthreads];
-    const auto **buffer = new const double *[nthreads];
+    auto eri = std::make_unique<TwoBodyAOInt *[]>(nthreads);
+    auto buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
-        eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[i] = rifactory->eri();
         buffer[i] = eri[i]->buffer();
     }
 
@@ -1385,7 +1385,7 @@ void SAPT0::df_integrals_aio() {
     free(PQ_stop);
     free(block_length);
 
-    for (int i = 0; i < nthreads; ++i) eri[i].reset();
+    delete[] buffer;
 
     psio_->close(PSIF_SAPT_TEMP, 0);
 }
@@ -1532,10 +1532,10 @@ void SAPT0::oo_df_integrals() {
 #endif
     int rank = 0;
 
-    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthreads];
-    const auto **buffer = new const double *[nthreads];
+    auto eri = std::make_unique<TwoBodyAOInt *[]>(nthreads);
+    auto buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
-        eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[i] = rifactory->eri();
         buffer[i] = eri[i]->buffer();
     }
 
@@ -1788,6 +1788,8 @@ void SAPT0::oo_df_integrals() {
     }
 
     C_p_BB.done();
+
+    delete[] buffer;
 }
 }  // namespace sapt
 }  // namespace psi
