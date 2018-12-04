@@ -41,7 +41,7 @@ namespace psi {
 class IntegralFactory;
 class AOShellCombinationsIterator;
 
-class ERDTwoElectronInt : public TwoBodyAOInt {
+class PSI_API ERDTwoElectronInt : public TwoBodyAOInt {
    protected:
     /// The list of renormalized contraction coefficients for center 1
     double *new_cc_1_;
@@ -131,7 +131,7 @@ class ERDTwoElectronInt : public TwoBodyAOInt {
     virtual size_t compute_shell_deriv2(int, int, int, int);
 };
 
-class ERDERI : public ERDTwoElectronInt {
+class PSI_API ERDERI : public ERDTwoElectronInt {
    public:
     ERDERI(const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     virtual ~ERDERI();

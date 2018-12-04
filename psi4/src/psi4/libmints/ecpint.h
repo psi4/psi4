@@ -42,6 +42,8 @@
 #define ECPINT_HEAD
 
 #include <vector>
+
+#include "psi4/pragma.h"
 #include "psi4/libmints/multiarr.h"
 #include "psi4/libmints/gaussquad.h"
 #include "psi4/libmints/typedefs.h"
@@ -85,7 +87,7 @@ struct ShellPairData {
  * This should not usually be created directly, it is instead owned by an ECPIntegral object,
  * so that integrals can be performed over multiple ECP centers without duplicating work.
  */
-class AngularIntegral {
+class PSI_API AngularIntegral {
    private:
     /// Maximum angular momentum of orbital basis and ECP basis, respectively
     int LB, LE;
@@ -188,7 +190,7 @@ class AngularIntegral {
  * This should not be used directly, and is owned by ECPIntegral.
  * It provides the interface to the adaptive quadrature algorithms used to calculate the type 1 and 2 radial integrals.
  */
-class RadialIntegral {
+class PSI_API RadialIntegral {
    private:
     /// The larger integration grid for type 1 integrals, and for when the smaller grid fails for type 2 integrals
     GCQuadrature bigGrid;
@@ -321,7 +323,7 @@ class RadialIntegral {
  * Given an ECP basis, and orbital bases, this will calculate the ECP integrals over all ECP centers.
  * TODO: Implement derivatives (identical to normal integrals, but with shifted angular momenta)
  */
-class ECPInt : public OneBodyAOInt {
+class PSI_API ECPInt : public OneBodyAOInt {
    private:
     /// The interface to the radial integral calculation
     RadialIntegral radInts;
@@ -356,7 +358,7 @@ class ECPInt : public OneBodyAOInt {
     ~ECPInt() override;
 };
 
-class ECPSOInt : public OneBodySOInt {
+class PSI_API ECPSOInt : public OneBodySOInt {
     int natom_;
 
    public:

@@ -145,7 +145,7 @@ struct SOCoefficients {
 };
 /////////////////////////////////////////////////////////////////////////////
 
-class PetiteList {
+class PSI_API PetiteList {
     int natom_;
     int nshell_;
     int nunique_shell_;

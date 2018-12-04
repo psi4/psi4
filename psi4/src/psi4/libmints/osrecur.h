@@ -29,13 +29,15 @@
 #ifndef _psi_src_lib_libmints_osrecur_h
 #define _psi_src_lib_libmints_osrecur_h
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 /*! \ingroup MINTS
  *  \class ObaraSaikaTwoCenterRecursion
  *  \brief Generic Obara and Saika recursion object.
  */
-class ObaraSaikaTwoCenterRecursion {
+class PSI_API ObaraSaikaTwoCenterRecursion {
     int max_am1_;
     int max_am2_;
 
@@ -70,7 +72,7 @@ class ObaraSaikaTwoCenterRecursion {
  *  \brief Obara and Saika recursion object for moment integrals. Currently not used by DipoleInt, hopefully soon.
  *  THIS CLASS HAS NOT BEEN TESTED!!!
  */
-class ObaraSaikaTwoCenterMIRecursion {
+class PSI_API ObaraSaikaTwoCenterMIRecursion {
     int max_am1_;
     int max_am2_;
     int max_m_;
@@ -98,7 +100,7 @@ class ObaraSaikaTwoCenterMIRecursion {
  *  \class ObaraSaikaTwoCenterVIRecursion
  *  \brief Obara and Saika recursion object for potential integrals.
  */
-class ObaraSaikaTwoCenterVIRecursion {
+class PSI_API ObaraSaikaTwoCenterVIRecursion {
    protected:
     int max_am1_;
     int max_am2_;
@@ -145,7 +147,7 @@ class ObaraSaikaTwoCenterVIRecursion {
  *  \class ObaraSaikaTwoCenterVIDerivRecursion
  *  \brief Obara and Saika recursion object for computing potential derivatives.
  */
-class ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursion {
+class PSI_API ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursion {
    protected:
     double ***vx_;
     double ***vy_;
@@ -172,7 +174,7 @@ class ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursio
  *  \class ObaraSaikaTwoCenterVIDerivRecursion
  *  \brief Obara and Saika recursion object for computing potential derivatives.
  */
-class ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRecursion {
+class PSI_API ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRecursion {
    protected:
     double ***vxx_;
     double ***vxy_;
@@ -205,7 +207,7 @@ class ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRe
  *  \class ObaraSaikaTwoCenterElectricField
  *  \brief Obara and Saika recursion object for computing electric field integrals.
  */
-class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion {
+class PSI_API ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion {
    protected:
     double ***q_;
     double ***x_;
@@ -234,7 +236,7 @@ class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion {
  *  \class ObaraSaikaTwoCenterElectricFieldGradient
  *  \brief Obara and Saika recursion object for computing electric field gradient integrals.
  */
-class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElectricField {
+class PSI_API ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElectricField {
    protected:
     double ***exx_;
     double ***eyy_;
@@ -264,7 +266,7 @@ class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElect
  *  \class ObaraSaikaTwoCenterEFPRecursion
  *  \brief Obara and Saika recursion object for potential integrals, and electric derivatives thereof, required in EFP.
  */
-class ObaraSaikaTwoCenterEFPRecursion {
+class PSI_API ObaraSaikaTwoCenterEFPRecursion {
    protected:
     int max_am1_;
     int max_am2_;
@@ -335,7 +337,7 @@ class ObaraSaikaTwoCenterEFPRecursion {
 /*! \ingroup MINTS
     \class ObaraSaikaThreeCenterRecursion
  */
-class ObaraSaikaThreeCenterRecursion {
+class PSI_API ObaraSaikaThreeCenterRecursion {
     int max_am1_;
     int max_am2_;
     int max_am3_;

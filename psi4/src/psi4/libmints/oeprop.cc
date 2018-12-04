@@ -937,7 +937,7 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
  * @brief The GridIterator class:  A class to iterate over a user-provided grid for
  *                                 computing electrostatic properties.
  */
-class GridIterator {
+class PSI_API GridIterator {
     std::ifstream gridfile_;
     Vector3 gridpoints_;
 

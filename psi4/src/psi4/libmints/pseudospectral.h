@@ -49,7 +49,7 @@ class SphericalTransform;
  *  \brief Computes pseudospectral integrals.
  * Use an IntegralFactory to create this object.
  */
-class PseudospectralInt : public OneBodyAOInt {
+class PSI_API PseudospectralInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
     void compute_pair(const GaussianShell&, const GaussianShell&) override;
     /// Computes integrals between two shell objects.

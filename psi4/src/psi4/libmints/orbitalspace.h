@@ -45,7 +45,7 @@ class IntegralFactory;
  * matrix and possible orbital energies. Relavent basis set and integral factory
  * are also contained.
  */
-class OrbitalSpace {
+class PSI_API OrbitalSpace {
     /// Unique identifier
     std::string id_;
     /// Name of the orbital space.

@@ -46,7 +46,7 @@ class BasisSet;
  *  \class X2CInt
  *  \brief Computes the 1e-X2C kinetic and potential integrals.
  */
-class X2CInt {
+class PSI_API X2CInt {
    public:
     X2CInt();
     ~X2CInt();

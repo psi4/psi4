@@ -39,7 +39,7 @@
  * Andy Simmonett.
  */
 
-class DCD {
+class PSI_API DCD {
    private:
     /// The number of subgroups in the current point group, pg_.
     int nsub_;

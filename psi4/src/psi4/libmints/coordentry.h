@@ -51,7 +51,7 @@ namespace psi {
  * may be defined in terms of other variables through this mechanism, greatly
  * simplifying Z-matrix specification, for example.
  */
-class CoordValue {
+class PSI_API CoordValue {
    protected:
     /// Fixed coordinate?
     bool fixed_;
@@ -91,7 +91,7 @@ class CoordValue {
 /**
  * Specialization of CoordValue that is simply a number to be stored.
  */
-class NumberValue : public CoordValue {
+class PSI_API NumberValue : public CoordValue {
     double value_;
 
    public:
@@ -110,7 +110,7 @@ class NumberValue : public CoordValue {
  * Specialization of CoordValue, where the current value depends on the list of
  * geometry values stored by the molecule.
  */
-class VariableValue : public CoordValue {
+class PSI_API VariableValue : public CoordValue {
     const std::string name_;
     std::map<std::string, double>& geometryVariables_;
     bool negate_;
@@ -133,7 +133,7 @@ class VariableValue : public CoordValue {
     }
 };
 
-class CoordEntry {
+class PSI_API CoordEntry {
     template <class Archive>
     friend void save(Archive& ar, const psi::Vector3& t, size_t /*version*/);
     template <class Archive>
@@ -278,7 +278,7 @@ class CoordEntry {
     void set_A(int A) { A_ = A; }
 };
 
-class CartesianEntry : public CoordEntry {
+class PSI_API CartesianEntry : public CoordEntry {
     std::shared_ptr<CoordValue> x_;
     std::shared_ptr<CoordValue> y_;
     std::shared_ptr<CoordValue> z_;
@@ -312,7 +312,7 @@ class CartesianEntry : public CoordEntry {
     }
 };
 
-class ZMatrixEntry : public CoordEntry {
+class PSI_API ZMatrixEntry : public CoordEntry {
     std::shared_ptr<CoordEntry> rto_;
     std::shared_ptr<CoordValue> rval_;
     std::shared_ptr<CoordEntry> ato_;

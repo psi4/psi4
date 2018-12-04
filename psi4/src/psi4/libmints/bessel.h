@@ -42,6 +42,8 @@
 
 #include <vector>
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 const double SMALL = 1.0E-7;
@@ -54,7 +56,7 @@ const int TAYLOR_CUT = 5;
  *  Uses pretabulation to calculate the Bessel function up to a given maximum
  *  angular momentum. Values are interpolated using local Taylor series.
  */
-class BesselFunction {
+class PSI_API BesselFunction {
    private:
     /// Maximum angular momentum
     int lMax;

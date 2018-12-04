@@ -43,7 +43,7 @@ class Molecule;
  *  \brief Computes arbitrary-order multipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class MultipoleInt : public OneBodyAOInt {
+class PSI_API MultipoleInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterMIRecursion mi_recur_;
 

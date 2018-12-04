@@ -35,7 +35,7 @@
 
 namespace psi {
 
-class SimintTwoElectronInt : public TwoBodyAOInt {
+class PSI_API SimintTwoElectronInt : public TwoBodyAOInt {
    public:
     typedef std::vector<simint_multi_shellpair> ShellPairVec;
     typedef std::vector<simint_shell> ShellVec;
@@ -83,7 +83,7 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
     std::shared_ptr<const ShellPairVec> multi_spairs_ket_;
 };
 
-class SimintERI : public SimintTwoElectronInt {
+class PSI_API SimintERI : public SimintTwoElectronInt {
    protected:
     SimintERI(const SimintERI& rhs);
 

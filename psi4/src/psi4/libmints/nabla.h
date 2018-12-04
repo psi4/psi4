@@ -48,7 +48,7 @@ class SphericalTransform;
  *  \brief Computes dipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class NablaInt : public OneBodyAOInt {
+class PSI_API NablaInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 

@@ -50,7 +50,7 @@ class CdSalcList;
  *  \brief Computes relativistic potential integrals.
  * Use an IntegralFactory to create this object.
  */
-class RelPotentialInt : public OneBodyAOInt {
+class PSI_API RelPotentialInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
     void compute_pair(const GaussianShell&, const GaussianShell&) override;
     /// Computes integrals between two shell objects.
@@ -86,7 +86,7 @@ class RelPotentialInt : public OneBodyAOInt {
     bool has_deriv1() override { return true; }
 };
 
-class RelPotentialSOInt : public OneBodySOInt {
+class PSI_API RelPotentialSOInt : public OneBodySOInt {
     int natom_;
 
    public:

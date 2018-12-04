@@ -104,7 +104,7 @@ class PSI_API OperatorSymmetry {
     std::vector<SharedMatrix> create_matrices(const std::string& basename);
 };
 
-class MultipoleSymmetry {
+class PSI_API MultipoleSymmetry {
     // The order of the multipole (dipole=1, quadrupole=2, etc...)
     int order_;
 

@@ -49,7 +49,7 @@ class SOBasisSet;
 class Molecule;
 class CdSalcList;
 
-class Deriv {
+class PSI_API Deriv {
     const std::shared_ptr<Wavefunction> wfn_;
     std::shared_ptr<IntegralFactory> integral_;
     std::shared_ptr<BasisSet> basis_;

@@ -37,7 +37,7 @@ class CdSalcList;
 class OneBodyAOInt;
 class IntegralFactory;
 
-class OneBodySOInt {
+class PSI_API OneBodySOInt {
    protected:
     std::shared_ptr<OneBodyAOInt> ob_;
     const IntegralFactory* integral_;

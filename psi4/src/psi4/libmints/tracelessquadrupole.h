@@ -49,7 +49,7 @@ class BasisSet;
  *  \brief Computes quadrupole integrals. At last check this may not be working.
  *  Use an IntegralFactory to create this object.
  */
-class TracelessQuadrupoleInt : public OneBodyAOInt {
+class PSI_API TracelessQuadrupoleInt : public OneBodyAOInt {
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     // This the work horse function.

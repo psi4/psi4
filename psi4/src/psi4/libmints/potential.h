@@ -47,7 +47,7 @@ class CdSalcList;
  *  \brief Computes potential integrals.
  * Use an IntegralFactory to create this object.
  */
-class PotentialInt : public OneBodyAOInt {
+class PSI_API PotentialInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
     void compute_pair(const GaussianShell&, const GaussianShell&) override;
     /// Computes integrals between two shell objects.
@@ -89,7 +89,7 @@ class PotentialInt : public OneBodyAOInt {
     bool has_deriv1() override { return true; }
 };
 
-class PotentialSOInt : public OneBodySOInt {
+class PSI_API PotentialSOInt : public OneBodySOInt {
     int natom_;
 
    public:

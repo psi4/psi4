@@ -81,7 +81,7 @@ class SOBasisSet;
 class CorrelationFactor;
 
 /*! \ingroup MINTS */
-class SphericalTransformComponent {
+class PSI_API SphericalTransformComponent {
    protected:
     int a_, b_, c_;
     int cartindex_, pureindex_;
@@ -108,7 +108,7 @@ class SphericalTransformComponent {
 /*! \ingroup MINTS */
 /** This is a base class for a container for a sparse Cartesian to solid
     harmonic basis function transformation. */
-class SphericalTransform {
+class PSI_API SphericalTransform {
    protected:
     std::vector<SphericalTransformComponent> components_;
     int l_;  // The angular momentum this transform is for.
@@ -142,7 +142,7 @@ class SphericalTransform {
 
 /*! \ingroup MINTS */
 /// This describes a solid harmonic to Cartesian transformation.
-class ISphericalTransform : public SphericalTransform {
+class PSI_API ISphericalTransform : public SphericalTransform {
    protected:
     ISphericalTransform();
     void init() override;
@@ -151,7 +151,7 @@ class ISphericalTransform : public SphericalTransform {
     ISphericalTransform(int l, int subl = -1);
 };
 
-class SphericalTransformIter {
+class PSI_API SphericalTransformIter {
    private:
     const SphericalTransform& trans_;
     int i_;
@@ -183,7 +183,7 @@ class SphericalTransformIter {
 };
 
 /*! \ingroup MINTS */
-class AOIntegralsIterator {
+class PSI_API AOIntegralsIterator {
    private:
     struct Integral {
         int i;
@@ -220,7 +220,7 @@ class AOIntegralsIterator {
 };
 
 /*! \ingroup MINTS */
-class AOShellCombinationsIterator {
+class PSI_API AOShellCombinationsIterator {
    private:
     struct ShellQuartet {
         int P;
