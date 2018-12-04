@@ -44,7 +44,7 @@ class SphericalTransform;
  *  \brief This class computes overlap integrals and soon overlap integral derivatives.
  *  Use an IntegralFactory to create this object.
  */
-class PSI_API OverlapInt : public OneBodyAOInt {
+class OverlapInt : public OneBodyAOInt {
     /// Generic Obara Saika recursion object.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 

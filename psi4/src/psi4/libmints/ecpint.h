@@ -323,7 +323,7 @@ class PSI_API RadialIntegral {
  * Given an ECP basis, and orbital bases, this will calculate the ECP integrals over all ECP centers.
  * TODO: Implement derivatives (identical to normal integrals, but with shifted angular momenta)
  */
-class PSI_API ECPInt : public OneBodyAOInt {
+class ECPInt : public OneBodyAOInt {
    private:
     /// The interface to the radial integral calculation
     RadialIntegral radInts;

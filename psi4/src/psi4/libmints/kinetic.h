@@ -50,7 +50,7 @@ class SphericalTransform;
  *
  * Use an IntegralFactory to create this object.
  */
-class PSI_API KineticInt : public OneBodyAOInt {
+class KineticInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 

@@ -79,7 +79,7 @@ class SphericalTransform;
  *     19    |      XYZ       |    6/15
  *
  */
-class PSI_API EFPMultipolePotentialInt : public OneBodyAOInt {
+class EFPMultipolePotentialInt : public OneBodyAOInt {
     // OS Recursion for this type of potential integral
     ObaraSaikaTwoCenterEFPRecursion mvi_recur_;
 

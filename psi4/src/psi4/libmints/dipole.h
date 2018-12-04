@@ -45,7 +45,7 @@ class Molecule;
  *  \brief Computes dipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class PSI_API DipoleInt : public OneBodyAOInt {
+class DipoleInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
