@@ -172,6 +172,7 @@ script:
 - PYTHONPATH=stage/lib/ pytest -v -rws --durations=5 stage/lib/psi4/tests/
 
 after_success:
+  - source deactivate
   - conda remove --name p4env --all
 
 # safelist
