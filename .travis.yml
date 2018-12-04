@@ -5,7 +5,7 @@ python: 3.6.5
 cache:
   timeout: 1000
   directories:
-    - $HOME/Deps/miniconda
+    - $HOME/miniconda
 
 env:
   global:
