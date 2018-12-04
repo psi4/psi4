@@ -26,7 +26,7 @@ if(${ENABLE_cppe})
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}
-                       -DENABLE_PYTHON_INTERFFACE=OFF
+                       -DENABLE_PYTHON_INTERFACE=OFF
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}

@@ -54,7 +54,7 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libpsipe/psipe.h"
+#include "psi4/libpe/psipe.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -845,7 +845,8 @@ PePropCalc::PeOutputType PePropCalc::compute_pe_prop(bool transition, bool print
         Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
     }
     Da->add(Db);
-    std::pair<double, SharedMatrix> res = wfn_->get_PeState()->compute_pe_contribution(Da, PeState::CalcType::electronic_only, true);
+    std::pair<double, SharedMatrix> res =
+        wfn_->get_PeState()->compute_pe_contribution(Da, PeState::CalcType::electronic_only, true);
     if (verbose) {
         // TODO
     }

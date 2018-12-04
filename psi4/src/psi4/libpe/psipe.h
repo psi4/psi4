@@ -25,7 +25,7 @@
  *
  * @END LICENSE
  */
- 
+
 #ifndef PSIPE_H
 #define PSIPE_H
 #ifdef USING_cppe
@@ -41,42 +41,39 @@
 #include <cppe/core/cppe_state.hh>
 #include <cppe/core/pe_options.hh>
 
-
 namespace psi {
-  class BasisSet;
-  class OneBodyAOInt;
-  
-  class PeIntegralHelper {
-      public:
-          PeIntegralHelper(std::shared_ptr<BasisSet> basisset) : basisset_(basisset) {}
-          /*! \brief computes the potential integrals at a site through k-th order
-           *   
-           */
-          SharedMatrix compute_multipole_potential_integrals(Vector3 site, int order, std::vector<double>& moments);
-          
-          /*! \brief computes the field integrals at a site
-           *
-           */
-          SharedMatrix compute_field_integrals(Vector3 site, arma::vec moments);
-          
-          /*! \brief computes the field at a site using the density matrix
-           *
-           */
-          Vector compute_field(Vector3 site, const SharedMatrix &D);
-          
-          
-      private:
-          std::shared_ptr<BasisSet> basisset_;
-  };
+class BasisSet;
+class OneBodyAOInt;
 
-  class PeState {
+class PeIntegralHelper {
+   public:
+    PeIntegralHelper(std::shared_ptr<BasisSet> basisset) : basisset_(basisset) {}
+    /*! \brief computes the potential integrals at a site through k-th order
+     *
+     */
+    SharedMatrix compute_multipole_potential_integrals(Vector3 site, int order, std::vector<double> &moments);
 
-  public:
+    /*! \brief computes the field integrals at a site
+     *
+     */
+    SharedMatrix compute_field_integrals(Vector3 site, arma::vec moments);
+
+    /*! \brief computes the field at a site using the density matrix
+     *
+     */
+    Vector compute_field(Vector3 site, const SharedMatrix &D);
+
+   private:
+    std::shared_ptr<BasisSet> basisset_;
+};
+
+class PeState {
+   public:
     enum CalcType { total, electronic_only };
     PeState() = default;
     PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset);
     ~PeState() {}
-    
+
     /*! \brief Compute PE energy and Fock matrix contribution
      *  \param[in] D density matrix
      *  \param[in] type (total Fock contribution or electronic contribution only)
@@ -85,26 +82,25 @@ namespace psi {
                                                             bool subtract_scf_density = false);
 
     /* \brief prints the summary table of PE energy contributions to the Psi4 output file
-    */
+     */
     void print_energy_summary();
 
     // void calculate_fock_contribution(arma::mat& Ptot, const libqints::multi_array<double>& out, double* energy);
     // void calculate_excited_state_energy_correction(double* p_exc, double* energy, bool is_tdm);
 
-  private:
-      std::shared_ptr<BasisSet> basisset_;
-      std::vector<libcppe::Potential> potentials_;
-      libcppe::CppeState cppe_state_;
-      PeIntegralHelper int_helper_;
-      
-      SharedMatrix V_es_;
-      SharedMatrix D_scf_;
-      
-      int iteration = 0;
-  };
+   private:
+    std::shared_ptr<BasisSet> basisset_;
+    std::vector<libcppe::Potential> potentials_;
+    libcppe::CppeState cppe_state_;
+    PeIntegralHelper int_helper_;
 
+    SharedMatrix V_es_;
+    SharedMatrix D_scf_;
 
-} // namespace psi
+    int iteration = 0;
+};
 
-#endif // USING_cppe
-#endif // PSIPE_H
+}  // namespace psi
+
+#endif  // USING_cppe
+#endif  // PSIPE_H

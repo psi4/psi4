@@ -53,7 +53,7 @@
 #include "psi4/libpsipcm/psipcm.h"
 #endif
 #ifdef USING_cppe
-#include "psi4/libpsipe/psipe.h"
+#include "psi4/libpe/psipe.h"
 #endif
 
 #include <typeinfo>

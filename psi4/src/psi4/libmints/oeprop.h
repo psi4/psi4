@@ -304,7 +304,7 @@ class PePropCalc : public Prop {
 
    public:
     /// Common initialization
-    PePropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn) {};
+    PePropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn){};
     // Output Type of multipole function, name, elec, nuc, tot
     typedef std::vector<double> PeOutputTypeBase;
     typedef std::shared_ptr<PeOutputTypeBase> PeOutputType;

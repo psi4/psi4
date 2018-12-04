@@ -1394,7 +1394,7 @@ def scf_helper(name, post_scf=True, **kwargs):
                 pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.redist
             pol_embed_border_options.rmin = core.get_local_option('PE', 'BORDER_RMIN')
             if core.get_local_option('PE', 'BORDER_RMIN_UNIT').upper() == "AA":
-                pol_embed_border_options.rmin *= 1.8897261246
+                pol_embed_border_options.rmin *= 1.0 / constants.bohr2angstroms
             pol_embed_border_options.redist_order = core.get_local_option('PE', 'BORDER_REDIST_ORDER')
             pol_embed_border_options.nredist = core.get_local_option('PE', 'BORDER_N_REDIST')
             pol_embed_border_options.redist_pol = core.get_local_option('PE', 'BORDER_REDIST_POL')

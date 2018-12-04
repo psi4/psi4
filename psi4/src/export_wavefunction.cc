@@ -73,7 +73,7 @@
 #endif
 
 #ifdef USING_cppe
-#include "psi4/libpsipe/psipe.h"
+#include "psi4/libpe/psipe.h"
 #endif
 
 using namespace psi;
