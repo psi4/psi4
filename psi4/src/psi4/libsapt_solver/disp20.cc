@@ -28,6 +28,10 @@
 
 #include "sapt0.h"
 #include "sapt2.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 namespace sapt {
@@ -156,8 +160,9 @@ void SAPT2::disp20() {
                 for (int b = 0, bs = 0; b < aoccB_; b++) {
                     for (int s = 0; s < no_nvirB_; s++, bs++) {
                         double tval = vARBS[ar][bs];
-                        e_no_disp20_ += 4.0 * tval * tval / (no_evalsA_[a + foccA_] + no_evalsB_[b + foccB_] -
-                                                             no_evalsA_[r + noccA_] - no_evalsB_[s + noccB_]);
+                        e_no_disp20_ += 4.0 * tval * tval /
+                                        (no_evalsA_[a + foccA_] + no_evalsB_[b + foccB_] - no_evalsA_[r + noccA_] -
+                                         no_evalsB_[s + noccB_]);
                     }
                 }
             }
@@ -322,5 +327,5 @@ void SAPT0::disp20()
   psio_->close(PSIF_SAPT_TEMP,0);
 }
 */
-}
-}
+}  // namespace sapt
+}  // namespace psi

@@ -481,5 +481,5 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
 
     return ret;
 }
-}
-}  // End namespace
+}  // namespace sapt
+}  // namespace psi

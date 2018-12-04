@@ -189,7 +189,7 @@ class SAPT2 : public SAPT {
     void exch12();
     void ind22();
 };
-}
-}
+}  // namespace sapt
+}  // namespace psi
 
 #endif

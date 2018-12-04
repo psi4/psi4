@@ -32,7 +32,11 @@
 
 #include "psi4/pragma.h"
 
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/aiohandler.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
 
 #include "sapt0.h"
 #include "sapt2.h"
@@ -1013,5 +1017,5 @@ void SAPT2::cphf_solver(double **tAR, double **wBAR, double *evals, int intfile,
     free(ipiv);
     free_block(Amat);
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

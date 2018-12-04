@@ -27,6 +27,10 @@
  */
 
 #include "sapt2p3.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 namespace sapt {
@@ -77,5 +81,5 @@ void SAPT2p3::ind_disp30() {
         outfile->Printf("    Ind-Disp30          = %18.12lf [Eh]\n", e_ind_disp30_);
     }
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

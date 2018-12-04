@@ -27,6 +27,8 @@
  */
 
 #include "sapt.h"
+#include "psi4/lib3index/3index.h"
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/factory.h"
@@ -34,6 +36,9 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libqt/qt.h"
 
 #include <cstring>
 
@@ -370,5 +375,5 @@ void CPHFDIIS::get_new_vector(double *t_vec) {
     free(Cvec);
     free_block(Bmat);
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

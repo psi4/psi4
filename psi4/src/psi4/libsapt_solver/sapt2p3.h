@@ -111,7 +111,7 @@ class SAPT2p3 : public SAPT2p {
     void disp30();
     void exch_disp30();
 };
-}
-}
+}  // namespace sapt
+}  // namespace psi
 
 #endif

@@ -28,6 +28,8 @@
 
 #include "sapt0.h"
 #include "sapt2.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 namespace sapt {
@@ -47,5 +49,5 @@ void SAPT2::elst10() {
         outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n", e_elst10_);
     }
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

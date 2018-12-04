@@ -107,7 +107,7 @@ class FDDS_Dispersion {
     SharedMatrix aux_overlap() { return aux_overlap_; }
 
 };  // End FDDS_Dispersion
-}
-}  // End namespace
+}  // namespace sapt
+}  // namespace psi
 
 #endif
