@@ -12,8 +12,9 @@ single = {
     "keywords": {}
 }
 
-r = CBSComputer(**single)
-# print(r)
-print(json.dumps(r.plan(), indent=2))
-# print(json.dumps(r.compute(), indent=2))
+cbs = CBSComputer(**single)
+print(cbs)
+print(json.dumps(cbs.plan(), indent=2))
+cbs.compute()
+print(json.dumps(cbs.get_results(), indent=2))
 

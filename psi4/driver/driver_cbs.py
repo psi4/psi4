@@ -29,6 +29,8 @@
 import math
 import re
 import sys
+import copy
+import pprint
 from typing import Any, Callable, Dict, List, Union
 
 import pydantic
@@ -1472,13 +1474,13 @@ def cbs(func, label, **kwargs):
     }
 
     # Plan CBS jobs
-    GRAND_NEED, MODELCHEM, JOBS = build_cbs_compute(metameta, metadata)
+    GRAND_NEED, MODELCHEM, JOBS, JOBS_EXT = build_cbs_compute(metameta, metadata)
 
     # Compute CBS components
     JOBS_EXT = compute_cbs_components(func, metameta, JOBS)
 
     # Assemble CBS quantities
-    cbs_results, GRAND_NEED = assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM)
+    cbs_results, GRAND_NEED = assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS)
 
     finalenergy = cbs_results['energy']
     finalgradient = cbs_results['gradient']
@@ -1836,8 +1838,10 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
         NEED[_lmh_labels[Nxtpl][idx]] = dict(
             zip(_f_fields, [
                 wfnname, basisname[idx], basiszeta[idx], 0.0,
-                core.Matrix(natom, 3),
-                core.Matrix(3 * natom, 3 * natom), options
+                np.zeros((natom, 3)),
+                np.zeros((3 * natom, 3 * natom)), options
+                #core.Matrix(natom, 3),
+                #core.Matrix(3 * natom, 3 * natom), options
             ]))
     return NEED
 
@@ -2152,7 +2156,28 @@ def build_cbs_compute(metameta, metadata):
              VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
     core.print_out(instructions)
 
-    return GRAND_NEED, MODELCHEM, JOBS
+    #     Expand listings to all that will be obtained
+    JOBS_EXT = []
+    for job in JOBS:
+        for wfn in VARH[job['f_wfn']]:
+            JOBS_EXT.append(
+                dict(
+                    zip(_f_fields, [
+                        wfn, job['f_basis'], job['f_zeta'], 0.0,
+                        np.zeros((natom, 3)),
+                        np.zeros((3 * natom, 3 * natom)), job['f_options']
+                        #core.Matrix(natom, 3),
+                        #core.Matrix(3 * natom, 3 * natom), job['f_options']
+                    ])))
+
+    instructions = """\n    Full listing of computations to be obtained (required and bonus).\n"""
+    for mc in JOBS_EXT:
+        instructions += """   %12s / %-24s for  %s%s\n""" % \
+            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+             VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
+    core.print_out(instructions)
+
+    return GRAND_NEED, MODELCHEM, JOBS, JOBS_EXT
 
 
 def compute_cbs_components(func, metameta, JOBS):
@@ -2171,25 +2196,6 @@ def compute_cbs_components(func, metameta, JOBS):
     # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
     #   needs to be communicated to optimize() so reset by that optstash
     core.set_local_option('SCF', 'GUESS_PERSIST', True)
-
-    #     Expand listings to all that will be obtained
-    JOBS_EXT = []
-    for job in JOBS:
-        for wfn in VARH[job['f_wfn']]:
-            JOBS_EXT.append(
-                dict(
-                    zip(_f_fields, [
-                        wfn, job['f_basis'], job['f_zeta'], 0.0,
-                        core.Matrix(natom, 3),
-                        core.Matrix(3 * natom, 3 * natom), job['f_options']
-                    ])))
-
-    instructions = """\n    Full listing of computations to be obtained (required and bonus).\n"""
-    for mc in JOBS_EXT:
-        instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-             VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
-    core.print_out(instructions)
 
     # Run necessary computations
     for mc in JOBS:
@@ -2266,10 +2272,11 @@ def compute_cbs_components(func, metameta, JOBS):
     return JOBS_EXT
 
 
-def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM):
+def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS):
     label = metameta['label']
     natom = metameta['molecule'].natom()
     ptype = metameta['ptype']
+
 
     # Build string of title banner
     cbsbanners = ''
@@ -2296,8 +2303,10 @@ def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM):
 
     # Make xtpl() call
     finalenergy = 0.0
-    finalgradient = core.Matrix(natom, 3)
-    finalhessian = core.Matrix(3 * natom, 3 * natom)
+    finalgradient = np.zeros((natom, 3))
+    finalhessian = np.zeros((3 * natom, 3 * natom))
+    #finalgradient = core.Matrix(natom, 3)
+    #finalhessian = core.Matrix(3 * natom, 3 * natom)
 
     for stage in GRAND_NEED:
         hiloargs = {'alpha': stage['d_alpha']}
@@ -2321,12 +2330,14 @@ def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM):
             finalhessian.add(work)
 
     cbs_results = {
+        'ret_ptype': {'energy': finalenergy, 'gradient': finalgradient.tolist(), 'hessian': finalhessian.tolist()}[ptype],
         'energy': finalenergy,
-        'gradient': finalgradient,
-        'hessian': finalhessian,
+        'gradient': finalgradient.tolist(),
+        'hessian': finalhessian.tolist(),
     }
 
     return cbs_results, GRAND_NEED
+
 
 class CBSComputer(BaseTask):
 
@@ -2339,6 +2350,8 @@ class CBSComputer(BaseTask):
 
     grand_need: Any = None
     modelchem: Any = None
+    jobs_ext: Any = None
+    metameta: Dict[str, Any] = {}
     compute_list: List[Any] = []
     task_list: List[Any] = []
     results_list: List[Any] = []
@@ -2348,44 +2361,62 @@ class CBSComputer(BaseTask):
         data["metadata"] = _process_cbs_kwargs(data)
         BaseTask.__init__(self, **data)
 
-        metameta = {
+        self.metameta = {
             'kwargs': data,
             'ptype': self.driver,
             'verbose': self.verbose,
             'label': None,
             'molecule': self.molecule,
+            #'options': data['keywords'], #.pop('BASIS'),
         }
+        print('METAMETA')
+        import pprint
+        pprint.pprint(self.metameta)
 
-        if self.metadata[0]["wfn"] not in VARH.keys():
-            raise ValidationError(
-                """Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-                (metadata[0]["wfn"]))
+        if data['metadata']:
+            print('DATAMETADATA', data['metadata'])
+            if data['metadata'][0]["wfn"] not in VARH.keys():
+            #if self.metadata[0]["wfn"] not in VARH.keys():
+                raise ValidationError(
+                    """Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                    (metadata[0]["wfn"]))
 
-        if len(self.metadata) > 1:
-            for delta in self.metadata[1:]:
-                if delta["wfn"] not in VARH.keys():
-                    raise ValidationError(
-                        """Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-                        (delta["treatment"], delta["wfn"]))
-                if delta["wfn_lo"] not in VARH.keys():
-                    raise ValidationError(
-                        """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-                        (delta["treatment"], delta["wfn_lo"]))
+            if len(self.metadata) > 1:
+                for delta in self.metadata[1:]:
+                    if delta["wfn"] not in VARH.keys():
+                        raise ValidationError(
+                            """Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                            (delta["treatment"], delta["wfn"]))
+                    if delta["wfn_lo"] not in VARH.keys():
+                        raise ValidationError(
+                            """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+                            (delta["treatment"], delta["wfn_lo"]))
 
-        # Plan CBS jobs
-        self.grand_need, self.modelchem, self.compute_list = build_cbs_compute(metameta, self.metadata)
+            # Plan CBS jobs
+            #    GRAND_NEED,      MODELCHEM,      JOBS,              JOBS_EXT = build_cbs_compute(     metameta,      metadata):
+            self.grand_need, self.modelchem, self.compute_list, self.jobs_ext = build_cbs_compute(self.metameta, self.metadata)
 
-        for job in self.compute_list:
-            task = SingleResult(**{
-                "molecule": self.molecule,
-                "driver": self.driver,
-                "method": job["f_wfn"],
-                "basis": job["f_basis"],
-                "keywords": job["f_options"] or {}
-            })
-            print(task)
-            self.task_list.append(task)
-
+            for job in self.compute_list:
+                keywords = copy.deepcopy(self.metameta['kwargs']['keywords'])
+                if job["f_options"] is not False:
+                    stage_keywords = dict(job["f_options"].items())
+                    print('STAGE KEY', stage_keywords)
+                    keywords = {**keywords, **stage_keywords}
+                    #keywords = copy.deepcopy(self.metameta['kwargs']['keywords']).update({k.upper(): v for k, v in job["f_options"].items()})
+                #else:
+                #    #keywords = None
+                #    keywords = self.metameta['kwargs']['keywords']
+                task = SingleResult(**{
+                    "molecule": self.molecule,
+                    "driver": self.driver,
+                    "method": job["f_wfn"],
+                    "basis": job["f_basis"],
+                    #"keywords": self.metameta['kwargs']['keywords'].copy().update({k.upper(): v for k, v in job["f_options"].items()}) or {}
+                    #"keywords": job["f_options"] or {}
+                    "keywords": keywords or {},
+                })
+                print(task)
+                self.task_list.append(task)
 
     @pydantic.validator('driver')
     def set_driver(cls, driver):
@@ -2401,6 +2432,9 @@ class CBSComputer(BaseTask):
         mol.fix_orientation(True)
         return mol
 
+    def build_tasks(self, obj, **data):
+        pass
+
     def plan(self):
         return [x.plan() for x in self.task_list]
 
@@ -2408,7 +2442,61 @@ class CBSComputer(BaseTask):
         self.results_list = [x.compute() for x in self.task_list]
 
     def get_results(self):
-        pass
+        energies = [x['properties']["return_energy"] for x in self.results_list]
+        print('ENE', energies)
+        for x in self.task_list:
+            print('\nTASK')
+            pprint.pprint(x)
+        for x in self.results_list:
+            print('\nRESULT')
+            pprint.pprint(x)
+
+        # load results_list numbers into compute_list (task_list is SingleResult-s)
+        for itask, mc in enumerate(self.compute_list):
+            task = self.results_list[itask]
+            response = task['properties']['return_energy']
+            print('ITASK:', itask, '\nMC:', mc, '\nRETURN', response, '\nTASK:', task, '\n')
+
+            if self.metameta['ptype'] == 'energy':
+                mc['f_energy'] = response
+            #elif ptype == 'gradient':
+            #    mc['f_gradient'] = response
+            #    mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+            #    if verbose > 1:
+            #        mc['f_gradient'].print_out()
+            #elif ptype == 'hessian':
+            #    mc['f_hessian'] = response
+            #    mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+            #    if verbose > 1:
+            #        mc['f_hessian'].print_out()
+            #if verbose > 1:
+            #    core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
+
+            # Fill in energies for subsumed methods
+            if self.metameta['ptype'] == 'energy':
+                for wfn in VARH[mc['f_wfn']]:
+                    for job in self.jobs_ext:
+                        if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
+                           (mc['f_options'] == job['f_options']):
+                            job['f_energy'] = task['psi4:qcvars'][VARH[wfn][wfn]]
+
+            # Copy data from 'run' to 'obtained' table
+            for mce in self.jobs_ext:
+                if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
+                   (mc['f_options'] == mce['f_options']):
+                    mce['f_energy'] = mc['f_energy']
+                    mce['f_gradient'] = mc['f_gradient']
+                    mce['f_hessian'] = mc['f_hessian']
+
+        for mc in self.compute_list:
+            print(mc)
+        # cbs_results,    GRAND_NEED = assemble_cbs_components(     metameta,      JOBS_EXT,      GRAND_NEED,      MODELCHEM,      JOBS):
+        cbs_results, self.grand_need = assemble_cbs_components(self.metameta, self.jobs_ext, self.grand_need, self.modelchem, self.compute_list)
+
+        print('\nCBS_RESULTS', cbs_results)
+        print('\nGRAND_NEED', self.grand_need)
+
+        return cbs_results
 
         # JOBS_EXT should have the energy as the required field
         # Since we not return full JSON schema this need to be pulled from there
