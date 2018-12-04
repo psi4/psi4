@@ -195,7 +195,7 @@ struct SAPTDFInts {
     int filenum_;
     const char *label_;
 
-    psio_address next_DF_{PSIO_ZERO};
+    psio_address next_DF_ = PSIO_ZERO;
 
     SAPTDFInts() {
         next_DF_ = PSIO_ZERO;
