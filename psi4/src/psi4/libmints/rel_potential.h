@@ -86,7 +86,7 @@ class RelPotentialInt : public OneBodyAOInt {
     bool has_deriv1() override { return true; }
 };
 
-class PSI_API RelPotentialSOInt : public OneBodySOInt {
+class RelPotentialSOInt : public OneBodySOInt {
     int natom_;
 
    public:

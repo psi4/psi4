@@ -358,7 +358,7 @@ class ECPInt : public OneBodyAOInt {
     ~ECPInt() override;
 };
 
-class PSI_API ECPSOInt : public OneBodySOInt {
+class ECPSOInt : public OneBodySOInt {
     int natom_;
 
    public:

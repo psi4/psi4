@@ -89,7 +89,7 @@ class PotentialInt : public OneBodyAOInt {
     bool has_deriv1() override { return true; }
 };
 
-class PSI_API PotentialSOInt : public OneBodySOInt {
+class PotentialSOInt : public OneBodySOInt {
     int natom_;
 
    public:
