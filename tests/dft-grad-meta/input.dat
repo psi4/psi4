@@ -1,4 +1,4 @@
-#! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+#! meta-GGA gradients of S22 HCN and water dimer
 
 tpss_rks_grad = psi4.Matrix.from_list([ 
     [-0.00010973017199,   0.00184569734216,  0.00000000000000],
@@ -46,3 +46,19 @@ analytic = gradient('TPSS', dertype=1)
 #finitediff = gradient('TPSS', dertype=0)
 #compare_matrices(analytic, finitediff, 5, "TPSS UKS Analytic vs FD Gradient")    #TEST
 compare_matrices(analytic, tpss_uks_grad, 6, "TPSS UKS Analytic vs Store")    #TEST
+
+molecule {
+0 1
+O         -1.65542       -0.12330        0.00000
+O          1.24621        0.10269        0.00000
+H         -0.70409        0.03193        0.00000
+H         -2.03867        0.75372        0.00000
+H          1.57599       -0.38252       -0.75856
+H          1.57599       -0.38252        0.75856
+}
+
+
+analytic = gradient('B97M-D3BJ', dertype=1)
+finitediff = gradient('B97M-D3BJ', dertype=0)
+compare_matrices(analytic, finitediff, 5, "B97M-D3BJ Analytic vs FD Gradient")    #TEST
+#compare_matrices(analytic, tpss_uks_grad, 6, "S UKS Analytic vs Store")    #TEST
