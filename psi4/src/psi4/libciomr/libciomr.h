@@ -112,12 +112,7 @@ PSI_API double **block_matrix(size_t n, size_t m, bool mlock = false);
 PSI_API void free_block(double **array);
 
 /* Functions in fndcor */
-<<<<<<< HEAD
-void fndcor(long int *maxcrb, std::string out_fname);
-}  // namespace psi
-=======
 PSI_API void fndcor(long int *maxcrb, std::string out_fname);
-}
->>>>>>> Expose all of libmints and libciomr (plus some other few)
+}  // namespace psi
 
 #endif /* header guard */
