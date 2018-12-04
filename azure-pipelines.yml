@@ -101,7 +101,7 @@ jobs:
         displayName: "Test Psi4 (OpenMP)"
         workingDirectory: $(Build.BinariesDirectory)/install/lib
 
-      # Test (ctest)
+      # Test (quick ctest)
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           ctest --build-config Debug ^
@@ -109,11 +109,28 @@ jobs:
                 --label-regex quick ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS%
+        displayName: "Test Psi4 (quick ctest)"
+        workingDirectory: $(Build.BinariesDirectory)/build
+
+      # Test (ctest; failing)
+      #
+      # Known failing ctests:
+      #   - cbs-parser
+      #   - cc46
+      #   - cc47
+      #   - cc53
+      #   - ci-property (fails radomly)
+      #   - fci-tdm
+      #   - fci-tdm-2
+      #   - psimrcc-fd-freq2
+      #   - psithon2
+      - script: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           ctest --build-config Debug ^
-                --tests-regex "^(ci-property)$" ^
+                --tests-regex "^(cbs-parser|cc46|cc47|cc53|ci-property|fci-tdm|fci-tdm-2|psimrcc-fd-freq2|psithon2)$" ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS% & exit 0
-        displayName: "Test Psi4 (ctest)"
+        displayName: "Test Psi4 (ctest; failing)"
         workingDirectory: $(Build.BinariesDirectory)/build
 
       # Test (built-in)
