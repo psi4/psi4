@@ -203,8 +203,8 @@ struct SAPTDFInts {
         B_d_ = nullptr;
     };
     ~SAPTDFInts() {
-        B_p_ == nullptr;
-        B_d_ == nullptr;
+        B_p_ = nullptr;
+        B_d_ = nullptr;
     };
     void rewind() { next_DF_ = PSIO_ZERO; };
     void clear() {

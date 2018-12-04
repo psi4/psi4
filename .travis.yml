@@ -171,6 +171,9 @@ script:
 - python ../.scripts/travis_print_failing.py
 - PYTHONPATH=stage/lib/ pytest -v -rws --durations=5 stage/lib/psi4/tests/
 
+after_success:
+  - conda remove --name p4env --all
+
 # safelist
 branches:
   only:
