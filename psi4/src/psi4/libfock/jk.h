@@ -715,7 +715,7 @@ class PSI_API DirectJK : public JK {
  *   the Hartree-Fock code in HF.cc
  *
  */
-class PSI_API GTFockJK : public JK {
+class GTFockJK : public JK {
    private:
     /// The actual instance that does the implementing
     std::shared_ptr<MinimalInterface> Impl_;
