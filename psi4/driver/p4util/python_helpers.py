@@ -38,7 +38,7 @@ import qcelemental as qcel
 from psi4 import core
 from psi4.driver import qcdb
 from . import optproc
-from .exceptions import *
+from .exceptions import ValidationError, TestComparisonError
 
 ## Python basis helps
 
@@ -538,7 +538,7 @@ def _core_wavefunction_has_variable(cls, key):
     return cls.has_scalar_variable(key) or cls.has_array_variable(key)
 
 
-def _core_variable(key, np_out=False):
+def _core_variable(key):
     if core.has_scalar_variable(key):
         return core.scalar_variable(key)
     elif core.has_array_variable(key):
@@ -547,7 +547,7 @@ def _core_variable(key, np_out=False):
         raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
 
 
-def _core_wavefunction_variable(cls, key, np_out=False):
+def _core_wavefunction_variable(cls, key):
     if cls.has_scalar_variable(key):
         return cls.scalar_variable(key)
     elif cls.has_array_variable(key):

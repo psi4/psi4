@@ -31,7 +31,7 @@ import sys
 import numpy as np
 
 from psi4 import core
-from .exceptions import *
+from .exceptions import ValidationError
 
 ### Matrix and Vector properties
 

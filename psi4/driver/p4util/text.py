@@ -34,7 +34,6 @@ import warnings
 
 from psi4 import core
 from psi4.driver import constants
-from .exceptions import *
 
 class Table(object):
     """Class defining a flexible Table object for storing data."""

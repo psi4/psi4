@@ -64,10 +64,10 @@ SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
     scf::HF* scfwfn = (scf::HF*)ref_wfn.get();
     functional_ = scfwfn->functional();
     potential_ = scfwfn->V_potential();
-    if (ref_wfn->arrays().count("-D Gradient")){
+    if (ref_wfn->has_array_variable("-D Gradient")) {
         gradients_["-D Gradient"] = ref_wfn->get_array("-D Gradient");
     }
-    if (ref_wfn->arrays().count("-D Hessian")){
+    if (ref_wfn->has_array_variable("-D Hessian")) {
         hessians_["-D Hessian"] = ref_wfn->get_array("-D Hessian");
     }
 

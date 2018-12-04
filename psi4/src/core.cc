@@ -1138,9 +1138,9 @@ PYBIND11_MODULE(core, core) {
              "valid option for *arg0*.");
 
     // These return/set/print PSI variables found in Process::environment.globals
-    core.def("has_scalar_variable", [](const std::string& key) { return Process::environment.globals.count(to_upper(key)); },
+    core.def("has_scalar_variable", [](const std::string& key) { return bool(Process::environment.globals.count(to_upper(key))); },
              "Is the double QC variable (case-insensitive) set?");
-    core.def("has_array_variable", [](const std::string& key) { return Process::environment.arrays.count(to_upper(key)); },
+    core.def("has_array_variable", [](const std::string& key) { return bool(Process::environment.arrays.count(to_upper(key))); },
              "Is the Matrix QC variable (case-insensitive) set?");
     core.def("scalar_variable", [](const std::string& key) { return Process::environment.globals[to_upper(key)]; },
              "Returns the requested (case-insensitive) double QC variable.");

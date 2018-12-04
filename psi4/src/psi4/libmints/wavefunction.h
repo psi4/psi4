@@ -650,8 +650,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
 
     /// Get and set variables and arrays dictionaries
-    int has_scalar_variable(const std::string& key);
-    int has_array_variable(const std::string& key);
+    bool has_scalar_variable(const std::string& key);
+    bool has_array_variable(const std::string& key);
     double scalar_variable(const std::string& key);
     SharedMatrix array_variable(const std::string& key);
     void set_scalar_variable(const std::string& key, double value);
@@ -661,17 +661,29 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::map<std::string, double> scalar_variables();
     std::map<std::string, SharedMatrix> array_variables();
 
-    PSI_DEPRECATED("Using `Wavefunction.get_variable` instead of `Wavefunction.scalar_variable` is deprecated, and in 1.4 it will stop working")
+    PSI_DEPRECATED(
+        "Using `Wavefunction.get_variable` instead of `Wavefunction.scalar_variable` is deprecated, and in 1.4 it will "
+        "stop working")
     double get_variable(const std::string& key);
-    PSI_DEPRECATED("Using `Wavefunction.set_variable` instead of `Wavefunction.set_scalar_variable` is deprecated, and in 1.4 it will stop working")
+    PSI_DEPRECATED(
+        "Using `Wavefunction.set_variable` instead of `Wavefunction.set_scalar_variable` is deprecated, and in 1.4 it "
+        "will stop working")
     void set_variable(const std::string& key, double value);
-    PSI_DEPRECATED("Using `Wavefunction.variables` instead of `Wavefunction.scalar_variables` is deprecated, and in 1.4 it will stop working")
+    PSI_DEPRECATED(
+        "Using `Wavefunction.variables` instead of `Wavefunction.scalar_variables` is deprecated, and in 1.4 it will "
+        "stop working")
     std::map<std::string, double> variables();
-    PSI_DEPRECATED("Using `Wavefunction.get_array` instead of `Wavefunction.array_variable` is deprecated, and in 1.4 it will stop working")
+    PSI_DEPRECATED(
+        "Using `Wavefunction.get_array` instead of `Wavefunction.array_variable` is deprecated, and in 1.4 it will "
+        "stop working")
     SharedMatrix get_array(const std::string& key);
-    PSI_DEPRECATED("Using `Wavefunction.set_array` instead of `Wavefunction.set_array_variable` is deprecated, and in 1.4 it will stop working")
+    PSI_DEPRECATED(
+        "Using `Wavefunction.set_array` instead of `Wavefunction.set_array_variable` is deprecated, and in 1.4 it will "
+        "stop working")
     void set_array(const std::string& key, SharedMatrix value);
-    PSI_DEPRECATED("Using `Wavefunction.arrays` instead of `Wavefunction.array_variables` is deprecated, and in 1.4 it will stop working")
+    PSI_DEPRECATED(
+        "Using `Wavefunction.arrays` instead of `Wavefunction.array_variables` is deprecated, and in 1.4 it will stop "
+        "working")
     std::map<std::string, SharedMatrix> arrays();
 
     /// Set PCM object

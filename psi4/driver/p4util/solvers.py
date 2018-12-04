@@ -34,7 +34,7 @@ import time
 import numpy as np
 
 from psi4 import core
-from .exceptions import *
+from .exceptions import ValidationError
 
 
 def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, printlvl=1, maxiter=20, rcond=1.e-6):

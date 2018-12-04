@@ -34,7 +34,8 @@ import inspect
 import warnings
 import collections
 
-from .exceptions import *
+from psi4 import core
+from .exceptions import ValidationError
 from . import p4regex
 
 

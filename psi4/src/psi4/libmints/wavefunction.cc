@@ -46,6 +46,7 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/corrtab.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #ifdef USING_PCMSolver
@@ -141,7 +142,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nbetapi_ = dimensions["nbetapi"];
     nmopi_ = dimensions["nmopi"];
     nsopi_ = dimensions["nsopi"];
-     
+
     // set integers
     nalpha_ = ints["nalpha"];
     nbeta_ = ints["nbeta"];
@@ -150,7 +151,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nmo_ = ints["nmo"];
     nso_ = ints["nso"];
     print_ = ints["print"];
-    
+
     // set strings
     name_ = strings["name"];
 
@@ -1356,22 +1357,12 @@ std::vector<std::vector<std::tuple<double, int, int>>> Wavefunction::get_no_occu
     return no_occs;
 }
 
+bool Wavefunction::has_scalar_variable(const std::string &key) { return variables_.count(to_upper_copy(key)); }
 
-int Wavefunction::has_scalar_variable(const std::string &key) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
-    return variables_.count(uc_key);
-}
-
-int Wavefunction::has_array_variable(const std::string &key) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
-    return arrays_.count(uc_key);
-}
+bool Wavefunction::has_array_variable(const std::string &key) { return arrays_.count(to_upper_copy(key)); }
 
 double Wavefunction::scalar_variable(const std::string &key) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
+    std::string uc_key = to_upper_copy(key);
 
     if (variables_.count(uc_key) == 0) {
         throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable " + uc_key + " was not set!\n");
@@ -1380,9 +1371,8 @@ double Wavefunction::scalar_variable(const std::string &key) {
     }
 }
 
-SharedMatrix Wavefunction::array_variable(const std::string& key) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
+SharedMatrix Wavefunction::array_variable(const std::string &key) {
+    std::string uc_key = to_upper_copy(key);
 
     if (arrays_.count(uc_key) == 0) {
         throw PSIEXCEPTION("Wavefunction::get_array: Requested array " + uc_key + " was not set!\n");
@@ -1391,42 +1381,26 @@ SharedMatrix Wavefunction::array_variable(const std::string& key) {
     }
 }
 
-void Wavefunction::set_scalar_variable(const std::string &key, double val) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
-    variables_[uc_key] = val;
-}
+void Wavefunction::set_scalar_variable(const std::string &key, double val) { variables_[to_upper_copy(key)] = val; }
 
 void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
-    arrays_[uc_key] = val->clone();
+    arrays_[to_upper_copy(key)] = val->clone();
 }
 
-int Wavefunction::del_scalar_variable(const std::string &key) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
-    return variables_.erase(uc_key);
-}
+int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }
 
-int Wavefunction::del_array_variable(const std::string &key) {
-    std::string uc_key = key;
-    std::transform(uc_key.begin(), uc_key.end(), uc_key.begin(), ::toupper);
-    return arrays_.erase(uc_key);
-}
+int Wavefunction::del_array_variable(const std::string &key) { return arrays_.erase(to_upper_copy(key)); }
 
 std::map<std::string, double> Wavefunction::scalar_variables() { return variables_; }
 
 std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arrays_; }
 
-
 double Wavefunction::get_variable(const std::string &key) { return scalar_variable(key); }
 SharedMatrix Wavefunction::get_array(const std::string &key) { return array_variable(key); }
-void Wavefunction::set_variable(const std::string& key, double val) { return set_scalar_variable(key, val); }
-void Wavefunction::set_array(const std::string& key, SharedMatrix val) { set_array_variable(key, val); }
+void Wavefunction::set_variable(const std::string &key, double val) { return set_scalar_variable(key, val); }
+void Wavefunction::set_array(const std::string &key, SharedMatrix val) { set_array_variable(key, val); }
 std::map<std::string, double> Wavefunction::variables() { return scalar_variables(); }
 std::map<std::string, SharedMatrix> Wavefunction::arrays() { return array_variables(); }
-
 
 void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
     PCM_ = pcm;
