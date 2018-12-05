@@ -33,7 +33,6 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libpsi4util/process.h"
 #endif
 
 #ifdef USING_LAPACK_MKL
@@ -42,17 +41,11 @@
 
 #define INDEX(i, j) ((i >= j) ? (ioff_[i] + j) : (ioff_[j] + i))
 
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsio/aiohandler.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/lib3index/3index.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
 
 namespace psi {
+
+class SAPTDenominator;
 namespace sapt {
 
 class SAPT : public Wavefunction {
@@ -145,7 +138,7 @@ class CPHFDIIS {
     void store_vectors(double *, double *);
     void get_new_vector(double *);
 };
-}
-}
+}  // namespace sapt
+}  // namespace psi
 
 #endif

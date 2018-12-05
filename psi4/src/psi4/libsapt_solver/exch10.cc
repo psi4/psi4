@@ -28,6 +28,9 @@
 
 #include "sapt0.h"
 #include "sapt2.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 namespace sapt {
@@ -756,5 +759,5 @@ void SAPT2::exch10() {
         outfile->Printf("    Exch10              = %18.12lf [Eh]\n", e_exch10_);
     }
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

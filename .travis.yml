@@ -1,5 +1,16 @@
+dist: xenial
 language: cpp
 sudo: false
+python: 3.6.5
+cache:
+  timeout: 1000
+  directories:
+    - $HOME/miniconda
+
+env:
+  global:
+    - CTEST_OUTPUT_ON_FAILURE=1
+
 matrix:
   #allow_failures:
   #  - compiler: clang
@@ -9,8 +20,6 @@ matrix:
   #      - C_COMPILER='clang-3.9'
   #      - Fortran_COMPILER='gfortran'
   #      - BUILD_TYPE='release'
-  #      - NAME='clang'
-  #      - VERSION='3.9'
 
   include:
 
@@ -18,23 +27,17 @@ matrix:
     compiler: clang
     addons: &1
       apt:
-        sources:
-        - llvm-toolchain-precise-3.6
-        - ubuntu-toolchain-r-test
         packages:
         - liblapack-dev
         - clang-3.6
         - libhdf5-serial-dev
         - gfortran
-        - g++-4.9
     env:
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
       - C_COMPILER='clang-3.6'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
-      - NAME='clang'
-      - VERSION='3.6'
 
   #- os: linux
   #  compiler: clang
@@ -54,32 +57,22 @@ matrix:
   #    - C_COMPILER='clang-3.9'
   #    - Fortran_COMPILER='gfortran'
   #    - BUILD_TYPE='release'
-  #    - NAME='clang'
-  #    - VERSION='3.9'
 
   - os: linux
     compiler: gcc
     addons: &3
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
         packages:
         - python-numpy
-        - cmake
-        - cmake-data
         - liblapack-dev
         - libhdf5-serial-dev
-        - g++-4.9
-        - gcc-4.9
-        - gfortran-4.9
+        - gfortran
     env:
-      - CXX_COMPILER='g++-4.9'
+      - CXX_COMPILER='g++'
       - PYTHON_VER='3.7'
-      - C_COMPILER='gcc-4.9'
-      - Fortran_COMPILER='gfortran-4.9'
+      - C_COMPILER='gcc'
+      - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
-      - NAME='gcc'
-      - VERSION='4.9'
 
   - os: linux
     compiler: gcc
@@ -89,8 +82,6 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - python-numpy
-        - cmake
-        - cmake-data
         - libhdf5-serial-dev
         - liblapack-dev
         - g++-6
@@ -102,8 +93,6 @@ matrix:
       - C_COMPILER='gcc-6'
       - Fortran_COMPILER='gfortran-6'
       - BUILD_TYPE='release'
-      - NAME='gcc'
-      - VERSION=6
 
 #  - os: linux
 #    compiler: gcc
@@ -126,26 +115,25 @@ matrix:
 #      - C_COMPILER='gcc-6'
 #      - Fortran_COMPILER='gfortran-6'
 #      - BUILD_TYPE='release'
-#      - NAME='gcc'
-#      - VERSION=6
 
 before_install:
   - uname -a
   - free -m
   - df -h
   - ulimit -a
+  - mkdir -p $HOME/miniconda
+
 install:
-- wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-- bash miniconda.sh -b -p $HOME/miniconda
-- export PATH="$HOME/miniconda/bin:$PATH"
-- hash -r
-- conda config --set always_yes yes --set changeps1 no
-- conda update -q conda
-- conda info -a
-- conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
-- source activate p4env
-- conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev  # snsmp2
-- conda list
+  - ./.scripts/miniconda.sh
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - >
+    if [[ ! "$(conda env list)" =~ "p4env" ]]; then
+      conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
+    fi
+  - source activate p4env
+  - conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
+  - conda list
+
 before_script:
 - python -V
 - python -c 'import numpy; print(numpy.version.version)'
@@ -153,7 +141,6 @@ before_script:
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}
 - export FC=${Fortran_COMPILER}
-- export CTEST_OUTPUT_ON_FAILURE=1
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version

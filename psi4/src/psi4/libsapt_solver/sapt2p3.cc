@@ -28,6 +28,8 @@
 
 #include "sapt2p3.h"
 #include "psi4/physconst.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libqt/qt.h"
 #include <cmath>
 
 namespace psi {
@@ -696,5 +698,5 @@ void SAPT2p3::print_results() {
         }
     }
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

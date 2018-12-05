@@ -181,7 +181,7 @@ class SAPTDIIS {
     void store_vectors();
     void get_new_vector();
 };
-}
-}
+}  // namespace sapt
+}  // namespace psi
 
 #endif

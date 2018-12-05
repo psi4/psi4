@@ -27,6 +27,10 @@
  */
 
 #include "sapt2.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 namespace sapt {
@@ -455,5 +459,5 @@ double SAPT2::ind220_7(int AAfile, const char *AAlabel, const char *ARlabel, con
 
     return (energy);
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

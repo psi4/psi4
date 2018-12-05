@@ -27,11 +27,18 @@
  */
 
 #include "sapt2.h"
+#include "psi4/lib3index/3index.h"
 #include "psi4/physconst.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/psio.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 namespace sapt {
@@ -435,7 +442,7 @@ void SAPT2::df_integrals() {
 #endif
     int rank = 0;
 
-    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[ nthreads ];
+    std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthreads];
     const auto **buffer = new const double *[nthreads];
     for (int i = 0; i < nthreads; ++i) {
         eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
@@ -1050,5 +1057,5 @@ void SAPT2::natural_orbitalify_df_ints() {
     free_block(C_p_SS);
     free_block(D_p_SS);
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

@@ -29,6 +29,10 @@
 #include "sapt.h"
 #include "sapt0.h"
 #include "sapt2.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/psio.h"
+#include "psi4/libqt/qt.h"
 
 #include <cmath>
 
@@ -49,7 +53,8 @@ void SAPT0::read_all(SAPTDFInts *ints) {
     long int nri = ndf_;
     if (ints->dress_) nri += 3L;
 
-    ints->B_p_ = block_matrix(nri, ints->ij_length_);
+    ints->BpMat_ = std::make_shared<Matrix>(nri, ints->ij_length_);
+    ints->B_p_ = ints->BpMat_->pointer();
 
     long int tot_i = ints->i_length_ + ints->i_start_;
 
@@ -191,7 +196,7 @@ Iterator SAPT0::set_iterator(long int length, SAPTDFInts *intA, bool alloc) {
     iter.num_blocks = num;
     if (gimp > 3) iter.num_blocks++;
     iter.curr_block = 1;
-    iter.block_size = init_int_array(iter.num_blocks);
+    iter.block_size = std::vector<int>(iter.num_blocks, 0);
     iter.curr_size = 0;
 
     for (int i = 0; i < num; i++) iter.block_size[i] = length;
@@ -203,7 +208,10 @@ Iterator SAPT0::set_iterator(long int length, SAPTDFInts *intA, bool alloc) {
 
     int max_block = iter.block_size[0];
 
-    if (alloc) intA->B_p_ = block_matrix(max_block, intA->ij_length_);
+    if (alloc) {
+        intA->BpMat_ = std::make_shared<Matrix>(max_block, intA->ij_length_);
+        intA->B_p_ = intA->BpMat_->pointer();
+    }
 
     return (iter);
 }
@@ -234,7 +242,7 @@ Iterator SAPT0::set_iterator(long int length, SAPTDFInts *intA, SAPTDFInts *intB
     iter.num_blocks = num;
     if (gimp > 3) iter.num_blocks++;
     iter.curr_block = 1;
-    iter.block_size = init_int_array(iter.num_blocks);
+    iter.block_size = std::vector<int>(iter.num_blocks, 0);
     iter.curr_size = 0;
 
     for (int i = 0; i < num; i++) iter.block_size[i] = length;
@@ -247,8 +255,10 @@ Iterator SAPT0::set_iterator(long int length, SAPTDFInts *intA, SAPTDFInts *intB
     int max_block = iter.block_size[0];
 
     if (alloc) {
-        intA->B_p_ = block_matrix(max_block, intA->ij_length_);
-        intB->B_p_ = block_matrix(max_block, intB->ij_length_);
+        intA->BpMat_ = std::make_shared<Matrix>(max_block, intA->ij_length_);
+        intB->BpMat_ = std::make_shared<Matrix>(max_block, intB->ij_length_);
+        intA->B_p_ = intA->BpMat_->pointer();
+        intB->B_p_ = intB->BpMat_->pointer();
     }
 
     return (iter);
@@ -273,7 +283,8 @@ SAPTDFInts SAPT0::set_A_AA() {
     A_AA.i_start_ = 0;
     A_AA.j_start_ = 0;
 
-    A_AA.B_d_ = block_matrix(3, noccA_ * noccA_);
+    A_AA.BdMat_ = std::make_shared<Matrix>(3, noccA_ * noccA_);
+    A_AA.B_d_ = A_AA.BdMat_->pointer();
 
     A_AA.filenum_ = PSIF_SAPT_AA_DF_INTS;
     A_AA.label_ = const_cast<char *>("AA RI Integrals");
@@ -310,7 +321,8 @@ SAPTDFInts SAPT0::set_B_BB() {
     B_BB.i_start_ = 0;
     B_BB.j_start_ = 0;
 
-    B_BB.B_d_ = block_matrix(3, noccB_ * noccB_);
+    B_BB.BdMat_ = std::make_shared<Matrix>(3, noccB_ * noccB_);
+    B_BB.B_d_ = B_BB.BdMat_->pointer();
 
     B_BB.filenum_ = PSIF_SAPT_BB_DF_INTS;
     B_BB.label_ = const_cast<char *>("BB RI Integrals");
@@ -347,7 +359,8 @@ SAPTDFInts SAPT0::set_A_AR() {
     A_AR.i_start_ = 0;
     A_AR.j_start_ = 0;
 
-    A_AR.B_d_ = block_matrix(3, noccA_ * nvirA_);
+    A_AR.BdMat_ = std::make_shared<Matrix>(3, noccA_ * nvirA_);
+    A_AR.B_d_ = A_AR.BdMat_->pointer();
 
     A_AR.filenum_ = PSIF_SAPT_AA_DF_INTS;
     A_AR.label_ = const_cast<char *>("AR RI Integrals");
@@ -381,7 +394,8 @@ SAPTDFInts SAPT0::set_B_BS() {
     B_BS.i_start_ = 0;
     B_BS.j_start_ = 0;
 
-    B_BS.B_d_ = block_matrix(3, noccB_ * nvirB_);
+    B_BS.BdMat_ = std::make_shared<Matrix>(3, noccB_ * nvirB_);
+    B_BS.B_d_ = B_BS.BdMat_->pointer();
 
     B_BS.filenum_ = PSIF_SAPT_BB_DF_INTS;
     B_BS.label_ = const_cast<char *>("BS RI Integrals");
@@ -415,7 +429,8 @@ SAPTDFInts SAPT0::set_A_AB() {
     A_AB.i_start_ = 0;
     A_AB.j_start_ = 0;
 
-    A_AB.B_d_ = block_matrix(3, noccA_ * noccB_);
+    A_AB.BdMat_ = std::make_shared<Matrix>(3, noccA_ * noccB_);
+    A_AB.B_d_ = A_AB.BdMat_->pointer();
 
     A_AB.filenum_ = PSIF_SAPT_AB_DF_INTS;
     A_AB.label_ = const_cast<char *>("AB RI Integrals");
@@ -451,7 +466,8 @@ SAPTDFInts SAPT0::set_B_AB() {
     B_AB.i_start_ = 0;
     B_AB.j_start_ = 0;
 
-    B_AB.B_d_ = block_matrix(3, noccA_ * noccB_);
+    B_AB.BdMat_ = std::make_shared<Matrix>(3, noccA_ * noccB_);
+    B_AB.B_d_ = B_AB.BdMat_->pointer();
 
     B_AB.filenum_ = PSIF_SAPT_AB_DF_INTS;
     B_AB.label_ = const_cast<char *>("AB RI Integrals");
@@ -601,7 +617,8 @@ SAPTDFInts SAPT0::set_A_RB() {
     A_RB.i_start_ = 0;
     A_RB.j_start_ = 0;
 
-    A_RB.B_d_ = block_matrix(3, nvirA_ * noccB_);
+    A_RB.BdMat_ = std::make_shared<Matrix>(3, nvirA_ * noccB_);
+    A_RB.B_d_ = A_RB.BdMat_->pointer();
 
     A_RB.filenum_ = PSIF_SAPT_AB_DF_INTS;
     A_RB.label_ = const_cast<char *>("RB RI Integrals");
@@ -637,7 +654,8 @@ SAPTDFInts SAPT0::set_B_RB() {
     B_RB.i_start_ = 0;
     B_RB.j_start_ = 0;
 
-    B_RB.B_d_ = block_matrix(3, nvirA_ * noccB_);
+    B_RB.BdMat_ = std::make_shared<Matrix>(3, nvirA_ * noccB_);
+    B_RB.B_d_ = B_RB.BdMat_->pointer();
 
     B_RB.filenum_ = PSIF_SAPT_AB_DF_INTS;
     B_RB.label_ = const_cast<char *>("RB RI Integrals");
@@ -673,7 +691,8 @@ SAPTDFInts SAPT0::set_A_AS() {
     A_AS.i_start_ = 0;
     A_AS.j_start_ = 0;
 
-    A_AS.B_d_ = block_matrix(3, noccA_ * nvirB_);
+    A_AS.BdMat_ = std::make_shared<Matrix>(3, noccA_ * nvirB_);
+    A_AS.B_d_ = A_AS.BdMat_->pointer();
 
     A_AS.filenum_ = PSIF_SAPT_AB_DF_INTS;
     A_AS.label_ = const_cast<char *>("AS RI Integrals");
@@ -709,7 +728,8 @@ SAPTDFInts SAPT0::set_B_AS() {
     B_AS.i_start_ = 0;
     B_AS.j_start_ = 0;
 
-    B_AS.B_d_ = block_matrix(3, noccA_ * nvirB_);
+    B_AS.BdMat_ = std::make_shared<Matrix>(3, noccA_ * nvirB_);
+    B_AS.B_d_ = B_AS.BdMat_->pointer();
 
     B_AS.filenum_ = PSIF_SAPT_AB_DF_INTS;
     B_AS.label_ = const_cast<char *>("AS RI Integrals");
@@ -783,7 +803,8 @@ SAPTDFInts SAPT0::set_act_A_AR() {
     A_AR.i_start_ = foccA_;
     A_AR.j_start_ = 0;
 
-    A_AR.B_d_ = block_matrix(3, aoccA_ * nvirA_);
+    A_AR.BdMat_ = std::make_shared<Matrix>(3, aoccA_ * nvirA_);
+    A_AR.B_d_ = A_AR.BdMat_->pointer();
 
     A_AR.filenum_ = PSIF_SAPT_AA_DF_INTS;
     A_AR.label_ = const_cast<char *>("AR RI Integrals");
@@ -817,7 +838,8 @@ SAPTDFInts SAPT0::set_act_B_BS() {
     B_BS.i_start_ = foccB_;
     B_BS.j_start_ = 0;
 
-    B_BS.B_d_ = block_matrix(3, aoccB_ * nvirB_);
+    B_BS.BdMat_ = std::make_shared<Matrix>(3, aoccB_ * nvirB_);
+    B_BS.B_d_ = B_BS.BdMat_->pointer();
 
     B_BS.filenum_ = PSIF_SAPT_BB_DF_INTS;
     B_BS.label_ = const_cast<char *>("BS RI Integrals");
@@ -1342,5 +1364,5 @@ void SAPT2::antisym(double **A, int nocc, int nvir) {
 
     free(X);
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi
