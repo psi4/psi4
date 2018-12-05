@@ -45,7 +45,7 @@ class Vector3;
  *  \brief Computes potential integrals.
  * Use an IntegralFactory to create this object.
  */
-class PSI_API ElectrostaticInt : public PotentialInt {
+class ElectrostaticInt : public PotentialInt {
     void compute_pair(const GaussianShell&, const GaussianShell&) override {}
 
    public:

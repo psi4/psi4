@@ -53,7 +53,7 @@ class BasisSet;
  *
  * NB: This code must be specified in the .h file in order for the compiler to properly in-line the functors. (TDC)
  */
-class PSI_API PCMPotentialInt : public PotentialInt {
+class PCMPotentialInt : public PotentialInt {
    public:
     PCMPotentialInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                     int deriv = 0);

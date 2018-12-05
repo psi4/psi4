@@ -108,7 +108,7 @@ std::string Options::to_string() const {
 
 void Options::print() {
     std::string list = to_string();
-    outfile->Printf("\n\n  Options:");
+    outfile->Printf("\n\n  Module %s Options:", current_module_.c_str());
     outfile->Printf("\n  ----------------------------------------------------------------------------\n");
     outfile->Printf("%s\n", list.c_str());
 }

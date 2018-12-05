@@ -63,7 +63,7 @@ namespace psi {
 class CorrelationFactor;
 
 /// Evaluates the Boys function F_j(T)
-class PSI_API Fjt {
+class Fjt {
    public:
     Fjt();
     virtual ~Fjt();
@@ -79,7 +79,7 @@ class PSI_API Fjt {
 #define TAYLOR_INTERPOLATION_AND_RECURSION \
     0  // compute F_lmax(T) and then iterate down to F_0(T)? Else use interpolation only
 /// Uses Taylor interpolation of up to 8-th order to compute the Boys function
-class PSI_API Taylor_Fjt : public Fjt {
+class Taylor_Fjt : public Fjt {
     static double relative_zero_;
 
    public:
@@ -110,7 +110,7 @@ class PSI_API Taylor_Fjt : public Fjt {
 
 /// "Old" intv3 code from Curt
 /// Computes F_j(T) using 6-th order Taylor interpolation
-class PSI_API FJT : public Fjt {
+class FJT : public Fjt {
    private:
     double** gtable;
 
@@ -130,7 +130,7 @@ class PSI_API FJT : public Fjt {
     double* values(int J, double T) override;
 };
 
-class PSI_API GaussianFundamental : public Fjt {
+class GaussianFundamental : public Fjt {
    protected:
     std::shared_ptr<CorrelationFactor> cf_;
     double rho_;
@@ -147,7 +147,7 @@ class PSI_API GaussianFundamental : public Fjt {
 /**
  *  Solves \scp -\gamma r_{12}
  */
-class PSI_API F12Fundamental : public GaussianFundamental {
+class F12Fundamental : public GaussianFundamental {
    public:
     F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     ~F12Fundamental() override;
@@ -157,21 +157,21 @@ class PSI_API F12Fundamental : public GaussianFundamental {
 /**
  *  Solves \frac{\exp -\gamma r_{12}}{\gamma}.
  */
-class PSI_API F12ScaledFundamental : public GaussianFundamental {
+class F12ScaledFundamental : public GaussianFundamental {
    public:
     F12ScaledFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     ~F12ScaledFundamental() override;
     double* values(int J, double T) override;
 };
 
-class PSI_API F12SquaredFundamental : public GaussianFundamental {
+class F12SquaredFundamental : public GaussianFundamental {
    public:
     F12SquaredFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     ~F12SquaredFundamental() override;
     double* values(int J, double T) override;
 };
 
-class PSI_API F12G12Fundamental : public GaussianFundamental {
+class F12G12Fundamental : public GaussianFundamental {
    private:
     std::shared_ptr<FJT> Fm_;
 
@@ -181,14 +181,14 @@ class PSI_API F12G12Fundamental : public GaussianFundamental {
     double* values(int J, double T) override;
 };
 
-class PSI_API F12DoubleCommutatorFundamental : public GaussianFundamental {
+class F12DoubleCommutatorFundamental : public GaussianFundamental {
    public:
     F12DoubleCommutatorFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     ~F12DoubleCommutatorFundamental() override;
     double* values(int J, double T) override;
 };
 
-class PSI_API ErfFundamental : public GaussianFundamental {
+class ErfFundamental : public GaussianFundamental {
    private:
     double omega_;
     std::shared_ptr<FJT> boys_;
@@ -200,7 +200,7 @@ class PSI_API ErfFundamental : public GaussianFundamental {
     void setOmega(double omega) { omega_ = omega; }
 };
 
-class PSI_API ErfComplementFundamental : public GaussianFundamental {
+class ErfComplementFundamental : public GaussianFundamental {
    private:
     double omega_;
     std::shared_ptr<FJT> boys_;

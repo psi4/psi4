@@ -71,7 +71,7 @@ typedef struct ShellPair_typ {
  *  \class ERI
  *  \brief Capable of computing two-electron repulsion integrals.
  */
-class PSI_API TwoElectronInt : public TwoBodyAOInt {
+class TwoElectronInt : public TwoBodyAOInt {
    protected:
     //! Libint object.
     Libint_t libint_;

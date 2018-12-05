@@ -41,7 +41,7 @@ namespace psi {
 class IntegralFactory;
 class AOShellCombinationsIterator;
 
-class PSI_API ERDTwoElectronInt : public TwoBodyAOInt {
+class ERDTwoElectronInt : public TwoBodyAOInt {
    protected:
     /// The list of renormalized contraction coefficients for center 1
     double *new_cc_1_;

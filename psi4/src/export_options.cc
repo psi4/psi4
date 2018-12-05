@@ -56,5 +56,7 @@ void export_options(py::module& m) {
         .def("set_read_globals", &Options::set_read_globals, "expert")
         .def("set_current_module", &Options::set_current_module, "sets *arg0* (all CAPS) as current module")
         .def("get_current_module", &Options::get_current_module, "gets current module")
-        .def("validate_options", &Options::validate_options, "validate options for *arg0* module");
+        .def("validate_options", &Options::validate_options, "validate options for *arg0* module")
+        .def("print", &Options::print, "print options")
+        .def("print_globals", &Options::print_globals, "print global options");
 }
