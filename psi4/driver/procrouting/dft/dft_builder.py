@@ -71,6 +71,7 @@ dict = {
      "dispersion":  {          definition of dispersion corrections
                "type": "",       dispersion type - "d2", "d3zero", "d3bj" etc., see empirical_dispersion.py
              "params": {},       parameters for the dispersion correction
+                "nlc": False     (optional) logical switch to turn off nlc (e.g. VV10) correction defined by LibXC
            "citation": "",       special reference for the dispersion correction parameters, appended to output
                                    (if defined in driver, not if defined in input file)
     },
@@ -367,7 +368,6 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
         if "nlc" in d_params:
             sup.set_vv10_b(-1.0) 
             sup.set_do_vv10(d_params["nlc"])
-            # sup.set_vv10_b(-1.0) # not here, this re-activates vv10 again.
         if d_params["type"] == 'nl':
             sup.set_vv10_b(d_params["params"]["b"])
             sup.set_vv10_c(d_params["params"]["c"])
