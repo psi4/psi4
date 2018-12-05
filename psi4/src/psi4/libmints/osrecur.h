@@ -266,7 +266,7 @@ class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElect
  *  \class ObaraSaikaTwoCenterEFPRecursion
  *  \brief Obara and Saika recursion object for potential integrals, and electric derivatives thereof, required in EFP.
  */
-class PSI_API ObaraSaikaTwoCenterEFPRecursion {
+class ObaraSaikaTwoCenterEFPRecursion {
    protected:
     int max_am1_;
     int max_am2_;
@@ -337,7 +337,7 @@ class PSI_API ObaraSaikaTwoCenterEFPRecursion {
 /*! \ingroup MINTS
     \class ObaraSaikaThreeCenterRecursion
  */
-class PSI_API ObaraSaikaThreeCenterRecursion {
+class ObaraSaikaThreeCenterRecursion {
     int max_am1_;
     int max_am2_;
     int max_am3_;

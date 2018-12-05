@@ -42,7 +42,7 @@ class GaussianShell;
     \class ThreeCenterOverlapInt
     \brief Three center overlap integral.
  */
-class PSI_API ThreeCenterOverlapInt {
+class ThreeCenterOverlapInt {
    protected:
     ObaraSaikaThreeCenterRecursion overlap_recur_;
 
