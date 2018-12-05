@@ -1065,10 +1065,10 @@ PYBIND11_MODULE(core, core) {
              "Returns the current legacy_wavefunction object from the most recent computation.");
     core.def("set_legacy_wavefunction", py_psi_set_legacy_wavefunction,
              "Returns the current legacy_wavefunction object from the most recent computation.");
-    core.def("get_gradient", py_psi_get_gradient,
-             "Returns the most recently computed gradient, as a N by 3 :py:class:`~psi4.core.Matrix` object.");
-    core.def("set_gradient", py_psi_set_gradient,
-             "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    core.def("get_legacy_gradient", py_psi_get_gradient,
+             "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE ONLY.");
+    core.def("set_legacy_gradient", py_psi_set_gradient,
+             "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
     core.def("get_atomic_point_charges", py_psi_get_atomic_point_charges,
              "Returns the most recently computed atomic point charges, as a double * object.");
     core.def("set_memory_bytes", py_psi_set_memory, py::arg("memory"), py::arg("quiet") = false,

@@ -406,6 +406,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     int nirrep() const { return nirrep_; }
     /// Returns the reference energy
     double reference_energy() const { return energy_; }
+    /// Sets the energy
+    void set_energy(double ene) { energy_ = ene; }
     /// Returns the frozen-core energy
     double efzc() const { return efzc_; }
     /// Sets the frozen-core energy
