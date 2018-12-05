@@ -566,9 +566,11 @@ void SAPT0::df_integrals() {
 #endif
     int rank = 0;
 
-    auto eri = std::make_unique<TwoBodyAOInt *[]>(nthreads);
+    auto eri = std::vector<std::unique_ptr<TwoBodyAOInt>>(nthreads);
+    auto buffer = std::vector<const double *>(nthreads, nullptr);
     for (int i = 0; i < nthreads; ++i) {
-        eri[i] = rifactory->eri();
+        eri[i] = std::unique_ptr<TwoBodyAOInt>(rifactory->eri());
+        buffer[i] = eri[i]->buffer();
     }
 
     zero_disk(PSIF_SAPT_TEMP, "AO RI Integrals", ndf_, nsotri_screened);
@@ -612,7 +614,7 @@ void SAPT0::df_integrals() {
                                         for (int nu = 0; nu < numnu; ++nu, ++index, ++munu) {
                                             int onu = basisset_->shell(NU).function_index() + nu;
 
-                                            AO_RI[munu + munu_offset][oP] = eri[rank]->buffer()[index];
+                                            AO_RI[munu + munu_offset][oP] = buffer[rank][index];
                                         }
                                     }
                                 }
@@ -627,7 +629,7 @@ void SAPT0::df_integrals() {
                                             int onu = basisset_->shell(NU).function_index() + nu;
                                             int index = P * nummu * nummu + mu * nummu + nu;
 
-                                            AO_RI[munu + munu_offset][oP] = eri[rank]->buffer()[index];
+                                            AO_RI[munu + munu_offset][oP] = buffer[rank][index];
                                         }
                                     }
                                 }
@@ -1030,9 +1032,11 @@ void SAPT0::df_integrals_aio() {
 #endif
     int rank = 0;
 
-    auto eri = std::make_unique<TwoBodyAOInt *[]>(nthreads);
+    auto eri = std::vector<std::unique_ptr<TwoBodyAOInt>>(nthreads);
+    auto buffer = std::vector<const double *>(nthreads, nullptr);
     for (int i = 0; i < nthreads; ++i) {
-        eri[i] = rifactory->eri();
+        eri[i] = std::unique_ptr<TwoBodyAOInt>(rifactory->eri());
+        buffer[i] = eri[i]->buffer();
     }
 
     zero_disk(PSIF_SAPT_TEMP, "AO RI Integrals", ndf_, nsotri_screened);
@@ -1081,7 +1085,7 @@ void SAPT0::df_integrals_aio() {
                                         for (int nu = 0; nu < numnu; ++nu, ++index, ++munu) {
                                             int onu = basisset_->shell(NU).function_index() + nu;
 
-                                            AO_RI[curr_block % 2][munu + munu_offset][oP] = eri[rank]->buffer()[index];
+                                            AO_RI[curr_block % 2][munu + munu_offset][oP] = buffer[rank][index];
                                         }
                                     }
                                 }
@@ -1096,7 +1100,7 @@ void SAPT0::df_integrals_aio() {
                                             int onu = basisset_->shell(NU).function_index() + nu;
                                             int index = P * nummu * nummu + mu * nummu + nu;
 
-                                            AO_RI[curr_block % 2][munu + munu_offset][oP] = eri[rank]->buffer()[index];
+                                            AO_RI[curr_block % 2][munu + munu_offset][oP] = buffer[rank][index];
                                         }
                                     }
                                 }
@@ -1524,9 +1528,11 @@ void SAPT0::oo_df_integrals() {
 #endif
     int rank = 0;
 
-    auto eri = std::make_unique<TwoBodyAOInt *[]>(nthreads);
+    auto eri = std::vector<std::unique_ptr<TwoBodyAOInt>>(nthreads);
+    auto buffer = std::vector<const double *>(nthreads, nullptr);
     for (int i = 0; i < nthreads; ++i) {
-        eri[i] = rifactory->eri();
+        eri[i] = std::unique_ptr<TwoBodyAOInt>(rifactory->eri());
+        buffer[i] = eri[i]->buffer();
     }
 
     int *MUNUtoMU = init_int_array(nshelltri);
@@ -1585,8 +1591,8 @@ void SAPT0::oo_df_integrals() {
                             for (int nu = 0; nu < numnu; ++nu, ++index) {
                                 int onu = basisset_->shell(NU).function_index() + nu;
 
-                                temp[P][omu * nso_ + onu] = eri[rank]->buffer()[index];
-                                temp[P][onu * nso_ + omu] = eri[rank]->buffer()[index];
+                                temp[P][omu * nso_ + onu] = buffer[rank][index];
+                                temp[P][onu * nso_ + omu] = buffer[rank][index];
                             }
                         }
                     }
