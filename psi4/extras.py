@@ -28,8 +28,8 @@
 
 import os
 import atexit
+import shutil
 import datetime
-import subprocess
 
 from . import core
 
@@ -89,24 +89,18 @@ def _CMake_to_Py_boolean(cmakevar):
         return False
 
 
-def _psi4_which(command):
+def _psi4_which(command, return_bool=False):
     # environment is $PSIPATH:$PATH, less any None values
     lenv = {'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
                     ':' + os.environ.get('PATH')}
     lenv = {k: v for k, v in lenv.items() if v is not None}
 
-    # thanks, http://stackoverflow.com/a/11270665
-    try:
-        from subprocess import DEVNULL  # py33
-    except ImportError:
-        DEVNULL = open(os.devnull, 'wb')
+    ans = shutil.which(command, mode=os.F_OK | os.X_OK, path=lenv['PATH'])
 
-    try:
-        dashout = subprocess.Popen(command, stdout=DEVNULL, stderr=subprocess.STDOUT, env=lenv)
-    except OSError as e:
-        return False
+    if return_bool:
+        return bool(ans)
     else:
-        return True
+        return ans
 
 
 def _plugin_import(plug):
@@ -132,10 +126,10 @@ _addons_ = {
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
-    "dftd3": _psi4_which("dftd3"),
-    "cfour": _psi4_which("xcfour"),
-    "mrcc": _psi4_which("dmrcc"),
-    "gcp": _psi4_which("gcp"),
+    "dftd3": _psi4_which("dftd3", return_bool=True),
+    "cfour": _psi4_which("xcfour", return_bool=True),
+    "mrcc": _psi4_which("dmrcc", return_bool=True),
+    "gcp": _psi4_which("gcp", return_bool=True),
     "v2rdm_casscf": _plugin_import("v2rdm_casscf"),
     "gpu_dfcc": _plugin_import("gpu_dfcc"),
     "forte": _plugin_import("forte"),
