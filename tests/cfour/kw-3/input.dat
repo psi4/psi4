@@ -17,14 +17,14 @@ A=104.5
 set cfour_basis pvdz
 
 energy('c4-mp2')
-compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default Sph')  #TEST
+compare_values(sph_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default Sph')  #TEST
 clean()
 clean_variables()
 
 set cfour_basis 6-31g*
 
 energy('c4-mp2')
-compare_values(sph_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* Default Sph')  #TEST
+compare_values(sph_631gs, variable('CURRENT ENERGY'), 6, '6-31G* Default Sph')  #TEST
 clean()
 clean_variables()
 
@@ -32,14 +32,14 @@ set cfour_basis pvdz
 set cfour_spherical false
 
 energy('c4-mp2')
-compare_values(cart_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ forced Cart')  #TEST
+compare_values(cart_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ forced Cart')  #TEST
 clean()
 clean_variables()
 
 set cfour_basis 6-31g*
 
 energy('c4-mp2')
-compare_values(cart_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* forced Cart')  #TEST
+compare_values(cart_631gs, variable('CURRENT ENERGY'), 6, '6-31G* forced Cart')  #TEST
 clean()
 clean_variables()
 

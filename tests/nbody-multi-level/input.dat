@@ -24,7 +24,7 @@ e, wfn = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], retur
 clean()
 comparison_dict = {'nocp': -225.019408434635, 'cp': -225.000173661598, 'vmfc': -224.998744381484} #TEST
 for b, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.get_variable('2'+b), 6, b + '-corrected multi-level energy')            #TEST
+    compare_values(v, wfn.variable('2'+b), 6, b + '-corrected multi-level energy')            #TEST
 
 # Compute 1-body contribution with ccsd(t) and estimate all higher order contributions with scf
 levels = {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}
@@ -32,7 +32,7 @@ e, wfn = energy('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=Tru
 clean()
 comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST  
-    compare_values(v, wfn.get_variable(n+'nocp'), 6, 'Supersystem multi-level energy')            #TEST
+    compare_values(v, wfn.variable(n+'nocp'), 6, 'Supersystem multi-level energy')            #TEST
 
 # Compute electrostatically embedded  many-body expansion energy.with Mulliken charges
 e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
@@ -40,7 +40,7 @@ e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_tota
 clean()
 comparison_dict = {'1': -224.911009557547, '2': -224.912828186182}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.get_variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST
+    compare_values(v, wfn.variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST
 
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
 tip3p_charges = [-0.834, 0.417, 0.417]
@@ -50,4 +50,4 @@ e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_tota
 clean()
 comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.get_variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST
+    compare_values(v, wfn.variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST

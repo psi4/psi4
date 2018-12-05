@@ -29,11 +29,11 @@ df_basis_sapt aug-cc-pVDZ-ri
 
 energy('sapt0')
 
-Eelst = psi4.get_variable("SAPT ELST ENERGY")
-Eexch = psi4.get_variable("SAPT EXCH ENERGY")
-Eind  = psi4.get_variable("SAPT IND ENERGY")
-Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ET    = psi4.get_variable("SAPT ENERGY")
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
 
 Eref = [ -0.00005818602,  #TEST
           0.00019907113,  #TEST
@@ -56,11 +56,11 @@ scf_type direct
 
 energy('sapt0')
 
-Eelst = psi4.get_variable("SAPT ELST ENERGY")
-Eexch = psi4.get_variable("SAPT EXCH ENERGY")
-Eind  = psi4.get_variable("SAPT IND ENERGY")
-Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ET    = psi4.get_variable("SAPT ENERGY")
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
 
 Eref = [ -0.00012024341,  #TEST
           0.00018948726,  #TEST

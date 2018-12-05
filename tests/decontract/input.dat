@@ -21,4 +21,4 @@ set {
 
 energy('scf')
 
-compare_values(ref_energy, get_variable("SCF TOTAL ENERGY"), 9, "RHF energy")  #TEST
+compare_values(ref_energy, variable("SCF TOTAL ENERGY"), 9, "RHF energy")  #TEST

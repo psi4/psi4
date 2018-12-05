@@ -24,6 +24,6 @@ energy('MP2/aug-cc-pV[D,T]Z', molecule=he_trimer, bsse_type=['cp', 'nocp', 'vmfc
 for bsse_type in ['CP', 'NOCP', 'VMFC']:                                          #TEST
     for n in [2, 3]:                                                              #TEST
         var_key = bsse_type + ('-CORRECTED %d-BODY INTERACTION ENERGY' % n)       #TEST
-        computed_value = psi4.get_variable(var_key)                               #TEST
+        computed_value = psi4.variable(var_key)                               #TEST
         compare_values(comparison_dict[bsse_type][n], computed_value, 8, var_key) #TEST
 

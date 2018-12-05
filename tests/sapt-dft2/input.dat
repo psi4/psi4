@@ -30,5 +30,5 @@ set {
 energy('sapt(dft)', molecule=dimer)
 
 for k, v in Eref.items():                                  #TEST
-    compare_values(v / 1000.0, psi4.get_variable(k), 6, k) #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
 

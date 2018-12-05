@@ -24,7 +24,7 @@ emp3   = energy('mp3')
 emp4   = energy('mp4')
 
 compare_values(refnuc, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")  #TEST 
-compare_values(refscf, get_variable("SCF total energy"), 8, "SCF energy")  #TEST
+compare_values(refscf, variable("SCF total energy"), 8, "SCF energy")  #TEST
 compare_values(refcisd, ecisd, 6, "CISD energy: DePrince")  #TEST
 compare_values(refcisdt, ecisdt, 6, "CISDT energy: Sherrill")  #TEST
 compare_values(refmp3, emp3, 6, "MP3 energy: Bozkaya")  #TEST
@@ -38,7 +38,7 @@ emp3   = energy('mp3')
 emp4   = energy('mp4')
 
 compare_values(refnuc, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")  #TEST 
-compare_values(refscf, get_variable("SCF total energy"), 8, "SCF energy")  #TEST
+compare_values(refscf, variable("SCF total energy"), 8, "SCF energy")  #TEST
 compare_values(refcisd, ecisd, 6, "CISD energy: Sherrill")  #TEST
 compare_values(refcisdt, ecisdt, 6, "CISDT energy: Sherrill")  #TEST
 compare_values(refmp3, emp3, 6, "MP3 energy: Sherrill")  #TEST

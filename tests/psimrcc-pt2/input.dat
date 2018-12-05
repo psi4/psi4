@@ -39,5 +39,5 @@ set psimrcc {
 
 energy('psimrcc')
 compare_values(refnuc, ch2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
-compare_values(refmkpt2, get_variable("CURRENT ENERGY") , 8, "Mk-MRPT2 energy")            #TEST 
+compare_values(refscf, variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST
+compare_values(refmkpt2, variable("CURRENT ENERGY") , 8, "Mk-MRPT2 energy")            #TEST
