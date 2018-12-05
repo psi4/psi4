@@ -235,6 +235,7 @@ def dftd3_plant(jobrec):
     command = ['dftd3', 'dftd3_geometry.xyz']
     if jobrec['driver'] == 'gradient':
         command.append('-grad')
+    command.append('-abc')
     dftd3rec['command'] = command
 
     return dftd3rec
@@ -293,6 +294,11 @@ def dftd3_harvest(jobrec, dftd3rec):
             version = ln.replace('DFTD3', '').replace('|', '').strip().lower()
         elif re.match(' Edisp /kcal,au', ln):
             ene = Decimal(ln.split()[3])
+        elif re.match(r" E6\(ABC\) \"   :", ln):
+            print(ln)
+            h2kcm = Decimal(qcel.constants.hartree2kcalmol)
+            atm = Decimal(ln.split()[-1])
+            atm /= h2kcm
         elif re.match(' normal termination of dftd3', ln):
             break
     else:
@@ -320,6 +326,8 @@ def dftd3_harvest(jobrec, dftd3rec):
     # OLD WAY
     calcinfo = []
     calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
+    calcinfo.append(QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION ENERGY', 'Eh', atm, ''))
+    calcinfo.append(QCAspect('{}ATM DISPERSION CORRECTION ENERGY'.format(qcvkey), 'Eh', atm, ''))
     if qcvkey:
         calcinfo.append(QCAspect('{} DISPERSION CORRECTION ENERGY'.format(qcvkey), 'Eh', ene, ''))
     if jobrec['driver'] == 'gradient':
