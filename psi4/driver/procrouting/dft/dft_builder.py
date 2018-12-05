@@ -131,18 +131,28 @@ for functional_name in dict_functionals:
     # else loop through dispersion types in dashparams (also considering aliases)
     #   and build dispersion corrected version (applies also for aliases)
     for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
-        for dispersion_functional in intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions']:
-            if dispersion_functional.lower() in functional_aliases:
-                func = copy.deepcopy(dict_functionals[functional_name])
-                func["name"] += "-" + resolved_dispersion_level
-                func["dispersion"] = copy.deepcopy(intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
-                func["dispersion"]["type"] = resolved_dispersion_level
+        # first check whether there is a pre-defined dispersion corrected functional
+        # of the same resolved_dispersion_level type
+        if functional_name + "-" + resolved_dispersion_level in dict_functionals:
+            formal = functional_name + "-" + resolved_dispersion_level
+            for alias in functional_aliases:
+                alias += "-" + nominal_dispersion_level.lower()
+                if formal != alias:
+                    functionals[alias] = copy.deepcopy(dict_functionals[formal])
+        # if not, build it from dashparam logic if possible
+        else:
+            for dispersion_functional in intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions']:
+                if dispersion_functional.lower() in functional_aliases:
+                    func = copy.deepcopy(dict_functionals[functional_name])
+                    func["name"] += "-" + resolved_dispersion_level
+                    func["dispersion"] = copy.deepcopy(intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
+                    func["dispersion"]["type"] = resolved_dispersion_level
 
-                # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
-                #   all point to the same method (M06-2X-D3ZERO)
-                for alias in functional_aliases:
-                    alias += "-" + nominal_dispersion_level.lower()
-                    functionals[alias] = func
+                    # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
+                    #   all point to the same method (M06-2X-D3ZERO)
+                    for alias in functional_aliases:
+                        alias += "-" + nominal_dispersion_level.lower()
+                        functionals[alias] = func
 
 
 def check_consistency(func_dictionary):
