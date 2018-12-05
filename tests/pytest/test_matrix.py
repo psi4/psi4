@@ -7,29 +7,31 @@ from psi4.core import Dimension, Matrix
 from utils import compare_arrays
 
 
+def check_dense_mat(m, exp_r, exp_c, exp_name=None):
+    assert m.rows() == exp_r
+    assert m.cols() == exp_c
+    if exp_name is not None:
+        assert m.name == exp_name
+    assert m.symmetry() == 0
+    assert m.nirrep() == 1
+
+
+def check_block_sparse_mat(m, exp_nirrep, exp_rdim, exp_cdim, exp_name=None, exp_sym=0):
+    assert m.symmetry() == exp_sym
+    assert m.nirrep() == exp_nirrep
+    assert m.rowdim() == exp_rdim
+    assert m.coldim() == exp_cdim
+    for row_irr in range(m.nirrep()):
+        col_irr = row_irr ^ m.symmetry()
+        r, c = m.nph[row_irr].shape
+        assert r == exp_rdim[row_irr]
+        assert c == exp_cdim[col_irr]
+
+    if exp_name is not None:
+        assert m.name == exp_name
+
+
 def test_constructors():
-    def check_dense_mat(m, exp_r, exp_c, exp_name=None):
-        assert m.rows() == exp_r
-        assert m.cols() == exp_c
-        if exp_name is not None:
-            assert m.name == exp_name
-        assert m.symmetry() == 0
-        assert m.nirrep() == 1
-
-    def check_block_sparse_mat(m, exp_nirrep, exp_rdim, exp_cdim, exp_name=None, exp_sym=0):
-        assert m.symmetry() == exp_sym
-        assert m.nirrep() == exp_nirrep
-        assert m.rowdim() == exp_rdim
-        assert m.coldim() == exp_cdim
-        for row_irr in range(m.nirrep()):
-            col_irr = row_irr ^ m.symmetry()
-            r, c = m.nph[row_irr].shape
-            assert r == exp_rdim[row_irr]
-            assert c == exp_cdim[col_irr]
-
-        if exp_name is not None:
-            assert m.name == exp_name
-
     int_row = 10
     int_col = 20
     # int row/col
@@ -57,10 +59,6 @@ def build_random_mat(rdim, cdim, symmetry=0):
         block_shape = (m.rows(h), m.cols(h ^ m.symmetry()))
         m.nph[h][:, :] = np.random.randn(*block_shape)
     return m
-
-
-def block_to_arr(m, h):
-    return np.asarray(m.nph[h])
 
 
 def generate_result(a, b, transa, transb):
