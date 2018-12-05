@@ -37,8 +37,7 @@ jobs:
           conda install --channel conda-forge ^
                         cmake ^
                         deepdiff ^
-                        intel-openmp=2018.0.3 ^
-                        mkl-devel=2018.0.3 ^
+                        mkl-devel ^
                         mpmath ^
                         networkx ^
                         ninja ^
