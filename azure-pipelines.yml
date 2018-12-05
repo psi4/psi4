@@ -94,9 +94,9 @@ jobs:
         workingDirectory: $(Build.BinariesDirectory)/build
 
       # Test (OpenMP)
+      # Check if OpenMP configuration had not failed silently
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          # Check if OpenMP config hadn't failed silently
           python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
         displayName: "Test Psi4 (OpenMP)"
         workingDirectory: $(Build.BinariesDirectory)/install/lib
@@ -112,25 +112,26 @@ jobs:
         displayName: "Test Psi4 (quick ctest)"
         workingDirectory: $(Build.BinariesDirectory)/build
 
-      # Test (ctest; failing)
+      # Test (failing ctest)
       #
-      # Known failing ctests:
+      # Failing ctests:
       #   - cbs-parser
       #   - cc46
       #   - cc47
       #   - cc53
-      #   - ci-property (fails radomly)
+      #   - ci-property (fails randomly)
       #   - fci-tdm
       #   - fci-tdm-2
       #   - psimrcc-fd-freq2
       #   - psithon2
+      #
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           ctest --build-config Debug ^
                 --tests-regex "^(cbs-parser|cc46|cc47|cc53|ci-property|fci-tdm|fci-tdm-2|psimrcc-fd-freq2|psithon2)$" ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS% & exit 0
-        displayName: "Test Psi4 (ctest; failing)"
+        displayName: "Test Psi4 (failing ctest)"
         workingDirectory: $(Build.BinariesDirectory)/build
 
       # Test (built-in)
