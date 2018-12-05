@@ -264,7 +264,7 @@ class PSI_API TaskListComputer {
  *
  */
 
-class PSI_API MultipolePropCalc : public Prop {
+class MultipolePropCalc : public Prop {
    private:
     MultipolePropCalc();
 
@@ -306,7 +306,7 @@ class PSI_API MultipolePropCalc : public Prop {
  *
  */
 
-class PSI_API PopulationAnalysisCalc : public Prop {
+class PopulationAnalysisCalc : public Prop {
    private:
     PopulationAnalysisCalc();
 
@@ -344,7 +344,7 @@ class PSI_API PopulationAnalysisCalc : public Prop {
  * OEProp still contains all that.
  *
  */
-class PSI_API ESPPropCalc : public Prop {
+class ESPPropCalc : public Prop {
    private:
     // Constructing without wavefunction is forbidden:
     ESPPropCalc();
@@ -384,7 +384,7 @@ class PSI_API ESPPropCalc : public Prop {
  * The OEProp object, computes arbitrary expectation values (scalars)
  * analyses (typically vectors)
  **/
-class PSI_API OEProp : public TaskListComputer {
+class OEProp : public TaskListComputer {
    private:
     /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
     OEProp();

@@ -108,7 +108,7 @@ class PSI_API SphericalTransformComponent {
 /*! \ingroup MINTS */
 /** This is a base class for a container for a sparse Cartesian to solid
     harmonic basis function transformation. */
-class PSI_API SphericalTransform {
+class SphericalTransform {
    protected:
     std::vector<SphericalTransformComponent> components_;
     int l_;  // The angular momentum this transform is for.
@@ -142,7 +142,7 @@ class PSI_API SphericalTransform {
 
 /*! \ingroup MINTS */
 /// This describes a solid harmonic to Cartesian transformation.
-class PSI_API ISphericalTransform : public SphericalTransform {
+class ISphericalTransform : public SphericalTransform {
    protected:
     ISphericalTransform();
     void init() override;
@@ -151,7 +151,7 @@ class PSI_API ISphericalTransform : public SphericalTransform {
     ISphericalTransform(int l, int subl = -1);
 };
 
-class PSI_API SphericalTransformIter {
+class SphericalTransformIter {
    private:
     const SphericalTransform& trans_;
     int i_;
@@ -183,7 +183,7 @@ class PSI_API SphericalTransformIter {
 };
 
 /*! \ingroup MINTS */
-class PSI_API AOIntegralsIterator {
+class AOIntegralsIterator {
    private:
     struct Integral {
         int i;

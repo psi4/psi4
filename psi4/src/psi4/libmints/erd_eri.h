@@ -131,7 +131,7 @@ class ERDTwoElectronInt : public TwoBodyAOInt {
     virtual size_t compute_shell_deriv2(int, int, int, int);
 };
 
-class PSI_API ERDERI : public ERDTwoElectronInt {
+class ERDERI : public ERDTwoElectronInt {
    public:
     ERDERI(const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     virtual ~ERDERI();

@@ -138,48 +138,48 @@ class TwoElectronInt : public TwoBodyAOInt {
     size_t compute_shell_deriv2(int, int, int, int) override;
 };
 
-class PSI_API ERI : public TwoElectronInt {
+class ERI : public TwoElectronInt {
    public:
     ERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
     ~ERI() override;
 };
 
-class PSI_API F12 : public TwoElectronInt {
+class F12 : public TwoElectronInt {
    public:
     F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
         bool use_shell_pairs = false);
     ~F12() override;
 };
 
-class PSI_API F12Scaled : public TwoElectronInt {
+class F12Scaled : public TwoElectronInt {
    public:
     F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
               bool use_shell_pairs = false);
     ~F12Scaled() override;
 };
 
-class PSI_API F12Squared : public TwoElectronInt {
+class F12Squared : public TwoElectronInt {
    public:
     F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
                bool use_shell_pairs = false);
     ~F12Squared() override;
 };
 
-class PSI_API F12G12 : public TwoElectronInt {
+class F12G12 : public TwoElectronInt {
    public:
     F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
            bool use_shell_pairs = false);
     ~F12G12() override;
 };
 
-class PSI_API F12DoubleCommutator : public TwoElectronInt {
+class F12DoubleCommutator : public TwoElectronInt {
    public:
     F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
                         bool use_shell_pairs = false);
     ~F12DoubleCommutator() override;
 };
 
-class PSI_API ErfERI : public TwoElectronInt {
+class ErfERI : public TwoElectronInt {
    public:
     ErfERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
     ~ErfERI() override;
@@ -187,7 +187,7 @@ class PSI_API ErfERI : public TwoElectronInt {
     void setOmega(double omega);
 };
 
-class PSI_API ErfComplementERI : public TwoElectronInt {
+class ErfComplementERI : public TwoElectronInt {
    public:
     ErfComplementERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
     ~ErfComplementERI() override;

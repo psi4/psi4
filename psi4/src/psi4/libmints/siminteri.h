@@ -83,7 +83,7 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
     std::shared_ptr<const ShellPairVec> multi_spairs_ket_;
 };
 
-class PSI_API SimintERI : public SimintTwoElectronInt {
+class SimintERI : public SimintTwoElectronInt {
    protected:
     SimintERI(const SimintERI& rhs);
 

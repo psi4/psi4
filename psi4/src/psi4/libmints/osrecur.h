@@ -37,7 +37,7 @@ namespace psi {
  *  \class ObaraSaikaTwoCenterRecursion
  *  \brief Generic Obara and Saika recursion object.
  */
-class PSI_API ObaraSaikaTwoCenterRecursion {
+class ObaraSaikaTwoCenterRecursion {
     int max_am1_;
     int max_am2_;
 
@@ -72,7 +72,7 @@ class PSI_API ObaraSaikaTwoCenterRecursion {
  *  \brief Obara and Saika recursion object for moment integrals. Currently not used by DipoleInt, hopefully soon.
  *  THIS CLASS HAS NOT BEEN TESTED!!!
  */
-class PSI_API ObaraSaikaTwoCenterMIRecursion {
+class ObaraSaikaTwoCenterMIRecursion {
     int max_am1_;
     int max_am2_;
     int max_m_;
@@ -100,7 +100,7 @@ class PSI_API ObaraSaikaTwoCenterMIRecursion {
  *  \class ObaraSaikaTwoCenterVIRecursion
  *  \brief Obara and Saika recursion object for potential integrals.
  */
-class PSI_API ObaraSaikaTwoCenterVIRecursion {
+class ObaraSaikaTwoCenterVIRecursion {
    protected:
     int max_am1_;
     int max_am2_;
@@ -147,7 +147,7 @@ class PSI_API ObaraSaikaTwoCenterVIRecursion {
  *  \class ObaraSaikaTwoCenterVIDerivRecursion
  *  \brief Obara and Saika recursion object for computing potential derivatives.
  */
-class PSI_API ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursion {
+class ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVIRecursion {
    protected:
     double ***vx_;
     double ***vy_;
@@ -174,7 +174,7 @@ class PSI_API ObaraSaikaTwoCenterVIDerivRecursion : public ObaraSaikaTwoCenterVI
  *  \class ObaraSaikaTwoCenterVIDerivRecursion
  *  \brief Obara and Saika recursion object for computing potential derivatives.
  */
-class PSI_API ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRecursion {
+class ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRecursion {
    protected:
     double ***vxx_;
     double ***vxy_;
@@ -207,7 +207,7 @@ class PSI_API ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterV
  *  \class ObaraSaikaTwoCenterElectricField
  *  \brief Obara and Saika recursion object for computing electric field integrals.
  */
-class PSI_API ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion {
+class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion {
    protected:
     double ***q_;
     double ***x_;
@@ -236,7 +236,7 @@ class PSI_API ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRec
  *  \class ObaraSaikaTwoCenterElectricFieldGradient
  *  \brief Obara and Saika recursion object for computing electric field gradient integrals.
  */
-class PSI_API ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElectricField {
+class ObaraSaikaTwoCenterElectricFieldGradient : public ObaraSaikaTwoCenterElectricField {
    protected:
     double ***exx_;
     double ***eyy_;
