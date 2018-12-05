@@ -167,6 +167,13 @@ if args["psidatadir"] is not None:
 
 ### Actually import psi4 and apply setup ###
 
+# Arrange for warnings to ignore everything except the message
+def custom_formatwarning(msg, *args, **kwargs):
+    return str(msg) + '\n'
+
+import warnings
+warnings.formatwarning = custom_formatwarning
+
 # Import installed psi4
 sys.path.insert(1, lib_dir)
 import psi4
