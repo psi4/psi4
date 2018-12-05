@@ -64,9 +64,9 @@ def run_gaussian_2(name, **kwargs):
     scf_e, ref = driver.frequency('scf', return_wfn=True)
 
     # thermodynamic properties
-    du = core.get_variable('THERMAL ENERGY CORRECTION')
-    dh = core.get_variable('ENTHALPY CORRECTION')
-    dg = core.get_variable('GIBBS FREE ENERGY CORRECTION')
+    du = core.variable('THERMAL ENERGY CORRECTION')
+    dh = core.variable('ENTHALPY CORRECTION')
+    dg = core.variable('GIBBS FREE ENERGY CORRECTION')
 
     freqs   = ref.frequencies()
     nfreq   = freqs.dim(0)
@@ -102,30 +102,30 @@ def run_gaussian_2(name, **kwargs):
     # hlc of gaussian-1
     hlc1 = -0.00614 * nalpha
 
-    eqci_6311gdp = core.get_variable("QCISD(T) TOTAL ENERGY")
-    emp4_6311gd  = core.get_variable("MP4 TOTAL ENERGY")
-    emp2_6311gd  = core.get_variable("MP2 TOTAL ENERGY")
+    eqci_6311gdp = core.variable("QCISD(T) TOTAL ENERGY")
+    emp4_6311gd  = core.variable("MP4 TOTAL ENERGY")
+    emp2_6311gd  = core.variable("MP2 TOTAL ENERGY")
     core.clean()
 
     # correction for diffuse functions
     core.set_global_option('BASIS',"6-311+G(D_P)")
     driver.energy('mp4')
-    emp4_6311pg_dp = core.get_variable("MP4 TOTAL ENERGY")
-    emp2_6311pg_dp = core.get_variable("MP2 TOTAL ENERGY")
+    emp4_6311pg_dp = core.variable("MP4 TOTAL ENERGY")
+    emp2_6311pg_dp = core.variable("MP2 TOTAL ENERGY")
     core.clean()
 
     # correction for polarization functions
     core.set_global_option('BASIS',"6-311G(2DF_P)")
     driver.energy('mp4')
-    emp4_6311g2dfp = core.get_variable("MP4 TOTAL ENERGY")
-    emp2_6311g2dfp = core.get_variable("MP2 TOTAL ENERGY")
+    emp4_6311g2dfp = core.variable("MP4 TOTAL ENERGY")
+    emp2_6311g2dfp = core.variable("MP2 TOTAL ENERGY")
     core.clean()
 
     # big basis mp2
     core.set_global_option('BASIS',"6-311+G(3DF_2P)")
     #run_fnocc('_mp2',**kwargs)
     driver.energy('mp2')
-    emp2_big = core.get_variable("MP2 TOTAL ENERGY")
+    emp2_big = core.variable("MP2 TOTAL ENERGY")
     core.clean()
     eqci       = eqci_6311gdp
     e_delta_g2 = emp2_big + emp2_6311gd - emp2_6311g2dfp - emp2_6311pg_dp

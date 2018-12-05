@@ -172,7 +172,7 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
         core.print_out("\n   ==> %s root %d information <==\n\n" % (rname, root))
 
         # Print total energy
-        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root))
+        root_e = core.variable("CI ROOT %d TOTAL ENERGY" % (root))
         core.print_out("    %s Root %d energy =  %20.15f\n" % (rname, root, root_e))
 
         # Print natural occupations

@@ -294,10 +294,10 @@ def nbody_gufunc(func, method_string, **kwargs):
             if d in dicts:
                 for var, value in r[d].items():
                     try:
-                        wfn.set_variable(str(var), value)
-                        core.set_variable(str(var), value)
+                        wfn.set_scalar_variable(str(var), value)
+                        core.set_scalar_variable(str(var), value)
                     except:
-                        wfn.set_array(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
+                        wfn.set_array_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
@@ -476,11 +476,11 @@ def compute_nbody_components(func, method_string, metadata):
             # Save energies info
             ptype_dict[pair], wfn = func(method_string, molecule=current_mol, return_wfn=True, **kwargs)
             core.set_global_option_python('EXTERN', None)
-            energies_dict[pair] = core.get_variable("CURRENT ENERGY")
+            energies_dict[pair] = core.variable("CURRENT ENERGY")
             gradients_dict[pair] = wfn.gradient()
             var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]), ', '.join(
                 [str(i) for i in pair[1]]))
-            intermediates_dict[var_key] = core.get_variable("CURRENT ENERGY")
+            intermediates_dict[var_key] = core.variable("CURRENT ENERGY")
             core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" % (str(
                 pair[0]), str(pair[1]), energies_dict[pair]))
             # Flip this off for now, needs more testing

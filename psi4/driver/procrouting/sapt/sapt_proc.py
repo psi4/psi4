@@ -122,7 +122,7 @@ def run_sapt_dft(name, **kwargs):
         core.timer_on("SAPT(DFT): Dimer SCF")
         hf_data = {}
         hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
-        hf_data["HF DIMER"] = core.get_variable("CURRENT ENERGY")
+        hf_data["HF DIMER"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT): Dimer SCF")
 
         core.timer_on("SAPT(DFT): Monomer A SCF")
@@ -130,7 +130,7 @@ def run_sapt_dft(name, **kwargs):
             core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
-        hf_data["HF MONOMER A"] = core.get_variable("CURRENT ENERGY")
+        hf_data["HF MONOMER A"] = core.variable("CURRENT ENERGY")
         core.timer_off("SAPT(DFT): Monomer A SCF")
 
         core.timer_on("SAPT(DFT): Monomer B SCF")
@@ -139,7 +139,7 @@ def run_sapt_dft(name, **kwargs):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
 
         hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
-        hf_data["HF MONOMER B"] = core.get_variable("CURRENT ENERGY")
+        hf_data["HF MONOMER B"] = core.variable("CURRENT ENERGY")
         core.set_global_option("SAVE_JK", False)
         core.timer_off("SAPT(DFT): Monomer B SCF")
 
@@ -192,7 +192,7 @@ def run_sapt_dft(name, **kwargs):
         core.print_out("\n")
         core.print_out(print_sapt_hf_summary(hf_data, "SAPT(HF)", delta_hf=dhf_value))
 
-        data["Delta HF Correction"] = core.get_variable("SAPT(DFT) Delta HF")
+        data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
         sapt_jk.finalize()
 
         del hf_wfn_A, hf_wfn_B, sapt_jk
@@ -216,7 +216,7 @@ def run_sapt_dft(name, **kwargs):
     core.IO.set_default_namespace('monomerA')
     wfn_A = scf_helper(
         sapt_dft_functional, post_scf=False, molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
-    data["DFT MONOMERA"] = core.get_variable("CURRENT ENERGY")
+    data["DFT MONOMERA"] = core.variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
     core.timer_off("SAPT(DFT): Monomer A DFT")
@@ -233,7 +233,7 @@ def run_sapt_dft(name, **kwargs):
     core.IO.set_default_namespace('monomerB')
     wfn_B = scf_helper(
         sapt_dft_functional, post_scf=False, molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
-    data["DFT MONOMERB"] = core.get_variable("CURRENT ENERGY")
+    data["DFT MONOMERB"] = core.variable("CURRENT ENERGY")
 
     # Save JK object
     sapt_jk = wfn_B.jk()

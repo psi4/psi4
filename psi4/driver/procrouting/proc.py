@@ -1385,7 +1385,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         oeprop.compute()
         for obj in [core]:
             for xyz in 'XYZ':
-                obj.set_variable('CURRENT DIPOLE ' + xyz, obj.get_variable('SCF DIPOLE ' + xyz))
+                obj.set_variable('CURRENT DIPOLE ' + xyz, obj.variable('SCF DIPOLE ' + xyz))
 
     # Write out MO's
     if core.get_option("SCF", "PRINT_MOS"):
@@ -2020,7 +2020,7 @@ def run_scf(name, **kwargs):
 
 
     scf_wfn = scf_helper(name, post_scf=False, **kwargs)
-    returnvalue = core.get_variable('CURRENT ENERGY')
+    returnvalue = core.variable('CURRENT ENERGY')
 
     ssuper = scf_wfn.functional()
 
@@ -2037,12 +2037,12 @@ def run_scf(name, **kwargs):
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
 
-            vdh = core.get_variable('SCS-MP2 CORRELATION ENERGY')
+            vdh = core.variable('SCS-MP2 CORRELATION ENERGY')
 
         else:
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
-            vdh = ssuper.c_alpha() * core.get_variable('MP2 CORRELATION ENERGY')
+            vdh = ssuper.c_alpha() * core.variable('MP2 CORRELATION ENERGY')
 
         # TODO: delete these variables, since they don't mean what they look to mean?
         # 'MP2 TOTAL ENERGY',
@@ -2088,7 +2088,7 @@ def run_scf_gradient(name, **kwargs):
 
     if hasattr(ref_wfn, "_disp_functor"):
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule())
-        ref_wfn.set_array("-D Gradient", disp_grad)
+        ref_wfn.set_variable("-D Gradient", disp_grad)
 
     grad = core.scfgrad(ref_wfn)
 
@@ -2156,7 +2156,7 @@ def run_scf_hessian(name, **kwargs):
 
     if hasattr(ref_wfn, "_disp_functor"):
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule())
-        ref_wfn.set_array("-D Hessian", disp_hess)
+        ref_wfn.set_variable("-D Hessian", disp_hess)
 
     H = core.scfhess(ref_wfn)
     ref_wfn.set_hessian(H)
@@ -2442,8 +2442,8 @@ def run_bccd(name, **kwargs):
         sort_func(ref_wfn)
 
         ref_wfn = core.ccenergy(ref_wfn)
-        core.print_out('Brueckner convergence check: %s\n' % bool(core.get_variable('BRUECKNER CONVERGED')))
-        if (core.get_variable('BRUECKNER CONVERGED') == True):
+        core.print_out('Brueckner convergence check: %s\n' % bool(core.variable('BRUECKNER CONVERGED')))
+        if (core.variable('BRUECKNER CONVERGED') == True):
             break
 
         if bcc_iter_cnt >= core.get_option('CCENERGY', 'BCCD_MAXITER'):
@@ -2523,7 +2523,7 @@ def run_scf_property(name, **kwargs):
 
     # Always must set SCF dipole
     for cart in ["X", "Y", "Z"]:
-        core.set_variable("SCF DIPOLE " + cart, core.get_variable(name + " DIPOLE " + cart))
+        core.set_variable("SCF DIPOLE " + cart, core.variable(name + " DIPOLE " + cart))
 
     # Run Linear Respsonse
     if len(linear_response):
@@ -2675,24 +2675,24 @@ def run_cc_property(name, **kwargs):
         if name.startswith('eom'):
             # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ... if we are doing multiple roots
             if 'dipole' in one:
-                core.set_variable("CC ROOT 0 DIPOLE X", core.get_variable("CC DIPOLE X"))
-                core.set_variable("CC ROOT 0 DIPOLE Y", core.get_variable("CC DIPOLE Y"))
-                core.set_variable("CC ROOT 0 DIPOLE Z", core.get_variable("CC DIPOLE Z"))
+                core.set_variable("CC ROOT 0 DIPOLE X", core.variable("CC DIPOLE X"))
+                core.set_variable("CC ROOT 0 DIPOLE Y", core.variable("CC DIPOLE Y"))
+                core.set_variable("CC ROOT 0 DIPOLE Z", core.variable("CC DIPOLE Z"))
             if 'quadrupole' in one:
-                core.set_variable("CC ROOT 0 QUADRUPOLE XX", core.get_variable("CC QUADRUPOLE XX"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE XY", core.get_variable("CC QUADRUPOLE XY"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE XZ", core.get_variable("CC QUADRUPOLE XZ"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE YY", core.get_variable("CC QUADRUPOLE YY"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.get_variable("CC QUADRUPOLE YZ"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.get_variable("CC QUADRUPOLE ZZ"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE XX", core.variable("CC QUADRUPOLE XX"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE XY", core.variable("CC QUADRUPOLE XY"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE XZ", core.variable("CC QUADRUPOLE XZ"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE YY", core.variable("CC QUADRUPOLE YY"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.variable("CC QUADRUPOLE YZ"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.variable("CC QUADRUPOLE ZZ"))
 
             n_root = sum(core.get_global_option("ROOTS_PER_IRREP"))
             for rn in range(n_root):
                 oe.set_title("CC ROOT {}".format(rn + 1))
-                Da = ccwfn.get_array("CC ROOT {} Da".format(rn + 1))
+                Da = ccwfn.variable("CC ROOT {} Da".format(rn + 1))
                 oe.set_Da_so(Da)
                 if core.get_global_option("REFERENCE") == "UHF":
-                    Db = ccwfn.get_array("CC ROOT {} Db".format(rn + 1))
+                    Db = ccwfn.variable("CC ROOT {} Db".format(rn + 1))
                     oe.set_Db_so(Db)
                 oe.compute()
 
@@ -2750,11 +2750,11 @@ def run_dfmp2_property(name, **kwargs):
     grad = dfmp2_wfn.compute_gradient()
 
     if name == 'scs-mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.variable('SCS-MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.variable('SCS-MP2 CORRELATION ENERGY'))
     elif name == 'mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.variable('MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.variable('MP2 CORRELATION ENERGY'))
 
     # Run OEProp
     oe = core.OEProp(dfmp2_wfn)
@@ -3066,9 +3066,9 @@ def run_detci(name, **kwargs):
         oeprop.add("DIPOLE")
         oeprop.compute()
         ciwfn.oeprop = oeprop
-        core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
-        core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
-        core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
+        core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
+        core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
+        core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
 
     ciwfn.cleanup_ci()
     ciwfn.cleanup_dpd()
@@ -3113,11 +3113,11 @@ def run_dfmp2(name, **kwargs):
     dfmp2_wfn.compute_energy()
 
     if name == 'scs-mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.variable('SCS-MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.variable('SCS-MP2 CORRELATION ENERGY'))
     elif name == 'mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
+        core.set_variable('CURRENT ENERGY', core.variable('MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.variable('MP2 CORRELATION ENERGY'))
 
     optstash.restore()
     core.tstop()
@@ -3225,7 +3225,7 @@ def run_dfep2(name, **kwargs):
         core.set_variable("CURRENT ENERGY", ip_vals[-1])
     if len(ea_vals):
         core.set_variable("EP2 ELECTRON AFFINITY", ea_vals[0])
-        if core.get_variable("EP2 IONIZATION POTENTIAL") == 0.0:
+        if core.variable("EP2 IONIZATION POTENTIAL") == 0.0:
             core.set_variable("CURRENT ENERGY", ea_vals[0])
 
     core.print_out("  EP2 has completed successfully!\n\n")
@@ -3358,7 +3358,7 @@ def run_sapt(name, **kwargs):
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
-        mp2_corl_interaction_e = core.get_variable('MP2 CORRELATION ENERGY')
+        mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
 
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'LOAD')
@@ -3374,7 +3374,7 @@ def run_sapt(name, **kwargs):
     monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerA_wfn, **kwargs)
-        mp2_corl_interaction_e -= core.get_variable('MP2 CORRELATION ENERGY')
+        mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
 
     # Compute Monomer B wavefunction
     if (sapt_basis == 'dimer') and (ri == 'DF'):
@@ -3388,7 +3388,7 @@ def run_sapt(name, **kwargs):
     # Delta MP2
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerB_wfn, **kwargs)
-        mp2_corl_interaction_e -= core.get_variable('MP2 CORRELATION ENERGY')
+        mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
         core.set_variable('SAPT MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
     core.set_global_option('DF_INTS_IO', df_ints_io)
 
@@ -3464,11 +3464,11 @@ def run_sapt(name, **kwargs):
 
     for term in ['ELST', 'EXCH', 'DISP', 'TOTAL']:
         core.set_variable(' '.join(['SAPT', term, 'ENERGY']),
-            core.get_variable(' '.join([name.upper(), term, 'ENERGY'])))
+            core.variable(' '.join([name.upper(), term, 'ENERGY'])))
     # Special induction case
     core.set_variable(' '.join(['SAPT', target_ind, 'ENERGY']),
-        core.get_variable(' '.join([name.upper(), which_ind, 'ENERGY'])))
-    core.set_variable('CURRENT ENERGY', core.get_variable('SAPT TOTAL ENERGY'))
+        core.variable(' '.join([name.upper(), which_ind, 'ENERGY'])))
+    core.set_variable('CURRENT ENERGY', core.variable('SAPT TOTAL ENERGY'))
 
     return dimer_wfn
 
@@ -3598,7 +3598,7 @@ def run_sapt_ct(name, **kwargs):
     core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
     core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
     e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
-    CTd = core.get_variable('SAPT CT ENERGY')
+    CTd = core.variable('SAPT CT ENERGY')
 
     core.print_out('\n')
     p4util.banner('Monomer Basis SAPT')
@@ -3606,7 +3606,7 @@ def run_sapt_ct(name, **kwargs):
     core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
     core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
     e_sapt = core.sapt(dimer_wfn, monomerAm_wfn, monomerBm_wfn)
-    CTm = core.get_variable('SAPT CT ENERGY')
+    CTm = core.variable('SAPT CT ENERGY')
     CT = CTd - CTm
 
     units = (1000.0, constants.hartree2kcalmol, constants.hartree2kJmol)
@@ -3699,7 +3699,7 @@ def run_mrcc(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
-    vscf = core.get_variable('SCF TOTAL ENERGY')
+    vscf = core.variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary
@@ -4033,33 +4033,33 @@ def run_fnocc(name, **kwargs):
 
     # set current correlation energy and total energy.  only need to treat mpn here.
     if name == 'mp3':
-        emp3 = core.get_variable("MP3 TOTAL ENERGY")
-        cemp3 = core.get_variable("MP3 CORRELATION ENERGY")
+        emp3 = core.variable("MP3 TOTAL ENERGY")
+        cemp3 = core.variable("MP3 CORRELATION ENERGY")
         core.set_variable("CURRENT ENERGY", emp3)
         core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
     elif name == 'fno-mp3':
-        emp3 = core.get_variable("MP3 TOTAL ENERGY")
-        cemp3 = core.get_variable("MP3 CORRELATION ENERGY")
+        emp3 = core.variable("MP3 TOTAL ENERGY")
+        cemp3 = core.variable("MP3 CORRELATION ENERGY")
         core.set_variable("CURRENT ENERGY", emp3)
         core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
     elif name == 'mp4(sdq)':
-        emp4sdq = core.get_variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = core.get_variable("MP4(SDQ) CORRELATION ENERGY")
+        emp4sdq = core.variable("MP4(SDQ) TOTAL ENERGY")
+        cemp4sdq = core.variable("MP4(SDQ) CORRELATION ENERGY")
         core.set_variable("CURRENT ENERGY", emp4sdq)
         core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
     elif name == 'fno-mp4(sdq)':
-        emp4sdq = core.get_variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = core.get_variable("MP4(SDQ) CORRELATION ENERGY")
+        emp4sdq = core.variable("MP4(SDQ) TOTAL ENERGY")
+        cemp4sdq = core.variable("MP4(SDQ) CORRELATION ENERGY")
         core.set_variable("CURRENT ENERGY", emp4sdq)
         core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
     elif name == 'fno-mp4':
-        emp4 = core.get_variable("MP4 TOTAL ENERGY")
-        cemp4 = core.get_variable("MP4 CORRELATION ENERGY")
+        emp4 = core.variable("MP4 TOTAL ENERGY")
+        cemp4 = core.variable("MP4 CORRELATION ENERGY")
         core.set_variable("CURRENT ENERGY", emp4)
         core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
     elif name == 'mp4':
-        emp4 = core.get_variable("MP4 TOTAL ENERGY")
-        cemp4 = core.get_variable("MP4 CORRELATION ENERGY")
+        emp4 = core.variable("MP4 TOTAL ENERGY")
+        cemp4 = core.variable("MP4 CORRELATION ENERGY")
         core.set_variable("CURRENT ENERGY", emp4)
         core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
 
@@ -4246,9 +4246,9 @@ def run_detcas(name, **kwargs):
     oeprop.add("DIPOLE")
     oeprop.compute()
     ciwfn.oeprop = oeprop
-    core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
-    core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
-    core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
+    core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
+    core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
+    core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
 
     optstash.restore()
     return ciwfn
@@ -4299,6 +4299,6 @@ def run_efp(name, **kwargs):
 
         torq = efpobj.get_gradient()
         torq = core.Matrix.from_array(np.asarray(torq).reshape(-1, 6))
-        core.set_array_variable('EFP TORQUE', torq)
+        core.set_variable('EFP TORQUE', torq)
 
     return ene['total']

@@ -184,9 +184,9 @@ def _core_wavefunction_from_file(wfn_data):
 
     # some of the wavefunction's variables can be changed directly
     for k, v in wfn_floatvar.items():
-        wfn.set_variable(k,v)
+        wfn.set_variable(k, v)
     for k, v in wfn_matrixarr.items():
-        wfn.set_array(k,v)
+        wfn.set_variable(k, v)
 
     return wfn
 
@@ -260,8 +260,8 @@ def _core_wavefunction_to_file(wfn, filename=None):
             'dipole_field_y': wfn.get_dipole_field_strength()[1],
             'dipole_field_z': wfn.get_dipole_field_strength()[2]
         },
-        'floatvar': wfn.variables(),
-        'matrixarr': {k: v.to_array() for k, v in wfn.arrays().items()},
+        'floatvar' : wfn.scalar_variables(),
+        'matrixarr' : {k: v.to_array() for k, v in wfn.array_variables().items()}
     }  # yapf: disable
 
     if filename is not None:

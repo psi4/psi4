@@ -1587,12 +1587,12 @@ def cbs(func, label, **kwargs):
             mc['f_energy'] = response
         elif ptype == 'gradient':
             mc['f_gradient'] = response
-            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+            mc['f_energy'] = core.variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_gradient'].print_out()
         elif ptype == 'hessian':
             mc['f_hessian'] = response
-            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+            mc['f_energy'] = core.variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_hessian'].print_out()
         Njobs += 1
@@ -1609,7 +1609,7 @@ def cbs(func, label, **kwargs):
                 for job in JOBS_EXT:
                     if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
                        (mc['f_options'] == job['f_options']):
-                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
+                        job['f_energy'] = core.variable(VARH[wfn][wfn])
 
         if verbose > 1:
             core.print_variables()

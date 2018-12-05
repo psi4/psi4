@@ -1579,7 +1579,7 @@ void OEProp::compute_mulliken_charges() {
     for (size_t i = 0; i < apcs->size(); i++) {
         vec_apcs->set(0, i, (*apcs)[i]);
     }
-    wfn_->set_array("MULLIKEN_CHARGES", vec_apcs);
+    wfn_->set_array_variable("MULLIKEN_CHARGES", vec_apcs);
 }
 
 std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
@@ -1674,7 +1674,7 @@ void OEProp::compute_lowdin_charges() {
     for (size_t i = 0; i < apcs->size(); i++) {
         vec_apcs->set(0, i, (*apcs)[i]);
     }
-    wfn_->set_array("LOWDIN_CHARGES", vec_apcs);
+    wfn_->set_array_variable("LOWDIN_CHARGES", vec_apcs);
 }
 
 std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
@@ -1768,7 +1768,7 @@ void OEProp::compute_mayer_indices() {
     SharedVector MBI_valence;
     std::tie(MBI_total, MBI_alpha, MBI_beta, MBI_valence) = pac_.compute_mayer_indices(true);
 
-    wfn_->set_array("MAYER_INDICES", MBI_total);
+    wfn_->set_array_variable("MAYER_INDICES", MBI_total);
 }
 
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAnalysisCalc::compute_mayer_indices(
@@ -1889,7 +1889,7 @@ void OEProp::compute_wiberg_lowdin_indices() {
     SharedMatrix WBI_total, WBI_alpha, WBI_beta;
     SharedVector WBI_valence;
     std::tie(WBI_total, WBI_alpha, WBI_beta, WBI_valence) = pac_.compute_wiberg_lowdin_indices(true);
-    wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
+    wfn_->set_array_variable("WIBERG_LOWDIN_INDICES", WBI_total);
 }
 
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector>

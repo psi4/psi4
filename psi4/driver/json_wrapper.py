@@ -187,13 +187,13 @@ def run_json_qc_schema(json_data, clean):
         if "quadrupole" in kwargs["properties"]:
             ret["quadrupole"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
         if "mulliken_charges" in kwargs["properties"]:
-            ret["mulliken_charges"] = wfn.get_array("MULLIKEN_CHARGES").np.ravel().tolist()
+            ret["mulliken_charges"] = wfn.variable("MULLIKEN_CHARGES").np.ravel().tolist()
         if "lowdin_charges" in kwargs["properties"]:
-            ret["lowdin_charges"] = wfn.get_array("LOWDIN_CHARGES").np.ravel().tolist()
+            ret["lowdin_charges"] = wfn.variable("LOWDIN_CHARGES").np.ravel().tolist()
         if "wiberg_lowdin_indices" in kwargs["properties"]:
-            ret["wiberg_lowdin_indices"] = wfn.get_array("WIBERG_LOWDIN_INDICES").np.ravel().tolist()
+            ret["wiberg_lowdin_indices"] = wfn.variable("WIBERG_LOWDIN_INDICES").np.ravel().tolist()
         if "mayer_indices" in kwargs["properties"]:
-            ret["mayer_indices"] = wfn.get_array("MAYER_INDICES").np.ravel().tolist()
+            ret["mayer_indices"] = wfn.variable("MAYER_INDICES").np.ravel().tolist()
 
         json_data["return_result"] = ret
     else:
@@ -406,7 +406,7 @@ def run_json_original_v1_1(json_data, clean):
     else:
         raise TypeError("Unrecognized return value of type %s\n" % type(val))
 
-    json_data["variables"] = core.get_variables()
+    json_data["variables"] = core.scalar_variables()
     json_data["success"] = True
 
     # Reset state

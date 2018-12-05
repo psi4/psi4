@@ -188,7 +188,7 @@ def frac_traverse(name, **kwargs):
         E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
         C = 1
         if E == 0.0:
-            E = core.get_variable('SCF ITERATION ENERGY')
+            E = core.variable('SCF ITERATION ENERGY')
             C = 0
 
         if LUMO > 0:
@@ -237,7 +237,7 @@ def frac_traverse(name, **kwargs):
         E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
         C = 1
         if E == 0.0:
-            E = core.get_variable('SCF ITERATION ENERGY')
+            E = core.variable('SCF ITERATION ENERGY')
             C = 0
 
         if LUMO > 0:
@@ -395,7 +395,7 @@ def frac_nuke(name, **kwargs):
             E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
             C = 1
             if E == 0.0:
-                E = core.get_variable('SCF ITERATION ENERGY')
+                E = core.variable('SCF ITERATION ENERGY')
                 C = 0
 
             if HOMO > 0:

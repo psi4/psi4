@@ -123,8 +123,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     double epcm = 0.0;
 #ifdef USING_PCMSolver
     if (options.get_bool("PCM")) {
-        epcm = ref->reference_wavefunction() ? ref->reference_wavefunction()->get_variable("PCM POLARIZATION ENERGY")
-                                             : ref->get_variable("PCM POLARIZATION ENERGY");
+        epcm = ref->reference_wavefunction() ? ref->reference_wavefunction()->scalar_variable("PCM POLARIZATION ENERGY")
+                                             : ref->scalar_variable("PCM POLARIZATION ENERGY");
     }
 #endif
 

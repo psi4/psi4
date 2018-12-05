@@ -551,7 +551,7 @@ def database(name, db_name, **kwargs):
             core.print_variables()
             exec(actives)
             for envv in db_tabulate:
-                VRGT[rgt][envv.upper()] = core.get_variable(envv)
+                VRGT[rgt][envv.upper()] = core.variable(envv)
             core.set_global_option("REFERENCE", user_reference)
             core.clean()
             #core.opt_clean()
@@ -577,7 +577,7 @@ def database(name, db_name, **kwargs):
                 for envv in db_tabulate:
                     freagent.write("""core.print_out('DATABASE RESULT: computation %d for reagent %s """
                         % (os.getpid(), rgt))
-                    freagent.write("""yields variable value    %20.12f for variable %s\\n' % (core.get_variable(""")
+                    freagent.write("""yields variable value    %20.12f for variable %s\\n' % (core.variable(""")
                     freagent.write("""'%s'), '%s'))\n""" % (envv.upper(), envv.upper()))
 
         elif db_mode == 'reap':
