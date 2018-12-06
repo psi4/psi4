@@ -26,7 +26,6 @@
 # @END LICENSE
 #
 """Module with utility function for dumping the Hamiltonian to file in FCIDUMP format."""
-from __future__ import division
 
 from datetime import datetime
 
@@ -36,7 +35,8 @@ from psi4.driver import psifiles as psif
 from psi4.driver.p4util.util import compare_values, success
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
-from .exceptions import *
+from psi4 import core
+from .exceptions import ValidationError, TestComparisonError
 
 
 def fcidump(wfn, fname='INTDUMP', oe_ints=None):

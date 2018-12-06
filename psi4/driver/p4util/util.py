@@ -26,15 +26,17 @@
 # @END LICENSE
 #
 """Module with utility functions for use in input files."""
-from __future__ import division
+
 import os
 import re
 import sys
 import math
+import warnings
 
 import numpy as np
 
-from .exceptions import *
+from psi4 import core
+from .exceptions import ValidationError, TestComparisonError
 
 
 def oeprop(wfn, *args, **kwargs):
@@ -393,47 +395,55 @@ def compare_cubes(expected, computed, label):
     return True
 
 
-def compare_wavefunctions(expected, computed, label):
+def compare_wavefunctions(expected, computed, digits=9, label='Wavefunctions equal'):
     """Function to compare two wavefunctions. Prints :py:func:`util.success`
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 
     """
-    if expected.Ca():       compare_matrices(expected.Ca(), computed.Ca(), 9, 'compare Ca') 
-    if expected.Cb():       compare_matrices(expected.Cb(), computed.Cb(), 9, 'compare Cb') 
-    if expected.Da():       compare_matrices(expected.Da(), computed.Da(), 9, 'compare Da') 
-    if expected.Db():       compare_matrices(expected.Db(), computed.Db(), 9, 'compare Db') 
-    if expected.Fa():       compare_matrices(expected.Fa(), computed.Fa(), 9, 'compare Fa') 
-    if expected.Fb():       compare_matrices(expected.Fb(), computed.Fb(), 9, 'compare Fb') 
-    if expected.H():        compare_matrices(expected.H(), computed.H(), 9, 'compare H') 
-    if expected.S():        compare_matrices(expected.S(), computed.S(), 9, 'compare S') 
-    if expected.X():        compare_matrices(expected.X(), computed.X(), 9, 'compare X') 
-    if expected.aotoso():   compare_matrices(expected.aotoso(), computed.aotoso(), 9, 'compare aotoso')
-    if expected.gradient(): compare_matrices(expected.gradient(), computed.gradient(), 9, 'compare gradient')
-    if expected.hessian():  compare_matrices(expected.hessian(), computed.hessian(), 9, 'compare hessian')
-    if expected.epsilon_a():   compare_vectors(expected.epsilon_a(), computed.epsilon_a(), 5, 'compare epsilon_a')
-    if expected.epsilon_b():   compare_vectors(expected.epsilon_b(), computed.epsilon_b(), 5, 'compare epsilon_b')
-    if expected.frequencies(): compare_vectors(expected.frequencies(), computed.frequencies(), 5, 'compare frequencies')
-    compare_integers(expected.nalpha(), computed.nalpha(), 'compare nalpha') 
-    compare_integers(expected.nbeta(), computed.nbeta(), 'compare nbeta') 
-    compare_integers(expected.nfrzc(), computed.nfrzc(), 'compare nfrzc') 
-    compare_integers(expected.nirrep(), computed.nirrep(), 'compare nirrep') 
-    compare_integers(expected.nmo(), computed.nmo(), 'compare nmo') 
-    compare_integers(expected.nso(), computed.nso(), 'compare nso') 
-    compare_strings(expected.name(), computed.name(), 'compare name') 
-    compare_values(expected.energy(), computed.energy(), 9, 'compare energy') 
-    compare_values(expected.efzc(), computed.efzc(), 9, 'compare frozen core energy') 
-    compare_values(expected.get_dipole_field_strength()[0], computed.get_dipole_field_strength()[0], 9, 'compare dipole field strength x') 
-    compare_values(expected.get_dipole_field_strength()[1], computed.get_dipole_field_strength()[1], 9, 'compare dipole field strength y') 
-    compare_values(expected.get_dipole_field_strength()[2], computed.get_dipole_field_strength()[2], 9, 'compare dipole field strength z') 
-    
-    compare_strings(expected.basisset().name(), computed.basisset().name(), 'compare basis set name') 
-    compare_integers(expected.basisset().nbf(), computed.basisset().nbf(), 'compare number of basis functions in set') 
-    compare_integers(expected.basisset().nprimitive(), computed.basisset().nprimitive(), 'compare total number of primitives in basis set') 
-    
+    # yapf: disable
+    if expected.Ca():          compare_matrices(expected.Ca(), computed.Ca(), digits, 'compare Ca')
+    if expected.Cb():          compare_matrices(expected.Cb(), computed.Cb(), digits, 'compare Cb')
+    if expected.Da():          compare_matrices(expected.Da(), computed.Da(), digits, 'compare Da')
+    if expected.Db():          compare_matrices(expected.Db(), computed.Db(), digits, 'compare Db')
+    if expected.Fa():          compare_matrices(expected.Fa(), computed.Fa(), digits, 'compare Fa')
+    if expected.Fb():          compare_matrices(expected.Fb(), computed.Fb(), digits, 'compare Fb')
+    if expected.H():           compare_matrices(expected.H(), computed.H(), digits, 'compare H')
+    if expected.S():           compare_matrices(expected.S(), computed.S(), digits, 'compare S')
+    if expected.X():           compare_matrices(expected.X(), computed.X(), digits, 'compare X')
+    if expected.aotoso():      compare_matrices(expected.aotoso(), computed.aotoso(), digits, 'compare aotoso')
+    if expected.gradient():    compare_matrices(expected.gradient(), computed.gradient(), digits, 'compare gradient')
+    if expected.hessian():     compare_matrices(expected.hessian(), computed.hessian(), digits, 'compare hessian')
+    if expected.epsilon_a():   compare_vectors(expected.epsilon_a(), computed.epsilon_a(), digits, 'compare epsilon_a')
+    if expected.epsilon_b():   compare_vectors(expected.epsilon_b(), computed.epsilon_b(), digits, 'compare epsilon_b')
+    if expected.frequencies(): compare_vectors(expected.frequencies(), computed.frequencies(), digits, 'compare frequencies')
+    # yapf: enable
+    compare_integers(expected.nalpha(), computed.nalpha(), 'compare nalpha')
+    compare_integers(expected.nbeta(), computed.nbeta(), 'compare nbeta')
+    compare_integers(expected.nfrzc(), computed.nfrzc(), 'compare nfrzc')
+    compare_integers(expected.nirrep(), computed.nirrep(), 'compare nirrep')
+    compare_integers(expected.nmo(), computed.nmo(), 'compare nmo')
+    compare_integers(expected.nso(), computed.nso(), 'compare nso')
+    compare_strings(expected.name(), computed.name(), 'compare name')
+    compare_values(expected.energy(), computed.energy(), digits, 'compare energy')
+    compare_values(expected.efzc(), computed.efzc(), digits, 'compare frozen core energy')
+    compare_values(expected.get_dipole_field_strength()[0],
+                   computed.get_dipole_field_strength()[0], digits, 'compare dipole field strength x')
+    compare_values(expected.get_dipole_field_strength()[1],
+                   computed.get_dipole_field_strength()[1], digits, 'compare dipole field strength y')
+    compare_values(expected.get_dipole_field_strength()[2],
+                   computed.get_dipole_field_strength()[2], digits, 'compare dipole field strength z')
+
+    compare_strings(expected.basisset().name(), computed.basisset().name(), 'compare basis set name')
+    compare_integers(expected.basisset().nbf(), computed.basisset().nbf(), 'compare number of basis functions in set')
+    compare_integers(expected.basisset().nprimitive(),
+                     computed.basisset().nprimitive(), 'compare total number of primitives in basis set')
+
     compare_strings(expected.molecule().name(), computed.molecule().name(), 'compare molecule name')
-    compare_strings(expected.molecule().get_full_point_group(), computed.molecule().get_full_point_group(), 'compare molecule point group')
-    compare_matrices(expected.molecule().geometry(), computed.molecule().geometry(), 9, 'compare molecule geometry')
+    compare_strings(expected.molecule().get_full_point_group(),
+                    computed.molecule().get_full_point_group(), 'compare molecule point group')
+    compare_matrices(expected.molecule().geometry(),
+                     computed.molecule().geometry(), digits, 'compare molecule geometry')
 
     success(label)
     return True
@@ -575,6 +585,11 @@ def xml2dict(filename=None):
     active CSX file.
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.xml2dict` is deprecated (silently in 1.2), and in 1.3 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     import xmltodict as xd
     if filename is None:
         csx = os.path.splitext(core.outfile_name())[0] + '.csx'
@@ -587,6 +602,11 @@ def xml2dict(filename=None):
 
 
 def getFromDict(dataDict, mapList):
+    warnings.warn(
+        "Using `psi4.driver.p4util.getFromDict` is deprecated (silently in 1.2), and in 1.3 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     return reduce(lambda d, k: d[k], mapList, dataDict)
 
 
@@ -596,8 +616,14 @@ def csx2endict():
     dictionary.
 
     """
-    blockprefix = ['chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState',
-                   'singleDeterminant']
+    warnings.warn(
+        "Using `psi4.driver.p4util.csx2endict` is deprecated (silently in 1.2), and in 1.3 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
+    blockprefix = [
+        'chemicalSemantics', 'molecularCalculation', 'quantumMechanics', 'singleReferenceState', 'singleDeterminant'
+    ]
     blockmidfix = ['energies', 'energy']
     prefix = 'cs:'
 
@@ -634,6 +660,11 @@ def compare_csx():
     active if write_csx flag on.
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.compare_csx` is deprecated (silently in 1.2), and in 1.3 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     if 'csx4psi' in sys.modules.keys():
         if core.get_global_option('WRITE_CSX'):
             enedict = csx2endict()

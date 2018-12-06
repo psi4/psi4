@@ -115,7 +115,7 @@ else: # sow=0, means that we are ready to compute the frequencies, run after ene
 
   read_disp("reference", findif_meta_dict["reference"])
 
-  H = driver_findif.compute_hessian_from_energy(findif_meta_dict, irrep)
+  H = driver_findif.compute_hessian_from_energies(findif_meta_dict, irrep)
   wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
   wfn.set_hessian(core.Matrix.from_array(H))
   vibinfo = vibanal_wfn(wfn, irrep=None, project_trans=project_trans, project_rot=project_rot)

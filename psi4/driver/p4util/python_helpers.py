@@ -30,25 +30,28 @@ import os
 import re
 import sys
 import uuid
+import warnings
+
 import numpy as np
 import qcelemental as qcel
 
 from psi4 import core
 from psi4.driver import qcdb
 from . import optproc
+from .exceptions import ValidationError, TestComparisonError
 
 ## Python basis helps
 
 
 @staticmethod
-def pybuild_basis(mol,
-                  key=None,
-                  target=None,
-                  fitrole='ORBITAL',
-                  other=None,
-                  puream=-1,
-                  return_atomlist=False,
-                  quiet=False):
+def _pybuild_basis(mol,
+                   key=None,
+                   target=None,
+                   fitrole='ORBITAL',
+                   other=None,
+                   puream=-1,
+                   return_atomlist=False,
+                   quiet=False):
     if key == 'ORBITAL':
         key = 'BASIS'
 
@@ -101,13 +104,13 @@ def pybuild_basis(mol,
     return psibasis
 
 
-core.BasisSet.build = pybuild_basis
+core.BasisSet.build = _pybuild_basis
 
 ## Python wavefunction helps
 
 
 @staticmethod
-def pybuild_wavefunction(mol, basis=None):
+def _core_wavefunction_build(mol, basis=None):
     if basis is None:
         basis = core.BasisSet.build(mol)
     elif (sys.version_info[0] == 2) and isinstance(basis, (str, unicode)):
@@ -122,11 +125,11 @@ def pybuild_wavefunction(mol, basis=None):
     return wfn
 
 
-core.Wavefunction.build = pybuild_wavefunction
+core.Wavefunction.build = _core_wavefunction_build
 
 
 @staticmethod
-def pyread_wavefunction(wfn_data):
+def _core_wavefunction_from_file(wfn_data):
 
     # load the wavefunction from file
     if isinstance(wfn_data, str):
@@ -187,11 +190,12 @@ def pyread_wavefunction(wfn_data):
 
     return wfn
 
-core.Wavefunction.from_file = pyread_wavefunction
+
+core.Wavefunction.from_file = _core_wavefunction_from_file
 
 
 @staticmethod
-def pywrite_wavefunction(wfn, filename=None):
+def _core_wavefunction_to_file(wfn, filename=None):
     # collect the wavefunction's variables in a dictionary indexed by varaible type
     # some of the data types have to be made numpy-friendly first
 
@@ -199,79 +203,80 @@ def pywrite_wavefunction(wfn, filename=None):
         raise ValidationError("Cannot serialize wavefunction with custom basissets.")
 
     wfn_data = {
-        'molecule' : wfn.molecule().to_dict(),
-        'matrix' : {
-            'Ca'       : wfn.Ca().to_array()       if wfn.Ca()       else None,
-            'Cb'       : wfn.Cb().to_array()       if wfn.Cb()       else None,
-            'Da'       : wfn.Da().to_array()       if wfn.Da()       else None,
-            'Db'       : wfn.Db().to_array()       if wfn.Db()       else None,
-            'Fa'       : wfn.Fa().to_array()       if wfn.Fa()       else None,
-            'Fb'       : wfn.Fb().to_array()       if wfn.Fb()       else None,
-            'H'        : wfn.H().to_array()        if wfn.H()        else None,
-            'S'        : wfn.S().to_array()        if wfn.S()       else None,
-            'X'        : wfn.X().to_array()        if wfn.X()        else None,
-            'aotoso'   : wfn.aotoso().to_array()   if wfn.aotoso()   else None,
-            'gradient' : wfn.gradient().to_array() if wfn.gradient() else None,
-            'hessian'  : wfn.hessian().to_array()  if wfn.hessian()  else None
-            },
-        'vector' : {
-            'epsilon_a'            : wfn.epsilon_a().to_array()   if wfn.epsilon_a() else None,
-            'epsilon_b'            : wfn.epsilon_b().to_array()   if wfn.epsilon_b() else None,
-            'frequencies'          : wfn.frequencies().to_array() if wfn.frequencies() else None
-            },
-        'dimension' : {
-            'doccpi'   : wfn.doccpi().to_tuple(),
-            'frzcpi'   : wfn.frzcpi().to_tuple(),  
-            'frzvpi'   : wfn.frzvpi().to_tuple(),  
-            'nalphapi' : wfn.nalphapi().to_tuple(),
-            'nbetapi'  : wfn.nbetapi().to_tuple(), 
-            'nmopi'    : wfn.nmopi().to_tuple(),   
-            'nsopi'    : wfn.nsopi().to_tuple(),   
-            'soccpi'   : wfn.soccpi().to_tuple()  
-            },
-        'int' : { 
-            'nalpha' : wfn.nalpha(),
-            'nbeta'  : wfn.nbeta(),
-            'nfrzc'  : wfn.nfrzc(),
-            'nirrep' : wfn.nirrep(),
-            'nmo'    : wfn.nmo(),
-            'nso'    : wfn.nso(),
-            'print'  : wfn.get_print(),
-            },
-        'string' : {
-            'name' : wfn.name(),
-            'basisname' : wfn.basisset().name()
-            },
-        'boolean' : {
-            'PCM_enabled'    : wfn.PCM_enabled(),
-            'same_a_b_dens'  : wfn.same_a_b_dens(),
-            'same_a_b_orbs'  : wfn.same_a_b_orbs(),
-            'density_fitted' : wfn.density_fitted(),
-            'basispuream'    : wfn.basisset().has_puream()
-            },
-        'float' : {
-            'energy' : wfn.energy(),
-            'efzc' : wfn.efzc(),
-            'dipole_field_x' : wfn.get_dipole_field_strength()[0],
-            'dipole_field_y' : wfn.get_dipole_field_strength()[1],
-            'dipole_field_z' : wfn.get_dipole_field_strength()[2]
-            },
-        'floatvar' : wfn.variables(),
-        'matrixarr' : {k: v.to_array() for k, v in wfn.arrays().items()}
-        }
+        'molecule': wfn.molecule().to_dict(),
+        'matrix': {
+            'Ca':       wfn.Ca().to_array()       if wfn.Ca()       else None,
+            'Cb':       wfn.Cb().to_array()       if wfn.Cb()       else None,
+            'Da':       wfn.Da().to_array()       if wfn.Da()       else None,
+            'Db':       wfn.Db().to_array()       if wfn.Db()       else None,
+            'Fa':       wfn.Fa().to_array()       if wfn.Fa()       else None,
+            'Fb':       wfn.Fb().to_array()       if wfn.Fb()       else None,
+            'H':        wfn.H().to_array()        if wfn.H()        else None,
+            'S':        wfn.S().to_array()        if wfn.S()        else None,
+            'X':        wfn.X().to_array()        if wfn.X()        else None,
+            'aotoso':   wfn.aotoso().to_array()   if wfn.aotoso()   else None,
+            'gradient': wfn.gradient().to_array() if wfn.gradient() else None,
+            'hessian':  wfn.hessian().to_array()  if wfn.hessian()  else None
+        },
+        'vector': {
+            'epsilon_a': wfn.epsilon_a().to_array() if wfn.epsilon_a() else None,
+            'epsilon_b': wfn.epsilon_b().to_array() if wfn.epsilon_b() else None,
+            'frequencies': wfn.frequencies().to_array() if wfn.frequencies() else None
+        },
+        'dimension': {
+            'doccpi':   wfn.doccpi().to_tuple(),
+            'frzcpi':   wfn.frzcpi().to_tuple(),
+            'frzvpi':   wfn.frzvpi().to_tuple(),
+            'nalphapi': wfn.nalphapi().to_tuple(),
+            'nbetapi':  wfn.nbetapi().to_tuple(),
+            'nmopi':    wfn.nmopi().to_tuple(),
+            'nsopi':    wfn.nsopi().to_tuple(),
+            'soccpi':   wfn.soccpi().to_tuple()
+        },
+        'int': {
+            'nalpha': wfn.nalpha(),
+            'nbeta':  wfn.nbeta(),
+            'nfrzc':  wfn.nfrzc(),
+            'nirrep': wfn.nirrep(),
+            'nmo':    wfn.nmo(),
+            'nso':    wfn.nso(),
+            'print':  wfn.get_print(),
+        },
+        'string': {
+            'name': wfn.name(),
+            'basisname': wfn.basisset().name()
+        },
+        'boolean': {
+            'PCM_enabled':    wfn.PCM_enabled(),
+            'same_a_b_dens':  wfn.same_a_b_dens(),
+            'same_a_b_orbs':  wfn.same_a_b_orbs(),
+            'density_fitted': wfn.density_fitted(),
+            'basispuream':    wfn.basisset().has_puream()
+        },
+        'float': {
+            'energy': wfn.energy(),
+            'efzc': wfn.efzc(),
+            'dipole_field_x': wfn.get_dipole_field_strength()[0],
+            'dipole_field_y': wfn.get_dipole_field_strength()[1],
+            'dipole_field_z': wfn.get_dipole_field_strength()[2]
+        },
+        'floatvar': wfn.variables(),
+        'matrixarr': {k: v.to_array() for k, v in wfn.arrays().items()},
+    }  # yapf: disable
 
     if filename is not None:
         np.save(filename,wfn_data)
     else:
         return wfn_data
 
-core.Wavefunction.to_file = pywrite_wavefunction
+
+core.Wavefunction.to_file = _core_wavefunction_to_file
 
 ## Python JK helps
 
 
 @staticmethod
-def pybuild_JK(orbital_basis, aux=None, jk_type=None):
+def _core_jk_build(orbital_basis, aux=None, jk_type=None):
     """
     Constructs a Psi4 JK object from an input basis.
 
@@ -328,12 +333,12 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
     return jk
 
 
-core.JK.build = pybuild_JK
+core.JK.build = _core_jk_build
 
 ## Grid Helpers
 
 
-def get_np_xyzw(Vpot):
+def _core_vbase_get_np_xyzw(Vpot):
     """
     Returns the x, y, z, and weights of a grid as a tuple of NumPy array objects.
     """
@@ -362,7 +367,7 @@ def get_np_xyzw(Vpot):
     return (x, y, z, w)
 
 
-core.VBase.get_np_xyzw = get_np_xyzw
+core.VBase.get_np_xyzw = _core_vbase_get_np_xyzw
 
 ## Python other helps
 
@@ -501,7 +506,7 @@ core.OEProp.valid_methods = [
 ## Option helpers
 
 
-def py_psi_set_global_option_python(key, EXTERN):
+def _core_set_global_option_python(key, EXTERN):
     """
     This is a fairly hacky way to get around EXTERN issues. Effectively we are routing this option Python side through attributes until the general Options overhaul.
     """
@@ -519,4 +524,209 @@ def py_psi_set_global_option_python(key, EXTERN):
         raise ValidationError("Options: set_global_option_python can either be a NULL or External Potential object")
 
 
-core.set_global_option_python = py_psi_set_global_option_python
+core.set_global_option_python = _core_set_global_option_python
+
+
+## QCvar helps
+
+
+def _core_has_variable(key):
+    return core.has_scalar_variable(key) or core.has_array_variable(key)
+
+
+def _core_wavefunction_has_variable(cls, key):
+    return cls.has_scalar_variable(key) or cls.has_array_variable(key)
+
+
+def _core_variable(key):
+    if core.has_scalar_variable(key):
+        return core.scalar_variable(key)
+    elif core.has_array_variable(key):
+        return core.array_variable(key)
+    else:
+        raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
+
+
+def _core_wavefunction_variable(cls, key):
+    if cls.has_scalar_variable(key):
+        return cls.scalar_variable(key)
+    elif cls.has_array_variable(key):
+        return cls.array_variable(key)
+    else:
+        raise KeyError("psi4.core.Wavefunction.variable: Requested variable " + key + " was not set!\n")
+
+
+def _core_set_variable(key, val):
+    if isinstance(val, core.Matrix):
+        if core.has_scalar_variable(key):
+            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
+        else:
+            core.set_array_variable(key, val)
+    elif isinstance(val, np.ndarray):
+        if core.has_scalar_variable(key):
+            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
+        else:
+            core.set_array_variable(key, core.Matrix.from_array(val))
+    else:
+        if core.has_array_variable(key):
+            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already an array variable!")
+        else:
+            core.set_scalar_variable(key, val)
+
+
+def _core_wavefunction_set_variable(cls, key, val):
+    if isinstance(val, core.Matrix):
+        if cls.has_scalar_variable(key):
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
+                                  " already a scalar variable!")
+        else:
+            cls.set_array_variable(key, val)
+    elif isinstance(val, np.ndarray):
+        if cls.has_scalar_variable(key):
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
+                                  " already a scalar variable!")
+        else:
+            cls.set_array_variable(key, core.Matrix.from_array(val))
+    else:
+        if cls.has_array_variable(key):
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
+                                  " already an array variable!")
+        else:
+            cls.set_scalar_variable(key, val)
+
+
+def _core_del_variable(key):
+    if core.has_scalar_variable(key):
+        core.del_scalar_variable(key)
+    elif core.has_array_variable(key):
+        core.del_array_variable(key)
+
+
+def _core_wavefunction_del_variable(cls, key):
+    if cls.has_scalar_variable(key):
+        cls.del_scalar_variable(key)
+    elif cls.has_array_variable(key):
+        cls.del_array_variable(key)
+
+
+def _core_variables():
+    return {**core.scalar_variables(), **core.array_variables()}
+
+
+def _core_wavefunction_variables(cls):
+    return {**cls.scalar_variables(), **cls.array_variables()}
+
+
+core.has_variable = _core_has_variable
+core.variable = _core_variable
+core.set_variable = _core_set_variable
+core.del_variable = _core_del_variable
+core.variables = _core_variables
+
+core.Wavefunction.has_variable = _core_wavefunction_has_variable
+core.Wavefunction.variable = _core_wavefunction_variable
+core.Wavefunction.set_variable = _core_wavefunction_set_variable
+core.Wavefunction.del_variable = _core_wavefunction_del_variable
+core.Wavefunction.variables = _core_wavefunction_variables
+
+
+## Psi4 v1.4 Export Deprecations
+
+
+def _core_get_variable(key):
+    warnings.warn(
+        "Using `psi4.core.get_variable` instead of `psi4.core.variable` (or `psi4.core.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.scalar_variable(key)
+
+
+def _core_get_variables():
+    warnings.warn(
+        "Using `psi4.core.get_variables` instead of `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.scalar_variables()
+
+
+def _core_get_array_variable(key):
+    warnings.warn(
+        "Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.array_variable(key)
+
+
+def _core_get_array_variables():
+    warnings.warn(
+        "Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.array_variables()
+
+
+core.get_variable = _core_get_variable
+core.get_variables = _core_get_variables
+core.get_array_variable = _core_get_array_variable
+core.get_array_variables = _core_get_array_variables
+
+
+def _core_wavefunction_get_variable(cls, key):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.scalar_variable(key)
+
+
+def _core_wavefunction_get_array(cls, key):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.get_array` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.array_variable(key)
+
+
+def _core_wavefunction_set_array(cls, key, val):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.set_array` instead of `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.set_array_variable(key, val)
+
+
+def _core_wavefunction_arrays(cls):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.arrays` instead of `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.array_variables()
+
+
+core.Wavefunction.get_variable = _core_wavefunction_get_variable
+core.Wavefunction.get_array = _core_wavefunction_get_array
+core.Wavefunction.set_array = _core_wavefunction_set_array
+core.Wavefunction.arrays = _core_wavefunction_arrays
+
+
+## Psi4 v1.3 Export Deprecations
+
+
+def _core_get_gradient():
+    warnings.warn(
+        "Using `psi4.core.get_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.4 (or whenever Py optking is adopted) it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.get_legacy_gradient()
+
+
+def _core_set_gradient(val):
+    warnings.warn(
+        "Using `psi4.core.set_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.4 (or whenever Py optking is adopted) it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.set_legacy_gradient(val)
+
+
+core.get_gradient = _core_get_gradient
+core.set_gradient = _core_set_gradient

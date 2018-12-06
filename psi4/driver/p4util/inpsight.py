@@ -26,12 +26,12 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-
 import os
 import math
 from datetime import date
 
+
+# yapf: disable
 class InPsight:
 
     # POV-Ray defines
@@ -646,3 +646,4 @@ class InPsight:
                 str(atom[5]),str(atom[6]),str(atom[7]),str(atom[8])))
 
         fh.close()
+# yapf: enable

@@ -338,6 +338,8 @@ dashcoeff = {
             'b2gpplyp'    : {'params': {'b':  9.900, 'c': 0.0093}, 'citation' : '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'},
             'b2plyp'      : {'params': {'b':  7.800, 'c': 0.0093}, 'citation' : '    J. Calbo, E. Orti, J. C. Sancho-Garcia, J. Arago, J. Chem. Theory Comput. 11, 932-939, 1015\n'},
             'pwpb95'      : {'params': {'b': 11.100, 'c': 0.0093}, 'citation' : '    F. Yu J. Chem. Theory Comput. 10, 4400-4407, 2014\n'},
+            'revtpss'     : {'params': {'b':  5.465, 'c': 0.0093}, 'citation' : '    H. Kruse, P. Banas, J. Sponer, JCTC 2018, 10.1021/acs.jctc.8b00643 \n'}, # "just accepted"
+
         }
     },
     'd1': {

@@ -1,0 +1,9 @@
+via email from L. Georigk
+ORCA with cc-pVDZ NORI GRID7
+
+        B97M-D3(BJ)     wB97M-D3(BJ)    wB97X-D3(BJ)
+monA    -76.44041836     -76.43267243    -76.43488361
+monB    -76.44040561    -76.4326441   -76.4348564
+dimer   -152.8932494    -152.8788328    -152.8826967
+Eint    0.01242543212   -0.01351626999   0.01295664452
+Eint kcal/mol   7.80    8.48    8.13

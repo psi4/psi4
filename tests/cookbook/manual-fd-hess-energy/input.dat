@@ -57,7 +57,7 @@ for n, displacement in enumerate(findif_meta_dict["displacements"].values(), sta
 wfn = process_displacement(method, h2o, findif_meta_dict["reference"], ndisp, ndisp)
 
 # Compute the hessian of the h2o molecule from the energies, for all symmetry blocks
-H = driver_findif.compute_hessian_from_energy(findif_meta_dict, -1)
+H = driver_findif.compute_hessian_from_energies(findif_meta_dict, -1)
 
 wfn.set_hessian(core.Matrix.from_array(H))
 # Only project out translations and rotations if you know you're not at a stationary point!
