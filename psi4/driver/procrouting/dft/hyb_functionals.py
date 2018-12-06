@@ -560,6 +560,53 @@ funcs.append({
     "doi": '10.1021/jz201170d',
 })
 
+funcs.append({
+    "name": "wB97M-D3BJ",
+    "alias": ["wB97M-D3(BJ)"],
+    "xc_functionals": {
+        "HYB_MGGA_XC_WB97M_V": {}
+    },
+    "dispersion": {
+        "nlc":False,
+        "type": "d3bj",
+        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n',
+        "params": {
+            's6': 1.000,
+            's8': 0.3908,
+            'a1': 0.5660,
+            'a2': 3.1280
+        },
+    },
+    "description": '    wB97M-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n'+
+                '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
+})
+
+funcs.append({
+    "name": "wB97X-D3BJ",
+    "alias": ["wB97X-D3(BJ)"],
+    "xc_functionals": {
+        "HYB_GGA_XC_WB97X_V": {}
+    },
+    "dispersion": {
+        "nlc":False,
+        "type": "d3bj",
+        "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14 5725, 2018\n',
+        "params": {
+            's6': 1.000,
+            's8': 0.2641,
+            'a1': 0.0000,
+            'a2': 5.4959
+        },
+    },
+    "description": '    wB97X-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem., 14 5725, 2018)\n'+
+                '    N. Mardirossian, M. Head-Gordon, Phys. Chem. Chem. Phys, 16, 9904, 2014\n'
+})
+
+
+
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional

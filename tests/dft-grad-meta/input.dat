@@ -1,4 +1,4 @@
-#! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+#! meta-GGA gradients of S22 HCN and water dimer
 
 tpss_rks_grad = psi4.Matrix.from_list([ 
     [-0.00010973017199,   0.00184569734216,  0.00000000000000],
