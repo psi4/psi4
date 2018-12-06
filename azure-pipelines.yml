@@ -46,6 +46,7 @@ jobs:
                         pint ^
                         pybind11 ^
                         pytest ^
+                        pytest-xdist ^
                         python=3.6
           conda list
         displayName: "Install conda packages"
@@ -134,9 +135,9 @@ jobs:
         displayName: "Test Psi4 (failing ctest)"
         workingDirectory: $(Build.BinariesDirectory)/build
 
-      # Test (built-in)
+      # Test (full pytest)
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          python psi4 --test
-        displayName: "Test Psi4 (bullt-in)"
+          python psi4 --fulltest -n %NUMBER_OF_PROCESSORS%
+        displayName: "Test Psi4 (full pytest)"
         workingDirectory: $(Build.BinariesDirectory)/install/bin
