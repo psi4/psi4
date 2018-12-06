@@ -59,7 +59,7 @@ except ImportError as err:
     else:
         raise ImportError("{0}".format(err))
 
-from psi4.core import set_output_file, get_variable, set_variable, get_num_threads, set_num_threads
+from psi4.core import set_output_file, get_num_threads, set_num_threads
 core.initialize()
 
 if "PSI_SCRATCH" in os.environ.keys():
@@ -91,6 +91,8 @@ from .metadata import __version__, version_formatter
 
 # A few extraneous functions
 from .extras import get_input_directory, addons, test
+from psi4.core import get_variable  # kill off in 1.4
+from psi4.core import variable, set_variable
 
 # Python portions of compiled-in Add-Ons
 # * Note that this is a "battening down the hatches" for the many

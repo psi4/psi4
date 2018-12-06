@@ -35,7 +35,8 @@ import warnings
 
 import numpy as np
 
-from .exceptions import *
+from psi4 import core
+from .exceptions import ValidationError, TestComparisonError
 
 
 def oeprop(wfn, *args, **kwargs):

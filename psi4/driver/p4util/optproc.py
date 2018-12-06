@@ -32,7 +32,8 @@ r"""Module to provide mechanism to store and restore option states in driver.
 import sys
 from contextlib import contextmanager
 
-from .exceptions import *
+from psi4 import core
+from .exceptions import ValidationError
 
 
 class OptionState(object):

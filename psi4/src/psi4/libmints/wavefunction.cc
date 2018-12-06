@@ -46,6 +46,7 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/corrtab.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/process.h"
 #ifdef USING_PCMSolver
@@ -141,7 +142,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nbetapi_ = dimensions["nbetapi"];
     nmopi_ = dimensions["nmopi"];
     nsopi_ = dimensions["nsopi"];
-     
+
     // set integers
     nalpha_ = ints["nalpha"];
     nbeta_ = ints["nbeta"];
@@ -150,7 +151,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nmo_ = ints["nmo"];
     nso_ = ints["nso"];
     print_ = ints["print"];
-    
+
     // set strings
     name_ = strings["name"];
 
@@ -1356,22 +1357,52 @@ std::vector<std::vector<std::tuple<double, int, int>>> Wavefunction::get_no_occu
     return no_occs;
 }
 
-double Wavefunction::get_variable(std::string label) {
-    std::string uc_label = label;
+bool Wavefunction::has_scalar_variable(const std::string &key) { return variables_.count(to_upper_copy(key)); }
 
-    if (variables_.count(uc_label) == 0) {
-        throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable " + label + " was not set!\n");
+bool Wavefunction::has_array_variable(const std::string &key) { return arrays_.count(to_upper_copy(key)); }
+
+double Wavefunction::scalar_variable(const std::string &key) {
+    std::string uc_key = to_upper_copy(key);
+
+    auto search = variables_.find(uc_key);
+    if (search != variables_.end()) {
+        return search->second;
     } else {
-        return variables_[uc_label];
+        throw PSIEXCEPTION("Wavefunction::scalar_variable: Requested variable " + uc_key + " was not set!\n");
     }
 }
-SharedMatrix Wavefunction::get_array(std::string label) {
-    if (arrays_.count(label) == 0) {
-        throw PSIEXCEPTION("Wavefunction::get_array: Requested array " + label + " was not set!\n");
+
+SharedMatrix Wavefunction::array_variable(const std::string &key) {
+    std::string uc_key = to_upper_copy(key);
+
+    auto search = arrays_.find(uc_key);
+    if (search != arrays_.end()) {
+        return search->second->clone();
     } else {
-        return arrays_[label];
+        throw PSIEXCEPTION("Wavefunction::array_variable: Requested variable " + uc_key + " was not set!\n");
     }
 }
+
+void Wavefunction::set_scalar_variable(const std::string &key, double val) { variables_[to_upper_copy(key)] = val; }
+
+void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) {
+    arrays_[to_upper_copy(key)] = val->clone();
+}
+
+int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }
+
+int Wavefunction::del_array_variable(const std::string &key) { return arrays_.erase(to_upper_copy(key)); }
+
+std::map<std::string, double> Wavefunction::scalar_variables() { return variables_; }
+
+std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arrays_; }
+
+double Wavefunction::get_variable(const std::string &key) { return scalar_variable(key); }
+SharedMatrix Wavefunction::get_array(const std::string &key) { return array_variable(key); }
+void Wavefunction::set_variable(const std::string &key, double val) { return set_scalar_variable(key, val); }
+void Wavefunction::set_array(const std::string &key, SharedMatrix val) { set_array_variable(key, val); }
+std::map<std::string, double> Wavefunction::variables() { return scalar_variables(); }
+std::map<std::string, SharedMatrix> Wavefunction::arrays() { return array_variables(); }
 
 void Wavefunction::set_PCM(const std::shared_ptr<PCM> &pcm) {
     PCM_ = pcm;

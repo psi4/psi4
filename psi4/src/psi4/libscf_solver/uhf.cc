@@ -354,7 +354,7 @@ double UHF::compute_E() {
     energies_["Two-Electron"] = 0.5 * (coulomb_E + exchange_E);
     energies_["XC"] = XC_E;
     energies_["VV10"] = VV10_E;
-    energies_["-D"] = variables_["-D Energy"];
+    energies_["-D"] = scalar_variable("-D Energy");
     double dashD_E = energies_["-D"];
 
     double Etotal = 0.0;

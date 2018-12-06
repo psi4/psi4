@@ -83,7 +83,7 @@ def mcscf_solver(ref_wfn):
     mcscf_current_step_type = 'Initial CI'
 
     # Start with SCF energy and other params
-    scf_energy = core.get_variable("HF TOTAL ENERGY")
+    scf_energy = ciwfn.variable("HF TOTAL ENERGY")
     eold = scf_energy
     norb_iter = 1
     converged = False

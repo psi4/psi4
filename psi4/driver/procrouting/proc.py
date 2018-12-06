@@ -3052,7 +3052,7 @@ def run_detci(name, **kwargs):
         ciwfn.ci_nat_orbs()
         print_nos = True
 
-    proc_util.print_ci_results(ciwfn, name.upper(), core.get_variable("HF TOTAL ENERGY"), core.get_variable("CURRENT ENERGY"), print_nos)
+    proc_util.print_ci_results(ciwfn, name.upper(), ciwfn.variable("HF TOTAL ENERGY"), core.variable("CURRENT ENERGY"), print_nos)
 
     core.print_out("\t\t \"A good bug is a dead bug\" \n\n");
     core.print_out("\t\t\t - Starship Troopers\n\n");
