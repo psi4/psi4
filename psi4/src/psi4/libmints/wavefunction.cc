@@ -1364,20 +1364,22 @@ bool Wavefunction::has_array_variable(const std::string &key) { return arrays_.c
 double Wavefunction::scalar_variable(const std::string &key) {
     std::string uc_key = to_upper_copy(key);
 
-    if (variables_.count(uc_key) == 0) {
-        throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable " + uc_key + " was not set!\n");
+    auto search = variables_.find(uc_key);
+    if (search != variables_.end()) {
+        return search->second;
     } else {
-        return variables_[uc_key];
+        throw PSIEXCEPTION("Wavefunction::scalar_variable: Requested variable " + uc_key + " was not set!\n");
     }
 }
 
 SharedMatrix Wavefunction::array_variable(const std::string &key) {
     std::string uc_key = to_upper_copy(key);
 
-    if (arrays_.count(uc_key) == 0) {
-        throw PSIEXCEPTION("Wavefunction::get_array: Requested array " + uc_key + " was not set!\n");
+    auto search = arrays_.find(uc_key);
+    if (search != arrays_.end()) {
+        return search->second->clone();
     } else {
-        return arrays_[uc_key]->clone();
+        throw PSIEXCEPTION("Wavefunction::array_variable: Requested variable " + uc_key + " was not set!\n");
     }
 }
 
