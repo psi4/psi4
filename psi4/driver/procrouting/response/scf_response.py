@@ -29,7 +29,10 @@
 import numpy as np
 
 from psi4 import core
+from psi4.driver.p4util import solvers
 from psi4.driver.p4util.exceptions import *
+from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
+                                                           TDUSCFEngine)
 
 dipole = {
     'name': 'Dipole polarizabilities',
@@ -54,8 +57,11 @@ traceless_quadrupole['vector names'] = [
     "AO Traceless Quadrupole " + x for x in traceless_quadrupole["printout_labels"]
 ]
 
-property_dicts = {'DIPOLE_POLARIZABILITIES': dipole, 'QUADRUPOLE_POLARIZABILITIES': quadrupole,
-                  'TRACELESS_QUADRUPOLE_POLARIZABILITIES': traceless_quadrupole}
+property_dicts = {
+    'DIPOLE_POLARIZABILITIES': dipole,
+    'QUADRUPOLE_POLARIZABILITIES': quadrupole,
+    'TRACELESS_QUADRUPOLE_POLARIZABILITIES': traceless_quadrupole
+}
 
 
 def cpscf_linear_response(wfn, *args, **kwargs):
@@ -133,7 +139,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
         else:
             tmp_vectors = prop['mints_function'](mints)
             for tmp in tmp_vectors:
-                tmp.scale(-2.0)    # RHF only
+                tmp.scale(-2.0)  # RHF only
                 vectors.append(tmp)
                 vector_names.append(tmp.name)
 
@@ -161,9 +167,8 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
         # verify that this vector already has the correct shape
         elif shape != (ndocc, nvirt):
-            raise ValidationError(
-                'ERROR: "{}" has an unrecognized shape. Must be either ({}, {}) or ({}, {})'.format(
-                    vector_names[i], nbf, nbf, ndocc, nvirt))
+            raise ValidationError('ERROR: "{}" has an unrecognized shape. Must be either ({}, {}) or ({}, {})'.format(
+                vector_names[i], nbf, nbf, ndocc, nvirt))
 
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
@@ -249,3 +254,106 @@ def _print_output(complete_dict, output):
             var_name = prop['name'].upper().replace("IES", "Y")
             _print_matrix(directions, output[i], var_name)
 
+
+def _single_random_fill(mat):
+    for h in range(mat.nirrep()):
+        shape = mat.nph[h].shape
+        mat.nph[h][:, :] = np.random.randn(*shape)
+    return mat
+
+
+def _pair_random_fill(matpair):
+    return [_single_random_fill(m) for m in mp]
+
+
+def tdscf_excitations(wfn, **kwargs):
+    """Compute excitations from a scf(HF/KS) wavefunction:
+
+    Parameters
+    -----------
+    wfn : :py:class:`psi4.core.Wavefunction`
+       The reference wavefunction
+    nstates : int {optional}
+       The number of states to find, if the system has symmetry this is the same as passing ``states_per_irrep`` with ``nstates``
+       as every element. (Convenient for C1 systems)
+    states_per_irrep : list (int), {optional}
+       The solver will find this many lowest excitations for each irreducible representation of the computational point group.
+       The default is to find the lowest excitation of each symmetry. If this option is provided it must have the same number of elements
+       as the number of irreducible representations as the computational point group.
+    triplets : str {optional, ``none``, ``only``, ``also``}
+       The default ``none`` will solve for no triplet states, ``only`` will solve for triplet states only, and ``also``
+       will solve for the requested number of states of both triplet and singlet. This option is only valid for restricted references,
+       and is ignored otherwise. The triplet and singlet solutions are found separately so using the ``also`` option will roughly double
+       the computational cost of the calculation.
+    tda :  bool {optional ``False``}
+       If true the Tamm-Dancoff approximation (TDA) will be employed. For HF references this is equivalent to CIS.
+    e_tol : float, {optional, 1.0e-6}
+       The convergence threshold for the excitation energy
+    r_tol : float, {optional, 1.0e-8}
+       The convergence threshold for the norm of the residual vector
+    max_ss_vectors: int {optional}
+       The maximum number of ss vectors that will be stored before a collapse is done.
+    guess : str
+       If string the guess that will be used. Allowed choices:
+       - ``denominators``: {default} uses orbital energy differences to generate guess vectors.
+       - ``random``: generates random vectors
+
+
+    ..note:: The algorithm employed to solve the non-Hermitian eigenvalue problem
+             (when ``tda`` is False) will fail when the SCF wavefunction has a triplet instability.
+    """
+    # gather arguments
+    etol = kwargs.pop('e_tol', 1.0e-6)
+    rtol = kwargs.pop('r_tol', 1.0e-8)
+    max_ss_vec = kwargs.pop('max_ss_vectors', 50)
+
+    # how many
+    passed_spi = kwargs.pop('states_per_irrep', [])
+    nstates = kwargs.pop('nstates', 1)
+    #states_per_irrep = _validate_states_args(wfn, passed_spi, nstates)
+    states_per_irrep = passed_spi
+
+    # guess
+    passed_guess = kwargs.pop('guess', 'random')
+    guess_type = None
+    if isinstance(passed_guess, (list, tuple)):
+        guess_vectors = _validate_user_guess(wfn, states_per_irrep, guess)
+        guess_type = 'user'
+    else:
+        guess_vectors = []
+        guess_type = 'random'
+
+    # which problem
+    ptype = 'rpa'
+    solve_function = solvers.hamiltonian_solver
+    if kwargs.pop('tda', False):
+        ptype = 'tda'
+        solve_function = solvers.davidson_solver
+
+    # construct the engine
+    if wfn.same_a_b_orbs():
+        random_fill = _single_random_fill
+        engine = TDRSCFEngine(wfn, triplet=kwargs.pop('triplet', False), ptype=ptype)
+    else:
+        random_fill = _pair_random_fill
+        engine = TDUSCFEngine(wfn, ptype=ptype)
+
+    solver_results = []
+    for state_sym, nstates in enumerate(states_per_irrep):
+        if nstates == 0:
+            solver_results.append(None)
+            continue
+        engine.reset_symmetry(state_sym)
+        guess_ = []
+        if guess_type == 'random':
+            for i in range(nstates):
+                guess_.append(random_fill(engine.new_vector("Guess vector")))
+        elif guess_type == 'user':
+            guess_ = guess_vectors[state_sym]
+
+        vecs_per_root = max_ss_vec // nstates
+        solver_results.append(
+            solve_function(
+                engine=engine, e_tol=etol, r_tol=rtol, max_vecs_per_root=vecs_per_root, nroot=nstates, guess=guess_))
+
+    return solver_results

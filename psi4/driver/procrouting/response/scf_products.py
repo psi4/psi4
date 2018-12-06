@@ -112,7 +112,7 @@ class SCFProducts:
 
 
 class TDRSCFEngine(object):
-    def __init__(self, wfn, ptype='rpa', triplet=False):
+    def __init__(self, wfn, ptype='rpa', triplet=False, add_tol=1.0e-8):
         self.wfn = wfn
         self.ptype = ptype
         self.triplet = triplet
@@ -134,6 +134,7 @@ class TDRSCFEngine(object):
         self.Dx = []
         # so that C1 wfns don't have to do this
         self.reset_symmetry(0)
+        self.add_tol = add_tol
 
     def new_vector(self, name=""):
         """Obtain a blank matrix object with the correct symmetry"""
@@ -255,10 +256,10 @@ class TDRSCFEngine(object):
         denom = self.new_vector("preconditioner")
         denom.set(shift)
         denom.axpy(-1.0, self.Dia)
-        rvec.apply_denomenator(denom)
+        rvec.apply_denominator(denom)
         return rvec
 
-    def approximate_eigvectors(self, ax, ss_vector):
+    def approximate_eigvector(self, ax, ss_vector):
         """Approximate the eigenvector of the real system:
 
         Parameters:
@@ -296,9 +297,9 @@ class TDRSCFEngine(object):
         while len(new_X) != 0:
             new = new_X.pop()
             for o in X:
-                dot = new.dot(o)
+                dot = new.vector_dot(o)
                 new.axpy(-dot, o)
-            norm = np.sqrt(new.dot(new))
+            norm = np.sqrt(new.vector_dot(new))
             if norm >= self.add_tol:
                 new.scale(1.0 / norm)
                 X.append(new)
@@ -318,7 +319,7 @@ class TDRSCFEngine(object):
 
 
 class TDUSCFEngine(object):
-    def __init__(self, wfn, ptype='rpa'):
+    def __init__(self, wfn, ptype='rpa', add_tol=1.0e-8):
         self.wfn = wfn
         self.ptype = ptype
         self.jk = self.wfn.jk()
@@ -338,6 +339,7 @@ class TDUSCFEngine(object):
         self.Vx = []
         self.Dx = []
         self.reset_symmetry(0)
+        self.add_tol = add_tol
 
     def new_vector(self, name=""):
         return [
@@ -506,8 +508,8 @@ class TDUSCFEngine(object):
         denom_b.set(shift)
         denom_a.axpy(-1.0, self.Dia[0])
         denom_b.axpy(-1.0, self.Dia[1])
-        rva.apply_denomenator(denom_a)
-        rvb.apply_denomenator(denom_b)
+        rva.apply_denominator(denom_a)
+        rvb.apply_denominator(denom_b)
         return rva, rvb
 
     def approximate_eigvector(self, ax, ss_vector):

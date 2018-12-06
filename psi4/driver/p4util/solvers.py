@@ -344,7 +344,7 @@ def _diag_print_info(solver_name, info, verbose=1):
             name=solver_name,
             ni=info['count'],
             m_de=np.max(info['delta_val']),
-            m_r=np.amx(info['res_norm']),
+            m_r=np.max(info['res_norm']),
             flgs="/".join(flags)))
     else:
         # print iter / ssdim folowed by de/|R| for each root
@@ -464,8 +464,9 @@ def davidson_solver(engine, guess, e_tol=1.0E-6, r_tol=1.0E-8, nroot=1, max_vecs
     # hard set for now --> make these options eventually
     imag_vec_tol = 1.0e-3
     imag_val_tol = 1.0e-3
-    nl = len(guess)
+    #nl = len(guess)
     nk = nroot
+
     iter_info = dict(
         count=0,
         res_norm=np.zeros((nk)),
@@ -473,7 +474,7 @@ def davidson_solver(engine, guess, e_tol=1.0E-6, r_tol=1.0E-8, nroot=1, max_vecs
         delta_val=np.zeros((nk)),
         # conv defaults to true, and will be flipped when a non-conv root is hit
         done=True,
-        nvec=nl,
+        nvec=None,
         collapse=False,
         product_count=0,
     )
