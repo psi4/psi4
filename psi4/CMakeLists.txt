@@ -46,12 +46,9 @@ endif()
 
 #  <<  Pybind11 & Python  >>
 if(MSVC)
-    # As for MSVC 14.0, it is not possible to set anything bellow C++14, so just use defaults
-    set(PYBIND11_CPP_STANDARD "/std:c++14")
-    # FIXME Uncomment when we switch to C++14, since it will work also when selecting C++17
-    #set(PYBIND11_CPP_STANDARD "/std:c++${CMAKE_CXX_STANDARD}")
+  set(PYBIND11_CPP_STANDARD "/std:c++${CMAKE_CXX_STANDARD}")
 else()
-    set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
+  set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 endif()
 find_package(pybind11 2.2.3 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
@@ -222,6 +219,8 @@ install(FILES ../tests/pytest/conftest.py
               ../tests/pytest/test_psi4.py
               ../tests/pytest/test_addons.py
               ../tests/pytest/test_molecule_to_string.py
+              ../tests/pytest/test_matrix.py
+              ../tests/pytest/test_qcvars.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>

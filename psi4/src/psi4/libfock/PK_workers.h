@@ -29,22 +29,21 @@
 #ifndef PKWRKR_H
 #define PKWRKR_H
 
-#if !defined( EXPLICIT_IOFF )
-#   define EXPLICIT_IOFF(i) ( (i) * ((i) + 1) / 2 )
+#if !defined(EXPLICIT_IOFF)
+#define EXPLICIT_IOFF(i) ((i) * ((i) + 1) / 2)
 #endif
 
-#if !defined( INDEX2 )
-#   define INDEX2(i, j) ( (i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i) )
+#if !defined(INDEX2)
+#define INDEX2(i, j) ((i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i))
 #endif
 
-#if !defined( INDEX4 )
-#   define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
+#if !defined(INDEX4)
+#define INDEX4(i, j, k, l) (INDEX2(INDEX2((i), (j)), INDEX2((k), (l))))
 #endif
 
 #include "psi4/libiwl/config.h"
 #include "psi4/libpsio/config.h"
 #include "psi4/libpsi4util/exception.h"
-
 
 namespace psi {
 
@@ -73,7 +72,7 @@ class AOShellSieveIterator {
     // Sieve object
     SharedSieve sieve_;
     // Vector of significant shell pairs
-    const std::vector< std::pair<int, int> >& shell_pairs_;
+    const std::vector<std::pair<int, int>>& shell_pairs_;
     // Number of shell pairs
     size_t npairs_;
     // Shell triangular indices
@@ -85,9 +84,10 @@ class AOShellSieveIterator {
 
     // Populate indices from shell_pairs
     void populate_indices();
-public:
+
+   public:
     /// Constructor
-    AOShellSieveIterator(std::shared_ptr< BasisSet > prim, SharedSieve sieve_input);
+    AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedSieve sieve_input);
 
     /// Iterator functions
     void first();
@@ -109,7 +109,7 @@ public:
  */
 
 class AOFctSieveIterator {
-private:
+   private:
     // Sieve
     std::shared_ptr<ERISieve> sieve_;
     // Integral indices
@@ -133,7 +133,7 @@ private:
     // Do we have the same shells in the quartets?
     bool sh_aaaa_;
     bool sh_abab_;
-    //Populate the integral indices, and reorder them
+    // Populate the integral indices, and reorder them
     void populate_indices();
     // Increment the integral indices to the next ones for ij
     void increment_bra();
@@ -141,11 +141,11 @@ private:
     void increment_ket();
     // Reorder indices in canonical order
     void reorder_inds();
-public:
+
+   public:
     /// Constructor
-    AOFctSieveIterator(const GaussianShell& s1, const GaussianShell& s2,
-                       const GaussianShell& s3, const GaussianShell& s4,
-                       std::shared_ptr<ERISieve> siev);
+    AOFctSieveIterator(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3,
+                       const GaussianShell& s4, std::shared_ptr<ERISieve> siev);
 
     /// Iterator functions
     void first();
@@ -158,7 +158,6 @@ public:
     int l() const { return l_; }
 };
 
-
 /** IWLAsync_PK: buffer class for pre-sorted PK integrals. Each buffer class
  * has one IWL bucket for each PK bucket. We pass integrals with their labels
  * to this class, and it stores it in the appropriate bucket. When a bucket is full,
@@ -167,7 +166,7 @@ public:
  * reworked, and also the integral reading from PK using IWL objects, but that is all.
  */
 class IWLAsync_PK {
-private:
+   private:
     /// File number
     int itap_;
     /// Position in bytes for next write
@@ -189,7 +188,7 @@ private:
     /// The AIO Handler
     std::shared_ptr<AIOHandler> AIO_;
 
-public:
+   public:
     /// Constructor, also allocates the arrays
     IWLAsync_PK(size_t* address, std::shared_ptr<AIOHandler> AIO, int itap);
     /// Destructor, also deallocates the arrays
@@ -198,7 +197,7 @@ public:
     /// Filling values in the bucket
     void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
     /// Popping a value from the current buffer, also decrements integral count
-    void pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t &l);
+    void pop_value(double& val, size_t& i, size_t& j, size_t& k, size_t& l);
     /// Actually writing integrals from the buffer to the disk.
     void write();
     /// Filling buffer with dummy values and flushing it. Also indicates
@@ -208,7 +207,6 @@ public:
     /// Accessor functions
     size_t nints() { return nints_; }
     size_t maxints() { return ints_per_buf_; }
-
 };
 
 /** PK_worker: Base class for PK workers, objects which take care
@@ -219,8 +217,7 @@ public:
  */
 
 class PKWorker {
-private:
-
+   private:
     /// Current basis set
     std::shared_ptr<BasisSet> primary_;
     /// Current sieve
@@ -255,38 +252,37 @@ private:
     bool is_shell_relevant();
 
     // This class should never be copied
-    PKWorker(const PKWorker &other) = delete;
-    PKWorker & operator = (PKWorker &other) = delete;
+    PKWorker(const PKWorker& other) = delete;
+    PKWorker& operator=(PKWorker& other) = delete;
 
-protected:
+   protected:
     /// Setter function for nbuf_
-    void set_nbuf(size_t tmp) {nbuf_ = tmp; }
+    void set_nbuf(size_t tmp) { nbuf_ = tmp; }
     /// Setting the buffer size, changes for wK
     void set_bufsize(size_t len) { buf_size_ = len; }
     /// Setter function for max_idx
     void set_max_idx(size_t tmp) { max_idx_ = tmp; }
 
-public:
+   public:
     /// Constructor for PKWorker
-    PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
-             std::shared_ptr<AIOHandler> AIO, int target_file,
+    PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO, int target_file,
              size_t buf_size);
     /// Destructor for PKWorker, does nothing
     virtual ~PKWorker() {}
 
     /// Accessor functions
-    std::shared_ptr< AIOHandler > AIO() const { return AIO_; }
-    size_t nbuf()                       const { return nbuf_; }
-    size_t buf_size()                   const { return buf_size_; }
-    size_t max_idx()                    const { return max_idx_; }
-    size_t offset()                     const { return offset_; }
-    int target_file()                   const { return target_file_; }
-    size_t bufidx()               const { return bufidx_; }
-    size_t P()                    const { return P_; }
-    size_t Q()                    const { return Q_; }
-    size_t R()                    const { return R_; }
-    size_t S()                    const { return S_; }
-    bool do_wK()                        const { return do_wK_; }
+    std::shared_ptr<AIOHandler> AIO() const { return AIO_; }
+    size_t nbuf() const { return nbuf_; }
+    size_t buf_size() const { return buf_size_; }
+    size_t max_idx() const { return max_idx_; }
+    size_t offset() const { return offset_; }
+    int target_file() const { return target_file_; }
+    size_t bufidx() const { return bufidx_; }
+    size_t P() const { return P_; }
+    size_t Q() const { return Q_; }
+    size_t R() const { return R_; }
+    size_t S() const { return S_; }
+    bool do_wK() const { return do_wK_; }
     /// Set do_wK
     void set_do_wK(bool tmp) { do_wK_ = tmp; }
 
@@ -297,7 +293,7 @@ public:
 
     /// Get max ijkl index included in current buffer
     /// Overloaded by specific derived classes
-    virtual void initialize_task()=0;
+    virtual void initialize_task() = 0;
 
     /// Set up the first shell quartet to be computed
     void first_quartet(size_t i);
@@ -321,11 +317,9 @@ public:
     virtual void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) = 0;
 
     /// Writing integral arrays for storage
-    virtual void write(std::vector< size_t > min_ind, std::vector< size_t > max_ind,
-                       size_t pk_pairs) = 0;
+    virtual void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) = 0;
     /// Writing wK integral arrays for storage
-    virtual void write_wK(std::vector< size_t > min_ind, std::vector< size_t > max_ind,
-                       size_t pk_pairs) {
+    virtual void write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) {
         throw PSIEXCEPTION("Function write_wK not implemented for current PK algorithm\n");
     }
 
@@ -339,11 +333,11 @@ public:
     }
 
     /// Functions specific to disk pre-sorting of integrals
-    virtual bool pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+    virtual bool pop_value(size_t bufid, double& val, size_t& i, size_t& j, size_t& k, size_t& l) {
         throw PSIEXCEPTION("Function pop_value not implemented for this class\n");
     }
     /// Functions specific to disk pre-sorting of integrals
-    virtual bool pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+    virtual bool pop_value_wK(size_t bufid, double& val, size_t& i, size_t& j, size_t& k, size_t& l) {
         throw PSIEXCEPTION("Function pop_value_wK not implemented for this class\n");
     }
 
@@ -355,12 +349,8 @@ public:
     }
 
     /// Flush a buffer to disk
-    virtual void flush() {
-        throw PSIEXCEPTION("Function flush not implemented for this class\n");
-    }
-    virtual void flush_wK() {
-        throw PSIEXCEPTION("Function flush not implemented for this class\n");
-    }
+    virtual void flush() { throw PSIEXCEPTION("Function flush not implemented for this class\n"); }
+    virtual void flush_wK() { throw PSIEXCEPTION("Function flush not implemented for this class\n"); }
 };
 
 /** class PKWrkReord: This worker class is associated with the
@@ -377,23 +367,23 @@ public:
  */
 
 class PKWrkrReord : public PKWorker {
-private:
+   private:
     /// This class can have a variable number of internal buffers,
     /// thus we need to have a vector of all relevant quantities.
     /// In addition, each buffer can write to more than one PK entries
 
     /// TOC entry labels
-    std::vector< std::vector<char*> > labels_J_;
-    std::vector< std::vector<char*> > labels_K_;
-    std::vector< std::vector<char*> > labels_wK_;
+    std::vector<std::vector<char*>> labels_J_;
+    std::vector<std::vector<char*>> labels_K_;
+    std::vector<std::vector<char*>> labels_wK_;
     /// Job IDs
-    std::vector< std::vector<size_t> > jobID_J_;
-    std::vector< std::vector<size_t> > jobID_K_;
-    std::vector< std::vector<size_t> > jobID_wK_;
+    std::vector<std::vector<size_t>> jobID_J_;
+    std::vector<std::vector<size_t>> jobID_K_;
+    std::vector<std::vector<size_t>> jobID_wK_;
     /// The internal buffers themselves
-    std::vector< double* > J_bufs_;
-    std::vector< double* > K_bufs_;
-    std::vector< double* > wK_bufs_;
+    std::vector<double*> J_bufs_;
+    std::vector<double*> K_bufs_;
+    std::vector<double*> wK_bufs_;
 
     /// Dummy psio_address for storage of write return value
     psio_address dummy_;
@@ -403,10 +393,9 @@ private:
 
     void initialize_task() override;
 
-public:
+   public:
     /// Constructor
-    PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
-                std::shared_ptr<AIOHandler> AIO, int target_file,
+    PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO, int target_file,
                 size_t buffer_size, size_t nbuffer);
     /// Destructor
     ~PKWrkrReord() override;
@@ -421,11 +410,9 @@ public:
     void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) override;
 
     /// Writing values in the appropriate PK file entry
-    void write(std::vector<size_t> min_ind,
-                       std::vector<size_t> max_ind, size_t pk_pairs) override;
+    void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) override;
     /// Writing wK values in the appropriate PK file entry
-    void write_wK(std::vector<size_t> min_ind,
-                       std::vector<size_t> max_ind, size_t pk_pairs) override;
+    void write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) override;
 };
 
 /** class PKWrkInCore: Computes all integrals for PK supermatrix
@@ -437,7 +424,7 @@ public:
  */
 
 class PKWrkrInCore : public PKWorker {
-private:
+   private:
     // We need to know the number of workers to properly
     // adjust the size of the last buffer
     int nworkers_;
@@ -455,9 +442,8 @@ private:
 
     void initialize_task() override;
 
-public:
-    PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
-                 size_t buf_size, size_t lastbuf, double* Jbuf,
+   public:
+    PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size, size_t lastbuf, double* Jbuf,
                  double* Kbuf, double* wKbuf, int nworkers);
 
     /// Filling values in the relevant part of the buffer
@@ -483,28 +469,26 @@ public:
  */
 
 class PKWrkrIWL : public PKWorker {
-private:
+   private:
     /// File for K IWL batches
     int K_file_;
     /// File for wK IWL batches
     int wK_file_;
     /// Vector mapping pq index to a bucket
-    std::vector< int > buf_for_pq_;
+    std::vector<int> buf_for_pq_;
     /// Vectors of IWL buffers for storage in the proper pre-sorting bucket
-    std::vector< IWLAsync_PK* > IWL_J_;
-    std::vector< IWLAsync_PK* > IWL_K_;
-    std::vector< IWLAsync_PK* > IWL_wK_;
+    std::vector<IWLAsync_PK*> IWL_J_;
+    std::vector<IWLAsync_PK*> IWL_K_;
+    std::vector<IWLAsync_PK*> IWL_wK_;
     /// Pointer to array with addresses in bytes where the next write
     /// should go for each bucket on file.
     std::shared_ptr<std::vector<size_t>> addresses_;
     std::shared_ptr<std::vector<size_t>> addresses_wK_;
 
-public:
+   public:
     /// Constructor
-    PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
-              std::shared_ptr<AIOHandler> AIOp, int targetfile, int K_file,
-              size_t buf_size, std::vector< int > &bufforpq,
-              std::shared_ptr<std::vector<size_t>> pos);
+    PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIOp, int targetfile,
+              int K_file, size_t buf_size, std::vector<int>& bufforpq, std::shared_ptr<std::vector<size_t>> pos);
     /// Destructor
     ~PKWrkrIWL() override;
 
@@ -516,11 +500,11 @@ public:
     /// Filling wK integrals in the appropriate buffers
     void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Popping a value from a buffer to finalize writing
-    bool pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) override;
+    bool pop_value(size_t bufid, double& val, size_t& i, size_t& j, size_t& k, size_t& l) override;
     /// Inserting a value back into a buffer
     void insert_value(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Popping a wK value from a buffer to finalize writing
-    bool pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) override;
+    bool pop_value_wK(size_t bufid, double& val, size_t& i, size_t& j, size_t& k, size_t& l) override;
     /// Inserting a wK value back into a buffer
     void insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) override;
     /// Flushing all buffers for current worker
@@ -529,16 +513,13 @@ public:
     void flush_wK() override;
 
     /// Functions that are not used here
-    void initialize_task() override {
-        throw PSIEXCEPTION("initialize_task not implemented for this class\n");
-    }
-    void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind,
-                       size_t pk_pairs) override {
+    void initialize_task() override { throw PSIEXCEPTION("initialize_task not implemented for this class\n"); }
+    void write(std::vector<size_t> min_ind, std::vector<size_t> max_ind, size_t pk_pairs) override {
         throw PSIEXCEPTION("write not implemented for this class\n");
     }
 };
 
-} // End namespace pk
-} // End namespace psi
+}  // End namespace pk
+}  // End namespace psi
 
 #endif

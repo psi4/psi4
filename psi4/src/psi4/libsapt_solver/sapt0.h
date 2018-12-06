@@ -30,6 +30,9 @@
 #define SAPT0_H
 
 #include "sapt.h"
+#include "psi4/libpsio/aiohandler.h"
+#include "psi4/libpsio/config.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 namespace sapt {
@@ -184,13 +187,15 @@ struct SAPTDFInts {
     size_t i_start_;
     size_t j_start_;
 
-    double **B_p_;
-    double **B_d_;
+    SharedMatrix BpMat_;
+    SharedMatrix BdMat_;
+    double **B_p_{nullptr};
+    double **B_d_{nullptr};
 
     int filenum_;
     const char *label_;
 
-    psio_address next_DF_;
+    psio_address next_DF_ = PSIO_ZERO;
 
     SAPTDFInts() {
         next_DF_ = PSIO_ZERO;
@@ -198,18 +203,18 @@ struct SAPTDFInts {
         B_d_ = nullptr;
     };
     ~SAPTDFInts() {
-        if (B_p_ != nullptr) free_block(B_p_);
-        if (B_d_ != nullptr) free_block(B_d_);
+        B_p_ = nullptr;
+        B_d_ = nullptr;
     };
     void rewind() { next_DF_ = PSIO_ZERO; };
     void clear() {
-        free_block(B_p_);
+        BpMat_.reset();
         B_p_ = nullptr;
         next_DF_ = PSIO_ZERO;
     };
     void done() {
-        free_block(B_p_);
-        if (dress_) free_block(B_d_);
+        BpMat_.reset();
+        if (dress_) BdMat_.reset();
         B_p_ = nullptr;
         B_d_ = nullptr;
     };
@@ -217,18 +222,17 @@ struct SAPTDFInts {
 
 struct Iterator {
     size_t num_blocks;
-    int *block_size;
+    std::vector<int> block_size;
 
     size_t curr_block;
     long int curr_size;
 
-    ~Iterator() { free(block_size); };
     void rewind() {
         curr_block = 1;
         curr_size = 0;
     };
 };
-}
-}
+}  // namespace sapt
+}  // namespace psi
 
 #endif

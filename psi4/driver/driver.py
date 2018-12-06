@@ -708,7 +708,7 @@ def gradient(name, **kwargs):
 
         # Compute the gradient
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = driver_findif.compute_gradient_from_energy(findif_meta_dict)
+        G = driver_findif.compute_gradient_from_energies(findif_meta_dict)
         grad_psi_matrix = core.Matrix.from_array(G)
         grad_psi_matrix.print_out()
         wfn.set_gradient(grad_psi_matrix)
@@ -1050,7 +1050,7 @@ def optimize(name, **kwargs):
             step_coordinates.append(moleculeclone.geometry())
             step_gradients.append(G.clone())
 
-        core.set_gradient(G)
+        core.set_legacy_gradient(G)
 
         # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
         # if opt_func.__name__ == 'complete_basis_set':
@@ -1061,12 +1061,12 @@ def optimize(name, **kwargs):
 
         # compute Hessian as requested; frequency wipes out gradient so stash it
         if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
-            G = core.get_gradient()  # TODO
+            G = core.get_legacy_gradient()  # TODO
             core.IOManager.shared_object().set_specific_retention(1, True)
             core.IOManager.shared_object().set_specific_path(1, './')
             frequencies(hessian_with_method, molecule=moleculeclone, **kwargs)
             steps_since_last_hessian = 0
-            core.set_gradient(G)
+            core.set_legacy_gradient(G)
             core.set_global_option('CART_HESS_READ', True)
         elif (full_hess_every == -1) and core.get_global_option('CART_HESS_READ') and (n == 1):
             pass
@@ -1293,7 +1293,7 @@ def hessian(name, **kwargs):
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = driver_findif.compute_hessian_from_gradient(findif_meta_dict, irrep)  # TODO or moleculeclone?
+        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, irrep)  # TODO or moleculeclone?
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
@@ -1335,7 +1335,7 @@ def hessian(name, **kwargs):
                                     **kwargs)
 
         # Assemble Hessian from energies
-        H = driver_findif.compute_hessian_from_energy(findif_meta_dict, irrep)
+        H = driver_findif.compute_hessian_from_energies(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 

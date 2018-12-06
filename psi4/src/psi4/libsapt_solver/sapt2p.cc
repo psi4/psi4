@@ -27,7 +27,10 @@
  */
 
 #include "sapt2p.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/physconst.h"
+#include "psi4/libqt/qt.h"
 
 #include <cmath>
 
@@ -473,5 +476,5 @@ void SAPT2p::print_results() {
         }
     }
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

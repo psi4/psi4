@@ -209,6 +209,15 @@ def scf_initialize(self):
         self.set_energies("Total Energy", self.compute_initial_E())
 
 
+    # turn off VV10 for iterations
+    if core.get_option('SCF', "DFT_VV10_POSTSCF") and self.functional().vv10_b() > 0.0:
+        core.print_out("  VV10: post-SCF option active \n \n")
+        self.functional().set_lock(False)
+        self.functional().set_do_vv10(False)
+        self.functional().set_lock(True)
+
+
+
 def scf_iterate(self, e_conv=None, d_conv=None):
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
@@ -416,7 +425,7 @@ def scf_finalize_energy(self):
     """
 
     # post-scf vv10 correlation
-    if core.get_option('SCF', "DFT_VV10_POSTSCF"):
+    if core.get_option('SCF', "DFT_VV10_POSTSCF") and self.functional().vv10_b() > 0.0:
         self.functional().set_lock(False)
         self.functional().set_do_vv10(True)
         self.functional().set_lock(True)

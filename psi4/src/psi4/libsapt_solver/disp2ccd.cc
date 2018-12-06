@@ -27,9 +27,14 @@
  */
 
 #include "sapt2p.h"
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsio/aiohandler.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cmath>
 
@@ -2155,5 +2160,5 @@ std::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, const char *VV_opdm, int nvir
 
     return U;
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

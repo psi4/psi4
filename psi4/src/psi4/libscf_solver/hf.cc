@@ -256,15 +256,10 @@ void HF::common_init() {
         potential_ = nullptr;
     }
 
-    // post-scf vv10 correlation
-    if (options_.get_bool("DFT_VV10_POSTSCF")) {
-        functional_->set_lock(false);
-        functional_->set_do_vv10(false);
-        functional_->set_lock(true);
-    }
+
 
     // -D is zero by default
-    variables_["-D Energy"] = 0.0;
+    set_scalar_variable("-D Energy", 0.0);
     energies_["-D"] = 0.0;
 
     // CPHF info

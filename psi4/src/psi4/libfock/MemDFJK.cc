@@ -61,14 +61,9 @@ MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 
 MemDFJK::~MemDFJK() {}
 
-void MemDFJK::common_init() {
-
-    dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
-
-}
+void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_); }
 
 void MemDFJK::preiterations() {
-
     // Initialize calls your derived class's preiterations member
     // knobs are set and state variables assigned
 
@@ -102,24 +97,20 @@ void MemDFJK::preiterations() {
     } else {
         dfh_->initialize();
     }
-
 }
 void MemDFJK::compute_JK() {
-
-    dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_,
-                   max_nocc(), do_J_, do_K_, do_wK_, lr_symmetric_);
-
+    dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, max_nocc(), do_J_, do_K_, do_wK_, lr_symmetric_);
 }
-void set_do_wK(bool do_wK){
-    if (do_wK){
+void set_do_wK(bool do_wK) {
+    if (do_wK) {
         std::stringstream message;
         message << "MemDFJK cannot compute wK integrals. Please use DiskDFJK." << std::endl;
-        message << "  If you are not a developer or using Psi4NumPy please report this issue at github.com/psi4/psi4." << std::endl;
+        message << "  If you are not a developer or using Psi4NumPy please report this issue at github.com/psi4/psi4."
+                << std::endl;
         throw PSIEXCEPTION(message.str());
     }
 }
-void MemDFJK::postiterations() {
-}
+void MemDFJK::postiterations() {}
 void MemDFJK::print_header() const {
     // dfh_->print_header();
     if (print_) {

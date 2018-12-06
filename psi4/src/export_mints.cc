@@ -472,6 +472,7 @@ void export_mints(py::module& m) {
         .def(py::init<int, int>())
         .def(py::init<const std::string&, int, int>())
         .def(py::init<const std::string&, const Dimension&, const Dimension&>())
+        .def(py::init<const std::string&, const Dimension&, const Dimension&, int>())
         .def(py::init<const std::string&>())
         .def("clone", &Matrix::clone, "Creates exact copy of the matrix and returns it")
         .def_property("name", py::cpp_function(&Matrix::name), py::cpp_function(&Matrix::set_name),
@@ -640,12 +641,12 @@ void export_mints(py::module& m) {
                      for (size_t h = 0; h < m.nirrep(); h++) {
                          // Hmm, sometimes we need to overload to nullptr
                          double* ptr = nullptr;
-                         if ((m.rowdim(h) * m.coldim(h)) != 0) {
+                         if ((m.rowdim(h) * m.coldim(h ^ m.symmetry())) != 0) {
                              ptr = m.pointer(h)[0];
                          }
 
                          // Build the array
-                         py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h)}, ptr, py::cast(&m));
+                         py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h ^ m.symmetry())}, ptr, py::cast(&m));
                          ret.append(arr);
                      }
                  }

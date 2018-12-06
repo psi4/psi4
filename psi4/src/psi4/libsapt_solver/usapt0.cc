@@ -2407,5 +2407,5 @@ void USAPT0::mp2_terms() {
     outfile->Printf("    Exch-Disp20         = %18.12lf H\n", ExchDisp20);
     outfile->Printf("\n");
 }
-}
-}  // End namespaces
+}  // namespace sapt
+}  // namespace psi

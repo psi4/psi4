@@ -27,6 +27,10 @@
  */
 
 #include "sapt2p3.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 namespace sapt {
@@ -494,5 +498,5 @@ double SAPT2p3::exch_disp30_22() {
 
     return (2.0 * energy);
 }
-}
-}
+}  // namespace sapt
+}  // namespace psi

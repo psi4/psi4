@@ -73,6 +73,8 @@ parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! experimental option.")
 parser.add_argument("-t", "--test", action='store_true',
                     help="Runs smoke tests.")
+parser.add_argument("--fulltest", action='store_true',
+                    help="Runs all pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
 
 # For plugins
 parser.add_argument("--plugin-name", help="""\
@@ -165,6 +167,13 @@ if args["psidatadir"] is not None:
 
 ### Actually import psi4 and apply setup ###
 
+# Arrange for warnings to ignore everything except the message
+def custom_formatwarning(msg, *args, **kwargs):
+    return str(msg) + '\n'
+
+import warnings
+warnings.formatwarning = custom_formatwarning
+
 # Import installed psi4
 sys.path.insert(1, lib_dir)
 import psi4
@@ -190,6 +199,15 @@ if args['plugin_name']:
 
 if args["test"]:
     retcode = psi4.test('smoke')
+    sys.exit(retcode)
+
+if args["fulltest"]:
+    nthread = int(args["nthread"])
+    if nthread == 1:
+        extras = None
+    else:
+        extras = ['-n', str(nthread)]
+    retcode = psi4.test('full', extras=extras)
     sys.exit(retcode)
 
 if not os.path.isfile(args["input"]):

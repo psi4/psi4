@@ -95,7 +95,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 
     // => Build basis function values <= //
     block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())){
+    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
         current_basis_map_ = &(*cache_map_)[block->index()];
     } else {
         current_basis_map_ = &basis_values_;
@@ -240,7 +240,7 @@ void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
 void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     // => Build basis function values <= //
     block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())){
+    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
         current_basis_map_ = &(*cache_map_)[block->index()];
     } else {
         current_basis_map_ = &basis_values_;
@@ -364,7 +364,7 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 
     // => Build basis function values <= //
     block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())){
+    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
         current_basis_map_ = &(*cache_map_)[block->index()];
     } else {
         current_basis_map_ = &basis_values_;
@@ -486,7 +486,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
                 double** Dc = D[t];
                 double** Tc = T[t];
                 double* tauc = tau[t];
-                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], coll_funcs, Dc[0], nglobal, 0.0, Tc[0], nglobal);
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], coll_funcs, Dc[0], nglobal, 0.0, Tc[0],
+                        nglobal);
                 for (int P = 0; P < npoints; P++) {
                     tauc[P] += 0.5 * C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
                 }
@@ -509,7 +510,7 @@ void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO) {
 void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute) {
     // => Build basis function values <= //
     block_index_ = block->index();
-    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())){
+    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
         current_basis_map_ = &(*cache_map_)[block->index()];
     } else {
         current_basis_map_ = &basis_values_;
@@ -587,18 +588,15 @@ SharedVector PointFunctions::point_value(const std::string& key) { return point_
 
 SharedMatrix PointFunctions::orbital_value(const std::string& key) { return orbital_values_[key]; }
 
-BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary,
-                               int max_points, int max_functions)
-    : primary_(primary),
-      max_points_(max_points),
-      max_functions_(max_functions) {
-  if (!primary_->has_puream()) {
-    puream_ = false;
-    return;
-  }
+BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
+    : primary_(primary), max_points_(max_points), max_functions_(max_functions) {
+    if (!primary_->has_puream()) {
+        puream_ = false;
+        return;
+    }
 
-  puream_ = true;
-  set_deriv(0);
+    puream_ = true;
+    set_deriv(0);
 }
 BasisFunctions::~BasisFunctions() {}
 void BasisFunctions::allocate() {
@@ -640,8 +638,7 @@ void BasisFunctions::allocate() {
     if (deriv_ >= 3) throw PSIEXCEPTION("BasisFunctions: Only up to Hessians are currently supported");
 }
 void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
-
-    //Pull out data
+    // Pull out data
     int npoints = block->npoints();
     double* x = block->x();
     double* y = block->y();

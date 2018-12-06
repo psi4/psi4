@@ -864,23 +864,6 @@ std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
     return empty;  // charges not added to process.h for environment - yet(?)
 }
 
-bool py_psi_has_variable(const std::string& key) { return Process::environment.globals.count(to_upper(key)); }
-
-double py_psi_get_variable(const std::string& key) { return Process::environment.globals[to_upper(key)]; }
-
-SharedMatrix py_psi_get_array_variable(const std::string& key) { return Process::environment.arrays[to_upper(key)]; }
-
-void py_psi_set_variable(const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; }
-
-void py_psi_set_array_variable(const std::string& key, SharedMatrix val) {
-    Process::environment.arrays[to_upper(key)] = val;
-}
-
-void py_psi_clean_variable_map() {
-    Process::environment.globals.clear();
-    Process::environment.arrays.clear();
-}
-
 void py_psi_set_memory(size_t mem, bool quiet) {
     Process::environment.set_memory(mem);
     if (!quiet) {
@@ -934,10 +917,6 @@ void py_psi_print_variable_map() {
     outfile->Printf("\n  ----------------------------------------------------------------------------\n");
     outfile->Printf("%s\n\n", line.str().c_str());
 }
-
-std::map<std::string, double> py_psi_return_variable_map() { return Process::environment.globals; }
-
-std::map<std::string, SharedMatrix> py_psi_return_array_variable_map() { return Process::environment.arrays; }
 
 std::string py_psi_top_srcdir() { return TOSTRING(PSI_TOP_SRCDIR); }
 
@@ -1065,10 +1044,10 @@ PYBIND11_MODULE(core, core) {
              "Returns the current legacy_wavefunction object from the most recent computation.");
     core.def("set_legacy_wavefunction", py_psi_set_legacy_wavefunction,
              "Returns the current legacy_wavefunction object from the most recent computation.");
-    core.def("get_gradient", py_psi_get_gradient,
-             "Returns the most recently computed gradient, as a N by 3 :py:class:`~psi4.core.Matrix` object.");
-    core.def("set_gradient", py_psi_set_gradient,
-             "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    core.def("get_legacy_gradient", py_psi_get_gradient,
+             "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE ONLY.");
+    core.def("set_legacy_gradient", py_psi_set_gradient,
+             "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
     core.def("get_atomic_point_charges", py_psi_get_atomic_point_charges,
              "Returns the most recently computed atomic point charges, as a double * object.");
     core.def("set_memory_bytes", py_psi_set_memory, py::arg("memory"), py::arg("quiet") = false,
@@ -1159,21 +1138,29 @@ PYBIND11_MODULE(core, core) {
              "valid option for *arg0*.");
 
     // These return/set/print PSI variables found in Process::environment.globals
-    core.def("has_variable", py_psi_has_variable, "Returns true if the PSI variable exists/is set.");
-    core.def("get_variable", py_psi_get_variable,
-             "Returns one of the PSI variables set internally by the modules or python driver (see manual for full "
-             "listing of variables available).");
-    core.def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
+    core.def("has_scalar_variable", [](const std::string& key) { return bool(Process::environment.globals.count(to_upper(key))); },
+             "Is the double QC variable (case-insensitive) set?");
+    core.def("has_array_variable", [](const std::string& key) { return bool(Process::environment.arrays.count(to_upper(key))); },
+             "Is the Matrix QC variable (case-insensitive) set?");
+    core.def("scalar_variable", [](const std::string& key) { return Process::environment.globals[to_upper(key)]; },
+             "Returns the requested (case-insensitive) double QC variable.");
+    core.def("array_variable", [](const std::string& key) { return Process::environment.arrays[to_upper(key)]->clone(); },
+             "Returns copy of the requested (case-insensitive) Matrix QC variable.");
+    core.def("set_scalar_variable", [](const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; },
+             "Sets the requested (case-insensitive) double QC variable.");
+    core.def("set_array_variable", [](const std::string& key, SharedMatrix val) { Process::environment.arrays[to_upper(key)] = val->clone(); },
+             "Sets the requested (case-insensitive) Matrix QC variable.");
+    core.def("del_scalar_variable", [](const std::string key) { Process::environment.globals.erase(to_upper(key)); },
+             "Removes the requested (case-insensitive) double QC variable.");
+    core.def("del_array_variable", [](const std::string key) { Process::environment.arrays.erase(to_upper(key)); },
+             "Removes the requested (case-insensitive) Matrix QC variable.");
     core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
-    core.def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
-    core.def("get_variables", py_psi_return_variable_map,
-             "Returns dictionary of the PSI variables set internally by the modules or python driver.");
-    core.def("get_array_variable", py_psi_get_array_variable,
-             "Returns one of the PSI variables set internally by the modules or python driver (see manual for full "
-             "listing of variables available).");
-    core.def("set_array_variable", py_psi_set_array_variable, "Sets a PSI variable, by name.");
-    core.def("get_array_variables", py_psi_return_array_variable_map,
-             "Returns dictionary of the PSI variables set internally by the modules or python driver.");
+    core.def("clean_variables", []() { Process::environment.globals.clear(); Process::environment.arrays.clear(); },
+             "Empties all PSI scalar and array variables that have been set internally.");
+    core.def("scalar_variables", []() { return Process::environment.globals; },
+             "Returns dictionary of all double QC variables.");
+    core.def("array_variables", []() { return Process::environment.arrays; },
+             "Returns dictionary of all Matrix QC variables.");
 
     // Returns the location where the Psi4 source is located.
     core.def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");

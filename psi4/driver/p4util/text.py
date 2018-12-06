@@ -25,26 +25,24 @@
 #
 # @END LICENSE
 #
-
-from __future__ import print_function
 """Module with utility classes and functions related
 to data tables and text.
 
 """
 import sys
+import warnings
 
 from psi4 import core
 from psi4.driver import constants
-from .exceptions import *
 
 class Table(object):
     """Class defining a flexible Table object for storing data."""
 
-    def __init__(self, rows=(),
-                 row_label_width=10,
-                 row_label_precision=4,
-                 cols=(),
-                 width=16, precision=10):
+    def __init__(self, rows=(), row_label_width=10, row_label_precision=4, cols=(), width=16, precision=10):
+        warnings.warn(
+            "Using `psi4.driver.p4util.Table` is deprecated, and in 1.4 it will stop working\n",
+            category=FutureWarning,
+            stacklevel=2)
         self.row_label_width = row_label_width
         self.row_label_precision = row_label_precision
         self.width = width
@@ -166,10 +164,9 @@ def banner(text, type=1, width=35, strNotOutfile=False):
     lines = text.split('\n')
     max_length = 0
     for line in lines:
-        if (len(line) > max_length):
-            max_length = len(line)
+        max_length = max(len(line), max_length)
 
-    max_length = max([width, max_length])
+    max_length = max(width, max_length)
 
     null = ''
     if type == 1:
@@ -188,17 +185,30 @@ def banner(text, type=1, width=35, strNotOutfile=False):
     else:
         core.print_out(banner)
 
+
 def print_stdout(stuff):
     """Function to print *stuff* to standard output stream."""
+    warnings.warn(
+        "Using `psi4.driver.p4util.print_stdout` instead of `print` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     print(stuff, file=sys.stdout)
 
 
 def print_stderr(stuff):
     """Function to print *stuff* to standard error stream."""
+    warnings.warn(
+        "Using `psi4.driver.p4util.print_stderr` instead of `print(..., file=sys.stderr)` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     print(stuff, file=sys.stderr)
 
+
 def levenshtein(seq1, seq2):
-    """Function to compute the Levenshtein distance between two strings."""
+    """Compute the Levenshtein distance between two strings."""
+
     oneago = None
     thisrow = list(range(1, len(seq2) + 1)) + [0]
     for x in range(len(seq1)):
@@ -210,11 +220,8 @@ def levenshtein(seq1, seq2):
             thisrow[y] = min(delcost, addcost, subcost)
     return thisrow[len(seq2) - 1]
 
-def find_approximate_string_matches(seq1,options,max_distance):
-    """Function to compute approximate string matches from a list of options."""
-    matches = []
-    for seq2 in options:
-        distance = levenshtein(seq1,seq2)
-        if distance <= max_distance:
-            matches.append(seq2)
-    return matches
+
+def find_approximate_string_matches(seq1, options, max_distance):
+    """Find list of approximate (within `max_distance`) matches to string `seq1` among `options`."""
+
+    return [seq2 for seq2 in options if (levenshtein(seq1, seq2) <= max_distance)]

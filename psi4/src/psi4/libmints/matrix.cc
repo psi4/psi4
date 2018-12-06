@@ -1351,7 +1351,6 @@ void Matrix::back_transform(const Matrix *const transformer) {
 }
 
 void Matrix::back_transform(const SharedMatrix &transformer) { back_transform(transformer.get()); }
-
 void Matrix::gemm(const char &transa, const char &transb, const std::vector<int> &m, const std::vector<int> &n,
                   const std::vector<int> &k, const double &alpha, const SharedMatrix &a, const std::vector<int> &lda,
                   const SharedMatrix &b, const std::vector<int> &ldb, const double &beta, const std::vector<int> &ldc,
@@ -1402,27 +1401,24 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a,
         throw PSIEXCEPTION("Matrix::gemm error: Input symmetries will not result in target symmetry.");
     }
 
-    if (transa && a->symmetry_)
-        throw PSIEXCEPTION("Matrix::gemm error: a is non totally symmetric and you're trying to transpose it");
-    if (transb && b->symmetry_)
-        throw PSIEXCEPTION("Matrix::gemm error: b is non totally symmetric and you're trying to transpose it");
-
     char ta = transa ? 't' : 'n';
     char tb = transb ? 't' : 'n';
-    int h, m, n, k, lda, ldb, ldc;
+    int symlink = (!transa ? a->symmetry() : 0);
+    auto nlink = (!transa ? a->colspi() : a->rowspi());
 
-    for (h = 0; h < nirrep_; ++h) {
-        m = rowspi_[h];
-        n = colspi_[h ^ symmetry_];
-        k = transa ? a->rowspi_[h] : a->colspi_[h ^ a->symmetry_];
-
-        lda = a->colspi_[h ^ a->symmetry_];
-        ldb = b->colspi_[h ^ b->symmetry_];
-        ldc = colspi_[h ^ symmetry_];
+    for (int Ha = 0; Ha < nirrep_; ++Ha) {
+        int Hb = Ha ^ (transa ? 0 : a->symmetry()) ^ (transb ? b->symmetry() : 0);
+        int Hc = Ha ^ (transa ? a->symmetry() : 0);
+        int m = rowspi_[Hc];
+        int n = colspi_[Hc ^ symmetry_];
+        int k = nlink[Ha ^ symlink];
+        int lda = a->colspi_[Ha ^ a->symmetry_];
+        int ldb = b->colspi_[Hb ^ b->symmetry_];
+        int ldc = colspi_[Hc ^ symmetry_];
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, alpha, &(a->matrix_[h][0][0]), lda,
-                    &(b->matrix_[h ^ symmetry_ ^ b->symmetry_][0][0]), ldb, beta, &(matrix_[h][0][0]), ldc);
+            C_DGEMM(ta, tb, m, n, k, alpha, &(a->matrix_[Ha][0][0]), lda, &(b->matrix_[Hb][0][0]), ldb, beta,
+                    &(matrix_[Hc][0][0]), ldc);
         }
     }
 }
@@ -1444,29 +1440,11 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix &a, const
 }
 
 SharedMatrix Matrix::doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
-    if (A->symmetry() || B->symmetry()) {
-        throw PSIEXCEPTION("Matrix::doublet is not supported for this non-totally-symmetric thing.");
-    }
-
-    if (A->nirrep() != B->nirrep()) {
-        throw PSIEXCEPTION("Matrix::doublet: Matrices do not have the same nirreps");
-    }
-
     Dimension m = (transA ? A->colspi() : A->rowspi());
     Dimension n = (transB ? B->rowspi() : B->colspi());
-    Dimension k = (!transA ? A->colspi() : A->rowspi());
-    Dimension k2 = (!transB ? B->rowspi() : B->colspi());
-    if (k != k2) {
-        throw PSIEXCEPTION("Matrix::doublet: Dimension mismatch");
-    }
 
-    auto T = std::make_shared<Matrix>("T", m, n);
-
-    for (int h = 0; h < A->nirrep(); h++) {
-        if (!k[h] || !m[h] || !n[h]) continue;
-        C_DGEMM((transA ? 'T' : 'N'), (transB ? 'T' : 'N'), m[h], n[h], k[h], 1.0, A->pointer(h)[0], A->colspi()[h],
-                B->pointer(h)[0], B->colspi()[h], 0.0, T->pointer(h)[0], T->colspi()[h]);
-    }
+    auto T = std::make_shared<Matrix>("T", m, n, A->symmetry() ^ B->symmetry());
+    T->gemm(transA, transB, 1.0, A, B, 0.0);
 
     return T;
 }
@@ -1483,8 +1461,8 @@ void Matrix::axpy(double a, SharedMatrix X) {
         throw PSIEXCEPTION("Matrix::axpy: Matrices do not have the same nirreps");
     }
     for (int h = 0; h < nirrep_; h++) {
-        size_t size = colspi_[h] * rowspi_[h];
-        if (size != (X->rowspi()[h] * X->colspi()[h])) {
+        size_t size = colspi_[h ^ symmetry()] * rowspi_[h];
+        if (size != (X->rowspi()[h] * X->colspi()[h ^ X->symmetry()])) {
             throw PSIEXCEPTION("Matrix::axpy: Matrices sizes do not match.");
         }
         if (size) {
@@ -2041,10 +2019,10 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
     return X;
 }
 
-void Matrix::swap_rows(int h, int i, int j) { C_DSWAP(colspi_[h], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1); }
+void Matrix::swap_rows(int h, int i, int j) { C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1); }
 
 void Matrix::swap_columns(int h, int i, int j) {
-    C_DSWAP(rowspi_[h], &(matrix_[h][0][i]), colspi_[h], &(matrix_[h][0][j]), colspi_[h]);
+    C_DSWAP(rowspi_[h], &(matrix_[h][0][i]), colspi_[h ^ symmetry_], &(matrix_[h][0][j]), colspi_[h ^ symmetry_]);
 }
 
 void Matrix::cholesky_factorize() {
@@ -2554,7 +2532,7 @@ void Matrix::zero_row(int h, int i) {
 }
 
 void Matrix::zero_column(int h, int i) {
-    if (i >= colspi_[h]) {
+    if (i >= colspi_[h ^ symmetry_]) {
         throw PSIEXCEPTION("Matrix::zero_column: index is out of bounds.");
     }
 #pragma omp parallel for
@@ -2664,15 +2642,15 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     // temp = M T
     for (int h = 0; h < nirrep_; ++h) {
         m = temp.rowdim(h);
-        n = temp.coldim(h);
+        n = temp.coldim(h ^ symmetry());
         k = a->ncol();
         nca = k;
         ncb = n;
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[0][0][0]), nca, &(transformer->matrix_[h][0][0]), ncb, 0.0,
-                    &(temp.matrix_[h][0][0]), ncc);
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[0][0][0]), nca, &(transformer->matrix_[h ^ symmetry()][0][0]),
+                    ncb, 0.0, &(temp.matrix_[h ^ symmetry()][0][0]), ncc);
         }
     }
 
@@ -2680,15 +2658,15 @@ void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transform
     ta = 't';
     for (int h = 0; h < nirrep_; ++h) {
         m = rowdim(h);
-        n = coldim(h);
+        n = coldim(h ^ symmetry());
         k = transformer->rowdim(h);
         nca = m;
         ncb = n;
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]), nca, &(temp.matrix_[h][0][0]), ncb, 0.0,
-                    &(matrix_[h][0][0]), ncc);
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]), nca, &(temp.matrix_[h ^ symmetry()][0][0]),
+                    ncb, 0.0, &(matrix_[h][0][0]), ncc);
         }
     }
 }
@@ -2711,7 +2689,7 @@ void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {
     zero();
 
     // Create temporary matrix of proper size.
-    Matrix temp(SO2AO->nirrep(), SO2AO->rowspi(), SO2AO->colspi());
+    Matrix temp(SO2AO->nirrep(), a->rowspi(), SO2AO->colspi());
 
     char ta = 'n';
     char tb = 'n';
@@ -2723,14 +2701,14 @@ void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {
     for (int h = 0; h < SO2AO->nirrep(); ++h) {
         m = temp.rowdim(h);
         n = temp.coldim(h);
-        k = a->coldim(h);
+        k = a->coldim(h ^ a->symmetry());
         nca = k;
         ncb = n;
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[h][0][0]), nca, &(SO2AO->matrix_[h][0][0]), ncb, 1.0,
-                    &(temp.matrix_[h][0][0]), ncc);
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[h][0][0]), nca, &(SO2AO->matrix_[h ^ a->symmetry()][0][0]), ncb,
+                    1.0, &(temp.matrix_[h][0][0]), ncc);
         }
     }
 

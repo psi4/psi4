@@ -59,7 +59,6 @@ JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
 JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
-
     // Throw small DF warning
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
@@ -105,7 +104,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-        //if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+        // if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
         if (options["DF_FITTING_CONDITION"].has_changed())
             jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
@@ -157,26 +156,23 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 }
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, bool do_wK, size_t doubles) {
-
     std::string jk_type = options.get_str("SCF_TYPE");
-    if (do_wK && jk_type == "MEM_DF") { // throw instead of auto fallback?
+    if (do_wK && jk_type == "MEM_DF") {  // throw instead of auto fallback?
         std::stringstream error;
         error << "Cannot do SCF_TYPE == 'MEM_DF' and do_wK (yet), please set SCF_TYPE = 'DISK_DF' ";
         throw PSIEXCEPTION(error.str().c_str());
     }
 
     if (jk_type == "DF") {
-
         // logic for MemDFJK vs DiskDFJK
         if (do_wK || !auxiliary->has_puream() || options["DF_INTS_IO"].has_changed()) {
             return build_JK(primary, auxiliary, options, "DISK_DF");
 
         } else {
-
             // conservative estimate for size of 3-center AOs
             size_t nbf = primary->nbf();
             size_t naux = auxiliary->nbf();
-            size_t required = naux * nbf * nbf; // + nthreads_ * nbf * nbf TODO
+            size_t required = naux * nbf * nbf;  // + nthreads_ * nbf * nbf TODO
 
             if (required > doubles) {
                 return build_JK(primary, auxiliary, options, "DISK_DF");
@@ -185,7 +181,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             }
         }
 
-    } else { // otherwise it has already been set
+    } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
     }
 

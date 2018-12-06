@@ -397,7 +397,7 @@ class CPKS_USAPT0 {
 
     void compute_cpks();
 };
-}
-}  // end namespaces
+}  // namespace sapt
+}  // namespace psi
 
 #endif

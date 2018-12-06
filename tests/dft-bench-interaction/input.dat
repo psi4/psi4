@@ -22,6 +22,12 @@ set {
    d_convergence 9 
 }
 
+orca_data = {
+'B97M-D3BJ' :  -0.01242543212, #TEST
+'wB97M-D3BJ':  -0.01351626999, #TEST
+'wB97X-D3BJ':  -0.01295664452, #TEST
+}
+
 qchem_data = {                              #TEST
      'M08-SO':  -0.015457831899993835,      #TEST
        'EDF1':   -0.01126603059999809,      #TEST
@@ -154,11 +160,18 @@ old_psi4_data = {                           #TEST
      'wB97X': -0.01638428793378921,         #TEST
 }                                           #TEST
 
-# Current version of Psi4 does not match pre-LibXC Psi4
-# (~April 2017, SHA: 53e752c)
 expected_fail_old_psi4 = ['B97-D', 'wB97X'] #TEST
 
+set basis cc-pVDZ
+for func in orca_data.keys():                                                                                  #TEST
+    psi4_ie = energy(func, molecule=h2o_dimer, bsse_type='nocp')                                               #TEST
+    orca_ie = orca_data[func]                                                                                  #TEST
+    compare_values(orca_ie, psi4_ie, 4, func + ': Psi4 vs. ORCA')                                              #TEST
 
+
+set basis 6-31G
+# Current version of Psi4 does not match pre-LibXC Psi4
+# (~April 2017, SHA: 53e752c)
 for func in qchem_data.keys():                                                                                 #TEST
     psi4_ie = energy(func, molecule=h2o_dimer, bsse_type='nocp')                                               #TEST
                                                                                                                #TEST 

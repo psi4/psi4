@@ -270,10 +270,10 @@ def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, ca
     svars = dimer_wfn.variables()
 
     core.print_out("\n")
-    core.print_out(print_sapt_var("Disp20 (MP2)", svars["E Disp20"], short=True) + "\n")
-    core.print_out(print_sapt_var("Exch-Disp20,u", svars["E Exch-Disp20"], short=True) + "\n")
+    core.print_out(print_sapt_var("Disp20 (MP2)", svars["E DISP20"], short=True) + "\n")
+    core.print_out(print_sapt_var("Exch-Disp20,u", svars["E EXCH-DISP20"], short=True) + "\n")
 
     ret = {}
-    ret["Exch-Disp20,u"] = svars["E Exch-Disp20"]
-    ret["Disp20,u"] = svars["E Disp20"]
+    ret["Exch-Disp20,u"] = svars["E EXCH-DISP20"]
+    ret["Disp20,u"] = svars["E DISP20"]
     return ret

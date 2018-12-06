@@ -52,57 +52,48 @@ using namespace psi;
 
 namespace psi {
 
+CDJK::CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance)
+    : DiskDFJK(primary, primary), cholesky_tolerance_(cholesky_tolerance) {}
+CDJK::~CDJK() {}
+void CDJK::initialize_JK_disk() { throw PsiException("Disk algorithm for CD JK not implemented.", __FILE__, __LINE__); }
 
-CDJK::CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance):
-    DiskDFJK(primary,primary), cholesky_tolerance_(cholesky_tolerance)
-{
-}
-CDJK::~CDJK()
-{
-}
-void CDJK::initialize_JK_disk()
-{
-    throw PsiException("Disk algorithm for CD JK not implemented.",__FILE__,__LINE__);
-}
-
-void CDJK::initialize_JK_core()
-{
+void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");
-    auto integral = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
+    auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     int ntri = sieve_->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
     /// Ugur needs ncholesky_ in NAUX (SCF), but it can also be read from disk
-    if(df_ints_io_ == "LOAD")
-    {
-        psio_->open(unit_,PSIO_OPEN_OLD);
+    if (df_ints_io_ == "LOAD") {
+        psio_->open(unit_, PSIO_OPEN_OLD);
         psio_->read_entry(unit_, "length", (char*)&ncholesky_, sizeof(long int));
-        Qmn_ = std::make_shared<Matrix>("Qmn (CD Integrals)", ncholesky_ , ntri);
+        Qmn_ = std::make_shared<Matrix>("Qmn (CD Integrals)", ncholesky_, ntri);
         double** Qmnp = Qmn_->pointer();
-        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
-        psio_->close(unit_,1);
+        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * ncholesky_);
+        psio_->close(unit_, 1);
         Process::environment.globals["NAUX (SCF)"] = ncholesky_;
         timer_off("CD: cholesky decomposition");
         return;
     }
 
-    ///If user does not want to read from disk, recompute the cholesky integrals
-    auto Ch = std::make_shared<CholeskyERI>(std::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_);
+    /// If user does not want to read from disk, recompute the cholesky integrals
+    auto Ch = std::make_shared<CholeskyERI>(std::shared_ptr<TwoBodyAOInt>(integral->eri()), 0.0, cholesky_tolerance_,
+                                            memory_);
     Ch->choleskify();
-    ncholesky_  = Ch->Q();
+    ncholesky_ = Ch->Q();
     size_t three_memory = ncholesky_ * ntri;
     size_t nbf = primary_->nbf();
 
-    ///Kinda silly to check for memory after you perform CD.
-    ///Most likely redundant as cholesky also checks for memory.
-    if ( memory_  < ((size_t)sizeof(double) * three_memory + (size_t)sizeof(double)* ncholesky_ * nbf * nbf))
-        throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
+    /// Kinda silly to check for memory after you perform CD.
+    /// Most likely redundant as cholesky also checks for memory.
+    if (memory_ < ((size_t)sizeof(double) * three_memory + (size_t)sizeof(double) * ncholesky_ * nbf * nbf))
+        throw PsiException("Not enough memory for CD.", __FILE__, __LINE__);
 
     std::shared_ptr<Matrix> L = Ch->L();
-    double ** Lp = L->pointer();
+    double** Lp = L->pointer();
     timer_off("CD: cholesky decomposition");
 
-    Qmn_ = std::make_shared<Matrix>("Qmn (CD Integrals)", ncholesky_ , ntri);
+    Qmn_ = std::make_shared<Matrix>("Qmn (CD Integrals)", ncholesky_, ntri);
 
     double** Qmnp = Qmn_->pointer();
 
@@ -111,59 +102,58 @@ void CDJK::initialize_JK_core()
     timer_on("CD: schwarz");
     for (size_t mu = 0; mu < nbf; mu++) {
         for (size_t nu = mu; nu < nbf; nu++) {
-            if ( schwarz_fun_pairs[nu*(nu+1)/2+mu] < 0 ) continue;
+            if (schwarz_fun_pairs[nu * (nu + 1) / 2 + mu] < 0) continue;
             for (long int P = 0; P < ncholesky_; P++) {
-                Qmnp[P][schwarz_fun_pairs[nu*(nu+1)/2+mu]] = Lp[P][mu * nbf + nu];
+                Qmnp[P][schwarz_fun_pairs[nu * (nu + 1) / 2 + mu]] = Lp[P][mu * nbf + nu];
             }
         }
     }
     timer_off("CD: schwarz");
     if (df_ints_io_ == "SAVE") {
-        psio_->open(unit_,PSIO_OPEN_NEW);
+        psio_->open(unit_, PSIO_OPEN_NEW);
         psio_->write_entry(unit_, "length", (char*)&ncholesky_, sizeof(long int));
-        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
-        psio_->close(unit_,1);
+        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * ncholesky_);
+        psio_->close(unit_, 1);
         // stick ncholesky in process environment for other codes that may use the integrals
-        // Not sure if this should really be here.  It is here because Ugur uses this option to get the number of cholesky vectors.
+        // Not sure if this should really be here.  It is here because Ugur uses this option to get the number of
+        // cholesky vectors.
         Process::environment.globals["NAUX (SCF)"] = ncholesky_;
     }
 }
-void CDJK::manage_JK_core()
-{
-    for (int Q = 0 ; Q < ncholesky_; Q += max_rows_) {
+void CDJK::manage_JK_core() {
+    for (int Q = 0; Q < ncholesky_; Q += max_rows_) {
         int naux = (ncholesky_ - Q <= max_rows_ ? ncholesky_ - Q : max_rows_);
         if (do_J_) {
             timer_on("JK: J");
-            block_J(&Qmn_->pointer()[Q],naux);
+            block_J(&Qmn_->pointer()[Q], naux);
             timer_off("JK: J");
         }
         if (do_K_) {
             timer_on("JK: K");
-            block_K(&Qmn_->pointer()[Q],naux);
+            block_K(&Qmn_->pointer()[Q], naux);
             timer_off("JK: K");
         }
     }
 }
-void CDJK::print_header() const
-{
+void CDJK::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
+        outfile->Printf("  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
 
-        outfile->Printf( "    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
-        outfile->Printf( "    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
-        outfile->Printf( "    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
+        outfile->Printf("    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf("    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf("    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_) {
-            throw PsiException("no wk for scf_type cd.",__FILE__,__LINE__);
-            //outfile->Printf( "    Omega:                %11.3E\n", omega_);
+            throw PsiException("no wk for scf_type cd.", __FILE__, __LINE__);
+            // outfile->Printf( "    Omega:                %11.3E\n", omega_);
         }
-        outfile->Printf( "    OpenMP threads:       %11d\n", omp_nthread_);
-        outfile->Printf( "    Integrals threads:    %11d\n", df_ints_num_threads_);
-        outfile->Printf( "    Memory [MiB]:         %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf( "    Algorithm:            %11s\n",  (is_core_ ? "Core" : "Disk"));
-        outfile->Printf( "    Integral Cache:       %11s\n",  df_ints_io_.c_str());
-        outfile->Printf( "    Schwarz Cutoff:       %11.0E\n", cutoff_);
-        outfile->Printf( "    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
-        outfile->Printf( "    No. Cholesky vectors: %11li\n\n", ncholesky_);
+        outfile->Printf("    OpenMP threads:       %11d\n", omp_nthread_);
+        outfile->Printf("    Integrals threads:    %11d\n", df_ints_num_threads_);
+        outfile->Printf("    Memory [MiB]:         %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+        outfile->Printf("    Algorithm:            %11s\n", (is_core_ ? "Core" : "Disk"));
+        outfile->Printf("    Integral Cache:       %11s\n", df_ints_io_.c_str());
+        outfile->Printf("    Schwarz Cutoff:       %11.0E\n", cutoff_);
+        outfile->Printf("    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
+        outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
 }
 }

@@ -1,4 +1,21 @@
+import os
+import shutil
+
 import pytest
+
+
+def _which(command, return_bool=False):
+    # environment is $PSIPATH:$PATH, less any None values
+    lenv = {'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
+                    ':' + os.environ.get('PATH')}
+    lenv = {k: v for k, v in lenv.items() if v is not None}
+
+    ans = shutil.which(command, mode=os.F_OK | os.X_OK, path=lenv['PATH'])
+
+    if return_bool:
+        return bool(ans)
+    else:
+        return ans
 
 
 def _plugin_import(plug):
@@ -60,6 +77,15 @@ using_memory_profiler = pytest.mark.skipif(_plugin_import('memory_profiler') is 
 
 using_psi4 = pytest.mark.skipif(False,
                                 reason='Not detecting module psi4. Install package if necessary and add to envvar PYTHONPATH')
+
+using_qcdb = pytest.mark.skipif(True,
+                                reason='Not detecting common driver. Install package if necessary and add to envvar PYTHONPATH')
+
+using_dftd3 = pytest.mark.skipif(_which('dftd3', return_bool=True) is False,
+                                reason='Not detecting executable dftd3. Install package if necessary and add to envvar PATH or PSIPATH')
+
+using_gcp = pytest.mark.skipif(_which("gcp", return_bool=True) is False,
+                                reason="Not detecting executable gcp. Install package if necessary and add to envvar PSIPATH or PATH")
 
 #using_scipy = pytest.mark.skipif(_plugin_import('scipy') is False,
 #                                reason='Not detecting module scipy. Install package if necessary and add to envvar PYTHONPATH')

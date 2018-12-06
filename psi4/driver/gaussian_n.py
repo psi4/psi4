@@ -64,7 +64,7 @@ def run_gaussian_2(name, **kwargs):
     scf_e, ref = driver.frequency('scf', return_wfn=True)
 
     # thermodynamic properties
-    du = core.get_variable('INTERNAL ENERGY CORRECTION')
+    du = core.get_variable('THERMAL ENERGY CORRECTION')
     dh = core.get_variable('ENTHALPY CORRECTION')
     dg = core.get_variable('GIBBS FREE ENERGY CORRECTION')
 
