@@ -75,10 +75,12 @@ std::string Options::to_string() const {
             // Local option was set, use it
             value = local_iter->second.to_string();
             option_specified = true;
-        } else if (global_iter->second.has_changed()) {
-            // Global option was set, get that
-            value = global_iter->second.to_string();
-            option_specified = true;
+        } else if (global_iter != globals_.end()){ // make sure name is contained in globals_
+            if (global_iter->second.has_changed()) {
+                // Global option was set, get that
+                value = global_iter->second.to_string();
+                option_specified = true;
+            }
         } else {
             // Just use the default local value
             value = local_iter->second.to_string();
