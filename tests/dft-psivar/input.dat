@@ -44,7 +44,6 @@ compare_values(ref_hf_1e, variable("One-Electron Energy"),   6, "HF: 1e")  #TEST
 compare_values(ref_hf_2e, variable("Two-Electron Energy"),   6, "HF: 2e")  #TEST
 compare_values(ref_nn + ref_hf_1e + ref_hf_2e, variable("hf Total Energy"), 6, "HF: total HF")  #TEST
 compare_values(ref_nn + ref_hf_1e + ref_hf_2e, variable("SCF Total Energy"), 6, "HF: total SCF")  #TEST
-compare_csx()  #TEST
 clean()
 
 energy('b3lyp')
@@ -55,7 +54,6 @@ compare_values(ref_b3lyp_xc, variable("DFT XC Energy"),       6, "DFT: XC")  #TE
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, variable("DFT Functional Total Energy"), 6, "DFT: total FNCL")  #TEST
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, variable("SCF Total Energy"), 6, "DFT: total SCF")  #TEST
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, variable("DFT Total Energy"), 6, "DFT: total DFT")  #TEST
-compare_csx()  #TEST
 clean()
 
 energy('b3lyp-d')
@@ -67,7 +65,6 @@ compare_values(ref_b3lyp_d, variable("dispersion correction Energy"), 6, "DFT-D:
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, variable("DFT Functional Total Energy"), 6, "DFT-D: total FNCL")  #TEST
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, variable("SCF Total Energy"), 6, "DFT-D: total SCF")  #TEST
 compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, variable("DFT Total Energy"), 6, "DFT-D: total DFT")  #TEST
-compare_csx()  #TEST
 clean()
 
 energy('b2plyp')
@@ -79,15 +76,7 @@ compare_values(ref_b2plyp_dh, variable("DOUBLE-hybrid correction Energy"), 6, "D
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, variable("DFT Functional Total Energy"), 6, "DH-DFT: total FNCL")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, variable("SCF Total Energy"), 6, "DH-DFT: total SCF")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_dh, variable("DFT Total Energy"), 6, "DH-DFT: total DFT")  #TEST
-compare_csx()  #TEST
 clean()
-
-# this will trigger if -D psivar from b3lyp-d shows up here after b2plyp  #TEST
-if 'csx4psi' in sys.modules.keys():  #TEST
-    if get_global_option('WRITE_CSX'):  #TEST
-        enedict = csx2endict()  #TEST
-        if 'DISPERSION CORRECTION ENERGY' in enedict.keys():  #TEST
-            compare_values(enedict['DISPERSION CORRECTION ENERGY'], 0.0, 4, '-D psivar cleaned')  #TEST
 
 energy('b2plyp-d')
 compare_values(ref_nn, variable("Nuclear Repulsion Energy"),               6, "DH-DFT-D: NN")  #TEST
@@ -99,5 +88,4 @@ compare_values(ref_b2plyp_dh, variable("double-hybrid correction Energy"), 6, "D
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, variable("DFT Functional Total Energy"), 6, "DH-DFT-D: total FNCL")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d, variable("SCF Total Energy"), 6, "DH-DFT-D: total SCF")  #TEST
 compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d + ref_b2plyp_dh, variable("DFT Total Energy"), 6, "DH-DFT-D: total DFT")  #TEST
-compare_csx()  #TEST
 

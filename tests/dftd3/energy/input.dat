@@ -22,7 +22,7 @@ H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 }
 
-print_stdout('  -D correction from Py-side')                      #TEST
+print('  -D correction from Py-side')                      #TEST
 eneyne.update_geometry()
 E, G = eneyne.run_dftd3('b3lyp', 'd2')
 compare_values(ref_d2[0], E, 7, 'Ethene-Ethyne -D2')              #TEST
@@ -68,7 +68,7 @@ set dft_spherical_points 110
 #set scf print 3  # will print dftd3 program output to psi4 output file
 
 
-print_stdout('  -D correction from C-side')                                                                         #TEST
+print('  -D correction from C-side')                                                                         #TEST
 activate(mA)
 energy('b3lyp-d2', engine='libdisp')
 compare_values(ref_d2[1], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')  #TEST
@@ -88,7 +88,7 @@ compare_values(ref_d2[1], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -
 energy('wb97x-d')
 compare_values(-0.000834247063, variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')            #TEST
 
-print_stdout('  non-default -D correction from C-side')                                                                 #TEST
+print('  non-default -D correction from C-side')                                                                 #TEST
 activate(mB)
 set dft_dispersion_parameters [0.75]
 energy('b3lyp-d', engine='libdisp')
@@ -117,7 +117,7 @@ set dft_dispersion_parameters [1.0]
 energy('wb97x-d')
 compare_values(-0.000834247063, variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')                #TEST
 
-print_stdout('  non-default -D correction from Py-side')                                                         #TEST
+print('  non-default -D correction from Py-side')                                                         #TEST
 eneyne.update_geometry()
 eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 compare_values(ref_pbe_d2[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2')              #TEST
@@ -153,7 +153,7 @@ compare_values(ref_pbe_d2[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethe
 eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 compare_values(ref_pbe_d2[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')      #TEST
 
-print_stdout('  cast-up, -D correction from C-side')                                                         #TEST
+print('  cast-up, -D correction from C-side')                                                         #TEST
 set basis_guess sto-3g
 energy('b3lyp-d3bj')
 compare_values(ref_d3bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')      #TEST

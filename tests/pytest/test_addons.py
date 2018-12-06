@@ -194,7 +194,7 @@ def test_dftd3():
     H   0.000000   0.000000   3.963929
     """)
 
-    psi4.print_stdout('  -D correction from Py-side')
+    print('  -D correction from Py-side')
     eneyne.update_geometry()
     E, G = eneyne.run_dftd3('b3lyp', 'd2')
     assert psi4.compare_values(ref_d2[0], E, 7, 'Ethene-Ethyne -D2')
@@ -240,7 +240,7 @@ def test_dftd3():
                       #'scf print': 3,  # will print dftd3 program output to psi4 output file
                     })
 
-    psi4.print_stdout('  -D correction from C-side')
+    print('  -D correction from C-side')
     psi4.activate(mA)
     #psi4.energy('b3lyp-d2', engine='libdisp')
     #assert psi4.compare_values(ref_d2[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
@@ -260,7 +260,7 @@ def test_dftd3():
     psi4.energy('wb97x-d')
     assert psi4.compare_values(-0.000834247063, psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
 
-    psi4.print_stdout('  non-default -D correction from C-side')
+    print('  non-default -D correction from C-side')
     psi4.activate(mB)
     #psi4.set_options({'dft_dispersion_parameters': [0.75]})
     #psi4.energy('b3lyp-d2', engine='libdisp')
@@ -289,7 +289,7 @@ def test_dftd3():
     psi4.energy('wb97x-d')
     assert psi4.compare_values(-0.000834247063, psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
 
-    psi4.print_stdout('  non-default -D correction from Py-side')
+    print('  non-default -D correction from Py-side')
     eneyne.update_geometry()
     eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
     assert psi4.compare_values(ref_pbe_d2[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2')
@@ -459,8 +459,8 @@ def _test_scf5():
     """scf5"""
     #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
 
-    psi4.print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2')
-    psi4.print_stdout('    -Integral package: {}'.format(psi4.core.get_global_option('integral_package')))
+    print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2')
+    print('    -Integral package: {}'.format(psi4.core.get_global_option('integral_package')))
 
     #Ensure that the checkpoint file is always nuked
     psi4.core.IOManager.shared_object().set_specific_retention(32,False)
@@ -489,7 +489,7 @@ def _test_scf5():
     singlet_o2.update_geometry()
     triplet_o2.update_geometry()
 
-    psi4.print_stdout('    -Nuclear Repulsion:')
+    print('    -Nuclear Repulsion:')
     assert psi4.compare_values(Eref_nuc, triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")
     assert psi4.compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")
 

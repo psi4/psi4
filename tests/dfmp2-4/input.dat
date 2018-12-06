@@ -140,5 +140,4 @@ compare_values(conv_mp2corl, variable('CURRENT CORRELATION ENERGY'), 5, 'mp2 cor
 compare_values(conv_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')                    #TEST
 compare_values(conv_mp2tot, val, 5, 'mp2 return')                                            #TEST
 clean()
-compare_csx()  #TEST
 
