@@ -139,6 +139,6 @@ jobs:
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          python psi4 --fulltest -n %NUMBER_OF_PROCESSORS%
+          python psi4 --fulltest
         displayName: "Test Psi4 (full pytest)"
         workingDirectory: $(Build.BinariesDirectory)/install/bin
