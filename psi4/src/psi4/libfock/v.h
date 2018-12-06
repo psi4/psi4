@@ -53,8 +53,7 @@ class BlockOPoints;
  **/
 
 class PSI_API VBase {
-
-protected:
+   protected:
     /// Debug flag
     int debug_;
     /// Print flag
@@ -96,27 +95,21 @@ protected:
     bool grac_initialized_;
 
     // VV10 dispersion, return vv10_nlc energy
-    void prepare_vv10_cache(
-        DFTGrid& nlgrid,
-        SharedMatrix D,
-        std::vector<std::map<std::string, SharedVector>>& vv10_cache,
-        std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers,
-        int ansatz=1);
+    void prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
+                            std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+                            std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers, int ansatz = 1);
     double vv10_nlc(SharedMatrix D, SharedMatrix ret);
     SharedMatrix vv10_nlc_gradient(SharedMatrix D);
 
     /// Set things up
     void common_init();
 
-
-public:
-     VBase(std::shared_ptr<SuperFunctional> functional,
-           std::shared_ptr<BasisSet> primary, Options& options);
-     virtual ~VBase();
+   public:
+    VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options);
+    virtual ~VBase();
 
     static std::shared_ptr<VBase> build_V(std::shared_ptr<BasisSet> primary,
-                                          std::shared_ptr<SuperFunctional> functional,
-                                          Options& options,
+                                          std::shared_ptr<SuperFunctional> functional, Options& options,
                                           const std::string& type = "RV");
 
     std::shared_ptr<BasisSet> basis() const { return primary_; }
@@ -156,13 +149,9 @@ public:
 // => Derived Classes <= //
 
 class RV : public VBase {
-
-protected:
-
-public:
-    RV(std::shared_ptr<SuperFunctional> functional,
-        std::shared_ptr<BasisSet> primary,
-        Options& options);
+   protected:
+   public:
+    RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options);
     ~RV() override;
 
     void initialize() override;
@@ -177,13 +166,9 @@ public:
 };
 
 class UV : public VBase {
-
-protected:
-
-public:
-    UV(std::shared_ptr<SuperFunctional> functional,
-        std::shared_ptr<BasisSet> primary,
-        Options& options);
+   protected:
+   public:
+    UV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options);
     ~UV() override;
 
     void initialize() override;
@@ -195,7 +180,5 @@ public:
 
     void print_header() const override;
 };
-
-
 }
 #endif
