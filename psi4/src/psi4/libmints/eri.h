@@ -67,6 +67,41 @@ typedef struct ShellPair_typ {
     double** overlap;
 } ShellPair;
 
+/**
+ * \ingroup MINTS
+ * Structure to hold precomputed gaussian product information
+ */
+typedef struct PrimPairScreen_typ {
+    //!x, y, z coordinate of gaussian
+    double P[3];
+    //! Distance between P and shell i center
+    double PA[3];
+    //! Distance between P and shell j center
+    double PB[3];
+    //! alphas for both centers
+    double ai, aj;
+    //! gamma (ai + aj)
+    double gamma;
+    //! Contraction coefficients
+    double ci, cj;
+    //! Overlap between primitives
+    double overlap;
+} PrimPairScreen;
+
+/**
+ * \ingroup MINTS
+ * Structure to hold precomputed shell pair information
+ */
+typedef struct ShellPairScreen_typ {
+    //! Shells for this information.
+    int i, j;
+    //! Distance between shell i and shell j centers
+    double AB[3];
+    //! Vector of significant primitive pairs that define this shell pair
+    std::vector<PrimPairScreen> nonzeroPrimPairs;
+} ShellPairScreen;
+
+
 /*! \ingroup MINTS
  *  \class ERI
  *  \brief Capable of computing two-electron repulsion integrals.
@@ -109,6 +144,9 @@ class TwoElectronInt : public TwoBodyAOInt {
 
     //! Shell pair information
     ShellPair **pairs12_, **pairs34_;
+    
+    //! Shell pair information, same as **pairs12_ and **pairs34_ but using std::vec instead of new [] for memory
+    std::vector<std::vector<ShellPairScreen>> screenpairs12_, screenpairs34_;
 
     //! Evaluates how much memory (in doubles) is needed to store shell pair data
     size_t memory_to_store_shell_pairs(const std::shared_ptr<BasisSet>&, const std::shared_ptr<BasisSet>&);
