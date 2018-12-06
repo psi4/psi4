@@ -52,7 +52,7 @@ class SphericalTransform;
  *  \class OneBodyInt
  *  \brief Basis class for all one-electron integrals.
  */
-class OneBodyAOInt {
+class PSI_API OneBodyAOInt {
    protected:
     std::shared_ptr<BasisSet> bs1_;
     std::shared_ptr<BasisSet> bs2_;

@@ -44,7 +44,7 @@ PRAGMA_WARNING_POP
 namespace psi {
 /*! \ingroup LIBMINTS */
 //! Integration Point/Weight container class (blocks, not individual)
-class GridBlock {
+class PSI_API GridBlock {
    public:
     /// Weight vector
     double* w_;

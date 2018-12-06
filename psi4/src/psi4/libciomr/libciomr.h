@@ -44,77 +44,75 @@
 
 namespace psi {
 
-int psi_start(FILE **infile, FILE **outfile, char **psi_file_prefix, int argc, char *argv[], int overwrite_output);
-int psi_stop(FILE *infile, FILE *outfile, char *psi_file_prefix);
-char *psi_ifname();
-char *psi_ofname();
-char *psi_fprefix();
+PSI_API int psi_start(FILE **infile, FILE **outfile, char **psi_file_prefix, int argc, char *argv[], int overwrite_output);
+PSI_API int psi_stop(FILE *infile, FILE *outfile, char *psi_file_prefix);
+PSI_API char *psi_ifname();
+PSI_API char *psi_ofname();
+PSI_API char *psi_fprefix();
 
-void balance(double **a, int n);
+PSI_API void balance(double **a, int n);
 
-void eigsort(double *d, double **v, int n);
-void eivout(double **a, double *b, int m, int n, std::string out);
-void mosort(double *d, double **v, int *sym, int nso, int nmo);
+PSI_API void eigsort(double *d, double **v, int n);
+PSI_API void eivout(double **a, double *b, int m, int n, std::string out);
+PSI_API void mosort(double *d, double **v, int *sym, int nso, int nmo);
 
-void flin(double **a, double *b, int in, int im, double *det);
-void free_matrix(double **array, size_t size);
-double *init_array(size_t size);
-double **init_matrix(size_t rows, size_t cols);
+PSI_API void flin(double **a, double *b, int in, int im, double *det);
+PSI_API void free_matrix(double **array, size_t size);
+PSI_API double *init_array(size_t size);
+PSI_API double **init_matrix(size_t rows, size_t cols);
 
-void lubksb(double **a, int n, int *indx, double *b);
-void ludcmp(double **a, int n, int *indx, double *d);
+PSI_API void lubksb(double **a, int n, int *indx, double *b);
+PSI_API void ludcmp(double **a, int n, int *indx, double *d);
 
 /* Functions under mat_to_arr.c */
-void mat_to_arr(double **a, double *b, int m, int n);
-void arr_to_mat(double **a, double *b, int m, int n);
+PSI_API void mat_to_arr(double **a, double *b, int m, int n);
+PSI_API void arr_to_mat(double **a, double *b, int m, int n);
 
 // void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
 //            int nr, int nl, int nc, int add) ;
-void print_array(double *a, int m, std::string out);
-void print_mat(double **a, int rows, int cols, std::string out);
+PSI_API void print_array(double *a, int m, std::string out);
+PSI_API void print_mat(double **a, int rows, int cols, std::string out);
 
-void rsp(int nm, int n, int nv, double *array, double *evals, int matz, double **evecs, double toler);
-void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
-void sq_to_tri(double **bmat, double *amat, int size);
+PSI_API void rsp(int nm, int n, int nv, double *array, double *evals, int matz, double **evecs, double toler);
+PSI_API void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
+PSI_API void sq_to_tri(double **bmat, double *amat, int size);
 
 /* Functions under tri_to_block.c */
-void tri_to_block(double *a, double **b, int num_ir, int *num_so, int *ioff);
-void block_to_tri(double *a, double **b, int num_ir, int *num_so, int *ioff);
+PSI_API void tri_to_block(double *a, double **b, int num_ir, int *num_so, int *ioff);
+PSI_API void block_to_tri(double *a, double **b, int num_ir, int *num_so, int *ioff);
 
-void tri_to_sq(double *amat, double **bmat, int size);
+PSI_API void tri_to_sq(double *amat, double **bmat, int size);
 
 /* Functions under tstart.c */
-PSI_API
-void tstart();
-PSI_API
-void tstop();
+PSI_API void tstart();
+PSI_API void tstop();
 
 /* Functions in zero.c */
-void zero_arr(double *a, int size);
-void zero_mat(double **a, int rows, int cols);
+PSI_API void zero_arr(double *a, int size);
+PSI_API void zero_mat(double **a, int rows, int cols);
 
 /* Functions in int_array.c */
 PSI_API int *init_int_array(int size);
-void zero_int_array(int *a, int size);
+PSI_API void zero_int_array(int *a, int size);
 PSI_API int **init_int_matrix(int rows, int cols);
-void free_int_matrix(int **array);
-void zero_int_matrix(int **array, int rows, int cols);
-void print_int_mat(int **a, int m, int n, std::string out);
+PSI_API void free_int_matrix(int **array);
+PSI_API void zero_int_matrix(int **array, int rows, int cols);
+PSI_API void print_int_mat(int **a, int m, int n, std::string out);
 
 /* Functions in long_int_array.c */
-long int *init_long_int_array(int size);
-void zero_long_int_array(long int *a, int size);
-long int **init_long_int_matrix(int rows, int cols);
-void free_long_int_matrix(long int **array);
-void zero_long_int_matrix(long int **array, int rows, int cols);
-void print_long_int_mat(long int **a, int m, int n, std::string out);
+PSI_API long int *init_long_int_array(int size);
+PSI_API void zero_long_int_array(long int *a, int size);
+PSI_API long int **init_long_int_matrix(int rows, int cols);
+PSI_API void free_long_int_matrix(long int **array);
+PSI_API void zero_long_int_matrix(long int **array, int rows, int cols);
+PSI_API void print_long_int_mat(long int **a, int m, int n, std::string out);
 
 /* Functions in block_matrix.c */
 PSI_API double **block_matrix(size_t n, size_t m, bool mlock = false);
-void free_block(double **array);
+PSI_API void free_block(double **array);
 
 /* Functions in fndcor */
-void fndcor(long int *maxcrb, std::string out_fname);
+PSI_API void fndcor(long int *maxcrb, std::string out_fname);
 }  // namespace psi
 
 #endif /* header guard */

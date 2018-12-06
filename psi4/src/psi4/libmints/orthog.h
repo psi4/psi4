@@ -34,7 +34,7 @@
 
 namespace psi {
 
-class OverlapOrthog {
+class PSI_API OverlapOrthog {
    public:
     /// An enum for the types of orthogonalization.
     enum OrthogMethod { Symmetric, Canonical, GramSchmidt };

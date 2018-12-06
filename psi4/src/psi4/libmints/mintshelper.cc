@@ -75,7 +75,7 @@ namespace psi {
 /**
  * IWLWriter functor for use with SO TEIs
  **/
-class IWLWriter {
+class PSI_API IWLWriter {
     IWL &writeto_;
     size_t count_;
     int &current_buffer_count_;

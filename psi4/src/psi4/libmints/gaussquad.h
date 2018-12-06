@@ -44,6 +44,8 @@
 #include <vector>
 #include <functional>
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 enum GCTYPE {
@@ -59,7 +61,7 @@ enum GCTYPE {
  * Stores the weights and abscissae for the quadrature, and provides two different methods to integrate on [-1, 1]
  * Also contains means to transform the region of integration to [0, infinity) and [rmin, rmax]
  */
-class GCQuadrature {
+class PSI_API GCQuadrature {
    private:
     /// Maximum number of points to use in quadrature
     int maxN;

@@ -44,7 +44,7 @@ class PetiteList;
 /*! \ingroup MINTS */
 /** SOTransformFunction describes how an AO function contributes to an SO
     function in a particular SO shell. */
-class SOTransformFunction {
+class PSI_API SOTransformFunction {
    public:
     /// The coefficient of the AO.
     double coef;
@@ -56,7 +56,7 @@ class SOTransformFunction {
     int irrep;
 };
 
-class AOTransformFunction {
+class PSI_API AOTransformFunction {
    public:
     double coef;
     int aofunc;
@@ -70,7 +70,7 @@ class AOTransformFunction {
 /** SOTransformShell maintains a list of AO functions contribute to an SO
     function in a particular SO shell.  The information is stored in
     objects of type SOTransformFunction. */
-class SOTransformShell {
+class PSI_API SOTransformShell {
    public:
     /// The number of the AO shell from which these functions come.
     int aoshell;
@@ -88,7 +88,7 @@ class SOTransformShell {
 /** SOTransform maintains a list of AO shells that are be used
     to compute the SO.  The information is stored in objects of
     type SOTransformShell. */
-class SOTransform {
+class PSI_API SOTransform {
    public:
     int naoshell_allocated;
     /// The number of AO shells that make up this SO shell.
@@ -102,7 +102,7 @@ class SOTransform {
     void add_transform(int aoshell, int irrep, double coef, int aofunc, int sofunc);
 };
 
-class AOTransform {
+class PSI_API AOTransform {
    public:
     std::vector<AOTransformFunction> soshell;
     std::vector<AOTransformFunction> soshellpi[8];

@@ -35,7 +35,7 @@ class Matrix;
 class Vector;
 
 // Denominator Factorizations (MP2-like for now)
-class Denominator {
+class PSI_API Denominator {
    protected:
     // Denominator (w in rows, ia in column)
     SharedMatrix denominator_;
@@ -65,7 +65,7 @@ class Denominator {
     SharedMatrix denominator() const { return denominator_; }
 };
 
-class LaplaceDenominator : public Denominator {
+class PSI_API LaplaceDenominator : public Denominator {
    protected:
     // Fully split denominator (w in rows, i in columns)
     SharedMatrix denominator_occ_;
@@ -82,7 +82,7 @@ class LaplaceDenominator : public Denominator {
     SharedMatrix denominator_vir() const { return denominator_vir_; }
 };
 
-class CholeskyDenominator : public Denominator {
+class PSI_API CholeskyDenominator : public Denominator {
    protected:
     void decompose() override;
 
@@ -92,7 +92,7 @@ class CholeskyDenominator : public Denominator {
     void debug() override;
 };
 
-class SAPTDenominator {
+class PSI_API SAPTDenominator {
    protected:
     // Denominator (w in rows, ar in column) (monomer A)
     SharedMatrix denominatorA_;
@@ -134,7 +134,7 @@ class SAPTDenominator {
     SharedMatrix denominatorB() const { return denominatorB_; }
 };
 
-class SAPTLaplaceDenominator : public SAPTDenominator {
+class PSI_API SAPTLaplaceDenominator : public SAPTDenominator {
    protected:
     // Fully split denominator (w in rows, a in columns) (monomer A)
     SharedMatrix denominator_occA_;
@@ -160,7 +160,7 @@ class SAPTLaplaceDenominator : public SAPTDenominator {
     SharedMatrix denominator_virB() const { return denominator_virB_; }
 };
 
-class SAPTCholeskyDenominator : public SAPTDenominator {
+class PSI_API SAPTCholeskyDenominator : public SAPTDenominator {
    protected:
     void decompose() override;
 
@@ -170,7 +170,7 @@ class SAPTCholeskyDenominator : public SAPTDenominator {
     ~SAPTCholeskyDenominator() override;
 };
 
-class TLaplaceDenominator {
+class PSI_API TLaplaceDenominator {
     // Pointer to active occupied orbital eigenvalues
     std::shared_ptr<Vector> eps_occ_;
     // Pointer to active virtual orbital eigenvalues

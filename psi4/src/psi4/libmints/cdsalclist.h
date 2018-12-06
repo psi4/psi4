@@ -44,9 +44,9 @@ namespace psi {
 
 class MatrixFactory;
 
-class CdSalc {
+class PSI_API CdSalc {
    public:
-    class Component {
+    class PSI_API Component {
        public:
         double coef;
         int atom;
@@ -78,9 +78,9 @@ class CdSalc {
     void print() const;
 };
 
-class CdSalcWRTAtom {
+class PSI_API CdSalcWRTAtom {
    public:
-    class Component {
+    class PSI_API Component {
        public:
         double coef;
         int irrep;
@@ -118,7 +118,7 @@ class CdSalcWRTAtom {
     void print() const;
 };
 
-class CdSalcList {
+class PSI_API CdSalcList {
     SharedMolecule molecule_;
 
     char needed_irreps_;

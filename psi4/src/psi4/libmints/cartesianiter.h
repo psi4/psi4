@@ -29,11 +29,13 @@
 #ifndef _psi_src_lib_libmints_cartesianiter_h_
 #define _psi_src_lib_libmints_cartesianiter_h_
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 /** CartesianIter gives the ordering of the Cartesian functions
     that is used in PSI4. */
-class CartesianIter {
+class PSI_API CartesianIter {
    protected:
     int a_;
     int b_;
@@ -74,7 +76,7 @@ class CartesianIter {
     of a given number of axes.  This is used to compute the transformation
     matrices that maps a set of Cartesian functions to another set of
     Cartesian functions in a rotated coordinate system. */
-class RedundantCartesianIter {
+class PSI_API RedundantCartesianIter {
     int done_;
     int l_;
     int *axis_;
@@ -145,7 +147,7 @@ inline int RedundantCartesianIter::c() const { return l(2); }
 
 /** Like RedundantCartesianIter, except a, b, and c are fixed to a given
     value. */
-class RedundantCartesianSubIter {
+class PSI_API RedundantCartesianSubIter {
     int done_;
     int l_;
     int e_[3];
