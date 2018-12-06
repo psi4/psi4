@@ -1,3 +1,5 @@
+import contextlib
+
 import pytest
 
 @pytest.fixture(scope="session", autouse=True)
@@ -25,4 +27,5 @@ def tear_down():
     for pat in patterns:
         pytest_scratches.extend(glob.glob(pat))
     for fl in pytest_scratches:
-        os.unlink(fl)
+        with contextlib.suppress(FileNotFoundError):
+            os.unlink(fl)
