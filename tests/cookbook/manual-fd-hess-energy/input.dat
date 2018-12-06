@@ -44,7 +44,7 @@ def process_displacement(method, molecule, displacement, n, ndisp, **kwargs):
 
     # Perform the energy calculation
     derivative, wfn = energy(method, return_wfn=True, molecule=molecule, **kwargs)
-    displacement["energy"] = core.get_variable('CURRENT ENERGY')
+    displacement["energy"] = core.variable('CURRENT ENERGY')
 
     # clean may be necessary when changing irreps of displacements
     core.clean()

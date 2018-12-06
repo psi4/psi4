@@ -15,5 +15,5 @@ reference rks
 }
 
 mp2_dft = energy("MP2", dft_functional="PBE0") #TEST
-compare_values(-76.3005012762123869, get_variable("SCF TOTAL ENERGY"), 6, "PBE0 Reference")  #TEST
+compare_values(-76.3005012762123869, variable("SCF TOTAL ENERGY"), 6, "PBE0 Reference")  #TEST
 compare_values(-76.4870829006874402, mp2_dft, 6, "MP2 with PBE0 orbitals")  #TEST

@@ -670,4 +670,4 @@ def compare_csx():
             enedict = csx2endict()
             compare_integers(len(enedict) >= 2, True, 'CSX harvested')
             for pv, en in enedict.items():
-                compare_values(core.get_variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))
+                compare_values(core.variable(pv), en, 6, 'CSX ' + pv + ' ' + str(round(en, 4)))

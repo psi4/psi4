@@ -44,11 +44,11 @@ for method in Earray:
    water.fix_orientation(True)
    water.update_geometry()
 
-   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY')))
    if method == 'CISD':  # fnocc finds insufficent room for excitation
         psi4.set_global_option('QC_MODULE', 'DETCI')
    ans = energy(method)
-   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY'), ans))
 
 #-------------------------------------------------------------------------------------------
 clean()
@@ -63,9 +63,9 @@ for method in Earray:
    water.fix_orientation(True)
    water.update_geometry()
 
-   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY')))
    ans = energy(method)
-   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY'), ans))
 
 set reference rhf
 #-------------------------------------------------------------------------------------------
@@ -90,9 +90,9 @@ for method in Earray:
    water.fix_orientation(True)
    water.update_geometry()
 
-   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY')))
    ans = energy(method)
-   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY'), ans))
 
 #-------------------------------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ Earray = [
   ]
 
 for method in Earray:
-   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY')))
    ans = energy(method)
-   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), variable('CURRENT ENERGY'), ans))
 

@@ -75,14 +75,14 @@ pbed2 = {
 
 ret = energy('scf', dft_functional=pbed2)
 compare_values(test_dict['PBE'] + test_dict_dash['E']['075'], ret, 5, 'PBE-D2 Energy, dft_functional=dict(s6=native)')
-compare_values(test_dict_dash['E']['075'], get_variable('PBE-D2 dispersion correction energy'), 5, 'PBE-D2 Energy, dft_functional=dict(s6=native)')
+compare_values(test_dict_dash['E']['075'], variable('PBE-D2 dispersion correction energy'), 5, 'PBE-D2 Energy, dft_functional=dict(s6=native)')
 clean()
 
 import numpy as np
 pbed2['dispersion']['params']['s6'] = 1.0
 ret = energy('scf', dft_functional=pbed2)
 compare_values(test_dict['PBE'] + test_dict_dash['E']['100'], ret, 5, 'PBE-D2 Energy, dft_functional=dict(s6=1.0)')
-compare_values(test_dict_dash['E']['100'], get_variable('tpss-d2 dispersion correction energy'), 5, 'PBE-D2 Energy, dft_functional=dict(s6=1.0)')
+compare_values(test_dict_dash['E']['100'], variable('tpss-d2 dispersion correction energy'), 5, 'PBE-D2 Energy, dft_functional=dict(s6=1.0)')
 clean()
 
 set dft_dispersion_parameters [1.0]

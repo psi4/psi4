@@ -86,8 +86,8 @@ def test_gdma():
     energy, wfn = psi4.energy('scf', return_wfn=True)
 
     psi4.gdma(wfn)
-    dmavals = psi4.core.get_array_variable("DMA DISTRIBUTED MULTIPOLES")
-    totvals = psi4.core.get_array_variable("DMA TOTAL MULTIPOLES")
+    dmavals = psi4.core.variable("DMA DISTRIBUTED MULTIPOLES")
+    totvals = psi4.core.variable("DMA TOTAL MULTIPOLES")
     assert psi4.compare_values(ref_energy, energy, 8, "SCF Energy")
     assert psi4.compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")
     assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
@@ -111,11 +111,11 @@ def test_mrcc():
 
     psi4.energy('mrccsdt')
 
-    assert psi4.compare_values(  8.801465529972, psi4.get_variable("NUCLEAR REPULSION ENERGY"), 6, 'NRE')
-    assert psi4.compare_values(-76.021418445155, psi4.get_variable("SCF TOTAL ENERGY"), 6, 'SCF')
-    assert psi4.compare_values( -0.204692406830, psi4.get_variable("MP2 CORRELATION ENERGY") , 6, 'MP2 correlation')
-    assert psi4.compare_values( -0.217715210258, psi4.get_variable("CCSDT CORRELATION ENERGY"), 6, 'CCSDT correlation')
-    assert psi4.compare_values(-76.239133655413, psi4.get_variable("CURRENT ENERGY"), 6, 'CCSDT')
+    assert psi4.compare_values(  8.801465529972, psi4.variable("NUCLEAR REPULSION ENERGY"), 6, 'NRE')
+    assert psi4.compare_values(-76.021418445155, psi4.variable("SCF TOTAL ENERGY"), 6, 'SCF')
+    assert psi4.compare_values( -0.204692406830, psi4.variable("MP2 CORRELATION ENERGY") , 6, 'MP2 correlation')
+    assert psi4.compare_values( -0.217715210258, psi4.variable("CCSDT CORRELATION ENERGY"), 6, 'CCSDT correlation')
+    assert psi4.compare_values(-76.239133655413, psi4.variable("CURRENT ENERGY"), 6, 'CCSDT')
 
 
 @pytest.mark.smoke
@@ -163,7 +163,7 @@ def test_chemps2():
     psi4.energy("dmrg-scf")
 
     ref_energy = -109.1035023353
-    assert psi4.compare_values(ref_energy, psi4.get_variable("CURRENT ENERGY"), 6, "DMRG Energy")
+    assert psi4.compare_values(ref_energy, psi4.variable("CURRENT ENERGY"), 6, "DMRG Energy")
 
 
 @pytest.mark.smoke
@@ -194,7 +194,7 @@ def test_dftd3():
     H   0.000000   0.000000   3.963929
     """)
 
-    psi4.print_stdout('  -D correction from Py-side')
+    print('  -D correction from Py-side')
     eneyne.update_geometry()
     E, G = eneyne.run_dftd3('b3lyp', 'd2')
     assert psi4.compare_values(ref_d2[0], E, 7, 'Ethene-Ethyne -D2')
@@ -240,90 +240,90 @@ def test_dftd3():
                       #'scf print': 3,  # will print dftd3 program output to psi4 output file
                     })
 
-    psi4.print_stdout('  -D correction from C-side')
+    print('  -D correction from C-side')
     psi4.activate(mA)
     #psi4.energy('b3lyp-d2', engine='libdisp')
-    #assert psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
+    #assert psi4.compare_values(ref_d2[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
     #psi4.energy('b3lyp-d2')
-    #assert psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
+    #assert psi4.compare_values(ref_d2[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
     #psi4.energy('b3lyp-d3zero')
-    #assert psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
+    #assert psi4.compare_values(ref_d3zero[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
     psi4.energy('b3lyp-d3bj')
-    assert psi4.compare_values(ref_d3bj[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
+    assert psi4.compare_values(ref_d3bj[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
 
     psi4.energy('b3lyp-d2', engine='libdisp')
-    assert psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
+    assert psi4.compare_values(ref_d2[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
     #psi4.energy('b3lyp-d3')
-    #assert psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (alias)')
+    #assert psi4.compare_values(ref_d3zero[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (alias)')
     #psi4.energy('b3lyp-d')
-    #assert psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D (alias)')
+    #assert psi4.compare_values(ref_d2[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D (alias)')
     psi4.energy('wb97x-d')
-    assert psi4.compare_values(-0.000834247063, psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
+    assert psi4.compare_values(-0.000834247063, psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
 
-    psi4.print_stdout('  non-default -D correction from C-side')
+    print('  non-default -D correction from C-side')
     psi4.activate(mB)
     #psi4.set_options({'dft_dispersion_parameters': [0.75]})
     #psi4.energy('b3lyp-d2', engine='libdisp')
-    #assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
+    #assert psi4.compare_values(ref_pbe_d2[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
     #psi4.set_options({'dft_dispersion_parameters': [0.75, 20.0]})
     #psi4.energy('b3lyp-d2')
-    #assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
+    #assert psi4.compare_values(ref_pbe_d2[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
     #psi4.set_options({'dft_dispersion_parameters': [1.0,  0.722, 1.217, 14.0]})
     #psi4.energy('b3lyp-d3zero')
-    #assert psi4.compare_values(ref_pbe_d3zero[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
+    #assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
     psi4.set_options({'dft_dispersion_parameters': [1.000, 0.7875, 0.4289, 4.4407]})
     psi4.energy('b3lyp-d3bj')
-    assert psi4.compare_values(ref_pbe_d3bj[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
+    assert psi4.compare_values(ref_pbe_d3bj[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
 
     psi4.set_options({'dft_dispersion_parameters': [0.75]})
     psi4.energy('b3lyp-d2', engine='dftd3')
-    assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
+    assert psi4.compare_values(ref_pbe_d2[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
     psi4.set_options({'dft_dispersion_parameters': [1.0,  0.722, 1.217, 14.0]})
     psi4.energy('b3lyp-d3')
-    assert psi4.compare_values(ref_pbe_d3zero[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (alias)')
+    assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (alias)')
     psi4.set_options({'dft_dispersion_parameters': [0.75]})
     psi4.energy('b3lyp-d')
-    assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D (alias)')
+    assert psi4.compare_values(ref_pbe_d2[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D (alias)')
     psi4.activate(mA)
     psi4.set_options({'dft_dispersion_parameters': [1.0]})
     psi4.energy('wb97x-d')
-    assert psi4.compare_values(-0.000834247063, psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
+    assert psi4.compare_values(-0.000834247063, psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
 
-    psi4.print_stdout('  non-default -D correction from Py-side')
+    print('  non-default -D correction from Py-side')
     eneyne.update_geometry()
     eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
-    assert psi4.compare_values(ref_pbe_d2[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2')
+    assert psi4.compare_values(ref_pbe_d2[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2')
     mA = eneyne.extract_subsets(1)
     mA.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
-    assert psi4.compare_values(ref_pbe_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2')
+    assert psi4.compare_values(ref_pbe_d2[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2')
     mB = eneyne.extract_subsets(2)
     mB.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
-    assert psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethyne -D2')
+    assert psi4.compare_values(ref_pbe_d2[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethyne -D2')
 
     eneyne.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
-    assert psi4.compare_values(ref_pbe_d3zero[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D3 (zero)')
+    assert psi4.compare_values(ref_pbe_d3zero[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D3 (zero)')
     mA = eneyne.extract_subsets(1)
     mA.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
-    assert psi4.compare_values(ref_pbe_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (zero)')
+    assert psi4.compare_values(ref_pbe_d3zero[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (zero)')
     mB = eneyne.extract_subsets(2)
     mB.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
-    assert psi4.compare_values(ref_pbe_d3zero[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethyne -D3 (zero)')
+    assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethyne -D3 (zero)')
 
     eneyne.run_dftd3('b3lyp', 'd3bj', {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407})
-    assert psi4.compare_values(ref_pbe_d3bj[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D3 (bj)')
+    assert psi4.compare_values(ref_pbe_d3bj[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D3 (bj)')
     mA = eneyne.extract_subsets(1)
     mA.run_dftd3('b3lyp', 'd3bj', {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407})
-    assert psi4.compare_values(ref_pbe_d3bj[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (bj)')
+    assert psi4.compare_values(ref_pbe_d3bj[1], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (bj)')
     mB = eneyne.extract_subsets(2)
     mB.run_dftd3('b3lyp', 'd3bj', {'s6': 1.000, 's8':  0.7875, 'a1':  0.4289, 'a2': 4.4407})
-    assert psi4.compare_values(ref_pbe_d3bj[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethyne -D3 (bj)')
+    assert psi4.compare_values(ref_pbe_d3bj[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethyne -D3 (bj)')
     eneyne.run_dftd3('b3lyp', 'd3', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
 
-    assert psi4.compare_values(ref_pbe_d3zero[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D3 (alias)')
+    assert psi4.compare_values(ref_pbe_d3zero[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D3 (alias)')
     eneyne.run_dftd3('b3lyp', 'd', {'s6': 0.75})
-    assert psi4.compare_values(ref_pbe_d2[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D (alias)')
+    assert psi4.compare_values(ref_pbe_d2[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D (alias)')
     eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
-    assert psi4.compare_values(ref_pbe_d2[0], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')
+    assert psi4.compare_values(ref_pbe_d2[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')
 
 
 @pytest.mark.smoke
@@ -358,12 +358,12 @@ def test_libefp():
 
     psi4.energy('efp')
     assert psi4.compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')
-    assert psi4.compare_values(-0.0004901368, psi4.get_variable('efp elst energy'), 6, 'EFP-EFP Elst')  # from q-chem
-    assert psi4.compare_values(-0.0003168768, psi4.get_variable('efp ind energy'), 6, 'EFP-EFP Indc')
-    assert psi4.compare_values(-0.0021985285, psi4.get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  # from q-chem
-    assert psi4.compare_values( 0.0056859871, psi4.get_variable('efp exch energy'), 6, 'EFP-EFP Exch')  # from q-chem
-    assert psi4.compare_values( 0.0026804450, psi4.get_variable('efp total energy'), 6, 'EFP-EFP Totl')
-    assert psi4.compare_values( 0.0026804450, psi4.get_variable('current energy'), 6, 'Current')
+    assert psi4.compare_values(-0.0004901368, psi4.variable('efp elst energy'), 6, 'EFP-EFP Elst')  # from q-chem
+    assert psi4.compare_values(-0.0003168768, psi4.variable('efp ind energy'), 6, 'EFP-EFP Indc')
+    assert psi4.compare_values(-0.0021985285, psi4.variable('efp disp energy'), 6, 'EFP-EFP Disp')  # from q-chem
+    assert psi4.compare_values( 0.0056859871, psi4.variable('efp exch energy'), 6, 'EFP-EFP Exch')  # from q-chem
+    assert psi4.compare_values( 0.0026804450, psi4.variable('efp total energy'), 6, 'EFP-EFP Totl')
+    assert psi4.compare_values( 0.0026804450, psi4.variable('current energy'), 6, 'Current')
     psi4.core.print_variables()
 
     psi4.core.clean()
@@ -376,12 +376,12 @@ def test_libefp():
     psi4.energy('scf')
 
     assert psi4.compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')
-    assert psi4.compare_values( 0.2622598847, psi4.get_variable('efp total energy') - psi4.get_variable('efp ind energy'), 6, 'EFP corr to SCF')  # from q-chem
-    assert psi4.compare_values(-0.0117694790, psi4.get_variable('efp ind energy'), 6, 'QM-EFP Indc')  # from q-chem
-    assert psi4.compare_values(-0.0021985285, psi4.get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  # from q-chem
-    assert psi4.compare_values( 0.0056859871, psi4.get_variable('efp exch energy'), 6, 'EFP-EFP Exch')  # from q-chem
-    assert psi4.compare_values( 0.2504904057, psi4.get_variable('efp total energy'), 6, 'EFP-EFP Totl')  # from q-chem
-    assert psi4.compare_values(-76.0139362744, psi4.get_variable('scf total energy'), 6, 'SCF')  # from q-chem
+    assert psi4.compare_values( 0.2622598847, psi4.variable('efp total energy') - psi4.variable('efp ind energy'), 6, 'EFP corr to SCF')  # from q-chem
+    assert psi4.compare_values(-0.0117694790, psi4.variable('efp ind energy'), 6, 'QM-EFP Indc')  # from q-chem
+    assert psi4.compare_values(-0.0021985285, psi4.variable('efp disp energy'), 6, 'EFP-EFP Disp')  # from q-chem
+    assert psi4.compare_values( 0.0056859871, psi4.variable('efp exch energy'), 6, 'EFP-EFP Exch')  # from q-chem
+    assert psi4.compare_values( 0.2504904057, psi4.variable('efp total energy'), 6, 'EFP-EFP Totl')  # from q-chem
+    assert psi4.compare_values(-76.0139362744, psi4.variable('scf total energy'), 6, 'SCF')  # from q-chem
     psi4.core.print_variables()
 
 
@@ -433,34 +433,34 @@ def test_pcmsolver():
     energy_scf1, wfn1 = psi4.energy('scf', return_wfn=True)
     assert psi4.compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
     assert psi4.compare_values(totalenergy, energy_scf1, 10, "Total energy (PCM, total algorithm)") #TEST
-    assert psi4.compare_values(polenergy, wfn1.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+    assert psi4.compare_values(polenergy, wfn1.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
     psi4.set_options({'pcm_scf_type': 'separate'})
     print('RHF-PCM, separate algorithm')
     energy_scf2 = psi4.energy('scf')
     assert psi4.compare_values(totalenergy, energy_scf2, 10, "Total energy (PCM, separate algorithm)")
-    assert psi4.compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")
+    assert psi4.compare_values(polenergy, psi4.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")
 
     # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
     psi4.set_options({'pcm_scf_type': 'total', 'reference': 'uhf'})
     print('UHF-PCM, total algorithm')
     energy_scf3 = psi4.energy('scf')
     assert psi4.compare_values(totalenergy, energy_scf3, 10, "Total energy (PCM, separate algorithm)")
-    assert psi4.compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")
+    assert psi4.compare_values(polenergy, psi4.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")
 
     psi4.set_options({'pcm_scf_type': 'total', 'reference': 'rohf'})
     print('ROHF-PCM, total algorithm')
     energy_scf4 = psi4.energy('scf')
     assert psi4.compare_values(totalenergy, energy_scf4, 10, "Total energy (PCM, separate algorithm)") #TEST
-    assert psi4.compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+    assert psi4.compare_values(polenergy, psi4.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 
 def _test_scf5():
     """scf5"""
     #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
 
-    psi4.print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2')
-    psi4.print_stdout('    -Integral package: {}'.format(psi4.core.get_global_option('integral_package')))
+    print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2')
+    print('    -Integral package: {}'.format(psi4.core.get_global_option('integral_package')))
 
     #Ensure that the checkpoint file is always nuked
     psi4.core.IOManager.shared_object().set_specific_retention(32,False)
@@ -489,7 +489,7 @@ def _test_scf5():
     singlet_o2.update_geometry()
     triplet_o2.update_geometry()
 
-    psi4.print_stdout('    -Nuclear Repulsion:')
+    print('    -Nuclear Repulsion:')
     assert psi4.compare_values(Eref_nuc, triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")
     assert psi4.compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")
 
@@ -705,12 +705,12 @@ def test_cfour():
 
     psi4.energy('cfour')
 
-    assert psi4.compare_values(-76.062748460117, psi4.get_variable('scf total energy'), 6, 'SCF')
-    assert psi4.compare_values(-76.332940127333, psi4.get_variable('mp2 total energy'), 6, 'MP2')
-    assert psi4.compare_values(-76.338453951890, psi4.get_variable('ccsd total energy'), 6, 'CCSD')
-    assert psi4.compare_values(-0.275705491773, psi4.get_variable('ccsd correlation energy'), 6, 'CCSD corl')
-    assert psi4.compare_values(-76.345717549886, psi4.get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')
-    assert psi4.compare_values(-0.282969089769, psi4.get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
+    assert psi4.compare_values(-76.062748460117, psi4.variable('scf total energy'), 6, 'SCF')
+    assert psi4.compare_values(-76.332940127333, psi4.variable('mp2 total energy'), 6, 'MP2')
+    assert psi4.compare_values(-76.338453951890, psi4.variable('ccsd total energy'), 6, 'CCSD')
+    assert psi4.compare_values(-0.275705491773, psi4.variable('ccsd correlation energy'), 6, 'CCSD corl')
+    assert psi4.compare_values(-76.345717549886, psi4.variable('ccsd(t) total energy'), 6, 'CCSD(T)')
+    assert psi4.compare_values(-0.282969089769, psi4.variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
 
 
 @pytest.mark.smoke
@@ -762,8 +762,8 @@ def test_v2rdm_casscf():
 
     psi4.energy('v2rdm-casscf', molecule=n2)
 
-    assert psi4.compare_values(refscf, psi4.get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy")
-    assert psi4.compare_values(refv2rdm, psi4.get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
+    assert psi4.compare_values(refscf, psi4.variable("SCF TOTAL ENERGY"), 8, "SCF total energy")
+    assert psi4.compare_values(refv2rdm, psi4.variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
 
 
 @pytest.mark.smoke
@@ -912,8 +912,8 @@ def disabled_test_forte():
     assert psi4.compare_values(refscf, scf,10,"SCF Energy")
 
     psi4.energy('forte')
-    assert psi4.compare_values(refaci, psi4.get_variable("ACI ENERGY"),10,"ACI energy")
-    assert psi4.compare_values(refacipt2, psi4.get_variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
+    assert psi4.compare_values(refaci, psi4.variable("ACI ENERGY"),10,"ACI energy")
+    assert psi4.compare_values(refacipt2, psi4.variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
 
 
 @pytest.mark.smoke
@@ -930,7 +930,7 @@ def test_snsmp2():
 
     e = psi4.energy('sns-mp2')
 
-    assert psi4.compare_values(0.00176708227, psi4.get_variable('SNS-MP2 TOTAL ENERGY'), 5, "SNS-MP2 IE [Eh]")
+    assert psi4.compare_values(0.00176708227, psi4.variable('SNS-MP2 TOTAL ENERGY'), 5, "SNS-MP2 IE [Eh]")
 
 
 @pytest.mark.smoke

@@ -46,31 +46,31 @@ set ao_basis none
 set algorithm simultaneous
 energy('dcft')
 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
-compare_values(refmp2, get_variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
 
-compare_values(refodc12scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=none)");     #TEST
-compare_values(refodc12, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=none)");                #TEST
-compare_values(refodc12_lambda_3, get_variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-12 Lambda_3 Energy (simultaneous, ao_basis=none)");     #TEST
-compare_values(refodc12_total, get_variable("CURRENT ENERGY"), 10, "ODC-12 Total Energy (simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc12scf, variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc12, variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc12_lambda_3, variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-12 Lambda_3 Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc12_total, variable("CURRENT ENERGY"), 10, "ODC-12 Total Energy (simultaneous, ao_basis=none)");                #TEST
 
 set ao_basis disk
 set algorithm simultaneous
 energy('dcft')
-compare_values(refodc12scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
-compare_values(refodc12, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=disk)");                #TEST
-compare_values(refodc12_lambda_3, get_variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-12 Lambda_3 Energy (simultaneous, ao_basis=disk)");     #TEST
-compare_values(refodc12_total, get_variable("CURRENT ENERGY"), 10, "ODC-12 Total Energy (simultaneous, ao_basis=disk)");                #TEST
+compare_values(refodc12scf, variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc12, variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=disk)");                #TEST
+compare_values(refodc12_lambda_3, variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-12 Lambda_3 Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc12_total, variable("CURRENT ENERGY"), 10, "ODC-12 Total Energy (simultaneous, ao_basis=disk)");                #TEST
 
 set ao_basis none
 set algorithm qc
 set qc_type simultaneous
 energy('dcft')
 
-compare_values(refodc12scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
-compare_values(refodc12, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
-compare_values(refodc12_lambda_3, get_variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-12 Lambda_3 Energy (qc, qc_type=simultaneous, ao_basis=none)");  #TEST
-compare_values(refodc12_total, get_variable("CURRENT ENERGY"), 10, "ODC-12 Total Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc12scf, variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc12, variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc12_lambda_3, variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-12 Lambda_3 Energy (qc, qc_type=simultaneous, ao_basis=none)");  #TEST
+compare_values(refodc12_total, variable("CURRENT ENERGY"), 10, "ODC-12 Total Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
 
 #ODC-13 (Lambda_3)
 set three_particle perturbative
@@ -79,25 +79,25 @@ set ao_basis none
 set algorithm simultaneous
 energy('dcft')
 
-compare_values(refodc13scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=none)");     #TEST
-compare_values(refodc13, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=none)");                #TEST
-compare_values(refodc13_lambda_3, get_variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-13 Lambda_3 Energy (simultaneous, ao_basis=none)");     #TEST
-compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total Energy (simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc13scf, variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc13, variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc13_lambda_3, variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-13 Lambda_3 Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc13_total, variable("CURRENT ENERGY"), 10, "ODC-13 Total Energy (simultaneous, ao_basis=none)");                #TEST
 
 set ao_basis disk
 set algorithm simultaneous
 energy('dcft')
-compare_values(refodc13scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
-compare_values(refodc13, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=disk)");                #TEST
-compare_values(refodc13_lambda_3, get_variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-13 Lambda_3 Energy (simultaneous, ao_basis=disk)");     #TEST
-compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total Energy (simultaneous, ao_basis=disk)");                #TEST
+compare_values(refodc13scf, variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc13, variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=disk)");                #TEST
+compare_values(refodc13_lambda_3, variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-13 Lambda_3 Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc13_total, variable("CURRENT ENERGY"), 10, "ODC-13 Total Energy (simultaneous, ao_basis=disk)");                #TEST
 
 set ao_basis none
 set algorithm qc
 set qc_type simultaneous
 energy('dcft')
 
-compare_values(refodc13scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
-compare_values(refodc13, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
-compare_values(refodc13_lambda_3, get_variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-13 Lambda_3 Energy (qc, qc_type=simultaneous, ao_basis=none)");  #TEST
-compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc13scf, variable("DCFT SCF ENERGY"), 10, "ODC-13 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc13, variable("DCFT TOTAL ENERGY"), 10, "ODC-13 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+compare_values(refodc13_lambda_3, variable("DCFT THREE-PARTICLE ENERGY"), 10, "ODC-13 Lambda_3 Energy (qc, qc_type=simultaneous, ao_basis=none)");  #TEST
+compare_values(refodc13_total, variable("CURRENT ENERGY"), 10, "ODC-13 Total Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST

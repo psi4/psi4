@@ -170,7 +170,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
 
     # Perform the derivative calculation
     derivative, wfn = derivfunc(method, return_wfn=True, molecule=molecule, **kwargs)
-    displacement["energy"] = core.get_variable('CURRENT ENERGY')
+    displacement["energy"] = core.variable('CURRENT ENERGY')
 
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
@@ -558,9 +558,9 @@ def energy(name, **kwargs):
             core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
             core.print_out("The returned wavefunction is the dimer SCF wavefunction.\n\n")
 
-        return (core.get_variable('CURRENT ENERGY'), wfn)
+        return (core.variable('CURRENT ENERGY'), wfn)
     else:
-        return core.get_variable('CURRENT ENERGY')
+        return core.variable('CURRENT ENERGY')
 
 
 def gradient(name, **kwargs):
@@ -816,9 +816,9 @@ def properties(*args, **kwargs):
     optstash.restore()
 
     if return_wfn:
-        return (core.get_variable('CURRENT ENERGY'), wfn)
+        return (core.variable('CURRENT ENERGY'), wfn)
     else:
-        return core.get_variable('CURRENT ENERGY')
+        return core.variable('CURRENT ENERGY')
 
 
 def optimize(name, **kwargs):
@@ -1033,12 +1033,12 @@ def optimize(name, **kwargs):
 
         # Before computing gradient, save previous molecule and wavefunction if this is an IRC optimization
         if (n > 1) and (core.get_option('OPTKING', 'OPT_TYPE') == 'IRC'):
-            old_thisenergy = core.get_variable('CURRENT ENERGY')
+            old_thisenergy = core.variable('CURRENT ENERGY')
 
         # Compute the gradient - preserve opt data despite core.clean calls in gradient
         core.IOManager.shared_object().set_specific_retention(1, True)
         G, wfn = gradient(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
-        thisenergy = core.get_variable('CURRENT ENERGY')
+        thisenergy = core.variable('CURRENT ENERGY')
 
         # above, used to be getting energy as last of energy list from gradient()
         # thisenergy below should ultimately be testing on wfn.energy()
@@ -1464,9 +1464,9 @@ def frequency(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     if return_wfn:
-        return (core.get_variable('CURRENT ENERGY'), wfn)
+        return (core.variable('CURRENT ENERGY'), wfn)
     else:
-        return core.get_variable('CURRENT ENERGY')
+        return core.variable('CURRENT ENERGY')
 
 
 def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
@@ -1550,7 +1550,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
             sigma=rsn,
             rotor_type=mol.rotor_type(),
             rot_const=np.asarray(mol.rotational_constants()),
-            E0=core.get_variable('CURRENT ENERGY'))  # someday, wfn.energy()
+            E0=core.variable('CURRENT ENERGY'))  # someday, wfn.energy()
         vibrec.update({k: qca.to_dict() for k, qca in therminfo.items()})
 
         core.set_variable("ZPVE", therminfo['ZPE_corr'].data)

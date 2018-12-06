@@ -80,9 +80,9 @@ SharedWavefunction gdma_interface(SharedWavefunction ref_wfn, Options& options, 
     Process::environment.arrays["DMA TOTAL MULTIPOLES"] = totvals;
     outfile->Printf(
         "\n  DMA results are available in the Python driver through the\n"
-        "\t  get_array_variable('DMA DISTRIBUTED MULTIPOLES')\n"
+        "\t  variable('DMA DISTRIBUTED MULTIPOLES')\n"
         "  and\n"
-        "\t  get_array_variable('DMA TOTAL MULTIPOLES')\n"
+        "\t  variable('DMA TOTAL MULTIPOLES')\n"
         "  commands.\n\n");
 
     return ref_wfn;

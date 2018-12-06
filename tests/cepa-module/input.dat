@@ -42,9 +42,9 @@ def labeler():
 
 def gogo(name, mol, theme):
     retE = energy(name, molecule=mol)
-    compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-    compare_values(cepacorl, get_variable('%s correlation energy' % name), 6, theme)  #TEST
-    compare_values(cepatot, get_variable('%s total energy' % name), 6, theme)  #TEST
+    compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+    compare_values(cepacorl, variable('%s correlation energy' % name), 6, theme)  #TEST
+    compare_values(cepatot, variable('%s total energy' % name), 6, theme)  #TEST
     compare_values(cepatot, retE, 6, theme)  #TEST
     clean_variables()
     clean()

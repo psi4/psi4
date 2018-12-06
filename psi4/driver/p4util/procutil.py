@@ -434,7 +434,7 @@ def expand_psivars(pvdefs):
         if verbose >= 2:
             print("""building %s %s""" % (pvar, '.' * (50 - len(pvar))), end='')
 
-        psivars = core.get_variables()
+        psivars = core.scalar_variables()
         data_rich_args = []
 
         for pv in action['args']:

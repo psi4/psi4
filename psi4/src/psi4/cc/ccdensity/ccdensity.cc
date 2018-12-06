@@ -372,7 +372,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 auto ref_Da_so = ref_wfn->Da();
                 ref_Da_so->copy(Pa_so);
             } else {
-                ref_wfn->set_array("CC ROOT " + std::to_string(i) + " Da", Pa_so);
+                ref_wfn->set_array_variable("CC ROOT " + std::to_string(i) + " Da", Pa_so);
             }
         } else {
             auto Pa_so = Matrix::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
@@ -383,8 +383,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 ref_Da_so->copy(Pa_so);
                 ref_Db_so->copy(Pb_so);
             } else {
-                ref_wfn->set_array("CC ROOT " + std::to_string(i) + " Da", Pa_so);
-                ref_wfn->set_array("CC ROOT " + std::to_string(i) + " Db", Pb_so);
+                ref_wfn->set_array_variable("CC ROOT " + std::to_string(i) + " Da", Pa_so);
+                ref_wfn->set_array_variable("CC ROOT " + std::to_string(i) + " Db", Pb_so);
             }
         }
 

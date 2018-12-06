@@ -743,7 +743,7 @@ def test_psi4_hessian(ref_geom_str, ref_vibonly, geom_str, tol, comparison_label
     
     psi4.core.clean()
     E, pwfn = psi4.frequency('hf', return_wfn=True, molecule=apmol, dertype=dertype)
-    print(psi4.get_variable('CURRENT ENERGY'))
+    print(psi4.variable('CURRENT ENERGY'))
 
     #sphess = qcdb.vib.hessian_symmetrize(np.asarray(pwfn.hessian()), aqmol)
     #print('Symmetrization non-catastrophic:', np.allclose(np.asarray(phess), sphess, atol=1.0e-1))
@@ -862,7 +862,7 @@ ch4_thermo_mol = psi4.geometry("""
 psi4.core.clean()
 psi4.optimize('hf/3-21g', molecule=ch4_thermo_mol)
 E, thermo_wfn = psi4.freq('hf/3-21g', return_wfn=True, molecule=ch4_thermo_mol, dertype=1)
-print(psi4.get_variable('CURRENT ENERGY'))
+print(psi4.variable('CURRENT ENERGY'))
 
 thermo_vibinfo = psi4.driver.vibanal_wfn(thermo_wfn)
 

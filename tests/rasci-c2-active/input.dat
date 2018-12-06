@@ -25,9 +25,9 @@ set {
 thisenergy = energy('detci')
 
 compare_values(refnuc, c2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refscf, variable("SCF total energy"),     9, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
 clean()
 revoke_global_option_changed("ACTIVE")
@@ -48,7 +48,7 @@ set {
 thisenergy = energy('detci')
 
 compare_values(refnuc, c2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refscf, variable("SCF total energy"),     9, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
