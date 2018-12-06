@@ -114,7 +114,7 @@ class SCFProducts:
 class TDRSCFEngine(object):
     def __init__(self, wfn, ptype='rpa', triplet=False):
         self.wfn = wfn
-        self.ptype = _validate_ptype(ptype)
+        self.ptype = ptype
         self.triplet = triplet
         self.jk = self.wfn.jk()
         self.Co = wfn.Ca_subset("SO", "OCC")
@@ -127,10 +127,13 @@ class TDRSCFEngine(object):
         self.Gx = None
         self.occpi = self.wfn.nalphapi()
         self.virpi = self.wfn.nmopi() - self.occpi
-        self.V_pot = wfn.V_potiential()
+        self.nsopi = self.wfn.nsopi()
+        self.V_pot = wfn.V_potential()
         self.func = wfn.functional()
         self.Vx = []
         self.Dx = []
+        # so that C1 wfns don't have to do this
+        self.reset_symmetry(0)
 
     def new_vector(self, name=""):
         """Obtain a blank matrix object with the correct symmetry"""
@@ -143,7 +146,7 @@ class TDRSCFEngine(object):
             h_a = self.Gx ^ h_i
             for i in range(self.occpi[h_i]):
                 for a in range(self.virpi[h_a]):
-                    self.Dia.nph[h_i][i, a] = self.ea.nph[H_a][a] - self.ei.nph[H_i][i]
+                    self.Dia.nph[h_i][i, a] = self.ea.nph[h_a][a] - self.ei.nph[h_i][i]
 
     def reset_symmetry(self, symmetry):
         """Reset pre-allocated storage will matrices with the correct symemtry"""
@@ -153,7 +156,7 @@ class TDRSCFEngine(object):
     def Fx_product(self, v):
         Fxi = self.new_vector("Fx")
         for h in range(self.wfn.nirrep()):
-            Fxi.nph[h] = v.nph[h] * self.Dia.nph[h]
+            Fxi.nph[h][:, :] = v.nph[h] * self.Dia.nph[h]
         return Fxi
 
     def add_Dx(self, D):
@@ -173,6 +176,7 @@ class TDRSCFEngine(object):
             Ax = []
             for xi in X:
                 Ax.append(self.compute_one(xi))
+            return Ax
 
     def compute_one(self, vector):
         self.jk.C_clear()
@@ -191,11 +195,11 @@ class TDRSCFEngine(object):
 
         if self.ptype == 'rpa':
             if self.triplet:
-                P = self.new_vector("Px")
-                M = self.new_vector("Mx")
+                P = core.Matrix("Px temp", self.nsopi, self.nsopi, self.Gx)
+                M = core.Matrix("Mx temp", self.nsopi, self.nsopi, self.Gx)
             else:
                 P = self.jk.J()[0]
-                M = self.new_vector("Mx")
+                M = core.Matrix("Mx temp", self.nsopi, self.nsopi, self.Gx)
                 P.scale(4.0)
                 if self.func.needs_xc():
                     P.axpy(4.0, self.Vx[0])
@@ -206,6 +210,8 @@ class TDRSCFEngine(object):
                 Kt = K.transpose()
                 P.axpy(-alpha, K)
                 P.axpy(-alpha, Kt)
+                M.print_out()
+                Kt.print_out()
                 M.axpy(alpha, Kt)
                 M.axpy(-alpha, K)
 
@@ -226,7 +232,7 @@ class TDRSCFEngine(object):
 
         elif self.ptype == 'tda':
             if self.triplet:
-                A = self.new_vector("Ax")
+                A = core.Matrix("Ax temp", self.nsopi, self.nsopi, self.Gx)
             else:
                 A = self.jk.J()[0]
                 A.scale(2.0)
@@ -314,7 +320,7 @@ class TDRSCFEngine(object):
 class TDUSCFEngine(object):
     def __init__(self, wfn, ptype='rpa'):
         self.wfn = wfn
-        self.ptype = _validate_ptype(ptype)
+        self.ptype = ptype
         self.jk = self.wfn.jk()
         self.Co = [wfn.Ca_subset("SO", "OCC"), wfn.Cb_subset("SO", "OCC")]
         self.Cv = [wfn.Ca_subset("SO", "VIR"), wfn.Cb_subset("SO", "VIR")]
@@ -326,14 +332,17 @@ class TDUSCFEngine(object):
         self.Gx = None
         self.occpi = [self.wfn.nalphapi(), self.wfn.nbetapi()]
         self.virpi = [self.wfn.nmopi() - self.occpi[0], self.wfn.nmopi() - self.occpi[1]]
-        self.V_pot = wfn.V_potiential()
+        self.nsopi = self.wfn.nsopi()
+        self.V_pot = wfn.V_potential()
         self.func = wfn.functional()
         self.Vx = []
         self.Dx = []
+        self.reset_symmetry(0)
 
     def new_vector(self, name=""):
         return [
-            core.Matrix(name + s, odim, vdim, self.Gx) for s, odim, vdim in zip(['a', 'b'], self.occpi, self.virpi)
+            core.Matrix(name + 'a', self.occpi[0], self.virpi[0], self.Gx),
+            core.Matrix(name + 'b', self.occpi[1], self.virpi[1], self.Gx)
         ]
 
     def build_Dia(self):
@@ -341,10 +350,12 @@ class TDUSCFEngine(object):
         self.Dia = self.new_vector("ei-ea ")
         for h_i in range(self.wfn.nirrep()):
             h_a = self.Gx ^ h_i
-            for a_or_b in (0, 1):
-                for i in range(self.occpi[a_or_b][h_i]):
-                    for a in range(self.virpi[a_or_b][h_a]):
-                        self.Dia[a_or_b].nph[h_i][i, a] = self.ea.nph[a_or_b][H_a][a] - self.ei[a_or_b].nph[H_i][i]
+            for i in range(self.occpi[0][h_i]):
+                for a in range(self.virpi[0][h_a]):
+                    self.Dia[0].nph[h_i][i, a] = self.ea[0].nph[h_a][a] - self.ei[0].nph[h_i][i]
+            for i in range(self.occpi[1][h_i]):
+                for a in range(self.virpi[1][h_a]):
+                    self.Dia[1].nph[h_i][i, a] = self.ea[1].nph[h_a][a] - self.ei[1].nph[h_i][i]
 
     def reset_symmetry(self, symmetry):
         self.Gx = symmetry
@@ -352,9 +363,9 @@ class TDUSCFEngine(object):
 
     def Fx_product(self, vector):
         Fxi = self.new_vector("Fx")
-        for a_or_b in (0, 1):
-            for h in range(self.wfn.nirrep()):
-                Fxi[a_or_b].nph[h] = v[a_or_b].nph[h] * self.Dia[a_or_b].nph[h]
+        for h in range(self.wfn.nirrep()):
+            Fxi[0].nph[h][:, :] = vector[0].nph[h] * self.Dia[0].nph[h]
+            Fxi[1].nph[h][:, :] = vector[1].nph[h] * self.Dia[1].nph[h]
         return Fxi
 
     def add_Dx(self, D):
@@ -383,13 +394,18 @@ class TDUSCFEngine(object):
         self.Vx.clear()
 
         cl_a, cl_b = self.Co
+        Cv_a, Cv_b = self.Cv
         cr_a = core.Matrix.doublet(Cv_a, vector_a, False, True)
         cr_b = core.Matrix.doublet(Cv_b, vector_b, False, True)
 
+        # push alpha occ onto left
         self.jk.C_left_add(cl_a)
+        # push alpha vir x vector alpha^T onto right
         self.jk.C_right_add(cr_a)
+        # push beta occ onto left
         self.jk.C_left_add(cl_b)
-        self.jk.C_left_add(cr_b)
+        # push beta vir x vector beta ^T onto right
+        self.jk.C_right_add(cr_b)
         self.jk.compute()
         if self.func.needs_xc():
             self.add_Dx([core.Matrix.doublet(cl_a, cr_a, False, True), core.Matrix.doublet(cl_b, cr_b, False, True)])
@@ -402,7 +418,10 @@ class TDUSCFEngine(object):
             P[0].scale(2.0)
             P[0].axpy(2.0, P[1])
             P[1].copy(P[0])
-            M = self.new_vector("Mx")
+            M = [
+                core.Matrix("Mx a", self.nsopi, self.nsopi, self.Gx),
+                core.Matrix("Mx b", self.nsopi, self.nsopi, self.Gx)
+            ]
             if self.func.needs_xc():
                 P[0].axpy(2.0, self.Vx[0])
                 P[1].axpy(2.0, self.Vx[1])
@@ -445,27 +464,35 @@ class TDUSCFEngine(object):
                 for a_or_b in (0, 1)
             ]
             Mret[0].axpy(1.0, Fxa)
-            Mret[0].axpy(1.0, Fxb)
+            Mret[1].axpy(1.0, Fxb)
             return Pret, Mret
 
         elif self.ptype == 'tda':
-            A = self.jk.J()
+            J = self.jk.J()
+            J[0].add(J[1])
+            # AO basis w/ JK
+            Ax = [
+                core.Matrix("Ax a", self.nsopi, self.nsopi, self.Gx),
+                core.Matrix("Ax b", self.nsopi, self.nsopi, self.Gx)
+            ]
+            Ax[0].copy(J[0])
+            Ax[1].copy(J[0])
             if self.func.needs_xc():
-                A[0].axpy(1.0, self.Vx[0])
-                A[1].axpy(1.0, self.Vx[1])
+                Ax[0].axpy(1.0, self.Vx[0])
+                Ax[1].axpy(1.0, self.Vx[1])
             if self.func.is_x_hybrid():
                 alpha = self.func.x_alpha()
                 K = self.jk.K()
-                A[0].axpy(-alpha, K[0])
-                A[1].axpy(-alpha, K[1])
+                Ax[0].axpy(-alpha, K[0])
+                Ax[1].axpy(-alpha, K[1])
             if self.func.is_x_lrc():
                 beta = self.func.x_beta()
                 wK = self.jk.wK()
-                A[0].axpy(-beta, wK[0])
-                A[1].axpy(-beta, wK[1])
+                Ax[0].axpy(-beta, wK[0])
+                Ax[1].axpy(-beta, wK[1])
 
             Aret = [
-                core.Matrix.triplet(self.Co[a_or_b], A[a_or_b], self.Cv[a_or_b], True, False, False)
+                core.Matrix.triplet(self.Co[a_or_b], Ax[a_or_b], self.Cv[a_or_b], True, False, False)
                 for a_or_b in (0, 1)
             ]
             Aret[0].axpy(1.0, Fxa)
