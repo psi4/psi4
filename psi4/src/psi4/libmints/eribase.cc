@@ -2028,7 +2028,7 @@ void TwoElectronInt::init_shell_pairs12() {
     // Total number of primitive pairs in all shell pairs (before screening) [FOR PRINING]
     int total_prim_pairs = 0;
     // Criteria for determining of overlap between primitives is significant for screening [FOR PRINTING]
-    double overlap_cutoff = 1.0e-10;
+    double overlap_cutoff = 1.0e-12;
     // Total number of primitives we discard by screening [FOR PRINTING]
     int discard_prim_pairs = 0;
 
