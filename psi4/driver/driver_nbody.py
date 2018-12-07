@@ -40,6 +40,7 @@ from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import driver_nbody_helper
 
+from psi4.driver import task_base
 from psi4.driver.task_base import BaseTask
 ### Math helper functions
 
@@ -249,110 +250,48 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
         Default is ``MULLIKEN_CHARGES``
     """
-
-    # Initialize dictionaries for easy data passing
-    metadata, component_results, nbody_results = {}, {}, {}
-
-    # Parse some kwargs
-    kwargs = p4util.kwargs_lower(kwargs)
-    if kwargs.get('levels', False):
-        return driver_nbody_helper.multi_level(func, **kwargs)
-    metadata['ptype'] = kwargs.pop('ptype', None)
-    metadata['return_wfn'] = kwargs.pop('return_wfn', False)
-    metadata['return_total_data'] = kwargs.pop('return_total_data', None)
-    metadata['molecule'] = kwargs.pop('molecule', core.get_active_molecule())
-    metadata['molecule'].update_geometry()
-    metadata['molecule'].fix_com(True)
-    metadata['molecule'].fix_orientation(True)
-    metadata['embedding_charges'] = kwargs.get('embedding_charges', False)
-    metadata['kwargs'] = kwargs
-    core.clean_variables()
-
-    if metadata['ptype'] not in ['energy', 'gradient', 'hessian']:
-        raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % metadata['ptype'])
-
-    if metadata['return_total_data'] is None:
-        if metadata['ptype'] in ['gradient', 'hessian']:
-            metadata['return_total_data'] = True
-        else:
-            metadata['return_total_data'] = False
-
-    # Parse bsse_type, raise exception if not provided or unrecognized
-    metadata['bsse_type_list'] = kwargs.pop('bsse_type')
-    if metadata['bsse_type_list'] is None:
-        raise ValidationError("N-Body GUFunc: Must pass a bsse_type")
-    if not isinstance(metadata['bsse_type_list'], list):
-        metadata['bsse_type_list'] = [metadata['bsse_type_list']]
-
-    for num, btype in enumerate(metadata['bsse_type_list']):
-        metadata['bsse_type_list'][num] = btype.lower()
-        if btype.lower() not in ['cp', 'nocp', 'vmfc']:
-            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
-
-    metadata['max_nbody'] = kwargs.get('max_nbody', -1)
-    if metadata['molecule'].nfragments() == 1:
+    
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    if molecule.nfragments() == 1:
         raise ValidationError("N-Body requires active molecule to have more than 1 fragment.")
-    metadata['max_frag'] = metadata['molecule'].nfragments()
-    if metadata['max_nbody'] == -1:
-        metadata['max_nbody'] = metadata['molecule'].nfragments()
-    else:
-        metadata['max_nbody'] = min(metadata['max_nbody'], metadata['max_frag'])
+    ComputeInstance = NBodyComputer(molecule=molecule, driver=kwargs['ptype'], **kwargs)
+    ComputeClass = task_base.SingleResult
+    keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
+    data = {'driver': kwargs['ptype'], 'method': method_string, 'basis': core.get_global_option('BASIS'), 'keywords': keywords}
+    ComputeInstance.build_tasks(ComputeClass, **data)
+    ComputeInstance.compute()
 
-    # Flip this off for now, needs more testing
-    # If we are doing CP lets save them integrals
-    #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-    #    # Set to save RI integrals for repeated full-basis computations
-    #    ri_ints_io = core.get_global_option('DF_INTS_IO')
+    nbody_results = ComputeInstance.get_results()
+    ret = nbody_results['ret_ptype']
+    if kwargs['ptype'] in ['gradient', 'hessian']:
+        ret = core.Matrix.from_array(ret)
 
-    #    # inquire if above at all applies to dfmp2 or just scf
-    #    core.set_global_option('DF_INTS_IO', 'SAVE')
-    #    psioh = core.IOManager.shared_object()
-    #    psioh.set_specific_retention(97, True)
-
-    bsse_str = metadata['bsse_type_list'][0]
-    if len(metadata['bsse_type_list']) > 1:
-        bsse_str = str(metadata['bsse_type_list'])
-    core.print_out("\n\n")
-    core.print_out("   ===> N-Body Interaction Abacus <===\n")
-    core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
-
-    # Get compute list
-    metadata = build_nbody_compute_list(metadata)
-
-    # Compute N-Body components
-    component_results = compute_nbody_components(func, method_string, metadata)
-
-    # Assemble N-Body quantities
-    nbody_results = assemble_nbody_components(metadata, component_results)
-
-    # Build wfn and bind variables
-    wfn = core.Wavefunction.build(metadata['molecule'], 'def2-svp')
+    wfn = core.Wavefunction.build(molecule, 'def2-svp')
     dicts = [
         'energies', 'ptype', 'intermediates', 'energy_body_dict', 'gradient_body_dict', 'hessian_body_dict', 'nbody',
         'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
     ]
-    if metadata['ptype'] == 'gradient':
-        wfn.set_gradient(nbody_results['ret_ptype'])
+    if kwargs['ptype'] == 'gradient':
+        wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_ptype']))
         nbody_results['gradient_body_dict'] = nbody_results['ptype_body_dict']
-    elif metadata['ptype'] == 'hessian':
+    elif kwargs['ptype'] == 'hessian':
         nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
-        wfn.set_hessian(nbody_results['ret_ptype'])
-        component_results_gradient = component_results.copy()
-        component_results_gradient['ptype'] = component_results_gradient['gradients']
-        metadata['ptype'] = 'gradient'
-        nbody_results_gradient = assemble_nbody_components(metadata, component_results_gradient)
-        wfn.set_gradient(nbody_results_gradient['ret_ptype'])
-        nbody_results['gradient_body_dict'] = nbody_results_gradient['ptype_body_dict']
+        wfn.set_hessian(core.Matrix.from_array(nbody_results['ret_ptype']))
+        #component_results_gradient = component_results.copy()
+        #component_results_gradient['ptype'] = component_results_gradient['gradients']
+        #kwargs['ptype'] = 'gradient'
+        #nbody_results_gradient = assemble_nbody_components(metadata, component_results_gradient)
+        #wfn.set_gradient(nbody_results_gradient['ret_ptype'])
+        #nbody_results['gradient_body_dict'] = nbody_results_gradient['ptype_body_dict']
 
-    for r in [component_results, nbody_results]:
-        for d in r:
-            if d in dicts:
-                for var, value in r[d].items():
-                    try:
-                        wfn.set_scalar_variable(str(var), value)
-                        core.set_scalar_variable(str(var), value)
-                    except Exception:
-                        wfn.set_array_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
+    for d in nbody_results: #[component_results, nbody_results]:
+        if d in dicts:
+            for var, value in nbody_results[d].items():
+                try:
+                    wfn.set_variable(str(var), value)
+                    core.set_variable(str(var), value)
+                except Exception:
+                    wfn.set_array(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
@@ -361,10 +300,10 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     elif metadata['ptype'] == 'hessian':
         core.set_variable("CURRENT HESSIAN", nbody_results['ret_ptype'])
 
-    if metadata['return_wfn']:
-        return (nbody_results['ret_ptype'], wfn)
+    if kwargs.get('return_wfn', False):
+        return (ret, wfn)
     else:
-        return nbody_results['ret_ptype']
+        return ret
 
 
 def build_nbody_compute_list(bsse_type_list, max_nbody, max_frag):
@@ -651,7 +590,7 @@ def assemble_nbody_components(metadata, component_results):
         elif metadata['driver'] == 'hessian':
             arr_shape = (molecule_total_atoms * 3, molecule_total_atoms * 3)
         else:
-            raise KeyError("N-Body: ptype '%s' not recognized" % ptype)
+            raise KeyError("N-Body: ptype '%s' not recognized" % metadata['driver'])
 
         cp_ptype_by_level = {n: np.zeros(arr_shape) for n in nbody_range}
         nocp_ptype_by_level = {n: np.zeros(arr_shape) for n in nbody_range}
@@ -843,8 +782,8 @@ def assemble_nbody_components(metadata, component_results):
         else:
             np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
             np_final_ptype -= results['ptype_body_dict'][1]
-        results['ptype_body_dict'] = {i: j.tolist() for i, j in results['ptype_body_dict'].items()}
-        results['ret_ptype'] = np_final_ptype.tolist()
+
+        results['ret_ptype'] = np_final_ptype
     else:
         results['ret_ptype'] = results['ret_energy']
 
@@ -852,6 +791,7 @@ def assemble_nbody_components(metadata, component_results):
         del results['energy_body_dict']
 
     return results
+
 
 class NBodyComputer(BaseTask):
 
@@ -867,7 +807,7 @@ class NBodyComputer(BaseTask):
     max_frag: int = None
 
     return_wfn: bool = False
-    return_total_data: bool = False
+    return_total_data: bool
     embedding_charges: Dict[int, list] = {}
     charge_method: str = ''
     charge_type: str = 'MULLIKEN_CHARGES'
@@ -875,7 +815,12 @@ class NBodyComputer(BaseTask):
     results_list: Dict[str, Any] = {}
     compute_dict: Dict[str, Any] = {}
 
+
     def __init__(self, **data):
+
+        if not isinstance(data['bsse_type'], list):
+            data['bsse_type'] = [data['bsse_type']]
+
         BaseTask.__init__(self, **data)
 
         self.max_frag = self.molecule.nfragments()
@@ -888,8 +833,9 @@ class NBodyComputer(BaseTask):
             if self.embedding_charges or self.charge_method:
                 raise Exception('Cannot return interaction data when using embedding scheme.')
 
-    #     # Get compute list
+        # Get compute list
         self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
+
 
     @pydantic.validator('molecule')
     def set_molecule(cls, mol):
@@ -901,19 +847,21 @@ class NBodyComputer(BaseTask):
     @pydantic.validator('bsse_type')
     def set_bsse_type(cls, bsse_type):
 
-        if bsse_type is None:
-            raise ValidationError("N-Body GUFunc: Must pass a bsse_type")
+        bsse_type = bsse_type.lower()
+        if bsse_type not in ['cp', 'nocp', 'vmfc']:
+            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" %bsse_type)
 
-        if not isinstance(bsse_type, list):
-            bsse_type = [bsse_type]
+        return bsse_type
 
-        for num, btype in enumerate(bsse_type):
-            bsse_type[num] = btype.lower()
-            if btype.lower() not in ['cp', 'nocp', 'vmfc']:
-                raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
-
-        return bsse_type[0]
-
+    @pydantic.validator("return_total_data")
+    def set_return_total_data(cls, v, values):
+        if "return_total_data" in values:
+            return v
+        else:
+            if values["driver"] in ["gradient", "hessian"]:
+                return True
+            else:
+                return False
 
     def build_tasks(self, obj, bsse_type="all", **kwargs):
 

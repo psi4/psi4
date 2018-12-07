@@ -516,7 +516,6 @@ def energy(name, **kwargs):
     >>> energy("MP2/aug-cc-pv([d,t]+d)z + d:ccsd(t)/cc-pvdz", corl_scheme=myxtplfn_2)
 
     """
-    nbody, cbs = None, None
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Bounce to MDI if mdi kwarg
@@ -532,11 +531,11 @@ def energy(name, **kwargs):
 
     # Bounce to CP if bsse kwarg
     if kwargs.get('bsse_type', None) is not None:
-        nbody = driver_nbody.NBodyComputer(molecule=molecule, driver="energy", **kwargs)
+        return driver_nbody.nbody_gufunc(energy, name, ptype='energy', molecule=molecule, **kwargs)
 
     # Bounce if name is function
     if hasattr(name, '__call__'):
-        return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', **kwargs)
+        return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', molecule=molecule, **kwargs)
 
     # Allow specification of methods to arbitrary order
     lowername = name.lower()
