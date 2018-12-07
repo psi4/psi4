@@ -71,7 +71,7 @@ typedef struct ShellPair_typ {
  * \ingroup MINTS
  * Structure to hold precomputed gaussian product information
  */
-typedef struct PrimPairScreen_typ {
+struct PrimPairScreen {
     //!x, y, z coordinate of gaussian
     double P[3];
     //! Distance between P and shell i center
@@ -86,20 +86,20 @@ typedef struct PrimPairScreen_typ {
     double ci, cj;
     //! Overlap between primitives
     double overlap;
-} PrimPairScreen;
+} ;
 
 /**
  * \ingroup MINTS
  * Structure to hold precomputed shell pair information
  */
-typedef struct ShellPairScreen_typ {
+struct ShellPairScreen {
     //! Shells for this information.
     int i, j;
     //! Distance between shell i and shell j centers
     double AB[3];
     //! Vector of significant primitive pairs that define this shell pair
     std::vector<PrimPairScreen> nonzeroPrimPairs;
-} ShellPairScreen;
+} ;
 
 
 /*! \ingroup MINTS
