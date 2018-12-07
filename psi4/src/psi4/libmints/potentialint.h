@@ -194,7 +194,7 @@ void PCMPotentialInt::compute(PCMPotentialIntFunctor &functor) {
     }  // End loop over shell 1
 }
 
-class PSI_API PrintIntegralsFunctor {
+class PrintIntegralsFunctor {
    public:
     /**
      * A functor, to be used with PCMPotentialInt, that just prints the integrals out for debugging
@@ -204,7 +204,7 @@ class PSI_API PrintIntegralsFunctor {
     }
 };
 
-class PSI_API ContractOverDensityFunctor {
+class ContractOverDensityFunctor {
     /**
      * A functor, to be used with PCMPotentialInt, that just contracts potential integrals and the
      * density matrix, over the basis function indices, giving the charge expectation value.
@@ -221,7 +221,7 @@ class PSI_API ContractOverDensityFunctor {
     void operator()(int bf1, int bf2, int center, double integral) { charges_[center] += pD_[bf1][bf2] * integral; }
 };
 
-class PSI_API ContractOverChargesFunctor {
+class ContractOverChargesFunctor {
     /**
      * A functor, to be used with PCMPotentialInt, that just contracts potential integrals over charges,
      * leaving a contribution to the Fock matrix
