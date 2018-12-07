@@ -704,10 +704,7 @@ bool py_psi_set_global_option_array_wrapper(std::string const& key, py::list val
 
 void py_psi_set_local_option_python(const std::string& key, py::object& obj) {
     std::string nonconst_key = to_upper(key);
-    std::string module_temp = Process::environment.options.get_current_module();
-    Process::environment.options.set_current_module(module);
     Data& data = Process::environment.options[nonconst_key];
-    Process::environment.options.set_current_module(module_temp);
 
     if (data.type() == "python")
         dynamic_cast<PythonDataType*>(data.get())->assign(obj);
