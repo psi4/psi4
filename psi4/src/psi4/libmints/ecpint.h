@@ -87,7 +87,7 @@ struct ShellPairData {
  * This should not usually be created directly, it is instead owned by an ECPIntegral object,
  * so that integrals can be performed over multiple ECP centers without duplicating work.
  */
-class PSI_API AngularIntegral {
+class AngularIntegral {
    private:
     /// Maximum angular momentum of orbital basis and ECP basis, respectively
     int LB, LE;
@@ -190,7 +190,7 @@ class PSI_API AngularIntegral {
  * This should not be used directly, and is owned by ECPIntegral.
  * It provides the interface to the adaptive quadrature algorithms used to calculate the type 1 and 2 radial integrals.
  */
-class PSI_API RadialIntegral {
+class RadialIntegral {
    private:
     /// The larger integration grid for type 1 integrals, and for when the smaller grid fails for type 2 integrals
     GCQuadrature bigGrid;
