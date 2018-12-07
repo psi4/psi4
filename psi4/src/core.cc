@@ -614,10 +614,14 @@ bool py_psi_set_global_option_double(std::string const& key, double value) {
 bool py_psi_set_local_option_array(std::string const& module, std::string const& key, const py::list& values,
                                    DataType* entry = nullptr) {
     std::string nonconst_key = to_upper(key);
+
     // Assign a new head entry on the first time around only
     if (entry == nullptr) {
         // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
+        std::string module_temp = Process::environment.options.get_current_module();
+        Process::environment.options.set_current_module(module);
         Data& data = Process::environment.options[nonconst_key];
+        Process::environment.options.set_current_module(module_temp);
         // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
         if (data.type() == "array") Process::environment.options.set_array(module, nonconst_key);
     }
@@ -700,7 +704,10 @@ bool py_psi_set_global_option_array_wrapper(std::string const& key, py::list val
 
 void py_psi_set_local_option_python(const std::string& key, py::object& obj) {
     std::string nonconst_key = to_upper(key);
+    std::string module_temp = Process::environment.options.get_current_module();
+    Process::environment.options.set_current_module(module);
     Data& data = Process::environment.options[nonconst_key];
+    Process::environment.options.set_current_module(module_temp);
 
     if (data.type() == "python")
         dynamic_cast<PythonDataType*>(data.get())->assign(obj);
