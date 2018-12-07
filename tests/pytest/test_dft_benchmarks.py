@@ -6,6 +6,7 @@ from addons import *
 
 import psi4
 
+
 @pytest.fixture
 def dft_bench_systems():
     ang = np.array([
@@ -50,6 +51,8 @@ def name_dft_test(val):
         return ' '
 
 
+@pytest.mark.scf
+@pytest.mark.dft
 @pytest.mark.parametrize("func,expected,basis", [
     pytest.param(          'PWB6K',    0.4535664415, '6-31G'),  # Q-Chem
     pytest.param(         'PW6B95',    0.4566580191, '6-31G'),  # Q-Chem
@@ -155,6 +158,9 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     assert compare_values(expected, cation - neutral, 4, request.node.name)
 
 
+@pytest.mark.scf
+@pytest.mark.dft
+@pytest.mark.long
 @pytest.mark.parametrize("func,expected,basis", [
     pytest.param(  'B97M-D3BJ',  -0.01242543212, 'cc-pVDZ'),  # Orca
     pytest.param( 'wB97M-D3BJ',  -0.01351626999, 'cc-pVDZ'),  # Orca
@@ -162,7 +168,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(     'M08-SO',  -0.0154578319, '6-31G'),  # Q-Chem
     pytest.param(       'EDF1',  -0.0112660306, '6-31G'),  # Q-Chem
     pytest.param(    'MPW1B95',  -0.0143828237, '6-31G'),  # Q-Chem
-    pytest.param(     'B97-D3',  -0.0144570179, '6-31G', marks=[using_dftd3, pytest.mark.xfail]),  # Q-Chem
+    pytest.param(     'B97-D3',  -0.0144570179, '6-31G', marks=using_dftd3),  # Q-Chem
     pytest.param(     'PW6B95',  -0.0145444936, '6-31G'),  # Q-Chem
     pytest.param(      'wB97X',  -0.0156289024, '6-31G'),  # Q-Chem
     pytest.param(     'B3LYP5',  -0.0144957247, '6-31G'),  # Q-Chem
@@ -237,7 +243,6 @@ def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request
 
 # Current version of Psi4 does not match Q-Chem for these tests
 #expected_fail_qchem = ['B97-D', 'wB97X-D3'] #TEST
-
 
 
 # ionization energy references for functionals not included in Psi4 at the moment.
