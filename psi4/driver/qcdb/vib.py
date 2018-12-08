@@ -95,6 +95,9 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
     checkkeys.extend(expected.keys())
 
     for asp in checkkeys:
+        if asp not in computed and asp in forgive:
+            continue
+
         if asp in ['q', 'w', 'x']:
             ccnc = _phase_cols_to_max_element(computed[asp].data)
             eenc = _phase_cols_to_max_element(expected[asp].data)
