@@ -48,7 +48,12 @@ namespace psi {
 PSIOManager::PSIOManager() {
     pid_ = psio_getpid();
 #ifdef _MSC_VER
-    set_default_path("C:\\");
+    if (const char* path = std::getenv("TEMP"))
+        set_default_path(path);
+    else if (const char* path = std::getenv("TMP"))
+        set_default_path(path);
+    else
+        set_default_path("C:");
 #else
     set_default_path("/tmp");
 #endif
