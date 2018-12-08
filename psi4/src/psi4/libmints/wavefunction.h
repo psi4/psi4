@@ -204,10 +204,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// gradient, if available, as natom_ x 3 SharedMatrix
     SharedMatrix gradient_;
 
-    /// derivative of dipole (atomic units), if available, stored as
-    /// degree-of-freedom by dipole component, i.e. 3 natom_ x 3
-    SharedMatrix dipole_gradient_;
-
     /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix (NOT mass-weighted!)
     SharedMatrix hessian_;
 
@@ -240,8 +236,13 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     // The external potential
     std::shared_ptr<ExternalPotential> external_pot_;
 
-    // Collection of variables
+    // Collection of scalar variables
     std::map<std::string, double> variables_;
+
+    // Collection of Matrix variables
+    // * any '<mtd> GRADIENT' is an energy derivative w.r.t. nuclear perturbations (a.u.) as a (nat, 3) Matrix
+    // * any '<mtd> DIPOLE GRADIENT' is a dipole derivative w.r.t. nuclear perturbations (a.u.) as a degree-of-freedom
+    //   by dipole component (3 * nat, 3) Matrix
     std::map<std::string, SharedMatrix> arrays_;
 
     // Polarizable continuum model
@@ -582,11 +583,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
-
-    /// Returns the dipole derivative (3Nx3 matrix, in atomic units)
-    SharedMatrix dipole_gradient() const;
-    /// Set the dipole gradient (3Nx3 matrix, in atomic units)
-    void set_dipole_gradient(SharedMatrix grad);
 
     /// Returns the gradient
     SharedMatrix gradient() const;

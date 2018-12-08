@@ -228,7 +228,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     epsilon_a_ = other->epsilon_a_;
     epsilon_b_ = other->epsilon_b_;
 
-    dipole_gradient_ = other->dipole_gradient_;
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
     external_pot_ = other->external_pot_;
@@ -309,7 +308,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
     if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
 
-    if (other->dipole_gradient_) dipole_gradient_ = other->dipole_gradient_->clone();
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
 
@@ -420,7 +418,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
 
     // these are simple SharedMatrices of size 3*natom_, etc., so should
     // not depend on symmetry ... can just copy them
-    if (dipole_gradient_) wfn->dipole_gradient_ = dipole_gradient_->clone();
     if (gradient_) wfn->gradient_ = gradient_->clone();
     if (hessian_) wfn->hessian_ = hessian_->clone();
 
@@ -1291,10 +1288,6 @@ SharedMatrix Wavefunction::X() const { return Lagrangian_; }
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
 void Wavefunction::set_gradient(SharedMatrix grad) { gradient_ = grad; }
-
-SharedMatrix Wavefunction::dipole_gradient() const { return dipole_gradient_; }
-
-void Wavefunction::set_dipole_gradient(SharedMatrix grad) { dipole_gradient_ = grad; }
 
 SharedMatrix Wavefunction::hessian() const { return hessian_; }
 

@@ -58,7 +58,8 @@ SharedMatrix scfhess(SharedWavefunction ref_wfn, Options &options)
     SCFGrad grad(ref_wfn, options);
     SharedMatrix H = grad.compute_hessian();
     ref_wfn->set_hessian(H);
-    ref_wfn->set_dipole_gradient(grad.dipole_gradient());
+    ref_wfn->set_array("SCF DIPOLE GRADIENT", grad.dipole_gradient());  // TODO set_array_variable
+    ref_wfn->set_array("CURRENT DIPOLE GRADIENT", grad.dipole_gradient());  // TODO set_array_variable
 
     tstop();
 
