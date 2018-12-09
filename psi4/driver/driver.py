@@ -1532,7 +1532,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     irrep_labels = mol.irrep_labels()
 
     vibinfo, vibtext = qcdb.vib.harmonic_analysis(
-        nmwhess, geom, m, wfn.basisset(), irrep_labels, project_trans=project_trans, project_rot=project_rot)
+        nmwhess, geom, m, wfn.basisset(), irrep_labels, dipder=dipder, project_trans=project_trans, project_rot=project_rot)
     vibrec.update({k: qca.to_dict() for k, qca in vibinfo.items()})
 
     core.print_out(vibtext)

@@ -6,7 +6,7 @@ import psi4
 from psi4.driver import qcdb
 
 
-def vibanal_str(mass, coord, fcm, hess=None, project_trans=True, project_rot=True):
+def vibanal_str(mass, coord, fcm, dipder=None, hess=None, project_trans=True, project_rot=True):
     """Vibrational analysis driver similar to psi4.driver.driver.vibanal_wfn only
     takes in arrays more directly than from a core.Wavefunction.
 
@@ -15,6 +15,9 @@ def vibanal_str(mass, coord, fcm, hess=None, project_trans=True, project_rot=Tru
         nmwhess = qcdb.hessparse.load_hessian(fcm, dtype='fcmfinal')
     else:
         nmwhess = hess
+
+    if dipder is not None:
+        dipder = np.asarray(dipder)
 
     mol = psi4.geometry(coord)
     m = np.asarray(mass)  # not good permanent
@@ -25,7 +28,7 @@ def vibanal_str(mass, coord, fcm, hess=None, project_trans=True, project_rot=Tru
     wfn = psi4.core.Wavefunction.build(mol, "STO-3G")  # dummy, obviously. only used for SALCs
     basisset = wfn.basisset()
 
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, basisset, irrep_labels,
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess, geom, m, basisset, irrep_labels, dipder,
                                                   project_trans=project_trans, project_rot=project_rot)
     print(vibtext)
     print(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='q', atom_lbl=symbols))
@@ -46,6 +49,26 @@ c4_eth_xyz = """
 """
 
 c4_eth_mass = [12.000000000, 12.000000000, 1.007825035, 1.007825035, 1.007825035, 1.007825035]
+
+c4_eth_dipder = [
+    [  -0.0109113955,       0.0000000000,       0.0000000000,
+       -0.0109113955,       0.0000000000,       0.0000000000,
+        0.0054556978,      -0.0873021078,       0.0000000000,
+        0.0054556978,       0.0873021078,       0.0000000000,
+        0.0054556978,       0.0873021078,       0.0000000000,
+        0.0054556978,      -0.0873021078,       0.0000000000],
+    [   0.0000000000,       0.1296195826,       0.0000000000,
+        0.0000000000,       0.1296195826,       0.0000000000,
+       -0.0490863766,      -0.0648097913,       0.0000000000,
+        0.0490863766,      -0.0648097913,       0.0000000000,
+        0.0490863766,      -0.0648097913,       0.0000000000,
+       -0.0490863766,      -0.0648097913,       0.0000000000],
+    [   0.0000000000,       0.0000000000,      -0.2891402044,
+        0.0000000000,       0.0000000000,      -0.2891402044,
+        0.0000000000,       0.0000000000,       0.1445701022,
+        0.0000000000,       0.0000000000,       0.1445701022,
+        0.0000000000,       0.0000000000,       0.1445701022,
+        0.0000000000,       0.0000000000,       0.1445701022]]
 
 c4_eth_fcm = """
     6   18
@@ -164,7 +187,7 @@ ref_eth_vibonly = {
     # freq from cfour after proj
     'omega': qcdb.vib.QCAspect('', '', np.asarray([885.4386, 1073.4306, 1080.4104, 1135.9390, 1328.7166,  1467.8428, 1565.5328, 1831.6445, 3287.3173, 3312.1889, 3371.7974, 3399.4232]), ''),
     'gamma': qcdb.vib.QCAspect('', '', ['B2u', 'B1u', 'B2g', 'Au', 'B1g', 'Ag', 'B3u', 'Ag', 'B3u', 'Ag', 'B1g', 'B2u'], ''),
-    'ir_intensity': qcdb.vib.QCAspect('', '', np.array([0.2122, 94.4517, 0.0000, 0.0000, 0.0000, 0.0000, 10.3819, 0.0000, 19.2423, 0.0000, 0.0000, 28.0922]), ''),  # [km/mol]
+    'IR_intensity': qcdb.vib.QCAspect('', '', np.array([0.2122, 94.4517, 0.0000, 0.0000, 0.0000, 0.0000, 10.3819, 0.0000, 19.2423, 0.0000, 0.0000, 28.0922]), ''),  # [km/mol]
 
     # from vibsuite after cfour
     'mu': qcdb.vib.QCAspect('', '', np.asarray([1.0423,  1.1607,  1.5200,  1.0078,  1.5276,  1.2029,  1.1122,  3.2209,  1.0475,  1.0799,  1.1150,  1.1182]), ''),
@@ -201,6 +224,20 @@ c4_nh3_xyz = """
 """
 
 c4_nh3_mass = [14.003074002,      1.007825035,      1.007825035,      1.007825035]
+
+c4_nh3_dipder = [
+   [   -0.3708419404,       0.0000000010,       0.0000000000,
+        0.1356506900,      -0.0583104805,      -0.0208481931,
+        0.1356506900,      -0.0583104805,       0.0208481931,
+        0.0995405605,       0.1166209602,       0.0000000000],
+   [   -0.0000000003,      -0.7895340805,       0.0000000000,
+       -0.0311511286,       0.2631780268,      -0.0539553375,
+       -0.0311511286,       0.2631780268,       0.0539553375,
+        0.0623022575,       0.2631780268,       0.0000000000],
+   [    0.0000000000,       0.0000000000,      -0.3708419390,
+       -0.0208481922,      -0.1009967143,       0.1115772701,
+        0.0208481922,       0.1009967143,       0.1115772701,
+        0.0000000000,       0.0000000000,       0.1476873986]]
 
 c4_nh3_fcm = """
     4   12
@@ -255,12 +292,14 @@ c4_nh3_fcm = """
 """
 
 ref_nh3_vibonly = {
+    # I think due to ZMAT confusion, the NH3 geom is slightly non-eq
 
     # freq from cfour after proj
     'omega': qcdb.vib.QCAspect('', '', np.asarray([760.3060, 1763.7937, 1763.7937, 3639.0750, 3817.6146, 3817.6146]), ''),
     'degeneracy': qcdb.vib.QCAspect('', '', np.asarray([1, 2, 2, 1, 2, 2]), ''),
     'gamma': qcdb.vib.QCAspect('', '', ['A1', 'E', 'E', 'A1', 'E', 'E'], ''),
-    'ir_intensity': qcdb.vib.QCAspect('', '', np.array([255.2339, 18.5931, 18.5931, 0.4207, 9.7416, 9.7416]), ''),
+    #'IR_intensity': qcdb.vib.QCAspect('', '', np.array([255.2339, 18.5931, 18.5931, 0.4207, 9.7416, 9.7416]), ''),  # unproj cfour
+    'IR_intensity': qcdb.vib.QCAspect('', '', np.array([255.214, 20.523, 20.523, 0.421, 9.971, 9.971]), ''),  # proj nwchem
 
     # from vibsuite after cfour
     'mu': qcdb.vib.QCAspect('', '', np.asarray([1.1920,  1.0762,  1.0762,  1.0183,  1.0976,  1.0976]), ''),
@@ -291,6 +330,38 @@ c4_hooh_xyz = """
 """
 
 c4_hooh_mass = [1.007825035, 15.994914630, 15.994914630, 1.007825035]
+
+##c4_hooh_dipder = [
+##    [   0.2780463304,      -0.0627424853,      -0.0000001662,
+##        0.2780463304,      -0.0627424853,       0.0000001662,
+##       -0.2780463304,       0.0627424853,       0.0000007872,
+##       -0.2780463304,       0.0627424853,      -0.0000007872],
+##    [  -0.0452363418,       0.2701572439,      -0.0000004247,
+##       -0.0452363418,       0.2701572439,       0.0000004247,
+##        0.0452363418,      -0.2701572439,       0.0000007936,
+##        0.0452363418,      -0.2701572439,      -0.0000007936],
+##    [  -0.0000001575,      -0.0000004725,       0.4019549247,
+##        0.0000001575,       0.0000004725,       0.4019549247,
+##       -0.0000000523,       0.0000008401,      -0.4019549247,
+##        0.0000000523,      -0.0000008401,      -0.4019549247]]
+
+# DIPDER was HHOO, not HOOH like FCMFINAL, so manually reordered
+c4_hooh_dipder = [
+    [
+        0.2780463304,      -0.0627424853,      -0.0000001662,
+       -0.2780463304,       0.0627424853,       0.0000007872,
+       -0.2780463304,       0.0627424853,      -0.0000007872,
+        0.2780463304,      -0.0627424853,       0.0000001662],
+    [
+       -0.0452363418,       0.2701572439,      -0.0000004247,
+        0.0452363418,      -0.2701572439,       0.0000007936,
+        0.0452363418,      -0.2701572439,      -0.0000007936,
+       -0.0452363418,       0.2701572439,       0.0000004247],
+    [
+       -0.0000001575,      -0.0000004725,       0.4019549247,
+       -0.0000000523,       0.0000008401,      -0.4019549247,
+        0.0000000523,      -0.0000008401,      -0.4019549247,
+        0.0000001575,       0.0000004725,       0.4019549247]]
 
 c4_hooh_fcm = """
     4   12
@@ -349,7 +420,7 @@ ref_hooh_vibonly = {
     # freq from cfour after proj
     'omega': qcdb.vib.QCAspect('', '', np.asarray([278.6136j, 1128.8155, 1364.3495, 1698.2924, 4140.0257, 4146.4749]), ''),
     'gamma': qcdb.vib.QCAspect('', '', ['A', 'A', 'B', 'A', 'A', 'B'], ''),
-    'ir_intensity': qcdb.vib.QCAspect('', '', np.array([332.2633, 0.0000, 129.1661, 0.0000, 0.0000, 192.2182]), ''),
+    'IR_intensity': qcdb.vib.QCAspect('', '', np.array([332.2633, 0.0000, 129.1661, 0.0000, 0.0000, 192.2182]), ''),
 
     # q from vibsuite after cfour
     'q': qcdb.vib.QCAspect('', '', np.asarray(
@@ -375,6 +446,23 @@ c4_ch4_xyz = """
 """
 
 c4_ch4_mass = [12.000000000, 1.007825035, 1.007825035, 1.007825035, 1.007825035]
+
+c4_ch4_dipder = [
+      [ 0.0605757483,       0.0000000000,       0.0000000000,
+       -0.0151439370,      -0.0746404771,       0.0746404770,
+       -0.0151439370,      -0.0746404771,      -0.0746404770,
+       -0.0151439370,       0.0746404771,       0.0746404770,
+       -0.0151439370,       0.0746404771,      -0.0746404770],
+      [ 0.0000000000,       0.0605757483,       0.0000000000,
+       -0.0746404771,      -0.0151439370,       0.0746404770,
+       -0.0746404771,      -0.0151439370,      -0.0746404770,
+        0.0746404771,      -0.0151439370,      -0.0746404770,
+        0.0746404771,      -0.0151439370,       0.0746404770],
+      [ 0.0000000000,       0.0000000000,       0.0605757483,
+        0.0746404771,       0.0746404771,      -0.0151439371,
+       -0.0746404771,      -0.0746404771,      -0.0151439371,
+        0.0746404771,      -0.0746404771,      -0.0151439371,
+       -0.0746404771,       0.0746404771,      -0.0151439371]]
 
 c4_ch4_fcm = """
     5   15
@@ -460,7 +548,7 @@ ref_ch4_vibonly = {
     # freq from cfour after proj
     'omega': qcdb.vib.QCAspect('', '', np.asarray([1433.2785, 1433.2785, 1433.2785, 1647.8698, 1647.8698, 3164.8164, 3285.6166, 3285.6166, 3285.6166]), ''),
     'gamma': qcdb.vib.QCAspect('', '', ['T2', 'T2', 'T2', 'E', 'E', 'A1', 'T2', 'T2', 'T2'], ''),
-    'ir_intensity': qcdb.vib.QCAspect('', '', np.array([9.8963, 9.8963, 9.8963, 0.0000, 0.0000, 0.0000, 34.4012, 34.4012, 34.4012]), ''),
+    'IR_intensity': qcdb.vib.QCAspect('', '', np.array([9.8963, 9.8963, 9.8963, 0.0000, 0.0000, 0.0000, 34.4012, 34.4012, 34.4012]), ''),
 
     # vibsuite seems to have contamination for evec from 1,2 degen, so
     #    from NORMCO (q; pre-proj) from cfour
@@ -526,6 +614,17 @@ c4_co2_xyz = """
 
 c4_co2_mass = [12.0, 15.994914630, 15.994914630]
 
+c4_co2_dipder = [
+     [  0.7687899340,        0.0000000000,        0.0000000000,
+       -0.3843949670,        0.0000000000,        0.0000000000,
+       -0.3843949670,        0.0000000000,        0.0000000000],
+     [  0.0000000000,        0.7687899340,        0.0000000000,
+        0.0000000000,       -0.3843949670,        0.0000000000,
+        0.0000000000,       -0.3843949670,        0.0000000000],
+     [  0.0000000000,        0.0000000000,        3.0485336770,
+        0.0000000000,        0.0000000000,       -1.5242668385,
+        0.0000000000,        0.0000000000,       -1.5242668385]]
+
 c4_co2_fcm = """
     3    9
         0.1913268270        0.0000000000        0.0000000000
@@ -562,7 +661,7 @@ ref_co2_vibonly = {
     # freq from cfour after proj
     'omega': qcdb.vib.QCAspect('', '', np.asarray([761.1526, 761.1526, 1513.3122, 2580.1495]), ''),
     'gamma': qcdb.vib.QCAspect('', '', ['PIu', 'PIu', 'SGg+', 'SGu-'], ''),
-    'ir_intensity': qcdb.vib.QCAspect('', '', np.array([66.0268, 66.0268, 0.0000, 1038.2141]), ''),
+    'IR_intensity': qcdb.vib.QCAspect('', '', np.array([66.0268, 66.0268, 0.0000, 1038.2141]), ''),
 
     # from vibsuite after cfour
     'mu': qcdb.vib.QCAspect('', '', np.asarray([ 12.8774,   12.8774,   15.9949,   12.8774]), ''),
@@ -591,6 +690,23 @@ c4_form_xyz = """
 """
 
 c4_form_mass = [12.000000000, 15.994914630, 1.007825035, 1.007825035]
+
+c4_form_dipder = [
+     [  0.2435938429,       0.0000000000,       0.0000000000,
+       -0.3830997164,       0.0000000000,       0.0000000000,
+        0.0697529367,       0.0000000000,       0.0000000000,
+        0.0697529367,       0.0000000000,       0.0000000000],
+
+     [  0.0000000000,       0.9433671590,       0.0000000000,
+        0.0000000000,      -0.5373880589,       0.0000000000,
+        0.0000000000,      -0.2029895500,      -0.0738515561,
+        0.0000000000,      -0.2029895500,       0.0738515561],
+
+     [  0.0000000000,       0.0000000000,       1.2038372293,
+        0.0000000000,       0.0000000000,      -1.1307467270,
+        0.0000000000,      -0.1078376670,      -0.0365452511,
+        0.0000000000,       0.1078376670,      -0.0365452511]]
+
 
 c4_form_fcm = """
     4   12
@@ -650,7 +766,7 @@ ref_form_vibonly = {
     # freq from cfour after proj
     'omega': qcdb.vib.QCAspect('', '', np.asarray([1325.3286, 1359.7579, 1637.4774, 2013.4255, 3108.9786, 3183.3975]), ''),
     'gamma': qcdb.vib.QCAspect('', '', ['B1', 'B2', 'A1', 'A1', 'A1', 'B2'], ''),
-    'ir_intensity': qcdb.vib.QCAspect('', '', np.array([1.0137, 26.1737, 11.0592, 158.8806, 50.8031, 134.5380]), ''),
+    'IR_intensity': qcdb.vib.QCAspect('', '', np.array([1.0137, 26.1737, 11.0592, 158.8806, 50.8031, 134.5380]), ''),
 
     # from vibsuite after cfour
     'mu': qcdb.vib.QCAspect('', '', np.asarray([1.3722, 1.3499, 1.0901, 7.8589, 1.0499, 1.1203]), ''),
@@ -674,36 +790,42 @@ _cfour_ref = {
     'nh3': {
         'xyz': c4_nh3_xyz,
         'mass': c4_nh3_mass,
+        'dipder': c4_nh3_dipder,
         'fcm': c4_nh3_fcm,
         'vibonly': ref_nh3_vibonly
     },
     'hooh': {
         'xyz': c4_hooh_xyz,
         'mass': c4_hooh_mass,
+        'dipder': c4_hooh_dipder,
         'fcm': c4_hooh_fcm,
         'vibonly': ref_hooh_vibonly
     },
     'c2h4': {
         'xyz': c4_eth_xyz,
         'mass': c4_eth_mass,
+        'dipder': c4_eth_dipder,
         'fcm': c4_eth_fcm,
         'vibonly': ref_eth_vibonly
     },
     'co2': {
         'xyz': c4_co2_xyz,
         'mass': c4_co2_mass,
+        'dipder': c4_co2_dipder,
         'fcm': c4_co2_fcm,
         'vibonly': ref_co2_vibonly
     },
     'ch4': {
         'xyz': c4_ch4_xyz,
         'mass': c4_ch4_mass,
+        'dipder': c4_ch4_dipder,
         'fcm': c4_ch4_fcm,
         'vibonly': ref_ch4_vibonly
     },
     'h2co': {
         'xyz': c4_form_xyz,
         'mass': c4_form_mass,
+        'dipder': c4_form_dipder,
         'fcm': c4_form_fcm,
         'vibonly': ref_form_vibonly
     },
@@ -766,28 +888,45 @@ units au
 
 # <<<  Section I: testing vibrational analysis vs Cfour  >>>
 
-@pytest.mark.parametrize("subject",
-    ['co2','c2h4', pytest.param('ch4', marks=pytest.mark.xfail(reason="unaligned degen mode pair")), 'nh3', 'h2co', 'hooh'],
-    ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH TS'])
+@pytest.mark.parametrize("subject", [
+    'co2',
+    'c2h4',
+    pytest.param('ch4', marks=pytest.mark.xfail(reason="unaligned degen mode pair")),
+    'nh3',
+    'h2co',
+    'hooh',
+], ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS'])
 def test_harmonic_analysis_vs_cfour(subject, request):
     digits = 2 if subject in ['ch4'] else 4  # one of the ch4 degen modes has slight noise (when geom is properly bohr, so 4->2)
+    toldict = {'IR_intensity': 1}  # IR was matching to 4 when I tuned the scale factor, but have to loosen to 1 since
+                                   #   Cfour using 974.868 and we're using ~974.880
     verbose = 2
-    forgive = ['gamma', 'ir_intensity'] if subject in ['co2', 'ch4', 'nh3'] else ['ir_intensity']  # since Psi can't classify degen symmetries
+    forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries
+    if subject in ['nh3', 'hooh']:
+        forgive.append('IR_intensity')
+        # there's problems with orientation for DIPDER
 
-    pvibinfo = vibanal_str(mass=_cfour_ref[subject]['mass'], coord=_cfour_ref[subject]['xyz'], fcm=_cfour_ref[subject]['fcm'])
+    pvibinfo = vibanal_str(
+        mass=_cfour_ref[subject]['mass'],
+        coord=_cfour_ref[subject]['xyz'],
+        fcm=_cfour_ref[subject]['fcm'],
+        dipder=_cfour_ref[subject]['dipder']
+    )
     pvibonly = qcdb.vib.filter_nonvib(pvibinfo)
     rvibonly = _cfour_ref[subject]['vibonly']
 
-    assert qcdb.compare_vibinfos(rvibonly, pvibonly, digits, request.node.name, verbose=verbose, forgive=forgive)
+    assert qcdb.compare_vibinfos(rvibonly, pvibonly, digits, request.node.name, verbose=verbose, forgive=forgive, toldict=toldict)
 
 
 # <<<  Section II: testing Psi4 findif-by-grad Hessians vs Cfour  >>>
 # <<<  Section III: testing Psi4 findif-by-energy Hessians vs Cfour  >>>
 # <<<  Section IV: testing Psi4 analytic Hessians vs Cfour  >>>
 
-@pytest.mark.parametrize("dertype",
-    [2, 1, pytest.param(0, marks=pytest.mark.long)],
-    ids=['H analytic', 'H by grad', 'H by ene'])
+@pytest.mark.parametrize("dertype", [
+    2,
+    1,
+    pytest.param(0, marks=pytest.mark.long),
+], ids=['H_analytic', 'H_by_grad', 'H_by_ene'])
 @pytest.mark.parametrize("subject", [
     pytest.param('co2'),
     pytest.param('c2h4', marks=pytest.mark.long),
@@ -795,14 +934,16 @@ def test_harmonic_analysis_vs_cfour(subject, request):
     pytest.param('nh3'),
     pytest.param('h2co'),
     pytest.param('hooh'),
-],
-    ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH TS'])
+], ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS'])
 def test_hessian_vs_cfour(subject, dertype, request):
     """compare analytic, findif by G, findif by E vibrational analyses for several mols"""
 
     digits = 2
-    verbose = 1
-    forgive = ['gamma', 'ir_intensity'] if subject in ['co2', 'ch4', 'nh3'] else ['ir_intensity']  # since Psi can't classify degen symmetries
+    toldict = {'IR_intensity': 1} if subject in ['nh3'] else {}
+    verbose = 2
+    forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries
+    if dertype != 2:
+        forgive.append('IR_intensity')
 
     qmol = qcdb.Molecule(_psi4_systems[subject])
     rqmol = qcdb.Molecule(_cfour_ref[subject]['xyz'])
@@ -821,7 +962,7 @@ def test_hessian_vs_cfour(subject, dertype, request):
     pvibonly = qcdb.vib.filter_nonvib(pwfn.frequency_analysis)
     rvibonly = _cfour_ref[subject]['vibonly']
 
-    assert qcdb.compare_vibinfos(rvibonly, pvibonly, digits, request.node.name, verbose=verbose, forgive=forgive)
+    assert qcdb.compare_vibinfos(rvibonly, pvibonly, digits, request.node.name, verbose=verbose, forgive=forgive, toldict=toldict)
 
 
 # <<<  Section V: Thermo  >>>
@@ -906,7 +1047,7 @@ def test_thermochemistry():
         'G_tot'   :   qcdb.vib.QCAspect('', '', -39.94617572, ''),
     }
 
-    assert qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 4, 'asdf', forgive=['omega', 'ir_intensity'])
+    assert qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 4, 'asdf', forgive=['omega', 'IR_intensity'])
 
 
 c4_neqh2o_xyz = """
@@ -1045,15 +1186,15 @@ def test_nonequilibrium_harmonic_analysis():
     analytic_vibinfo = vibanal_str(mass=block['mass'], coord=block['xyz'], fcm=block['fcm']['analytic'],
                                    project_trans=projtrans, project_rot=projrot)
     _cfour_ref['neqh2o']['vibonly']['analytic'] = qcdb.vib.filter_nonvib(analytic_vibinfo)
-    
+
     findifproj_vibinfo = vibanal_str(mass=block['mass'], coord=block['xyz'], fcm=block['fcm']['findifproj'],
                                      project_trans=projtrans, project_rot=projrot)
     _cfour_ref['neqh2o']['vibonly']['findifproj'] = qcdb.vib.filter_nonvib(findifproj_vibinfo)
-   
+
     findifrot_vibinfo = vibanal_str(mass=block['mass'], coord=block['xyz'], fcm=block['fcm']['findifrot'],
                                     project_trans=projtrans, project_rot=projrot)
     _cfour_ref['neqh2o']['vibonly']['findifrot'] = qcdb.vib.filter_nonvib(findifrot_vibinfo)
-    
+
     assert compare_values(w_right, block['vibonly']['analytic']['omega'].data[-2].real, 0.2, 'Cfour analytic, analysis-T-projected mode')
     assert compare_values(w_wrong, block['vibonly']['findifproj']['omega'].data[-2].real, 0.2, 'Cfour G-findif-TR-projected, analysis-T-projected mode')
     assert compare_values(w_right, block['vibonly']['findifrot']['omega'].data[-2].real, 0.2, 'Cfour G-findif-T-projected, analysis-T-projected mode')
@@ -1067,24 +1208,24 @@ def test_nonequilibrium_harmonic_analysis():
                       'd_convergence': 10,
                       'points': 5,
                       'scf_type': 'pk'})
-    
+
     # 1. findif-by-G, auto inclusion of rot dof b/c non-eq
     e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=1)
     pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
-    
+
     assert qcdb.compare_vibinfos(block['vibonly']['analytic'], pvibonly, 3, 'Cfour analytic vs. Psi4 G-findif-T-projected')
 
     # 2. analytic, always include rot dof
     e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=2)
     pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
-    
+
     assert qcdb.compare_vibinfos(block['vibonly']['analytic'], pvibonly, 3, 'Cfour analytic vs. Psi4 analytic')
 
     # 3. even though same non-eq geometry, forcibly turn off rot dof
     psi4.set_options({'fd_project': True})
     e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=1)
     pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
-    
+
     assert qcdb.compare_vibinfos(block['vibonly']['findifproj'], pvibonly, 3, 'Cfour G-findif-TR-projected vs. Psi4 G-findif-TR-projected')
 
 
@@ -1103,12 +1244,12 @@ def test_nonequilibrium_harmonic_analysis():
 #                      'points': 5,
 #                      'scf_type': 'pk'})
 #    psi4.set_options(opts)
-#    
-#    
+#
+#
 #    # 1. findif-by-G, auto inclusion of rot dof b/c non-eq
 #    # 2. analytic, always include rot dof
 #    # 3. even though same non-eq geometry, forcibly turn off rot dof
 #    e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=dertype)
 #    pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
-#    
+#
 #    assert qcdb.compare_vibinfos(block['vibonly'][ref], pvibonly, 3, 'Cfour analytic vs. Psi4 G-findif-T-projected')

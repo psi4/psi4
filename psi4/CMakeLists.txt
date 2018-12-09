@@ -221,6 +221,7 @@ install(FILES ../tests/pytest/conftest.py
               ../tests/pytest/test_molecule_to_string.py
               ../tests/pytest/test_matrix.py
               ../tests/pytest/test_qcvars.py
+              ../tests/pytest/test_vibanalysis.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>
