@@ -288,7 +288,6 @@ class PSI_API MintsHelper {
     SharedMatrix potential_grad(SharedMatrix D);
     SharedMatrix dipole_grad(SharedMatrix D);
     SharedMatrix perturb_grad(SharedMatrix D);
-    SharedMatrix perturb_grad(SharedMatrix D, double xlambda, double ylambda, double zlambda);
 
     /// Play function
     void play();
