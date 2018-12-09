@@ -1503,9 +1503,10 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     else:
         nmwhess = hess
 
-    dipder = wfn.arrays().get("CURRENT DIPOLE GRADIENT", None)  # TODO variable
+    dipder = wfn.variables().get("CURRENT DIPOLE GRADIENT", None)
     if dipder is not None:
         dipder = np.asarray(dipder).T
+
     mol = wfn.molecule()
     geom = np.asarray(mol.geometry())
     symbols = [mol.symbol(at) for at in range(mol.natom())]

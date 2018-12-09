@@ -234,6 +234,7 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
         for at in range(nat):
             text += ('   ' + """{:20.10f}""" * 3 + '\n').format(*(vibinfo['x'].data[:, vib].reshape(nat, 3)[at].real))
 
+
 #     text += """\n[INT]\n"""
 #     for vib in active:
 #         text += """1.0\n"""
@@ -429,9 +430,8 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, dipder=None, pro
     space = ('T' if project_trans else '') + ('R' if project_rot else '')
     TRspace = _get_TR_space(mass, geom, space=space, tol=LINEAR_A_TOL)
     nrt = TRspace.shape[0]
-    text.append(
-        '  projection of translations ({}) and rotations ({}) removed {} degrees of freedom ({})'.
-        format(project_trans, project_rot, nrt, nrt_expected))
+    text.append('  projection of translations ({}) and rotations ({}) removed {} degrees of freedom ({})'.format(
+        project_trans, project_rot, nrt, nrt_expected))
 
     P = np.identity(3 * nat)
     for irt in TRspace:
@@ -448,7 +448,8 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, dipder=None, pro
 
     idx = np.argsort(pre_force_constant_au)
     pre_force_constant_au = pre_force_constant_au[idx]
-    uconv_cm_1 = np.sqrt(qcel.constants.na * qcel.constants.hartree2J * 1.0e19) / (2 * np.pi * qcel.constants.c * qcel.constants.bohr2angstroms)
+    uconv_cm_1 = (np.sqrt(qcel.constants.na * qcel.constants.hartree2J * 1.0e19) /
+                  (2 * np.pi * qcel.constants.c * qcel.constants.bohr2angstroms))
     pre_frequency_cm_1 = np.lib.scimath.sqrt(pre_force_constant_au) * uconv_cm_1
 
     pre_lowfreq = np.where(np.real(pre_frequency_cm_1) < 100.0)[0]
@@ -522,11 +523,13 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, dipder=None, pro
     if project_trans and not project_rot:
         text.append('  Note that "Vibration"s include {} un-projected rotation-like modes.'.format(nrt_expected - 3))
     elif not project_trans and not project_rot:
-        text.append('  Note that "Vibration"s include {} un-projected rotation-like and translation-like modes.'.format(nrt_expected))
+        text.append('  Note that "Vibration"s include {} un-projected rotation-like and translation-like modes.'.
+                    format(nrt_expected))
 
     # general conversion factors, LAB II.11
     uconv_K = (qcel.constants.h * qcel.constants.na * 1.0e21) / (8 * np.pi * np.pi * qcel.constants.c)
-    uconv_S = np.sqrt((qcel.constants.c * (2 * np.pi * qcel.constants.bohr2angstroms)**2) / (qcel.constants.h * qcel.constants.na * 1.0e21))
+    uconv_S = np.sqrt((qcel.constants.c * (2 * np.pi * qcel.constants.bohr2angstroms)**2) /
+                      (qcel.constants.h * qcel.constants.na * 1.0e21))
 
     # normco & reduced mass, LAB II.14 & II.15
     wL = np.einsum('i,ij->ij', sqrtmmminv, qL)
@@ -768,8 +771,9 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
                     for vib in row:
                         if vib is None:
                             break
-                        text += """{:^{width}.{prec}f}""".format(
-                            (vibinfo[normco].data[3 * at + xyz, vib]), width=width, prec=ncprec)
+                        text += """{:^{width}.{prec}f}""".format((vibinfo[normco].data[3 * at + xyz, vib]),
+                                                                 width=width,
+                                                                 prec=ncprec)
                         text += """{:{colsp}}""".format('', colsp=colsp)
                     text += '\n'
 
@@ -821,7 +825,8 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
 
     # translational
     beta = 1 / (qcel.constants.kb * T)
-    q_trans = (2.0 * np.pi * molecular_mass * qcel.constants.amu2kg / (beta * qcel.constants.h * qcel.constants.h))**1.5 * qcel.constants.na / (beta * P)
+    q_trans = (2.0 * np.pi * molecular_mass * qcel.constants.amu2kg /
+               (beta * qcel.constants.h * qcel.constants.h))**1.5 * qcel.constants.na / (beta * P)
     sm[('S', 'trans')] = 5 / 2 + math.log(q_trans / qcel.constants.na)
     sm[('Cv', 'trans')] = 3 / 2
     sm[('Cp', 'trans')] = 5 / 2
@@ -871,7 +876,9 @@ def thermo(vibinfo, T, P, multiplicity, molecular_mass, E0, sigma, rot_const, ro
     sm[('E', 'vib')] = sm[('ZPE', 'vib')] + np.sum(rT * T / np.expm1(rT))
     sm[('H', 'vib')] = sm[('E', 'vib')]
 
-    assert (abs(ZPE_cm_1 - sm[('ZPE', 'vib')] * qcel.constants.R * qcel.constants.hartree2wavenumbers * 0.001 / qcel.constants.hartree2kJmol) < 0.1)
+    assert (abs(ZPE_cm_1 - sm[
+        ('ZPE', 'vib')] * qcel.constants.R * qcel.constants.hartree2wavenumbers * 0.001 / qcel.constants.hartree2kJmol)
+            < 0.1)
 
     #real_vibs = np.ma.masked_where(vibinfo['omega'].data.imag > vibinfo['omega'].data.real, vibinfo['omega'].data)
 
