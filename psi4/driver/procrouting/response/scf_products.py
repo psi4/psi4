@@ -128,11 +128,7 @@ class TDRSCFEngine(object):
         self.occpi = self.wfn.nalphapi()
         self.virpi = self.wfn.nmopi() - self.occpi
         self.nsopi = self.wfn.nsopi()
-        self.V_pot = wfn.V_potential()
         self.func = wfn.functional()
-        self.Vx = []
-        self.Dx = []
-        # so that C1 wfns don't have to do this
         self.reset_symmetry(0)
         self.add_tol = add_tol
 
@@ -154,103 +150,104 @@ class TDRSCFEngine(object):
         self.Gx = symmetry
         self.build_Dia()
 
-    def Fx_product(self, v):
-        Fxi = self.new_vector("Fx")
-        for h in range(self.wfn.nirrep()):
-            Fxi.nph[h][:, :] = v.nph[h] * self.Dia.nph[h]
-        return Fxi
+    def combine_a_plus_b(self, twoel_parts, Fx):
+        """Combine Ax, Jx, Kx (if hybrid dft) to make (A+B)x products"""
+        nvec = len(Fx)
+        Px = []
+        for i in range(nvec):
+            Px.append(Fx[i].clone())
+            if self.func.is_x_hybrid():
+                Jxi = twoel_parts[2 * i]
+                Kxi = twoel_parts[2 * i + 1]
+                Kxi_t = Kxi.transpose()
+                Kxi_t.scale(-1.0)
+                Kxi_t.axpy(-1.0, Kxi)
+                if self.triplet:
+                    # (A+B)x = Fx + Co^T(-Kx-Kx^T)Cv
+                    Px[i].add(core.Matrix.triplet(self.Co, Kxi_t, self.Cv, True, False, False))
+                else:
+                    # (A+B)x = Fx + Co^T(4.0J -Kx-Kx^T)Cv
+                    Kxi_t.axpy(4.0, Jxi)
+                    Px[i].add(core.Matrix.triplet(self.Co, Kxi_t, self.Cv, True, False, False))
+            else:
+                Jxi = twoel_parts[i]
+                if self.triplet:
+                    #(A+B)x = Fx
+                    pass
+                else:
+                    #(A+B)x = Fx + Co^T(4.0J)Cv
+                    Jxi.scale(4.0)
+                    Px[i].add(core.Matrix.triplet(self.Co, Jxi, self.Cv, True, False, False))
+        return Px
 
-    def add_Dx(self, D):
-        self.Dx.append(D)
-        self.Vx.append(self.new_vector("Vx"))
+    def combine_a_minus_b(self, twoel_parts, Fx):
+        """Combine Fx, Jx, Kx(if hybrid dft) to make (A-B)x products"""
+        nvec = len(Fx)
+        Mx = []
+        for i in range(nvec):
+            Mx.append(Fx[i].clone())
+            if self.func.is_x_hybrid():
+                Jxi = twoel_parts[2 * i]
+                Kxi = twoel_parts[2 * i + 1]
+                Kxi_t = Kxi.transpose()
+                # (A-B)x = Fx + Co^T(Kx^T-Kx)Cv
+                Kxi_t.axpy(-1.0, Kxi)
+                Mx[i].add(core.Matrix.triplet(self.Co, Kxi_t, self.Cv, True, False, False))
+            # else: (A-B) = Fx
+        return Mx
+
+    def combine_a(self, twoel_parts, Fx):
+        """Combine Fx, Jx, Kx(if hybrid DFT) to make Ax products"""
+        nvec = len(Fx)
+        Ax = []
+        for i in range(nvec):
+            Ax.append(Fx[i].clone())
+            if self.func.is_x_hybrid():
+                Jxi = twoel_parts[2 * i]
+                Kxi = twoel_parts[2 * i + 1]
+                if self.triplet:
+                    # Ax = Fx - Co^T(K)Cv
+                    Ax[i].subtract(core.Matrix.triplet(self.Co, Kxi, self.Cv, True, False, False))
+                else:
+                    # Ax = Fx + Co^T(2.0Jx - K)Cv
+                    Jxi.scale(2.0)
+                    Jxi.axpy(-1.0, Kxi)
+                    Ax[i].add(core.Matrix.triplet(self.Co, Jxi, self.Cv, True, False, False))
+            else:
+                Jxi = twoel_parts[i]
+                if self.triplet:
+                    #Ax = Fx
+                    pass
+                else:
+                    #Ax = Fx + (2.0Jx)
+                    Jxi.scale(2.0)
+                    Ax[i].add(core.Matrix.triplet(self.Co, Jxi, self.Cv, True, False, False))
+        return Ax
 
     def compute_products(self, X):
+        """Given a set of vectors X Compute products
+        if ptype == rpa:
+           Returns pair (A+B)X, (A-B)X
+        if ptype == tda:
+           Returns AX
+        """
+        Fx = self.wfn.onel_Hx(X)
+        twoel_parts = self.wfn.twoel_Hx(X, False, "SO")
         if self.ptype == 'rpa':
-            Px = []
-            Mx = []
-            for xi in X:
-                Pxi, Mxi = self.compute_one(xi)
-                Px.append(Pxi)
-                Mx.append(Mxi)
+            Px = self.combine_a_plus_b(twoel_parts, Fx)
+            Mx = self.combine_a_minus_b(twoel_parts, Fx)
+            # onel/twoel returns - of what we want
+            for Pxi in Px:
+                Pxi.scale(-1.0)
+            for Mxi in Mx:
+                Mxi.scale(-1.0)
             return Px, Mx
         else:
-            Ax = []
-            for xi in X:
-                Ax.append(self.compute_one(xi))
+            # onel/twoel returns - of what we want
+            Ax = self.combine_a(twoel_parts, Fx)
+            for Axi in Ax:
+                Axi.scale(-1.0)
             return Ax
-
-    def compute_one(self, vector):
-        self.jk.C_clear()
-        self.Dx.clear()
-        self.Vx.clear()
-        cl = self.Co
-        cr = core.Matrix.doublet(self.Cv, vector, False, True)
-        self.jk.C_left_add(cl)
-        self.jk.C_right_add(cr)
-        self.jk.compute()
-        if self.func.needs_xc():
-            self.add_Dx(core.Matrix.doublet(cl, cr, False, True))
-            self.V_pot.compute_Vx(self.Dx, self.Vx)
-
-        Fx = self.Fx_product(vector)
-
-        if self.ptype == 'rpa':
-            if self.triplet:
-                P = core.Matrix("Px temp", self.nsopi, self.nsopi, self.Gx)
-                M = core.Matrix("Mx temp", self.nsopi, self.nsopi, self.Gx)
-            else:
-                P = self.jk.J()[0]
-                M = core.Matrix("Mx temp", self.nsopi, self.nsopi, self.Gx)
-                P.scale(4.0)
-                if self.func.needs_xc():
-                    P.axpy(4.0, self.Vx[0])
-
-            if self.func.is_x_hybrid():
-                alpha = self.func.x_alpha()
-                K = self.jk.K()[0]
-                Kt = K.transpose()
-                P.axpy(-alpha, K)
-                P.axpy(-alpha, Kt)
-                M.print_out()
-                Kt.print_out()
-                M.axpy(alpha, Kt)
-                M.axpy(-alpha, K)
-
-            if self.func.is_x_lrc():
-                beta = self.func.x_beta()
-                wK = self.jk.wK()[0]
-                wKt = wK.transpose()
-                P.axpy(-beta, wK)
-                P.axpy(-beta, wKt)
-                M.axpy(beta, wKt)
-                M.axpy(-beta, wK)
-
-            Pret = core.Matrix.triplet(self.Co, P, self.Cv, True, False, False)
-            Pret.axpy(1.0, Fx)
-            Mret = core.Matrix.triplet(self.Co, M, self.Cv, True, False, False)
-            Mret.axpy(1.0, Fx)
-            return Pret, Mret
-
-        elif self.ptype == 'tda':
-            if self.triplet:
-                A = core.Matrix("Ax temp", self.nsopi, self.nsopi, self.Gx)
-            else:
-                A = self.jk.J()[0]
-                A.scale(2.0)
-            if self.func.needs_xc():
-                A.axpy(2.0, self.Vx[0])
-            if self.func.is_x_hybrid():
-                alpha = self.func.x_alpha()
-                K = self.jk.K()[0]
-                A.axpy(-alpha, K)
-            if self.func.is_x_lrc():
-                beta = self.func.x_beta()
-                wK = self.jk.wK()[0]
-                A.axpy(-beta, wK)
-
-            Aret = core.Matrix.triplet(self.Co, A, self.Cv, True, False, False)
-            Aret.axpy(1.0, Fx)
-            return Aret
 
     def precondition_residual(self, rvec, shift):
         denom = self.new_vector("preconditioner")
@@ -334,10 +331,7 @@ class TDUSCFEngine(object):
         self.occpi = [self.wfn.nalphapi(), self.wfn.nbetapi()]
         self.virpi = [self.wfn.nmopi() - self.occpi[0], self.wfn.nmopi() - self.occpi[1]]
         self.nsopi = self.wfn.nsopi()
-        self.V_pot = wfn.V_potential()
         self.func = wfn.functional()
-        self.Vx = []
-        self.Dx = []
         self.reset_symmetry(0)
         self.add_tol = add_tol
 
@@ -363,143 +357,143 @@ class TDUSCFEngine(object):
         self.Gx = symmetry
         self.build_Dia()
 
-    def Fx_product(self, vector):
-        Fxi = self.new_vector("Fx")
-        for h in range(self.wfn.nirrep()):
-            Fxi[0].nph[h][:, :] = vector[0].nph[h] * self.Dia[0].nph[h]
-            Fxi[1].nph[h][:, :] = vector[1].nph[h] * self.Dia[1].nph[h]
-        return Fxi
+    def combine_a_plus_b(self, twoel_parts, Fx):
+        """Combine Fx, Jx, Kx (if hybrid dft) to make (A+B)x products"""
+        nvec = len(Fx) // 2
+        Px = []
+        for i in range(nvec):
+            Px_a = Fx[2 * i].clone()
+            Px_b = Fx[2 * i + 1].clone()
+            if self.func.is_x_hybrid():
+                Jxi_a = twoel_parts[4 * i]
+                Jxi_b = twoel_parts[4 * i + 1]
+                Kxi_a = twoel_parts[4 * i + 2]
+                Kxi_b = twoel_parts[4 * i + 3]
 
-    def add_Dx(self, D):
-        self.Dx.extend(D)
-        self.Vx.extend(self.new_vector("Vx"))
+                # (A+B)x[s] = Fx[s] + Co[s]^T(2.0Jx[s]+2.0Jx[s']-Kx[s]-Kx[s]^T)Cv[s]
+                Kxi_a_t = Kxi_a.transpose()
+                Kxi_a_t.scale(-1.0)
+                Kxi_a_t.axpy(-1.0, Kxi_a)
+                Kxi_a_t.axpy(2.0, Jxi_a)
+                Kxi_a_t.axpy(2.0, Jxi_b)
+
+                Kxi_b_t = Kxi_b.transpose()
+                Kxi_b_t.scale(-1.0)
+                Kxi_b_t.axpy(-1.0, Kxi_b)
+                Kxi_b_t.axpy(2.0, Jxi_a)
+                Kxi_b_t.axpy(2.0, Jxi_b)
+
+                Px_a.add(core.Matrix.triplet(self.Co[0], Kxi_a_t, self.Cv[0], True, False, False))
+                Px_b.add(core.Matrix.triplet(self.Co[1], Kxi_b_t, self.Cv[1], True, False, False))
+
+            else:
+                #(A+B)x[s] = Fx[s] + Co[s]^T(Jx[s] + Jx[s'])Cv[s]
+                Jxi_a = twoel_parts[2 * i]
+                Jxi_b = twoel_parts[2 * i + 1]
+                Jxi_a.scale(2.0)
+                Jxi_a.axpy(2.0, Jxi_b)
+                Px_a.add(core.Matrix.triplet(self.Co[0], Jxi_a, self.Cv[0], True, False, False))
+                Px_b.add(core.Matrix.triplet(self.Co[1], Jxi_a, self.Cv[1], True, False, False))
+            Px.append([Px_a, Px_b])
+        return Px
+
+    def combine_a_minus_b(self, twoel_parts, Fx):
+        """Combine Fx, Jx, Kx (if hybrid dft) to make (A-B)x products"""
+        nvec = len(Fx) // 2
+        Mx = []
+        for i in range(nvec):
+            Mx_a = Fx[2 * i].clone()
+            Mx_b = Fx[2 * i + 1].clone()
+            if self.func.is_x_hybrid():
+                # Jxi_a = twoel_parts[4*i]
+                # Jxi_b = twoel_parts[4*i+1]
+                Kxi_a = twoel_parts[4 * i + 2]
+                Kxi_b = twoel_parts[4 * i + 3]
+
+                Kxi_a_t = Kxi_a.transpose()
+                Kxi_a_t.axpy(-1.0, Kxi_a)
+
+                Kxi_b_t = Kxi_b.transpose()
+                Kxi_b_t.axpy(-1.0, Kxi_b)
+
+                Mx_a.add(core.Matrix.triplet(self.Co[0], Kxi_a_t, self.Cv[0], True, False, False))
+                Mx_b.add(core.Matrix.triplet(self.Co[1], Kxi_b_t, self.Cv[1], True, False, False))
+                # (A-B)x[s] = Fx[s] + Co[s]^T(Kx[s]^T-Kx[s])Cv[s]
+
+            else:
+                # (A-B)x[s] = Fx[s] (A-B is diagonal for non-hybrid DFT)
+                pass
+            Mx.append([Mx_a, Mx_b])
+        return Mx
+
+    def combine_a(self, twoel_parts, Fx):
+        """Combine Fx, Jx, Kx (if hybrid dft) to make Ax products"""
+        nvec = len(Fx) // 2
+        Ax = []
+        for i in range(nvec):
+            Ax_a = Fx[2 * i].clone()
+            Ax_b = Fx[2 * i + 1].clone()
+            if self.func.is_x_hybrid():
+                Jxi_a = twoel_parts[4 * i]
+                Jxi_b = twoel_parts[4 * i + 1]
+                Kxi_a = twoel_parts[4 * i + 2]
+                Kxi_b = twoel_parts[4 * i + 3]
+
+                # Ax[s] = Fx[s] + Co[s]^T(1.0Jx[s]+1.0Jx[s']-Kx[s])Cv[s]
+                Jxi_a.axpy(1.0, Jxi_b)
+                Jxi_b.copy(Jxi_a)
+
+                Jxi_a.axpy(-1.0, Kxi_a)
+                Jxi_b.axpy(-1.0, Kxi_b)
+
+                Ax_a.add(core.Matrix.triplet(self.Co[0], Jxi_a, self.Cv[0], True, False, False))
+                Ax_b.add(core.Matrix.triplet(self.Co[1], Jxi_b, self.Cv[1], True, False, False))
+
+            else:
+                Jxi_a = twoel_parts[2 * i]
+                Jxi_b = twoel_parts[2 * i + 1]
+                Jxi_a.axpy(1.0, Jxi_b)
+                Jxi_b.copy(Jxi_a)
+
+                # Ax[s] = Fx[s] + Co[s]^T(Jx[s]+Jx[s'])Cv[s]
+                Ax_a.add(core.Matrix.triplet(self.Co[0], Jxi_a, self.Cv[0], True, False, False))
+                Ax_b.add(core.Matrix.triplet(self.Co[1], Jxi_b, self.Cv[1], True, False, False))
+
+            Ax.append([Ax_a, Ax_b])
+        return Ax
 
     def compute_products(self, X):
+        """Compute Products for a list of guess vectors (X).
+        if ptype == 'rpa':
+           returns pair (A+B)X, (A-B)X products
+        if ptype == 'tda':
+           returns Ax products.
+        each element of return is a pair Product(X_a), Product(X_b)
+        """
+        X_flat = []
+        for Xa, Xb in X:
+            X_flat.append(Xa)
+            X_flat.append(Xb)
+        Fx = self.wfn.onel_Hx(X_flat)
+        twoel_parts = self.wfn.twoel_Hx(X_flat, False, "SO")
         if self.ptype == 'rpa':
-            Px = []
-            Mx = []
-            for xi in X:
-                Pxi, Mxi = self.compute_one(xi)
-                Px.append(Pxi)
-                Mx.append(Mxi)
+            Px = self.combine_a_plus_b(twoel_parts, Fx)
+            Mx = self.combine_a_minus_b(twoel_parts, Fx)
+            # onel/twoel return - of what we want
+            for Pxi_a, Pxi_b in Px:
+                Pxi_a.scale(-1.0)
+                Pxi_b.scale(-1.0)
+            for Mxi_a, Mxi_b in Mx:
+                Mxi_a.scale(-1.0)
+                Mxi_b.scale(-1.0)
             return Px, Mx
         else:
-            Ax = []
-            for xi in X:
-                Ax.append(self.compute_one(xi))
+            Ax = self.combine_a(twoel_parts, Fx)
+            # onel/twoel return - of what we want
+            for Axi_a, Axi_b in Ax:
+                Axi_a.scale(-1.0)
+                Axi_b.scale(-1.0)
             return Ax
-
-    def compute_one(self, vector):
-        vector_a, vector_b = vector
-        self.jk.C_clear()
-        self.Dx.clear()
-        self.Vx.clear()
-
-        cl_a, cl_b = self.Co
-        Cv_a, Cv_b = self.Cv
-        cr_a = core.Matrix.doublet(Cv_a, vector_a, False, True)
-        cr_b = core.Matrix.doublet(Cv_b, vector_b, False, True)
-
-        # push alpha occ onto left
-        self.jk.C_left_add(cl_a)
-        # push alpha vir x vector alpha^T onto right
-        self.jk.C_right_add(cr_a)
-        # push beta occ onto left
-        self.jk.C_left_add(cl_b)
-        # push beta vir x vector beta ^T onto right
-        self.jk.C_right_add(cr_b)
-        self.jk.compute()
-        if self.func.needs_xc():
-            self.add_Dx([core.Matrix.doublet(cl_a, cr_a, False, True), core.Matrix.doublet(cl_b, cr_b, False, True)])
-            self.V_pot.compute_Vx(self.Dx, self.Vx)
-
-        Fxa, Fxb = self.Fx_product(vector)
-
-        if self.ptype == 'rpa':
-            P = self.jk.J()
-            P[0].scale(2.0)
-            P[0].axpy(2.0, P[1])
-            P[1].copy(P[0])
-            M = [
-                core.Matrix("Mx a", self.nsopi, self.nsopi, self.Gx),
-                core.Matrix("Mx b", self.nsopi, self.nsopi, self.Gx)
-            ]
-            if self.func.needs_xc():
-                P[0].axpy(2.0, self.Vx[0])
-                P[1].axpy(2.0, self.Vx[1])
-
-            if self.func.is_x_hybrid():
-                alpha = self.func.x_alpha()
-                K = self.jk.K()
-                P[0].axpy(-alpha, K[0])
-                P[1].axpy(-alpha, K[1])
-                M[0].axpy(-alpha, K[0])
-                M[1].axpy(-alpha, K[1])
-                Kt = [K[0].transpose(), K[1].transpose()]
-                P[0].axpy(-alpha, Kt[0])
-                P[1].axpy(-alpha, Kt[1])
-                M[0].axpy(alpha, Kt[0])
-                M[1].axpy(alpha, Kt[1])
-
-            if self.func.is_x_lrc():
-                beta = self.func.x_beta()
-                wK = self.jk.wK()
-                P[0].axpy(-alpha, wK[0])
-                P[1].axpy(-alpha, wK[1])
-                M[0].axpy(-alpha, wK[0])
-                M[1].axpy(-alpha, wK[1])
-                wKt = [wK[0].transpose(), wK[1].transpose()]
-                P[0].axpy(-alpha, wKt[0])
-                P[1].axpy(-alpha, wKt[1])
-                M[0].axpy(alpha, wKt[0])
-                M[1].axpy(alpha, wKt[1])
-
-            Pret = [
-                core.Matrix.triplet(self.Co[a_or_b], P[a_or_b], self.Cv[a_or_b], True, False, False)
-                for a_or_b in (0, 1)
-            ]
-            Pret[0].axpy(1.0, Fxa)
-            Pret[1].axpy(1.0, Fxb)
-
-            Mret = [
-                core.Matrix.triplet(self.Co[a_or_b], M[a_or_b], self.Cv[a_or_b], True, False, False)
-                for a_or_b in (0, 1)
-            ]
-            Mret[0].axpy(1.0, Fxa)
-            Mret[1].axpy(1.0, Fxb)
-            return Pret, Mret
-
-        elif self.ptype == 'tda':
-            J = self.jk.J()
-            J[0].add(J[1])
-            # AO basis w/ JK
-            Ax = [
-                core.Matrix("Ax a", self.nsopi, self.nsopi, self.Gx),
-                core.Matrix("Ax b", self.nsopi, self.nsopi, self.Gx)
-            ]
-            Ax[0].copy(J[0])
-            Ax[1].copy(J[0])
-            if self.func.needs_xc():
-                Ax[0].axpy(1.0, self.Vx[0])
-                Ax[1].axpy(1.0, self.Vx[1])
-            if self.func.is_x_hybrid():
-                alpha = self.func.x_alpha()
-                K = self.jk.K()
-                Ax[0].axpy(-alpha, K[0])
-                Ax[1].axpy(-alpha, K[1])
-            if self.func.is_x_lrc():
-                beta = self.func.x_beta()
-                wK = self.jk.wK()
-                Ax[0].axpy(-beta, wK[0])
-                Ax[1].axpy(-beta, wK[1])
-
-            Aret = [
-                core.Matrix.triplet(self.Co[a_or_b], Ax[a_or_b], self.Cv[a_or_b], True, False, False)
-                for a_or_b in (0, 1)
-            ]
-            Aret[0].axpy(1.0, Fxa)
-            Aret[1].axpy(1.0, Fxb)
-            return Aret
 
     def precondition_residual(self, rvec, shift):
         rva, rvb = rvec
