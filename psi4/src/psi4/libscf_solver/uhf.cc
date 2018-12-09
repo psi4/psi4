@@ -499,21 +499,21 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         for (size_t i = 0; i < nvecs; i++) {
-            ret.push_back(J[i]);
-            ret.push_back(J[nvecs + i]);
+          if (functional_->needs_xc()){
+            J[i]->add(Vx[2*i]);
+            J[nvecs + i]->add(Vx[2*i +1]);
+          }
+          ret.push_back(J[i]);
+          ret.push_back(J[nvecs + i]);
             if (functional_->is_x_hybrid()) {
                 K[i]->scale(alpha);
-                ret.push_back(K[i]);
-
                 K[nvecs + i]->scale(alpha);
-                ret.push_back(K[nvecs + i]);
                 if (functional_->is_x_lrc()) {
                     K[i]->axpy(beta, wK[i]);
                     K[nvecs + i]->axpy(beta, wK[nvecs + i]);
                 }
-            }
-            if (functional_->needs_xc()) {
-                ret.push_back(Vx[i]);
+                ret.push_back(K[i]);
+                ret.push_back(K[nvecs+i]);
             }
         }
     }
