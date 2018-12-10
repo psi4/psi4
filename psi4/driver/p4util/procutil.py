@@ -310,6 +310,43 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
     return E
 
 
+_modules = [
+        # PSI4 Modules
+        "ADC", "CCENERGY", "CCEOM", "CCDENSITY", "CCLAMBDA", "CCHBAR",
+        "CCRESPONSE", "CCSORT", "CCTRIPLES", "CLAG", "CPHF", "CIS",
+        "DCFT", "DETCI", "DFMP2", "DFTSAPT", "FINDIF", "FNOCC", "LMP2",
+        "MCSCF", "MINTS", "MRCC", "OCC", "OPTKING", "PSIMRCC", "RESPONSE",
+        "SAPT", "SCF", "STABILITY", "THERMO", "TRANSQT", "TRANSQT2",
+        # External Modules
+        "CFOUR",
+        ]
+
+
+def reset_pe_options(pofm):
+    """Acts on Process::environment.options to clear it, the set it to state encoded in `pofm`.
+
+    Parameters
+    ----------
+    pofm : dict
+        Result of psi4.driver.p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
+
+    Returns
+    -------
+    None
+
+    """
+    core.clean_options()
+
+    for go, dgo in pofm['GLOBALS'].items():
+        if dgo['has_changed']:
+            core.set_global_option(go, dgo['value'])
+
+    for module in _modules:
+        for lo, dlo in pofm[module].items():
+            if dlo['has_changed']:
+                core.set_local_option(module, lo, dlo['value'])
+
+
 def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
     """Function to return a string of commands to replicate the
     current state of user-modified options. Used to capture C++
@@ -324,17 +361,6 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
        - command return doesn't revoke has_changed setting for unchanged with changedOnly=False
 
     """
-    modules = [
-        # PSI4 Modules
-        "ADC", "CCENERGY", "CCEOM", "CCDENSITY", "CCLAMBDA", "CCHBAR",
-        "CCRESPONSE", "CCSORT", "CCTRIPLES", "CLAG", "CPHF", "CIS",
-        "DCFT", "DETCI", "DFMP2", "DFTSAPT", "FINDIF", "FNOCC", "LMP2",
-        "MCSCF", "MINTS", "MRCC", "OCC", "OPTKING", "PSIMRCC", "RESPONSE",
-        "SAPT", "SCF", "STABILITY", "THERMO", "TRANSQT", "TRANSQT2",
-        # External Modules
-        "CFOUR",
-        ]
-
     options = collections.defaultdict(dict)
     commands = ''
     for opt in core.get_global_option_list():
@@ -351,7 +377,7 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
             #if changedOnly:
             #    print('Appending module %s option %s value %s has_changed %s.' % \
             #        ('GLOBALS', opt, core.get_global_option(opt), core.has_global_option_changed(opt)))
-        for module in modules:
+        for module in _modules:
             if core.option_exists_in_module(module, opt):
                 hoc = core.has_option_changed(module, opt)
                 if hoc or not changedOnly:

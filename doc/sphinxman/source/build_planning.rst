@@ -184,18 +184,16 @@ Libint, and even C++ compilers on Linux and Mac) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
-* :ref:`C++ and C Compilers <cmake:cxx>` (C++11 compliant)
+* :ref:`C++ and C Compilers <cmake:cxx>` (C++14 compliant)
 
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
 * :ref:`Python interpreter and headers <cmake:python>` (3.5, 3.6, or 3.7) https://www.python.org/
 
-* CMake (3.3+) http://www.cmake.org/download/
+* CMake (3.8+) http://www.cmake.org/download/
 
 * NumPy (needed at runtime *and* buildtime) http://www.numpy.org/
-
-* mpmath (only needed if you build gau2grid to angular momentum >16) http://mpmath.org/
 
 * System utilities: GNU make, GNU install, POSIX threads (Pthreads) library
 
@@ -210,6 +208,8 @@ build system will automatically download and build.
 
 * pybind11 |w---w| `[what is this?] <https://pybind11.readthedocs.io/en/master/>`_ `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
 
+* QCElemental |w---w| `[what is this?] <https://qcelemental.readthedocs.io/en/latest/>`_
+
 Additionally, there are runtime-only dependencies:
 
 * NumPy http://www.numpy.org/
@@ -217,6 +217,8 @@ Additionally, there are runtime-only dependencies:
 * networkx https://github.com/networkx/networkx
 
 * deepdiff https://github.com/seperman/deepdiff
+
+* pint https://pint.readthedocs.io/en/latest/
 
 
 .. _`faq:addondepend`:
@@ -1299,7 +1301,7 @@ B. Build with specific Python
 
   .. code-block:: bash
 
-    >>> cmake -DPYTHON_EXECUTABLE=/path/to/interp/python2.7
+    >>> cmake -DPYTHON_EXECUTABLE=/path/to/interp/python3.6
 
 C. Build with full Python specification to root directory ``${PFXC}``
 
