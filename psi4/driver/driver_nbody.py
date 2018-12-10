@@ -918,9 +918,12 @@ class NBodyComputer(BaseTask):
         return ret
 
     def compute(self):
+        all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
         for k, v in self.task_list.items():
             self.results_list[k] = v.compute()
             print(self.results_list[k]["return_result"])
+
+        p4util.reset_pe_options(all_options)
 
     def get_results(self):
         energies = {k: v['properties']["return_energy"] for k, v in self.results_list.items()}
