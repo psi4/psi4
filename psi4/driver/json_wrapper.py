@@ -29,11 +29,12 @@
 Runs a JSON input psi file.
 """
 
-import os
-import copy
-import uuid
-import json
 import atexit
+import copy
+import json
+import numpy as np
+import os
+import uuid
 
 import psi4
 from psi4.driver import driver
@@ -79,9 +80,16 @@ _qcschema_translation = {
         "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]},
         "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
         "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
-        "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip": True},
-        "scf_xc_energy": {"variables": "DFT XC ENERGY", "skip": True},
-        "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip": True},
+        "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
+        "scf_xc_energy": {"variables": "DFT XC ENERGY", "skip_zero": True},
+        "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip_zero": True},
+
+        # SCF Properties (experimental)
+        "scf_quadrupole_moment": {"variables": ["SCF QUADRUPOLE " + x for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]},
+        "scf_mulliken_charges": {"variables": "MULLIKEN_CHARGES"},
+        "scf_lowdin_charges": {"variables": "LOWDIN_CHARGES"},
+        "scf_wiberg_lowdin_indices": {"variables": "MAYER_INDICES"},
+        "scf_mayer_indices": {"variables": "MAYER_INDICES"},
     },
 
     # MP2 variables
@@ -100,32 +108,48 @@ _qcschema_translation = {
 
 def _convert_variables(data, include=None):
 
-    needed_vars = _qcschema_translation[include]
+    # Build the correct translation units
+    if include is None:
+        needed_vars = _qcschema_translation[include]
+    else:
+        needed_vars = {}
+        for v in _qcschema_translation.values():
+            needed_vars.update(v)
 
     ret = {}
-    for k, v in needed_vars.items():
+    for key, var in needed_vars.items():
 
         # Get the actual variables
-        if isinstance(v["variables"], str):
-            value = data.get(v["variables"], None)
-        elif isinstance(v["variables"], (list, tuple)):
-            value = [data.get(x, None) for x in v["variables"]]
+        if isinstance(var["variables"], str):
+            value = data.get(var["variables"], None)
+        elif isinstance(var["variables"], (list, tuple)):
+            value = [data.get(x, None) for x in var["variables"]]
+            if not any(value):
+                value = None
         else:
             raise TypeError("variables type not understood.")
 
         # Handle skips
-        if v.get("skip", False) and (value is not None) and (value == 0):
+        if var.get("skip_zero", False) and (value is not None) and (value == 0):
             continue
 
         # Add defaults
-        if (value is None) and ("default" in v):
-            value = v["default"]
+        if (value is None) and ("default" in var):
+            value = var["default"]
 
         # Cast if called
-        if "cast" in v:
-            value = v["cast"](value)
+        if "cast" in var:
+            value = var["cast"](value)
 
-        ret[k] = value
+        # Translate to correct return unit
+        if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
+            value = value.np.ravel().tolist()
+        elif isinstance(value, (psi4.core.Dimension)):
+            value = value.to_tuple()
+        elif isinstance(value, np.ndarray):
+            value = value.ravel().tolist()
+
+        ret[key] = value
 
     return ret
 
@@ -173,7 +197,7 @@ def run_json(json_data, clean=True):
         json_data["error"] = repr(error)
         json_data["success"] = False
 
-        # raise error
+        raise error
 
     if return_output:
         with open(outfile, 'r') as f:
@@ -259,18 +283,13 @@ def run_json_qc_schema(json_data, clean):
     elif json_data["driver"] == "properties":
         ret = {}
         mtd = json_data["model"]["method"].upper()
+
+        # Dipole/quadrupole still special case
         if "dipole" in kwargs["properties"]:
             ret["dipole"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
         if "quadrupole" in kwargs["properties"]:
             ret["quadrupole"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
-        if "mulliken_charges" in kwargs["properties"]:
-            ret["mulliken_charges"] = wfn.variable("MULLIKEN_CHARGES").np.ravel().tolist()
-        if "lowdin_charges" in kwargs["properties"]:
-            ret["lowdin_charges"] = wfn.variable("LOWDIN_CHARGES").np.ravel().tolist()
-        if "wiberg_lowdin_indices" in kwargs["properties"]:
-            ret["wiberg_lowdin_indices"] = wfn.variable("WIBERG_LOWDIN_INDICES").np.ravel().tolist()
-        if "mayer_indices" in kwargs["properties"]:
-            ret["mayer_indices"] = wfn.variable("MAYER_INDICES").np.ravel().tolist()
+        ret.update(_convert_variables(wfn.variables(), include="properties"))
 
         json_data["return_result"] = ret
     else:
