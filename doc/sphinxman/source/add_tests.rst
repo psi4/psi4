@@ -77,3 +77,12 @@ Of those small modifications, first, note the special comment at the top (starti
 The reference values are assigned to variables for later use. The compare_values function (along with several relatives in :source:`psi4/driver/p4util/util.py` for comparing strings, matrices, etc.) checks that the computed values match these reference values to suitable precision. This function prints an error message and signals that the test failed to the make system, if the values don't match. Any lines of the input associated with the validation process should be flagged with #TEST at the end of each line, so that they can be removed when copying from the tests to the samples directory.
 
 Finally, add the directory name to the list of tests in :source:`tests/CMakeLists.txt`.
+
+In preparing the test case, turn energy, density, amplitude, and
+geometry convergence criteria to very tight levels, and use these
+results for reference energies, reference geometries, reference cube
+files, *etc.*. Then, either remove or relax the convergence settings,
+if these are not a vital part of the test. In choosing the number of
+digits for :py:class:`compare_values` and other compare_* functions,
+select a number looser than the convergence set in the test or the
+default convergence for the calculation type (energy, gradient, *etc.*).
