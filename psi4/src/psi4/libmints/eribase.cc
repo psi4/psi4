@@ -1779,14 +1779,15 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt, const ShellP
     }
     return nprim;
 }
-static size_t fill_primitive_data_screen(prim_data *PrimQuartet, Fjt *fjt, const ShellPairScreen& sp12, const ShellPairScreen& sp34, int am,
-                                  bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
+static size_t fill_primitive_data_screen(prim_data *PrimQuartet, Fjt *fjt, const ShellPairScreen &sp12,
+                                         const ShellPairScreen &sp34, int am, bool sh1eqsh2, bool sh3eqsh4,
+                                         int deriv_lvl) {
     double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
     double a1, a2, a3, a4;
     int p12, p34, i;
     size_t nprim = 0L;
     for (p12 = 0; p12 < sp12.nonzeroPrimPairs.size(); ++p12) {
-        const PrimPairScreen& pp12 = sp12.nonzeroPrimPairs[p12]; 
+        const PrimPairScreen &pp12 = sp12.nonzeroPrimPairs[p12];
         a1 = pp12.ai;
         a2 = pp12.aj;
         o12 = pp12.overlap;
@@ -1801,7 +1802,7 @@ static size_t fill_primitive_data_screen(prim_data *PrimQuartet, Fjt *fjt, const
         double PABy = pp12.P[1];
         double PABz = pp12.P[2];
         for (p34 = 0; p34 < sp34.nonzeroPrimPairs.size(); ++p34) {
-            const PrimPairScreen& pp34 = sp34.nonzeroPrimPairs[p34]; 
+            const PrimPairScreen &pp34 = sp34.nonzeroPrimPairs[p34];
             a3 = pp34.ai;
             a4 = pp34.aj;
             o34 = pp34.overlap;
@@ -2019,8 +2020,10 @@ void TwoElectronInt::init_shell_pairs12() {
     pairs12_ = new ShellPair *[basis1()->nshell()];
     for (i = 0; i < basis1()->nshell(); ++i) pairs12_[i] = new ShellPair[basis2()->nshell()];
 
-    // Store screened shell pairs in a vector of vectors
-    screenpairs12_ = std::vector<std::vector<ShellPairScreen>>(basis1()->nshell(), std::vector<ShellPairScreen>(basis2()->nshell()));
+    // Store screened shell pairs in a shared pointer to a vector of vectors
+    screenpairs12_ =
+        std::make_shared<std::vector<std::vector<ShellPairScreen>>>(std::vector<std::vector<ShellPairScreen>>(
+            basis2()->nshell(), std::vector<ShellPairScreen>(basis2()->nshell())));
 
     // Total number of primitive pairs in all shell pairs (before screening) [FOR PRINING]
     int total_prim_pairs = 0;
@@ -2048,7 +2051,7 @@ void TwoElectronInt::init_shell_pairs12() {
             sp->AB[0] = AB[0];
             sp->AB[1] = AB[1];
             sp->AB[2] = AB[2];
-            
+
             // Make and populate fields of screened shell pair
             ShellPairScreen spsc;
             spsc.i = si;
@@ -2061,7 +2064,7 @@ void TwoElectronInt::init_shell_pairs12() {
             np_j = basis2()->shell(sj).nprimitive();
 
             // Reserve some memory for the primitives
-            spsc.nonzeroPrimPairs.reserve(np_i*np_j);
+            spsc.nonzeroPrimPairs.resize(np_i * np_j);
 
             // Reserve some memory for the primitives
             sp->ai = curr_stack_ptr;
@@ -2108,6 +2111,9 @@ void TwoElectronInt::init_shell_pairs12() {
                 }
             }
 
+            // the number of primitive pairs not screened
+            int nprim_sig = 0;
+
             // All memory has been reserved/allocated for this shell primitive pair pair.
             // Pre-compute all data that we can:
             for (i = 0; i < np_i; ++i) {
@@ -2144,7 +2150,7 @@ void TwoElectronInt::init_shell_pairs12() {
                     sp->PB[i][j][2] = PB[2];
                     sp->overlap[i][j] = pow(M_PI / gam, 3.0 / 2.0) * exp(-a1 * a2 * ab2 / gam) * c1 * c2;
                     // Check overlap for screening condition
-                    if(fabs(sp->overlap[i][j]) >= overlap_cutoff) {
+                    if (fabs(sp->overlap[i][j]) >= overlap_cutoff) {
                         // Make and populate fields of screened primitive pair
                         PrimPairScreen pps;
 
@@ -2165,23 +2171,25 @@ void TwoElectronInt::init_shell_pairs12() {
                         pps.cj = c2;
                         pps.overlap = sp->overlap[i][j];
 
-                        //Store this primitive pair in the shell pair
-                        spsc.nonzeroPrimPairs.push_back(pps);
+                        // Store this primitive pair in the shell pair
+                        spsc.nonzeroPrimPairs[nprim_sig] = pps;
+                        ++nprim_sig;
                     } else {
                         ++discard_prim_pairs;
                     }
                 }
             }
 
-            total_prim_pairs += np_i*np_j;
-            screenpairs12_[si][sj] = spsc;
-            
+            total_prim_pairs += np_i * np_j;
+            spsc.nonzeroPrimPairs.resize(nprim_sig);
+            (*screenpairs12_)[si][sj] = spsc;
         }
     }
 
-    double discard_percent = discard_prim_pairs*100.0/total_prim_pairs;
-    outfile->Printf("\n  Screening Overlap Integrals: Cutoff of %.12f \n", overlap_cutoff);
-    outfile->Printf("  Discarded %d of %d primitive products (%.2f%%)\n\n", discard_prim_pairs, total_prim_pairs, discard_percent);
+    double discard_percent = discard_prim_pairs * 100.0 / total_prim_pairs;
+    outfile->Printf("\n  Overlap Screening of DISK ERIs: Cutoff of %.12f \n", overlap_cutoff);
+    outfile->Printf("  Discarded %d of %d primitive products (%.2f%%)\n\n", discard_prim_pairs, total_prim_pairs,
+                    discard_percent);
 }
 
 void TwoElectronInt::init_shell_pairs34() {
@@ -2581,12 +2589,13 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4) {
         // 1234 -> 1234 no change
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
-        const ShellPairScreen& sp12 = screenpairs12_[sh1][sh2];
-        const ShellPairScreen& sp34 = screenpairs34_[sh3][sh4];
+        const ShellPairScreen &sp12 = (*screenpairs12_)[sh1][sh2];
+        const ShellPairScreen &sp34 = (*screenpairs34_)[sh3][sh4];
 
         // old way of filling primitive data (without screening)
-        //nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 0);
-        
+        // nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 ==
+        // sh2, sh3 == sh4, 0);
+
         // new way of filling primitve data (with screening)
         nprim = fill_primitive_data_screen(libint_.PrimQuartet, fjt_, sp12, sp34, am, sh1 == sh2, sh3 == sh4, 0);
 
@@ -2950,13 +2959,13 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
         ShellPair *p12, *p34;
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
-        const ShellPairScreen& sp12 = screenpairs12_[sh1][sh2];
-        const ShellPairScreen& sp34 = screenpairs34_[sh3][sh4];
+        const ShellPairScreen &sp12 = (*screenpairs12_)[sh1][sh2];
+        const ShellPairScreen &sp34 = (*screenpairs34_)[sh3][sh4];
 
         // old way of filling primitive data (without screening)
-        //nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4,
+        // nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4,
         //                            sh1 == sh2, sh3 == sh4, 1);
-        
+
         // new way of filling primitve data (with screening)
         nprim = fill_primitive_data_screen(libderiv_.PrimQuartet, fjt_, sp12, sp34, am, sh1 == sh2, sh3 == sh4, 1);
     } else {
@@ -3297,13 +3306,13 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
         ShellPair *p12, *p34;
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
-        const ShellPairScreen& sp12 = screenpairs12_[sh1][sh2];
-        const ShellPairScreen& sp34 = screenpairs34_[sh3][sh4];
+        const ShellPairScreen &sp12 = (*screenpairs12_)[sh1][sh2];
+        const ShellPairScreen &sp34 = (*screenpairs34_)[sh3][sh4];
 
         // old way of filling primitive data (without screening)
-        //nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4,
+        // nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4,
         //                            sh1 == sh2, sh3 == sh4, 2);
-        
+
         // new way of filling primitve data (with screening)
         nprim = fill_primitive_data_screen(libderiv_.PrimQuartet, fjt_, sp12, sp34, am, sh1 == sh2, sh3 == sh4, 2);
     } else {
