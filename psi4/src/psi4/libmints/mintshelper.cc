@@ -1812,16 +1812,23 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
         throw PSIEXCEPTION(msg);
     }
 
-    return perturb_grad(D, xlambda, ylambda, zlambda);
+    int natoms = basisset_->molecule()->natom();
+    auto perturbation_gradient = std::make_shared<Matrix>("Perturbation Gradient", natoms, 3);
+    auto dipole_gradients = dipole_grad(D);
+    double lambdas[3] = {xlambda, ylambda, zlambda};
+    C_DGEMM('n', 't', 3 * natoms, 1, 3, 1.0, dipole_gradients->pointer()[0], 3, &lambdas[0], 3, 0.0,
+            perturbation_gradient->pointer()[0], 1);
+    return perturbation_gradient;
 }
-SharedMatrix MintsHelper::perturb_grad(SharedMatrix D, double xlambda, double ylambda, double zlambda) {
+
+SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
+    // Computes skeleton (Hellman-Feynman like) dipole derivatives for each perturbation
     double **Dp = D->pointer();
 
     int natom = molecule_->natom();
-    auto ret = std::make_shared<Matrix>("Perturbation Gradient", natom, 3);
+    auto ret = std::make_shared<Matrix>("Dipole dervatives (pert*component, i.e. 3Nx3)", 3 * natom, 3);
     double **Pp = ret->pointer();
 
-    // Electronic dipole perturbation derivatives
     std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
     const double *buffer = Dint->buffer();
 
@@ -1838,156 +1845,140 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D, double xlambda, double yl
             int aQ = basisset_->shell(Q).ncenter();
 
             const double *ref = buffer;
-            double perm = (P == Q ? 1.0 : 2.0);
-            double prefac;
+            double prefac = (P == Q ? 1.0 : 2.0);
 
             /*
              * Mu X derivatives
              */
-            if (xlambda != 0.0) {
-                prefac = perm * xlambda;
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
-            } else {
-                // Xlambda is zero, so we just advance the pointer to the buffer
-                ref += 6 * nP * nQ;
             }
 
             /*
              * Mu Y derivatives
              */
-            if (ylambda != 0.0) {
-                prefac = perm * ylambda;
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
-            } else {
-                // Ylambda is zero, so we just advance the pointer to the buffer
-                ref += 6 * nP * nQ;
             }
 
             /*
              * Mu Z derivatives
              */
-            if (zlambda != 0.0) {
-                prefac = perm * zlambda;
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aP][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aP + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
+            }
 
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[aQ][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Pp[3 * aQ + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
                 }
             }
         }

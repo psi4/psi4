@@ -1503,6 +1503,10 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     else:
         nmwhess = hess
 
+    dipder = wfn.variables().get("CURRENT DIPOLE GRADIENT", None)
+    if dipder is not None:
+        dipder = np.asarray(dipder).T
+
     mol = wfn.molecule()
     geom = np.asarray(mol.geometry())
     symbols = [mol.symbol(at) for at in range(mol.natom())]
@@ -1529,7 +1533,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     irrep_labels = mol.irrep_labels()
 
     vibinfo, vibtext = qcdb.vib.harmonic_analysis(
-        nmwhess, geom, m, wfn.basisset(), irrep_labels, project_trans=project_trans, project_rot=project_rot)
+        nmwhess, geom, m, wfn.basisset(), irrep_labels, dipder=dipder, project_trans=project_trans, project_rot=project_rot)
     vibrec.update({k: qca.to_dict() for k, qca in vibinfo.items()})
 
     core.print_out(vibtext)

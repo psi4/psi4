@@ -48,6 +48,7 @@ protected:
     std::shared_ptr<VBase> potential_;
     std::map<std::string, SharedMatrix> gradients_;
     std::map<std::string, SharedMatrix> hessians_;
+    SharedMatrix dipole_gradient_;
 
 public:
     SCFGrad(SharedWavefunction ref_wfn, Options& options);
@@ -60,6 +61,8 @@ public:
     SharedMatrix compute_hessian() override;
 
     SharedMatrix rhf_hessian_response();
+
+    SharedMatrix dipole_gradient() const { return dipole_gradient_; }
 };
 
 }} // Namespaces

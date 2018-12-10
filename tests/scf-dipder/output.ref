@@ -1,0 +1,870 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.3a2.dev187 
+
+                         Git: Rev {dipder} f5d7711 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, and R. A. Shaw
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Wednesday, 28 November 2018 02:47PM
+
+    Process ID: 51858
+    Host:       QuickSilver.local
+    PSIDATADIR: /Users/andysim/programming/psi4/obj_debug/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test SCF dipole derivatives against old Psi3 reference values
+
+ref_energy = -78.01198983530274                                        #TEST
+ref_dipder = np.array([                                                #TEST
+     [ -0.0841019829,       0.0000000000,       0.0000000000,          #TEST
+       -0.0841019829,       0.0000000000,       0.0000000000,          #TEST
+        0.0420509914,      -0.5105760573,       0.0000000000,          #TEST
+        0.0420509914,       0.5105760573,       0.0000000000,          #TEST
+        0.0420509914,       0.5105760573,       0.0000000000,          #TEST
+        0.0420509914,      -0.5105760573,       0.0000000000],         #TEST
+     [  0.0000000000,       0.8591577608,       0.0000000000,          #TEST
+        0.0000000000,       0.8591577608,       0.0000000000,          #TEST
+       -0.4230783027,      -0.4295788804,       0.0000000000,          #TEST
+        0.4230783027,      -0.4295788804,       0.0000000000,          #TEST
+        0.4230783027,      -0.4295788804,       0.0000000000,          #TEST
+       -0.4230783027,      -0.4295788804,       0.0000000000],         #TEST
+     [  0.0000000000,       0.0000000000,      -1.8293459180,          #TEST
+        0.0000000000,       0.0000000000,      -1.8293459180,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590,          #TEST
+        0.0000000000,       0.0000000000,       0.9146729590]])        #TEST
+ref_frequencies = np.array(                                            #TEST
+         [ 913.03885413, 1111.72520574, 1140.53100754, 1142.92951947,  #TEST
+          1356.13505719, 1491.23000869, 1613.9468836,  1808.84736263,  #TEST
+          3321.35225239, 3350.15280409, 3415.68299952, 3448.49429407]  #TEST
+)                                                                      #TEST
+
+molecule {
+    C       -1.2602962432        0.0000000000        0.0000000000
+    C        1.2602962432        0.0000000000        0.0000000000
+    H       -2.3303912628       -1.7258024530        0.0000000000
+    H        2.3303912628       -1.7258024530        0.0000000000
+    H       -2.3303912628        1.7258024530        0.0000000000
+    H        2.3303912628        1.7258024530        0.0000000000
+    units bohr
+    symmetry c1
+}
+
+set scf_type pk
+set d_convergence 10
+
+e, wfn = frequency('SCF/DZ', return_wfn=True)
+
+# Convert dipole derivatives to Debye/Ang units
+dipder = wfn.dipole_gradient().np * psi_dipmom_au2debye / psi_bohr2angstroms
+
+# The differences in values are due to updated CODATA physical constants
+compare_values(ref_energy, e, 1e-8, "SCF energy")                             #TEST
+compare_arrays(ref_frequencies, wfn.frequencies(), 1e-4, "SCF frequencies")   #TEST
+compare_arrays(ref_dipder.T, dipder, 1e-4, "SCF dipole derivatives")          #TEST
+--------------------------------------------------------------------------
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on QuickSilver.local
+*** at Wed Nov 28 14:47:37 2018
+
+   => Loading Basis Set <=
+
+    Name: DZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry C          line    63 file /Users/andysim/programming/psi4/obj_debug/stage/share/psi4/basis/dz.gbs 
+    atoms 3-6 entry H          line    12 file /Users/andysim/programming/psi4/obj_debug/stage/share/psi4/basis/dz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D2h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         C            1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         H           -2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H           -2.330391262800     1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800     1.725802453000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      5.01380  B =      1.00311  C =      0.83587 [cm^-1]
+  Rotational constants: A = 150309.91786  B =  30072.40665  C =  25058.89081 [MHz]
+  Nuclear repulsion =   33.478943917692163
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: DZ
+    Blend: DZ
+    Number of shells: 20
+    Number of basis function: 28
+    Number of Cartesian functions: 28
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         28      28       0       0       0       0
+   -------------------------------------------------------
+    Total      28      28       8       8       8       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   6
+      Number of AO shells:              20
+      Number of primitives:             44
+      Number of atomic orbitals:        28
+      Number of basis functions:        28
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 165242 doubles for integral storage.
+  We computed 22154 shell quartets total.
+  Whereas there are 22155 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 4.3777277458E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:   -78.29083073408316   -7.82908e+01   8.48807e-02 
+   @RHF iter   1:   -77.96439033679647    3.26440e-01   8.12248e-03 
+   @RHF iter   2:   -78.00724437453782   -4.28540e-02   2.17999e-03 DIIS
+   @RHF iter   3:   -78.01154175740741   -4.29738e-03   6.56824e-04 DIIS
+   @RHF iter   4:   -78.01193104196446   -3.89285e-04   1.99377e-04 DIIS
+   @RHF iter   5:   -78.01198516777123   -5.41258e-05   5.15843e-05 DIIS
+   @RHF iter   6:   -78.01198970064875   -4.53288e-06   9.22844e-06 DIIS
+   @RHF iter   7:   -78.01198983273295   -1.32084e-07   1.34704e-06 DIIS
+   @RHF iter   8:   -78.01198983521786   -2.48491e-09   2.14888e-07 DIIS
+   @RHF iter   9:   -78.01198983529693   -7.90692e-11   5.47934e-08 DIIS
+   @RHF iter  10:   -78.01198983530273   -5.79803e-12   6.74579e-09 DIIS
+   @RHF iter  11:   -78.01198983530278   -5.68434e-14   1.14768e-09 DIIS
+   @RHF iter  12:   -78.01198983530277    1.42109e-14   1.32995e-10 DIIS
+   @RHF iter  13:   -78.01198983530284   -7.10543e-14   2.23995e-11 DIIS
+  Energy converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -11.240918     2A    -11.239270     3A     -1.040982  
+       4A     -0.797242     5A     -0.648798     6A     -0.590961  
+       7A     -0.506072     8A     -0.376680  
+
+    Virtual:                                                              
+
+       9A      0.146623    10A      0.259818    11A      0.293576  
+      12A      0.371367    13A      0.407595    14A      0.413361  
+      15A      0.438541    16A      0.467208    17A      0.489025  
+      18A      0.615514    19A      0.693649    20A      0.731441  
+      21A      0.906318    22A      1.133248    23A      1.319006  
+      24A      1.392383    25A      1.463409    26A      1.702170  
+      27A     23.765408    28A     24.067519  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     8 ]
+
+  @RHF Final Energy:   -78.01198983530284
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             33.4789439176921633
+    One-Electron Energy =                -170.1000244302209978
+    Two-Electron Energy =                  58.6090906772259927
+    Total Energy =                        -78.0119898353028418
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on QuickSilver.local at Wed Nov 28 14:47:38 2018
+Module time:
+	user time   =       1.03 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.03 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Wed Nov 28 14:47:38 2018
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D2h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         C            1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         H           -2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H           -2.330391262800     1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800     1.725802453000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =   33.478943917692163
+
+  ==> Basis Set <==
+
+  Basis Set: DZ
+    Blend: DZ
+    Number of shells: 20
+    Number of basis function: 28
+    Number of Cartesian functions: 28
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+ERI derivative integrals only available using Libint
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000000001717     0.000000000010    -0.000000000002
+       2        0.000000001717    -0.000000000010     0.000000000002
+       3        0.000000000196     0.000000000177     0.000000000004
+       4       -0.000000000196     0.000000000188     0.000000000005
+       5        0.000000000196    -0.000000000188    -0.000000000005
+       6       -0.000000000196    -0.000000000177    -0.000000000004
+
+
+*** tstop() called on QuickSilver.local at Wed Nov 28 14:47:38 2018
+Module time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.36 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+  Based on options and gradient (rms=5.86E-10), recommend projecting translations and projecting rotations.
+hessian() will perform analytic frequency computation.
+
+*** tstart() called on QuickSilver.local
+*** at Wed Nov 28 14:47:38 2018
+
+   => Loading Basis Set <=
+
+    Name: DZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry C          line    63 file /Users/andysim/programming/psi4/obj_debug/stage/share/psi4/basis/dz.gbs 
+    atoms 3-6 entry H          line    12 file /Users/andysim/programming/psi4/obj_debug/stage/share/psi4/basis/dz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D2h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         C            1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         H           -2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H           -2.330391262800     1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800     1.725802453000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      5.01380  B =      1.00311  C =      0.83587 [cm^-1]
+  Rotational constants: A = 150309.91786  B =  30072.40665  C =  25058.89081 [MHz]
+  Nuclear repulsion =   33.478943917692163
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: DZ
+    Blend: DZ
+    Number of shells: 20
+    Number of basis function: 28
+    Number of Cartesian functions: 28
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         28      28       0       0       0       0
+   -------------------------------------------------------
+    Total      28      28       8       8       8       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   6
+      Number of AO shells:              20
+      Number of primitives:             44
+      Number of atomic orbitals:        28
+      Number of basis functions:        28
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 165242 doubles for integral storage.
+  We computed 22154 shell quartets total.
+  Whereas there are 22155 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 4.3777277458E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:   -78.29083073408316   -7.82908e+01   8.48807e-02 
+   @RHF iter   1:   -77.96439033679648    3.26440e-01   8.12248e-03 
+   @RHF iter   2:   -78.00724437453781   -4.28540e-02   2.17999e-03 DIIS
+   @RHF iter   3:   -78.01154175740736   -4.29738e-03   6.56824e-04 DIIS
+   @RHF iter   4:   -78.01193104196447   -3.89285e-04   1.99377e-04 DIIS
+   @RHF iter   5:   -78.01198516777126   -5.41258e-05   5.15843e-05 DIIS
+   @RHF iter   6:   -78.01198970064875   -4.53288e-06   9.22844e-06 DIIS
+   @RHF iter   7:   -78.01198983273289   -1.32084e-07   1.34704e-06 DIIS
+   @RHF iter   8:   -78.01198983521785   -2.48495e-09   2.14888e-07 DIIS
+   @RHF iter   9:   -78.01198983529694   -7.90976e-11   5.47934e-08 DIIS
+   @RHF iter  10:   -78.01198983530276   -5.81224e-12   6.74579e-09 DIIS
+   @RHF iter  11:   -78.01198983530284   -8.52651e-14   1.14768e-09 DIIS
+   @RHF iter  12:   -78.01198983530278    5.68434e-14   1.32995e-10 DIIS
+   @RHF iter  13:   -78.01198983530286   -7.10543e-14   2.23993e-11 DIIS
+  Energy converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -11.240918     2A    -11.239270     3A     -1.040982  
+       4A     -0.797242     5A     -0.648798     6A     -0.590961  
+       7A     -0.506072     8A     -0.376680  
+
+    Virtual:                                                              
+
+       9A      0.146623    10A      0.259818    11A      0.293576  
+      12A      0.371367    13A      0.407595    14A      0.413361  
+      15A      0.438541    16A      0.467208    17A      0.489025  
+      18A      0.615514    19A      0.693649    20A      0.731441  
+      21A      0.906318    22A      1.133248    23A      1.319006  
+      24A      1.392383    25A      1.463409    26A      1.702170  
+      27A     23.765408    28A     24.067519  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     8 ]
+
+  @RHF Final Energy:   -78.01198983530286
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             33.4789439176921633
+    One-Electron Energy =                -170.1000244302210263
+    Two-Electron Energy =                  58.6090906772260070
+    Total Energy =                        -78.0119898353028560
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on QuickSilver.local at Wed Nov 28 14:47:39 2018
+Module time:
+	user time   =       0.99 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.38 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Wed Nov 28 14:47:39 2018
+
+
+         ------------------------------------------------------------
+                                   SCF HESS                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D2h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         C            1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         H           -2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H           -2.330391262800     1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800     1.725802453000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =   33.478943917692163
+
+  ==> Basis Set <==
+
+  Basis Set: DZ
+    Blend: DZ
+    Number of shells: 20
+    Number of basis function: 28
+    Number of Cartesian functions: 28
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    2
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+ERI derivative integrals only available using LibintERI derivative integrals only available using Libint  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   6
+      Number of AO shells:              20
+      Number of primitives:             44
+      Number of atomic orbitals:        28
+      Number of basis functions:        28
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 165242 doubles for integral storage.
+  We computed 22154 shell quartets total.
+  Whereas there are 22155 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+
+         ------------------------------------------------------------
+                                     CPHF                           
+                                  Rob Parrish                       
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D2h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         C            1.260296243200     0.000000000000     0.000000000000    12.000000000000
+         H           -2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800    -1.725802453000     0.000000000000     1.007825032230
+         H           -2.330391262800     1.725802453000     0.000000000000     1.007825032230
+         H            2.330391262800     1.725802453000     0.000000000000     1.007825032230
+
+  Nuclear repulsion =   33.478943917692163
+  Reference energy  =  -78.011989835302856
+
+  ==> Basis Set <==
+
+  Basis Set: DZ
+    Blend: DZ
+    Number of shells: 20
+    Number of basis function: 28
+    Number of Cartesian functions: 28
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> CGRSolver (by Rob Parrish) <==
+
+   Number of roots    =        18
+   Preconditioning    =    JACOBI
+   Convergence cutoff =     1E-06
+   Maximum iterations =       100
+
+  ==> CPHFRHamiltonian (by Rob Parrish) <== 
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  ==> CPHF Iterations <==
+
+  => Iterations <=
+
+             Iter  Converged  Remaining    Residual
+  CGR           1          0         18   1.122E-01
+  CGR           2          0         18   1.938E-02
+  CGR           3          0         18   6.107E-03
+  CGR           4          0         18   1.506E-03
+  CGR           5          0         18   2.737E-04
+  CGR           6          2         16   4.659E-05
+  CGR           7          4         14   9.032E-06
+  CGR           8         18          0   9.895E-07
+
+    CGRSolver converged.
+
+
+*** tstop() called on QuickSilver.local at Wed Nov 28 14:47:43 2018
+Module time:
+	user time   =       2.99 seconds =       0.05 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       5.37 seconds =       0.09 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+
+  ==> Harmonic Vibrational Analysis <==
+
+  non-mass-weighted Hessian:       Symmetric? True   Hermitian? True   Lin Dep Dim?  0 (0)
+  projection of translations (True) and rotations (True) removed 6 degrees of freedom (6)
+  total projector:                 Symmetric? True   Hermitian? True   Lin Dep Dim?  6 (6)
+  mass-weighted Hessian:           Symmetric? True   Hermitian? True   Lin Dep Dim?  0 (0)
+  pre-proj  low-frequency mode:    0.0000i [cm^-1]
+  pre-proj  low-frequency mode:    0.0000i [cm^-1]
+  pre-proj  low-frequency mode:    0.0000i [cm^-1]
+  pre-proj  low-frequency mode:    0.0000i [cm^-1]
+  pre-proj  low-frequency mode:    0.0204  [cm^-1]
+  pre-proj  low-frequency mode:    0.0321  [cm^-1]
+  pre-proj  all modes:['0.0532i' '0.0010i' '0.0009i' '0.0007i' '0.0204' '0.0321' '913.0389'
+ '1111.7252' '1140.5310' '1142.9295' '1356.1351' '1491.2300' '1613.9469'
+ '1808.8474' '3321.3523' '3350.1528' '3415.6830' '3448.4943']
+  projected mass-weighted Hessian: Symmetric? True   Hermitian? True   Lin Dep Dim?  6 (6)
+  post-proj low-frequency mode:    0.0001i [cm^-1] (TR)
+  post-proj low-frequency mode:    0.0000i [cm^-1] (TR)
+  post-proj low-frequency mode:    0.0000i [cm^-1] (TR)
+  post-proj low-frequency mode:    0.0000i [cm^-1] (TR)
+  post-proj low-frequency mode:    0.0000  [cm^-1] (TR)
+  post-proj low-frequency mode:    0.0000  [cm^-1] (TR)
+  post-proj  all modes:['0.0001i' '0.0000i' '0.0000i' '0.0000i' '0.0000' '0.0000' '913.0389'
+ '1111.7252' '1140.5310' '1142.9295' '1356.1351' '1491.2300' '1613.9469'
+ '1808.8474' '3321.3523' '3350.1528' '3415.6830' '3448.4943']
+
+  Vibration                       7                   8                   9           
+  Freq [cm^-1]                 913.0389           1111.7252           1140.5310       
+  Irrep                           A                   A                   A           
+  Reduced mass [u]              1.0433              1.1607              1.0078        
+  Force const [mDyne/A]         0.5124              0.8452              0.7724        
+  Turning point v=0 [a0]        0.3555              0.3055              0.3236        
+  RMS dev v=0 [a0 u^1/2]        0.2568              0.2327              0.2297        
+  Char temp [K]               1313.6596           1599.5250           1640.9702       
+  ----------------------------------------------------------------------------------
+      1   C                0.00  0.04  0.00   -0.00  0.00 -0.08    0.00  0.00 -0.00   
+      2   C                0.00  0.04  0.00   -0.00  0.00 -0.08    0.00  0.00 -0.00   
+      3   H                0.44 -0.24 -0.00    0.00 -0.00  0.50    0.00 -0.00  0.50   
+      4   H               -0.44 -0.24 -0.00   -0.00 -0.00  0.50   -0.00  0.00 -0.50   
+      5   H               -0.44 -0.24 -0.00   -0.00 -0.00  0.50   -0.00  0.00 -0.50   
+      6   H                0.44 -0.24 -0.00    0.00 -0.00  0.50    0.00 -0.00  0.50   
+
+  Vibration                       10                  11                  12          
+  Freq [cm^-1]                1142.9295           1356.1351           1491.2300       
+  Irrep                           A                   A                   A           
+  Reduced mass [u]              1.5136              1.5173              1.3034        
+  Force const [mDyne/A]         1.1649              1.6441              1.7077        
+  Turning point v=0 [a0]        0.2638              0.2419              0.2489        
+  RMS dev v=0 [a0 u^1/2]        0.2295              0.2107              0.2009        
+  Char temp [K]               1644.4211           1951.1764           2145.5480       
+  ----------------------------------------------------------------------------------
+      1   C                0.00  0.00  0.15   -0.00  0.15 -0.00    0.12  0.00 -0.00   
+      2   C               -0.00 -0.00 -0.15    0.00 -0.15  0.00   -0.12 -0.00  0.00   
+      3   H                0.00 -0.00 -0.49    0.47 -0.14  0.00    0.46 -0.18  0.00   
+      4   H                0.00  0.00  0.49    0.47  0.14 -0.00   -0.46 -0.18 -0.00   
+      5   H               -0.00 -0.00 -0.49   -0.47 -0.14  0.00    0.46  0.18  0.00   
+      6   H               -0.00  0.00  0.49   -0.47  0.14 -0.00   -0.46  0.18 -0.00   
+
+  Vibration                       13                  14                  15          
+  Freq [cm^-1]                1613.9469           1808.8474           3321.3523       
+  Irrep                           A                   A                   A           
+  Reduced mass [u]              1.1115              2.6657              1.0482        
+  Force const [mDyne/A]         1.7058              5.1389              6.8125        
+  Turning point v=0 [a0]        0.2591              0.1580              0.1860        
+  RMS dev v=0 [a0 u^1/2]        0.1931              0.1824              0.1346        
+  Char temp [K]               2322.1102           2602.5286           4778.6864       
+  ----------------------------------------------------------------------------------
+      1   C               -0.07  0.00 -0.00    0.27 -0.00 -0.00   -0.04  0.00  0.00   
+      2   C               -0.07  0.00 -0.00   -0.27  0.00  0.00   -0.04  0.00  0.00   
+      3   H                0.41 -0.28  0.00   -0.26  0.38  0.00    0.25  0.43  0.00   
+      4   H                0.41  0.28 -0.00    0.26  0.38 -0.00    0.25 -0.43 -0.00   
+      5   H                0.41  0.28 -0.00   -0.26 -0.38  0.00    0.25 -0.43 -0.00   
+      6   H                0.41 -0.28  0.00    0.26 -0.38 -0.00    0.25  0.43  0.00   
+
+  Vibration                       16                  17                  18          
+  Freq [cm^-1]                3350.1528           3415.6830           3448.4943       
+  Irrep                           A                   A                   A           
+  Reduced mass [u]              1.0806              1.1141              1.1170        
+  Force const [mDyne/A]         7.1456              7.6583              7.8262        
+  Turning point v=0 [a0]        0.1824              0.1779              0.1768        
+  RMS dev v=0 [a0 u^1/2]        0.1340              0.1328              0.1321        
+  Char temp [K]               4820.1240           4914.4073           4961.6155       
+  ----------------------------------------------------------------------------------
+      1   C               -0.06  0.00  0.00   -0.00 -0.07  0.00   -0.00 -0.07 -0.00   
+      2   C                0.06 -0.00 -0.00    0.00  0.07 -0.00   -0.00 -0.07 -0.00   
+      3   H                0.26  0.43 -0.00    0.27  0.42 -0.00    0.27  0.42  0.00   
+      4   H               -0.26  0.43  0.00    0.27 -0.42  0.00   -0.27  0.42  0.00   
+      5   H                0.26 -0.43 -0.00   -0.27  0.42 -0.00   -0.27  0.42  0.00   
+      6   H               -0.26 -0.43  0.00   -0.27 -0.42  0.00    0.27  0.42  0.00   
+
+  ==> Thermochemistry Components <==
+
+  Entropy, S
+    Electronic S            0.000 [cal/(mol K)]        0.000 [J/(mol K)]       0.00000000 [mEh/K] (multiplicity = 1)
+    Translational S        35.927 [cal/(mol K)]      150.318 [J/(mol K)]       0.05725309 [mEh/K] (mol. weight = 28.0313 [u], P = 101325.00 [Pa])
+    Rotational S           15.836 [cal/(mol K)]       66.256 [J/(mol K)]       0.02523557 [mEh/K] (symmetry no. = 4)
+    Vibrational S           0.341 [cal/(mol K)]        1.428 [J/(mol K)]       0.00054390 [mEh/K]
+  Total S                  52.104 [cal/(mol K)]      218.002 [J/(mol K)]       0.08303256 [mEh/K]
+  Correction S              0.000 [cal/(mol K)]        0.000 [J/(mol K)]       0.00000000 [mEh/K]
+
+  Constant volume heat capacity, Cv
+    Electronic Cv           0.000 [cal/(mol K)]        0.000 [J/(mol K)]       0.00000000 [mEh/K]
+    Translational Cv        2.981 [cal/(mol K)]       12.472 [J/(mol K)]       0.00475022 [mEh/K]
+    Rotational Cv           2.981 [cal/(mol K)]       12.472 [J/(mol K)]       0.00475022 [mEh/K]
+    Vibrational Cv          1.520 [cal/(mol K)]        6.358 [J/(mol K)]       0.00242162 [mEh/K]
+  Total Cv                  7.481 [cal/(mol K)]       31.301 [J/(mol K)]       0.01192205 [mEh/K]
+  Correction Cv             0.000 [cal/(mol K)]        0.000 [J/(mol K)]       0.00000000 [mEh/K]
+
+  Constant pressure heat capacity, Cp
+    Electronic Cp           0.000 [cal/(mol K)]        0.000 [J/(mol K)]       0.00000000 [mEh/K]
+    Translational Cp        4.968 [cal/(mol K)]       20.786 [J/(mol K)]       0.00791703 [mEh/K]
+    Rotational Cp           2.981 [cal/(mol K)]       12.472 [J/(mol K)]       0.00475022 [mEh/K]
+    Vibrational Cp          1.520 [cal/(mol K)]        6.358 [J/(mol K)]       0.00242162 [mEh/K]
+  Total Cp                  9.468 [cal/(mol K)]       39.616 [J/(mol K)]       0.01508886 [mEh/K]
+  Correction Cp             0.000 [cal/(mol K)]        0.000 [J/(mol K)]       0.00000000 [mEh/K]
+
+  ==> Thermochemistry Energy Analysis <==
+
+  Raw electronic energy, E0
+  Total E0, Electronic energy at well bottom at 0 [K]                  -78.01198984 [Eh]
+
+  Zero-point energy, ZPE_vib = Sum_i nu_i / 2
+    Electronic ZPE          0.000 [kcal/mol]        0.000 [kJ/mol]       0.00000000 [Eh]
+    Translational ZPE       0.000 [kcal/mol]        0.000 [kJ/mol]       0.00000000 [Eh]
+    Rotational ZPE          0.000 [kcal/mol]        0.000 [kJ/mol]       0.00000000 [Eh]
+    Vibrational ZPE        34.473 [kcal/mol]      144.234 [kJ/mol]       0.05493588 [Eh]       12057.033 [cm^-1]
+  Correction ZPE           34.473 [kcal/mol]      144.234 [kJ/mol]       0.05493588 [Eh]       12057.033 [cm^-1]
+  Total ZPE, Electronic energy at 0 [K]                                -77.95705395 [Eh]
+
+  Thermal Energy, E (includes ZPE)
+    Electronic E            0.000 [kcal/mol]        0.000 [kJ/mol]       0.00000000 [Eh]
+    Translational E         0.889 [kcal/mol]        3.718 [kJ/mol]       0.00141628 [Eh]
+    Rotational E            0.889 [kcal/mol]        3.718 [kJ/mol]       0.00141628 [Eh]
+    Vibrational E          34.558 [kcal/mol]      144.591 [kJ/mol]       0.05507176 [Eh]
+  Correction E             36.336 [kcal/mol]      152.028 [kJ/mol]       0.05790431 [Eh]
+  Total E, Electronic energy at  298.15 [K]                            -77.95408553 [Eh]
+
+  Enthalpy, H_trans = E_trans + k_B * T
+    Electronic H            0.000 [kcal/mol]        0.000 [kJ/mol]       0.00000000 [Eh]
+    Translational H         1.481 [kcal/mol]        6.197 [kJ/mol]       0.00236046 [Eh]
+    Rotational H            0.889 [kcal/mol]        3.718 [kJ/mol]       0.00141628 [Eh]
+    Vibrational H          34.558 [kcal/mol]      144.591 [kJ/mol]       0.05507176 [Eh]
+  Correction H             36.928 [kcal/mol]      154.507 [kJ/mol]       0.05884849 [Eh]
+  Total H, Enthalpy at  298.15 [K]                                     -77.95314134 [Eh]
+
+  Gibbs free energy, G = H - T * S
+    Electronic G            0.000 [kcal/mol]        0.000 [kJ/mol]       0.00000000 [Eh]
+    Translational G        -9.230 [kcal/mol]      -38.620 [kJ/mol]      -0.01470955 [Eh]
+    Rotational G           -3.833 [kcal/mol]      -16.036 [kJ/mol]      -0.00610771 [Eh]
+    Vibrational G          34.456 [kcal/mol]      144.165 [kJ/mol]       0.05490959 [Eh]
+  Correction G             21.393 [kcal/mol]       89.509 [kJ/mol]       0.03409234 [Eh]
+  Total G, Free enthalpy at  298.15 [K]                                -77.97789750 [Eh]
+	SCF energy........................................................PASSED
+	SCF frequencies...................................................PASSED
+	SCF dipole derivatives............................................PASSED
+
+    Psi4 stopped on: Wednesday, 28 November 2018 02:47PM
+    Psi4 wall time for execution: 0:00:05.76
+
+*** Psi4 exiting successfully. Buy a developer a beer!
