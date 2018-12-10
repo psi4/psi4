@@ -21,6 +21,6 @@ set qc_module detci
 thisenergy = optimize('cisd', dertype = 0)
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(),         4, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"),       7, "SCF energy") #TEST
+compare_values(refscf, variable("SCF total energy"),       7, "SCF energy") #TEST
 compare_values(refci, thisenergy,                              7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CIsd CORRELATION ENERGY"), 6, "CI correlation energy") #TEST
+compare_values(refcorr, variable("CIsd CORRELATION ENERGY"), 6, "CI correlation energy") #TEST

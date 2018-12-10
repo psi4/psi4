@@ -526,7 +526,7 @@ class PSI_API JK {
  * JK implementation using disk-based PK
  * integral technology
  */
-class DiskJK : public JK {
+class PSI_API DiskJK : public JK {
     /// Absolute AO index to relative SO index
     int* so2index_;
     /// Absolute AO index to irrep
@@ -646,7 +646,7 @@ class PSI_API PKJK : public JK {
  * you have a high core-to-memory ratio. Clamp the
  * DF_INTS_NUM_THREADS value if this fate befalls you.
  */
-class DirectJK : public JK {
+class PSI_API DirectJK : public JK {
    protected:
     /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
     int df_ints_num_threads_;
@@ -906,7 +906,7 @@ class PSI_API DiskDFJK : public JK {
  * JK implementation using
  * cholesky decomposition technology
  */
-class CDJK : public DiskDFJK {
+class PSI_API CDJK : public DiskDFJK {
    protected:
     // the number of cholesky vectors
     long int ncholesky_;
@@ -955,7 +955,7 @@ class CDJK : public DiskDFJK {
  * under slightly different paradigm than DiskDFJK
  * wraps lib3index/DFHelper class
  */
-class MemDFJK : public JK {
+class PSI_API MemDFJK : public JK {
    protected:
     // => DF-Specific stuff <= //
 

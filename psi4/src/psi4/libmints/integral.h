@@ -81,7 +81,7 @@ class SOBasisSet;
 class CorrelationFactor;
 
 /*! \ingroup MINTS */
-class SphericalTransformComponent {
+class PSI_API SphericalTransformComponent {
    protected:
     int a_, b_, c_;
     int cartindex_, pureindex_;
@@ -220,7 +220,7 @@ class AOIntegralsIterator {
 };
 
 /*! \ingroup MINTS */
-class AOShellCombinationsIterator {
+class PSI_API AOShellCombinationsIterator {
    private:
     struct ShellQuartet {
         int P;

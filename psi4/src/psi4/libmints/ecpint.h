@@ -42,6 +42,8 @@
 #define ECPINT_HEAD
 
 #include <vector>
+
+#include "psi4/pragma.h"
 #include "psi4/libmints/multiarr.h"
 #include "psi4/libmints/gaussquad.h"
 #include "psi4/libmints/typedefs.h"

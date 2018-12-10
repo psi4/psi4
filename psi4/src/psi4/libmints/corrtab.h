@@ -70,7 +70,7 @@ namespace psi {
 /** The CorrelationTable class provides a correlation
     table between two point groups.
 */
-class CorrelationTable {
+class PSI_API CorrelationTable {
    private:
     std::shared_ptr<PointGroup> group_;
     std::shared_ptr<PointGroup> subgroup_;

@@ -56,7 +56,7 @@ namespace psi {
 
 size_t counter;
 
-class CorrelatedFunctor {
+class PSI_API CorrelatedFunctor {
     /// The buffer to hold the TPDM
     double *tpdm_buffer_;
     /// Pointer to the current TPDM element
@@ -122,7 +122,7 @@ class CorrelatedFunctor {
     }
 };
 
-class ScfRestrictedFunctor {
+class PSI_API ScfRestrictedFunctor {
     SharedMatrix D_;
 
    public:
@@ -188,7 +188,7 @@ class ScfRestrictedFunctor {
     }
 };
 
-class ScfAndDfCorrelationRestrictedFunctor {
+class PSI_API ScfAndDfCorrelationRestrictedFunctor {
     SharedMatrix D_ref_;
     SharedMatrix D_;
     ScfRestrictedFunctor scf_functor_;
@@ -315,7 +315,7 @@ class ScfAndDfCorrelationRestrictedFunctor {
     }
 };
 
-class ScfUnrestrictedFunctor {
+class PSI_API ScfUnrestrictedFunctor {
     SharedMatrix Da_;
     SharedMatrix Db_;
 

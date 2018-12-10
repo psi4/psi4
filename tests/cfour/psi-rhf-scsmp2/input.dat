@@ -25,10 +25,10 @@ print_variables()
 clean()
 
 for vari in test_psivars:  #TEST
-    store[vari] = get_variable(vari)  #TEST
+    store[vari] = variable(vari)  #TEST
     set_variable(vari, 0.0)  #TEST
-    #print(store[vari], get_variable(vari))  #TEST
-    #print get_variable(vari)  #TEST
+    #print(store[vari], variable(vari))  #TEST
+    #print variable(vari)  #TEST
 
 molecule h2o {
 O
@@ -48,5 +48,5 @@ energy('mp2')
 print_variables()
 
 for vari in test_psivars:  #TEST
-    compare_values(store[vari], get_variable(vari), 6, vari.upper())  #TEST
+    compare_values(store[vari], variable(vari), 6, vari.upper())  #TEST
 

@@ -288,7 +288,7 @@ class PSI_API Vector {
 };
 
 /*! \ingroup MINTS */
-class IntVector {
+class PSI_API IntVector {
    protected:
     /// IntVector data
     int **vector_;

@@ -33,9 +33,11 @@
 #include <cmath>
 #include <sstream>
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
-class Vector3 {
+class PSI_API Vector3 {
    private:
     double v_[3];
 

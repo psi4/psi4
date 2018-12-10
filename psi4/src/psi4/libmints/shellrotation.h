@@ -34,7 +34,7 @@ namespace psi {
 class SymmetryOperation;
 class IntegralFactory;
 
-class ShellRotation {
+class PSI_API ShellRotation {
     int n_;
     int am_;
     double** r_;

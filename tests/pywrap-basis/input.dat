@@ -36,7 +36,7 @@ df_basis_sapt {
 set scf_type df
 
 energy('sapt0')
-compare_values(-0.004628759506, get_variable('SAPT TOTAL ENERGY'), 6, """[1] autofrag'd sapt: explicit vs. custom haDZ""")  #TEST
+compare_values(-0.004628759506, variable('SAPT TOTAL ENERGY'), 6, """[1] autofrag'd sapt: explicit vs. custom haDZ""")  #TEST
 clean()
 
 

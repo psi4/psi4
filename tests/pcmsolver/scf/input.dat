@@ -47,13 +47,13 @@ print('PK-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
 set pcm_scf_type separate
 print('PK-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
@@ -61,7 +61,7 @@ set reference uhf
 print('PK-UHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Check SCF_TYPE OUT_OF_CORE
 set reference rhf
@@ -70,13 +70,13 @@ print('OUT_OF_CORE-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
 set pcm_scf_type separate
 print('OUT_OF_CORE-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
@@ -84,7 +84,7 @@ set reference uhf
 print('OUT_OF_CORE-UHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Check SCF_TYPE DIRECT
 set reference rhf
@@ -93,13 +93,13 @@ print('DIRECT-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
 set pcm_scf_type separate
 print('DIRECT-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
@@ -107,7 +107,7 @@ set reference uhf
 print('DIRECT-UHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Check SCF_TYPE DF
 set reference rhf
@@ -116,13 +116,13 @@ print('DF-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
 compare_values(df_totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
-compare_values(df_polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+compare_values(df_polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
 set pcm_scf_type separate
 print('DF-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(df_totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(df_polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(df_polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
@@ -130,7 +130,7 @@ set reference uhf
 print('DF-UHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(df_totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(df_polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(df_polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Check SCF_TYPE CD
 set reference rhf
@@ -139,13 +139,13 @@ print('CD-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
 compare_values(cd_totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
-compare_values(cd_polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+compare_values(cd_polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
 set pcm_scf_type separate
 print('CD-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(cd_totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(cd_polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(cd_polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
@@ -153,5 +153,5 @@ set reference uhf
 print('CD-UHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 compare_values(cd_totalenergy, energy_scf, 10, "Total energy (PCM, separate algorithm)") #TEST
-compare_values(cd_polenergy, wfn.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
+compare_values(cd_polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")  #TEST
 

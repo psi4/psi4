@@ -521,7 +521,11 @@ Options& py_psi_get_options() { return Process::environment.options; }
 
 bool py_psi_set_local_option_string(std::string const& module, std::string const& key, std::string const& value) {
     std::string nonconst_key = to_upper(key);
+
+    std::string module_temp = Process::environment.options.get_current_module();
+    Process::environment.options.set_current_module(module);
     Data& data = Process::environment.options[nonconst_key];
+    Process::environment.options.set_current_module(module_temp);
 
     if (data.type() == "string") {
         Process::environment.options.set_str(module, nonconst_key, value);
@@ -540,7 +544,11 @@ bool py_psi_set_local_option_string(std::string const& module, std::string const
 
 bool py_psi_set_local_option_int(std::string const& module, std::string const& key, int value) {
     std::string nonconst_key = to_upper(key);
+
+    std::string module_temp = Process::environment.options.get_current_module();
+    Process::environment.options.set_current_module(module);
     Data& data = Process::environment.options[nonconst_key];
+    Process::environment.options.set_current_module(module_temp);
 
     if (data.type() == "double") {
         double val = (specifies_convergence(nonconst_key)) ? pow(10.0, -value) : double(value);
@@ -606,10 +614,14 @@ bool py_psi_set_global_option_double(std::string const& key, double value) {
 bool py_psi_set_local_option_array(std::string const& module, std::string const& key, const py::list& values,
                                    DataType* entry = nullptr) {
     std::string nonconst_key = to_upper(key);
+
     // Assign a new head entry on the first time around only
     if (entry == nullptr) {
         // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
+        std::string module_temp = Process::environment.options.get_current_module();
+        Process::environment.options.set_current_module(module);
         Data& data = Process::environment.options[nonconst_key];
+        Process::environment.options.set_current_module(module_temp);
         // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
         if (data.type() == "array") Process::environment.options.set_array(module, nonconst_key);
     }

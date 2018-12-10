@@ -23,7 +23,7 @@ MEMORY=20000000)
 }
 
 energy('cfour')
-compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default (Sph)')  #TEST
+compare_values(sph_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -44,7 +44,7 @@ MEMORY=20000000)
 }
 
 energy('cfour')
-compare_values(sph_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* Default (Sph)')  #TEST
+compare_values(sph_631gs, variable('CURRENT ENERGY'), 6, '6-31G* Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -63,7 +63,7 @@ set cfour_CALC_level=MP2
 set basis 6-31g*
 
 energy('cfour')
-compare_values(cart_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* P4 Default (Cart)')  #TEST
+compare_values(cart_631gs, variable('CURRENT ENERGY'), 6, '6-31G* P4 Default (Cart)')  #TEST
 
 clean()
 clean_variables()
@@ -72,7 +72,7 @@ cfour {}
 set basis cc-pvdz
 
 energy('cfour')
-compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Default (Sph)')  #TEST
+compare_values(sph_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -82,5 +82,5 @@ cfour {}
 set puream false
 
 energy('cfour')
-compare_values(cart_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Forced (Cart)')  #TEST
+compare_values(cart_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Forced (Cart)')  #TEST
 

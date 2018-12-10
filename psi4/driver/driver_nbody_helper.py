@@ -91,16 +91,16 @@ def multi_level(func, **kwargs):
             # Subtract the (n-1)-body contribution from the n-body contribution to get the n-body effect
             sign = (-1)**(1 - m // n)
             for b in kwargs['bsse_type']:
-                energy_bsse_dict[b] += sign * wfn.get_variable('%i%s' % (m, b.lower()))
+                energy_bsse_dict[b] += sign * wfn.variable('%i%s' % (m, b.lower()))
             if ptype in ['gradient', 'hessian']:
-                gradient_result += sign * np.array(wfn.get_array('GRADIENT ' + str(m)))
+                gradient_result += sign * np.array(wfn.variable('GRADIENT ' + str(m)))
                 # Keep 1-body contribution to compute interaction data
                 if n == 1:
-                    gradient1 = np.array(wfn.get_array('GRADIENT ' + str(m)))
+                    gradient1 = np.array(wfn.variable('GRADIENT ' + str(m)))
             if ptype == 'hessian':
-                hessian_result += sign * np.array(wfn.get_array('HESSIAN ' + str(m)))
+                hessian_result += sign * np.array(wfn.variable('HESSIAN ' + str(m)))
                 if n == 1:
-                    hessian1 = np.array(wfn.get_array('HESSIAN ' + str(m)))
+                    hessian1 = np.array(wfn.variable('HESSIAN ' + str(m)))
         energy_result += energy_bsse_dict[kwargs['bsse_type'][0]]
         for b in kwargs['bsse_type']:
             energy_body_contribution[b][n] = energy_bsse_dict[b]
@@ -118,15 +118,15 @@ def multi_level(func, **kwargs):
         kwargs_copy['max_nbody'] = max(levels)
         # Subtract lower order effects to avoid double counting
         ret, wfn = nbody_gufunc(func, supersystem, **kwargs_copy)
-        energy_result += wfn_super.energy() - wfn.get_variable(str(max(levels)))
+        energy_result += wfn_super.energy() - wfn.variable(str(max(levels)))
         for b in kwargs['bsse_type']:
-            energy_body_contribution[b][molecule.nfragments()] = wfn_super.energy() - wfn.get_variable(
+            energy_body_contribution[b][molecule.nfragments()] = wfn_super.energy() - wfn.variable(
                 str(max(levels)))
 
         if ptype in ['gradient', 'hessian']:
-            gradient_result += np.array(wfn_super.gradient()) - np.array(wfn.get_array('GRADIENT ' + str(max(levels))))
+            gradient_result += np.array(wfn_super.gradient()) - np.array(wfn.variable('GRADIENT ' + str(max(levels))))
         if ptype == 'hessian':
-            hessian_result += np.array(wfn_super.hessian()) - np.array(wfn.get_array('HESSIAN ' + str(max(levels))))
+            hessian_result += np.array(wfn_super.hessian()) - np.array(wfn.variable('HESSIAN ' + str(max(levels))))
         levels['supersystem'] = supersystem
 
     for b in kwargs['bsse_type']:

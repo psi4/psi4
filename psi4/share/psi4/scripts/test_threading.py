@@ -94,11 +94,11 @@ set {
 energy('sapt0')
 
 compare_values(85.189064531275775, dimer.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy")
-compare_values(-0.00343130969, psi4.get_variable("SSAPT0 ELST ENERGY"), 6, "sSAPT0 elst")
-compare_values( 0.00368418323, psi4.get_variable("SSAPT0 EXCH ENERGY"), 6, "sSAPT0 exch")
-compare_values(-0.00093297498, psi4.get_variable("SSAPT0 IND ENERGY"), 6, "sSAPT0 ind")
-compare_values(-0.00231534918, psi4.get_variable("SSAPT0 DISP ENERGY"), 6, "sSAPT0 disp")
-compare_values(-0.00299545062, psi4.get_variable("SSAPT0 TOTAL ENERGY"), 6, "sSAPT0")
+compare_values(-0.00343130969, psi4.variable("SSAPT0 ELST ENERGY"), 6, "sSAPT0 elst")
+compare_values( 0.00368418323, psi4.variable("SSAPT0 EXCH ENERGY"), 6, "sSAPT0 exch")
+compare_values(-0.00093297498, psi4.variable("SSAPT0 IND ENERGY"), 6, "sSAPT0 ind")
+compare_values(-0.00231534918, psi4.variable("SSAPT0 DISP ENERGY"), 6, "sSAPT0 disp")
+compare_values(-0.00299545062, psi4.variable("SSAPT0 TOTAL ENERGY"), 6, "sSAPT0")
 """
 
     tfn = '_thread_test_input_psi4_yo'
@@ -173,8 +173,8 @@ set {
 }
 
 e, wfn = energy('plugdfmp2', return_wfn=True)
-compare_values(-1.6309450762271729, wfn.get_variable('MP2 CORRELATION ENERGY'), 5, 'df-mp2 energy')  # aug-cc-pvdz
-#compare_values(-1.5720781831194317, wfn.get_variable('MP2 CORRELATION ENERGY'), 5, 'df-mp2 energy')  # cc-pvdz
+compare_values(-1.6309450762271729, wfn.variable('MP2 CORRELATION ENERGY'), 5, 'df-mp2 energy')  # aug-cc-pvdz
+#compare_values(-1.5720781831194317, wfn.variable('MP2 CORRELATION ENERGY'), 5, 'df-mp2 energy')  # cc-pvdz
 """ % (args.module)
 
     tfn = '_dfmp2_plugin_thread_test_input_psi4_yo'

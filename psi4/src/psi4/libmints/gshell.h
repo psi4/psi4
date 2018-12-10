@@ -49,7 +49,7 @@ enum ShellType { Gaussian = 0, ECPType1 = 1, ECPType2 = 2 };
  *         slower data structures, which are easier to construct. These are used to build the
  *         basis set, which builds more efficient pointer-based GaussianShell objects.
  */
-class ShellInfo {
+class PSI_API ShellInfo {
    protected:
     /// Angular momentum
     int l_;
@@ -165,7 +165,7 @@ class ShellInfo {
  *  \class GaussianShell
  *  \brief Gaussian orbital shell.
  */
-class GaussianShell {
+class PSI_API GaussianShell {
    protected:
     /// Angular momentum
     int l_;

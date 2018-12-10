@@ -61,7 +61,7 @@ class BasisSet;
  *  wavefunction, substitutions may be made later, to use different orbitals
  *  or densities.
  */
-class Prop {
+class PSI_API Prop {
    protected:
     /// The wavefunction object this Prop is built around
     std::shared_ptr<Wavefunction> wfn_;
@@ -207,7 +207,7 @@ class Prop {
  *     interpreter.
  */
 
-class TaskListComputer {
+class PSI_API TaskListComputer {
    protected:
     /// Print flag
     int print_;
@@ -493,7 +493,7 @@ class OEProp : public TaskListComputer {
  *  - This unit grid is scaled symmetrically so that its edges measure (l_x, l_y, l_z)
  *  - The grid is translated so that the origin is as (o_x,o_y,o_z)
  **/
-// class GridProp : public Prop {
+// class PSI_API GridProp : public Prop {
 //
 // protected:
 //    /// The absolute file path where results from this analysis will be stored

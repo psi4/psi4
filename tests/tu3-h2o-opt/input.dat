@@ -13,4 +13,4 @@ set basis cc-pVDZ
 optimize('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
-compare_values(refenergy, get_variable("CURRENT ENERGY"), 4, "Reference energy") #TEST
+compare_values(refenergy, variable("CURRENT ENERGY"), 4, "Reference energy") #TEST

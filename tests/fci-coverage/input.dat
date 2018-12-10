@@ -18,7 +18,7 @@ set {
 
 scf_energy, scf_wfn = energy("SCF", return_wfn=True)
 #compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-#compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
+#compare_values(refscf, variable("SCF total energy"),     8, "SCF energy") #TEST
 
 # Test major methods
 set DIAG_METHOD SEM

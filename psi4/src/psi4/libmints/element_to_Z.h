@@ -40,7 +40,7 @@
 
 namespace psi {
 
-class Element_to_Z {
+class PSI_API Element_to_Z {
    private:
     bool loaded;
     std::map<std::string, double> element_to_Z;

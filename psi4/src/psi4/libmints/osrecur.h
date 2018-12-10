@@ -29,6 +29,8 @@
 #ifndef _psi_src_lib_libmints_osrecur_h
 #define _psi_src_lib_libmints_osrecur_h
 
+#include "psi4/pragma.h"
+
 namespace psi {
 
 /*! \ingroup MINTS

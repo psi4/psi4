@@ -66,8 +66,8 @@ PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, Shared
             SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
             sapt.compute_energy();
             // Copy back over the variables
-            for (const auto& kv : sapt.variables()) {
-                Dimer->set_variable(kv.first, kv.second);
+            for (const auto& kv : sapt.scalar_variables()) {
+                Dimer->set_scalar_variable(kv.first, kv.second);
             }
 
         } else {

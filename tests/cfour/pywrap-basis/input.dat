@@ -34,5 +34,5 @@ df_basis_sapt {
 }               
 
 energy('c4-scf')
-compare_values(-112.412159937, get_variable('current ENERGY'), 6, """[1] autofrag'd scf: explicit vs. custom haDZ""")  #TEST
+compare_values(-112.412159937, variable('current ENERGY'), 6, """[1] autofrag'd scf: explicit vs. custom haDZ""")  #TEST
 

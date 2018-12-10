@@ -21,7 +21,7 @@ molecule mol {
 }
 
 scf_e, scf_wfn = psi4.energy("SCF", return_wfn=True)
-compare_values(-76.017259983350, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.017259983350, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
 
 set icore 1
 rasscf_energy, rasscf_wfn = energy('RASSCF', ref_wfn=scf_wfn, return_wfn=True)

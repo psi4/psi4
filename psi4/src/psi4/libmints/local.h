@@ -138,7 +138,7 @@ class PSI_API BoysLocalizer : public Localizer {
     void localize() override;
 };
 
-class PMLocalizer : public Localizer {
+class PSI_API PMLocalizer : public Localizer {
    protected:
     /// Set defaults
     void common_init();

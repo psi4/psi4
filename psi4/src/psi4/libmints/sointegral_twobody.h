@@ -68,7 +68,7 @@ class BasisSet;
 // Only include the following function if Doxygen is running to generate appropriate
 // documentation.
 #ifdef DOXYGEN
-class TwoBodySOIntFunctor {
+class PSI_API TwoBodySOIntFunctor {
    public:
     void operator()(int pirrep, int pso, int qirrep, int qso, int rirrep, int rso, int sirrep, int sso, double value);
 };

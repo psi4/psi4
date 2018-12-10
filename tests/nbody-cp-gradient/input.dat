@@ -32,11 +32,11 @@ energy_dict, gradient_dict = {}, {} #TEST
 for i in cp_scheme: #TEST
     mol = water_trimer.extract_subsets(eval(i)[0], list(set(eval(i)[1]) - set(eval(i)[0]))) #TEST
     gradient_dict[i], wfn_mol = gradient('SCF/STO-3G', molecule=mol, return_wfn=True) #TEST
-    energy_dict[i] = core.get_variable('CURRENT ENERGY') #TEST
+    energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
     compare_values(energy_dict[i], wfn.variables()[i], 8, 'Energy of %s' %i) #TEST
-    compare_arrays(gradient_dict[i], wfn.arrays()['PTYPE %s' %i], 8, 'Gradient of %s' %i) #TEST
+    compare_arrays(gradient_dict[i], wfn.variables()['PTYPE %s' %i], 8, 'Gradient of %s' %i) #TEST
 
 energy, gradient = 0, np.zeros((9, 3)) #TEST
 for i in cp_scheme: #TEST
@@ -51,4 +51,4 @@ for i in range(3): #TEST
 for i in cp_scheme: #TEST
     gradient += cp_scheme[i] * np.array(gradient_dict[i]) #TEST
     
-compare_arrays(gradient, wfn.arrays()['GRADIENT 2'], 8, 'CP-Corrected Gradient') #TEST
+compare_arrays(gradient, wfn.variables()['GRADIENT 2'], 8, 'CP-Corrected Gradient') #TEST
