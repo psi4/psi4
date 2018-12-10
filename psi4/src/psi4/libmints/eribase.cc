@@ -2182,6 +2182,7 @@ void TwoElectronInt::init_shell_pairs12() {
 
             total_prim_pairs += np_i * np_j;
             spsc.nonzeroPrimPairs.resize(nprim_sig);
+            spsc.nonzeroPrimPairs.shrink_to_fit();
             (*screenpairs12_)[si][sj] = spsc;
         }
     }
