@@ -247,9 +247,10 @@ class MaxIterationsExceeded : public LimitExceeded<T> {
     * @param file The file that threw the exception (use __FILE__ macro)
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
-    MaxIterationsExceeded(std::string routine_name, T max, const char *file, int line) noexcept;
+    MaxIterationsExceeded(std::string routine_name, T max, const char *file, int line) noexcept
+        : LimitExceeded<T>(routine_name + " iterations", max, max, file, line) {};
 
-    ~MaxIterationsExceeded() noexcept override;
+    ~MaxIterationsExceeded() noexcept override {};
 };
 
 /**
@@ -268,19 +269,27 @@ class ConvergenceError : public MaxIterationsExceeded<T> {
     * @param line The line number that threw the exception (use __LINE__ macro)
     */
     ConvergenceError(std::string routine_name, T max, double desired_accuracy, double actual_accuracy, const char *file,
-                     int line) noexcept;
+                     int line) noexcept
+        : MaxIterationsExceeded<T>(routine_name + " iterations", max, file, line),
+          desired_acc_(desired_accuracy), actual_acc_(actual_accuracy) {
+        std::stringstream sstr;
+        sstr << "could not converge " << routine_name << ".  desired " << desired_acc_ << " but got "
+             << actual_acc_ << "\n";
+        sstr << ConvergenceError<T>::description();
+        ConvergenceError<T>::rewrite_msg(sstr.str());
+    }
 
     /** Accessor method
     *  @return The accuracy you wish to achieve
     */
-    double desired_accuracy() const noexcept;
+    double desired_accuracy() const noexcept { return desired_acc_; };
 
     /** Accessor method
     *  @return The accuracy you actually got
     */
-    double actual_accuracy() const noexcept;
+    double actual_accuracy() const noexcept { return actual_acc_; };
 
-    ~ConvergenceError() noexcept override;
+    ~ConvergenceError() noexcept override {};
 
    private:
     double desired_acc_;
