@@ -715,6 +715,10 @@ def gradient(name, **kwargs):
         dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         lowername = name.lower()
         if dertype == 1:
+            # Make sure the molecule the user provided is the active one
+            molecule = kwargs.pop('molecule', core.get_active_molecule())
+            molecule.update_geometry()
+
             # Bounce to CBS in pure-gradient mode if "method/basis" name and all parts have analytic grad. avail.
             return driver_cbs._cbs_gufunc(gradient, name, ptype='gradient', molecule=molecule, **kwargs)
         else:
