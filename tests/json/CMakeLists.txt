@@ -1,5 +1,3 @@
-add_subdirectory(v11-energy)
-add_subdirectory(v11-gradient)
 add_subdirectory(schema-1-energy)
 add_subdirectory(schema-1-ghost)
 add_subdirectory(schema-1-orient)
