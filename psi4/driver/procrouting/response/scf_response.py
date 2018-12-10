@@ -263,7 +263,7 @@ def _single_random_fill(mat):
 
 
 def _pair_random_fill(matpair):
-    return [_single_random_fill(m) for m in mp]
+    return [_single_random_fill(m) for m in matpair]
 
 
 def tdscf_excitations(wfn, **kwargs):
@@ -354,6 +354,7 @@ def tdscf_excitations(wfn, **kwargs):
         vecs_per_root = max_ss_vec // nstates
         solver_results.append(
             solve_function(
-                engine=engine, e_tol=etol, r_tol=rtol, max_vecs_per_root=vecs_per_root, nroot=nstates, guess=guess_))
+                engine=engine, e_tol=etol, r_tol=rtol, max_vecs_per_root=vecs_per_root, nroot=nstates, guess=guess_,
+                verbose=2))
 
     return solver_results

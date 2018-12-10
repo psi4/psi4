@@ -522,7 +522,8 @@ class TDUSCFEngine(object):
            The approximate eigenvector: $V_i \approx \sum_j A_{ij} x_j \tilde{V}_{ji}$
         """
         ret = self.new_vector("eigenvector")
-        for ax_a, ax_b in ax:
+        for j in range(len(ss_vector)):
+            ax_a, ax_b = ax[j]
             ret[0].axpy(ss_vector[j], ax_a)
             ret[1].axpy(ss_vector[j], ax_b)
         return ret
@@ -533,7 +534,7 @@ class TDUSCFEngine(object):
         """
         ret = self.new_vector("error")
         c = ss_vector * ss_value
-        for xa, xb in X:
+        for j,(xa, xb) in enumerate(x):
             ret[0].axpy(c[j], xa)
             ret[1].axpy(c[j], xb)
         return ret
@@ -541,7 +542,7 @@ class TDUSCFEngine(object):
     def orthogonalize_subspace(self, old_X, new_X):
         X = old_X
         while len(new_X) != 0:
-            new_a, new_b = new_X
+            new_a, new_b = new_X.pop()
             for (oa, ob) in X:
                 dot = new_a.vector_dot(oa)
                 dot += new_b.vector_dot(ob)
@@ -559,6 +560,7 @@ class TDUSCFEngine(object):
     def vector_norm(self, v):
         norm = np.sqrt(v[0].vector_dot(v[0]))
         norm += np.sqrt(v[1].vector_dot(v[1]))
+        return norm
 
     def residual(self, V, x, ss_vector, ss_value):
         ret = self.error(x, ss_vector, -ss_value)
