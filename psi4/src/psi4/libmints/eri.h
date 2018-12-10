@@ -145,9 +145,9 @@ class TwoElectronInt : public TwoBodyAOInt {
     //! Shell pair information
     ShellPair **pairs12_, **pairs34_;
     
-    //! Shell pair information, same as **pairs12_ and **pairs34_ but using std::vec instead of new [] for memory
-    std::vector<std::vector<ShellPairScreen>> screenpairs12_, screenpairs34_;
-
+    //! Shell pair information, same as **pairs12_ and **pairs34_ but using std::vec instead of new [] for memory and applies screening
+    std::shared_ptr<std::vector<std::vector<ShellPairScreen>>> screenpairs12_, screenpairs34_;
+   
     //! Evaluates how much memory (in doubles) is needed to store shell pair data
     size_t memory_to_store_shell_pairs(const std::shared_ptr<BasisSet>&, const std::shared_ptr<BasisSet>&);
 
