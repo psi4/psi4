@@ -41,6 +41,8 @@ from psi4.driver import molutil
 from psi4.driver import p4util
 from psi4 import core
 
+## Methods and properties blocks
+
 methods_dict_ = {
     'energy': driver.energy,
     'gradient': driver.gradient,
@@ -52,11 +54,88 @@ can_do_properties_ = {
     "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
 }
 
+## QCSchema translation blocks
+
+_qcschema_translation = {
+
+    # Generics
+    "generics": {
+        "return_energy": {"variables": "CURRENT ENERGY"},
+        "nuclear_repulsion_energy": {"variables": "NUCLEAR REPULSION ENERGY"},
+    },
+
+    # Properties
+    "properties": {
+        "mulliken_charges": {"variables": "MULLIKEN_CHARGES"},
+        "lowdin_charges": {"variables": "LOWDIN_CHARGES"},
+        "wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES"},
+        "mayer_indices": {"variables": "MAYER_INDICES"},
+    },
+
+    # SCF variables
+    "scf": {
+        "scf_one_electron_energy": {"variables": "ONE-ELECTRON ENERGY"},
+        "scf_two_electron_energy": {"variables": "TWO-ELECTRON ENERGY"},
+        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]},
+        "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
+        "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
+        "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip": True},
+        "scf_xc_energy": {"variables": "DFT XC ENERGY", "skip": True},
+        "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip": True},
+    },
+
+    # MP2 variables
+    "mp2": {
+        "mp2_same_spin_correlation_energy": {"variables": "MP2 SAME-SPIN CORRELATION ENERGY"},
+        "mp2_opposite_spin_correlation_energy": {"variables": "MP2 OPPOSITE-SPIN CORRELATION ENERGY"},
+        "mp2_singles_energy": {"variables": "NYI", "default": 0.0},
+        "mp2_doubles_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_total_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_total_energy": {"variables": "MP2 TOTAL ENERGY"},
+    },
+
+#    "": {"variables": },
+
+} # yapf: disable
+
+def _convert_variables(data, include=None):
+
+    needed_vars = _qcschema_translation[include]
+
+    ret = {}
+    for k, v in needed_vars.items():
+
+        # Get the actual variables
+        if isinstance(v["variables"], str):
+            value = data.get(v["variables"], None)
+        elif isinstance(v["variables"], (list, tuple)):
+            value = [data.get(x, None) for x in v["variables"]]
+        else:
+            raise TypeError("variables type not understood.")
+
+        # Handle skips
+        if v.get("skip", False) and (value is not None) and (value == 0):
+            continue
+
+        # Add defaults
+        if (value is None) and ("default" in v):
+            value = v["default"]
+
+        # Cast if called
+        if "cast" in v:
+            value = v["cast"](value)
+
+        ret[k] = value
+
+    return ret
+
+## Execution functions
+
 def _clean_psi_environ(do_clean):
     if do_clean:
         psi4.core.clean_variables()
         psi4.core.clean_options()
-        core.clean()
+        psi4.core.clean()
 
 def run_json(json_data, clean=True):
 
@@ -95,6 +174,8 @@ def run_json(json_data, clean=True):
     except Exception as error:
         json_data["error"] = repr(error)
         json_data["success"] = False
+
+        # raise error
 
     if return_output:
         with open(outfile, 'r') as f:
@@ -206,30 +287,13 @@ def run_json_qc_schema(json_data, clean):
         "calcinfo_nalpha": wfn.nalpha(),
         "calcinfo_nbeta": wfn.nbeta(),
         "calcinfo_natom": mol.geometry().shape[0],
-        "scf_one_electron_energy": psi_props["ONE-ELECTRON ENERGY"],
-        "scf_two_electron_energy": psi_props["TWO-ELECTRON ENERGY"],
-        "nuclear_repulsion_energy": psi_props["NUCLEAR REPULSION ENERGY"],
-        "scf_dipole_moment": [psi_props[x] for x in ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]],
-        "scf_iterations": int(psi_props["SCF ITERATIONS"]),
-        "scf_total_energy": psi_props["SCF TOTAL ENERGY"],
-        "return_energy": psi_props["CURRENT ENERGY"],
     }
-
-    # Pull out optional SCF keywords
-    other_scf = [("DFT VV10 ENERGY", "scf_vv10_energy"), ("DFT XC ENERGY", "scf_xc_energy"),
-                 ("DISPERSION CORRECTION ENERGY", "scf_dispersion_correction_energy")]
-    for pkey, skey in other_scf:
-        if (pkey in psi_props) and (psi_props[pkey] != 0):
-            props[skey] = psi_props[pkey]
+    props.update(_convert_variables(psi_props, include="generics"))
+    props.update(_convert_variables(psi_props, include="scf"))
 
     # Write out MP2 keywords
     if "MP2 CORRELATION ENERGY" in psi_props:
-        props["mp2_same_spin_correlation_energy"] = psi_props["MP2 SAME-SPIN CORRELATION ENERGY"]
-        props["mp2_opposite_spin_correlation_energy"] = psi_props["MP2 OPPOSITE-SPIN CORRELATION ENERGY"]
-        props["mp2_singles_energy"] = 0.0
-        props["mp2_doubles_energy"] = psi_props["MP2 CORRELATION ENERGY"]
-        props["mp2_total_correlation_energy"] = psi_props["MP2 CORRELATION ENERGY"]
-        props["mp2_total_energy"] = psi_props["MP2 TOTAL ENERGY"]
+        props.update(_convert_variables(psi_props, include="mp2"))
 
     json_data["properties"] = props
     json_data["success"] = True
