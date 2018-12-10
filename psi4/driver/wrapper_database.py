@@ -229,13 +229,13 @@ def database(name, db_name, **kwargs):
     kwargs.pop('molecule', None)
 
     # Paths to search for database files: here + PSIPATH + library + PYTHONPATH
-    dbPaths = []
-    dbPaths.append(os.getcwd())
-    dbPaths.extend(os.environ.get('PSIPATH', '').split(os.path.pathsep))
-    dbPaths.append(os.path.join(core.get_datadir(), 'databases'))
-    dbPaths.append(os.path.dirname(__file__))
-    dbPaths = list(map(os.path.abspath, dbPaths))
-    sys.path = dbPaths + sys.path
+    db_paths = []
+    db_paths.append(os.getcwd())
+    db_paths.extend(os.environ.get('PSIPATH', '').split(os.path.pathsep))
+    db_paths.append(os.path.join(core.get_datadir(), 'databases'))
+    db_paths.append(os.path.dirname(__file__))
+    db_paths = list(map(os.path.abspath, db_paths))
+    sys.path[1:1] = db_paths
     # TODO this should be modernized a la interface_cfour
 
     # Define path and load module for requested database
