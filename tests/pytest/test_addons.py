@@ -1,3 +1,4 @@
+import json
 import psi4
 import pytest
 
@@ -651,32 +652,33 @@ def test_json():
     import numpy as np
 
     # Generate JSON data
-    json_data = {}
-    json_data["molecule"] = """He 0 0 0\n--\nHe 0 0 1"""
-    json_data["driver"] = "gradient"
-    json_data["method"] = 'SCF'
-    json_data["kwargs"] = {}
-    json_data["options"] = {"BASIS": "STO-3G"}
-    json_data["return_output"] = True
+    json_input = {
+        "schema_name": "qc_schema_input",
+        "schema_version": 1,
+        "molecule": {
+            "symbols": ["He", "He"],
+            "geometry": [0, 0, -1, 0, 0, 1]
+        },
+        "driver": "gradient",
+        "model": {
+            "method": "SCF",
+            "basis": "sto-3g"
+        },
+        "keywords": {}
+    }
 
-    psi4.json_wrapper.run_json(json_data)
+    json_ret = psi4.json_wrapper.run_json(json_input)
 
-    assert psi4.compare_strings("STO-3G", json_data["options"]["BASIS"], "Options test")
-    assert psi4.compare_integers(True, json_data["success"], "Success")
+    assert psi4.compare_integers(True, json_ret["success"], "Success")
+    assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")
 
-    bench_energy = -5.433191881443323
-    cenergy = json_data["variables"]["CURRENT ENERGY"]
-
-    bench_gradient = np.array([[  0.0 , 0.0 ,   0.4206844],
-                               [  0.0 , 0.0 ,  -0.4206844]])
-    cgradient = psi4.core.Matrix.from_serial(json_data["return_value"])
-    assert psi4.compare_arrays(bench_gradient, cgradient.np, 4, "SCF RETURN_VALUE")
-
-    return_wfn = "return_wfn" not in json_data["kwargs"]
-    assert psi4.compare_integers(True, return_wfn, "Immutable input")
+    bench_gradient = np.array([[  0.0 , 0.0 ,   0.32746933],
+                               [  0.0 , 0.0 ,  -0.32746933]])
+    cgradient = np.array(json_ret["return_result"]).reshape(-1, 3)
+    assert psi4.compare_arrays(bench_gradient, cgradient, 4, "SCF RETURN GRADIENT")
 
     with open("pytest_output.dat", "w") as f:
-        f.write(json_data["raw_output"])
+        json.dump(json_ret["raw_output"], f)
 
 
 @pytest.mark.smoke
@@ -772,15 +774,15 @@ def test_v2rdm_casscf():
 def test_gpu_dfcc():
     """gpu_dfcc/tests/gpu_dfcc1"""
     #! cc-pvdz (H2O)2 Test DF-CCSD vs GPU-DF-CCSD
-    
-    import gpu_dfcc 
- 
+
+    import gpu_dfcc
+
     H20 = psi4.geometry("""
-               O          0.000000000000     0.000000000000    -0.068516219310   
-               H          0.000000000000    -0.790689573744     0.543701060724   
-               H          0.000000000000     0.790689573744     0.543701060724   
+               O          0.000000000000     0.000000000000    -0.068516219310
+               H          0.000000000000    -0.790689573744     0.543701060724
+               H          0.000000000000     0.790689573744     0.543701060724
     """)
-    
+
     psi4.set_memory(32000000000)
     psi4.set_options({
       'cc_timings': False,
@@ -798,11 +800,11 @@ def test_gpu_dfcc():
     psi4.set_num_threads(2)
     en_dfcc     = psi4.energy('ccsd', molecule=H20)
     en_gpu_dfcc = psi4.energy('gpu-df-ccsd', molecule=H20)
-    
+
     assert psi4.compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy")
-    
-    
-    
+
+
+
 @pytest.mark.smoke
 @using_dftd3
 @using_gcp

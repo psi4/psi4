@@ -120,18 +120,18 @@ def _json_translation(value):
 
     return value
 
-def _convert_variables(data, include=None):
+def _convert_variables(data, context=None):
     """
     Converts dictionaries of variables based on translation metadata
     """
 
     # Build the correct translation units
-    if include is None:
+    if context is None:
         needed_vars = {}
         for v in _qcschema_translation.values():
             needed_vars.update(v)
     else:
-        needed_vars = _qcschema_translation[include]
+        needed_vars = _qcschema_translation[context]
 
     ret = {}
     for key, var in needed_vars.items():
@@ -304,7 +304,7 @@ def run_json_qc_schema(json_data, clean):
             ret["dipole"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
         if "quadrupole" in kwargs["properties"]:
             ret["quadrupole"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
-        ret.update(_convert_variables(wfn.variables(), include="properties"))
+        ret.update(_convert_variables(wfn.variables(), context="properties"))
 
         json_data["return_result"] = ret
     else:
@@ -317,12 +317,12 @@ def run_json_qc_schema(json_data, clean):
         "calcinfo_nbeta": wfn.nbeta(),
         "calcinfo_natom": mol.geometry().shape[0],
     }
-    props.update(_convert_variables(psi_props, include="generics"))
-    props.update(_convert_variables(psi_props, include="scf"))
+    props.update(_convert_variables(psi_props, context="generics"))
+    props.update(_convert_variables(psi_props, context="scf"))
 
     # Write out MP2 keywords
     if "MP2 CORRELATION ENERGY" in psi_props:
-        props.update(_convert_variables(psi_props, include="mp2"))
+        props.update(_convert_variables(psi_props, context="mp2"))
 
     json_data["properties"] = props
     json_data["success"] = True
