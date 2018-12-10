@@ -1377,11 +1377,21 @@ def scf_helper(name, post_scf=True, **kwargs):
         for pv in ["SCF TOTAL ENERGY", "CURRENT ENERGY", "CURRENT REFERENCE ENERGY"]:
             obj.set_variable(pv, e_scf)
 
-    # We always would like to print a little dipole information
-    if kwargs.get('scf_do_dipole', True):
+    # We always would like to print a little property information
+    if kwargs.get('scf_do_properties', True):
         oeprop = core.OEProp(scf_wfn)
         oeprop.set_title("SCF")
-        oeprop.add("DIPOLE")
+
+        # Figure our properties, if empty do dipole
+        props = [x.upper() for x in core.get_option("SCF", "SCF_PROPERTIES")]
+        if "DIPOLE" not in props:
+            props.append("DIPOLE")
+
+        proc_util.oeprop_validator(props)
+        for x in props:
+            oeprop.add(x)
+
+        # Compute properties
         oeprop.compute()
         for obj in [core]:
             for xyz in 'XYZ':
@@ -2511,7 +2521,7 @@ def run_scf_property(name, **kwargs):
         core.set_global_option("SAVE_JK", True)
 
     # Compute the Wavefunction
-    scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
+    scf_wfn = run_scf(name, scf_do_properties=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
@@ -2734,7 +2744,7 @@ def run_dfmp2_property(name, **kwargs):
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, scf_do_dipole=False, use_c1=True, **kwargs)  # C1 certified
+        ref_wfn = scf_helper(name, scf_do_properties=False, use_c1=True, **kwargs)  # C1 certified
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
                                     core.get_option("DFMP2", "DF_BASIS_MP2"),

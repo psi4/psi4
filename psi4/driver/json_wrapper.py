@@ -67,10 +67,10 @@ _qcschema_translation = {
 
     # Properties
     "properties": {
-        "mulliken_charges": {"variables": "MULLIKEN_CHARGES"},
-        "lowdin_charges": {"variables": "LOWDIN_CHARGES"},
-        "wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES"},
-        "mayer_indices": {"variables": "MAYER_INDICES"},
+        "mulliken_charges": {"variables": "MULLIKEN_CHARGES", "skip_null": True},
+        "lowdin_charges": {"variables": "LOWDIN_CHARGES", "skip_null": True},
+        "wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES", "skip_null": True},
+        "mayer_indices": {"variables": "MAYER_INDICES", "skip_null": True},
     },
 
     # SCF variables
@@ -85,11 +85,11 @@ _qcschema_translation = {
         "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip_zero": True},
 
         # SCF Properties (experimental)
-        "scf_quadrupole_moment": {"variables": ["SCF QUADRUPOLE " + x for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]},
-        "scf_mulliken_charges": {"variables": "MULLIKEN_CHARGES"},
-        "scf_lowdin_charges": {"variables": "LOWDIN_CHARGES"},
-        "scf_wiberg_lowdin_indices": {"variables": "MAYER_INDICES"},
-        "scf_mayer_indices": {"variables": "MAYER_INDICES"},
+        # "scf_quadrupole_moment": {"variables": ["SCF QUADRUPOLE " + x for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]], "skip_null": True},
+        # "scf_mulliken_charges": {"variables": "MULLIKEN_CHARGES", "skip_null": True},
+        # "scf_lowdin_charges": {"variables": "LOWDIN_CHARGES", "skip_null": True},
+        # "scf_wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES", "skip_null": True},
+        # "scf_mayer_indices": {"variables": "MAYER_INDICES", "skip_null": True},
     },
 
     # MP2 variables
@@ -106,15 +106,32 @@ _qcschema_translation = {
 
 } # yapf: disable
 
+def _json_translation(value):
+    """
+    Translates from Psi4 to JSON data types
+    """
+
+    if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
+        value = value.np.ravel().tolist()
+    elif isinstance(value, (psi4.core.Dimension)):
+        value = value.to_tuple()
+    elif isinstance(value, np.ndarray):
+        value = value.ravel().tolist()
+
+    return value
+
 def _convert_variables(data, include=None):
+    """
+    Converts dictionaries of variables based on translation metadata
+    """
 
     # Build the correct translation units
     if include is None:
-        needed_vars = _qcschema_translation[include]
-    else:
         needed_vars = {}
         for v in _qcschema_translation.values():
             needed_vars.update(v)
+    else:
+        needed_vars = _qcschema_translation[include]
 
     ret = {}
     for key, var in needed_vars.items():
@@ -130,7 +147,10 @@ def _convert_variables(data, include=None):
             raise TypeError("variables type not understood.")
 
         # Handle skips
-        if var.get("skip_zero", False) and (value is not None) and (value == 0):
+        if var.get("skip_zero", False) and (value == 0):
+            continue
+
+        if (var.get("skip_zero") or var.get("skip_null", False)) and (value is None):
             continue
 
         # Add defaults
@@ -141,15 +161,7 @@ def _convert_variables(data, include=None):
         if "cast" in var:
             value = var["cast"](value)
 
-        # Translate to correct return unit
-        if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
-            value = value.np.ravel().tolist()
-        elif isinstance(value, (psi4.core.Dimension)):
-            value = value.to_tuple()
-        elif isinstance(value, np.ndarray):
-            value = value.ravel().tolist()
-
-        ret[key] = value
+        ret[key] = _json_translation(value)
 
     return ret
 
@@ -196,8 +208,6 @@ def run_json(json_data, clean=True):
     except Exception as error:
         json_data["error"] = repr(error)
         json_data["success"] = False
-
-        raise error
 
     if return_output:
         with open(outfile, 'r') as f:
@@ -271,9 +281,14 @@ def run_json_qc_schema(json_data, clean):
     # Actual driver run
     val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
 
-    # Pull out a standard set of SCF properties
+    # Pull out a standard set of Psi variables
     psi_props = psi4.core.scalar_variables()
     json_data["psi4:qcvars"] = psi_props
+
+    # Still a bit of a mess at the moment add in local vars as well.
+    for k, v in wfn.variables().items():
+        if k not in json_data["psi4:qcvars"]:
+            json_data["psi4:qcvars"][k] = _json_translation(v)
 
     # Handle the return result
     if json_data["driver"] == "energy":
