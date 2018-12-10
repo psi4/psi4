@@ -177,27 +177,35 @@ def _contract_bracketed_basis(basisarray: List):
         return basisstring
 
 
-def xtpl_highest_1(functionname: str, zHI: int, valueHI: float, verbose: bool = True, **kwargs):
+def xtpl_highest_1(functionname: str, zHI: int, valueHI: Union[float, np.ndarray], verbose: int = 1, **kwargs):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
     functionname
-        Name of the CBS component.
+        Name of the CBS component (e.g., 'mp2') used in summary printing.
     zHI
         Zeta-level, only used for printing.
     valueHI
-        Value of the CBS component.
+        Energy, gradient, or Hessian value at the basis set.
+    verbose
+        Controls volume of printing.
 
     Returns
     -------
-    float
+    float or ndarray
         Returns :math:`E_{total}^{\infty}` which is equal to valueHI.
+        Eponymous function applied to input zetas and values; type from `valueHI`.
 
     Notes
     -----
     .. math:: E_{total}^X = E_{total}^{\infty}
+
+    Examples
+    --------
+    >>> # [1] Fancy way to get HF/cc-pCVQZ
+    >>> psi4.energy(cbs, scf_wfn='hf', scf_basis='cc-pcvqz', scf_scheme=qcdb.xtpl_highest_1)
 
     """
     if isinstance(valueHI, float):
@@ -205,45 +213,50 @@ def xtpl_highest_1(functionname: str, zHI: int, valueHI: float, verbose: bool = 
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> %s <==\n\n""" % (functionname.upper())
-            cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
+            cbsscheme += """\n   ==> {} <==\n\n""".format(functionname.upper())
+            cbsscheme += """   HI-zeta ({}) Energy:               {:16.12f}\n""".format(zHI, valueHI)
 
             core.print_out(cbsscheme)
 
         return valueHI
 
-    elif isinstance(valueHI, (core.Matrix, core.Vector)):
+    elif isinstance(valueHI, np.ndarray):
 
         if verbose > 2:
-            core.print_out("""   HI-zeta (%s) Total Energy:\n""" % (str(zHI)))
+            core.print_out("""   HI-zeta ({}) Total Energy:\n""".format(zHI))
             valueHI.print_out()
 
         return valueHI
 
 
-def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
+def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Union[float, np.ndarray], zHI: int, valueHI: Union[float, np.ndarray], verbose: int = 1, alpha: float = None):
     r"""Extrapolation scheme using exponential form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
     functionname
-        Name of the CBS component.
+        Name of the CBS component (e.g., 'HF') used in summary printing.
     zLO
-        Lower zeta level.
+        Zeta number of the smaller basis set in 2-point extrapolation.
     valueLO
-        Lower value used for extrapolation.
+        Energy, gradient, or Hessian value at the smaller basis set in 2-point.
+        extrapolation.
     zHI
-        Higher zeta level. Should be equal to zLO + 1.
+        Zeta number of the larger basis set in 2-point extrapolation.
+        Must be `zLO + 1`.
     valueHI
-        Higher value used for extrapolation.
+        Energy, gradient, or Hessian value at the larger basis set in 2-point
+        extrapolation.
+    verbose
+        Controls volume of printing.
     alpha
-        Overrides the default :math:`\alpha = 1.63`
+        Fitted 2-point parameter. Overrides the default :math:`\alpha = 1.63`
 
     Returns
     -------
-    float
-        Returns :math:`E_{total}^{\infty}`, see below.
+    float or ndarray
+        Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
     -----
@@ -255,6 +268,11 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, v
 
     .. [1] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
        DOI: 10.1016/S0009-2614(99)00179-7
+
+    Examples
+    --------
+    >>> # [1] Hartree-Fock extrapolation
+    >>> qcdb.energy(qcdb.cbs, scf_wfn='hf', scf_basis='cc-pV[DT]Z', scf_scheme=qcdb.scf_xtpl_helgaker_2)
 
     """
 
@@ -291,23 +309,18 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, v
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-        beta = valueHI.clone()
-        beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
-        beta.subtract(valueLO)
-        beta.scale(beta_division)
-        beta.scale(beta_mult)
-
-        value = valueHI.clone()
-        value.subtract(beta)
-        value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
+    elif isinstance(valueLO, np.ndarray):
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
+        #beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
+        #value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
             core.print_out("""\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" %
                            (functionname.upper()))
-            core.print_out("""   LO-zeta (%s)""" % str(zLO))
+            core.print_out("""   LO-zeta ({})""".format(zLO))
             core.print_out("""   LO-zeta Data""")
-            valueLO.print_out()
+            core.print_out(valueLO)
             core.print_out("""   HI-zeta (%s)""" % str(zHI))
             core.print_out("""   HI-zeta Data""")
             valueHI.print_out()
@@ -527,33 +540,40 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, val
         raise ValidationError("scf_xtpl_Karton_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, valueMD: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
+def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Union[float, np.ndarray], zMD: int, valueMD: Union[float, np.ndarray], zHI: int, valueHI: Union[float, np.ndarray], verbose: int = 1, alpha: float = None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
     functionname
-        Name of the CBS component.
+        Name of the CBS component (e.g., 'HF') used in summary printing.
     zLO
-        Lower zeta level.
+        Zeta number of the smaller basis set in 3-point extrapolation.
     valueLO
-        Lower value used for extrapolation.
+        Energy, gradient, or Hessian value at the smaller basis set in 3-point
+        extrapolation.
     zMD
-        Intermediate zeta level. Should be equal to zLO + 1.
+        Zeta number of the medium basis set in 3-point extrapolation.
+        Must be `zLO + 1`.
     valueMD
-        Intermediate value used for extrapolation.
+        Energy, gradient, or Hessian value at the medium basis set in 3-point
+        extrapolation.
     zHI
-        Higher zeta level. Should be equal to zLO + 2.
+        Zeta number of the larger basis set in 3-point extrapolation.
+        Must be `zLO + 2`.
     valueHI
-        Higher value used for extrapolation.
+        Energy, gradient, or Hessian value at the larger basis set in 3-point
+        extrapolation.
+    verbose
+        Controls volume of printing.
     alpha
         Not used.
 
     Returns
     -------
-    float
-        Returns :math:`E_{total}^{\infty}`, see below.
+    float or ndarray
+        Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
     -----
@@ -565,6 +585,11 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, v
 
     .. [4] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
        DOI: 10.1016/S0009-2614(99)00179-7
+
+    Examples
+    --------
+    >>> # [1] Hartree-Fock extrapolation
+    >>> psi4.energy(cbs, scf_wfn='hf', scf_basis='cc-pV[DTQ]Z', scf_scheme=qcdb.scf_xtpl_helgaker_3)
 
     """
 
@@ -600,7 +625,7 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, v
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+    elif isinstance(valueLO, np.ndarray):
         valueLO = np.array(valueLO)
         valueMD = np.array(valueMD)
         valueHI = np.array(valueHI)
@@ -615,41 +640,46 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, v
         np_value = valueHI.copy()
         np_value[nonzero_mask] -= beta * np.exp(-1 * alpha * zHI)
         np_value[~nonzero_mask] = 0.0
+        return np_value
 
-        # Build and set from numpy routines
-        value = core.Matrix(*valueHI.shape)
-        value_view = np.asarray(value)
-        value_view[:] = np_value
-        return value
+        ## Build and set from numpy routines
+        #value = core.Matrix(*valueHI.shape)
+        #value_view = np.asarray(value)
+        #value_view[:] = np_value
+        #return value
 
     else:
         raise ValidationError("scf_xtpl_helgaker_3: datatype is not recognized '%s'." % type(valueLO))
 
 
-#def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
-def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
+def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Union[float, np.ndarray], zHI: int, valueHI: Union[float, np.ndarray], verbose: int = 1, alpha: float = None):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
     functionname
-        Name of the CBS component.
+        Name of the CBS components (e.g., 'MP2') used in summary printing.
     zLO
-        Lower zeta level.
+        Zeta number of the smaller basis set in 2-point extrapolation.
     valueLO
-        Lower value used for extrapolation.
+        Energy, gradient, or Hessian value at the smaller basis set in 2-point
+        extrapolation.
     zHI
-        Higher zeta level. Should be equal to zLO + 1.
+        Zeta number of the larger basis set in 2-point extrapolation.
+        Must be `zLO + 1`.
     valueHI
-        Higher value used for extrapolation.
+        Energy, gradient, or Hessian value at the larger basis set in 2-point
+        extrapolation.
+    verbose
+        Controls volume of printing.
     alpha
         Overrides the default :math:`\alpha = 3.0`
 
     Returns
     -------
-    float
-        Returns :math:`E_{total}^{\infty}`, see below.
+    float or numpy.ndarray
+        Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
     -----
@@ -663,6 +693,11 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, 
        Chem. Phys. Lett. 286 (1998) 243-252,
        DOI: 10.1016/S0009-2614(99)00179-7
 
+    Examples
+    --------
+    >>> # [1] CISD extrapolation
+    >>> energy(cbs, corl_wfn='cisd', corl_basis='cc-pV[DT]Z', corl_scheme=qcdb.corl_xtpl_helgaker_2)
+
     """
     if type(valueLO) != type(valueHI):
         raise ValidationError(
@@ -675,7 +710,6 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, 
         value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
         beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
 
-        #        final = valueSCF + value
         final = value
         if verbose:
             # Output string with extrapolation parameters
@@ -700,42 +734,30 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, 
 
         return final
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+    elif isinstance(valueLO, np.ndarray):
+        beta = (valueHI - valueLO) / (zHI ** (-alpha) - zLO ** (-alpha))
+        #beta.name = 'Helgaker Corl (%s, %s) beta' % (zLO, zHI)
 
-        beta = valueHI.clone()
-        beta.subtract(valueLO)
-        beta.scale(1 / (zHI**(-alpha) - zLO**(-alpha)))
-        beta.name = 'Helgaker Corl (%s, %s) beta' % (zLO, zHI)
-
-        value = valueHI.clone()
-        value.scale(zHI**alpha)
-
-        tmp = valueLO.clone()
-        tmp.scale(zLO**alpha)
-        value.subtract(tmp)
-
-        value.scale(1 / (zHI**alpha - zLO**alpha))
-        value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
+        value = (valueHI * zHI ** alpha - valueLO * zLO ** alpha) / (zHI**alpha - zLO**alpha)
+        #value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
             core.print_out("""\n   ==> Helgaker 2-point correlated extrapolation for """
-                           """method: %s <==\n\n""" % (functionname.upper()))
+                           """method: %s <==\n\n""" % (mtdname.upper()))
             core.print_out("""   LO-zeta (%s) Data\n""" % (str(zLO)))
             valueLO.print_out()
             core.print_out("""   HI-zeta (%s) Data\n""" % (str(zHI)))
             valueHI.print_out()
             core.print_out("""   Extrapolated Data:\n""")
             value.print_out()
-            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % alpha)
             core.print_out("""   Beta Data:\n""")
             beta.print_out()
 
-
-#        value.add(valueSCF)
         return value
 
     else:
         raise ValidationError("corl_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
+
 
 def return_energy_components():
     """Define some quantum chemical knowledge, namely what methods are subsumed in others."""
@@ -1433,290 +1455,447 @@ def cbs(func, label, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-    metadata = _process_cbs_kwargs(kwargs)
+#    metadata = _process_cbs_kwargs(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
-    verbose = kwargs.pop('verbose', 0)
+#    verbose = kwargs.pop('verbose', 0)
     ptype = kwargs.pop('ptype')
-
-    if ptype not in ['energy', 'gradient', 'hessian']:
-        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
-                                 function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
-
-    # Define some quantum chemical knowledge, namely what methods are subsumed in others
+#
+#    if ptype not in ['energy', 'gradient', 'hessian']:
+#        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
+#                                 function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
+#
+#    # Define some quantum chemical knowledge, namely what methods are subsumed in others
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
-    natom = molecule.natom()
+#    natom = molecule.natom()
 
-    if metadata[0]["wfn"] not in VARH.keys():
-        raise ValidationError(
-            """Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-            (metadata[0]["wfn"]))
+    keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
+    #cbs = CBSComputer(molecule=molecule, driver="energy", keywords=keywords, **kwargs)
+    cbs = CBSComputer(molecule=molecule, driver=ptype, keywords=keywords, **kwargs)
 
-    if len(metadata) > 1:
-        for delta in metadata[1:]:
-            if delta["wfn"] not in VARH.keys():
-                raise ValidationError(
-                    """Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-                    (delta["treatment"], delta["wfn"]))
-            if delta["wfn_lo"] not in VARH.keys():
-                raise ValidationError(
-                    """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-                    (delta["treatment"], delta["wfn_lo"]))
+    ComputeInstance = cbs
+    ComputeClass = SingleResult
+    ComputeInstance.compute()
 
-    metameta = {
-        'kwargs': kwargs,
-        'ptype': ptype,
-        'verbose': verbose,
-        'label': label,
-        'molecule': molecule,
-    }
+    gotten_results = ComputeInstance.get_results()
+    #return ComputeInstance.get_results()['ret_ptype']
 
-    # Plan CBS jobs
-    GRAND_NEED, MODELCHEM, JOBS, JOBS_EXT = build_cbs_compute(metameta, metadata)
 
-    # Compute CBS components
-    JOBS_EXT = compute_cbs_components(func, metameta, JOBS)
-
-    # Assemble CBS quantities
-    cbs_results, GRAND_NEED = assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS)
-
-    finalenergy = cbs_results['energy']
-    finalgradient = cbs_results['gradient']
-    finalhessian = cbs_results['hessian']
-
-######### PARSE / PREPARE
-
-#    # Build string of title banner
-#    cbsbanners = ''
-#    cbsbanners += """core.print_out('\\n')\n"""
-#    cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
-#    cbsbanners += """core.print_out('\\n')\n\n"""
-#    exec(cbsbanners)
+#    core.print_out(tables)
 #
-#    # Call schemes for each portion of total energy to 'place orders' for calculations needed
-#    d_fields = [
-#        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
-#    ]
-#    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
-#    GRAND_NEED = []
-#    MODELCHEM = []
+#    core.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+    core.set_variable('CBS CORRELATION ENERGY', gotten_results['energy'] - cbs.grand_need[0]['d_energy'])
+    core.set_variable('CBS TOTAL ENERGY', gotten_results['energy'])
+#    core.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+#    core.set_variable('CURRENT CORRELATION ENERGY', gotten_results['energy'] - GRAND_NEED[0]['d_energy'])
+    core.set_variable('CURRENT ENERGY', gotten_results['energy'])
+    core.set_variable('CBS NUMBER', len(cbs.compute_list))
+
+#    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+    basis = core.BasisSet.build(molecule, "ORBITAL", 'def2-svp')
+    wfn = core.Wavefunction(molecule, basis)
+
+#    elif ptype == 'hessian':
+#        finalquantity = finalhessian
+#        wfn.set_gradient(finalgradient)
+#        wfn.set_hessian(finalquantity)
+#        if finalquantity.rows(0) < 20:
+#            core.print_out('CURRENT HESSIAN')
+#            finalquantity.print_out()
+
+    if ptype == 'energy':
+        ret_ptype = gotten_results['ret_ptype']
+
+    elif ptype == 'gradient':
+        np_type = np.asarray(gotten_results['ret_ptype']).reshape((-1, 3))
+        ret_ptype = core.Matrix.from_array(np_type)
+
+        wfn.set_gradient(ret_ptype)
+        if ret_ptype.rows(0) < 20:
+            core.print_out('CURRENT GRADIENT')
+            ret_ptype.print_out()
+
+    elif ptype == 'hessian':
+        ndof = int(math.sqrt(len(gotten_results['ret_ptype'])))
+        np_type = np.asarray(gotten_results['ret_ptype']).reshape((ndof, ndof))
+        ret_ptype = core.Matrix.from_array(np_type)
+
+    if return_wfn:
+        return (ret_ptype, wfn)
+    else:
+        return ret_ptype
+
+
+
+
+
+
+#def old_cbs(func, label, **kwargs):
+#    kwargs = p4util.kwargs_lower(kwargs)
+#    metadata = _process_cbs_kwargs(kwargs)
+#    return_wfn = kwargs.pop('return_wfn', False)
+#    verbose = kwargs.pop('verbose', 0)
+#    ptype = kwargs.pop('ptype')
 #
-#    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
-#                                 metadata[0]["wfn"], metadata[0]["options"], natom)
-#    GRAND_NEED.append(
-#        dict(
-#            zip(d_fields, [
-#                'scf', metadata[0]["scheme"],
-#                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
-#                metadata[0]["alpha"]
-#            ])))
+#    if ptype not in ['energy', 'gradient', 'hessian']:
+#        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
+#                                 function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
+#
+#    # Define some quantum chemical knowledge, namely what methods are subsumed in others
+#
+#    # Make sure the molecule the user provided is the active one
+#    molecule = kwargs.pop('molecule', core.get_active_molecule())
+#    molecule.update_geometry()
+#    natom = molecule.natom()
+#
+#    if metadata[0]["wfn"] not in VARH.keys():
+#        raise ValidationError(
+#            """Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+#            (metadata[0]["wfn"]))
+#
 #    if len(metadata) > 1:
 #        for delta in metadata[1:]:
-#            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
-#                                         delta["options"], natom)
-#            GRAND_NEED.append(
-#                dict(
-#                    zip(d_fields, [
-#                        delta["stage"], delta["scheme"],
-#                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
-#                        delta["alpha"]
-#                    ])))
-#            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
-#                                         False, natom)
-#            GRAND_NEED.append(
-#                dict(
-#                    zip(d_fields, [
-#                        delta["stage"], delta["scheme"],
-#                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
-#                        delta["alpha"]
-#                    ])))
+#            if delta["wfn"] not in VARH.keys():
+#                raise ValidationError(
+#                    """Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+#                    (delta["treatment"], delta["wfn"]))
+#            if delta["wfn_lo"] not in VARH.keys():
+#                raise ValidationError(
+#                    """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
+#                    (delta["treatment"], delta["wfn_lo"]))
 #
-#    for stage in GRAND_NEED:
-#        for lvl in stage['d_need'].items():
-#            MODELCHEM.append(lvl[1])
+######### OUTSOURCE
 #
-#    # Apply chemical reasoning to choose the minimum computations to run
-#    JOBS = MODELCHEM[:]
+#    metameta = {
+#        'kwargs': kwargs,
+#        'ptype': ptype,
+#        'verbose': verbose,
+#        'label': label,
+#        'molecule': molecule,
+#    }
 #
-#    instructions = ''
-#    instructions += """    Naive listing of computations required.\n"""
-#    for mc in JOBS:
-#        instructions += """   %12s / %-24s for  %s%s\n""" % \
-#            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-#             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+#    # Plan CBS jobs
+#    GRAND_NEED, MODELCHEM, JOBS, JOBS_EXT = build_cbs_compute(metameta, metadata)
 #
-#    #     Remove duplicate modelchem portion listings
-#    for mc in MODELCHEM:
-#        dups = -1
-#        for indx_job, job in enumerate(JOBS):
-#            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
-#               (job['f_options'] == mc['f_options']):
-#                dups += 1
-#                if dups >= 1:
-#                    del JOBS[indx_job]
+#    # Compute CBS components
+#    JOBS_EXT = compute_cbs_components(func, metameta, JOBS)
 #
-#    #     Remove chemically subsumed modelchem portion listings
-#    if ptype == 'energy':
+#    # Assemble CBS quantities
+#    cbs_results, GRAND_NEED = assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS)
+#
+#    finalenergy = cbs_results['energy']
+#    finalgradient = cbs_results['gradient']
+#    finalhessian = cbs_results['hessian']
+#
+########## PARSE / PREPARE
+#
+##    # Build string of title banner
+##    cbsbanners = ''
+##    cbsbanners += """core.print_out('\\n')\n"""
+##    cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
+##    cbsbanners += """core.print_out('\\n')\n\n"""
+##    exec(cbsbanners)
+##
+##    # Call schemes for each portion of total energy to 'place orders' for calculations needed
+##    d_fields = [
+##        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
+##    ]
+##    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
+##    GRAND_NEED = []
+##    MODELCHEM = []
+##
+##    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
+##                                 metadata[0]["wfn"], metadata[0]["options"], natom)
+##    GRAND_NEED.append(
+##        dict(
+##            zip(d_fields, [
+##                'scf', metadata[0]["scheme"],
+##                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
+##                metadata[0]["alpha"]
+##            ])))
+##    if len(metadata) > 1:
+##        for delta in metadata[1:]:
+##            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
+##                                         delta["options"], natom)
+##            GRAND_NEED.append(
+##                dict(
+##                    zip(d_fields, [
+##                        delta["stage"], delta["scheme"],
+##                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
+##                        delta["alpha"]
+##                    ])))
+##            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
+##                                         False, natom)
+##            GRAND_NEED.append(
+##                dict(
+##                    zip(d_fields, [
+##                        delta["stage"], delta["scheme"],
+##                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
+##                        delta["alpha"]
+##                    ])))
+##
+##    for stage in GRAND_NEED:
+##        for lvl in stage['d_need'].items():
+##            MODELCHEM.append(lvl[1])
+##
+##    # Apply chemical reasoning to choose the minimum computations to run
+##    JOBS = MODELCHEM[:]
+##
+##    instructions = ''
+##    instructions += """    Naive listing of computations required.\n"""
+##    for mc in JOBS:
+##        instructions += """   %12s / %-24s for  %s%s\n""" % \
+##            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+##             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+##
+##    #     Remove duplicate modelchem portion listings
+##    for mc in MODELCHEM:
+##        dups = -1
+##        for indx_job, job in enumerate(JOBS):
+##            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
+##               (job['f_options'] == mc['f_options']):
+##                dups += 1
+##                if dups >= 1:
+##                    del JOBS[indx_job]
+##
+##    #     Remove chemically subsumed modelchem portion listings
+##    if ptype == 'energy':
+##        for mc in MODELCHEM:
+##            for wfn in VARH[mc['f_wfn']]:
+##                for indx_job, job in enumerate(JOBS):
+##                    if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
+##                       (mc['f_basis'] == job['f_basis']) and not \
+##                       (mc['f_wfn'] == job['f_wfn']):
+##                        del JOBS[indx_job]
+##
+##    instructions += """\n    Enlightened listing of computations required.\n"""
+##    for mc in JOBS:
+##        instructions += """   %12s / %-24s for  %s%s\n""" % \
+##            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+##             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+##
+#
+########## PREPARE / COMPUTE
+#
+##    #     Expand listings to all that will be obtained
+##    JOBS_EXT = []
+##    for job in JOBS:
+##        for wfn in VARH[job['f_wfn']]:
+##            JOBS_EXT.append(
+##                dict(
+##                    zip(f_fields, [
+##                        wfn, job['f_basis'], job['f_zeta'], 0.0,
+##                        core.Matrix(natom, 3),
+##                        core.Matrix(3 * natom, 3 * natom), job['f_options']
+##                    ])))
+##
+##    instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
+##    for mc in JOBS_EXT:
+##        instructions += """   %12s / %-24s for  %s%s\n""" % \
+##            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
+##             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
+##    core.print_out(instructions)
+##
+##    #psioh = core.IOManager.shared_object()
+##    #psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
+##    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+##    #   needs to be communicated to optimize() so reset by that optstash
+##    core.set_local_option('SCF', 'GUESS_PERSIST', True)
+##
+##    Njobs = 0
+##    # Run necessary computations
+##    for mc in JOBS:
+##        kwargs['name'] = mc['f_wfn']
+##
+##        # Build string of title banner
+##        cbsbanners = ''
+##        cbsbanners += """core.print_out('\\n')\n"""
+##        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
+##            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), addlremark[ptype])
+##        cbsbanners += """core.print_out('\\n')\n\n"""
+##        exec(cbsbanners)
+##
+##        # Build string of molecule and commands that are dependent on the database
+##        commands = '\n'
+##        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+##        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+##            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+##        exec(commands)
+##
+##        # Stash and set options if any
+##        if mc["f_options"]:
+##            optionstash = p4util.OptionsState(list(mc["f_options"]))
+##            for k, v, in mc["f_options"].items():
+##                core.set_global_option(k.upper(), v)
+##        else:
+##            optionstash = False
+##
+##        # Make energy(), etc. call
+##        response = func(molecule=molecule, **kwargs)
+##        if ptype == 'energy':
+##            mc['f_energy'] = response
+##        elif ptype == 'gradient':
+##            mc['f_gradient'] = response
+##            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+##            if verbose > 1:
+##                mc['f_gradient'].print_out()
+##        elif ptype == 'hessian':
+##            mc['f_hessian'] = response
+##            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+##            if verbose > 1:
+##                mc['f_hessian'].print_out()
+##        Njobs += 1
+##        if verbose > 1:
+##            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
+##
+##        # Restore modified options
+##        if optionstash:
+##            optionstash.restore()
+##
+##        # Fill in energies for subsumed methods
+##        if ptype == 'energy':
+##            for wfn in VARH[mc['f_wfn']]:
+##                for job in JOBS_EXT:
+##                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
+##                       (mc['f_options'] == job['f_options']):
+##                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
+##
+##        if verbose > 1:
+##            core.print_variables()
+##        core.clean_variables()
+##        core.clean()
+##
+##        # Copy data from 'run' to 'obtained' table
+##        for mce in JOBS_EXT:
+##            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
+##               (mc['f_options'] == mce['f_options']):
+##                mce['f_energy'] = mc['f_energy']
+##                mce['f_gradient'] = mc['f_gradient']
+##                mce['f_hessian'] = mc['f_hessian']
+##
+##    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
+#
+########## COMPUTE / ASSEMBLE
+#
+##    # Build string of title banner
+##    cbsbanners = ''
+##    cbsbanners += """core.print_out('\\n')\n"""
+##    cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
+##    cbsbanners += """core.print_out('\\n')\n\n"""
+##    exec(cbsbanners)
+##
+##    # Insert obtained energies into the array that stores the cbs stages
+##    for stage in GRAND_NEED:
+##        for lvl in stage['d_need'].items():
+##            MODELCHEM.append(lvl[1])
+##
+##            for job in JOBS_EXT:
+##                # Dont ask
+##                if (((lvl[1]['f_wfn'] == job['f_wfn']) or
+##                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
+##                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
+##                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
+##                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
+##                    lvl[1]['f_energy'] = job['f_energy']
+##                    lvl[1]['f_gradient'] = job['f_gradient']
+##                    lvl[1]['f_hessian'] = job['f_hessian']
+##
+##    # Make xtpl() call
+##    finalenergy = 0.0
+##    finalgradient = core.Matrix(natom, 3)
+##    finalhessian = core.Matrix(3 * natom, 3 * natom)
+##
+##    for stage in GRAND_NEED:
+##        hiloargs = {'alpha': stage['d_alpha']}
+##
+##        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
+##        stage['d_energy'] = stage['d_scheme'](**hiloargs)
+##        finalenergy += stage['d_energy'] * stage['d_coef']
+##
+##        if ptype == 'gradient':
+##            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
+##            stage['d_gradient'] = stage['d_scheme'](**hiloargs)
+##            work = stage['d_gradient'].clone()
+##            work.scale(stage['d_coef'])
+##            finalgradient.add(work)
+##
+##        elif ptype == 'hessian':
+##            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
+##            stage['d_hessian'] = stage['d_scheme'](**hiloargs)
+##            work = stage['d_hessian'].clone()
+##            work.scale(stage['d_coef'])
+##            finalhessian.add(work)
+#
+########## ASSEMBLE / REPORT
+#
+#    # Build string of results table
+#    table_delimit = '  ' + '-' * 105 + '\n'
+#    tables = ''
+#    tables += """\n   ==> %s <==\n\n""" % ('Components')
+#    tables += table_delimit
+#    tables += """     %6s %20s %1s %-26s %3s %16s   %-s\n""" % ('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]',
+#                                                                'Variable')
+#    tables += table_delimit
+#    for job in JOBS_EXT:
+#        star = ''
 #        for mc in MODELCHEM:
-#            for wfn in VARH[mc['f_wfn']]:
-#                for indx_job, job in enumerate(JOBS):
-#                    if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
-#                       (mc['f_basis'] == job['f_basis']) and not \
-#                       (mc['f_wfn'] == job['f_wfn']):
-#                        del JOBS[indx_job]
+#            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']):
+#                star = '*'
+#        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+#            '', job['f_wfn'], '/', job['f_basis'] + " + options" * bool(job['f_options']), star, job['f_energy'],
+#            VARH[job['f_wfn']][job['f_wfn']])
+#    tables += table_delimit
 #
-#    instructions += """\n    Enlightened listing of computations required.\n"""
-#    for mc in JOBS:
-#        instructions += """   %12s / %-24s for  %s%s\n""" % \
-#            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-#             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
-#
-
-######### PREPARE / COMPUTE
-
-#    #     Expand listings to all that will be obtained
-#    JOBS_EXT = []
-#    for job in JOBS:
-#        for wfn in VARH[job['f_wfn']]:
-#            JOBS_EXT.append(
-#                dict(
-#                    zip(f_fields, [
-#                        wfn, job['f_basis'], job['f_zeta'], 0.0,
-#                        core.Matrix(natom, 3),
-#                        core.Matrix(3 * natom, 3 * natom), job['f_options']
-#                    ])))
-#
-#    instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
-#    for mc in JOBS_EXT:
-#        instructions += """   %12s / %-24s for  %s%s\n""" % \
-#            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-#             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
-#    core.print_out(instructions)
-#
-#    #psioh = core.IOManager.shared_object()
-#    #psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
-#    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
-#    #   needs to be communicated to optimize() so reset by that optstash
-#    core.set_local_option('SCF', 'GUESS_PERSIST', True)
-#
-#    Njobs = 0
-#    # Run necessary computations
-#    for mc in JOBS:
-#        kwargs['name'] = mc['f_wfn']
-#
-#        # Build string of title banner
-#        cbsbanners = ''
-#        cbsbanners += """core.print_out('\\n')\n"""
-#        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
-#            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), addlremark[ptype])
-#        cbsbanners += """core.print_out('\\n')\n\n"""
-#        exec(cbsbanners)
-#
-#        # Build string of molecule and commands that are dependent on the database
-#        commands = '\n'
-#        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
-#        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
-#            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
-#        exec(commands)
-#
-#        # Stash and set options if any
-#        if mc["f_options"]:
-#            optionstash = p4util.OptionsState(list(mc["f_options"]))
-#            for k, v, in mc["f_options"].items():
-#                core.set_global_option(k.upper(), v)
-#        else:
-#            optionstash = False
-#
-#        # Make energy(), etc. call
-#        response = func(molecule=molecule, **kwargs)
-#        if ptype == 'energy':
-#            mc['f_energy'] = response
-#        elif ptype == 'gradient':
-#            mc['f_gradient'] = response
-#            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
-#            if verbose > 1:
-#                mc['f_gradient'].print_out()
-#        elif ptype == 'hessian':
-#            mc['f_hessian'] = response
-#            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
-#            if verbose > 1:
-#                mc['f_hessian'].print_out()
-#        Njobs += 1
-#        if verbose > 1:
-#            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
-#
-#        # Restore modified options
-#        if optionstash:
-#            optionstash.restore()
-#
-#        # Fill in energies for subsumed methods
-#        if ptype == 'energy':
-#            for wfn in VARH[mc['f_wfn']]:
-#                for job in JOBS_EXT:
-#                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
-#                       (mc['f_options'] == job['f_options']):
-#                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
-#
-#        if verbose > 1:
-#            core.print_variables()
-#        core.clean_variables()
-#        core.clean()
-#
-#        # Copy data from 'run' to 'obtained' table
-#        for mce in JOBS_EXT:
-#            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
-#               (mc['f_options'] == mce['f_options']):
-#                mce['f_energy'] = mc['f_energy']
-#                mce['f_gradient'] = mc['f_gradient']
-#                mce['f_hessian'] = mc['f_hessian']
-#
-#    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
-
-######### COMPUTE / ASSEMBLE
-
-#    # Build string of title banner
-#    cbsbanners = ''
-#    cbsbanners += """core.print_out('\\n')\n"""
-#    cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
-#    cbsbanners += """core.print_out('\\n')\n\n"""
-#    exec(cbsbanners)
-#
-#    # Insert obtained energies into the array that stores the cbs stages
+#    tables += """\n   ==> %s <==\n\n""" % ('Stages')
+#    tables += table_delimit
+#    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]',
+#                                                                'Scheme')
+#    tables += table_delimit
 #    for stage in GRAND_NEED:
-#        for lvl in stage['d_need'].items():
-#            MODELCHEM.append(lvl[1])
+#        tables += """     %6s %20s %1s %-27s %2d %16.8f   %-s\n""" % (stage['d_stage'], stage['d_wfn'], '/',
+#                                                                      stage['d_basis'], stage['d_coef'],
+#                                                                      stage['d_energy'], stage['d_scheme'].__name__)
+#    tables += table_delimit
 #
-#            for job in JOBS_EXT:
-#                # Dont ask
-#                if (((lvl[1]['f_wfn'] == job['f_wfn']) or
-#                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
-#                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
-#                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
-#                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
-#                    lvl[1]['f_energy'] = job['f_energy']
-#                    lvl[1]['f_gradient'] = job['f_gradient']
-#                    lvl[1]['f_hessian'] = job['f_hessian']
+#    tables += """\n   ==> %s <==\n\n""" % ('CBS')
+#    tables += table_delimit
+#    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]',
+#                                                                'Scheme')
+#    tables += table_delimit
+#    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+#        GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '', GRAND_NEED[0]['d_energy'],
+#        GRAND_NEED[0]['d_scheme'].__name__)
+#    if len(metadata) > 1:
+#        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+#            GRAND_NEED[1]['d_stage'], GRAND_NEED[1]['d_wfn'], '/', GRAND_NEED[1]['d_basis'], '',
+#            GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'], GRAND_NEED[1]['d_scheme'].__name__)
+#    if len(metadata) > 2:
+#        dc = 3
+#        for delta in metadata[2:]:
+#            tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
+#                GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
+#                GRAND_NEED[dc]['d_basis'], '', GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy'],
+#                GRAND_NEED[dc]['d_scheme'].__name__)
+#            dc += 2
 #
-#    # Make xtpl() call
-#    finalenergy = 0.0
-#    finalgradient = core.Matrix(natom, 3)
-#    finalhessian = core.Matrix(3 * natom, 3 * natom)
+#    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
+#    tables += table_delimit
 #
-#    for stage in GRAND_NEED:
-#        hiloargs = {'alpha': stage['d_alpha']}
+#    core.print_out(tables)
 #
-#        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
-#        stage['d_energy'] = stage['d_scheme'](**hiloargs)
-#        finalenergy += stage['d_energy'] * stage['d_coef']
+#    core.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+#    core.set_variable('CBS CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
+#    core.set_variable('CBS TOTAL ENERGY', finalenergy)
+#    core.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+#    core.set_variable('CURRENT CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
+#    core.set_variable('CURRENT ENERGY', finalenergy)
+#    core.set_variable('CBS NUMBER', len(JOBS))
 #
-#        if ptype == 'gradient':
-#            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
-#            stage['d_gradient'] = stage['d_scheme'](**hiloargs)
-#            work = stage['d_gradient'].clone()
-#            work.scale(stage['d_coef'])
-#            finalgradient.add(work)
+#    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+#    basis = core.BasisSet.build(molecule, "ORBITAL", 'def2-svp')
+#    wfn = core.Wavefunction(molecule, basis)
 #
 #        elif ptype == 'hessian':
 #            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
@@ -1964,8 +2143,8 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     -------
     tuple or float
         Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
-    """
 
+    """
     # Catch kwarg issues for all methods
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
@@ -1984,31 +2163,32 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     # Split into components
     method_list, basis_list = _parse_cbs_gufunc_string(total_method_name)
 
-    # Single energy call?
-    single_call = len(method_list) == 1
-    single_call &= '[' not in basis_list[0]
-    single_call &= ']' not in basis_list[0]
-
-    if single_call:
-        method_name = method_list[0]
-        basis = basis_list[0]
-
-        # Save some global variables so we can reset them later
-        optstash = p4util.OptionsState(['BASIS'])
-        core.set_global_option('BASIS', basis)
-        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
-            core.clean()
-        optstash.restore()
-
-        if return_wfn:
-            return (ptype_value, wfn)
-        else:
-            return ptype_value
-
-    # Drop out for unsupported calls
-    if ptype not in ["energy", "gradient", "hessian"]:
-        raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
+#    # Single energy call?
+#    single_call = len(method_list) == 1
+#    single_call &= '[' not in basis_list[0]
+#    single_call &= ']' not in basis_list[0]
+#
+#    if single_call:
+#        method_name = method_list[0]
+#        basis = basis_list[0]
+#
+#        # Save some global variables so we can reset them later
+#        optstash = p4util.OptionsState(['BASIS'])
+#        core.set_global_option('BASIS', basis)
+#        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
+#        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
+#           core.clean()
+#
+#        optstash.restore()
+#
+#        if return_wfn:
+#            return (ptype_value, wfn)
+#        else:
+#            return ptype_value
+#
+#    # Drop out for unsupported calls
+#    if ptype not in ["energy", "gradient", "hessian"]:
+#        raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
 
     # Catch kwarg issues for CBS methods only
     user_dertype = kwargs.pop('dertype', None)
@@ -2058,6 +2238,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         metadata.append(stage)
 
     cbs_kwargs["cbs_metadata"] = metadata
+
     ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
     if return_wfn:
@@ -2180,96 +2361,96 @@ def build_cbs_compute(metameta, metadata):
     return GRAND_NEED, MODELCHEM, JOBS, JOBS_EXT
 
 
-def compute_cbs_components(func, metameta, JOBS):
-    ptype = metameta['ptype']
-    kwargs = metameta['kwargs']
-    molecule = metameta['molecule']
-    natom = molecule.natom()
-    optstash = p4util.OptionsState(['BASIS'], ['WFN'],
-                                   ['WRITER_FILE_LABEL'])
-    user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
-    verbose = metameta['verbose']
-
-    psioh = core.IOManager.shared_object()
-    psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
-
-    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
-    #   needs to be communicated to optimize() so reset by that optstash
-    core.set_local_option('SCF', 'GUESS_PERSIST', True)
-
-    # Run necessary computations
-    for mc in JOBS:
-        kwargs['name'] = mc['f_wfn']
-
-        # Build string of title banner
-        cbsbanners = ''
-        cbsbanners += """core.print_out('\\n')\n"""
-        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
-            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), _addlremark[ptype])
-        cbsbanners += """core.print_out('\\n')\n\n"""
-        exec(cbsbanners)
-
-        # Build string of molecule and commands that are dependent on the database
-        commands = '\n'
-        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
-        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
-            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
-        exec(commands)
-
-        # Stash and set options if any
-        if mc["f_options"]:
-            optionstash = p4util.OptionsState(list(mc["f_options"]))
-            for k, v, in mc["f_options"].items():
-                core.set_global_option(k.upper(), v)
-        else:
-            optionstash = False
-
-        # Make energy(), etc. call
-        response = func(molecule=molecule, **kwargs)
-        if ptype == 'energy':
-            mc['f_energy'] = response
-        elif ptype == 'gradient':
-            mc['f_gradient'] = response
-            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
-            if verbose > 1:
-                mc['f_gradient'].print_out()
-        elif ptype == 'hessian':
-            mc['f_hessian'] = response
-            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
-            if verbose > 1:
-                mc['f_hessian'].print_out()
-        if verbose > 1:
-            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
-
-        # Restore modified options
-        if optionstash:
-            optionstash.restore()
-
-        # Fill in energies for subsumed methods
-        if ptype == 'energy':
-            for wfn in VARH[mc['f_wfn']]:
-                for job in JOBS_EXT:
-                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
-                       (mc['f_options'] == job['f_options']):
-                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
-
-        if verbose > 1:
-            core.print_variables()
-        core.clean_variables()
-        core.clean()
-
-        # Copy data from 'run' to 'obtained' table
-        for mce in JOBS_EXT:
-            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
-               (mc['f_options'] == mce['f_options']):
-                mce['f_energy'] = mc['f_energy']
-                mce['f_gradient'] = mc['f_gradient']
-                mce['f_hessian'] = mc['f_hessian']
-
-    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
-    optstash.restore()
-
-    return JOBS_EXT
+#def compute_cbs_components(func, metameta, JOBS):
+#    ptype = metameta['ptype']
+#    kwargs = metameta['kwargs']
+#    molecule = metameta['molecule']
+#    natom = molecule.natom()
+#    optstash = p4util.OptionsState(['BASIS'], ['WFN'],
+#                                   ['WRITER_FILE_LABEL'])
+#    user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
+#    verbose = metameta['verbose']
+#
+#    psioh = core.IOManager.shared_object()
+#    psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
+#
+#    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+#    #   needs to be communicated to optimize() so reset by that optstash
+#    core.set_local_option('SCF', 'GUESS_PERSIST', True)
+#
+#    # Run necessary computations
+#    for mc in JOBS:
+#        kwargs['name'] = mc['f_wfn']
+#
+#        # Build string of title banner
+#        cbsbanners = ''
+#        cbsbanners += """core.print_out('\\n')\n"""
+#        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
+#            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), _addlremark[ptype])
+#        cbsbanners += """core.print_out('\\n')\n\n"""
+#        exec(cbsbanners)
+#
+#        # Build string of molecule and commands that are dependent on the database
+#        commands = '\n'
+#        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+#        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+#            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+#        exec(commands)
+#
+#        # Stash and set options if any
+#        if mc["f_options"]:
+#            optionstash = p4util.OptionsState(list(mc["f_options"]))
+#            for k, v, in mc["f_options"].items():
+#                core.set_global_option(k.upper(), v)
+#        else:
+#            optionstash = False
+#
+#        # Make energy(), etc. call
+#        response = func(molecule=molecule, **kwargs)
+#        if ptype == 'energy':
+#            mc['f_energy'] = response
+#        elif ptype == 'gradient':
+#            mc['f_gradient'] = response
+#            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+#            if verbose > 1:
+#                mc['f_gradient'].print_out()
+#        elif ptype == 'hessian':
+#            mc['f_hessian'] = response
+#            mc['f_energy'] = core.get_variable('CURRENT ENERGY')
+#            if verbose > 1:
+#                mc['f_hessian'].print_out()
+#        if verbose > 1:
+#            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
+#
+#        # Restore modified options
+#        if optionstash:
+#            optionstash.restore()
+#
+#        # Fill in energies for subsumed methods
+#        if ptype == 'energy':
+#            for wfn in VARH[mc['f_wfn']]:
+#                for job in JOBS_EXT:
+#                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
+#                       (mc['f_options'] == job['f_options']):
+#                        job['f_energy'] = core.get_variable(VARH[wfn][wfn])
+#
+#        if verbose > 1:
+#            core.print_variables()
+#        core.clean_variables()
+#        core.clean()
+#
+#        # Copy data from 'run' to 'obtained' table
+#        for mce in JOBS_EXT:
+#            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
+#               (mc['f_options'] == mce['f_options']):
+#                mce['f_energy'] = mc['f_energy']
+#                mce['f_gradient'] = mc['f_gradient']
+#                mce['f_hessian'] = mc['f_hessian']
+#
+#    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
+#    optstash.restore()
+#
+#    return JOBS_EXT
 
 
 def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS):
@@ -2317,10 +2498,15 @@ def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS):
 
         if ptype == 'gradient':
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
+            print('hiloargs', hiloargs)
+            print('d_scheme', stage['d_scheme'])
+            print('stage_grad', stage['d_scheme'](**hiloargs))
             stage['d_gradient'] = stage['d_scheme'](**hiloargs)
-            work = stage['d_gradient'].clone()
-            work.scale(stage['d_coef'])
-            finalgradient.add(work)
+            finalgradient += stage['d_gradient'] * stage['d_coef']
+            print('GRAD', stage['d_coef'], finalgradient)
+            #work = stage['d_gradient'].clone()
+            #work.scale(stage['d_coef'])
+            #finalgradient.add(work)
 
         elif ptype == 'hessian':
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
@@ -2433,13 +2619,16 @@ class CBSComputer(BaseTask):
         return mol
 
     def build_tasks(self, obj, **data):
+        # permanently a dummy function
         pass
 
     def plan(self):
         return [x.plan() for x in self.task_list]
 
     def compute(self):
+        all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
         self.results_list = [x.compute() for x in self.task_list]
+        p4util.reset_pe_options(all_options)
 
     def get_results(self):
         energies = [x['properties']["return_energy"] for x in self.results_list]
@@ -2454,13 +2643,14 @@ class CBSComputer(BaseTask):
         # load results_list numbers into compute_list (task_list is SingleResult-s)
         for itask, mc in enumerate(self.compute_list):
             task = self.results_list[itask]
-            response = task['properties']['return_energy']
+            #response = task['properties']['return_energy']
+            response = task['return_result']
             print('ITASK:', itask, '\nMC:', mc, '\nRETURN', response, '\nTASK:', task, '\n')
 
             if self.metameta['ptype'] == 'energy':
                 mc['f_energy'] = response
-            #elif ptype == 'gradient':
-            #    mc['f_gradient'] = response
+            elif self.metameta['ptype'] == 'gradient':
+                mc['f_gradient'] = np.array(response).reshape((-1, 3))
             #    mc['f_energy'] = core.get_variable('CURRENT ENERGY')
             #    if verbose > 1:
             #        mc['f_gradient'].print_out()
@@ -2488,8 +2678,6 @@ class CBSComputer(BaseTask):
                     mce['f_gradient'] = mc['f_gradient']
                     mce['f_hessian'] = mc['f_hessian']
 
-        for mc in self.compute_list:
-            print(mc)
         # cbs_results,    GRAND_NEED = assemble_cbs_components(     metameta,      JOBS_EXT,      GRAND_NEED,      MODELCHEM,      JOBS):
         cbs_results, self.grand_need = assemble_cbs_components(self.metameta, self.jobs_ext, self.grand_need, self.modelchem, self.compute_list)
 
