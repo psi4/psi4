@@ -617,7 +617,7 @@ def gradient(name, **kwargs):
         else:
             optstash = driver_util._set_convergence_criterion('energy', 'scf', 8, 10, 8, 10, 8)
             lowername = name
-    
+
     elif gradient_type == 'nbody_gufunc':
         return driver_nbody.nbody_gufunc(gradient, name, ptype='gradient', **kwargs)
 
@@ -1180,7 +1180,7 @@ def hessian(name, **kwargs):
             gradient_type = 'custom_function'
 
     elif kwargs.get('bsse_type', None) is not None:
-        gradient_type = 'nbody_gufunc' 
+        gradient_type = 'nbody_gufunc'
     elif '/' in name:
         gradient_type = 'cbs_gufunc'
     else:
@@ -1198,7 +1198,7 @@ def hessian(name, **kwargs):
         raise ValidationError("Hessian: Does not yet support custom functions.")
     else:
         lowername = name.lower()
-    
+
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
     dertype = 2
@@ -1299,6 +1299,7 @@ def hessian(name, **kwargs):
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
         core.set_parent_symmetry('')
         optstash.restore()
@@ -1341,6 +1342,7 @@ def hessian(name, **kwargs):
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
         core.set_parent_symmetry('')
         optstash.restore()
