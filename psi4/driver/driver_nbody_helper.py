@@ -175,7 +175,7 @@ def compute_charges(charge_method, charge_type, molecule):
     for i in range(1, molecule.nfragments() + 1):
         molecule.set_name('charges%i' % i)
         e, wfn = energy(charge_method, molecule=molecule.extract_subsets([i]), return_wfn=True)
-        oeprop(wfn, charge_type)
+        oeprop(wfn, charge_type.upper())
         charges[i] = wfn.atomic_point_charges().np
 
     return charges

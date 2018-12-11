@@ -251,6 +251,10 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         Default is ``MULLIKEN_CHARGES``
     """
     
+    kwargs = p4util.kwargs_lower(kwargs)
+    if kwargs.get('levels', False):
+        return driver_nbody_helper.multi_level(func, **kwargs)
+
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     if molecule.nfragments() == 1:
         raise ValidationError("N-Body requires active molecule to have more than 1 fragment.")
