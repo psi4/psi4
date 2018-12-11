@@ -277,14 +277,10 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     elif kwargs['ptype'] == 'hessian':
         nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
         wfn.set_hessian(core.Matrix.from_array(nbody_results['ret_ptype']))
-        #component_results_gradient = component_results.copy()
-        #component_results_gradient['ptype'] = component_results_gradient['gradients']
-        #kwargs['ptype'] = 'gradient'
-        #nbody_results_gradient = assemble_nbody_components(metadata, component_results_gradient)
-        #wfn.set_gradient(nbody_results_gradient['ret_ptype'])
-        #nbody_results['gradient_body_dict'] = nbody_results_gradient['ptype_body_dict']
+        wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_gradient']))
 
-    for d in nbody_results: #[component_results, nbody_results]:
+
+    for d in nbody_results:
         if d in dicts:
             for var, value in nbody_results[d].items():
                 try:
@@ -919,11 +915,14 @@ class NBodyComputer(BaseTask):
 
     def compute(self):
         all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
+        gof = core.get_output_file()
+        core.close_outfile()
         for k, v in self.task_list.items():
             self.results_list[k] = v.compute()
 
             print(self.results_list[k]["return_result"])
 
+        core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
 
     def get_results(self):
@@ -938,6 +937,16 @@ class NBodyComputer(BaseTask):
                      int(np.sqrt(len(v["return_result"]))))) for k, v in self.results_list.items()}
         tmp = {"energies": energies, "ptype": ptype}
         nbody_results = assemble_nbody_components(self.dict(), tmp)
+
+        if self.driver == 'hessian':
+            gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((len(v['psi4:qcvars']["CURRENT GRADIENT"])//3, 3))
+                        for k, v in self.results_list.items()}
+            tmp['ptype'] = gradient
+            metadata = self.dict().copy()
+            metadata['driver'] = 'gradient'
+            grad_result = assemble_nbody_components(metadata, tmp)
+            nbody_results.update({'gradient_body_dict': grad_result['ptype_body_dict'],
+                                  'ret_gradient': grad_result['ret_ptype']})
 
         nbody_results['intermediates'] = {"N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in k[0]]), ', '.join(
                         [str(i) for i in k[1]])): v['properties']["return_energy"] for k, v in self.results_list.items()}
