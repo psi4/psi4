@@ -26,16 +26,15 @@
  * @END LICENSE
  */
 
+#include "psi4/libpsi4util/exception.h"
+
 #ifndef _MSC_VER
 #include <execinfo.h>
 #include <cxxabi.h>
 #endif
 
-#include <vector>
-#include <sstream>
-#include <cstring>
 #include <cstdlib>
-#include "psi4/libpsi4util/exception.h"
+#include <vector>
 
 namespace psi {
 
