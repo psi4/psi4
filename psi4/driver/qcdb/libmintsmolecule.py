@@ -91,6 +91,8 @@ class LibmintsMolecule():
         self.PYcomment = ''
         # Molecule origin
         self.PYprovenance = []
+        # Molecule connectivity
+        self.PYconnectivity = []
         # The molecular charge
         self.PYmolecular_charge = 0
         # The multiplicity (defined as 2Ms + 1)
@@ -200,9 +202,9 @@ class LibmintsMolecule():
         """Get molecule provenance
 
         >>> print(H2OH2O.provenance())
-        [{'creator': 'QCElemental',
-          'routine': 'qcelemental.molparse.from_arrays',
-          'version': 'v0.1.0a+8.g465f4e3'}]
+        {'creator': 'QCElemental',
+         'routine': 'qcelemental.molparse.from_arrays',
+         'version': 'v0.1.0a+8.g465f4e3'}
 
         """
         return copy.deepcopy(self.PYprovenance)
@@ -214,6 +216,23 @@ class LibmintsMolecule():
 
         """
         self.PYprovenance = provenance
+
+    def connectivity(self):
+        """Get molecule connectivity
+
+        >>> print(H2OH2O.connectivity())
+        [(0, 1, 1.0), (0, 2, 1.0)]
+
+        """
+        return copy.deepcopy(self.PYconnectivity)
+
+    def set_connectivity(self, connectivity):
+        """Set molecule connectivity
+
+        >>> H2OH2O.set_connectivity([(0, 1, 1.0), (0, 2, 1.0)])
+
+        """
+        self.PYconnectivity = connectivity
 
     def natom(self):
         """Number of atoms

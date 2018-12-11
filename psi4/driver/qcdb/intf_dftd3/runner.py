@@ -66,7 +66,7 @@ def run_dftd3(name, molecule, options, **kwargs):
     prov['creator'] = 'QCDB'
     prov['version'] = __version__
     prov['routine'] = sys._getframe().f_code.co_name
-    jobrec['provenance'] = [prov]
+    jobrec['provenance'] = prov
 
     # strip engine hint
     if name.startswith('d3-'):
@@ -109,7 +109,7 @@ def run_dftd3_from_arrays(molrec,
     prov['creator'] = 'QCDB'
     prov['version'] = __version__
     prov['routine'] = sys._getframe().f_code.co_name
-    jobrec['provenance'] = [prov]
+    jobrec['provenance'] = prov
 
     # strip engine hint
     if name_hint.startswith('d3-'):
@@ -348,7 +348,7 @@ def dftd3_harvest(jobrec, dftd3rec):
     prov['creator'] = 'DFTD3'
     prov['routine'] = sys._getframe().f_code.co_name
     prov['version'] = version
-    jobrec['provenance'].append(prov)
+    jobrec['provenance'] = prov
 
     return jobrec
 

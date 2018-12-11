@@ -74,7 +74,7 @@ class Molecule(LibmintsMolecule):
                  molecular_multiplicity=None,
                  comment=None,
                  provenance=None,
-                 #connectivity=None,
+                 connectivity=None,
                  enable_qm=True,
                  enable_efp=True,
                  missing_enabled_return_qm='none',
@@ -130,7 +130,7 @@ class Molecule(LibmintsMolecule):
                     molecular_multiplicity=molecular_multiplicity,
                     comment=comment,
                     provenance=provenance,
-                    #connectivity=connectivity,
+                    connectivity=connectivity,
                     domain='qm',
                     missing_enabled_return=missing_enabled_return,
                     tooclose=tooclose,
@@ -1169,7 +1169,7 @@ class Molecule(LibmintsMolecule):
                     molecular_multiplicity=None,
                     comment=None,
                     provenance=None,
-                    #connectivity=None,
+                    connectivity=None,
                     missing_enabled_return='error',
                     tooclose=0.1,
                     zero_ghost_fragments=False,
@@ -1219,7 +1219,7 @@ class Molecule(LibmintsMolecule):
             molecular_multiplicity=molecular_multiplicity,
             comment=comment,
             provenance=provenance,
-            #connectivity=connectivity,
+            connectivity=connectivity,
             domain='qm',
             missing_enabled_return=missing_enabled_return,
             tooclose=tooclose,
@@ -1367,6 +1367,9 @@ class Molecule(LibmintsMolecule):
         # qcdb does not add prov, so rely upon all qcdb.Mol creation happening in molparse for this to return valid value (not [])
         molrec['provenance'] = copy.deepcopy(self.provenance())
 
+        if self.connectivity != []:
+            molrec['connectivity'] = copy.deepcopy(self.connectivity())
+
         if force_units == 'Bohr':
             molrec['units'] = 'Bohr'
         elif force_units == 'Angstrom':
@@ -1454,7 +1457,7 @@ class Molecule(LibmintsMolecule):
             validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
-        validated_molrec['provenance'].pop()
+        #validated_molrec['provenance'].pop()
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
 
         if not np_out:
@@ -1485,6 +1488,9 @@ class Molecule(LibmintsMolecule):
             self.set_comment(molrec['comment'])
 
         self.set_provenance(copy.deepcopy(molrec['provenance']))
+
+        if 'connectivity' in molrec:
+            self.set_connectivity(copy.deepcopy(molrec['connectivity']))
 
         self.set_units(molrec['units'])
         if 'input_units_to_au' in molrec:
