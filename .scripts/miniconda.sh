@@ -19,6 +19,12 @@ MINICONDA_HOME=$HOME/miniconda
 echo "-- Installing latest Miniconda"
 if [ -d "$MINICONDA_HOME/bin" ]; then
     echo "-- Miniconda latest version FOUND in cache"
+    
+    # Config settings are not saved in the cache
+    export PIP_ARGS="-U"
+    export PATH=$MINICONDA_HOME/bin:$PATH
+
+    conda config --set always_yes yes --set changeps1 no
 else
     MINICONDA_MD5=$(curl -s https://repo.continuum.io/miniconda/ | grep -A3 $MINICONDA | sed -n '4p' | sed -n 's/ *<td>\(.*\)<\/td> */\1/p')
     echo "-- Miniconda latest version NOT FOUND in cache"
