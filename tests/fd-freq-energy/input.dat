@@ -39,6 +39,7 @@ clean()
 
 # Frequencies by 3-pt formula in C2v.
 molecule h2o {
+  symmetry c2v
   O
   H 1 0.9894093
   H 1 0.9894093 2 100.02688

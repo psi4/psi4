@@ -140,7 +140,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
        method : str
           A string specifying the method to be used for the computation.
        molecule: psi4.core.molecule or qcdb.molecule
-          The molecule for the computation. Geometry setting is handled internally.
+          The molecule for the computation. All processing is handled internally.
        displacement : dict
           A dictionary containing the necessary information for the displacement.
           See driver_findif/_geom_generator.py docstring for details.
@@ -161,15 +161,25 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     print(""" %d""" % (n), end=('\n' if (n == ndisp) else ''))
     sys.stdout.flush()
 
+    parent_group = molecule.point_group()
+    clone = molecule.clone()
+    clone.reinterpret_coordentry(False)
+    clone.fix_orientation(True)
+
     # Load in displacement (flat list) into the active molecule
     geom_array = np.reshape(displacement["geometry"], (-1, 3))
-    molecule.set_geometry(core.Matrix.from_array(geom_array))
+    clone.set_geometry(core.Matrix.from_array(geom_array))
 
+    # If we lost symmetry, use the highest subgroup of the parent this displacement has..
+    disp_group = clone.find_highest_point_group()
+    new_bits = parent_group.bits() & disp_group.bits()
+    new_symm_string = qcdb.PointGroup.bits_to_full_name(new_bits)
+    clone.reset_point_group(new_symm_string)
     # clean possibly necessary for n=1 if its irrep (unsorted in displacement list) different from initial G0 for freq
     core.clean()
 
     # Perform the derivative calculation
-    derivative, wfn = derivfunc(method, return_wfn=True, molecule=molecule, **kwargs)
+    derivative, wfn = derivfunc(method, return_wfn=True, molecule=clone, **kwargs)
     displacement["energy"] = core.variable('CURRENT ENERGY')
 
     # If we computed a first or higher order derivative, set it.
@@ -689,22 +699,18 @@ def gradient(name, **kwargs):
         if opt_iter == 1:
             print('Performing finite difference calculations')
 
-        # Shifting the geometry so need to copy the active molecule
-        moleculeclone = molecule.clone()
-
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.gradient_from_energy_geometries(moleculeclone)
+        findif_meta_dict = driver_findif.gradient_from_energy_geometries(molecule)
         ndisp = len(findif_meta_dict["displacements"]) + 1
 
-        # This version is pretty dependent on the reference geometry being last (as it is now)
         print(""" %d displacements needed ...""" % (ndisp), end='')
 
-        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
-            _process_displacement(
-                energy, lowername, moleculeclone, displacement, n, ndisp, write_orbitals=False, **kwargs)
-
-        wfn = _process_displacement(energy, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
+        wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
+
+        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
+            _process_displacement(
+                energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         # Compute the gradient
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
@@ -1269,13 +1275,8 @@ def hessian(name, **kwargs):
         core.print_out(
             """hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
 
-        # Shifting the geometry so need to copy the active molecule
-        moleculeclone = molecule.clone()
-
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_gradient_geometries(moleculeclone, irrep)
-        moleculeclone.reinterpret_coordentry(False)
-        moleculeclone.fix_orientation(True)
+        findif_meta_dict = driver_findif.hessian_from_gradient_geometries(molecule, irrep)
 
         # Record undisplaced symmetry for projection of displaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
@@ -1284,16 +1285,16 @@ def hessian(name, **kwargs):
 
         print(""" %d displacements needed.""" % ndisp)
 
-        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
-            _process_displacement(
-                gradient, lowername, moleculeclone, displacement, n, ndisp, write_orbitals=False, **kwargs)
-
-        wfn = _process_displacement(gradient, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
+        wfn = _process_displacement(gradient, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
+
+        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
+            _process_displacement(
+                gradient, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, irrep)  # TODO or moleculeclone?
+        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
@@ -1312,13 +1313,8 @@ def hessian(name, **kwargs):
         optstash_conv.restore()
         optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
 
-        # Shifting the geometry so need to copy the active molecule
-        moleculeclone = molecule.clone()
-
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_energy_geometries(moleculeclone, irrep)
-        moleculeclone.fix_orientation(True)
-        moleculeclone.reinterpret_coordentry(False)
+        findif_meta_dict = driver_findif.hessian_from_energy_geometries(molecule, irrep)
 
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
@@ -1327,12 +1323,12 @@ def hessian(name, **kwargs):
 
         print(' %d displacements needed.' % ndisp)
 
-        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=1):
-            _process_displacement(
-                energy, lowername, moleculeclone, displacement, n, ndisp, write_orbitals=False, **kwargs)
-
-        wfn = _process_displacement(energy, lowername, moleculeclone, findif_meta_dict["reference"], ndisp, ndisp,
+        wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
+
+        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
+            _process_displacement(
+                energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         # Assemble Hessian from energies
         H = driver_findif.compute_hessian_from_energies(findif_meta_dict, irrep)
