@@ -31,9 +31,10 @@ Ne 0 4 0
 set {
     e_convergence 1.e-10
     d_convergence 1.e-10
+    basis cc-pvdz
 }
 
-energy('SCF/cc-pvdz', molecule=noble_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
+energy('SCF', molecule=noble_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
 
 for compl in comparison_dict.keys():
     var_key = 'N-BODY %s TOTAL ENERGY' % compl                                #TEST

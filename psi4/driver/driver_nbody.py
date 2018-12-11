@@ -268,7 +268,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
     wfn = core.Wavefunction.build(molecule, 'def2-svp')
     dicts = [
-        'energies', 'ptype', 'intermediates', 'energy_body_dict', 'gradient_body_dict', 'hessian_body_dict', 'nbody',
+        'energies', 'ptype', 'intermediates', 'intermediates2', 'intermediates_ptype','energy_body_dict', 'gradient_body_dict', 'hessian_body_dict', 'nbody',
         'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
     ]
     if kwargs['ptype'] == 'gradient':
@@ -291,7 +291,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
                     wfn.set_variable(str(var), value)
                     core.set_variable(str(var), value)
                 except Exception:
-                    wfn.set_array(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
+                    wfn.set_array_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
@@ -921,12 +921,14 @@ class NBodyComputer(BaseTask):
         all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
         for k, v in self.task_list.items():
             self.results_list[k] = v.compute()
+
             print(self.results_list[k]["return_result"])
 
         p4util.reset_pe_options(all_options)
 
     def get_results(self):
         energies = {k: v['properties']["return_energy"] for k, v in self.results_list.items()}
+
         ptype = None
         if self.driver == 'gradient':
             ptype = {k: np.array(v["return_result"]).reshape((len(v["return_result"])//3, 3))
@@ -936,5 +938,14 @@ class NBodyComputer(BaseTask):
                      int(np.sqrt(len(v["return_result"]))))) for k, v in self.results_list.items()}
         tmp = {"energies": energies, "ptype": ptype}
         nbody_results = assemble_nbody_components(self.dict(), tmp)
+
+        nbody_results['intermediates'] = {"N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in k[0]]), ', '.join(
+                        [str(i) for i in k[1]])): v['properties']["return_energy"] for k, v in self.results_list.items()}
+
+        nbody_results['intermediates2'] = {str(k): v['properties']["return_energy"] for k, v in self.results_list.items()}
+
+        if ptype is not None:
+             nbody_results['intermediates_ptype'] = {'PTYPE ' + str(k): v for k, v in ptype.items()}
+
         return nbody_results
 

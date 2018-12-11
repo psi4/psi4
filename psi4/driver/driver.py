@@ -720,7 +720,7 @@ def gradient(name, **kwargs):
             molecule.update_geometry()
 
             # Bounce to CBS in pure-gradient mode if "method/basis" name and all parts have analytic grad. avail.
-            return driver_cbs._cbs_gufunc(gradient, name, ptype='gradient', molecule=molecule, **kwargs)
+            return driver_cbs._cbs_gufunc(gradient, name, ptype='gradient', **kwargs)
         else:
             # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
             optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
