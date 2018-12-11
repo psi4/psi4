@@ -46,6 +46,7 @@ jobs:
                         pint ^
                         pybind11 ^
                         pytest ^
+                        pytest-xdist ^
                         python=3.6
           conda list
         displayName: "Install conda packages"
@@ -93,7 +94,15 @@ jobs:
         displayName: "Install Psi4"
         workingDirectory: $(Build.BinariesDirectory)/build
 
-      # Test (ctest)
+      # Test (OpenMP)
+      # Check if OpenMP configuration had not failed silently
+      - script: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+        displayName: "Test Psi4 (OpenMP)"
+        workingDirectory: $(Build.BinariesDirectory)/install/lib
+
+      # Test (quick ctest)
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           ctest --build-config Debug ^
@@ -101,16 +110,35 @@ jobs:
                 --label-regex quick ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS%
-          ctest --build-config Debug ^
-                --tests-regex "^(ci-property)$" ^
-                --output-on-failure ^
-                --parallel %NUMBER_OF_PROCESSORS% & exit 0
-        displayName: "Test Psi4 (ctest)"
+        displayName: "Test Psi4 (quick ctest)"
         workingDirectory: $(Build.BinariesDirectory)/build
 
-      # Test (built-in)
+      # Test (failing ctest)
+      #
+      # Failing ctests:
+      #   - cbs-parser
+      #   - cc46
+      #   - cc47
+      #   - cc53
+      #   - ci-property (fails randomly)
+      #   - fci-tdm
+      #   - fci-tdm-2
+      #   - psimrcc-fd-freq2
+      #   - psithon2
+      #
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          python psi4 --test
-        displayName: "Test Psi4 (bullt-in)"
+          ctest --build-config Debug ^
+                --tests-regex "^(cbs-parser|cc46|cc47|cc53|ci-property|fci-tdm|fci-tdm-2|psimrcc-fd-freq2|psithon2)$" ^
+                --output-on-failure ^
+                --parallel %NUMBER_OF_PROCESSORS% & exit 0
+        displayName: "Test Psi4 (failing ctest)"
+        workingDirectory: $(Build.BinariesDirectory)/build
+
+      # Test (full pytest)
+      - script: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
+          python psi4 --fulltest
+        displayName: "Test Psi4 (full pytest)"
         workingDirectory: $(Build.BinariesDirectory)/install/bin

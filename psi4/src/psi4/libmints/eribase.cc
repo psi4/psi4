@@ -2207,9 +2207,9 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
 #ifdef MINTS_TIMER
     timer_on("ERI::compute_shell");
 #endif
-    // Need to ensure the ordering asked by the user is valid for libint
-    // compute_quartet does NOT check this. SEGFAULTS should occur if order
-    // is not guaranteed.
+// Need to ensure the ordering asked by the user is valid for libint
+// compute_quartet does NOT check this. SEGFAULTS should occur if order
+// is not guaranteed.
 #ifdef MINTS_TIMER
     timer_on("reorder");
 #endif

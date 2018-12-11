@@ -65,6 +65,7 @@ class DipoleInt : public OneBodyAOInt {
 
     /// Returns the nuclear contribution to the dipole moment
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
+    static SharedMatrix nuclear_gradient_contribution(std::shared_ptr<Molecule> mol);
 };
 
 }  // namespace psi

@@ -94,17 +94,13 @@ Wavefunction::Wavefunction(SharedWavefunction reference_wavefunction, Options &o
 }
 
 // TODO: pass Options object to constructor instead of relying on globals
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, 
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset,
                            std::map<std::string, std::shared_ptr<Matrix>> matrices,
                            std::map<std::string, std::shared_ptr<Vector>> vectors,
-                           std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints, 
-                           std::map<std::string, std::string> strings, std::map<std::string, bool> booleans, 
+                           std::map<std::string, Dimension> dimensions, std::map<std::string, int> ints,
+                           std::map<std::string, std::string> strings, std::map<std::string, bool> booleans,
                            std::map<std::string, double> floats)
-    : options_(Process::environment.options),
-      basisset_(basisset),
-      molecule_(molecule) {
-
-
+    : options_(Process::environment.options), basisset_(basisset), molecule_(molecule) {
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
         molecule_->set_point_group(molecule_->find_point_group());
@@ -1291,15 +1287,15 @@ SharedMatrix Wavefunction::X() const { return Lagrangian_; }
 
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
-void Wavefunction::set_gradient(SharedMatrix &grad) { gradient_ = grad; }
+void Wavefunction::set_gradient(SharedMatrix grad) { gradient_ = grad; }
 
 SharedMatrix Wavefunction::hessian() const { return hessian_; }
 
-void Wavefunction::set_hessian(SharedMatrix &hess) { hessian_ = hess; }
+void Wavefunction::set_hessian(SharedMatrix hess) { hessian_ = hess; }
 
 SharedVector Wavefunction::frequencies() const { return frequencies_; }
 
-void Wavefunction::set_frequencies(std::shared_ptr<Vector> &freqs) { frequencies_ = freqs; }
+void Wavefunction::set_frequencies(std::shared_ptr<Vector> freqs) { frequencies_ = freqs; }
 
 void Wavefunction::save() const {}
 

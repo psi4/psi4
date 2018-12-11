@@ -162,7 +162,7 @@ distribution.
 .. code-block:: bash
 
     # Linux or Mac or Windows
-    # substitute x.x by 2.7|3.5|3.6 for alternate python versions
+    # substitute x.x by 3.5|3.6|3.7 for alternate python versions
     # remove `-c psi4/label/dev` to get stable releases instead of nightly builds
     >>> conda create -n p4env python=x.x psi4 psi4-rt -c psi4/label/dev -c psi4
 
@@ -228,7 +228,7 @@ How to use conda to compile Psi4 faster and easier
 .. code-block:: bash
 
     # Linux # c. v1.2rc1  ###or Mac or Windows
-    # substitute x.x by 2.7|3.5|3.6 for alternate python versions
+    # substitute x.x by 3.5|3.6|3.7 for alternate python versions
     >>> conda create -n p4dev python=x.x psi4-dev -c psi4/label/dev -c psi4
     >>> conda activate p4dev
 
@@ -264,7 +264,7 @@ How to use conda to compile Psi4 faster and easier
     >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
     >>> make install
 
-Same for Linux/Mac/Windows. Substitute desired python version: 2.7, 3.5, 3.6. Fine
+Same for Linux/Mac/Windows. Substitute desired python version: 3.5, 3.6, 3.7. Fine
 to choose your own env name. Include ``-c psi4/label/dev`` to get dependencies to
 build current master, as opposed to latest release. 
 Activate environment, ``conda activate

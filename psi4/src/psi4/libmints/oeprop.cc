@@ -1493,7 +1493,7 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
         for (int i = 0; i < nmo; i++) {
             dipole[2]->set(0, i, C_DDOT(nao, Ca->pointer()[i], nmo, temp->pointer()[i], 1));
         }
-        // Quadrupoles
+// Quadrupoles
 #if 0
         C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
         for (int i = 0; i < nmo; i++) {

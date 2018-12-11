@@ -236,7 +236,7 @@ void ERISieve::integrals() {
         }
     }
 
-    // All this is broken (only built one shell-pair's info)
+// All this is broken (only built one shell-pair's info)
 #if 0
     if (do_qqr_) {
 

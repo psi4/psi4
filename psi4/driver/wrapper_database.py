@@ -229,16 +229,13 @@ def database(name, db_name, **kwargs):
     kwargs.pop('molecule', None)
 
     # Paths to search for database files: here + PSIPATH + library + PYTHONPATH
-    psidatadir = core.get_datadir()
-    #nolongerpredictable psidatadir = __file__ + '/../..' if psidatadir is None else psidatadir
-    libraryPath = ':' + os.path.abspath(psidatadir) + '/databases'
-    driver_loc = os.path.dirname(os.path.abspath(__file__))
-    dbPath = os.path.abspath('.') + \
-        ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
-        libraryPath + \
-        ':' + driver_loc  # so the databases can "import qcdb"
-
-    sys.path = [sys.path[0]] + dbPath.split(':') + sys.path[1:]
+    db_paths = []
+    db_paths.append(os.getcwd())
+    db_paths.extend(os.environ.get('PSIPATH', '').split(os.path.pathsep))
+    db_paths.append(os.path.join(core.get_datadir(), 'databases'))
+    db_paths.append(os.path.dirname(__file__))
+    db_paths = list(map(os.path.abspath, db_paths))
+    sys.path[1:1] = db_paths
     # TODO this should be modernized a la interface_cfour
 
     # Define path and load module for requested database

@@ -1045,6 +1045,7 @@ void export_mints(py::module& m) {
         .def("play", &MintsHelper::play, "play function")
 
         // Contracted gradient terms
+        .def("dipole_grad", &MintsHelper::dipole_grad, "First nuclear derivative dipole integrals")
         .def("overlap_grad", &MintsHelper::overlap_grad, "First nuclear derivative overlap integrals")
         .def("kinetic_grad", &MintsHelper::kinetic_grad, "First nuclear derivative kinetic integrals")
         .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
