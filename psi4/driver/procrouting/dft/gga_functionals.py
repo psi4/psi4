@@ -223,7 +223,6 @@ funcs.append({
 
 funcs.append({
     "name": "B97-D2",
-    "alias": ["B97-D"],
     "xc_functionals": {
         "GGA_XC_B97_D": {}
     },
@@ -238,8 +237,7 @@ funcs.append({
 })
 
 funcs.append({
-    "name": "B97-D3",
-    "alias": ["B97-D3ZERO"],
+    "name": "B97-D3ZERO",
     "xc_functionals": {
         "GGA_XC_B97_D": {}
     },
@@ -257,7 +255,6 @@ funcs.append({
 
 funcs.append({
     "name": "B97-D3BJ",
-    "alias": ["B97-D3(BJ)"],
     "xc_functionals": {
         "GGA_XC_B97_D": {}
     },
@@ -273,8 +270,7 @@ funcs.append({
 })
 
 funcs.append({
-    "name": "B97-D3M",
-    "alias": ["B97-D3MZERO"],
+    "name": "B97-D3MZERO",
     "xc_functionals": {
         "GGA_XC_B97_D": {}
     },
@@ -291,7 +287,6 @@ funcs.append({
 
 funcs.append({
     "name": "B97-D3MBJ",
-    "alias": ["B97-D3M(BJ)"],
     "xc_functionals": {
         "GGA_XC_B97_D": {}
     },

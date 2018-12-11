@@ -121,11 +121,19 @@ for functional_name in dict_functionals:
     for alias in functional_aliases:
         functionals[alias] = dict_functionals[functional_name]
 
-    # if the parent functional is already dispersion corrected, skip to next
+    # if the parent functional is already dispersion corrected:
     if "dispersion" in dict_functionals[functional_name]:
         disp = dict_functionals[functional_name]['dispersion']
-        dashcoeff_supplement[disp['type']]['definitions'][functional_name] = disp
-        # this is to "bless" dft/*_functionals dispersion definitions
+        for formal in functional_aliases:
+            # "bless" the original functional dft/*_functionals dispersion definition including aliases
+            dashcoeff_supplement[disp['type']]['definitions'][formal] = disp
+            # generate dispersion aliases for every functional alias
+            for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
+                if resolved_dispersion_level.lower() == disp["type"]:
+                    alias = formal.replace(disp["type"], nominal_dispersion_level.lower())
+                    if alias not in functionals:
+                        dashcoeff_supplement[disp['type']]['definitions'][formal] = disp
+                        functionals[alias] = dict_functionals[functional_name]
         continue
 
     # else loop through dispersion types in dashparams (also considering aliases)
@@ -137,8 +145,8 @@ for functional_name in dict_functionals:
             formal = functional_name + "-" + resolved_dispersion_level
             for alias in functional_aliases:
                 alias += "-" + nominal_dispersion_level.lower()
-                if formal != alias:
-                    functionals[alias] = copy.deepcopy(dict_functionals[formal])
+                if alias not in functionals:
+                    functionals[alias] = dict_functionals[formal]
         # if not, build it from dashparam logic if possible
         else:
             for dispersion_functional in intf_dftd3.dashcoeff[resolved_dispersion_level]['definitions']:
@@ -376,7 +384,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
         if "citation" not in d_params:
             d_params["citation"] = False
         if "nlc" in d_params:
-            sup.set_vv10_b(-1.0) 
+            sup.set_vv10_b(-1.0)
             sup.set_do_vv10(d_params["nlc"])
         if d_params["type"] == 'nl':
             sup.set_vv10_b(d_params["params"]["b"])
