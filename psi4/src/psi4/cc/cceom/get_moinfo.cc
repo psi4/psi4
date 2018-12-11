@@ -44,6 +44,8 @@
 #define EXTERN
 #include "globals.h"
 
+#include <cctype> 
+
 namespace psi {
 namespace cceom {
 
