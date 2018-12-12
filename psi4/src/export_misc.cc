@@ -32,6 +32,7 @@
 #include "psi4/libqt/qt.h"
 
 using namespace psi;
+namespace py = pybind11;
 
 void export_misc(py::module &m) {
     m.def("timer_on", timer_on, "Start timer with argument as label");

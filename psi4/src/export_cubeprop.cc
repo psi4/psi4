@@ -34,6 +34,7 @@
 #include "psi4/libmints/basisset.h"
 
 using namespace psi;
+namespace py = pybind11;
 
 void export_cubeprop(py::module& m) {
     py::class_<CubeProperties, std::shared_ptr<CubeProperties>>(m, "CubeProperties", "docstring")

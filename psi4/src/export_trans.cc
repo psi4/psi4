@@ -42,6 +42,7 @@
 
 using namespace psi;
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 void export_trans(py::module& m) {
     py::class_<MOSpace, std::shared_ptr<MOSpace>>(m, "MOSpace",
@@ -102,23 +103,20 @@ void export_trans(py::module& m) {
     int_trans_bind.def(py::init<std::shared_ptr<Wavefunction>, std::vector<std::shared_ptr<MOSpace>>,
                                 IntegralTransform::TransformationType, IntegralTransform::OutputType,
                                 IntegralTransform::MOOrdering, IntegralTransform::FrozenOrbitals, bool>(),
-                       py::arg("wfn"), py::arg("spaces"),
-                       py::arg("transformationType") = IntegralTransform::TransformationType::Restricted,
-                       py::arg("outputType") = IntegralTransform::OutputType::DPDOnly,
-                       py::arg("moOrdering") = IntegralTransform::MOOrdering::QTOrder,
-                       py::arg("FrozenOrbitals") = IntegralTransform::FrozenOrbitals::OccAndVir,
-                       py::arg("initialize") = true);
+                       "wfn"_a, "spaces"_a, "transformationType"_a = IntegralTransform::TransformationType::Restricted,
+                       "outputType"_a = IntegralTransform::OutputType::DPDOnly,
+                       "moOrdering"_a = IntegralTransform::MOOrdering::QTOrder,
+                       "FrozenOrbitals"_a = IntegralTransform::FrozenOrbitals::OccAndVir, "initialize"_a = true);
 
     int_trans_bind.def(py::init<std::shared_ptr<Matrix>, std::shared_ptr<Matrix>, std::shared_ptr<Matrix>,
                                 std::shared_ptr<Matrix>, std::shared_ptr<Matrix>, std::vector<std::shared_ptr<MOSpace>>,
                                 IntegralTransform::TransformationType, IntegralTransform::OutputType,
                                 IntegralTransform::MOOrdering, IntegralTransform::FrozenOrbitals, bool>(),
-                       py::arg("H"), py::arg("c"), py::arg("i"), py::arg("a"), py::arg("v"), py::arg("spaces"),
-                       py::arg("transformationType") = IntegralTransform::TransformationType::Restricted,
-                       py::arg("outputType") = IntegralTransform::OutputType::DPDOnly,
-                       py::arg("moOrdering") = IntegralTransform::MOOrdering::QTOrder,
-                       py::arg("FrozenOrbitals") = IntegralTransform::FrozenOrbitals::OccAndVir,
-                       py::arg("initialize") = true);
+                       "H"_a, "c"_a, "i"_a, "a"_a, "v"_a, "spaces"_a,
+                       "transformationType"_a = IntegralTransform::TransformationType::Restricted,
+                       "outputType"_a = IntegralTransform::OutputType::DPDOnly,
+                       "moOrdering"_a = IntegralTransform::MOOrdering::QTOrder,
+                       "FrozenOrbitals"_a = IntegralTransform::FrozenOrbitals::OccAndVir, "initialize"_a = true);
 
     typedef int (IntegralTransform::*DPD_ID_1)(const std::string&);
     typedef int (IntegralTransform::*DPD_ID_2)(const char);
@@ -129,25 +127,22 @@ void export_trans(py::module& m) {
         .def("presort_so_tei", &IntegralTransform::presort_so_tei, "docstring")
         .def("generate_oei", &IntegralTransform::generate_oei, "docstring")
         .def("update_orbitals", &IntegralTransform::update_orbitals, "docstring")
-        .def("transform_oei", &IntegralTransform::transform_oei, "Transform one-electron integrals", py::arg("s1"),
-             py::arg("s2"), py::arg("labels"))
-        .def("transform_tei", &IntegralTransform::transform_tei, "Transform two-electron integrals", py::arg("s1"),
-             py::arg("s2"), py::arg("s3"), py::arg("s4"),
-             py::arg("half_trans") = IntegralTransform::HalfTrans::MakeAndNuke)
+        .def("transform_oei", &IntegralTransform::transform_oei, "Transform one-electron integrals", "s1"_a, "s2"_a,
+             "labels"_a)
+        .def("transform_tei", &IntegralTransform::transform_tei, "Transform two-electron integrals", "s1"_a, "s2"_a,
+             "s3"_a, "s4"_a, "half_trans"_a = IntegralTransform::HalfTrans::MakeAndNuke)
         .def("transform_tei_first_half", &IntegralTransform::transform_tei_first_half,
-             "First half-transform two-electron integrals", py::arg("s1"), py::arg("s2"))
+             "First half-transform two-electron integrals", "s1"_a, "s2"_a)
         .def("transform_tei_second_half", &IntegralTransform::transform_tei_second_half,
-             "Second half-transform two-electron integrals", py::arg("s1"), py::arg("s2"), py::arg("s3"), py::arg("s4"))
+             "Second half-transform two-electron integrals", "s1"_a, "s2"_a, "s3"_a, "s4"_a)
         .def("backtransform_density", &IntegralTransform::backtransform_density)
         .def("backtransform_tpdm_restricted", &IntegralTransform::backtransform_tpdm_restricted)
         .def("backtransform_tpdm_unrestricted", &IntegralTransform::backtransform_tpdm_unrestricted)
         .def("print_dpd_lookup", &IntegralTransform::print_dpd_lookup)
-        .def("compute_fock_like_matrices", &IntegralTransform::compute_fock_like_matrices, py::arg("Hcore"),
-             py::arg("Cmats"))
-        .def("DPD_ID", DPD_ID_1(&IntegralTransform::DPD_ID), "docstring", py::arg("c"))
-        .def("DPD_ID", DPD_ID_2(&IntegralTransform::DPD_ID), "docstring", py::arg("str"))
-        .def("DPD_ID", DPD_ID_3(&IntegralTransform::DPD_ID), "docstring", py::arg("s1"), py::arg("s2"), py::arg("spin"),
-             py::arg("pack"));
+        .def("compute_fock_like_matrices", &IntegralTransform::compute_fock_like_matrices, "Hcore"_a, "Cmats"_a)
+        .def("DPD_ID", DPD_ID_1(&IntegralTransform::DPD_ID), "docstring", "c"_a)
+        .def("DPD_ID", DPD_ID_2(&IntegralTransform::DPD_ID), "docstring", "str"_a)
+        .def("DPD_ID", DPD_ID_3(&IntegralTransform::DPD_ID), "docstring", "s1"_a, "s2"_a, "spin"_a, "pack"_a);
 
     int_trans_bind.def("set_so_tei_file", &IntegralTransform::set_so_tei_file)
         .def("set_write_dpd_so_tpdm", &IntegralTransform::set_write_dpd_so_tpdm)
@@ -179,7 +174,6 @@ void export_trans(py::module& m) {
         .def("nirrep", &IntegralTransform::nirrep)
         .def("reset_so_int", &IntegralTransform::reset_so_int);
 
-    m.def("fcidump_tei_helper", &fcidump::fcidump_tei_helper, "Write integrals to file in FCIDUMP format",
-          py::arg("nirrep"), py::arg("restricted"), py::arg("DPD_info"), py::arg("ints_tolerance"),
-          py::arg("fname") = "INTDUMP");
+    m.def("fcidump_tei_helper", &fcidump::fcidump_tei_helper, "Write integrals to file in FCIDUMP format", "nirrep"_a,
+          "restricted"_a, "DPD_info"_a, "ints_tolerance"_a, "fname"_a = "INTDUMP");
 }
