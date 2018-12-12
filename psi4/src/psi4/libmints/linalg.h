@@ -29,9 +29,13 @@
 #pragma once
 
 #include <array>
+#include <string>
+#include <vector>
 
 #include <xtensor/xtensor.hpp>
 //#include <xtensor-blas/xlinalg.hpp>
+
+#include "dimension.h"
 
 namespace psi {
 /*! Basic linear algebra storage object
@@ -50,6 +54,37 @@ using Storage = xt::xtensor<T, Rank>;
  */
 template <typename T, size_t Rank, size_t Blocks>
 using BlockStorage = std::array<Storage<T, Rank>, Blocks>;
+
+template <size_t Rank>
+using Shape = std::array<size_t, Rank>;
+
+template <typename T, size_t Rank>
+class Tensor {
+   public:
+    explicit Tensor(const std::string& name, size_t blocks, Shape<Rank> shape)
+        : name_(name), store_(blocks, xt::zeros<T>(shape)) {}
+    explicit Tensor(size_t blocks, Shape<Rank> shape) : Tensor("", blocks, shape) {}
+    explicit Tensor(const std::string& name, Shape<Rank> shape) : Tensor(name, 1, shape) {}
+    explicit Tensor(Shape<Rank> shape) : Tensor("", 1, shape) {}
+    explicit Tensor(const std::string& name, const Dimension& dimpi) : name_(name), store_(dimpi.n()) {
+        for (int h = 0; h < store_.size(); ++h) {
+            store_[h] = xt::zeros<T>({dimpi[h]});
+        }
+    }
+
+    size_t dim() const {
+        return std::accumulate(std::begin(store_), std::end(store_), 0,
+                               [](size_t s, auto& b) { return (s + b.size()); });
+    }
+
+    size_t nirrep() const { return store_.size(); }
+    std::string name() const { return name_; }
+    void set_name(const std::string& name) { name_ = name; }
+
+   protected:
+    std::string name_;
+    std::vector<Storage<T, Rank>> store_{};
+};
 
 template <typename T, size_t Rank, size_t Blocks>
 T norm(const BlockStorage<T, Rank, Blocks>& store);

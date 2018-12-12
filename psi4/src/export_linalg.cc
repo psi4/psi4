@@ -26,12 +26,15 @@
  * @END LICENSE
  */
 
-#include <string>
-
-#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include <pybind11/pytypes.h>
+#include <pybind11/stl.h>
 
+#include <string>
+#include <vector>
+
+#include "psi4/libmints/linalg.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
 
@@ -39,10 +42,35 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-void export_linalg(py::module& m) {
-    py::class_<Vector, std::shared_ptr<Vector>>(m, "Vector", "Class for creating and manipulating vectors",
-                                                py::dynamic_attr())
-        .def(py::init<int>())
+auto docstring = [](const std::string& s1, const std::string& s2) { return (s1 + " " + s2).c_str(); };
+
+namespace {
+template <typename T, size_t Rank>
+void declareTensor(py::module& mod, const std::string& name) {
+    using Class = Tensor<T, Rank>;
+    using PyClass = py::class_<Class, std::shared_ptr<Class>>;
+
+    PyClass cls(mod, name.c_str());
+
+    cls.def(py::init<const std::string&, size_t, Shape<Rank>>());
+    cls.def(py::init<size_t, Shape<Rank>>());
+    cls.def(py::init<Shape<Rank>>());
+    cls.def(py::init<const std::string&, Shape<Rank>>());
+    cls.def(py::init<const std::string&, const Dimension&>());
+    cls.def("dim", &Class::dim, ("Total dimension of " + name).c_str());
+    cls.def("nirrep", &Class::nirrep, ("Number of irreps in " + name).c_str());
+    cls.def_property("name", &Class::name, &Class::set_name, ("The name of " + name).c_str());
+}
+}  // namespace
+
+void export_linalg(py::module& mod) {
+    declareTensor<double, 1>(mod, "NewVector");
+
+    using Class = Vector;
+    using PyClass = py::class_<Vector, std::shared_ptr<Vector>>;
+
+    PyClass cls(mod, "Vector", "Class for creating and manipulating vectors", py::dynamic_attr());
+    cls.def(py::init<int>())
         .def(py::init<const Dimension&>())
         .def(py::init<const std::string&, int>())
         .def(py::init<const std::string&, const Dimension&>())
@@ -59,10 +87,11 @@ void export_linalg(py::module& m) {
              "Sets a single element value located at m in irrep h", "h"_a, "m"_a, "val"_a)
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
-        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a)
+        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
         .def("set_block", &Vector::set_block, "Set a vector block", "slice"_a, "block"_a)
+        .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
         .def("array_interface",
              [](Vector& v) {
 
