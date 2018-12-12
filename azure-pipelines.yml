@@ -97,14 +97,12 @@ jobs:
       # Test (OpenMP)
       # Check if OpenMP configuration had not failed silently
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
         displayName: "Test Psi4 (OpenMP)"
         workingDirectory: $(Build.BinariesDirectory)/install/lib
 
       # Test (quick ctest)
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           ctest --build-config Debug ^
                 --exclude-regex "^(ci-property)$" ^
                 --label-regex quick ^
@@ -127,7 +125,6 @@ jobs:
       #   - psithon2
       #
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           ctest --build-config Debug ^
                 --tests-regex "^(cbs-parser|cc46|cc47|cc53|ci-property|fci-tdm|fci-tdm-2|psimrcc-fd-freq2|psithon2)$" ^
                 --output-on-failure ^
@@ -137,8 +134,8 @@ jobs:
 
       # Test (quick pytest)
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          python psi4 --test quick
-        displayName: "Test Psi4 (full pytest)"
-        workingDirectory: $(Build.BinariesDirectory)/install/bin
+          psi4 --test quick
+        displayName: "Test Psi4 (quick pytest)"
+        workingDirectory: $(Build.BinariesDirectory)
