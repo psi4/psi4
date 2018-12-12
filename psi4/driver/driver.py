@@ -614,8 +614,6 @@ def energy(name, **kwargs):
     if kwargs.get('embedding_charges', None):
         driver_nbody_helper.electrostatic_embedding(kwargs['embedding_charges'])
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
-    if kwargs.get('embedding_charges', None):
-        core.set_global_option_python('EXTERN', None)
 
     for postcallback in hooks['energy']['post']:
         postcallback(lowername, wfn=wfn, **kwargs)
@@ -755,6 +753,10 @@ def gradient(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
+
+    # Add embedding charges for nbody
+    if kwargs.get('embedding_charges', None):
+        driver_nbody_helper.electrostatic_embedding(kwargs['embedding_charges'])
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
@@ -1548,6 +1550,10 @@ def hessian(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
+
+    # Add embedding charges for nbody
+    if kwargs.get('embedding_charges', None):
+        driver_nbody_helper.electrostatic_embedding(kwargs['embedding_charges'])
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)

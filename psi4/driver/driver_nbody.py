@@ -922,12 +922,15 @@ class NBodyComputer(BaseTask):
         gof = core.get_output_file()
         core.close_outfile()
         for k, v in self.task_list.items():
+            core.set_active_molecule(v.molecule)
             self.results_list[k] = v.compute()
 
             print(self.results_list[k]["return_result"])
 
         core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
+        if self.embedding_charges:
+            core.set_global_option_python('EXTERN', None)
 
     def get_results(self):
         energies = {k: v['properties']["return_energy"] for k, v in self.results_list.items()}
