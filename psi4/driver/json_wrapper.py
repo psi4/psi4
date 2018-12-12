@@ -29,17 +29,20 @@
 Runs a JSON input psi file.
 """
 
-import os
-import copy
-import uuid
-import json
 import atexit
+import copy
+import json
+import numpy as np
+import os
+import uuid
 
 import psi4
 from psi4.driver import driver
 from psi4.driver import molutil
 from psi4.driver import p4util
 from psi4 import core
+
+## Methods and properties blocks
 
 methods_dict_ = {
     'energy': driver.energy,
@@ -52,11 +55,126 @@ can_do_properties_ = {
     "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
 }
 
+## QCSchema translation blocks
+
+_qcschema_translation = {
+
+    # Generics
+    "generics": {
+        "return_energy": {"variables": "CURRENT ENERGY"},
+        "nuclear_repulsion_energy": {"variables": "NUCLEAR REPULSION ENERGY"},
+    },
+
+    # Properties
+    "properties": {
+        "mulliken_charges": {"variables": "MULLIKEN_CHARGES", "skip_null": True},
+        "lowdin_charges": {"variables": "LOWDIN_CHARGES", "skip_null": True},
+        "wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES", "skip_null": True},
+        "mayer_indices": {"variables": "MAYER_INDICES", "skip_null": True},
+    },
+
+    # SCF variables
+    "scf": {
+        "scf_one_electron_energy": {"variables": "ONE-ELECTRON ENERGY"},
+        "scf_two_electron_energy": {"variables": "TWO-ELECTRON ENERGY"},
+        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]},
+        "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
+        "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
+        "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
+        "scf_xc_energy": {"variables": "DFT XC ENERGY", "skip_zero": True},
+        "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip_zero": True},
+
+        # SCF Properties (experimental)
+        # "scf_quadrupole_moment": {"variables": ["SCF QUADRUPOLE " + x for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]], "skip_null": True},
+        # "scf_mulliken_charges": {"variables": "MULLIKEN_CHARGES", "skip_null": True},
+        # "scf_lowdin_charges": {"variables": "LOWDIN_CHARGES", "skip_null": True},
+        # "scf_wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES", "skip_null": True},
+        # "scf_mayer_indices": {"variables": "MAYER_INDICES", "skip_null": True},
+    },
+
+    # MP2 variables
+    "mp2": {
+        "mp2_same_spin_correlation_energy": {"variables": "MP2 SAME-SPIN CORRELATION ENERGY"},
+        "mp2_opposite_spin_correlation_energy": {"variables": "MP2 OPPOSITE-SPIN CORRELATION ENERGY"},
+        "mp2_singles_energy": {"variables": "NYI", "default": 0.0},
+        "mp2_doubles_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_total_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_total_energy": {"variables": "MP2 TOTAL ENERGY"},
+    },
+
+#    "": {"variables": },
+
+} # yapf: disable
+
+def _json_translation(value):
+    """
+    Translates from Psi4 to JSON data types
+    """
+
+    if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
+        value = value.np.ravel().tolist()
+    elif isinstance(value, (psi4.core.Dimension)):
+        value = value.to_tuple()
+    elif isinstance(value, np.ndarray):
+        value = value.ravel().tolist()
+
+    return value
+
+def _convert_variables(data, context=None):
+    """
+    Converts dictionaries of variables based on translation metadata
+    """
+
+    # Build the correct translation units
+    if context is None:
+        needed_vars = {}
+        for v in _qcschema_translation.values():
+            needed_vars.update(v)
+    else:
+        needed_vars = _qcschema_translation[context]
+
+    ret = {}
+    for key, var in needed_vars.items():
+
+        # Get the actual variables
+        if isinstance(var["variables"], str):
+            value = data.get(var["variables"], None)
+        elif isinstance(var["variables"], (list, tuple)):
+            value = [data.get(x, None) for x in var["variables"]]
+            if not any(value):
+                value = None
+        else:
+            raise TypeError("variables type not understood.")
+
+        # Handle skips
+        if var.get("skip_zero", False) and (value == 0):
+            continue
+
+        if (var.get("skip_zero") or var.get("skip_null", False)) and (value is None):
+            continue
+
+        # Add defaults
+        if (value is None) and ("default" in var):
+            value = var["default"]
+
+        # Cast if called
+        if "cast" in var:
+            value = var["cast"](value)
+
+        ret[key] = _json_translation(value)
+
+    return ret
+
+
+## Execution functions
+
+
 def _clean_psi_environ(do_clean):
     if do_clean:
         psi4.core.clean_variables()
         psi4.core.clean_options()
-        core.clean()
+        psi4.core.clean()
+
 
 def run_json(json_data, clean=True):
 
@@ -73,7 +191,6 @@ def run_json(json_data, clean=True):
     if "memory" in json_data:
         psi4.set_memory(json_data["memory"])
 
-
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
     if return_output:
@@ -85,12 +202,8 @@ def run_json(json_data, clean=True):
 
     # Attempt to run the computer
     try:
-        if json_data.get("schema_name", "").startswith("qc_schema"):
-            # qc_schema should be copied
-            json_data = run_json_qc_schema(copy.deepcopy(json_data), clean)
-        else:
-            # Original run updates inplace
-            run_json_original_v1_1(json_data, clean)
+        # qc_schema should be copied
+        json_data = run_json_qc_schema(copy.deepcopy(json_data), clean)
 
     except Exception as error:
         json_data["error"] = repr(error)
@@ -145,7 +258,6 @@ def run_json_qc_schema(json_data, clean):
     # Update molecule geometry as we orient and fix_com
     json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()
 
-
     # Set options
     for k, v in json_data["keywords"].items():
         core.set_global_option(k, v)
@@ -166,13 +278,17 @@ def run_json_qc_schema(json_data, clean):
         else:
             kwargs["properties"] = list(can_do_properties_)
 
-
     # Actual driver run
     val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
 
-    # Pull out a standard set of SCF properties
+    # Pull out a standard set of Psi variables
     psi_props = psi4.core.scalar_variables()
     json_data["psi4:qcvars"] = psi_props
+
+    # Still a bit of a mess at the moment add in local vars as well.
+    for k, v in wfn.variables().items():
+        if k not in json_data["psi4:qcvars"]:
+            json_data["psi4:qcvars"][k] = _json_translation(v)
 
     # Handle the return result
     if json_data["driver"] == "energy":
@@ -182,23 +298,17 @@ def run_json_qc_schema(json_data, clean):
     elif json_data["driver"] == "properties":
         ret = {}
         mtd = json_data["model"]["method"].upper()
+
+        # Dipole/quadrupole still special case
         if "dipole" in kwargs["properties"]:
             ret["dipole"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
         if "quadrupole" in kwargs["properties"]:
             ret["quadrupole"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
-        if "mulliken_charges" in kwargs["properties"]:
-            ret["mulliken_charges"] = wfn.variable("MULLIKEN_CHARGES").np.ravel().tolist()
-        if "lowdin_charges" in kwargs["properties"]:
-            ret["lowdin_charges"] = wfn.variable("LOWDIN_CHARGES").np.ravel().tolist()
-        if "wiberg_lowdin_indices" in kwargs["properties"]:
-            ret["wiberg_lowdin_indices"] = wfn.variable("WIBERG_LOWDIN_INDICES").np.ravel().tolist()
-        if "mayer_indices" in kwargs["properties"]:
-            ret["mayer_indices"] = wfn.variable("MAYER_INDICES").np.ravel().tolist()
+        ret.update(_convert_variables(wfn.variables(), context="properties"))
 
         json_data["return_result"] = ret
     else:
         raise KeyError("Did not understand Driver key %s." % json_data["driver"])
-
 
     props = {
         "calcinfo_nbasis": wfn.nso(),
@@ -206,30 +316,13 @@ def run_json_qc_schema(json_data, clean):
         "calcinfo_nalpha": wfn.nalpha(),
         "calcinfo_nbeta": wfn.nbeta(),
         "calcinfo_natom": mol.geometry().shape[0],
-        "scf_one_electron_energy": psi_props["ONE-ELECTRON ENERGY"],
-        "scf_two_electron_energy": psi_props["TWO-ELECTRON ENERGY"],
-        "nuclear_repulsion_energy": psi_props["NUCLEAR REPULSION ENERGY"],
-        "scf_dipole_moment": [psi_props[x] for x in ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]],
-        "scf_iterations": int(psi_props["SCF ITERATIONS"]),
-        "scf_total_energy": psi_props["SCF TOTAL ENERGY"],
-        "return_energy": psi_props["CURRENT ENERGY"],
     }
-
-    # Pull out optional SCF keywords
-    other_scf = [("DFT VV10 ENERGY", "scf_vv10_energy"), ("DFT XC ENERGY", "scf_xc_energy"),
-                 ("DISPERSION CORRECTION ENERGY", "scf_dispersion_correction_energy")]
-    for pkey, skey in other_scf:
-        if (pkey in psi_props) and (psi_props[pkey] != 0):
-            props[skey] = psi_props[pkey]
+    props.update(_convert_variables(psi_props, context="generics"))
+    props.update(_convert_variables(psi_props, context="scf"))
 
     # Write out MP2 keywords
     if "MP2 CORRELATION ENERGY" in psi_props:
-        props["mp2_same_spin_correlation_energy"] = psi_props["MP2 SAME-SPIN CORRELATION ENERGY"]
-        props["mp2_opposite_spin_correlation_energy"] = psi_props["MP2 OPPOSITE-SPIN CORRELATION ENERGY"]
-        props["mp2_singles_energy"] = 0.0
-        props["mp2_doubles_energy"] = psi_props["MP2 CORRELATION ENERGY"]
-        props["mp2_total_correlation_energy"] = psi_props["MP2 CORRELATION ENERGY"]
-        props["mp2_total_energy"] = psi_props["MP2 TOTAL ENERGY"]
+        props.update(_convert_variables(psi_props, context="mp2"))
 
     json_data["properties"] = props
     json_data["success"] = True
@@ -238,178 +331,5 @@ def run_json_qc_schema(json_data, clean):
     _clean_psi_environ(clean)
 
     json_data["schema_name"] = "qc_schema_output"
-
-    return json_data
-
-
-def run_json_original_v1_1(json_data, clean):
-    """
-    Runs and updates the input JSON data.
-
-    This was a trial specification introduced in Psi4 v1.1. This will be deprecated in Psi4 v1.3 in favour of the QC JSON format
-    found here: http://molssi-qc-schema.readthedocs.io/en/latest/index.html#
-
-    Parameters
-    ----------
-    json_data : JSON input
-        Required input fields:
-            - molecule : str
-                A string representation of the molecule. Any valid psi4 synatx is valid.
-            - driver : str
-                The driver method to use valid arguments are "energy", "gradient", "property"
-            - args : str
-                Input arguments to the driver function
-            - kwargs : dict
-                Input dictionary to the driver function
-
-        Optional input fields:
-            - kwargs : dict
-                Additional kwargs to be passed to the driver.
-            - options : dict
-                Global options to set in the Psi4 run.
-            - scratch_location : str
-                Overide the default scratch location.
-            - return_output : bool
-                Return the full string reprsentation of the output or not.
-
-        Output fields:
-            - return_value : float, psi4.core.Vector, psi4.core.Matrix
-                The return value of the input function.
-            - variables : dict
-                The list of Psi4 variables generated from the run.
-            - success : bool
-                Indicates if the run was successful or not.
-            - error : str
-                If an error is raised the result is returned here.
-            - raw_output : str
-                The full Psi4 output if requested.
-
-
-    Notes
-    -----
-    !Warning! This function is experimental and likely to change in the future.
-    Please report any suggestions or uses of this function on github.com/psi4/psi4.
-
-    Examples
-    --------
-
-    # CP corrected Helium dimer energy in the STO-3G basis.
-    >>> json_data = {}
-
-    >>> json_data["molecule"] = "He 0 0 0\n--\nHe 0 0 1"
-    >>> json_data["driver"] = "energy"
-    >>> json_data["method"] = 'SCF'
-    >>> json_data["kwargs"] = {"bsse_type": "cp"}
-    >>> json_data["options"] = {"BASIS": "STO-3G"}
-
-    >>> run_json(json_data)
-    {
-        "raw_output": "Output storing was not requested.",
-        "options": {
-            "BASIS": "STO-3G"
-        },
-        "driver": "energy",
-        "molecule": "He 0 0 0\n--\nHe 0 0 1",
-        "method": "SCF",
-        "variables": {
-            "SCF N ITERS": 2.0,
-            "SCF DIPOLE Y": 0.0,
-            "CURRENT DIPOLE Y": 0.0,
-            "CP-CORRECTED 2-BODY INTERACTION ENERGY": 0.1839360538612116,
-            "HF TOTAL ENERGY": -5.433191881443323,
-            "SCF TOTAL ENERGY": -5.433191881443323,
-            "TWO-ELECTRON ENERGY": 4.124089347186247,
-            "SCF ITERATION ENERGY": -5.433191881443323,
-            "CURRENT DIPOLE X": 0.0,
-            "CURRENT DIPOLE Z": 0.0,
-            "CURRENT REFERENCE ENERGY": -5.433191881443323,
-            "CURRENT ENERGY": 0.1839360538612116,
-            "COUNTERPOISE CORRECTED TOTAL ENERGY": -5.433191881443323,
-            "SCF DIPOLE Z": 0.0,
-            "COUNTERPOISE CORRECTED INTERACTION ENERGY": 0.1839360538612116,
-            "NUCLEAR REPULSION ENERGY": 2.11670883436,
-            "SCF DIPOLE X": 0.0,
-            "ONE-ELECTRON ENERGY": -11.67399006298957
-        },
-        "return_value": 0.1839360538612116,
-        "error": "",
-        "success": true,
-        "provenance": {
-            "creator": "Psi4",
-            "routine": "psi4.run_json",
-            "version": "1.1a1"
-        },
-        "kwargs": {
-            "bsse_type": "cp"
-        }
-    }
-    """
-
-    # Clean a few things
-    _clean_psi_environ(clean)
-
-    # Set a few variables
-    json_data["error"] = ""
-    json_data["success"] = False
-    json_data["raw_output"] = None
-    json_data[
-        "warning"] = "Warning! This format will be deprecated in Psi4 v1.3. Please switch the standard QC JSON format."
-
-    # Add the provenance data
-    prov = {}
-    prov["version"] = psi4.__version__
-    prov["routine"] = "psi4.run_json"
-    prov["creator"] = "Psi4"
-    json_data["provenance"] = prov
-
-    # Check input
-    for check in ["driver", "method", "molecule"]:
-        if check not in list(json_data):
-            json_data["error"] = "Minimum input requires the %s field." % check
-            return json_data
-
-    # Check driver call
-    if json_data["driver"] not in list(methods_dict_):
-        json_data["error"] = "Driver parameters '%s' not recognized" % str(json_data["driver"])
-        return json_data
-
-    # Set options
-    if "options" in json_data.keys() and (json_data["options"] is not None):
-        for k, v in json_data["options"].items():
-            core.set_global_option(k, v)
-
-    # Rework args
-    args = json_data["method"]
-    if not isinstance(args, (list, tuple)):
-        args = [args]
-
-    # Deep copy kwargs
-    if "kwargs" in list(json_data):
-        kwargs = copy.deepcopy(json_data["kwargs"])
-    else:
-        kwargs = {}
-
-    kwargs["molecule"] = molutil.geometry(json_data["molecule"])
-
-    # Full driver call
-    kwargs["return_wfn"] = True
-
-    if json_data["driver"] not in methods_dict_:
-        raise KeyError("Driver type '%s' not recognized." % str(json_data["driver"]))
-
-    val, wfn = methods_dict_[json_data["driver"]](*args, **kwargs)
-
-    if isinstance(val, (float, int)):
-        json_data["return_value"] = val
-    elif isinstance(val, (core.Matrix, core.Vector)):
-        json_data["return_value"] = val.to_serial()
-    else:
-        raise TypeError("Unrecognized return value of type %s\n" % type(val))
-
-    json_data["variables"] = core.scalar_variables()
-    json_data["success"] = True
-
-    # Reset state
-    _clean_psi_environ(clean)
 
     return json_data

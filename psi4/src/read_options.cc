@@ -1253,6 +1253,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do perform a QCHF computation?  -*/
         options.add_bool("QCHF", false);
 
+        /*- SCF Properties to calculate after an energy evaluation. Note, this
+        keyword is not used for property evaluations. -*/
+        options.add("SCF_PROPERTIES", new ArrayType());
+
         /*- SUBSECTION Convergence Control/Stabilization -*/
 
         /*- Maximum number of iterations.

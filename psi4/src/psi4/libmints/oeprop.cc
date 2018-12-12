@@ -840,6 +840,7 @@ void OEProp::compute_multipoles(int order, bool transition) {
         /*- Process::environment.globals["32-POLE XXXXX"] -*/
         /*- Process::environment.globals["32-POLE XXXXY"] -*/
         Process::environment.globals[name] = total_mpole;
+        wfn_->set_scalar_variable(name, total_mpole);
     }
 }
 
@@ -1123,6 +1124,7 @@ void OEProp::compute_esp_at_nuclei() {
         s << "ESP AT CENTER " << atom1 + 1;
         /*- Process::environment.globals["ESP AT CENTER n"] -*/
         Process::environment.globals[s.str()] = (*nesps)[atom1];
+        wfn_->set_scalar_variable(s.str(), (*nesps)[atom1]);
     }
     wfn_->set_esp_at_nuclei(nesps);
 }
@@ -1181,12 +1183,17 @@ void OEProp::compute_dipole(bool transition) {
     std::stringstream s;
     s << title_ << " DIPOLE X";
     Process::environment.globals[s.str()] = dipole->get(0);
+    wfn_->set_scalar_variable(s.str(), dipole->get(0));
+
     s.str(std::string());
     s << title_ << " DIPOLE Y";
     Process::environment.globals[s.str()] = dipole->get(1);
+    wfn_->set_scalar_variable(s.str(), dipole->get(1));
+
     s.str(std::string());
     s << title_ << " DIPOLE Z";
     Process::environment.globals[s.str()] = dipole->get(2);
+    wfn_->set_scalar_variable(s.str(), dipole->get(2));
 }
 
 SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_output, bool verbose) {
@@ -1286,21 +1293,32 @@ void OEProp::compute_quadrupole(bool transition) {
     std::stringstream s;
     s << title_ << " QUADRUPOLE XX";
     Process::environment.globals[s.str()] = quadrupole->get(0, 0);
+    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 0));
+
     s.str(std::string());
     s << title_ << " QUADRUPOLE YY";
     Process::environment.globals[s.str()] = quadrupole->get(1, 1);
+    wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 1));
+
     s.str(std::string());
     s << title_ << " QUADRUPOLE ZZ";
     Process::environment.globals[s.str()] = quadrupole->get(2, 2);
+    wfn_->set_scalar_variable(s.str(), quadrupole->get(2, 2));
+
     s.str(std::string());
     s << title_ << " QUADRUPOLE XY";
     Process::environment.globals[s.str()] = quadrupole->get(0, 1);
+    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 1));
+
     s.str(std::string());
     s << title_ << " QUADRUPOLE XZ";
     Process::environment.globals[s.str()] = quadrupole->get(0, 2);
+    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 2));
+
     s.str(std::string());
     s << title_ << " QUADRUPOLE YZ";
     Process::environment.globals[s.str()] = quadrupole->get(1, 2);
+    wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 2));
 }
 
 SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_output, bool verbose) {
