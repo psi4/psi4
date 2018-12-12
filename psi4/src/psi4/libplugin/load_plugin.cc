@@ -66,7 +66,7 @@ plugin_info plugin_load(std::string &plugin_pathname) {
     // Modify info.name converting things that are allowed
     // filename characters to allowed C++ function names.
     // Replace all '-' with '_'
-    std::transform(info.name.begin(), info.name.end(), info.name.begin(), [](char c) { return c == '_' ? '-' : c; });
+    std::transform(info.name.begin(), info.name.end(), info.name.begin(), [](char c) { return c == '-' ? '_' : c; });
 
     info.plugin = (plugin_t)dlsym(info.plugin_handle, info.name.c_str());
     const char *dlsym_error3 = dlerror();
