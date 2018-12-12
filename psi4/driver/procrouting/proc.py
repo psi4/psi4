@@ -1366,6 +1366,8 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # PCM preparation
     if core.get_option('SCF', 'PCM'):
+        if core.get_option('SCF', 'PE'):
+            raise ValidationError("""Error: 3-layer QM/MM/PCM not implemented.\n""")
         pcmsolver_parsed_fname = core.get_local_option('PCM', 'PCMSOLVER_PARSED_FNAME')
         pcm_print_level = core.get_option('SCF', "PRINT")
         scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
@@ -1375,6 +1377,8 @@ def scf_helper(name, post_scf=True, **kwargs):
     
     # PE preparation
     if core.get_option('SCF', 'PE'):
+        if core.get_option('SCF', 'PCM'):
+            raise ValidationError("""Error: 3-layer QM/MM/PCM not implemented.\n""")
         potfile_name = core.get_local_option('PE', 'POTFILE')
         pol_embed_options = core.PeOptions()
         pol_embed_options.potfile = potfile_name

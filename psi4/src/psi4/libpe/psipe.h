@@ -71,7 +71,7 @@ class PeState {
    public:
     enum CalcType { total, electronic_only };
     PeState() = default;
-    PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset);
+    explicit PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset);
     ~PeState() {}
 
     /*! \brief Compute PE energy and Fock matrix contribution
@@ -89,7 +89,7 @@ class PeState {
     // void calculate_excited_state_energy_correction(double* p_exc, double* energy, bool is_tdm);
 
    private:
-    std::shared_ptr<BasisSet> basisset_;
+    int nbf_;
     std::vector<libcppe::Potential> potentials_;
     libcppe::CppeState cppe_state_;
     PeIntegralHelper int_helper_;

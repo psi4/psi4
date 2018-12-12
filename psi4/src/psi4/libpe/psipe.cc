@@ -79,32 +79,28 @@ std::vector<int> from_alphabetical_to_psi4 = {
 }  // unnamed namespace
 
 PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset)
-    : basisset_(basisset),
-      cppe_state_(libcppe::CppeState(options, make_molecule(basisset_->molecule()), *(outfile->stream()))),
+    : cppe_state_(libcppe::CppeState(options, make_molecule(basisset->molecule()), *(outfile->stream()))),
       int_helper_(PeIntegralHelper(basisset)) {
     potentials_ = cppe_state_.get_potentials();
     cppe_state_.calculate_static_energies_and_fields();
+    nbf_ = basisset->nbf();
+
+    V_es_ = std::make_shared<Matrix>("V_es", nbf_, nbf_);
+    for (auto& p : potentials_) {
+        Vector3 site(p.m_x, p.m_y, p.m_z);
+        std::vector<double> moments;
+        for (auto& m : p.get_multipoles()) {
+            m.remove_trace();
+            if (m.m_k > 2) throw std::runtime_error("PE is only implemented up to quadrupoles.");
+            for (auto d : m.get_values()) moments.push_back(d);
+        }
+        V_es_->add(int_helper_.compute_multipole_potential_integrals(site, 2, moments));
+    }
+    cppe_state_.set_es_operator(arma::mat(V_es_->get_pointer(), V_es_->nrow(), V_es_->ncol(), true));
 }
 
 std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMatrix& Dm, CalcType type,
                                                                  bool subtract_scf_density) {
-    // build the electrostatics operator only once!
-    if (!iteration && (type == PeState::CalcType::total)) {
-        V_es_ = std::make_shared<Matrix>("V_es", basisset_->nbf(), basisset_->nbf());
-        for (auto& p : potentials_) {
-            Vector3 site(p.m_x, p.m_y, p.m_z);
-            std::vector<double> moments;
-            for (auto& m : p.get_multipoles()) {
-                m.remove_trace();
-                if (m.m_k > 2) throw std::runtime_error("PE is only implemented up to quadrupoles.");
-                for (auto d : m.get_values()) moments.push_back(d);
-            }
-            V_es_->add(int_helper_.compute_multipole_potential_integrals(site, 2, moments));
-        }
-        cppe_state_.set_es_operator(arma::mat(V_es_->get_pointer(), V_es_->nrow(), V_es_->ncol(), true));
-        cppe_state_.es_operator_copy().save("V_es_psi4.txt", arma::raw_ascii);
-    }
-
     SharedMatrix D = Dm;
     if (subtract_scf_density && type == PeState::CalcType::electronic_only) {
         D->subtract(D_scf_);
@@ -114,7 +110,7 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
     size_t n_sitecoords = 3 * cppe_state_.get_polarizable_site_number();
 
     // induction operator
-    auto V_ind = std::make_shared<Matrix>("V_ind", basisset_->nbf(), basisset_->nbf());
+    auto V_ind = std::make_shared<Matrix>("V_ind", nbf_, nbf_);
     if (n_sitecoords) {
         int current_polsite = 0;
         arma::vec elec_fields(n_sitecoords, arma::fill::zeros);
@@ -146,9 +142,6 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
         V_ind->add(V_es_);
         D_scf_ = D;
     }
-    // TODO: only for debugging
-    // cppe_state_.print_summary();
-
     if (type == PeState::CalcType::total) iteration++;
 
     double energy_result =
@@ -162,8 +155,7 @@ void PeState::print_energy_summary() { cppe_state_.print_summary(); }
 SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 site, int order,
                                                                      std::vector<double>& moments) {
     auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    std::shared_ptr<OneBodyAOInt> multipole_integrals =
-        static_cast<std::shared_ptr<OneBodyAOInt>>(integrals->ao_efp_multipole_potential());
+    auto multipole_integrals = integrals->ao_efp_multipole_potential();
 
     // TODO: only compute up to the needed order!
     std::vector<SharedMatrix> mult;
@@ -216,14 +208,13 @@ SharedMatrix PeIntegralHelper::compute_field_integrals(Vector3 site, arma::vec m
     fields.push_back(std::make_shared<Matrix>("AO Field Z", basisset_->nbf(), basisset_->nbf()));
 
     auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    std::shared_ptr<OneBodyAOInt> field_integrals_ =
-        static_cast<std::shared_ptr<OneBodyAOInt>>(integrals->electric_field());
+    auto field_integrals_ = integrals->electric_field();
     field_integrals_->set_origin(site);
     field_integrals_->compute(fields);
 
-    fields[0]->scale(-1.0 * moment[0]);
-    fields[1]->scale(-1.0 * moment[1]);
-    fields[2]->scale(-1.0 * moment[2]);
+    for (int i = 0; i < 3; ++i) {
+        fields[i]->scale(-1.0 * moment[i]);
+    }
 
     fields[0]->add(fields[1]);
     fields[0]->add(fields[2]);
@@ -238,15 +229,14 @@ Vector PeIntegralHelper::compute_field(Vector3 site, const SharedMatrix& D) {
     fields.push_back(std::make_shared<Matrix>("AO Field Z", basisset_->nbf(), basisset_->nbf()));
 
     auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    std::shared_ptr<OneBodyAOInt> field_integrals_ =
-        static_cast<std::shared_ptr<OneBodyAOInt>>(integrals->electric_field());
+    auto field_integrals_ = integrals->electric_field();
     field_integrals_->set_origin(site);
     field_integrals_->compute(fields);
 
     Vector efields("efields", 3);
-    efields.set(0, D->vector_dot(fields[0]));
-    efields.set(1, D->vector_dot(fields[1]));
-    efields.set(2, D->vector_dot(fields[2]));
+    for (int i = 0; i < 3; ++i) {
+        efields[i] = D->vector_dot(fields[i]);
+    }
     return efields;
 }
 
