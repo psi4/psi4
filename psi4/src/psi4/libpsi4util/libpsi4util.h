@@ -31,6 +31,7 @@
 
 #include "psi4/pragma.h"
 
+#include <cctype>
 #include <algorithm>
 #include <chrono>
 #include <string>
