@@ -925,6 +925,12 @@ class NBodyComputer(BaseTask):
             core.set_active_molecule(v.molecule)
             self.results_list[k] = v.compute()
 
+            if self.results_list[k] is None:
+                # Get CBS results
+                results = v.get_results()
+                self.results_list[k] = {'properties': {'return_energy': results['energy']}, 'return_result': results['ret_ptype'],
+                                        'psi4:qcvars': {'CURRENT GRADIENT': results['gradient']}}
+
             print(self.results_list[k]["return_result"])
 
         core.set_output_file(gof, True)
