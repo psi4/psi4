@@ -277,7 +277,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_qcel_molparse_to_string.py
               ../tests/pytests/test_matrix.py
               ../tests/pytests/test_vector.py
-              ../tests/pytests/test_newvector.py
+              ../tests/pytests/test_tensor.py
               ../tests/pytests/test_qcvars.py
               ../tests/pytests/test_dft_benchmarks.py
               ../tests/pytests/test_vibanalysis.py
