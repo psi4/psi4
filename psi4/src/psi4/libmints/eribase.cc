@@ -1752,7 +1752,6 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt, const ShellP
             nprim++;
         }
     }
-
     return nprim;
 }
 
@@ -1889,8 +1888,8 @@ void TwoElectronInt::init_shell_pairs12() {
     int prim_pairs_total = 0;
     int prim_pairs_keep = 0;
 
-    // Criteria for determining if the overlap between primitives is large enough
-    // #TODO make this an adjustable parameter
+    // Criteria for determining if the overlap between primitives is negligible
+    // #TODO make this a user defined parameter
     double overlap_cutoff = 1.0e-12;
 
     // Loop over all shell pairs (si, sj) and create primitive pairs pairs
@@ -1904,18 +1903,18 @@ void TwoElectronInt::init_shell_pairs12() {
             ab2 = AB.dot(AB);
 
             // Make and populate fields of screened shell pair
-            ShellPair spsc;
-            spsc.i = si;
-            spsc.j = sj;
-            spsc.AB[0] = AB[0];
-            spsc.AB[1] = AB[1];
-            spsc.AB[2] = AB[2];
+            ShellPair sp;
+            sp.i = si;
+            sp.j = sj;
+            sp.AB[0] = AB[0];
+            sp.AB[1] = AB[1];
+            sp.AB[2] = AB[2];
 
             np_i = basis1()->shell(si).nprimitive();
             np_j = basis2()->shell(sj).nprimitive();
 
             // Reserve some memory for the primitives pairs of this shell pair
-            spsc.nonzeroPrimPairs.resize(np_i * np_j);
+            sp.nonzeroPrimPairs.resize(np_i * np_j);
 
             // the number of significant primitive pairs just in this shell pair (not screened)
             np_sig = 0;
@@ -1939,29 +1938,29 @@ void TwoElectronInt::init_shell_pairs12() {
                         PB = P - B;
 
                         // Make and populate fields of screened primitive pair
-                        PrimPair pps;
+                        PrimPair pp;
 
                         // Copy data into pairs array
-                        pps.P[0] = P[0];
-                        pps.P[1] = P[1];
-                        pps.P[2] = P[2];
-                        pps.PA[0] = PA[0];
-                        pps.PA[1] = PA[1];
-                        pps.PA[2] = PA[2];
-                        pps.PB[0] = PB[0];
-                        pps.PB[1] = PB[1];
-                        pps.PB[2] = PB[2];
+                        pp.P[0] = P[0];
+                        pp.P[1] = P[1];
+                        pp.P[2] = P[2];
+                        pp.PA[0] = PA[0];
+                        pp.PA[1] = PA[1];
+                        pp.PA[2] = PA[2];
+                        pp.PB[0] = PB[0];
+                        pp.PB[1] = PB[1];
+                        pp.PB[2] = PB[2];
 
                         // Save some information
-                        pps.ai = a1;
-                        pps.aj = a2;
-                        pps.gamma = gam;
-                        pps.ci = c1;
-                        pps.cj = c2;
-                        pps.overlap = overlap;
+                        pp.ai = a1;
+                        pp.aj = a2;
+                        pp.gamma = gam;
+                        pp.ci = c1;
+                        pp.cj = c2;
+                        pp.overlap = overlap;
 
                         // Store this primitive pair in the shell pair
-                        spsc.nonzeroPrimPairs[np_sig] = pps;
+                        sp.nonzeroPrimPairs[np_sig] = pp;
                         ++np_sig;
                     } else {
                         // do nothing
@@ -1973,10 +1972,10 @@ void TwoElectronInt::init_shell_pairs12() {
             prim_pairs_total += np_i * np_j;
             prim_pairs_keep += np_sig;
 
-            spsc.nonzeroPrimPairs.resize(np_sig);
-            spsc.nonzeroPrimPairs.shrink_to_fit();
+            sp.nonzeroPrimPairs.resize(np_sig);
+            sp.nonzeroPrimPairs.shrink_to_fit();
 
-            (*pairs12_)[si][sj] = spsc;
+            (*pairs12_)[si][sj] = sp;
         }
     }
 
@@ -2234,10 +2233,6 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4) {
 
     // If we can, use the precomputed values found in ShellPair.
     if (use_shell_pairs_) {
-        // ShellPair *p12, *p34;
-        // 1234 -> 1234 no change
-        // p12 = &(pairs12_[sh1][sh2]);
-        // p34 = &(pairs34_[sh3][sh4]);
         const ShellPair &sp12 = (*pairs12_)[sh1][sh2];
         const ShellPair &sp34 = (*pairs34_)[sh3][sh4];
 
@@ -2600,9 +2595,6 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
     nprim = 0;
 
     if (use_shell_pairs_) {
-        // ShellPair *p12, *p34;
-        // p12 = &(pairs12_[sh1][sh2]);
-        // p34 = &(pairs34_[sh3][sh4]);
         const ShellPair &sp12 = (*pairs12_)[sh1][sh2];
         const ShellPair &sp34 = (*pairs34_)[sh3][sh4];
 
