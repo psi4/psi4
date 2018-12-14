@@ -45,6 +45,7 @@ molecule h2o {
   H 1 0.9894093 2 100.02688
 }
 
+set DOCC [3, 0, 1, 1]
 set { points 3 }
 
 scf_e, scf_wfn = frequencies('scf', dertype=0, return_wfn=True)
