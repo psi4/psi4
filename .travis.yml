@@ -132,6 +132,7 @@ install:
     fi
   - source activate p4env
   - conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
+  - conda remove qcelemental -f
   - conda list
 
 before_script:
