@@ -37,10 +37,8 @@ from typing import Dict, List, Any, Union
 
 import numpy as np
 
-# from psi4 import core
-# from psi4.driver import p4util
-# from psi4.driver import constants
-# from psi4.driver.p4util.exceptions import *
+from psi4 import core
+from psi4.driver import p4util
 
 
 class BaseTask(pydantic.BaseModel, abc.ABC):
@@ -81,3 +79,60 @@ class SingleResult(BaseTask):
         from psi4.driver import json_wrapper
 
         return json_wrapper.run_json(self.plan())
+
+
+def planner(name, **kwargs):
+
+    keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
+    data = {'driver': kwargs['ptype'], 'method': name, 'basis': core.get_global_option('BASIS'), 'keywords': keywords}
+
+    comp_plan = {}
+    if 'bsse_type' in kwargs:
+        # Call nbody wrapper
+        from psi4.driver.driver_nbody import nbody_gufunc
+        from psi4.driver.driver_nbody import NBodyComputer
+
+        comp_plan.update({'function': nbody_gufunc, 'computer': SingleResult, 'data': data})
+        ComputeInstance = NBodyComputer
+
+    if hasattr(name, '__call__') and name.__name__ in ['cbs', 'complete_basis_set']:
+        function = comp_plan.get('function', name)
+
+        if function != name:
+            # Use CBSComputer inside the nbody wrapper
+            from psi4.driver.driver_cbs import CBSComputer
+
+            data.update({k: v for k, v in kwargs.items() if k not in ComputeInstance.__fields__})
+            comp_plan.update({'computer': CBSComputer, 'data': data})
+
+        else:
+            # Call CBS wrapper
+            comp_plan.update({'function': function})
+            comp_plan.update({'name': kwargs.pop('label', 'custom function')})
+
+    elif '/' in name:
+        from psi4.driver.driver_cbs import _cbs_text_parser
+        from psi4.driver.driver_cbs import _cbs_gufunc
+        from psi4.driver.driver_cbs import CBSComputer
+
+        tmp = _cbs_text_parser(name, **kwargs)
+
+        function = comp_plan.get('function', _cbs_gufunc)
+
+        if function != _cbs_gufunc:
+            if 'cbs_metadata' in tmp:
+                # Use CBSComputer inside the nbody wrapper
+                data.update({'cbs_metadata': tmp['cbs_metadata']})
+                comp_plan.update({'computer': CBSComputer, 'data': data})
+
+            else:
+                # Use SingleResult inside the nbody wrapper
+                data.update(tmp)
+
+        else:
+            # Call _cbs_gufunc
+            comp_plan.update({'function': function})
+
+
+    return comp_plan
+

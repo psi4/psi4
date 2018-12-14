@@ -42,7 +42,7 @@ def multi_level(func, **kwargs):
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
     """
-    from psi4.driver.driver_nbody import _print_nbody_energy, nbody_gufunc
+    from psi4.driver.driver_nbody import _print_nbody_energy
 
     ptype = kwargs['ptype']
     return_wfn = kwargs.get('return_wfn', False)
@@ -79,7 +79,7 @@ def multi_level(func, **kwargs):
         energy_bsse_dict = {b: 0 for b in kwargs['bsse_type']}
         if isinstance(levels[n], str):
             # If a new level of theory is provided, compute contribution
-            ret, wfn = nbody_gufunc(func, levels[n], **kwargs_copy)
+            ret, wfn = func(levels[n], **kwargs_copy)
             wfns[n] = wfn
         else:
             # For the n-body contribution, use available data from the higher order levels[n]-body
@@ -116,7 +116,7 @@ def multi_level(func, **kwargs):
         kwargs_copy['bsse_type'] = 'nocp'
         kwargs_copy['max_nbody'] = max(levels)
         # Subtract lower order effects to avoid double counting
-        ret, wfn = nbody_gufunc(func, supersystem, **kwargs_copy)
+        ret, wfn = func(supersystem, **kwargs_copy)
         energy_result += wfn_super.energy() - wfn.variable(str(max(levels)))
         for b in kwargs['bsse_type']:
             energy_body_contribution[b][molecule.nfragments()] = wfn_super.energy() - wfn.variable(

@@ -2118,7 +2118,7 @@ def _parse_cbs_gufunc_string(method_name):
     return method_list, basis_list
 
 
-def _cbs_gufunc(func, total_method_name, **kwargs):
+def _cbs_text_parser(total_method_name, **kwargs):
     """
     A text based parser of the CBS method string. Provided to handle "method/basis"
     specification of the requested calculations. Also handles "simple" (i.e.
@@ -2126,8 +2126,6 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     Parameters
     ----------
-    func : function
-        Function to be called (energy, gradient, frequency or cbs).
     total_method_name : str
         String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
         bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
@@ -2136,19 +2134,10 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     Returns
     -------
-    tuple or float
-        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
-
+    dict of updated CBS keyword arguments
     """
-    # Catch kwarg issues for all methods
-    kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    core.clean_variables()
-    ptype = kwargs.pop('ptype', None)
 
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
+    ptype = kwargs.pop('ptype', None)
 
     # Sanitize total_method_name
     label = total_method_name
@@ -2167,19 +2156,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         method_name = method_list[0]
         basis = basis_list[0]
 
-        # Save some global variables so we can reset them later
-        optstash = p4util.OptionsState(['BASIS'])
-        core.set_global_option('BASIS', basis)
-        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
-            core.clean()
-
-        optstash.restore()
-
-        if return_wfn:
-            return (ptype_value, wfn)
-        else:
-            return ptype_value
+        return {'method': method_name, 'basis': basis}
 
     # Drop out for unsupported calls
     if ptype not in ["energy", "gradient", "hessian"]:
@@ -2192,8 +2169,6 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     # If we are not a single call, let CBS wrapper handle it!
     cbs_kwargs = {}
     cbs_kwargs['ptype'] = ptype
-    cbs_kwargs['return_wfn'] = True
-    cbs_kwargs['molecule'] = molecule
     cbs_kwargs['verbose'] = cbs_verbose
 
     if user_dertype is not None:
@@ -2234,7 +2209,61 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     cbs_kwargs["cbs_metadata"] = metadata
 
-    ptype_value, wfn = cbs(func, label, **cbs_kwargs)
+    return cbs_kwargs
+
+
+def _cbs_gufunc(func, total_method_name, **kwargs):
+    """
+    A text based wrapper of the CBS function. Provided to handle "method/basis"
+    specification of the requested calculations. Also handles "simple" (i.e.
+    one-method and one-basis) calls.
+
+    Parameters
+    ----------
+    func : function
+        Function to be called (energy, gradient, frequency or cbs).
+    total_method_name : str
+        String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
+        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
+        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
+        and pushed through :py:func:`~psi4.cbs`.
+
+    Returns
+    -------
+    tuple or float
+        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
+
+    """
+
+    # Catch kwarg issues for all methods
+    kwargs = p4util.kwargs_lower(kwargs)
+    return_wfn = kwargs.pop('return_wfn', False)
+    core.clean_variables()
+
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule.update_geometry()
+
+    cbs_kwargs = _cbs_text_parser(total_method_name, **kwargs)
+    cbs_kwargs['molecule'] = molecule
+    cbs_kwargs['return_wfn'] = True
+
+    if 'cbs_metadata' not in cbs_kwargs:
+        # Single call
+        method_name = cbs_kwargs['method']
+        basis = cbs_kwargs['basis']
+
+        # Save some global variables so we can reset them later
+        optstash = p4util.OptionsState(['BASIS'])
+        core.set_global_option('BASIS', basis)
+        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
+        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
+            core.clean()
+
+        optstash.restore()
+
+    else:
+        ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs)
 
     if return_wfn:
         return (ptype_value, wfn)

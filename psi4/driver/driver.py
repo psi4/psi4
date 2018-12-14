@@ -529,13 +529,10 @@ def energy(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
-    # Bounce to CP if bsse kwarg
-    if kwargs.get('bsse_type', None) is not None:
-        return driver_nbody.nbody_gufunc(energy, name, ptype='energy', molecule=molecule, **kwargs)
-
-    # Bounce if name is function
-    if hasattr(name, '__call__'):
-        return name(energy, kwargs.pop('label', 'custom function'), ptype='energy', molecule=molecule, **kwargs)
+    comp_plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'energy'), **kwargs)
+    kwargs.update(comp_plan)
+    if comp_plan:
+        return kwargs.pop('function')(energy, kwargs.pop('name', name), ptype='energy', molecule=molecule, **kwargs)
 
     # Allow specification of methods to arbitrary order
     lowername = name.lower()
@@ -543,24 +540,8 @@ def energy(name, **kwargs):
     if level:
         kwargs['level'] = level
 
-    # Bounce to CBS if "method/basis" name
-    if "/" in lowername:
-        # Change that later when cbs class ic completed
-        cbs = driver_cbs.CBSComputer(molecule=molecule, driver="energy", **kwargs)
-
     _filter_renamed_methods("energy", lowername)
 
-    if nbody is not None or cbs is not None:
-        # Now works for either nbody or cbs
-        ComputeInstance = nbody if nbody is not None else cbs
-        ComputeClass = task_base.SingleResult
-        keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
-        data = {'driver': 'energy', 'method': lowername, 'basis': core.get_global_option('BASIS'), 'keywords': keywords}
-        ComputeInstance.build_tasks(ComputeClass, **data)
-        ComputeInstance.compute()
-
-        return ComputeInstance.get_results()['ret_ptype']
-    
     # Commit to procedures['energy'] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
@@ -656,6 +637,12 @@ def gradient(name, **kwargs):
     
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
+    comp_plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'gradient'), **kwargs)
+
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule.update_geometry()
+
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
@@ -686,20 +673,21 @@ def gradient(name, **kwargs):
             dertype = user_dertype
 
         if dertype == 1:
-            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', molecule=molecule, **kwargs)
         else:
             optstash = driver_util._set_convergence_criterion('energy', 'scf', 8, 10, 8, 10, 8)
             lowername = name
 
     elif gradient_type == 'nbody_gufunc':
-        return driver_nbody.nbody_gufunc(gradient, name, ptype='gradient', **kwargs)
+        kwargs.update(comp_plan)
+        return kwargs.pop('function')(gradient, name, ptype='gradient', molecule=molecule, **kwargs)
 
     elif gradient_type == 'cbs_wrapper':
         cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
         dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         if dertype == 1:
             # Bounce to CBS (directly) in pure-gradient mode if name is CBS and all parts have analytic grad. avail.
-            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
+            return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', molecule=molecule, **kwargs)
         else:
             optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
             lowername = name
@@ -712,12 +700,8 @@ def gradient(name, **kwargs):
         dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         lowername = name.lower()
         if dertype == 1:
-            # Make sure the molecule the user provided is the active one
-            molecule = kwargs.pop('molecule', core.get_active_molecule())
-            molecule.update_geometry()
-
             # Bounce to CBS in pure-gradient mode if "method/basis" name and all parts have analytic grad. avail.
-            return driver_cbs._cbs_gufunc(gradient, name, ptype='gradient', **kwargs)
+            return driver_cbs._cbs_gufunc(gradient, name, ptype='gradient', molecule=molecule, **kwargs)
         else:
             # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
             optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
@@ -748,10 +732,6 @@ def gradient(name, **kwargs):
     if core.get_global_option('SCF_TYPE') == 'CD':
         if (dertype == 1):
             raise ValidationError("""No analytic derivatives for SCF_TYPE CD.""")
-
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
 
     # Add embedding charges for nbody
     if kwargs.get('embedding_charges', None):
@@ -1496,6 +1476,8 @@ def hessian(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
+    comp_plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'hessian'), **kwargs)
+
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
@@ -1513,7 +1495,8 @@ def hessian(name, **kwargs):
 
     # Call appropriate wrappers
     if gradient_type == 'nbody_gufunc':
-        return driver_nbody.nbody_gufunc(hessian, name.lower(), ptype='hessian', **kwargs)
+        kwargs.update(comp_plan)
+        return kwargs.pop('function')(hessian, name, ptype='hessian', **kwargs)
     # Check if this is a CBS extrapolation
     elif gradient_type == "cbs_gufunc":
         return driver_cbs._cbs_gufunc(hessian, name.lower(), **kwargs, ptype="hessian")

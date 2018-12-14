@@ -259,10 +259,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     if molecule.nfragments() == 1:
         raise ValidationError("N-Body requires active molecule to have more than 1 fragment.")
     ComputeInstance = NBodyComputer(molecule=molecule, driver=kwargs['ptype'], **kwargs)
-    ComputeClass = task_base.SingleResult
-    keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
-    data = {'driver': kwargs['ptype'], 'method': method_string, 'basis': core.get_global_option('BASIS'), 'keywords': keywords}
-    ComputeInstance.build_tasks(ComputeClass, **data)
+    ComputeInstance.build_tasks(kwargs['computer'], **kwargs['data'])
     ComputeInstance.compute()
 
     nbody_results = ComputeInstance.get_results()
