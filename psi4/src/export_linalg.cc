@@ -31,6 +31,7 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -43,51 +44,103 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-auto docstring = [](const std::string& s1, const std::string& s2) { return (s1 + " " + s2).c_str(); };
-
 namespace {
 template <size_t Rank>
-struct bind_special_ctors final {
-    template <typename PyClass, size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    void operator()(PyClass& c) {
-        c.def(py::init<int>());
-        c.def(py::init<const std::string&, int>());
-    }
+std::string class_name(std::string suffix) {
+    return "Tensor" + std::to_string(Rank) + "_" + suffix;
+}
 
-    template <typename PyClass, size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
-    void operator()(PyClass& c, int /* dummy */ = 0) {
-        c.def(py::init<int, int>());
-        c.def(py::init<const std::string&, int, int>());
+template <>
+std::string class_name<1>(std::string suffix) {
+    return "NewVector_" + suffix;
+}
+
+template <>
+std::string class_name<2>(std::string suffix) {
+    return "NewMatrix_" + suffix;
+}
+
+template <typename T>
+std::string suffix() {
+    if (std::is_same<T, float>::value) {
+        return "F";
+    } else if (std::is_same<T, double>::value) {
+        return "D";
+    } else if (std::is_same<T, int>::value) {
+        return "I";
+    }
+}
+
+struct VectorDecorator final {
+    template <typename PyClass>
+    void operator()(PyClass& cls) const {
+        cls.def(py::init<const std::string&, const Dimension&>(), "Labeled, blocked vector", "label"_a, "dimpi"_a);
+        cls.def(py::init<const std::string&, int>(), "Labeled, 1-irrep vector", "label"_a, "dim"_a);
+        cls.def(py::init<const Dimension&>(), "Unlabeled, blocked vector", "dimpi"_a);
+        cls.def(py::init<int>(), "Unlabeled, 1-irrep vector", "dim"_a);
+        cls.def_property_readonly("dimpi", [](const typename PyClass::type& obj) { return obj.dimpi(); },
+                                  py::return_value_policy::copy, "Return the Dimension object");
+    }
+};
+
+struct MatrixDecorator final {
+    template <typename PyClass>
+    void operator()(PyClass& cls) const {
+        cls.def(py::init<const std::string&, const Dimension&, const Dimension&>(), "Labeled, blocked matrix",
+                "label"_a, "rowspi"_a, "colspi"_a);
+        cls.def(py::init<const std::string&, int, int>(), "Labeled, 1-irrep matrix", "label"_a, "rows"_a, "cols"_a);
+        cls.def(py::init<const Dimension&, const Dimension&>(), "Unlabeled, blocked matrix", "rowspi"_a, "colspi"_a);
+        cls.def(py::init<int, int>(), "Unlabeled, 1-irrep matrix", "rows"_a, "cols"_a);
+        cls.def_property_readonly("rowspi", [](const typename PyClass::type& obj) { return obj.rowspi(); },
+                                  py::return_value_policy::copy, "Returns the rows per irrep array");
+        cls.def_property_readonly("colspi", [](const typename PyClass::type& obj) { return obj.colspi(); },
+                                  py::return_value_policy::copy, "Returns the columns per irrep array");
     }
 };
 
 template <typename T, size_t Rank>
-void declareTensor(py::module& mod, const std::string& suffix) {
+struct DeclareTensor final {
     using Class = Tensor<T, Rank>;
     using PyClass = py::class_<Class, std::shared_ptr<Class>>;
-    auto binder = bind_special_ctors<Rank>();
+    using SpecialBinder = std::function<void(PyClass&)>;
 
-    std::string name = "Tensor_" + suffix;
+    static void bind_tensor(py::module& mod, const SpecialBinder& decorate = [](PyClass& /*cls*/) {}) {
+        std::string name = class_name<Rank>(suffix<T>());
 
-    PyClass cls(mod, name.c_str());
+        PyClass cls(mod, name.c_str());
 
-    cls.def(py::init<const std::string&, size_t, const std::array<Dimension, Rank>&>());
-    binder(cls);
-    cls.def_property_readonly("dim", &Class::dim, ("Total dimension of " + name).c_str());
-    cls.def_property_readonly("nirrep", &Class::nirrep, ("Number of irreps in " + name).c_str());
-    cls.def_property("name", &Class::name, &Class::set_name, ("The name of " + name).c_str());
-    // cls.def_property_readonly("dimpi", py::overload_cast<>(&Class::dimpi),
-    //                          ("Returns the Dimension object of " + name).c_str());
-    cls.def("axes_dimpi", &Class::axes_dimpi, ("Returns the Dimension object of " + name + " for given axis").c_str(),
-            "axis"_a);
-}
+        // Rank-n bindings
+        cls.def(py::init<const std::string&, size_t, const std::array<Dimension, Rank>&>(),
+                ("Labeled, blocked " + name).c_str(), "label"_a, "blocks"_a, "axes_dimpi"_a);
+        cls.def(py::init<const std::string&, const std::array<Dimension, Rank>&>(),
+                ("Labeled, 1-irrep " + name).c_str(), "label"_a, "axes_dimpi"_a);
+        cls.def(py::init<size_t, const std::array<Dimension, Rank>&>(), ("Unlabeled, blocked " + name).c_str(),
+                "blocks"_a, "axes_dimpi"_a);
+        cls.def(py::init<const std::array<Dimension, Rank>&>(), ("Unlabeled, 1-irrep " + name).c_str(), "axes_dimpi"_a);
+        cls.def_property_readonly("dim", &Class::dim, "Total number of elements");
+        cls.def_property_readonly("nirrep", &Class::nirrep, "Number of irreps");
+        cls.def_property("label", &Class::label, &Class::set_label, ("The label of the " + name).c_str());
+        cls.def("axes_dimpi", &Class::axes_dimpi, "Returns the Dimension object for given axis", "axis"_a);
+        cls.def("nph", &Class::nph, "Block shape for given irrep", "h"_a);
+
+        // Specific bindings, e.g. rank-1 and rank-2
+        decorate(cls);
+    }
+};
 }  // namespace
 
 void export_linalg(py::module& mod) {
-    // Rank-1 tensor aka blocked vector
-    declareTensor<double, 1>(mod, "D_1");
-    // Rank-2 tensore aka blocked matrix
-    declareTensor<double, 2>(mod, "D_2");
+    // Rank-1 tensor, aka blocked vector
+    auto decorate_v = VectorDecorator();
+    DeclareTensor<float, 1>::bind_tensor(mod, decorate_v);
+    DeclareTensor<double, 1>::bind_tensor(mod, decorate_v);
+    // Rank-2 tensor, aka blocked matrix
+    auto decorate_m = MatrixDecorator();
+    DeclareTensor<float, 2>::bind_tensor(mod, decorate_m);
+    DeclareTensor<double, 2>::bind_tensor(mod, decorate_m);
+    // Rank-3 tensor
+    DeclareTensor<float, 3>::bind_tensor(mod);
+    DeclareTensor<double, 3>::bind_tensor(mod);
 
     using Class = Vector;
     using PyClass = py::class_<Vector, std::shared_ptr<Vector>>;
