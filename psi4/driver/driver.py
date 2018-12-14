@@ -170,11 +170,13 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     geom_array = np.reshape(displacement["geometry"], (-1, 3))
     clone.set_geometry(core.Matrix.from_array(geom_array))
 
-    # If we lost symmetry, use the highest subgroup of the parent this displacement has..
-    disp_group = clone.find_highest_point_group()
-    new_bits = parent_group.bits() & disp_group.bits()
-    new_symm_string = qcdb.PointGroup.bits_to_full_name(new_bits)
-    clone.reset_point_group(new_symm_string)
+    # If the user insists on symmetry, weaken it if some is lost when displacing.
+    if molecule.symmetry_from_input():
+        disp_group = clone.find_highest_point_group()
+        new_bits = parent_group.bits() & disp_group.bits()
+        new_symm_string = qcdb.PointGroup.bits_to_full_name(new_bits)
+        clone.reset_point_group(new_symm_string)
+
     # clean possibly necessary for n=1 if its irrep (unsorted in displacement list) different from initial G0 for freq
     core.clean()
 
@@ -707,10 +709,15 @@ def gradient(name, **kwargs):
 
         wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
+        var_dict = core.variables()
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
             _process_displacement(
                 energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+
+        # Reset variables
+        for key, val in var_dict.items():
+            core.set_variable(key, val)
 
         # Compute the gradient
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
@@ -1287,10 +1294,15 @@ def hessian(name, **kwargs):
 
         wfn = _process_displacement(gradient, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
+        var_dict = core.variables()
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
             _process_displacement(
                 gradient, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+
+        # Reset variables
+        for key, val in var_dict.items():
+            core.set_variable(key, val)
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
@@ -1325,10 +1337,15 @@ def hessian(name, **kwargs):
 
         wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
+        var_dict = core.variables()
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
             _process_displacement(
                 energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+
+        # Reset variables
+        for key, val in var_dict.items():
+            core.set_variable(key, val)
 
         # Assemble Hessian from energies
         H = driver_findif.compute_hessian_from_energies(findif_meta_dict, irrep)
