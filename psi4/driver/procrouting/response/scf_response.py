@@ -262,8 +262,33 @@ def _single_random_fill(mat):
     return mat
 
 
-def _pair_random_fill(matpair):
-    return [_single_random_fill(m) for m in matpair]
+def _denom_guess_uhf(engine, nstates):
+    guess_vecs = []
+    for ex_spin in range(2):
+        for irr_occ in range(engine.wfn.nirrep()):
+            irr_vir = irr_occ ^ engine.Gx
+            begin_occ = max(engine.occpi[ex_spin][irr_occ] - nstates * 2, 0)
+            end_vir = min(engine.virpi[ex_spin][irr_vir], nstates * 2)
+            for i in range(begin_occ, engine.occpi[ex_spin][irr_occ]):
+                for a in range(0, end_vir):
+                    new_vec = engine.new_vector("Guess vector")
+                    new_vec[ex_spin].set(irr_occ, i, a, 1.0)
+                    guess_vecs.append(new_vec)
+    return guess_vecs
+
+
+def _denom_guess_rhf(engine, nstates):
+    guess_vecs = []
+    for irr_occ in range(engine.wfn.nirrep()):
+        irr_vir = irr_occ ^ engine.Gx
+        begin_occ = max(engine.occpi[irr_occ] - nstates * 2, 0)
+        end_vir = min(engine.virpi[irr_vir], nstates * 2)
+        for i in range(begin_occ, engine.occpi[irr_occ]):
+            for a in range(0, end_vir):
+                new_vec = engine.new_vector("Guess vector")
+                new_vec.set(irr_occ, i, a, 1.0)
+                guess_vecs.append(new_vec)
+    return guess_vecs
 
 
 def tdscf_excitations(wfn, **kwargs):
@@ -332,10 +357,10 @@ def tdscf_excitations(wfn, **kwargs):
 
     # construct the engine
     if wfn.same_a_b_orbs():
-        random_fill = _single_random_fill
+        guess_gen = _denom_guess_rhf
         engine = TDRSCFEngine(wfn, triplet=kwargs.pop('triplet', False), ptype=ptype)
     else:
-        random_fill = _pair_random_fill
+        guess_gen = _denom_guess_uhf
         engine = TDUSCFEngine(wfn, ptype=ptype)
 
     solver_results = []
@@ -346,15 +371,19 @@ def tdscf_excitations(wfn, **kwargs):
         engine.reset_symmetry(state_sym)
         guess_ = []
         if guess_type == 'random':
-            for i in range(nstates):
-                guess_.append(random_fill(engine.new_vector("Guess vector")))
+            guess_ = guess_gen(engine, nstates)
         elif guess_type == 'user':
             guess_ = guess_vectors[state_sym]
 
         vecs_per_root = max_ss_vec // nstates
         solver_results.append(
             solve_function(
-                engine=engine, e_tol=etol, r_tol=rtol, max_vecs_per_root=vecs_per_root, nroot=nstates, guess=guess_,
+                engine=engine,
+                e_tol=etol,
+                r_tol=rtol,
+                max_vecs_per_root=vecs_per_root,
+                nroot=nstates,
+                guess=guess_,
                 verbose=2))
 
     return solver_results
