@@ -1457,8 +1457,10 @@ class Molecule(LibmintsMolecule):
             validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
-        #validated_molrec['provenance'].pop()
         compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
+
+        # from_arrays overwrites provenance
+        validated_molrec['provenance'] = copy.deepcopy(molrec['provenance'])
 
         if not np_out:
             validated_molrec = qcel.util.unnp(validated_molrec)

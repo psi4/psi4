@@ -198,26 +198,16 @@ Molecule &Molecule::operator=(const Molecule &other) {
     full_pg_n_ = other.full_pg_n_;
 
     // Deep copy provenance
-    provenance_ = other.provenance_;
-//    provenance_.clear();
-//    for(auto prov: other.provenance_) {
-//        std::map<std::string, std::string> provcp;
-//        for(auto kv: prov) {
-//            provcp[kv.first] = kv.second;
-//        }
-//        provenance_.push_back(provcp);
-//    }
+    provenance_.clear();
+    for(auto kv: other.provenance_) {
+        provenance_[kv.first] = kv.second;
+    }
 
     // Deep copy connectivity
     connectivity_.clear();
-    Connectivity connectivity_(other.connectivity_);
-//    for(auto conn: other.connectivity_) {
-//        Connectivity conncp;
-//        for(auto kv: conn) {
-//            conncp[kv.first] = kv.second;
-//        }
-//        connectivity_.push_back(conncp);
-//    }
+    for (auto conn: other.connectivity_) {
+        connectivity_.push_back(std::make_tuple(std::get<0>(conn), std::get<1>(conn), std::get<2>(conn)));
+    }
 
     // Deep copy the map of variables
     full_atoms_.clear();
