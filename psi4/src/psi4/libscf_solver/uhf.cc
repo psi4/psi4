@@ -499,12 +499,14 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         for (size_t i = 0; i < nvecs; i++) {
-          if (functional_->needs_xc()){
-            J[i]->add(Vx[2*i]);
-            J[nvecs + i]->add(Vx[2*i +1]);
-          }
-          ret.push_back(J[i]);
-          ret.push_back(J[nvecs + i]);
+            J[i]->add(J[nvecs + i]);
+            J[nvecs + i]->copy(J[i]);
+            if (functional_->needs_xc()) {
+                J[i]->add(Vx[2 * i]);
+                J[nvecs + i]->add(Vx[2 * i + 1]);
+            }
+            ret.push_back(J[i]);
+            ret.push_back(J[nvecs + i]);
             if (functional_->is_x_hybrid()) {
                 K[i]->scale(alpha);
                 K[nvecs + i]->scale(alpha);
@@ -513,7 +515,12 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                     K[nvecs + i]->axpy(beta, wK[nvecs + i]);
                 }
                 ret.push_back(K[i]);
-                ret.push_back(K[nvecs+i]);
+                ret.push_back(K[nvecs + i]);
+            } else if (functional_->is_x_lrc()) {
+                wK[i]->scale(beta);
+                wK[nvecs + i]->scale(beta);
+                ret.push_back(wK[i]);
+                ret.push_back(wK[nvecs + i]);
             }
         }
     }
