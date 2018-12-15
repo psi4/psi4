@@ -1015,14 +1015,9 @@ void HF::guess() {
     // ref_C_-C matrices were detected in the incoming wavefunction
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
-    // "SAD"-Superposition of Atomic Denisties
+    // "SAD"-Superposition of Atomic Densities
     std::string guess_type = options_.get_str("GUESS");
 
-    // DGAS broke SAD
-    // if (guess_type == "SAD"){
-    //     outfile->Printf("\nWarning! SAD is temporarily broken, switching to CORE!\n\n");
-    //     guess_type = "CORE";
-    // }
     // Take care of options that should be overridden
     if (guess_type == "AUTO") {
         outfile->Printf("\nWarning! Guess was AUTO, switching to CORE!\n\n");
@@ -1089,17 +1084,31 @@ void HF::guess() {
         format_guess();
         form_D();
 
-        // This is a guess iteration similar to SAD
+        // This is a guess iteration: orbital occupations may be reset in SCF
         iteration_ = -1;
         guess_E = compute_initial_E();
 
     } else if (guess_type == "SAD") {
         if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
-        // Superposition of Atomic Density
+        // Superposition of Atomic Density. Modified by Susi Lehtola
+        // 2018-12-15 to work also for ROHF, as well as to allow using
+        // SAD with predefined orbital occupations.
+        compute_SAD_guess();
+
+        // Form Fock matrix
+        form_G();
+        form_initialF();
+
+        // Diagonalize Fock matrix to get orbitals
+        form_initial_C();
+
+        // Now can form density matrix
+        form_D();
+
+        // This is a guess iteration: orbital occupations may be reset in SCF
         iteration_ = -1;
         reset_occ_ = true;
-        compute_SAD_guess();
         guess_E = compute_initial_E();
 
     } else if (guess_type == "GWH") {
@@ -1121,7 +1130,6 @@ void HF::guess() {
         }
         Fb_->copy(Fa_);
         form_initial_C();
-        find_occupation();
         form_D();
         guess_E = compute_initial_E();
 
@@ -1132,7 +1140,6 @@ void HF::guess() {
         Fb_->copy(H_);
 
         form_initial_C();
-        find_occupation();
         form_D();
         guess_E = compute_initial_E();
     } else {
