@@ -264,13 +264,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         SCFE = 0.0
         self.clear_external_potentials()
 
-        core.timer_on("HF: Form G")
-        self.form_G()
-        core.timer_off("HF: Form G")
-
         # reset fractional SAD occupation
         if (self.iteration_ == 0) and self.reset_occ_:
             self.reset_occupation()
+            self.find_occupation()
+            self.form_D()
+
+        core.timer_on("HF: Form G")
+        self.form_G()
+        core.timer_off("HF: Form G")
 
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):
