@@ -347,7 +347,10 @@ bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
 void ROHF::form_initialF() {
     // Form the initial Fock matrix, closed and open variants
     Fa_->copy(H_);
-    Fa_->transform(X_);
+    Fa_->add(Ga_);
+    for (const auto& Vext : external_potentials_) {
+      Fa_->add(Vext);
+    }
     Fb_->copy(Fa_);
 
     if (debug_) {
@@ -462,7 +465,13 @@ void ROHF::form_initial_C() {
     // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
-    if (print_ > 3) Ca_->print("outfile", "initial C");
+    find_occupation();
+
+    if (debug_) {
+      Ca_->print("outfile");
+      outfile->Printf("In ROHF::form_initial_C:\n");
+      Ct_->eivprint(epsilon_a_);
+    }
 }
 
 void ROHF::form_D() {

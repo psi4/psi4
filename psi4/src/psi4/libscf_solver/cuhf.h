@@ -74,7 +74,7 @@ class CUHF : public HF {
     SharedMatrix J_, Ka_, Kb_;
     // Contributions to the Fock matrix from charge and spin density
     SharedMatrix Fp_, Fm_;
-    // Charge denisty and natural orbitals (eigenvectors of charge density)
+    // Charge density and natural orbitals (eigenvectors of charge density)
     SharedMatrix Dp_, Cno_, Cno_temp_;
     // Natural orbital occupations
     SharedVector No_;
