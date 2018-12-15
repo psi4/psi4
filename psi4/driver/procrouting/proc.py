@@ -1220,15 +1220,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         p4util.banner('  Computing high-spin triplet guess  ')
         core.print_out('\n')
 
-    # If GUESS is auto guess what it should be
+    # If GUESS is auto, it should probably be SAD
     if core.get_option('SCF', 'GUESS') == "AUTO":
-        if (core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
-                ((scf_molecule.natom() > 1) or core.get_option('SCF', 'SAD_FRAC_OCC')):
-            core.set_local_option('SCF', 'GUESS', 'SAD')
-        elif core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
-            core.set_local_option('SCF', 'GUESS', 'GWH')
-        else:
-            core.set_local_option('SCF', 'GUESS', 'CORE')
+        core.set_local_option('SCF', 'GUESS', 'SAD')
 
     if core.get_global_option('BASIS') == '':
         if name in ['hf3c', 'hf-3c']:
