@@ -41,7 +41,6 @@ class UHF : public HF {
     SharedMatrix Da_old_, Db_old_;
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
-    void form_initialF();
     double compute_initial_E() override;
     bool stability_analysis_pk();
 

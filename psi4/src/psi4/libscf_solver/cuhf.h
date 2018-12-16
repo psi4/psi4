@@ -79,7 +79,7 @@ class CUHF : public HF {
     // Natural orbital occupations
     SharedVector No_;
 
-    void form_initialF();
+    void form_initial_F();
     double compute_initial_E() override;
 
     void compute_spin_contamination() override;
