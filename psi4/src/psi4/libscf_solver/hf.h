@@ -214,7 +214,7 @@ class HF : public Wavefunction {
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
     /** Computes the initial Fock matrix (default is to call form_F) */
-    virtual void form_initialF() { form_F(); }
+    virtual void form_initial_F() { form_F(); }
 
     /** Form Fia (for DIIS) **/
     virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);

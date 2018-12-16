@@ -202,9 +202,14 @@ void CUHF::compute_spin_contamination() {
     outfile->Printf("  @S^2 Observed:              %8.5F\n", S2 + dS);
 }
 
-void CUHF::form_initialF() {
+void CUHF::form_initial_F() {
+    // Form the initial Fock matrix, closed and open variants
     Fa_->copy(H_);
-    Fb_->copy(H_);
+    Fa_->add(Ga_);
+    for (const auto& Vext : external_potentials_) {
+      Fa_->add(Vext);
+    }
+    Fb_->copy(Fa_);
 
     if (debug_) {
         outfile->Printf("Initial Fock alpha matrix:\n");
