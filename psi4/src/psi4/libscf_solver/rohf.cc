@@ -344,7 +344,7 @@ double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
 
 bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
 
-void ROHF::form_initialF() {
+void ROHF::form_initial_F() {
     // Form the initial Fock matrix, closed and open variants
     Fa_->copy(H_);
     Fa_->add(Ga_);
