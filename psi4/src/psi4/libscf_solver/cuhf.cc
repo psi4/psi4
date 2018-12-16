@@ -203,12 +203,20 @@ void CUHF::compute_spin_contamination() {
 }
 
 void CUHF::form_initial_F() {
-    // Form the initial Fock matrix, closed and open variants
+    // Form the initial Fock matrix to get initial orbitals
+    Fp_->copy(J_);
+    Fp_->scale(2.0);
+    Fp_->subtract(Ka_);
+    Fp_->subtract(Kb_);
+    Fp_->scale(0.5);
+
     Fa_->copy(H_);
-    Fa_->add(Ga_);
     for (const auto& Vext : external_potentials_) {
       Fa_->add(Vext);
     }
+    Fa_->add(Fp_);
+
+    // Just reuse alpha for beta
     Fb_->copy(Fa_);
 
     if (debug_) {
@@ -282,10 +290,16 @@ void CUHF::form_F() {
 
     // Build the modified alpha and beta Fock matrices
     Fa_->copy(H_);
+    for (const auto& Vext : external_potentials_) {
+      Fa_->add(Vext);
+    }
     Fa_->add(Fp_);
     Fa_->add(Fm_);
 
     Fb_->copy(H_);
+    for (const auto& Vext : external_potentials_) {
+      Fb_->add(Vext);
+    }
     Fb_->add(Fp_);
     Fb_->subtract(Fm_);
 
