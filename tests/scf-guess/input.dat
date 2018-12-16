@@ -18,7 +18,6 @@ set {
   df_scf_guess false
   guess core
   docc [ 3, 0, 1, 1 ]
-
 }
 energy('scf')
 
