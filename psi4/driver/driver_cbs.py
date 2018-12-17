@@ -2212,7 +2212,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
     return cbs_kwargs
 
 
-def _cbs_gufunc(func, total_method_name, **kwargs):
+def cbs_gufunc(func, total_method_name, **kwargs):
     """
     A text based wrapper of the CBS function. Provided to handle "method/basis"
     specification of the requested calculations. Also handles "simple" (i.e.

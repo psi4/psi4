@@ -117,9 +117,9 @@ def planner(name, **kwargs):
 
         tmp = _cbs_text_parser(name, **kwargs)
 
-        function = comp_plan.get('function', _cbs_gufunc)
+        function = comp_plan.get('function', cbs_gufunc)
 
-        if function != _cbs_gufunc:
+        if function != cbs_gufunc:
             if 'cbs_metadata' in tmp:
                 # Use CBSComputer inside the nbody wrapper
                 data.update({'cbs_metadata': tmp['cbs_metadata']})
@@ -130,7 +130,7 @@ def planner(name, **kwargs):
                 data.update(tmp)
 
         else:
-            # Call _cbs_gufunc
+            # Call cbs_gufunc
             comp_plan.update({'function': function})
 
 

@@ -701,7 +701,7 @@ def gradient(name, **kwargs):
         lowername = name.lower()
         if dertype == 1:
             # Bounce to CBS in pure-gradient mode if "method/basis" name and all parts have analytic grad. avail.
-            return driver_cbs._cbs_gufunc(gradient, name, ptype='gradient', molecule=molecule, **kwargs)
+            return driver_cbs.cbs_gufunc(gradient, name, ptype='gradient', molecule=molecule, **kwargs)
         else:
             # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
             optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
@@ -898,7 +898,7 @@ def properties(*args, **kwargs):
         kwargs['level'] = level
 
     if "/" in lowername:
-        return driver_cbs._cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
+        return driver_cbs.cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
 
     return_wfn = kwargs.pop('return_wfn', False)
     props = kwargs.get('properties', ['dipole', 'quadrupole'])
@@ -1499,7 +1499,7 @@ def hessian(name, **kwargs):
         return kwargs.pop('function')(hessian, name, ptype='hessian', **kwargs)
     # Check if this is a CBS extrapolation
     elif gradient_type == "cbs_gufunc":
-        return driver_cbs._cbs_gufunc(hessian, name.lower(), **kwargs, ptype="hessian")
+        return driver_cbs.cbs_gufunc(hessian, name.lower(), **kwargs, ptype="hessian")
     elif gradient_type == "cbs_wrapper":
         return driver_cbs.cbs(hessian, "cbs", **kwargs, ptype="hessian")
     elif gradient_type != "conventional":
