@@ -24,6 +24,10 @@ json_data = {
       "O",
       "H",
       "H"
+    ],
+    "connectivity" : [
+    (0, 1, 1.0),
+    (0, 2, 1.0)
     ]
   },
   "driver": "energy",
