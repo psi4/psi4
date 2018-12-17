@@ -6,6 +6,9 @@ from utils import *
 import numpy as np
 import psi4
 
+pytestmark = pytest.mark.quick
+
+
 _vars_entered = {
     'VAR A': 4.0,
     'VaR B': -4.0,

@@ -2,6 +2,9 @@ import pytest
 
 import psi4
 
+pytestmark = pytest.mark.quick
+
+
 @pytest.mark.smoke
 def test_psi4_basic():
     """tu1-h2o-energy"""
