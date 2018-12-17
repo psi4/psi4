@@ -162,9 +162,9 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
 @pytest.mark.dft
 @pytest.mark.long
 @pytest.mark.parametrize("func,expected,basis", [
-    pytest.param(  'B97M-D3BJ',  -0.01242543212, 'cc-pVDZ'),  # Orca
-    pytest.param( 'wB97M-D3BJ',  -0.01351626999, 'cc-pVDZ'),  # Orca
-    pytest.param( 'wB97X-D3BJ',  -0.01295664452, 'cc-pVDZ'),  # Orca
+    pytest.param(  'B97M-D3BJ',  -0.01242543212, 'cc-pVDZ', marks=using_dftd3),  # Orca
+    pytest.param( 'wB97M-D3BJ',  -0.01351626999, 'cc-pVDZ', marks=using_dftd3),  # Orca
+    pytest.param( 'wB97X-D3BJ',  -0.01295664452, 'cc-pVDZ', marks=using_dftd3),  # Orca
     pytest.param(     'M08-SO',  -0.0154578319, '6-31G'),  # Q-Chem
     pytest.param(       'EDF1',  -0.0112660306, '6-31G'),  # Q-Chem
     pytest.param(    'MPW1B95',  -0.0143828237, '6-31G'),  # Q-Chem
