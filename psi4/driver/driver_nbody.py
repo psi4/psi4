@@ -256,8 +256,10 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         return driver_nbody_helper.multi_level(func, **kwargs)
 
     molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule.update_geometry()
     if molecule.nfragments() == 1:
         raise ValidationError("N-Body requires active molecule to have more than 1 fragment.")
+
     ComputeInstance = NBodyComputer(molecule=molecule, driver=kwargs['ptype'], **kwargs)
     ComputeInstance.build_tasks(kwargs['computer'], **kwargs['data'])
     ComputeInstance.compute()
@@ -919,7 +921,6 @@ class NBodyComputer(BaseTask):
         gof = core.get_output_file()
         core.close_outfile()
         for k, v in self.task_list.items():
-            core.set_active_molecule(v.molecule)
             self.results_list[k] = v.compute()
 
             if self.results_list[k] is None:
