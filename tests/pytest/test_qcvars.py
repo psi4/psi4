@@ -6,6 +6,9 @@ from utils import *
 import numpy as np
 import psi4
 
+pytestmark = pytest.mark.quick
+
+
 _vars_entered = {
     'VAR A': 4.0,
     'VaR B': -4.0,
@@ -221,52 +224,60 @@ def test_has_del_variable_scal(mode, tkey, fkey, pe_wfn_qcvars):
 
 
 def test_deprecated_core_get_variable(pe_wfn_qcvars):
-    subject = psi4.core.get_variable('vAR B')
+    with pytest.warns(FutureWarning) as err:
+        subject = psi4.core.get_variable('vAR B')
 
     assert compare_values(_vars_stored['VAR B'], subject, 8, tnm())
 
 
 def test_deprecated_core_get_variables(pe_wfn_qcvars):
-    subject = psi4.core.get_variables()
+    with pytest.warns(FutureWarning) as err:
+        subject = psi4.core.get_variables()
     scals = {k: v for k, v in _vars_stored.items() if k.startswith('VAR ')}
 
     _compare_qcvars(scals, subject, 8, tnm())
 
 
 def test_deprecated_core_get_array_variable(pe_wfn_qcvars):
-    subject = psi4.core.get_array_variable('MatvAR B')
+    with pytest.warns(FutureWarning) as err:
+        subject = psi4.core.get_array_variable('MatvAR B')
 
     assert compare_matrices(_vars_stored['MATVAR B'], subject, 8, tnm())
 
 
 def test_deprecated_core_get_array_variables(pe_wfn_qcvars):
-    subject = psi4.core.get_array_variables()
+    with pytest.warns(FutureWarning) as err:
+        subject = psi4.core.get_array_variables()
     arrs = {k: v for k, v in _vars_stored.items() if not k.startswith('VAR ')}
 
     _compare_qcvars(arrs, subject, 8, tnm())
 
 
 def test_deprecated_wfn_get_variable(pe_wfn_qcvars):
-    subject = pe_wfn_qcvars.get_variable('vAR B')
+    with pytest.warns(FutureWarning) as err:
+        subject = pe_wfn_qcvars.get_variable('vAR B')
 
     assert compare_values(_vars_stored['VAR B'], subject, 8, tnm())
 
 
 def test_deprecated_wfn_get_array(pe_wfn_qcvars):
-    subject = pe_wfn_qcvars.get_array('MatvAR B')
+    with pytest.warns(FutureWarning) as err:
+        subject = pe_wfn_qcvars.get_array('MatvAR B')
 
     assert compare_matrices(_vars_stored['MATVAR B'], subject, 8, tnm())
 
 
 def test_deprecated_wfn_set_array(pe_wfn_qcvars):
     mat = psi4.core.Matrix.from_array(np.arange(4).reshape(2, 2))
-    pe_wfn_qcvars.set_array('matvar D', mat)
+    with pytest.warns(FutureWarning) as err:
+        pe_wfn_qcvars.set_array('matvar D', mat)
 
     assert compare_matrices(mat, pe_wfn_qcvars.variable('MATvar D'), 8, tnm())
 
 
 def test_deprecated_wfn_arrays(pe_wfn_qcvars):
-    subject = pe_wfn_qcvars.arrays()
+    with pytest.warns(FutureWarning) as err:
+        subject = pe_wfn_qcvars.arrays()
     arrs = {k: v for k, v in _vars_stored.items() if not k.startswith('VAR ')}
 
     _compare_qcvars(arrs, subject, 8, tnm())

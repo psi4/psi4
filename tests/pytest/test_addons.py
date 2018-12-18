@@ -5,6 +5,8 @@ import pytest
 from addons import *
 
 
+pytestmark = pytest.mark.quick
+
 using_ambit = pytest.mark.skipif(psi4.addons("ambit") is False,
                                 reason="Psi4 not compiled with ambit. Rebuild with -DENABLE_ambit")
 using_cfour = pytest.mark.skipif(psi4.addons("cfour") is False,

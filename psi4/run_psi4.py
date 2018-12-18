@@ -71,10 +71,8 @@ parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
 parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! experimental option.")
-parser.add_argument("-t", "--test", action='store_true',
-                    help="Runs smoke tests.")
-parser.add_argument("--fulltest", action='store_true',
-                    help="Runs all pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
+parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
+                    help="Runs pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
 
 # For plugins
 parser.add_argument("--plugin-name", help="""\
@@ -197,17 +195,16 @@ if args['plugin_name']:
 
     sys.exit()
 
-if args["test"]:
-    retcode = psi4.test('smoke')
-    sys.exit(retcode)
+if args["test"] is not None:
+    if args["test"] not in ['smoke', 'quick', 'full', 'long']:
+        raise KeyError("The test category {} does not exist.".format(args["test"]))
 
-if args["fulltest"]:
     nthread = int(args["nthread"])
     if nthread == 1:
         extras = None
     else:
         extras = ['-n', str(nthread)]
-    retcode = psi4.test('full', extras=extras)
+    retcode = psi4.test(args["test"], extras=extras)
     sys.exit(retcode)
 
 if not os.path.isfile(args["input"]):

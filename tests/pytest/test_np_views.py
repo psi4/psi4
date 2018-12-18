@@ -7,6 +7,7 @@ from addons import *
 import psi4
 import numpy as np
 
+pytestmark = pytest.mark.quick
 
 # If it's too small, something odd happens with the memory manager
 mat_size = 10000

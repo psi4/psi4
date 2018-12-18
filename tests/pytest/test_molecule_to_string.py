@@ -4,6 +4,9 @@ import pytest
 from utils import *
 from addons import *
 
+pytestmark = pytest.mark.quick
+
+
 _results = {
     "subject1":
     """
