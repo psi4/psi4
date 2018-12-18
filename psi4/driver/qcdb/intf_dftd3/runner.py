@@ -80,12 +80,13 @@ def run_dftd3(name, molecule, options, **kwargs):
 
     try:
         dftd3_driver(jobrec)
-        jobrec['success'] = True
     except Exception as err:
         jobrec['success'] = False
         jobrec['error'] += repr(err)
+    else:
+        jobrec['success'] = True
+        jobrec['qcvars']['CURRENT ENERGY'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'])
 
-    jobrec['qcvars']['CURRENT ENERGY'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'])
     return jobrec
 
 
@@ -128,16 +129,18 @@ def run_dftd3_from_arrays(molrec,
 
     try:
         dftd3_driver(jobrec)
-        jobrec['success'] = True
     except Exception as err:
         jobrec['success'] = False
         jobrec['error'] += repr(err)
+        raise RuntimeError(err) from err
+    else:
+        jobrec['success'] = True
+        jobrec['qcvars']['CURRENT ENERGY'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'])
 
-    jobrec['qcvars']['CURRENT ENERGY'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'])
     return jobrec
 
 
-def dftd3_driver(jobrec):
+def dftd3_driver(jobrec, verbose=1):
     """Drive the jobrec@i (input) -> dftd3rec@i -> dftd3rec@io -> jobrec@io (returned) process.
 
     Input Fields
@@ -153,8 +156,6 @@ def dftd3_driver(jobrec):
     ----------------------
 
     """
-    verbose = 1
-
     if verbose > 2:
         print('[1] {} JOBREC PRE-PLANT (j@i) <<<'.format('DFTD3'))
         pp.pprint(jobrec)

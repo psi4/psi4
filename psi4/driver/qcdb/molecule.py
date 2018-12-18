@@ -1367,7 +1367,7 @@ class Molecule(LibmintsMolecule):
         # qcdb does not add prov, so rely upon all qcdb.Mol creation happening in molparse for this to return valid value (not [])
         molrec['provenance'] = copy.deepcopy(self.provenance())
 
-        if self.connectivity != []:
+        if self.connectivity() != []:
             molrec['connectivity'] = copy.deepcopy(self.connectivity())
 
         if force_units == 'Bohr':
@@ -1439,7 +1439,8 @@ class Molecule(LibmintsMolecule):
         #   (2) return the from_arrays filled-in values
         # * from.arrays is expecting speclabel "Co_userlbl" for elbl, but we're
         #   sending "_userlbl", hence speclabel=False
-        forgive = ['elea']
+        # * from.arrays sets difference provenance than input mol
+        forgive = ['elea', 'provenance']
 
         # * from_arrays and comparison lines below are quite unnecessary to
         #   to_dict, but is included as a check. in practice, only fills in mass
