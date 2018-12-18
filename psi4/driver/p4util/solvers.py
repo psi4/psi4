@@ -309,13 +309,16 @@ class DIIS(object):
         return out
 
 
-def _diag_print_heading(solver_name, max_ss_size, nroot, e_tol, r_tol, maxiter, verbose=1):
+def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, e_tol, r_tol, maxiter, verbose=1):
     if verbose < 1:
         # no printing
         return
-    else:
-        # summary of options
-        core.print_out("\n\n")
+    # show title if not silent
+    core.print_out("\n\n")
+    core.print_out("\n".join([x.center(77) for x in title_lines]))
+    core.print_out("\n")
+    if verbose > 1:
+        # summarize options for verbose
         core.print_out("   " + "{} options".format(solver_name).center(77) + "\n")
         core.print_out("\n  -----------------------------------------------------\n")
         core.print_out("    Maxiter                         = {:<5d}\n".format(maxiter))
@@ -323,9 +326,15 @@ def _diag_print_heading(solver_name, max_ss_size, nroot, e_tol, r_tol, maxiter, 
         core.print_out("    Eigenvector tolerance           = {:11.5e}\n".format(r_tol))
         core.print_out("    Max number of expansion vectors = {:<5d}\n".format(max_ss_size))
         core.print_out("\n")
-        core.print_out("  => Iterations <=\n")
+    # show iteration info headings if not silent
+    core.print_out("  => Iterations <=\n")
     if verbose == 1:
-        core.print_out("  {}           {}      {}\n".format(" " * len(solver_name), "Max[delta val]", "Max[|R|]"))
+        # default printing one line per iter max delta value and max residual norm
+        core.print_out("  {}           {}      {}\n".format(" " * len(solver_name), "Max[D[value]]", "Max[|R|]"))
+    else:
+        # verbose printing, value, delta, and |R| for each root
+        core.print_out("  {}           {}      {}      {}\n".format(" " * len(solver_name), "value", "D[value]",
+                                                                    "|R|"))
 
 
 def _diag_print_info(solver_name, info, verbose=1):
@@ -350,31 +359,64 @@ def _diag_print_info(solver_name, info, verbose=1):
         # print iter / ssdim folowed by de/|R| for each root
         core.print_out("  {name} iter {ni:3d}: {nv:4d} guess vectors\n".format(
             name=solver_name, ni=info['count'], nv=info['nvec']))
-        for i, (de, rn) in enumerate(zip(info['delta_val'], info['res_norm'])):
-            core.print_out("     {nr:2d}: {de:-11.5e} {rn:12.5e}\n".format(nr=i + 1, de=de, rn=rn))
-            if info['done']:
-                core.print_out("  Solver Converged! all roots\n\n")
-            else:
-                if info['collapse']:
-                    core.print_out("  Subspace limits exceeded restarting\n\n")
+        for i, (e, de, rn) in enumerate(zip(info['val'], infp['delta_val'], info['res_norm'])):
+            core.print_out("     {nr:2d}: {e:-11.5f} {de:-11.5e} {rn:12.5e}\n".format(nr=i + 1, e=e, rn=rn))
+        if info['done']:
+            core.print_out("  Solver Converged! all roots\n\n")
+        elif info['collapse']:
+            core.print_out("  Subspace limits exceeded restarting\n\n")
 
 
 def _diag_print_converged(solver_name, stats, vals, verbose=1, **kwargs):
     if verbose < 1:
         # no printing
         return
-    if verbose == 1:
+    if verbose >= 1:
         # print values summary + number of iterations + # of "big" product evals
-        core.print_out(" {} converged in {} iterations".format(solver_name, stats[-1]['count']))
+        core.print_out(" {} converged in {} iterations\n".format(solver_name, stats[-1]['count']))
         core.print_out("  Root #    eigenvalue\n")
         for (i, vi) in enumerate(vals):
-            core.print_out("  {:^6}    {:20.12f}".format(i + 1, vi))
+            core.print_out("  {:^6}    {:20.12f}\n".format(i + 1, vi))
         max_nvec = max(istat['nvec'] for istat in stats)
         core.print_out("  Computed a total of {} Large products\n\n".format(stats[-1]['product_count']))
 
 
-def davidson_solver(engine, guess, e_tol=1.0E-6, r_tol=1.0E-8, nroot=1, max_vecs_per_root=20, maxiter=100, verbose=1):
+def _gs_orth(engine, old_vecs, new_vec, thresh):
+    for old in old_vecs:
+        dot = engine.vector_dot(old, new_vec)
+        new_vec = engine.vector_axpy(-1.0 * dot, old, new_vec)
+    norm = engine.vector_dot(new_vec, new_vec)
+    norm = np.sqrt(norm)
+    if norm >= thresh:
+        new_vec = engine.vector_scale(1.0 / norm, new_vec)
+        return new_vec
+    else:
+        return None
+
+
+def _collapse_guess_space(engine, ss_vectors, basis_vectors):
+    l, nroot = ss_vectors.shape
+    new_vecs = []
+    for i in range(nroot):
+        cv_i = engine.new_vector()
+        for j in range(l):
+            cv_i = engine.vector_axpy(ss_vectors[i, j], basis_vectors[j], cv_i)
+        new_vecs.append(cv_i)
+    engine.product_cache.reset()
+    return new_vecs
+
+
+def davidson_solver(engine,
+                    guess,
+                    e_tol=1.0E-6,
+                    r_tol=1.0E-8,
+                    nroot=1,
+                    max_vecs_per_root=20,
+                    maxiter=100,
+                    verbose=1,
+                    schmidt_add_tol=1.0e-4):
     """
+
     Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
 
 
@@ -400,162 +442,141 @@ def davidson_solver(engine, guess, e_tol=1.0E-6, r_tol=1.0E-8, nroot=1, max_vecs
         Number of roots desired
     maxiter : int
         The maximum number of iterations
+    schmidt_add_tol : float
+        Correction vectors must have norm larger than this value to be added to the guess space
     verbose : int
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
     Requirements of engine
     ----------------------
-    orthogonalize_subspace(old_X, new_X) --> X, nx:
-       old_X : list of `vectors`
-           This set may be empty, if not, the vectors are mutually orthogonal.
-       new_x : list of `trial vectors`
-           The normalization or orthogonality of these vectors can't be assumed
-       X : list of `vectors`
-           A set of ortho-normal vectors constructed from old_X and new_X, need not have dimension = dim(old_X) + dim(new_X)
-       nl : The number of vectors in the set.
-
     compute_products(X) -> AX :
        X : list of `vectors`
-           As returned from `orthogonalize_subspace`
-       Ax : list of `vectors`
-           The product :math:`AX_{i}` for each `X_{i}` in `X`, in that order.
+       AX : list of `vectors`
+           The product :math:`A x X_{i}` for each `X_{i}` in `X`, in that order. Where a is the hermitian matrix to be diagonalized.
 
-    subspace_project:(X, Ax) --> A
-       X : list of `vectors` length d
-           As returned from `orthogonalize_subspace`
-       Ax : list of `vectors` length d
-           As returned from `compute_products`
-       A : :py:class:`numpy.ndarray` float {d, d}
-           Each element of :math:`A_{ij}` is the dot product :math:`X_i(AX)_{j}`
-
-    approximate_eigenvector(Ax, Vss_k) -> V
-       Ax : list of `vectors` length d
-           As returned from compute_products
-       Vss_k : `numpy.ndarray` float {d, }
-           The k'th eigenvector of the subspace projected problem
-       V : single `vector`
-           The approximate "true" eigenvector :math:`V_{k} = \sum_j (AX)_j\tilde{V}_k`
-
-    residual(V, X, Vss_k, w_k) -> R
-       V : single `vector`
-           The approximate "true" eigenvector returned for `approximate_eigenvector`
-       X : list of `vector` length d
-           As returned from `orthogonalize_subspace`
-       Vss_k : `numpy.ndarray` float {d,}
-           As in `approximate_eigenvector`
-       w_k : float
-           The eigenvalue of the subspace problem associated with Vss_k
-       R : single `vector`
-           The residual vector :math:`R_{k} = V_k - \sum_j X_j\tilde{V}_k\tilde{\omega}_k`
-
-    precondition_residual(R_k, w_k) -> new_X_k
-       R_k : single `vector`
-           As returned from `residual`
-       w_k : float
-           As in `residual`
+    precondition(R_k, w_k) -> new_X_k
+       R_k : single `vector`, the residual vector
+       w_k : float, the eigenvalue associated with this vector
        new_X_k : single `vector`
-           This vector will be in the set passed to `orthogonalize_subspace` at the start of the next iteration.
+           This vector will be added to the guess space after orthogonalization
+
+    vector_dot(X, Y) -> a:
+       X : single `vector`
+       Y : single `vector`
+       a : float, the dot product  (X x Y)
+
+    vector_axpy(a, X, Y) - > Y':
+       a : float
+       X : single `vector`
+       Y : single `vector`
+       Y': single `vector`
+         Y' = Y + a*X (it is assumed that the vector passed as Y is modified. This may not be true)
+
+    vector_scale(a, X) -- > X':
+       a : float
+       X : single `vector`
+       X': single `vector`
+          X' = a * X (it is assumed that the vector passed as X is modified. This may not be true)
+
+    vector_copy(X) -- > X':
+       X : single `vector`
+       X': single `vector`
+         a copy of X
+
+     new_vector() -- > X:
+       X : single `vector`
+         A new object that has the same shape as `vector` like quantities.
+
 
      ..note:: The `vector` referred to here is intentionally vague, the solver does not care what it is and only
               holds individual or sets of them. In fact an individual `vector` could be split across two elements in a list,
-              such as for different. This allowance is also why the `orthogonalize_subspace` function should return the dimension
-              of the subspace. It is not required to be equal to `len(X)`.
+              such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
+              len(list) returns the number of vector-like objects.
     """
-    # hard set for now --> make these options eventually
-    imag_vec_tol = 1.0e-3
-    imag_val_tol = 1.0e-3
-    #nl = len(guess)
     nk = nroot
 
-    iter_info = dict(
-        count=0,
-        res_norm=np.zeros((nk)),
-        val=np.zeros((nk)),
-        delta_val=np.zeros((nk)),
+    iter_info = {
+        "count": 0,
+        "res_norm": np.zeros((nk)),
+        "val": np.zeros((nk)),
+        "delta_val": np.zeros((nk)),
         # conv defaults to true, and will be flipped when a non-conv root is hit
-        done=True,
-        nvec=None,
-        collapse=False,
-        product_count=0,
-    )
+        "done": True,
+        "nvec": None,
+        "collapse": False,
+        "product_count": 0,
+    }
 
     print_name = "DavidsonSolver"
     if verbose != 0:
         core.print_out("\n  " + "Generalized Davidson Solver".center(53) + "\n")
         core.print_out("   " + "By Ruhee Dcunha".center(53) + "\n")
 
-    max_ss_size = max_vecs_per_root * nk
-    X_new = guess
-    X = []
+    title_lines = ["Generalized Davidson Solver", "By Ruhee Dcunha"]
 
+    max_ss_size = max_vecs_per_root * nk
+    vecs = guess
     stats = []
 
-    _diag_print_heading(print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
 
     while iter_info['count'] < maxiter:
         # increment iteration/ save old vals
         iter_info['count'] += 1
-        old_w = iter_info['val'].copy()
+        old_vals = iter_info['val'].copy()
         # reset flags
         iter_info['collapse'] = False
         iter_info['done'] = True
 
-        # expand subspace
-        X, nl = engine.orthogonalize_subspace(X, X_new)
-        X_new = []
-
-        if nl >= max_ss_size:
+        l = len(vecs)
+        iter_info['nvec'] = l
+        if l >= max_ss_size:
             iter_info['collapse'] = True
 
-        iter_info['nvec'] = nl
+        Ax = engine.compute_products(vecs)
+        G = np.zeros((l, l))
+        for i in range(l):
+            for j in range(l):
+                G[i, j] = engine.vector_dot(vecs[i], Ax[j])
 
-        Ax = engine.compute_products(X)
-        iter_info['product_count'] += len(Ax)
-        Ass = engine.subspace_project(Ax, X)
+        lam, alpha = np.linalg.eigh(G)
+        idx = np.argsort(lam)
+        lam = lam[idx]
+        alpha = alpha[:, idx]
 
-        # solve eigenvalue problem for subspace matrix
-        w, Vss = np.linalg.eig(Ass)
-
-        # sorting eigenvalues and corresponding eigenvectors & choose n lowest eigenvalue eigpairs
-        idx = w.argsort()[:nk]
-        Vss = Vss[:, idx]
-        w = w[idx]
-        imag_V = Vss.imag
-        imag_w = w.imag
-        Vss = Vss.real
-        w = w.real
-
-        if any(imag_w > imag_val_tol):
-            raise Exception("DavidsonSolver: Im[eigenvalue] exceeded tolerance")
-        if any(np.linalg.norm(imag_V, axis=1) > imag_vec_tol):
-            raise Exception("DavidsonSolver: |Im[eigenvector]| exceeded tolerance")
-
-        V = []
         for k in range(nk):
-            # computes $\tilde{V}_k = sum_j Ax_j V^{ss}_k$
-            V.append(engine.approximate_eigvector(Ax, Vss[:, k]))
-            # $R^{v}_k = \tilde{V}_k - \sum_j \omega_k X_j V^{ss}_k$
-            Rv = engine.residual(V[k], X, Vss[:, k], w[k])
-            iter_info['res_norm'][k] = engine.vector_norm(Rv)
-            iter_info['delta_val'][k] = abs(old_w[k] - w[k])
-            iter_info['val'][k] = w[k]
-            if (iter_info['res_norm'][k] < r_tol) and (iter_info['delta_val'][k] < e_tol):
-                continue
-            else:
+            Rk = engine.new_vector()
+            lam_k = lam[k]
+            for i in range(l):
+                Xi = vecs[i]
+                Axi = Ax[i]
+                alpha_ik = alpha[i, k]
+                Rk = engine.vector_axpy(-1.0 * lam_k * alpha[i, k], Xi, Rk)
+                Rk = engine.vector_axpy(alpha_ik, Axi, Rk)
+
+            Rk = engine.precondition(Rk, lam_k)
+            norm = engine.vector_dot(Rk, Rk)
+            norm = np.sqrt(norm)
+
+            iter_info['val'][k] = lam_k
+            iter_info['delta_val'][k] = abs(old_vals[k] - lam_k)
+            iter_info['res_norm'][k] = norm
+            if (norm > r_tol) or (abs(old_vals[k] - lam_k) > e_tol):
                 iter_info['done'] = False
-                if iter_info['collapse']:
-                    continue
-                else:
-                    X_new.append(engine.precondition_residual(Rv, shift=w[k]))
+                Qk = engine.vector_scale(1.0 / norm, Rk)
+                Qk = _gs_orth(engine, vecs, Qk, schmidt_add_tol)
+                if Qk is not None:
+                    vecs.append(Qk)
 
         _diag_print_info(print_name, iter_info, verbose)
         stats.append(iter_info.copy())
         if iter_info['done']:
-            _diag_print_converged(print_name, stats, w, rvec=V, verbose=verbose)
-            return w, V, stats
+            lam = lam[:nk]
+            V = _collapse_guess_space(engine, alpha[:, :nk], vecs)
+            _diag_print_converged(print_name, stats, lam, rvec=V, verbose=verbose)
+            return lam, V, stats
         if iter_info['collapse']:
-            X = []
-            X_new = V
+            vecs = _collapse_guess_space(engine, alpha[:, :nk], vecs)
 
     # If we get down here  we have exceeded max iterations without convergence, return none + stats
     return None, None, stats
@@ -573,8 +594,26 @@ def hamiltonian_solver(engine,
     Finds the smallest eigenvalues and associated right and left hand eigenvectors of a large real Hamiltonian eigenvalue problem
     emulated through an engine.
 
-    Similar to the davidson algorithm but with special considerations that preserve the structure of the problem and lead to faster
-    convergence.
+    A hamiltonian EVP has the structure with A, B of some large dimension N the problem is 2Nx2N:
+    [A  B][X]  = [1   0](w)[X]
+    [B  A][Y]    [0  -1](w)[Y]
+
+    Which can be written as the NxN, non-hermitan EVP:
+    (A+B)(A-B)(X+Y) = w^2(X+Y)
+
+
+    With left-hand eigenvectors:
+    (X-Y)(A-B)(A+B) = w^2(X-Y)
+
+    if (A-B) is positive definite, we can transform the problem to arrive at the hermitian NxN EVP:
+    (A-B)^1/2(A+B)(A-B)^1/2 = w^2 T
+
+    Where T = (A-B)^-1/2(X+Y).
+
+    We use a Davidson like where we transform (A+B) (H1) and (A-B)(H2) in to the subspace defined by the trial vectors. Transform the subspace quantities and solve the
+    subspace analog of the NxN hermitian EVP, and back transform to extract X+Y, X-Y. The subspace is augmented to correct for both until convergence.
+
+    Using the converged Left/Right eigenvectors of the NxN non-hermitian EVP, the components of the 2n*2N Hamiltonian problem (X, Y) are extracted.
 
     Parameters
     -----------
@@ -591,89 +630,80 @@ def hamiltonian_solver(engine,
         Number of roots desired
     maxiter : int
         The maximum number of iterations
+    schmidt_add_tol : float
+        Correction vectors must have norm larger than this value to be added to the guess space
     verbose : int
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
+
     Requirements of engine
     ----------------------
-    orthogonalize_subspace(old_X, new_X) --> X, nx:
-       old_X : list of `vectors`
-           This set may be empty, if not, the vectors are mutually orthogonal.
-       new_x : list of `trial vectors`
-           The normalization or orthogonality of these vectors can't be assumed
+    compute_products(X) -> H1X, H2X :
        X : list of `vectors`
-           A set of ortho-normal vectors constructed from old_X and new_X, need not have dimension = dim(old_X) + dim(new_X)
-       nl : The number of vectors in the set.
+       H1X : list of `vectors`
+           The product :math:`H1 x X_{i}` for each `X_{i}` in `X`, in that order. Where H1 is the sum (A+B) of the blocks described above.
+       H2X : list of `vectors`
+           The product :math:H2 x X_{i} for each `X_{i}` in  X, in that order. Where H2 is the difference (A-B) of the blocks described above.
 
-    compute_products(X) -> Px, Mx:
-       X : list of `vectors`
-           As returned from `orthogonalize_subspace`
-       Px : list of `vectors`
-           The product :math:`(A+B)X_{i}` for each `X_{i}` in `X`, in that order.
-       Mx : list of `vectors`
-           The product :math:`(A-B)X_{i}` for each `X_{i}` in `X`, in that order.
-
-    subspace_project:(X, Ax) --> A
-       X : list of `vectors` length d
-           As returned from `orthogonalize_subspace`
-       Ax : list of `vectors` length d
-           As either of the returns from `compute_products`
-       A : :py:class:`numpy.ndarray` float {d, d}
-           Each element of :math:`A_{ij}` is the dot product :math:`X_i(AX)_{j}`
-
-    approximate_eigenvector(Ax, Vss_k) -> V
-       Ax : list of `vectors` length d
-           As returned from `compute`_products
-       Vss_k : `numpy.ndarray` float {d, }
-           The k'th eigenvector of the subspace projected problem
-       V : single `vector`
-           The approximate "true" eigenvector :math:`V_{k} = \sum_j (AX)_j\tilde{V}_k`
-
-    residual(V, X, Vss_k, w_k) -> R
-       V : single `vector`
-           The approximate "true" eigenvector returned for `approximate_eigenvector`
-       X : list of `vector` length d
-           As returned from `orthogonalize_subspace`
-       Vss_k : `numpy.ndarray` float {d,}
-           As in `approximate_eigenvector`
-       w_k : float
-           The eigenvalue of the subspace problem associated with Vss_k
-       R : single `vector`
-           The residual vector :math:`R_{k} = V_k - \sum_j X_j\tilde{V}_k\tilde{\omega}_k`
-
-    precondition_residual(R_k, w_k) -> new_X_k
-       R_k : single `vector`
-           As returned from `residual`
-       w_k : float
-           As in `residual`
+    precondition(R_k, w_k) -> new_X_k
+       R_k : single `vector`, the residual vector
+       w_k : float, the eigenvalue associated with this vector
        new_X_k : single `vector`
-           This vector will be in the set passed to `orthogonalize_subspace` at the start of the next iteration.
+           This vector will be added to the guess space after orthogonalization
+
+    vector_dot(X, Y) -> a:
+       X : single `vector`
+       Y : single `vector`
+       a : float, the dot product  (X x Y)
+
+    vector_axpy(a, X, Y) - > Y':
+       a : float
+       X : single `vector`
+       Y : single `vector`
+       Y': single `vector`
+         Y' = Y + a*X (it is assumed that the vector passed as Y is modified. This may not be true)
+
+    vector_scale(a, X) -- > X':
+       a : float
+       X : single `vector`
+       X': single `vector`
+          X' = a * X (it is assumed that the vector passed as X is modified. This may not be true)
+
+    vector_copy(X) -- > X':
+       X : single `vector`
+       X': single `vector`
+         a copy of X
+
+     new_vector() -- > X:
+       X : single `vector`
+         A new object that has the same shape as `vector` like quantities.
+
 
      ..note:: The `vector` referred to here is intentionally vague, the solver does not care what it is and only
               holds individual or sets of them. In fact an individual `vector` could be split across two elements in a list,
-              such as for different. This allowance is also why the `orthogonalize_subspace` function should return the dimension
-              of the subspace. It is not required to be equal to `len(X)`.
-
+              such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
+              len(list) returns the number of vector-like objects.
     """
 
     nk = nroot
 
-    iter_info = dict(
-        count=0,
-        res_norm=np.zeros((nk)),
-        val=np.zeros((nk)),
-        delta_val=np.zeros((nk)),
+    iter_info = {
+        "count": 0,
+        "res_norm": np.zeros((nk)),
+        "val": np.zeros((nk)),
+        "delta_val": np.zeros((nk)),
         # conv defaults to true, and will be flipped when a non-conv root is hit
-        conv=True,
-        nvec=0,
-        product_count=0,
-    )
+        "conv": True,
+        "nvec": 0,
+    }
     ss_max = max_vecs_per_root * nk
-    X_new = guess
-    X = []
+    vecs = guess
 
     stats = []
     print_name = "HamiltonianSolver"
+
+    title_lines = ["Generalized Hamiltonian Solver", "By Andrew M. James"]
+    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
 
     while iter_info['count'] < maxiter:
         # increment iteration/ save old vals
@@ -684,25 +714,27 @@ def hamiltonian_solver(engine,
         iter_info['done'] = True
 
         # expand subspace
-        X, nl = engine.orthogonalize_subspace(X, X_new)
-        X_new = []
-        if nl >= ss_max:
+        l = len(vecs)
+        if l >= ss_max:
             iter_info['collapse'] = True
 
-        iter_info['nvec'] = nl
+        iter_info['nvec'] = l
         # Step 2: compute (P)*bi and (M)*bi
-        Px, Mx = engine.compute_products(X)
-        iter_info['product_count'] += len(Px) * 2
+        H1x, H2x = engine.compute_products(vecs)
         # Step 3: form Pss, Mss. The P/M matrices in the subspace
-        Pss = engine.subspace_project(Px, X)
-        Mss = engine.subspace_project(Mx, X)
+        H1_ss = np.zeros((l, l))
+        H2_ss = np.zeros((l, l))
+        for i in range(l):
+            for j in range(l):
+                H1_ss[i, j] = engine.vector_dot(vecs[i], H1x[j])
+                H2_ss[i, j] = engine.vector_dot(vecs[i], H2x[j])
 
         # Step 4: Hermitian Product (Subspace analog of M^{1/2} P M^{1/2})
-        Mss_val, Mss_vec = np.linalg.eigh(Mss)
-        if any(Mss_val < 0.0):
-            raise Exception("A-B is not Positive Definite")
-        Mss_half = np.einsum('ij,j,kj->ik', Mss_vec, np.sqrt(Mss_val), Mss_vec)
-        Hss = np.einsum('ij,jk,km->im', Mss_half, Pss, Mss_half)
+        H2_ss_val, H2_ss_vec = np.linalg.eigh(H2_ss)
+        if any(H2_ss_val < 0.0):
+            raise Exception("H2 is not Positive Definite")
+        H2_ss_half = np.einsum('ij,j,kj->ik', H2_ss_vec, np.sqrt(H2_ss_val), H2_ss_vec)
+        Hss = np.einsum('ij,jk,km->im', H2_ss_half, H1_ss, H2_ss_half)
 
         # Step 5: diagonalize Hss -> w^2, Tss
         w, Tss = np.linalg.eigh(Hss)
@@ -711,46 +743,65 @@ def hamiltonian_solver(engine,
         w = w[idx]
         Tss = Tss[:, idx]
 
-        #Step 6a: extract Rss = M^{1/2}Tss
-        Rss = np.dot(Mss_half, Tss)
+        #Step 6a: extract Rss = H2_ss^{1/2}Tss
+        Rss = np.dot(H2_ss_half, Tss)
         #Step 6b: extract Lss = Pss Rss * w^-1
-        Lss = np.dot(Pss, Rss)
+        Lss = np.dot(H1_ss, Rss)
         Lss = np.einsum('ij,j->ij', Lss, np.divide(1.0, w))
 
         # store best R/L eigvals
-        L = []
-        R = []
         for k in range(nk):
-            L.append(engine.approximate_eigvector(Px, Rss[:, k]))
-            R.append(engine.approximate_eigvector(Mx, Lss[:, k]))
-            WL = engine.residual(L[k], X, Lss[:, k], w[k])
-            WR = engine.residual(R[k], X, Rss[:, k], w[k])
-            norm_r = engine.vector_norm(WR)
-            norm_l = engine.vector_norm(WL)
-            iter_info['res_norm'][k] = norm_r + norm_l
+            WR_k = engine.new_vector()
+            WL_k = engine.new_vector()
+            wk = w[k]
+            for i in range(l):
+                Xi = vecs[i]
+                H1x_i = H1x[i]
+                H2x_i = H2x[i]
+                WL_k = engine.vector_axpy(-1.0 * wk * Lss[i, k], Xi, WL_k)
+                WL_k = engine.vector_axpy(Rss[i, k], H1x_i, WL_k)
+
+                WR_k = engine.vector_axpy(-1.0 * wk * Rss[i, k], Xi, WR_k)
+                WR_k = engine.vector_axpy(Lss[i, k], H2x_i, WR_k)
+
+            norm_R = engine.vector_dot(WR_k, WR_k)
+            norm_R = np.sqrt(norm_R)
+            WR_k = engine.vector_scale(1.0 / norm_R, WR_k)
+
+            norm_L = engine.vector_dot(WL_k, WL_k)
+            norm_L = engine.sqrt(norm_L)
+            WL_k = engine.vector_scale(1.0 / norm_L, WL_k)
+
+            norm = norm_R + norm_L
+
+            iter_info['res_norm'][k] = norm
             iter_info['delta_val'][k] = np.abs(old_w[k] - w[k])
             iter_info['val'][k] = w[k]
-            if (iter_info['res_norm'][k] < r_tol) and (iter_info['delta_val'][k] < e_tol):
-                continue
-            else:
+            if (iter_info['res_norm'][k] > r_tol) or (iter_info['delta_val'][k] > e_tol):
                 iter_info['done'] = False
-                if iter_info['collapse']:
-                    # don't bother preconditioning, we are not going to use them
-                    continue
-                else:
-                    # precondition residuals
-                    X_new.append(engine.precondition_residual(WL, shift=w[k]))
-                    X_new.append(engine.precondition_residual(WR, shift=w[k]))
+
+                QR_k = engine.precondition(WR_k, w[k])
+                QR_k = _gs_orth(engine, vecs, QR_k, schmidt_add_tol)
+                if QR_k is not None:
+                    vecs.append(QR_k)
+
+                QL_k = engine.precondition(WL_k, w[k])
+                QL_k = _gs_orth(engine, vecs, QL_k, schmidt_add_tol)
+                if QL_k is not None:
+                    vecs.append(QL_k)
 
         _diag_print_info(print_name, iter_info, verbose)
         stats.append(iter_info.copy())
         if iter_info['done']:
+            R = _collapse_guess_space(engine, Rss[:, :nk], vecs)
+            L = _collapse_guess_space(engine, Lss[:, :nk], vecs)
             _diag_print_converged(print_name, stats, w, rvec=R, lvec=L, verbose=verbose)
             return w[:nk], R, L, stats
         if iter_info['collapse']:
             # list add, not vector add, collapsed guess space will be 2*nroots in size(nroot L + nroot R)
-            X = []
-            X_new = R + L
+            R = _collapse_guess_space(engine, Rss[:, :nk], vecs)
+            L = _collapse_guess_space(engine, Lss[:, :nk], vecs)
+            vecs = R + L
 
     # if we get down here we have exceeded max iterations without convergence, return none + stats
     return None, None, None, stats

@@ -19,8 +19,29 @@ def _diag_dom_sym_mat(size, sep, scale, sym=1.0):
     M = (M.T * (sym) + M) / 2.0
     return M
 
+class SimulateBase:
+    @staticmethod
+    def vector_dot(X, Y):
+        return X.dot(Y)
 
-class DSProblemSimulate(object):
+    @staticmethod
+    def vector_axpy(a, X, Y):
+        Y += a*X
+        return Y
+
+    @staticmethod
+    def vector_scale(a, X):
+        return a * X
+
+    @staticmethod
+    def vector_copy(X):
+        return X.copy()
+
+    def new_vector(self):
+        return np.zeros((self.size,))
+
+
+class DSProblemSimulate(SimulateBase):
     "Provide the interface of an engine, around an actual matrix stored in memory"
 
     def __init__(self, size, sep=1.0, scale=0.0001, sym=1.0):
@@ -30,38 +51,11 @@ class DSProblemSimulate(object):
     def compute_products(self, X):
         return self.A.dot(X)
 
-    def precondition_residual(self, R, shift):
+    def precondition(self, R, shift):
         return R / (shift - np.diag(self.A))
 
-    def approximate_eigvector(self, Ax, Vss):
-        return np.dot(Ax, Vss)
 
-    def residual(self, V, x, ss_vector, ss_value):
-        return V - np.dot(x, ss_vector * ss_value)
-
-    def vector_norm(self, V):
-        return np.linalg.norm(V)
-
-    def orthogonalize_subspace(self, old_X, new_X):
-        if isinstance(old_X, list):
-            assert len(old_X) == 0
-            old_x_cols = tuple()
-        else:
-            old_x_cols = tuple(old_X.T)
-        if isinstance(new_X, np.ndarray):
-            new_x_cols = tuple(new_X.T)
-        else:
-            new_x_cols = tuple(new_X)
-
-        X = np.column_stack(old_x_cols + new_x_cols)
-        X, _ = np.linalg.qr(X)
-        return X, X.shape[-1]
-
-    def subspace_project(self, X, Ax):
-        return np.dot(X.T, Ax)
-
-
-class HSProblemSimulate(object):
+class HSProblemSimulate(SimulateBase):
     "Provide the interface of an engine, around an actual matrix stored in memory"
 
     def __init__(self, size, a_sep=1.0, b_sep=0.001, scale=0.0001, a_sym=1.0, b_sym=1.0):
@@ -74,35 +68,9 @@ class HSProblemSimulate(object):
         Mx = np.dot(self.A - self.B, X)
         return Px, Mx
 
-    def precondition_residual(self, R, shift):
+    def precondition(self, R, shift):
         return R / (shift - np.diag(self.A))
 
-    def approximate_eigvector(self, Ax, Vss):
-        return np.dot(Ax, Vss)
-
-    def residual(self, V, x, ss_vector, ss_value):
-        return V - np.dot(x, ss_vector * ss_value)
-
-    def vector_norm(self, V):
-        return np.linalg.norm(V)
-
-    def orthogonalize_subspace(self, old_X, new_X):
-        if isinstance(old_X, list):
-            assert len(old_X) == 0
-            old_x_cols = tuple()
-        else:
-            old_x_cols = tuple(old_X.T)
-        if isinstance(new_X, np.ndarray):
-            new_x_cols = tuple(new_X.T)
-        else:
-            new_x_cols = tuple(new_X)
-
-        X = np.column_stack(old_x_cols + new_x_cols)
-        X, _ = np.linalg.qr(X)
-        return X, X.shape[-1]
-
-    def subspace_project(self, X, Ax):
-        return np.dot(X.T, Ax)
 
 
 @pytest.mark.unittest

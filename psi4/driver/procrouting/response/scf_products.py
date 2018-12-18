@@ -26,552 +26,461 @@
 # @END LICENSE
 #
 
+from abc import ABC, abstractmethod
+
 import numpy as np
 
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
 
 
-class SCFProducts:
-    def __init__(self, wfn):
+# H1/ H2 docstrings to keep them straight
+"""
+Aia,jb  = (E_a - E_i) +    J    -    K
+        = (E_a - E_i) + (ia|jb) - (ij|ab)
 
-        if len(tuple(wfn.doccpi())) > 1:
-            raise ValueError("Can only handle C1 wavefunctions currently.")
+Bia,jb  =    J    -   K^T
+        = (ai|bj) - (aj|bi)
 
-        self.restricted = wfn.same_a_b_dens()
-        if self.restricted is False:
-            raise ValueError("Can only handle restricted wavefunctions.")
+H2ia,jb =                A                   -           B
+        = [(E_a - E_i) +    J    -    K   ]  - [   J     -    K^T ]
+        = [(E_a - E_i) + (ia|jb) - (ij|ab)]  - [(ai|bj)  - (aj|bi)]
+        = (E_a - E_i) -    K    +    K^T
+        = (E_a - E_i) - (ij|ab) + (aj|bi)
 
-        self.wfn = wfn
+H1ia,jb =              A                    +       B
+        = [(E_a - E_i) +    J    -    K   ] + [J    -   K^T]
+        = [(E_a - E_i) + (ia|jb) - (ij|ab)] + [(ai|bj)  - (aj|bi)]
+        = [(E_a - E_i) + 2   J    -    K     -   K^T]
+        = [(E_a - E_i) + 2(ia|jb) - (ij|ab)  - (aj|bi)]
 
-        # Grab sizes
-        self.nmo = wfn.nmopi().sum()
-        self.nalpha = wfn.nalphapi().sum()
-        self.navir = self.nmo - self.nalpha
-        self.narot = self.nalpha * self.navir
+"""
 
-        self.nbeta = wfn.nbetapi().sum()
-        self.nbvir = self.nmo - self.nbeta
-        self.nbrot = self.nbeta * self.nbvir
 
-        self.alpha_shape = (self.nalpha, self.navir)
-        self.beta_shape = (self.nbeta, self.nbvir)
+class SingleMatPerVector:
+    @staticmethod
+    def vector_dot(X, Y):
+        return X.vector_dot(Y)
 
-        # Grab orbitals
-        self.Ca_occ = wfn.Ca_subset("AO", "OCC")
-        self.Ca_vir = wfn.Ca_subset("AO", "VIR")
-        self.Cb_occ = wfn.Cb_subset("AO", "OCC")
-        self.Cb_vir = wfn.Cb_subset("AO", "VIR")
+    @staticmethod
+    def vector_scale(a, X):
+        X.scale(a)
+        return X
 
-    def H2_product(self, vector):
-        """
-        H2 = H2_ai,bj * vector_bj
-                          K         K.T
-        [(E_a - E_i) + (ab|ij) - (aj|bi)] x_bj
-        Note that we can only take a single vector, be good to take many
-        """
-        vector = core.Matrix.from_array(vector.reshape(self.alpha_shape))
-        ret = self.wfn.onel_Hx([vector])[0]
+    @staticmethod
+    def vector_axpy(a, X, Y):
+        Y.axpy(a, X)
+        return Y
 
-        # Special case for DFT
-        if self.wfn.functional().needs_xc():
-            Jx, Kx, XCx = self.wfn.twoel_Hx([vector], False, "SO")
-            Kx.axpy(-1.0, Kx.transpose())
-            Kx.axpy(1.0, XCx)
+    @staticmethod
+    def vector_copy(X):
+        return X.clone()
+
+    @staticmethod
+    def vector_transpose(X):
+        return X.transpose()
+
+
+class PairedMatPerVector:
+    @staticmethod
+    def vector_dot(X, Y):
+        dot = X[0].vector_dot(Y[0])
+        dot += X[1].vector_dot(Y[1])
+        return dot
+
+    @staticmethod
+    def vector_scale(a, X):
+        X[0].scale(a)
+        X[1].scale(a)
+        return X
+
+    @staticmethod
+    def vector_axpy(a, X, Y):
+        Y[0].axpy(a, X[0])
+        Y[1].axpy(a, X[1])
+        return Y
+
+    @staticmethod
+    def vector_copy(X):
+        return [X[0].clone(), X[1].clone()]
+
+    @staticmethod
+    def vector_transpose(X):
+        return [X[0].transpose(), X[1].transpose()]
+
+
+class ProductCache:
+    def __init__(self, *product_types):
+        self._products = {p: [] for p in product_types}
+
+    def add(self, pkey, new_elements):
+        if pkey not in self._products.keys():
+            raise AttributeError("no such product {}".format(pkey))
+        for new in new_elements:
+            self._products[pkey].append(new)
+        return self._products[pkey].copy()
+
+    def reset(self):
+        for pkey in self._products.keys():
+            self._products[pkey].clear()
+
+    def count(self):
+        lens = [len(self._products[pkey]) for pkey in self._products.keys()]
+        all_same = lens[1:] == lens[-1:]
+        if all_same:
+            return lens[0]
         else:
-            Jx, Kx = self.wfn.twoel_Hx([vector], False, "SO")
-            Kx.axpy(-1.0, Kx.transpose())
-        twoel_mo = core.Matrix.triplet(self.Ca_occ, Kx, self.Ca_vir, True, False, False)
-
-        # Some signs get mixed around, but this is correct
-        ret.axpy(-1.0, twoel_mo)
-        ret = np.array(ret).ravel()
-        return ret
-
-    def H1_product(self, vector):
-        """
-        H1 (Orbital Hessian)
-        """
-        matvec = core.Matrix.from_array(vector.reshape(self.alpha_shape))
-        ret = np.array(self.wfn.cphf_Hx([matvec])[0]).ravel()
-
-        return ret
-
-    def H2H1_product(self, vector, omega=None):
-        """
-        H2 * H1 * x + omega ** 2
-        """
-        matvec = core.Matrix.from_array(vector.reshape(self.alpha_shape))
-        tmp = np.array(self.wfn.cphf_Hx([matvec])[0]).ravel()
-
-        ret = self.H2_product(tmp)
-        if omega is not None:
-            ret += vector * (omega**2)
-
-        return np.array(ret).ravel()
+            self.reset()
+            return 0
 
 
-class TDRSCFEngine(object):
-    def __init__(self, wfn, ptype='rpa', triplet=False, add_tol=1.0e-8):
+class TDRSCFEngine(SingleMatPerVector):
+    def __init__(self, wfn, ptype='rpa', triplet=False):
         self.wfn = wfn
         self.ptype = ptype
+        self.needs_K_like = self.wfn.functional().is_x_hybrid() or self.wfn.functional().is_x_lrc()
         self.triplet = triplet
-        self.jk = self.wfn.jk()
-        self.Co = wfn.Ca_subset("SO", "OCC")
-        self.Cv = wfn.Ca_subset("SO", "VIR")
-        self.ei = wfn.epsilon_a_subset("SO", "OCC")
-        self.ea = wfn.epsilon_b_subset("SO", "VIR")
-        # orbital energy differences
-        self.Dia = None
-        # symmetry of vector
-        self.Gx = None
+        if ptype == 'rpa':
+            self.product_cache = ProductCache("H1", "H2")
+        else:
+            self.product_cache = ProductCache("A")
+        self.Co = self.wfn.Ca_subset("SO", "OCC")
+        self.Cv = self.wfn.Ca_subset("SO", "VIR")
+        self.E_occ = self.wfn.epsilon_a_subset("SO", "OCC")
+        self.E_vir = self.wfn.epsilon_b_subset("SO", "VIR")
+        self.prec = None
+        # ground state symmetry
+        self.G_gs = 0
+        # excited state symmetry
+        self.G_es = None
+        # symmetry of transition
         self.occpi = self.wfn.nalphapi()
         self.virpi = self.wfn.nmopi() - self.occpi
         self.nsopi = self.wfn.nsopi()
-        self.func = wfn.functional()
-        self.reset_symmetry(0)
-        self.add_tol = add_tol
+        self.reset_for_state_symm(0)
 
     def new_vector(self, name=""):
         """Obtain a blank matrix object with the correct symmetry"""
-        return core.Matrix(name, self.occpi, self.virpi, self.Gx)
+        return core.Matrix(name, self.occpi, self.virpi, self.G_trans)
 
-    def build_Dia(self):
-        """Rebuild the (Eps_a - Eps_i) matrix for the currently set Guess vector symmetry"""
-        self.Dia = self.new_vector("ei-ea")
-        for h_i in range(self.wfn.nirrep()):
-            h_a = self.Gx ^ h_i
-            for i in range(self.occpi[h_i]):
-                for a in range(self.virpi[h_a]):
-                    self.Dia.nph[h_i][i, a] = self.ea.nph[h_a][a] - self.ei.nph[h_i][i]
+    def reset_for_state_symm(self, symmetry):
+        self.G_es = symmetry
+        self._build_prec()
+        self.product_cache.reset()
 
-    def reset_symmetry(self, symmetry):
-        """Reset pre-allocated storage will matrices with the correct symemtry"""
-        self.Gx = symmetry
-        self.build_Dia()
+    def combine_H1_H2(self, Fx, Jx, Kx=None):
+        """
+        Singlet:
+            H1 X =  [(Ea - Ei) + 4J - K - K^T]X
+            H2 X =  [(Ea - Ei) - K  + K^T]X
 
-    def combine_a_plus_b(self, twoel_parts, Fx):
-        """Combine Ax, Jx, Kx (if hybrid dft) to make (A+B)x products"""
-        nvec = len(Fx)
-        Px = []
-        for i in range(nvec):
-            Px.append(Fx[i].clone())
-            if self.func.is_x_hybrid():
-                Jxi = twoel_parts[2 * i]
-                Kxi = twoel_parts[2 * i + 1]
-                Kxi_t = Kxi.transpose()
-                Kxi_t.scale(-1.0)
-                Kxi_t.axpy(-1.0, Kxi)
+        Triplet:
+            H1 X =  [(Ea - Ei) - K - K^T]X
+            H2 X =  [(Ea - Ei) - K + K^T]X
+
+        """
+
+        H1X = []
+        H2X = []
+        if Kx is not None:
+            for Fxi, Jxi, Kxi in zip(Fx, Jx, Kx):
+                Kxit = self.vector_transpose(Kxi)
                 if self.triplet:
-                    # (A+B)x = Fx + Co^T(-Kx-Kx^T)Cv
-                    Px[i].add(core.Matrix.triplet(self.Co, Kxi_t, self.Cv, True, False, False))
+                    H1X_so = self.vector_scale(0.0, Jxi)
                 else:
-                    # (A+B)x = Fx + Co^T(4.0J -Kx-Kx^T)Cv
-                    Kxi_t.axpy(4.0, Jxi)
-                    Px[i].add(core.Matrix.triplet(self.Co, Kxi_t, self.Cv, True, False, False))
-            else:
-                Jxi = twoel_parts[i]
+                    H1X_so = self.vector_scale(4.0, Jxi)
+                H1X_so = self.vector_axpy(-1.0, Kxi, H1X_so)
+                H1X_so = self.vector_axpy(-1.0, Kxit, H1X_so)
+                H1X.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(H1X_so)))
+
+                H2X_so = self.vector_axpy(-1.0, Kxi, Kxit)
+                H2X.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(H2X_so)))
+
+        else:
+            for Fxi, Jxi in zip(Fx, Jx):
                 if self.triplet:
-                    #(A+B)x = Fx
-                    pass
+                    H1X.append(self.vector_copy(Fxi))
                 else:
-                    #(A+B)x = Fx + Co^T(4.0J)Cv
-                    Jxi.scale(4.0)
-                    Px[i].add(core.Matrix.triplet(self.Co, Jxi, self.Cv, True, False, False))
-        return Px
+                    H1X_so = self.vector_scale(4.0, Jxi)
+                    H1X.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(H1X_so)))
+                H2X.append(self.vector_copy(Fxi))
+        return H1X, H2X
 
-    def combine_a_minus_b(self, twoel_parts, Fx):
-        """Combine Fx, Jx, Kx(if hybrid dft) to make (A-B)x products"""
-        nvec = len(Fx)
-        Mx = []
-        for i in range(nvec):
-            Mx.append(Fx[i].clone())
-            if self.func.is_x_hybrid():
-                Jxi = twoel_parts[2 * i]
-                Kxi = twoel_parts[2 * i + 1]
-                Kxi_t = Kxi.transpose()
-                # (A-B)x = Fx + Co^T(Kx^T-Kx)Cv
-                Kxi_t.axpy(-1.0, Kxi)
-                Mx[i].add(core.Matrix.triplet(self.Co, Kxi_t, self.Cv, True, False, False))
-            # else: (A-B) = Fx
-        return Mx
+    def combine_A(self, Fx, Jx, Kx=None):
+        """
+        Singlet:
+           A X = [(Ea - Ei) + 2 J - K] X
 
-    def combine_a(self, twoel_parts, Fx):
-        """Combine Fx, Jx, Kx(if hybrid DFT) to make Ax products"""
-        nvec = len(Fx)
+        Triplet:
+           A X = [(Ea - Ei) - K] X
+        """
         Ax = []
-        for i in range(nvec):
-            Ax.append(Fx[i].clone())
-            if self.func.is_x_hybrid():
-                Jxi = twoel_parts[2 * i]
-                Kxi = twoel_parts[2 * i + 1]
+        if Kx is not None:
+            for Fxi, Jxi, Kxi in zip(Fx, Jx, Kx):
                 if self.triplet:
-                    # Ax = Fx - Co^T(K)Cv
-                    Ax[i].subtract(core.Matrix.triplet(self.Co, Kxi, self.Cv, True, False, False))
+                    Ax.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(self.vector_scale(-1.0, Kxi))))
                 else:
-                    # Ax = Fx + Co^T(2.0Jx - K)Cv
-                    Jxi.scale(2.0)
-                    Jxi.axpy(-1.0, Kxi)
-                    Ax[i].add(core.Matrix.triplet(self.Co, Jxi, self.Cv, True, False, False))
-            else:
-                Jxi = twoel_parts[i]
+                    Ax_so = self.vector_scale(2.0, Jxi)
+                    Ax_so = self.vector_axpy(-1.0, Kxi, Ax_so)
+                    Ax.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(Ax_so)))
+
+        else:
+            for Fxi, Jxi in zip(Fx, Jx):
                 if self.triplet:
-                    #Ax = Fx
-                    pass
+                    Ax.append(self.vector_copy(Fxi))
                 else:
-                    #Ax = Fx + (2.0Jx)
-                    Jxi.scale(2.0)
-                    Ax[i].add(core.Matrix.triplet(self.Co, Jxi, self.Cv, True, False, False))
+                    Ax.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(self.vector_scale(2.0, Jx))))
         return Ax
 
-    def compute_products(self, X):
+    def compute_products(self, vectors):
         """Given a set of vectors X Compute products
         if ptype == rpa:
            Returns pair (A+B)X, (A-B)X
         if ptype == tda:
            Returns AX
         """
-        Fx = self.wfn.onel_Hx(X)
-        twoel_parts = self.wfn.twoel_Hx(X, False, "SO")
-        if self.ptype == 'rpa':
-            Px = self.combine_a_plus_b(twoel_parts, Fx)
-            Mx = self.combine_a_minus_b(twoel_parts, Fx)
-            # onel/twoel returns - of what we want
-            for Pxi in Px:
-                Pxi.scale(-1.0)
-            for Mxi in Mx:
-                Mxi.scale(-1.0)
-            return Px, Mx
+        n_old = self.product_cache.count()
+        n_new = len(vectors)
+        if n_new <= n_old:
+            self.product_cache.reset()
+            compute_vectors = vectors
         else:
-            # onel/twoel returns - of what we want
-            Ax = self.combine_a(twoel_parts, Fx)
-            for Axi in Ax:
-                Axi.scale(-1.0)
-            return Ax
+            compute_vectors = vectors[n_old:]
 
-    def precondition_residual(self, rvec, shift):
-        denom = self.new_vector("preconditioner")
-        denom.set(shift)
-        denom.axpy(-1.0, self.Dia)
-        rvec.apply_denominator(denom)
-        return rvec
+        Fx = self.wfn.onel_Hx(compute_vectors)
+        twoel = self.wfn.twoel_Hx(compute_vectors, False, "SO")
+        Jx, Kx = self.split_twoel(twoel)
+        if self.ptype == 'rpa':
+            H1X_new, H2X_new = self.combine_H1_H2(Fx, Jx, Kx)
+            for H1x in H1X_new:
+                self.vector_scale(-1.0, H1x)
+            for H2x in H2X_new:
+                self.vector_scale(-1.0, H2x)
+            H1X_all = self.product_cache.add("H1", H1X_new)
+            H2X_all = self.product_cache.add("H2", H2X_new)
+            return H1X_all, H2X_all
+        else:
+            AX_new = self.combine_A(Fx, Jx, Kx)
+            for Ax in AX_new:
+                self.vector_scale(-1.0, Ax)
+            AX_all = self.product_cache.add("A", AX_new)
+            return AX_all
 
-    def approximate_eigvector(self, ax, ss_vector):
-        """Approximate the eigenvector of the real system:
+    def so_to_mo(self, X):
+        return core.Matrix.triplet(self.Co, X, self.Cv, True, False, False)
 
-        Parameters:
-        -----------
-        ax: list, of :py:class:`~psi4.core.Matrix(x_dim, x_sym)` length == ss_dim
-          The matrix times guess vector products.
-        ss_vector: :py:class:`numpy.ndarray` {ss_dim}
-          Subspace eigenvector
+    def split_twoel(self, twoel):
+        if self.needs_K_like:
+            Jx = twoel[0::2]
+            Kx = twoel[1::2]
+        else:
+            Jx = twoel
+            Kx = None
+        return Jx, Kx
 
-        Returns:
-        --------
-        :py:class:`psi4.core.Matrix`
-           The approximate eigenvector: $V_i \approx \sum_j A_{ij} x_j \tilde{V}_{ji}$
-        """
-        ret = self.new_vector("eigenvector")
-        for j in range(len(ax)):
-            ret.axpy(ss_vector[j], ax[j])
-        return ret
+    @property
+    def G_trans(self):
+        return self.G_gs ^ self.G_es
 
-    def error(self, x, ss_vector, ss_value):
-        """Compute the error piece of the residual expression:
-        $\sum_{j} X_j \tilde{V}_{ji}\omega_i$
-        """
-        ret = self.new_vector("error")
-        c = ss_vector * ss_value
-        for j in range(len(x)):
-            ret.axpy(c[j], x[j])
-        return ret
+    def _build_prec(self):
+        self.prec = self.new_vector()
+        for h in range(self.wfn.nirrep()):
+            self.prec.nph[h][:] = self.E_vir.nph[h ^ self.G_trans] - self.E_occ.nph[h].reshape(-1, 1)
 
-    def vector_norm(self, v):
-        return np.sqrt(v.vector_dot(v))
+    def precondition(self, Rvec, shift):
+        for h in range(self.wfn.nirrep()):
+            den = shift - self.prec.nph[h]
+            idx = np.where(den < 0.0001)
+            den[idx] = 1.0
+            Rvec.nph[h][:] /= den
+        return Rvec
 
-    def orthogonalize_subspace(self, old_X, new_X):
-        X = old_X
-        while len(new_X) != 0:
-            new = new_X.pop()
-            for o in X:
-                dot = new.vector_dot(o)
-                new.axpy(-dot, o)
-            norm = np.sqrt(new.vector_dot(new))
-            if norm >= self.add_tol:
-                new.scale(1.0 / norm)
-                X.append(new)
-        return X, len(X)
-
-    def residual(self, V, x, ss_vector, ss_value):
-        ret = self.error(x, ss_vector, -ss_value)
-        ret.axpy(1.0, V)
-        return ret
-
-    def subspace_project(self, X, Ax):
-        A = np.zeros((len(X), len(X)))
-        for i, xi in enumerate(X):
-            for j, Axj in enumerate(Ax):
-                A[i, j] = xi.vector_dot(Axj)
-        return A
+    def generate_guess(self, nguess):
+        deltas = []
+        guess_vectors = []
+        for h in range(self.wfn.nirrep()):
+            for i, ei in enumerate(self.E_occ.nph[h]):
+                for a, ei in enumerate(self.E_vir.nph[h ^ G_trans]):
+                    deltas.append((ea - ei, i, a, h))
+        deltas_sorted = sorted(deltas, key=lambda x: x[0])
+        for i in range(nguess):
+            v = self.new_vector()
+            oidx = deltas_sorted[i][1]
+            vidx = deltas_sorted[i][2]
+            h = deltas_sorted[i][3]
+            v.set(h, oidx, vidx, 1.0)
+            guess_vectors.append(v)
+        return guess_vectors
 
 
-class TDUSCFEngine(object):
-    def __init__(self, wfn, ptype='rpa', add_tol=1.0e-8):
+class TDUSCFEngine(PairedMatPerVector):
+    def __init__(self, wfn, ptype='rpa'):
         self.wfn = wfn
         self.ptype = ptype
-        self.jk = self.wfn.jk()
+        if ptype == 'rpa':
+            self.product_cache = ProductCache("H1", "H2")
+        else:
+            self.product_cache = ProductCache("A")
         self.Co = [wfn.Ca_subset("SO", "OCC"), wfn.Cb_subset("SO", "OCC")]
         self.Cv = [wfn.Ca_subset("SO", "VIR"), wfn.Cb_subset("SO", "VIR")]
-        self.ei = [wfn.epsilon_a_subset("SO", "OCC"), wfn.epsilon_b_subset("SO", "OCC")]
-        self.ea = [wfn.epsilon_a_subset("SO", "VIR"), wfn.epsilon_b_subset("SO", "VIR")]
-        # orbital energy differences
-        self.Dia_a = None
-        # symmetry of vector
-        self.Gx = None
+        self.E_occ = [wfn.epsilon_a_subset("SO", "OCC"), wfn.epsilon_b_subset("SO", "OCC")]
+        self.E_vir = [wfn.epsilon_a_subset("SO", "VIR"), wfn.epsilon_b_subset("SO", "VIR")]
+        self.needs_K_like = self.wfn.functional().is_x_hybrid() or self.wfn.functional().is_x_lrc()
         self.occpi = [self.wfn.nalphapi(), self.wfn.nbetapi()]
         self.virpi = [self.wfn.nmopi() - self.occpi[0], self.wfn.nmopi() - self.occpi[1]]
         self.nsopi = self.wfn.nsopi()
-        self.func = wfn.functional()
-        self.reset_symmetry(0)
-        self.add_tol = add_tol
+        # orbital energy differences
+        self.prec = [None, None]
+        # ground state symmetry
+        self.G_gs = 0
+        for h in range(self.wfn.nirrep()):
+            for i in range(self.occpi[0][h] - self.occpi[1][h]):
+                self.G_gs = self.G_gs ^ h
+        # excited state symmetry
+        self.G_es = None
+        self.reset_for_state_symm(0)
 
     def new_vector(self, name=""):
         return [
-            core.Matrix(name + 'a', self.occpi[0], self.virpi[0], self.Gx),
-            core.Matrix(name + 'b', self.occpi[1], self.virpi[1], self.Gx)
+            core.Matrix(name + 'a', self.occpi[0], self.virpi[0], self.G_trans),
+            core.Matrix(name + 'b', self.occpi[1], self.virpi[1], self.G_trans)
         ]
 
-    def build_Dia(self):
-        """Rebuild the (Eps_a - Eps_i) matrix for the currently set Guess vector symmetry"""
-        self.Dia = self.new_vector("ei-ea ")
-        for h_i in range(self.wfn.nirrep()):
-            h_a = self.Gx ^ h_i
-            for i in range(self.occpi[0][h_i]):
-                for a in range(self.virpi[0][h_a]):
-                    self.Dia[0].nph[h_i][i, a] = self.ea[0].nph[h_a][a] - self.ei[0].nph[h_i][i]
-            for i in range(self.occpi[1][h_i]):
-                for a in range(self.virpi[1][h_a]):
-                    self.Dia[1].nph[h_i][i, a] = self.ea[1].nph[h_a][a] - self.ei[1].nph[h_i][i]
+    def reset_for_state_symm(self, symmetry):
+        self.G_es = symmetry
+        self._build_prec()
+        self.product_cache.reset()
 
-    def reset_symmetry(self, symmetry):
-        self.Gx = symmetry
-        self.build_Dia()
-
-    def combine_a_plus_b(self, twoel_parts, Fx):
+    def combine_H1_H2(self, Fx, Jx, Kx=None):
         """Combine Fx, Jx, Kx (if hybrid dft) to make (A+B)x products"""
-        nvec = len(Fx) // 2
-        Px = []
-        for i in range(nvec):
-            Px_a = Fx[2 * i].clone()
-            Px_b = Fx[2 * i + 1].clone()
-            if self.func.is_x_hybrid():
-                Jxi_a = twoel_parts[4 * i]
-                Jxi_b = twoel_parts[4 * i + 1]
-                Kxi_a = twoel_parts[4 * i + 2]
-                Kxi_b = twoel_parts[4 * i + 3]
+        H1X = []
+        H2X = []
+        if Kx is not None:
+            # H1X = Fx + 2Jx - Kx - Kx^T
+            # H2X = Fx - Kx + Kx^T
+            for Fxi, Jxi, Kxi in zip(Fx, Jx, Kx):
+                H1X_so = self.vector_scale(2.0, Jxi)
+                Kxit = self.vector_transpose(Kxi)
+                H1X_so = self.vector_axpy(-1.0, Kxi, H1X_so)
+                H1X_so = self.vector_axpy(-1.0, Kxit, H1X_so)
+                H1X.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(H1X_so)))
 
-                # (A+B)x[s] = Fx[s] + Co[s]^T(2.0Jx[s]+2.0Jx[s']-Kx[s]-Kx[s]^T)Cv[s]
-                Kxi_a_t = Kxi_a.transpose()
-                Kxi_a_t.scale(-1.0)
-                Kxi_a_t.axpy(-1.0, Kxi_a)
-                Kxi_a_t.axpy(2.0, Jxi_a)
-                Kxi_a_t.axpy(2.0, Jxi_b)
+                H2X_so = self.vector_axpy(-1.0, Kxi, Kxit)
+                H2X.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(H2X_so)))
+        else:
+            # H1X = Fx + 2Jx - Kx - Kx^T
+            # H2X = Fx - Kx + Kx^T
+            for Fxi, Jxi in zip(Fx, Jx):
+                H1X_so = self.vector_scale(2.0, Jxi)
+                H1X.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(H1X_so)))
+                H2X.append(self.vector_copy(Fxi))
 
-                Kxi_b_t = Kxi_b.transpose()
-                Kxi_b_t.scale(-1.0)
-                Kxi_b_t.axpy(-1.0, Kxi_b)
-                Kxi_b_t.axpy(2.0, Jxi_a)
-                Kxi_b_t.axpy(2.0, Jxi_b)
+        return H1X, H2X
 
-                Px_a.add(core.Matrix.triplet(self.Co[0], Kxi_a_t, self.Cv[0], True, False, False))
-                Px_b.add(core.Matrix.triplet(self.Co[1], Kxi_b_t, self.Cv[1], True, False, False))
-
-            else:
-                #(A+B)x[s] = Fx[s] + Co[s]^T(Jx[s] + Jx[s'])Cv[s]
-                Jxi_a = twoel_parts[2 * i]
-                Jxi_b = twoel_parts[2 * i + 1]
-                Jxi_a.scale(2.0)
-                Jxi_a.axpy(2.0, Jxi_b)
-                Px_a.add(core.Matrix.triplet(self.Co[0], Jxi_a, self.Cv[0], True, False, False))
-                Px_b.add(core.Matrix.triplet(self.Co[1], Jxi_a, self.Cv[1], True, False, False))
-            Px.append([Px_a, Px_b])
-        return Px
-
-    def combine_a_minus_b(self, twoel_parts, Fx):
-        """Combine Fx, Jx, Kx (if hybrid dft) to make (A-B)x products"""
-        nvec = len(Fx) // 2
-        Mx = []
-        for i in range(nvec):
-            Mx_a = Fx[2 * i].clone()
-            Mx_b = Fx[2 * i + 1].clone()
-            if self.func.is_x_hybrid():
-                # Jxi_a = twoel_parts[4*i]
-                # Jxi_b = twoel_parts[4*i+1]
-                Kxi_a = twoel_parts[4 * i + 2]
-                Kxi_b = twoel_parts[4 * i + 3]
-
-                Kxi_a_t = Kxi_a.transpose()
-                Kxi_a_t.axpy(-1.0, Kxi_a)
-
-                Kxi_b_t = Kxi_b.transpose()
-                Kxi_b_t.axpy(-1.0, Kxi_b)
-
-                Mx_a.add(core.Matrix.triplet(self.Co[0], Kxi_a_t, self.Cv[0], True, False, False))
-                Mx_b.add(core.Matrix.triplet(self.Co[1], Kxi_b_t, self.Cv[1], True, False, False))
-                # (A-B)x[s] = Fx[s] + Co[s]^T(Kx[s]^T-Kx[s])Cv[s]
-
-            else:
-                # (A-B)x[s] = Fx[s] (A-B is diagonal for non-hybrid DFT)
-                pass
-            Mx.append([Mx_a, Mx_b])
-        return Mx
-
-    def combine_a(self, twoel_parts, Fx):
-        """Combine Fx, Jx, Kx (if hybrid dft) to make Ax products"""
-        nvec = len(Fx) // 2
+    def combine_A(self, Fx, Jx, Kx):
         Ax = []
-        for i in range(nvec):
-            Ax_a = Fx[2 * i].clone()
-            Ax_b = Fx[2 * i + 1].clone()
-            if self.func.is_x_hybrid():
-                Jxi_a = twoel_parts[4 * i]
-                Jxi_b = twoel_parts[4 * i + 1]
-                Kxi_a = twoel_parts[4 * i + 2]
-                Kxi_b = twoel_parts[4 * i + 3]
-
-                # Ax[s] = Fx[s] + Co[s]^T(1.0Jx[s]+1.0Jx[s']-Kx[s])Cv[s]
-                Jxi_a.axpy(1.0, Jxi_b)
-                Jxi_b.copy(Jxi_a)
-
-                Jxi_a.axpy(-1.0, Kxi_a)
-                Jxi_b.axpy(-1.0, Kxi_b)
-
-                Ax_a.add(core.Matrix.triplet(self.Co[0], Jxi_a, self.Cv[0], True, False, False))
-                Ax_b.add(core.Matrix.triplet(self.Co[1], Jxi_b, self.Cv[1], True, False, False))
-
-            else:
-                Jxi_a = twoel_parts[2 * i]
-                Jxi_b = twoel_parts[2 * i + 1]
-                Jxi_a.axpy(1.0, Jxi_b)
-                Jxi_b.copy(Jxi_a)
-
-                # Ax[s] = Fx[s] + Co[s]^T(Jx[s]+Jx[s'])Cv[s]
-                Ax_a.add(core.Matrix.triplet(self.Co[0], Jxi_a, self.Cv[0], True, False, False))
-                Ax_b.add(core.Matrix.triplet(self.Co[1], Jxi_b, self.Cv[1], True, False, False))
-
-            Ax.append([Ax_a, Ax_b])
+        if Kx is not None:
+            # Ax = Fx + J - K
+            for Fxi, Jxi, Kxi in zip(Fx, Jx, Kx):
+                Ax_so = self.vector_axpy(-1.0, Kxi, Jxi)
+                Ax.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(Ax_so)))
+        else:
+            for Fxi, Jxi in zip(Fx, Jx):
+                Ax.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(Jxi)))
         return Ax
 
-    def compute_products(self, X):
+    def compute_products(self, vectors):
         """Compute Products for a list of guess vectors (X).
         if ptype == 'rpa':
+                           H1 ,   H2
            returns pair (A+B)X, (A-B)X products
         if ptype == 'tda':
            returns Ax products.
-        each element of return is a pair Product(X_a), Product(X_b)
         """
-        X_flat = []
-        for Xa, Xb in X:
-            X_flat.append(Xa)
-            X_flat.append(Xb)
-        Fx = self.wfn.onel_Hx(X_flat)
-        twoel_parts = self.wfn.twoel_Hx(X_flat, False, "SO")
-        if self.ptype == 'rpa':
-            Px = self.combine_a_plus_b(twoel_parts, Fx)
-            Mx = self.combine_a_minus_b(twoel_parts, Fx)
-            # onel/twoel return - of what we want
-            for Pxi_a, Pxi_b in Px:
-                Pxi_a.scale(-1.0)
-                Pxi_b.scale(-1.0)
-            for Mxi_a, Mxi_b in Mx:
-                Mxi_a.scale(-1.0)
-                Mxi_b.scale(-1.0)
-            return Px, Mx
+        n_old = self.product_cache.count()
+        n_new = len(vectors)
+        if n_new <= n_old:
+            self.product_cache.reset()
+            compute_vectors = vectors
         else:
-            Ax = self.combine_a(twoel_parts, Fx)
-            # onel/twoel return - of what we want
-            for Axi_a, Axi_b in Ax:
-                Axi_a.scale(-1.0)
-                Axi_b.scale(-1.0)
-            return Ax
+            compute_vectors = vectors[n_old:]
+        vec_flat = []
+        for vec_a, vec_b in compute_vectors:
+            vec_flat.append(vec_a)
+            vec_flat.append(vec_b)
+        Fx = self.pair_onel(self.wfn.onel_Hx(vec_flat))
+        twoel = self.wfn.twoel_Hx(vec_flat, False, "SO")
+        Jx, Kx = self.split_twoel(twoel)
+        if self.ptype == "rpa":
+            H1X_new, H2X_new = self.combine_H1_H2(Fx, Jx, Kx)
+            for H1x in H1X_new:
+                self.vector_scale(-1.0, H1x)
+            for H2x in H2X_new:
+                self.vector_scale(-1.0, H2x)
+            H1X_all = self.product_cache.add("H1", H1X_new)
+            H2X_all = self.product_cache.add("H2", H2X_new)
+            return H1X_all, H2X_all
+        else:
+            AX_new = self.combine_A(Fx, Jx, Kx)
+            for Ax in AX_new:
+                self.vector_scale(-1.0, Ax)
+            AX_all = self.product_cache.add("A", AX_new)
+            return AX_all
 
-    def precondition_residual(self, rvec, shift):
-        rva, rvb = rvec
-        denom_a, denom_b = self.new_vector("preconditioner")
-        denom_a.set(shift)
-        denom_b.set(shift)
-        denom_a.axpy(-1.0, self.Dia[0])
-        denom_b.axpy(-1.0, self.Dia[1])
-        rva.apply_denominator(denom_a)
-        rvb.apply_denominator(denom_b)
-        return rva, rvb
+    def so_to_mo(self, X):
+        return [core.Matrix.triplet(self.Co[i], X[i], self.Cv[i], True, False, False) for i in (0, 1)]
 
-    def approximate_eigvector(self, ax, ss_vector):
-        """Approximate the eigenvector of the real system:
+    def pair_onel(self, onel):
+        return list(zip(onel[0::2], onel[1::2]))
 
-        Parameters:
-        -----------
-        ax: list, of :py:class:`~psi4.core.Matrix(x_dim, x_sym)` length == 2*ss_dim (a/b pairs)
-          The matrix times guess vector products.
-        ss_vector: :py:class:`numpy.ndarray` {ss_dim}
-          Eigenvector of ss problem
+    def split_twoel(self, twoel):
+        if self.needs_K_like:
+            Jx = list(zip(twoel[0::4], twoel[1::4]))
+            Kx = list(zip(twoel[2::4], twoel[3::4]))
+        else:
+            Jx = list(zip(twoel[0::2], twoel[1::2]))
+            Kx = None
+        return Jx, Kx
 
-        Returns:
-        --------
-        pair of :py:class:`psi4.core.Matrix` (a/b pair)
-           The approximate eigenvector: $V_i \approx \sum_j A_{ij} x_j \tilde{V}_{ji}$
-        """
-        ret = self.new_vector("eigenvector")
-        for j in range(len(ss_vector)):
-            ax_a, ax_b = ax[j]
-            ret[0].axpy(ss_vector[j], ax_a)
-            ret[1].axpy(ss_vector[j], ax_b)
-        return ret
+    @property
+    def G_trans(self):
+        return self.G_gs ^ self.G_es
 
-    def error(self, x, ss_vector, ss_value):
-        """Compute the error piece of the residual expression:
-        $\Delta_{i} = \sum_{j} X_j \tilde{V}_{ji}\omega_i$
-        """
-        ret = self.new_vector("error")
-        c = ss_vector * ss_value
-        for j,(xa, xb) in enumerate(x):
-            ret[0].axpy(c[j], xa)
-            ret[1].axpy(c[j], xb)
-        return ret
+    def _build_prec(self):
+        self.prec = self.new_vector()
+        for h in range(self.wfn.nirrep()):
+            self.prec[0].nph[h][:] = self.E_vir[0].nph[h ^ self.G_trans] - self.E_occ[0].nph[h].reshape(-1, 1)
+            self.prec[1].nph[h][:] = self.E_vir[1].nph[h ^ self.G_trans] - self.E_occ[1].nph[h].reshape(-1, 1)
 
-    def orthogonalize_subspace(self, old_X, new_X):
-        X = old_X
-        while len(new_X) != 0:
-            new_a, new_b = new_X.pop()
-            for (oa, ob) in X:
-                dot = new_a.vector_dot(oa)
-                dot += new_b.vector_dot(ob)
-                new_a.axpy(-dot, oa)
-                new_b.axpy(-dot, ob)
-            norm = np.sqrt(new_a.vector_dot(new_a))
-            norm += np.sqrt(new_b.vector_dot(new_b))
-            if norm >= self.add_tol:
-                factor = 1.0 / norm
-                new_a.scale(factor)
-                new_b.scale(factor)
-                X.append([new_a, new_b])
-        return X, len(X)
+    def precondition(self, Rvec, shift):
+        for h in range(self.wfn.nirrep()):
+            den = [shift - self.prec[0].nph[h], shift - self.prec[1].nph[h]]
+            idx = np.where(den[0] < 0.0001)
+            den[0][idx] = 1.0
+            idx = np.where(den[1] < 0.0001)
+            den[1][idx] = 1.0
+            Rvec[0].nph[h][:] /= den[0]
+            Rvec[1].nph[h][:] /= den[1]
+        return Rvec
 
-    def vector_norm(self, v):
-        norm = np.sqrt(v[0].vector_dot(v[0]))
-        norm += np.sqrt(v[1].vector_dot(v[1]))
-        return norm
+    def generate_guess(self, nguess):
+        guess_vectors = []
+        deltas = []
+        for h in range(self.wfn.nirrep()):
+            for i, ei in enumerate(self.E_occ[0].nph[h]):
+                for a, ea in enumerate(self.E_vir[0].nph[h ^ G_trans]):
+                    deltas.append((ea - ei, 0, i, a, h))
+            for i, ei in enumerate(self.E_occ[1].nph[h]):
+                for a, ea in enumerate(self.E_vir[1].nph[h ^ G_trans]):
+                    deltas.append((ea - ei, 1, i, a, h))
 
-    def residual(self, V, x, ss_vector, ss_value):
-        ret = self.error(x, ss_vector, -ss_value)
-        ret[0].axpy(1.0, V[0])
-        ret[1].axpy(1.0, V[1])
-        return ret
-
-    def subspace_project(self, X, Ax):
-        A = np.zeros((len(X), len(X)))
-        for i, xi in enumerate(X):
-            for j, Axj in enumerate(Ax):
-                A[i, j] = xi[0].vector_dot(Axj[0])
-                A[i, j] += xi[1].vector_dot(Axj[1])
-        return A
+        deltas_sorted = sorted(deltas, key=lambda x: x[0])
+        for i in range(nguess):
+            v = self.new_vector()
+            spin = deltas_sorted[i][1]
+            oidx = deltas_sorted[i][2]
+            vidx = deltas_sorted[i][3]
+            h = deltas_sorted[i][4]
+            v[spin].set(h, oidx, vidx, 1.0)
+            guess_vectors.append(v)
+        return guess_vectors
