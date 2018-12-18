@@ -28,7 +28,6 @@
 
 #pragma once
 
-#include <iostream>
 #include <array>
 #include <string>
 #include <type_traits>
@@ -36,6 +35,8 @@
 
 #include <xtensor/xtensor.hpp>
 //#include <xtensor-blas/xlinalg.hpp>
+
+#include "psi4/libpsi4util/exception.h"
 
 #include "dimension.h"
 
@@ -98,49 +99,70 @@ class Tensor {
     using value_type = T;
     using Shape = std::array<size_t, Rank>;
 
-    /*! Labeled, blocked, rank-n CTOR
+    /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
      *  \param[in] label
      *  \param[in] blocks
      *  \param[in] axes_dimpi
+     *  \param[in] symmetry
      *
-     * FIXME Check that all axes_dimpi[ax].n() are the same
+     *  This is the only CTOR that does actual work. All other CTORs delegate to this one.
      */
     template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
-    explicit Tensor(const std::string& label, size_t blocks, const std::array<Dimension, Rank>& axes_dimpi)
-        : label_(label), axes_dimpi_(axes_dimpi), shapes_(blocks), store_(blocks) {
+    explicit Tensor(const std::string& label, size_t blocks, const std::array<Dimension, Rank>& axes_dimpi,
+                    unsigned int symmetry)
+        : symmetry_(symmetry), label_(label), axes_dimpi_(axes_dimpi), shapes_(blocks), store_(blocks) {
+        if (Rank > 1) {
+            auto ax0_n = axes_dimpi[0].n();
+            auto all_axes_have_same_size = std::all_of(std::begin(axes_dimpi), std::end(axes_dimpi),
+                                                       [ax0_n](const Dimension& dimpi) { return dimpi.n() == ax0_n; });
+            if (!all_axes_have_same_size) {
+                throw PsiException("In Tensor CTOR axes_dimpi do NOT have same size", __FILE__, __LINE__);
+            }
+        }
         for (int h = 0; h < store_.size(); ++h) {
-            for (int ax = 0; ax < Rank; ++ax) shapes_[h][ax] = axes_dimpi[ax][h];
+            shapes_[h][0] = axes_dimpi[0][h];
+            for (int ax = 1; ax < Rank; ++ax) shapes_[h][ax] = axes_dimpi[ax][h ^ symmetry];
             store_[h] = xt::zeros<T>(shapes_[h]);
         }
     }
+
+    /*! @{ Rank-n CTORs */
     /*! Labeled, 1-irrep, rank-n CTOR
      *  \param[in] label
      *  \param[in] axes_dimpi
      */
     template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor(const std::string& label, const std::array<Dimension, Rank>& axes_dimpi)
-        : Tensor(label, 1, axes_dimpi) {}
+        : Tensor(label, 1, axes_dimpi, 0) {}
+    /*! Unlabeled, blocked, symmetry-assigned rank-n CTOR
+     *  \param[in] blocks
+     *  \param[in] axes_dimpi
+     *  \param[in] symmetry
+     */
+    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
+    explicit Tensor(size_t blocks, const std::array<Dimension, Rank>& axes_dimpi, unsigned int symmetry)
+        : Tensor("", blocks, axes_dimpi, symmetry) {}
     /*! Unlabeled, blocked, rank-n CTOR
      *  \param[in] blocks
      *  \param[in] axes_dimpi
-     *
-     * FIXME Check that all axes_dimpi[ax].n() are the same
      */
     template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
-    explicit Tensor(size_t blocks, const std::array<Dimension, Rank>& axes_dimpi) : Tensor("", blocks, axes_dimpi) {}
+    explicit Tensor(size_t blocks, const std::array<Dimension, Rank>& axes_dimpi) : Tensor("", blocks, axes_dimpi, 0) {}
     /*! Unlabeled, 1-irrep, rank-n CTOR
      *  \param[in] axes_dimpi
      */
     template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
-    explicit Tensor(const std::array<Dimension, Rank>& axes_dimpi) : Tensor("", 1, axes_dimpi) {}
+    explicit Tensor(const std::array<Dimension, Rank>& axes_dimpi) : Tensor("", 1, axes_dimpi, 0) {}
+    /*! @}*/
 
+    /*! @{ Rank-1 CTORs */
     /*! Labeled, blocked, rank-1 CTOR
      *  \param[in] label
      *  \param[in] dimpi
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(const std::string& label, const Dimension& dimpi)
-        : Tensor(label, dimpi.n(), std::array<Dimension, Rank>{dimpi}) {}
+        : Tensor(label, dimpi.n(), std::array<Dimension, Rank>{dimpi}, 0) {}
     /*! Labeled, 1-irrep, rank-1 CTOR
      *  \param[in] label
      *  \param[in] dim
@@ -148,28 +170,38 @@ class Tensor {
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(const std::string& label, int dim)
-        : Tensor(label, 1, std::array<Dimension, Rank>{Dimension(std::vector<int>{dim})}) {}
+        : Tensor(label, 1, std::array<Dimension, Rank>{Dimension(std::vector<int>{dim})}, 0) {}
     /*! Unlabeled, blocked, rank-1 CTOR
      *  \param[in] dimpi
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    explicit Tensor(const Dimension& dimpi) : Tensor("", dimpi.n(), std::array<Dimension, Rank>{dimpi}) {}
+    explicit Tensor(const Dimension& dimpi) : Tensor("", dimpi.n(), std::array<Dimension, Rank>{dimpi}, 0) {}
     /*! Unlabeled, 1-irrep, rank-1 CTOR
      *  \param[in] dim
      * FIXME int vs. size_t in this CTOR
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    explicit Tensor(int dim) : Tensor("", 1, std::array<Dimension, Rank>{Dimension(std::vector<int>{dim})}) {}
+    explicit Tensor(int dim) : Tensor("", 1, std::array<Dimension, Rank>{Dimension(std::vector<int>{dim})}, 0) {}
+    /*! @}*/
 
+    /*! @{ Rank-2 CTORs */
+    /*! Labeled, blocked, symmetry-assigned, rank-2 CTOR
+     *  \param[in] label
+     *  \param[in] rowspi
+     *  \param[in] colspi
+     *  \param[in] symmetry
+     */
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
+    explicit Tensor(const std::string& label, const Dimension& rowspi, const Dimension& colspi, unsigned int symmetry)
+        : Tensor(label, rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, symmetry) {}
     /*! Labeled, blocked, rank-2 CTOR
      *  \param[in] label
      *  \param[in] rowspi
      *  \param[in] colspi
-     * FIXME Check that rowspi.n() == colspi.n()
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const std::string& label, const Dimension& rowspi, const Dimension& colspi)
-        : Tensor(label, rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}) {}
+        : Tensor(label, rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, 0) {}
     /*! Labeled 1-irrep rank-2 CTOR
      *  \param[in] label
      *  \param[in] rows
@@ -179,15 +211,23 @@ class Tensor {
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const std::string& label, int rows, int cols)
         : Tensor(label, 1,
-                 std::array<Dimension, Rank>{Dimension(std::vector<int>{rows}), Dimension(std::vector<int>{cols})}) {}
+                 std::array<Dimension, Rank>{Dimension(std::vector<int>{rows}), Dimension(std::vector<int>{cols})}, 0) {
+    }
+    /*! Unlabeled, blocked, symmetry-assigned rank-2 CTOR
+     *  \param[in] rowspi
+     *  \param[in] colspi
+     *  \param[in] symmetry
+     */
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
+    explicit Tensor(const Dimension& rowspi, const Dimension& colspi, unsigned int symmetry)
+        : Tensor("", rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, symmetry) {}
     /*! Unlabeled blocked rank-2 CTOR
      *  \param[in] rowspi
      *  \param[in] colspi
-     * FIXME Check that rowspi.n() == colspi.n()
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const Dimension& rowspi, const Dimension& colspi)
-        : Tensor("", rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}) {}
+        : Tensor("", rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, 0) {}
     /*! Unlabeled 1-irrep rank-2 CTOR
      *  \param[in] rows
      *  \param[in] cols
@@ -196,18 +236,26 @@ class Tensor {
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(int rows, int cols)
         : Tensor("", 1,
-                 std::array<Dimension, Rank>{Dimension(std::vector<int>{rows}), Dimension(std::vector<int>{cols})}) {}
+                 std::array<Dimension, Rank>{Dimension(std::vector<int>{rows}), Dimension(std::vector<int>{cols})}, 0) {
+    }
+    /*! @}*/
 
+    /*! Return dimension of tensor */
     size_t dim() const {
         return std::accumulate(std::begin(store_), std::end(store_), 0,
                                [](size_t s, auto& b) { return (s + b.size()); });
     }
 
+    /*! Return number of irreducible representations */
     size_t nirrep() const { return store_.size(); }
-    Shape nph(size_t h = 0) const { return shapes_.at(h); }
+    /*! Return shapes of blocks */
+    const std::vector<Shape>& nph() const { return shapes_; }
 
     std::string label() const { return label_; }
     void set_label(const std::string& label) { label_ = label; }
+
+    unsigned int symmetry() const { return symmetry_; }
+    void set_symmetry(unsigned int s) { symmetry_ = s; }
 
     /*! Returns Dimension object for given axis
      * \param[in] ax
@@ -225,11 +273,25 @@ class Tensor {
     const Dimension& rowspi() const {
         return axes_dimpi_[0];
     }
+    /*! Returns the number of rows in given irrep
+     *  \param[in] h
+     */
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
+    size_t rows(size_t h = 0) const {
+        return axes_dimpi_[0][h];
+    }
 
     /// Returns the dimension array for the rows of a rank-2 tensor aka a matrix
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     const Dimension& colspi() const {
         return axes_dimpi_[1];
+    }
+    /*! Returns the number of columns in given irrep
+     *  \param[in] h
+     */
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
+    size_t cols(size_t h = 0) const {
+        return axes_dimpi_[1][h];
     }
 
     /*! Returns pointer to given irrep
@@ -239,6 +301,7 @@ class Tensor {
     const T* data(size_t h = 0) const { return store_.at(h).data(); }
 
    protected:
+    unsigned int symmetry_{0};
     std::string label_;
     std::array<Dimension, Rank> axes_dimpi_{};
     std::vector<Shape> shapes_{};
