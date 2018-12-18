@@ -53,7 +53,7 @@
 namespace psi {
 namespace cctriples {
 
-struct thread_data {
+struct EaT_RHF_thread_data {
     dpdfile2 *fIJ;
     dpdfile2 *fAB;
     dpdfile2 *fIA;
@@ -71,7 +71,7 @@ struct thread_data {
     int last_ijk;
 };
 
-void EaT_RHF_thread(thread_data *);
+void EaT_RHF_thread(EaT_RHF_thread_data *);
 
 double EaT_RHF() {
     int i, j, k, I, J, K, Gi, Gj, Gk, h, nirreps, cnt;
@@ -91,7 +91,7 @@ double EaT_RHF() {
     vir_off = moinfo.vir_off;
 
     nthreads = params.nthreads;
-    std::vector<thread_data> thread_data_array(nthreads);
+    std::vector<EaT_RHF_thread_data> thread_data_array(nthreads);
 
 #ifdef USING_LAPACK_MKL
     int old_threads = mkl_get_max_threads();
@@ -266,7 +266,7 @@ double EaT_RHF() {
     return ET;
 }
 
-void EaT_RHF_thread(thread_data *data) {
+void EaT_RHF_thread(EaT_RHF_thread_data *data) {
     int h, nirreps, cnt_ijk;
     int Gp, p, nump;
     int nrows, ncols, nlinks;
