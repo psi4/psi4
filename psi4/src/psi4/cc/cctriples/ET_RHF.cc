@@ -53,7 +53,7 @@
 namespace psi {
 namespace cctriples {
 
-struct thread_data {
+struct ET_RHF_thread_data {
     dpdfile2 *fIJ;
     dpdfile2 *fAB;
     dpdfile2 *fIA;
@@ -70,7 +70,7 @@ struct thread_data {
     int last_ijk;
 };
 
-void ET_RHF_thread(thread_data *);
+void ET_RHF_thread(ET_RHF_thread_data *);
 
 double ET_RHF() {
     int i, j, k, I, J, K, Gi, Gj, Gk, h, nirreps, cnt;
@@ -122,7 +122,7 @@ double ET_RHF() {
     outfile->Printf("    MKL num_threads set to 1 for explicit threading.\n\n");
 #endif
 
-    std::vector<thread_data> thread_data_array(nthreads);
+    std::vector<ET_RHF_thread_data> thread_data_array(nthreads);
 
     global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -283,7 +283,7 @@ double ET_RHF() {
     return ET;
 }
 
-void ET_RHF_thread(thread_data *data) {
+void ET_RHF_thread(ET_RHF_thread_data *data) {
     int h, nirreps, cnt_ijk;
     int Gp, p, nump;
     int nrows, ncols, nlinks;
