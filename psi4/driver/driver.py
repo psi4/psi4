@@ -141,6 +141,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
           A string specifying the method to be used for the computation.
        molecule: psi4.core.molecule or qcdb.molecule
           The molecule for the computation. All processing is handled internally.
+          molecule must not be modified!
        displacement : dict
           A dictionary containing the necessary information for the displacement.
           See driver_findif/_geom_generator.py docstring for details.
