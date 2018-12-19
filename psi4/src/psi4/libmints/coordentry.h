@@ -291,6 +291,7 @@ class CartesianEntry : public CoordEntry {
         std::shared_ptr<CoordEntry> temp =
             std::make_shared<CartesianEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, x_->clone(map),
                                              y_->clone(map), z_->clone(map), basissets_, shells_);
+        if (computed_) temp->compute(); // The constructor sets the coords we want, so this just sets computed_.
         return temp;
     }
 };
