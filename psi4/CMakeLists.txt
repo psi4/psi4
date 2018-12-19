@@ -199,6 +199,7 @@ find_package(xtensor-python 0.21.0 CONFIG REQUIRED)
 get_property(_loc TARGET xtensor-python PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor-python${ColourReset}: ${_loc} (version ${xtensor-python_VERSION})")
+find_package(NumPy REQUIRED)
 
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)

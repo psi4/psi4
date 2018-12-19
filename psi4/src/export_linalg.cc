@@ -30,10 +30,14 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
+#include <pybind11/operators.h>
 
 #include <functional>
 #include <string>
 #include <vector>
+
+#define FORCE_IMPORT_ARRAY              // numpy C api loading
+#include "xtensor-python/pytensor.hpp"  // Numpy bindings
 
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/linalg.h"
@@ -45,32 +49,6 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace {
-template <size_t Rank>
-std::string class_name(std::string suffix) {
-    return "Tensor" + std::to_string(Rank) + "_" + suffix;
-}
-
-template <>
-std::string class_name<1>(std::string suffix) {
-    return "NewVector_" + suffix;
-}
-
-template <>
-std::string class_name<2>(std::string suffix) {
-    return "NewMatrix_" + suffix;
-}
-
-template <typename T>
-std::string suffix() {
-    if (std::is_same<T, float>::value) {
-        return "F";
-    } else if (std::is_same<T, double>::value) {
-        return "D";
-    } else if (std::is_same<T, int>::value) {
-        return "I";
-    }
-}
-
 struct Rank1Decorator final {
     template <typename PyClass>
     void operator()(PyClass& cls, const std::string& /* name */) const {
@@ -130,7 +108,7 @@ struct DeclareTensor final {
     using SpecialBinder = std::function<void(PyClass&, const std::string&)>;
 
     static void bind_tensor(py::module& mod, const SpecialBinder& decorate) {
-        std::string name = class_name<Rank>(suffix<T>());
+        std::string name = Class::pyClassName();
 
         PyClass cls(mod, name.c_str());
 
@@ -138,10 +116,15 @@ struct DeclareTensor final {
         cls.def_property_readonly("nirrep", &Class::nirrep, "Number of irreps");
         cls.def_property("label", &Class::label, &Class::set_label, ("The label of the " + name).c_str());
         cls.def("axes_dimpi", &Class::axes_dimpi, "Returns the Dimension object for given axis", "axis"_a);
-        cls.def_property_readonly("nph", [](const Class& obj) { return obj.nph(); }, py ::return_value_policy::copy,
-                                  "Shapes of blocks");
-        cls.def_property("symmetry", &Class::symmetry, &Class::set_symmetry,
-                                  ("The symmetry of " + name).c_str());
+        cls.def_property_readonly("shapes", [](const Class& obj) { return obj.shapes(); },
+                                  py ::return_value_policy::copy, "Shapes of blocks");
+        cls.def("nph", py::overload_cast<size_t>(&Class::block), "Return block at given irrep", "h"_a = 0,
+                py::return_value_policy::reference_internal);
+        cls.def_property("symmetry", &Class::symmetry, &Class::set_symmetry, ("The symmetry of " + name).c_str());
+
+        cls.def("__repr__", &Class::repr);
+        cls.def("__str__", &Class::str);
+        cls.def("__format__", &Class::format, "extra"_a = "");
 
         // Rank-dependent bindings, e.g. CTORs
         decorate(cls, name);
@@ -150,6 +133,7 @@ struct DeclareTensor final {
 }  // namespace
 
 void export_linalg(py::module& mod) {
+    xt::import_numpy();
     // Rank-1 tensor, aka blocked vector
     auto decorate_v = Rank1Decorator();
     DeclareTensor<float, 1>::bind_tensor(mod, decorate_v);

@@ -40,6 +40,11 @@ set_target_properties(core
     VISIBILITY_INLINES_HIDDEN 1
   )
 
+target_include_directories(core
+  PRIVATE
+    ${NUMPY_INCLUDE_DIRS}
+  )
+
 get_property(psi4_binmodules GLOBAL PROPERTY LINKBINLIST)
 get_property(psi4_libmodules GLOBAL PROPERTY LINKLIBLIST)
 target_link_libraries(core
@@ -50,6 +55,7 @@ target_link_libraries(core
     ${POST_LIBRARY_OPTION}
     ${LIBC_INTERJECT}
     xtensor
+    xtensor-python
     tgt::lapack # OpenMP flags to core.cc
   )
 

@@ -34,6 +34,7 @@
 #include <vector>
 
 #include <xtensor/xtensor.hpp>
+#include <xtensor/xio.hpp>
 //#include <xtensor-blas/xlinalg.hpp>
 
 #include "psi4/libpsi4util/exception.h"
@@ -71,6 +72,65 @@ struct is_rank2 : std::integral_constant<bool, std::is_same<std::integral_consta
 // Note for posterity this can be declared inline in C++17
 template <size_t Rank>
 constexpr bool is_rank2_v = is_rank2<Rank>::value;
+
+template <size_t Rank>
+struct is_rankn : std::integral_constant<bool, !is_rank1_v<Rank> || !is_rank2_v<Rank>> {};
+
+// Note for posterity this can be declared inline in C++17
+template <size_t Rank>
+constexpr bool is_rankn_v = is_rankn<Rank>::value;
+
+template <size_t Rank>
+std::string class_name() {
+    return "Tensor" + std::to_string(Rank);
+}
+
+template <>
+std::string class_name<1>() {
+    return "Vector";
+}
+
+template <>
+std::string class_name<2>() {
+    return "Matrix";
+}
+
+template <typename T>
+struct Type2String final {
+    static std::string full() {}
+    static std::string suffix() {}
+};
+
+template <>
+struct Type2String<int> final {
+    static std::string full() { return "int"; }
+    static std::string suffix() { return "I"; }
+};
+
+template <>
+struct Type2String<float> final {
+    static std::string full() { return "float"; }
+    static std::string suffix() { return "F"; }
+};
+
+template <>
+struct Type2String<double> final {
+    static std::string full() { return "double"; }
+    static std::string suffix() { return "D"; }
+};
+
+template <size_t Rank>
+std::string print_shape(const std::array<size_t, Rank>& shape) {
+    std::ostringstream retval;
+    retval << "{";
+    std::string sep;
+    for (const auto& s : shape) {
+        retval << sep << s;
+        sep = ", ";
+    }
+    retval << "}";
+    return retval.str();
+}
 }  // namespace detail
 
 /*! Basic linear algebra storage object
@@ -98,6 +158,12 @@ class Tensor {
     /*! Access arithmetic type of Tensor as Tensor<T, Rank>::value_type */
     using value_type = T;
     using Shape = std::array<size_t, Rank>;
+    /*! C++ string representation of type */
+    static std::string cxxClassName() {
+        return detail::class_name<Rank>() + "<" + detail::Type2String<T>::full() + ">";
+    }
+    /*! Python string representation of type */
+    static std::string pyClassName() { return detail::class_name<Rank>() + "_" + detail::Type2String<T>::suffix(); }
 
     /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
      *  \param[in] label
@@ -248,8 +314,22 @@ class Tensor {
 
     /*! Return number of irreducible representations */
     size_t nirrep() const { return store_.size(); }
+
     /*! Return shapes of blocks */
-    const std::vector<Shape>& nph() const { return shapes_; }
+    const std::vector<Shape>& shapes() const { return shapes_; }
+
+    /*! Return block at given irrep
+     *  \param[in] h
+     */
+    const Storage<T, Rank>& block(size_t h = 0) const { return store_[h]; }
+    /*! Return block at given irrep
+     *  \param[in] h
+     */
+    Storage<T, Rank>& block(size_t h = 0) { return store_[h]; }
+    /*! Set block at given irrep
+     *  \param[in] h
+     */
+    void set_block(const Storage<T, Rank>& block, size_t h) { store_[h] = block; }
 
     std::string label() const { return label_; }
     void set_label(const std::string& label) { label_ = label; }
@@ -299,6 +379,34 @@ class Tensor {
      */
     T* data(size_t h = 0) { return store_.at(h).data(); }
     const T* data(size_t h = 0) const { return store_.at(h).data(); }
+
+    std::string repr() const { return cxxClassName(); }
+
+    std::string str() const { return format(cxxClassName()); }
+
+    /*! Tensor formatter
+     *  \param[in] extra
+     * TODO Generalise to any rank
+     */
+    std::string format(const std::string extra = "") const {
+        std::ostringstream retval;
+        // Title and stuff
+        if (!label_.empty()) {
+            retval << "  ## " << label_ << " " << extra << " (Symmetry " << symmetry_ << ") ##\n" << std::endl;
+        }
+        // Blocks
+        for (size_t h = 0; h < store_.size(); ++h) {
+            retval << "  Irrep: " << h + 1 << " Shape: " << detail::print_shape(store_[h].shape()) << std::endl;
+            if (store_[h].size() == 0) {
+                retval << "    (empty)" << std::endl;
+            } else {
+                retval << xt::print_options::line_width(120) << xt::print_options::precision(14) << store_[h]
+                       << std::endl;
+            }
+            retval << std::endl;
+        }
+        return retval.str();
+    }
 
    protected:
     unsigned int symmetry_{0};
