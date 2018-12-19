@@ -55,7 +55,7 @@ def name_dft_test(val):
 @pytest.mark.dft
 @pytest.mark.parametrize("func,expected,basis", [
     pytest.param(          'PWB6K',    0.4535664415, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(         'PW6B95',    0.4566580191, '6-31G', marks=pytest.mark.quick),  # Q-Chem
+    pytest.param(         'PW6B95',    0.4566580191, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-D',    0.4575912358, '6-31G', marks=pytest.mark.quick),  # Q-Chem
     pytest.param(        'revTPSS',    0.4499706673, '6-31G', marks=pytest.mark.quick),  # Q-Chem
     pytest.param(           'TPSS',    0.4510368445, '6-31G'),  # Q-Chem
@@ -139,8 +139,8 @@ def name_dft_test(val):
     pytest.param(           'VSXC',    0.4547894146, '6-31G'),  # Q-Chem
     pytest.param(      'CAM-B3LYP',    0.4568003604, '6-31G'),  # Q-Chem
     pytest.param(           'VV10',    0.4551366594, '6-31G'),  # Q-Chem
-    pytest.param(         'B97M-V',    0.4561660762, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(        'LC-VV10',    0.4556872545, '6-31G', marks=pytest.mark.quick),  # Q-Chem
+    pytest.param(         'B97M-V',    0.4561660762, '6-31G'),  # Q-Chem
+    pytest.param(        'LC-VV10',    0.4556872545, '6-31G'),  # Q-Chem
     pytest.param(        'wB97M-V',    0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-V',    0.455302602,  '6-31G'),  # Q-Chem
 ], ids=name_dft_test)
