@@ -55,7 +55,7 @@ def name_dft_test(val):
 @pytest.mark.dft
 @pytest.mark.parametrize("func,expected,basis", [
     pytest.param(          'PWB6K',    0.4535664415, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(         'PW6B95',    0.4566580191, '6-31G', marks=pytest.mark.quick),  # Q-Chem
+    pytest.param(         'PW6B95',    0.4566580191, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-D',    0.4575912358, '6-31G', marks=pytest.mark.quick),  # Q-Chem
     pytest.param(        'revTPSS',    0.4499706673, '6-31G', marks=pytest.mark.quick),  # Q-Chem
     pytest.param(           'TPSS',    0.4510368445, '6-31G'),  # Q-Chem
@@ -109,7 +109,7 @@ def name_dft_test(val):
     pytest.param(            'PBE',    0.4552076767, '6-31G'),  # Q-Chem
     pytest.param(         'MPWB1K',    0.4525753564, '6-31G'),  # Q-Chem
     pytest.param(          'B97-K',    0.4498949296, '6-31G'),  # Q-Chem
-    pytest.param(            'B97',    0.4555394941, '6-31G'),  # Q-Chem
+    pytest.param(          'B97-0',    0.4555394941, '6-31G'),  # Q-Chem
     pytest.param(         'B1PW91',    0.4538643591, '6-31G'),  # Q-Chem
     pytest.param(           'EDF2',    0.457161542,  '6-31G'),  # Q-Chem
     pytest.param(          'B97-2',    0.4562077948, '6-31G'),  # Q-Chem
@@ -139,8 +139,8 @@ def name_dft_test(val):
     pytest.param(           'VSXC',    0.4547894146, '6-31G'),  # Q-Chem
     pytest.param(      'CAM-B3LYP',    0.4568003604, '6-31G'),  # Q-Chem
     pytest.param(           'VV10',    0.4551366594, '6-31G'),  # Q-Chem
-    pytest.param(         'B97M-V',    0.4561660762, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(        'LC-VV10',    0.4556872545, '6-31G', marks=pytest.mark.quick),  # Q-Chem
+    pytest.param(         'B97M-V',    0.4561660762, '6-31G'),  # Q-Chem
+    pytest.param(        'LC-VV10',    0.4556872545, '6-31G'),  # Q-Chem
     pytest.param(        'wB97M-V',    0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-V',    0.455302602,  '6-31G'),  # Q-Chem
 ], ids=name_dft_test)
@@ -211,7 +211,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(       'BP86',  -0.0138889593, '6-31G'),  # Q-Chem
     pytest.param(       'PBE0',  -0.0149591069, '6-31G'),  # Q-Chem
     pytest.param(       'BLYP',  -0.0142958198, '6-31G'),  # Q-Chem
-    pytest.param(        'B97',  -0.0139591073, '6-31G'),  # Q-Chem
+    pytest.param(      'B97-0',  -0.0139591073, '6-31G'),  # Q-Chem
     pytest.param(      'X3LYP',  -0.0151870467, '6-31G'),  # Q-Chem
     pytest.param(      'B97-1',  -0.0146773380, '6-31G'),  # Q-Chem
     pytest.param(   'revTPSSh',  -0.0139563411, '6-31G'),  # Q-Chem
