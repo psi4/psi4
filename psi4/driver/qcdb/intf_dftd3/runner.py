@@ -365,20 +365,27 @@ def dftd3_harvest(jobrec, dftd3rec):
 def dftd3_coeff_formatter(dashlvl, dashcoeff):
     """Return strings for DFTD3 program parameter file.
 
-             s6 rs6 s18    rs8     alpha6      version
-             -------------------------------------------
-    d2:      s6 sr6 s8=0.0 a2=None alpha6      version=2
-    d3zero:  s6 sr6 s8     a2=sr8  alpha6      version=3
-    d3bj:    s6 a1  s8     a2      alpha6=None version=4
-    d3mzero: s6 sr6 s8     beta    alpha6=14.0 version=5
-    d3mbj:   s6 a1  s8     a2      alpha6=None version=6
+             s6      rs6      s18     rs8     alpha6      version
+             ------------------------------------------------------
+    d2:      s6      sr6      s8=0.0  a2=None alpha6      version=2
+    d3zero:  s6      sr6      s8      a2=sr8  alpha6      version=3
+    d3bj:    s6      a1       s8      a2      alpha6=None version=4
+    d3mzero: s6      sr6      s8      beta    alpha6=14.0 version=5
+    d3mbj:   s6      a1       s8      a2      alpha6=None version=6
+    atmgr:   s6=None sr6=None s8=None a2=None alpha6     version=3
 
     Parameters
     ----------
-    dashlvl : {'d2', 'd3zero', d3bj', 'd3mzero', 'd3mbj'}
+    dashlvl : {'d2', 'd3zero', d3bj', 'd3mzero', 'd3mbj', 'atmgr'}
         Level of dispersion correction.
     dashcoeff : dict
         Dictionary fully specifying non-fixed parameters (table above) for `dashlvl` to drive DFTD3.
+
+    Notes
+    -----
+    The `atmgr` dashlvl is intended for use only to get the three-body Axilrod-Teller-Muto
+    three body dispersion correction; therefore, dummy parameters are passed for two-body damping
+    function, and will give garbage for two-body component of dispersion correction.
 
     Returns
     -------
@@ -400,6 +407,9 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
         return dashformatter.format(dashcoeff['s6'], dashcoeff['sr6'], dashcoeff['s8'], dashcoeff['beta'], 14.0, 5)
     elif dashlvl == 'd3mbj':
         return dashformatter.format(dashcoeff['s6'], dashcoeff['a1'], dashcoeff['s8'], dashcoeff['a2'], 0.0, 6)
+    elif dashlvl == 'atmgr':
+        # Need to set first four parameters to something other than None, otherwise Grimme is mad
+        return dashformatter.format(1.0, 2.0, 3.0, 4.0, dashcoeff['alpha6'], 3)
     else:
         raise ValidationError(
             """-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))

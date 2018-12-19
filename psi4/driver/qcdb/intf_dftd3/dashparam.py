@@ -383,6 +383,17 @@ dashcoeff = {
         'definitions' : {
         }
     },
+    'atmgr': {
+        'formal'      : "ATM-Grimme",
+        'alias'       : [],
+        'description' : "    Grimme approximate Axilrod-Teller-Muto 3-body Dispersion Correction",
+        'citation'    : "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n",
+        'bibtex'      : "Grimme:2010:154104",
+        'default'     : collections.OrderedDict([("alpha6", 14.0)]),
+        'definitions' : {
+            'pbe'         : {'params': {'alpha6': 14.0}}, # alpha6 = 14 => damping parameter used is alp8 = 16
+        }
+    },
 } # yapf: disable
 
 
