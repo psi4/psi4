@@ -250,7 +250,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
         Default is ``MULLIKEN_CHARGES``
     """
-    
+
     kwargs = p4util.kwargs_lower(kwargs)
     if kwargs.get('levels', False):
         return driver_nbody_helper.multi_level(func, **kwargs)
@@ -813,22 +813,6 @@ class NBodyComputer(BaseTask):
     task_list: Dict[str, Any] = {}
     results_list: Dict[str, Any] = {}
     compute_dict: Dict[str, Any] = {}
-
-    def __init__(self, **data):
-        BaseTask.__init__(self, **data)
-
-        self.max_frag = self.molecule.nfragments()
-        if self.max_nbody == -1:
-            self.max_nbody = self.molecule.nfragments()
-        else:
-            self.max_nbody = min(self.max_nbody, self.max_frag)
-
-        if not self.return_total_data:
-            if self.embedding_charges or self.charge_method:
-                raise Exception('Cannot return interaction data when using embedding scheme.')
-
-    #     # Get compute list
-        self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
 
     def __init__(self, **data):
 
