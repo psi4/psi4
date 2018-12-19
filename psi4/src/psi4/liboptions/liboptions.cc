@@ -488,6 +488,9 @@ Options& Options::operator=(const Options& rhs) {
 
     locals_ = rhs.locals_;
     globals_ = rhs.globals_;
+    edit_globals_ = rhs.edit_globals_;
+    all_local_options_ = rhs.all_local_options_;
+    current_module_ = rhs.current_module_;
 
     return *this;
 }
