@@ -129,7 +129,7 @@ for functional_name in dict_functionals:
             dashcoeff_supplement[disp['type']]['definitions'][formal] = disp
             # generate dispersion aliases for every functional alias
             for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
-                if resolved_dispersion_level.lower() == disp["type"]:
+                if resolved_dispersion_level == disp["type"]:
                     alias = formal.replace(disp["type"], nominal_dispersion_level.lower())
                     if alias not in functionals:
                         dashcoeff_supplement[disp['type']]['definitions'][formal] = disp
