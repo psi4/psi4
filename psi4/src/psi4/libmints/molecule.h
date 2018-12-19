@@ -217,6 +217,8 @@ class PSI_API Molecule {
      * \param charge charge to use if non standard
      * \param lbl extended atomic symbol
      * \param A mass number
+     *
+     * add_atom is for Cartesians with NumberValue coordinates. Use add_unsettled_atom otherwise (ZMAT, VariableValue).
      */
     void add_atom(double Z, double x, double y, double z, std::string sym = "", double mass = 0.0, double charge = 0.0,
                   std::string lbl = "", int A = -1);
