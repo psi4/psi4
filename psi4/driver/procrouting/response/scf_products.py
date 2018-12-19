@@ -300,7 +300,7 @@ class TDRSCFEngine(SingleMatPerVector):
         guess_vectors = []
         for h in range(self.wfn.nirrep()):
             for i, ei in enumerate(self.E_occ.nph[h]):
-                for a, ei in enumerate(self.E_vir.nph[h ^ G_trans]):
+                for a, ei in enumerate(self.E_vir.nph[h ^ self.G_trans]):
                     deltas.append((ea - ei, i, a, h))
         deltas_sorted = sorted(deltas, key=lambda x: x[0])
         for i in range(nguess):
@@ -468,10 +468,10 @@ class TDUSCFEngine(PairedMatPerVector):
         deltas = []
         for h in range(self.wfn.nirrep()):
             for i, ei in enumerate(self.E_occ[0].nph[h]):
-                for a, ea in enumerate(self.E_vir[0].nph[h ^ G_trans]):
+                for a, ea in enumerate(self.E_vir[0].nph[h ^ self.G_trans]):
                     deltas.append((ea - ei, 0, i, a, h))
             for i, ei in enumerate(self.E_occ[1].nph[h]):
-                for a, ea in enumerate(self.E_vir[1].nph[h ^ G_trans]):
+                for a, ea in enumerate(self.E_vir[1].nph[h ^ self.G_trans]):
                     deltas.append((ea - ei, 1, i, a, h))
 
         deltas_sorted = sorted(deltas, key=lambda x: x[0])

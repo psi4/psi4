@@ -310,6 +310,7 @@ class DIIS(object):
 
 
 def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, e_tol, r_tol, maxiter, verbose=1):
+    """Print a message to the output file when the solver has processed all options and is ready to begin"""
     if verbose < 1:
         # no printing
         return
@@ -333,11 +334,11 @@ def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, e_tol, r_t
         core.print_out("  {}           {}      {}\n".format(" " * len(solver_name), "Max[D[value]]", "Max[|R|]"))
     else:
         # verbose printing, value, delta, and |R| for each root
-        core.print_out("  {}           {}      {}      {}\n".format(" " * len(solver_name), "value", "D[value]",
-                                                                    "|R|"))
+        core.print_out("    {}       {}      {}      {}\n".format(" " * len(solver_name), "value", "D[value]", "|R|"))
 
 
 def _diag_print_info(solver_name, info, verbose=1):
+    """Print a message to the output file at each iteration"""
     if verbose < 1:
         # no printing
         return
@@ -359,8 +360,9 @@ def _diag_print_info(solver_name, info, verbose=1):
         # print iter / ssdim folowed by de/|R| for each root
         core.print_out("  {name} iter {ni:3d}: {nv:4d} guess vectors\n".format(
             name=solver_name, ni=info['count'], nv=info['nvec']))
-        for i, (e, de, rn) in enumerate(zip(info['val'], infp['delta_val'], info['res_norm'])):
-            core.print_out("     {nr:2d}: {e:-11.5f} {de:-11.5e} {rn:12.5e}\n".format(nr=i + 1, e=e, rn=rn))
+        for i, (e, de, rn) in enumerate(zip(info['val'], info['delta_val'], info['res_norm'])):
+            core.print_out("     {nr:2d}: {s:} {e:-11.5f} {de:-11.5e} {rn:12.5e}\n".format(
+                nr=i + 1, s=" " * (len(solver_name) - 8), e=e, de=de, rn=rn))
         if info['done']:
             core.print_out("  Solver Converged! all roots\n\n")
         elif info['collapse']:
@@ -368,6 +370,7 @@ def _diag_print_info(solver_name, info, verbose=1):
 
 
 def _diag_print_converged(solver_name, stats, vals, verbose=1, **kwargs):
+    """Print a message to the output file when the solver is converged."""
     if verbose < 1:
         # no printing
         return
@@ -382,6 +385,28 @@ def _diag_print_converged(solver_name, stats, vals, verbose=1, **kwargs):
 
 
 def _gs_orth(engine, old_vecs, new_vec, thresh):
+    """Perform GS orthonormalization of new_vec against some set old_vecs
+    Parameters
+    ----------
+    engine : object
+       The engine passed to the solver, required to define vector algebraic operations needed
+    old_vecs : list of `vector`
+       A set of orthonormal vectors, can be empty so that a set of vectors can be build via successive calls
+    new_vec : single `vector`
+       The vector to orthonormalize against old_vecs
+    thresh : float
+       If the orthogonalized vector has a norm smaller than this value it is considered LD to the set
+
+    Returns
+    -------
+    new : single `vector` (if norm > thresh)
+       new_vec after all components from old_vec have been projected out and the result normalized
+    None: if (norm < thresh)
+       When the final vector has norm smaller than thresh and should be discarded, none is returned.
+
+    ..note:: Since discarded vectors are returned as None, when appending to a set with successive calls to the this function
+    the caller should check the return before appending.
+    """
     for old in old_vecs:
         dot = engine.vector_dot(old, new_vec)
         new_vec = engine.vector_axpy(-1.0 * dot, old, new_vec)
@@ -394,15 +419,34 @@ def _gs_orth(engine, old_vecs, new_vec, thresh):
         return None
 
 
-def _collapse_guess_space(engine, ss_vectors, basis_vectors):
-    l, nroot = ss_vectors.shape
+def _best_vectors(engine, ss_vectors, basis_vectors):
+    """Best approximation of the true eigenvectors:
+
+    ..math:: V^{k} = \Sum_{i} \tilde{V}^{k}_{i}X_{i}
+
+    Where :math:`\tilde{V}^{k} is the `k`th eigenvector of the subspace problem and :math:`X_{i}` is an expansion vector
+
+    Parameters
+    ----------
+    engine : object
+       The engine passed to the solver, required to define vector algebraic operations needed
+    ss_vectors : :py:class:`np.ndarray` {l, k}
+       The k eigenvectors of the subspace problem, l = dimension of the subspace basis, and k is the number of roots
+    basis_vectors : list of `vector` {l}
+       The current basis vectors
+
+    Returns
+    -------
+    new_vecs : list of `vector` {k}
+       The approximations of the k true eigenvectors.
+    """
+    l, n = ss_vectors.shape
     new_vecs = []
-    for i in range(nroot):
+    for i in range(n):
         cv_i = engine.new_vector()
         for j in range(l):
-            cv_i = engine.vector_axpy(ss_vectors[i, j], basis_vectors[j], cv_i)
+            cv_i = engine.vector_axpy(ss_vectors[j, i], basis_vectors[j], cv_i)
         new_vecs.append(cv_i)
-    engine.product_cache.reset()
     return new_vecs
 
 
@@ -508,17 +552,34 @@ def davidson_solver(engine,
     }
 
     print_name = "DavidsonSolver"
-    if verbose != 0:
-        core.print_out("\n  " + "Generalized Davidson Solver".center(53) + "\n")
-        core.print_out("   " + "By Ruhee Dcunha".center(53) + "\n")
-
     title_lines = ["Generalized Davidson Solver", "By Ruhee Dcunha"]
-
     max_ss_size = max_vecs_per_root * nk
-    vecs = guess
-    stats = []
 
     _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
+
+    nguess_v_passed = len(guess)
+    vecs = []
+    # make guess set orthonormal
+    for v in guess:
+        new = _gs_orth(engine, vecs, v, schmidt_add_tol)
+        if new is not None:
+            vecs.append(new)
+
+    nguess_v_after_orth = len(vecs)
+    # print warning if LD in passed guesses had to be removed.
+    if (nguess_v_after_orth < nguess_v_passed) and (verbose > 0):
+        ndiscard = nguess_v_passed - nguess_v_after_orth
+        core.print_out(
+            "\n***Warning: Linear dependencies detected in initial guess vector, {} passed vectors discarded\n".format(
+                ndiscard))
+
+    # raise exception if we don't have at least nroot guesses
+    if nguess_v_after_orth < nk:
+        raise Exception(
+            "At least nroot ({}) ortho-normal guess vectors must be provided. After orthonormalization only {} vectors remain".
+            format(nk, nguess_v_after_orth))
+
+    stats = []
 
     while iter_info['count'] < maxiter:
         # increment iteration/ save old vals
@@ -544,24 +605,27 @@ def davidson_solver(engine,
         lam = lam[idx]
         alpha = alpha[:, idx]
 
+        # update best_solutions, failure return
+        best_eigvecs = _best_vectors(engine, alpha[:, :nk], vecs)
+
         for k in range(nk):
             Rk = engine.new_vector()
             lam_k = lam[k]
             for i in range(l):
-                Xi = vecs[i]
                 Axi = Ax[i]
-                alpha_ik = alpha[i, k]
-                Rk = engine.vector_axpy(-1.0 * lam_k * alpha[i, k], Xi, Rk)
-                Rk = engine.vector_axpy(alpha_ik, Axi, Rk)
+                Rk = engine.vector_axpy(alpha[i, k], Axi, Rk)
 
-            Rk = engine.precondition(Rk, lam_k)
+            Rk = engine.vector_axpy(-1.0 * lam_k, best_eigvecs[k], Rk)
             norm = engine.vector_dot(Rk, Rk)
             norm = np.sqrt(norm)
 
             iter_info['val'][k] = lam_k
             iter_info['delta_val'][k] = abs(old_vals[k] - lam_k)
             iter_info['res_norm'][k] = norm
-            if (norm > r_tol) or (abs(old_vals[k] - lam_k) > e_tol):
+            converged = (norm < r_tol) and (abs(old_vals[k] - lam_k) < e_tol)
+            # We want to expand trial basis when, solution is not converged or when trial space is too small.
+            if (not converged):
+                Qk = engine.precondition(Rk, lam_k)
                 iter_info['done'] = False
                 Qk = engine.vector_scale(1.0 / norm, Rk)
                 Qk = _gs_orth(engine, vecs, Qk, schmidt_add_tol)
@@ -572,13 +636,13 @@ def davidson_solver(engine,
         stats.append(iter_info.copy())
         if iter_info['done']:
             lam = lam[:nk]
-            V = _collapse_guess_space(engine, alpha[:, :nk], vecs)
-            _diag_print_converged(print_name, stats, lam, rvec=V, verbose=verbose)
-            return lam, V, stats
+            _diag_print_converged(print_name, stats, lam, rvec=best_eigvecs, verbose=verbose)
+            return lam, best_eigvecs, stats
         if iter_info['collapse']:
-            vecs = _collapse_guess_space(engine, alpha[:, :nk], vecs)
+            vecs = best_eigvecs
+            best_eigvecs = []
 
-    # If we get down here  we have exceeded max iterations without convergence, return none + stats
+    # If we get down here  we have exceeded max iterations without convergence, return None + stats, (let caller raise the error)
     return None, None, stats
 
 
@@ -589,7 +653,8 @@ def hamiltonian_solver(engine,
                        nroot=1,
                        max_vecs_per_root=20,
                        maxiter=100,
-                       verbose=1):
+                       verbose=1,
+                       schmidt_add_tol=1.0e-4):
     """
     Finds the smallest eigenvalues and associated right and left hand eigenvectors of a large real Hamiltonian eigenvalue problem
     emulated through an engine.
@@ -696,15 +761,35 @@ def hamiltonian_solver(engine,
         "conv": True,
         "nvec": 0,
     }
+    print_name = "HamiltonianSolver"
+    title_lines = ["Generalized Hamiltonian Solver", "By Andrew M. James"]
     ss_max = max_vecs_per_root * nk
-    vecs = guess
+
+    _diag_print_heading(title_lines, print_name, ss_max, nroot, r_tol, e_tol, maxiter, verbose)
+
+    nguess_v_passed = len(guess)
+    vecs = []
+    # make guess set orthonormal
+    for v in guess:
+        new = _gs_orth(engine, vecs, v, schmidt_add_tol)
+        if new is not None:
+            vecs.append(new)
+
+    nguess_v_after_orth = len(vecs)
+    # print warning if LD in passed guesses had to be removed.
+    if (nguess_v_after_orth < nguess_v_passed) and (verbose > 0):
+        ndiscard = nguess_v_passed - nguess_v_after_orth
+        core.print_out(
+            "\n***Warning: Linear dependencies detected in initial guess vector, {} passed vectors discarded\n".format(
+                ndiscard))
+
+    # raise exception if we don't have at least nroot guesses
+    if nguess_v_after_orth < nk:
+        raise Exception(
+            "At least nroot ({}) ortho-normal guess vectors must be provided. After orthonormalization only {} vectors remain".
+            format(nk, nguess_v_after_orth))
 
     stats = []
-    print_name = "HamiltonianSolver"
-
-    title_lines = ["Generalized Hamiltonian Solver", "By Andrew M. James"]
-    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
-
     while iter_info['count'] < maxiter:
         # increment iteration/ save old vals
         iter_info['count'] += 1
@@ -749,27 +834,35 @@ def hamiltonian_solver(engine,
         Lss = np.dot(H1_ss, Rss)
         Lss = np.einsum('ij,j->ij', Lss, np.divide(1.0, w))
 
-        # store best R/L eigvals
+        # #step 6c: R/L in the subspace are already biorthogonal, we need to normalize
+        for k in range(l):
+            dot = np.sqrt(Rss[:, k].dot(Lss[:, k]))
+            Rss[:, k] /= dot
+            Lss[:, k] /= dot
+
+        best_R = _best_vectors(engine, Rss[:, :nk], vecs)
+        best_L = _best_vectors(engine, Lss[:, :nk], vecs)
+
+        # compute residuals
         for k in range(nk):
             WR_k = engine.new_vector()
             WL_k = engine.new_vector()
             wk = w[k]
             for i in range(l):
-                Xi = vecs[i]
                 H1x_i = H1x[i]
                 H2x_i = H2x[i]
-                WL_k = engine.vector_axpy(-1.0 * wk * Lss[i, k], Xi, WL_k)
                 WL_k = engine.vector_axpy(Rss[i, k], H1x_i, WL_k)
-
-                WR_k = engine.vector_axpy(-1.0 * wk * Rss[i, k], Xi, WR_k)
                 WR_k = engine.vector_axpy(Lss[i, k], H2x_i, WR_k)
+
+            WL_k = engine.vector_axpy(-1.0 * wk, best_L[k], WL_k)
+            WR_k = engine.vector_axpy(-1.0 * wk, best_R[k], WR_k)
 
             norm_R = engine.vector_dot(WR_k, WR_k)
             norm_R = np.sqrt(norm_R)
             WR_k = engine.vector_scale(1.0 / norm_R, WR_k)
 
             norm_L = engine.vector_dot(WL_k, WL_k)
-            norm_L = engine.sqrt(norm_L)
+            norm_L = np.sqrt(norm_L)
             WL_k = engine.vector_scale(1.0 / norm_L, WL_k)
 
             norm = norm_R + norm_L
@@ -793,15 +886,18 @@ def hamiltonian_solver(engine,
         _diag_print_info(print_name, iter_info, verbose)
         stats.append(iter_info.copy())
         if iter_info['done']:
-            R = _collapse_guess_space(engine, Rss[:, :nk], vecs)
-            L = _collapse_guess_space(engine, Lss[:, :nk], vecs)
-            _diag_print_converged(print_name, stats, w, rvec=R, lvec=L, verbose=verbose)
-            return w[:nk], R, L, stats
+            _diag_print_converged(print_name, stats, w[:nk], rvec=best_R, lvec=best_L, verbose=verbose)
+            return w[:nk], best_R, best_L, stats
         if iter_info['collapse']:
-            # list add, not vector add, collapsed guess space will be 2*nroots in size(nroot L + nroot R)
-            R = _collapse_guess_space(engine, Rss[:, :nk], vecs)
-            L = _collapse_guess_space(engine, Lss[:, :nk], vecs)
-            vecs = R + L
+            vecs = []
+            for r in best_R:
+                new = _gs_orth(engine, vecs, r, schmidt_add_tol)
+                if new is not None:
+                    vecs.append(new)
+            for l in best_L:
+                new = _gs_orth(engine, vecs, l, schmidt_add_tol)
+                if new is not None:
+                    vecs.append(new)
 
     # if we get down here we have exceeded max iterations without convergence, return none + stats
     return None, None, None, stats

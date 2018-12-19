@@ -19,6 +19,7 @@ def _diag_dom_sym_mat(size, sep, scale, sym=1.0):
     M = (M.T * (sym) + M) / 2.0
     return M
 
+
 class SimulateBase:
     @staticmethod
     def vector_dot(X, Y):
@@ -26,7 +27,7 @@ class SimulateBase:
 
     @staticmethod
     def vector_axpy(a, X, Y):
-        Y += a*X
+        Y += a * X
         return Y
 
     @staticmethod
@@ -38,7 +39,7 @@ class SimulateBase:
         return X.copy()
 
     def new_vector(self):
-        return np.zeros((self.size,))
+        return np.zeros((self.size, ))
 
 
 class DSProblemSimulate(SimulateBase):
@@ -49,7 +50,9 @@ class DSProblemSimulate(SimulateBase):
         self.A = _diag_dom_sym_mat(size, sep=sep, scale=scale, sym=sym)
 
     def compute_products(self, X):
-        return self.A.dot(X)
+        Xmat = np.column_stack(X)
+        prods = self.A.dot(Xmat)
+        return list(prods.T)
 
     def precondition(self, R, shift):
         return R / (shift - np.diag(self.A))
@@ -64,13 +67,15 @@ class HSProblemSimulate(SimulateBase):
         self.B = _diag_dom_sym_mat(size, sep=b_sep, scale=scale, sym=b_sym)
 
     def compute_products(self, X):
-        Px = np.dot(self.A + self.B, X)
-        Mx = np.dot(self.A - self.B, X)
-        return Px, Mx
+        Xmat = np.column_stack(X)
+        ApBx_prd = np.dot(self.A + self.B, Xmat)
+        AmBx_prd = np.dot(self.A - self.B, Xmat)
+        H1x = list(ApBx_prd.T)
+        H2x = list(AmBx_prd.T)
+        return H1x, H2x
 
     def precondition(self, R, shift):
         return R / (shift - np.diag(self.A))
-
 
 
 @pytest.mark.unittest
@@ -108,7 +113,7 @@ def test_davidson_solver_numpy():
 def test_hamiltonian_solver():
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.random.randn(BIGDIM, nroot).T)
+    guess = tuple(np.eye(BIGDIM)[:, :nroot * 2].T)
     test_engine = HSProblemSimulate(BIGDIM)
     test_vals, test_rvecs, test_lvecs, _ = hamiltonian_solver(
         engine=test_engine,
