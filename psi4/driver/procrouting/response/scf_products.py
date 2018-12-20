@@ -34,10 +34,12 @@ from psi4 import core
 from psi4.driver.p4util.exceptions import *
 
 
-# H1/ H2 docstrings to keep them straight
 """
-Aia,jb  = (E_a - E_i) +    J    -    K
-        = (E_a - E_i) + (ia|jb) - (ij|ab)
+- H1/ H2 docstrings to keep them straight
+- RHF equations
+
+Aia,jb  = (E_a - E_i) +     J    -    K
+        = (E_a - E_i) + 4(ia|jb) - (ij|ab)
 
 Bia,jb  =    J    -   K^T
         = (ai|bj) - (aj|bi)
@@ -49,15 +51,18 @@ H2ia,jb =                A                   -           B
         = (E_a - E_i) - (ij|ab) + (aj|bi)
 
 H1ia,jb =              A                    +       B
-        = [(E_a - E_i) +    J    -    K   ] + [J    -   K^T]
-        = [(E_a - E_i) + (ia|jb) - (ij|ab)] + [(ai|bj)  - (aj|bi)]
-        = [(E_a - E_i) + 2   J    -    K     -   K^T]
-        = [(E_a - E_i) + 2(ia|jb) - (ij|ab)  - (aj|bi)]
+        = [(E_a - E_i) +     J    -    K   ] + [J    -   K^T]
+        = [(E_a - E_i) +  (ia|jb) - (ij|ab)] + [(ai|bj)  - (aj|bi)]
+        = [(E_a - E_i) + 4   J    -    K     -   K^T]
+        = [(E_a - E_i) + 4(ia|jb) - (ij|ab)  - (aj|bi)]
 
 """
 
 
 class SingleMatPerVector:
+    """Matrix operations for RHF-like systems
+    """
+
     @staticmethod
     def vector_dot(X, Y):
         return X.vector_dot(Y)
@@ -82,6 +87,9 @@ class SingleMatPerVector:
 
 
 class PairedMatPerVector:
+    """Matrix operations for UHF-like systems
+    """
+
     @staticmethod
     def vector_dot(X, Y):
         dot = X[0].vector_dot(Y[0])
@@ -110,60 +118,105 @@ class PairedMatPerVector:
 
 
 class ProductCache:
+    """Caches product vectors
+    """
+
     def __init__(self, *product_types):
+        """Creates a new Product Cache
+
+        Parameters
+        ----------
+        *product_types, list of str
+            A list of product labels
+        """
         self._products = {p: [] for p in product_types}
 
     def add(self, pkey, new_elements):
+        """Adds new elements to a given key
+
+        Parameters
+        ----------
+        pkey : str
+            Product label
+        new_elements : list of arrays
+            New products to add to the cache
+
+        """
         if pkey not in self._products.keys():
-            raise AttributeError("no such product {}".format(pkey))
+            raise AttributeError("No such product {}".format(pkey))
+
         for new in new_elements:
             self._products[pkey].append(new)
+
         return self._products[pkey].copy()
 
     def reset(self):
+        """Resets the ProductCache by clearing all data.
+        """
         for pkey in self._products.keys():
             self._products[pkey].clear()
 
     def count(self):
+        """
+
+        """
         lens = [len(self._products[pkey]) for pkey in self._products.keys()]
-        all_same = lens[1:] == lens[-1:]
+        all_same = all(lens[0] == x for x in lens)
+
         if all_same:
             return lens[0]
         else:
-            self.reset()
-            return 0
+            raise ValueError("Cache lengths are not the same, invalid cache error. Call a developer.")
 
 
 class TDRSCFEngine(SingleMatPerVector):
-    def __init__(self, wfn, ptype='rpa', triplet=False):
+    def __init__(self, wfn, ptype, triplet=False):
+
+        # primary data
         self.wfn = wfn
-        self.ptype = ptype
+        self.ptype = ptype.lower()
         self.needs_K_like = self.wfn.functional().is_x_hybrid() or self.wfn.functional().is_x_lrc()
+
+        if self.ptype not in ["rpa", "rda"]:
+            raise KeyError("Product type {} not understood".format(self.ptype))
+
+        # product type
         self.triplet = triplet
         if ptype == 'rpa':
             self.product_cache = ProductCache("H1", "H2")
         else:
             self.product_cache = ProductCache("A")
+
+        # orbitals and eigenvalues
         self.Co = self.wfn.Ca_subset("SO", "OCC")
         self.Cv = self.wfn.Ca_subset("SO", "VIR")
         self.E_occ = self.wfn.epsilon_a_subset("SO", "OCC")
-        self.E_vir = self.wfn.epsilon_b_subset("SO", "VIR")
+        self.E_vir = self.wfn.epsilon_a_subset("SO", "VIR")
         self.prec = None
+
         # ground state symmetry
         self.G_gs = 0
+
         # excited state symmetry
         self.G_es = None
+
         # symmetry of transition
         self.occpi = self.wfn.nalphapi()
         self.virpi = self.wfn.nmopi() - self.occpi
         self.nsopi = self.wfn.nsopi()
         self.reset_for_state_symm(0)
 
+## API required by engine
+
+## Helper functions
+
     def new_vector(self, name=""):
         """Obtain a blank matrix object with the correct symmetry"""
         return core.Matrix(name, self.occpi, self.virpi, self.G_trans)
 
     def reset_for_state_symm(self, symmetry):
+        """Reset Wavefuncitn to a new symmetry
+        """
         self.G_es = symmetry
         self._build_prec()
         self.product_cache.reset()
@@ -179,6 +232,9 @@ class TDRSCFEngine(SingleMatPerVector):
             H2 X =  [(Ea - Ei) - K + K^T]X
 
         """
+
+        for x in range(len(Fx)):
+            H1X_so = Fxi
 
         H1X = []
         H2X = []
@@ -239,27 +295,34 @@ class TDRSCFEngine(SingleMatPerVector):
         if ptype == tda:
            Returns AX
         """
+
         self.product_cache.reset()
         n_old = self.product_cache.count()
         n_new = len(vectors)
+
         if n_new <= n_old:
             self.product_cache.reset()
             compute_vectors = vectors
         else:
             compute_vectors = vectors[n_old:]
 
+        # Build base one and two electron quantities
         Fx = self.wfn.onel_Hx(compute_vectors)
         twoel = self.wfn.twoel_Hx(compute_vectors, False, "SO")
         Jx, Kx = self.split_twoel(twoel)
+
+        # Switch between rpa and tda
         if self.ptype == 'rpa':
             H1X_new, H2X_new = self.combine_H1_H2(Fx, Jx, Kx)
             for H1x in H1X_new:
                 self.vector_scale(-1.0, H1x)
             for H2x in H2X_new:
                 self.vector_scale(-1.0, H2x)
+
             H1X_all = self.product_cache.add("H1", H1X_new)
             H2X_all = self.product_cache.add("H2", H2X_new)
             return H1X_all, H2X_all
+
         else:
             AX_new = self.combine_A(Fx, Jx, Kx)
             for Ax in AX_new:
@@ -271,6 +334,8 @@ class TDRSCFEngine(SingleMatPerVector):
         return core.Matrix.triplet(self.Co, X, self.Cv, True, False, False)
 
     def split_twoel(self, twoel):
+        """Unpack J and K matrices
+        """
         if self.needs_K_like:
             Jx = twoel[0::2]
             Kx = twoel[1::2]
@@ -284,15 +349,22 @@ class TDRSCFEngine(SingleMatPerVector):
         return self.G_gs ^ self.G_es
 
     def _build_prec(self):
+        """
+        Builds energy denominator
+        """
         self.prec = self.new_vector()
         for h in range(self.wfn.nirrep()):
             self.prec.nph[h][:] = self.E_vir.nph[h ^ self.G_trans] - self.E_occ.nph[h].reshape(-1, 1)
 
     def precondition(self, Rvec, shift):
+        """
+        Applies the preconditioner with a shift
+
+        value = R / (shift - preconditioner)
+        """
         for h in range(self.wfn.nirrep()):
             den = shift - self.prec.nph[h]
-            idx = np.where(den < 0.0001)
-            den[idx] = 1.0
+            den[np.abs(den) < 0.0001] = 1.0
             Rvec.nph[h][:] /= den
         return Rvec
 
@@ -316,13 +388,19 @@ class TDRSCFEngine(SingleMatPerVector):
 
 
 class TDUSCFEngine(PairedMatPerVector):
-    def __init__(self, wfn, ptype='rpa'):
+    def __init__(self, wfn, ptype):
+
+        # Primary data
         self.wfn = wfn
         self.ptype = ptype
+
+        # Find product type
         if ptype == 'rpa':
             self.product_cache = ProductCache("H1", "H2")
         else:
             self.product_cache = ProductCache("A")
+
+        # Save orbitals and eigenvalues
         self.Co = [wfn.Ca_subset("SO", "OCC"), wfn.Cb_subset("SO", "OCC")]
         self.Cv = [wfn.Ca_subset("SO", "VIR"), wfn.Cb_subset("SO", "VIR")]
         self.E_occ = [wfn.epsilon_a_subset("SO", "OCC"), wfn.epsilon_b_subset("SO", "OCC")]
@@ -331,14 +409,16 @@ class TDUSCFEngine(PairedMatPerVector):
         self.occpi = [self.wfn.nalphapi(), self.wfn.nbetapi()]
         self.virpi = [self.wfn.nmopi() - self.occpi[0], self.wfn.nmopi() - self.occpi[1]]
         self.nsopi = self.wfn.nsopi()
-        # orbital energy differences
+
+        # Orbital energy differences
         self.prec = [None, None]
-        # ground state symmetry
+
+        # Ground state symmetry
         self.G_gs = 0
         for h in range(self.wfn.nirrep()):
             for i in range(self.occpi[0][h] - self.occpi[1][h]):
                 self.G_gs = self.G_gs ^ h
-        # excited state symmetry
+        # Excited state symmetry
         self.G_es = None
         self.reset_for_state_symm(0)
 
@@ -456,13 +536,14 @@ class TDUSCFEngine(PairedMatPerVector):
 
     def precondition(self, Rvec, shift):
         for h in range(self.wfn.nirrep()):
-            den = [shift - self.prec[0].nph[h], shift - self.prec[1].nph[h]]
-            idx = np.where(den[0] < 0.0001)
-            den[0][idx] = 1.0
-            idx = np.where(den[1] < 0.0001)
-            den[1][idx] = 1.0
-            Rvec[0].nph[h][:] /= den[0]
-            Rvec[1].nph[h][:] /= den[1]
+
+            den = shift - self.prec[0].nph[h]
+            den[np.abs(den) < 0.0001] = 1.0
+            Rvec[0].nph[h][:] /= den
+
+            den = shift - self.prec[1].nph[h]
+            den[np.abs(den) < 0.0001] = 1.0
+            Rvec[1].nph[h][:] /= den
         return Rvec
 
     def generate_guess(self, nguess):

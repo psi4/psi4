@@ -838,6 +838,7 @@ def hamiltonian_solver(engine,
 
         #Step 6a: extract Rss = H2_ss^{1/2}Tss
         Rss = np.dot(H2_ss_half, Tss)
+
         #Step 6b: extract Lss = Pss Rss * w^-1
         Lss = np.dot(H1_ss, Rss)
         Lss = np.einsum('ij,j->ij', Lss, np.divide(1.0, w))
@@ -876,6 +877,8 @@ def hamiltonian_solver(engine,
             iter_info['res_norm'][k] = norm
             iter_info['delta_val'][k] = np.abs(old_w[k] - w[k])
             iter_info['val'][k] = w[k]
+
+            # Check convergence
             if (iter_info['res_norm'][k] > r_tol) or (iter_info['delta_val'][k] > e_tol):
                 iter_info['done'] = False
 
@@ -894,6 +897,7 @@ def hamiltonian_solver(engine,
         if iter_info['done']:
             _diag_print_converged(print_name, stats, w[:nk], rvec=best_R, lvec=best_L, verbose=verbose)
             return w[:nk], best_R, best_L, stats
+
         # number of vectors hasn't changed (nothing new added), but we are not converged. Force collapse
         if len(vecs) == iter_info['nvec']:
             iter_info['collapse'] = True
