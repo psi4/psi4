@@ -255,42 +255,6 @@ def _print_output(complete_dict, output):
             _print_matrix(directions, output[i], var_name)
 
 
-def _single_random_fill(mat):
-    for h in range(mat.nirrep()):
-        shape = mat.nph[h].shape
-        mat.nph[h][:, :] = np.random.randn(*shape)
-    return mat
-
-
-def _denom_guess_uhf(engine, nstates):
-    guess_vecs = []
-    for ex_spin in range(2):
-        for irr_occ in range(engine.wfn.nirrep()):
-            irr_vir = irr_occ ^ engine.Gx
-            begin_occ = max(engine.occpi[ex_spin][irr_occ] - nstates * 2, 0)
-            end_vir = min(engine.virpi[ex_spin][irr_vir], nstates * 2)
-            for i in range(begin_occ, engine.occpi[ex_spin][irr_occ]):
-                for a in range(0, end_vir):
-                    new_vec = engine.new_vector("Guess vector")
-                    new_vec[ex_spin].set(irr_occ, i, a, 1.0)
-                    guess_vecs.append(new_vec)
-    return guess_vecs
-
-
-def _denom_guess_rhf(engine, nstates):
-    guess_vecs = []
-    for irr_occ in range(engine.wfn.nirrep()):
-        irr_vir = irr_occ ^ engine.Gx
-        begin_occ = max(engine.occpi[irr_occ] - nstates * 2, 0)
-        end_vir = min(engine.virpi[irr_vir], nstates * 2)
-        for i in range(begin_occ, engine.occpi[irr_occ]):
-            for a in range(0, end_vir):
-                new_vec = engine.new_vector("Guess vector")
-                new_vec.set(irr_occ, i, a, 1.0)
-                guess_vecs.append(new_vec)
-    return guess_vecs
-
-
 def tdscf_excitations(wfn, **kwargs):
     """Compute excitations from a scf(HF/KS) wavefunction:
 
@@ -357,33 +321,30 @@ def tdscf_excitations(wfn, **kwargs):
 
     # construct the engine
     if wfn.same_a_b_orbs():
-        guess_gen = _denom_guess_rhf
         engine = TDRSCFEngine(wfn, triplet=kwargs.pop('triplet', False), ptype=ptype)
     else:
-        guess_gen = _denom_guess_uhf
         engine = TDUSCFEngine(wfn, ptype=ptype)
 
     solver_results = []
     for state_sym, nstates in enumerate(states_per_irrep):
         if nstates == 0:
-            solver_results.append(None)
+            solver_results.append([])
             continue
-        engine.reset_symmetry(state_sym)
-        guess_ = []
-        if guess_type == 'random':
-            guess_ = guess_gen(engine, nstates)
-        elif guess_type == 'user':
-            guess_ = guess_vectors[state_sym]
+        engine.reset_for_state_symm(state_sym)
+        guess_ = engine.generate_guess(nstates * 2)
 
         vecs_per_root = max_ss_vec // nstates
-        solver_results.append(
-            solve_function(
-                engine=engine,
-                e_tol=etol,
-                r_tol=rtol,
-                max_vecs_per_root=vecs_per_root,
-                nroot=nstates,
-                guess=guess_,
-                verbose=2))
+        energies, *others = solve_function(
+            engine=engine,
+            e_tol=etol,
+            r_tol=rtol,
+            max_vecs_per_root=vecs_per_root,
+            nroot=nstates,
+            guess=guess_,
+            verbose=2)
+        if energies is None:
+            raise Exception("Solver did not converge")
+        else:
+            solver_results.append(energies)
 
     return solver_results
