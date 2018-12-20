@@ -138,6 +138,7 @@ void if_to_invert_axis(const Vector3 &v1, int &must_invert, int &should_invert, 
 
 Molecule::Molecule()
     : name_("default"),
+      comment_(""),
       fix_orientation_(false),
       move_to_com_(true),
       molecular_charge_(0),
@@ -168,6 +169,7 @@ Molecule &Molecule::operator=(const Molecule &other) {
     if (this == &other) return *this;
 
     name_ = other.name_;
+    comment_ = other.comment_;
     all_variables_ = other.all_variables_;
     fragments_ = other.fragments_;
     fragment_charges_ = other.fragment_charges_;
@@ -194,6 +196,18 @@ Molecule &Molecule::operator=(const Molecule &other) {
     form_symmetry_information();
     full_pg_ = other.full_pg_;
     full_pg_n_ = other.full_pg_n_;
+
+    // Deep copy provenance
+    provenance_.clear();
+    for(auto kv: other.provenance_) {
+        provenance_[kv.first] = kv.second;
+    }
+
+    // Deep copy connectivity
+    connectivity_.clear();
+    for (auto conn: other.connectivity_) {
+        connectivity_.push_back(std::make_tuple(std::get<0>(conn), std::get<1>(conn), std::get<2>(conn)));
+    }
 
     // Deep copy the map of variables
     full_atoms_.clear();

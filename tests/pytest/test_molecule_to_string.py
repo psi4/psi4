@@ -4,6 +4,9 @@ import pytest
 from utils import *
 from addons import *
 
+pytestmark = pytest.mark.quick
+
+
 _results = {
     "subject1":
     """
@@ -228,3 +231,53 @@ def test_to_string_mol_pmol(inp, expected):
     smol = mol.format_molecule_for_mol(**inp[1])
 
     assert compare_strings(_results[expected], smol, tnm())
+
+
+def test_provenance_connectivity_setting():
+    he3 = psi4.geometry("""
+    He
+    He 1 3.
+    He 1 3. 2 120.
+    units au
+    """)
+    dhe3 = he3.to_dict()
+
+    conn1 = [(0, 1, 2.0), (0, 2, 1.0)]
+    prov1 = {'creator': 'hello!', 'version': '33', 'routine': 'hello.main'}
+    dhe3['connectivity'] = conn1
+    dhe3['provenance'] = prov1
+
+    phe3 = psi4.core.Molecule.from_dict(dhe3)
+    qhe3 = qcdb.Molecule.from_dict(dhe3)
+
+    p2he3 = phe3.clone()
+    q2he3 = qhe3.clone()
+
+    conn2 = [(0, 1, 2.0), (0, 2, 3.0)]
+    prov2 = {'creator': 'goodbye!', 'version': '44', 'routine': 'goodbye.main'}
+
+    assert phe3.to_dict()['connectivity'] == conn1
+    assert qhe3.to_dict()['connectivity'] == conn1
+    assert phe3.to_dict()['provenance'] == prov1
+    assert qhe3.to_dict()['provenance'] == prov1
+
+    phe3.set_connectivity(conn2)
+    qhe3.set_connectivity(conn2)
+    phe3.set_provenance(prov2)
+    qhe3.set_provenance(prov2)
+
+    assert phe3.connectivity() == conn2
+    assert qhe3.connectivity() == conn2
+    assert phe3.provenance() == prov2
+    assert qhe3.provenance() == prov2
+
+    assert phe3.to_dict()['connectivity'] == conn2
+    assert qhe3.to_dict()['connectivity'] == conn2
+    assert phe3.to_dict()['provenance'] == prov2
+    assert qhe3.to_dict()['provenance'] == prov2
+
+    assert p2he3.to_dict()['connectivity'] == conn1
+    assert q2he3.to_dict()['connectivity'] == conn1
+    assert p2he3.to_dict()['provenance'] == prov1
+    assert q2he3.to_dict()['provenance'] == prov1
+

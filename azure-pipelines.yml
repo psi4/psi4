@@ -135,10 +135,10 @@ jobs:
         displayName: "Test Psi4 (failing ctest)"
         workingDirectory: $(Build.BinariesDirectory)/build
 
-      # Test (full pytest)
+      # Test (quick pytest)
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          python psi4 --fulltest
+          python psi4 --test quick
         displayName: "Test Psi4 (full pytest)"
         workingDirectory: $(Build.BinariesDirectory)/install/bin

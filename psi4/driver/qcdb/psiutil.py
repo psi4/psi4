@@ -186,12 +186,6 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
 
     thresh = 10 ** -tol if tol >= 1 else tol
 
-    # TEMP TODO just in case working from qcel head, not 0.1
-    if forgive is None:
-        forgive = ['provenance']
-    if 'provenance' not in forgive:
-        forgive.append('provenance')
-
     # Need to manipulate the dictionaries a bit, so hold values
     xptd = copy.deepcopy(expected)
     cptd = copy.deepcopy(computed)
@@ -218,13 +212,18 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
         if 'molecular_multiplicity' in dicary:
             dicary['molecular_multiplicity'] = int(dicary['molecular_multiplicity'])
         if 'fragment_multiplicities' in dicary:
-            dicary['fragment_multiplicities'] = [(m if m is None else int(m)) for m in dicary['fragment_multiplicities']]
+            dicary['fragment_multiplicities'] = [(m if m is None else int(m))
+                                                 for m in dicary['fragment_multiplicities']]
         if 'fragment_separators' in dicary:
             dicary['fragment_separators'] = [(s if s is None else int(s)) for s in dicary['fragment_separators']]
         # forgive generator version changes
         if 'provenance' in dicary:
-            for prov in dicary['provenance']:
-                prov.pop('version')
+            dicary['provenance'].pop('version')
+        # regularize connectivity ordering
+        if 'connectivity' in dicary:
+            conn = [(min(at1, at2), max(at1, at2), bo) for (at1, at2, bo) in dicary['connectivity']]
+            conn.sort(key=lambda tup: tup[0])
+            dicary['connectivity'] = conn
 
         return dicary
 
@@ -254,12 +253,6 @@ def compare_molrecs(expected, computed, tol, label, forgive=None, verbose=1, rel
             compare_integers(1, np.allclose(np.identity(3), mill.rotation, atol=thresh), 'null rotation', verbose=verbose)
         ageom = mill.align_coordinates(cgeom)
         cptd['geom'] = ageom.reshape((-1))
-
-    # TEMP TODO just in case working from qcel head, not 0.1
-    if forgive is None:
-        forgive = ['provenance']
-    if 'provenance' not in forgive:
-        forgive.append('provenance')
 
     compare_dicts(xptd, cptd, tol, label, forgive=forgive, verbose=verbose)
 

@@ -14,7 +14,7 @@ else()
     ExternalProject_Add(gau2grid_external
         DEPENDS pybind11_external
         GIT_REPOSITORY https://github.com/dgasmith/gau2grid
-        GIT_TAG v1.2.0
+        GIT_TAG v1.3.1
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
