@@ -892,6 +892,7 @@ units au
 # <<<  Section I: testing vibrational analysis vs Cfour  >>>
 
 
+@pytest.mark.quick
 @pytest.mark.parametrize(
     "subject", [
         'co2',
@@ -940,9 +941,9 @@ def test_harmonic_analysis_vs_cfour(subject, request):
     "subject", [
         pytest.param('co2'),
         pytest.param('c2h4', marks=pytest.mark.long),
-        pytest.param('ch4'),
+        pytest.param('ch4', marks=pytest.mark.quick),
         pytest.param('nh3'),
-        pytest.param('h2co'),
+        pytest.param('h2co', marks=pytest.mark.quick),
         pytest.param('hooh'),
     ],
     ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS'])
@@ -980,6 +981,7 @@ def test_hessian_vs_cfour(subject, dertype, request):
 # <<<  Section V: Thermo  >>>
 
 
+@pytest.mark.quick
 def test_thermochemistry():
     modelchem = 'hf/3-21g'
 

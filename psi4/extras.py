@@ -157,9 +157,9 @@ def test(extent='full', extras=None):
     extent : {'smoke', 'quick', 'full', 'long'}
         All choices are defined, but choices may be redundant in some projects.
         _smoke_ will be minimal "is-working?" test(s).
-        #_quick_ will be as much coverage as can be got quickly, approx. 1/3 tests.
-        #_full_ will be the whole test suite, less some exceedingly long outliers.
-        #_long_ will be the whole test suite.
+        _quick_ will be as much coverage as can be got quickly, approx. 1/3 tests.
+        _full_ will be the whole test suite, less some exceedingly long outliers.
+        _long_ will be the whole test suite.
     extras : list
         Additional arguments to pass to `pytest`.
 
@@ -179,7 +179,7 @@ def test(extent='full', extras=None):
     if extent.lower() == 'smoke':
         command.extend(['-m', 'smoke'])
     elif extent.lower() == 'quick':
-        command.extend(['-m', 'quick and smoke'])
+        command.extend(['-m', 'quick or smoke'])
     elif extent.lower() == 'full':
         command.extend(['-m', 'not long'])
     elif extent.lower() == 'long':

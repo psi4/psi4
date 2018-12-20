@@ -103,7 +103,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
         else:
             ktol = tol
 
-        if asp in ['q', 'w', 'x']:
+        if asp in 'qwx':
             ccnc = _phase_cols_to_max_element(computed[asp].data)
             eenc = _phase_cols_to_max_element(expected[asp].data)
             ccnc = _check_degen_modes(ccnc, computed['omega'].data)

@@ -211,6 +211,14 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 
     if (_has_key(molrec, "name")) mol->set_name(molrec["name"].cast<std::string>());
 
+    if (_has_key(molrec, "comment"))
+        mol->set_comment(molrec["comment"].cast<std::string>());
+
+    mol->set_provenance(molrec["provenance"].cast<std::map <std::string, std::string>>());
+
+    if (_has_key(molrec, "connectivity"))
+        mol->set_connectivity(molrec["connectivity"].cast<std::vector<std::tuple <int, int, double>>>());
+
     if (molrec["units"].cast<std::string>() == "Angstrom")
         mol->set_units(Molecule::Angstrom);
     else if (molrec["units"].cast<std::string>() == "Bohr")
@@ -1196,6 +1204,12 @@ void export_mints(py::module& m) {
              "Gets the nuclear contribution to the dipole, with respect to the origin")
         .def("set_name", &Molecule::set_name, "Sets molecule name")
         .def("name", &Molecule::name, "Gets molecule name")
+        .def("set_comment", &Molecule::set_comment, "Sets molecule comment")
+        .def("comment", &Molecule::comment, "Gets molecule comment")
+        .def("set_provenance", &Molecule::set_provenance, "Sets molecule provenance")
+        .def("provenance", &Molecule::provenance, "Gets molecule provenance")
+        .def("set_connectivity", &Molecule::set_connectivity, "Sets molecule connectivity")
+        .def("connectivity", &Molecule::connectivity, "Gets molecule connectivity")
         .def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry,
              "Do reinterpret coordinate entries during update_geometry().")
         .def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame")

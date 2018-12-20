@@ -252,7 +252,7 @@ double DCFTSolver::compute_orbital_residual() {
     double maxGradient = 0.0;
     // Alpha spin
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for
+#pragma omp parallel for reduction(max:maxGradient)
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -275,7 +275,7 @@ double DCFTSolver::compute_orbital_residual() {
 
     // Beta spin
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for
+#pragma omp parallel for reduction(max:maxGradient)
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = 0; a < nbvirpi_[h]; ++a) {
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
