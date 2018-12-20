@@ -1352,7 +1352,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         pCb = ref_wfn.basis_projection(ref_wfn.Cb(), ref_wfn.nbetapi(), ref_wfn.basisset(), scf_wfn.basisset())
         scf_wfn.guess_Ca(pCa)
         scf_wfn.guess_Cb(pCb)
-
+        scf_wfn.reset_occ_ = True
 
     # Print basis set info
     if core.get_option("SCF", "PRINT_BASIS"):
