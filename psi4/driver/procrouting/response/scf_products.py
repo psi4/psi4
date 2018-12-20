@@ -229,7 +229,7 @@ class TDRSCFEngine(SingleMatPerVector):
                 if self.triplet:
                     Ax.append(self.vector_copy(Fxi))
                 else:
-                    Ax.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(self.vector_scale(2.0, Jx))))
+                    Ax.append(self.vector_axpy(1.0, Fxi, self.so_to_mo(self.vector_scale(2.0, Jxi))))
         return Ax
 
     def compute_products(self, vectors):
@@ -239,6 +239,7 @@ class TDRSCFEngine(SingleMatPerVector):
         if ptype == tda:
            Returns AX
         """
+        self.product_cache.reset()
         n_old = self.product_cache.count()
         n_new = len(vectors)
         if n_new <= n_old:
@@ -300,9 +301,10 @@ class TDRSCFEngine(SingleMatPerVector):
         guess_vectors = []
         for h in range(self.wfn.nirrep()):
             for i, ei in enumerate(self.E_occ.nph[h]):
-                for a, ei in enumerate(self.E_vir.nph[h ^ self.G_trans]):
+                for a, ea in enumerate(self.E_vir.nph[h ^ self.G_trans]):
                     deltas.append((ea - ei, i, a, h))
         deltas_sorted = sorted(deltas, key=lambda x: x[0])
+        nguess = min(nguess, len(deltas_sorted))
         for i in range(nguess):
             v = self.new_vector()
             oidx = deltas_sorted[i][1]
@@ -475,6 +477,7 @@ class TDUSCFEngine(PairedMatPerVector):
                     deltas.append((ea - ei, 1, i, a, h))
 
         deltas_sorted = sorted(deltas, key=lambda x: x[0])
+        nguess = min(nguess, len(deltas_sorted))
         for i in range(nguess):
             v = self.new_vector()
             spin = deltas_sorted[i][1]
