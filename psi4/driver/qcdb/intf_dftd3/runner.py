@@ -295,7 +295,6 @@ def dftd3_harvest(jobrec, dftd3rec):
         elif re.match(' Edisp /kcal,au', ln):
             ene = Decimal(ln.split()[3])
         elif re.match(r" E6\(ABC\) \"   :", ln):
-            print(ln)
             h2kcm = Decimal(qcel.constants.hartree2kcalmol)
             atm = Decimal(ln.split()[-1])
             atm /= h2kcm
