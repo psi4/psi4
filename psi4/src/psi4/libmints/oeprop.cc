@@ -1432,17 +1432,8 @@ void OEProp::compute_mo_extents() {
 }
 
 std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_output) {
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
-    SharedMatrix Ca;
-    SharedMatrix Cb;
 
-    if (same_orbs_) {
-        Ca = Ca_ao();
-        Cb = Ca;
-    } else {
-        Ca = Ca_ao();
-        Cb = Cb_ao();
-    }
+    SharedMatrix Ca = Ca_ao();
 
     std::vector<SharedVector> mo_es;
     mo_es.push_back(SharedVector(new Vector("<x^2>", basisset_->nbf())));
@@ -1451,13 +1442,7 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     mo_es.push_back(SharedVector(new Vector("<r^2>", basisset_->nbf())));
 
     // Create a vector of matrices with the proper symmetry
-    std::vector<SharedMatrix> ao_Dpole;
     std::vector<SharedMatrix> ao_Qpole;
-
-    ao_Dpole.push_back(std::make_shared<Matrix>("Dipole X", basisset_->nbf(), basisset_->nbf()));
-    ao_Dpole.push_back(std::make_shared<Matrix>("Dipole Y", basisset_->nbf(), basisset_->nbf()));
-    ao_Dpole.push_back(std::make_shared<Matrix>("Dipole Z", basisset_->nbf(), basisset_->nbf()));
-
     ao_Qpole.push_back(std::make_shared<Matrix>("Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
     ao_Qpole.push_back(std::make_shared<Matrix>("Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
     ao_Qpole.push_back(std::make_shared<Matrix>("Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
@@ -1466,51 +1451,23 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     ao_Qpole.push_back(std::make_shared<Matrix>("Quadrupole ZZ", basisset_->nbf(), basisset_->nbf()));
 
     // Form the one-electron integral objects from the integral factory
-    std::shared_ptr<OneBodyAOInt> aodOBI(integral_->ao_dipole());
     std::shared_ptr<OneBodyAOInt> aoqOBI(integral_->ao_quadrupole());
 
-    aodOBI->set_origin(origin_);
-    aoqOBI->set_origin(origin_);
-
     // Compute multipole moment integrals
-    aodOBI->compute(ao_Dpole);
+    aoqOBI->set_origin(origin_);
     aoqOBI->compute(ao_Qpole);
-
-    aodOBI.reset();
     aoqOBI.reset();
-
-    std::vector<SharedVector> dipole;
-    dipole.push_back(std::make_shared<Vector>("Orbital Dipole X", Ca->ncol()));
-    dipole.push_back(std::make_shared<Vector>("Orbital Dipole Y", Ca->ncol()));
-    dipole.push_back(std::make_shared<Vector>("Orbital Dipole Z", Ca->ncol()));
 
     std::vector<SharedVector> quadrupole;
     quadrupole.push_back(std::make_shared<Vector>("Orbital Quadrupole XX", Ca->ncol()));
     quadrupole.push_back(std::make_shared<Vector>("Orbital Quadrupole YY", Ca->ncol()));
     quadrupole.push_back(std::make_shared<Vector>("Orbital Quadrupole ZZ", Ca->ncol()));
 
-    auto temp = std::make_shared<Matrix>("Temp", Ca->nrow(), Ca->ncol());
-
-    int nao = Ca->nrow();
+    // auto temp = std::make_shared<Matrix>("Temp", Ca->nrow(), Ca->ncol());
+    // int nao = Ca->nrow();
     int nmo = Ca->ncol();
 
     if (same_orbs_) {
-        // Dipoles
-        C_DGEMM('T', 'N', nmo, nao, nao, 1.0, Ca->pointer()[0], nmo, ao_Dpole[0]->pointer()[0], nao, 0.0,
-                temp->pointer()[0], nao);
-        for (int i = 0; i < nmo; i++) {
-            dipole[0]->set(0, i, C_DDOT(nao, Ca->pointer()[i], nmo, temp->pointer()[i], 1));
-        }
-        C_DGEMM('T', 'N', nmo, nao, nao, 1.0, Ca->pointer()[0], nmo, ao_Dpole[1]->pointer()[0], nao, 0.0,
-                temp->pointer()[0], nao);
-        for (int i = 0; i < nmo; i++) {
-            dipole[1]->set(0, i, C_DDOT(nao, Ca->pointer()[i], nmo, temp->pointer()[i], 1));
-        }
-        C_DGEMM('T', 'N', nmo, nao, nao, 1.0, Ca->pointer()[0], nmo, ao_Dpole[2]->pointer()[0], nao, 0.0,
-                temp->pointer()[0], nao);
-        for (int i = 0; i < nmo; i++) {
-            dipole[2]->set(0, i, C_DDOT(nao, Ca->pointer()[i], nmo, temp->pointer()[i], 1));
-        }
 // Quadrupoles
 #if 0
         C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
