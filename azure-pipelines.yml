@@ -135,7 +135,7 @@ jobs:
           ctest --build-config Debug ^
                 --tests-regex "^ci-property$" ^
                 --output-on-failure ^
-                --repeat-until-fail 10
+                --repeat-until-fail 10 ^
                 --parallel %NUMBER_OF_PROCESSORS%
           exit 0
         displayName: "Test Psi4 (failing ctest)"
