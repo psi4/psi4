@@ -316,6 +316,11 @@ void export_mints(py::module& m) {
     //        def(vector_indexing_suite<std::vector<double>, true >());
     //    py::bind_vector<double>(m, "VectorDouble");
 
+    typedef void (Vector::*vector_setitem_1)(int, double);
+    typedef void (Vector::*vector_setitem_2)(int, int, double);
+    typedef double (Vector::*vector_getitem_1)(int) const;
+    typedef double (Vector::*vector_getitem_2)(int, int) const;
+
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<int>())
         .def(py::init<int, const std::string&>())

@@ -1,4 +1,4 @@
-find_package(xtensor 0.18.3 CONFIG QUIET)
+find_package(xtensor 0.20.1 CONFIG QUIET)
 
 if(${xtensor_FOUND})
   message(STATUS "${Cyan}Found xtensor${ColourReset}: ${xtensor_INCLUDE_DIR} (found version ${xtensor_VERSION})")
@@ -14,12 +14,8 @@ else()
     DEPENDS
       xtl_external
       xsimd_external
-    GIT_REPOSITORY
-      https://github.com/QuantStack/xtensor
-    GIT_TAG
-      0.18.3
-    UPDATE_COMMAND
-      ""
+    URL
+      https://github.com/QuantStack/xtensor/archive/0.20.1.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

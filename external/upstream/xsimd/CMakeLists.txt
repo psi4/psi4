@@ -1,4 +1,4 @@
-find_package(xsimd 7.1.0 CONFIG QUIET)
+find_package(xsimd 7.1.3 CONFIG QUIET)
 
 if(${xsimd_FOUND})
   message(STATUS "${Cyan}Found xsimd${ColourReset}: ${xsimd_INCLUDE_DIR} (found version ${xsimd_VERSION})")
@@ -11,12 +11,8 @@ else()
   include(ExternalProject)
   message(STATUS "Suitable xsimd could not be located, ${Magenta}Building xsimd${ColourReset} instead.")
   ExternalProject_Add(xsimd_external
-    GIT_REPOSITORY
-      https://github.com/QuantStack/xsimd
-    GIT_TAG
-      7.1.0
-    UPDATE_COMMAND
-      ""
+    URL
+      https://github.com/QuantStack/xsimd/archive/7.1.3.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

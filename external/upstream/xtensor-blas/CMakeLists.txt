@@ -1,4 +1,4 @@
-find_package(xtensor-blas 0.14.0 CONFIG QUIET)
+find_package(xtensor-blas 0.16.0 CONFIG QUIET)
 
 if(${xtensor-blas_FOUND})
   message(STATUS "${Cyan}Found xtensor-blas${ColourReset}: ${xtensor-blas_INCLUDE_DIR} (found version ${xtensor-blas_VERSION})")
@@ -13,12 +13,8 @@ else()
   ExternalProject_Add(xtensor-blas_external
     DEPENDS
       xtensor_external
-    GIT_REPOSITORY
-      https://github.com/QuantStack/xtensor-blas
-    GIT_TAG
-      0.14.0
-    UPDATE_COMMAND
-      ""
+    URL
+      https://github.com/QuantStack/xtensor-blas/archive/0.16.0.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

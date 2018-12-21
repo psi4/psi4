@@ -1,4 +1,4 @@
-find_package(xtensor-python 0.21.0 CONFIG QUIET)
+find_package(xtensor-python 0.22.1 CONFIG QUIET)
 
 if(${xtensor-python_FOUND})
   message(STATUS "${Cyan}Found xtensor-python${ColourReset}: ${xtensor-python_INCLUDE_DIR} (found version ${xtensor-python_VERSION})")
@@ -15,12 +15,8 @@ else()
       pybind11_external
       xtl_external
       xtensor_external
-    GIT_REPOSITORY
-      https://github.com/QuantStack/xtensor-python
-    GIT_TAG
-      0.21.0
-    UPDATE_COMMAND
-      ""
+    URL
+      https://github.com/QuantStack/xtensor-python/archive/0.22.1.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

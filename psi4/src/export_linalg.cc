@@ -41,7 +41,6 @@
 
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/linalg.h"
-#include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
 
 using namespace psi;
@@ -158,73 +157,4 @@ void export_linalg(py::module& mod) {
     auto decorate_rankn = RankNDecorator<3>();
     DeclareTensor<float, 3>::bind_tensor(mod, decorate_rankn);
     DeclareTensor<double, 3>::bind_tensor(mod, decorate_rankn);
-
-    using Class = Vector;
-    using PyClass = py::class_<Vector, std::shared_ptr<Vector>>;
-
-    PyClass cls(mod, "Vector", "Class for creating and manipulating vectors", py::dynamic_attr());
-    cls.def(py::init<int>())
-        .def(py::init<const Dimension&>())
-        .def(py::init<const std::string&, int>())
-        .def(py::init<const std::string&, const Dimension&>())
-        .def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
-                      "The name of the Vector. Used in printing.")
-        .def("get", py::overload_cast<int>(&Vector::get, py::const_), "Returns a single element value located at m",
-             "m"_a)
-
-        .def("get", py::overload_cast<int, int>(&Vector::get, py::const_),
-             "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
-        .def("set", py::overload_cast<int, double>(&Vector::set), "Sets a single element value located at m", "m"_a,
-             "val"_a)
-        .def("set", py::overload_cast<int, int, double>(&Vector::set),
-             "Sets a single element value located at m in irrep h", "h"_a, "m"_a, "val"_a)
-        .def("print_out", &Vector::print_out, "Prints the vector to the output file")
-        .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
-        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
-        .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
-        .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
-        .def("set_block", &Vector::set_block, "Set a vector block", "slice"_a, "block"_a)
-        .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
-        .def("array_interface",
-             [](Vector& v) {
-
-                 // Build a list of NumPy views, used for the .np and .nph accessors.Vy
-                 py::list ret;
-
-                 // If we set a NumPy shape
-                 if (v.numpy_shape().size()) {
-                     if (v.nirrep() > 1) {
-                         throw PSIEXCEPTION(
-                             "Vector::array_interface numpy shape with more than one irrep is not "
-                             "valid.");
-                     }
-
-                     // Cast the NumPy shape vector
-                     std::vector<size_t> shape;
-                     for (int val : v.numpy_shape()) {
-                         shape.push_back((size_t)val);
-                     }
-
-                     // Build the array
-                     py::array arr(shape, v.pointer(0), py::cast(&v));
-                     ret.append(arr);
-
-                 } else {
-                     for (size_t h = 0; h < v.nirrep(); h++) {
-                         // Hmm, sometimes we need to handle empty ptr's correctly
-                         double* ptr = nullptr;
-                         if (v.dim(h) != 0) {
-                             ptr = v.pointer(h);
-                         }
-
-                         // Build the array
-                         std::vector<size_t> shape{(size_t)v.dim(h)};
-                         py::array arr(shape, ptr, py::cast(&v));
-                         ret.append(arr);
-                     }
-                 }
-
-                 return ret;
-             },
-             py::return_value_policy::reference_internal);
 }
