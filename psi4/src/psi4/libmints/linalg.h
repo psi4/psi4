@@ -29,13 +29,14 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
 
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xio.hpp>
-//#include <xtensor-blas/xlinalg.hpp>
+#include <xtensor-blas/xlinalg.hpp>
 
 #include "psi4/libpsi4util/exception.h"
 
@@ -140,16 +141,6 @@ std::string print_shape(const std::array<size_t, Rank>& shape) {
 template <typename T, size_t Rank>
 using Storage = xt::xtensor<T, Rank>;
 
-/*! Symmetry-blocked linear algebra storage
- * \tparam T the underlying numerical type
- * \tparam Rank rank of the object, i.e. 1 for a vector, 2 for a matrix, etc.
- * \tparam Blocks number of symmetry blocks, i.e. 1 for C1, 4 for C2v, etc.
- *
- * \note To ensure symmetry blocking, we use a std::array. Each block has the same storage type.
- */
-template <typename T, size_t Rank, size_t Blocks>
-using BlockStorage = std::array<Storage<T, Rank>, Blocks>;
-
 template <typename T, size_t Rank>
 class Tensor {
    public:
@@ -182,7 +173,7 @@ class Tensor {
             auto all_axes_have_same_size = std::all_of(std::begin(axes_dimpi), std::end(axes_dimpi),
                                                        [ax0_n](const Dimension& dimpi) { return dimpi.n() == ax0_n; });
             if (!all_axes_have_same_size) {
-                throw PsiException("In Tensor CTOR axes_dimpi do NOT have same size", __FILE__, __LINE__);
+                throw PSIEXCEPTION("In Tensor CTOR axes_dimpi do NOT have same size");
             }
         }
         for (int h = 0; h < store_.size(); ++h) {
@@ -307,16 +298,16 @@ class Tensor {
     /*! @}*/
 
     /*! Return dimension of tensor */
-    size_t dim() const {
+    size_t dim() const noexcept {
         return std::accumulate(std::begin(store_), std::end(store_), 0,
                                [](size_t s, auto& b) { return (s + b.size()); });
     }
 
     /*! Return number of irreducible representations */
-    size_t nirrep() const { return store_.size(); }
+    size_t nirrep() const noexcept { return store_.size(); }
 
     /*! Return shapes of blocks */
-    const std::vector<Shape>& shapes() const { return shapes_; }
+    const std::vector<Shape>& shapes() const noexcept { return shapes_; }
 
     /*! Return block at given irrep
      *  \param[in] h
@@ -326,16 +317,19 @@ class Tensor {
      *  \param[in] h
      */
     Storage<T, Rank>& block(size_t h = 0) { return store_[h]; }
+    Storage<T, Rank> operator[](size_t h) const { return store_[h]; }
     /*! Set block at given irrep
      *  \param[in] h
+     *  \param[in] block
      */
-    void set_block(const Storage<T, Rank>& block, size_t h) { store_[h] = block; }
+    void set_block(size_t h, const Storage<T, Rank>& block) { store_[h] = block; }
+    Storage<T, Rank>& operator[](size_t h) { return store_[h]; }
 
-    std::string label() const { return label_; }
-    void set_label(const std::string& label) { label_ = label; }
+    std::string label() const noexcept { return label_; }
+    void set_label(const std::string& label) noexcept { label_ = label; }
 
-    unsigned int symmetry() const { return symmetry_; }
-    void set_symmetry(unsigned int s) { symmetry_ = s; }
+    unsigned int symmetry() const noexcept { return symmetry_; }
+    void set_symmetry(unsigned int s) noexcept { symmetry_ = s; }
 
     /*! Returns Dimension object for given axis
      * \param[in] ax
@@ -380,15 +374,15 @@ class Tensor {
     T* data(size_t h = 0) { return store_.at(h).data(); }
     const T* data(size_t h = 0) const { return store_.at(h).data(); }
 
-    std::string repr() const { return cxxClassName(); }
+    std::string repr() const noexcept { return cxxClassName(); }
 
-    std::string str() const { return format(cxxClassName()); }
+    std::string str() const noexcept { return format(cxxClassName()); }
 
     /*! Tensor formatter
      *  \param[in] extra
      * TODO Generalise to any rank
      */
-    std::string format(const std::string extra = "") const {
+    std::string format(const std::string extra = "") const noexcept {
         std::ostringstream retval;
         // Title and stuff
         if (!label_.empty()) {
@@ -416,19 +410,85 @@ class Tensor {
     std::vector<Storage<T, Rank>> store_{};
 };
 
-template <typename T, size_t Rank, size_t Blocks>
-T norm(const BlockStorage<T, Rank, Blocks>& store);
+template <typename T, size_t Rank>
+using SharedTensor = std::shared_ptr<Tensor<T, Rank>>;
 
-// template <typename T, size_t Rank, size_t Blocks>
-// T dot(const BlockStorage<T, Rank, Blocks>& bs1, const BlockStorage<T, Rank, Blocks>& bs2) {
-//    T retval = 0.0;
-//    for (size_t h = 0; h < Blocks; ++h) {
-//        retval += xt::linalg::vdot(bs1[h], bs2[h]);
-//    }
-//    return retval;
-//}
-template <typename T, size_t Rank, size_t Blocks>
-void zero(BlockStorage<T, Rank, Blocks>& bs) {
-    std::for_each(std::begin(bs), std::end(bs), [](auto& b) { xt::zeros<T>(b); });
+enum class Operation { None, Transpose, TransposeConj };
+
+/*! Symmetry-blocking aware GEneralized Matrix Multiplication (GEMM)
+ *  \param[in]
+ *  \param[in]
+ *  C := alpha * op(A) * op(B) + beta * C
+ */
+template <typename T>
+SharedTensor<T, 2> gemm(Operation opA, Operation opB, double alpha, const SharedTensor<T, 2>& A,
+                        const SharedTensor<T, 2>& B, double beta, SharedTensor<T, 2>& C) {
+    std::string label = "GEMM: ";
+
+    std::vector<size_t> ax_A;
+    bool transA = (opA == Operation::Transpose || opA == Operation::TransposeConj);
+    switch (opA) {
+        case Operation::None:
+            ax_A.push_back(1);
+            label += A->label();
+            break;
+        case Operation::Transpose:
+            ax_A.push_back(0);
+            label += A->label() + "T x ";
+            break;
+        case Operation::TransposeConj:
+            ax_A.push_back(0);
+            label += A->label() + "H x ";
+            break;
+    }
+
+    std::vector<size_t> ax_B;
+    bool transB = (opB == Operation::Transpose || opB == Operation::TransposeConj);
+    switch (opB) {
+        case Operation::None:
+            ax_B.push_back(0);
+            label += B->label();
+            break;
+        case Operation::Transpose:
+            ax_B.push_back(1);
+            label += B->label() + "T";
+            break;
+        case Operation::TransposeConj:
+            ax_B.push_back(1);
+            label += B->label() + "H";
+            break;
+    }
+
+    for (size_t hA = 0; hA < A->nirrep(); ++hA) {
+        size_t hB = hA ^ (transA ? 0 : A->symmetry()) ^ (transB ? B->symmetry() : 0);
+        size_t hC = hA ^ (transA ? A->symmetry() : 0);
+
+        // FIXME Currently NOT handling transpose-conjugate case
+        C->block(hC) = xt::linalg::tensordot(alpha * A->block(hA), B->block(hB), ax_A, ax_B) + beta * C->block(hC);
+    }
+    // More descriptive label
+    C->set_label(label);
+
+    return C;
+}
+
+/*! Simple doublet GEMM with on-the-fly allocation
+ * \param[in] A The first matrix
+ * \param[in] B The second matrix
+ * \param[in] transA Transpose the first matrix
+ * \param[in] transB Transpose the second matrix
+ */
+template <typename T>
+SharedTensor<T, 2> doublet(const SharedTensor<T, 2>& A, const SharedTensor<T, 2>& B, bool transA = false,
+                           bool transB = false) {
+    Operation opA = transA ? Operation::Transpose : Operation::None;
+    Operation opB = transB ? Operation::Transpose : Operation::None;
+
+    Dimension rowspi = transA ? A->colspi() : A->rowspi();
+    Dimension colspi = transB ? B->rowspi() : B->colspi();
+
+    auto C = std::make_shared<Tensor<T, 2>>("result", rowspi, colspi, A->symmetry() ^ B->symmetry());
+
+    return gemm(opA, opB, 1.0, A, B, 0.0, C);
 }
 }  // namespace psi

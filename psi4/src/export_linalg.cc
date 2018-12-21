@@ -101,6 +101,13 @@ struct RankNDecorator final {
     }
 };
 
+template <typename T>
+void declareMatrixFreeFunctions(py::module& mod) {
+    mod.def("doublet", &doublet<T>,
+            "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
+            "B"_a, "transA"_a = false, "transB"_a = false);
+}
+
 template <typename T, size_t Rank>
 struct DeclareTensor final {
     using Class = Tensor<T, Rank>;
@@ -118,13 +125,15 @@ struct DeclareTensor final {
         cls.def("axes_dimpi", &Class::axes_dimpi, "Returns the Dimension object for given axis", "axis"_a);
         cls.def_property_readonly("shapes", [](const Class& obj) { return obj.shapes(); },
                                   py ::return_value_policy::copy, "Shapes of blocks");
-        cls.def("nph", py::overload_cast<size_t>(&Class::block), "Return block at given irrep", "h"_a = 0,
-                py::return_value_policy::reference_internal);
         cls.def_property("symmetry", &Class::symmetry, &Class::set_symmetry, ("The symmetry of " + name).c_str());
 
         cls.def("__repr__", &Class::repr);
         cls.def("__str__", &Class::str);
         cls.def("__format__", &Class::format, "extra"_a = "");
+        cls.def("__getitem__", py::overload_cast<size_t>(&Class::operator[]), "Return block at given irrep", "h"_a,
+                py::is_operator(), py::return_value_policy::reference_internal);
+        // FIXME Doesn't compile :/
+        // cls.def("__setitem__", &Class::set_block, "Set block at given irrep", py::is_operator());
 
         // Rank-dependent bindings, e.g. CTORs
         decorate(cls, name);
@@ -141,7 +150,9 @@ void export_linalg(py::module& mod) {
     // Rank-2 tensor, aka blocked matrix
     auto decorate_m = Rank2Decorator();
     DeclareTensor<float, 2>::bind_tensor(mod, decorate_m);
+    declareMatrixFreeFunctions<float>(mod);
     DeclareTensor<double, 2>::bind_tensor(mod, decorate_m);
+    declareMatrixFreeFunctions<double>(mod);
     // Rank-3 tensor
     // FIXME not ideal to have rank info spread out...
     auto decorate_rankn = RankNDecorator<3>();
