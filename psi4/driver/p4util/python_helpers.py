@@ -125,13 +125,26 @@ core.Wavefunction.build = _core_wavefunction_build
 
 @staticmethod
 def _core_wavefunction_from_file(wfn_data):
+    """Summary
 
+    Parameters
+    ----------
+    wfn_data : str or dict
+        If a str reads a Wavefunction from a disk otherwise, assumes the data
+        is passed in.
+
+    Returns
+    -------
+    Wavefunction
+        A deserialized Wavefunction object
+    """
     # load the wavefunction from file
     if isinstance(wfn_data, str):
         wfn_data = np.load(wfn_data + '.npy').item()
-    # otherwise a dictionary was passed in
-    else:
+    elif isinstance(wfn_data, dict):
         pass
+    else:
+        raise ValidationError("wfn_data must either be a str (filename) or a dictionary.")
 
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
@@ -174,8 +187,8 @@ def _core_wavefunction_from_file(wfn_data):
         wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array else None
 
     # make the wavefunction
-    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int, wfn_string,
-                            wfn_boolean, wfn_float)
+    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int,
+                            wfn_string, wfn_boolean, wfn_float)
 
     # some of the wavefunction's variables can be changed directly
     for k, v in wfn_floatvar.items():
@@ -189,11 +202,25 @@ def _core_wavefunction_from_file(wfn_data):
 core.Wavefunction.from_file = _core_wavefunction_from_file
 
 
-@staticmethod
 def _core_wavefunction_to_file(wfn, filename=None):
+    """Converts a Wavefunction object to a base class
+
+    Parameters
+    ----------
+    wfn : Wavefunction
+        A Wavefunction or inherited class
+    filename : None, optional
+        An optional filename to write the data to
+
+    Returns
+    -------
+    dict
+        A dictionary and NumPy representation of the Wavefunction.
+
+    """
+
     # collect the wavefunction's variables in a dictionary indexed by varaible type
     # some of the data types have to be made numpy-friendly first
-
     if wfn.basisset().name().startswith("anonymous"):
         raise ValidationError("Cannot serialize wavefunction with custom basissets.")
 
@@ -261,8 +288,8 @@ def _core_wavefunction_to_file(wfn, filename=None):
 
     if filename is not None:
         np.save(filename, wfn_data)
-    else:
-        return wfn_data
+
+    return wfn_data
 
 
 core.Wavefunction.to_file = _core_wavefunction_to_file

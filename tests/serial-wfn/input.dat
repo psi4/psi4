@@ -17,7 +17,7 @@ set {
 e, wfn_old = energy('hf', return_wfn=True)
 
 # write the wavefunction to file
-Wavefunction.to_file(wfn_old, 'my_wfn')
+wfn_old.to_file('my_wfn')
 
 # read wavefunction from file
 wfn_new = Wavefunction.from_file('my_wfn')
@@ -25,7 +25,7 @@ wfn_new = Wavefunction.from_file('my_wfn')
 compare_wavefunctions(wfn_old, wfn_new, label='Serialization Check 1') #TEST
 
 # alternatively store the dict representation of the wavefunction in memory
-wfn_dict = Wavefunction.to_file(wfn_old)
+wfn_dict = wfn_old.to_file()
 
 # make a wavefunction from the dict
 wfn_new2 = Wavefunction.from_file(wfn_dict)

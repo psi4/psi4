@@ -428,7 +428,7 @@ to the complete listing of all functionals of each class are presented below:
 
 :ref:`Double-Hybrid Functionals <table:dft_dhybrid>`
     Double hybrids are percolating into |PSIfour|. Note that these are
-    only available with density-fitted, not conventional, mp2 algorithms.
+    only available with density-fitted, not conventional, MP2 algorithms.
 
 :ref:`-D Functionals <table:dft_disp>`
     We have several -D2 functionals implemented. -D3 functionls are available
