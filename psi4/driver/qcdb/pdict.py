@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
 from decimal import Decimal, ROUND_FLOOR, ROUND_CEILING
 from .exceptions import *
 

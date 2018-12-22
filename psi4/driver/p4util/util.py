@@ -183,8 +183,8 @@ def set_memory(inputval, execute=True):
     min_mem_allowed = 262144000
     if memory_amount < min_mem_allowed:
         raise ValidationError(
-            """set_memory(): Requested {:.3} MiB ({:.3} MB); minimum 250 MiB (263 MB). Please, sir, I want some more.""".format(
-                memory_amount / 1024**2, memory_amount / 1000**2))
+            """set_memory(): Requested {:.3} MiB ({:.3} MB); minimum 250 MiB (263 MB). Please, sir, I want some more."""
+            .format(memory_amount / 1024**2, memory_amount / 1000**2))
 
     if execute:
         core.set_memory_bytes(memory_amount)
@@ -217,9 +217,9 @@ def compare_values(expected, computed, digits, label, exitonfail=True):
 
     """
     if digits > 1:
-        thresh = 10 ** -digits
+        thresh = 10**-digits
         message = """\t{}: computed value ({:.{digits1}f}) does not match ({:.{digits1}f}) to {digits} digits.""".format(
-                  label, computed, expected, digits1=int(digits)+1, digits=digits)
+            label, computed, expected, digits1=int(digits) + 1, digits=digits)
     else:
         thresh = digits
         message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
@@ -271,12 +271,12 @@ def compare_matrices(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        message = ("\t%s has %d irreps, but %s has %d\n." %
-                   (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(),
+                                                             computed.nirrep()))
         raise TestComparisonError(message)
     if (expected.symmetry() != computed.symmetry()):
-        message = ("\t%s has %d symmetry, but %s has %d\n." %
-                   (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
+        message = ("\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(),
+                                                               computed.symmetry()))
         raise TestComparisonError(message)
     nirreps = expected.nirrep()
     symmetry = expected.symmetry()
@@ -295,8 +295,8 @@ def compare_matrices(expected, computed, digits, label):
         for row in range(rows):
             for col in range(cols):
                 if (abs(expected.get(irrep, row, col) - computed.get(irrep, row, col)) > 10**(-digits)):
-                    print("\t%s: computed value (%s) does not match (%s)." %
-                          (label, expected.get(irrep, row, col), computed.get(irrep, row, col)))
+                    print("\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, row, col),
+                                                                              computed.get(irrep, row, col)))
                     failed = 1
                     break
 
@@ -320,8 +320,8 @@ def compare_vectors(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        message = ("\t%s has %d irreps, but %s has %d\n." %
-                   (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
+        message = ("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(),
+                                                             computed.nirrep()))
         raise TestComparisonError(message)
     nirreps = expected.nirrep()
     for irrep in range(nirreps):
@@ -341,8 +341,8 @@ def compare_vectors(expected, computed, digits, label):
             computed.print_out()
             core.print_out("The reference vector\n")
             expected.print_out()
-            message = ("\t%s: computed value (%s) does not match (%s)." %
-                       (label, computed.get(irrep, entry), expected.get(irrep, entry)))
+            message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry),
+                                                                           expected.get(irrep, entry)))
             raise TestComparisonError(message)
     success(label)
     return True
@@ -447,6 +447,7 @@ def compare_wavefunctions(expected, computed, digits=9, label='Wavefunctions equ
 
     success(label)
     return True
+
 
 # Uncomment and use if compare_arrays above is inadequate
 #def compare_lists(expected, computed, digits, label):

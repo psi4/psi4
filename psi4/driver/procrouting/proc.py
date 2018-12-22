@@ -31,8 +31,6 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function. *name* can be assumed lowercase by here.
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 import shutil
 import subprocess
@@ -2065,7 +2063,7 @@ def run_scf(name, **kwargs):
         core.set_variable('CURRENT ENERGY', returnvalue)
         core.print_out('\n\n')
         core.print_out('    %s Energy Summary\n' % (name.upper()))
-        core.print_out('    -------------------------\n')
+        core.print_out('    ' + '-' * (15 + len(name)) + '\n')
         core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
         core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
         core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
@@ -2789,7 +2787,6 @@ def run_detci_property(name, **kwargs):
         ['OPDM'],
         ['TDM'])
 
-
     # Find valid properties
     valid_transition = ['TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE']
 
@@ -3132,6 +3129,7 @@ def run_dfmp2(name, **kwargs):
     optstash.restore()
     core.tstop()
     return dfmp2_wfn
+
 
 def run_dfep2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -4163,7 +4161,6 @@ def run_detcas(name, **kwargs):
     determinant-based multireference wavefuncations,
     namely CASSCF and RASSCF.
     """
-
     optstash = p4util.OptionsState(
         ['DETCI', 'WFN'],
         ['SCF_TYPE'],

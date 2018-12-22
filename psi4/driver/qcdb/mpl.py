@@ -31,8 +31,6 @@ any particular qcdb data structures but can be called with basic
 arguments.
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 #import matplotlib
 #matplotlib.use('Agg')

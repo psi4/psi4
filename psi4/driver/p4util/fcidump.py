@@ -320,7 +320,9 @@ def compare_fcidumps(expected, computed, label):
     try:
         from deepdiff import DeepDiff
     except ImportError:
-        raise ImportError("""Python module deepdiff not found. Solve by installing it: `conda install deepdiff -c conda-forge` or `pip install deepdiff`""")
+        raise ImportError(
+            """Python module deepdiff not found. Solve by installing it: `conda install deepdiff -c conda-forge` or `pip install deepdiff`"""
+        )
 
     # Grab expected header and integrals
     ref_intdump = fcidump_from_file(expected)
@@ -339,10 +341,14 @@ def compare_fcidumps(expected, computed, label):
     ref_energies = _energies_from_fcidump(ref_intdump)
     energies = _energies_from_fcidump(intdump)
 
-    pass_1el = compare_values(ref_energies['ONE-ELECTRON ENERGY'], energies['ONE-ELECTRON ENERGY'], 7, label + '. 1-electron energy')
-    pass_2el = compare_values(ref_energies['TWO-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'], 7, label + '. 2-electron energy')
-    pass_scf = compare_values(ref_energies['SCF TOTAL ENERGY'], energies['SCF TOTAL ENERGY'], 10, label + '. SCF total energy')
-    pass_mp2 = compare_values(ref_energies['MP2 CORRELATION ENERGY'], energies['MP2 CORRELATION ENERGY'], 10, label + '. MP2 correlation energy')
+    pass_1el = compare_values(ref_energies['ONE-ELECTRON ENERGY'], energies['ONE-ELECTRON ENERGY'], 7,
+                              label + '. 1-electron energy')
+    pass_2el = compare_values(ref_energies['TWO-ELECTRON ENERGY'], energies['TWO-ELECTRON ENERGY'], 7,
+                              label + '. 2-electron energy')
+    pass_scf = compare_values(ref_energies['SCF TOTAL ENERGY'], energies['SCF TOTAL ENERGY'], 10,
+                              label + '. SCF total energy')
+    pass_mp2 = compare_values(ref_energies['MP2 CORRELATION ENERGY'], energies['MP2 CORRELATION ENERGY'], 10,
+                              label + '. MP2 correlation energy')
 
     if (pass_1el and pass_2el and pass_scf and pass_mp2):
         success(label)

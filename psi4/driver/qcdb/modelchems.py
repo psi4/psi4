@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
 import collections
 
 # thinking now that QCEssential should have one doi and dictionary of

@@ -48,7 +48,6 @@ def kwargs_lower(kwargs):
 
     """
     caseless_kwargs = {}
-    # items() inefficient on Py2 but this is small dict
     for key, value in kwargs.items():
         lkey = key.lower()
         if lkey in ['subset', 'banner']:  # only kw for which case matters
@@ -126,8 +125,7 @@ def format_molecule_for_input(mol, name='', forcexyz=False):
             mol_string = mol.create_psi4_string_from_molecule()
         mol_name = mol.name() if name == '' else name
 
-    commands = """\nmolecule %s {\n%s%s\n}\n""" % (mol_name, mol_string,
-               '\nno_com\nno_reorient' if forcexyz else '')
+    commands = """\nmolecule %s {\n%s%s\n}\n""" % (mol_name, mol_string, '\nno_com\nno_reorient' if forcexyz else '')
     return commands
 
 
@@ -156,6 +154,8 @@ def format_options_for_input(molecule=None, **kwargs):
 
             if isinstance(chgdoptval, str):
                 commands += """core.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+
+
 # Next four lines were conflict between master and roa branches (TDC, 10/29/2014)
             elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
                 commands += """core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
@@ -288,38 +288,69 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
             if not line:
                 if E == 0.0:
                     if allvital:
-                        raise ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
+                        raise ValidationError(
+                            'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
                     else:
-                        ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
+                        ValidationError(
+                            'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
                 break
             s = line.strip().split(None, 10)
             if (len(s) != 0) and (s[0:3] == [quantity, 'RESULT:', 'computation']):
                 if int(s[3]) != linkage:
-                    raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
-                        % (sowout, str(s[3]), str(linkage)))
+                    raise ValidationError(
+                        'Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' %
+                        (sowout, str(s[3]), str(linkage)))
                 if s[6] != str(sownum + 1):
-                    raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
-                        % (sowout, s[6], str(sownum + 1)))
+                    raise ValidationError(
+                        'Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.' %
+                        (sowout, s[6], str(sownum + 1)))
                 if label == 'electronic energy' and s[8:10] == ['electronic', 'energy']:
-                        E = float(s[10])
-                        core.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
+                    E = float(s[10])
+                    core.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
                 if label == 'electronic gradient' and s[8:10] == ['electronic', 'gradient']:
-                        E = ast.literal_eval(s[-1])
-                        core.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
+                    E = ast.literal_eval(s[-1])
+                    core.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
         freagent.close()
     return E
 
 
 _modules = [
-        # PSI4 Modules
-        "ADC", "CCENERGY", "CCEOM", "CCDENSITY", "CCLAMBDA", "CCHBAR",
-        "CCRESPONSE", "CCSORT", "CCTRIPLES", "CLAG", "CPHF", "CIS",
-        "DCFT", "DETCI", "DFMP2", "DFTSAPT", "FINDIF", "FNOCC", "LMP2",
-        "MCSCF", "MINTS", "MRCC", "OCC", "OPTKING", "PSIMRCC", "RESPONSE",
-        "SAPT", "SCF", "STABILITY", "THERMO", "TRANSQT", "TRANSQT2",
-        # External Modules
-        "CFOUR",
-        ]
+    # PSI4 Modules
+    "ADC",
+    "CCENERGY",
+    "CCEOM",
+    "CCDENSITY",
+    "CCLAMBDA",
+    "CCHBAR",
+    "CCRESPONSE",
+    "CCSORT",
+    "CCTRIPLES",
+    "CLAG",
+    "CPHF",
+    "CIS",
+    "DCFT",
+    "DETCI",
+    "DFMP2",
+    "DFTSAPT",
+    "FINDIF",
+    "FNOCC",
+    "LMP2",
+    "MCSCF",
+    "MINTS",
+    "MRCC",
+    "OCC",
+    "OPTKING",
+    "PSIMRCC",
+    "RESPONSE",
+    "SAPT",
+    "SCF",
+    "STABILITY",
+    "THERMO",
+    "TRANSQT",
+    "TRANSQT2",
+    # External Modules
+    "CFOUR",
+]
 
 
 def reset_pe_options(pofm):
@@ -368,9 +399,8 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
             if opt in ['DFT_CUSTOM_FUNCTIONAL', 'EXTERN']:  # Feb 2017 hack
                 continue
             val = core.get_global_option(opt)
-            options['GLOBALS'][opt] = {'value': val,
-                                       'has_changed': core.has_global_option_changed(opt)}
-            if isinstance(val, basestring):
+            options['GLOBALS'][opt] = {'value': val, 'has_changed': core.has_global_option_changed(opt)}
+            if isinstance(val, str):
                 commands += """core.set_global_option('%s', '%s')\n""" % (opt, val)
             else:
                 commands += """core.set_global_option('%s', %s)\n""" % (opt, val)

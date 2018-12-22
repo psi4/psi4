@@ -75,10 +75,8 @@ def _pybuild_basis(mol,
     # if a string, they search for a gbs file with that name.
     # if a function, it needs to apply a basis to each atom.
 
-    bs, basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(),
-                                              key, resolved_target, fitrole, other,
-                                              return_dict=True,
-                                              return_atomlist=return_atomlist)
+    bs, basisdict = qcdb.BasisSet.pyconstruct(
+        mol.to_dict(), key, resolved_target, fitrole, other, return_dict=True, return_atomlist=return_atomlist)
 
     if return_atomlist:
         atom_basis_list = []
@@ -87,8 +85,7 @@ def _pybuild_basis(mol,
             lmbs = core.BasisSet.construct_from_pydict(atommol, atbs, puream)
             atom_basis_list.append(lmbs)
         return atom_basis_list
-    if ((sys.version_info < (3, 0) and isinstance(resolved_target, basestring))
-            or (sys.version_info >= (3, 0) and isinstance(resolved_target, str))):
+    if isinstance(resolved_target, str):
         basisdict['name'] = basisdict['name'].split('/')[-1].replace('.gbs', '')
     if callable(resolved_target):
         basisdict['name'] = resolved_target.__name__.replace('basisspec_psi4_yo__', '').upper()
@@ -113,9 +110,7 @@ core.BasisSet.build = _pybuild_basis
 def _core_wavefunction_build(mol, basis=None):
     if basis is None:
         basis = core.BasisSet.build(mol)
-    elif (sys.version_info[0] == 2) and isinstance(basis, (str, unicode)):
-        basis = core.BasisSet.build(mol, "ORBITAL", basis)
-    elif (sys.version_info[0] > 2) and isinstance(basis, str):
+    elif isinstance(basis, str):
         basis = core.BasisSet.build(mol, "ORBITAL", basis)
 
     wfn = core.Wavefunction(mol, basis)
@@ -137,10 +132,10 @@ def _core_wavefunction_from_file(wfn_data):
     # otherwise a dictionary was passed in
     else:
         pass
-    
+
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
-    wfn_vector= wfn_data['vector']
+    wfn_vector = wfn_data['vector']
     wfn_dimension = wfn_data['dimension']
     wfn_int = wfn_data['int']
     wfn_string = wfn_data['string']
@@ -164,23 +159,23 @@ def _core_wavefunction_from_file(wfn_data):
     # change some variables to psi4 specific data types (Matrix, Vector, Dimension)
     for label in wfn_matrix:
         array = wfn_matrix[label]
-        wfn_matrix[label] = core.Matrix.from_array(array,name=label) if array is not None else None
-    
+        wfn_matrix[label] = core.Matrix.from_array(array, name=label) if array is not None else None
+
     for label in wfn_vector:
         array = wfn_vector[label]
-        wfn_vector[label] = core.Vector.from_array(array,name=label) if array else None
+        wfn_vector[label] = core.Vector.from_array(array, name=label) if array else None
 
     for label in wfn_dimension:
         tup = wfn_dimension[label]
-        wfn_dimension[label] = core.Dimension.from_list(tup,name=label) if tup else None
+        wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup else None
 
     for label in wfn_matrixarr:
         array = wfn_dimension[label]
-        wfn_dimension[label] = core.Matrix.from_array(array,name=label) if array else None
+        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array else None
 
-    # make the wavefunction 
-    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int,
-                            wfn_string, wfn_boolean, wfn_float)
+    # make the wavefunction
+    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int, wfn_string,
+                            wfn_boolean, wfn_float)
 
     # some of the wavefunction's variables can be changed directly
     for k, v in wfn_floatvar.items():
@@ -260,12 +255,12 @@ def _core_wavefunction_to_file(wfn, filename=None):
             'dipole_field_y': wfn.get_dipole_field_strength()[1],
             'dipole_field_z': wfn.get_dipole_field_strength()[2]
         },
-        'floatvar' : wfn.scalar_variables(),
-        'matrixarr' : {k: v.to_array() for k, v in wfn.array_variables().items()}
+        'floatvar': wfn.scalar_variables(),
+        'matrixarr': {k: v.to_array() for k, v in wfn.array_variables().items()}
     }  # yapf: disable
 
     if filename is not None:
-        np.save(filename,wfn_data)
+        np.save(filename, wfn_data)
     else:
         return wfn_data
 
@@ -321,9 +316,8 @@ def _core_jk_build(orbital_basis, aux=None, jk_type=None):
 
     if aux is None:
         if core.get_global_option("SCF_TYPE") == "DF":
-            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
-                                      core.get_option("SCF", "DF_BASIS_SCF"), "JKFIT",
-                                      core.get_global_option('BASIS'), orbital_basis.has_puream())
+            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF", core.get_option("SCF", "DF_BASIS_SCF"),
+                                      "JKFIT", core.get_global_option('BASIS'), orbital_basis.has_puream())
         else:
             aux = core.BasisSet.zero_ao_basis_set()
 
@@ -526,7 +520,6 @@ def _core_set_global_option_python(key, EXTERN):
 
 core.set_global_option_python = _core_set_global_option_python
 
-
 ## QCvar helps
 
 
@@ -629,7 +622,6 @@ core.Wavefunction.set_variable = _core_wavefunction_set_variable
 core.Wavefunction.del_variable = _core_wavefunction_del_variable
 core.Wavefunction.variables = _core_wavefunction_variables
 
-
 ## Psi4 v1.4 Export Deprecations
 
 
@@ -707,7 +699,6 @@ core.Wavefunction.get_variable = _core_wavefunction_get_variable
 core.Wavefunction.get_array = _core_wavefunction_get_array
 core.Wavefunction.set_array = _core_wavefunction_set_array
 core.Wavefunction.arrays = _core_wavefunction_arrays
-
 
 ## Psi4 v1.3 Export Deprecations
 

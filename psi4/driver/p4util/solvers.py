@@ -87,8 +87,7 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
         core.print_out("    Maxiter             = %11d\n" % maxiter)
         core.print_out("    Convergence         = %11.3E\n" % rcond)
         core.print_out("    Number of equations = %11ld\n\n" % len(rhs_vec))
-        core.print_out("     %4s %14s %12s  %6s  %6s\n" %
-                       ("Iter", "Residual RMS", "Max RMS", "Remain", "Time [s]"))
+        core.print_out("     %4s %14s %12s  %6s  %6s\n" % ("Iter", "Residual RMS", "Max RMS", "Remain", "Time [s]"))
         core.print_out("   -----------------------------------------------------\n")
 
     nrhs = len(rhs_vec)
@@ -117,14 +116,14 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
     # First RMS
     grad_dot = [x.sum_of_squares() for x in rhs_vec]
 
-    resid = [(r_vec[x].sum_of_squares() / grad_dot[x]) ** 0.5 for x in range(nrhs)]
+    resid = [(r_vec[x].sum_of_squares() / grad_dot[x])**0.5 for x in range(nrhs)]
 
     if printer:
         resid = printer(0, x_vec, r_vec)
     elif printlvl:
         # core.print_out('         CG Iteration Guess:    Rel. RMS = %1.5e\n' %  np.mean(resid))
-        core.print_out("    %5s %14.3e %12.3e %7d %9d\n" % (
-            "Guess", np.mean(resid), np.max(resid), len(z_vec), time.time() - tstart))
+        core.print_out("    %5s %14.3e %12.3e %7d %9d\n" % ("Guess", np.mean(resid), np.max(resid), len(z_vec),
+                                                            time.time() - tstart))
 
     rms = np.mean(resid)
     rz_old = [0.0 for x in range(nrhs)]
@@ -151,8 +150,7 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
 
             x_vec[x].axpy(alpha[x], p_vec[x])
             r_vec[x].axpy(-alpha[x], Ap_vec[x])
-            resid[x] = (r_vec[x].sum_of_squares() / grad_dot[x]) ** 0.5
-
+            resid[x] = (r_vec[x].sum_of_squares() / grad_dot[x])**0.5
 
         # Print out or compute the resid function
         if printer:
@@ -165,9 +163,8 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
 
         # Print out if requested
         if printlvl:
-            core.print_out("    %5d %14.3e %12.3e %7d %9d\n" % (
-                rot_iter + 1, np.mean(resid), np.max(resid), sum(active_mask), time.time() - tstart))
-
+            core.print_out("    %5d %14.3e %12.3e %7d %9d\n" % (rot_iter + 1, np.mean(resid), np.max(resid),
+                                                                sum(active_mask), time.time() - tstart))
 
         active = np.where(active_mask)[0]
 
@@ -188,7 +185,6 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
 
 
 class DIIS(object):
-
     """
     An object to assist in the DIIS extrpolation procedure.
     """

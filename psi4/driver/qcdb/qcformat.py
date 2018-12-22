@@ -29,8 +29,6 @@
 """Parent classes for quantum chemistry program input and output file
 formats.
 """
-from __future__ import absolute_import
-from __future__ import print_function
 import re
 
 

@@ -35,6 +35,7 @@ import warnings
 from psi4 import core
 from psi4.driver import constants
 
+
 class Table(object):
     """Class defining a flexible Table object for storing data."""
 
@@ -50,7 +51,7 @@ class Table(object):
         self.rows = rows
 
         if isinstance(cols, str):
-            self.cols = (cols,)
+            self.cols = (cols, )
         else:
             self.cols = cols
 

@@ -27,8 +27,6 @@
 #
 
 """Module with functions that interface with Grimme's GCP code."""
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import re
 import uuid
@@ -68,7 +66,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     elif isinstance(self, core.Molecule):
         # called on a python export of a psi4.core.Molecule (py-side through Psi4's driver)
         self.create_psi4_string_from_molecule()
-    elif isinstance(self, basestring):
+    elif isinstance(self, str):
         # called on a string representation of a psi4.Molecule (c-side through psi4.Dispersion)
         self = Molecule(self)
     else:

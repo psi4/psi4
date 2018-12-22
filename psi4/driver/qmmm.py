@@ -30,7 +30,6 @@
 a QM calculation.
 
 """
-from __future__ import absolute_import
 
 from psi4.driver import *
 
