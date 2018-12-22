@@ -72,6 +72,7 @@ ROHF::ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Op
 ROHF::~ROHF() {}
 
 void ROHF::common_init() {
+    name_ = "ROHF";
     Fa_ = SharedMatrix(factory_->create_matrix("Alpha Fock Matrix"));
     Fb_ = SharedMatrix(factory_->create_matrix("Beta Fock Matrix"));
     moFeff_ = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));

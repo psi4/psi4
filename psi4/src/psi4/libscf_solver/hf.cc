@@ -503,8 +503,8 @@ void HF::print_header() {
     outfile->Printf("\n");
     outfile->Printf("         ---------------------------------------------------------\n");
     outfile->Printf("                                   SCF\n");
-    outfile->Printf("            by Justin Turney, Rob Parrish, Andy Simmonett\n");
-    outfile->Printf("                             and Daniel Smith\n");
+    outfile->Printf("               by Justin Turney, Rob Parrish, Andy Simmonett\n");
+    outfile->Printf("                          and Daniel G. A. Smith\n");
     outfile->Printf("                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
     outfile->Printf("                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1048576L);
     outfile->Printf("         ---------------------------------------------------------\n");

@@ -68,6 +68,7 @@ CUHF::CUHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Op
 CUHF::~CUHF() {}
 
 void CUHF::common_init() {
+    name_ = "CUHF";
     Drms_ = 0.0;
 
     Fa_ = SharedMatrix(factory_->create_matrix("F alpha"));

@@ -140,7 +140,9 @@ def _core_wavefunction_from_file(wfn_data):
     """
     # load the wavefunction from file
     if isinstance(wfn_data, str):
-        wfn_data = np.load(wfn_data + '.npy').item()
+        if not wfn_data.endswith(".npy"):
+            wfn_data = wfn_data + ".npy"
+        wfn_data = np.load(wfn_data).item()
     elif isinstance(wfn_data, dict):
         pass
     else:

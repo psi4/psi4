@@ -208,7 +208,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 def _print_header(complete_dict, n_user):
     core.print_out('\n\n         ---------------------------------------------------------\n'
                    '         {:^57}\n'.format('CPSCF Linear Response Solver') +
-                   '         {:^57}\n'.format('by Marvin Lechner and Daniel Smith') +
+                   '         {:^57}\n'.format('by Marvin Lechner and Daniel G. A. Smith') +
                    '         ---------------------------------------------------------\n')
 
     core.print_out('\n   ==> Requested Responses <==\n\n')

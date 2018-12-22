@@ -76,6 +76,8 @@ RHF::RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Opti
 RHF::~RHF() {}
 
 void RHF::common_init() {
+    name_ = "RHF";
+
     if (multiplicity_ != 1) throw PSIEXCEPTION("RHF: RHF reference is only for singlets.");
     Drms_ = 0.0;
 
