@@ -35,6 +35,7 @@
 DFT-NL
 ======
 
+.. codeauthor:: Daniel G. A. Smith and Holger Kruse
 .. sectionauthor:: Holger Kruse
 
 Non-local (NL), density based correlation energy from the VV10 kernel can be added
@@ -42,23 +43,23 @@ to arbitrary functionals.
 
 .. math:: E_{DFT-NL}=E_{DFT}+E_{NL}
 
-For pre-defined functionals (see Functional overview in :ref:`this Table <table:dft_all>` ) it is sufficient to add `-NL` to 
+For pre-defined functionals (see Functional overview in :ref:`this Table <table:dft_all>` ) it is sufficient to add `-NL` to
 the functional name::
 
     energy('b3lyp-nl')
 
 Modification of the parameters `b` and `C` is done setting |scf__DFT_VV10_B| and |scf__DFT_VV10_C|. The `C` is usually left unchanged and the originally proposed
-value of `C=0.0093` is used. 
+value of `C=0.0093` is used.
 
 Adding |scf__DFT_VV10_B| to any functional activates the calculation of the VV10 kernel. A BLYP-NL calculation can be set as follows::
-   
+
     set DFT_VV10_B 4.0
     energy('blyp')
 
 The default `C` parameter will be used.
 
 Similar to |scf__DFT_DISPERSION_PARAMETERS| the tuple |scf__NL_DISPERSION_PARAMETERS| can used::
-    
+
     set NL_DISPERSION_PARAMTERS [4.0]
     energy('blyp')
 
