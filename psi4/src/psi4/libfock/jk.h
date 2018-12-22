@@ -838,7 +838,7 @@ class PSI_API DiskDFJK : public JK {
     /// Common initialization
     void common_init();
 
-    bool is_core() const;
+    bool is_core();
     size_t memory_temp() const;
     int max_rows() const;
     int max_nocc() const;
@@ -930,6 +930,8 @@ class PSI_API DiskDFJK : public JK {
 class PSI_API CDJK : public DiskDFJK {
    protected:
     std::string name() override { return "CDJK"; }
+    size_t memory_estimate() override;
+
 
     // the number of cholesky vectors
     long int ncholesky_;

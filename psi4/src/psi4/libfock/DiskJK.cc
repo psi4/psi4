@@ -54,7 +54,7 @@ DiskJK::DiskJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary
 DiskJK::~DiskJK() {}
 void DiskJK::common_init() {}
 size_t DiskJK::memory_estimate() {
-    return 0;
+    return 0; // Effectively zero
 }
 void DiskJK::print_header() const {
     if (print_) {

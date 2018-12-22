@@ -287,8 +287,8 @@ class PSI_API DFHelper {
 
     // => internal holders <=
     std::string method_ = "STORE";
-    bool direct_;
-    bool direct_iaQ_;
+    bool direct_ = false;
+    bool direct_iaQ_ = false;
     bool symm_compute_;
     bool AO_core_ = true;
     bool MO_core_ = false;

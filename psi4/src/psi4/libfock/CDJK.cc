@@ -56,6 +56,13 @@ CDJK::CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance)
     : DiskDFJK(primary, primary), cholesky_tolerance_(cholesky_tolerance) {}
 CDJK::~CDJK() {}
 void CDJK::initialize_JK_disk() { throw PsiException("Disk algorithm for CD JK not implemented.", __FILE__, __LINE__); }
+size_t CDJK::memory_estimate() {
+    // Size is unknown until actual evaluation
+    size_t nbf = primary_->nbf();
+
+    // Assume cholesky index is ~4x of nbf.
+    return nbf * nbf * nbf * 4;
+}
 
 void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");

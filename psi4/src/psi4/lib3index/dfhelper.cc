@@ -228,6 +228,10 @@ void DFHelper::AO_core() {
 
 }
 void DFHelper::print_header() {
+
+    // Preps any required metadata, safe to call multiple times
+    get_core_size();
+
     outfile->Printf("  ==> DFHelper <==\n");
     outfile->Printf("    nao:                     %11ld\n", nao_);
     outfile->Printf("    naux:                    %11ld\n", naux_);

@@ -70,7 +70,22 @@ void DiskDFJK::common_init() {
     psio_ = PSIO::shared_object();
 }
 size_t DiskDFJK::memory_estimate() {
-    return (size_t)5e9;
+    // DF requires constant sieve, must be static throughout object life
+    if (!sieve_) {
+        sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
+    }
+
+    size_t ntri = sieve_->function_pairs().size();
+    size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
+    size_t two_memory = 2 * ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
+
+    if (do_wK_) { three_memory *= 3; }
+
+    size_t memory = three_memory + two_memory;
+    memory += memory_overhead();
+    memory += memory_temp();
+
+    return memory;
 }
 SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
     // Target quantity
@@ -270,20 +285,8 @@ void DiskDFJK::print_header() const {
         auxiliary_->print_by_level("outfile", print_);
     }
 }
-bool DiskDFJK::is_core() const {
-    size_t ntri = sieve_->function_pairs().size();
-    size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
-    size_t two_memory = ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
-
-    size_t mem = memory_;
-    mem -= memory_overhead();
-    mem -= memory_temp();
-
-    // Two is for buffer space in fitting
-    if (do_wK_)
-        return (3L * three_memory + 2L * two_memory < memory_);
-    else
-        return (three_memory + 2L * two_memory < memory_);
+bool DiskDFJK::is_core() {
+    return memory_estimate() < memory_;
 }
 size_t DiskDFJK::memory_temp() const {
     size_t mem = 0L;
@@ -394,10 +397,6 @@ void DiskDFJK::free_w_temps() {
     Q_temp_.clear();
 }
 void DiskDFJK::preiterations() {
-    // DF requires constant sieve, must be static throughout object life
-    if (!sieve_) {
-        sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
-    }
 
     // Core or disk?
     is_core_ = is_core();

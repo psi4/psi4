@@ -165,33 +165,12 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             return build_JK(primary, auxiliary, options, "DISK_DF");
 
         } else {
-            // conservative estimate for size of 3-center AOs
-            size_t nbf = primary->nbf();
-            size_t naux = auxiliary->nbf();
-            size_t required = naux * nbf * nbf;
-            required += naux * naux;
-            required += Process::environment.get_n_threads() * nbf * nbf;
-            required += 3 * nbf * nbf * auxiliary->max_function_per_shell();
-
-            // Conservative estimate works, return
-            if (required < doubles) {
-                return build_JK(primary, auxiliary, options, "MEM_DF");
-            }
-
             // Build exact estimate via Schwarz metrics
-            auto jk = std::make_shared<MemDFJK>(primary, auxiliary);
-            _set_dfjk_options<MemDFJK>(jk.get(), options);
-
-            auto dfh = jk->dfh();
-
-            // Set nthread/cutoff explicitly
-            dfh->set_nthreads(jk->get_omp_nthread());
-            dfh->set_schwarz_cutoff(jk->get_cutoff());
-            required = dfh->get_core_size();
-
-            if (required < doubles) {
-                return std::static_pointer_cast<JK>(jk);
+            auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
+            if (jk->memory_estimate() < doubles) {
+                return jk;
             }
+            jk.reset();
 
             // Use Disk DFJK
             return build_JK(primary, auxiliary, options, "DISK_DF");
