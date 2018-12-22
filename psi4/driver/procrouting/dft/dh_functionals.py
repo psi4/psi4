@@ -110,7 +110,6 @@ funcs.append({
 
 funcs.append({
     "name": "DSD-BLYP-D3BJ",
-    "alias": ["DSD-BLYP-D3(BJ)"],
     "x_functionals": {
         "GGA_X_B88": {
             "alpha": 0.29
@@ -275,7 +274,6 @@ funcs.append({
 
 funcs.append({
     "name": "DSD-PBEP86-D3BJ",
-    "alias": ["DSD-PBEP86-D3(BJ)"],
     "x_functionals": {
         "GGA_X_PBE": {
             "alpha": 0.31
@@ -431,7 +429,6 @@ funcs.append({
 
 funcs.append({
     "name": "DSD-PBEPBE-D3BJ",
-    "alias": ["DSD-PBEPBE-D3(BJ)"],
     "x_functionals": {
         "GGA_X_PBE": {
             "alpha": 0.32
@@ -707,7 +704,6 @@ funcs.append({
 
 funcs.append({
     "name": "DSD-PBEB95-D3BJ",
-    "alias": ["DSD-PBEB95-D3(BJ)"],
     "x_functionals": {
         "GGA_X_PBE": {
             "alpha": 0.34

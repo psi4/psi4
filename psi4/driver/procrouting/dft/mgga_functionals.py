@@ -187,7 +187,6 @@ funcs.append({
 
 funcs.append({
     "name": "B97M-D3BJ",
-    "alias": ["B97M-D3(BJ)"],
     "xc_functionals": {
         "MGGA_XC_B97M_V": {}
     },
