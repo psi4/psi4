@@ -81,6 +81,9 @@ class PSI_API DFHelper {
     /// Returns the number of doubles in the *screened* AO integrals
     size_t get_AO_size() { return big_skips_[nao_]; }
 
+    /// Returns the size of the in-core version in doubles
+    size_t get_core_size() { AO_core(); return required_core_size_;}
+
     /// Returns the amount of sparsity in the AO integrals
     double ao_sparsity() { return (1.0 - (double)small_skips_[nao_] / (double)(nao_ * nao_)); }
 
@@ -146,9 +149,13 @@ class PSI_API DFHelper {
     /// @param print_lvl indicating verbosity
     ///
     void set_print_lvl(int print_lvl) { print_lvl_ = print_lvl; }
+    int get_print_lvl() { return print_lvl_; }
 
     /// Initialize the object
     void initialize();
+
+    /// Prepare the sparsity matrix
+    void prepare_sparsity();
 
     /// print tons of useful info
     void print_header();
@@ -276,6 +283,7 @@ class PSI_API DFHelper {
 
     // => memory in doubles <=
     size_t memory_ = 256000000;
+    size_t required_core_size_;
 
     // => internal holders <=
     std::string method_ = "STORE";
@@ -296,6 +304,7 @@ class PSI_API DFHelper {
     bool do_wK_ = false;
     double omega_;
     bool debug_ = false;
+    bool sparsity_prepared_ = false;
     int print_lvl_ = 1;
 
     // => in-core machinery <=
@@ -348,7 +357,6 @@ class PSI_API DFHelper {
     std::vector<size_t> schwarz_fun_mask_;
     std::vector<size_t> schwarz_shell_mask_;
     std::vector<size_t> schwarz_fun_count_;
-    void prepare_sparsity();
 
     // => Coulomb metric handling <=
     std::vector<std::pair<double, std::string>> metric_keys_;

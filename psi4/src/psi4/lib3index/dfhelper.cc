@@ -168,9 +168,7 @@ void DFHelper::initialize() {
     if (!(std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
 
     // prepare sparsity masks
-    timer_on("DFH: sparsity prep");
     prepare_sparsity();
-    timer_off("DFH: sparsity prep");
 
     // figure out AO_core
     AO_core();
@@ -202,30 +200,31 @@ void DFHelper::initialize() {
     }
 }
 void DFHelper::AO_core() {
-    size_t required;
+
+    prepare_sparsity();
 
     if (direct_iaQ_) {
         // the direct_iaQ method does not use sparse storage
         // if do_wK added to code, the following will need to be changed to match
-        required = naux_ * nao_ * nao_;
+        required_core_size_ = naux_ * nao_ * nao_;
     } else {
         // total size of sparse AOs
-        required = (do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
+        required_core_size_ = (do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
     }
 
     // C_buffers (conservative estimate since I do not have max_nocc TODO)
-    required += nthreads_ * nao_ * nao_;
+    required_core_size_ += nthreads_ * nao_ * nao_;
 
     // Tmp buffers (again, I do not have max_nocc TODO)
-    required += 3 * nao_ * nao_ * Qshell_max_;
+    required_core_size_ += 3 * nao_ * nao_ * Qshell_max_;
 
     // a fraction of memory to use, do we want it as an option?
-    if (memory_ < required) AO_core_ = false;
+    if (memory_ < required_core_size_) AO_core_ = false;
 
     if (print_lvl_ > 0) {
         outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
-                        (required * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
-        outfile->Printf("%s in-core AOs.\n\n", (memory_ < required) ? "Turning off" : "Using");
+                        (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
+        outfile->Printf("%s in-core AOs.\n\n", (memory_ < required_core_size_) ? "Turning off" : "Using");
     }
 }
 void DFHelper::print_header() {
@@ -247,6 +246,9 @@ void DFHelper::print_header() {
 }
 
 void DFHelper::prepare_sparsity() {
+    if (sparsity_prepared_) return;
+    timer_on("DFH: sparsity prep");
+
     // prep info vectors
     std::vector<double> shell_max_vals(pshells_ * pshells_, 0.0);
     std::vector<double> fun_max_vals(nao_ * nao_, 0.0);
@@ -360,6 +362,9 @@ void DFHelper::prepare_sparsity() {
     for (size_t i = 1; i < nao_ + 1; i++) {
         symm_big_skips_[i] = symm_big_skips_[i - 1] + symm_small_skips_[i - 1] * naux_;
     }
+
+    sparsity_prepared_ = true;
+    timer_off("DFH: sparsity prep");
 }
 
 void DFHelper::prepare_AO() {

@@ -40,6 +40,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/cholesky.h"
+#include "psi4/lib3index/dfhelper.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -54,6 +55,18 @@
 using namespace psi;
 
 namespace psi {
+
+template<class T>
+void _set_dfjk_options(T* jk, Options& options){
+    if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+    if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
+    if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+    if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+    if (options["DF_FITTING_CONDITION"].has_changed())
+        jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+    if (options["DF_INTS_NUM_THREADS"].has_changed())
+        jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+}
 
 JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
 JK::~JK() {}
@@ -84,31 +97,14 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "DISK_DF") {
         DiskDFJK* jk = new DiskDFJK(primary, auxiliary);
-
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+        _set_dfjk_options<DiskDFJK>(jk, options);
         if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
-        if (options["DF_FITTING_CONDITION"].has_changed())
-            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
-        if (options["DF_INTS_NUM_THREADS"].has_changed())
-            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "MEM_DF") {
         MemDFJK* jk = new MemDFJK(primary, auxiliary);
-
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-        // if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
-        if (options["DF_FITTING_CONDITION"].has_changed())
-            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
-        if (options["DF_INTS_NUM_THREADS"].has_changed())
-            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        _set_dfjk_options<MemDFJK>(jk, options);
 
         return std::shared_ptr<JK>(jk);
 
@@ -172,13 +168,37 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             // conservative estimate for size of 3-center AOs
             size_t nbf = primary->nbf();
             size_t naux = auxiliary->nbf();
-            size_t required = naux * nbf * nbf;  // + nthreads_ * nbf * nbf TODO
+            size_t required = naux * nbf * nbf;
+            required += naux * naux;
+            required += Process::environment.get_n_threads() * nbf * nbf;
+            required += 3 * nbf * nbf * auxiliary->max_function_per_shell();
 
-            if (required > doubles) {
-                return build_JK(primary, auxiliary, options, "DISK_DF");
-            } else {
+            // Conservative estimate works, return
+            if (required < doubles) {
                 return build_JK(primary, auxiliary, options, "MEM_DF");
             }
+
+            // Build exact estimate via Schwarz metrics
+            auto jk = std::make_shared<MemDFJK>(primary, auxiliary);
+            _set_dfjk_options<MemDFJK>(jk.get(), options);
+
+            auto dfh = jk->dfh();
+
+            // Set nthread/cutoff explicitly and capture print level
+            int plvl = dfh->get_print_lvl();
+            dfh->set_nthreads(jk->get_omp_nthread());
+            dfh->set_schwarz_cutoff(jk->get_cutoff());
+
+            dfh->set_print_lvl(0);
+            required = dfh->get_core_size();
+            dfh->set_print_lvl(plvl);
+
+            if (required < doubles) {
+                return std::static_pointer_cast<JK>(jk);
+            }
+
+            // Use Disk DFJK
+            return build_JK(primary, auxiliary, options, "DISK_DF");
         }
 
     } else {  // otherwise it has already been set
