@@ -17,6 +17,8 @@ set {
   scf_type pk
   df_scf_guess false
   guess core
+  docc [ 3, 0, 1, 1 ]
+
 }
 energy('scf')
 
@@ -40,6 +42,8 @@ H 1 0.9015
 set {
   reference uhf
   guess core
+  docc [ 3, 0, 0, 1 ]
+  socc [ 0, 0, 1, 0 ]
 }
 energy('scf')
 compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, CORE guess (a.u.)");             #TEST
