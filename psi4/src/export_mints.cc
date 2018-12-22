@@ -1169,6 +1169,7 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&>())
         .def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group")
         .def("order", &PointGroup::order, "Return the order of the point group")
+        .def("bits", &PointGroup::bits, "Return the bit representation of the point group")
         .def("char_table", &PointGroup::char_table, "Return the CharacterTable of the point group");
     // def("origin", &PointGroup::origin).
     //            def("set_symbol", &PointGroup::set_symbol);
@@ -1343,9 +1344,11 @@ void export_mints(py::module& m) {
              "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)")
         .def("nuclear_repulsion_energy_deriv2", &Molecule::nuclear_repulsion_energy_deriv2,
              "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)")
-        .def("find_point_group", &Molecule::find_point_group,
+        .def("find_point_group", &Molecule::find_point_group, py::arg("tolerance") = DEFAULT_SYM_TOL,
              "Finds computational molecular point group, user can override this with the symmetry "
              "keyword")
+        .def("find_highest_point_group", &Molecule::find_highest_point_group, py::arg("tolerance") = DEFAULT_SYM_TOL,
+             "Finds highest possible computational molecular point group")
         .def("reset_point_group", &Molecule::reset_point_group, "Overrides symmetry from outside the molecule string")
         .def("set_point_group", &Molecule::set_point_group,
              "Sets the molecular point group to the point group object arg0")

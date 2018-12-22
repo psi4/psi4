@@ -1961,7 +1961,8 @@ std::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const {
         int end = user.length() - 1;
 
         bool user_specified_direction = false;
-        // Did the user provide directionality? If they did, the last letter would be x, y, or z
+        // Did the user provide directionality? If they did, the last letter (not character) would be x, y, or z
+        end -= (user[end] == ')');
         if (user[end] == 'X' || user[end] == 'x' || user[end] == 'Y' || user[end] == 'y' || user[end] == 'Z' ||
             user[end] == 'z') {
             // Directionality given, assume the user is smart enough to know what they're doing.
