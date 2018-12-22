@@ -87,6 +87,9 @@ using_dftd3 = pytest.mark.skipif(_which('dftd3', return_bool=True) is False,
 using_gcp = pytest.mark.skipif(_which("gcp", return_bool=True) is False,
                                 reason="Not detecting executable gcp. Install package if necessary and add to envvar PSIPATH or PATH")
 
+using_mp2d = pytest.mark.skipif(_which('mp2d', return_bool=True) is False,
+                                reason='Not detecting executable mp2d. Install package if necessary and add to envvar PATH or PSIPATH')
+
 #using_scipy = pytest.mark.skipif(_plugin_import('scipy') is False,
 #                                reason='Not detecting module scipy. Install package if necessary and add to envvar PYTHONPATH')
 #

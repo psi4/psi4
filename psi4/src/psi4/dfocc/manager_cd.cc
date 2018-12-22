@@ -94,21 +94,22 @@ void DFOCC::cd_omp2_manager() {
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["CURRENT ENERGY"] = Emp2;
-    Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+    energy_ = Emp2;
+    variables_["CURRENT ENERGY"] = Emp2;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
     Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
 
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
+    variables_["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
     Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
 
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
 
     omp2_opdm();
     omp2_tpdm();
@@ -194,9 +195,10 @@ void DFOCC::cd_omp2_manager() {
         Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] = Escsmp2;
         Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] = Esosmp2;
         Process::environment.globals["SCSN-OMP2 TOTAL ENERGY"] = Escsnmp2;
-        Process::environment.globals["CURRENT ENERGY"] = Emp2L;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2L - Escf;
+        energy_ = Emp2L;
+        variables_["CURRENT ENERGY"] = Emp2L;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = Emp2L - Escf;
 
         Process::environment.globals["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
         Process::environment.globals["SCS-OMP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
@@ -206,21 +208,24 @@ void DFOCC::cd_omp2_manager() {
         // if scs on
         if (do_scs == "TRUE") {
             if (scs_type_ == "SCS") {
-                Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
+                energy_ = Escsmp2;
+                variables_["CURRENT ENERGY"] = Escsmp2;
+                variables_["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
             }
 
             else if (scs_type_ == "SCSN") {
-                Process::environment.globals["CURRENT ENERGY"] = Escsnmp2;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
+                energy_ = Escsnmp2;
+                variables_["CURRENT ENERGY"] = Escsnmp2;
+                variables_["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
             }
         }
 
         // else if sos on
         else if (do_sos == "TRUE") {
             if (sos_type_ == "SOS") {
-                Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
+                energy_ = Esosmp2;
+                variables_["CURRENT ENERGY"] = Esosmp2;
+                variables_["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
             }
         }
 
@@ -298,21 +303,22 @@ void DFOCC::cd_mp2_manager() {
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["CURRENT ENERGY"] = Emp2;
-    Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+    energy_ = Emp2;
+    variables_["CURRENT ENERGY"] = Emp2;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
     Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
 
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
+    variables_["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
     Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
 
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
 
 }  // end mp2_manager
 

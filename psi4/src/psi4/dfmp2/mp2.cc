@@ -745,12 +745,19 @@ void DFMP2::print_energies() {
                                            variables_["MP2 SINGLES ENERGY"];
     variables_["MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] + variables_["MP2 CORRELATION ENERGY"];
 
-    variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = oss_ * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"];
-    variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = sss_ * variables_["MP2 SAME-SPIN CORRELATION ENERGY"];
-    variables_["SCS-MP2 CORRELATION ENERGY"] = variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
-                                               variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] +
-                                               variables_["MP2 SINGLES ENERGY"];
+    //variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = oss_ * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"];
+    //variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = sss_ * variables_["MP2 SAME-SPIN CORRELATION ENERGY"];
+    //variables_["SCS-MP2 CORRELATION ENERGY"] = variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+    //                                           variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] +
+    //                                           variables_["MP2 SINGLES ENERGY"];
+    variables_["SCS-MP2 CORRELATION ENERGY"] = 6.0/5.0 * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+                                               1.0/3.0 * variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
+                                                         variables_["MP2 SINGLES ENERGY"];
     variables_["SCS-MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] + variables_["SCS-MP2 CORRELATION ENERGY"];
+    variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"] = oss_ * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+                                                      sss_ * variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
+                                                             variables_["MP2 SINGLES ENERGY"];
+    variables_["CUSTOM SCS-MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] + variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"];
 
     outfile->Printf("\t-----------------------------------------------------------\n");
     outfile->Printf("\t ==================> DF-MP2 Energies <==================== \n");
@@ -775,18 +782,8 @@ void DFMP2::print_energies() {
     outfile->Printf("\t %-25s = %24.16f [Eh]\n", "SCS Total Energy", variables_["SCS-MP2 TOTAL ENERGY"]);
     outfile->Printf("\t-----------------------------------------------------------\n");
     outfile->Printf("\n");
-
-    Process::environment.globals["CURRENT ENERGY"] = variables_["MP2 TOTAL ENERGY"];
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = variables_["MP2 CORRELATION ENERGY"];
-    Process::environment.globals["MP2 TOTAL ENERGY"] = variables_["MP2 TOTAL ENERGY"];
-    Process::environment.globals["MP2 SINGLES ENERGY"] = variables_["MP2 SINGLES ENERGY"];
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = variables_["MP2 SAME-SPIN CORRELATION ENERGY"];
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] =
-        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"];
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = variables_["MP2 CORRELATION ENERGY"];
-    Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = variables_["SCS-MP2 TOTAL ENERGY"];
-    Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = variables_["SCS-MP2 CORRELATION ENERGY"];
 }
+
 void DFMP2::print_gradients() {
     std::vector<std::string> gradient_terms;
     gradient_terms.push_back("Nuclear");

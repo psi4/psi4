@@ -67,8 +67,8 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2
-                  mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
-                  mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
+                  mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
+                  mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient 
                   nbody-cp-gradient nbody-vmfc-gradient nbody-convergence
                   nbody-freq nbody-multi-level numpy-array-interface
                   ocepa-freq1 ocepa-grad1 ocepa-grad2 ocepa1 ocepa2 ocepa3
