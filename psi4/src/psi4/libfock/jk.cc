@@ -184,14 +184,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
             auto dfh = jk->dfh();
 
-            // Set nthread/cutoff explicitly and capture print level
-            int plvl = dfh->get_print_lvl();
+            // Set nthread/cutoff explicitly
             dfh->set_nthreads(jk->get_omp_nthread());
             dfh->set_schwarz_cutoff(jk->get_cutoff());
-
-            dfh->set_print_lvl(0);
             required = dfh->get_core_size();
-            dfh->set_print_lvl(plvl);
 
             if (required < doubles) {
                 return std::static_pointer_cast<JK>(jk);

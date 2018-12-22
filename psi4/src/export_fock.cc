@@ -51,6 +51,12 @@ void export_fock(py::module &m) {
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
                         return JK::build_JK(basis, aux, Process::environment.options);
                     })
+        .def_static("build_JK",
+                    [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux, bool do_wK, size_t doubles) {
+                        return JK::build_JK(basis, aux, Process::environment.options, do_wK, doubles);
+                    })
+        .def("name", &JK::name)
+        .def("memory_estimate", &JK::memory_estimate)
         .def("initialize", &JK::initialize)
         .def("basisset", &JK::basisset)
         .def("set_cutoff", &JK::set_cutoff)

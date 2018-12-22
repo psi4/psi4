@@ -65,6 +65,9 @@ void DirectJK::common_init() {
     df_ints_num_threads_ = Process::environment.get_n_threads();
 #endif
 }
+size_t DirectJK::memory_estimate() {
+    return 0; // Effectively
+}
 void DirectJK::print_header() const {
     if (print_) {
         outfile->Printf("  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");

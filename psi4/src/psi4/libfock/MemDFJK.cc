@@ -62,6 +62,9 @@ MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 MemDFJK::~MemDFJK() {}
 
 void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_); }
+size_t MemDFJK::memory_estimate() {
+    return 0;
+}
 
 void MemDFJK::preiterations() {
     // Initialize calls your derived class's preiterations member

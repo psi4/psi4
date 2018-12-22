@@ -300,7 +300,7 @@ core.Wavefunction.to_file = _core_wavefunction_to_file
 
 
 @staticmethod
-def _core_jk_build(orbital_basis, aux=None, jk_type=None):
+def _core_jk_build(orbital_basis, aux=None, jk_type=None, do_wK=None, memory=None):
     """
     Constructs a Psi4 JK object from an input basis.
 
@@ -345,12 +345,16 @@ def _core_jk_build(orbital_basis, aux=None, jk_type=None):
 
     if aux is None:
         if core.get_global_option("SCF_TYPE") == "DF":
-            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF", core.get_option("SCF", "DF_BASIS_SCF"),
-                                      "JKFIT", core.get_global_option('BASIS'), orbital_basis.has_puream())
+            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
+                                      core.get_option("SCF", "DF_BASIS_SCF"), "JKFIT",
+                                      orbital_basis.name(), orbital_basis.has_puream())
         else:
             aux = core.BasisSet.zero_ao_basis_set()
 
-    jk = core.JK.build_JK(orbital_basis, aux)
+    if (do_wK is None) or (memory is None):
+        jk = core.JK.build_JK(orbital_basis, aux)
+    else:
+        jk = core.JK.build_JK(orbital_basis, aux, bool(do_wK), int(memory))
 
     optstash.restore()
     return jk

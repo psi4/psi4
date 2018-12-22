@@ -69,6 +69,9 @@ void DiskDFJK::common_init() {
     is_core_ = true;
     psio_ = PSIO::shared_object();
 }
+size_t DiskDFJK::memory_estimate() {
+    return (size_t)5e9;
+}
 SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
     // Target quantity
     Dimension dim(Ci->nirrep());
