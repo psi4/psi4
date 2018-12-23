@@ -79,13 +79,16 @@ class PSI_API DFHelper {
     size_t get_memory() { return memory_; }
 
     /// Returns the number of doubles in the *screened* AO integrals
-    size_t get_AO_size() { return big_skips_[nao_]; }
+    size_t get_AO_size() { return big_skips_[nbf_]; }
 
     /// Returns the size of the in-core version in doubles
-    size_t get_core_size() { AO_core(); return required_core_size_;}
+    size_t get_core_size() {
+        AO_core();
+        return required_core_size_;
+    }
 
     /// Returns the amount of sparsity in the AO integrals
-    double ao_sparsity() { return (1.0 - (double)small_skips_[nao_] / (double)(nao_ * nao_)); }
+    double ao_sparsity() { return (1.0 - (double)small_skips_[nbf_] / (double)(nbf_ * nbf_)); }
 
     ///
     /// Sets the AO integrals to in-core. (Defaults to TRUE)
@@ -278,7 +281,7 @@ class PSI_API DFHelper {
     // => basis sets <=
     std::shared_ptr<BasisSet> primary_;
     std::shared_ptr<BasisSet> aux_;
-    size_t nao_;
+    size_t nbf_;
     size_t naux_;
 
     // => memory in doubles <=
@@ -327,8 +330,8 @@ class PSI_API DFHelper {
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
     // first integral transforms
-    void first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size, double* Mp,
-                             double* Tp, double* Bp, std::vector<std::vector<double>>& C_buffers);
+    void first_transform_pQq(size_t bsize, size_t bcount, size_t block_size, double* Mp, double* Tp, double* Bp,
+                             std::vector<std::vector<double>>& C_buffers);
 
     // => index vectors for screened AOs <=
     std::vector<size_t> small_skips_;
@@ -381,9 +384,9 @@ class PSI_API DFHelper {
     // => transformation machinery <=
     std::pair<size_t, size_t> identify_order();
     void print_order();
-    void put_transformations_Qpq(int naux, int begin, int end, int wsize, int bsize, double* Fp, int ind, bool bleft);
-    void put_transformations_pQq(int naux, int begin, int end, int block_size, int bcount, int wsize, int bsize,
-                                 double* Np, double* Fp, int ind, bool bleft);
+    void put_transformations_Qpq(int begin, int end, int wsize, int bsize, double* Fp, int ind, bool bleft);
+    void put_transformations_pQq(int begin, int end, int block_size, int bcount, int wsize, int bsize, double* Np,
+                                 double* Fp, int ind, bool bleft);
     std::vector<std::pair<std::string, size_t>> sorted_spaces_;
     std::vector<std::string> order_;
     std::vector<std::string> bspace_;
