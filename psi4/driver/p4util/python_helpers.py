@@ -139,14 +139,15 @@ def _core_wavefunction_from_file(wfn_data):
         A deserialized Wavefunction object
     """
     # load the wavefunction from file
-    if isinstance(wfn_data, str):
+    if isinstance(wfn_data, dict):
+        pass
+    elif isinstance(wfn_data, str):
         if not wfn_data.endswith(".npy"):
             wfn_data = wfn_data + ".npy"
         wfn_data = np.load(wfn_data).item()
-    elif isinstance(wfn_data, dict):
-        pass
     else:
-        raise ValidationError("wfn_data must either be a str (filename) or a dictionary.")
+        # Could be path-like or file-like, let `np.load` handle it
+        wfn_data = np.load(wfn_data).item()
 
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']

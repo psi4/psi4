@@ -216,10 +216,13 @@ void DFHelper::AO_core() {
         required_core_size_ = (do_wK_ ? 3 * big_skips_[nbf_] : big_skips_[nbf_]);
     }
 
+    // Auxiliary metric
+    required_core_size_ += naux_ * naux_;
+
     // C_buffers (conservative estimate since I do not have max_nocc TODO)
     required_core_size_ += nthreads_ * nbf_ * nbf_;
 
-    // Tmp buffers (again, I do not have max_nocc TODO)
+    // Tmp buffers
     required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
     // a fraction of memory to use, do we want it as an option?
