@@ -348,12 +348,14 @@ def compare_vectors(expected, computed, digits, label):
     return True
 
 
-def compare_arrays(expected, computed, digits, label):
+def compare_arrays(expected, computed, digits, label, rtol=1.e-16):
     """Function to compare two numpy arrays. Prints :py:func:`util.success`
     when elements of vector *computed* match elements of vector *expected* to
     number of *digits*. Performs a system exit on failure to match symmetry
     structure, dimension, or element values. Used in input files in the test suite.
 
+    Sets rtol to zero to match expected Psi4 behaviour, otherwise measured as:
+        absolute(computed - expected) <= (atol + rtol * absolute(expected))
     """
 
     try:
@@ -368,8 +370,8 @@ def compare_arrays(expected, computed, digits, label):
         TestComparisonError("Input shapes do not match.")
 
     tol = 10**(-digits)
-    if not np.allclose(expected, computed, atol=tol):
-        message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
+    if not np.allclose(expected, computed, atol=tol, rtol=rtol):
+        message = "\tArray difference norm is %12.6e." % np.linalg.norm(expected - computed)
         raise TestComparisonError(message)
     success(label)
     return True
