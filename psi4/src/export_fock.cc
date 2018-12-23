@@ -59,6 +59,7 @@ void export_fock(py::module &m) {
         .def("memory_estimate", &JK::memory_estimate)
         .def("initialize", &JK::initialize)
         .def("basisset", &JK::basisset)
+        .def("set_print", &JK::set_print)
         .def("set_cutoff", &JK::set_cutoff)
         .def("set_memory", &JK::set_memory)
         .def("set_omp_nthread", &JK::set_omp_nthread)

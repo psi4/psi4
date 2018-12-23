@@ -218,7 +218,7 @@ void export_wavefunction(py::module& m) {
         .def("form_H", &scf::HF::form_H, "Forms the core Hamiltonian")
         .def("form_Shalf", &scf::HF::form_Shalf, "Forms the S^1/2 matrix")
         .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
-        .def("initialize_jk", &scf::HF::initialize_jk, "Sets up the JK object")
+        .def("initialize_gtfock_jk", &scf::HF::initialize_gtfock_jk, "Sets up a GTFock JK object")
         .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
         .def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products")
         .def("cphf_Hx", &scf::HF::cphf_Hx, "CPHF Hessian-vector prodcuts (4 * J - K - K.T).")

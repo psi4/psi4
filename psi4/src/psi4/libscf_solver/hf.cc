@@ -342,45 +342,21 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     U.reset();
     tmp.reset();
 }
-void HF::initialize_jk(size_t effective_memory_doubles) {
-    if (print_) outfile->Printf("  ==> Integral Setup <==\n\n");
+void HF::initialize_gtfock_jk() {
 
     // Build the JK from options, symmetric type
-    if (options_.get_str("SCF_TYPE") == "GTFOCK") {
 #ifdef HAVE_JK_FACTORY
-        // DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
-        std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
-        Process::environment.set_legacy_molecule(molecule_);
-        if (options_.get_bool("SOSCF"))
-            jk_ = std::make_shared<GTFockJK>(basisset_, 2, false);
-        else
-            jk_ = std::make_shared<GTFockJK>(basisset_, 2, true);
-        Process::environment.set_legacy_molecule(other_legacy);
+    // DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
+    std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
+    Process::environment.set_legacy_molecule(molecule_);
+    if (options_.get_bool("SOSCF"))
+        jk_ = std::make_shared<GTFockJK>(basisset_, 2, false);
+    else
+        jk_ = std::make_shared<GTFockJK>(basisset_, 2, true);
+    Process::environment.set_legacy_molecule(other_legacy);
 #else
-        throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
+    throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
 #endif
-    } else {
-        jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_, functional_->is_x_lrc(),
-                           effective_memory_doubles);
-    }
-
-    // Tell the JK to print
-    jk_->set_print(print_);
-    // Give the JK 75% of the memory
-    jk_->set_memory(effective_memory_doubles);
-
-    // DFT sometimes needs custom stuff
-    // K matrices
-    jk_->set_do_K(functional_->is_x_hybrid());
-    // wK matrices
-    jk_->set_do_wK(functional_->is_x_lrc());
-    // w Value
-    jk_->set_omega(functional_->x_omega());
-
-    // Initialize
-    jk_->initialize();
-    // Print the header
-    jk_->print_header();
 }
 
 void HF::finalize() {

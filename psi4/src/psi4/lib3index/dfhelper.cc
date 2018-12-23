@@ -217,6 +217,9 @@ void DFHelper::AO_core() {
         required_core_size_ = (do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
     }
 
+    // Auxiliary size
+    required_core_size_ += naux_ * naux_;
+
     // C_buffers (conservative estimate since I do not have max_nocc TODO)
     required_core_size_ += nthreads_ * nao_ * nao_;
 
@@ -550,7 +553,7 @@ std::pair<size_t, size_t> DFHelper::pshell_blocks_for_AO_build(const size_t mem,
             if (count == 1 && i != pshells_ - 1) {
                 std::stringstream error;
                 error << "DFHelper: not enough memory for (p shell) AO blocking!"
-                      << " required memory: " << constraint * 8 / (1024 * 1024 * 1024.0) << "[GiB].";
+                      << " required memory: " << constraint * 8 / (1024 * 1024 * 1024.0) << " [GiB].";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             if (constraint > mem) {
