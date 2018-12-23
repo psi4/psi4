@@ -143,7 +143,7 @@ class PSI_API DFTensor {
     SharedMatrix Cavir_;
 
     /// Number of AO primary functions
-    int nso_;
+    int nbf_;
     /// Number of MO primary functions
     int nmo_;
 
