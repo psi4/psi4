@@ -76,7 +76,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
         outfile->Printf("           Please use the build_JK(primary, auxiliary, options, do_wK, memory)\n");
-        outfile->Printf("           constructor as DiskDFJK non-optimal performance.\n\n");
+        outfile->Printf("           constructor as DiskDFJK has non-optimal performance for many workloads.\n\n");
         jk_type = "DISK_DF";
     }
 
@@ -161,7 +161,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     if (jk_type == "DF") {
         // logic for MemDFJK vs DiskDFJK
-        if (do_wK || !auxiliary->has_puream() || options["DF_INTS_IO"].has_changed()) {
+        if (do_wK || options["DF_INTS_IO"].has_changed()) {
             return build_JK(primary, auxiliary, options, "DISK_DF");
 
         } else {

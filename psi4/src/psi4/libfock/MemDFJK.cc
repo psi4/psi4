@@ -81,16 +81,6 @@ void MemDFJK::preiterations() {
     dfh_->set_do_wK(do_wK_);
     dfh_->set_omega(omega_);
 
-    // This is a very subtle issue that only happens if the auxiliary is cartesian.
-    // It should be noted that this bug does not show up in the 3-index transform.
-    if (!auxiliary_->has_puream()) {
-        std::stringstream error;
-        error << "\nDFHelper (MemDFJK): Cannot do cartesian auxiliary functions. Please use the\n";
-        error << "                    SCF_TYPE = DF to automatically select the correct DF JK\n";
-        error << "                    backend implementation or choose DISK_DF for this computation.";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
-
     // we need to prepare the AOs here, and that's it.
     // DFHelper takes care of all the housekeeping
 
