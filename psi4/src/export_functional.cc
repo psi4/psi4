@@ -199,8 +199,7 @@ void export_functional(py::module &m) {
         .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
         .def("set_pointers", matrix_set1(&PointFunctions::set_pointers), "docstring")
         .def("set_pointers", matrix_set2(&PointFunctions::set_pointers), "docstring")
-        .def("compute_points", &PointFunctions::compute_points, "block"_a, "force_compute"_a = true,
-             "docstring")
+        .def("compute_points", &PointFunctions::compute_points, "block"_a, "force_compute"_a = true, "docstring")
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
@@ -270,8 +269,8 @@ void export_functional(py::module &m) {
         });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
-        .def_static("build", &Dispersion::build, "type"_a, "s6"_a = 0.0, "alpha6"_a = 0.0,
-                    "sr6"_a = 0.0, "Initialize instance capable of computing a dispersion correction of *type*")
+        .def_static("build", &Dispersion::build, "type"_a, "s6"_a = 0.0, "alpha6"_a = 0.0, "sr6"_a = 0.0,
+                    "Initialize instance capable of computing a dispersion correction of *type*")
         .def("name", &Dispersion::name, "docstring")
         .def("description", &Dispersion::description, "docstring")
         .def("citation", &Dispersion::citation, "docstring")

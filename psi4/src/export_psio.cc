@@ -42,8 +42,7 @@ void export_psio(py::module &m) {
              "should be open",
              "unit"_a, "status"_a)
         .def("exists", &PSIO::exists, "Check if the unit exists.", "unit"_a)
-        .def("close", &PSIO::close, "Close unit. If keep == 0, will remove the file, else keep it", "unit"_a,
-             "keep"_a)
+        .def("close", &PSIO::close, "Close unit. If keep == 0, will remove the file, else keep it", "unit"_a, "keep"_a)
         .def("rehash", &PSIO::rehash,
              "Sync up the object to the file on disk by closing and opening the file, if necessary", "unit"_a)
         .def("open_check", &PSIO::open_check, "Return 1 if unit is open", "unit"_a)
@@ -79,15 +78,15 @@ void export_psio(py::module &m) {
         .def("crashclean", &PSIOManager::crashclean,
              "Clean from disk-mirrored image after crash. NOT to be called during regular computation.")
         .def("mark_file_for_retention", &PSIOManager::mark_file_for_retention,
-             "Mark a file to be retained after a psiclean operation, ie for use in a later computation",
-             "full_path"_a, "retain"_a)
+             "Mark a file to be retained after a psiclean operation, ie for use in a later computation", "full_path"_a,
+             "retain"_a)
         .def("write_scratch_file", &PSIOManager::write_scratch_file,
              "Write a string to a temporary file.  The scratch file is opened and closed by this function.",
              "full_path"_a, "text"_a)
         .def("set_default_path", &PSIOManager::set_default_path, "Set the default path for files to be stored",
              "path"_a)
-        .def("set_specific_path", &PSIOManager::set_specific_path, "Set the path for specific file numbers",
-             "fileno"_a, "path"_a)
+        .def("set_specific_path", &PSIOManager::set_specific_path, "Set the path for specific file numbers", "fileno"_a,
+             "path"_a)
         .def("get_file_path", &PSIOManager::get_file_path, "Get the path for a specific file number", "fileno"_a)
         .def("set_specific_retention", &PSIOManager::set_specific_retention,
              "Set the specific file number to be retained", "fileno"_a, "retain"_a)

@@ -67,6 +67,8 @@ int for_set_reentrancy(int*);
 }
 
 using namespace psi;
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 // Python helper wrappers
 void export_benchmarks(py::module&);
@@ -1044,19 +1046,21 @@ PYBIND11_MODULE(core, core) {
     core.def("set_legacy_wavefunction", py_psi_set_legacy_wavefunction,
              "Returns the current legacy_wavefunction object from the most recent computation.");
     core.def("get_legacy_gradient", py_psi_get_gradient,
-             "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE ONLY.");
-    core.def("set_legacy_gradient", py_psi_set_gradient,
-             "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
+             "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE "
+             "ONLY.");
+    core.def(
+        "set_legacy_gradient", py_psi_set_gradient,
+        "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
     core.def("get_atomic_point_charges", py_psi_get_atomic_point_charges,
              "Returns the most recently computed atomic point charges, as a double * object.");
-    core.def("set_memory_bytes", py_psi_set_memory, py::arg("memory"), py::arg("quiet") = false,
+    core.def("set_memory_bytes", py_psi_set_memory, "memory"_a, "quiet"_a = false,
              "Sets the memory available to Psi (in bytes).");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     core.def("set_datadir", [](const std::string& pdd) { Process::environment.set_datadir(pdd); },
              "Returns the amount of memory available to Psi (in bytes).");
     core.def("get_datadir", []() { return Process::environment.get_datadir(); },
              "Sets the path to shared text resources, PSIDATADIR");
-    core.def("set_num_threads", py_psi_set_n_threads, py::arg("nthread"), py::arg("quiet") = false,
+    core.def("set_num_threads", py_psi_set_n_threads, "nthread"_a, "quiet"_a = false,
              "Sets the number of threads to use in SMP parallel computations.");
     core.def("get_num_threads", py_psi_get_n_threads,
              "Returns the number of threads to use in SMP parallel computations.");
@@ -1137,24 +1141,34 @@ PYBIND11_MODULE(core, core) {
              "valid option for *arg0*.");
 
     // These return/set/print PSI variables found in Process::environment.globals
-    core.def("has_scalar_variable", [](const std::string& key) { return bool(Process::environment.globals.count(to_upper(key))); },
+    core.def("has_scalar_variable",
+             [](const std::string& key) { return bool(Process::environment.globals.count(to_upper(key))); },
              "Is the double QC variable (case-insensitive) set?");
-    core.def("has_array_variable", [](const std::string& key) { return bool(Process::environment.arrays.count(to_upper(key))); },
+    core.def("has_array_variable",
+             [](const std::string& key) { return bool(Process::environment.arrays.count(to_upper(key))); },
              "Is the Matrix QC variable (case-insensitive) set?");
     core.def("scalar_variable", [](const std::string& key) { return Process::environment.globals[to_upper(key)]; },
              "Returns the requested (case-insensitive) double QC variable.");
-    core.def("array_variable", [](const std::string& key) { return Process::environment.arrays[to_upper(key)]->clone(); },
+    core.def("array_variable",
+             [](const std::string& key) { return Process::environment.arrays[to_upper(key)]->clone(); },
              "Returns copy of the requested (case-insensitive) Matrix QC variable.");
-    core.def("set_scalar_variable", [](const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; },
+    core.def("set_scalar_variable",
+             [](const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; },
              "Sets the requested (case-insensitive) double QC variable.");
-    core.def("set_array_variable", [](const std::string& key, SharedMatrix val) { Process::environment.arrays[to_upper(key)] = val->clone(); },
-             "Sets the requested (case-insensitive) Matrix QC variable.");
+    core.def(
+        "set_array_variable",
+        [](const std::string& key, SharedMatrix val) { Process::environment.arrays[to_upper(key)] = val->clone(); },
+        "Sets the requested (case-insensitive) Matrix QC variable.");
     core.def("del_scalar_variable", [](const std::string key) { Process::environment.globals.erase(to_upper(key)); },
              "Removes the requested (case-insensitive) double QC variable.");
     core.def("del_array_variable", [](const std::string key) { Process::environment.arrays.erase(to_upper(key)); },
              "Removes the requested (case-insensitive) Matrix QC variable.");
     core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
-    core.def("clean_variables", []() { Process::environment.globals.clear(); Process::environment.arrays.clear(); },
+    core.def("clean_variables",
+             []() {
+                 Process::environment.globals.clear();
+                 Process::environment.arrays.clear();
+             },
              "Empties all PSI scalar and array variables that have been set internally.");
     core.def("scalar_variables", []() { return Process::environment.globals; },
              "Returns dictionary of all double QC variables.");
