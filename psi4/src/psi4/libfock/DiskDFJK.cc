@@ -597,7 +597,7 @@ void DiskDFJK::initialize_JK_core() {
     timer_on("JK: (A|Q)^-1/2");
 
     auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
-    Jinv->form_eig_inverse();
+    Jinv->form_eig_inverse(condition_);
     double** Jinvp = Jinv->get_metric()->pointer();
 
     timer_off("JK: (A|Q)^-1/2");
