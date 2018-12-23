@@ -178,19 +178,19 @@ def _core_wavefunction_from_file(wfn_data):
 
     for label in wfn_vector:
         array = wfn_vector[label]
-        wfn_vector[label] = core.Vector.from_array(array, name=label) if array else None
+        wfn_vector[label] = core.Vector.from_array(array, name=label) if array is not None else None
 
     for label in wfn_dimension:
         tup = wfn_dimension[label]
-        wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup else None
+        wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup is not None else None
 
     for label in wfn_matrixarr:
         array = wfn_dimension[label]
-        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array else None
+        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array is not None else None
 
     # make the wavefunction
-    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int,
-                            wfn_string, wfn_boolean, wfn_float)
+    wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int, wfn_string,
+                            wfn_boolean, wfn_float)
 
     # some of the wavefunction's variables can be changed directly
     for k, v in wfn_floatvar.items():

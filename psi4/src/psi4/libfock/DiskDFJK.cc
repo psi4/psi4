@@ -398,6 +398,11 @@ void DiskDFJK::free_w_temps() {
 }
 void DiskDFJK::preiterations() {
 
+    // DF requires constant sieve, must be static throughout object life
+    if (!sieve_) {
+        sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
+    }
+
     // Core or disk?
     is_core_ = is_core();
 
