@@ -86,6 +86,7 @@ void OCCWave::omp2_manager() {
     outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
     outfile->Printf("\t============================================================================== \n");
 
+    // LAB: variables_ are future track. P::e.globals are planned to be set py-side in future.
     variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
