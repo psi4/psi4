@@ -416,7 +416,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     double reference_energy() const { return energy_; }
     double energy() const { return energy_; }
     /// Sets the energy
-    void set_energy(double ene) { energy_ = ene; }
+    void set_energy(double ene);
     /// Returns the frozen-core energy
     double efzc() const { return efzc_; }
     /// Sets the frozen-core energy

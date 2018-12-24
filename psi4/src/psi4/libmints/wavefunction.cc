@@ -1285,13 +1285,24 @@ SharedMatrix Wavefunction::Db() const { return Db_; }
 
 SharedMatrix Wavefunction::X() const { return Lagrangian_; }
 
+void Wavefunction::set_energy(double ene) {
+    energy_ = ene;
+    set_scalar_variable("CURRENT ENERGY", ene);
+}
+
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
-void Wavefunction::set_gradient(SharedMatrix grad) { gradient_ = grad; }
+void Wavefunction::set_gradient(SharedMatrix grad) {
+    gradient_ = grad;
+    set_array_variable("CURRENT GRADIENT", grad);
+}
 
 SharedMatrix Wavefunction::hessian() const { return hessian_; }
 
-void Wavefunction::set_hessian(SharedMatrix hess) { hessian_ = hess; }
+void Wavefunction::set_hessian(SharedMatrix hess) {
+    hessian_ = hess;
+    set_array_variable("CURRENT HESSIAN", hess);
+}
 
 SharedVector Wavefunction::frequencies() const { return frequencies_; }
 
