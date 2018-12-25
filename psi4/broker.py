@@ -69,7 +69,7 @@ class Broker(Client):
 
         self.timing = {}
 
-    def run_frc(self, pos):
+    def calculate_force(self, pos):
         """Fetch force, energy of PSI.
         """
         if len(pos.shape) == 1:
@@ -99,14 +99,14 @@ class Broker(Client):
         mol = self.get_molecule(pos)
         psi4.geometry(mol, "xwrapper")
 
-        self.calc_full(self.options["LOT"])
+        self.calculate_gradient(self.options["LOT"])
 
         self.pot = psi4.core.get_variable('CURRENT ENERGY')
         self.frc = -np.array(self.grd)
 
         return self.frc, np.float64(self.pot)
 
-    def calc_full(self, LOT, bypass_scf=False):
+    def calculate_gradient(self, LOT, bypass_scf=False):
         """Calculate the gradient with @LOT.
 
         When bypass_scf=True a hf energy calculation has been done before.
@@ -142,11 +142,11 @@ def broker(serverdata=False, options=None):
                 atoms = atoms.reshape((ratio, 3))
                 print("Calculating force for", atoms)
             print("FORCE:")
-            frc, pot = b.run_frc(atoms)
+            frc, pot = b.calculate_force(atoms)
             print(frc, pot)
 
             atoms *= -1.0
-            frc2, pot2 = b.run_frc(atoms)
+            frc2, pot2 = b.calculate_force(atoms)
             print("FORCE MIRROR:")
             print(frc2, pot2)
             assert_equal(pot, pot2)
