@@ -78,18 +78,18 @@ class Broker(Client):
         return self.frc, self.pot
 
     def get_molecule(self, pos):
-        ret = "".join(
-                    ["%s %f %f %f\n" % (self.atoms_list[i],
-                                        pos[i][0], pos[i][1],
-                                        pos[i][2])
-                                        for i in range(len(pos))]
-                    + ["units bohr\n"]
-                    + ["no_reorient\n"]
-                    #+ ["no_com\n"]
-                    + ["symmetry c1\n"]
-                    + ["%d %d\n" % (self.options["charge"],
-                                    self.options["multiplicity"])]
-                )
+        ret = "\n".join(
+                    ["%s %f %f %f" % (self.atoms_list[i],
+                                        pos[i, 0], pos[i, 1],
+                                        pos[i, 2])
+                                        for i in range(len(pos))] +
+                   ["units bohr",
+                    "no_reorient",
+                    #"no_com",
+                    "symmetry c1",
+                    "%d %d" % (self.options["charge"],
+                                 self.options["multiplicity"]),
+                    ])
         return ret
 
     def callback(self, pos):
