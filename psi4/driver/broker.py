@@ -73,7 +73,7 @@ class Broker(Client):
         """Fetch force, energy of PSI.
         """
         if len(pos.shape) == 1:
-            pos = pos.reshape((len(pos) / 3, 3))
+            pos = pos.reshape((-1, 3))
         self.frc, self.pot = self.callback(pos)
         return self.frc, self.pot
 
