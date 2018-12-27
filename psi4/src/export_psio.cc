@@ -31,6 +31,8 @@
 #include "psi4/libpsio/psio.hpp"
 
 using namespace psi;
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 void export_psio(py::module &m) {
     py::class_<PSIO, std::shared_ptr<PSIO> >(m, "IO", "docstring")
@@ -38,16 +40,15 @@ void export_psio(py::module &m) {
         .def("open", &PSIO::open,
              "Open unit. Status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file "
              "should be open",
-             py::arg("unit"), py::arg("status"))
-        .def("exists", &PSIO::exists, "Check if the unit exists.", py::arg("unit"))
-        .def("close", &PSIO::close, "Close unit. If keep == 0, will remove the file, else keep it", py::arg("unit"),
-             py::arg("keep"))
+             "unit"_a, "status"_a)
+        .def("exists", &PSIO::exists, "Check if the unit exists.", "unit"_a)
+        .def("close", &PSIO::close, "Close unit. If keep == 0, will remove the file, else keep it", "unit"_a, "keep"_a)
         .def("rehash", &PSIO::rehash,
-             "Sync up the object to the file on disk by closing and opening the file, if necessary", py::arg("unit"))
-        .def("open_check", &PSIO::open_check, "Return 1 if unit is open", py::arg("unit"))
+             "Sync up the object to the file on disk by closing and opening the file, if necessary", "unit"_a)
+        .def("open_check", &PSIO::open_check, "Return 1 if unit is open", "unit"_a)
         .def("tocclean", &PSIO::tocclean,
              "Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped",
-             py::arg("unit"), py::arg("key"))
+             "unit"_a, "key"_a)
         .def("tocprint", &PSIO::tocprint, "Print the table of contents for the given unit")
         .def("tocentry_exists", &PSIO::tocentry_exists,
              "Checks the TOC to see if a particular keyword exists there or not")
@@ -56,14 +57,14 @@ void export_psio(py::module &m) {
              "Seek string in binary file. This export is only good for catching None, as returned success object not "
              "exported.")
         .def("getpid", &PSIO::getpid, "Lookup process id")
-        .def("set_pid", &PSIO::set_pid, "Set process id", py::arg("pid"))
+        .def("set_pid", &PSIO::set_pid, "Set process id", "pid"_a)
         .def_static("shared_object", &PSIO::shared_object, "Return the global shared object")
         .def_static("get_default_namespace", &PSIO::get_default_namespace,
                     "Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering)")
         .def_static("set_default_namespace", &PSIO::set_default_namespace,
-                    "Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering)", py::arg("ns"))
+                    "Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering)", "ns"_a)
         .def_static("change_file_namespace", &PSIO::change_file_namespace, "Change file number from ns1 to ns2",
-                    py::arg("fileno"), py::arg("ns1"), py::arg("ns2"));
+                    "fileno"_a, "ns1"_a, "ns2"_a);
 
     py::class_<PSIOManager, std::shared_ptr<PSIOManager> >(m, "IOManager",
                                                            "PSIOManager is a class designed to be used as a static "
@@ -77,17 +78,17 @@ void export_psio(py::module &m) {
         .def("crashclean", &PSIOManager::crashclean,
              "Clean from disk-mirrored image after crash. NOT to be called during regular computation.")
         .def("mark_file_for_retention", &PSIOManager::mark_file_for_retention,
-             "Mark a file to be retained after a psiclean operation, ie for use in a later computation",
-             py::arg("full_path"), py::arg("retain"))
+             "Mark a file to be retained after a psiclean operation, ie for use in a later computation", "full_path"_a,
+             "retain"_a)
         .def("write_scratch_file", &PSIOManager::write_scratch_file,
              "Write a string to a temporary file.  The scratch file is opened and closed by this function.",
-             py::arg("full_path"), py::arg("text"))
+             "full_path"_a, "text"_a)
         .def("set_default_path", &PSIOManager::set_default_path, "Set the default path for files to be stored",
-             py::arg("path"))
-        .def("set_specific_path", &PSIOManager::set_specific_path, "Set the path for specific file numbers",
-             py::arg("fileno"), py::arg("path"))
-        .def("get_file_path", &PSIOManager::get_file_path, "Get the path for a specific file number", py::arg("fileno"))
+             "path"_a)
+        .def("set_specific_path", &PSIOManager::set_specific_path, "Set the path for specific file numbers", "fileno"_a,
+             "path"_a)
+        .def("get_file_path", &PSIOManager::get_file_path, "Get the path for a specific file number", "fileno"_a)
         .def("set_specific_retention", &PSIOManager::set_specific_retention,
-             "Set the specific file number to be retained", py::arg("fileno"), py::arg("retain"))
+             "Set the specific file number to be retained", "fileno"_a, "retain"_a)
         .def("get_default_path", &PSIOManager::get_default_path, "Return the default path");
 }

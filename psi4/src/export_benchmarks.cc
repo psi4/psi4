@@ -29,6 +29,8 @@
 #include "psi4/libmints/benchmark.h"
 #include "psi4/pybind11.h"
 
+namespace py = pybind11;
+
 void export_benchmarks(py::module& m) {
     m.def("benchmark_blas1", &psi::benchmark_blas1, "docstring");
     m.def("benchmark_blas2", &psi::benchmark_blas2, "docstring");

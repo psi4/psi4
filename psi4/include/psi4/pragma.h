@@ -160,19 +160,7 @@
 // will produce this kind output when compiling:
 //    warning: 'explode' is deprecated: extremely unsafe, use 'combust' instead!!!
 // The macro can similarly be used to deprecate variables.
-// The implementation uses the standard attribute if C++14 available, falling back
-// to compiler extensions if C++11 is used.
-#if __cplusplus >= 201402L
+// The implementation uses the standard attribute available in C++14
 #define PSI_DEPRECATED(msg) [[deprecated(msg)]]
-#else
-#if defined(__GNUC__) || defined(__clang__)
-#define PSI_DEPRECATED(msg) __attribute__((deprecated(msg)))
-#elif defined(_MSC_VER)
-#define PSI_DEPRECATED(msg) __declspec(deprecated(msg))
-#else
-#pragma message("WARNING: You need to implement PSI_DEPRECATED for this compiler")
-#define PSI_DEPRECATED
-#endif
-#endif
 
 #endif

@@ -44,6 +44,8 @@
 #include "psi4/libpsi4util/process.h"
 
 using namespace psi;
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 void export_functional(py::module &m) {
     py::class_<SuperFunctional, std::shared_ptr<SuperFunctional>>(m, "SuperFunctional", "docstring")
@@ -116,7 +118,7 @@ void export_functional(py::module &m) {
         .def("print_detail", &SuperFunctional::py_print_detail, "Prints all SuperFunctional information.");
 
     py::class_<Functional, std::shared_ptr<Functional>>(m, "Functional", "docstring")
-        .def_static("build_base", &Functional::build_base, py::arg("alias"), "docstring")
+        .def_static("build_base", &Functional::build_base, "alias"_a, "docstring")
         .def("compute_functional", &Functional::compute_functional, "docstring")
         .def("name", &Functional::name, "docstring")
         .def("description", &Functional::description, "docstring")
@@ -192,13 +194,12 @@ void export_functional(py::module &m) {
     typedef void (PointFunctions::*matrix_set2)(SharedMatrix, SharedMatrix);
 
     py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions", "docstring")
-        .def("print_out", &PointFunctions::print, py::arg("out_fname") = "outfile", py::arg("print") = 2, "docstring")
+        .def("print_out", &PointFunctions::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
         .def("ansatz", &PointFunctions::ansatz, "docstring")
         .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
         .def("set_pointers", matrix_set1(&PointFunctions::set_pointers), "docstring")
         .def("set_pointers", matrix_set2(&PointFunctions::set_pointers), "docstring")
-        .def("compute_points", &PointFunctions::compute_points, py::arg("block"), py::arg("force_compute") = true,
-             "docstring")
+        .def("compute_points", &PointFunctions::compute_points, "block"_a, "force_compute"_a = true, "docstring")
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
@@ -236,7 +237,7 @@ void export_functional(py::module &m) {
              })
         .def("refresh", &BlockOPoints::refresh, "docstring")
         .def("npoints", &BlockOPoints::npoints, "docstring")
-        .def("print_out", &BlockOPoints::print, py::arg("out_fname") = "outfile", py::arg("print") = 2, "docstring")
+        .def("print_out", &BlockOPoints::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
 
@@ -268,8 +269,8 @@ void export_functional(py::module &m) {
         });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
-        .def_static("build", &Dispersion::build, py::arg("type"), py::arg("s6") = 0.0, py::arg("alpha6") = 0.0,
-                    py::arg("sr6") = 0.0, "Initialize instance capable of computing a dispersion correction of *type*")
+        .def_static("build", &Dispersion::build, "type"_a, "s6"_a = 0.0, "alpha6"_a = 0.0, "sr6"_a = 0.0,
+                    "Initialize instance capable of computing a dispersion correction of *type*")
         .def("name", &Dispersion::name, "docstring")
         .def("description", &Dispersion::description, "docstring")
         .def("citation", &Dispersion::citation, "docstring")

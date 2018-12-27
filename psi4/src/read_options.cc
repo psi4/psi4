@@ -183,13 +183,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
-// CDS-TODO: We should go through and check that the user hasn't done
-// something silly like specify frozen_docc in DETCI but not in TRANSQT.
-// That would create problems.  (This was formerly checked in DETCI
-// itself, but I don't think DETCI will have the info available to check
-// this anymore).  This problem has affected users in the past.
-// Same goes for restricted_docc, restricted_uocc, ras1, ras2, ras3,
-// frozen_uocc.
+    // CDS-TODO: We should go through and check that the user hasn't done
+    // something silly like specify frozen_docc in DETCI but not in TRANSQT.
+    // That would create problems.  (This was formerly checked in DETCI
+    // itself, but I don't think DETCI will have the info available to check
+    // this anymore).  This problem has affected users in the past.
+    // Same goes for restricted_docc, restricted_uocc, ras1, ras2, ras3,
+    // frozen_uocc.
 
 #ifdef USING_dkh
     /*- Relativistic Hamiltonian type !expert -*/

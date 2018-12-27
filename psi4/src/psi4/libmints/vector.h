@@ -125,13 +125,13 @@ class PSI_API Vector {
     const double *pointer(int h = 0) const { return vector_[h]; }
 
     /// Returns a single element value
-    double get(int h, int m) { return vector_[h][m]; }
+    double get(int h, int m) const { return vector_[h][m]; }
 
     /// Sets a single element value
     void set(int h, int m, double val) { vector_[h][m] = val; }
 
     /// Returns a single element value
-    double get(int m) { return vector_[0][m]; }
+    double get(int m) const { return vector_[0][m]; }
 
     /// Sets a single element value
     void set(int m, double val) { vector_[0][m] = val; }

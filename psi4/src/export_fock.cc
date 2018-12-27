@@ -42,6 +42,8 @@
 #include "psi4/libscf_solver/sad.h"
 
 using namespace psi;
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 void export_fock(py::module &m) {
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
@@ -110,7 +112,7 @@ void export_fock(py::module &m) {
     py::class_<SOMCSCF, std::shared_ptr<SOMCSCF>>(m, "SOMCSCF", "docstring")
         // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
         .def("Ck", &SOMCSCF::Ck)
-        .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, py::arg("x"), py::arg("order") = 2)
+        .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, "x"_a, "order"_a = 2)
         .def("rhf_energy", &SOMCSCF::rhf_energy)
         .def("update", &SOMCSCF::update)
         .def("approx_solve", &SOMCSCF::approx_solve)
@@ -155,8 +157,7 @@ void export_fock(py::module &m) {
         .def("add_space", &DFHelper::add_space)
         .def("initialize", &DFHelper::initialize)
         .def("print_header", &DFHelper::print_header)
-        .def("add_transformation", &DFHelper::add_transformation, py::arg("name"), py::arg("key1"), py::arg("key2"),
-             py::arg("order") = "Qpq")
+        .def("add_transformation", &DFHelper::add_transformation, "name"_a, "key1"_a, "key2"_a, "order"_a = "Qpq")
         .def("transform", &DFHelper::transform)
         .def("clear_spaces", &DFHelper::clear_spaces)
         .def("clear_all", &DFHelper::clear_all)

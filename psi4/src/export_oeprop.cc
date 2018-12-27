@@ -34,6 +34,8 @@
 #include "psi4/libmints/wavefunction.h"
 
 using namespace psi;
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 void export_oeprop(py::module &m) {
     py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring");
@@ -66,8 +68,8 @@ void export_oeprop(py::module &m) {
         .
         //        def("set_title", &OEProp::set_title, "docstring").
         def("clear", &OEProp::clear, "docstring")
-        .def("set_Da_ao", &OEProp::set_Da_ao, "docstring", py::arg("Da"), py::arg("symmetry") = 0)
-        .def("set_Db_ao", &OEProp::set_Db_ao, "docstring", py::arg("Db"), py::arg("symmetry") = 0)
+        .def("set_Da_ao", &OEProp::set_Da_ao, "docstring", "Da"_a, "symmetry"_a = 0)
+        .def("set_Db_ao", &OEProp::set_Db_ao, "docstring", "Db"_a, "symmetry"_a = 0)
         .def("set_Da_so", &OEProp::set_Da_so, "docstring")
         .def("set_Db_so", &OEProp::set_Db_so, "docstring")
         .def("set_Da_mo", &OEProp::set_Da_mo, "docstring")

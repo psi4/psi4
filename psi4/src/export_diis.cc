@@ -32,6 +32,7 @@
 #include "psi4/libdiis/diismanager.h"
 
 using namespace psi;
+namespace py = pybind11;
 
 void export_diis(py::module &m) {
     py::class_<DIISManager, std::shared_ptr<DIISManager> >(m, "DIISManager", "docstring")
