@@ -227,6 +227,7 @@ install(FILES ../tests/pytest/conftest.py
               ../tests/pytest/test_addons.py
               ../tests/pytest/test_molecule_to_string.py
               ../tests/pytest/test_matrix.py
+              ../tests/pytest/test_vector.py
               ../tests/pytest/test_qcvars.py
               ../tests/pytest/test_dft_benchmarks.py
               ../tests/pytest/test_vibanalysis.py

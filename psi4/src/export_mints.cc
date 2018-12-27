@@ -562,13 +562,6 @@ void export_mints(py::module& m) {
         .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
         .def("power", &Matrix::power, "Takes the matrix to the alpha power with precision cutoff", "alpha"_a,
              "cutoff"_a = 1.0E-12)
-        .def_static("doublet", &Matrix::doublet,
-                    "Returns the multiplication of two matrices A and B, with options to transpose each beforehand",
-                    "A"_a, "B"_a, "transA"_a = false, "transB"_a = false)
-        .def_static(
-            "triplet", &Matrix::triplet,
-            "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
-            "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false)
         .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n",
              "h"_a, "m"_a, "n"_a)
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", "m"_a, "n"_a)
@@ -643,6 +636,15 @@ void export_mints(py::module& m) {
                  return ret;
              },
              py::return_value_policy::reference_internal);
+
+    // Free functions
+    m.def("doublet", &doublet,
+          "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", py::arg("A"),
+          py::arg("B"), py::arg("transA") = false, py::arg("transB") = false);
+    m.def("triplet", &triplet,
+          "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
+          py::arg("A"), py::arg("B"), py::arg("C"), py::arg("transA") = false, py::arg("transB") = false,
+          py::arg("transC") = false);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "Computes gradients of wavefunctions")
         .def(py::init<std::shared_ptr<Wavefunction>>())

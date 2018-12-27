@@ -475,7 +475,7 @@ def _chain_dot(*args, **kwargs):
 
     # Run through
     for n, mat in enumerate(args[1:]):
-        ret = core.Matrix.doublet(ret, mat, False, trans[n + 1])
+        ret = core.doublet(ret, mat, False, trans[n + 1])
 
     return ret
 

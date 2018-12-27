@@ -62,14 +62,14 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     cache["eps_vir_B"] = wfn_B.epsilon_a_subset("AO", "VIR")
 
     # Build the densities as HF takes an extra "step"
-    cache["D_A"] = core.Matrix.doublet(
+    cache["D_A"] = core.doublet(
         cache["Cocc_A"], cache["Cocc_A"], False, True)
-    cache["D_B"] = core.Matrix.doublet(
+    cache["D_B"] = core.doublet(
         cache["Cocc_B"], cache["Cocc_B"], False, True)
 
-    cache["P_A"] = core.Matrix.doublet(
+    cache["P_A"] = core.doublet(
         cache["Cvir_A"], cache["Cvir_A"], False, True)
-    cache["P_B"] = core.Matrix.doublet(
+    cache["P_B"] = core.doublet(
         cache["Cvir_B"], cache["Cvir_B"], False, True)
 
     # Potential ints
@@ -96,7 +96,7 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     jk.C_right_add(wfn_B.Ca_subset("SO", "OCC"))
 
     # K_O J/K
-    C_O_A = core.Matrix.triplet(
+    C_O_A = core.triplet(
         cache["D_B"], cache["S"], cache["Cocc_A"], False, False, False)
     jk.C_left_add(C_O_A)
     jk.C_right_add(cache["Cocc_A"])
@@ -171,7 +171,7 @@ def exchange(cache, jk, do_print=True):
     # Build inverse exchange metric
     nocc_A = cache["Cocc_A"].shape[1]
     nocc_B = cache["Cocc_B"].shape[1]
-    SAB = core.Matrix.triplet(
+    SAB = core.triplet(
         cache["Cocc_A"], cache["S"], cache["Cocc_B"], True, False, False)
     num_occ = nocc_A + nocc_B
 
@@ -202,10 +202,10 @@ def exchange(cache, jk, do_print=True):
     jk.C_clear()
 
     jk.C_left_add(cache["Cocc_A"])
-    jk.C_right_add(core.Matrix.doublet(cache["Cocc_A"], Tmo_AA, False, False))
+    jk.C_right_add(core.doublet(cache["Cocc_A"], Tmo_AA, False, False))
 
     jk.C_left_add(cache["Cocc_B"])
-    jk.C_right_add(core.Matrix.doublet(cache["Cocc_A"], Tmo_AB, False, False))
+    jk.C_right_add(core.doublet(cache["Cocc_A"], Tmo_AB, False, False))
 
     jk.C_left_add(cache["Cocc_A"])
     jk.C_right_add(core.Matrix.chain_dot(P_B, S, cache["Cocc_A"]))
@@ -353,9 +353,9 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     w_B = cache["V_B"].clone()
     w_B.axpy(2.0, cache["J_B"])
 
-    w_B_MOA = core.Matrix.triplet(
+    w_B_MOA = core.triplet(
         cache["Cocc_A"], w_B, cache["Cvir_A"], True, False, False)
-    w_A_MOB = core.Matrix.triplet(
+    w_A_MOB = core.triplet(
         cache["Cocc_B"], w_A, cache["Cvir_B"], True, False, False)
 
     # Do uncoupled
@@ -393,7 +393,7 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     if Sinf:
         nocc_A = cache["Cocc_A"].shape[1]
         nocc_B = cache["Cocc_B"].shape[1]
-        SAB = core.Matrix.triplet(
+        SAB = core.triplet(
             cache["Cocc_A"], cache["S"], cache["Cocc_B"], True, False, False)
         num_occ = nocc_A + nocc_B
 
@@ -407,9 +407,9 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
         Tmo_BB = core.Matrix.from_array(Sab.np[nocc_A:, nocc_A:])
         Tmo_AB = core.Matrix.from_array(Sab.np[:nocc_A, nocc_A:])
 
-        T_A = core.Matrix.triplet(cache["Cocc_A"], Tmo_AA, cache["Cocc_A"], False, False, True)
-        T_B = core.Matrix.triplet(cache["Cocc_B"], Tmo_BB, cache["Cocc_B"], False, False, True)
-        T_AB = core.Matrix.triplet(cache["Cocc_A"], Tmo_AB, cache["Cocc_B"], False, False, True)
+        T_A = core.triplet(cache["Cocc_A"], Tmo_AA, cache["Cocc_A"], False, False, True)
+        T_B = core.triplet(cache["Cocc_B"], Tmo_BB, cache["Cocc_B"], False, False, True)
+        T_AB = core.triplet(cache["Cocc_A"], Tmo_AB, cache["Cocc_B"], False, False, True)
 
         sT_A = core.Matrix.chain_dot(cache["Cvir_A"], unc_x_B_MOA, Tmo_AA, cache["Cocc_A"],
             trans=[False, True, False, True])

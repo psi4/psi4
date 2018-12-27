@@ -2,8 +2,7 @@ import itertools
 
 import numpy as np
 import pytest
-
-from psi4.core import Dimension, Matrix
+from psi4.core import Dimension, Matrix, doublet
 from utils import compare_arrays
 
 
@@ -216,7 +215,7 @@ for group_size in [1, 2, 4, 8]:
 def test_doublets(adl, adr, Ga, bdl, bdr, Gb, at, bt):
     a = build_random_mat(adl, adr, Ga)
     b = build_random_mat(bdl, bdr, Gb)
-    res = Matrix.doublet(a, b, at, bt)
+    res = doublet(a, b, at, bt)
     expected = generate_result(a, b, at, bt)
     assert res.symmetry() == a.symmetry() ^ b.symmetry(), "Symm mismatch {} x {} != {}".format(
         a.symmetry(), b.symemtry(), res.symmetry())

@@ -53,7 +53,7 @@ PSI_API char *psi_fprefix();
 PSI_API void balance(double **a, int n);
 
 PSI_API void eigsort(double *d, double **v, int n);
-PSI_API void eivout(double **a, double *b, int m, int n, std::string out);
+PSI_API void eivout(double **a, const double *b, int m, int n, std::string out);
 PSI_API void mosort(double *d, double **v, int *sym, int nso, int nmo);
 
 PSI_API void flin(double **a, double *b, int in, int im, double *det);

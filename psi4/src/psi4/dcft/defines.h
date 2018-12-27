@@ -31,10 +31,11 @@
 
 #define GIT_ID "d12f233900069eb274854278e3aa1c733c34c9e6"
 
-#define PSIF_DCFT_DPD 100
-#define PSIF_DCFT_DENSITY 101
+constexpr auto PSIF_DCFT_DPD = 100;
+constexpr auto PSIF_DCFT_DENSITY = 101;
+constexpr auto ZERO = 1.0E-16;
+
 #define PRINT_ENERGY_COMPONENTS 0
-#define ZERO 1.0E-16
 
 #define ID(x) _ints->DPD_ID(x)
 

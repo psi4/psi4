@@ -636,7 +636,7 @@ void IntegralTransform::process_eigenvectors() {
                 std::vector<SharedMatrix> virandsoc;
                 virandsoc.push_back(Ca_->get_block({zero, sopi_}, {nalphapi_, nalphapi_ + avir}));
                 virandsoc.push_back(Ca_->get_block({zero, sopi_}, {clsdpi_, clsdpi_ + openpi_}));
-                Ca = Matrix::horzcat(virandsoc);
+                Ca = horzcat(virandsoc);
                 Ca->set_name("Alpha virtual orbitals");
             } else {
                 Ca = Ca_->get_block({zero, sopi_}, {nalphapi_, nalphapi_ + avir});

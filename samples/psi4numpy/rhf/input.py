@@ -49,18 +49,18 @@ A.power(-0.5, 1.e-16)
 
 # Diagonalize routine
 def build_orbitals(diag):
-    Fp = psi4.core.Matrix.triplet(A, diag, A, True, False, True)
+    Fp = psi4.core.triplet(A, diag, A, True, False, True)
 
     Cp = psi4.core.Matrix(nbf, nbf)
     eigvecs = psi4.core.Vector(nbf)
     Fp.diagonalize(Cp, eigvecs, psi4.core.DiagonalizeOrder.Ascending)
 
-    C = psi4.core.Matrix.doublet(A, Cp, False, False)
+    C = psi4.core.doublet(A, Cp, False, False)
 
     Cocc = psi4.core.Matrix(nbf, ndocc)
     Cocc.np[:] = C.np[:, :ndocc]
 
-    D = psi4.core.Matrix.doublet(Cocc, Cocc, False, True)
+    D = psi4.core.doublet(Cocc, Cocc, False, True)
     return C, Cocc, D
 
 # Build core orbitals
@@ -98,9 +98,9 @@ for SCF_ITER in range(1, maxiter + 1):
     F.axpy(-1.0, jk.K()[0])
 
     # DIIS error build and update
-    diis_e = psi4.core.Matrix.triplet(F, D, S, False, False, False)
-    diis_e.subtract(psi4.core.Matrix.triplet(S, D, F, False, False, False))
-    diis_e = psi4.core.Matrix.triplet(A, diis_e, A, False, False, False)
+    diis_e = psi4.core.triplet(F, D, S, False, False, False)
+    diis_e.subtract(psi4.core.triplet(S, D, F, False, False, False))
+    diis_e = psi4.core.triplet(A, diis_e, A, False, False, False)
 
     diis_obj.add(F, diis_e)
 

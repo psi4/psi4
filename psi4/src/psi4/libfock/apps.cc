@@ -113,7 +113,7 @@ void RBase::set_reference(SharedWavefunction ref_wfn) {
     Cs.push_back(Caocc_);
     Cs.push_back(Cavir_);
     Cs.push_back(Cfvir_);
-    C_ = Matrix::horzcat(Cs);
+    C_ = horzcat(Cs);
 }
 void RBase::preiterations() {
     if (!jk_) {

@@ -26,17 +26,15 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_matrix_h_
-#define _psi_src_lib_libmints_matrix_h_
+#pragma once
 
-#include "psi4/libmints/dimension.h"
-#include "psi4/libmints/typedefs.h"
-#include "psi4/libpsi4util/exception.h"
-
-#include <cstdio>
 #include <string>
 #include <vector>
 #include <memory>
+
+#include "psi4/libpsi4util/exception.h"
+
+#include "dimension.h"
 
 namespace psi {
 
@@ -44,9 +42,12 @@ struct dpdfile2;
 
 class PSIO;
 class Vector;
+using SharedVector = std::shared_ptr<Vector>;
 class Dimension;
 class Molecule;
 class Vector3;
+class Matrix;
+using SharedMatrix = std::shared_ptr<Matrix>;
 
 enum diagonalize_order { evals_only_ascending = 0, ascending = 1, evals_only_descending = 2, descending = 3 };
 
@@ -78,11 +79,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
 
     /// Copies data from the passed matrix to this matrix_
     void copy_from(double***);
-
-    /// allocate a block matrix -- analogous to libciomr's block_matrix
-    static double** matrix(int nrow, int ncol);
-    /// free a (block) matrix -- analogous to libciomr's free_block
-    static void free(double** Block);
 
     void print_mat(const double* const* const a, int m, int n, std::string out) const;
 
@@ -201,11 +197,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     SharedMatrix clone() const;
 
     /**
-     * Convenient creation function return SharedMatrix
-     */
-    static SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols);
-
-    /**
      * @{
      * Copies data onto this
      * @param cp Object to copy from.
@@ -214,18 +205,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
-
-    /**
-     * Horizontally concatenate matrices
-     * @param mats std::vector of Matrix objects to concatenate
-     */
-    static SharedMatrix horzcat(const std::vector<SharedMatrix>& mats);
-
-    /**
-     * Vertically concatenate matrices
-     * @param mats std::vector of Matrix objects to concatenate
-     */
-    static SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
 
     /**
     ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an
@@ -780,25 +759,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
               const unsigned long& offset_c = 0);
     /// @}
 
-    /** Simple doublet GEMM with on-the-fly allocation
-     * \param A The first matrix
-     * \param B The second matrix
-     * \param transA Transpose the first matrix
-     * \param transB Transpose the second matrix
-     */
-    static SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false, bool transB = false);
-
-    /** Simple triplet GEMM with on-the-fly allocation
-     * \param A The first matrix
-     * \param B The second matrix
-     * \param C The third matrix
-     * \param transA Transpose the first matrix
-     * \param transB Transpose the second matrix
-     * \param transC Transpose the third matrix
-     */
-    static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C,
-                                bool transA = false, bool transB = false, bool transC = false);
-
     /**
      * Simple AXPY call with support for irreps Y = a * X + Y
      * @param a Scaling parameter
@@ -1087,6 +1047,52 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     friend class Vector;
 };
 
-}  // namespace psi
+namespace detail {
+/*!
+ * allocate a block matrix -- analogous to libciomr's block_matrix
+ */
+double** matrix(int nrow, int ncol);
 
-#endif  // MATRIX_H
+/*!
+ * free a (block) matrix -- analogous to libciomr's free_block
+ */
+void free(double** Block);
+}  // namespace detail
+
+/**
+ * Convenient creation function return SharedMatrix
+ */
+SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols);
+
+/**
+ * Horizontally concatenate matrices
+ * @param mats std::vector of Matrix objects to concatenate
+ */
+SharedMatrix horzcat(const std::vector<SharedMatrix>& mats);
+
+/**
+ * Vertically concatenate matrices
+ * @param mats std::vector of Matrix objects to concatenate
+ */
+SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
+
+/** Simple doublet GEMM with on-the-fly allocation
+ * \param A The first matrix
+ * \param B The second matrix
+ * \param transA Transpose the first matrix
+ * \param transB Transpose the second matrix
+ */
+SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false, bool transB = false);
+
+/** Simple triplet GEMM with on-the-fly allocation
+ * \param A The first matrix
+ * \param B The second matrix
+ * \param C The third matrix
+ * \param transA Transpose the first matrix
+ * \param transB Transpose the second matrix
+ * \param transC Transpose the third matrix
+ */
+SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false,
+                     bool transB = false, bool transC = false);
+
+}  // namespace psi
