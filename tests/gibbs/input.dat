@@ -51,6 +51,7 @@ molecule nh3 {
 set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
+  docc [4, 1]
 }
 
 optimize('scf')
@@ -72,6 +73,7 @@ molecule CH4 {
 set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
+  docc [3, 0, 1, 1]
 }
 
 optimize('scf')
