@@ -39,6 +39,7 @@ cmake_policy(SET CMP0057 NEW)  # support IN_LISTS
 set(_TargetOpenMP_PN ${PN})
 set(PN TargetOpenMP)
 
+separate_arguments(${PN}_FIND_COMPONENTS)
 if(${PN}_FIND_COMPONENTS)
     set(_${PN}_FIND_LIST ${${PN}_FIND_COMPONENTS})
 else()
