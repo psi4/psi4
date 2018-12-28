@@ -84,8 +84,8 @@ PSI_API void block_to_tri(double *a, double **b, int num_ir, int *num_so, int *i
 PSI_API void tri_to_sq(double *amat, double **bmat, int size);
 
 /* Functions under tstart.c */
-PSI_API void tstart();
-PSI_API void tstop();
+void tstart();
+void tstop();
 
 /* Functions in zero.c */
 PSI_API void zero_arr(double *a, int size);
