@@ -232,6 +232,7 @@ int C_DGGES(char jobvsl, char jobvsr, char sort, int n, double* a, int lda, doub
 int C_DGGESX(char jobvsl, char jobvsr, char sort, char sense, int n, double* a, int lda, double* b, int ldb, int* sdim,
              double* alphar, double* alphai, double* beta, double* vsl, int ldvsl, double* vsr, int ldvsr,
              double* rconde, double* rcondv, double* work, int lwork, int* iwork, int liwork);
+PSI_API
 int C_DGGEV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ldb, double* alphar, double* alphai,
             double* beta, double* vl, int ldvl, double* vr, int ldvr, double* work, int lwork);
 int C_DGGEVX(char balanc, char jobvl, char jobvr, char sense, int n, double* a, int lda, double* b, int ldb,
