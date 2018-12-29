@@ -89,6 +89,7 @@ void HF::common_init() {
     attempt_number_ = 1;
     ref_C_ = false;
     reset_occ_ = false;
+    sad_ = false;
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
@@ -1101,26 +1102,12 @@ void HF::guess() {
         // Build non-idempotent, spin-restricted SAD density matrix
         compute_SAD_guess();
 
-        // Form initial (spin-restricted) Fock matrix from the SAD density.
-        form_G();
-        form_initial_F();
-
-        // Diagonalize spin-restricted Fock matrix to get the same
-        // orbitals for alpha and beta, also allowing spin-restricted
-        // open shell calculations to work.
-        form_initial_C();
-
-        // Now can form the target density matrix, which may also
-        // correspond to a different charge and/or spin state than the
-        // neutral spin-restricted SAD guess. The density matrix is
-        // now also idempotent, so the energies one gets for the first
-        // printed iteration are variational.
-        form_D();
-
-        // This is a guess iteration: orbital occupations corresponded
-        // to SAD and must be reset in SCF.
+        // This is a guess iteration: orbital occupations must be
+        // reset in SCF.
         iteration_ = -1;
-        reset_occ_ = true;
+        // SAD doesn't yield orbitals so also the SCF logic is
+        // slightly different for the first iteration.
+        sad_ = true;
         guess_E = compute_initial_E();
 
     } else if (guess_type == "GWH") {

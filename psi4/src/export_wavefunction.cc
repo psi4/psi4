@@ -209,10 +209,12 @@ void export_wavefunction(py::module& m) {
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
+        .def("form_initial_C", &scf::HF::form_initial_C, "Forms the initial Orbital Matrices from the current Fock Matrices.")
         .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
         .def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
         .def("form_G", &scf::HF::form_G, "Forms the G matrix.")
         .def("form_F", &scf::HF::form_F, "Forms the F matrix.")
+        .def("form_initial_F", &scf::HF::form_initial_F, "Forms the initial F matrix.")
         .def("form_H", &scf::HF::form_H, "Forms the core Hamiltonian")
         .def("form_Shalf", &scf::HF::form_Shalf, "Forms the S^1/2 matrix")
         .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
@@ -227,6 +229,8 @@ void export_wavefunction(py::module& m) {
         .def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix")
         .def_property("reset_occ_", &scf::HF::reset_occ, &scf::HF::set_reset_occ,
                       "Do reset the occupation after the guess to the inital occupation.")
+        .def_property("sad_", &scf::HF::sad, &scf::HF::set_sad,
+                    "Do assume a non-idempotent density matrix and no orbitals after the guess.")
         .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
