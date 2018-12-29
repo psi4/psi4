@@ -27,7 +27,7 @@ compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, CORE 
 
 set guess gwh
 energy('scf')
-compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, GWH  guess  (a.u.)");             #TEST
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, GWH  guess (a.u.)");             #TEST
 
 set guess sad
 energy('scf')
