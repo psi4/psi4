@@ -264,12 +264,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         SCFE = 0.0
         self.clear_external_potentials()
 
-        # reset fractional SAD occupation
-        if (self.iteration_ == 0) and self.reset_occ_:
-            self.reset_occupation()
-            self.find_occupation()
-            self.form_D()
-
         core.timer_on("HF: Form G")
         self.form_G()
         core.timer_off("HF: Form G")
@@ -288,7 +282,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.set_energies("PCM Polarization", upcm)
 
         core.timer_on("HF: Form F")
-        self.form_F()
+        # SAD: since we don't have orbitals yet, we might not be able
+        # to form the real Fock matrix. Instead, build an initial one
+        if (self.iteration_ == 0) and self.sad_:
+            self.form_initial_F()
+        else:
+            self.form_F()
         core.timer_off("HF: Form F")
 
         if verbose > 3:
@@ -310,75 +309,89 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         status = []
 
+        # SAD: form initial orbitals from the initial Fock matrix, and
+        # reset the occupations. From here on, the density matrices
+        # are correct.
+        if (self.iteration_ == 0) and self.sad_:
+            self.form_initial_C()
+            self.reset_occupation()
+            self.find_occupation()
+
         # We either do SOSCF or DIIS
-        if (soscf_enabled and (self.iteration_ > 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
+        else:
+            if (soscf_enabled and (self.iteration_ > 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
 
-            Drms = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
-            diis_performed = False
-            if self.functional().needs_xc():
-                base_name = "SOKS, nmicro="
-            else:
-                base_name = "SOSCF, nmicro="
-
-            if not _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
-                nmicro = self.soscf_update(
-                    core.get_option('SCF', 'SOSCF_CONV'),
-                    core.get_option('SCF', 'SOSCF_MIN_ITER'),
-                    core.get_option('SCF', 'SOSCF_MAX_ITER'), core.get_option('SCF', 'SOSCF_PRINT'))
-                if nmicro > 0:
-                    # if zero, the soscf call bounced for some reason
-                    self.find_occupation()
-                    status.append(base_name + str(nmicro))
-                    soscf_performed = True  # Stops DIIS
+                Drms = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
+                diis_performed = False
+                if self.functional().needs_xc():
+                    base_name = "SOKS, nmicro="
                 else:
-                    if verbose > 0:
-                        core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
-                    soscf_performed = False  # Back to DIIS
+                    base_name = "SOSCF, nmicro="
 
-            else:
-                # need to ensure orthogonal orbitals and set epsilon
-                status.append(base_name + "conv")
-                core.timer_on("HF: Form C")
-                self.form_C()
-                core.timer_off("HF: Form C")
-                soscf_performed = True  # Stops DIIS
+                    if not _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
+                        nmicro = self.soscf_update(
+                            core.get_option('SCF', 'SOSCF_CONV'),
+                            core.get_option('SCF', 'SOSCF_MIN_ITER'),
+                            core.get_option('SCF', 'SOSCF_MAX_ITER'), core.get_option('SCF', 'SOSCF_PRINT'))
+                        if nmicro > 0:
+                            # if zero, the soscf call bounced for some reason
+                            self.find_occupation()
+                            status.append(base_name + str(nmicro))
+                            soscf_performed = True  # Stops DIIS
+                        else:
+                            if verbose > 0:
+                                core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
+                                soscf_performed = False  # Back to DIIS
 
-        if not soscf_performed:
-            # Normal convergence procedures if we do not do SOSCF
+                    else:
+                        # need to ensure orthogonal orbitals and set epsilon
+                        status.append(base_name + "conv")
+                        core.timer_on("HF: Form C")
+                        self.form_C()
+                        core.timer_off("HF: Form C")
+                        soscf_performed = True  # Stops DIIS
 
-            core.timer_on("HF: DIIS")
-            diis_performed = False
-            add_to_diis_subspace = False
+            if not soscf_performed:
+                # Normal convergence procedures if we do not do SOSCF
 
-            if self.diis_enabled_ and self.iteration_ >= self.diis_start_:
-                add_to_diis_subspace = True
+                core.timer_on("HF: DIIS")
+                diis_performed = False
+                add_to_diis_subspace = False
 
-            Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
+                if self.diis_enabled_ and self.iteration_ >= self.diis_start_:
+                    add_to_diis_subspace = True
 
-            if (self.diis_enabled_
-                    and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
-                diis_performed = self.diis()
+                    Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-            if diis_performed:
-                status.append("DIIS")
+                    if (self.diis_enabled_
+                        and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
+                        diis_performed = self.diis()
 
-            core.timer_off("HF: DIIS")
+                    if diis_performed:
+                        status.append("DIIS")
 
-            if verbose > 4 and diis_performed:
-                core.print_out("  After DIIS:\n")
-                self.Fa().print_out()
-                self.Fb().print_out()
+                    core.timer_off("HF: DIIS")
 
-            # frac, MOM invoked here from Wfn::HF::find_occupation
-            core.timer_on("HF: Form C")
-            self.form_C()
-            core.timer_off("HF: Form C")
+                    if verbose > 4 and diis_performed:
+                        core.print_out("  After DIIS:\n")
+                        self.Fa().print_out()
+                        self.Fb().print_out()
 
-        if self.MOM_performed_:
-            status.append("MOM")
+                    # frac, MOM invoked here from Wfn::HF::find_occupation
+                    core.timer_on("HF: Form C")
+                    self.form_C()
+                    core.timer_off("HF: Form C")
 
-        if self.frac_performed_:
-            status.append("FRAC")
+                    if self.MOM_performed_:
+                        status.append("MOM")
+
+                    if self.frac_performed_:
+                        status.append("FRAC")
+
+        # Reset occupations if necessary
+        if (self.iteration_ == 0) and self.reset_occ_:
+            self.reset_occupation()
+            self.find_occupation()
 
         core.timer_on("HF: Form D")
         self.form_D()
