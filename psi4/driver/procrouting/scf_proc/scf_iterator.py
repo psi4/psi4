@@ -361,32 +361,32 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if self.diis_enabled_ and self.iteration_ >= self.diis_start_:
                     add_to_diis_subspace = True
 
-                    Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
+                Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-                    if (self.diis_enabled_
+                if (self.diis_enabled_
                         and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
-                        diis_performed = self.diis()
+                    diis_performed = self.diis()
 
-                    if diis_performed:
-                        status.append("DIIS")
+                if diis_performed:
+                    status.append("DIIS")
 
-                    core.timer_off("HF: DIIS")
+                core.timer_off("HF: DIIS")
 
-                    if verbose > 4 and diis_performed:
-                        core.print_out("  After DIIS:\n")
-                        self.Fa().print_out()
-                        self.Fb().print_out()
+                if verbose > 4 and diis_performed:
+                    core.print_out("  After DIIS:\n")
+                    self.Fa().print_out()
+                    self.Fb().print_out()
 
-                    # frac, MOM invoked here from Wfn::HF::find_occupation
-                    core.timer_on("HF: Form C")
-                    self.form_C()
-                    core.timer_off("HF: Form C")
+                # frac, MOM invoked here from Wfn::HF::find_occupation
+                core.timer_on("HF: Form C")
+                self.form_C()
+                core.timer_off("HF: Form C")
 
-                    if self.MOM_performed_:
-                        status.append("MOM")
+                if self.MOM_performed_:
+                    status.append("MOM")
 
-                    if self.frac_performed_:
-                        status.append("FRAC")
+                if self.frac_performed_:
+                    status.append("FRAC")
 
         # Reset occupations if necessary
         if (self.iteration_ == 0) and self.reset_occ_:
