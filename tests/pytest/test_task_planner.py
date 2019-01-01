@@ -13,6 +13,7 @@ from psi4.driver.task_base import SingleResult
 from psi4.driver.driver_cbs import CBSComputer
 from psi4.driver.driver_nbody import NBodyComputer
 
+pytestmark = pytest.mark.quick
 
 def test_single_result():
     mol = psi4.geometry("He")

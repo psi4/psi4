@@ -2610,3 +2610,73 @@ class CBSComputer(BaseTask):
         print('\nGRAND_NEED', self.grand_need)
 
         return cbs_results
+
+    def get_json_results(self):
+        gotten_results = self.get_results()
+
+        ret = {
+            "return_result": gotten_results["ret_ptype"],
+            "properties": {
+                "return_energy": gotten_results["energy"],
+            },
+            "psi4:qcvars": {
+                "URRENT GRADIENT": gotten_results["gradient"],
+            },
+        }
+        return ret
+
+
+    def get_psi_results(self, return_wfn=False):
+
+        gotten_results = self.get_results()
+
+        #core.print_out(tables)
+
+        # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+        basis = core.BasisSet.build(self.molecule, "ORBITAL", 'def2-svp')
+        wfn = core.Wavefunction(self.molecule, basis)
+
+        finalenergy = gotten_results['energy']
+        ret_ptype = {'energy': finalenergy}
+
+        for obj in [core, wfn]:
+            for qcv in ['CBS', 'CURRENT']:
+                obj.set_variable(qcv + ' REFERENCE ENERGY', self.grand_need[0]['d_energy'])
+                obj.set_variable(qcv + ' CORRELATION ENERGY', gotten_results['energy'] - self.grand_need[0]['d_energy'])
+                obj.set_variable(qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY', gotten_results['energy'])
+
+            obj.set_variable('CBS NUMBER', len(self.compute_list))
+
+        if np.count_nonzero(gotten_results['gradient']):
+            np_grad = np.asarray(gotten_results['gradient']).reshape((-1, 3))
+            finalgradient = core.Matrix.from_array(np_grad)
+            ret_ptype['gradient'] = finalgradient
+
+            wfn.set_gradient(finalgradient)
+            for obj in [core, wfn]:
+                for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
+                    obj.set_variable(qcv, finalgradient)
+
+            if finalgradient.rows(0) < 20:
+                core.print_out('CURRENT GRADIENT')
+                finalgradient.print_out()
+
+        if np.count_nonzero(gotten_results['hessian']):
+            ndof = int(math.sqrt(len(gotten_results['hessian'])))
+            np_hess = np.asarray(gotten_results['hessian']).reshape((ndof, ndof))
+            finalhessian = core.Matrix.from_array(np_hess)
+            ret_ptype['hessian'] = finalgradient
+
+            wfn.set_hessian(finalhessian)
+            for obj in [core, wfn]:
+                for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
+                    obj.set_variable(qcv, finalhessian)
+
+            if finalhessian.rows(0) < 20:
+                core.print_out('CURRENT HESSIAN')
+                finalhessian.print_out()
+
+        if return_wfn:
+            return (ret_ptype[self.driver], wfn)
+        else:
+            return ret_ptype[self.driver]

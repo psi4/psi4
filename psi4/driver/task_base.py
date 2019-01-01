@@ -107,3 +107,6 @@ class SingleResult(BaseTask):
 
     def get_results(self):
         return self.result
+
+    def get_json_results(self):
+        return self.result

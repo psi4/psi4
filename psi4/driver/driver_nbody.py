@@ -40,8 +40,8 @@ from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import driver_nbody_helper
 
-from psi4.driver import task_base
 from psi4.driver.task_base import BaseTask
+
 ### Math helper functions
 
 
@@ -271,8 +271,9 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
     wfn = core.Wavefunction.build(molecule, 'def2-svp')
     dicts = [
-        'energies', 'ptype', 'intermediates', 'intermediates2', 'intermediates_ptype','energy_body_dict', 'gradient_body_dict', 'hessian_body_dict', 'nbody',
-        'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
+        'energies', 'ptype', 'intermediates', 'intermediates2', 'intermediates_ptype', 'energy_body_dict',
+        'gradient_body_dict', 'hessian_body_dict', 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict',
+        'vmfc_energy_body_dict'
     ]
     if kwargs['ptype'] == 'gradient':
         wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_ptype']))
@@ -281,7 +282,6 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
         wfn.set_hessian(core.Matrix.from_array(nbody_results['ret_ptype']))
         wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_gradient']))
-
 
     for d in nbody_results:
         if d in dicts:
@@ -455,7 +455,9 @@ def compute_nbody_components(func, method_string, metadata):
     intermediates_dict = {}
     if kwargs.get('charge_method', False) and not metadata['embedding_charges']:
         metadata['embedding_charges'] = driver_nbody_helper.compute_charges(kwargs['charge_method'],
-                                            kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), molecule)
+                                                                            kwargs.get(
+                                                                                'charge_type',
+                                                                                'MULLIKEN_CHARGES').upper(), molecule)
     for count, n in enumerate(compute_list.keys()):
         core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
         total = len(compute_list[n])
@@ -473,11 +475,11 @@ def compute_nbody_components(func, method_string, metadata):
             core.set_global_option_python('EXTERN', None)
             energies_dict[pair] = core.variable("CURRENT ENERGY")
             gradients_dict[pair] = wfn.gradient()
-            var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]), ', '.join(
-                [str(i) for i in pair[1]]))
+            var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]),
+                                                         ', '.join([str(i) for i in pair[1]]))
             intermediates_dict[var_key] = core.variable("CURRENT ENERGY")
-            core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" % (str(
-                pair[0]), str(pair[1]), energies_dict[pair]))
+            core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" %
+                           (str(pair[0]), str(pair[1]), energies_dict[pair]))
             # Flip this off for now, needs more testing
             #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
             #    core.set_global_option('DF_INTS_IO', 'LOAD')
@@ -811,7 +813,6 @@ class NBodyComputer(BaseTask):
     charge_method: str = ''
     charge_type: str = 'MULLIKEN_CHARGES'
     task_list: Dict[str, Any] = {}
-    results_list: Dict[str, Any] = {}
     compute_dict: Dict[str, Any] = {}
 
     def __init__(self, **data):
@@ -834,7 +835,6 @@ class NBodyComputer(BaseTask):
         # Get compute list
         self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
 
-
     @pydantic.validator('molecule')
     def set_molecule(cls, mol):
         mol.update_geometry()
@@ -847,7 +847,7 @@ class NBodyComputer(BaseTask):
 
         bsse_type = bsse_type.lower()
         if bsse_type not in ['cp', 'nocp', 'vmfc']:
-            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" %bsse_type)
+            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % bsse_type)
 
         return bsse_type
 
@@ -861,7 +861,6 @@ class NBodyComputer(BaseTask):
             else:
                 return False
 
-
     def build_tasks(self, obj, bsse_type="all", **kwargs):
 
         import json
@@ -869,8 +868,8 @@ class NBodyComputer(BaseTask):
         compute_list = self.compute_dict[bsse_type]
 
         if self.charge_method and not self.embedding_charges:
-            self.embedding_charges = driver_nbody_helper.compute_charges(self.charge_method,
-                                                self.charge_type, self.molecule)
+            self.embedding_charges = driver_nbody_helper.compute_charges(self.charge_method, self.charge_type,
+                                                                         self.molecule)
 
         counter = 0
         for count, n in enumerate(compute_list):
@@ -902,8 +901,8 @@ class NBodyComputer(BaseTask):
 
     def compute(self):
         all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
-        gof = core.get_output_file()
-        core.close_outfile()
+        # gof = core.get_output_file()
+        # core.close_outfile()
         for k, v in self.task_list.items():
             v.compute()
 
@@ -915,41 +914,83 @@ class NBodyComputer(BaseTask):
 
             # print(self.results_list[k]["return_result"])
 
-        core.set_output_file(gof, True)
+        # core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
 
     def get_results(self):
-        energies = {k: v.get_results()['properties']["return_energy"] for k, v in self.task_list.items()}
+        results_list = {k: v.get_json_results() for k, v in self.task_list.items()}
+        energies = {k: v['properties']["return_energy"] for k, v in results_list.items()}
 
         ptype = None
         if self.driver == 'gradient':
-            ptype = {k: np.array(v["return_result"]).reshape((len(v["return_result"])//3, 3))
-                     for k, v in self.results_list.items()}
+            ptype = {k: np.array(v["return_result"]).reshape((-1, 3)) for k, v in results_list.items()}
         elif self.driver == 'hessian':
-            ptype = {k: np.array(v["return_result"]).reshape((int(np.sqrt(len(v["return_result"]))),
-                     int(np.sqrt(len(v["return_result"]))))) for k, v in self.results_list.items()}
+            ptype = {
+                k: np.array(v["return_result"]).reshape(int(np.sqrt(len(v["return_result"]))), -1)
+                for k, v in results_list.items()
+            }
         tmp = {"energies": energies, "ptype": ptype}
         nbody_results = assemble_nbody_components(self.dict(), tmp)
 
         if self.driver == 'hessian':
-            gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((len(v['psi4:qcvars']["CURRENT GRADIENT"])//3, 3))
-                        for k, v in self.results_list.items()}
+            gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
             tmp['ptype'] = gradient
             metadata = self.dict().copy()
             metadata['driver'] = 'gradient'
             grad_result = assemble_nbody_components(metadata, tmp)
-            nbody_results.update({'gradient_body_dict': grad_result['ptype_body_dict'],
-                                  'ret_gradient': grad_result['ret_ptype']})
+            nbody_results.update({
+                'gradient_body_dict': grad_result['ptype_body_dict'],
+                'ret_gradient': grad_result['ret_ptype']
+            })
 
-        nbody_results['intermediates'] = {"N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in k[0]]), ', '.join(
-                        [str(i) for i in k[1]])): v['properties']["return_energy"] for k, v in self.results_list.items()}
+        nbody_results['intermediates'] = {
+            "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in k[0]]), ', '.join([str(i) for i in k[1]])):
+            v['properties']["return_energy"]
+            for k, v in results_list.items()
+        }
 
-        nbody_results['intermediates2'] = {str(k): v['properties']["return_energy"] for k, v in self.results_list.items()}
+        nbody_results['intermediates2'] = {str(k): v['properties']["return_energy"] for k, v in results_list.items()}
 
         if ptype is not None:
-             nbody_results['intermediates_ptype'] = {'PTYPE ' + str(k): v for k, v in ptype.items()}
+            nbody_results['intermediates_ptype'] = {'PTYPE ' + str(k): v for k, v in ptype.items()}
 
         return nbody_results
 
+    def get_psi_results(self, return_wfn=False):
+        nbody_results = self.get_results()
+        ret = nbody_results['ret_ptype']
+        if self.driver in ['gradient', 'hessian']:
+            ret = core.Matrix.from_array(ret)
+
+        wfn = core.Wavefunction.build(self.molecule, 'def2-svp')
+        dicts = [
+            'energies', 'ptype', 'intermediates', 'intermediates2', 'intermediates_ptype', 'energy_body_dict',
+            'gradient_body_dict', 'hessian_body_dict', 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict',
+            'vmfc_energy_body_dict'
+        ]
+        if self.driver == 'gradient':
+            wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_ptype']))
+            nbody_results['gradient_body_dict'] = nbody_results['ptype_body_dict']
+        elif self.driver == 'hessian':
+            nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
+            wfn.set_hessian(core.Matrix.from_array(nbody_results['ret_ptype']))
+            wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_gradient']))
+
+        for d in nbody_results:
+            if d in dicts:
+                for var, value in nbody_results[d].items():
+                    try:
+                        wfn.set_variable(str(var), value)
+                        core.set_variable(str(var), value)
+                    except:
+                        wfn.set_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
+
+        core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
+        wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
+
+        if return_wfn:
+            return (ret, wfn)
+        else:
+            return ret

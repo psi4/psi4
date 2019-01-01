@@ -549,12 +549,7 @@ def energy(name, **kwargs):
         core_clean = True
     else:
         plan.compute()
-        results = plan.get_results()
-
-        if return_wfn:
-            raise Exception("Return WFN NYI")
-        else:
-            return results["energy"]
+        return plan.get_psi_results(return_wfn=return_wfn)
 
     # Allow specification of methods to arbitrary order
     lowername = name.lower()
