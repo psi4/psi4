@@ -47,6 +47,7 @@ from psi4.driver import driver_nbody
 from psi4.driver import driver_nbody_helper
 from psi4.driver import driver_findif
 from psi4.driver import task_base
+from psi4.driver import task_planner
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.procrouting import *
@@ -525,14 +526,35 @@ def energy(name, **kwargs):
 
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
-    # Are we planning?
-    plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'energy'), **kwargs)
-    if plan:
-        return plan
+    basisstash = p4util.OptionsState(['BASIS'])
+    core_clean = False
+    return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
+
+    # Are we planning?
+    plan = task_planner.task_planner("energy", name, molecule, **kwargs)
+    #plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'energy'), **kwargs)
+    #if plan:
+    if kwargs.get("return_plan", False):
+        return plan
+
+    # We have unpacked to a Single Result
+    elif isinstance(plan, task_base.SingleResult):
+        name = plan.method
+        basis = plan.basis
+        core.set_global_option("BASIS", basis)
+        core_clean = True
+    else:
+        plan.compute()
+        results = plan.get_results()
+
+        if return_wfn:
+            raise Exception("Return WFN NYI")
+        else:
+            return results["energy"]
 
     # Allow specification of methods to arbitrary order
     lowername = name.lower()
@@ -543,7 +565,6 @@ def energy(name, **kwargs):
     _filter_renamed_methods("energy", lowername)
 
     # Commit to procedures['energy'] call hereafter
-    return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
 
     #for precallback in hooks['energy']['pre']:
@@ -598,8 +619,12 @@ def energy(name, **kwargs):
     for postcallback in hooks['energy']['post']:
         postcallback(lowername, wfn=wfn, **kwargs)
 
+    basisstash.restore()
     optstash.restore()
     optstash2.restore()
+    if core_clean:
+        core.clean()
+
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment

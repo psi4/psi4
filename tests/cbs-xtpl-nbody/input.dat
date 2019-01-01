@@ -39,7 +39,7 @@ def unaug_focal(func, label, **kwargs):
 
 E_func         = energy(unaug_focal, bsse_type="nocp")
 E_method_basis = energy("MP2/cc-pv[dt]z + D:CCSD(T)/cc-pvdz", bsse_type="nocp")
-E_cbs          = energy(cbs, bsse_type="nocp", corl_wfn="mp2", corl_basis="cc-pv[dt]z",
+E_cbs          = energy("cbs", bsse_type="nocp", corl_wfn="mp2", corl_basis="cc-pv[dt]z",
                                                delta_wfn="ccsd(t)", delta_basis="cc-pvdz")
 
 compare_values(ans, E_method_basis, 6, "IE MP2/cc-pv[dt]z + D:CCSD(T)/cc-pvdz")  #TEST

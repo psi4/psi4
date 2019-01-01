@@ -2543,17 +2543,19 @@ class CBSComputer(BaseTask):
 
     def compute(self):
         all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
-        gof = core.get_output_file()
-        core.close_outfile()
+        # gof = core.get_output_file()
+        # core.close_outfile()
 
         for x in self.task_list:
             x.compute()
 
-        core.set_output_file(gof, True)
+        # core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
 
     def get_results(self):
-        energies = [x.get_results()['properties']["return_energy"] for x in self.task_list]
+        results_list = [x.get_results() for x in self.task_list]
+        print(results_list)
+        energies = [x['properties']["return_energy"] for x in results_list]
         print('ENE', energies)
         for x in self.task_list:
             print('\nTASK')
@@ -2564,7 +2566,7 @@ class CBSComputer(BaseTask):
 
         # load results_list numbers into compute_list (task_list is SingleResult-s)
         for itask, mc in enumerate(self.compute_list):
-            task = self.results_list[itask]
+            task = results_list[itask]
             response = task['return_result']
             print('ITASK:', itask, '\nRETURN', response, '\nTASK:')
             pprint.pprint(task)

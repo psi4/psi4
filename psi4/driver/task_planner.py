@@ -73,8 +73,10 @@ def task_planner(driver, method, molecule, **kwargs):
     """
 
     # Only pull the changed options
-    # keywords = {key: v['value'] for key, v in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
-    keywords = {}
+    keywords = {
+        key: v['value']
+        for key, v in p4util.prepare_options_for_modules(changedOnly=True, globalsOnly=True)['GLOBALS'].items()
+    }
 
     # Pull basis out of kwargs, override globals if user specified
     basis = keywords.pop("BASIS", None)

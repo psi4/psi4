@@ -380,7 +380,7 @@ def reset_pe_options(pofm):
                 core.set_local_option(module, lo, dlo['value'])
 
 
-def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
+def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False, globalsOnly=False):
     """Function to return a string of commands to replicate the
     current state of user-modified options. Used to capture C++
     options information for distributed (sow/reap) input files.
@@ -409,6 +409,9 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
             #if changedOnly:
             #    print('Appending module %s option %s value %s has_changed %s.' % \
             #        ('GLOBALS', opt, core.get_global_option(opt), core.has_global_option_changed(opt)))
+        if globalsOnly:
+            continue
+
         for module in _modules:
             if core.option_exists_in_module(module, opt):
                 hoc = core.has_option_changed(module, opt)

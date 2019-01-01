@@ -32,29 +32,29 @@ h2o.update_geometry()
 compare_values(nucenergy_ref, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 # SCF TESTS
-scf_dz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pVDZ"}])
+scf_dz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pVDZ"}])
 compare_values(scf_dz_ref, scf_dz, 6, "SCF/DZ Energy Check")  #TEST
 
-scf_adtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pV[2T]Z"}])
+scf_adtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pV[2T]Z"}])
 compare_values(scf_adtz_ref, scf_adtz, 6, "SCF/a[DT]Z Energy Check")  #TEST
 
 
 # MP2 TESTS
-mp2_atz = energy(cbs, cbs_metadata = [{"wfn": "mp2", "basis": "aug-cc-pVTZ"}])
+mp2_atz = energy("cbs", cbs_metadata = [{"wfn": "mp2", "basis": "aug-cc-pVTZ"}])
 compare_values(mp2_atz_ref, mp2_atz, 6, "MP2/aTZ Energy Check")  #TEST
 
-mp2_adtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pvtz"},
+mp2_adtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "aug-cc-pvtz"},
                                        {"wfn": "mp2", "basis": "aug-cc-pv[dt]z"}])
 compare_values(mp2_adtz_ref, mp2_adtz, 6, "MP2/a[DT]Z Energy Check")  #TEST
 
 # D:CCSD(T) TESTS
 
-cbs_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+cbs_dtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
                                       {"wfn": "mp2", "basis": "cc-pv[dt]z"},
                                       {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])
 compare_values(cbs_ref, cbs_dtz, 6, "MP2/[DT]Z + D:CCSD(T)/DZ Energy Check")  #TEST
 
-cbs_no_scf = energy(cbs, cbs_metadata=[{"wfn": "mp2", "basis": "cc-pv[dt]z"},
+cbs_no_scf = energy("cbs", cbs_metadata=[{"wfn": "mp2", "basis": "cc-pv[dt]z"},
                                        {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])
 compare_values(cbs_ref, cbs_no_scf, 6, "MP2/[DT]Z + D:CCSD(T)/DZ without explicit SCF stage") #TEST
 
@@ -62,7 +62,7 @@ compare_values(cbs_ref, cbs_no_scf, 6, "MP2/[DT]Z + D:CCSD(T)/DZ without explici
 # Options test
 set freeze_core True
 
-ae_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+ae_dtz = energy("cbs", cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
                                       {"wfn": "mp2", "basis": "cc-pv[dt]z"},
                                       {"wfn": "mp2", "basis": "cc-pvdz",
                                        "options": {"freeze_core": "False"}}])

@@ -28,6 +28,7 @@
 
 import abc
 import math
+import json
 import itertools
 import pydantic
 
@@ -58,7 +59,7 @@ class SingleResult(BaseTask):
     basis: str
     method: str
     driver: str
-    keywords: Dict[str, Any] = None
+    keywords: Dict[str, Any] = {}
     computed: bool = False
     result: Dict[str, Any] = None
 
@@ -90,7 +91,7 @@ class SingleResult(BaseTask):
                 "method": self.method,
                 "basis": self.basis
             },
-            "keywords": self.keywords if self.keywords else None,
+            "keywords": self.keywords,
         }
 
         return data
