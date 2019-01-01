@@ -391,10 +391,13 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         }
 
         // Number of occupied orbitals is
-        int norb(nfzc+nact);
-        // Fractional alpha occupation
-        double frac_a = static_cast<double>(nalpha - 2*nfzc) / nact;
-        double frac_b = static_cast<double>(nbeta - 2*nfzc) / nact;
+        int norb = nfzc + nact;
+        // Fractional alpha and beta occupation.
+        double frac_a = (double)(nalpha - 2*nfzc) / nact;
+        double frac_b = (double)(nbeta - 2*nfzc) / nact;
+        // Occupations are squared in the density calculation, so take the root
+        frac_a = sqrt(frac_a);
+        frac_b = sqrt(frac_b);
 
         occ_a = std::make_shared<Vector>("Alpha fractional occupation", norb);
         for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
