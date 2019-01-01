@@ -31,6 +31,7 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver import qcdb
+from psi4.driver.task_base import BaseTask
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -853,7 +854,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
 def gradient_from_energies_geometries(molecule):
     """
     Generate geometries for a gradient by finite difference of energies.
-    
+
     Parameters
     ----------
     molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
@@ -875,7 +876,7 @@ def gradient_from_energies_geometries(molecule):
 def hessian_from_gradients_geometries(molecule, irrep):
     """
     Generate geometries for a hessian by finite difference of energies.
-    
+
     Parameters
     ----------
     molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
@@ -895,7 +896,7 @@ def hessian_from_gradients_geometries(molecule, irrep):
 def hessian_from_energies_geometries(molecule, irrep):
     """
     Generate geometries for a hessian by finite difference of energies.
-    
+
     Parameters
     ----------
     molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`

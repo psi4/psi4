@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
-from __future__ import absolute_import
 import abc
 import math
 import itertools
@@ -39,7 +37,7 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver import p4util
-
+from psi4.driver.p4util import exceptions
 
 __all__ = ["BaseTask", "SingleResult"]
 
@@ -64,6 +62,23 @@ class SingleResult(BaseTask):
     computed: bool = False
     result: Dict[str, Any] = None
 
+    @pydantic.validator('basis')
+    def set_basis(cls, basis):
+        return basis.lower()
+
+    @pydantic.validator('method')
+    def set_method(cls, method):
+        return method.lower()
+
+    @pydantic.validator('driver')
+    def set_driver(cls, driver):
+        driver = driver.lower()
+        if driver not in ["energy", "gradient", "hessian"]:
+            raise exceptions.ValidationError(
+                "Driver must be either energy, gradient, or hessian. Found {}.".format(driver))
+
+        return driver
+
     def plan(self):
 
         data = {
@@ -75,7 +90,7 @@ class SingleResult(BaseTask):
                 "method": self.method,
                 "basis": self.basis
             },
-            "keywords": self.keywords,
+            "keywords": self.keywords if self.keywords else None,
         }
 
         return data
@@ -91,4 +106,3 @@ class SingleResult(BaseTask):
 
     def get_results(self):
         return self.result
-

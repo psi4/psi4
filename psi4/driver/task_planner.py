@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
-from __future__ import absolute_import
 import abc
 import math
 import itertools
@@ -42,7 +40,6 @@ from psi4.driver import p4util
 from psi4.driver.task_base import SingleResult
 from psi4.driver.driver_nbody import NBodyComputer, nbody_gufunc
 from psi4.driver.driver_cbs import CBSComputer, cbs_gufunc, _cbs_text_parser
-
 
 __all__ = ["task_planner"]
 
@@ -78,14 +75,11 @@ def task_planner(driver, method, molecule, **kwargs):
     # Only pull the changed options
     # keywords = {key: v['value'] for key, v in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
     keywords = {}
-    if not len(keywords):
-        keywords = None
-        basis = None
-    else:
-        basis = keywords.pop("BASIS", None)
 
     # Pull basis out of kwargs, override globals if user specified
+    basis = keywords.pop("BASIS", None)
     basis = kwargs.pop("basis", basis)
+    method = method.lower()
 
     # Expand CBS methods
     if "/" in method:
@@ -102,22 +96,26 @@ def task_planner(driver, method, molecule, **kwargs):
     else:
         cbsmeta = {}
 
-
     # Build a packet
     packet = {"molecule": molecule, "driver": driver, "method": method, "basis": basis, "keywords": keywords}
 
     # First check for BSSE type
     if 'bsse_type' in kwargs:
-        raise Exception("BSSE not yet ready")
-        NBodyComputer
+        plan = NBodyComputer(**packet, **kwargs)
+        del packet["molecule"]
+
+        if method == "cbs":
+            plan.build_tasks(CBSComputer, **packet, **cbsmeta)
+        else:
+            plan.build_tasks(SingleResult, **packet)
+        return plan
 
     # Check for CBS
-    elif method.lower() == "cbs":
+    elif method == "cbs":
 
-        return CBSComputer(**packet, **cbsmeta)
+        return CBSComputer(**packet, **cbsmeta, **kwargs)
 
     # Finally a single result
     else:
 
         return SingleResult(**packet, **kwargs)
-
