@@ -390,14 +390,19 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
             throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radon");
         }
 
-        nalpha = nfzc + nact;
-        nbeta = nalpha;
-        double frac_act = std::pow(((double)(Z - nfzc * 2)) / ((double)nact * 2), 0.5);
+        // Number of occupied orbitals is
+        int norb(nfzc+nact);
+        // Fractional alpha occupation
+        double frac_a = static_cast<double>(nalpha - 2*nfzc) / nact;
+        double frac_b = static_cast<double>(nbeta - 2*nfzc) / nact;
 
-        occ_a = std::make_shared<Vector>("Alpha fractional occupation", nalpha);
+        occ_a = std::make_shared<Vector>("Alpha fractional occupation", norb);
         for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
-        for (size_t x = nfzc; x < nalpha; x++) occ_a->set(x, frac_act);
-        occ_b = std::shared_ptr<Vector>(occ_a->clone());
+        for (size_t x = nfzc; x < norb; x++) occ_a->set(x, frac_a);
+
+        occ_b = std::make_shared<Vector>("Beta fractional occupation", norb);
+        for (size_t x = 0; x < nfzc; x++) occ_b->set(x, 1.0);
+        for (size_t x = nfzc; x < norb; x++) occ_b->set(x, frac_b);
 
     } else {
         // Conventional occupations
