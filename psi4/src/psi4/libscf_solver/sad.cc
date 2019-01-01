@@ -381,7 +381,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
           // Number of active orbitals is 2l+1
           nact = 2*l_values[ishell++]+1;
-          if(nel>=nact) {
+          if(nel>nact) {
             // Shell is fully occupied
             nfzc+=nact;
           }
@@ -389,11 +389,27 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
           nel-=nact;
         }
 
+        // Spread the occupation around on the whole valence shell to
+        // make sure the SCF converges nicely; we don't want the
+        // fractional occupation to flip e.g. between s and p
+        // orbitals. The partially occupied shell is --ishell
+        if(l_values[--ishell]) {
+          do {
+            // Go to previous valence shell
+            --ishell;
+            // Take the orbitals on the shell out of the frozen core
+            int nshell = 2*l_values[ishell]+1;
+            nfzc -= nshell;
+            nact += nshell;
+          } while(l_values[ishell]);
+        }
+
         // Number of occupied orbitals is
         nocc_a = nocc_b = nfzc + nact;
         // Fractional alpha and beta occupation.
         double frac_a = (double)(nalpha - nfzc) / nact;
         double frac_b = (double)(nbeta - nfzc) / nact;
+
         // Occupations are squared in the density calculation, so take the root
         frac_a = sqrt(frac_a);
         frac_b = sqrt(frac_b);
