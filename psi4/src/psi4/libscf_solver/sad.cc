@@ -361,33 +361,30 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     // Factional occupation
     SharedVector occ_a, occ_b;
     if (options_.get_bool("SAD_FRAC_OCC")) {
-        int nfzc = 0, nact = 0;
-        if (Z <= 2) {
-            nfzc = 0;
-            nact = 1;
-        } else if (Z <= 4) {
-            nfzc = 1;
-            nact = 1;
-        } else if (Z <= 10) {
-            nfzc = 2;
-            nact = 3;
-        } else if (Z <= 18) {
-            nfzc = 5;
-            nact = 4;
-        } else if (Z <= 36) {
-            nfzc = 9;
-            nact = 9;
-        } else if (Z <= 54) {
-            nfzc = 18;
-            nact = 9;
-        } else if (Z <= 54) {
-            nfzc = 18;
-            nact = 9;
-        } else if (Z <= 86) {
-            nfzc = 27;
-            nact = 16;
-        } else {
-            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radon");
+        // Shell order, angular momentum: s, s, p, s, p, ...
+        static const int l_values[]={0, 0, 1, 0, 1, 0, 2, 1, 0, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1};
+        static const int num_l(sizeof(l_values)/sizeof(l_values[0]));
+
+        // Number of electrons to occupy
+        int nel(std::min(nalpha, nbeta));
+        // Number of frozen orbitals
+        int nfzc = 0;
+        // Number of active orbitals
+        int nact = 0;
+        // Shell index
+        int ishell = 0;
+        while(nel>0) {
+          // Number of active orbitals is 2l+1
+          nact = 2*l_values[ishell++]+1;
+          if(nel>=nact) {
+            // Shell is fully occupied
+            nfzc+=nact;
+          }
+          // Electrons taken care of
+          nel-=nact;
+
+          if(ishell==num_l)
+            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Oganesson");
         }
 
         // Number of occupied orbitals is
