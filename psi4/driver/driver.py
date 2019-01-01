@@ -525,14 +525,14 @@ def energy(name, **kwargs):
 
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
+    # Are we planning?
+    plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'energy'), **kwargs)
+    if plan:
+        return plan
+
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
-
-    comp_plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'energy'), **kwargs)
-    kwargs.update(comp_plan)
-    if comp_plan:
-        return kwargs.pop('function')(energy, kwargs.pop('name', name), ptype='energy', molecule=molecule, **kwargs)
 
     # Allow specification of methods to arbitrary order
     lowername = name.lower()

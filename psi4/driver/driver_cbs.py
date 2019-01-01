@@ -2159,7 +2159,9 @@ def _cbs_text_parser(total_method_name, **kwargs):
         return {'method': method_name, 'basis': basis}
 
     # Drop out for unsupported calls
-    if ptype not in ["energy", "gradient", "hessian"]:
+    if ptype is None:
+        raise ValidationError("A CBS call was detected, but no ptyped was passed in. Please alert a dev.")
+    elif ptype not in ["energy", "gradient", "hessian"]:
         raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
 
     # Catch kwarg issues for CBS methods only
@@ -2544,13 +2546,14 @@ class CBSComputer(BaseTask):
         gof = core.get_output_file()
         core.close_outfile()
 
-        self.results_list = [x.compute() for x in self.task_list]
+        for x in self.task_list:
+            x.compute()
 
         core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
 
     def get_results(self):
-        energies = [x['properties']["return_energy"] for x in self.results_list]
+        energies = [x.get_results()['properties']["return_energy"] for x in self.task_list]
         print('ENE', energies)
         for x in self.task_list:
             print('\nTASK')

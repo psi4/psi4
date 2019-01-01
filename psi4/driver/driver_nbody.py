@@ -905,15 +905,15 @@ class NBodyComputer(BaseTask):
         gof = core.get_output_file()
         core.close_outfile()
         for k, v in self.task_list.items():
-            self.results_list[k] = v.compute()
+            v.compute()
 
-            if self.results_list[k] is None:
-                # Get CBS results
-                results = v.get_results()
-                self.results_list[k] = {'properties': {'return_energy': results['energy']}, 'return_result': results['ret_ptype'],
-                                        'psi4:qcvars': {'CURRENT GRADIENT': results['gradient']}}
+            # if self.results_list[k] is None:
+            #     # Get CBS results
+            #     results = v.get_results()
+            #     self.results_list[k] = {'properties': {'return_energy': results['energy']}, 'return_result': results['ret_ptype'],
+            #                             'psi4:qcvars': {'CURRENT GRADIENT': results['gradient']}}
 
-            print(self.results_list[k]["return_result"])
+            # print(self.results_list[k]["return_result"])
 
         core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
@@ -921,7 +921,7 @@ class NBodyComputer(BaseTask):
             core.set_global_option_python('EXTERN', None)
 
     def get_results(self):
-        energies = {k: v['properties']["return_energy"] for k, v in self.results_list.items()}
+        energies = {k: v.get_results()['properties']["return_energy"] for k, v in self.task_list.items()}
 
         ptype = None
         if self.driver == 'gradient':

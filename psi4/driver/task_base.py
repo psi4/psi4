@@ -41,6 +41,9 @@ from psi4 import core
 from psi4.driver import p4util
 
 
+# __all__ = ["BaseTask", "SingleResult", "planner"]
+
+
 class BaseTask(pydantic.BaseModel, abc.ABC):
     @abc.abstractmethod
     def compute(self):
@@ -57,7 +60,9 @@ class SingleResult(BaseTask):
     basis: str
     method: str
     driver: str
-    keywords: Dict[str, Any] = {}
+    keywords: Dict[str, Any] = None
+    computed: bool = False
+    result: Dict[str, Any] = None
 
     def plan(self):
 
@@ -76,59 +81,91 @@ class SingleResult(BaseTask):
         return data
 
     def compute(self):
+        if self.computed:
+            return
+
+        print(json.dumps(self.plan(), indent=2))
         from psi4.driver import json_wrapper
+        self.result = json_wrapper.run_json(self.plan())
+        self.computed = True
 
-        return json_wrapper.run_json(self.plan())
+    def get_results(self):
+        return self.result
 
 
-def planner(name, **kwargs):
+def planner(driver, method, molecule, **kwargs):
+    """Plans a task graph of a complex computations.
+
+    Canonical Task layering:
+     - N-Body
+     - CBS
+     - Finite Difference
+     - Single Result
+
+    Parameters
+    ----------
+    driver :
+        The resulting type of computation {"energy", "gradient", "hessian"}
+    method :
+        A string representation of the method such as "HF" or "B3LYP". Special cases are:
+        "cbs"
+    molecule : psi4.core.Molecule
+        A Psi4 base molecule to use
+    **kwargs
+        Description
+
+    Returns
+    -------
+    Task
+        A task object
+
+    """
     from psi4.driver.driver_nbody import NBodyComputer, nbody_gufunc
     from psi4.driver.driver_cbs import CBSComputer, cbs_gufunc, _cbs_text_parser
 
-    keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
-    data = {'driver': kwargs['ptype'], 'method': name, 'basis': core.get_global_option('BASIS'), 'keywords': keywords}
+    # Only pull the changed options
+    # keywords = {key: v['value'] for key, v in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
+    keywords = {}
+    if not len(keywords):
+        keywords = None
+        basis = None
+    else:
+        basis = keywords.pop("BASIS", None)
 
-    comp_plan = {}
+    # Pull basis out of kwargs, override globals if user specified
+    basis = kwargs.pop("basis", basis)
+
+    # Expand CBS methods
+    if "/" in method:
+        tmp_kwargs = kwargs.copy()
+        tmp_kwargs["ptype"] = driver
+        cbsmeta = _cbs_text_parser(method, **tmp_kwargs)
+
+        # Single call detected
+        if "cbs_metadata" not in cbsmeta:
+            method = cbsmeta["method"]
+            basis = cbsmeta["basis"]
+        else:
+            method = "cbs"
+    else:
+        cbsmeta = {}
+
+
+    # Build a packet
+    packet = {"molecule": molecule, "driver": driver, "method": method, "basis": basis, "keywords": keywords}
+
+    # First check for BSSE type
     if 'bsse_type' in kwargs:
-        # Call nbody wrapper
+        raise Exception("BSSE not yet ready")
+        NBodyComputer
 
-        comp_plan.update({'function': nbody_gufunc, 'computer': SingleResult, 'data': data})
-        ComputeInstance = NBodyComputer
+    # Check for CBS
+    elif method.lower() == "cbs":
 
-    if hasattr(name, '__call__'):  # and name.__name__ in ['cbs', 'complete_basis_set']:
-        function = comp_plan.get('function', name)
+        return CBSComputer(**packet, **cbsmeta)
 
-        if function != name:
-            # Use CBSComputer inside the nbody wrapper
+    # Finally a single result
+    else:
 
-            data.update({k: v for k, v in kwargs.items() if k not in ComputeInstance.__fields__})
-            comp_plan.update({'computer': CBSComputer, 'data': data})
-
-        else:
-            # Call CBS wrapper
-            comp_plan.update({'function': function})
-            comp_plan.update({'name': kwargs.pop('label', 'custom function')})
-
-    elif '/' in name:
-
-        tmp = _cbs_text_parser(name, **kwargs)
-
-        function = comp_plan.get('function', cbs_gufunc)
-
-        if function != cbs_gufunc:
-            if 'cbs_metadata' in tmp:
-                # Use CBSComputer inside the nbody wrapper
-                data.update({'cbs_metadata': tmp['cbs_metadata']})
-                comp_plan.update({'computer': CBSComputer, 'data': data})
-
-            else:
-                # Use SingleResult inside the nbody wrapper
-                data.update(tmp)
-
-        else:
-            # Call cbs_gufunc
-            comp_plan.update({'function': function})
-
-
-    return comp_plan
+        return SingleResult(**packet, **kwargs)
 
