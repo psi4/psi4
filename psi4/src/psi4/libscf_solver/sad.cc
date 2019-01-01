@@ -608,7 +608,7 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
     }
     // Scale by occ
     for (int i = 0; i < nocc; i++) {
-        C_DSCAL(norbs, occ->get(i), &Cp[0][i], nocc);
+        C_DSCAL(norbs, occ->get(i), &Coccp[0][i], nocc);
     }
     // Form D = Cocc*Cocc'
     D->gemm(false, true, 1.0, Cocc, Cocc, 0.0);
