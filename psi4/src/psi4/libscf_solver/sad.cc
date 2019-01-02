@@ -363,46 +363,22 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     // Number of partially or fully occupied orbitals
     int nocc_a, nocc_b;
     if (options_.get_bool("SAD_FRAC_OCC") || options_.get_bool("SAD_FRAC_SR_OCC")) {
-        // Shell order, angular momentum: s, s, p, s, p, ...
-        static const int l_values[] = {0, 0, 1, 0, 1, 0, 2, 1, 0, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1};
-        static const size_t num_l = sizeof(l_values)/sizeof(l_values[0]);
-
-        // Number of electrons to treat
-        int nel = std::min(nalpha, nbeta);
-        // Number of frozen orbitals
-        int nfzc = 0;
-        // Number of active orbitals
-        int nact = 0;
+        // The density is spread over the whole of the possible valence shell.
+        // Only the noble gas core is doubly occupied
+        static const int magic_values[] = {0, 2, 10, 18, 36, 54, 86, 118};
+        static const size_t Nmagic = sizeof(magic_values)/sizeof(magic_values[0]);
         // Shell index
-        size_t ishell = 0;
-        while(nel>0) {
-          if(ishell>=num_l)
+        size_t imagic = 0;
+        while(Z>magic_values[imagic+1]) {
+          imagic++;
+          if(imagic+1>=Nmagic)
             throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Oganesson");
-
-          // Number of active orbitals is 2l+1
-          nact = 2*l_values[ishell++]+1;
-          if(nel>nact) {
-            // Shell is fully occupied
-            nfzc+=nact;
-          }
-          // Electrons taken care of
-          nel-=nact;
         }
 
-        // Spread the occupation around on the whole valence shell to
-        // make sure the SCF converges nicely; we don't want the
-        // fractional occupation to flip e.g. between s and p
-        // orbitals. The partially occupied shell is --ishell
-        if(l_values[--ishell]) {
-          do {
-            // Go to previous valence shell
-            --ishell;
-            // Take the orbitals on the shell out of the frozen core
-            int nshell = 2*l_values[ishell]+1;
-            nfzc -= nshell;
-            nact += nshell;
-          } while(l_values[ishell]);
-        }
+        // Number of frozen orbitals
+        int nfzc = magic_values[imagic]/2;
+        // Number of active orbitals
+        int nact = magic_values[imagic+1]/2 - nfzc;
 
         // Number of occupied orbitals is
         nocc_a = nocc_b = nfzc + nact;
