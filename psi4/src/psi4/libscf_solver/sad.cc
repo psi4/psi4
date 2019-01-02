@@ -362,7 +362,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     SharedVector occ_a, occ_b;
     // Number of partially or fully occupied orbitals
     int nocc_a, nocc_b;
-    if (options_.get_bool("SAD_FRAC_OCC")) {
+    if (options_.get_bool("SAD_FRAC_OCC") || options_.get_bool("SAD_FRAC_SR_OCC")) {
         // Shell order, angular momentum: s, s, p, s, p, ...
         static const int l_values[] = {0, 0, 1, 0, 1, 0, 2, 1, 0, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1};
         static const size_t num_l = sizeof(l_values)/sizeof(l_values[0]);
@@ -407,8 +407,16 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         // Number of occupied orbitals is
         nocc_a = nocc_b = nfzc + nact;
         // Fractional alpha and beta occupation.
-        double frac_a = (double)(nalpha - nfzc) / nact;
-        double frac_b = (double)(nbeta - nfzc) / nact;
+        double frac_a, frac_b;
+
+        if (options_.get_bool("SAD_FRAC_SR_OCC")) {
+          // Spin-restricted occupations
+          frac_a = frac_b = sqrt((Z - 2.0*nfzc) / (2.0 * nact));
+        } else {
+          // Normal occupations
+          frac_a = (double)(nalpha - nfzc) / nact;
+          frac_b = (double)(nbeta - nfzc) / nact;
+        }
 
         // Occupations are squared in the density calculation, so take the root
         frac_a = sqrt(frac_a);
