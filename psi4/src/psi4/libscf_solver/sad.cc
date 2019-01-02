@@ -146,7 +146,7 @@ void SADGuess::form_C() {
     } else {
         Cb_ = SharedMatrix(Ca_->clone());
         Cb_->set_name("Cb SAD");
-        Cb_->scale(sqrt(((double)nbeta_) / ((double)nalpha_)));
+        Cb_->scale(std::sqrt(((double)nbeta_) / ((double)nalpha_)));
     }
 
     if (debug_) {
@@ -365,13 +365,12 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     if (options_.get_bool("SAD_FRAC_OCC") || options_.get_bool("SAD_FRAC_SR_OCC")) {
         // The density is spread over the whole of the possible valence shell.
         // Only the noble gas core is doubly occupied
-        static const int magic_values[] = {0, 2, 10, 18, 36, 54, 86, 118};
-        static const size_t Nmagic = sizeof(magic_values)/sizeof(magic_values[0]);
+        static const std::vector<int> magic_values = {0, 2, 10, 18, 36, 54, 86, 118};
         // Shell index
         size_t imagic = 0;
         while(Z>magic_values[imagic+1]) {
           imagic++;
-          if(imagic+1>=Nmagic)
+          if(imagic+1>=magic_values.size())
             throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Oganesson");
         }
 
@@ -395,8 +394,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         }
 
         // Occupations are squared in the density calculation, so take the root
-        frac_a = sqrt(frac_a);
-        frac_b = sqrt(frac_b);
+        frac_a = std::sqrt(frac_a);
+        frac_b = std::sqrt(frac_b);
 
         occ_a = std::make_shared<Vector>("Alpha fractional occupation", nocc_a);
         for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
@@ -421,8 +420,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     auto Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, nocc_b);
 
     // Compute initial Cx, Dx, and D from core guess
-    form_C_and_D(norbs, X, H, Ca, Ca_occ, occ_a, Da);
-    form_C_and_D(norbs, X, H, Cb, Cb_occ, occ_b, Db);
+    form_C_and_D(X, H, Ca, Ca_occ, occ_a, Da);
+    form_C_and_D(X, H, Cb, Cb_occ, occ_b, Db);
 
     D->zero();
     D->add(Da);
@@ -523,8 +522,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         double deltaE = std::fabs(E - E_old);
 
         // Build Gradient
-        form_gradient(norbs, gradient_a, Fa, Da, S, X);
-        form_gradient(norbs, gradient_b, Fb, Db, S, X);
+        form_gradient(gradient_a, Fa, Da, S, X);
+        form_gradient(gradient_b, Fb, Db, S, X);
         double Drms = 0.5 * (gradient_a->rms() + gradient_b->rms());
 
         // Add and extrapolate DIIS
@@ -532,8 +531,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         diis_manager.extrapolate(2, Fa.get(), Fb.get());
 
         // Diagonalize Fa and Fb to from Ca and Cb and Da and Db
-        form_C_and_D(norbs, X, Fa, Ca, Ca_occ, occ_a, Da);
-        form_C_and_D(norbs, X, Fb, Cb, Cb_occ, occ_b, Db);
+        form_C_and_D(X, Fa, Ca, Ca_occ, occ_a, Da);
+        form_C_and_D(X, Fb, Cb, Cb_occ, occ_b, Db);
 
         // Form D
         D->copy(Da);
@@ -567,8 +566,9 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     if (converged && print_ > 1)
         outfile->Printf("  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(), E);
 }
-void SADGuess::form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S,
+void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S,
                              SharedMatrix X) {
+    int norbs = X->rowdim();
     auto Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
     auto Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
 
@@ -592,8 +592,9 @@ void SADGuess::form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, Share
     Scratch2.reset();
 }
 
-void SADGuess::form_C_and_D(int norbs, SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc,
+void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc,
                             SharedVector occ, SharedMatrix D) {
+    int norbs = X->rowdim();
     int nocc = occ->dim();
     if (nocc == 0) return;
 
