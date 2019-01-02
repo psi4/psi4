@@ -88,6 +88,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
 
     core.print_out('Writing integrals in FCIDUMP format to ' + fname + '\n')
     # Generate FCIDUMP header
+    psi2dump = fcidump_helper(wfn)
     header = '&FCI\n'
     header += 'NORB={:d},\n'.format(nbf)
     header += 'NELEC={:d},\n'.format(nelectron)
@@ -96,10 +97,11 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     orbsym = ''
     for h in range(active_mopi.n()):
         for n in range(frzcpi[h], frzcpi[h] + active_mopi[h]):
-            orbsym += '{:d},'.format(h + 1)
+            orbsym += '{:d},'.format(psi2dump[h])
             if not wfn.same_a_b_orbs():
-                orbsym += '{:d},'.format(h + 1)
+                orbsym += '{:d},'.format(psi2dump[h])
     header += 'ORBSYM={}\n'.format(orbsym)
+    #header += 'ISYM={:d},\n'.format(psi2dump[wfn.irrep()]) #TODO find functional equiv to .irrep()
     header += '&END\n'
     with open(fname, 'w') as intdump:
         intdump.write(header)
@@ -208,6 +210,52 @@ def write_eigenvalues(eigs, mo_idx):
             eigs_dump += '{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0)
             iorb += 1
     return eigs_dump
+
+
+def fcidump_helper(wfn):
+
+    nirrep = wfn.nirrep()
+    symm   = wfn.molecule().point_group().symbol()
+    #print('!!',nirrep,'!!',symm,'\n')
+    psi2dump = np.zeros([nirrep], dtype='int')
+
+    if  'c1' == symm :
+        psi2dump[0] = 1    # A
+    if  'ci' == symm :
+        psi2dump[0] = 1    # Ag
+        psi2dump[1] = 2    # Au
+    if  'c2' == symm :
+        psi2dump[0] = 1    # A
+        psi2dump[1] = 2    # B
+    if  'cs' == symm :
+        psi2dump[0] = 1    # A'
+        psi2dump[1] = 2    # A"
+    if  'd2' == symm :
+        psi2dump[0] = 1    # A
+        psi2dump[1] = 4    # B1
+        psi2dump[2] = 3    # B2
+        psi2dump[3] = 2    # B3
+    if  'c2v' == symm :
+        psi2dump[0] = 1    # A1
+        psi2dump[1] = 4    # A2
+        psi2dump[2] = 2    # B1
+        psi2dump[3] = 3    # B2
+    if  'c2h' == symm :
+        psi2dump[0] = 1    # Ag
+        psi2dump[1] = 4    # Bg
+        psi2dump[2] = 2    # Au
+        psi2dump[3] = 3    # Bu
+    if  'd2h' == symm :
+        psi2dump[0] = 1    # Ag
+        psi2dump[1] = 4    # B1g
+        psi2dump[2] = 6    # B2g
+        psi2dump[3] = 7    # B3g
+        psi2dump[4] = 8    # Au
+        psi2dump[5] = 5    # B1u
+        psi2dump[6] = 3    # B2u
+        psi2dump[7] = 2    # B3u
+
+    return psi2dump
 
 
 def fcidump_from_file(fname):
