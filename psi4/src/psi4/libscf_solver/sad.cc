@@ -411,7 +411,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
         if (options_.get_bool("SAD_FRAC_SR_OCC")) {
           // Spin-restricted occupations
-          frac_a = frac_b = sqrt((Z - 2.0*nfzc) / (2.0 * nact));
+          frac_a = frac_b = (Z - 2.0*nfzc) / (2.0 * nact);
         } else {
           // Normal occupations
           frac_a = (double)(nalpha - nfzc) / nact;
