@@ -358,61 +358,87 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     SharedMatrix Fa(mat.create_matrix("Fa"));
     SharedMatrix Fb(mat.create_matrix("Fb"));
 
-    // Factional occupation
+    // Fractional occupation
     SharedVector occ_a, occ_b;
+    // Number of partially or fully occupied orbitals
+    int nocc_a, nocc_b;
     if (options_.get_bool("SAD_FRAC_OCC")) {
-        int nfzc = 0, nact = 0;
-        if (Z <= 2) {
-            nfzc = 0;
-            nact = 1;
-        } else if (Z <= 4) {
-            nfzc = 1;
-            nact = 1;
-        } else if (Z <= 10) {
-            nfzc = 2;
-            nact = 3;
-        } else if (Z <= 18) {
-            nfzc = 5;
-            nact = 4;
-        } else if (Z <= 36) {
-            nfzc = 9;
-            nact = 9;
-        } else if (Z <= 54) {
-            nfzc = 18;
-            nact = 9;
-        } else if (Z <= 54) {
-            nfzc = 18;
-            nact = 9;
-        } else if (Z <= 86) {
-            nfzc = 27;
-            nact = 16;
-        } else {
-            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radon");
+        // Shell order, angular momentum: s, s, p, s, p, ...
+        static const int l_values[] = {0, 0, 1, 0, 1, 0, 2, 1, 0, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1};
+        static const size_t num_l = sizeof(l_values)/sizeof(l_values[0]);
+
+        // Number of electrons to treat
+        int nel = std::min(nalpha, nbeta);
+        // Number of frozen orbitals
+        int nfzc = 0;
+        // Number of active orbitals
+        int nact = 0;
+        // Shell index
+        size_t ishell = 0;
+        while(nel>0) {
+          if(ishell>=num_l)
+            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Oganesson");
+
+          // Number of active orbitals is 2l+1
+          nact = 2*l_values[ishell++]+1;
+          if(nel>nact) {
+            // Shell is fully occupied
+            nfzc+=nact;
+          }
+          // Electrons taken care of
+          nel-=nact;
         }
 
-        nalpha = nfzc + nact;
-        nbeta = nalpha;
-        double frac_act = std::pow(((double)(Z - nfzc * 2)) / ((double)nact * 2), 0.5);
+        // Spread the occupation around on the whole valence shell to
+        // make sure the SCF converges nicely; we don't want the
+        // fractional occupation to flip e.g. between s and p
+        // orbitals. The partially occupied shell is --ishell
+        if(l_values[--ishell]) {
+          do {
+            // Go to previous valence shell
+            --ishell;
+            // Take the orbitals on the shell out of the frozen core
+            int nshell = 2*l_values[ishell]+1;
+            nfzc -= nshell;
+            nact += nshell;
+          } while(l_values[ishell]);
+        }
 
-        occ_a = std::make_shared<Vector>("Alpha fractional occupation", nalpha);
+        // Number of occupied orbitals is
+        nocc_a = nocc_b = nfzc + nact;
+        // Fractional alpha and beta occupation.
+        double frac_a = (double)(nalpha - nfzc) / nact;
+        double frac_b = (double)(nbeta - nfzc) / nact;
+
+        // Occupations are squared in the density calculation, so take the root
+        frac_a = sqrt(frac_a);
+        frac_b = sqrt(frac_b);
+
+        occ_a = std::make_shared<Vector>("Alpha fractional occupation", nocc_a);
         for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
-        for (size_t x = nfzc; x < nalpha; x++) occ_a->set(x, frac_act);
-        occ_b = std::shared_ptr<Vector>(occ_a->clone());
+        for (size_t x = nfzc; x < nocc_a; x++) occ_a->set(x, frac_a);
+
+        occ_b = std::make_shared<Vector>("Beta fractional occupation", nocc_b);
+        for (size_t x = 0; x < nfzc; x++) occ_b->set(x, 1.0);
+        for (size_t x = nfzc; x < nocc_b; x++) occ_b->set(x, frac_b);
 
     } else {
         // Conventional occupations
+        nocc_a = nalpha;
         occ_a = std::make_shared<Vector>("Alpha occupation", nalpha);
         for (size_t x = 0; x < nalpha; x++) occ_a->set(x, 1.0);
+
+        nocc_b = nbeta;
         occ_b = std::make_shared<Vector>("Beta occupation", nbeta);
         for (size_t x = 0; x < nbeta; x++) occ_b->set(x, 1.0);
     }
 
-    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, nalpha);
-    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, nbeta);
+    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, nocc_a);
+    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, nocc_b);
 
     // Compute initial Cx, Dx, and D from core guess
-    form_C_and_D(nalpha, norbs, X, H, Ca, Ca_occ, occ_a, Da);
-    form_C_and_D(nbeta, norbs, X, H, Cb, Cb_occ, occ_b, Db);
+    form_C_and_D(norbs, X, H, Ca, Ca_occ, occ_a, Da);
+    form_C_and_D(norbs, X, H, Cb, Cb_occ, occ_b, Db);
 
     D->zero();
     D->add(Da);
@@ -522,8 +548,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         diis_manager.extrapolate(2, Fa.get(), Fb.get());
 
         // Diagonalize Fa and Fb to from Ca and Cb and Da and Db
-        form_C_and_D(nalpha, norbs, X, Fa, Ca, Ca_occ, occ_a, Da);
-        form_C_and_D(nbeta, norbs, X, Fb, Cb, Cb_occ, occ_b, Db);
+        form_C_and_D(norbs, X, Fa, Ca, Ca_occ, occ_a, Da);
+        form_C_and_D(norbs, X, Fb, Cb, Cb_occ, occ_b, Db);
 
         // Form D
         D->copy(Da);
@@ -582,8 +608,9 @@ void SADGuess::form_gradient(int norbs, SharedMatrix grad, SharedMatrix F, Share
     Scratch2.reset();
 }
 
-void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc,
+void SADGuess::form_C_and_D(int norbs, SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc,
                             SharedVector occ, SharedMatrix D) {
+    int nocc = occ->dim();
     if (nocc == 0) return;
 
     // Forms C in the AO basis for SAD Guesses
