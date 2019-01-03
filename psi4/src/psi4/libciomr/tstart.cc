@@ -64,7 +64,7 @@ double user_stop, sys_stop;
 **
 ** \ingroup CIOMR
 */
-void tstart() {
+void PSI_API tstart() {
     int error;
     char *name;
     struct tms total_tmstime;
@@ -100,7 +100,7 @@ void tstart() {
 **
 ** \ingroup CIOMR
 */
-void tstop() {
+void PSI_API tstop() {
     int error;
     std::time_t total_time;
     std::time_t total_time_overall;
