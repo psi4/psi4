@@ -192,6 +192,13 @@ configure_file(run_psi4.py psi4 @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
+if(WIN32)
+    # Generate a batch script, which wraps "bin/psi4" script to "python bin/psi4"
+    configure_file(psi4.bat psi4.bat @ONLY)
+    install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4.bat
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+endif()
+
     # <<<  install lib/  >>>
 install(DIRECTORY share/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
