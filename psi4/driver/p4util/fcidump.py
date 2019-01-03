@@ -85,10 +85,15 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     nbf = active_mopi.sum() if wfn.same_a_b_orbs() else 2 * active_mopi.sum()
     nirrep = wfn.nirrep()
     nelectron = 2 * active_docc.sum() + active_socc.sum()
+    irrep_map = _irrep_map(wfn)
+
+    wfn_irrep = 0
+    for h, n_socc in enumerate(active_socc):
+        if n_socc % 2 == 1:
+            wfn_irrep ^= h
 
     core.print_out('Writing integrals in FCIDUMP format to ' + fname + '\n')
     # Generate FCIDUMP header
-    psi2dump = fcidump_helper(wfn)
     header = '&FCI\n'
     header += 'NORB={:d},\n'.format(nbf)
     header += 'NELEC={:d},\n'.format(nelectron)
@@ -97,11 +102,11 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     orbsym = ''
     for h in range(active_mopi.n()):
         for n in range(frzcpi[h], frzcpi[h] + active_mopi[h]):
-            orbsym += '{:d},'.format(psi2dump[h])
+            orbsym += '{:d},'.format(irrep_map[h])
             if not wfn.same_a_b_orbs():
-                orbsym += '{:d},'.format(psi2dump[h])
+                orbsym += '{:d},'.format(irrep_map[h])
     header += 'ORBSYM={}\n'.format(orbsym)
-    #header += 'ISYM={:d},\n'.format(psi2dump[wfn.irrep()]) #TODO find functional equiv to .irrep()
+    header += 'ISYM={:d},\n'.format(irrep_map[wfn_irrep])
     header += '&END\n'
     with open(fname, 'w') as intdump:
         intdump.write(header)
@@ -212,50 +217,22 @@ def write_eigenvalues(eigs, mo_idx):
     return eigs_dump
 
 
-def fcidump_helper(wfn):
+def _irrep_map(wfn):
+    """Returns an array of irrep indices that maps from Psi4's ordering convention to the standard FCIDUMP convention.
+    """
+    symm = wfn.molecule().point_group().symbol()
+    psi2dump = {'c1' : [1],               # A
+                'ci' : [1,2],             # Ag Au
+                'c2' : [1,2],             # A  B
+                'cs' : [1,2],             # A' A"
+                'd2' : [1,4,3,2],         # A  B1  B2  B3
+                'c2v' : [1,4,2,3],        # A1 A2  B1  B2
+                'c2h' : [1,4,2,3],        # Ag Bg  Au  Bu
+                'd2h' : [1,4,6,7,8,5,3,2] # Ag B1g B2g B3g Au B1u B2u B3u
+                }
 
-    nirrep = wfn.nirrep()
-    symm   = wfn.molecule().point_group().symbol()
-    #print('!!',nirrep,'!!',symm,'\n')
-    psi2dump = np.zeros([nirrep], dtype='int')
-
-    if  'c1' == symm :
-        psi2dump[0] = 1    # A
-    if  'ci' == symm :
-        psi2dump[0] = 1    # Ag
-        psi2dump[1] = 2    # Au
-    if  'c2' == symm :
-        psi2dump[0] = 1    # A
-        psi2dump[1] = 2    # B
-    if  'cs' == symm :
-        psi2dump[0] = 1    # A'
-        psi2dump[1] = 2    # A"
-    if  'd2' == symm :
-        psi2dump[0] = 1    # A
-        psi2dump[1] = 4    # B1
-        psi2dump[2] = 3    # B2
-        psi2dump[3] = 2    # B3
-    if  'c2v' == symm :
-        psi2dump[0] = 1    # A1
-        psi2dump[1] = 4    # A2
-        psi2dump[2] = 2    # B1
-        psi2dump[3] = 3    # B2
-    if  'c2h' == symm :
-        psi2dump[0] = 1    # Ag
-        psi2dump[1] = 4    # Bg
-        psi2dump[2] = 2    # Au
-        psi2dump[3] = 3    # Bu
-    if  'd2h' == symm :
-        psi2dump[0] = 1    # Ag
-        psi2dump[1] = 4    # B1g
-        psi2dump[2] = 6    # B2g
-        psi2dump[3] = 7    # B3g
-        psi2dump[4] = 8    # Au
-        psi2dump[5] = 5    # B1u
-        psi2dump[6] = 3    # B2u
-        psi2dump[7] = 2    # B3u
-
-    return psi2dump
+    irrep_map = psi2dump[symm]
+    return np.array(irrep_map, dtype='int')
 
 
 def fcidump_from_file(fname):
