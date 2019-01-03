@@ -1570,7 +1570,7 @@ def cbs(func, label, **kwargs):
         commands = '\n'
         commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
         commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
-            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower().replace('*', 's'))
         exec(commands)
 
         # Stash and set options if any
