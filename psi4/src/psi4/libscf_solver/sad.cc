@@ -366,18 +366,25 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         // The density is spread over the whole of the possible valence shell.
         // Only the noble gas core is doubly occupied
         static const std::vector<int> magic_values = {0, 2, 10, 18, 36, 54, 86, 118};
-        // Shell index
-        size_t imagic = 0;
-        while(Z>magic_values[imagic+1]) {
-          imagic++;
-          if(imagic+1>=magic_values.size())
+        // Find the noble gas core.
+        auto imagic = std::lower_bound(magic_values.begin(), magic_values.end(), Z);
+        if (imagic == magic_values.end()) {
             throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Oganesson");
         }
+        // lower_bound gives a value that is equal or greater than the
+        // wanted value, which is handled next.
+        if (*imagic > Z) imagic--;
 
-        // Number of frozen orbitals
-        int nfzc = magic_values[imagic]/2;
-        // Number of active orbitals
-        int nact = magic_values[imagic+1]/2 - nfzc;
+        // Number of frozen and active orbitals
+        int nfzc, nact;
+        if ((*imagic) == Z) {
+            // Special case: we can hit the boundary at the end of the array
+            nfzc = 0;
+            nact = (*imagic) / 2;
+        } else {
+            nfzc = (*imagic) / 2;
+            nact = (*(++imagic)) / 2 - nfzc;
+        }
 
         // Number of occupied orbitals is
         nocc_a = nocc_b = nfzc + nact;
@@ -385,12 +392,12 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         double frac_a, frac_b;
 
         if (options_.get_bool("SAD_FRAC_SR_OCC")) {
-          // Spin-restricted occupations
-          frac_a = frac_b = (Z - 2.0*nfzc) / (2.0 * nact);
+            // Spin-restricted occupations
+            frac_a = frac_b = (Z - 2.0 * nfzc) / (2.0 * nact);
         } else {
-          // Normal occupations
-          frac_a = (double)(nalpha - nfzc) / nact;
-          frac_b = (double)(nbeta - nfzc) / nact;
+            // Normal occupations
+            frac_a = (double)(nalpha - nfzc) / nact;
+            frac_b = (double)(nbeta - nfzc) / nact;
         }
 
         // Occupations are squared in the density calculation, so take the root
@@ -566,8 +573,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     if (converged && print_ > 1)
         outfile->Printf("  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(), E);
 }
-void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S,
-                             SharedMatrix X) {
+void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S, SharedMatrix X) {
     int norbs = X->rowdim();
     auto Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
     auto Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
@@ -592,8 +598,8 @@ void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, 
     Scratch2.reset();
 }
 
-void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc,
-                            SharedVector occ, SharedMatrix D) {
+void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
+                            SharedMatrix D) {
     int norbs = X->rowdim();
     int nocc = occ->dim();
     if (nocc == 0) return;
