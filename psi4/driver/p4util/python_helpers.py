@@ -702,6 +702,9 @@ core.Wavefunction.arrays = _core_wavefunction_arrays
 
 
 def _core_wavefunction_frequencies(cls):
+    if not hasattr(cls, 'frequency_analysis'):
+        return None
+
     vibinfo = cls.frequency_analysis
     vibonly = qcdb.vib.filter_nonvib(vibinfo)
     return core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data))
