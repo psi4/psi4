@@ -31,15 +31,17 @@
  \ingroup PSIO
  */
 
+#include "psi4/libpsio/psio.h"
+#include "psi4/psi4-dec.h"
+
 #ifdef _MSC_VER
 #include <io.h>
-#define SYSTEM_LSEEK ::_lseek
+#define SYSTEM_LSEEK ::_lseeki64
 #else
 #include <unistd.h>
 #define SYSTEM_LSEEK ::lseek
 #endif
-#include "psi4/libpsio/psio.h"
-#include "psi4/psi4-dec.h"
+
 /* This is strictly used to avoid overflow errors on lseek() calls */
 #define PSIO_BIGNUM 10000
 
@@ -50,32 +52,25 @@ namespace psi {
  ** \ingroup PSIO
  */
 int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols) {
-    int stream, errcod;
-    size_t bignum, total_offset;
 
-    bignum = PSIO_BIGNUM * numvols;
-
-    stream = vol->stream;
+    int stream = vol->stream;
 
     /* Set file pointer to beginning of file */
-    errcod = SYSTEM_LSEEK(stream, (size_t)0, SEEK_SET);
-    if (errcod == -1) return (errcod);
+    if (SYSTEM_LSEEK(stream, 0, SEEK_SET) == -1)
+        return -1;
 
     /* lseek() through large chunks of the file to avoid offset overflows */
-    for (; page > bignum; page -= bignum) {
-        total_offset = PSIO_BIGNUM * PSIO_PAGELEN;
-        errcod = SYSTEM_LSEEK(stream, total_offset, SEEK_CUR);
-        if (errcod == -1) return (errcod);
-    }
+    size_t bignum = PSIO_BIGNUM * numvols;
+    for (; page > bignum; page -= bignum)
+        if (SYSTEM_LSEEK(stream, PSIO_BIGNUM * PSIO_PAGELEN, SEEK_CUR) == -1)
+            return -1;
 
     /* Now compute the final offset including the page-relative term */
-    total_offset = (size_t)page / numvols; /* This should truncate */
-    total_offset *= PSIO_PAGELEN;
-    total_offset += offset; /* Add the page-relative term */
-    errcod = SYSTEM_LSEEK(stream, total_offset, SEEK_CUR);
-    if (errcod == -1) return (errcod);
+    size_t final_offset = (page / numvols) * PSIO_PAGELEN + offset;
+    if (SYSTEM_LSEEK(stream, final_offset, SEEK_CUR) == -1)
+        return -1;
 
-    return (0);
+    return 0;
 }
 
 }  // namespace psi
