@@ -29,9 +29,6 @@
 databases. Contains Molecule class and physical constants from psi4 suite.
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
 __version__ = '0.4'
 __author__ = 'Lori A. Burns'
 

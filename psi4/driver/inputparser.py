@@ -31,10 +31,6 @@ module calls that access the C++ side of Psi4.
 
 """
 
-## Force Python 3 print syntax, if this is python 2.X
-#if sys.hexversion < 0x03000000:
-from __future__ import print_function
-from __future__ import absolute_import
 import re
 import os
 import sys
@@ -197,12 +193,8 @@ def process_molecule_command(matchobj):
     molecule = spaces
 
     if name != "":
-        if sys.version_info >= (3, 0):
-            if not name.isidentifier():
-                raise ValidationError('Molecule name not valid Python identifier: ' + name)
-        else:
-            if not re.match(r'^[^\d\W]\w*\Z', name):
-                raise ValidationError('Molecule name not valid Python identifier: ' + name)
+        if not name.isidentifier():
+            raise ValidationError('Molecule name not valid Python identifier: ' + name)
 
     if name != "":
         molecule += '%s = ' % (name)

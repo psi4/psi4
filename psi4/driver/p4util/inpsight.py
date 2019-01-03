@@ -47,16 +47,16 @@ class InPsight:
     defines['Antialias_Threshold'] = '0.1'
 
     # Molecule geometry
-    atoms = [] # (Z,x,y,z,R,r,g,b,t) in bohr
-    bonds = [] # (x1,y1,z1,R1,x2,y2,z2,R2,r,g,b,t)
+    atoms = []  # (Z,x,y,z,R,r,g,b,t) in bohr
+    bonds = []  # (x1,y1,z1,R1,x2,y2,z2,R2,r,g,b,t)
 
     # Molecular geometry defines
     colors = []
     radii = []
     radial_scale = 0.25
-    bond_width = 0.2 # bohr
+    bond_width = 0.2  # bohr
     bohr_per_ang = 1.8897161646320724
-    bonding_alpha = 0.65 # Used to select/reject bonds via sum of vDW radii
+    bonding_alpha = 0.65  # Used to select/reject bonds via sum of vDW radii
 
     # View defines (high-level)
     azimuth = 0.0

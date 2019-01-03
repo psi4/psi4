@@ -31,8 +31,6 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 :py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
 import os
 import re
 import math
@@ -383,7 +381,7 @@ def database(name, db_name, **kwargs):
     if 'subset' in kwargs:
         db_subset = kwargs['subset']
 
-    if isinstance(db_subset, basestring):
+    if isinstance(db_subset, (str, bytes)):
         if db_subset.lower() == 'small':
             try:
                 database.HRXN_SM
@@ -497,7 +495,7 @@ def database(name, db_name, **kwargs):
             if core.has_global_option_changed(chgdopt):
                 chgdoptval = core.get_global_option(chgdopt)
                 #chgdoptval = core.get_option(chgdopt)
-                if isinstance(chgdoptval, basestring):
+                if isinstance(chgdoptval, (str, bytes)):
                     commands += """core.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
                     commands += """core.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
@@ -776,21 +774,3 @@ db = database
 #######################
 ##  End of Database  ##
 #######################
-
-
-# Quickly normalize the types for both python 2 and 3
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    str = str
-    unicode = str
-    bytes = bytes
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    str = str
-    unicode = unicode
-    bytes = str
-    basestring = basestring
-

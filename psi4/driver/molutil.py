@@ -26,7 +26,6 @@
 # @END LICENSE
 #
 """Module with utility functions that act on molecule objects."""
-from __future__ import absolute_import
 
 import numpy as np
 import qcelemental as qcel

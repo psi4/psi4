@@ -26,9 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
 import os
 import sys
 import hashlib
@@ -44,8 +41,6 @@ from .libmintsgshell import ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis, corresponding_zeta
 
-if sys.version_info >= (3,0):
-    basestring = str
 
 basishorde = {}
 
@@ -139,12 +134,12 @@ class BasisSet(object):
             isinstance(args[1], int):
             self.constructor_basisset_center(*args)
         elif len(args) == 3 and \
-            isinstance(args[0], basestring) and \
+            isinstance(args[0], str) and \
             isinstance(args[1], Molecule) and \
             isinstance(args[2], collections.OrderedDict):
             self.constructor_role_mol_shellmap(*args)
         elif len(args) == 4 and \
-            isinstance(args[0], basestring) and \
+            isinstance(args[0], str) and \
             isinstance(args[1], Molecule) and \
             isinstance(args[2], collections.OrderedDict) and \
             isinstance(args[3], bool):
@@ -654,7 +649,7 @@ class BasisSet(object):
         elif orb in basishorde:
             basstrings['BASIS'] = basishorde[orb](mol, 'BASIS')
             callby = orb
-        elif isinstance(orb, basestring):
+        elif isinstance(orb, str):
             mol.set_basis_all_atoms(orb, role='BASIS')
             callby = orb
         else:
@@ -666,7 +661,7 @@ class BasisSet(object):
             elif callable(aux):
                 basstrings[fitrole] = aux(mol, fitrole)
                 callby = aux.__name__.replace('basisspec_psi4_yo__', '')
-            elif isinstance(aux, basestring):
+            elif isinstance(aux, str):
                 mol.set_basis_all_atoms(aux, role=fitrole)
                 callby = aux
             else:

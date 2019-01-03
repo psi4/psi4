@@ -32,8 +32,6 @@ Justin M. Turney, with incremental improvements by other
 psi4 developers.
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
 import math
 import copy
 import collections

@@ -47,12 +47,7 @@ except ImportError:
 try:
     import snsmp2
 except ImportError as e:
-    if sys.version_info >= (3, 0):
-        errmsg = e.msg
-    else:
-        errmsg = e.message
-
-    if 'scipy' in errmsg:
+    if 'scipy' in e.msg:
         raise ImportError("""Psi4 plugin 'snsmp2' available, but scipy missing. Try `conda install scipy` or `pip install scipy`.""")
     else:
         pass

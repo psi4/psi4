@@ -33,9 +33,6 @@ Vectors that use these functions are overwhelmingly of length 3, so
 pure python instead of NumPy is the right choice efficiency-wise.
 
 """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
 import copy
 import math
 

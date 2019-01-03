@@ -42,27 +42,33 @@ class ValidationError(PsiException):
     error message *msg* to standard output stream and output file.
 
     """
+
     def __init__(self, msg):
         PsiException.__init__(self, msg)
         # print("%s" % repr(msg))
         self.message = '\nPsiException: %s\n\n' % repr(msg)
+
 
 class ParsingError(PsiException):
     """Error called for problems parsing a text file. Prints error message
     *msg* to standard output stream and output file.
 
     """
+
     def __init__(self, msg):
-        PsiException.__init__(self,msg)
+        PsiException.__init__(self, msg)
         self.message = '\nPsiException: %s\n\n' % msg
+
 
 class PsiImportError(PsiException):
     """Error called for problems import python dependencies. Prints error message
     *msg* to standard output stream and output file.
     """
+
     def __init__(self, msg):
-        PsiException.__init__(self,msg)
+        PsiException.__init__(self, msg)
         self.message = '\nPsiException: %s\n\n' % msg
+
 
 class TestComparisonError(PsiException):
     """Error called when a test case fails due to a failed
@@ -70,6 +76,7 @@ class TestComparisonError(PsiException):
     output stream and output file.
 
     """
+
     def __init__(self, msg):
         PsiException.__init__(self, msg)
         self.message = '\nPsiException: %s\n\n' % msg
@@ -86,6 +93,7 @@ class ConvergenceError(PsiException):
         What iteration we failed on
 
     """
+
     def __init__(self, eqn_description, iteration):
         msg = "Could not converge %s in %d iterations." % (eqn_description, iteration)
         PsiException.__init__(self, msg)
@@ -115,6 +123,7 @@ class SCFConvergenceError(ConvergenceError):
         RMS change in density for last iteration
 
     """
+
     def __init__(self, eqn_description, iteration, wfn, e_conv, d_conv):
         ConvergenceError.__init__(self, eqn_description, iteration)
         self.e_conv = e_conv
@@ -126,6 +135,7 @@ class CSXError(PsiException):
     """Error called when CSX generation fails.
 
     """
+
     def __init__(self, msg):
         PsiException.__init__(self, msg)
         self.message = '\nCSXException: %s\n\n' % msg
@@ -136,7 +146,8 @@ class ManagedMethodError(PsiException):
         if circs[5] == '':
             msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not available{5}""".format(*circs)
         else:
-            msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not directable to QC_MODULE '{5}'""".format(*circs)
+            msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not directable to QC_MODULE '{5}'""".format(
+                *circs)
         PsiException.__init__(self, msg)
         self.message = '\nPsiException: %s\n\n' % msg
 
@@ -145,9 +156,11 @@ class Dftd3Error(PsiException):
     """
 
     """
+
     def __init__(self, msg):
         PsiException.__init__(self, msg)
         self.message = '\nDftd3Error: %s\n\n' % msg
+
 
 class PastureRequiredError(PsiException):
     """Error called when the specified value of *option* requires some
@@ -180,16 +193,14 @@ class PastureRequiredError(PsiException):
          {module_args}
     to cmake command line when building psi4.
     """
-    pasture_required_modules = {
-            "RUN_CCTRANSORT": ["ccsort", "transqt2"]
-            }
+    pasture_required_modules = {"RUN_CCTRANSORT": ["ccsort", "transqt2"]}
 
     def __init__(self, option):
         mods_str = ", ".join([m for m in PastureRequiredError.pasture_required_modules[option]])
-        msg = PastureRequiredError.msg_tmpl.format(opt = option, modlist = mods_str)
+        msg = PastureRequiredError.msg_tmpl.format(opt=option, modlist=mods_str)
         PsiException.__init__(self, msg)
-        module_cmake_args = " ".join([ "-DENABLE_{}=ON".format(module)
-            for module in PastureRequiredError.pasture_required_modules[option]])
-        msg += PastureRequiredError.install_instructions.format(module_args = module_cmake_args)
+        module_cmake_args = " ".join(
+            ["-DENABLE_{}=ON".format(module) for module in PastureRequiredError.pasture_required_modules[option]])
+        msg += PastureRequiredError.install_instructions.format(module_args=module_cmake_args)
         self.message = '\nPsiException: {}\n\n'.format(msg)
         core.print_out(self.message)

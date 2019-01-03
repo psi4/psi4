@@ -26,9 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
 import time
 import itertools
 import collections
@@ -40,11 +37,6 @@ import qcelemental as qcel
 from .molecule import Molecule
 from .util import *
 from .psiutil import *
-
-try:
-    from itertools import izip as zip  # py2
-except ImportError:
-    pass  # py3
 
 
 class AlignmentMill(collections.namedtuple('AlignmentMill', 'shift rotation atommap mirror')):

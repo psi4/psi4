@@ -26,11 +26,9 @@
 # @END LICENSE
 #
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 import sys
 import math
+import itertools
 import collections
 
 import numpy as np
@@ -42,10 +40,6 @@ from .util import *
 from .libmintsmolecule import compute_atom_map
 from .datastructures import QCAspect
 
-try:
-    from itertools import izip_longest as zip_longest  # py2
-except ImportError:
-    from itertools import zip_longest  # py3
 
 LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 
@@ -645,7 +639,7 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
         "Collect data into fixed-length chunks or blocks"
         # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
         args = [iter(iterable)] * n
-        return zip_longest(*args, fillvalue=fillvalue)
+        return itertools.zip_longest(*args, fillvalue=fillvalue)
 
     if normco not in ['q', 'w', 'x']:
         raise ValidationError("""Requested normal coordinates not among allowed q/w/x: """ + normco)
