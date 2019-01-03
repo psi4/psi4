@@ -562,7 +562,7 @@ void FCHKWriter::write(const std::string &filename) {
     write_matrix("Primitive exponents", exponents);
     write_matrix("Contraction coefficients", coefficients);
     write_matrix("Coordinates of each shell", shell_coords);
-    write_number("Total Energy", wavefunction_->reference_energy());
+    write_number("Total Energy", wavefunction_->energy());
     // write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
     write_matrix(wavefunction_->epsilon_a()->name().c_str(), wavefunction_->epsilon_a_subset("AO"));
     // write_matrix("Alpha MO coefficients", reorderedCa);

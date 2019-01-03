@@ -872,7 +872,7 @@ void FISAPT::dHF() {
 
     // => Dimer HF (Already done) <= //
 
-    double EABC = reference_->reference_energy();
+    double EABC = reference_->energy();
 
     // => Monomer AC Energy <= //
 

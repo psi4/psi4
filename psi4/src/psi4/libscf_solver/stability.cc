@@ -99,7 +99,7 @@ void UStab::set_reference(std::shared_ptr<Wavefunction> wfn) {
     eps_virb_ = wfn->epsilon_b_subset("SO", "VIR");
     molecule_ = wfn->molecule();
     basis_ = wfn->basisset();
-    Eref_ = wfn->reference_energy();
+    Eref_ = wfn->energy();
 }
 
 void UStab::print_header() {

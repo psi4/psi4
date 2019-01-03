@@ -84,7 +84,7 @@ void RBase::set_reference(SharedWavefunction ref_wfn) {
         throw PSIEXCEPTION("RBase: Reference is not restricted");
     }
 
-    Eref_ = reference_wavefunction_->reference_energy();
+    Eref_ = reference_wavefunction_->energy();
 
     if (use_symmetry_) {
         Cocc_ = Ca_subset("SO", "OCC");

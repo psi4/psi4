@@ -131,7 +131,7 @@ void export_wavefunction(py::module& m) {
         .def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.")
         .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
         .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
-        .def("energy", &Wavefunction::reference_energy, "Returns the Wavefunction's energy.")
+        .def("energy", &Wavefunction::energy, "Returns the Wavefunction's energy.")
         .def("set_energy", &Wavefunction::set_energy, "Sets the Wavefunction's energy.")
         .def("gradient", &Wavefunction::gradient, "Returns the Wavefunction's gradient.")
         .def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunction's gradient.")

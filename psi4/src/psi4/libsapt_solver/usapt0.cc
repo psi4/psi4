@@ -64,9 +64,9 @@ USAPT0::USAPT0(SharedWavefunction d, SharedWavefunction mA, SharedWavefunction m
     monomer_A_ = mA->molecule();
     monomer_B_ = mB->molecule();
 
-    E_dimer_ = d->reference_energy();
-    E_monomer_A_ = mA->reference_energy();
-    E_monomer_B_ = mB->reference_energy();
+    E_dimer_ = d->energy();
+    E_monomer_A_ = mA->energy();
+    E_monomer_B_ = mB->energy();
 
     primary_ = d->basisset();
     primary_A_ = mA->basisset();

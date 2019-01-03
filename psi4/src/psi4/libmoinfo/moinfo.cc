@@ -113,7 +113,7 @@ void MOInfo::read_info() {
     read_data();
     nmo = ref_wfn.nmo();
     compute_number_of_electrons();
-    scf_energy = ref_wfn.reference_energy();
+    scf_energy = ref_wfn.energy();
     mopi = convert_int_array_to_vector(nirreps, ref_wfn.nmopi());
     SharedMatrix matCa = ref_wfn.Ca();
     scf = block_matrix(nso, nmo);

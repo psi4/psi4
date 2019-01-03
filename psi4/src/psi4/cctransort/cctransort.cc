@@ -116,9 +116,9 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     double enuc = ref->molecule()->nuclear_repulsion_energy(ref->get_dipole_field_strength());
     double escf;
     if (ref->reference_wavefunction()) {
-        escf = ref->reference_wavefunction()->reference_energy();
+        escf = ref->reference_wavefunction()->energy();
     } else {
-        escf = ref->reference_energy();
+        escf = ref->energy();
     }
     double epcm = 0.0;
 #ifdef USING_PCMSolver
