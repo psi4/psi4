@@ -314,6 +314,11 @@ void export_mints(py::module& m) {
     //        def(vector_indexing_suite<std::vector<double>, true >());
     //    py::bind_vector<double>(m, "VectorDouble");
 
+    typedef void (Vector::*vector_setitem_1)(int, double);
+    typedef void (Vector::*vector_setitem_2)(int, int, double);
+    typedef double (Vector::*vector_getitem_1)(int) const;
+    typedef double (Vector::*vector_getitem_2)(int, int) const;
+
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<int>())
         .def(py::init<int, const std::string&>())
@@ -352,13 +357,13 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
                       "The name of the Vector. Used in printing.")
-        .def("get", py::overload_cast<int>(&Vector::get, py::const_), "Returns a single element value located at m",
+        .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m",
              "m"_a)
-        .def("get", py::overload_cast<int, int>(&Vector::get, py::const_),
+        .def("get", vector_getitem_2(&Vector::get),
              "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
-        .def("set", py::overload_cast<int, double>(&Vector::set), "Sets a single element value located at m", "m"_a,
+        .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a,
              "val"_a)
-        .def("set", py::overload_cast<int, int, double>(&Vector::set),
+        .def("set", vector_setitem_2(&Vector::set),
              "Sets a single element value located at m in irrep h", "h"_a, "m"_a, "val"_a)
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
