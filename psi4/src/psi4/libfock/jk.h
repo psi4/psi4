@@ -379,7 +379,7 @@ class PSI_API JK {
      *        ignored if possible
      */
     void set_cutoff(double cutoff) { cutoff_ = cutoff; }
-    double get_cutoff() { return cutoff_; }
+    double get_cutoff() const { return cutoff_; }
     /**
      * Maximum memory to use, in doubles (for tensor-based methods,
      * integral generation objects typically ignore this)
@@ -396,7 +396,7 @@ class PSI_API JK {
      *        run with their original maximum number)
      */
     void set_omp_nthread(int omp_nthread) { omp_nthread_ = omp_nthread; }
-    int get_omp_nthread() { return omp_nthread_; }
+    int get_omp_nthread() const { return omp_nthread_; }
 
     /// Print flag (defaults to 1)
     void set_print(int print) { print_ = print; }

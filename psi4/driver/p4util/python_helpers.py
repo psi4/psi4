@@ -346,9 +346,8 @@ def _core_jk_build(orbital_basis, aux=None, jk_type=None, do_wK=None, memory=Non
 
     if aux is None:
         if core.get_global_option("SCF_TYPE") == "DF":
-            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
-                                      core.get_option("SCF", "DF_BASIS_SCF"), "JKFIT",
-                                      orbital_basis.name(), orbital_basis.has_puream())
+            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF", core.get_option("SCF", "DF_BASIS_SCF"),
+                                      "JKFIT", orbital_basis.name(), orbital_basis.has_puream())
         else:
             aux = core.BasisSet.zero_ao_basis_set()
 
@@ -763,7 +762,6 @@ def _core_wavefunction_set_frequencies(cls, val):
 core.Wavefunction.frequencies = _core_wavefunction_frequencies
 core.Wavefunction.legacy_frequencies = _core_wavefunction_legacy_frequencies
 core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
-
 
 ## Psi4 v1.3 Export Deprecations
 
