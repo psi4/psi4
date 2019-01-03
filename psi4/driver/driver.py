@@ -1470,8 +1470,6 @@ def frequency(name, **kwargs):
 
     irrep = kwargs.get('irrep', None)
     vibinfo = vibanal_wfn(wfn, irrep=irrep, project_trans=project_trans, project_rot=project_rot)
-    vibonly = qcdb.vib.filter_nonvib(vibinfo)
-    wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
     wfn.frequency_analysis = vibinfo
 
     for postcallback in hooks['frequency']['post']:
