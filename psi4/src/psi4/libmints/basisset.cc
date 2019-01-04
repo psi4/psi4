@@ -244,7 +244,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 // Add ECPs to Z, the number of electrons less ECP-treated electrons
                 int ECP = n_ecp_core(mymol->label(A));
                 int current_shell = _atom_to_period(Z + ECP);
-                int delta = _period_to_full_shell(current_shell - req_shell);
+                int delta = _period_to_full_shell(std::max(current_shell - req_shell, 0));
                 // If this center has an ECP, some electrons are already frozen
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
