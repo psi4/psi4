@@ -169,33 +169,42 @@ SharedMatrix SADGuess::form_D_AO() {
     // or user input
     std::vector<int> nalpha(molecule_->natom(), 0);
     std::vector<int> nbeta(molecule_->natom(), 0);
-    std::vector<int> nelec(molecule_->natom(), 0);
-    std::vector<int> nhigh(molecule_->natom(), 0);
     int tot_elec = 0;
 
     // Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
     // For 37 to 86, save for f-block: Atomic, Molecular, & Optical Physics Handbook, Ed. Gordon W. F. Drake, American
     // Institute of Physics, Woodbury, New York, USA, 1996.
-    const int reference_S[] = {0, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 6, 5, 4, 3, 2,
-                               1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 5, 6, 5, 4, 3, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1,
-                               0, 3, 4, 5, 6, 7, 8, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0};
-    const int MAX_Z = 86;
+    const std::vector<int> reference_S = {0, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1,
+                                          2, 3, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 2, 5, 6, 5,
+                                          4, 3, 0, 1, 0, 1, 2, 3, 2, 1, 0, 1, 0, 1, 0, 3, 4, 5, 6, 7, 8, 5,
+                                          4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0};
 
     if (print_ > 1) outfile->Printf("  Determining Atomic Occupations\n");
 
     for (int A = 0; A < molecule_->natom(); A++) {
         int Z = molecule_->Z(A);
-        if (Z > MAX_Z) {
-            throw std::domain_error(" Only Atoms up to 86 (Rn) are currently supported with SAD Guess");
+        // Assuming neutral atoms for now
+        int nelec = Z;
+        tot_elec += nelec;
+
+        if (options_.get_bool("SAD_SPIN_AVERAGE")) {
+            // Spin-averaged occupations
+            nalpha[A] = nbeta[A] = 0.5 * nelec;
+
+        } else {
+            // Target ground spin state
+            if (Z >= reference_S.size()) {
+                std::ostringstream err;
+                err << " Only atoms up to Z = " << reference_S.size() - 1
+                    << " are currently supported with SAD_SPIN_AVERAGE = false\n";
+                throw std::domain_error(err.str());
+            }
+            int nhigh = reference_S[Z];
+            nbeta[A] = (nelec - nhigh) / 2;
+            nalpha[A] = nelec - nbeta[A];
         }
-        nhigh[A] = reference_S[Z];
-        nelec[A] = Z;
-        tot_elec += nelec[A];
-        nbeta[A] = (nelec[A] - nhigh[A]) / 2;
-        nalpha[A] = nelec[A] - nbeta[A];
-        if (print_ > 1)
-            outfile->Printf("  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n", A, Z, nelec[A],
-                            nhigh[A], nalpha[A], nbeta[A]);
+
+        if (print_ > 1) outfile->Printf("  Atom %d, Z = %d, nalpha = %.1f, nbeta = %.1f\n", A, Z, nalpha[A], nbeta[A]);
     }
 
     // Determine redundant atoms
@@ -215,8 +224,6 @@ SharedMatrix SADGuess::form_D_AO() {
             if (molecule_->Z(l) != molecule_->Z(m)) continue;
             if (nalpha[l] != nalpha[m]) continue;
             if (nbeta[l] != nbeta[m]) continue;
-            if (nhigh[l] != nhigh[m]) continue;
-            if (nelec[l] != nelec[m]) continue;
             if (atomic_bases_[l]->nbf() != atomic_bases_[m]->nbf()) continue;
             if (atomic_bases_[l]->nshell() != atomic_bases_[m]->nshell()) continue;
             if (atomic_bases_[l]->nprimitive() != atomic_bases_[m]->nprimitive()) continue;
@@ -247,14 +254,15 @@ SharedMatrix SADGuess::form_D_AO() {
     if (print_ > 1) outfile->Printf("\n  Performing Atomic UHF Computations:\n");
     for (int A = 0; A < nunique; A++) {
         int index = atomic_indices[A];
+
         if (print_ > 1) outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:", A, index);
 
         if (options_.get_str("SAD_SCF_TYPE") == "DF") {
-            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], nelec[index], nhigh[index],
+            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], nalpha[index], nbeta[index],
                                    atomic_D[A]);
         } else {
             std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
-            get_uhf_atomic_density(atomic_bases_[index], zbas, nelec[index], nhigh[index], atomic_D[A]);
+            get_uhf_atomic_density(atomic_bases_[index], zbas, nalpha[index], nbeta[index], atomic_D[A]);
         }
         if (print_ > 1) outfile->Printf("Finished UHF Computation!\n");
     }
@@ -277,16 +285,14 @@ SharedMatrix SADGuess::form_D_AO() {
 
     return DAO;
 }
-void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, int nelec,
-                                      int nhigh, SharedMatrix D) {
+void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, double nalpha,
+                                      double nbeta, SharedMatrix D) {
     std::shared_ptr<Molecule> mol = bas->molecule();
     mol->update_geometry();
     if (print_ > 1) {
         mol->print();
     }
 
-    int nbeta = (nelec - nhigh) / 2;
-    int nalpha = nelec - nbeta;
     int natom = mol->natom();
     int norbs = bas->nbf();
     int Z = bas->molecule()->Z(0);
@@ -362,7 +368,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     SharedVector occ_a, occ_b;
     // Number of partially or fully occupied orbitals
     int nocc_a, nocc_b;
-    if (options_.get_bool("SAD_FRAC_OCC") || options_.get_bool("SAD_FRAC_SR_OCC")) {
+    if (options_.get_bool("SAD_FRAC_OCC")) {
         // The density is spread over the whole of the possible valence shell.
         // Only the noble gas core is doubly occupied
         static const std::vector<int> magic_values = {0, 2, 10, 18, 36, 54, 86, 118};
@@ -388,21 +394,11 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
         // Number of occupied orbitals is
         nocc_a = nocc_b = nfzc + nact;
-        // Fractional alpha and beta occupation.
-        double frac_a, frac_b;
 
-        if (options_.get_bool("SAD_FRAC_SR_OCC")) {
-            // Spin-restricted occupations
-            frac_a = frac_b = (Z - 2.0 * nfzc) / (2.0 * nact);
-        } else {
-            // Normal occupations
-            frac_a = (double)(nalpha - nfzc) / nact;
-            frac_b = (double)(nbeta - nfzc) / nact;
-        }
-
-        // Occupations are squared in the density calculation, so take the root
-        frac_a = std::sqrt(frac_a);
-        frac_b = std::sqrt(frac_b);
+        // Fractional alpha and beta occupation. Occupations are
+        // squared in the density calculation, so take the root
+        double frac_a = std::sqrt((nalpha - nfzc) / nact);
+        double frac_b = std::sqrt((nbeta - nfzc) / nact);
 
         occ_a = std::make_shared<Vector>("Alpha fractional occupation", nocc_a);
         for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
