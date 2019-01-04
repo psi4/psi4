@@ -1436,10 +1436,10 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     SharedMatrix Ca = Ca_ao();
 
     std::vector<SharedVector> mo_es;
-    mo_es.push_back(SharedVector(new Vector("<x^2>", basisset_->nbf())));
-    mo_es.push_back(SharedVector(new Vector("<y^2>", basisset_->nbf())));
-    mo_es.push_back(SharedVector(new Vector("<z^2>", basisset_->nbf())));
-    mo_es.push_back(SharedVector(new Vector("<r^2>", basisset_->nbf())));
+    mo_es.push_back(std::make_shared<Vector>("<x^2>", basisset_->nbf()));
+    mo_es.push_back(std::make_shared<Vector>("<y^2>", basisset_->nbf()));
+    mo_es.push_back(std::make_shared<Vector>("<z^2>", basisset_->nbf()));
+    mo_es.push_back(std::make_shared<Vector>("<r^2>", basisset_->nbf()));
 
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> ao_Qpole;
