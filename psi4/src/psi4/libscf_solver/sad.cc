@@ -198,8 +198,8 @@ SharedMatrix SADGuess::form_D_AO() {
                 throw std::domain_error(err.str());
             }
             int nhigh = reference_S[Z];
-            nalpha[A] = 0.5*(nelec[A] + nhigh);
-            nbeta[A] = 0.5*(nelec[A] - nhigh);
+            nalpha[A] = 0.5 * (nelec[A] + nhigh);
+            nbeta[A] = 0.5 * (nelec[A] - nhigh);
         }
 
         if (print_ > 1) outfile->Printf("  Atom %d, Z = %d, nalpha = %.1f, nbeta = %.1f\n", A, Z, nalpha[A], nbeta[A]);
@@ -252,20 +252,85 @@ SharedMatrix SADGuess::form_D_AO() {
     if (print_ > 1) outfile->Printf("\n  Performing Atomic UHF Computations:\n");
     for (int A = 0; A < nunique; A++) {
         int index = atomic_indices[A];
-        if(nelec[index] == 0) {
-          // No electrons on atom!
-          atomic_D[A]->zero();
-          continue;
+        int norbs = atomic_bases_[index]->nbf();
+        int Z = molecule_->Z(index);
+        if (nelec[index] == 0) {
+            // No electrons on atom!
+            atomic_D[A]->zero();
+            continue;
         }
 
-        if (print_ > 1) outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:", A, index);
+        if (print_ > 1) {
+            outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:\n", A, index);
+            outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, norbs = %d\n", nalpha[A], nbeta[A], norbs);
+        }
+
+        // Occupation numbers
+        SharedVector occ_a, occ_b;
+        // Number of orbitals occupied, partially or fully
+        int nocc_a, nocc_b;
+        if (options_.get_bool("SAD_FRAC_OCC")) {
+            // The density is spread over the whole of the possible valence shell.
+            // Only the noble gas core is doubly occupied
+            static const std::vector<int> magic_values = {0, 2, 10, 18, 36, 54, 86, 118};
+            // Find the noble gas core.
+            auto imagic = std::lower_bound(magic_values.begin(), magic_values.end(), Z);
+            if (imagic == magic_values.end()) {
+                throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Oganesson");
+            }
+            // lower_bound gives a value that is equal or greater than the
+            // wanted value, which is handled next.
+            if (*imagic > Z) imagic--;
+
+            // Number of frozen and active orbitals
+            int nfzc, nact;
+            if ((*imagic) == Z) {
+                // Special case: we can hit the boundary at the end of the array
+                nfzc = 0;
+                nact = (*imagic) / 2;
+            } else {
+                nfzc = (*imagic) / 2;
+                nact = (*(++imagic)) / 2 - nfzc;
+            }
+
+            // Number of occupied orbitals is
+            nocc_a = nocc_b = nfzc + nact;
+
+            // Fractional alpha and beta occupation. Occupations are
+            // squared in the density calculation, so take the root
+            double frac_a = std::sqrt((nalpha[index] - nfzc) / nact);
+            double frac_b = std::sqrt((nbeta[index] - nfzc) / nact);
+
+            occ_a = std::make_shared<Vector>("Alpha fractional occupation", nocc_a);
+            for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
+            for (size_t x = nfzc; x < nocc_a; x++) occ_a->set(x, frac_a);
+
+            occ_b = std::make_shared<Vector>("Beta fractional occupation", nocc_b);
+            for (size_t x = 0; x < nfzc; x++) occ_b->set(x, 1.0);
+            for (size_t x = nfzc; x < nocc_b; x++) occ_b->set(x, frac_b);
+
+            if (print_ > 1) {
+                outfile->Printf(
+                    "  %d fully and %d partially occupied orbitals with % .3f alpha and % .3f beta electrons "
+                    "each\n",
+                    nfzc, nact, (nalpha[index] - nfzc) / nact, (nbeta[index] - nfzc) / nact);
+            }
+        } else {
+            // Conventional occupations
+            nocc_a = std::round(nalpha[index]);
+            occ_a = std::make_shared<Vector>("Alpha occupation", nocc_a);
+            for (size_t x = 0; x < nocc_a; x++) occ_a->set(x, 1.0);
+
+            nocc_b = std::round(nbeta[index]);
+            occ_b = std::make_shared<Vector>("Beta occupation", nocc_b);
+            for (size_t x = 0; x < nocc_b; x++) occ_b->set(x, 1.0);
+        }
 
         if (options_.get_str("SAD_SCF_TYPE") == "DF") {
-            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], nalpha[index], nbeta[index],
-                                   atomic_D[A]);
+            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[A]);
         } else {
             std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
-            get_uhf_atomic_density(atomic_bases_[index], zbas, nalpha[index], nbeta[index], atomic_D[A]);
+            get_uhf_atomic_density(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[A]);
         }
         if (print_ > 1) outfile->Printf("Finished UHF Computation!\n");
     }
@@ -288,8 +353,8 @@ SharedMatrix SADGuess::form_D_AO() {
 
     return DAO;
 }
-void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, double nalpha,
-                                      double nbeta, SharedMatrix D) {
+void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, SharedVector occ_a,
+                                      SharedVector occ_b, SharedMatrix D) {
     std::shared_ptr<Molecule> mol = bas->molecule();
     mol->update_geometry();
     if (print_ > 1) {
@@ -300,12 +365,12 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     int norbs = bas->nbf();
     int Z = bas->molecule()->Z(0);
 
-    if (nalpha > norbs || nbeta > norbs) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
+    if (occ_a->dim() > norbs || occ_b->dim() > norbs)
+        throw PSIEXCEPTION("Atom has more electrons than basis functions.");
 
     if (print_ > 1) {
         outfile->Printf("\n");
         bas->print("outfile");
-        outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, norbs = %d\n", nalpha, nbeta, norbs);
         outfile->Printf("\n  Atom:\n");
         mol->print();
     }
@@ -367,63 +432,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     SharedMatrix Fa(mat.create_matrix("Fa"));
     SharedMatrix Fb(mat.create_matrix("Fb"));
 
-    // Fractional occupation
-    SharedVector occ_a, occ_b;
-    // Number of partially or fully occupied orbitals
-    int nocc_a, nocc_b;
-    if (options_.get_bool("SAD_FRAC_OCC")) {
-        // The density is spread over the whole of the possible valence shell.
-        // Only the noble gas core is doubly occupied
-        static const std::vector<int> magic_values = {0, 2, 10, 18, 36, 54, 86, 118};
-        // Find the noble gas core.
-        auto imagic = std::lower_bound(magic_values.begin(), magic_values.end(), Z);
-        if (imagic == magic_values.end()) {
-            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Oganesson");
-        }
-        // lower_bound gives a value that is equal or greater than the
-        // wanted value, which is handled next.
-        if (*imagic > Z) imagic--;
-
-        // Number of frozen and active orbitals
-        int nfzc, nact;
-        if ((*imagic) == Z) {
-            // Special case: we can hit the boundary at the end of the array
-            nfzc = 0;
-            nact = (*imagic) / 2;
-        } else {
-            nfzc = (*imagic) / 2;
-            nact = (*(++imagic)) / 2 - nfzc;
-        }
-
-        // Number of occupied orbitals is
-        nocc_a = nocc_b = nfzc + nact;
-
-        // Fractional alpha and beta occupation. Occupations are
-        // squared in the density calculation, so take the root
-        double frac_a = std::sqrt((nalpha - nfzc) / nact);
-        double frac_b = std::sqrt((nbeta - nfzc) / nact);
-
-        occ_a = std::make_shared<Vector>("Alpha fractional occupation", nocc_a);
-        for (size_t x = 0; x < nfzc; x++) occ_a->set(x, 1.0);
-        for (size_t x = nfzc; x < nocc_a; x++) occ_a->set(x, frac_a);
-
-        occ_b = std::make_shared<Vector>("Beta fractional occupation", nocc_b);
-        for (size_t x = 0; x < nfzc; x++) occ_b->set(x, 1.0);
-        for (size_t x = nfzc; x < nocc_b; x++) occ_b->set(x, frac_b);
-
-    } else {
-        // Conventional occupations
-        nocc_a = std::round(nalpha);
-        occ_a = std::make_shared<Vector>("Alpha occupation", nocc_a);
-        for (size_t x = 0; x < nocc_a; x++) occ_a->set(x, 1.0);
-
-        nocc_b = std::round(nbeta);
-        occ_b = std::make_shared<Vector>("Beta occupation", nocc_b);
-        for (size_t x = 0; x < nocc_b; x++) occ_b->set(x, 1.0);
-    }
-
-    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, nocc_a);
-    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, nocc_b);
+    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, occ_a->dim());
+    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, occ_b->dim());
 
     // Compute initial Cx, Dx, and D from core guess
     form_C_and_D(X, H, Ca, Ca_occ, occ_a, Da);

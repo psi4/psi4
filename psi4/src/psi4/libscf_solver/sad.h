@@ -62,7 +62,7 @@ class SADGuess {
     SharedMatrix form_D_AO();
     void form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S, SharedMatrix X);
     void get_uhf_atomic_density(std::shared_ptr<BasisSet> atomic_basis, std::shared_ptr<BasisSet> fit_basis,
-                                double n_alpha, double n_beta, SharedMatrix D);
+                                SharedVector occ_a, SharedVector occ_b, SharedMatrix D);
     void form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
                       SharedMatrix D);
 
