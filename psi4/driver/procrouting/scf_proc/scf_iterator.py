@@ -324,15 +324,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     core.get_option('SCF', 'SOSCF_CONV'),
                     core.get_option('SCF', 'SOSCF_MIN_ITER'),
                     core.get_option('SCF', 'SOSCF_MAX_ITER'), core.get_option('SCF', 'SOSCF_PRINT'))
-                if nmicro > 0:
-                    # if zero, the soscf call bounced for some reason
+                # if zero, the soscf call bounced for some reason
+                soscf_performed = (nmicro>0)
+
+                if soscf_performed:
                     self.find_occupation()
                     status.append(base_name + str(nmicro))
-                    soscf_performed = True  # Stops DIIS
                 else:
                     if verbose > 0:
                         core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
-                        soscf_performed = False  # Back to DIIS
 
             else:
                 # need to ensure orthogonal orbitals and set epsilon
@@ -364,8 +364,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-                if (self.diis_enabled_
-                        and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
+                if (add_to_diis_subspace + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
                     diis_performed = self.diis()
 
                 if diis_performed:
