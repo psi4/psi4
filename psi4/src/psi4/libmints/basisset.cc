@@ -173,6 +173,23 @@ int BasisSet::n_ecp_core() const {
     return ncoreelectrons;
 }
 
+int BasisSet::_atom_to_period(int Z) {
+    if (Z > 118) {
+        throw PSIEXCEPTION("Atomic number beyond Oganesson");
+    }
+    static const std::vector<int> full_shell_values = {0, 2, 10, 18, 36, 54, 86, 118};
+    auto period = std::lower_bound(full_shell_values.begin(), full_shell_values.end(), Z) - full_shell_values.begin();
+    return period;
+}
+
+int BasisSet::_period_to_full_shell(int p) {
+    if (p > 7) {
+        throw PSIEXCEPTION("Atomic number beyond Oganesson");
+    }
+    static const std::vector<int> full_shell_values = {0, 2, 10, 18, 36, 54, 86, 118};
+    return full_shell_values[p];
+}
+
 int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
     std::string local = depth;
     if (depth.empty()) local = Process::environment.options.get_str("FREEZE_CORE");
@@ -182,10 +199,9 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
     if (local == "FALSE") {
         return 0;
     } else if (local == "TRUE") {
-        int nfzel = 0;
-        int valence = -1 * mymol->molecular_charge();
-        int lg_delta = 0;
-        int lg_shell = 0;
+        int num_frozen_el = 0;
+        int mol_valence = -1 * mymol->molecular_charge();
+        int largest_shell = 0;
         // Freeze the number of core electrons corresponding to the
         // nearest previous noble gas atom.  This means that the 4p block
         // will still have 3d electrons active.  Alkali earth atoms will
@@ -195,36 +211,24 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
             // Exclude ghosted atoms from core-freezing
             if (Z > 0) {
                 // Add ECPs to Z, the number of electrons less ECP-treated electrons
-                double ECP = n_ecp_core(mymol->label(A));
-                int delta = 0;
-                if (Z + ECP > 2)  delta = 2;
-                if (Z + ECP > 10) delta = 10;
-                if (Z + ECP > 18) delta = 18;
-                if (Z + ECP > 36) delta = 36;
-                if (Z + ECP > 54) delta = 54;
-                if (Z + ECP > 86) delta = 86;
-                if (Z + ECP > 108) {
-                    throw PSIEXCEPTION("Invalid atomic number");
-                }
+                int ECP = n_ecp_core(mymol->label(A));
+                int current_shell = _atom_to_period(Z + ECP);
+                int delta = _period_to_full_shell(current_shell - 1);
                 // Keep track of the largest frozen shell, in case its a cationic species
-                if (lg_delta < delta) {
-                    if (delta == 2) lg_shell = 2;
-                    if (delta == 10) lg_shell = 8;
-                    if (delta == 18) lg_shell = 8;
-                    if (delta == 36) lg_shell = 18;
-                    if (delta == 54) lg_shell = 18;
-                    if (delta == 86) lg_shell = 32;
-                    lg_delta = delta;
+                if (largest_shell < current_shell) {
+                    largest_shell = current_shell;
                 }
                 // If this center has an ECP, some electrons are already frozen
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
-                valence = valence + Z - delta;
-                nfzel += delta;
+                mol_valence = mol_valence + Z - delta;
+                num_frozen_el += delta;
             }
         }
-        if (valence <= 0) nfzel -= lg_shell;
-        return nfzel/2;
+        // If we are about to end up with no valence electrons,
+        // unfreeze electrons from the largest shell in the molecule
+        if (mol_valence <= 0) num_frozen_el -= _period_to_full_shell(largest_shell - 1);
+        return num_frozen_el/2;
     } else {
         throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
     }

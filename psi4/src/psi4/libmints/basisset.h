@@ -281,6 +281,10 @@ class PSI_API BasisSet {
     /// Return the number of core electrons associated with this (ECP) basisset, for the specified label.
     int n_ecp_core(const std::string &label) const { return ncore_.count(label) ? ncore_.at(label) : 0; }
 
+    /// Helper functions for frozen core to reduce LOC
+    int _atom_to_period(int Z);
+    int _period_to_full_shell(int p);
+
     /// Return the total number of core electrons assocated with this (ECP) basisset.
     int n_ecp_core() const;
 
