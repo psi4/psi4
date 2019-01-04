@@ -73,7 +73,7 @@ void CCEnergyWavefunction::get_moinfo() {
     moinfo_.enuc = molecule_->nuclear_repulsion_energy(dipole_field_strength_);
     moinfo_.conv = 0.0;
     if (reference_wavefunction_)
-        moinfo_.escf = reference_wavefunction_->reference_energy();
+        moinfo_.escf = reference_wavefunction_->energy();
     else
         moinfo_.escf = energy_;
     moinfo_.sopi = nsopi_;

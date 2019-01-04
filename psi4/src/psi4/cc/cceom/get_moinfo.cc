@@ -70,9 +70,9 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     moinfo.irr_labs = wfn->molecule()->irrep_labels();
     moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy(wfn->get_dipole_field_strength());
     if (wfn->reference_wavefunction())
-        moinfo.escf = wfn->reference_wavefunction()->reference_energy();
+        moinfo.escf = wfn->reference_wavefunction()->energy();
     else
-        moinfo.escf = wfn->reference_energy();
+        moinfo.escf = wfn->energy();
 
     moinfo.sopi = init_int_array(moinfo.nirreps);
     moinfo.orbspi = init_int_array(moinfo.nirreps);

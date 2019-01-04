@@ -101,7 +101,7 @@ void OCCWave::get_moinfo() {
             reference_wavefunction_->get_dipole_field_strength());
 
         // Read SCF energy
-        Escf = reference_wavefunction_->reference_energy();
+        Escf = reference_wavefunction_->energy();
         Eref = Escf;
         Eelec = Escf - Enuc;
 
@@ -449,7 +449,7 @@ void OCCWave::get_moinfo() {
             reference_wavefunction_->get_dipole_field_strength());
 
         // Read SCF energy
-        Escf = reference_wavefunction_->reference_energy();
+        Escf = reference_wavefunction_->energy();
         Eref = Escf;
         Eelec = Escf - Enuc;
 

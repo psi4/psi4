@@ -177,7 +177,7 @@ void DFMP2::common_init() {
     variables_["MP2 SINGLES ENERGY"] = 0.0;
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
-    variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->reference_energy();
+    variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->energy();
 
     sss_ = options_.get_double("MP2_SS_SCALE");
     oss_ = options_.get_double("MP2_OS_SCALE");

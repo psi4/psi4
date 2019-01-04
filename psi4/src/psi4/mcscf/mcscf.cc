@@ -90,9 +90,9 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options) {
         moinfo_scf = new psi::MOInfoSCF(*(wfn.get()), options);
         wfn->compute_energy();
 
-        Process::environment.globals["CURRENT ENERGY"] = wfn->reference_energy();
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->reference_energy();
-        Process::environment.globals["SCF TOTAL ENERGY"] = wfn->reference_energy();
+        Process::environment.globals["CURRENT ENERGY"] = wfn->energy();
+        Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->energy();
+        Process::environment.globals["SCF TOTAL ENERGY"] = wfn->energy();
 
     } else if (options.get_str("REFERENCE") == "MCSCF") {
         throw PSIEXCEPTION("REFERENCE = MCSCF not implemented yet");

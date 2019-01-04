@@ -79,7 +79,7 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->docc = doccpi();
     CalcInfo_->socc = soccpi();
     CalcInfo_->enuc = molecule()->nuclear_repulsion_energy(dipole_field_strength_);
-    CalcInfo_->escf = reference_energy();
+    CalcInfo_->escf = energy();
     CalcInfo_->edrc = 0.0;
 
     if (CalcInfo_->iopen && Parameters_->opentype == PARM_OPENTYPE_NONE) {

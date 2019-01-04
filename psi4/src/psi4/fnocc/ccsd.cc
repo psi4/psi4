@@ -86,7 +86,7 @@ void CoupledCluster::common_init() {
     mp3_only = options_.get_bool("RUN_MP3");
     isccsd = options_.get_bool("RUN_CCSD");
 
-    escf = reference_wavefunction_->reference_energy();
+    escf = reference_wavefunction_->energy();
     doccpi_ = reference_wavefunction_->doccpi();
     soccpi_ = reference_wavefunction_->soccpi();
     frzcpi_ = reference_wavefunction_->frzcpi();

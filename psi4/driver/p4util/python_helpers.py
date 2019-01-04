@@ -700,6 +700,37 @@ core.Wavefunction.get_array = _core_wavefunction_get_array
 core.Wavefunction.set_array = _core_wavefunction_set_array
 core.Wavefunction.arrays = _core_wavefunction_arrays
 
+
+def _core_wavefunction_frequencies(cls):
+    if not hasattr(cls, 'frequency_analysis'):
+        return None
+
+    vibinfo = cls.frequency_analysis
+    vibonly = qcdb.vib.filter_nonvib(vibinfo)
+    return core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data))
+
+
+def _core_wavefunction_legacy_frequencies(cls):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.legacy_frequencies` (accessing c-side member data) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.legacy_frequencies()
+
+
+def _core_wavefunction_set_frequencies(cls, val):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.set_frequencies` (accessing c-side member data) instead of `psi4.core.Wavefunction.frequency_analysis` (py-side member data) is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.set_legacy_frequencies(val)
+
+
+core.Wavefunction.frequencies = _core_wavefunction_frequencies
+core.Wavefunction.legacy_frequencies = _core_wavefunction_legacy_frequencies
+core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
+
+
 ## Psi4 v1.3 Export Deprecations
 
 

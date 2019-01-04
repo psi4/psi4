@@ -167,7 +167,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     noccA_ = MonomerA->doccpi().sum();
     nvirA_ = nmoA_ - noccA_;
     NA_ = 2 * noccA_;
-    eHFA = MonomerA->reference_energy();
+    eHFA = MonomerA->energy();
     enucA = MonomerA->molecule()->nuclear_repulsion_energy(dipole_field_strength_);
     aoccA_ = noccA_ - foccA_;
 
@@ -177,7 +177,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     noccB_ = MonomerB->doccpi().sum();
     nvirB_ = nmoB_ - noccB_;
     NB_ = 2 * noccB_;
-    eHFB = MonomerB->reference_energy();
+    eHFB = MonomerB->energy();
     enucB = MonomerB->molecule()->nuclear_repulsion_energy(dipole_field_strength_);
     aoccB_ = noccB_ - foccB_;
 

@@ -409,8 +409,12 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     int nmo() const { return nmo_; }
     /// Returns the number of irreps
     int nirrep() const { return nirrep_; }
-    /// Returns the reference energy
+    /// Returns the energy
+    PSI_DEPRECATED(
+        "Using `Wavefunction.reference_energy` instead of `Wavefunction.energy` is deprecated, and in 1.4 it will "
+        "stop working")
     double reference_energy() const { return energy_; }
+    double energy() const { return energy_; }
     /// Sets the energy
     void set_energy(double ene) { energy_ = ene; }
     /// Returns the frozen-core energy
@@ -632,8 +636,13 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     }
 
     /// Returns the frequencies
+    PSI_DEPRECATED(
+        "Using `Wavefunction.frequencies` c-side instead of `Wavefunction.frequencies` py-side is deprecated, and in "
+        "1.4 it will stop working")
     SharedVector frequencies() const;
+
     /// Set the frequencies for the wavefunction
+    PSI_DEPRECATED("Using `Wavefunction.set_frequencies` is deprecated, and in 1.4 it will stop working")
     void set_frequencies(std::shared_ptr<Vector> freqs);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
