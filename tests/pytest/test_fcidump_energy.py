@@ -28,8 +28,6 @@ def test_fcidump_scf_energy():
 
     assert psi4.compare_values(scf_e, fcidump_e, 5, 'SCF energy') #TEST
 
-    os.remove('FCIDUMP_SCF')
-
 
 def test_fcidump_mp2_energy():
     """Compare FCIDUMP computed MP2 energy against call to energy()"""
@@ -52,5 +50,3 @@ def test_fcidump_mp2_energy():
     fcidump_e = e_dict['SCF TOTAL ENERGY'] + e_dict['MP2 CORRELATION ENERGY']
 
     assert psi4.compare_values(mp2_e, fcidump_e, 5, 'MP2 energy') #TEST
-
-    os.remove('FCIDUMP_MP2')
