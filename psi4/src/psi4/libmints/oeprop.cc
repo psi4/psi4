@@ -1463,26 +1463,9 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     quadrupole.push_back(std::make_shared<Vector>("Orbital Quadrupole YY", Ca->ncol()));
     quadrupole.push_back(std::make_shared<Vector>("Orbital Quadrupole ZZ", Ca->ncol()));
 
-    // auto temp = std::make_shared<Matrix>("Temp", Ca->nrow(), Ca->ncol());
-    // int nao = Ca->nrow();
-    int nmo = Ca->ncol();
-
     if (same_orbs_) {
-// Quadrupoles
-#if 0
-        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-        for (int i = 0; i < nmo; i++) {
-            quadrupole[0]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-        }
-        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[3]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-        for (int i = 0; i < nmo; i++) {
-            quadrupole[1]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-        }
-        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[5]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-        for (int i = 0; i < nmo; i++) {
-            quadrupole[2]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-        }
-#else
+
+        // Quadrupoles
         for (int i = 0; i < Ca->ncol(); ++i) {
             double sumx = 0.0, sumy = 0.0, sumz = 0.0;
             for (int k = 0; k < Ca->nrow(); ++k) {
@@ -1498,7 +1481,7 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
             quadrupole[1]->set(0, i, std::fabs(sumy));
             quadrupole[2]->set(0, i, std::fabs(sumz));
         }
-#endif
+
         std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
         std::vector<std::tuple<double, int, int>> metric;
         for (int h = 0; h < epsilon_a_->nirrep(); h++) {
@@ -1512,7 +1495,7 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
             outfile->Printf("    %10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
         }
 
-        for (int i = 0; i < nmo; i++) {
+        for (int i = 0; i < Ca->ncol(); i++) {
             int n = std::get<1>(metric[i]);
             int h = std::get<2>(metric[i]);
 
