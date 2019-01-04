@@ -167,9 +167,9 @@ SharedMatrix SADGuess::form_D_AO() {
 
     // Spin occupations per atom, to be determined by Hund's Rules
     // or user input
-    std::vector<int> nalpha(molecule_->natom(), 0);
-    std::vector<int> nbeta(molecule_->natom(), 0);
-    int tot_elec = 0;
+    std::vector<double> nalpha(molecule_->natom(), 0);
+    std::vector<double> nbeta(molecule_->natom(), 0);
+    std::vector<int> nelec(molecule_->natom(), 0);
 
     // Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
     // For 37 to 86, save for f-block: Atomic, Molecular, & Optical Physics Handbook, Ed. Gordon W. F. Drake, American
@@ -184,13 +184,11 @@ SharedMatrix SADGuess::form_D_AO() {
     for (int A = 0; A < molecule_->natom(); A++) {
         int Z = molecule_->Z(A);
         // Assuming neutral atoms for now
-        int nelec = Z;
-        tot_elec += nelec;
+        nelec[A] = Z;
 
         if (options_.get_bool("SAD_SPIN_AVERAGE")) {
             // Spin-averaged occupations
-            nalpha[A] = nbeta[A] = 0.5 * nelec;
-
+            nalpha[A] = nbeta[A] = 0.5 * nelec[A];
         } else {
             // Target ground spin state
             if (Z >= reference_S.size()) {
@@ -200,8 +198,8 @@ SharedMatrix SADGuess::form_D_AO() {
                 throw std::domain_error(err.str());
             }
             int nhigh = reference_S[Z];
-            nbeta[A] = (nelec - nhigh) / 2;
-            nalpha[A] = nelec - nbeta[A];
+            nalpha[A] = 0.5*(nelec[A] + nhigh);
+            nbeta[A] = 0.5*(nelec[A] - nhigh);
         }
 
         if (print_ > 1) outfile->Printf("  Atom %d, Z = %d, nalpha = %.1f, nbeta = %.1f\n", A, Z, nalpha[A], nbeta[A]);
@@ -254,6 +252,11 @@ SharedMatrix SADGuess::form_D_AO() {
     if (print_ > 1) outfile->Printf("\n  Performing Atomic UHF Computations:\n");
     for (int A = 0; A < nunique; A++) {
         int index = atomic_indices[A];
+        if(nelec[index] == 0) {
+          // No electrons on atom!
+          atomic_D[A]->zero();
+          continue;
+        }
 
         if (print_ > 1) outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:", A, index);
 
@@ -302,7 +305,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     if (print_ > 1) {
         outfile->Printf("\n");
         bas->print("outfile");
-        outfile->Printf("  Occupation: nalpha = %d, nbeta = %d, norbs = %d\n", nalpha, nbeta, norbs);
+        outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, norbs = %d\n", nalpha, nbeta, norbs);
         outfile->Printf("\n  Atom:\n");
         mol->print();
     }
@@ -410,13 +413,13 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     } else {
         // Conventional occupations
-        nocc_a = nalpha;
-        occ_a = std::make_shared<Vector>("Alpha occupation", nalpha);
-        for (size_t x = 0; x < nalpha; x++) occ_a->set(x, 1.0);
+        nocc_a = std::round(nalpha);
+        occ_a = std::make_shared<Vector>("Alpha occupation", nocc_a);
+        for (size_t x = 0; x < nocc_a; x++) occ_a->set(x, 1.0);
 
-        nocc_b = nbeta;
-        occ_b = std::make_shared<Vector>("Beta occupation", nbeta);
-        for (size_t x = 0; x < nbeta; x++) occ_b->set(x, 1.0);
+        nocc_b = std::round(nbeta);
+        occ_b = std::make_shared<Vector>("Beta occupation", nocc_b);
+        for (size_t x = 0; x < nocc_b; x++) occ_b->set(x, 1.0);
     }
 
     auto Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, nocc_a);
