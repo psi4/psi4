@@ -257,8 +257,6 @@ void HF::common_init() {
         potential_ = nullptr;
     }
 
-
-
     // -D is zero by default
     set_scalar_variable("-D Energy", 0.0);
     energies_["-D"] = 0.0;
