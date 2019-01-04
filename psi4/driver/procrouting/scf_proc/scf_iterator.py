@@ -268,10 +268,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_G()
         core.timer_off("HF: Form G")
 
-        # reset fractional SAD occupation
-        if (self.iteration_ == 0) and self.reset_occ_:
-            self.reset_occupation()
-
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):
             calc_type = core.PCM.CalcType.Total
@@ -286,7 +282,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.set_energies("PCM Polarization", upcm)
 
         core.timer_on("HF: Form F")
-        self.form_F()
+        # SAD: since we don't have orbitals yet, we might not be able
+        # to form the real Fock matrix. Instead, build an initial one
+        if (self.iteration_ == 0) and self.sad_:
+            self.form_initial_F()
+        else:
+            self.form_F()
         core.timer_off("HF: Form F")
 
         if verbose > 3:
@@ -303,14 +304,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
 
         self.set_energies("Total Energy", SCFE)
+        core.set_variable("SCF ITERATION ENERGY", SCFE)
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
 
         status = []
 
-        # We either do SOSCF or DIIS
-        if (soscf_enabled and (self.iteration_ > 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
-
+        # Check if we are doing SOSCF
+        if (soscf_enabled and (self.iteration_ >= 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
             Drms = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
             diis_performed = False
             if self.functional().needs_xc():
@@ -323,15 +324,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     core.get_option('SCF', 'SOSCF_CONV'),
                     core.get_option('SCF', 'SOSCF_MIN_ITER'),
                     core.get_option('SCF', 'SOSCF_MAX_ITER'), core.get_option('SCF', 'SOSCF_PRINT'))
-                if nmicro > 0:
-                    # if zero, the soscf call bounced for some reason
+                # if zero, the soscf call bounced for some reason
+                soscf_performed = (nmicro>0)
+
+                if soscf_performed:
                     self.find_occupation()
                     status.append(base_name + str(nmicro))
-                    soscf_performed = True  # Stops DIIS
                 else:
                     if verbose > 0:
                         core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
-                    soscf_performed = False  # Back to DIIS
 
             else:
                 # need to ensure orthogonal orbitals and set epsilon
@@ -344,45 +345,55 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if not soscf_performed:
             # Normal convergence procedures if we do not do SOSCF
 
-            core.timer_on("HF: DIIS")
-            diis_performed = False
-            add_to_diis_subspace = False
+            # SAD: form initial orbitals from the initial Fock matrix, and
+            # reset the occupations. From here on, the density matrices
+            # are correct.
+            if (self.iteration_ == 0) and self.sad_:
+                self.form_initial_C()
+                self.reset_occupation()
+                self.find_occupation()
 
-            if self.diis_enabled_ and self.iteration_ >= self.diis_start_:
-                add_to_diis_subspace = True
+            else:
+                # Run DIIS
+                core.timer_on("HF: DIIS")
+                diis_performed = False
+                add_to_diis_subspace = self.diis_enabled_ and self.iteration_ >= self.diis_start_
 
-            Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
+                Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-            if (self.diis_enabled_
-                    and self.iteration_ >= self.diis_start_ + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
-                diis_performed = self.diis()
+                if (add_to_diis_subspace and core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
+                    diis_performed = self.diis()
 
-            if diis_performed:
-                status.append("DIIS")
+                if diis_performed:
+                    status.append("DIIS")
 
-            core.timer_off("HF: DIIS")
+                core.timer_off("HF: DIIS")
 
-            if verbose > 4 and diis_performed:
-                core.print_out("  After DIIS:\n")
-                self.Fa().print_out()
-                self.Fb().print_out()
+                if verbose > 4 and diis_performed:
+                    core.print_out("  After DIIS:\n")
+                    self.Fa().print_out()
+                    self.Fb().print_out()
 
-            # frac, MOM invoked here from Wfn::HF::find_occupation
-            core.timer_on("HF: Form C")
-            self.form_C()
-            core.timer_off("HF: Form C")
+                # frac, MOM invoked here from Wfn::HF::find_occupation
+                core.timer_on("HF: Form C")
+                self.form_C()
+                core.timer_off("HF: Form C")
 
-        if self.MOM_performed_:
-            status.append("MOM")
+                if self.MOM_performed_:
+                    status.append("MOM")
 
-        if self.frac_performed_:
-            status.append("FRAC")
+                if self.frac_performed_:
+                    status.append("FRAC")
 
+                # Reset occupations if necessary
+                if (self.iteration_ == 0) and self.reset_occ_:
+                    self.reset_occupation()
+                    self.find_occupation()
+
+        # Form new density matrix
         core.timer_on("HF: Form D")
         self.form_D()
         core.timer_off("HF: Form D")
-
-        core.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
@@ -409,7 +420,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             continue
 
         # Call any postiteration callbacks
-
         if _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
             break
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):

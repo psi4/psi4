@@ -224,18 +224,6 @@ void UHF::form_G() {
     }
 }
 
-void UHF::form_initialF() {
-    Fa_->copy(H_);
-    Fb_->copy(H_);
-
-    if (debug_) {
-        outfile->Printf("Initial Fock alpha matrix:\n");
-        Fa_->print("outfile");
-        outfile->Printf("Initial Fock beta matrix:\n");
-        Fb_->print("outfile");
-    }
-}
-
 void UHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(Ga_);

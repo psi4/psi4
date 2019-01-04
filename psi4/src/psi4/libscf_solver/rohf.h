@@ -52,7 +52,7 @@ class ROHF : public HF {
     SharedMatrix moFa_;
     SharedMatrix moFb_;
 
-    void form_initialF();
+    void form_initial_F() override;
     void form_initial_C() override;
     double compute_initial_E() override;
     void prepare_canonical_orthogonalization() override;
