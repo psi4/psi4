@@ -16,9 +16,12 @@ scf_type df
 FREEZE_CORE true
 }
 
-ref = -0.11271235519134452
+ref_lanl = -0.10472432075265364
+ref_321g = -0.09561604218297935
 
-E = energy('sapt0/def2-svp')
+E = energy('sapt0/3-21g')
+compare_values(ref_321g, E, 8, "SAPT0 energy with Ca2+, without ECP")                               #TEST
+E = energy('sapt0/lanl2dz')
+compare_values(ref_lanl, E, 8, "SAPT0 energy with Ca2+, with ECP")                                  #TEST
 
-compare_values(ref, E, 8, "SAPT0 energy with Ca2+")                                        #TEST
 

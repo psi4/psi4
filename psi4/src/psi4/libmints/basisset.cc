@@ -227,7 +227,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         }
         // If we are about to end up with no valence electrons,
         // unfreeze electrons from the largest shell in the molecule
-        if (mol_valence <= 0) num_frozen_el -= _period_to_full_shell(largest_shell - 1);
+        if (mol_valence <= 0) num_frozen_el -= _period_to_full_shell(largest_shell - 1) - _period_to_full_shell(largest_shell - 2);
         return num_frozen_el/2;
     } else {
         throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
