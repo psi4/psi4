@@ -205,7 +205,7 @@ def xtpl_highest_1(functionname: str, zHI: int, valueHI: Union[float, np.ndarray
     Examples
     --------
     >>> # [1] Fancy way to get HF/cc-pCVQZ
-    >>> psi4.energy(cbs, scf_wfn='hf', scf_basis='cc-pcvqz', scf_scheme=qcdb.xtpl_highest_1)
+    >>> psi4.energy('cbs', scf_wfn='hf', scf_basis='cc-pcvqz', scf_scheme='xtpl_highest_1')
 
     """
     if isinstance(valueHI, float):
@@ -272,7 +272,7 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Union[float, np.nd
     Examples
     --------
     >>> # [1] Hartree-Fock extrapolation
-    >>> qcdb.energy(qcdb.cbs, scf_wfn='hf', scf_basis='cc-pV[DT]Z', scf_scheme=qcdb.scf_xtpl_helgaker_2)
+    >>> psi4.energy('cbs', scf_wfn='hf', scf_basis='cc-pV[DT]Z', scf_scheme='scf_xtpl_helgaker_2')
 
     """
 
@@ -589,7 +589,7 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Union[float, np.nd
     Examples
     --------
     >>> # [1] Hartree-Fock extrapolation
-    >>> psi4.energy(cbs, scf_wfn='hf', scf_basis='cc-pV[DTQ]Z', scf_scheme=qcdb.scf_xtpl_helgaker_3)
+    >>> psi4.energy('cbs', scf_wfn='hf', scf_basis='cc-pV[DTQ]Z', scf_scheme='scf_xtpl_helgaker_3')
 
     """
 
@@ -696,7 +696,7 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Union[float, np.n
     Examples
     --------
     >>> # [1] CISD extrapolation
-    >>> energy(cbs, corl_wfn='cisd', corl_basis='cc-pV[DT]Z', corl_scheme=qcdb.corl_xtpl_helgaker_2)
+    >>> energy('cbs', corl_wfn='cisd', corl_basis='cc-pV[DT]Z', corl_scheme='corl_xtpl_helgaker_2')
 
     """
     if type(valueLO) != type(valueHI):
@@ -757,6 +757,25 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Union[float, np.n
 
     else:
         raise ValidationError("corl_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
+
+
+xtpl_procedures = {
+    'xtpl_highest_1': xtpl_highest_1,
+    'scf_xtpl_helgaker_2': scf_xtpl_helgaker_2,
+    'scf_xtpl_truhlar_2': scf_xtpl_truhlar_2,
+    'scf_xtpl_karton_2': scf_xtpl_karton_2,
+    'scf_xtpl_helgaker_3': scf_xtpl_helgaker_3,
+    'corl_xtpl_helgaker_2': corl_xtpl_helgaker_2,
+}
+
+
+def register_xtpl_scheme(func):
+    """Enable user-defined extrapolation `func`."""
+
+    if func.__name__.split('_')[-1].isdigit():
+        xtpl_procedures[func.__name__] = func
+    else:
+        raise ValidationError("Extrapolation function names follow <scf|corl>_xtpl_<scientist>_<#basis>")
 
 
 def return_energy_components():
@@ -973,17 +992,17 @@ def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
     """
 
     if nbasis == 1 and xtpl_type in ["scf", "corl"]:
-        return xtpl_highest_1
+        return 'xtpl_highest_1'
     elif xtpl_type == "scf":
         if nbasis == 2:
-            return scf_xtpl_helgaker_2
+            return 'scf_xtpl_helgaker_2'
         elif nbasis == 3:
-            return scf_xtpl_helgaker_3
+            return 'scf_xtpl_helgaker_3'
         else:
             raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
     elif xtpl_type == "corl":
         if nbasis == 2:
-            return corl_xtpl_helgaker_2
+            return 'corl_xtpl_helgaker_2'
         else:
             raise ValidationError(f"Wrong number of basis sets supplied to corl_xtpl: {nbasis}")
     else:
@@ -1293,8 +1312,8 @@ def cbs(func, label, **kwargs):
         An exception is the default, ``'xtpl_highest_1'``, which uses the best basis
         set available. See :ref:`sec:cbs_xtpl` for all available schemes.
 
-    :type scf_scheme: Callable
-    :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
+    :type scf_scheme: string
+    :param scf_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'scf_xtpl_helgaker_3'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the reference energy.
         Defaults to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3` if three valid basis sets
@@ -1310,8 +1329,8 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_truhlar_2`
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
 
-    :type corl_scheme: Callable
-    :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :type corl_scheme: string
+    :param corl_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
         Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
@@ -1323,8 +1342,8 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
-    :type delta_scheme: Callable
-    :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :type delta_scheme: string
+    :param delta_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the delta correction
         to the correlation energy.
@@ -1337,8 +1356,8 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
-    :type delta2_scheme: Callable
-    :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :type delta2_scheme: string
+    :param delta2_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
@@ -1432,26 +1451,26 @@ def cbs(func, label, **kwargs):
     >>> energy(cbs, corl_wfn='mp2', corl_basis='jun-cc-pVDZ')
 
     >>> # [3] DTQ-zeta extrapolated scf reference energy
-    >>> energy(cbs, scf_wfn='scf', scf_basis='cc-pV[DTQ]Z', scf_scheme=scf_xtpl_helgaker_3)
+    >>> energy('cbs', scf_wfn='scf', scf_basis='cc-pV[DTQ]Z', scf_scheme='scf_xtpl_helgaker_3')
 
     >>> # [4] DT-zeta extrapolated mp2 correlation energy atop a T-zeta reference
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='cc-pv[dt]z', corl_scheme='corl_xtpl_helgaker_2')
 
     >>> # [5] a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference (both equivalent)
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z')
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z')
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme='corl_xtpl_helgaker_2', delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme='corl_xtpl_helgaker_2')
 
     >>> # [6] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme='corl_xtpl_helgaker_2', delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
 
     >>> # [7] a Q5-zeta MP2 calculation, corrected by CCSD(T) at the TQ-zeta extrapolated level, and all-electron CCSD(T) correlation at T-zeta level
     >>> energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pv5z"}, {"wfn": "mp2", "basis": "cc-pv[q5]z"}, {"wfn": "ccsd(t)", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvtz", "options": {"freeze_core": "False"}}])
 
     >>> # [8] cbs() coupled with database()
-    >>> TODO database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
+    >>> TODO database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme='corl_xtpl_helgaker_2', delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
     >>> # [9] cbs() coupled with optimize()
-    >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2, func=cbs)
+    >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme='corl_xtpl_helgaker_2', func=cbs)
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
@@ -2006,8 +2025,16 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
     """
     Nxtpl = len(basiszeta)
 
-    if int(scheme.__name__.split('_')[-1]) != Nxtpl:
-        raise ValidationError("""Call to '%s' not valid with '%s' basis sets.""" % (scheme.__name__, len(basiszeta)))
+    try:
+        scheme.split()
+    except AttributeError:
+        raise UpgradeHelper(scheme, repr(scheme.__name__), 1.4, ' Replace extrapolation function with function name.')
+
+    if scheme not in xtpl_procedures:
+        raise ValidationError('Extrapolation function ({}) not among registered extrapolation schemes: {}'.format(scheme, list(xtpl_procedures.keys())))
+
+    if int(scheme.split('_')[-1]) != Nxtpl:
+        raise ValidationError("""Call to '%s' not valid with '%s' basis sets.""" % (scheme, len(basiszeta)))
 
     NEED = {}
     for idx in range(Nxtpl):
@@ -2426,17 +2453,17 @@ def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS):
         hess_available = all([np.count_nonzero(lmh['f_hessian']) for lmh in stage['d_need'].values()])
 
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
-        stage['d_energy'] = stage['d_scheme'](**hiloargs)
+        stage['d_energy'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
         finalenergy += stage['d_energy'] * stage['d_coef']
 
         if ptype == 'gradient' or grad_available:
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
-            stage['d_gradient'] = stage['d_scheme'](**hiloargs)
+            stage['d_gradient'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
             finalgradient += stage['d_gradient'] * stage['d_coef']
 
         if ptype == 'hessian' or hess_available:
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
-            stage['d_hessian'] = stage['d_scheme'](**hiloargs)
+            stage['d_hessian'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
             finalhessian += stage['d_hessian'] * stage['d_coef']
 
     cbs_results = {

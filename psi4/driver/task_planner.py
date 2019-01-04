@@ -37,6 +37,7 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver import p4util
+from psi4.driver.p4util.exceptions import UpgradeHelper
 from psi4.driver.task_base import SingleResult
 from psi4.driver.driver_nbody import NBodyComputer, nbody_gufunc
 from psi4.driver.driver_cbs import CBSComputer, cbs_gufunc, _cbs_text_parser
@@ -77,6 +78,14 @@ def task_planner(driver, method, molecule, **kwargs):
         key: v['value']
         for key, v in p4util.prepare_options_for_modules(changedOnly=True, globalsOnly=True)['GLOBALS'].items()
     }
+
+    try:
+        method.lower()
+    except AttributeError as e:
+        if method.__name__ == 'cbs':
+            raise UpgradeHelper(method, repr(method.__name__), 1.4, ' Replace cbs or complete_basis_set function with cbs string.')
+        else:
+            raise e
 
     # Pull basis out of kwargs, override globals if user specified
     basis = keywords.pop("BASIS", None)
