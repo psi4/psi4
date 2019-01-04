@@ -29,8 +29,6 @@
 
 #include <iomanip>
 
-#include <armadillo>
-
 #include "psi4/psi4-dec.h"
 
 #include "psi4/libmints/basisset.h"
@@ -96,7 +94,6 @@ PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset)
         }
         V_es_->add(int_helper_.compute_multipole_potential_integrals(site, 2, moments));
     }
-    cppe_state_.set_es_operator(arma::mat(V_es_->get_pointer(), V_es_->nrow(), V_es_->ncol(), true));
 }
 
 std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMatrix& Dm, CalcType type,
@@ -105,7 +102,7 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
     if (subtract_scf_density && type == PeState::CalcType::electronic_only) {
         D->subtract(D_scf_);
     }
-    cppe_state_.update_energies(arma::mat(D->get_pointer(), D->nrow(), D->ncol(), true));
+    cppe_state_.get_energies().set("Electrostatic/Electronic", D->vector_dot(V_es_));
 
     size_t n_sitecoords = 3 * cppe_state_.get_polarizable_site_number();
 
@@ -113,7 +110,7 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
     auto V_ind = std::make_shared<Matrix>("V_ind", nbf_, nbf_);
     if (n_sitecoords) {
         int current_polsite = 0;
-        arma::vec elec_fields(n_sitecoords, arma::fill::zeros);
+        Eigen::VectorXd elec_fields(n_sitecoords);
         for (auto& p : potentials_) {
             if (!p.is_polarizable()) continue;
             Vector3 site(p.m_x, p.m_y, p.m_z);
@@ -124,15 +121,15 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
             current_polsite += 1;
         }
         // std::cout << "elec fields : " << n_sitecoords << std::endl << elec_fields << std::endl;
-        cppe_state_.update_induced_moments(elec_fields, iteration, type == PeState::CalcType::electronic_only);
-        arma::vec induced_moments = cppe_state_.get_induced_moments();
+        cppe_state_.update_induced_moments(elec_fields, type == PeState::CalcType::electronic_only);
+        Eigen::VectorXd induced_moments = cppe_state_.get_induced_moments_vec();
 
         current_polsite = 0;
         for (auto& p : potentials_) {
             if (!p.is_polarizable()) continue;
             Vector3 site(p.m_x, p.m_y, p.m_z);
-            SharedMatrix V_ind_s = int_helper_.compute_field_integrals(
-                site, induced_moments.subvec(3 * current_polsite, 3 * current_polsite + 2));
+            SharedMatrix V_ind_s =
+                int_helper_.compute_field_integrals(site, induced_moments.segment(3 * current_polsite, 3));
             V_ind->add(V_ind_s);
             current_polsite += 1;
         }
@@ -145,8 +142,8 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
     if (type == PeState::CalcType::total) iteration++;
 
     double energy_result =
-        (type == PeState::CalcType::total ? cppe_state_.get_current_energies().get_total_energy()
-                                          : cppe_state_.get_current_energies().get("Polarization/Electronic"));
+        (type == PeState::CalcType::total ? cppe_state_.get_energies().get_total_energy()
+                                          : cppe_state_.get_energies().get("Polarization/Electronic"));
     return std::pair<double, SharedMatrix>(energy_result, V_ind);
 }
 
@@ -201,7 +198,7 @@ SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 sit
     return res;
 }
 
-SharedMatrix PeIntegralHelper::compute_field_integrals(Vector3 site, arma::vec moment) {
+SharedMatrix PeIntegralHelper::compute_field_integrals(Vector3 site, Eigen::VectorXd moment) {
     std::vector<SharedMatrix> fields;
     fields.push_back(std::make_shared<Matrix>("AO Field X", basisset_->nbf(), basisset_->nbf()));
     fields.push_back(std::make_shared<Matrix>("AO Field Y", basisset_->nbf(), basisset_->nbf()));

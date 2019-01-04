@@ -54,7 +54,6 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libpe/psipe.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -683,7 +682,7 @@ Vector3 OEProp::compute_center(const double* property) const {
 }
 
 OEProp::OEProp(std::shared_ptr<Wavefunction> wfn)
-    : wfn_(wfn), mpc_(wfn, get_origin_from_environment()), pe_(wfn), pac_(wfn), epc_(wfn) {
+    : wfn_(wfn), mpc_(wfn, get_origin_from_environment()), pac_(wfn), epc_(wfn) {
     if (wfn_.get() == nullptr) throw PSIEXCEPTION("Prop: Wavefunction is null");
     common_init();
 }
@@ -827,40 +826,6 @@ void OEProp::compute() {
     if (tasks_.count("NO_OCCUPATIONS")) compute_no_occupations();
     if (tasks_.count("GRID_FIELD")) compute_field_over_grid();
     if (tasks_.count("GRID_ESP")) compute_esp_over_grid();
-    if (tasks_.count("PE_CORR")) compute_pe();
-}
-
-PePropCalc::PeOutputType PePropCalc::compute_pe_prop(bool transition, bool print_output, bool verbose) {
-    PePropCalc::PeOutputType pt = std::make_shared<PePropCalc::PeOutputTypeBase>();
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
-
-    SharedMatrix Da;
-    SharedMatrix Db;
-
-    if (same_dens_) {
-        Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
-        Db = Da;
-    } else {
-        Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D alpha");
-        Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
-    }
-    Da->add(Db);
-    std::pair<double, SharedMatrix> res =
-        wfn_->get_PeState()->compute_pe_contribution(Da, PeState::CalcType::electronic_only, true);
-    if (verbose) {
-        // TODO
-    }
-    if (print_output) {
-        outfile->Printf("\n--------------------------------------------------------------------------------\n");
-        outfile->Printf("     PE ptSS energy correction:  %18.10f  eV", res.first * pc_hartree2ev);
-        outfile->Printf("\n--------------------------------------------------------------------------------\n");
-    }
-
-    return pt;
-}
-
-void OEProp::compute_pe(bool transition) {
-    PePropCalc::PeOutputType pe_corr = pe_.compute_pe_prop(transition, true, print_ > 4);
 }
 
 void OEProp::compute_multipoles(int order, bool transition) {
@@ -2134,84 +2099,72 @@ std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> Populati
 
 void OEProp::set_wavefunction(std::shared_ptr<Wavefunction> wfn) {
     mpc_.set_wavefunction(wfn);
-    pe_.set_wavefunction(wfn);
     pac_.set_wavefunction(wfn);
     epc_.set_wavefunction(wfn);
 }
 
 void OEProp::set_restricted(bool restricted) {
     mpc_.set_restricted(restricted);
-    pe_.set_restricted(restricted);
     pac_.set_restricted(restricted);
     epc_.set_restricted(restricted);
 }
 
 void OEProp::set_epsilon_a(SharedVector epsilon_a) {
     mpc_.set_epsilon_a(epsilon_a);
-    pe_.set_epsilon_a(epsilon_a);
     pac_.set_epsilon_a(epsilon_a);
     epc_.set_epsilon_a(epsilon_a);
 }
 
 void OEProp::set_epsilon_b(SharedVector epsilon_b) {
     mpc_.set_epsilon_b(epsilon_b);
-    pe_.set_epsilon_b(epsilon_b);
     pac_.set_epsilon_b(epsilon_b);
     epc_.set_epsilon_b(epsilon_b);
 }
 
 void OEProp::set_Ca(SharedMatrix Ca) {
     mpc_.set_Ca(Ca);
-    pe_.set_Ca(Ca);
     pac_.set_Ca(Ca);
     epc_.set_Ca(Ca);
 }
 
 void OEProp::set_Cb(SharedMatrix Cb) {
     mpc_.set_Cb(Cb);
-    pe_.set_Cb(Cb);
     pac_.set_Cb(Cb);
     epc_.set_Cb(Cb);
 }
 
 void OEProp::set_Da_ao(SharedMatrix Da, int symmetry) {
     mpc_.set_Da_ao(Da, symmetry);
-    pe_.set_Da_ao(Da, symmetry);
     pac_.set_Da_ao(Da, symmetry);
     epc_.set_Da_ao(Da, symmetry);
 }
 
 void OEProp::set_Db_ao(SharedMatrix Db, int symmetry) {
     mpc_.set_Db_ao(Db, symmetry);
-    pe_.set_Db_ao(Db, symmetry);
     pac_.set_Db_ao(Db, symmetry);
     epc_.set_Db_ao(Db, symmetry);
 }
 
 void OEProp::set_Da_so(SharedMatrix Da) {
     mpc_.set_Da_so(Da);
-    pe_.set_Da_so(Da);
     pac_.set_Da_so(Da);
     epc_.set_Da_so(Da);
 }
 
 void OEProp::set_Db_so(SharedMatrix Db) {
     mpc_.set_Db_so(Db);
-    pe_.set_Db_so(Db);
     pac_.set_Db_so(Db);
     epc_.set_Db_so(Db);
 }
 
 void OEProp::set_Da_mo(SharedMatrix Da) {
     mpc_.set_Da_mo(Da);
-    pe_.set_Da_mo(Da);
     pac_.set_Da_mo(Da);
     epc_.set_Da_mo(Da);
 }
 
 void OEProp::set_Db_mo(SharedMatrix Db) {
     mpc_.set_Db_mo(Db);
-    pe_.set_Db_mo(Db);
     pac_.set_Db_mo(Db);
     epc_.set_Db_mo(Db);
 }

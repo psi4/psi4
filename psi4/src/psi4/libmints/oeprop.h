@@ -292,26 +292,6 @@ class MultipolePropCalc : public Prop {
 };
 
 /**
- * PePropCalc
- *
- * Class which calculates perturbative energy corrections using the PE model
- *
- */
-
-class PePropCalc : public Prop {
-   private:
-    PePropCalc();
-
-   public:
-    /// Common initialization
-    PePropCalc(std::shared_ptr<Wavefunction> wfn) : Prop(wfn){};
-    // Output Type of multipole function, name, elec, nuc, tot
-    typedef std::vector<double> PeOutputTypeBase;
-    typedef std::shared_ptr<PeOutputTypeBase> PeOutputType;
-    PeOutputType compute_pe_prop(bool transition = false, bool print_output = false, bool verbose = false);
-};
-
-/**
  * PopulationAnalysisCalc
  *
  * Class, which carries out popular population analysis, such as Mulliken or Loewdin.
@@ -424,8 +404,6 @@ class PSI_API OEProp : public TaskListComputer {
     void compute_quadrupole(bool transition = false);
     /// Compute arbitrary-order multipoles up to (and including) l=order
     void compute_multipoles(int order, bool transition = false);
-    /// Compute PE perturbative energy corrections
-    void compute_pe(bool transition = false);
     /// Compute mo extents
     void compute_mo_extents();
     /// Compute Mulliken Charges
@@ -449,7 +427,6 @@ class PSI_API OEProp : public TaskListComputer {
     void compute_field_over_grid();
 
     MultipolePropCalc mpc_;
-    PePropCalc pe_;
     PopulationAnalysisCalc pac_;
     ESPPropCalc epc_;
 

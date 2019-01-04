@@ -33,6 +33,8 @@
 #include <string>
 #include <memory>
 
+#include <Eigen/Core>
+
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
 
@@ -56,7 +58,7 @@ class PeIntegralHelper {
     /*! \brief computes the field integrals at a site
      *
      */
-    SharedMatrix compute_field_integrals(Vector3 site, arma::vec moments);
+    SharedMatrix compute_field_integrals(Vector3 site, Eigen::VectorXd moments);
 
     /*! \brief computes the field at a site using the density matrix
      *
@@ -84,9 +86,6 @@ class PeState {
     /* \brief prints the summary table of PE energy contributions to the Psi4 output file
      */
     void print_energy_summary();
-
-    // void calculate_fock_contribution(arma::mat& Ptot, const libqints::multi_array<double>& out, double* energy);
-    // void calculate_excited_state_energy_correction(double* p_exc, double* energy, bool is_tdm);
 
    private:
     int nbf_;
