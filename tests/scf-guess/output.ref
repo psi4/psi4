@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.3a2.dev305 
+                               Psi4 1.3a2.dev335 
 
-                         Git: Rev {sad_rohf} adbd3a7 dirty
+                         Git: Rev {newsad} 10c991c dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -22,9 +22,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sunday, 16 December 2018 09:53PM
+    Psi4 started on: Friday, 04 January 2019 03:13PM
 
-    Process ID: 25041
+    Process ID: 12697
     Host:       dx7-lehtola.chem.helsinki.fi
     PSIDATADIR: /home/work/psi4/install.susi/share/psi4
     Memory:     500.0 MiB
@@ -52,6 +52,7 @@ set {
   scf_type pk
   df_scf_guess false
   guess core
+  docc [ 3, 0, 1, 1 ]
 }
 energy('scf')
 
@@ -60,7 +61,7 @@ compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, CORE 
 
 set guess gwh
 energy('scf')
-compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, GWH  guess  (a.u.)");             #TEST
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, GWH  guess (a.u.)");             #TEST
 
 set guess sad
 energy('scf')
@@ -75,6 +76,8 @@ H 1 0.9015
 set {
   reference uhf
   guess core
+  docc [ 3, 0, 0, 1 ]
+  socc [ 0, 0, 1, 0 ]
 }
 energy('scf')
 compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, CORE guess (a.u.)");             #TEST
@@ -105,7 +108,7 @@ compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAD  
 --------------------------------------------------------------------------
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:30 2018
+*** at Fri Jan  4 15:13:59 2019
 
    => Loading Basis Set <=
 
@@ -174,10 +177,10 @@ compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAD  
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       1       1       0
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       5       5       0
    -------------------------------------------------------
@@ -219,24 +222,16 @@ compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAD  
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     4,    0,    1,    0 ]
-
-   @RHF iter   1:   -85.33505416384978   -8.53351e+01   3.50122e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @RHF iter   2:   -91.10767049405827   -5.77262e+00   1.51846e-01 DIIS
-   @RHF iter   3:   -98.58258052901719   -7.47491e+00   1.00097e-01 DIIS
-   @RHF iter   4:   -99.93951023567348   -1.35693e+00   2.44152e-02 DIIS
-   @RHF iter   5:  -100.05744198293387   -1.17932e-01   1.65487e-03 DIIS
-   @RHF iter   6:  -100.05827354637998   -8.31563e-04   8.34275e-04 DIIS
-   @RHF iter   7:  -100.05843724413234   -1.63698e-04   1.49650e-04 DIIS
-   @RHF iter   8:  -100.05844575714320   -8.51301e-06   2.83896e-05 DIIS
-   @RHF iter   9:  -100.05844593934070   -1.82197e-07   3.30291e-06 DIIS
-   @RHF iter  10:  -100.05844594421211   -4.87141e-09   3.71224e-07 DIIS
+   @RHF iter   1:   -85.33505416384978   -8.53351e+01   3.50122e-01 DIIS
+   @RHF iter   2:   -90.15653311396636   -4.82148e+00   1.60562e-01 DIIS
+   @RHF iter   3:   -98.52130828906670   -8.36478e+00   1.02798e-01 DIIS
+   @RHF iter   4:   -99.93258431195144   -1.41128e+00   2.52406e-02 DIIS
+   @RHF iter   5:  -100.05668150599611   -1.24097e-01   1.86727e-03 DIIS
+   @RHF iter   6:  -100.05812401048792   -1.44250e-03   1.02594e-03 DIIS
+   @RHF iter   7:  -100.05842516823020   -3.01158e-04   2.01229e-04 DIIS
+   @RHF iter   8:  -100.05844583812492   -2.06699e-05   2.62283e-05 DIIS
+   @RHF iter   9:  -100.05844594389093   -1.05766e-07   1.04947e-06 DIIS
+   @RHF iter  10:  -100.05844594427322   -3.82286e-10   1.52829e-07 DIIS
   Energy converged.
 
 
@@ -247,37 +242,37 @@ compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAD  
 
     Doubly Occupied:                                                      
 
-       1A1   -26.286004     2A1    -1.600001     3A1    -0.766543  
-       1B1    -0.644853     1B2    -0.644852  
+       1A1   -26.286002     2A1    -1.600001     3A1    -0.766542  
+       1B2    -0.644852     1B1    -0.644852  
 
     Virtual:                                                              
 
-       4A1     0.145421     5A1     0.572506     6A1     0.812502  
+       4A1     0.145421     5A1     0.572507     6A1     0.812502  
        2B1     0.857876     2B2     0.857876     3B1     0.986375  
-       3B2     0.986375     7A1     1.455858     8A1     1.553376  
-       9A1     2.227599     1A2     2.227599    10A1     2.263013  
+       3B2     0.986375     7A1     1.455858     8A1     1.553377  
+       9A1     2.227600     1A2     2.227600    10A1     2.263014  
        4B2     2.544695     4B1     2.544695    11A1     3.232051  
-       2A2     3.552428    12A1     3.552428     5B1     3.853177  
-       5B2     3.853177    13A1     4.250229     6B1     4.321165  
-       6B2     4.321165    14A1     5.198270     7B1     5.364506  
-       7B2     5.364506    15A1     6.236857     8B1     7.408845  
-       8B2     7.408845     3A2     7.614739    16A1     7.614739  
-       9B2     8.497216     9B1     8.497216    17A1     8.525277  
-       4A2     8.909365    18A1     8.909365    10B2     9.336847  
-      10B1     9.336847    19A1     9.702183    20A1    12.638150  
+      12A1     3.552429     2A2     3.552429     5B2     3.853178  
+       5B1     3.853178    13A1     4.250230     6B2     4.321165  
+       6B1     4.321165    14A1     5.198271     7B2     5.364506  
+       7B1     5.364506    15A1     6.236858     8B2     7.408846  
+       8B1     7.408846    16A1     7.614740     3A2     7.614740  
+       9B2     8.497217     9B1     8.497217    17A1     8.525278  
+       4A2     8.909366    18A1     8.909366    10B2     9.336848  
+      10B1     9.336848    19A1     9.702184    20A1    12.638150  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @RHF Final Energy:  -100.05844594421211
+  @RHF Final Energy:  -100.05844594427322
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -150.7983411201149124
-    Two-Electron Energy =                  45.4569280144718419
-    Total Energy =                       -100.0584459442121243
+    One-Electron Energy =                -150.7983235225373733
+    Two-Electron Energy =                  45.4569104168332103
+    Total Energy =                       -100.0584459442732168
 
 Computation Completed
 
@@ -299,20 +294,20 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.9114     Total:     1.9114
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:30 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:13:59 2019
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 	Nuclear Repulsion Energy (a.u.)...................................PASSED
 	RHF  energy, CORE guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:30 2018
+*** at Fri Jan  4 15:13:59 2019
 
    => Loading Basis Set <=
 
@@ -381,10 +376,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       1       1       0
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       5       5       0
    -------------------------------------------------------
@@ -426,24 +421,16 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     4,    0,    0,    1 ]
-
-   @RHF iter   1:   -92.48691177199242   -9.24869e+01   2.75904e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @RHF iter   2:   -94.06882631427098   -1.58191e+00   1.33585e-01 DIIS
-   @RHF iter   3:   -99.01396614376071   -4.94514e+00   8.36175e-02 DIIS
-   @RHF iter   4:   -99.95856431272190   -9.44598e-01   2.26760e-02 DIIS
-   @RHF iter   5:  -100.05755990561795   -9.89956e-02   1.32076e-03 DIIS
-   @RHF iter   6:  -100.05834157210909   -7.81666e-04   6.20578e-04 DIIS
-   @RHF iter   7:  -100.05844343085573   -1.01859e-04   7.64898e-05 DIIS
-   @RHF iter   8:  -100.05844588911194   -2.45826e-06   1.28304e-05 DIIS
-   @RHF iter   9:  -100.05844594195449   -5.28426e-08   2.40319e-06 DIIS
-   @RHF iter  10:  -100.05844594424084   -2.28636e-09   3.08509e-07 DIIS
+   @RHF iter   1:   -92.48691177199242   -9.24869e+01   2.75904e-01 DIIS
+   @RHF iter   2:   -94.81281880857573   -2.32591e+00   1.35875e-01 DIIS
+   @RHF iter   3:   -99.28602067782353   -4.47320e+00   7.24465e-02 DIIS
+   @RHF iter   4:  -100.01311714889604   -7.27096e-01   1.52857e-02 DIIS
+   @RHF iter   5:  -100.05790781283881   -4.47907e-02   1.17242e-03 DIIS
+   @RHF iter   6:  -100.05838014162740   -4.72329e-04   4.70454e-04 DIIS
+   @RHF iter   7:  -100.05844356207233   -6.34204e-05   6.30951e-05 DIIS
+   @RHF iter   8:  -100.05844587719858   -2.31513e-06   9.69801e-06 DIIS
+   @RHF iter   9:  -100.05844594291696   -6.57184e-08   2.21017e-06 DIIS
+   @RHF iter  10:  -100.05844594427576   -1.35880e-09   1.45647e-07 DIIS
   Energy converged.
 
 
@@ -454,37 +441,37 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -26.286004     2A1    -1.600002     3A1    -0.766543  
-       1B2    -0.644853     1B1    -0.644852  
+       1A1   -26.286003     2A1    -1.600001     3A1    -0.766542  
+       1B2    -0.644852     1B1    -0.644852  
 
     Virtual:                                                              
 
        4A1     0.145421     5A1     0.572506     6A1     0.812502  
-       2B2     0.857876     2B1     0.857876     3B2     0.986375  
-       3B1     0.986375     7A1     1.455858     8A1     1.553376  
-       9A1     2.227599     1A2     2.227599    10A1     2.263013  
-       4B1     2.544695     4B2     2.544695    11A1     3.232050  
-       2A2     3.552428    12A1     3.552428     5B2     3.853177  
-       5B1     3.853177    13A1     4.250229     6B2     4.321164  
-       6B1     4.321164    14A1     5.198270     7B2     5.364505  
-       7B1     5.364505    15A1     6.236857     8B2     7.408845  
-       8B1     7.408845     3A2     7.614739    16A1     7.614739  
-       9B1     8.497216     9B2     8.497216    17A1     8.525277  
-       4A2     8.909364    18A1     8.909364    10B1     9.336846  
-      10B2     9.336846    19A1     9.702183    20A1    12.638149  
+       2B1     0.857876     2B2     0.857876     3B1     0.986375  
+       3B2     0.986375     7A1     1.455858     8A1     1.553377  
+       1A2     2.227600     9A1     2.227600    10A1     2.263014  
+       4B2     2.544695     4B1     2.544695    11A1     3.232051  
+      12A1     3.552429     2A2     3.552429     5B2     3.853178  
+       5B1     3.853178    13A1     4.250230     6B1     4.321165  
+       6B2     4.321165    14A1     5.198271     7B2     5.364506  
+       7B1     5.364506    15A1     6.236857     8B2     7.408845  
+       8B1     7.408845    16A1     7.614739     3A2     7.614739  
+       9B2     8.497216     9B1     8.497216    17A1     8.525277  
+       4A2     8.909365    18A1     8.909365    10B2     9.336847  
+      10B1     9.336847    19A1     9.702183    20A1    12.638150  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @RHF Final Energy:  -100.05844594424084
+  @RHF Final Energy:  -100.05844594427576
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -150.7983492601197781
-    Two-Electron Energy =                  45.4569361544479733
-    Total Energy =                       -100.0584459442408587
+    One-Electron Energy =                -150.7983205333916317
+    Two-Electron Energy =                  45.4569074276849321
+    Total Energy =                       -100.0584459442757463
 
 Computation Completed
 
@@ -506,19 +493,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.9114     Total:     1.9114
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:30 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:00 2019
 Module time:
 	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.24 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-	RHF  energy, GWH  guess  (a.u.)...................................PASSED
+	total time  =          1 seconds =       0.02 minutes
+	RHF  energy, GWH  guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:30 2018
+*** at Fri Jan  4 15:14:00 2019
 
    => Loading Basis Set <=
 
@@ -587,10 +574,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       1       1       0
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       5       5       0
    -------------------------------------------------------
@@ -632,13 +619,14 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -100.03749947075762   -1.00037e+02   9.99042e-03 
-   @RHF iter   1:  -100.05384985156070   -1.63504e-02   5.60191e-03 
-   @RHF iter   2:  -100.05686089124127   -3.01104e-03   3.33064e-03 DIIS
-   @RHF iter   3:  -100.05843658764793   -1.57570e-03   1.43686e-04 DIIS
-   @RHF iter   4:  -100.05844520376682   -8.61612e-06   3.83489e-05 DIIS
-   @RHF iter   5:  -100.05844592860011   -7.24833e-07   5.06800e-06 DIIS
-   @RHF iter   6:  -100.05844594400700   -1.54069e-08   6.73616e-07 DIIS
+   @RHF iter   0:   -99.90679763470987   -9.99068e+01   0.00000e+00 
+   @RHF iter   1:  -100.03749947075762   -1.30702e-01   9.99042e-03 DIIS
+   @RHF iter   2:  -100.05384985156076   -1.63504e-02   5.60191e-03 DIIS
+   @RHF iter   3:  -100.05835675546629   -4.50690e-03   5.53362e-04 DIIS
+   @RHF iter   4:  -100.05843715521004   -8.03997e-05   1.43039e-04 DIIS
+   @RHF iter   5:  -100.05844549111171   -8.33590e-06   2.86495e-05 DIIS
+   @RHF iter   6:  -100.05844593383658   -4.42725e-07   4.12882e-06 DIIS
+   @RHF iter   7:  -100.05844594406867   -1.02321e-08   5.75859e-07 DIIS
   Energy converged.
 
 
@@ -649,37 +637,37 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -26.286000     2A1    -1.599999     3A1    -0.766542  
-       1B1    -0.644851     1B2    -0.644850  
+       1A1   -26.286002     2A1    -1.600000     3A1    -0.766542  
+       1B1    -0.644852     1B2    -0.644851  
 
     Virtual:                                                              
 
-       4A1     0.145421     5A1     0.572506     6A1     0.812503  
-       2B1     0.857876     2B2     0.857876     3B1     0.986376  
-       3B2     0.986376     7A1     1.455859     8A1     1.553377  
-       1A2     2.227601     9A1     2.227601    10A1     2.263014  
+       4A1     0.145421     5A1     0.572506     6A1     0.812502  
+       2B1     0.857876     2B2     0.857876     3B1     0.986375  
+       3B2     0.986376     7A1     1.455858     8A1     1.553376  
+       9A1     2.227600     1A2     2.227600    10A1     2.263013  
        4B1     2.544696     4B2     2.544696    11A1     3.232051  
-       2A2     3.552428    12A1     3.552428     5B1     3.853177  
+      12A1     3.552428     2A2     3.552428     5B1     3.853177  
        5B2     3.853177    13A1     4.250229     6B1     4.321165  
-       6B2     4.321165    14A1     5.198271     7B1     5.364508  
-       7B2     5.364508    15A1     6.236859     8B2     7.408847  
-       8B1     7.408847     3A2     7.614741    16A1     7.614741  
-       9B2     8.497218     9B1     8.497218    17A1     8.525279  
-      18A1     8.909368     4A2     8.909368    10B2     9.336849  
-      10B1     9.336849    19A1     9.702186    20A1    12.638152  
+       6B2     4.321165    14A1     5.198270     7B1     5.364507  
+       7B2     5.364507    15A1     6.236858     8B1     7.408846  
+       8B2     7.408846    16A1     7.614740     3A2     7.614740  
+       9B2     8.497217     9B1     8.497217    17A1     8.525278  
+       4A2     8.909366    18A1     8.909366    10B2     9.336848  
+      10B1     9.336848    19A1     9.702184    20A1    12.638150  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @RHF Final Energy:  -100.05844594400700
+  @RHF Final Energy:  -100.05844594406867
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -150.7983563839765111
-    Two-Electron Energy =                  45.4569432785385601
-    Total Energy =                       -100.0584459440070049
+    One-Electron Energy =                -150.7983337014678966
+    Two-Electron Energy =                  45.4569205959682918
+    Total Energy =                       -100.0584459440686658
 
 Computation Completed
 
@@ -701,19 +689,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.9114     Total:     1.9114
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:30 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:00 2019
 Module time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.45 seconds =       0.01 minutes
+	user time   =       0.20 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	RHF  energy, SAD  guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:30 2018
+*** at Fri Jan  4 15:14:00 2019
 
    => Loading Basis Set <=
 
@@ -782,10 +770,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       0       0       1
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       4       4       1
    -------------------------------------------------------
@@ -827,35 +815,24 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     4,    0,    0,    0 ]
-    SOCC [     0,    0,    1,    0 ]
-
-   @UHF iter   1:   -88.23264523695433   -8.82326e+01   3.06237e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    0,    1 ]
-    SOCC [     0,    0,    1,    0 ]
-
-   @UHF iter   2:   -93.00749100119293   -4.77485e+00   1.30113e-01 DIIS
-   @UHF iter   3:   -98.96650997205859   -5.95902e+00   6.12017e-02 DIIS
-   @UHF iter   4:   -99.49198201262239   -5.25472e-01   1.39170e-02 DIIS
-   @UHF iter   5:   -99.53078113448440   -3.87991e-02   1.15953e-03 DIIS
-   @UHF iter   6:   -99.53116623761149   -3.85103e-04   4.68075e-04 DIIS
-   @UHF iter   7:   -99.53122195334382   -5.57157e-05   8.74365e-05 DIIS
-   @UHF iter   8:   -99.53122530865195   -3.35531e-06   2.42067e-05 DIIS
-   @UHF iter   9:   -99.53122567350465   -3.64853e-07   8.13063e-06 DIIS
-   @UHF iter  10:   -99.53122572128875   -4.77841e-08   1.20937e-06 DIIS
-   @UHF iter  11:   -99.53122572214455   -8.55806e-10   1.27144e-07 DIIS
+   @UHF iter   1:   -88.99202896495353   -8.89920e+01   3.02296e-01 DIIS
+   @UHF iter   2:   -95.39707554592566   -6.40505e+00   1.26999e-01 DIIS
+   @UHF iter   3:   -99.28658953444925   -3.88951e+00   4.24323e-02 DIIS
+   @UHF iter   4:   -99.52581951930914   -2.39230e-01   5.14637e-03 DIIS
+   @UHF iter   5:   -99.53109056732249   -5.27105e-03   5.96857e-04 DIIS
+   @UHF iter   6:   -99.53121042092060   -1.19854e-04   1.70123e-04 DIIS
+   @UHF iter   7:   -99.53122350134247   -1.30804e-05   5.47483e-05 DIIS
+   @UHF iter   8:   -99.53122549384143   -1.99250e-06   1.72191e-05 DIIS
+   @UHF iter   9:   -99.53122571558831   -2.21747e-07   2.98887e-06 DIIS
+   @UHF iter  10:   -99.53122572203858   -6.45028e-09   6.46645e-07 DIIS
   Energy converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   4.192479748E-03
+   @Spin Contamination Metric:   4.192520260E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.541924797E-01
+   @S^2 Observed:                7.541925203E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -864,44 +841,44 @@ Total time:
 
     Alpha Occupied:                                                       
 
-       1A1   -26.987379     2A1    -2.274177     1B1    -1.390064  
+       1A1   -26.987379     2A1    -2.274177     1B1    -1.390065  
        3A1    -1.381376     1B2    -1.273581  
 
     Alpha Virtual:                                                        
 
-       4A1    -0.185343     5A1     0.174906     2B1     0.391539  
-       6A1     0.417152     2B2     0.426075     3B1     0.544611  
+       4A1    -0.185343     5A1     0.174906     2B1     0.391538  
+       6A1     0.417152     2B2     0.426074     3B1     0.544611  
        3B2     0.571665     7A1     0.965391     8A1     1.112363  
        9A1     1.649973     1A2     1.650573    10A1     1.811016  
        4B1     1.976746     4B2     2.027806    11A1     2.720216  
        2A2     3.075779    12A1     3.076221     5B1     3.380642  
        5B2     3.393759    13A1     3.778690     6B1     3.783300  
        6B2     3.820501    14A1     4.660651     7B1     4.696121  
-       7B2     4.776301    15A1     5.646970     8B1     6.750498  
+       7B2     4.776300    15A1     5.646969     8B1     6.750498  
        8B2     6.750519     3A2     6.986488    16A1     6.986719  
        9B1     7.839722     9B2     7.908702    17A1     7.920759  
-      18A1     8.205319     4A2     8.206350    10B1     8.666404  
+      18A1     8.205318     4A2     8.206349    10B1     8.666404  
       10B2     8.740687    19A1     9.081980    20A1    12.029285  
 
     Beta Occupied:                                                        
 
-       1A1   -26.935689     2A1    -2.083726     3A1    -1.328924  
-       1B2    -1.219533  
+       1A1   -26.935688     2A1    -2.083726     3A1    -1.328924  
+       1B2    -1.219531  
 
     Beta Virtual:                                                         
 
-       1B1    -0.432044     4A1    -0.175301     5A1     0.182663  
-       6A1     0.427562     2B2     0.433746     2B1     0.482987  
+       1B1    -0.432044     4A1    -0.175302     5A1     0.182663  
+       6A1     0.427562     2B2     0.433747     2B1     0.482987  
        3B2     0.575908     3B1     0.620390     7A1     1.002733  
        8A1     1.126957     9A1     1.739198     1A2     1.739546  
       10A1     1.819539     4B2     2.035713     4B1     2.061449  
-      11A1     2.742011     2A2     3.084546    12A1     3.084561  
+      11A1     2.742011     2A2     3.084545    12A1     3.084561  
        5B1     3.387498     5B2     3.390768    13A1     3.784204  
-       6B2     3.827305     6B1     3.844507    14A1     4.682923  
-       7B2     4.799182     7B1     4.843271    15A1     5.679300  
+       6B2     3.827306     6B1     3.844507    14A1     4.682923  
+       7B2     4.799183     7B1     4.843271    15A1     5.679300  
        8B2     6.821657     8B1     6.821659    16A1     7.036965  
        3A2     7.037019     9B1     7.920409     9B2     7.924737  
-      17A1     7.951313     4A2     8.327834    18A1     8.328100  
+      17A1     7.951313     4A2     8.327835    18A1     8.328100  
       10B2     8.757640    10B1     8.758923    19A1     9.121435  
       20A1    12.072478  
 
@@ -910,14 +887,14 @@ Total time:
     DOCC [     3,    0,    0,    1 ]
     SOCC [     0,    0,    1,    0 ]
 
-  @UHF Final Energy:   -99.53122572214455
+  @UHF Final Energy:   -99.53122572203858
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -144.7539366993825070
-    Two-Electron Energy =                  39.9397438158070059
-    Total Energy =                        -99.5312257221445549
+    One-Electron Energy =                -144.7539754220743760
+    Two-Electron Energy =                  39.9397825386048453
+    Total Energy =                        -99.5312257220385845
 
   UHF NO Occupations:
   HONO-2 :    2 A1 1.9996019
@@ -949,19 +926,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3262     Total:     2.3262
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:30 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:00 2019
 Module time:
-	user time   =       0.15 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.60 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	UHF  energy, CORE guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:30 2018
+*** at Fri Jan  4 15:14:00 2019
 
    => Loading Basis Set <=
 
@@ -1030,10 +1007,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       0       0       1
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       4       4       1
    -------------------------------------------------------
@@ -1075,15 +1052,15 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:   -94.35585144644560   -9.43559e+01   2.43823e-01 
-   @UHF iter   2:   -98.29872799930521   -3.94288e+00   8.15661e-02 DIIS
-   @UHF iter   3:   -99.44938731771835   -1.15066e+00   2.54434e-02 DIIS
-   @UHF iter   4:   -99.53009031835913   -8.07030e-02   2.65438e-03 DIIS
-   @UHF iter   5:   -99.53120766464281   -1.11735e-03   2.15671e-04 DIIS
-   @UHF iter   6:   -99.53122427560506   -1.66110e-05   4.69404e-05 DIIS
-   @UHF iter   7:   -99.53122541947030   -1.14387e-06   1.98652e-05 DIIS
-   @UHF iter   8:   -99.53122570963504   -2.90165e-07   4.23138e-06 DIIS
-   @UHF iter   9:   -99.53122572189922   -1.22642e-08   6.97571e-07 DIIS
+   @UHF iter   1:   -94.35585144644560   -9.43559e+01   2.43823e-01 DIIS
+   @UHF iter   2:   -98.29872799930514   -3.94288e+00   8.15661e-02 DIIS
+   @UHF iter   3:   -99.44938731771843   -1.15066e+00   2.54434e-02 DIIS
+   @UHF iter   4:   -99.53009031835916   -8.07030e-02   2.65438e-03 DIIS
+   @UHF iter   5:   -99.53120766464284   -1.11735e-03   2.15671e-04 DIIS
+   @UHF iter   6:   -99.53122427560501   -1.66110e-05   4.69404e-05 DIIS
+   @UHF iter   7:   -99.53122541947029   -1.14387e-06   1.98652e-05 DIIS
+   @UHF iter   8:   -99.53122570963505   -2.90165e-07   4.23138e-06 DIIS
+   @UHF iter   9:   -99.53122572189923   -1.22642e-08   6.97571e-07 DIIS
   Energy converged.
 
 
@@ -1146,14 +1123,14 @@ Total time:
     DOCC [     3,    0,    0,    1 ]
     SOCC [     0,    0,    1,    0 ]
 
-  @UHF Final Energy:   -99.53122572189922
+  @UHF Final Energy:   -99.53122572189923
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -144.7539350339384043
-    Two-Electron Energy =                  39.9397421506082395
-    Total Energy =                        -99.5312257218992187
+    One-Electron Energy =                -144.7539350339384328
+    Two-Electron Energy =                  39.9397421506082537
+    Total Energy =                        -99.5312257218992329
 
   UHF NO Occupations:
   HONO-2 :    2 A1 1.9996020
@@ -1185,19 +1162,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3262     Total:     2.3262
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:30 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:00 2019
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
+	user time   =       0.68 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	UHF  energy, GWH  guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:30 2018
+*** at Fri Jan  4 15:14:00 2019
 
    => Loading Basis Set <=
 
@@ -1266,10 +1243,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       0       0       1
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       4       4       1
    -------------------------------------------------------
@@ -1311,22 +1288,23 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   0:   -99.40576845293968   -9.94058e+01   3.25606e-02 
-   @UHF iter   1:   -99.51337182188979   -1.07603e-01   1.13874e-02 
-   @UHF iter   2:   -99.52863279199822   -1.52610e-02   4.49130e-03 DIIS
-   @UHF iter   3:   -99.53120936848374   -2.57658e-03   2.22920e-04 DIIS
-   @UHF iter   4:   -99.53122498765461   -1.56192e-05   4.13432e-05 DIIS
-   @UHF iter   5:   -99.53122566022556   -6.72571e-07   9.64058e-06 DIIS
-   @UHF iter   6:   -99.53122571231420   -5.20886e-08   3.48655e-06 DIIS
-   @UHF iter   7:   -99.53122572152137   -9.20717e-09   9.22697e-07 DIIS
+   @UHF iter   0:   -93.49845299857162   -9.34985e+01   0.00000e+00 
+   @UHF iter   1:   -99.40576845293968   -5.90732e+00   3.25606e-02 DIIS
+   @UHF iter   2:   -99.51337182188979   -1.07603e-01   1.13874e-02 DIIS
+   @UHF iter   3:   -99.53105781923095   -1.76860e-02   9.15057e-04 DIIS
+   @UHF iter   4:   -99.53121845291156   -1.60634e-04   1.40951e-04 DIIS
+   @UHF iter   5:   -99.53122525384359   -6.80093e-06   3.03380e-05 DIIS
+   @UHF iter   6:   -99.53122567448175   -4.20638e-07   8.21378e-06 DIIS
+   @UHF iter   7:   -99.53122571493859   -4.04568e-08   2.97008e-06 DIIS
+   @UHF iter   8:   -99.53122572196349   -7.02491e-09   5.48387e-07 DIIS
   Energy converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   4.192304784E-03
+   @Spin Contamination Metric:   4.192390908E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.541923048E-01
+   @S^2 Observed:                7.541923909E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -1335,67 +1313,67 @@ Total time:
 
     Alpha Occupied:                                                       
 
-       1A1   -26.987380     2A1    -2.274178     1B1    -1.390065  
+       1A1   -26.987379     2A1    -2.274177     1B1    -1.390064  
        3A1    -1.381376     1B2    -1.273580  
 
     Alpha Virtual:                                                        
 
-       4A1    -0.185343     5A1     0.174906     2B1     0.391538  
-       6A1     0.417152     2B2     0.426075     3B1     0.544610  
-       3B2     0.571665     7A1     0.965390     8A1     1.112363  
-       9A1     1.649972     1A2     1.650572    10A1     1.811016  
-       4B1     1.976746     4B2     2.027805    11A1     2.720216  
+       4A1    -0.185343     5A1     0.174906     2B1     0.391539  
+       6A1     0.417152     2B2     0.426075     3B1     0.544611  
+       3B2     0.571665     7A1     0.965391     8A1     1.112363  
+       9A1     1.649973     1A2     1.650573    10A1     1.811016  
+       4B1     1.976746     4B2     2.027806    11A1     2.720216  
        2A2     3.075779    12A1     3.076221     5B1     3.380642  
        5B2     3.393759    13A1     3.778690     6B1     3.783300  
-       6B2     3.820500    14A1     4.660651     7B1     4.696120  
-       7B2     4.776300    15A1     5.646969     8B1     6.750497  
-       8B2     6.750518     3A2     6.986487    16A1     6.986718  
-       9B1     7.839721     9B2     7.908701    17A1     7.920758  
-      18A1     8.205318     4A2     8.206349    10B1     8.666403  
-      10B2     8.740687    19A1     9.081979    20A1    12.029284  
+       6B2     3.820501    14A1     4.660651     7B1     4.696121  
+       7B2     4.776301    15A1     5.646970     8B1     6.750499  
+       8B2     6.750519     3A2     6.986488    16A1     6.986719  
+       9B1     7.839722     9B2     7.908702    17A1     7.920759  
+      18A1     8.205319     4A2     8.206350    10B1     8.666404  
+      10B2     8.740688    19A1     9.081980    20A1    12.029285  
 
     Beta Occupied:                                                        
 
-       1A1   -26.935691     2A1    -2.083727     3A1    -1.328925  
-       1B2    -1.219535  
+       1A1   -26.935689     2A1    -2.083726     3A1    -1.328924  
+       1B2    -1.219534  
 
     Beta Virtual:                                                         
 
-       1B1    -0.432045     4A1    -0.175302     5A1     0.182663  
+       1B1    -0.432044     4A1    -0.175302     5A1     0.182663  
        6A1     0.427562     2B2     0.433746     2B1     0.482987  
        3B2     0.575908     3B1     0.620390     7A1     1.002733  
-       8A1     1.126957     9A1     1.739197     1A2     1.739545  
-      10A1     1.819539     4B2     2.035712     4B1     2.061448  
-      11A1     2.742011     2A2     3.084546    12A1     3.084561  
+       8A1     1.126957     9A1     1.739198     1A2     1.739546  
+      10A1     1.819539     4B2     2.035713     4B1     2.061449  
+      11A1     2.742011     2A2     3.084545    12A1     3.084561  
        5B1     3.387498     5B2     3.390768    13A1     3.784204  
-       6B2     3.827305     6B1     3.844506    14A1     4.682922  
-       7B2     4.799181     7B1     4.843270    15A1     5.679299  
-       8B2     6.821656     8B1     6.821658    16A1     7.036964  
-       3A2     7.037018     9B1     7.920408     9B2     7.924735  
-      17A1     7.951312     4A2     8.327833    18A1     8.328098  
-      10B2     8.757638    10B1     8.758922    19A1     9.121434  
-      20A1    12.072477  
+       6B2     3.827305     6B1     3.844507    14A1     4.682923  
+       7B2     4.799182     7B1     4.843271    15A1     5.679300  
+       8B2     6.821658     8B1     6.821659    16A1     7.036965  
+       3A2     7.037019     9B1     7.920409     9B2     7.924737  
+      17A1     7.951313     4A2     8.327834    18A1     8.328099  
+      10B2     8.757640    10B1     8.758923    19A1     9.121435  
+      20A1    12.072478  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    0,    1 ]
     SOCC [     0,    0,    1,    0 ]
 
-  @UHF Final Energy:   -99.53122572152137
+  @UHF Final Energy:   -99.53122572196349
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -144.7539319169771659
-    Two-Electron Energy =                  39.9397390340248535
-    Total Energy =                        -99.5312257215213663
+    One-Electron Energy =                -144.7539435836967812
+    Two-Electron Energy =                  39.9397507003023264
+    Total Energy =                        -99.5312257219635086
 
   UHF NO Occupations:
-  HONO-2 :    2 A1 1.9996020
+  HONO-2 :    2 A1 1.9996019
   HONO-1 :    3 A1 1.9984982
   HONO-0 :    1 B1 1.0000000
   LUNO+0 :    4 A1 0.0015018
-  LUNO+1 :    5 A1 0.0003980
+  LUNO+1 :    5 A1 0.0003981
   LUNO+2 :    2 B2 0.0001965
   LUNO+3 :    6 A1 0.0000010
 
@@ -1420,19 +1398,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3262     Total:     2.3262
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:31 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:00 2019
 Module time:
 	user time   =       0.22 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.94 seconds =       0.02 minutes
+	user time   =       0.91 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 	UHF  energy, SAD  guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:31 2018
+*** at Fri Jan  4 15:14:00 2019
 
    => Loading Basis Set <=
 
@@ -1501,10 +1479,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       0       0       1
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       4       4       1
    -------------------------------------------------------
@@ -1546,26 +1524,15 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     4,    0,    0,    0 ]
-    SOCC [     0,    0,    1,    0 ]
-
-   @ROHF iter   1:   -88.23264523695431   -8.82326e+01   2.34402e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    0 ]
-    SOCC [     0,    0,    0,    1 ]
-
-   @ROHF iter   2:   -92.51751086156852   -4.28487e+00   1.02434e-01 DIIS
-   @ROHF iter   3:   -98.77533046384100   -6.25782e+00   5.50901e-02 DIIS
-   @ROHF iter   4:   -99.47971277182756   -7.04382e-01   1.14694e-02 DIIS
-   @ROHF iter   5:   -99.52551842541945   -4.58057e-02   1.07188e-03 DIIS
-   @ROHF iter   6:   -99.52613461161746   -6.16186e-04   2.83637e-04 DIIS
-   @ROHF iter   7:   -99.52617029109521   -3.56795e-05   3.77913e-05 DIIS
-   @ROHF iter   8:   -99.52617132829337   -1.03720e-06   5.53341e-06 DIIS
-   @ROHF iter   9:   -99.52617134986156   -2.15682e-08   1.46470e-06 DIIS
-   @ROHF iter  10:   -99.52617135121240   -1.35084e-09   2.20122e-07 DIIS
+   @ROHF iter   1:   -88.99202896495353   -8.89920e+01   2.25388e-01 DIIS
+   @ROHF iter   2:   -94.76173947230723   -5.76971e+00   9.73159e-02 DIIS
+   @ROHF iter   3:   -99.09252921087801   -4.33079e+00   4.24504e-02 DIIS
+   @ROHF iter   4:   -99.51198980087987   -4.19461e-01   6.48144e-03 DIIS
+   @ROHF iter   5:   -99.52601174030082   -1.40219e-02   6.02218e-04 DIIS
+   @ROHF iter   6:   -99.52616181232666   -1.50072e-04   1.35312e-04 DIIS
+   @ROHF iter   7:   -99.52617106943212   -9.25711e-06   1.75540e-05 DIIS
+   @ROHF iter   8:   -99.52617133609061   -2.66658e-07   4.01154e-06 DIIS
+   @ROHF iter   9:   -99.52617135108531   -1.49947e-08   5.37596e-07 DIIS
   Energy converged.
 
 
@@ -1576,42 +1543,42 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -26.962057     2A1    -2.176864     3A1    -1.355356  
-       1B1    -1.246707  
+       1A1   -26.962056     2A1    -2.176864     3A1    -1.355356  
+       1B2    -1.246706  
 
     Singly Occupied:                                                      
 
-       1B2    -0.882971  
+       1B1    -0.882970  
 
     Virtual:                                                              
 
-       4A1    -0.180491     5A1     0.178550     6A1     0.422240  
-       2B2     0.429509     2B1     0.429839     3B2     0.566011  
-       3B1     0.573608     7A1     0.983899     8A1     1.119530  
-       1A2     1.695113     9A1     1.695135    10A1     1.813677  
-       4B2     2.018923     4B1     2.031681    11A1     2.730610  
-       2A2     3.079972    12A1     3.080073     5B2     3.383958  
-       5B1     3.392058    13A1     3.781202     6B2     3.813377  
-       6B1     3.823743    14A1     4.671568     7B2     4.766665  
-       7B1     4.787527    15A1     5.663032     8B2     6.785701  
-       8B1     6.785785     3A2     7.011608    16A1     7.011642  
-       9B2     7.880010     9B1     7.916625    17A1     7.935700  
-      18A1     8.266300     4A2     8.266602    10B2     8.711859  
-      10B1     8.748989    19A1     9.100782    20A1    12.050440  
+       4A1    -0.180491     5A1     0.178550     6A1     0.422241  
+       2B1     0.429509     2B2     0.429839     3B1     0.566011  
+       3B2     0.573608     7A1     0.983899     8A1     1.119530  
+       1A2     1.695114     9A1     1.695136    10A1     1.813677  
+       4B1     2.018923     4B2     2.031681    11A1     2.730610  
+       2A2     3.079972    12A1     3.080073     5B1     3.383958  
+       5B2     3.392058    13A1     3.781202     6B1     3.813377  
+       6B2     3.823743    14A1     4.671568     7B1     4.766665  
+       7B2     4.787527    15A1     5.663032     8B1     6.785701  
+       8B2     6.785785     3A2     7.011608    16A1     7.011643  
+       9B1     7.880011     9B2     7.916625    17A1     7.935701  
+      18A1     8.266301     4A2     8.266603    10B1     8.711859  
+      10B2     8.748989    19A1     9.100782    20A1    12.050440  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    0 ]
-    SOCC [     0,    0,    0,    1 ]
+    DOCC [     3,    0,    0,    1 ]
+    SOCC [     0,    0,    1,    0 ]
 
-  @ROHF Final Energy:   -99.52617135121240
+  @ROHF Final Energy:   -99.52617135108531
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -144.7572776200485407
-    Two-Electron Energy =                  39.9481391074051970
-    Total Energy =                        -99.5261713512123976
+    One-Electron Energy =                -144.7572499551081648
+    Two-Electron Energy =                  39.9481114425919088
+    Total Energy =                        -99.5261713510853099
 
 Computation Completed
 
@@ -1633,19 +1600,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3272     Total:     2.3272
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:31 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:00 2019
 Module time:
 	user time   =       0.12 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.06 seconds =       0.02 minutes
+	user time   =       1.03 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 	ROHF energy, CORE guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:31 2018
+*** at Fri Jan  4 15:14:00 2019
 
    => Loading Basis Set <=
 
@@ -1714,10 +1681,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       0       0       1
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       4       4       1
    -------------------------------------------------------
@@ -1759,25 +1726,15 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    0,    1 ]
-    SOCC [     1,    0,    0,    0 ]
-
-   @ROHF iter   1:   -94.35585144644557   -9.43559e+01   1.78830e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    0,    1 ]
-    SOCC [     0,    0,    1,    0 ]
-
-   @ROHF iter   2:   -97.10719850733254   -2.75135e+00   6.76387e-02 DIIS
-   @ROHF iter   3:   -99.25835680276901   -2.15116e+00   3.25568e-02 DIIS
-   @ROHF iter   4:   -99.51398971553218   -2.55633e-01   5.88017e-03 DIIS
-   @ROHF iter   5:   -99.52595624841956   -1.19665e-02   5.44037e-04 DIIS
-   @ROHF iter   6:   -99.52616175284240   -2.05504e-04   1.09006e-04 DIIS
-   @ROHF iter   7:   -99.52617123234572   -9.47950e-06   1.12144e-05 DIIS
-   @ROHF iter   8:   -99.52617134700064   -1.14655e-07   3.00064e-06 DIIS
-   @ROHF iter   9:   -99.52617135121889   -4.21825e-09   1.86028e-07 DIIS
+   @ROHF iter   1:   -94.35585144644557   -9.43559e+01   1.78830e-01 DIIS
+   @ROHF iter   2:   -97.74862418157667   -3.39277e+00   7.00348e-02 DIIS
+   @ROHF iter   3:   -99.37530742984110   -1.62668e+00   2.52341e-02 DIIS
+   @ROHF iter   4:   -99.52287871000358   -1.47571e-01   3.08104e-03 DIIS
+   @ROHF iter   5:   -99.52612552903291   -3.24682e-03   3.64369e-04 DIIS
+   @ROHF iter   6:   -99.52617114228762   -4.56133e-05   2.38100e-05 DIIS
+   @ROHF iter   7:   -99.52617133771889   -1.95431e-07   3.71102e-06 DIIS
+   @ROHF iter   8:   -99.52617134988091   -1.21620e-08   1.20710e-06 DIIS
+   @ROHF iter   9:   -99.52617135123243   -1.35152e-09   1.04670e-07 DIIS
   Energy converged.
 
 
@@ -1788,8 +1745,8 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -26.962057     2A1    -2.176864     3A1    -1.355356  
-       1B2    -1.246707  
+       1A1   -26.962056     2A1    -2.176864     3A1    -1.355356  
+       1B2    -1.246706  
 
     Singly Occupied:                                                      
 
@@ -1800,30 +1757,30 @@ Total time:
        4A1    -0.180491     5A1     0.178550     6A1     0.422240  
        2B1     0.429509     2B2     0.429839     3B1     0.566011  
        3B2     0.573608     7A1     0.983899     8A1     1.119530  
-       1A2     1.695113     9A1     1.695135    10A1     1.813677  
+       1A2     1.695114     9A1     1.695135    10A1     1.813677  
        4B1     2.018923     4B2     2.031681    11A1     2.730610  
        2A2     3.079972    12A1     3.080073     5B1     3.383958  
        5B2     3.392058    13A1     3.781202     6B1     3.813377  
-       6B2     3.823743    14A1     4.671568     7B1     4.766664  
+       6B2     3.823743    14A1     4.671568     7B1     4.766665  
        7B2     4.787527    15A1     5.663032     8B1     6.785701  
        8B2     6.785785     3A2     7.011608    16A1     7.011642  
-       9B1     7.880010     9B2     7.916625    17A1     7.935700  
-      18A1     8.266300     4A2     8.266602    10B1     8.711859  
-      10B2     8.748989    19A1     9.100782    20A1    12.050439  
+       9B1     7.880010     9B2     7.916625    17A1     7.935701  
+      18A1     8.266301     4A2     8.266603    10B1     8.711859  
+      10B2     8.748989    19A1     9.100782    20A1    12.050440  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    0,    1 ]
     SOCC [     0,    0,    1,    0 ]
 
-  @ROHF Final Energy:   -99.52617135121889
+  @ROHF Final Energy:   -99.52617135123243
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -144.7572982261189054
-    Two-Electron Energy =                  39.9481597134690745
-    Total Energy =                        -99.5261713512188919
+    One-Electron Energy =                -144.7572871760333726
+    Two-Electron Energy =                  39.9481486633699916
+    Total Energy =                        -99.5261713512324349
 
 Computation Completed
 
@@ -1845,19 +1802,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3272     Total:     2.3272
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:31 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:00 2019
 Module time:
 	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.18 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       1.15 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 	ROHF energy, GWH  guess (a.u.)....................................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Dec 16 21:53:31 2018
+*** at Fri Jan  4 15:14:00 2019
 
    => Loading Basis Set <=
 
@@ -1926,10 +1883,10 @@ Total time:
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        20      20       0       0       0       0
+     A1        20      20       3       3       3       0
      A2         4       4       0       0       0       0
-     B1        10      10       0       0       0       0
-     B2        10      10       0       0       0       0
+     B1        10      10       1       0       0       1
+     B2        10      10       1       1       1       0
    -------------------------------------------------------
     Total      44      44       5       4       4       1
    -------------------------------------------------------
@@ -1971,14 +1928,15 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   0:   -98.88199282615329   -9.88820e+01   5.47587e-02 
-   @ROHF iter   1:   -99.37308671364974   -4.91094e-01   2.39373e-02 
-   @ROHF iter   2:   -99.49928041819270   -1.26194e-01   1.06275e-02 DIIS
-   @ROHF iter   3:   -99.52603046506722   -2.67500e-02   5.31814e-04 DIIS
-   @ROHF iter   4:   -99.52616482892887   -1.34364e-04   1.51898e-04 DIIS
-   @ROHF iter   5:   -99.52617125059395   -6.42167e-06   1.09997e-05 DIIS
-   @ROHF iter   6:   -99.52617134223544   -9.16415e-08   2.95519e-06 DIIS
-   @ROHF iter   7:   -99.52617135114004   -8.90459e-09   3.40166e-07 DIIS
+   @ROHF iter   0:    37.35213783948360    3.73521e+01   0.00000e+00 
+   @ROHF iter   1:   -98.88199282615329   -1.36234e+02   5.47587e-02 DIIS
+   @ROHF iter   2:   -99.37308671364978   -4.91094e-01   2.39373e-02 DIIS
+   @ROHF iter   3:   -99.52506651519126   -1.51980e-01   1.60839e-03 DIIS
+   @ROHF iter   4:   -99.52612487148858   -1.05836e-03   3.72093e-04 DIIS
+   @ROHF iter   5:   -99.52617068447651   -4.58130e-05   3.55283e-05 DIIS
+   @ROHF iter   6:   -99.52617130679995   -6.22323e-07   6.69049e-06 DIIS
+   @ROHF iter   7:   -99.52617134939349   -4.25935e-08   1.37357e-06 DIIS
+   @ROHF iter   8:   -99.52617135123218   -1.83869e-09   1.08978e-07 DIIS
   Energy converged.
 
 
@@ -1990,7 +1948,7 @@ Total time:
     Doubly Occupied:                                                      
 
        1A1   -26.962057     2A1    -2.176864     3A1    -1.355356  
-       1B2    -1.246706  
+       1B2    -1.246707  
 
     Singly Occupied:                                                      
 
@@ -1999,32 +1957,32 @@ Total time:
     Virtual:                                                              
 
        4A1    -0.180491     5A1     0.178550     6A1     0.422240  
-       2B1     0.429509     2B2     0.429839     3B1     0.566010  
+       2B1     0.429509     2B2     0.429839     3B1     0.566011  
        3B2     0.573608     7A1     0.983899     8A1     1.119530  
-       1A2     1.695113     9A1     1.695135    10A1     1.813676  
+       1A2     1.695114     9A1     1.695135    10A1     1.813677  
        4B1     2.018923     4B2     2.031681    11A1     2.730610  
-       2A2     3.079972    12A1     3.080073     5B1     3.383957  
+       2A2     3.079972    12A1     3.080073     5B1     3.383958  
        5B2     3.392058    13A1     3.781202     6B1     3.813377  
-       6B2     3.823743    14A1     4.671567     7B1     4.766665  
+       6B2     3.823743    14A1     4.671568     7B1     4.766665  
        7B2     4.787527    15A1     5.663032     8B1     6.785701  
        8B2     6.785785     3A2     7.011608    16A1     7.011642  
-       9B1     7.880010     9B2     7.916625    17A1     7.935700  
+       9B1     7.880010     9B2     7.916625    17A1     7.935701  
       18A1     8.266300     4A2     8.266603    10B1     8.711859  
-      10B2     8.748989    19A1     9.100782    20A1    12.050439  
+      10B2     8.748989    19A1     9.100782    20A1    12.050440  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    0,    1 ]
     SOCC [     0,    0,    1,    0 ]
 
-  @ROHF Final Energy:   -99.52617135114004
+  @ROHF Final Energy:   -99.52617135123218
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.2829671614309497
-    One-Electron Energy =                -144.7572799169074642
-    Two-Electron Energy =                  39.9481414043364822
-    Total Energy =                        -99.5261713511400359
+    One-Electron Energy =                -144.7572894497901359
+    Two-Electron Energy =                  39.9481509371270107
+    Total Energy =                        -99.5261713512321791
 
 Computation Completed
 
@@ -2046,18 +2004,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3272     Total:     2.3272
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Dec 16 21:53:31 2018
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Fri Jan  4 15:14:01 2019
 Module time:
 	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.40 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.37 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 	ROHF energy, SAD  guess (a.u.)....................................PASSED
 
-    Psi4 stopped on: Sunday, 16 December 2018 09:53PM
-    Psi4 wall time for execution: 0:00:01.51
+    Psi4 stopped on: Friday, 04 January 2019 03:14PM
+    Psi4 wall time for execution: 0:00:01.44
 
 *** Psi4 exiting successfully. Buy a developer a beer!
