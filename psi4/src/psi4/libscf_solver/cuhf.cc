@@ -212,7 +212,7 @@ void CUHF::form_initial_F() {
 
     Fa_->copy(H_);
     for (const auto& Vext : external_potentials_) {
-      Fa_->add(Vext);
+        Fa_->add(Vext);
     }
     Fa_->add(Fp_);
 
@@ -291,14 +291,14 @@ void CUHF::form_F() {
     // Build the modified alpha and beta Fock matrices
     Fa_->copy(H_);
     for (const auto& Vext : external_potentials_) {
-      Fa_->add(Vext);
+        Fa_->add(Vext);
     }
     Fa_->add(Fp_);
     Fa_->add(Fm_);
 
     Fb_->copy(H_);
     for (const auto& Vext : external_potentials_) {
-      Fb_->add(Vext);
+        Fb_->add(Vext);
     }
     Fb_->add(Fp_);
     Fb_->subtract(Fm_);

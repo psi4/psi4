@@ -349,7 +349,7 @@ void ROHF::form_initial_F() {
     Fa_->copy(H_);
     Fa_->add(Ga_);
     for (const auto& Vext : external_potentials_) {
-      Fa_->add(Vext);
+        Fa_->add(Vext);
     }
     Fb_->copy(Fa_);
 
@@ -468,9 +468,9 @@ void ROHF::form_initial_C() {
     find_occupation();
 
     if (debug_) {
-      Ca_->print("outfile");
-      outfile->Printf("In ROHF::form_initial_C:\n");
-      Ct_->eivprint(epsilon_a_);
+        Ca_->print("outfile");
+        outfile->Printf("In ROHF::form_initial_C:\n");
+        Ct_->eivprint(epsilon_a_);
     }
 }
 
