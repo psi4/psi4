@@ -196,9 +196,9 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
 
     SharedMolecule mymol = mol ? mol : molecule_;
 
-    if (local == "FALSE") {
+    if (local == "FALSE" or local == "0") {
         return 0;
-    } else if (local == "TRUE") {
+    } else if (local == "TRUE" or local == "1") {
         int num_frozen_el = 0;
         int mol_valence = -1 * mymol->molecular_charge();
         int largest_shell = 0;
@@ -230,7 +230,32 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         if (mol_valence <= 0) num_frozen_el -= _period_to_full_shell(largest_shell - 1) - _period_to_full_shell(largest_shell - 2);
         return num_frozen_el/2;
     } else {
-        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
+        // Options are filtered in read_options.cc; allowed strings are:
+        // TRUE, FALSE, -1, -2, -3
+        int req_shell = -std::stoi(local, nullptr, 10);
+        int num_frozen_el = 0;
+        int mol_valence = -1 * mymol->molecular_charge();
+        // Freeze the number of core electrons strictly corresponding to the
+        // requested previous n-th shell.
+        for (int A = 0; A < mymol->natom(); A++) {
+            double Z = mymol->Z(A);
+            // Exclude ghosted atoms from core-freezing
+            if (Z > 0) {
+                // Add ECPs to Z, the number of electrons less ECP-treated electrons
+                int ECP = n_ecp_core(mymol->label(A));
+                int current_shell = _atom_to_period(Z + ECP);
+                int delta = _period_to_full_shell(current_shell - req_shell);
+                // If this center has an ECP, some electrons are already frozen
+                if (ECP > 0) delta -= ECP;
+                // Keep track of current valence electrons
+                mol_valence = mol_valence + Z - delta;
+                num_frozen_el += delta;
+            }
+        }
+        // If we are about to end up with no valence electrons,
+        // throw an exception.
+        if (mol_valence <= 0) throw PSIEXCEPTION("Cannot freeze the requested previous shell: valence <= 0.");
+        return num_frozen_el/2;
     }
 }
 

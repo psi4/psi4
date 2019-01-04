@@ -109,7 +109,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     of orbitals to freeze, program picks the lowest-energy orbitals)
     or |globals__frozen_docc| (gives the number of orbitals to freeze per
     irreducible representation) -*/
-    options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
+    options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE 1 0 -1 -2 -3");
 
     options.add("NUM_GPUS", 1);
     /*- Do use pure angular momentum basis functions?
