@@ -363,8 +363,8 @@ def compare_fcidumps(expected, computed, label):
         message = ("\tComputed FCIDUMP file header does not match expected header.\n")
         raise TestComparisonError(header_diff)
 
-    ref_energies = _energies_from_fcidump(ref_intdump)
-    energies = _energies_from_fcidump(intdump)
+    ref_energies = energies_from_fcidump(ref_intdump)
+    energies = energies_from_fcidump(intdump)
 
     pass_1el = compare_values(ref_energies['ONE-ELECTRON ENERGY'], energies['ONE-ELECTRON ENERGY'], 7,
                               label + '. 1-electron energy')
@@ -381,7 +381,7 @@ def compare_fcidumps(expected, computed, label):
     return True
 
 
-def _energies_from_fcidump(intdump):
+def energies_from_fcidump(intdump):
     energies = {}
     energies['NUCLEAR REPULSION ENERGY'] = intdump['enuc']
     epsilon = intdump['epsilon']
