@@ -357,14 +357,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 # Run DIIS
                 core.timer_on("HF: DIIS")
                 diis_performed = False
-                add_to_diis_subspace = False
-
-                if self.diis_enabled_ and self.iteration_ >= self.diis_start_:
-                    add_to_diis_subspace = True
+                add_to_diis_subspace = self.diis_enabled_ and self.iteration_ >= self.diis_start_
 
                 Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-                if (add_to_diis_subspace + core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
+                if (add_to_diis_subspace and core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
                     diis_performed = self.diis()
 
                 if diis_performed:
