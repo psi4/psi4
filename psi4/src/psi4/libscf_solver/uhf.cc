@@ -80,6 +80,7 @@ UHF::UHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func, Opti
 UHF::~UHF() {}
 
 void UHF::common_init() {
+    name_ = "UHF";
     Drms_ = 0.0;
     // TODO: Move that to the base object
     step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");

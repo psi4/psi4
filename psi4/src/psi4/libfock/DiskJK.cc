@@ -53,6 +53,9 @@ namespace psi {
 DiskJK::DiskJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary), options_(options) { common_init(); }
 DiskJK::~DiskJK() {}
 void DiskJK::common_init() {}
+size_t DiskJK::memory_estimate() {
+    return 0; // Effectively zero
+}
 void DiskJK::print_header() const {
     if (print_) {
         outfile->Printf("  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");

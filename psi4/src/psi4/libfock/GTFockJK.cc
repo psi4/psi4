@@ -43,6 +43,9 @@ struct MinimalInterface {
 #ifdef ENABLE_GTFOCK
 namespace psi {
 GTFockJK::GTFockJK(std::shared_ptr<psi::BasisSet> Primary) : JK(Primary), Impl_(new MinimalInterface()) {}
+size_t GTFockJK::estimate_memory() {
+    return 0; // Effectively
+}
 void GTFockJK::compute_JK() {
     NMats_ = C_left_.size();
     Impl_->create_pfock(NMats_, lr_symmetric_);

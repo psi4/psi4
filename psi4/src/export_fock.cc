@@ -51,8 +51,15 @@ void export_fock(py::module &m) {
                     [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
                         return JK::build_JK(basis, aux, Process::environment.options);
                     })
+        .def_static("build_JK",
+                    [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux, bool do_wK, size_t doubles) {
+                        return JK::build_JK(basis, aux, Process::environment.options, do_wK, doubles);
+                    })
+        .def("name", &JK::name)
+        .def("memory_estimate", &JK::memory_estimate)
         .def("initialize", &JK::initialize)
         .def("basisset", &JK::basisset)
+        .def("set_print", &JK::set_print)
         .def("set_cutoff", &JK::set_cutoff)
         .def("set_memory", &JK::set_memory)
         .def("set_omp_nthread", &JK::set_omp_nthread)
@@ -79,6 +86,9 @@ void export_fock(py::module &m) {
         .def("wK", &JK::wK, py::return_value_policy::reference_internal)
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("print_header", &JK::print_header, "docstring");
+
+    py::class_<MemDFJK, std::shared_ptr<MemDFJK>, JK>(m, "MemDFJK", "docstring")
+        .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())

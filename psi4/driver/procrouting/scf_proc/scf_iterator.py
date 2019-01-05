@@ -100,6 +100,31 @@ def scf_compute_energy(self):
     scf_energy = self.finalize_energy()
     return scf_energy
 
+def _build_jk(wfn, memory):
+    jk = core.JK.build(
+        wfn.get_basisset("ORBITAL"),
+        aux=wfn.get_basisset("DF_BASIS_SCF"),
+        do_wK=wfn.functional().is_x_lrc(),
+        memory=memory)
+    return jk
+
+def initialize_jk(self, memory, jk=None):
+
+    functional = self.functional()
+    if jk is None:
+        jk = _build_jk(self, memory)
+
+    self.set_jk(jk)
+
+    jk.set_print(self.get_print())
+    jk.set_memory(memory)
+    jk.set_do_K(functional.is_x_hybrid())
+    jk.set_do_wK(functional.is_x_lrc())
+    jk.set_omega(functional.x_omega())
+
+    jk.initialize()
+    jk.print_header()
+
 
 def scf_initialize(self):
     """Specialized initialization, compute integrals and does everything to prepare for iterations"""
@@ -120,17 +145,9 @@ def scf_initialize(self):
     else:
         collocation_size = 0
 
-
     # Change allocation for collocation matrices based on DFT type
-    scf_type = core.get_global_option('SCF_TYPE').upper()
-    nbf = self.get_basisset("ORBITAL").nbf()
-    naux = self.get_basisset("DF_BASIS_SCF").nbf()
-    if "DIRECT" == scf_type:
-        jk_size = total_memory * 0.1
-    elif scf_type.endswith('DF'):
-        jk_size = naux * nbf * nbf
-    else:
-        jk_size = nbf ** 4
+    jk = _build_jk(self, total_memory)
+    jk_size = jk.memory_estimate()
 
     # Give remaining to collocation
     if total_memory > jk_size:
@@ -150,9 +167,12 @@ def scf_initialize(self):
     self.memory_collocation_ = int(collocation_memory)
 
     # Print out initial docc/socc/etc data
-    if core.get_option('SCF', "PRINT") > 0:
+    if self.get_print():
         core.print_out("  ==> Pre-Iterations <==\n\n")
         self.print_preiterations()
+
+    if self.get_print():
+        core.print_out("  ==> Integral Setup <==\n\n")
 
     # Initialize EFP
     efp_enabled = hasattr(self.molecule(), 'EFP')
@@ -175,7 +195,7 @@ def scf_initialize(self):
             mints.set_rel_basisset(self.get_basisset('BASIS_RELATIVISTIC'))
 
         mints.one_electron_integrals()
-        self.initialize_jk(self.memory_jk_)
+        self.initialize_jk(self.memory_jk_, jk=jk)
         if self.V_potential():
             self.V_potential().build_collocation_cache(self.memory_collocation_)
 
@@ -645,6 +665,7 @@ def scf_print_energies(self):
 
 # Bind functions to core.HF class
 core.HF.initialize = scf_initialize
+core.HF.initialize_jk = initialize_jk
 core.HF.iterations = scf_iterate
 core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy

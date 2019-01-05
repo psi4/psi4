@@ -125,13 +125,29 @@ core.Wavefunction.build = _core_wavefunction_build
 
 @staticmethod
 def _core_wavefunction_from_file(wfn_data):
+    """Summary
 
+    Parameters
+    ----------
+    wfn_data : str or dict
+        If a str reads a Wavefunction from a disk otherwise, assumes the data
+        is passed in.
+
+    Returns
+    -------
+    Wavefunction
+        A deserialized Wavefunction object
+    """
     # load the wavefunction from file
-    if isinstance(wfn_data, str):
-        wfn_data = np.load(wfn_data + '.npy').item()
-    # otherwise a dictionary was passed in
-    else:
+    if isinstance(wfn_data, dict):
         pass
+    elif isinstance(wfn_data, str):
+        if not wfn_data.endswith(".npy"):
+            wfn_data = wfn_data + ".npy"
+        wfn_data = np.load(wfn_data).item()
+    else:
+        # Could be path-like or file-like, let `np.load` handle it
+        wfn_data = np.load(wfn_data).item()
 
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
@@ -163,15 +179,15 @@ def _core_wavefunction_from_file(wfn_data):
 
     for label in wfn_vector:
         array = wfn_vector[label]
-        wfn_vector[label] = core.Vector.from_array(array, name=label) if array else None
+        wfn_vector[label] = core.Vector.from_array(array, name=label) if array is not None else None
 
     for label in wfn_dimension:
         tup = wfn_dimension[label]
-        wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup else None
+        wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup is not None else None
 
     for label in wfn_matrixarr:
         array = wfn_dimension[label]
-        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array else None
+        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array is not None else None
 
     # make the wavefunction
     wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int, wfn_string,
@@ -189,11 +205,25 @@ def _core_wavefunction_from_file(wfn_data):
 core.Wavefunction.from_file = _core_wavefunction_from_file
 
 
-@staticmethod
 def _core_wavefunction_to_file(wfn, filename=None):
+    """Converts a Wavefunction object to a base class
+
+    Parameters
+    ----------
+    wfn : Wavefunction
+        A Wavefunction or inherited class
+    filename : None, optional
+        An optional filename to write the data to
+
+    Returns
+    -------
+    dict
+        A dictionary and NumPy representation of the Wavefunction.
+
+    """
+
     # collect the wavefunction's variables in a dictionary indexed by varaible type
     # some of the data types have to be made numpy-friendly first
-
     if wfn.basisset().name().startswith("anonymous"):
         raise ValidationError("Cannot serialize wavefunction with custom basissets.")
 
@@ -261,8 +291,8 @@ def _core_wavefunction_to_file(wfn, filename=None):
 
     if filename is not None:
         np.save(filename, wfn_data)
-    else:
-        return wfn_data
+
+    return wfn_data
 
 
 core.Wavefunction.to_file = _core_wavefunction_to_file
@@ -271,7 +301,7 @@ core.Wavefunction.to_file = _core_wavefunction_to_file
 
 
 @staticmethod
-def _core_jk_build(orbital_basis, aux=None, jk_type=None):
+def _core_jk_build(orbital_basis, aux=None, jk_type=None, do_wK=None, memory=None):
     """
     Constructs a Psi4 JK object from an input basis.
 
@@ -317,11 +347,14 @@ def _core_jk_build(orbital_basis, aux=None, jk_type=None):
     if aux is None:
         if core.get_global_option("SCF_TYPE") == "DF":
             aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF", core.get_option("SCF", "DF_BASIS_SCF"),
-                                      "JKFIT", core.get_global_option('BASIS'), orbital_basis.has_puream())
+                                      "JKFIT", orbital_basis.name(), orbital_basis.has_puream())
         else:
             aux = core.BasisSet.zero_ao_basis_set()
 
-    jk = core.JK.build_JK(orbital_basis, aux)
+    if (do_wK is None) or (memory is None):
+        jk = core.JK.build_JK(orbital_basis, aux)
+    else:
+        jk = core.JK.build_JK(orbital_basis, aux, bool(do_wK), int(memory))
 
     optstash.restore()
     return jk
@@ -729,7 +762,6 @@ def _core_wavefunction_set_frequencies(cls, val):
 core.Wavefunction.frequencies = _core_wavefunction_frequencies
 core.Wavefunction.legacy_frequencies = _core_wavefunction_legacy_frequencies
 core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
-
 
 ## Psi4 v1.3 Export Deprecations
 

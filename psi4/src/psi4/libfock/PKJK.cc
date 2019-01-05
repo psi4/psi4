@@ -63,6 +63,10 @@ void PKJK::common_init() {
     nthreads_ = Process::environment.get_n_threads();
 #endif
 }
+size_t PKJK::memory_estimate() {
+    size_t nbf = (size_t)primary_->nbf();
+    return nbf * nbf * nbf * nbf;
+}
 
 bool PKJK::C1() const { return true; }
 

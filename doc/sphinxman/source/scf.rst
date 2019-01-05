@@ -59,14 +59,14 @@ An illustrative example of using the SCF module is as follows::
     O
     O 1 1.21
     }
-    
+
     set {
     basis cc-pvdz
     guess sad
     reference uhf
     scf_type direct
     }
-    
+
     energy('scf')
 
 This will run a UHF computation for triplet molecular oxygen (the ground state)
@@ -116,7 +116,7 @@ printed, and some bookkeeping is performed to set up possible correlated
 computations. Additional one-electron properties are available by increasing the
 |globals__print| option. Also printed are the occupied and virtual orbital energies,
 which are useful in elucidating the stability and reactivity of the system.
-  
+
 .. index::
    pair: SCF; theory
 
@@ -135,8 +135,8 @@ constrained variational parameters in Hartree--Fock. The molecular orbitals are
 used to build the simplest possible antisymmetric wavefunction, a single Slater
 determinant,
 
-.. math:: | \Psi_0 \rangle = 
-    \frac{1}{\sqrt{N!}} \left | \begin{array}{cccc} 
+.. math:: | \Psi_0 \rangle =
+    \frac{1}{\sqrt{N!}} \left | \begin{array}{cccc}
     \psi_1 (\vec x_1) & \psi_2(\vec x_1) & \ldots & \psi_N (\vec x_1) \\
     \psi_1 (\vec x_2) & \psi_2(\vec x_2) & \ldots & \psi_N (\vec x_2) \\
     \vdots & \vdots & \ddots & \vdots \\
@@ -155,12 +155,12 @@ Considering the electronic Hamiltonian,
 
 the Hartree--Fock energy is, by Slater's rules,
 
-.. math:: E_{\mathrm{HF}} = 
-    \langle \Psi_0 | \hat H | \Psi_0 \rangle 
-    = \sum_{i} \langle i | \hat h | i \rangle 
+.. math:: E_{\mathrm{HF}} =
+    \langle \Psi_0 | \hat H | \Psi_0 \rangle
+    = \sum_{i} \langle i | \hat h | i \rangle
     + \frac 1 2 \sum_{i,j} [ii|jj] - [ij|ji]
 
-.. math:: = 
+.. math:: =
     D_{\mu\nu}^\alpha \left(H_{\mu\nu} + F_{\mu\nu}^{\alpha} \right)
     + D_{\mu\nu}^\beta \left(H_{\mu\nu} + F_{\mu\nu}^{\beta} \right)
 
@@ -174,13 +174,13 @@ electron-nuclear attraction and kinetic energy,
 :math:`D` is the AO-basis density matrix, build from the occupied orbital
 coefficients,
 
-.. math:: D_{\mu\nu}^{\alpha} = 
+.. math:: D_{\mu\nu}^{\alpha} =
     C_{\mu i}^{\alpha} C_{\nu i}^{\alpha},
 
 and :math:`F` is the Fock matrix, which is the effective one-body potential at
 the current value of the density,
 
-.. math:: F_{\mu\nu}^{\alpha} = H_{\mu\nu} 
+.. math:: F_{\mu\nu}^{\alpha} = H_{\mu\nu}
     + \underbrace{\left(D_{\lambda\sigma}^{\alpha} + D_{\lambda\sigma}^{\beta}\right)
     (\mu\nu|\lambda\sigma)}_{J}
     + \underbrace{D_{\lambda\sigma}^{\alpha} (\mu\lambda|\sigma\nu)}_{K^{\alpha}}
@@ -188,12 +188,12 @@ the current value of the density,
 Here the tensor :math:`(\mu\nu|\lambda\sigma)` is an AO Electron-Repulsion
 Integral (ERI) in chemists' notation,
 
-.. math:: (\mu\nu|\lambda\sigma) = \iint_{\mathbb{R}^6} 
-    \phi_{\mu} (\vec r_1) 
-    \phi_{\nu} (\vec r_1) 
+.. math:: (\mu\nu|\lambda\sigma) = \iint_{\mathbb{R}^6}
+    \phi_{\mu} (\vec r_1)
+    \phi_{\nu} (\vec r_1)
     \frac{1}{r_{12}}
-    \phi_{\lambda} (\vec r_2) 
-    \phi_{\sigma} (\vec r_2) 
+    \phi_{\lambda} (\vec r_2)
+    \phi_{\sigma} (\vec r_2)
     \ \mathrm{d}^3 r_1
     \ \mathrm{d}^3 r_2.
 
@@ -209,26 +209,26 @@ The eigenvalues :math:`\epsilon` are the orbital energies, and the metric matrix
 Note that the Fock Matrix depends on the density (both alpha and beta), and
 therefore the orbitals. Because of this, SCF is a nonlinear procedure, which
 terminates when the generating orbitals are self-consistent with the Fock matrix
-they generate. 
+they generate.
 
 The formation of the Coulomb matrix :math:`J` and the exchange matrix
 :math:`K^{\alpha}` dominate the computational effort of the SCF procedure. For
 very large systems, diagonalization of the Fock matrix can also present a
-significant hurdle. 
+significant hurdle.
 
 Minimal Input
 ~~~~~~~~~~~~~
 
 Minimal input for a Hartree--Fock computation is a molecule block, basis set
 option, and a call to ``energy('scf')``::
-    
+
     molecule {
     He
     }
 
-    set basis sto-3g 
-    
-    energy('scf') 
+    set basis sto-3g
+
+    energy('scf')
 
 This will run a Restricted Hartree--Fock (RHF) on neutral singlet Helium in
 :math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-6
@@ -259,10 +259,10 @@ Unrestricted Hartree--Fock (UHF)
 Restricted Open-Shell Hartree--Fock (ROHF)
   Appropriate for open-shell systems where spin-contamination is problem.
   Sometimes more difficult to converge, and assumes uniformly positive spin
-  polarization (the alpha and beta doubly-occupied orbitals are identical). 
+  polarization (the alpha and beta doubly-occupied orbitals are identical).
 Constrained Unrestricted Hartree--Fock (CUHF)
   A variant of ROHF that starts from a UHF ansatz and is therefore often
-  easier to converge. 
+  easier to converge.
 
 These can be invoked by the |scf__reference| keyword, which defaults to ``RHF``.
 The charge and multiplicity may either be specified in the molecule definition::
@@ -276,19 +276,19 @@ or, dynamically, by setting the relevant attributes in the Python molecule
 object::
 
     h.set_molecular_charge(0)
-    h.set_multiplicity(2) 
+    h.set_multiplicity(2)
 
 Abelian spatial symmetry is fully supported in |PSIfour| and can be used to
 obtain physical interpretation of the molecular orbitals, to assist in difficult
 convergence cases, and, in some methods, to obtain significant performance
 gains. The point group of the molecule is inferred when reading the molecule
 section, and may be overridden by the :ref:`symmetry <sec:moleculeKeywords>` flag, as in::
-    
+
     molecule h {
     0 2
-    H 
+    H
     symmetry c1
-    } 
+    }
 
 or by the ``reset_point_group`` Python molecule attribute::
 
@@ -304,7 +304,7 @@ actually,::
 
     molecule h2o {
     0 1
-    O 
+    O
     H 1 1.0
     H 1 1.0 2 104.5
     }
@@ -373,15 +373,15 @@ below::
     H 1 1.0 2 104.5
     symmetry c2  # Two irreps is easier to comprehend
     }
-    
+
     set {
-    s_tolerance 0.0001      # Set an unreasonably tight 
+    s_tolerance 0.0001      # Set an unreasonably tight
                             # tolerance to force canonical
-    basis aug-cc-pv5z       # This diffuse basis will have 
+    basis aug-cc-pv5z       # This diffuse basis will have
                             # small-ish eigenvalues for even H2O
     print 3
     }
-    
+
     energy('scf')
 
 Output::
@@ -427,7 +427,7 @@ should be noted that SCF is a chaotic process, and, as such, often requires
 careful selection of initial orbitals and damping during iterations to ensure
 convergence. This is particularly likely for large systems, metallic systems,
 multireference systems, open-shell systems, anions, and systems with diffuse
-basis sets. 
+basis sets.
 
 For initial orbital selection, several options are available. These include:
 
@@ -442,7 +442,7 @@ SAD [:term:`Default <GUESS (SCF)>`]
     open-shell system, uniform scaling of the spin-averaged density matrices is
     performed. If orbitals are needed (*e.g.*, in density fitting), a partial
     Cholesky factorization of the density matrices is used. Often extremely
-    accurate, particularly for closed-shell systems. 
+    accurate, particularly for closed-shell systems.
 GWH [:term:`Default <GUESS (SCF)>`]
     Generalized Wolfsberg-Helmholtz, a simple H\ |u_dots|\ ckel-Theory-like method based on
     the overlap and core Hamiltonian matrices. May be useful in open-shell systems.
@@ -455,7 +455,7 @@ READ
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
-casting up to the true basis. This can be done by adding  
+casting up to the true basis. This can be done by adding
 |scf__basis_guess| = SMALL_BASIS to the options list. We recommend the
 3-21G basis for the small basis due to its efficient mix of flexibility and
 compactness. An example of performing an RHF solution of water by SAD guessing
@@ -467,13 +467,13 @@ in a 3-21G basis and then casting up to cc-pVTZ is shown below::
     H 1 1.0
     H 1 1.0 2 104.5
     }
-    
+
     set {
-    basis cc-pvtz 
+    basis cc-pvtz
     basis_guess 3-21G
     guess sad
     }
-    
+
     energy('scf')
 
 
@@ -511,11 +511,11 @@ MOM [Off by Default]
     lowest total energy occurs on iterations :math:`N,N+2,\ldots`, invoking
     |scf__mom_start| ``N`` can often rescue the convergence of the SCF. MOM can
     be used in concert with DIIS, though care should be taken to not turn MOM on
-    until the oscillatory behavior begins. 
+    until the oscillatory behavior begins.
 Damping [Off by Default]
     In some cases, a static mixing of Fock Matrices from adjacent iterations can
     quench oscillations. This mixing, known as "damping" can be activated by setting
-    the |scf__damping_percentage| keyword to a nonzero percent. 
+    the |scf__damping_percentage| keyword to a nonzero percent.
 SOSCF [Off by Default]
     See :ref:`sec:soscf`
 
@@ -593,7 +593,7 @@ sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications).
 
 We have added the automatic capability to use the extremely fast DF
-code for intermediate convergence of the orbitals, for |globals__scf_type| 
+code for intermediate convergence of the orbitals, for |globals__scf_type|
 ``DIRECT``. At the moment, the code defaults to cc-pVDZ-JKFIT as the
 auxiliary basis, unless the user specifies |scf__df_basis_scf| manually. For
 some atoms, cc-pVDZ-JKFIT is not defined, so a very large fitting basis of last
@@ -633,10 +633,10 @@ the microiterations typically results in the overall cost being greater for
 SOSCF than for gradient-based methods. Therefore, SOSCF should only be used if
 it is difficult to locate a stable minimum.
 
-SOSCF is only available for RHF, ROHF, and UHF reference (and only for HF, not DFT).
-To turn on, simply set
-the option |scf__soscf| to ``true``. Additional options to modify the number of
-microiterations taken are as follows:
+SOSCF is available for all HF and DFT references with the exception of meta-
+GGA functionals. To enable, set the option |scf__soscf| to ``true``.
+Additional options to modify the number of microiterations taken are as
+follows:
 
     |scf__soscf_start_convergence|: when to start SOSCF based on the current density RMS
 
@@ -652,18 +652,18 @@ microiterations taken are as follows:
 Stability Analysis
 ~~~~~~~~~~~~~~~~~~
 
-SCF algorithms attempt to minimize the gradient of the energy with respect  
+SCF algorithms attempt to minimize the gradient of the energy with respect
 to orbital variation parameters. At convergence, the gradient should be approximately zero
 given a convergence criterion. Although this is enough to make sure the SCF converged to a
-stationary point, this is not a sufficient condition for a minimal SCF solution. It may be 
+stationary point, this is not a sufficient condition for a minimal SCF solution. It may be
 a saddle point or a maximum.
 
 To ensure that a minimum has been found, the electronic Hessian, *i.e.* the matrix of second
-derivatives of the energy with respect to orbital variation parameters, must be computed. 
-If one or more eigenvalues of the electronic Hessian are negative, the SCF solution is not a minimum. 
+derivatives of the energy with respect to orbital variation parameters, must be computed.
+If one or more eigenvalues of the electronic Hessian are negative, the SCF solution is not a minimum.
 In that case, orbital parameters can be varied along the lowest Hessian eigenvector to lower the energy.
 
-Orbital variation parameters are usually constrained. For example, in RHF the 
+Orbital variation parameters are usually constrained. For example, in RHF the
 spatial parts of the :math:`\alpha` and :math:`\beta` orbitals are the same. In
 UHF, the orbital coefficients are usually constrained to be real. A stability analysis
 can check whether a lower SCF solution exists while respecting the constraints of the original
@@ -672,8 +672,8 @@ a lower-energy solution, there is an external instability. In |PSIfour|, the onl
 that can be checked at present is the RHF :math:`\rightarrow` UHF one.
 
 Currently, two algorithms exist in |PSIfour| for stability analysis: the original
-Direct Inversion and the newly implemented Davidson algorithms. We will first describe 
-options common to both algorithms. To request a stability analysis at the end of the SCF, 
+Direct Inversion and the newly implemented Davidson algorithms. We will first describe
+options common to both algorithms. To request a stability analysis at the end of the SCF,
 set the keyword |scf__stability_analysis|. Value ``CHECK`` only computes the electronic
 Hessian eigenvalue and checks if an actual SCF minimum has been found, while value ``FOLLOW``
 rotates the converged orbitals along the lowest eigenvector, then invokes the SCF
@@ -687,7 +687,7 @@ if the instability still exists. For more attempts, set |scf__max_attempts|;
 the default value of 1 is recommended. In case the SCF ends up in the same minimum, modification
 of |scf__follow_step_scale| is recommended over increasing |scf__max_attempts|.
 
-.. note:: Setting the option |scf__stability_analysis| to ``FOLLOW`` is only avalible for UHF. When using 
+.. note:: Setting the option |scf__stability_analysis| to ``FOLLOW`` is only avalible for UHF. When using
    RHF and ROHF instabilities can be checked, but not followed. If you want to attempt to find a lower energy solution
    you should re-run the calculation with |scf__reference| set to ``UHF``.
 
@@ -697,7 +697,7 @@ matrix before explicitly inverting it. As such, this algorithm is very slow and 
 be avoided whenever possible. Direct Inversion is automatically invoked if the newer algorithm
 is not available.
 
-The Davidson algorithm for stability analysis was implemented recently. 
+The Davidson algorithm for stability analysis was implemented recently.
 Only the lowest eigenvalues of the electronic Hessian are computed, and Hessian-vector
 products are computed instead of the full Hessian. This algorithm is thus
 much more efficient than the Direct Inversion, but at present, it is only available for UHF :math:`\rightarrow` UHF stability
@@ -720,36 +720,36 @@ analysis. The capabilities of both algorithms are summarized below:
 The best algorithm is automatically selected, *i.e.* Davidson for UHF :math:`\rightarrow` UHF and Direct Inversion otherwise.
 
 In addition to the options available for Direct Inversion, the Davidson algorithm can automatically
-adapt |scf__follow_step_scale| to find a new SCF minimum. If |scf__max_attempts| > 1, additional attempts 
-will automatically increment |scf__follow_step_scale| by 0.2 every time the SCF falls back to the previously 
+adapt |scf__follow_step_scale| to find a new SCF minimum. If |scf__max_attempts| > 1, additional attempts
+will automatically increment |scf__follow_step_scale| by 0.2 every time the SCF falls back to the previously
 found unstable minimum. The increment can be adjusted by setting |scf__follow_step_increment|.
 The default value is 0.2; adjust if needed to try different values of |scf__follow_step_scale| in a single computation.
 
 The Davidson solver for the eigenvalues is controlled through several keywords. In the following
-we only report the most pertinent for stability analysis, see documentation for the :ref:`CPHF <apdx:cphf>` 
+we only report the most pertinent for stability analysis, see documentation for the :ref:`CPHF <apdx:cphf>`
 module for a complete list.
-Some default values were modified for the stability analysis code, in that case they are 
+Some default values were modified for the stability analysis code, in that case they are
 explicitly indicated here.
 
   |cphf__solver_maxiter|: maximum number of iterations
 
-  |cphf__solver_convergence|: eigenvector convergence threshold 
+  |cphf__solver_convergence|: eigenvector convergence threshold
 
   |cphf__solver_n_root|: Solve for N eigenvectors in each irreducible representation
 
   |cphf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Default within this context: 3
 
-  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing. 
+  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing.
 
   |cphf__solver_max_subspace|: Maximum size of the subspace. Default within this context: 12
-   
+
 
 In case convergence problems are encountered during the Davidson procedure,
-it is recommended to first increase |cphf__solver_max_subspace|, especially if you solve 
+it is recommended to first increase |cphf__solver_max_subspace|, especially if you solve
 for a large number of roots. This will result in a higher computational cost of each iteration, but should
 make the solver better behaved. However, note that |cphf__solver_max_subspace| should never be larger than
-the full subspace minus the number of desired roots to avoid adding artificial zero eigenvalues. 
-This may happen in minimal basis sets, especially with symmetry, but the code automatically adjusts 
+the full subspace minus the number of desired roots to avoid adding artificial zero eigenvalues.
+This may happen in minimal basis sets, especially with symmetry, but the code automatically adjusts
 |cphf__solver_max_subspace| if it is too large.
 If the solver seems to converge on the wrong eigenvalue, try increasing |cphf__solver_n_guess|.
 Otherwise, if the solver is almost converged but reaches the maximum number of iterations, try increasing
@@ -779,7 +779,7 @@ External potentials and QM/MM
 
 In addition to the implementation of :ref:`EFP <sec:libefp>` for accurate QM/MM
 computations, |PSIfour| can perform more rudimentary QM/MM procedures via the
-|scf__extern| keyword.  The following snippet, extracted from the 
+|scf__extern| keyword.  The following snippet, extracted from the
 :srcsample:`extern1` test case, demonstrates its use for a TIP3P external potential::
 
     Chrgfield = QMMM()
@@ -852,7 +852,7 @@ Convergence and Algorithm Defaults
     +--------------------+--------------------+----------------------+-------------------------+
 
 .. rubric:: Footnotes
- 
+
 .. [#f1] Note that this table applies only the SCF module,
    not to the final convergence criteria for post-HF methods or to methods
    that use an alternate starting point, like MCSCF. SAPT computations, too,
@@ -863,10 +863,10 @@ Convergence and Algorithm Defaults
 .. [#f3] Post-HF methods that do not rely upon the usual 4-index AO integrals use a
    density-fitted SCF reference. That is, for DF-MP2 and SAPT, the default |globals__scf_type| is DF.
 
-.. [#f4] Note that this table applies to the final convergence criteria for 
+.. [#f4] Note that this table applies to the final convergence criteria for
    all the post-SCF modules that define a |ccenergy__e_convergence| keyword.
 
-.. [#f5] The E_CONVERGENCE keyword is implemented for most post-SCF modules. 
+.. [#f5] The E_CONVERGENCE keyword is implemented for most post-SCF modules.
    See a list beginning at |ccenergy__e_convergence|.
 
 .. [#f6] The R_CONVERGENCE keyword places a convergence check on an internal
@@ -903,7 +903,7 @@ practical calculations:
   ``DIRECT``.
 * Don't mess with the DIIS convergence options unless convergence is a problem.
   We have optimized the parameters for efficiency over a wide array of system
-  types.  
+  types.
 * Buy a developer a beer!
 
 The "best-practice" input file for HF is::

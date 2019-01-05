@@ -82,17 +82,17 @@ void DFTensor::common_init() {
     nfocc_ = nocc_ - naocc_;
     nfvir_ = nvir_ - navir_;
 
-    nso_ = C_->rowspi()[0];
+    nbf_ = primary_->nbf();
     nmo_ = C_->colspi()[0];
 
-    Caocc_ = std::make_shared<Matrix>("C active occupied", nso_, naocc_);
-    Cavir_ = std::make_shared<Matrix>("C active virtual", nso_, navir_);
+    Caocc_ = std::make_shared<Matrix>("C active occupied", nbf_, naocc_);
+    Cavir_ = std::make_shared<Matrix>("C active virtual", nbf_, navir_);
 
     double** Cp = C_->pointer();
     double** Cop = Caocc_->pointer();
     double** Cvp = Cavir_->pointer();
 
-    for (int m = 0; m < nso_; m++) {
+    for (int m = 0; m < nbf_; m++) {
         C_DCOPY(naocc_, &Cp[m][nfocc_], 1, Cop[m], 1);
         C_DCOPY(navir_, &Cp[m][nocc_], 1, Cvp[m], 1);
     }
@@ -126,8 +126,8 @@ void DFTensor::build_metric() {
     }
 }
 SharedMatrix DFTensor::Qso() {
-    auto B = std::make_shared<Matrix>("Bso", naux_, nso_ * nso_);
-    auto A = std::make_shared<Matrix>("Aso", naux_, nso_ * nso_);
+    auto B = std::make_shared<Matrix>("Bso", naux_, nbf_ * nbf_);
+    auto A = std::make_shared<Matrix>("Aso", naux_, nbf_ * nbf_);
     double** Ap = A->pointer();
     double** Bp = B->pointer();
     double** Jp = metric_->pointer();
@@ -153,7 +153,7 @@ SharedMatrix DFTensor::Qso() {
                 for (int p = 0, index = 0; p < np; p++) {
                     for (int m = 0; m < nm; m++) {
                         for (int n = 0; n < nn; n++, index++) {
-                            Bp[p + pstart][(m + mstart) * nso_ + (n + nstart)] = buffer[index];
+                            Bp[p + pstart][(m + mstart) * nbf_ + (n + nstart)] = buffer[index];
                         }
                     }
                 }
@@ -161,7 +161,7 @@ SharedMatrix DFTensor::Qso() {
         }
     }
 
-    C_DGEMM('N', 'N', naux_, nso_ * nso_, naux_, 1.0, Jp[0], naux_, Bp[0], nso_ * nso_, 0.0, Ap[0], nso_ * nso_);
+    C_DGEMM('N', 'N', naux_, nbf_ * nbf_, naux_, 1.0, Jp[0], naux_, Bp[0], nbf_ * nbf_, 0.0, Ap[0], nbf_ * nbf_);
 
     if (debug_) {
         metric_->print();
@@ -169,20 +169,20 @@ SharedMatrix DFTensor::Qso() {
         A->print();
     }
     // Build numpy and final matrix shape
-    std::vector<int> nshape{naux_, nso_, nso_};
+    std::vector<int> nshape{naux_, nbf_, nbf_};
     A->set_numpy_shape(nshape);
 
     return A;
 }
 SharedMatrix DFTensor::Qoo() {
     SharedMatrix Amn = Qso();
-    auto Ami = std::make_shared<Matrix>("Ami", naux_, naocc_ * (size_t)nso_);
+    auto Ami = std::make_shared<Matrix>("Ami", naux_, naocc_ * (size_t)nbf_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cop = Caocc_->pointer();
 
-    C_DGEMM('N', 'N', naux_ * (size_t)nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_, 0.0, Amip[0], naocc_);
+    C_DGEMM('N', 'N', naux_ * (size_t)nbf_, naocc_, nbf_, 1.0, Amnp[0], nbf_, Cop[0], naocc_, 0.0, Amip[0], naocc_);
 
     Amn.reset();
 
@@ -190,7 +190,7 @@ SharedMatrix DFTensor::Qoo() {
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
-        C_DGEMM('T', 'N', naocc_, naocc_, nso_, 1.0, Amip[Q], naocc_, Cop[0], naocc_, 0.0, Aiap[Q], naocc_);
+        C_DGEMM('T', 'N', naocc_, naocc_, nbf_, 1.0, Amip[Q], naocc_, Cop[0], naocc_, 0.0, Aiap[Q], naocc_);
     }
 
     if (debug_) {
@@ -206,14 +206,14 @@ SharedMatrix DFTensor::Qoo() {
 }
 SharedMatrix DFTensor::Qov() {
     SharedMatrix Amn = Qso();
-    auto Ami = std::make_shared<Matrix>("Qmi", naux_, naocc_ * (size_t)nso_);
+    auto Ami = std::make_shared<Matrix>("Qmi", naux_, naocc_ * (size_t)nbf_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cop = Caocc_->pointer();
     double** Cvp = Cavir_->pointer();
 
-    C_DGEMM('N', 'N', naux_ * (size_t)nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_, 0.0, Amip[0], naocc_);
+    C_DGEMM('N', 'N', naux_ * (size_t)nbf_, naocc_, nbf_, 1.0, Amnp[0], nbf_, Cop[0], naocc_, 0.0, Amip[0], naocc_);
 
     Amn.reset();
 
@@ -222,7 +222,7 @@ SharedMatrix DFTensor::Qov() {
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
-        C_DGEMM('T', 'N', naocc_, navir_, nso_, 1.0, Amip[Q], naocc_, Cvp[0], navir_, 0.0, Aiap[Q], navir_);
+        C_DGEMM('T', 'N', naocc_, navir_, nbf_, 1.0, Amip[Q], naocc_, Cvp[0], navir_, 0.0, Aiap[Q], navir_);
     }
 
     if (debug_) {
@@ -239,13 +239,13 @@ SharedMatrix DFTensor::Qov() {
 }
 SharedMatrix DFTensor::Qvv() {
     SharedMatrix Amn = Qso();
-    auto Ami = std::make_shared<Matrix>("Qmi", naux_, navir_ * (size_t)nso_);
+    auto Ami = std::make_shared<Matrix>("Qmi", naux_, navir_ * (size_t)nbf_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cvp = Cavir_->pointer();
 
-    C_DGEMM('N', 'N', naux_ * (size_t)nso_, navir_, nso_, 1.0, Amnp[0], nso_, Cvp[0], navir_, 0.0, Amip[0], navir_);
+    C_DGEMM('N', 'N', naux_ * (size_t)nbf_, navir_, nbf_, 1.0, Amnp[0], nbf_, Cvp[0], navir_, 0.0, Amip[0], navir_);
 
     Amn.reset();
 
@@ -253,7 +253,7 @@ SharedMatrix DFTensor::Qvv() {
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
-        C_DGEMM('T', 'N', navir_, navir_, nso_, 1.0, Amip[Q], navir_, Cvp[0], navir_, 0.0, Aiap[Q], navir_);
+        C_DGEMM('T', 'N', navir_, navir_, nbf_, 1.0, Amip[Q], navir_, Cvp[0], navir_, 0.0, Aiap[Q], navir_);
     }
 
     if (debug_) {
@@ -269,13 +269,13 @@ SharedMatrix DFTensor::Qvv() {
 }
 SharedMatrix DFTensor::Qmo() {
     SharedMatrix Amn = Qso();
-    auto Ami = std::make_shared<Matrix>("Qmi", naux_, nmo_ * (size_t)nso_);
+    auto Ami = std::make_shared<Matrix>("Qmi", naux_, nmo_ * (size_t)nbf_);
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cvp = C_->pointer();
 
-    C_DGEMM('N', 'N', naux_ * (size_t)nso_, nmo_, nso_, 1.0, Amnp[0], nso_, Cvp[0], nmo_, 0.0, Amip[0], nmo_);
+    C_DGEMM('N', 'N', naux_ * (size_t)nbf_, nmo_, nbf_, 1.0, Amnp[0], nbf_, Cvp[0], nmo_, 0.0, Amip[0], nmo_);
 
     Amn.reset();
 
@@ -283,7 +283,7 @@ SharedMatrix DFTensor::Qmo() {
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
-        C_DGEMM('T', 'N', nmo_, nmo_, nso_, 1.0, Amip[Q], nmo_, Cvp[0], nmo_, 0.0, Aiap[Q], nmo_);
+        C_DGEMM('T', 'N', nmo_, nmo_, nbf_, 1.0, Amip[Q], nmo_, Cvp[0], nmo_, 0.0, Aiap[Q], nmo_);
     }
 
     if (debug_) {

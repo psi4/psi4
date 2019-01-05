@@ -2307,7 +2307,7 @@ Dimension Matrix::power(double alpha, double cutoff) {
         double max_a = (std::fabs(a[n - 1]) > std::fabs(a[0]) ? std::fabs(a[n - 1]) : std::fabs(a[0]));
         int remain = 0;
         for (int i = 0; i < n; i++) {
-            if (alpha < 0.0 && std::fabs(a[i]) < cutoff * max_a)
+            if (alpha < 0.0 && (std::fabs(a[i]) < cutoff * max_a))
                 a[i] = 0.0;
             else {
                 a[i] = pow(a[i], alpha);

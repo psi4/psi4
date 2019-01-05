@@ -69,6 +69,24 @@ void DiskDFJK::common_init() {
     is_core_ = true;
     psio_ = PSIO::shared_object();
 }
+size_t DiskDFJK::memory_estimate() {
+    // DF requires constant sieve, must be static throughout object life
+    if (!sieve_) {
+        sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
+    }
+
+    size_t ntri = sieve_->function_pairs().size();
+    size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
+    size_t two_memory = 2 * ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
+
+    if (do_wK_) { three_memory *= 3; }
+
+    size_t memory = three_memory + two_memory;
+    memory += memory_overhead();
+    memory += memory_temp();
+
+    return memory;
+}
 SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
     // Target quantity
     Dimension dim(Ci->nirrep());
@@ -267,20 +285,8 @@ void DiskDFJK::print_header() const {
         auxiliary_->print_by_level("outfile", print_);
     }
 }
-bool DiskDFJK::is_core() const {
-    size_t ntri = sieve_->function_pairs().size();
-    size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
-    size_t two_memory = ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
-
-    size_t mem = memory_;
-    mem -= memory_overhead();
-    mem -= memory_temp();
-
-    // Two is for buffer space in fitting
-    if (do_wK_)
-        return (3L * three_memory + 2L * two_memory < memory_);
-    else
-        return (three_memory + 2L * two_memory < memory_);
+bool DiskDFJK::is_core() {
+    return memory_estimate() < memory_;
 }
 size_t DiskDFJK::memory_temp() const {
     size_t mem = 0L;
@@ -391,6 +397,7 @@ void DiskDFJK::free_w_temps() {
     Q_temp_.clear();
 }
 void DiskDFJK::preiterations() {
+
     // DF requires constant sieve, must be static throughout object life
     if (!sieve_) {
         sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
@@ -590,7 +597,7 @@ void DiskDFJK::initialize_JK_core() {
     timer_on("JK: (A|Q)^-1/2");
 
     auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
-    Jinv->form_eig_inverse();
+    Jinv->form_eig_inverse(condition_);
     double** Jinvp = Jinv->get_metric()->pointer();
 
     timer_off("JK: (A|Q)^-1/2");

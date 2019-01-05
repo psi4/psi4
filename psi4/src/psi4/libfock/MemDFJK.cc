@@ -62,6 +62,11 @@ MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 MemDFJK::~MemDFJK() {}
 
 void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_); }
+size_t MemDFJK::memory_estimate() {
+    dfh_->set_nthreads(omp_nthread_);
+    dfh_->set_schwarz_cutoff(cutoff_);
+    return dfh_->get_core_size();
+}
 
 void MemDFJK::preiterations() {
     // Initialize calls your derived class's preiterations member
@@ -75,16 +80,6 @@ void MemDFJK::preiterations() {
     dfh_->set_memory(memory_ - memory_overhead());
     dfh_->set_do_wK(do_wK_);
     dfh_->set_omega(omega_);
-
-    // This is a very subtle issue that only happens if the auxiliary is cartesian.
-    // It should be noted that this bug does not show up in the 3-index transform.
-    if (!auxiliary_->has_puream()) {
-        std::stringstream error;
-        error << "\nDFHelper (MemDFJK): Cannot do cartesian auxiliary functions. Please use the\n";
-        error << "                    SCF_TYPE = DF to automatically select the correct DF JK\n";
-        error << "                    backend implementation or choose DISK_DF for this computation.";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
 
     // we need to prepare the AOs here, and that's it.
     // DFHelper takes care of all the housekeeping

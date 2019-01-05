@@ -1286,43 +1286,33 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
     psi_scratch = core.IOManager.shared_object().get_default_path()
-    read_filename = os.path.join(psi_scratch, fname + ".180.npz")
+    read_filename = os.path.join(psi_scratch, fname + ".180.npy")
 
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
-        data = np.load(read_filename)
-        Ca_occ = core.Matrix.np_read(data, "Ca_occ")
-        Cb_occ = core.Matrix.np_read(data, "Cb_occ")
-        symmetry = str(data["symmetry"])
-        basis_name = str(data["BasisSet"])
 
-        if symmetry != scf_molecule.schoenflies_symbol():
+        old_wfn = core.Wavefunction.from_file(read_filename)
+        Ca_occ = old_wfn.Ca_subset("SO", "OCC")
+        Cb_occ = old_wfn.Cb_subset("SO", "OCC")
+
+        if old_wfn.molecule().schoenflies_symbol() != scf_molecule.schoenflies_symbol():
             raise ValidationError("Cannot compute projection of different symmetries.")
 
-        if basis_name == scf_wfn.basisset().name():
+        if old_wfn.basisset().name() == scf_wfn.basisset().name():
             core.print_out("  Reading orbitals from file 180, no projection.\n\n")
             scf_wfn.guess_Ca(Ca_occ)
             scf_wfn.guess_Cb(Cb_occ)
         else:
             core.print_out("  Reading orbitals from file 180, projecting to new basis.\n\n")
+            core.print_out("  Computing basis projection from %s to %s\n\n" % (old_wfn.basisset().name(), scf_wfn.basisset().name()))
 
-            puream = int(data["BasisSet PUREAM"])
-
-            if ".gbs" in basis_name:
-                basis_name = basis_name.split('/')[-1].replace('.gbs', '')
-
-            old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
-            core.print_out("  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
-
-            nalphapi = core.Dimension.from_list(data["nalphapi"])
-            nbetapi = core.Dimension.from_list(data["nbetapi"])
-            pCa = scf_wfn.basis_projection(Ca_occ, nalphapi, old_basis, base_wfn.basisset())
-            pCb = scf_wfn.basis_projection(Cb_occ, nbetapi, old_basis, base_wfn.basisset())
+            pCa = scf_wfn.basis_projection(Ca_occ, old_wfn.nalphapi(), old_wfn.basisset(), scf_wfn.basisset())
+            pCb = scf_wfn.basis_projection(Cb_occ, old_wfn.nbetapi(), old_wfn.basisset(), scf_wfn.basisset())
             scf_wfn.guess_Ca(pCa)
             scf_wfn.guess_Cb(pCb)
 
         # Strip off headers to only get R, RO, U, CU
-        old_ref = str(data["reference"]).replace("KS", "").replace("HF", "")
-        new_ref = core.get_option('SCF', 'REFERENCE').replace("KS", "").replace("HF", "")
+        old_ref = old_wfn.name().replace("KS", "").replace("HF", "")
+        new_ref = scf_wfn.name().replace("KS", "").replace("HF", "")
         if old_ref != new_ref:
             scf_wfn.reset_occ_ = True
 
@@ -1416,26 +1406,8 @@ def scf_helper(name, post_scf=True, **kwargs):
     # Write out orbitals and basis; Can be disabled, e.g., for findif displacements
     if kwargs.get('write_orbitals', True):
         fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
-        write_filename = os.path.join(psi_scratch, fname + ".180.npz")
-        data = {}
-        data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
-        data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
-
-        Ca_occ = scf_wfn.Ca_subset("SO", "OCC")
-        data.update(Ca_occ.np_write(None, prefix="Ca_occ"))
-
-        Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
-        data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
-
-        data["reference"] = core.get_option('SCF', 'REFERENCE')
-        data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
-        data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
-        data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
-        data["nbetapi"] = scf_wfn.nbetapi().to_tuple()
-        data["symmetry"] = scf_molecule.schoenflies_symbol()
-        data["BasisSet"] = scf_wfn.basisset().name()
-        data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
-        np.savez(write_filename, **data)
+        write_filename = os.path.join(psi_scratch, fname + ".180.npy")
+        scf_wfn.to_file(write_filename)
         extras.register_numpy_file(write_filename)
 
     if do_timer:

@@ -65,7 +65,7 @@ DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
     primary_ = primary;
     aux_ = aux;
 
-    nao_ = primary_->nbf();
+    nbf_ = primary_->nbf();
     naux_ = aux_->nbf();
     prepare_blocking();
 }
@@ -168,12 +168,15 @@ void DFHelper::initialize() {
     if (!(std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
 
     // prepare sparsity masks
-    timer_on("DFH: sparsity prep");
     prepare_sparsity();
-    timer_off("DFH: sparsity prep");
 
     // figure out AO_core
     AO_core();
+    if (print_lvl_ > 0) {
+        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
+                        (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
+        outfile->Printf("%s in-core AOs.\n\n", (memory_ < required_core_size_) ? "Turning off" : "Using");
+    }
 
     // prepare AOs for STORE method
     if (AO_core_) {
@@ -202,61 +205,64 @@ void DFHelper::initialize() {
     }
 }
 void DFHelper::AO_core() {
-    size_t required;
+    prepare_sparsity();
 
     if (direct_iaQ_) {
         // the direct_iaQ method does not use sparse storage
         // if do_wK added to code, the following will need to be changed to match
-        required = naux_ * nao_ * nao_;
+        required_core_size_ = naux_ * nbf_ * nbf_;
     } else {
         // total size of sparse AOs
-        required = (do_wK_ ? 3 * big_skips_[nao_] : big_skips_[nao_]);
+        required_core_size_ = (do_wK_ ? 3 * big_skips_[nbf_] : big_skips_[nbf_]);
     }
+
+    // Auxiliary metric
+    required_core_size_ += naux_ * naux_;
 
     // C_buffers (conservative estimate since I do not have max_nocc TODO)
-    required += nthreads_ * nao_ * nao_;
+    required_core_size_ += nthreads_ * nbf_ * nbf_;
 
-    // Tmp buffers (again, I do not have max_nocc TODO)
-    required += 3 * nao_ * nao_ * Qshell_max_;
+    // Tmp buffers
+    required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
     // a fraction of memory to use, do we want it as an option?
-    if (memory_ < required) AO_core_ = false;
-
-    if (print_lvl_ > 0) {
-        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
-                        (required * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
-        outfile->Printf("%s in-core AOs.\n\n", (memory_ < required) ? "Turning off" : "Using");
-    }
+    if (memory_ < required_core_size_) AO_core_ = false;
 }
 void DFHelper::print_header() {
+    // Preps any required metadata, safe to call multiple times
+    get_core_size();
+
     outfile->Printf("  ==> DFHelper <==\n");
-    outfile->Printf("    nao:                     %11ld\n", nao_);
-    outfile->Printf("    naux:                    %11ld\n", naux_);
-    outfile->Printf("    Schwarz cutoff:          %11.0E\n", cutoff_);
+    outfile->Printf("    NBF:                     %11ld\n", nbf_);
+    outfile->Printf("    NAux:                    %11ld\n", naux_);
+    outfile->Printf("    Schwarz Cutoff:          %11.0E\n", cutoff_);
     outfile->Printf("    Mask sparsity (%%):       %11.0f\n", 100. * ao_sparsity());
     outfile->Printf("    DFH Avail. Memory [GiB]: %11.3f\n", (memory_ * 8L) / ((double)(1024L * 1024L * 1024L)));
     outfile->Printf("    OpenMP threads:          %11d\n", nthreads_);
     outfile->Printf("    Algorithm:               %11s\n", method_.c_str());
-    outfile->Printf("    AO_core:                 %11s\n", (AO_core_ ? "True" : "False"));
-    outfile->Printf("    MO_core:                 %11s\n", (MO_core_ ? "True" : "False"));
+    outfile->Printf("    AO Core:                 %11s\n", (AO_core_ ? "True" : "False"));
+    outfile->Printf("    MO Core:                 %11s\n", (MO_core_ ? "True" : "False"));
     outfile->Printf("    Hold Metric:             %11s\n", (hold_met_ ? "True" : "False"));
-    outfile->Printf("    Metric Power:            %11.0E\n", mpower_);
-    outfile->Printf("    Fitting condition:       %11.0E\n", condition_);
+    outfile->Printf("    Metric Power:            %11.3f\n", mpower_);
+    outfile->Printf("    Fitting Condition:       %11.0E\n", condition_);
     outfile->Printf("    Q Shell Max:             %11d\n", (int)Qshell_max_);
     outfile->Printf("\n\n");
 }
 
 void DFHelper::prepare_sparsity() {
+    if (sparsity_prepared_) return;
+    timer_on("DFH: sparsity prep");
+
     // prep info vectors
     std::vector<double> shell_max_vals(pshells_ * pshells_, 0.0);
-    std::vector<double> fun_max_vals(nao_ * nao_, 0.0);
+    std::vector<double> fun_max_vals(nbf_ * nbf_, 0.0);
     schwarz_shell_mask_.resize(pshells_ * pshells_);
-    schwarz_fun_mask_.resize(nao_ * nao_);
-    symm_ignored_columns_.resize(nao_);
-    symm_big_skips_.resize(nao_ + 1);
-    symm_small_skips_.resize(nao_);
-    small_skips_.resize(nao_ + 1);
-    big_skips_.resize(nao_ + 1);
+    schwarz_fun_mask_.resize(nbf_ * nbf_);
+    symm_ignored_columns_.resize(nbf_);
+    symm_big_skips_.resize(nbf_ + 1);
+    symm_small_skips_.resize(nbf_);
+    small_skips_.resize(nbf_ + 1);
+    big_skips_.resize(nbf_ + 1);
 
     // prepare eri buffers
     size_t nthreads = (nthreads_ == 1 ? 1 : 2);  // for now
@@ -264,7 +270,7 @@ void DFHelper::prepare_sparsity() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads);
     std::vector<const double*> buffer(nthreads);
 
-#pragma omp parallel num_threads(nthreads) if (nao_ > 1000)
+#pragma omp parallel num_threads(nthreads) if (nbf_ > 1000)
     {
         int rank = 0;
 #ifdef _OPENMP
@@ -275,7 +281,7 @@ void DFHelper::prepare_sparsity() {
     }
 
     double max_val = 0.0;
-#pragma omp parallel for num_threads(nthreads) if (nao_ > 1000) schedule(guided) reduction(max : max_val)
+#pragma omp parallel for num_threads(nthreads) if (nbf_ > 1000) schedule(guided) reduction(max : max_val)
     for (size_t MU = 0; MU < pshells_; ++MU) {
         int rank = 0;
 #ifdef _OPENMP
@@ -285,10 +291,14 @@ void DFHelper::prepare_sparsity() {
         for (size_t NU = 0; NU <= MU; ++NU) {
             size_t numnu = primary_->shell(NU).nfunction();
             eri[rank]->compute_shell(MU, NU, MU, NU);
+
+            // Loop over basis functions inside shell pair
             for (size_t mu = 0; mu < nummu; ++mu) {
                 size_t omu = primary_->shell(MU).function_index() + mu;
                 for (size_t nu = 0; nu < numnu; ++nu) {
                     size_t onu = primary_->shell(NU).function_index() + nu;
+
+                    // Find shell and function maximums
                     if (omu >= onu) {
                         size_t index = mu * (numnu * nummu * numnu + numnu) + nu * (nummu * numnu + 1);
                         double val = fabs(buffer[rank][index]);
@@ -297,9 +307,9 @@ void DFHelper::prepare_sparsity() {
                             shell_max_vals[MU * pshells_ + NU] = val;
                             shell_max_vals[NU * pshells_ + MU] = val;
                         }
-                        if (fun_max_vals[omu * nao_ + onu] <= val) {
-                            fun_max_vals[omu * nao_ + onu] = val;
-                            fun_max_vals[onu * nao_ + omu] = val;
+                        if (fun_max_vals[omu * nbf_ + onu] <= val) {
+                            fun_max_vals[omu * nbf_ + onu] = val;
+                            fun_max_vals[onu * nbf_ + omu] = val;
                         }
                     }
                 }
@@ -314,14 +324,14 @@ void DFHelper::prepare_sparsity() {
     for (size_t i = 0; i < pshells_ * pshells_; i++) schwarz_shell_mask_[i] = (shell_max_vals[i] < tolerance ? 0 : 1);
 
     //#pragma omp parallel for private(count) num_threads(nthreads_)
-    for (size_t i = 0, count = 0; i < nao_; i++) {
+    for (size_t i = 0, count = 0; i < nbf_; i++) {
         count = 0;
-        for (size_t j = 0; j < nao_; j++) {
-            if (fun_max_vals[i * nao_ + j] >= tolerance) {
+        for (size_t j = 0; j < nbf_; j++) {
+            if (fun_max_vals[i * nbf_ + j] >= tolerance) {
                 count++;
-                schwarz_fun_mask_[i * nao_ + j] = count;
+                schwarz_fun_mask_[i * nbf_ + j] = count;
             } else
-                schwarz_fun_mask_[i * nao_ + j] = 0;
+                schwarz_fun_mask_[i * nbf_ + j] = 0;
         }
         small_skips_[i] = count;
     }
@@ -331,24 +341,24 @@ void DFHelper::prepare_sparsity() {
     // small_skips: size of q for each p index.
     big_skips_[0] = 0;
     size_t coltots = 0;
-    for (size_t j = 0; j < nao_; j++) {
+    for (size_t j = 0; j < nbf_; j++) {
         size_t cols = small_skips_[j];
         size_t size = cols * naux_;
         coltots += cols;
         big_skips_[j + 1] = size + big_skips_[j];
     }
-    small_skips_[nao_] = coltots;
+    small_skips_[nbf_] = coltots;
 
     // build indexing skips for sparse, symmetric pQq integrals
     // symm_big_skips: outer indexing jumps. for the p index
     // symm_ignored_columns: number of columns that should be ignored, for a given p index,
     //                              due to triangular symmetry
     // symm_small_skips: size of q for each p index, technically small_skips[p] - symm_ignored_columns[p]
-    for (size_t i = 0; i < nao_; i++) {
+    for (size_t i = 0; i < nbf_; i++) {
         size_t size = 0;
         size_t skip = 0;
-        for (size_t j = 0; j < nao_; j++) {
-            if (schwarz_fun_mask_[i * nao_ + j]) {
+        for (size_t j = 0; j < nbf_; j++) {
+            if (schwarz_fun_mask_[i * nbf_ + j]) {
                 (j >= i ? size++ : skip++);
             }
         }
@@ -357,9 +367,12 @@ void DFHelper::prepare_sparsity() {
     }
 
     symm_big_skips_[0] = 0;
-    for (size_t i = 1; i < nao_ + 1; i++) {
+    for (size_t i = 1; i < nbf_ + 1; i++) {
         symm_big_skips_[i] = symm_big_skips_[i - 1] + symm_small_skips_[i - 1] * naux_;
     }
+
+    sparsity_prepared_ = true;
+    timer_off("DFH: sparsity prep");
 }
 
 void DFHelper::prepare_AO() {
@@ -458,9 +471,9 @@ void DFHelper::prepare_AO_core() {
 
     // allocate final AO vector
     if (direct_iaQ_) {
-        Ppq_ = std::unique_ptr<double[]>(new double[naux_ * nao_ * nao_]);
+        Ppq_ = std::unique_ptr<double[]>(new double[naux_ * nbf_ * nbf_]);
     } else {
-        Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nao_]]);
+        Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
     }
 
     // outfile->Printf("\n    ==> Begin AO Blocked Construction <==\n\n");
@@ -511,7 +524,7 @@ void DFHelper::prepare_AO_core() {
 }
 std::pair<size_t, size_t> DFHelper::pshell_blocks_for_AO_build(const size_t mem, size_t symm,
                                                                std::vector<std::pair<size_t, size_t>>& b) {
-    size_t full_3index = (symm ? big_skips_[nao_] : 0);
+    size_t full_3index = (symm ? big_skips_[nbf_] : 0);
     size_t constraint, end, begin, current, block_size, tmpbs, total, count, largest;
     block_size = tmpbs = total = count = largest = 0;
     for (size_t i = 0; i < pshells_; i++) {
@@ -541,7 +554,7 @@ std::pair<size_t, size_t> DFHelper::pshell_blocks_for_AO_build(const size_t mem,
             if (count == 1 && i != pshells_ - 1) {
                 std::stringstream error;
                 error << "DFHelper: not enough memory for (p shell) AO blocking!"
-                      << " required memory: " << constraint * 8 / (1024 * 1024 * 1024.0) << "[GiB].";
+                      << " required memory: " << constraint * 8 / (1024 * 1024 * 1024.0) << " [GiB].";
                 throw PSIEXCEPTION(error.str().c_str());
             }
             if (constraint > mem) {
@@ -577,16 +590,16 @@ std::pair<size_t, size_t> DFHelper::Qshell_blocks_for_transform(const size_t mem
 
         if (direct_iaQ_) {
             // the direct_iaQ method does not use sparse storage
-            current = (end - begin + 1) * nao_ * nao_;
+            current = (end - begin + 1) * nbf_ * nbf_;
             total += current;
-            total = (AO_core_ ? naux_ * nao_ * nao_ : total);
+            total = (AO_core_ ? naux_ * nbf_ * nbf_ : total);
         } else {
-            current = (end - begin + 1) * small_skips_[nao_];
+            current = (end - begin + 1) * small_skips_[nbf_];
             total += current;
-            total = (AO_core_ ? big_skips_[nao_] : total);
+            total = (AO_core_ ? big_skips_[nbf_] : total);
         }
 
-        size_t constraint = total + (wtmp * nao_ + 2 * wfinal) * tmpbs + extra;
+        size_t constraint = total + (wtmp * nbf_ + 2 * wfinal) * tmpbs + extra;
         // AOs + worst half transformed + worst final
         if (constraint > mem || i == Qshells_ - 1) {
             if (count == 1 && i != Qshells_ - 1) {
@@ -621,14 +634,14 @@ std::tuple<size_t, size_t> DFHelper::Qshell_blocks_for_JK_build(std::vector<std:
     // 2. T3 is always used, includes C_buffers
 
     // K tmps
-    size_t T1 = nao_ * max_nocc;
-    size_t T2 = (lr_symmetric ? nao_ * nao_ : nao_ * max_nocc);
+    size_t T1 = nbf_ * max_nocc;
+    size_t T2 = (lr_symmetric ? nbf_ * nbf_ : nbf_ * max_nocc);
 
     // C_buffers
-    size_t T3 = std::max(nthreads_ * nao_ * nao_, nthreads_ * nao_ * max_nocc);
+    size_t T3 = std::max(nthreads_ * nbf_ * nbf_, nthreads_ * nbf_ * max_nocc);
 
     // total AO buffer size is max if core alg is used, otherwise init to 0
-    size_t total_AO_buffer = (AO_core_ ? big_skips_[nao_] : 0);
+    size_t total_AO_buffer = (AO_core_ ? big_skips_[nbf_] : 0);
 
     size_t block_size = 0, largest = 0;
     for (size_t i = 0, tmpbs = 0, count = 1; i < Qshells_; i++, count++) {
@@ -637,7 +650,7 @@ std::tuple<size_t, size_t> DFHelper::Qshell_blocks_for_JK_build(std::vector<std:
         size_t end = Qshell_aggs_[i + 1] - 1;
 
         // update AO buffer, block sizes
-        size_t current = (end - begin + 1) * small_skips_[nao_];
+        size_t current = (end - begin + 1) * small_skips_[nbf_];
         total_AO_buffer += (AO_core_ ? 0 : current);
         tmpbs += end - begin + 1;
 
@@ -919,7 +932,7 @@ void DFHelper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t sto
     size_t block_size = end - begin + 1;
 
     // stripe the buffer
-    fill(Mp, block_size * nao_ * nao_, 0.0);
+    fill(Mp, block_size * nbf_ * nbf_, 0.0);
 
     // prepare eri buffers
     size_t nthread = nthreads_;
@@ -954,12 +967,12 @@ void DFHelper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t sto
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
                         size_t onu = primary_->shell(NU).function_index() + nu;
-                        if (!schwarz_fun_mask_[omu * nao_ + onu]) {
+                        if (!schwarz_fun_mask_[omu * nbf_ + onu]) {
                             continue;
                         }
                         for (size_t P = 0; P < numP; P++) {
-                            Mp[(PHI + P - begin) * nao_ * nao_ + omu * nao_ + onu] =
-                                Mp[(PHI + P - begin) * nao_ * nao_ + onu * nao_ + omu] =
+                            Mp[(PHI + P - begin) * nbf_ * nbf_ + omu * nbf_ + onu] =
+                                Mp[(PHI + P - begin) * nbf_ * nbf_ + onu * nbf_ + omu] =
                                     buffer[rank][P * nummu * numnu + mu * numnu + nu];
                         }
                     }
@@ -1009,12 +1022,12 @@ void DFHelper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t st
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
                         size_t onu = primary_->shell(NU).function_index() + nu;
-                        if (!schwarz_fun_mask_[omu * nao_ + onu]) {
+                        if (!schwarz_fun_mask_[omu * nbf_ + onu]) {
                             continue;
                         }
                         for (size_t P = 0; P < numP; P++) {
                             Mp[(big_skips_[omu] * block_size) / naux_ + (PHI + P - begin) * small_skips_[omu] +
-                               schwarz_fun_mask_[omu * nao_ + onu] - 1] =
+                               schwarz_fun_mask_[omu * nbf_ + onu] - 1] =
                                 buffer[rank][P * nummu * numnu + mu * numnu + nu];
                         }
                     }
@@ -1030,7 +1043,7 @@ void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t st
     size_t block_size = end - begin + 1;
     size_t startind = big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
-    //    outfile->Printf(", nao index: (%zu, %zu), size: %zu\n", begin, end, block_size);
+    //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
     // prepare eri buffers
     size_t nthread = nthreads_;
@@ -1066,12 +1079,12 @@ void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t st
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
                         size_t onu = primary_->shell(NU).function_index() + nu;
-                        if (!schwarz_fun_mask_[omu * nao_ + onu]) {
+                        if (!schwarz_fun_mask_[omu * nbf_ + onu]) {
                             continue;
                         }
                         for (size_t P = 0; P < numP; P++) {
                             Mp[big_skips_[omu] - startind + (PHI + P) * small_skips_[omu] +
-                               schwarz_fun_mask_[omu * nao_ + onu] - 1] =
+                               schwarz_fun_mask_[omu * nbf_ + onu] - 1] =
                                 buffer[rank][P * nummu * numnu + mu * numnu + nu];
                         }
                     }
@@ -1087,7 +1100,7 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
     size_t block_size = end - begin + 1;
     size_t startind = symm_big_skips_[begin];
     //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
-    //    outfile->Printf(", nao index: (%zu, %zu), size: %zu\n", begin, end, block_size);
+    //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
     // prepare eri buffers
     size_t nthread = nthreads_;
@@ -1103,6 +1116,7 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
         buffer[rank] = eri[rank]->buffer();
     }
 
+// Block over p in pQq 3-index integrals
 #pragma omp parallel for schedule(guided) num_threads(nthread)
     for (size_t MU = start; MU <= stop; MU++) {
         int rank = 0;
@@ -1115,19 +1129,25 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
             if (!schwarz_shell_mask_[MU * pshells_ + NU]) {
                 continue;
             }
+
+            // Loop over Auxiliary index
             for (size_t Pshell = 0; Pshell < Qshells_; Pshell++) {
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
                         size_t onu = primary_->shell(NU).function_index() + nu;
-                        if (!schwarz_fun_mask_[omu * nao_ + onu] || omu > onu) {
+
+                        // Remove sieved integrals or lower triangular
+                        if (!schwarz_fun_mask_[omu * nbf_ + onu] || omu > onu) {
                             continue;
                         }
+
                         for (size_t P = 0; P < numP; P++) {
-                            size_t jump = schwarz_fun_mask_[omu * nao_ + onu] - schwarz_fun_mask_[omu * nao_ + omu];
+                            size_t jump = schwarz_fun_mask_[omu * nbf_ + onu] - schwarz_fun_mask_[omu * nbf_ + omu];
                             size_t ind1 = symm_big_skips_[omu] - startind + (PHI + P) * symm_small_skips_[omu] + jump;
                             Mp[ind1] = buffer[rank][P * nummu * numnu + mu * numnu + nu];
                         }
@@ -1144,7 +1164,7 @@ void DFHelper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     std::string getf = AO_files_[AO_names_[1]];
 
     // presumably not thread safe or inherently sequential, but could revisit
-    for (size_t i = 0, sta = 0; i < nao_; i++) {
+    for (size_t i = 0, sta = 0; i < nbf_; i++) {
         size_t size = block_size * small_skips_[i];
         size_t jump = begin * small_skips_[i];
         get_tensor_AO(getf, &Mp[sta], size, big_skips_[i] + jump);
@@ -1152,11 +1172,11 @@ void DFHelper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     }
 }
 void DFHelper::prepare_metric_core() {
-    timer_on("DFH: metric contsruction");
+    timer_on("DFH: metric construction");
     auto Jinv = std::make_shared<FittingMetric>(aux_, true);
     Jinv->form_fitting_metric();
     metrics_[1.0] = Jinv->get_metric();
-    timer_off("DFH: metric contsruction");
+    timer_off("DFH: metric construction");
 }
 double* DFHelper::metric_prep_core(double pow) {
     bool on = false;
@@ -1176,6 +1196,7 @@ double* DFHelper::metric_prep_core(double pow) {
         metrics_[power] = J;
         timer_off("DFH: metric power");
     }
+
     return metrics_[power]->pointer()[0];
 }
 void DFHelper::prepare_metric() {
@@ -1346,7 +1367,7 @@ void DFHelper::contract_metric(std::string file, double* metp, double* Mp, doubl
 void DFHelper::contract_metric_AO_core(double* Qpq, double* metp) {
 // loop and contract
 #pragma omp parallel for num_threads(nthreads_) schedule(guided)
-    for (size_t j = 0; j < nao_; j++) {
+    for (size_t j = 0; j < nbf_; j++) {
         size_t mi = small_skips_[j];
         size_t skips = big_skips_[j];
         C_DGEMM('N', 'N', naux_, mi, naux_, 1.0, metp, naux_, &Qpq[skips], mi, 0.0, &Ppq_[skips], mi);
@@ -1365,15 +1386,16 @@ void DFHelper::contract_metric_AO_core_symm(double* Qpq, double* metp, size_t be
         size_t skip2 = symm_big_skips_[j] - startind;
         C_DGEMM('N', 'N', naux_, mi, naux_, 1.0, metp, naux_, &Qpq[skip2], mi, 0.0, &Ppq_[skip1 + jump], si);
     }
+
     // copy upper-to-lower
     double* Ppq = Ppq_.get();
 #pragma omp parallel for num_threads(nthreads_) schedule(static)
     for (size_t omu = begin; omu <= end; omu++) {
         for (size_t Q = 0; Q < naux_; Q++) {
-            for (size_t onu = omu + 1; onu < nao_; onu++) {
-                if (schwarz_fun_mask_[omu * nao_ + onu]) {
-                    size_t ind1 = big_skips_[onu] + Q * small_skips_[onu] + schwarz_fun_mask_[onu * nao_ + omu] - 1;
-                    size_t ind2 = big_skips_[omu] + Q * small_skips_[omu] + schwarz_fun_mask_[omu * nao_ + onu] - 1;
+            for (size_t onu = omu + 1; onu < nbf_; onu++) {
+                if (schwarz_fun_mask_[omu * nbf_ + onu]) {
+                    size_t ind1 = big_skips_[onu] + Q * small_skips_[onu] + schwarz_fun_mask_[onu * nbf_ + omu] - 1;
+                    size_t ind2 = big_skips_[omu] + Q * small_skips_[omu] + schwarz_fun_mask_[omu * nbf_ + onu] - 1;
                     Ppq[ind1] = Ppq[ind2];
                 }
             }
@@ -1386,9 +1408,9 @@ void DFHelper::add_space(std::string key, SharedMatrix M) {
 
     if (!built_) {
         throw PSIEXCEPTION("DFHelper:add_space: call initialize() before adding spaces!");
-    } else if (a0 != nao_) {
+    } else if (a0 != nbf_) {
         std::stringstream error;
-        error << "DFHelper:add_space: illegal space (" << key << "), primary axis is not nao";
+        error << "DFHelper:add_space: illegal space (" << key << "), primary axis is not nbf_";
         throw PSIEXCEPTION(error.str().c_str());
     } else if (spaces_.find(key) != spaces_.end()) {
         if (a1 != std::get<1>(spaces_[key])) {
@@ -1531,8 +1553,6 @@ void DFHelper::transform() {
     // outfile->Printf("\n     ==> DFHelper:--Begin Transformations <==\n\n");
 
     size_t nthreads = nthreads_;
-    size_t naux = naux_;
-    size_t nao = nao_;
 
     // reset tranposes (in case the transpose() function was called)
     tsizes_.clear();
@@ -1562,7 +1582,7 @@ void DFHelper::transform() {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        std::vector<double> Cp(nao * wtmp);
+        std::vector<double> Cp(nbf_ * wtmp);
         C_buffers[rank] = Cp;
         eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
@@ -1571,14 +1591,14 @@ void DFHelper::transform() {
     if (MO_core_) {
         for (auto& kv : transf_) {
             size_t size = std::get<1>(spaces_[std::get<0>(kv.second)]) * std::get<1>(spaces_[std::get<1>(kv.second)]);
-            transf_core_[kv.first] = std::unique_ptr<double[]>(new double[size * naux]);
+            transf_core_[kv.first] = std::unique_ptr<double[]>(new double[size * naux_]);
         }
     }
 
     // scope buffer declarations
     {
         // declare buffers
-        std::unique_ptr<double[]> T(new double[max_block * nao * wtmp]);
+        std::unique_ptr<double[]> T(new double[max_block * nbf_ * wtmp]);
         std::unique_ptr<double[]> F(new double[max_block * wfinal]);
         std::unique_ptr<double[]> N;
         double* Tp = T.get();
@@ -1637,7 +1657,7 @@ void DFHelper::transform() {
                 double* Bp = std::get<0>(spaces_[bspace])->pointer()[0];
 
                 // index bump if AOs are in core
-                size_t bump = (AO_core_ ? bcount * nao_ * nao_ : 0);
+                size_t bump = (AO_core_ ? bcount * nbf_ * nbf_ : 0);
 
                 // perform first contraction
                 timer_on("DFH: Total Workflow");
@@ -1645,10 +1665,10 @@ void DFHelper::transform() {
                 timer_on("DFH: 1st Contraction");
                 if (direct_iaQ_) {
                     // (qb)(Q|pq)->(Q|pb)
-                    C_DGEMM('N', 'N', block_size * nao_, bsize, nao_, 1.0, &Mp[bump], nao_, Bp, bsize, 0.0, Tp, bsize);
+                    C_DGEMM('N', 'N', block_size * nbf_, bsize, nbf_, 1.0, &Mp[bump], nbf_, Bp, bsize, 0.0, Tp, bsize);
                 } else {
                     // (bq)(p|Qq)->(p|Qb)
-                    first_transform_pQq(nao, naux, bsize, bcount, block_size, Mp, Tp, Bp, C_buffers);
+                    first_transform_pQq(bsize, bcount, block_size, Mp, Tp, Bp, C_buffers);
                 }
                 timer_off("DFH: 1st Contraction");
                 timer_off("DFH: Total Transform");
@@ -1684,20 +1704,20 @@ void DFHelper::transform() {
                         if (bleft) {
 #pragma omp parallel for num_threads(nthreads_)
                             for (size_t i = 0; i < block_size; i++) {
-                                C_DGEMM('T', 'N', bsize, wsize, nao_, 1.0, &Tp[i * nao_ * bsize], bsize, Wp, wsize, 0.0,
+                                C_DGEMM('T', 'N', bsize, wsize, nbf_, 1.0, &Tp[i * nbf_ * bsize], bsize, Wp, wsize, 0.0,
                                         &Fp[bump + i * wsize * bsize], wsize);
                             }
                         } else {
 // (pw)(Q|pb)->(Q|wb)
 #pragma omp parallel for num_threads(nthreads_)
                             for (size_t i = 0; i < block_size; i++) {
-                                C_DGEMM('T', 'N', wsize, bsize, nao_, 1.0, Wp, wsize, &Tp[i * nao_ * bsize], bsize, 0.0,
+                                C_DGEMM('T', 'N', wsize, bsize, nbf_, 1.0, Wp, wsize, &Tp[i * nbf_ * bsize], bsize, 0.0,
                                         &Fp[bump + i * wsize * bsize], bsize);
                             }
                         }
                     } else {
                         // (pw)(p|Qb)->(w|Qb)
-                        C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0,
+                        C_DGEMM('T', 'N', wsize, block_size * bsize, nbf_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0,
                                 Fp, block_size * bsize);
                     }
                     timer_off("DFH: 2nd Contraction");
@@ -1707,10 +1727,9 @@ void DFHelper::transform() {
                     // put the transformations away
                     timer_on("DFH: MO to disk");
                     if (direct_iaQ_) {
-                        put_transformations_Qpq(naux, begin, end, wsize, bsize, Fp, count + k, bleft);
+                        put_transformations_Qpq(begin, end, wsize, bsize, Fp, count + k, bleft);
                     } else {
-                        put_transformations_pQq(naux, begin, end, block_size, bcount, wsize, bsize, Np, Fp, count + k,
-                                                bleft);
+                        put_transformations_pQq(begin, end, block_size, bcount, wsize, bsize, Np, Fp, count + k, bleft);
                     }
                     timer_off("DFH: MO to disk");
                 }
@@ -1737,7 +1756,7 @@ void DFHelper::transform() {
 
         if (direct_iaQ_) {
             if (MO_core_) {
-                std::unique_ptr<double[]> N(new double[naux * wfinal]);
+                std::unique_ptr<double[]> N(new double[naux_ * wfinal]);
                 double* Np = N.get();
 
                 for (auto& kv : transf_core_) {
@@ -1755,7 +1774,7 @@ void DFHelper::transform() {
             } else {
                 // total size allowed, in doubles
                 size_t total_mem =
-                    (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
+                    (memory_ > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (memory_ - naux_ * naux_) / 2);
 
                 std::unique_ptr<double[]> M(new double[total_mem]);
                 std::unique_ptr<double[]> F(new double[total_mem]);
@@ -1768,9 +1787,9 @@ void DFHelper::transform() {
         } else if (direct_) {
             if (!MO_core_) {
                 // total size allowed, in doubles.
-                // note that memory - naux2 cannot be negative (handled in init)
+                // note that memory - naux_2 cannot be negative (handled in init)
                 size_t total_mem =
-                    (memory_ > wfinal * naux * 2 + naux_ * naux_ ? wfinal * naux : (memory_ - naux_ * naux_) / 2);
+                    (memory_ > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (memory_ - naux_ * naux_) / 2);
 
                 std::unique_ptr<double[]> M(new double[total_mem]);
                 std::unique_ptr<double[]> F(new double[total_mem]);
@@ -1781,7 +1800,7 @@ void DFHelper::transform() {
                     contract_metric(*itr, metp, Mp, Fp, total_mem);
 
             } else {
-                std::unique_ptr<double[]> N(new double[naux * wfinal]);
+                std::unique_ptr<double[]> N(new double[naux_ * wfinal]);
                 double* Np = N.get();
 
                 for (auto& kv : transf_core_) {
@@ -1798,11 +1817,11 @@ void DFHelper::transform() {
                     if (std::get<2>(transf_[kv.first]) == 2) {
                         C_DGEMM('N', 'N', a0 * a1, a2, a2, 1.0, Np, a2, metp, a2, 0.0, Lp, a2);
                     } else if (std::get<2>(transf_[kv.first]) == 0) {
-                        C_DGEMM('N', 'N', a0, a1 * a2, a0, 1.0, metp, naux, Np, a1 * a2, 0.0, Lp, a1 * a2);
+                        C_DGEMM('N', 'N', a0, a1 * a2, a0, 1.0, metp, naux_, Np, a1 * a2, 0.0, Lp, a1 * a2);
                     } else {
 #pragma omp parallel for num_threads(nthreads_)
                         for (size_t i = 0; i < a0; i++) {
-                            C_DGEMM('N', 'N', a1, a2, a1, 1.0, metp, naux, &Np[i * a1 * a2], a2, 0.0, &Lp[i * a1 * a2],
+                            C_DGEMM('N', 'N', a1, a2, a1, 1.0, metp, naux_, &Np[i * a1 * a2], a2, 0.0, &Lp[i * a1 * a2],
                                     a2);
                         }
                     }
@@ -1819,11 +1838,11 @@ void DFHelper::transform() {
     }
 }
 
-void DFHelper::first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t bcount, size_t block_size, double* Mp,
-                                   double* Tp, double* Bp, std::vector<std::vector<double>>& C_buffers) {
+void DFHelper::first_transform_pQq(size_t bsize, size_t bcount, size_t block_size, double* Mp, double* Tp, double* Bp,
+                                   std::vector<std::vector<double>>& C_buffers) {
 // perform first contraction on pQq, thread over p.
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
-    for (size_t k = 0; k < nao_; k++) {
+    for (size_t k = 0; k < nbf_; k++) {
         // truncate transformation matrix according to fun_mask
         size_t sp_size = small_skips_[k];
         size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux_);
@@ -1832,8 +1851,8 @@ void DFHelper::first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        for (size_t m = 0, sp_count = -1; m < nao_; m++) {
-            if (schwarz_fun_mask_[k * nao_ + m]) {
+        for (size_t m = 0, sp_count = -1; m < nbf_; m++) {
+            if (schwarz_fun_mask_[k * nbf_ + m]) {
                 sp_count++;
                 C_DCOPY(bsize, &Bp[m * bsize], 1, &C_buffers[rank][sp_count * bsize], 1);
             }
@@ -1845,8 +1864,7 @@ void DFHelper::first_transform_pQq(size_t nao, size_t naux, size_t bsize, size_t
     }
 }
 
-void DFHelper::put_transformations_Qpq(int naux, int begin, int end, int wsize, int bsize, double* Fp, int ind,
-                                       bool bleft) {
+void DFHelper::put_transformations_Qpq(int begin, int end, int wsize, int bsize, double* Fp, int ind, bool bleft) {
     // incoming transformed integrals to this function are in a Qpq format.
     // if MO_core is on, do nothing
     // else, the buffers are put to disk.
@@ -1866,7 +1884,7 @@ void DFHelper::put_transformations_Qpq(int naux, int begin, int end, int wsize, 
     }
 }
 
-void DFHelper::put_transformations_pQq(int naux, int begin, int end, int rblock_size, int bcount, int wsize, int bsize,
+void DFHelper::put_transformations_pQq(int begin, int end, int rblock_size, int bcount, int wsize, int bsize,
                                        double* Np, double* Fp, int ind, bool bleft) {
     // incoming transformed integrals to this function are in a pQq format.
     // first, the integrals are tranposed to the desired format specified in add_transformation().
@@ -1881,7 +1899,7 @@ void DFHelper::put_transformations_pQq(int naux, int begin, int end, int rblock_
         op = "wb";
         bcount = 0;
     } else {
-        lblock_size = naux;
+        lblock_size = naux_;
     }
 
     if (bleft) {
@@ -2703,9 +2721,6 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     // size checks for C matrices occur in jk.cc
     // computing D occurs inside of jk.cc
 
-    size_t naux = naux_;
-    size_t nao = nao_;
-
     // determine buffer sizes and blocking scheme
     // would love to move this to initialize(), but
     // we would need to know max_nocc_ beforehand
@@ -2730,7 +2745,7 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        C_buffers[rank] = std::vector<double>(nao * std::max(max_nocc, nao));
+        C_buffers[rank] = std::vector<double>(nbf_ * std::max(max_nocc, nbf_));
     }
 
     // declare bufs
@@ -2740,22 +2755,22 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 
     // allocate first Ktmp
     size_t Ktmp_size = (!max_nocc ? totsb * 1 : totsb * max_nocc);
-    Ktmp_size = std::max(Ktmp_size * nao, nthreads_ * naux);  // max necessary
+    Ktmp_size = std::max(Ktmp_size * nbf_, nthreads_ * naux_);  // max necessary
     T1 = std::unique_ptr<double[]>(new double[Ktmp_size]);
+    double* T1p = T1.get();
 
     // if lr_symmetric, we can be more clever with mem usage. T2 is used for both the
     // second tmp in the K build, as well as the completed, pruned J build.
     if (lr_symmetric) {
-        Ktmp_size = nao * nao;  // size for pruned J build
+        Ktmp_size = nbf_ * nbf_;  // size for pruned J build
     } else {
-        Ktmp_size = std::max(nao * nao, Ktmp_size);  // max necessary
+        Ktmp_size = std::max(nbf_ * nbf_, Ktmp_size);  // max necessary
     }
 
     T2 = std::unique_ptr<double[]>(new double[Ktmp_size]);
-    double* T1p = T1.get();
     double* T2p = T2.get();
-    double* Mp;
 
+    double* Mp;
     if (!AO_core_) {
         M = std::unique_ptr<double[]>(new double[tots]);
         Mp = M.get();
@@ -2805,66 +2820,63 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
 void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
                               double* T2p, std::vector<std::vector<double>>& D_buffers, size_t bcount,
                               size_t block_size) {
-    size_t nao = nao_;
-    size_t naux = naux_;
-
     for (size_t i = 0; i < J.size(); i++) {
         // grab orbital spaces
         double* Dp = D[i]->pointer()[0];
         double* Jp = J[i]->pointer()[0];
 
         // initialize Tmp (pQ)
-        fill(T1p, nthreads_ * naux, 0.0);
+        fill(T1p, nthreads_ * naux_, 0.0);
 
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
-        for (size_t k = 0; k < nao; k++) {
+        for (size_t k = 0; k < nbf_; k++) {
             size_t si = small_skips_[k];
             size_t mi = symm_small_skips_[k];
             size_t skip = symm_ignored_columns_[k];
-            size_t jump = (AO_core_ ? big_skips_[k] + bcount * si : (big_skips_[k] * block_size) / naux);
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * si : (big_skips_[k] * block_size) / naux_);
 
             int rank = 0;
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
 
-            for (size_t m = k, sp_count = -1; m < nao; m++) {
-                if (schwarz_fun_mask_[k * nao + m]) {
+            for (size_t m = k, sp_count = -1; m < nbf_; m++) {
+                if (schwarz_fun_mask_[k * nbf_ + m]) {
                     sp_count++;
-                    D_buffers[rank][sp_count] = (m == k ? Dp[nao * k + m] : 2 * Dp[nao * k + m]);
+                    D_buffers[rank][sp_count] = (m == k ? Dp[nbf_ * k + m] : 2 * Dp[nbf_ * k + m]);
                 }
             }
 
             // (Qm)(m) -> (Q)
-            C_DGEMV('N', block_size, mi, 1.0, &Mp[jump + skip], si, &D_buffers[rank][0], 1, 1.0, &T1p[rank * naux], 1);
+            C_DGEMV('N', block_size, mi, 1.0, &Mp[jump + skip], si, &D_buffers[rank][0], 1, 1.0, &T1p[rank * naux_], 1);
         }
 
         // reduce
         for (size_t k = 1; k < nthreads_; k++) {
-            for (size_t l = 0; l < naux; l++) T1p[l] += T1p[k * naux + l];
+            for (size_t l = 0; l < naux_; l++) T1p[l] += T1p[k * naux_ + l];
         }
 
 // complete pruned J
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
-        for (size_t k = 0; k < nao; k++) {
+        for (size_t k = 0; k < nbf_; k++) {
             size_t si = small_skips_[k];
             size_t mi = symm_small_skips_[k];
             size_t skip = symm_ignored_columns_[k];
-            size_t jump = (AO_core_ ? big_skips_[k] + bcount * si : (big_skips_[k] * block_size) / naux);
-            C_DGEMV('T', block_size, mi, 1.0, &Mp[jump + skip], si, T1p, 1, 0.0, &T2p[k * nao], 1);
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * si : (big_skips_[k] * block_size) / naux_);
+            C_DGEMV('T', block_size, mi, 1.0, &Mp[jump + skip], si, T1p, 1, 0.0, &T2p[k * nbf_], 1);
         }
 
         // unpack from sparse to dense
-        for (size_t k = 0; k < nao; k++) {
-            for (size_t m = k + 1, count = 0; m < nao; m++) {  // assumes diagonal exists to avoid if  FIXME
-                if (schwarz_fun_mask_[k * nao + m]) {
+        for (size_t k = 0; k < nbf_; k++) {
+            for (size_t m = k + 1, count = 0; m < nbf_; m++) {  // assumes diagonal exists to avoid if  FIXME
+                if (schwarz_fun_mask_[k * nbf_ + m]) {
                     count++;
-                    Jp[k * nao + m] += T2p[k * nao + count];
-                    Jp[m * nao + k] += T2p[k * nao + count];
+                    Jp[k * nbf_ + m] += T2p[k * nbf_ + count];
+                    Jp[m * nbf_ + k] += T2p[k * nbf_ + count];
                 }
             }
         }
-        for (size_t k = 0; k < nao; k++) Jp[k * nao + k] += T2p[k * nao];
+        for (size_t k = 0; k < nbf_; k++) Jp[k * nbf_ + k] += T2p[k * nbf_];
     }
 }
 void DFHelper::fill(double* b, size_t count, double value) {
@@ -2875,57 +2887,54 @@ void DFHelper::fill(double* b, size_t count, double value) {
 }
 void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                          std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size) {
-    size_t nao = nao_;
-    size_t naux = naux_;
-
     for (size_t i = 0; i < J.size(); i++) {
         // grab orbital spaces
         double* Dp = D[i]->pointer()[0];
         double* Jp = J[i]->pointer()[0];
 
         // initialize Tmp (pQ)
-        fill(T1p, nthreads_ * naux, 0.0);
+        fill(T1p, nthreads_ * naux_, 0.0);
 
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
-        for (size_t k = 0; k < nao; k++) {
+        for (size_t k = 0; k < nbf_; k++) {
             size_t sp_size = small_skips_[k];
-            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux_);
 
             int rank = 0;
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
 
-            for (size_t m = 0, sp_count = -1; m < nao; m++) {
-                if (schwarz_fun_mask_[k * nao + m]) {
+            for (size_t m = 0, sp_count = -1; m < nbf_; m++) {
+                if (schwarz_fun_mask_[k * nbf_ + m]) {
                     sp_count++;
-                    D_buffers[rank][sp_count] = Dp[nao * k + m];
+                    D_buffers[rank][sp_count] = Dp[nbf_ * k + m];
                 }
             }
             // (Qm)(m) -> (Q)
-            C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, &D_buffers[rank][0], 1, 1.0, &T1p[rank * naux],
+            C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, &D_buffers[rank][0], 1, 1.0, &T1p[rank * naux_],
                     1);
         }
 
         // reduce
         for (size_t k = 1; k < nthreads_; k++) {
-            for (size_t l = 0; l < naux; l++) T1p[l] += T1p[k * naux + l];
+            for (size_t l = 0; l < naux_; l++) T1p[l] += T1p[k * naux_ + l];
         }
 
 // complete pruned J
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
-        for (size_t k = 0; k < nao; k++) {
+        for (size_t k = 0; k < nbf_; k++) {
             size_t sp_size = small_skips_[k];
-            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
-            C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, T1p, 1, 0.0, &T2p[k * nao], 1);
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux_);
+            C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, T1p, 1, 0.0, &T2p[k * nbf_], 1);
         }
 
         // unpack from sparse to dense
-        for (size_t k = 0; k < nao; k++) {
-            for (size_t m = 0, count = -1; m < nao; m++) {
-                if (schwarz_fun_mask_[k * nao + m]) {
+        for (size_t k = 0; k < nbf_; k++) {
+            for (size_t m = 0, count = -1; m < nbf_; m++) {
+                if (schwarz_fun_mask_[k * nbf_ + m]) {
                     count++;
-                    Jp[k * nao + m] += T2p[k * nao + count];
+                    Jp[k * nbf_ + m] += T2p[k * nbf_ + count];
                 }
             }
         }
@@ -2934,9 +2943,6 @@ void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> 
 void DFHelper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K,
                          double* T1p, double* T2p, double* Mp, size_t bcount, size_t block_size,
                          std::vector<std::vector<double>>& C_buffers, bool lr_symmetric) {
-    size_t nao = nao_;
-    size_t naux = naux_;
-
     for (size_t i = 0; i < K.size(); i++) {
         size_t nocc = Cleft[i]->colspi()[0];
         if (!nocc) {
@@ -2948,18 +2954,18 @@ void DFHelper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatr
         double* Kp = K[i]->pointer()[0];
 
         // compute first tmp
-        first_transform_pQq(nao, naux, nocc, bcount, block_size, Mp, T1p, Clp, C_buffers);
+        first_transform_pQq(nocc, bcount, block_size, Mp, T1p, Clp, C_buffers);
 
         // compute second tmp
         if (lr_symmetric) {
             T2p = T1p;
         } else {
-            first_transform_pQq(nao, naux, nocc, bcount, block_size, Mp, T2p, Crp, C_buffers);
+            first_transform_pQq(nocc, bcount, block_size, Mp, T2p, Crp, C_buffers);
         }
 
         // compute K
-        C_DGEMM('N', 'T', nao, nao, nocc * block_size, 1.0, T1p, nocc * block_size, T2p, nocc * block_size, 1.0, Kp,
-                nao);
+        C_DGEMM('N', 'T', nbf_, nbf_, nocc * block_size, 1.0, T1p, nocc * block_size, T2p, nocc * block_size, 1.0, Kp,
+                nbf_);
     }
 }
 

@@ -37,7 +37,7 @@
 DFT: Density Functional Theory
 ==============================
 
-.. codeauthor:: Robert M. Parrish and Justin M. Turney
+.. codeauthor:: Robert M. Parrish, Justin M. Turney, and Daniel G. A. Smith
 .. sectionauthor:: Robert M. Parrish
 
 *Module:* :ref:`Keywords <apdx:scf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBFUNCTIONAL <psi4/src/psi4/libfunctional>`, :source:`LIBFOCK <psi4/src/psi4/libfock>`, :source:`LIBSCF_SOLVER <psi4/src/psi4/libscf_solver>`
@@ -57,7 +57,7 @@ Theory
 
 Generalized Kohn--Sham Density Functional Theory (KS-DFT) [Kohn:1965:A1133]_ [Parr:1989]_ is one of the primary
 workhorses of modern computational chemistry due to its phenomenal accuracy/cost
-ratio. 
+ratio.
 
 Pure Kohn--Sham DFT is built on the Hohenberg--Kohn theorems [Hohenberg:1964:136]_ which states: A) the energy is a universal
 functional of the one-particle electronic density and B) there exists a set of
@@ -70,10 +70,10 @@ treatment of the troublesome kinetic energy term via the implicit one-body
 Kohn--Sham orbitals.  KS-DFT borrows much of the machinery of Hartree--Fock, as is
 evident by looking at the energy expression,
 
-.. math:: 
+.. math::
 
-    E_{\mathrm{KS}}  
-    &= \sum_{i} \langle i | \hat h | i \rangle 
+    E_{\mathrm{KS}}
+    &= \sum_{i} \langle i | \hat h | i \rangle
     + \frac 1 2 \sum_{i,j} [ii|jj] + E_{\mathrm{xc}} [\rho_\alpha, \rho_\beta] \\
     &= D_{\mu\nu}^{\mathrm{T}}\left(T_{\mu\nu} +
     V_{\mu\nu}\right) + \frac{1}{2} D_{\mu\nu}^{\mathrm{T}}
@@ -105,7 +105,7 @@ functionals which use the norm of the density gradient
 parameter.
 
 .. math:: \gamma_{\alpha\alpha} (\vec r_1) = \nabla \rho_{\alpha} (\vec r_1) \cdot \nabla
-    \rho_{\alpha} (\vec r_1) 
+    \rho_{\alpha} (\vec r_1)
 
 .. math:: \gamma_{\alpha\beta} (\vec r_1) = \nabla \rho_{\alpha} (\vec r_1) \cdot \nabla
     \rho_{\beta} (\vec r_1)
@@ -116,7 +116,7 @@ where,
     (\vec r_1) \nabla \phi_{\nu} (\vec r_1)
 
 GGA functionals are essentially the same cost as LSDA functionals and are often
-considerably more accurate. 
+considerably more accurate.
 
 Another local variant  which has gained some popularity (though perhaps not as
 much as GGA functionals) is the meta approximation, in which information about
@@ -144,16 +144,16 @@ A generic local meta-GGA functional may then be written as,
 
 The potential corresponding to this energy functional is,
 
-.. math:: V_{\mu\nu}^{\mathrm{xc},\alpha} = 
+.. math:: V_{\mu\nu}^{\mathrm{xc},\alpha} =
 
-    \int_{\mathbb{R}^3} 
+    \int_{\mathbb{R}^3}
     \left(\frac{\partial f}{\rho_\alpha}\right)
     \phi_{\mu}
     \phi_{\nu}
     \ \mathrm{d} ^3 r_1
 
 .. math:: +
-    \int_{\mathbb{R}^3} 
+    \int_{\mathbb{R}^3}
     \left(2 \frac{\partial f}{\gamma_{\alpha\alpha}} \nabla \rho_\alpha + \frac{\partial
     f}{\gamma_{\alpha\beta}}\nabla \rho_\beta \right)
     \nabla\left(\phi_{\mu}
@@ -161,7 +161,7 @@ The potential corresponding to this energy functional is,
     \ \mathrm{d} ^3 r_1
 
 .. math:: +
-    \int_{\mathbb{R}^3} 
+    \int_{\mathbb{R}^3}
     \left(\frac{\partial f}{\tau_\alpha}\right)
     \nabla \phi_{\mu}
     \nabla \phi_{\nu}
@@ -185,7 +185,7 @@ functions decay exponentially), meaning that the Coulomb and diagonalization
 steps become rate limiting. This enormous potential speed gain over Hartree--Fock
 with potentially exact treatment of electron correlation for "free" was one of
 the primary motivations for KS-DFT's adoption by chemists in the late 1980s and
-early 1990s. 
+early 1990s.
 
 Unfortunately, local KS-DFT exhibits several spectacular failures, most of which
 stem from the exponential decay of the local Kohn--Sham potential, which cannot
@@ -196,14 +196,14 @@ excited-state calculations, eventual metallic breakdown in extended insulators,
 poor thermochemistry, and complete lack of a derivative discontinuity in the
 chemical potential as integer particle numbers are crossed. On the correlation
 side, this is primarily observed in the inability of KS-DFT to treat dispersion
-interactions. 
+interactions.
 
 Generalized Kohn--Sham (GKS) functionals incorporate long-range information into
 the functional through orbital-dependent contributions, and are designed to
 combat the failures of local KS-DFT, particularly the MSIE on the exchange side.
 Note that these functionals are often referred to as "implicit" density
 functionals, as the orbitals are themselves functionals of the Kohn--Sham
-potential. 
+potential.
 
 The simplest form of an exchange-side GKS is the global hybrid ansatz, in which
 some fraction of the exact Hartree--Fock exchange of the noninteracting
@@ -218,7 +218,7 @@ is often determined by adiabatic or heuristic arguments and is typically around
 Hartree--Fock code, with the caveat that Hartree--Fock exchange is often much more
 costly to obtain than the Coulomb matrix. The global hybrid ansatz has become
 exceedingly popular, with functionals such as the ubiquitous B3LYP often
-producing absurdly accurate results. 
+producing absurdly accurate results.
 
 A more advanced GKS functional technology which has developed enormous
 popularity in recent years is the Long-Range Corrected (LRC) ansatz. LRC
@@ -243,12 +243,12 @@ generic form,
     \gamma_{\beta\beta} (\vec r_1),
     \tau_{\alpha} (\vec r_1),
     \tau_{\beta} (\vec r_1)
-    ; \omega \right) \ \mathrm{d} ^3 r_1 
+    ; \omega \right) \ \mathrm{d} ^3 r_1
 
 .. math::
     -\frac{1}{2} \sum_{i,j}
     \delta_{\sigma_{i} \sigma_{j}} \alpha \iint_{\mathrm{R}^6} \phi_{i}^1 \phi_{j}^1
-    \frac{1}{r_{12}} \phi_{i}^2 \phi_{j}^2 \ \mathrm{d}^3 r_1 \ \mathrm{d}^3 r_2 
+    \frac{1}{r_{12}} \phi_{i}^2 \phi_{j}^2 \ \mathrm{d}^3 r_1 \ \mathrm{d}^3 r_2
 
 .. math::
     -\frac{1}{2} \sum_{i,j}
@@ -276,17 +276,17 @@ Note that LRC functionals with default :math:`\omega` only capture the
 
 .. math:: \lim_{r\rightarrow\infty} v_{\mathrm{x}}^{\mathrm{LRC}} (r) = -
     \frac{1}{r},
-    
+
 hybrid functionals only capture part of the :math:`-1/r` dependence,
 
 .. math:: \lim_{r\rightarrow\infty} v_{\mathrm{x}}^{\mathrm{Hybrid}} (r) = -
-    \frac{\alpha}{r}, 
+    \frac{\alpha}{r},
 
 and local functionals decay exponentially, resulting in completely incorrect
 asymptotics,
 
 .. math:: \lim_{r\rightarrow\infty} v_{\mathrm{x}}^{\mathrm{Local}} (r) = 0
-    
+
 IP-tuned LRC functionals effectively pin the chemical potential at :math:`N`
 electrons to the correct value determined by the ionization potential. This
 often cleans up the MSIE problem for a surprisingly large number of high-lying
@@ -311,7 +311,7 @@ option, and a call to ``energy('b3lyp')`` (or other valid functional name)::
     }
 
     set basis sto-3g
-    
+
     energy('b3lyp')
 
 This will run a B3LYP Restricted Kohn--Sham (RKS) on neutral singlet Helium in
@@ -341,7 +341,7 @@ Unrestricted Kohn--Sham (UKS)
   :math:`S^2` metric printed in the output) is usually a severe overestimation
   of the spin contamination of the true electrons.
 
-These are set in the |scf__reference| option. 
+These are set in the |scf__reference| option.
 
 Note that there are not equivalents to ROHF or CUHF, *e.g.*, no ROKS or CUKS. This
 is because ROHF is implicitly assumed to be followed by a correlated method
@@ -368,7 +368,7 @@ Note that if you are running an unrestricted computation, you should set the
 The functional may also be manually specified by calling ``energy`` (or any driver function)
 with a ``dft_functional`` argument::
 
-    energy('scf', dft_functional = 'b3lyp') 
+    energy('scf', dft_functional = 'b3lyp')
 
 Another alternative is providing a specially crafted `dict`-ionary to the ``dft_functional``
 argument::
@@ -376,7 +376,7 @@ argument::
     custom_functional = { "name": "my_unique_name", ... }
     energy('scf', dft_functional = custom_functional)
 
-For further details about this so called `dict_func` syntax, see 
+For further details about this so called `dict_func` syntax, see
 :ref:`sec:dftdictbuilder`.
 
 For hybrid functionals, the fraction of exact exchange is controlled by the
@@ -399,7 +399,7 @@ to the complete listing of all functionals of each class are presented below:
     Many common GGA functionals. BLYP and PBE are probably among the best pure
     GGAs. Please do not use FT97 at the moment, as there
     are problems with the stability of the correlation hole. Don't worry, it
-    will definitely NaN on you if you try to use it. 
+    will definitely NaN on you if you try to use it.
 
 :ref:`Meta Functionals <table:dft_meta>`
     We have recently implemented the M05 classes of meta functionals in
@@ -409,7 +409,7 @@ to the complete listing of all functionals of each class are presented below:
 
 :ref:`Hybrid Functionals <table:dft_hybrid>`
     Many common hybrid functionals, including the ubiquitous B3LYP. PBE0 and the
-    B97 series are also quite good for many thermochemical problems. 
+    B97 series are also quite good for many thermochemical problems.
 
 :ref:`LRC Functionals <table:dft_lrc>`
     LRC functionals are a particular area of interest of the |PSIfour| DFT team.
@@ -424,24 +424,23 @@ to the complete listing of all functionals of each class are presented below:
     against the partition function in the exchange hole. We would like to thank Dr.
     Scuseria for providing helpful advice and a reference implementations of the
     older HSE exchange-hole model which led to the successful implementation of the
-    HJS model. 
-    
+    HJS model.
+
 :ref:`Double-Hybrid Functionals <table:dft_dhybrid>`
     Double hybrids are percolating into |PSIfour|. Note that these are
-    only available with density-fitted, not conventional, mp2 algorithms.
+    only available with density-fitted, not conventional, MP2 algorithms.
 
 :ref:`-D Functionals <table:dft_disp>`
     We have several -D2 functionals implemented. -D3 functionls are available
     with the installation of Grimme's :ref:`DFTD3 program <sec:dftd3>`.
     For now, the pure-GGA B97-D
     functional of Grimme is remarkably accurate, and the hybrid B3LYP-D
-    functional is also quite reliable. 
+    functional is also quite reliable.
 
 Note: we have made a sincere effort to rigorously test all functionals
-implemented in |PSIfour| for both numerical stability and correctness. If you
-observe any unexpected results, please email Rob Parrish (robparrish@gmail.com)
-for immediate assistance. Additionally, if you have a request for a new
-functional, please let us know.
+implemented in |PSIfour| for correctness. If you find an error in a DFT
+functional or have a request for a new functional, please let us know on our
+forum or GitHub page.
 
 Grid Selection
 ~~~~~~~~~~~~~~
@@ -450,7 +449,7 @@ Grid Selection
 number of radial quadratures and atomic partitioning schemes. Pruned grids are
 not yet available, but we have plans.
 The default grid in |PSIfour| is a Lebedev-Treutler (75,302) grid with a Treutler
-partition of the atomic weights. 
+partition of the atomic weights.
 
 Spherical grids are all of the extremely efficient Lebedev-Laikov type.
 Spherical grid resolution is controlled by the |scf__dft_spherical_points|
@@ -461,67 +460,67 @@ option, which may take one of the following values:
     +-----------------------------+-------+
     | |scf__dft_spherical_points| | Order |
     +=============================+=======+
-    | 6                           | 3     |                                             
+    | 6                           | 3     |
     +-----------------------------+-------+
-    | 14                          | 5     |                                             
+    | 14                          | 5     |
     +-----------------------------+-------+
-    | 26                          | 7     |                                             
+    | 26                          | 7     |
     +-----------------------------+-------+
-    | 38                          | 9     |                                             
+    | 38                          | 9     |
     +-----------------------------+-------+
-    | 50                          | 11    |                                             
+    | 50                          | 11    |
     +-----------------------------+-------+
-    | 74                          | 13    |                                             
+    | 74                          | 13    |
     +-----------------------------+-------+
-    | 86                          | 15    |                                             
+    | 86                          | 15    |
     +-----------------------------+-------+
-    | 110                         | 17    |                                             
+    | 110                         | 17    |
     +-----------------------------+-------+
-    | 146                         | 19    |                                             
+    | 146                         | 19    |
     +-----------------------------+-------+
-    | 170                         | 21    |                                             
+    | 170                         | 21    |
     +-----------------------------+-------+
-    | 194                         | 23    |                                             
+    | 194                         | 23    |
     +-----------------------------+-------+
-    | 230                         | 25    |                                             
+    | 230                         | 25    |
     +-----------------------------+-------+
-    | 266                         | 27    |                                             
+    | 266                         | 27    |
     +-----------------------------+-------+
-    | 302                         | 29    |                                             
+    | 302                         | 29    |
     +-----------------------------+-------+
-    | 350                         | 31    |                                             
+    | 350                         | 31    |
     +-----------------------------+-------+
-    | 434                         | 35    |                                             
+    | 434                         | 35    |
     +-----------------------------+-------+
-    | 590                         | 41    |                                             
+    | 590                         | 41    |
     +-----------------------------+-------+
-    | 770                         | 47    |                                             
+    | 770                         | 47    |
     +-----------------------------+-------+
-    | 974                         | 53    |                                             
+    | 974                         | 53    |
     +-----------------------------+-------+
-    | 1202                        | 59    |                                             
+    | 1202                        | 59    |
     +-----------------------------+-------+
-    | 1454                        | 65    |                                             
+    | 1454                        | 65    |
     +-----------------------------+-------+
-    | 1730                        | 71    |                                             
+    | 1730                        | 71    |
     +-----------------------------+-------+
-    | 2030                        | 77    |                                             
+    | 2030                        | 77    |
     +-----------------------------+-------+
-    | 2354                        | 83    |                                             
+    | 2354                        | 83    |
     +-----------------------------+-------+
-    | 2702                        | 89    |                                             
+    | 2702                        | 89    |
     +-----------------------------+-------+
-    | 3074                        | 95    |                                            
+    | 3074                        | 95    |
     +-----------------------------+-------+
-    | 3470                        | 101   |                                             
+    | 3470                        | 101   |
     +-----------------------------+-------+
-    | 3890                        | 107   |                                             
+    | 3890                        | 107   |
     +-----------------------------+-------+
-    | 4334                        | 113   |                                             
+    | 4334                        | 113   |
     +-----------------------------+-------+
-    | 4802                        | 119   |                                             
+    | 4802                        | 119   |
     +-----------------------------+-------+
-    | 5294                        | 125   |                                             
+    | 5294                        | 125   |
     +-----------------------------+-------+
     | 5810                        | 131   |
     +-----------------------------+-------+
@@ -575,7 +574,7 @@ An example of a fully specified grid is as follows::
     dft_nuclear_scheme treutler  # Rarely needed
     dft_basis_tolerance 1.0E-11  # Can speed things up, but benchmark the error
     }
-    
+
     energy('b3lyp')
 
 ERI Algorithms
@@ -588,11 +587,6 @@ DF and DIRECT algorithms. The use of DF is highly recommended for KS-DFT, as the
 errors incurred by the density fitting approximation (in a proper -JKFIT
 auxiliary basis) are orders of magnitude smaller than the accuracy of any known
 functional.
-
-Note: gradients with LRC functionals and DF integrals technology are not
-currently enabled. We hope to have a patch for this deficit soon. Please let us
-know if you have a strong need for this capability, and we will move the
-priority up.
 
 IP Fitting
 ~~~~~~~~~~
@@ -629,7 +623,7 @@ the DF tensors, and starting from the neutral/cation orbitals of the previous
 for the bounds of :math:`\omega`. This small test case has a tuned
 :math:`\omega` of 1.700, hence the bounds of 0.4 and 2.0. Larger systems,
 particularly conjugated systems, will typically have an optimized :math:`\omega`
-between 0.1 and 0.5. 
+between 0.1 and 0.5.
 
 Fractional Particle Curves
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -640,7 +634,7 @@ functional technologies. |PSIfour| features an efficient fractional-particle DFT
 code, written into the UKS spin specialization. Due to a combination of DIIS and
 reuse of integrals/guess orbitals across a range of fractional occupations, this
 code is able to perform fractional occupation curves for systems with up to 60
-atoms, across a wide range of the particle number :math:`N`. 
+atoms, across a wide range of the particle number :math:`N`.
 
 Two python macros exist for this code. The first is :py:func:`~frac.frac_traverse`, which is
 used to investigate the fractional occupation behavior within one electron above
@@ -693,15 +687,15 @@ medium to large systems in difficult electronic environments (*e.g.*, compact
 spatial extents, diffuse basis sets, low band-gaps, LRC and/or hybrid GKS
 functionals), and time to code completion. We are very interested in optimizing
 and extending the code, so expect performance gains and extensions to
-gradients/hessians and TDDFT in future releases. 
+gradients/hessians and TDDFT in future releases.
 
 Some rough guidelines for using the KS-DFT code are as follows,
 
-* Use DF for the ERI algorithm wherever possible.  
+* Use DF for the ERI algorithm wherever possible.
 * |PSIfour| is a "tight" code, meaning we've set the default numerical cutoffs
   for integrals, grids, and convergence criteria in such a way that you will often
   get many more digits of precision than needed. You may be able to realize
-  additional speed gains by loosening some of these thresholds. See 
+  additional speed gains by loosening some of these thresholds. See
   :ref:`SCF Convergence <table:conv_scf>` for default convergence criteria.
 * Read the literature to determine which functional technology to use. The world
   contains far too many papers using B3LYP on noncovalent interactions without a -D.
