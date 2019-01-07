@@ -967,6 +967,7 @@ def test_hessian_vs_cfour(subject, dertype, request):
         'd_convergence': 10,
         'points': 5,
         'scf_type': 'pk',
+        'guess': 'core',
     })
 
     E, pwfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=apmol, dertype=dertype)
