@@ -603,7 +603,7 @@ def scf_finalize_energy(self):
         core.set_variable(k, v)
 
     # TODO re-enable
-    # self.finalize()
+    self.finalize()
     if self.V_potential():
         self.V_potential().clear_collocation_cache()
 
