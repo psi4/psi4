@@ -1,4 +1,4 @@
-#!Convergence of many-body gradients of different BSSE schemes
+#! Convergence of many-body gradients of different BSSE schemes
 
 gradients = {} #TEST
 
