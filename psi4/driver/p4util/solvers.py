@@ -459,7 +459,7 @@ def davidson_solver(engine,
                     max_vecs_per_root=20,
                     maxiter=100,
                     verbose=1,
-                    schmidt_add_tol=1.0e-4):
+                    schmidt_add_tol=1.0e-8):
     """
 
     Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
@@ -559,28 +559,7 @@ def davidson_solver(engine,
     _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
 
     # NOTE: ignore passed guess always generate max_ss / vectors and force collapse on first iter
-    vecs = engine.generate_guess(max_ss_size)
-    # nguess_v_passed = len(guess)
-    # vecs = []
-    # # make guess set orthonormal
-    # for v in guess:
-    #     new = _gs_orth(engine, vecs, v, schmidt_add_tol)
-    #     if new is not None:
-    #         vecs.append(new)
-
-    # nguess_v_after_orth = len(vecs)
-    # # print warning if LD in passed guesses had to be removed.
-    # if (nguess_v_after_orth < nguess_v_passed) and (verbose > 0):
-    #     ndiscard = nguess_v_passed - nguess_v_after_orth
-    #     core.print_out(
-    #         "\n***Warning: Linear dependencies detected in initial guess vector, {} passed vectors discarded\n".format(
-    #             ndiscard))
-
-    # # raise exception if we don't have at least nroot guesses
-    # if nguess_v_after_orth < nk:
-    #     raise Exception(
-    #         "At least nroot ({}) ortho-normal guess vectors must be provided. After orthonormalization only {} vectors remain".
-    #         format(nk, nguess_v_after_orth))
+    vecs = guess
 
     stats = []
 
@@ -628,12 +607,15 @@ def davidson_solver(engine,
             converged = (norm < r_tol) and (abs(old_vals[k] - lam_k) < e_tol)
             # We want to expand trial basis when, solution is not converged or when trial space is too small.
             if (not converged):
-                Qk = engine.precondition(Rk, lam_k)
                 iter_info['done'] = False
-                Qk = engine.vector_scale(1.0 / norm, Rk)
+                Qk = engine.precondition(Rk, lam_k)
                 Qk = _gs_orth(engine, vecs, Qk, schmidt_add_tol)
                 if Qk is not None:
                     vecs.append(Qk)
+
+        # no vectors added, force collapse
+        if len(vecs) == iter_info['nvec']:
+            iter_info['collapse'] = True
 
         _diag_print_info(print_name, iter_info, verbose)
         stats.append(iter_info.copy())
@@ -772,30 +754,8 @@ def hamiltonian_solver(engine,
     _diag_print_heading(title_lines, print_name, ss_max, nroot, r_tol, e_tol, maxiter, verbose)
 
     # NOTE: Ignore passed guess, always generate 1/2 * max ss size vectors and allow collapse on first iter
-    vecs = engine.generate_guess(ss_max)
-
-    # NOTE: Re-enable guess ortho-normalization if user guess allowed.
-    # nguess_v_passed = len(guess)
-    # vecs = []
-    # # make guess set orthonormal
-    # for v in guess:
-    #     new = _gs_orth(engine, vecs, v, schmidt_add_tol)
-    #     if new is not None:
-    #         vecs.append(new)
-
-    # nguess_v_after_orth = len(vecs)
-    # # print warning if LD in passed guesses had to be removed.
-    # if (nguess_v_after_orth < nguess_v_passed) and (verbose > 0):
-    #     ndiscard = nguess_v_passed - nguess_v_after_orth
-    #     core.print_out(
-    #         "\n***Warning: Linear dependencies detected in initial guess vector, {} passed vectors discarded\n".format(
-    #             ndiscard))
-
-    # raise exception if we don't have at least nroot guesses
-    # if nguess_v_after_orth < nk:
-    #     raise Exception(
-    #         "At least nroot ({}) ortho-normal guess vectors must be provided. After orthonormalization only {} vectors remain".
-    #         format(nk, nguess_v_after_orth))
+    vecs = engine.generate_guess(nk * 8)
+    nk = min(nk, len(vecs))
 
     stats = []
     while iter_info['count'] < maxiter:
@@ -831,6 +791,7 @@ def hamiltonian_solver(engine,
 
         # Step 5: diagonalize Hss -> w^2, Tss
         w, Tss = np.linalg.eigh(Hss)
+        #break_err = 1.0 / 0.0
         w = np.sqrt(w)
         idx = np.argsort(w)
         w = w[idx]
@@ -845,7 +806,7 @@ def hamiltonian_solver(engine,
 
         # #step 6c: R/L in the subspace are already biorthogonal, we need to normalize
         for k in range(l):
-            dot = np.sqrt(Rss[:, k].dot(Lss[:, k]))
+            dot = Rss[:, k].dot(Lss[:, k])
             Rss[:, k] /= dot
             Lss[:, k] /= dot
 
@@ -892,6 +853,9 @@ def hamiltonian_solver(engine,
                 if QL_k is not None:
                     vecs.append(QL_k)
 
+        if len(vecs) == iter_info['nvec']:
+            iter_info['collapse'] = True
+
         _diag_print_info(print_name, iter_info, verbose)
         stats.append(iter_info.copy())
         if iter_info['done']:
@@ -899,8 +863,6 @@ def hamiltonian_solver(engine,
             return w[:nk], best_R, best_L, stats
 
         # number of vectors hasn't changed (nothing new added), but we are not converged. Force collapse
-        if len(vecs) == iter_info['nvec']:
-            iter_info['collapse'] = True
         if iter_info['collapse']:
             vecs = []
             for r in best_R:

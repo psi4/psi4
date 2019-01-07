@@ -4,7 +4,7 @@ import pytest
 import psi4
 from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
                                                            TDUSCFEngine)
-from utils import compare_arrays
+from utils import compare_arrays, compare_values
 
 
 def build_RHF_AB_C1_singlet(wfn):
@@ -92,7 +92,8 @@ def build_UHF_AB_C1(wfn):
     return A, B
 
 
-@pytest.mark.tddft
+@pytest.mark.unittest
+@pytest.mark.tdscf
 def test_restricted_TDA_singlet_c1():
     "Build out the full CIS/TDA hamiltonian (A) col by col with the product engine"
     h2o = psi4.geometry("""
@@ -101,7 +102,7 @@ def test_restricted_TDA_singlet_c1():
     H 1 0.96 2 104.5
     symmetry c1
     """)
-    psi4.set_options({"scf_type": "pk"})
+    psi4.set_options({"scf_type": "pk", 'save_jk': True})
     e, wfn = psi4.energy("hf/cc-pvdz", molecule=h2o, return_wfn=True)
     A_ref, _ = build_RHF_AB_C1_singlet(wfn)
     ni, na, _, _ = A_ref.shape
@@ -115,7 +116,8 @@ def test_restricted_TDA_singlet_c1():
     assert compare_arrays(A_ref, A_test, 8, "RHF Ax C1 products")
 
 
-@pytest.mark.tddft
+@pytest.mark.unittest
+@pytest.mark.tdscf
 def test_restricted_TDA_triplet_c1():
     "Build out the full CIS/TDA hamiltonian (A) col by col with the product engine"
     h2o = psi4.geometry("""
@@ -124,7 +126,7 @@ def test_restricted_TDA_triplet_c1():
     H 1 0.96 2 104.5
     symmetry c1
     """)
-    psi4.set_options({"scf_type": "pk"})
+    psi4.set_options({"scf_type": "pk", 'save_jk': True})
     e, wfn = psi4.energy("hf/cc-pvdz", molecule=h2o, return_wfn=True)
     A_ref, _ = build_RHF_AB_C1_triplet(wfn)
     ni, na, _, _ = A_ref.shape
@@ -138,7 +140,60 @@ def test_restricted_TDA_triplet_c1():
     assert compare_arrays(A_ref, A_test, 8, "RHF Ax C1 products")
 
 
-@pytest.mark.tddft
+@pytest.mark.unittest
+@pytest.mark.tdscf
+@pytest.mark.check_triplet
+def test_RU_TDA_C1():
+    h2o = psi4.geometry("""0 1
+    O          0.000000    0.000000    0.135446
+    H         -0.000000    0.866812   -0.541782
+    H         -0.000000   -0.866812   -0.541782
+    symmetry c1
+    no_reorient
+    no_com
+    """)
+    psi4.set_options({"scf_type": "pk", 'save_jk': True})
+    e, wfn = psi4.energy("hf/sto-3g", molecule=h2o, return_wfn=True)
+    A_ref, _ = build_UHF_AB_C1(wfn)
+    ni, na, _, _ = A_ref['IAJB'].shape
+    nia = ni * na
+    A_sing_ref = A_ref['IAJB'] + A_ref['IAjb']
+    A_sing_ref = A_sing_ref.reshape(nia, nia)
+    A_trip_ref = A_ref['IAJB'] - A_ref['IAjb']
+    A_trip_ref = A_trip_ref.reshape(nia, nia)
+    sing_vals, _ = np.linalg.eigh(A_sing_ref)
+    trip_vals, _ = np.linalg.eigh(A_trip_ref)
+
+    trip_eng = TDRSCFEngine(wfn, ptype='tda', triplet=True)
+    sing_eng = TDRSCFEngine(wfn, ptype='tda', triplet=False)
+    ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
+    psi4.core.print_out("\nA sing:\n" + str(A_sing_ref) + "\n\n")
+    psi4.core.print_out("\nA trip:\n" + str(A_trip_ref) + "\n\n")
+    A_trip_test = np.column_stack([x.to_array().flatten() for x in trip_eng.compute_products(ID)])
+    assert compare_arrays(A_trip_ref, A_trip_test, 8, "Triplet Ax C1 products")
+    A_sing_test = np.column_stack([x.to_array().flatten() for x in sing_eng.compute_products(ID)])
+    assert compare_arrays(A_sing_ref, A_sing_test, 8, "Singlet Ax C1 products")
+
+    sing_vals_2, _ = np.linalg.eigh(A_sing_test)
+    trip_vals_2, _ = np.linalg.eigh(A_trip_test)
+
+    psi4.core.print_out("\n\n SINGLET EIGENVALUES\n")
+    for x, y in zip(sing_vals, sing_vals_2):
+        psi4.core.print_out("{:10.6f}  {:10.6f}\n".format(x, y))
+        # assert compare_values(x, y, 4, "Singlet ROOT")
+    psi4.core.print_out("\n\n Triplet EIGENVALUES\n")
+    for x, y in zip(trip_vals, trip_vals_2):
+        psi4.core.print_out("{:10.6f}  {:10.6f}\n".format(x, y))
+        # assert compare_values(x, y, 4, "Triplet Root")
+
+    for x, y in zip(sing_vals, sing_vals_2):
+        assert compare_values(x, y, 4, "Singlet ROOT")
+    for x, y in zip(trip_vals, trip_vals_2):
+        assert compare_values(x, y, 4, "Triplet Root")
+
+
+@pytest.mark.unittest
+@pytest.mark.tdscf
 def test_restricted_RPA_singlet_c1():
     "Build out the full CIS/TDA hamiltonian (A) col by col with the product engine"
     h2o = psi4.geometry("""
@@ -147,7 +202,7 @@ def test_restricted_RPA_singlet_c1():
     H 1 0.96 2 104.5
     symmetry c1
     """)
-    psi4.set_options({"scf_type": "pk"})
+    psi4.set_options({"scf_type": "pk", 'save_jk': True})
     e, wfn = psi4.energy("hf/cc-pvdz", molecule=h2o, return_wfn=True)
     A_ref, B_ref = build_RHF_AB_C1_singlet(wfn)
     ni, na, _, _ = A_ref.shape
@@ -167,7 +222,8 @@ def test_restricted_RPA_singlet_c1():
     assert compare_arrays(M_ref, M_test, 8, "RHF (A-B)x C1 products")
 
 
-@pytest.mark.tddft
+@pytest.mark.unittest
+@pytest.mark.tdscf
 def test_restricted_RPA_triplet_c1():
     "Build out the full CIS/TDA hamiltonian (A) col by col with the product engine"
     h2o = psi4.geometry("""
@@ -176,7 +232,7 @@ def test_restricted_RPA_triplet_c1():
     H 1 0.96 2 104.5
     symmetry c1
     """)
-    psi4.set_options({"scf_type": "pk"})
+    psi4.set_options({"scf_type": "pk", 'save_jk': True})
     e, wfn = psi4.energy("hf/cc-pvdz", molecule=h2o, return_wfn=True)
     A_ref, B_ref = build_RHF_AB_C1_triplet(wfn)
     ni, na, _, _ = A_ref.shape
@@ -196,7 +252,8 @@ def test_restricted_RPA_triplet_c1():
     assert compare_arrays(M_ref, M_test, 8, "RHF (A-B)x C1 products")
 
 
-@pytest.mark.tddft
+@pytest.mark.unittest
+@pytest.mark.tdscf
 def test_unrestricted_TDA_C1():
     ch2 = psi4.geometry("""
     0 3
@@ -205,7 +262,7 @@ def test_unrestricted_TDA_C1():
     h 1 1.0 2 125.0
     symmetry c1
     """)
-    psi4.set_options({"scf_type": "pk", 'reference': 'UHF'})
+    psi4.set_options({"scf_type": "pk", 'reference': 'UHF', 'save_jk': True})
     e, wfn = psi4.energy("hf/cc-pvdz", molecule=ch2, return_wfn=True)
     A_ref, B_ref = build_UHF_AB_C1(wfn)
     nI, nA, _, _ = A_ref['IAJB'].shape
@@ -240,7 +297,8 @@ def test_unrestricted_TDA_C1():
     assert compare_arrays(A_ref['iajb'].reshape(nia, nia), A_iajb_test, 8, "A_iajb")
 
 
-@pytest.mark.tddft
+@pytest.mark.unittest
+@pytest.mark.tdscf
 def test_unrestricted_RPA_C1():
     ch2 = psi4.geometry("""
     0 3
@@ -249,7 +307,7 @@ def test_unrestricted_RPA_C1():
     h 1 1.0 2 125.0
     symmetry c1
     """)
-    psi4.set_options({"scf_type": "pk", 'reference': 'UHF'})
+    psi4.set_options({"scf_type": "pk", 'reference': 'UHF', 'save_jk': True})
     e, wfn = psi4.energy("hf/cc-pvdz", molecule=ch2, return_wfn=True)
     A_ref, B_ref = build_UHF_AB_C1(wfn)
     nI, nA, _, _ = A_ref['IAJB'].shape

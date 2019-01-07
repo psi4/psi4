@@ -1,11 +1,26 @@
-import pytest
-from utils import *
-from addons import *
+from pathlib import Path
+
 import numpy as np
+import pytest
 
 import psi4
-from psi4.driver.procrouting.response.scf_response import tdscf_excitations
-from psi4.driver.procrouting.response.scf_products import TDRSCFEngine, TDUSCFEngine
+from addons import *
+from psi4.driver.p4util.solvers import davidson_solver, hamiltonian_solver
+from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
+                                                           TDUSCFEngine)
+from utils import *
+
+
+@pytest.fixture(scope='function', autouse=True)
+def outfile_swap(request):
+    old_o_file = psi4.core.outfile_name()
+    node_id = request.node.nodeid
+    st = node_id.find('[') + 1
+    ed = node_id.find(']')
+    this_job_outfile_name = node_id[st:ed] + ".pytest.out"
+    psi4.set_output_file(this_job_outfile_name, True)
+    yield
+    psi4.set_output_file(old_o_file, False)
 
 
 @pytest.fixture
@@ -13,93 +28,1083 @@ def tddft_systems():
     psi4.core.clean()
 
     # Canonical unrestricted system
-    ch2 = psi4.geometry("""
-    0 3
-    C        0.000000    0.000000    0.159693
-    H       -0.000000    0.895527   -0.479080
-    H       -0.000000   -0.895527   -0.479080
+    ch2 = psi4.geometry("""0 3
+    C          0.000000000000     0.000000000000    -0.091864689759
+    H          0.000000000000    -0.895527070192     0.546908561523
+    H          0.000000000000     0.895527070192     0.546908561523
     symmetry c1
-    no_reorient
-    no_com
     """)
 
     # Canonical restricted system
     h2o = psi4.geometry("""0 1
-    O          0.000000    0.000000    0.135446
-    H         -0.000000    0.866812   -0.541782
-    H         -0.000000   -0.866812   -0.541782
+    O            0.000000000000     0.000000000000    -0.075791843599
+    H            0.000000000000    -0.866811828967     0.601435779259
+    H            0.000000000000     0.866811828967     0.601435779259
     symmetry c1
-    no_reorient
-    no_com
     """)
-    psi4.set_options({'scf_type': 'pk', 'e_convergence': 8, 'd_convergence': 8, 'save_jk': True})
 
     return {'UHF': ch2, 'RHF': h2o}
 
 
-def name_tdscf_run(reference, func, tda, triplets, basis, expected):
-    if reference == 'RHF':
-        if triplets:
-            name = 'RHF [Triplet]'
+@pytest.fixture
+def wfn_factory(tddft_systems):
+    def _build_wfn(ref, func, basis, nosym):
+        if ref.startswith('RHF'):
+            mol = tddft_systems['RHF']
         else:
-            name = 'RHF [Singlet]'
-    else:
-        name = 'UHF          '
-    name += "/{}".format(func)
-    if tda:
-        name += "/TDA"
-    else:
-        name += "/RPA"
-    name += "/{}".format(basis)
-    return name
+            mol = tddft_systems['UHF']
+            psi4.set_options({'reference': 'UHF'})
+        # if nosym:
+        #     mol.reset_point_group('c1')
+        psi4.set_options({'scf_type': 'pk', 'e_convergence': 8, 'd_convergence': 8, 'save_jk': True})
+        e, wfn = psi4.energy("{}/{}".format(func, basis), return_wfn=True, molecule=mol)
+        return wfn
+
+    return _build_wfn
+
+
+@pytest.fixture
+def solver_funcs():
+    return {'TDA': davidson_solver, 'RPA': hamiltonian_solver}
+
+
+@pytest.fixture
+def engines():
+    return {
+        'RHF-1': lambda w, p: TDRSCFEngine(w, ptype=p.lower(), triplet=False),
+        'RHF-3': lambda w, p: TDRSCFEngine(w, ptype=p.lower(), triplet=True),
+        'UHF': lambda w, p: TDUSCFEngine(w, ptype=p.lower())
+    }
+
+
+@pytest.fixture
+def expected():
+    return {
+        "UHF-HF-RPA-cc-pvdz": [{
+            "e": 0.2445704160468683,
+            "sym": "B2"
+        }, {
+            "e": 0.2878574429978692,
+            "sym": "A2"
+        }, {
+            "e": 0.3179110389232691,
+            "sym": "B1"
+        }, {
+            "e": 0.3547301851175197,
+            "sym": "A2"
+        }, {
+            "e": 0.3879221731828428,
+            "sym": "A1"
+        }, {
+            "e": 0.4038089052916107,
+            "sym": "B2"
+        }, {
+            "e": 0.43529939972603865,
+            "sym": "A1"
+        }, {
+            "e": 0.4508039388809985,
+            "sym": "B2"
+        }, {
+            "e": 0.4834961361605727,
+            "sym": "B2"
+        }, {
+            "e": 0.515831865012076,
+            "sym": "A1"
+        }],
+        "UHF-HF-TDA-cc-pvdz": [{
+            "e": 0.24880026306449304,
+            "sym": "B2"
+        }, {
+            "e": 0.28968755925744966,
+            "sym": "A2"
+        }, {
+            "e": 0.32054964027744337,
+            "sym": "B1"
+        }, {
+            "e": 0.35741288565867185,
+            "sym": "A2"
+        }, {
+            "e": 0.39502214228627547,
+            "sym": "A1"
+        }, {
+            "e": 0.41144173957102564,
+            "sym": "B2"
+        }, {
+            "e": 0.4445528791268893,
+            "sym": "A1"
+        }, {
+            "e": 0.4535932124573471,
+            "sym": "B2"
+        }, {
+            "e": 0.48482278670215617,
+            "sym": "B2"
+        }, {
+            "e": 0.5203446818128086,
+            "sym": "A1"
+        }],
+        "RHF-1-HF-RPA-cc-pvdz": [{
+            "e": 0.27878771020942616,
+            "sym": "B1"
+        }, {
+            "e": 0.333654448674359,
+            "sym": "A2"
+        }, {
+            "e": 0.3755413264388134,
+            "sym": "A1"
+        }, {
+            "e": 0.42481114308980833,
+            "sym": "B2"
+        }, {
+            "e": 0.45601499280888025,
+            "sym": "B2"
+        }, {
+            "e": 0.5776368755615227,
+            "sym": "A1"
+        }, {
+            "e": 0.8037995559773897,
+            "sym": "A2"
+        }, {
+            "e": 0.839747743228828,
+            "sym": "B1"
+        }, {
+            "e": 0.9021958669217016,
+            "sym": "B2"
+        }, {
+            "e": 0.9229188098690396,
+            "sym": "A1"
+        }],
+        "RHF-1-HF-TDA-cc-pvdz": [{
+            "e": 0.282253171319435,
+            "sym": "B1"
+        }, {
+            "e": 0.33726690707429396,
+            "sym": "A2"
+        }, {
+            "e": 0.3798850963561309,
+            "sym": "A1"
+        }, {
+            "e": 0.4300699711369161,
+            "sym": "B2"
+        }, {
+            "e": 0.45887776503019195,
+            "sym": "B2"
+        }, {
+            "e": 0.5918368137683881,
+            "sym": "A1"
+        }, {
+            "e": 0.8045639418850057,
+            "sym": "A2"
+        }, {
+            "e": 0.8421474739868723,
+            "sym": "B1"
+        }, {
+            "e": 0.9055290304707769,
+            "sym": "B2"
+        }, {
+            "e": 0.9250906948276983,
+            "sym": "A1"
+        }],
+        "RHF-3-HF-RPA-cc-pvdz": [{
+            "e": 0.2357358789223071,
+            "sym": "B1"
+        }, {
+            "e": 0.26804588324807327,
+            "sym": "A1"
+        }, {
+            "e": 0.3013517942130891,
+            "sym": "A2"
+        }, {
+            "e": 0.30942929529453067,
+            "sym": "B2"
+        }, {
+            "e": 0.4023793566470789,
+            "sym": "B2"
+        }, {
+            "e": 0.42341834376775817,
+            "sym": "A1"
+        }, {
+            "e": 0.7930871284740221,
+            "sym": "A2"
+        }, {
+            "e": 0.8015468225092716,
+            "sym": "B2"
+        }, {
+            "e": 0.8053062781991327,
+            "sym": "A1"
+        }, {
+            "e": 0.8117190349721608,
+            "sym": "B1"
+        }],
+        "RHF-3-HF-TDA-cc-pvdz": [{
+            "e": 0.2428836221449658,
+            "sym": "B1"
+        }, {
+            "e": 0.2954976271417805,
+            "sym": "A1"
+        }, {
+            "e": 0.30883763120257796,
+            "sym": "A2"
+        }, {
+            "e": 0.33788429569198375,
+            "sym": "B2"
+        }, {
+            "e": 0.4084209452630434,
+            "sym": "B2"
+        }, {
+            "e": 0.4426382394256013,
+            "sym": "A1"
+        }, {
+            "e": 0.7945056523218094,
+            "sym": "A2"
+        }, {
+            "e": 0.808852587818601,
+            "sym": "B2"
+        }, {
+            "e": 0.8142547382233867,
+            "sym": "B1"
+        }, {
+            "e": 0.8170954608512094,
+            "sym": "A1"
+        }],
+        "UHF-HCTH93-RPA-cc-pvdz": [{
+            "e": 0.1856355275832295,
+            "sym": "B2"
+        }, {
+            "e": 0.2451767798678136,
+            "sym": "A2"
+        }, {
+            "e": 0.26726679761146477,
+            "sym": "B1"
+        }, {
+            "e": 0.3089515541022707,
+            "sym": "A2"
+        }, {
+            "e": 0.3376895242828316,
+            "sym": "A1"
+        }, {
+            "e": 0.38421049161220766,
+            "sym": "B2"
+        }, {
+            "e": 0.41623385122261786,
+            "sym": "B2"
+        }, {
+            "e": 0.41855640840345093,
+            "sym": "A1"
+        }, {
+            "e": 0.45103913454488037,
+            "sym": "B2"
+        }, {
+            "e": 0.4544715212646558,
+            "sym": "A1"
+        }],
+        "UHF-HCTH93-TDA-cc-pvdz": [{
+            "e": 0.18766409018421026,
+            "sym": "B2"
+        }, {
+            "e": 0.24640420723869694,
+            "sym": "A2"
+        }, {
+            "e": 0.26811570696078824,
+            "sym": "B1"
+        }, {
+            "e": 0.3091904246984007,
+            "sym": "A2"
+        }, {
+            "e": 0.33847595978393646,
+            "sym": "A1"
+        }, {
+            "e": 0.3854121944573539,
+            "sym": "B2"
+        }, {
+            "e": 0.41763767534141255,
+            "sym": "B2"
+        }, {
+            "e": 0.4238887350955218,
+            "sym": "A1"
+        }, {
+            "e": 0.4524539834604195,
+            "sym": "B2"
+        }, {
+            "e": 0.4571064476865819,
+            "sym": "A1"
+        }],
+        "RHF-1-HCTH93-RPA-cc-pvdz": [{
+            "e": 0.2278274247242806,
+            "sym": "B1"
+        }, {
+            "e": 0.2894192892033345,
+            "sym": "A2"
+        }, {
+            "e": 0.3289064362097446,
+            "sym": "A1"
+        }, {
+            "e": 0.3884917876813066,
+            "sym": "B2"
+        }, {
+            "e": 0.4481984119170576,
+            "sym": "B2"
+        }, {
+            "e": 0.5517690274667697,
+            "sym": "A1"
+        }, {
+            "e": 0.6738466018181832,
+            "sym": "A2"
+        }, {
+            "e": 0.707226011428162,
+            "sym": "B1"
+        }, {
+            "e": 0.7881149451422703,
+            "sym": "B2"
+        }, {
+            "e": 0.7978351409386365,
+            "sym": "A1"
+        }],
+        "RHF-1-HCTH93-TDA-cc-pvdz": [{
+            "e": 0.22904382729841943,
+            "sym": "B1"
+        }, {
+            "e": 0.28974635817342015,
+            "sym": "A2"
+        }, {
+            "e": 0.3335662503004033,
+            "sym": "A1"
+        }, {
+            "e": 0.39102014106803623,
+            "sym": "B2"
+        }, {
+            "e": 0.4529464243816721,
+            "sym": "B2"
+        }, {
+            "e": 0.5679313794941492,
+            "sym": "A1"
+        }, {
+            "e": 0.6739678745823723,
+            "sym": "A2"
+        }, {
+            "e": 0.7085967611567234,
+            "sym": "B1"
+        }, {
+            "e": 0.7913415356561492,
+            "sym": "B2"
+        }, {
+            "e": 0.7994116868730944,
+            "sym": "A1"
+        }],
+        "RHF-3-HCTH93-RPA-cc-pvdz": [{
+            "e": 0.2006807002071702,
+            "sym": "B1"
+        }, {
+            "e": 0.26766736522651347,
+            "sym": "A2"
+        }, {
+            "e": 0.2785010654940702,
+            "sym": "A1"
+        }, {
+            "e": 0.3420810683193752,
+            "sym": "B2"
+        }, {
+            "e": 0.39419895746268907,
+            "sym": "B2"
+        }, {
+            "e": 0.4394557480987003,
+            "sym": "A1"
+        }, {
+            "e": 0.6662358171322572,
+            "sym": "A2"
+        }, {
+            "e": 0.6870212339278138,
+            "sym": "B1"
+        }, {
+            "e": 0.732255974970336,
+            "sym": "B2"
+        }, {
+            "e": 0.7517257660210537,
+            "sym": "A1"
+        }],
+        "RHF-3-HCTH93-TDA-cc-pvdz": [{
+            "e": 0.20200735074875364,
+            "sym": "B1"
+        }, {
+            "e": 0.26861182281428897,
+            "sym": "A2"
+        }, {
+            "e": 0.281727656007949,
+            "sym": "A1"
+        }, {
+            "e": 0.3449548653374312,
+            "sym": "B2"
+        }, {
+            "e": 0.3960474483835103,
+            "sym": "B2"
+        }, {
+            "e": 0.44406043820563673,
+            "sym": "A1"
+        }, {
+            "e": 0.6665408365088539,
+            "sym": "A2"
+        }, {
+            "e": 0.6875430743070515,
+            "sym": "B1"
+        }, {
+            "e": 0.7339868680592164,
+            "sym": "B2"
+        }, {
+            "e": 0.7549670562639251,
+            "sym": "A1"
+        }],
+        "UHF-LRC-wPBE-RPA-cc-pvdz": [{
+            "e": 0.20857445467620409,
+            "sym": "B2"
+        }, {
+            "e": 0.25750617756036887,
+            "sym": "A2"
+        }, {
+            "e": 0.29567402388969183,
+            "sym": "B1"
+        }, {
+            "e": 0.3353963665599838,
+            "sym": "A2"
+        }, {
+            "e": 0.3676659466310203,
+            "sym": "A1"
+        }, {
+            "e": 0.4059771153180213,
+            "sym": "B2"
+        }, {
+            "e": 0.42314272384914664,
+            "sym": "A1"
+        }, {
+            "e": 0.4309152055539914,
+            "sym": "B2"
+        }, {
+            "e": 0.47108588995855805,
+            "sym": "B2"
+        }, {
+            "e": 0.47426103142096276,
+            "sym": "A1"
+        }],
+        "UHF-LRC-wPBE-TDA-cc-pvdz": [{
+            "e": 0.2111138328596782,
+            "sym": "B2"
+        }, {
+            "e": 0.2588953019501709,
+            "sym": "A2"
+        }, {
+            "e": 0.296850002209101,
+            "sym": "B1"
+        }, {
+            "e": 0.33591453200697347,
+            "sym": "A2"
+        }, {
+            "e": 0.36902567156283717,
+            "sym": "A1"
+        }, {
+            "e": 0.40870758997839934,
+            "sym": "B2"
+        }, {
+            "e": 0.4285081249314508,
+            "sym": "A1"
+        }, {
+            "e": 0.4325872997269013,
+            "sym": "B2"
+        }, {
+            "e": 0.4722361437522301,
+            "sym": "B2"
+        }, {
+            "e": 0.4778293906339199,
+            "sym": "A1"
+        }],
+        "RHF-1-LRC-wPBE-RPA-cc-pvdz": [{
+            "e": 0.24823799843052555,
+            "sym": "B1"
+        }, {
+            "e": 0.3133577978678068,
+            "sym": "A2"
+        }, {
+            "e": 0.34407655653012253,
+            "sym": "A1"
+        }, {
+            "e": 0.4111771444491586,
+            "sym": "B2"
+        }, {
+            "e": 0.45620241435353615,
+            "sym": "B2"
+        }, {
+            "e": 0.5713821408751654,
+            "sym": "A1"
+        }, {
+            "e": 0.7121320459794471,
+            "sym": "A2"
+        }, {
+            "e": 0.7467646074860463,
+            "sym": "B1"
+        }, {
+            "e": 0.8237985372718415,
+            "sym": "B2"
+        }, {
+            "e": 0.8347057361843613,
+            "sym": "A1"
+        }],
+        "RHF-1-LRC-wPBE-TDA-cc-pvdz": [{
+            "e": 0.25019673731879144,
+            "sym": "B1"
+        }, {
+            "e": 0.3137951148053371,
+            "sym": "A2"
+        }, {
+            "e": 0.3480087340356468,
+            "sym": "A1"
+        }, {
+            "e": 0.4139259937707775,
+            "sym": "B2"
+        }, {
+            "e": 0.4595355779026114,
+            "sym": "B2"
+        }, {
+            "e": 0.5866661840952361,
+            "sym": "A1"
+        }, {
+            "e": 0.7122790432693733,
+            "sym": "A2"
+        }, {
+            "e": 0.7482823545045337,
+            "sym": "B1"
+        }, {
+            "e": 0.8268119817153274,
+            "sym": "B2"
+        }, {
+            "e": 0.8363484308992859,
+            "sym": "A1"
+        }],
+        "RHF-3-LRC-wPBE-RPA-cc-pvdz": [{
+            "e": 0.21493576239775788,
+            "sym": "B1"
+        }, {
+            "e": 0.28128298920592243,
+            "sym": "A1"
+        }, {
+            "e": 0.2873576522121203,
+            "sym": "A2"
+        }, {
+            "e": 0.34026197685653914,
+            "sym": "B2"
+        }, {
+            "e": 0.40093878320580273,
+            "sym": "B2"
+        }, {
+            "e": 0.44324092831429845,
+            "sym": "A1"
+        }, {
+            "e": 0.7026102965244811,
+            "sym": "A2"
+        }, {
+            "e": 0.7221756358136507,
+            "sym": "B1"
+        }, {
+            "e": 0.7560327866158897,
+            "sym": "B2"
+        }, {
+            "e": 0.7725589569358363,
+            "sym": "A1"
+        }],
+        "RHF-3-LRC-wPBE-TDA-cc-pvdz": [{
+            "e": 0.2164314598227564,
+            "sym": "B1"
+        }, {
+            "e": 0.28700485871629755,
+            "sym": "A1"
+        }, {
+            "e": 0.28869165261820007,
+            "sym": "A2"
+        }, {
+            "e": 0.34761184135284623,
+            "sym": "B2"
+        }, {
+            "e": 0.40273215014290165,
+            "sym": "B2"
+        }, {
+            "e": 0.44947361340716696,
+            "sym": "A1"
+        }, {
+            "e": 0.7029814646815448,
+            "sym": "A2"
+        }, {
+            "e": 0.722752600176611,
+            "sym": "B1"
+        }, {
+            "e": 0.7587595863440195,
+            "sym": "B2"
+        }, {
+            "e": 0.7765352336283384,
+            "sym": "A1"
+        }],
+        "UHF-PBE0-RPA-cc-pvdz": [{
+            "e": 0.2057925309643518,
+            "sym": "B2"
+        }, {
+            "e": 0.25788469558192867,
+            "sym": "A2"
+        }, {
+            "e": 0.27774770438319873,
+            "sym": "B1"
+        }, {
+            "e": 0.3209796073504773,
+            "sym": "A2"
+        }, {
+            "e": 0.34905608972637064,
+            "sym": "A1"
+        }, {
+            "e": 0.3920417722330229,
+            "sym": "B2"
+        }, {
+            "e": 0.4166160441764259,
+            "sym": "B2"
+        }, {
+            "e": 0.4181815653141393,
+            "sym": "A1"
+        }, {
+            "e": 0.4582640513447503,
+            "sym": "B2"
+        }, {
+            "e": 0.46098717614063206,
+            "sym": "A1"
+        }],
+        "UHF-PBE0-TDA-cc-pvdz": [{
+            "e": 0.20835395874131485,
+            "sym": "B2"
+        }, {
+            "e": 0.2593583434134383,
+            "sym": "A2"
+        }, {
+            "e": 0.2788171096674114,
+            "sym": "B1"
+        }, {
+            "e": 0.32146837333948175,
+            "sym": "A2"
+        }, {
+            "e": 0.3502541176392687,
+            "sym": "A1"
+        }, {
+            "e": 0.3942357067851706,
+            "sym": "B2"
+        }, {
+            "e": 0.41852333401321756,
+            "sym": "B2"
+        }, {
+            "e": 0.42350654214171385,
+            "sym": "A1"
+        }, {
+            "e": 0.45957232722509295,
+            "sym": "B2"
+        }, {
+            "e": 0.46426154077373694,
+            "sym": "A1"
+        }],
+        "RHF-1-PBE0-RPA-cc-pvdz": [{
+            "e": 0.24152757214539713,
+            "sym": "B1"
+        }, {
+            "e": 0.30322600965964747,
+            "sym": "A2"
+        }, {
+            "e": 0.3397842356642792,
+            "sym": "A1"
+        }, {
+            "e": 0.3989212454015664,
+            "sym": "B2"
+        }, {
+            "e": 0.450576093081613,
+            "sym": "B2"
+        }, {
+            "e": 0.5607321872200163,
+            "sym": "A1"
+        }, {
+            "e": 0.7111912633239198,
+            "sym": "A2"
+        }, {
+            "e": 0.7451917364838366,
+            "sym": "B1"
+        }, {
+            "e": 0.8210717375437115,
+            "sym": "B2"
+        }, {
+            "e": 0.8330520166726922,
+            "sym": "A1"
+        }],
+        "RHF-1-PBE0-TDA-cc-pvdz": [{
+            "e": 0.24295344585768072,
+            "sym": "B1"
+        }, {
+            "e": 0.3037111007164037,
+            "sym": "A2"
+        }, {
+            "e": 0.3439369091046927,
+            "sym": "A1"
+        }, {
+            "e": 0.40143489905930346,
+            "sym": "B2"
+        }, {
+            "e": 0.4543833228907001,
+            "sym": "B2"
+        }, {
+            "e": 0.5759280320661313,
+            "sym": "A1"
+        }, {
+            "e": 0.711338260613846,
+            "sym": "A2"
+        }, {
+            "e": 0.7466102603316238,
+            "sym": "B1"
+        }, {
+            "e": 0.8240815070549493,
+            "sym": "B2"
+        }, {
+            "e": 0.8345991631491648,
+            "sym": "A1"
+        }],
+        "RHF-3-PBE0-RPA-cc-pvdz": [{
+            "e": 0.20871042716938573,
+            "sym": "B1"
+        }, {
+            "e": 0.2750098798583243,
+            "sym": "A1"
+        }, {
+            "e": 0.2767775222696862,
+            "sym": "A2"
+        }, {
+            "e": 0.33116284461011086,
+            "sym": "B2"
+        }, {
+            "e": 0.3922953425581455,
+            "sym": "B2"
+        }, {
+            "e": 0.43251747601418633,
+            "sym": "A1"
+        }, {
+            "e": 0.7010631500480085,
+            "sym": "A2"
+        }, {
+            "e": 0.7203308198250776,
+            "sym": "B1"
+        }, {
+            "e": 0.752831920627748,
+            "sym": "B2"
+        }, {
+            "e": 0.7687590769912455,
+            "sym": "A1"
+        }],
+        "RHF-3-PBE0-TDA-cc-pvdz": [{
+            "e": 0.21080513855083327,
+            "sym": "B1"
+        }, {
+            "e": 0.27866276251298894,
+            "sym": "A2"
+        }, {
+            "e": 0.28137118757987817,
+            "sym": "A1"
+        }, {
+            "e": 0.3390676238758892,
+            "sym": "B2"
+        }, {
+            "e": 0.3944745773813006,
+            "sym": "B2"
+        }, {
+            "e": 0.4398416159847564,
+            "sym": "A1"
+        }, {
+            "e": 0.7015372163080204,
+            "sym": "A2"
+        }, {
+            "e": 0.7211099054616862,
+            "sym": "B1"
+        }, {
+            "e": 0.7557167424425485,
+            "sym": "B2"
+        }, {
+            "e": 0.7733747918949263,
+            "sym": "A1"
+        }],
+        "UHF-wB97X-RPA-cc-pvdz": [{
+            "e": 0.18313657365448505,
+            "sym": "B2"
+        }, {
+            "e": 0.24031484450350646,
+            "sym": "A2"
+        }, {
+            "e": 0.2859023790418515,
+            "sym": "B1"
+        }, {
+            "e": 0.3266610526061227,
+            "sym": "A2"
+        }, {
+            "e": 0.36160598335381505,
+            "sym": "A1"
+        }, {
+            "e": 0.4077778321196165,
+            "sym": "B2"
+        }, {
+            "e": 0.4338588262847624,
+            "sym": "B2"
+        }, {
+            "e": 0.4340278731681775,
+            "sym": "A1"
+        }, {
+            "e": 0.4666281971415478,
+            "sym": "B2"
+        }, {
+            "e": 0.48119562857322856,
+            "sym": "A1"
+        }],
+        "UHF-wB97X-TDA-cc-pvdz": [{
+            "e": 0.1852129103746918,
+            "sym": "B2"
+        }, {
+            "e": 0.24126665195577823,
+            "sym": "A2"
+        }, {
+            "e": 0.28685786142637143,
+            "sym": "B1"
+        }, {
+            "e": 0.3270946946114049,
+            "sym": "A2"
+        }, {
+            "e": 0.3624254932451533,
+            "sym": "A1"
+        }, {
+            "e": 0.4091853311706593,
+            "sym": "B2"
+        }, {
+            "e": 0.43516710216510507,
+            "sym": "B2"
+        }, {
+            "e": 0.4401539852258495,
+            "sym": "A1"
+        }, {
+            "e": 0.4679474978186349,
+            "sym": "B2"
+        }, {
+            "e": 0.484293596458422,
+            "sym": "A1"
+        }],
+        "RHF-1-wB97X-RPA-cc-pvdz": [{
+            "e": 0.2472126923332907,
+            "sym": "B1"
+        }, {
+            "e": 0.3131997757811362,
+            "sym": "A2"
+        }, {
+            "e": 0.34444772468718604,
+            "sym": "A1"
+        }, {
+            "e": 0.41038703401580556,
+            "sym": "B2"
+        }, {
+            "e": 0.45278105243050515,
+            "sym": "B2"
+        }, {
+            "e": 0.5674462884373929,
+            "sym": "A1"
+        }, {
+            "e": 0.7190997175219462,
+            "sym": "A2"
+        }, {
+            "e": 0.7518360139884983,
+            "sym": "B1"
+        }, {
+            "e": 0.8295240817144648,
+            "sym": "B2"
+        }, {
+            "e": 0.840034387944184,
+            "sym": "A1"
+        }],
+        "RHF-1-wB97X-TDA-cc-pvdz": [{
+            "e": 0.24888846143844873,
+            "sym": "B1"
+        }, {
+            "e": 0.31362606792192205,
+            "sym": "A2"
+        }, {
+            "e": 0.34848280029565865,
+            "sym": "A1"
+        }, {
+            "e": 0.41301093564098723,
+            "sym": "B2"
+        }, {
+            "e": 0.4563016375242363,
+            "sym": "B2"
+        }, {
+            "e": 0.5822268659394665,
+            "sym": "A1"
+        }, {
+            "e": 0.7192503897441206,
+            "sym": "A2"
+        }, {
+            "e": 0.7532949620910153,
+            "sym": "B1"
+        }, {
+            "e": 0.8325669256159359,
+            "sym": "B2"
+        }, {
+            "e": 0.8418130551522903,
+            "sym": "A1"
+        }],
+        "RHF-3-wB97X-RPA-cc-pvdz": [{
+            "e": 0.21928320724732356,
+            "sym": "B1"
+        }, {
+            "e": 0.29090028689934033,
+            "sym": "A2"
+        }, {
+            "e": 0.29346538960855156,
+            "sym": "A1"
+        }, {
+            "e": 0.3566558496155522,
+            "sym": "B2"
+        }, {
+            "e": 0.4047901122018677,
+            "sym": "B2"
+        }, {
+            "e": 0.45354911327036923,
+            "sym": "A1"
+        }, {
+            "e": 0.7135101455725047,
+            "sym": "A2"
+        }, {
+            "e": 0.7332151322871041,
+            "sym": "B1"
+        }, {
+            "e": 0.7665614675068497,
+            "sym": "B2"
+        }, {
+            "e": 0.7836168280705303,
+            "sym": "A1"
+        }],
+        "RHF-3-wB97X-TDA-cc-pvdz": [{
+            "e": 0.22053635914394396,
+            "sym": "B1"
+        }, {
+            "e": 0.29207259028650134,
+            "sym": "A2"
+        }, {
+            "e": 0.2973130436723683,
+            "sym": "A1"
+        }, {
+            "e": 0.36116866641628476,
+            "sym": "B2"
+        }, {
+            "e": 0.4065136554262517,
+            "sym": "B2"
+        }, {
+            "e": 0.4588630653011993,
+            "sym": "A1"
+        }, {
+            "e": 0.7138849886618163,
+            "sym": "A2"
+        }, {
+            "e": 0.7338067963790569,
+            "sym": "B1"
+        }, {
+            "e": 0.7689722230616385,
+            "sym": "B2"
+        }, {
+            "e": 0.7875931047630326,
+            "sym": "A1"
+        }]
+    }
 
 
 @pytest.mark.tdscf
-@pytest.mark.parametrize(
-    "reference,func,tda,triplets,basis,expected",
-    [
-        pytest.param(*args, id=name_tdscf_run(*args))
-        for args in [
-            # ('RHF','HF', False, False,'cc-pvdz',[[0.37554133], [0.33365445], [0.27878771], [0.42481114]]), # G09 rev E.01
-            # ('RHF','HF',  True, False,'cc-pvdz',[[0.37988510], [0.33726691], [0.28225317], [0.43006997]]), # G09 rev E.01
-            # ('UHF','HF', False, False,'cc-pvdz',[[], [0.28785744, 0.35473019], [0.31791104], [0.24457042]]), # G09 rev E.01
-            # ('UHF','HF',  True, False,'cc-pvdz',[[], [0.28968756, 0.35741289], [0.32054964], [0.24880026]]), # G09 rev E.01
-            # ('RHF','HF', False,  True,'cc-pvdz',[[0.26804588], [0.30135179], [0.23573588], [0.30942930]]), # G09 rev E.01
-            # ('RHF','HF',  True,  True,'cc-pvdz',[[0.29549763], [0.30883763], [0.24288362], [0.33788430]]), # G09 rev E.01
-            # ('RHF',    'HF', False, False,'sto-3g',[[0.50011418], [0.41531879], [0.35477796], [0.55140153]]), # G09 rev E.01
-            # ('RHF',    'HF',  True, False,'sto-3g',[[0.50564128], [0.41607215], [0.35646108], [0.55521611]]), # G09 rev E.01
-            # ('UHF',    'HF', False, False,'sto-3g',[[0.53924486], [0.39001321, 0.56554635], [], [0.32329849]]), # G09 rev E.01
-            # ('UHF',    'HF',  True, False,'sto-3g',[[0.55163673], [0.39029985, 0.56582932], [], [0.32673823]]), # G09 rev E.01
-            # ('RHF',    'HF', False,  True,'sto-3g',[[0.29976422], [0.36513024], [0.28516372], [0.35263180]]), # G09 rev E.01
-            # ('RHF',    'HF',  True,  True,'sto-3g',[[0.34444405], [0.36599018], [0.28725475], [0.39451500]]), # G09 rev E.01
-            ('RHF', 'HCTH93', False, False, 'cc-pvdz',
-             [[0.32890644], [0.28941929], [0.22782742], [0.38849179]]),  # G09 rev E.01
-            ('RHF', 'HCTH93', True, False, 'cc-pvdz',
-             [[0.33356625], [0.28974636], [0.22904383], [0.39102014]]),  # G09 rev E.01
-            # ('UHF','HCTH93', False, False,'cc-pvdz',[[], [0.24517678, 0.30895155], [0.26726680], [0.18563553]]), # G09 rev E.01
-            # ('UHF','HCTH93',  True, False,'cc-pvdz',[[], [0.24640421, 0.30919042], [0.26811571], [0.18766409]]), # G09 rev E.01
-            # ('RHF','HCTH93', False,  True,'cc-pvdz',[[0.27850107], [0.26766737], [0.20068070], [0.34208107]]), # G09 rev E.01
-            # ('RHF','HCTH93',  True,  True,'cc-pvdz',[[0.28172766], [0.26861182], [0.20200735], [0.34495487]]), # G09 rev E.01
-        ]
-    ])
-def test_tdscf(reference, func, tda, triplets, expected, basis, tddft_systems):
-    mol = tddft_systems[reference]
-    psi4.set_options({'reference': reference, 'basis': basis})
+@pytest.mark.parametrize("ref,func,ptype,basis", [
+    pytest.param(   'UHF',        'HF',  'RPA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param(   'UHF',        'HF',  'TDA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',        'HF',  'RPA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',        'HF',  'TDA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',        'HF',  'RPA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',        'HF',  'TDA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param(   'UHF',    'HCTH93',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param(   'UHF',    'HCTH93',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',    'HCTH93',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',    'HCTH93',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',    'HCTH93',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',    'HCTH93',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param(   'UHF',  'LRC-wPBE',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param(   'UHF',  'LRC-wPBE',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',  'LRC-wPBE',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',  'LRC-wPBE',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',  'LRC-wPBE',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',  'LRC-wPBE',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param(   'UHF',      'PBE0',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param(   'UHF',      'PBE0',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',      'PBE0',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',      'PBE0',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',      'PBE0',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',      'PBE0',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param(   'UHF',     'wB97X',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param(   'UHF',     'wB97X',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',     'wB97X',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',     'wB97X',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',     'wB97X',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',     'wB97X',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
+]) # yapf: disable
+def test_tdscf(ref, func, ptype, basis, expected, wfn_factory, solver_funcs, engines):
 
-    # gather tddft driver args
-    tdscf_kwargs = {'tda': tda, 'states_per_irrep': [4], 'r_tol': 1.0e-5, 'e_tol': 1.0e-4, 'triplets': triplets}
-    label_fmt = "{ref}-{func}-{count}-{sym}"
-    if triplets:
-        label_fmt += "-Triplet"
-    e, wfn = psi4.energy(func, molecule=mol, return_wfn=True)
-    e_out = tdscf_excitations(wfn, **tdscf_kwargs)
+    ### setup
+    # Look up expected in fixture (easier to read)
+    exp_lookup = "{}-{}-{}-{}".format(ref, func, ptype, basis)
+    lowvals = {'A1': 100, 'A2': 100, 'B1': 100, "B2": 100}
+    for x in expected[exp_lookup]:
+        lowvals[x['sym']] = min(x['e'], lowvals[x['sym']])
+    ref_energies = np.array([x['e'] for x in expected[exp_lookup]])
+    ref_energies.sort()
 
-    # Flatten out the list of list and sort
-    energies = np.hstack(e_out)
-    expected.sort()
+    wfn = wfn_factory(ref, func, basis, nosym=True)
 
-    exp = np.hstack(expected)
-    energies.sort()
+    solver = solver_funcs[ptype]
 
-    for i, (ref, me) in enumerate(zip(expected, energies[:len(expected)])):
-        assert compare_values(ref, me, 3, label_fmt.format(ref=reference, func=func, count=str(i + 1), sym="??"))
+    #TODO: Disable after testing
+    old_o_file = psi4.core.outfile_name()
+    outfile = "{}-{}-{}-{}.dat".format(ref, func, ptype, basis)
+
+    # build engine
+    engine = engines[ref](wfn, ptype)
+    # test_vals = {}
+    # for irr in range(wfn.nirrep()):
+    #     lab = wfn.molecule().irrep_labels()[irr]
+    #     engine.reset_for_state_symm(irr)
+    #     vals = solver(
+    #         engine=engine,
+    #         guess=engine.generate_guess(20),
+    #         nroot=2,
+    #         verbose=2,
+    #         maxiter=100,
+    #         e_tol=1.0e-7,
+    #         r_tol=1.0e-4,
+    #         schmidt_add_tol=1.0e-10)[0]
+    #     assert vals is not None, "Failed to converge irrep {}".format(lab)
+    #     test_vals[lab] = vals[0]
+
+    # checks = []
+    # for lab, comp_v in test_vals.items():
+    #     test_v = lowvals[lab]
+    #     checks.append(compare_values(test_v, comp_v, 4, "{}-{}-{}-ROOT-{}".format(ref, func, ptype, lab)))
+    # assert all(checks)
+
+    # solvhe
+    test_vals = solver(
+        engine=engine,
+        guess=engine.generate_guess(20),
+        max_vecs_per_root=10,
+        nroot=4,
+        verbose=2,
+        maxiter=30,
+        e_tol=1.0e-7,
+        r_tol=1.0e-4,
+        schmidt_add_tol=1.0e-10)[0]
+
+    assert test_vals is not None, "Failed to Converge"
+
+    checks = []
+    for i, comp_v in enumerate(test_vals):
+        test_v = ref_energies[i]
+        checks.append(compare_values(test_v, comp_v, 4, "{}-{}-{}-ROOT-{}".format(ref, func, ptype, i + 1)))
+    assert all(checks)

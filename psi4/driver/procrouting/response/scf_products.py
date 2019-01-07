@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from abc import ABC, abstractmethod
-
 import numpy as np
 
 from psi4 import core
@@ -177,7 +175,7 @@ class TDRSCFEngine(SingleMatPerVector):
         self.ptype = ptype.lower()
         self.needs_K_like = self.wfn.functional().is_x_hybrid() or self.wfn.functional().is_x_lrc()
 
-        if self.ptype not in ["rpa", "rda"]:
+        if self.ptype not in ["rpa", "tda"]:
             raise KeyError("Product type {} not understood".format(self.ptype))
 
         # product type
@@ -206,6 +204,7 @@ class TDRSCFEngine(SingleMatPerVector):
         self.nsopi = self.wfn.nsopi()
         self.reset_for_state_symm(0)
 
+
 ## API required by engine
 
 ## Helper functions
@@ -232,9 +231,6 @@ class TDRSCFEngine(SingleMatPerVector):
             H2 X =  [(Ea - Ei) - K + K^T]X
 
         """
-
-        for x in range(len(Fx)):
-            H1X_so = Fxi
 
         H1X = []
         H2X = []
@@ -406,6 +402,7 @@ class TDUSCFEngine(PairedMatPerVector):
         self.E_occ = [wfn.epsilon_a_subset("SO", "OCC"), wfn.epsilon_b_subset("SO", "OCC")]
         self.E_vir = [wfn.epsilon_a_subset("SO", "VIR"), wfn.epsilon_b_subset("SO", "VIR")]
         self.needs_K_like = self.wfn.functional().is_x_hybrid() or self.wfn.functional().is_x_lrc()
+
         self.occpi = [self.wfn.nalphapi(), self.wfn.nbetapi()]
         self.virpi = [self.wfn.nmopi() - self.occpi[0], self.wfn.nmopi() - self.occpi[1]]
         self.nsopi = self.wfn.nsopi()
@@ -479,18 +476,23 @@ class TDUSCFEngine(PairedMatPerVector):
         if ptype == 'tda':
            returns Ax products.
         """
-        n_old = self.product_cache.count()
-        n_new = len(vectors)
-        if n_new <= n_old:
-            self.product_cache.reset()
-            compute_vectors = vectors
-        else:
-            compute_vectors = vectors[n_old:]
+
+        def _elemwise_prod(x, y):
+            p = self.vector_copy(x)
+            for h in range(self.wfn.nirrep()):
+                p[0].nph[h][:] = -1.0 * x[0].nph[h] * y[0].nph[h]
+                p[1].nph[h][:] = -1.0 * x[1].nph[h] * y[1].nph[h]
+            return p
+
+        #TODO: product cache
+        self.product_cache.reset()
         vec_flat = []
+        compute_vectors = vectors
         for vec_a, vec_b in compute_vectors:
             vec_flat.append(vec_a)
             vec_flat.append(vec_b)
-        Fx = self.pair_onel(self.wfn.onel_Hx(vec_flat))
+        #Fx = self.pair_onel(self.wfn.onel_Hx(vec_flat))
+        Fx = [_elemwise_prod(v, self.prec) for v in vectors]
         twoel = self.wfn.twoel_Hx(vec_flat, False, "SO")
         Jx, Kx = self.split_twoel(twoel)
         if self.ptype == "rpa":
@@ -537,11 +539,11 @@ class TDUSCFEngine(PairedMatPerVector):
     def precondition(self, Rvec, shift):
         for h in range(self.wfn.nirrep()):
 
-            den = shift - self.prec[0].nph[h]
+            den = self.prec[0].nph[h] - shift
             den[np.abs(den) < 0.0001] = 1.0
             Rvec[0].nph[h][:] /= den
 
-            den = shift - self.prec[1].nph[h]
+            den = self.prec[1].nph[h] - shift
             den[np.abs(den) < 0.0001] = 1.0
             Rvec[1].nph[h][:] /= den
         return Rvec
