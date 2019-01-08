@@ -173,7 +173,7 @@ int BasisSet::n_ecp_core() const {
     return ncoreelectrons;
 }
 
-int BasisSet::_atom_to_period(int Z) {
+int BasisSet::atom_to_period(int Z) {
     if (Z > 118) {
         throw PSIEXCEPTION("Atomic number beyond Oganesson");
     }
@@ -182,7 +182,7 @@ int BasisSet::_atom_to_period(int Z) {
     return period;
 }
 
-int BasisSet::_period_to_full_shell(int p) {
+int BasisSet::period_to_full_shell(int p) {
     if (p > 7) {
         throw PSIEXCEPTION("Atomic number beyond Oganesson");
     }
@@ -212,8 +212,8 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
             if (Z > 0) {
                 // Add ECPs to Z, the number of electrons less ECP-treated electrons
                 int ECP = n_ecp_core(mymol->label(A));
-                int current_shell = _atom_to_period(Z + ECP);
-                int delta = _period_to_full_shell(current_shell - 1);
+                int current_shell = atom_to_period(Z + ECP);
+                int delta = period_to_full_shell(current_shell - 1);
                 // Keep track of the largest frozen shell, in case its a cationic species
                 if (largest_shell < current_shell) {
                     largest_shell = current_shell;
@@ -227,7 +227,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         }
         // If we are about to end up with no valence electrons,
         // unfreeze electrons from the largest shell in the molecule
-        if (mol_valence <= 0) num_frozen_el -= _period_to_full_shell(largest_shell - 1) - _period_to_full_shell(largest_shell - 2);
+        if (mol_valence <= 0) num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
         return num_frozen_el/2;
     } else {
         // Options are filtered in read_options.cc; allowed strings are:
@@ -243,8 +243,8 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
             if (Z > 0) {
                 // Add ECPs to Z, the number of electrons less ECP-treated electrons
                 int ECP = n_ecp_core(mymol->label(A));
-                int current_shell = _atom_to_period(Z + ECP);
-                int delta = _period_to_full_shell(std::max(current_shell - req_shell, 0));
+                int current_shell = atom_to_period(Z + ECP);
+                int delta = period_to_full_shell(std::max(current_shell - req_shell, 0));
                 // If this center has an ECP, some electrons are already frozen
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
