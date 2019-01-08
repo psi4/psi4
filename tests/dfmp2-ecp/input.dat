@@ -77,6 +77,8 @@ no_com
 set globals {
 scf_type df
 mp2_type df
+e_convergence 1.e-10
+d_convergence 1.e-10
 }
 
 ref_0 = 0.017489937540631217                                                      #TEST
