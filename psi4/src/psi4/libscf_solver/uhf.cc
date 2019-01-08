@@ -81,7 +81,7 @@ UHF::~UHF() {}
 
 void UHF::common_init() {
     name_ = "UHF";
-    Drms_ = 0.0;
+
     // TODO: Move that to the base object
     step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
     step_increment_ = options_.get_double("FOLLOW_STEP_INCREMENT");
@@ -643,7 +643,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         if (resid_denom[i] < 1.e-14) {
             resid_denom[i] = 1.e-14;  // Prevent rel denom from being too small
         }
-        rms[i] = sqrt(resid[i] / resid_denom[i]);
+        rms[i] = std::sqrt(resid[i] / resid_denom[i]);
         mean_rms += rms[i];
         if (rms[i] > max_rms) {
             max_rms = rms[i];
@@ -718,7 +718,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
             resid[i] = r_vec[2 * i]->sum_of_squares();
             resid[i] += r_vec[2 * i + 1]->sum_of_squares();
 
-            rms[i] = sqrt(resid[i] / resid_denom[i]);
+            rms[i] = std::sqrt(resid[i] / resid_denom[i]);
             if (rms[i] > max_rms) {
                 max_rms = rms[i];
             }
@@ -821,7 +821,6 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
 double UHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
     SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
     SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
-    double Drms = 0.5 * (gradient_a->rms() + gradient_b->rms());
 
     if (save_fock) {
         if (initialized_diis_manager_ == false) {
@@ -835,7 +834,12 @@ double UHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
 
         diis_manager_->add_entry(4, gradient_a.get(), gradient_b.get(), Fa_.get(), Fb_.get());
     }
-    return Drms;
+
+    if (options_.get_bool("DIIS_RMS_ERROR")) {
+        return std::sqrt(0.5 * (std::pow(gradient_a->rms(), 2) + std::pow(gradient_b->rms(), 2)));
+    } else {
+        return std::max(gradient_a->absmax(), gradient_b->absmax());
+    }
 }
 
 bool UHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }

@@ -1294,6 +1294,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         set. A value of ``TRUE`` turns on density fitting with the
         default basis, otherwise the specified basis is used. -*/
         options.add_str("DF_BASIS_GUESS", "FALSE", "");
+        /*- Use RMS error instead of the more robust absolute error? -*/
+        options.add_bool("DIIS_RMS_ERROR", true);
         /*- The minimum iteration to start storing DIIS vectors -*/
         options.add_int("DIIS_START", 1);
         /*- Minimum number of error vectors stored for DIIS extrapolation -*/
@@ -2449,7 +2451,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
         unless |optking__flexible_g_convergence| is also on.      See Table :ref:`Geometry Convergence
         <table:optkingconv>` for details. -*/
-        options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT INTERFRAG_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
+        options.add_str(
+            "G_CONVERGENCE", "QCHEM",
+            "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT INTERFRAG_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
         /*- Convergence criterion for geometry optmization: maximum force
         (internal coordinates, atomic units). -*/
         options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);

@@ -79,7 +79,6 @@ void RHF::common_init() {
     name_ = "RHF";
 
     if (multiplicity_ != 1) throw PSIEXCEPTION("RHF: RHF reference is only for singlets.");
-    Drms_ = 0.0;
 
     // Allocate matrix memory
     Fa_ = SharedMatrix(factory_->create_matrix("F"));
@@ -233,7 +232,12 @@ double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
         }
         diis_manager_->add_entry(2, gradient.get(), Fa_.get());
     }
-    return gradient->rms();
+
+    if (options_.get_bool("DIIS_RMS_ERROR")) {
+        return gradient->rms();
+    } else {
+        return gradient->absmax();
+    }
 }
 
 bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
@@ -651,7 +655,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         if (resid_denom[i] < 1.e-14) {
             resid_denom[i] = 1.e-14;  // Prevent rel denom from being too small
         }
-        rms[i] = sqrt(resid[i] / resid_denom[i]);
+        rms[i] = std::sqrt(resid[i] / resid_denom[i]);
         mean_rms += rms[i];
         if (rms[i] > max_rms) {
             max_rms = rms[i];
@@ -716,7 +720,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
             // Get residual
             resid[i] = r_vec[i]->sum_of_squares();
-            rms[i] = sqrt(resid[i] / resid_denom[i]);
+            rms[i] = std::sqrt(resid[i] / resid_denom[i]);
             if (rms[i] > max_rms) {
                 max_rms = rms[i];
             }

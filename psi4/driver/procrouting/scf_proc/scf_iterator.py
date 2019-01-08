@@ -252,16 +252,17 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
+    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
 
     if self.iteration_ < 2:
         core.print_out("  ==> Iterations <==\n\n")
-        core.print_out("%s                        Total Energy        Delta E     RMS |[F,P]|\n\n" % ("   "
-                                                                                                      if is_dfjk else ""))
+        core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" % ("   "
+                                                                                                     if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
     # SCF iterations!
     SCFE_old = 0.0
     SCFE = 0.0
-    Drms = 0.0
+    Dnorm = 0.0
     while True:
         self.iteration_ += 1
 
@@ -331,15 +332,15 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         status = []
 
         # Check if we are doing SOSCF
-        if (soscf_enabled and (self.iteration_ >= 3) and (Drms < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
-            Drms = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
+        if (soscf_enabled and (self.iteration_ >= 3) and (Dnorm < core.get_option('SCF', 'SOSCF_START_CONVERGENCE'))):
+            Dnorm = self.compute_orbital_gradient(False, core.get_option('SCF', 'DIIS_MAX_VECS'))
             diis_performed = False
             if self.functional().needs_xc():
                 base_name = "SOKS, nmicro="
             else:
                 base_name = "SOSCF, nmicro="
 
-            if not _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
+            if not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
                 nmicro = self.soscf_update(
                     core.get_option('SCF', 'SOSCF_CONV'),
                     core.get_option('SCF', 'SOSCF_MIN_ITER'),
@@ -379,7 +380,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 diis_performed = False
                 add_to_diis_subspace = self.diis_enabled_ and self.iteration_ >= self.diis_start_
 
-                Drms = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
+                Dnorm = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
                 if (add_to_diis_subspace and core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
                     diis_performed = self.diis()
@@ -416,7 +417,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_off("HF: Form D")
 
         # After we've built the new D, damp the update
-        if (damping_enabled and self.iteration_ > 1 and Drms > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
+        if (damping_enabled and self.iteration_ > 1 and Dnorm > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
             damping_percentage = core.get_option('SCF', "DAMPING_PERCENTAGE")
             self.damping_update(damping_percentage * 0.01)
             status.append("DAMP={}%".format(round(damping_percentage)))
@@ -429,7 +430,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Print out the iteration
         core.print_out("   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n" %
-                       ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Drms, '/'.join(status)))
+                       ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
 
         # if a an excited MOM is requested but not started, don't stop yet
         if self.MOM_excited_ and not self.MOM_performed_:
@@ -440,10 +441,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             continue
 
         # Call any postiteration callbacks
-        if _converged(Ediff, Drms, e_conv=e_conv, d_conv=d_conv):
+        if _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
             break
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
-            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Drms)
+            raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
 
 
 def scf_finalize_energy(self):

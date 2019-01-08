@@ -451,6 +451,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     double E_tol = options_.get_double("SAD_E_CONVERGENCE");
     double D_tol = options_.get_double("SAD_D_CONVERGENCE");
     int sad_maxiter = options_.get_int("SAD_MAXITER");
+    bool diis_rms = options_.get_bool("DIIS_RMS_ERROR");
 
     double E_old = E;
     int iteration = 0;
@@ -531,7 +532,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         // Build Gradient
         form_gradient(gradient_a, Fa, Da, S, X);
         form_gradient(gradient_b, Fb, Db, S, X);
-        double Drms = 0.5 * (gradient_a->rms() + gradient_b->rms());
+        double Dnorm = diis_rms ? std::sqrt(0.5 * (std::pow(gradient_a->rms(), 2) + std::pow(gradient_b->rms(), 2)))
+                                : std::max(gradient_a->absmax(), gradient_b->absmax());
 
         // Add and extrapolate DIIS
         diis_manager.add_entry(4, gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
@@ -557,10 +559,12 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         }
         if (print_ > 1)
             outfile->Printf("  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, E - E_old,
-                            Drms);
+                            Dnorm);
 
         // Check convergence
-        if (iteration > 1 && deltaE < E_tol && Drms < D_tol) converged = true;
+        if (iteration > 1) {
+            converged = (deltaE < E_tol && Dnorm < D_tol);
+        }
 
         if (iteration > sad_maxiter) {
             outfile->Printf(

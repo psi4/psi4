@@ -343,7 +343,6 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     tmp.reset();
 }
 void HF::initialize_gtfock_jk() {
-
     // Build the JK from options, symmetric type
 #ifdef HAVE_JK_FACTORY
     // DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
@@ -718,7 +717,7 @@ void HF::form_Shalf() {
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < dimpi[h]; ++i) {
             if (min_S > eigval->get(h, i)) min_S = eigval->get(h, i);
-            double scale = 1.0 / sqrt(eigval->get(h, i));
+            double scale = 1.0 / std::sqrt(eigval->get(h, i));
             eigval->set(h, i, scale);
         }
     }
@@ -748,7 +747,7 @@ void HF::form_Shalf() {
             int start_index = 0;
             for (int i = 0; i < dimpi[h]; ++i) {
                 if (S_cutoff < eigval->get(h, i)) {
-                    double scale = 1.0 / sqrt(eigval->get(h, i));
+                    double scale = 1.0 / std::sqrt(eigval->get(h, i));
                     eigvec->scale_column(h, i, scale);
                 } else {
                     start_index++;
