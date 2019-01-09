@@ -657,11 +657,28 @@ def gradient(name, **kwargs):
     
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
-    comp_plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'gradient'), **kwargs)
+    basisstash = p4util.OptionsState(['BASIS'])
+    core_clean = False
+    return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
+
+    # Are we planning?
+    plan = task_planner.task_planner("gradient", name, molecule, **kwargs)
+    if kwargs.get("return_plan", False):
+        return plan
+
+    # We have unpacked to a Single Result
+    elif isinstance(plan, task_base.SingleResult):
+        name = plan.method
+        basis = plan.basis
+        core.set_global_option("BASIS", basis)
+        core_clean = True
+    else:
+        plan.compute()
+        return plan.get_psi_results(return_wfn=return_wfn)
 
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
@@ -699,8 +716,7 @@ def gradient(name, **kwargs):
             lowername = name
 
     elif gradient_type == 'nbody_gufunc':
-        kwargs.update(comp_plan)
-        return kwargs.pop('function')(gradient, name, ptype='gradient', molecule=molecule, **kwargs)
+        return driver_nbody.nbody_gufunc(gradient, name, ptype='gradient', **kwargs)
 
     elif gradient_type == 'cbs_wrapper':
         cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
@@ -745,7 +761,6 @@ def gradient(name, **kwargs):
 
 
     # Commit to procedures[] call hereafter
-    return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
 
     # no analytic derivatives for scf_type cd
@@ -1495,8 +1510,29 @@ def hessian(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    basisstash = p4util.OptionsState(['BASIS'])
+    core_clean = False
+    return_wfn = kwargs.pop('return_wfn', False)
 
-    comp_plan = task_base.planner(name, ptype=kwargs.pop('ptype', 'hessian'), **kwargs)
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule.update_geometry()
+
+    # Are we planning?
+    plan = task_planner.task_planner("hessian", name, molecule, **kwargs)
+    if kwargs.get("return_plan", False):
+        return plan
+
+    # We have unpacked to a Single Result
+    elif isinstance(plan, task_base.SingleResult):
+        name = plan.method
+        basis = plan.basis
+        core.set_global_option("BASIS", basis)
+        core_clean = True
+    else:
+        plan.compute()
+        return plan.get_psi_results(return_wfn=return_wfn)
+
 
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
@@ -1515,8 +1551,7 @@ def hessian(name, **kwargs):
 
     # Call appropriate wrappers
     if gradient_type == 'nbody_gufunc':
-        kwargs.update(comp_plan)
-        return kwargs.pop('function')(hessian, name, ptype='hessian', **kwargs)
+        return driver_nbody.nbody_gufunc(hessian, name.lower(), ptype='hessian', **kwargs)
     # Check if this is a CBS extrapolation
     elif gradient_type == "cbs_gufunc":
         return driver_cbs.cbs_gufunc(hessian, name.lower(), **kwargs, ptype="hessian")
