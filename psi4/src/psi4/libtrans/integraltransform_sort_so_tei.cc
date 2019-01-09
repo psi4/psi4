@@ -38,7 +38,9 @@
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <cassert>
 #include <cmath>
+#include <cstdlib>
 
 using namespace psi;
 
@@ -206,7 +208,12 @@ void IntegralTransform::presort_so_tei() {
             for (int q = 0; q <= p; ++q) {
                 int pq = INDEX((p + soOffset), (q + soOffset));
                 for (int i = 0; i < frzcpi_[h]; ++i) aFzcD[pq] += pCa[p][i] * pCa[q][i];
+
+                assert(Ca_->colspi()[h] >= nalphapi_[h]); // Does not work with Release builds
+                if (Ca_->colspi()[h] < nalphapi_[h])
+                    exit(-1);
                 for (int i = 0; i < nalphapi_[h]; ++i) aD[pq] += pCa[p][i] * pCa[q][i];
+
                 if (transformationType_ != TransformationType::Restricted) {
                     for (int i = 0; i < frzcpi_[h]; ++i) bFzcD[pq] += pCb[p][i] * pCb[q][i];
                     for (int i = 0; i < nbetapi_[h]; ++i) bD[pq] += pCb[p][i] * pCb[q][i];
