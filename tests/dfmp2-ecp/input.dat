@@ -77,14 +77,12 @@ no_com
 set globals {
 scf_type df
 mp2_type df
-e_convergence 1.e-10
-d_convergence 1.e-10
 }
 
-ref_0 = 0.017489937540631217                                                      #TEST
-ref_1 = 0.017534534033075033                                                      #TEST
-ref_2 = 0.017495709601462295                                                      #TEST
-ref_3 = 0.017490717913460685                                                      #TEST
+ref_0 = 0.017534693850393523                                                       #TEST
+ref_1 = 0.01757929255381896                                                        #TEST
+ref_2 = 0.017540466258651577                                                       #TEST
+ref_3 = 0.01753547425960278                                                        #TEST
 
 set freeze_core 0
 E, wfn = energy('mp2/3-21g', bsse_type="nocp", return_wfn="True")
