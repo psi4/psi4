@@ -1584,10 +1584,6 @@ def hessian(name, **kwargs):
 
     dertype = _find_derivative_type('hessian', lowername, kwargs.pop('freq_dertype', kwargs.get('dertype', None)))
 
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
-
     # Add embedding charges for nbody
     if kwargs.get('embedding_charges', None):
         driver_nbody_helper.electrostatic_embedding(kwargs['embedding_charges'])

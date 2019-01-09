@@ -920,7 +920,7 @@ class NBodyComputer(BaseTask):
             core.set_global_option_python('EXTERN', None)
 
     def get_results(self):
-        results_list = {k: v.get_json_results() for k, v in self.task_list.items()}
+        results_list = {k: v.get_results() for k, v in self.task_list.items()}
         energies = {k: v['properties']["return_energy"] for k, v in results_list.items()}
 
         ptype = None
