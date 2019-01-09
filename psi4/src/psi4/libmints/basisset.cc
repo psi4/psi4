@@ -173,11 +173,12 @@ int BasisSet::n_ecp_core() const {
     return ncoreelectrons;
 }
 
+static const std::vector<int> full_shell_values = {0, 2, 10, 18, 36, 54, 86, 118};
+
 int BasisSet::atom_to_period(int Z) {
     if (Z > 118) {
         throw PSIEXCEPTION("Atomic number beyond Oganesson");
     }
-    static const std::vector<int> full_shell_values = {0, 2, 10, 18, 36, 54, 86, 118};
     auto period = std::lower_bound(full_shell_values.begin(), full_shell_values.end(), Z) - full_shell_values.begin();
     return period;
 }
@@ -186,7 +187,6 @@ int BasisSet::period_to_full_shell(int p) {
     if (p > 7) {
         throw PSIEXCEPTION("Atomic number beyond Oganesson");
     }
-    static const std::vector<int> full_shell_values = {0, 2, 10, 18, 36, 54, 86, 118};
     return full_shell_values[p];
 }
 

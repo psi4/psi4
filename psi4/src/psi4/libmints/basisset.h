@@ -393,8 +393,8 @@ class PSI_API BasisSet {
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
     
-    /// Helper functions for frozen core to reduce LOC
    private: 
+    /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);
 };

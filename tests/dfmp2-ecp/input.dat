@@ -64,6 +64,8 @@ Eghne = energy('mp2', molecule=ghne)
 Eghxe = energy('mp2', molecule=ghxe)
 compare_values(refEin, Efzc - Eghne - Eghxe, 8, "MP2 CP interaction energy frozen [He] and [Kr] by hand")  #TEST
 
+clean()
+
 molecule {
 0 1
 Kr 0 0 0
@@ -77,6 +79,8 @@ no_com
 set globals {
 scf_type df
 mp2_type df
+e_convergence 1.0e-9
+d_convergence 1.0e-9
 }
 
 ref_0 = 0.017534693850393523                                                       #TEST
