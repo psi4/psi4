@@ -50,7 +50,7 @@ zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
 _zeta_sym2val = {v: k for k, v in _zeta_val2sym.items()}
 _addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
-_f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
+_f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_options', 'f_energy', 'f_gradient', 'f_hessian']
 _lmh_labels = {
     1: ['HI'],
     2: ['LO', 'HI'],
@@ -541,7 +541,11 @@ def _process_cbs_kwargs(kwargs):
 ###################################
 
 
-def cbs(func, label, **kwargs):
+def cbs():
+    pass
+
+
+def unused_cbs(func, label, **kwargs):
     r"""Function to define a multistage energy method from combinations of
     basis set extrapolations and delta corrections and condense the
     components into a minimum number of calculations.
@@ -908,6 +912,13 @@ def cbs(func, label, **kwargs):
 
         obj.set_variable('CBS NUMBER', len(cbs.compute_list))
 
+        for idelta in range(int(len(cbs.grand_need) / 2)):
+            if idelta == 0:
+                continue
+            dc = idelta * 2 + 1
+            obj.set_variable(f"CBS {cbs.grand_need[dc]['d_stage'].upper()} TOTAL ENERGY",
+                cbs.grand_need[dc]["d_energy"] - cbs.grand_need[dc + 1]["d_energy"])
+
     if np.count_nonzero(gotten_results['gradient']):
         np_grad = np.asarray(gotten_results['gradient']).reshape((-1, 3))
         finalgradient = core.Matrix.from_array(np_grad)
@@ -944,106 +955,27 @@ def cbs(func, label, **kwargs):
 
 
 ######### OUTSOURCE
+######### PARSE / PREPARE
+######### PREPARE / COMPUTE
+
+#    #psioh = core.IOManager.shared_object()
+#    #psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
+#    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+#    #   needs to be communicated to optimize() so reset by that optstash
+#    core.set_local_option('SCF', 'GUESS_PERSIST', True)
 #
-#    metameta = {
-#        'kwargs': kwargs,
-#        'ptype': ptype,
-#        'verbose': verbose,
-#        'label': label,
-#        'molecule': molecule,
-#    }
+#    # Run necessary computations
+#    for mc in JOBS:
+#        kwargs['name'] = mc['f_wfn']
 #
-#    # Plan CBS jobs
-#    GRAND_NEED, MODELCHEM, JOBS, JOBS_EXT = build_cbs_compute(metameta, metadata)
+#        # Build string of molecule and commands that are dependent on the database
+#        commands = '\n'
+#        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+#        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+#            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+#        exec(commands)
 #
-#    # Compute CBS components
-#
-#    # Assemble CBS quantities
-#    cbs_results, GRAND_NEED = assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS)
-#
-#
-########## PARSE / PREPARE
-########## PREPARE / COMPUTE
-#
-##    #psioh = core.IOManager.shared_object()
-##    #psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
-##    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
-##    #   needs to be communicated to optimize() so reset by that optstash
-##    core.set_local_option('SCF', 'GUESS_PERSIST', True)
-##
-##    # Run necessary computations
-##    for mc in JOBS:
-##        kwargs['name'] = mc['f_wfn']
-##
-##        # Build string of molecule and commands that are dependent on the database
-##        commands = '\n'
-##        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
-##        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
-##            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
-##        exec(commands)
-##
-##    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
-#
-########## COMPUTE / ASSEMBLE
-########## ASSEMBLE / REPORT
-
-
-def _summary_table(finalenergy, metadata, JOBS_EXT, GRAND_NEED, MODELCHEM):
-    """Build string of results table"""
-
-    delimit = '  ' + '-' * 105 + '\n'
-    blckfmt = """\n   ==> {} <==\n\n"""
-    headfmt = """     {:>6} {:>20} {:1} {:26} {:>3} {:>16}   {}\n"""
-    linefmt = """     {:>6} {:>20} {:1} {:27} {:2} {:16.8f}   {}\n"""
-
-    tables = ''
-    tables += blckfmt.format('Components')
-    tables += delimit
-
-    tables += headfmt.format('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]', 'Variable')
-    tables += delimit
-    for job in JOBS_EXT:
-        star = ''
-        for mc in MODELCHEM:
-            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']):
-                star = '*'
-        tables += linefmt.format('', job['f_wfn'], '/', job['f_basis'] + " + options" * bool(job['f_options']), star,
-                                 job['f_energy'], VARH[job['f_wfn']][job['f_wfn']])
-    tables += delimit
-
-    tables += blckfmt.format('Stages')
-    tables += delimit
-    tables += headfmt.format('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]', 'Scheme')
-    tables += delimit
-    for stage in GRAND_NEED:
-        tables += linefmt.format(stage['d_stage'], stage['d_wfn'], '/', stage['d_basis'], stage['d_coef'],
-                                 stage['d_energy'], stage['d_scheme'])
-    tables += delimit
-
-    tables += blckfmt.format('CBS')
-    tables += delimit
-    tables += headfmt.format('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]', 'Scheme')
-    tables += delimit
-    tables += linefmt.format(GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '',
-                             GRAND_NEED[0]['d_energy'], GRAND_NEED[0]['d_scheme'])
-    if len(metadata) > 1:
-        tables += linefmt.format(GRAND_NEED[1]['d_stage'], GRAND_NEED[1]['d_wfn'], '/', GRAND_NEED[1]['d_basis'], '',
-                                 GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'], GRAND_NEED[1]['d_scheme'])
-    if len(metadata) > 2:
-        dc = 3
-        for delta in metadata[2:]:
-            deltaE_total = GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy']
-            tables += linefmt.format(
-                GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
-                GRAND_NEED[dc]['d_basis'], '', GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy'],
-                GRAND_NEED[dc]['d_scheme'])
-            core.set_variable(f"CBS {GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
-            dc += 2
-
-    tables += linefmt.format('total', 'CBS', '', '', '', finalenergy, '')
-    tables += delimit
-
-    return tables
+#    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
 
 
 def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom):
@@ -1070,9 +1002,9 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
     for idx in range(Nxtpl):
         NEED[_lmh_labels[Nxtpl][idx]] = dict(
             zip(_f_fields, [
-                wfnname, basisname[idx], basiszeta[idx], 0.0,
+                wfnname, basisname[idx], basiszeta[idx], options, 0.0,
                 np.zeros((natom, 3)),
-                np.zeros((3 * natom, 3 * natom)), options
+                np.zeros((3 * natom, 3 * natom))
             ]))
     return NEED
 
@@ -1330,7 +1262,7 @@ def cbs_gufunc(func, total_method_name, **kwargs):
         return ptype_value
 
 
-def build_cbs_compute(metameta, metadata):
+def _build_cbs_compute(metameta, metadata):
     label = metameta['label']
     natom = metameta['molecule'].natom()
     ptype = metameta['ptype']
@@ -1347,7 +1279,6 @@ def build_cbs_compute(metameta, metadata):
         'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
     ]
     GRAND_NEED = []
-    MODELCHEM = []
 
     NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
                                  metadata[0]["wfn"], metadata[0]["options"], natom)
@@ -1379,19 +1310,18 @@ def build_cbs_compute(metameta, metadata):
                         delta["alpha"]
                     ])))
 
+    MODELCHEM = []
     for stage in GRAND_NEED:
-        for lvl in stage['d_need'].items():
-            MODELCHEM.append(lvl[1])
+        for lvl in stage['d_need'].values():
+            MODELCHEM.append(lvl)
+
+    # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
+    # JOBS is subset of MODELCHEM with minimal list of single result *jobs* needed to satisfy full CBS
+    # TROVE is superset of JOBS with maximal list of single result *entries* resulting from JOBS
 
     # Apply chemical reasoning to choose the minimum computations to run
     JOBS = MODELCHEM[:]
     listfmt = """   {:>12} / {:24} for  {}{}\n"""
-
-    instructions = ''
-    instructions += """    Naive listing of computations required.\n"""
-    for mc in JOBS:
-        instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
-                                       VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
 
     #     Remove duplicate modelchem portion listings
     for mc in MODELCHEM:
@@ -1402,6 +1332,12 @@ def build_cbs_compute(metameta, metadata):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
+
+    instructions = ''
+    instructions += """    Naive listing of computations required.\n"""
+    for mc in JOBS:
+        instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
+                                       VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
 
     #     Remove chemically subsumed modelchem portion listings
     if ptype == 'energy':
@@ -1419,27 +1355,27 @@ def build_cbs_compute(metameta, metadata):
     core.print_out(instructions)
 
     #     Expand listings to all that will be obtained
-    JOBS_EXT = []
+    TROVE = []
     for job in JOBS:
         for wfn in VARH[job['f_wfn']]:
-            JOBS_EXT.append(
+            TROVE.append(
                 dict(
                     zip(_f_fields, [
-                        wfn, job['f_basis'], job['f_zeta'], 0.0,
+                        wfn, job['f_basis'], job['f_zeta'], job['f_options'], 0.0,
                         np.zeros((natom, 3)),
-                        np.zeros((3 * natom, 3 * natom)), job['f_options']
+                        np.zeros((3 * natom, 3 * natom))
                     ])))
 
     instructions = """\n    Full listing of computations to be obtained (required and bonus).\n"""
-    for mc in JOBS_EXT:
+    for mc in TROVE:
         instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
                                        VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
     core.print_out(instructions)
 
-    return GRAND_NEED, MODELCHEM, JOBS, JOBS_EXT
+    return GRAND_NEED, JOBS, TROVE
 
 
-def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS):
+def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
     label = metameta['label']
     natom = metameta['molecule'].natom()
     ptype = metameta['ptype']
@@ -1453,19 +1389,17 @@ def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS):
 
     # Insert obtained energies into the array that stores the cbs stages
     for stage in GRAND_NEED:
-        for lvl in stage['d_need'].items():
-            MODELCHEM.append(lvl[1])
-
-            for job in JOBS_EXT:
+        for lvl in stage['d_need'].values():
+            for job in TROVE:
                 # Dont ask
-                if (((lvl[1]['f_wfn'] == job['f_wfn']) or
-                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
-                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
-                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
-                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
-                    lvl[1]['f_energy'] = job['f_energy']
-                    lvl[1]['f_gradient'] = job['f_gradient']
-                    lvl[1]['f_hessian'] = job['f_hessian']
+                if (((lvl['f_wfn'] == job['f_wfn']) or
+                     ((lvl['f_wfn'][3:] == job['f_wfn']) and lvl['f_wfn'].startswith('c4-')) or
+                     ((lvl['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
+                     (('c4-' + lvl['f_wfn']) == job['f_wfn']) or (lvl['f_wfn'] == ('c4-' + job['f_wfn'])))
+                        and (lvl['f_basis'] == job['f_basis']) and (lvl['f_options'] == job['f_options'])):
+                    lvl['f_energy'] = job['f_energy']
+                    lvl['f_gradient'] = job['f_gradient']
+                    lvl['f_hessian'] = job['f_hessian']
 
     # Make xtpl() call
     finalenergy = 0.0
@@ -1506,21 +1440,92 @@ def assemble_cbs_components(metameta, JOBS_EXT, GRAND_NEED, MODELCHEM, JOBS):
     return cbs_results, GRAND_NEED
 
 
+def _summary_table(metadata, TROVE, GRAND_NEED):
+    """Build string of results table"""
+
+    delimit = '  ' + '-' * 105 + '\n'
+    blckfmt = """\n   ==> {} <==\n\n"""
+    headfmt = """     {:>6} {:>20} {:1} {:26} {:>3} {:>16}   {}\n"""
+    linefmt = """     {:>6} {:>20} {:1} {:27} {:2} {:16.8f}   {}\n"""
+
+    tables = ''
+    tables += blckfmt.format('Components')
+    tables += delimit
+
+    required = []
+    finalenergy = 0.0
+    for stage in GRAND_NEED:
+        finalenergy += stage['d_energy'] * stage['d_coef']
+        for lvl in stage['d_need'].values():
+            required.append((lvl['f_wfn'], lvl['f_basis'], lvl['f_options']))
+
+    tables += headfmt.format('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]', 'Variable')
+    tables += delimit
+    for job in TROVE:
+        star = ''
+        for mc in required:
+            if (job['f_wfn'], job['f_basis'], job['f_options']) == mc:
+                star = '*'
+        tables += linefmt.format('', job['f_wfn'], '/', job['f_basis'] + " + options" * bool(job['f_options']), star,
+                                 job['f_energy'], VARH[job['f_wfn']][job['f_wfn']])
+    tables += delimit
+
+    tables += blckfmt.format('Stages')
+    tables += delimit
+    tables += headfmt.format('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]', 'Scheme')
+    tables += delimit
+    for stage in GRAND_NEED:
+        tables += linefmt.format(stage['d_stage'], stage['d_wfn'], '/', stage['d_basis'], stage['d_coef'],
+                                 stage['d_energy'], stage['d_scheme'])
+    tables += delimit
+
+    tables += blckfmt.format('CBS')
+    tables += delimit
+    tables += headfmt.format('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]', 'Scheme')
+    tables += delimit
+    tables += linefmt.format(GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '',
+                             GRAND_NEED[0]['d_energy'], GRAND_NEED[0]['d_scheme'])
+
+    if len(metadata) > 1:
+        dc = 1
+        for delta in metadata[1:]:
+            mtdstr = GRAND_NEED[dc]['d_wfn']
+            if dc != 1:
+                mtdstr += ' - ' + GRAND_NEED[dc + 1]['d_wfn']
+            tables += linefmt.format(GRAND_NEED[dc]['d_stage'], mtdstr, '/', GRAND_NEED[dc]['d_basis'], '',
+                                     GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy'],
+                                     GRAND_NEED[dc]['d_scheme'])
+            dc += 2
+
+    tables += linefmt.format('total', 'CBS', '', '', '', finalenergy, '')
+    tables += delimit
+
+    return tables
+
+
 class CBSComputer(BaseTask):
 
     molecule: Any
     driver: str = "energy"
     metadata: Any
+    metameta: Dict[str, Any] = {}
 
     return_wfn: bool = False
     verbose: int = 0
 
-    grand_need: Any = None
-    modelchem: Any = None
-    jobs_ext: Any = None
-    metameta: Dict[str, Any] = {}
-    compute_list: List[Any] = []  # formerly JOBS
+    # List of model chemistries with extrapolation scheme applied. Can reconstruct CBS. Keys are d_fields.
+    grand_need: List[Dict[str, Any]] = []
+
+    # Maximal list of model chemistries extractable from running `compute_list`. Keys are _f_fields. Formerly JOBS_EXT.
+    trove: List[Dict[str, Any]] = []
+
+    # Minimal (enlightened) list of jobs to run to satisfy full CBS. Keys are _f_fields. Formerly JOBS.
+    compute_list: List[Dict[str, Any]] = []
+
+    # One-to-One list of SingleResult-s corresponding to `compute_list`.
     task_list: List[Any] = []
+
+    # One-to-One list of QCSchema corresponding to `task_list`.
     results_list: List[Any] = []
 
     def __init__(self, **data):
@@ -1557,8 +1562,7 @@ class CBSComputer(BaseTask):
                             """Requested lesser %s method '%s' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
                             % (delta["treatment"], delta["wfn_lo"]))
 
-            self.grand_need, self.modelchem, self.compute_list, self.jobs_ext = build_cbs_compute(
-                self.metameta, self.metadata)
+            self.grand_need, self.compute_list, self.trove = _build_cbs_compute(self.metameta, self.metadata)
 
             for job in self.compute_list:
                 keywords = copy.deepcopy(self.metameta['kwargs']['keywords'])
@@ -1609,7 +1613,7 @@ class CBSComputer(BaseTask):
         # core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
 
-    def get_results(self):
+    def _prepare_results(self):
         results_list = [x.get_results() for x in self.task_list]
         print(results_list)
         energies = [x['properties']["return_energy"] for x in results_list]
@@ -1645,13 +1649,13 @@ class CBSComputer(BaseTask):
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
                 for wfn in VARH[mc['f_wfn']]:
-                    for job in self.jobs_ext:
+                    for job in self.trove:
                         if ((wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis'])
                                 and (mc['f_options'] == job['f_options'])):
                             job['f_energy'] = task['psi4:qcvars'][VARH[wfn][wfn]]
 
             # Copy data from 'run' to 'obtained' table
-            for mce in self.jobs_ext:
+            for mce in self.trove:
                 if ((mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis'])
                         and (mc['f_options'] == mce['f_options'])):
                     mce['f_energy'] = mc['f_energy']
@@ -1660,80 +1664,105 @@ class CBSComputer(BaseTask):
 
             print('MC:\n', mc)
 
-        cbs_results, self.grand_need = assemble_cbs_components(self.metameta, self.jobs_ext, self.grand_need,
-                                                               self.modelchem, self.compute_list)
+        cbs_results, self.grand_need = _assemble_cbs_components(self.metameta, self.trove, self.grand_need)
 
         print('\nCBS_RESULTS', cbs_results)
         print('\nGRAND_NEED', self.grand_need)
 
         return cbs_results
 
-    def get_json_results(self):
-        gotten_results = self.get_results()
+    def get_results(self):
+        assembled_results = self._prepare_results()
 
-        ret = {
-            "return_result": gotten_results["ret_ptype"],
-            "properties": {
-                "return_energy": gotten_results["energy"],
-            },
-            "psi4:qcvars": {
-                "CURRENT GRADIENT": gotten_results["gradient"],
-            },
+        # load QCVariables
+        qcvars = {
+            'CBS NUMBER': len(self.compute_list),
+            'NUCLEAR REPULSION ENERGY': self.molecule.nuclear_repulsion_energy(),
         }
-        return ret
+
+        for qcv in ['CBS', 'CURRENT']:
+            qcvars[qcv + ' REFERENCE ENERGY'] = self.grand_need[0]['d_energy']
+            qcvars[qcv + ' CORRELATION ENERGY'] = assembled_results['energy'] - self.grand_need[0]['d_energy']
+            qcvars[qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY'] = assembled_results['energy']
+
+        if np.count_nonzero(assembled_results['gradient']):
+            for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
+                qcvars[qcv] = finalgradient
+
+        if np.count_nonzero(assembled_results['hessian']):
+            for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
+                qcvars[qcv] = finalhessian
+
+        data = {
+            'cbs_record': copy.deepcopy(self.grand_need),
+            'driver': self.driver,
+            #'keywords': self.keywords,
+            #'model': {
+            #    'method': self.method,
+            #    'basis': self.basis
+            #},
+            'molecule': self.molecule.to_schema(dtype=1)['molecule'],
+            'properties': {
+                #'calcinfo_nalpha': wfn.nalpha(),
+                #'calcinfo_nbeta': wfn.nbeta(),
+                'calcinfo_natom': self.molecule.natom(),
+                'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
+                'return_energy': assembled_results['energy'],
+            },
+            'provenance': p4util.provenance_stamp(__name__),
+            'psi4:qcvars': qcvars,
+            #'raw_output': None,
+            'return_result': assembled_results['ret_ptype'],
+            'schema_name': 'qc_schema_output',
+            'schema_version': 1,
+            'success': True,
+        }
+
+        print('\nCBS QCSchema:')
+        pprint.pprint(data)
+        return data
 
     def get_psi_results(self, return_wfn=False):
 
-        gotten_results = self.get_results()
+        cbs_schema = self.get_results()
+
+        json_grad = cbs_schema['psi4:qcvars'].get('CBS GRADIENT')
+        json_hess = cbs_schema['psi4:qcvars'].get('CBS HESSIAN')
+        ret_ptype = cbs_schema['return_result']  # going to be wrong type for grad
+
+        core.print_out(_summary_table(self.metadata, self.trove, self.grand_need))
 
         # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
         basis = core.BasisSet.build(self.molecule, "ORBITAL", 'def2-svp')
         wfn = core.Wavefunction(self.molecule, basis)
 
-        finalenergy = gotten_results['energy']
-        ret_ptype = {'energy': finalenergy}
+        for qcv, val in cbs_schema['psi4:qcvars'].items():
+            for obj in [core, wfn]:
+                obj.set_variable(qcv, val)
 
-        core.print_out(_summary_table(finalenergy, self.metadata, self.jobs_ext, self.grand_need, self.modelchem))
-
-        for obj in [core, wfn]:
-            for qcv in ['CBS', 'CURRENT']:
-                obj.set_variable(qcv + ' REFERENCE ENERGY', self.grand_need[0]['d_energy'])
-                obj.set_variable(qcv + ' CORRELATION ENERGY',
-                                 gotten_results['energy'] - self.grand_need[0]['d_energy'])
-                obj.set_variable(qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY', gotten_results['energy'])
-
-            obj.set_variable('CBS NUMBER', len(self.compute_list))
-
-        if np.count_nonzero(gotten_results['gradient']):
-            np_grad = np.asarray(gotten_results['gradient']).reshape((-1, 3))
+        if json_grad is not None:
+            np_grad = np.asarray(json_grad).reshape((-1, 3))
             finalgradient = core.Matrix.from_array(np_grad)
-            ret_ptype['gradient'] = finalgradient
 
             wfn.set_gradient(finalgradient)
-            for obj in [core, wfn]:
-                for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
-                    obj.set_variable(qcv, finalgradient)
 
             if finalgradient.rows(0) < 20:
                 core.print_out('CURRENT GRADIENT')
                 finalgradient.print_out()
 
-        if np.count_nonzero(gotten_results['hessian']):
-            ndof = int(math.sqrt(len(gotten_results['hessian'])))
-            np_hess = np.asarray(gotten_results['hessian']).reshape((ndof, ndof))
+        if json_hess is not None:
+            ndof = int(math.sqrt(len(json_hess)))
+            np_hess = np.asarray(json_hess).reshape((ndof, ndof))
             finalhessian = core.Matrix.from_array(np_hess)
-            ret_ptype['hessian'] = finalgradient
+            ret_ptype['hessian'] = finalhessian
 
             wfn.set_hessian(finalhessian)
-            for obj in [core, wfn]:
-                for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
-                    obj.set_variable(qcv, finalhessian)
 
             if finalhessian.rows(0) < 20:
                 core.print_out('CURRENT HESSIAN')
                 finalhessian.print_out()
 
         if return_wfn:
-            return (ret_ptype[self.driver], wfn)
+            return (ret_ptype, wfn)
         else:
-            return ret_ptype[self.driver]
+            return ret_ptype
