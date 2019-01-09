@@ -93,9 +93,9 @@ def scf_compute_energy(self):
             # die_if_not_converged()
             raise e
         else:
-            core.print_out("  Energy did not converge, but proceeding anyway.\n\n")
+            core.print_out("  Energy and/or wave function did not converge, but proceeding anyway.\n\n")
     else:
-        core.print_out("  Energy converged.\n\n")
+        core.print_out("  Energy and wave function converged.\n\n")
 
     scf_energy = self.finalize_energy()
     return scf_energy
