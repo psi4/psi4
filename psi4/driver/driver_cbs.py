@@ -1310,14 +1310,14 @@ def _build_cbs_compute(metameta, metadata):
                         delta["alpha"]
                     ])))
 
+    # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
+    # JOBS is subset of MODELCHEM with minimal list of single result *jobs* needed to satisfy full CBS
+    # TROVE is superset of JOBS with maximal list of single result *entries* resulting from JOBS
+
     MODELCHEM = []
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].values():
             MODELCHEM.append(lvl)
-
-    # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
-    # JOBS is subset of MODELCHEM with minimal list of single result *jobs* needed to satisfy full CBS
-    # TROVE is superset of JOBS with maximal list of single result *entries* resulting from JOBS
 
     # Apply chemical reasoning to choose the minimum computations to run
     JOBS = MODELCHEM[:]
@@ -1376,6 +1376,11 @@ def _build_cbs_compute(metameta, metadata):
 
 
 def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
+    """Absorb job E/G/H results from `TROVE` into `GRAND_NEED`. Process
+    those into stage E/G/H in `GRAND_NEED`, returning the latter.
+    Accumulate into final E/G/H quantities, returning them in dict.
+
+    """
     label = metameta['label']
     natom = metameta['molecule'].natom()
     ptype = metameta['ptype']
@@ -1391,7 +1396,7 @@ def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].values():
             for job in TROVE:
-                # Dont ask
+                # Don't ask
                 if (((lvl['f_wfn'] == job['f_wfn']) or
                      ((lvl['f_wfn'][3:] == job['f_wfn']) and lvl['f_wfn'].startswith('c4-')) or
                      ((lvl['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
@@ -1429,12 +1434,12 @@ def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
     cbs_results = {
         'ret_ptype': {
             'energy': finalenergy,
-            'gradient': finalgradient.ravel().tolist(),
-            'hessian': finalhessian.ravel().tolist()
+            'gradient': finalgradient,
+            'hessian': finalhessian,
         }[ptype],
         'energy': finalenergy,
-        'gradient': finalgradient.ravel().tolist(),
-        'hessian': finalhessian.ravel().tolist(),
+        'gradient': finalgradient,
+        'hessian': finalhessian,
     }
 
     return cbs_results, GRAND_NEED
@@ -1637,14 +1642,13 @@ class CBSComputer(BaseTask):
 
             elif self.metameta['ptype'] == 'gradient':
                 mc['f_gradient'] = np.array(response).reshape((-1, 3))
-                mc['f_energy'] = task['properties']['return_energy']
+                mc['f_energy'] = task['psi4:qcvars']['CURRENT ENERGY']
 
             elif self.metameta['ptype'] == 'hessian':
-                ndof = int(math.sqrt(len(response)))
-                mc['f_hessian'] = np.asarray(response).reshape((ndof, ndof))
-                mc['f_energy'] = task['properties']['return_energy']
+                mc['f_hessian'] = plump_qcvar(response, 'hessian')
+                mc['f_energy'] = task['psi4:qcvars']['CURRENT ENERGY']
                 if 'CURRENT GRADIENT' in task['psi4:qcvars']:
-                    mc['f_gradient'] = np.array(task['psi4:qcvars']['CURRENT GRADIENT']).reshape((-1, 3))
+                    mc['f_gradient'] = plump_qcvar(task['psi4:qcvars']['CURRENT GRADIENT'], 'gradient')
 
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
@@ -1666,12 +1670,16 @@ class CBSComputer(BaseTask):
 
         cbs_results, self.grand_need = _assemble_cbs_components(self.metameta, self.trove, self.grand_need)
 
+        core.print_out(_summary_table(self.metadata, self.trove, self.grand_need))
+
         print('\nCBS_RESULTS', cbs_results)
         print('\nGRAND_NEED', self.grand_need)
 
         return cbs_results
 
     def get_results(self):
+        """Return CBS results as CBS-flavored QCSchema."""
+
         assembled_results = self._prepare_results()
 
         # load QCVariables
@@ -1687,11 +1695,11 @@ class CBSComputer(BaseTask):
 
         if np.count_nonzero(assembled_results['gradient']):
             for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
-                qcvars[qcv] = finalgradient
+                qcvars[qcv] = assembled_results['gradient']
 
         if np.count_nonzero(assembled_results['hessian']):
             for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
-                qcvars[qcv] = finalhessian
+                qcvars[qcv] = assembled_results['hessian']
 
         data = {
             'cbs_record': copy.deepcopy(self.grand_need),
@@ -1718,51 +1726,114 @@ class CBSComputer(BaseTask):
             'success': True,
         }
 
+        data = unnp(data, flat=True)
         print('\nCBS QCSchema:')
         pprint.pprint(data)
         return data
 
     def get_psi_results(self, return_wfn=False):
+        """Return CBS results in usual E/wfn interface."""
 
         cbs_schema = self.get_results()
 
-        json_grad = cbs_schema['psi4:qcvars'].get('CBS GRADIENT')
-        json_hess = cbs_schema['psi4:qcvars'].get('CBS HESSIAN')
-        ret_ptype = cbs_schema['return_result']  # going to be wrong type for grad
+        ret_ptype = plump_qcvar(cbs_schema['return_result'], shape_clue=cbs_schema['driver'], ret='psi4')
+        wfn = self._cbs_schema_to_wfn(cbs_schema)
 
-        core.print_out(_summary_table(self.metadata, self.trove, self.grand_need))
+        if return_wfn:
+            return (ret_ptype, wfn)
+        else:
+            return ret_ptype
+
+    @staticmethod
+    def _cbs_schema_to_wfn(cbs_schema):
+        """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
 
         # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-        basis = core.BasisSet.build(self.molecule, "ORBITAL", 'def2-svp')
-        wfn = core.Wavefunction(self.molecule, basis)
+        mol = core.Molecule.from_schema(cbs_schema)
+        basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
+        wfn = core.Wavefunction(mol, basis)
 
         for qcv, val in cbs_schema['psi4:qcvars'].items():
             for obj in [core, wfn]:
-                obj.set_variable(qcv, val)
+                obj.set_variable(qcv, plump_qcvar(val, qcv))
 
-        if json_grad is not None:
-            np_grad = np.asarray(json_grad).reshape((-1, 3))
-            finalgradient = core.Matrix.from_array(np_grad)
-
+        flat_grad = cbs_schema['psi4:qcvars'].get('CBS TOTAL GRADIENT')
+        if flat_grad is not None:
+            finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
             wfn.set_gradient(finalgradient)
 
             if finalgradient.rows(0) < 20:
                 core.print_out('CURRENT GRADIENT')
                 finalgradient.print_out()
 
-        if json_hess is not None:
-            ndof = int(math.sqrt(len(json_hess)))
-            np_hess = np.asarray(json_hess).reshape((ndof, ndof))
-            finalhessian = core.Matrix.from_array(np_hess)
-            ret_ptype['hessian'] = finalhessian
-
+        flat_hess = cbs_schema['psi4:qcvars'].get('CBS TOTAL HESSIAN')
+        if flat_hess is not None:
+            finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
             wfn.set_hessian(finalhessian)
 
             if finalhessian.rows(0) < 20:
                 core.print_out('CURRENT HESSIAN')
                 finalhessian.print_out()
 
-        if return_wfn:
-            return (ret_ptype, wfn)
+        return wfn
+
+
+def plump_qcvar(val, shape_clue, ret='np'):
+    #if isinstance(val, np.ndarray):
+    #    tgt = val
+    if isinstance(val, (np.ndarray, core.Matrix)):
+        raise TypeError
+    elif isinstance(val, list):
+        tgt = np.asarray(val)
+    else:
+        # presumably double
+        return val
+
+    if 'gradient' in shape_clue.lower():
+        reshaper = (-1, 3)
+    elif 'hessian' in shape_clue.lower():
+        ndof = int(math.sqrt(len(tgt)))
+        reshaper = (ndof, ndof)
+    else:
+        raise ValidationError('Uncertain how to reshape array: {}'.format(shape_clue))
+
+    if ret == 'np':
+        return tgt.reshape(reshaper)
+    elif ret == 'psi4':
+        return core.Matrix.from_array(tgt.reshape(reshaper))
+    else:
+        raise ValidationError('Return type not among [np, psi4]: {}'.format(ret))
+
+
+def unnp(dicary, flat=False, _path=None):
+    """Return `dicary` with any ndarray values replaced by lists.
+
+    Parameters
+    ----------
+    flat : bool, optional
+        Whether the returned lists are flat or nested.
+
+    Returns
+    -------
+    dict
+        Input with any ndarray values replaced by lists.
+
+    """
+    if _path is None:
+        _path = []
+
+    ndicary = {}
+    for k, v in dicary.items():
+        if isinstance(v, dict):
+            ndicary[k] = unnp(v, flat, _path + [str(k)])
         else:
-            return ret_ptype
+            try:
+                v.shape
+            except AttributeError:
+                ndicary[k] = v
+            else:
+                if flat:
+                    ndicary[k] = v.ravel().tolist()
+                else:
+                    ndicary[k] = v.tolist()
+    return ndicary
