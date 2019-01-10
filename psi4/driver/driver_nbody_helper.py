@@ -32,7 +32,7 @@ from psi4 import core
 from psi4.driver.p4util.exceptions import *
 
 
-def multi_level(func, **kwargs):
+def get_results(self):
     """
     Use different levels of theory for different expansion levels
     See kwargs description in driver_nbody.nbody_gufunc
@@ -44,123 +44,105 @@ def multi_level(func, **kwargs):
     """
     from psi4.driver.driver_nbody import _print_nbody_energy
 
-    ptype = kwargs['ptype']
-    return_wfn = kwargs.get('return_wfn', False)
-    kwargs['return_wfn'] = True
-    levels = {}
-    for k, v in kwargs.pop('levels').items():
-        if isinstance(k, str):
-            levels[k.lower()] = v
-        else:
-            levels[k] = v
-    supersystem = levels.pop('supersystem', False)
-    molecule = kwargs.get('molecule', core.get_active_molecule())
-    kwargs['bsse_type'] = [kwargs['bsse_type']] if isinstance(kwargs['bsse_type'], str) else kwargs['bsse_type']
-    natoms = molecule.natom()
+    ptype = self.driver 
+    natoms = self.molecule.natom()
+    supersystem = self.task_list.pop('supersystem', None)
 
     # Initialize with zeros
     energy_result, gradient_result, hessian_result = 0, None, None
-    energy_body_contribution = {b: {} for b in kwargs['bsse_type']}
-    energy_body_dict = {b: {} for b in kwargs['bsse_type']}
-    wfns = {}
+    energy_body_contribution = {b: {} for b in self.bsse_type}
+    energy_body_dict = {b: {} for b in self.bsse_type}
     if ptype in ['gradient', 'hessian']:
         gradient_result = np.zeros((natoms, 3))
     if ptype == 'hessian':
         hessian_result = np.zeros((natoms * 3, natoms * 3))
 
-    if kwargs.get('charge_method', False) and not kwargs.get('embedding_charges', False):
-        kwargs['embedding_charges'] = compute_charges(kwargs['charge_method'],
-                                      kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), molecule)
-
-    for n in sorted(levels)[::-1]:
-        molecule.set_name('%i' % n)
-        kwargs_copy = kwargs.copy()
-        kwargs_copy['max_nbody'] = n
-        energy_bsse_dict = {b: 0 for b in kwargs['bsse_type']}
-        if isinstance(levels[n], str):
-            # If a new level of theory is provided, compute contribution
-            ret, wfn = func(levels[n], **kwargs_copy)
-            wfns[n] = wfn
-        else:
-            # For the n-body contribution, use available data from the higher order levels[n]-body
-            wfn = wfns[levels[n]]
+    for n in sorted(self.task_list)[::-1]:
+        energy_bsse_dict = {b: 0 for b in self.bsse_type}
+        self.max_nbody = n
+        results = self.get_results(results=self.task_list[n])
 
         for m in range(n - 1, n + 1):
             if m == 0: continue
             # Subtract the (n-1)-body contribution from the n-body contribution to get the n-body effect
             sign = (-1)**(1 - m // n)
-            for b in kwargs['bsse_type']:
-                energy_bsse_dict[b] += sign * wfn.variable('%i%s' % (m, b.lower()))
-            if ptype in ['gradient', 'hessian']:
-                gradient_result += sign * np.array(wfn.variable('GRADIENT ' + str(m)))
+            for b in self.bsse_type:
+                energy_bsse_dict[b] += sign * results['%s_energy_body_dict' %b.lower()]['%i%s' %(m, b.lower())]
+
+            if ptype == 'hessian':
+                hessian_result += sign * results['ptype_body_dict'][m]
+                gradient_result += sign * results['gradient_body_dict'][m]
+                if n == 1:
+                    hessian1 = results['ptype_body_dict'][n]
+                    gradient1 = results['gradient_body_dict'][n]
+
+            elif ptype == 'gradient':
+                gradient_result += sign * results['ptype_body_dict'][m]
                 # Keep 1-body contribution to compute interaction data
                 if n == 1:
-                    gradient1 = np.array(wfn.variable('GRADIENT ' + str(m)))
-            if ptype == 'hessian':
-                hessian_result += sign * np.array(wfn.variable('HESSIAN ' + str(m)))
-                if n == 1:
-                    hessian1 = np.array(wfn.variable('HESSIAN ' + str(m)))
-        energy_result += energy_bsse_dict[kwargs['bsse_type'][0]]
-        for b in kwargs['bsse_type']:
+                    gradient1 = results['ptype_body_dict'][n]
+
+        energy_result += energy_bsse_dict[self.bsse_type[0]]
+        for b in self.bsse_type:
             energy_body_contribution[b][n] = energy_bsse_dict[b]
 
     if supersystem:
         # Super system recovers higher order effects at a lower level
-        molecule.set_name('supersystem')
-        kwargs_copy = kwargs.copy()
-        kwargs_copy.pop('bsse_type')
-        kwargs_copy.pop('ptype')
-        ret, wfn_super = func(supersystem, **kwargs_copy)
-        core.clean()
-        kwargs_copy = kwargs.copy()
-        kwargs_copy['bsse_type'] = 'nocp'
-        kwargs_copy['max_nbody'] = max(levels)
-        # Subtract lower order effects to avoid double counting
-        ret, wfn = func(supersystem, **kwargs_copy)
-        energy_result += wfn_super.energy() - wfn.variable(str(max(levels)))
-        for b in kwargs['bsse_type']:
-            energy_body_contribution[b][molecule.nfragments()] = wfn_super.energy() - wfn.variable(
-                str(max(levels)))
+        supersystem_result = supersystem.pop(self.max_frag).get_results()
+        self.max_nbody = max(self.task_list)
+        components = self.get_results(results=supersystem)
 
-        if ptype in ['gradient', 'hessian']:
-            gradient_result += np.array(wfn_super.gradient()) - np.array(wfn.variable('GRADIENT ' + str(max(levels))))
+        energy_result += supersystem_result['properties']['return_energy'] - components['energy_body_dict'][self.max_nbody]
+        for b in self.bsse_type:
+            energy_body_contribution[b][self.molecule.nfragments()] = (supersystem_result['properties']['return_energy'] -
+                                                                       components['energy_body_dict'][self.max_nbody])
+
         if ptype == 'hessian':
-            hessian_result += np.array(wfn_super.hessian()) - np.array(wfn.variable('HESSIAN ' + str(max(levels))))
-        levels['supersystem'] = supersystem
+            gradient_result += supersystem_result['psi4:qcvars']['CURRENT GRADIENT'] - components['gradient_body_dict'][self.max_nbody]
+            hessian_result += supersystem_result['return_result'] - components['ptype_body_dict'][self.max_nbody]
 
-    for b in kwargs['bsse_type']:
+        elif ptype == 'gradient':
+            gradient_result += supersystem_result['return_result'] - components['ptype_body_dict'][self.max_nbody]
+
+
+    for b in self.bsse_type:
         for n in energy_body_contribution[b]:
             energy_body_dict[b][n] = sum(
                 [energy_body_contribution[b][i] for i in range(1, n + 1) if i in energy_body_contribution[b]])
 
-    is_embedded = kwargs.get('embedding_charges', False) or kwargs.get('charge_method', False)
-    for b in kwargs['bsse_type']:
+    is_embedded = self.embedding_charges or self.charge_method
+    for b in self.bsse_type:
         _print_nbody_energy(energy_body_dict[b], '%s-corrected multilevel many-body expansion' % b.upper(),
                             is_embedded)
 
-    if not kwargs['return_total_data']:
-        # Remove monomer contribution for interaction data
-        energy_result -= energy_body_dict[kwargs['bsse_type'][0]][1]
+    if not self.return_total_data:
+        # Remove monomer cotribution for interaction data
+        energy_result -= energy_body_dict[self.bsse_type[0]][1]
         if ptype in ['gradient', 'hessian']:
             gradient_result -= gradient1
         if ptype == 'hessian':
             hessian_result -= hessian1
-    wfn_out = core.Wavefunction.build(molecule, 'def2-svp')
-    core.set_variable("CURRENT ENERGY", energy_result)
-    wfn_out.set_variable("CURRENT ENERGY", energy_result)
-    if gradient_result is not None:
-        wfn_out.set_gradient(core.Matrix.from_array(gradient_result))
-    if hessian_result is not None:
-        wfn_out.set_hessian(core.Matrix.from_array(hessian_result) )
-    ptype_result = eval(ptype + '_result')
-    for b in kwargs['bsse_type']:
-        for i in energy_body_dict[b]:
-            wfn_out.set_variable(str(i) + b, energy_body_dict[b][i])
+    #rebase uncertain wfn_out = core.Wavefunction.build(molecule, 'def2-svp')
+    #rebase uncertain core.set_variable("CURRENT ENERGY", energy_result)
+    #rebase uncertain wfn_out.set_variable("CURRENT ENERGY", energy_result)
+    #rebase uncertain if gradient_result is not None:
+    #rebase uncertain     wfn_out.set_gradient(core.Matrix.from_array(gradient_result))
+    #rebase uncertain if hessian_result is not None:
+    #rebase uncertain     wfn_out.set_hessian(core.Matrix.from_array(hessian_result) )
+    #rebase uncertain ptype_result = eval(ptype + '_result')
+    #rebase uncertain for b in kwargs['bsse_type']:
+    #rebase uncertain     for i in energy_body_dict[b]:
+    #rebase uncertain         wfn_out.set_variable(str(i) + b, energy_body_dict[b][i])
 
-    if kwargs['return_wfn']:
-        return (ptype_result, wfn_out)
-    else:
-        return ptype_result
+    #rebase uncertain if kwargs['return_wfn']:
+    #rebase uncertain     return (ptype_result, wfn_out)
+    #rebase uncertain else:
+    #rebase uncertain     return ptype_result
+
+
+    energy_body_dict = {str(k) + b: v for b in energy_body_dict for k, v in energy_body_dict[b].items()}
+
+    return {'ret_energy': energy_result, 'ret_ptype': eval(ptype + '_result'), 'energy_body_dict': energy_body_dict, 'ptype_body_dict': {}}
 
 
 def compute_charges(charge_method, charge_type, molecule):

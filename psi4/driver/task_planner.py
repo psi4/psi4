@@ -39,10 +39,30 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import UpgradeHelper
 from psi4.driver.task_base import SingleResult
-from psi4.driver.driver_nbody import NBodyComputer, nbody_gufunc
-from psi4.driver.driver_cbs import CBSComputer, cbs_gufunc, _cbs_text_parser
+from psi4.driver.driver_nbody import NBodyComputer
+from psi4.driver.driver_cbs import CBSComputer, _cbs_text_parser
 
 __all__ = ["task_planner"]
+
+
+def _expand_cbs_methods(method, basis, driver, **kwargs):
+    if method == 'cbs':
+        return method, basis, kwargs['cbsmeta'] 
+    # Expand CBS methods
+    if "/" in method:
+        kwargs["ptype"] = driver
+        cbsmeta = _cbs_text_parser(method, **kwargs)
+
+        # Single call detected
+        if "cbs_metadata" not in cbsmeta:
+            method = cbsmeta["method"]
+            basis = cbsmeta["basis"]
+        else:
+            method = "cbs"
+    else:
+        cbsmeta = {}
+
+    return method, basis, cbsmeta
 
 
 def task_planner(driver, method, molecule, **kwargs):
@@ -93,19 +113,7 @@ def task_planner(driver, method, molecule, **kwargs):
     method = method.lower()
 
     # Expand CBS methods
-    if "/" in method:
-        tmp_kwargs = kwargs.copy()
-        tmp_kwargs["ptype"] = driver
-        cbsmeta = _cbs_text_parser(method, **tmp_kwargs)
-
-        # Single call detected
-        if "cbs_metadata" not in cbsmeta:
-            method = cbsmeta["method"]
-            basis = cbsmeta["basis"]
-        else:
-            method = "cbs"
-    else:
-        cbsmeta = {}
+    method, basis, cbsmeta = _expand_cbs_methods(method, basis, driver, **kwargs)
 
     # Build a packet
     packet = {"molecule": molecule, "driver": driver, "method": method, "basis": basis, "keywords": keywords}
@@ -115,10 +123,19 @@ def task_planner(driver, method, molecule, **kwargs):
         plan = NBodyComputer(**packet, **kwargs)
         del packet["molecule"]
 
-        if method == "cbs":
-            plan.build_tasks(CBSComputer, **packet, **cbsmeta)
-        else:
-            plan.build_tasks(SingleResult, **packet)
+        # Add tasks for every nbody level requested
+        levels = kwargs.pop('levels', {plan.max_nbody: method})
+        plan.max_nbody = max([i for i in levels if isinstance(i, int)])
+
+        for n, level in levels.items():
+            method, basis, cbsmeta = _expand_cbs_methods(level, basis, driver, cbsmeta=cbsmeta, **kwargs)
+            packet.update({'method': method, 'basis': basis})
+
+            if method == "cbs":
+                plan.build_tasks(CBSComputer, **packet, **cbsmeta, max_nbody=n)
+            else:
+                plan.build_tasks(SingleResult, **packet, max_nbody=n)
+
         return plan
 
     # Check for CBS

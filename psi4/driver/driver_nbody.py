@@ -555,12 +555,11 @@ def assemble_nbody_components(metadata, component_results):
     """
     nbody_range = range(1, metadata['max_nbody'] + 1)
 
-    # Unpack compute list metadata
-    compute_list = metadata['compute_dict']['all']
-    cp_compute_list = metadata['compute_dict']['cp']
-    nocp_compute_list = metadata['compute_dict']['nocp']
-    vmfc_compute_list = metadata['compute_dict']['vmfc_compute']
-    vmfc_level_list = metadata['compute_dict']['vmfc_levels']
+    compute_dict = build_nbody_compute_list(metadata['bsse_type'], metadata['max_nbody'], metadata['max_frag'])
+    cp_compute_list = compute_dict['cp']
+    nocp_compute_list = compute_dict['nocp']
+    vmfc_compute_list = compute_dict['vmfc_compute']
+    vmfc_level_list = compute_dict['vmfc_levels']
 
 
     # Build size and slices dictionaries
@@ -812,7 +811,7 @@ class NBodyComputer(BaseTask):
     embedding_charges: Dict[int, list] = {}
     charge_method: str = ''
     charge_type: str = 'MULLIKEN_CHARGES'
-    task_list: Dict[str, Any] = {}
+    task_list: Dict[Any, Dict[str, Any]] = {}
     compute_dict: Dict[str, Any] = {}
 
     def __init__(self, **data):
@@ -831,9 +830,6 @@ class NBodyComputer(BaseTask):
         if not self.return_total_data:
             if self.embedding_charges or self.charge_method:
                 raise Exception('Cannot return interaction data when using embedding scheme.')
-
-        # Get compute list
-        self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
 
     @pydantic.validator('molecule')
     def set_molecule(cls, mol):
@@ -865,16 +861,32 @@ class NBodyComputer(BaseTask):
 
         import json
         template = json.dumps(kwargs)
-        compute_list = self.compute_dict[bsse_type]
 
+        # Compute embedding charges
         if self.charge_method and not self.embedding_charges:
             self.embedding_charges = driver_nbody_helper.compute_charges(self.charge_method, self.charge_type,
                                                                          self.molecule)
+        # Store tasks by level
+        level = kwargs.pop('max_nbody', self.max_nbody)
+        self.task_list[level] = {}
+
+        # Add supersystem computation if requested 
+        if level == 'supersystem':
+            data = json.loads(template)
+            data["molecule"] = self.molecule
+            self.task_list[level][self.max_frag] = obj(**data)
+            self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
+
+        else:
+            # Get compute list
+            self.compute_dict = build_nbody_compute_list(self.bsse_type, level, self.max_frag)
+
+        compute_list = self.compute_dict[bsse_type]
 
         counter = 0
         for count, n in enumerate(compute_list):
             for key, pair in enumerate(compute_list[n]):
-                if pair in self.task_list:
+                if pair in self.task_list[level]:
                     continue
                 print(pair)
                 data = json.loads(template)
@@ -888,39 +900,39 @@ class NBodyComputer(BaseTask):
                         charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
                     data['keywords'].update({'embedding_charges': charges})
 
-                self.task_list[pair] = obj(**data)
+                self.task_list[level][pair] = obj(**data)
                 counter += 1
+
 
         return counter
 
     def plan(self):
         ret = []
-        for k, v in self.task_list.items():
-            ret.append(v.plan())
+        for level in self.task_list:
+            for k, v in self.task_list[level].item():
+                ret.append(v.plan())
         return ret
 
     def compute(self):
         all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
         # gof = core.get_output_file()
         # core.close_outfile()
-        for k, v in self.task_list.items():
-            v.compute()
-
-            # if self.results_list[k] is None:
-            #     # Get CBS results
-            #     results = v.get_results()
-            #     self.results_list[k] = {'properties': {'return_energy': results['energy']}, 'return_result': results['ret_ptype'],
-            #                             'psi4:qcvars': {'CURRENT GRADIENT': results['gradient']}}
-
-            # print(self.results_list[k]["return_result"])
+        for level in self.task_list:
+            for k, v in self.task_list[level].items():
+                v.compute()
 
         # core.set_output_file(gof, True)
         p4util.reset_pe_options(all_options)
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
 
-    def get_results(self):
-        results_list = {k: v.get_results() for k, v in self.task_list.items()}
+    def get_results(self, results={}):
+
+        if len(self.task_list) > 1 and not results:
+            return driver_nbody_helper.get_results(self)
+
+        metadata = self.dict().copy()
+        results_list = {k: v.get_results() for k, v in (results.items() or self.task_list[self.max_nbody].items())}
         energies = {k: v['properties']["return_energy"] for k, v in results_list.items()}
 
         ptype = None
@@ -932,12 +944,12 @@ class NBodyComputer(BaseTask):
                 for k, v in results_list.items()
             }
         tmp = {"energies": energies, "ptype": ptype}
-        nbody_results = assemble_nbody_components(self.dict(), tmp)
+        nbody_results = assemble_nbody_components(metadata.copy(), tmp)
 
         if self.driver == 'hessian':
             gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
             tmp['ptype'] = gradient
-            metadata = self.dict().copy()
+            metadata = metadata.copy()
             metadata['driver'] = 'gradient'
             grad_result = assemble_nbody_components(metadata, tmp)
             nbody_results.update({
