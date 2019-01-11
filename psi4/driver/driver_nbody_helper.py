@@ -32,7 +32,7 @@ from psi4 import core
 from psi4.driver.p4util.exceptions import *
 
 
-def get_results(self):
+def prepare_results(self):
     """
     Use different levels of theory for different expansion levels
     See kwargs description in driver_nbody.nbody_gufunc
@@ -60,7 +60,7 @@ def get_results(self):
     for n in sorted(self.task_list)[::-1]:
         energy_bsse_dict = {b: 0 for b in self.bsse_type}
         self.max_nbody = n
-        results = self.get_results(results=self.task_list[n])
+        results = self.prepare_results(results=self.task_list[n])
 
         for m in range(n - 1, n + 1):
             if m == 0: continue
@@ -90,7 +90,7 @@ def get_results(self):
         # Super system recovers higher order effects at a lower level
         supersystem_result = supersystem.pop(self.max_frag).get_results()
         self.max_nbody = max(self.task_list)
-        components = self.get_results(results=supersystem)
+        components = self.prepare_results(results=supersystem)
 
         energy_result += supersystem_result['properties']['return_energy'] - components['energy_body_dict'][self.max_nbody]
         for b in self.bsse_type:

@@ -909,7 +909,7 @@ class NBodyComputer(BaseTask):
     def plan(self):
         ret = []
         for level in self.task_list:
-            for k, v in self.task_list[level].item():
+            for k, v in self.task_list[level].items():
                 ret.append(v.plan())
         return ret
 
@@ -926,10 +926,10 @@ class NBodyComputer(BaseTask):
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
 
-    def get_results(self, results={}):
+    def prepare_results(self, results={}):
 
         if len(self.task_list) > 1 and not results:
-            return driver_nbody_helper.get_results(self)
+            return driver_nbody_helper.prepare_results(self)
 
         metadata = self.dict().copy()
         results_list = {k: v.get_results() for k, v in (results.items() or self.task_list[self.max_nbody].items())}
@@ -947,7 +947,6 @@ class NBodyComputer(BaseTask):
         nbody_results = assemble_nbody_components(metadata.copy(), tmp)
 
         if self.driver == 'hessian':
-            print(results_list)
             gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
             tmp['ptype'] = gradient
             metadata = metadata.copy()
@@ -967,15 +966,66 @@ class NBodyComputer(BaseTask):
         nbody_results['intermediates2'] = {str(k): v['properties']["return_energy"] for k, v in results_list.items()}
 
         if ptype is not None:
-            nbody_results['intermediates_ptype'] = {'PTYPE ' + str(k): v for k, v in ptype.items()}
+            nbody_results['intermediates_ptype'] = {str(k): v for k, v in ptype.items()}
 
         return nbody_results
 
+    def get_results(self):
+        """Return nbody results as nbody-flavored QCSchema."""
+
+        results = self.prepare_results()
+        ret_energy, ret_ptype, ret_gradient = results.pop('ret_energy'), results.pop('ret_ptype'), results.pop('ret_gradient', None)
+
+        # load QCVariables
+        qcvars = {
+            'NUCLEAR REPULSION ENERGY': self.molecule.nuclear_repulsion_energy(),
+        }
+
+        for k, val in results.items():
+            for k2, val2 in val.items():
+                if isinstance(val2, np.ndarray):
+                    val[k2] = val2.tolist()
+            qcvars[k] = val
+
+        qcvars['CURRENT ENERGY'] = ret_energy
+        if self.driver == 'gradient':
+            qcvars['CURRENT GRADIENT'] = ret_ptype.tolist()
+        elif self.driver == 'hessian':
+            qcvars['CURRENT GRADIENT'] = ret_gradient.tolist()
+            qcvars['CURRENT HESSIAN'] = ret_ptype.tolist()
+
+        component_results = self.dict()['task_list']
+        for k1, val1 in component_results.items():
+            for k2 in val1:
+                val1[k2]['molecule'] = val1[k2]['molecule'].to_schema(dtype=1)['molecule']
+
+        data = {
+            'driver': self.driver,
+            'molecule': self.molecule.to_schema(dtype=1)['molecule'],
+            'properties': {
+                'calcinfo_natom': self.molecule.natom(),
+                'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
+                'return_energy': ret_energy,
+            },
+            'provenance': p4util.provenance_stamp(__name__),
+            'psi4:qcvars': qcvars,
+            #'raw_output': None,
+            'return_result': ret_energy if self.driver == 'energy' else ret_ptype.tolist(),
+            'schema_name': 'qc_schema_output',
+            'schema_version': 1,
+            'success': True,
+            'component_results': component_results
+        }
+
+        return data
+
     def get_psi_results(self, return_wfn=False):
         nbody_results = self.get_results()
-        ret = nbody_results['ret_ptype']
-        if self.driver in ['gradient', 'hessian']:
-            ret = core.Matrix.from_array(ret)
+        ret = nbody_results['return_result']
+        if self.driver == 'gradient':
+            ret = core.Matrix.from_array(np.array(ret).reshape((-1, 3)))
+        elif self.driver == 'hessian':
+            ret = core.Matrix.from_array(np.array(ret))
 
         wfn = core.Wavefunction.build(self.molecule, 'def2-svp')
         dicts = [
@@ -984,24 +1034,26 @@ class NBodyComputer(BaseTask):
             'vmfc_energy_body_dict'
         ]
         if self.driver == 'gradient':
-            wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_ptype']))
-            nbody_results['gradient_body_dict'] = nbody_results['ptype_body_dict']
+            wfn.set_gradient(ret)
+            nbody_results['psi4:qcvars']['gradient_body_dict'] = nbody_results['psi4:qcvars']['ptype_body_dict']
         elif self.driver == 'hessian':
-            nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
-            wfn.set_hessian(core.Matrix.from_array(nbody_results['ret_ptype']))
-            wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_gradient']))
+            nbody_results['psi4:qcvars']['hessian_body_dict'] = nbody_results['psi4:qcvars']['ptype_body_dict']
+            wfn.set_hessian(ret)
+            g = np.array(nbody_results['psi4:qcvars']['CURRENT GRADIENT']).reshape((-1, 3))
+            wfn.set_gradient(core.Matrix.from_array(g))
 
-        for d in nbody_results:
+        for d in nbody_results['psi4:qcvars']:
             if d in dicts:
-                for var, value in nbody_results[d].items():
+                for var, value in nbody_results['psi4:qcvars'][d].items():
                     try:
                         wfn.set_variable(str(var), value)
                         core.set_variable(str(var), value)
                     except:
-                        wfn.set_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
+                        value = np.array(value)
+                        wfn.set_variable(self.driver + ' ' + str(var), core.Matrix.from_array(value))
 
-        core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
-        wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
+        core.set_variable("CURRENT ENERGY", nbody_results['properties']['return_energy'])
+        wfn.set_variable("CURRENT ENERGY", nbody_results['properties']['return_energy'])
 
         if return_wfn:
             return (ret, wfn)

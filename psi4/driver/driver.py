@@ -1727,6 +1727,7 @@ def hessian(name, **kwargs):
 
     _hessian_write(wfn)
 
+    core.set_variable("CURRENT GRADIENT", G0)
     if return_wfn:
         return (wfn.hessian(), wfn)
     else:

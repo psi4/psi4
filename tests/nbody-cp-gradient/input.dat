@@ -122,7 +122,7 @@ for i in cp_scheme: #TEST
 
     for result in [
         gradient_dict[i],
-        wfn.variable(f"PTYPE {i}"),
+        wfn.variable(f"GRADIENT {i}"),
         wfn_mol.variable("CURRENT GRADIENT"),
         variable("CURRENT GRADIENT"),
     ]:

@@ -37,7 +37,7 @@ for i in vmfc_scheme: #TEST
     core.clean() #TEST
 
     compare_values(energy_dict[i], wfn.variables()[i], 8, 'Energy of %s' %i) #TEST
-    compare_arrays(gradient_dict[i], wfn.variables()['PTYPE %s' %i], 8, 'Gradient of %s' %i) #TEST
+    compare_arrays(gradient_dict[i], wfn.variables()['GRADIENT %s' %i], 8, 'Gradient of %s' %i) #TEST
 
 ene, grad = 0, np.zeros((9, 3)) #TEST
 
