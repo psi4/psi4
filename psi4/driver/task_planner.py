@@ -46,8 +46,9 @@ __all__ = ["task_planner"]
 
 
 def _expand_cbs_methods(method, basis, driver, **kwargs):
-    if method == 'cbs':
-        return method, basis, kwargs['cbsmeta'] 
+    if method == 'cbs' and kwargs.get('cbsmeta', None):
+        return method, basis, kwargs['cbsmeta']
+
     # Expand CBS methods
     if "/" in method:
         kwargs["ptype"] = driver
@@ -140,8 +141,8 @@ def task_planner(driver, method, molecule, **kwargs):
 
     # Check for CBS
     elif method == "cbs":
-
-        return CBSComputer(**packet, **cbsmeta, **kwargs)
+        kwargs.update(cbsmeta)
+        return CBSComputer(**packet, **kwargs)
 
     # Finally a single result
     else:

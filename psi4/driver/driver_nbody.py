@@ -947,6 +947,7 @@ class NBodyComputer(BaseTask):
         nbody_results = assemble_nbody_components(metadata.copy(), tmp)
 
         if self.driver == 'hessian':
+            print(results_list)
             gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
             tmp['ptype'] = gradient
             metadata = metadata.copy()
