@@ -480,8 +480,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
             // This probably shouldn't be recomputed here; we already needed it to get the
             // second derivative integrals.  One fine day, this should be refactored.
-            auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
-            metric->form_full_eig_inverse();
+            auto metric = std::make_shared<FittingMetric>(auxiliary_, true);            
+            metric->form_full_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
             SharedMatrix PQ = metric->get_metric();
             double** PQp = PQ->pointer();
 

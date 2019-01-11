@@ -428,7 +428,7 @@ void DFCorrGrad::build_AB_inv_terms() {
     // => Fitting Metric Full Inverse <= //
 
     auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
-    metric->form_full_eig_inverse();
+    metric->form_full_eig_inverse(condition_);
     SharedMatrix J = metric->get_metric();
     double** Jp = J->pointer();
 

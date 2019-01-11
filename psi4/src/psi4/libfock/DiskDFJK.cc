@@ -1060,7 +1060,7 @@ void DiskDFJK::initialize_wK_core() {
 
     // Fitting metric
     auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
-    Jinv->form_full_eig_inverse();
+    Jinv->form_full_eig_inverse(condition_);
     double** Jinvp = Jinv->get_metric()->pointer();
 
     timer_off("JK: (A|Q)^-1");
@@ -1349,7 +1349,7 @@ void DiskDFJK::initialize_wK_disk() {
 
     // Form the J full inverse
     auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
-    Jinv->form_full_eig_inverse();
+    Jinv->form_full_eig_inverse(condition_);
     double** Jinvp = Jinv->get_metric()->pointer();
 
     // Synch up

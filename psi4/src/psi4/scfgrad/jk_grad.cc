@@ -646,7 +646,7 @@ void DFJKGrad::build_AB_inv_terms()
     // => Fitting Metric Full Inverse <= //
 
     auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
-    metric->form_full_eig_inverse();
+    metric->form_full_eig_inverse(condition_);
     SharedMatrix J = metric->get_metric();
     double** Jp = J->pointer();
 
@@ -1472,7 +1472,7 @@ void DFJKGrad::compute_hessian()
 
     int na = Ca_->colspi()[0];
     auto metric = std::make_shared<FittingMetric>(auxiliary_, true);
-    metric->form_full_eig_inverse();
+    metric->form_full_eig_inverse(condition_);
     SharedMatrix PQ = metric->get_metric();
     double** PQp = PQ->pointer();
 
