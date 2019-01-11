@@ -44,9 +44,8 @@ def _method_exists(ptype, method_name):
         alt_method_name = p4util.text.find_approximate_string_matches(method_name,
                                                                 procedures[ptype].keys(), 2)
         if len(alt_method_name) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
-        Cptype = ptype[0].upper() + ptype[1:]
-        raise ValidationError('%s method "%s" is not available.%s' % (Cptype, method_name, alternatives))
+            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
+        raise ValidationError(f"""{ptype.capitalize()} method "{method_name}" is not available.{alternatives}""")
 
 
 def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec, verbose=1):

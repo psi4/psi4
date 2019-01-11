@@ -44,7 +44,7 @@ from psi4.driver import psifiles as psif
 from psi4.driver.driver_cbs_helper import xtpl_procedures, register_xtpl_scheme
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import BaseTask, SingleResult
+from psi4.driver.task_base import BaseTask, SingleResult, unnp
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -541,11 +541,7 @@ def _process_cbs_kwargs(kwargs):
 ###################################
 
 
-def cbs():
-    pass
-
-
-def unused_cbs(func, label, **kwargs):
+def cbs(func, label, **kwargs):
     r"""Function to define a multistage energy method from combinations of
     basis set extrapolations and delta corrections and condense the
     components into a minimum number of calculations.
@@ -876,82 +872,13 @@ def unused_cbs(func, label, **kwargs):
     >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme='corl_xtpl_helgaker_2', func=cbs)
 
     """
-    kwargs = p4util.kwargs_lower(kwargs)
-    # metadata = _process_cbs_kwargs(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    # verbose = kwargs.pop('verbose', 0)
-    ptype = kwargs.pop('ptype')
+    pass
 
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
 
-    keywords = {i: j['value'] for i, j in p4util.prepare_options_for_modules(changedOnly=True)['GLOBALS'].items()}
-    cbs = CBSComputer(molecule=molecule, driver=ptype, keywords=keywords, **kwargs)
+##  Aliases  ##
+complete_basis_set = cbs
 
-    ComputeInstance = cbs
-    ComputeClass = SingleResult
-    ComputeInstance.compute()
 
-    gotten_results = ComputeInstance.get_results()
-
-    #core.print_out(tables)
-
-    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    basis = core.BasisSet.build(molecule, "ORBITAL", 'def2-svp')
-    wfn = core.Wavefunction(molecule, basis)
-
-    finalenergy = gotten_results['energy']
-    ret_ptype = {'energy': finalenergy}
-
-    for obj in [core, wfn]:
-        for qcv in ['CBS', 'CURRENT']:
-            obj.set_variable(qcv + ' REFERENCE ENERGY', cbs.grand_need[0]['d_energy'])
-            obj.set_variable(qcv + ' CORRELATION ENERGY', gotten_results['energy'] - cbs.grand_need[0]['d_energy'])
-            obj.set_variable(qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY', gotten_results['energy'])
-
-        obj.set_variable('CBS NUMBER', len(cbs.compute_list))
-
-        for idelta in range(int(len(cbs.grand_need) / 2)):
-            if idelta == 0:
-                continue
-            dc = idelta * 2 + 1
-            obj.set_variable(f"CBS {cbs.grand_need[dc]['d_stage'].upper()} TOTAL ENERGY",
-                cbs.grand_need[dc]["d_energy"] - cbs.grand_need[dc + 1]["d_energy"])
-
-    if np.count_nonzero(gotten_results['gradient']):
-        np_grad = np.asarray(gotten_results['gradient']).reshape((-1, 3))
-        finalgradient = core.Matrix.from_array(np_grad)
-        ret_ptype['gradient'] = finalgradient
-
-        wfn.set_gradient(finalgradient)
-        for obj in [core, wfn]:
-            for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
-                obj.set_variable(qcv, finalgradient)
-
-        if finalgradient.rows(0) < 20:
-            core.print_out('CURRENT GRADIENT')
-            finalgradient.print_out()
-
-    if np.count_nonzero(gotten_results['hessian']):
-        ndof = int(math.sqrt(len(gotten_results['hessian'])))
-        np_hess = np.asarray(gotten_results['hessian']).reshape((ndof, ndof))
-        finalhessian = core.Matrix.from_array(np_hess)
-        ret_ptype['hessian'] = finalgradient
-
-        wfn.set_hessian(finalhessian)
-        for obj in [core, wfn]:
-            for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
-                obj.set_variable(qcv, finalhessian)
-
-        if finalhessian.rows(0) < 20:
-            core.print_out('CURRENT HESSIAN')
-            finalhessian.print_out()
-
-    if return_wfn:
-        return (ret_ptype[ptype], wfn)
-    else:
-        return ret_ptype[ptype]
 
 
 ######### OUTSOURCE
@@ -1027,10 +954,6 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
         largs['value' + zlab] = needdict[zlab][datakey]
 
     return largs
-
-
-##  Aliases  ##
-complete_basis_set = cbs
 
 
 def _cbs_wrapper_methods(**kwargs):
@@ -1313,6 +1236,8 @@ def _build_cbs_compute(metameta, metadata):
     # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
     # JOBS is subset of MODELCHEM with minimal list of single result *jobs* needed to satisfy full CBS
     # TROVE is superset of JOBS with maximal list of single result *entries* resulting from JOBS
+    # "entry" here is a mtd-bas-opt spec that can support E/G/H data
+    # "job" here is an entry on which to sic Psi4 that, through VARH, may fill in multiple entries
 
     MODELCHEM = []
     for stage in GRAND_NEED:
@@ -1600,7 +1525,7 @@ class CBSComputer(BaseTask):
         mol.fix_orientation(True)
         return mol
 
-    def build_tasks(self, obj, **data):
+    def build_tasks(self, obj, **kwargs):
         # permanently a dummy function
         pass
 
@@ -1693,6 +1618,12 @@ class CBSComputer(BaseTask):
             qcvars[qcv + ' CORRELATION ENERGY'] = assembled_results['energy'] - self.grand_need[0]['d_energy']
             qcvars[qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY'] = assembled_results['energy']
 
+        for idelta in range(int(len(cbs.grand_need) / 2)):
+            if idelta == 0:
+                continue
+            dc = idelta * 2 + 1
+            qcvars[f"CBS {cbs.grand_need[dc]['d_stage'].upper()} TOTAL ENERGY"] = self.grand_need[dc]["d_energy"] - self.grand_need[dc + 1]["d_energy"]
+
         if np.count_nonzero(assembled_results['gradient']):
             for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
                 qcvars[qcv] = assembled_results['gradient']
@@ -1701,7 +1632,8 @@ class CBSComputer(BaseTask):
             for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
                 qcvars[qcv] = assembled_results['hessian']
 
-        data = {
+        cbsrec = {
+            #'cbs_jobs': copy.deepcopy(self.compute_list),
             'cbs_record': copy.deepcopy(self.grand_need),
             'driver': self.driver,
             #'keywords': self.keywords,
@@ -1726,10 +1658,10 @@ class CBSComputer(BaseTask):
             'success': True,
         }
 
-        data = unnp(data, flat=True)
+        cbsrec = unnp(cbsrec, flat=True)
         print('\nCBS QCSchema:')
-        pprint.pprint(data)
-        return data
+        pprint.pprint(cbsrec)
+        return cbsrec
 
     def get_psi_results(self, return_wfn=False):
         """Return CBS results in usual E/wfn interface."""
@@ -1779,14 +1711,34 @@ class CBSComputer(BaseTask):
 
 
 def plump_qcvar(val, shape_clue, ret='np'):
-    #if isinstance(val, np.ndarray):
-    #    tgt = val
+    """Convert flat arra
+
+    Parameters
+    ----------
+    val : list or scalar
+        flat (?, ) list or scalar, probably from JSON storage.
+    shape_clue : str
+        Label that includes (case insensitive) one of the following as
+        a clue to the array's natural dimensions: 'gradient', 'hessian'
+    ret : {'np', 'psi4'}
+        Whether to return `np.ndarray` or `psi4.core.Matrix`.
+
+    Returns
+    -------
+    np.ndarray or psi4.core.Matrix
+        Reshaped array of type `ret` with natural dimensions of `shape_clue`.
+
+    Raises
+    ------
+    TODO
+
+    """
     if isinstance(val, (np.ndarray, core.Matrix)):
         raise TypeError
     elif isinstance(val, list):
         tgt = np.asarray(val)
     else:
-        # presumably double
+        # presumably scalar
         return val
 
     if 'gradient' in shape_clue.lower():
@@ -1801,39 +1753,6 @@ def plump_qcvar(val, shape_clue, ret='np'):
         return tgt.reshape(reshaper)
     elif ret == 'psi4':
         return core.Matrix.from_array(tgt.reshape(reshaper))
+#wfn.gradient().np.ravel().tolist()
     else:
         raise ValidationError('Return type not among [np, psi4]: {}'.format(ret))
-
-
-def unnp(dicary, flat=False, _path=None):
-    """Return `dicary` with any ndarray values replaced by lists.
-
-    Parameters
-    ----------
-    flat : bool, optional
-        Whether the returned lists are flat or nested.
-
-    Returns
-    -------
-    dict
-        Input with any ndarray values replaced by lists.
-
-    """
-    if _path is None:
-        _path = []
-
-    ndicary = {}
-    for k, v in dicary.items():
-        if isinstance(v, dict):
-            ndicary[k] = unnp(v, flat, _path + [str(k)])
-        else:
-            try:
-                v.shape
-            except AttributeError:
-                ndicary[k] = v
-            else:
-                if flat:
-                    ndicary[k] = v.ravel().tolist()
-                else:
-                    ndicary[k] = v.tolist()
-    return ndicary

@@ -70,16 +70,16 @@ def task_planner(driver, method, molecule, **kwargs):
     """Plans a task graph of a complex computations.
 
     Canonical Task layering:
-     - N-Body
+     - NBody
      - CBS
-     - Finite Difference
-     - Single Result
+     - FinDif
+     - SingleResult
 
     Parameters
     ----------
-    driver :
-        The resulting type of computation {"energy", "gradient", "hessian"}
-    method :
+    driver : {"energy", "gradient", "hessian"}
+        The resulting type of computation.
+    method : str
         A string representation of the method such as "HF" or "B3LYP". Special cases are:
         "cbs"
     molecule : psi4.core.Molecule

@@ -875,7 +875,7 @@ def gradient_from_energies_geometries(molecule):
 
 def hessian_from_gradients_geometries(molecule, irrep):
     """
-    Generate geometries for a hessian by finite difference of energies.
+    Generate geometries for a hessian by finite difference of gradients.
 
     Parameters
     ----------
