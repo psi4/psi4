@@ -1458,6 +1458,20 @@ class CBSComputer(BaseTask):
     # One-to-One list of QCSchema corresponding to `task_list`.
     results_list: List[Any] = []
 
+    @pydantic.validator('driver')
+    def set_driver(cls, driver):
+        if driver not in ['energy', 'gradient', 'hessian']:
+            raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
+                                     function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % driver)
+        return driver
+
+    @pydantic.validator('molecule')
+    def set_molecule(cls, mol):
+        mol.update_geometry()
+        mol.fix_com(True)
+        mol.fix_orientation(True)
+        return mol
+
     def __init__(self, **data):
         data = p4util.kwargs_lower(data)
         data["metadata"] = _process_cbs_kwargs(data)
@@ -1510,20 +1524,6 @@ class CBSComputer(BaseTask):
                     })
                 print(task)
                 self.task_list.append(task)
-
-    @pydantic.validator('driver')
-    def set_driver(cls, driver):
-        if driver not in ['energy', 'gradient', 'hessian']:
-            raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
-                                     function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % driver)
-        return driver
-
-    @pydantic.validator('molecule')
-    def set_molecule(cls, mol):
-        mol.update_geometry()
-        mol.fix_com(True)
-        mol.fix_orientation(True)
-        return mol
 
     def build_tasks(self, obj, **kwargs):
         # permanently a dummy function
@@ -1747,7 +1747,7 @@ def plump_qcvar(val, shape_clue, ret='np'):
         ndof = int(math.sqrt(len(tgt)))
         reshaper = (ndof, ndof)
     else:
-        raise ValidationError('Uncertain how to reshape array: {}'.format(shape_clue))
+        raise ValidationError(f'Uncertain how to reshape array: {shape_clue}')
 
     if ret == 'np':
         return tgt.reshape(reshaper)
@@ -1755,4 +1755,4 @@ def plump_qcvar(val, shape_clue, ret='np'):
         return core.Matrix.from_array(tgt.reshape(reshaper))
 #wfn.gradient().np.ravel().tolist()
     else:
-        raise ValidationError('Return type not among [np, psi4]: {}'.format(ret))
+        raise ValidationError(f'Return type not among [np, psi4]: {ret}')

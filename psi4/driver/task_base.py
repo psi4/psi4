@@ -76,7 +76,7 @@ class SingleResult(BaseTask):
         driver = driver.lower()
         if driver not in ["energy", "gradient", "hessian"]:
             raise exceptions.ValidationError(
-                "Driver must be either energy, gradient, or hessian. Found {}.".format(driver))
+                f"Driver must be either energy, gradient, or hessian. Found {driver}.")
 
         return driver
 

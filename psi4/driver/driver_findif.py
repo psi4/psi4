@@ -41,13 +41,13 @@ from psi4.driver.task_base import BaseTask
 array_format = {"precision": 10}
 
 
-def _displace_cart(mol, geom, salc_list, i_m, step_size):
+def _displace_cart(mass, geom, salc_list, i_m, step_size):
     """Displace a geometry along the specified displacement SALCs.
 
     Parameters
     ----------
-    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
-        The molecule to displace
+    mass : ndarray
+        (nat, ) masses [u] of atoms of the molecule (const).
     geom : ndarray
         (nat, 3) reference geometry [a0] of the molecule (const).
     salc_list : :py:class:`~psi4.core.CdSalcList`
@@ -60,24 +60,28 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
         The size of a single "step," i.e., the stencil size.
 
     Returns
-    ------
+    -------
+    disp_geom : ndarray
+        (nat, 3) Displaced geometry.
     label : str
         Displacement label for the metadata dictionary.
 
     """
-    label = ""
+    label = []
+    disp_geom = np.copy(geom)
     # This for loop and tuple unpacking is why the function can handle
     # an arbitrary number of SALCs.
     for salc_index, disp_steps in i_m:
         # * Python error if iterate through `salc_list`
         for i in range(len(salc_list[salc_index])):
-            component = salc_list[salc_index][i]
-            geom[component.atom, component.xyz] += (
-                disp_steps * step_size * component.coef / np.sqrt(mol.mass(component.atom)))
-        # salc_index is in descending order. We want the label in ascending order, so...
-        # ...add the new label part from the left of the string, not the right.
-        label = "{:d}: {:d}".format(salc_index, disp_steps) + (", " if label else "") + label
-    return label
+            salc = salc_list[salc_index][i]
+            disp_geom[salc.atom, salc.xyz] += disp_steps * step_size * salc.coef / np.sqrt(mass[salc.atom])
+        label.append(f"{salc_index}: {disp_steps}")
+
+    # salc_index is in descending order. We want the label in ascending order, so...
+    # ...add the new label part from the left of the string, not the right.
+    label = ', '.join(reversed(label))
+    return disp_geom, label
 
 
 def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0):
@@ -334,9 +338,9 @@ def _geom_generator(mol, freq_irrep_only, mode):
         raise ValidationError("FINDIF: Mode {} not recognized.".format(mode))
 
     def init_string(data):
-        return ("  Using finite-differences of {:s}.\n"
-                "    Generating geometries for use with {:d}-point formula.\n"
-                "    Displacement size will be {:6.2e}.\n".format(print_msg, data["num_pts"], data["disp_size"]))
+        return f"""  Using finite-differences of {print_msg}.
+    Generating geometries for use with {data["num_pts"]}-point formula.
+    Displacement size will be {data["disp_size"]:6.2e}.\n"""
 
     # Genuine support for qcdb molecules would be nice. But that requires qcdb CdSalc tech.
     # Until then, silently swap the qcdb molecule out for a psi4.core.molecule.
@@ -346,7 +350,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
     data = _initialize_findif(mol, freq_irrep_only, mode, init_string, 1)
 
     # We can finally start generating displacements.
-    ref_geom = mol.geometry().clone()
+    ref_geom = np.array(mol.geometry())
 
     # Now we generate the metadata...
     findifrec = {
@@ -365,13 +369,12 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     def append_geoms(indices, steps):
         """Given a list of indices and a list of steps to displace each, append the corresponding geometry to the list."""
-        new_geom = ref_geom.clone().np
+
         # Next, to make this salc/magnitude composite.
-        index_steps = zip(indices, steps)
-        label = _displace_cart(mol, new_geom, data["salc_list"], index_steps, data["disp_size"])
+        disp_geom, label = _displace_cart(findifrec['molecule']['molecule']['masses'], ref_geom, data["salc_list"], zip(indices, steps), data["disp_size"])
         if data["print_lvl"] > 2:
-            core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(new_geom, **array_format)))
-        findifrec["displacements"][label] = {"geometry": new_geom.ravel().tolist()}
+            core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(disp_geom, **array_format)))
+        findifrec["displacements"][label] = {"geometry": disp_geom.ravel().tolist()}
 
     for h in range(data["n_irrep"]):
         active_indices = data["salc_indices_pi"][h]
@@ -391,8 +394,8 @@ def _geom_generator(mol, freq_irrep_only, mode):
                         append_geoms((index, index2), val)
 
     if data["print_lvl"] > 2:
-        core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom.np, **array_format)))
-    findifrec["reference"]["geometry"] = ref_geom.np.ravel().tolist()
+        core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom, **array_format)))
+    findifrec["reference"]["geometry"] = ref_geom.ravel().tolist()
 
     if data["print_lvl"] > 1:
         core.print_out("\n-------------------------------------------------------------\n")
