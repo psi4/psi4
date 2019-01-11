@@ -188,7 +188,9 @@ SharedMatrix SADGuess::form_D_AO() {
     if (print_ > 1) outfile->Printf("  Determining Atomic Occupations\n");
 
     for (int A = 0; A < molecule_->natom(); A++) {
-        int Z = molecule_->Z(A);
+        int Z = std::round(molecule_->Z(A));
+        // Number of ECP electrons on center
+        int ECP = basis_->n_ecp_core(molecule_->label(A));
         // Assuming neutral atoms for now
         nelec[A] = Z;
 
@@ -197,13 +199,13 @@ SharedMatrix SADGuess::form_D_AO() {
             nalpha[A] = nbeta[A] = 0.5 * nelec[A];
         } else {
             // Target ground spin state
-            if (Z >= reference_S.size()) {
+            if (Z+ECP >= reference_S.size()) {
                 std::ostringstream err;
                 err << " Only atoms up to Z = " << reference_S.size() - 1
                     << " are currently supported with SAD_SPIN_AVERAGE = false\n";
                 throw std::domain_error(err.str());
             }
-            int nhigh = reference_S[Z];
+            int nhigh = reference_S[Z+ECP];
             nalpha[A] = 0.5 * (nelec[A] + nhigh);
             nbeta[A] = 0.5 * (nelec[A] - nhigh);
         }
@@ -234,6 +236,7 @@ SharedMatrix SADGuess::form_D_AO() {
             if (atomic_bases_[l]->max_am() != atomic_bases_[m]->max_am()) continue;
             if (atomic_bases_[l]->max_nprimitive() != atomic_bases_[m]->max_nprimitive()) continue;
             if (atomic_bases_[l]->has_puream() != atomic_bases_[m]->has_puream()) continue;
+            if (atomic_bases_[l]->n_ecp_core() != atomic_bases_[m]->n_ecp_core()) continue;
 
             // Semi-Rigorous match obtained
             unique_indices[m] = l;
@@ -391,6 +394,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     OneBodyAOInt* S_ints = integral.ao_overlap();
     OneBodyAOInt* T_ints = integral.ao_kinetic();
     OneBodyAOInt* V_ints = integral.ao_potential();
+    OneBodyAOInt* ECP_ints = integral.ao_ecp();
 
     // Compute overlap S and orthogonalizer X;
     SharedMatrix S(mat.create_matrix("Overlap Matrix"));
@@ -410,16 +414,21 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     T_ints->compute(T);
     SharedMatrix V(mat.create_matrix("V"));
     V_ints->compute(V);
+    SharedMatrix ECP(mat.create_matrix("ECP"));
+    ECP_ints->compute(ECP);
     SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));
     H->zero();
     H->add(T);
     H->add(V);
+    H->add(ECP);
 
     T.reset();
     V.reset();
+    ECP.reset();
     delete S_ints;
     delete T_ints;
     delete V_ints;
+    delete ECP_ints;
 
     if (print_ > 6) {
         H->print();
