@@ -34,7 +34,7 @@ from psi4 import core
 
 from .exceptions import ValidationError
 
-
+np.set_printoptions(precision=4, linewidth=240, suppress=True)
 """
 Generalized iterative solvers for Psi4.
 
@@ -321,7 +321,7 @@ def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, e_tol, r_t
     core.print_out("\n")
     if verbose > 1:
         # summarize options for verbose
-        core.print_out("   " + "{} options".format(solver_name).center(77) + "\n")
+        core.print_out("   " + "{} options".format(solver_name) + "\n")
         core.print_out("\n  -----------------------------------------------------\n")
         core.print_out("    Maxiter                         = {:<5d}\n".format(maxiter))
         core.print_out("    Eigenvalue tolerance            = {:11.5e}\n".format(e_tol))
@@ -385,47 +385,57 @@ def _diag_print_converged(solver_name, stats, vals, verbose=1, **kwargs):
         core.print_out("  Computed a total of {} Large products\n\n".format(stats[-1]['product_count']))
 
 
-def _gs_orth(engine, old_vecs, new_vec, thresh):
-    """Perform GS orthonormalization of new_vec against some set old_vecs
+def _print_array(name, arr, verbose):
+    """print an subspace quantity (numpy array) to the output file
+
+    Parameters
+    ----------
+    name : str
+        The name to print above the array
+    arr : :py:class:`np.ndarray`
+        The array to print
+    verbose : int
+        The amount of information to print. Only prints for verbose > 2
+    """
+    if verbose > 2:
+        core.print_out("\n\n{}:\n{}\n".format(name, str(arr)))
+
+
+def _gs_orth(engine, U, V, thresh):
+    """Perform GS orthonormalization of a set V against a previously orthonormalized set U
     Parameters
     ----------
     engine : object
        The engine passed to the solver, required to define vector algebraic operations needed
-    old_vecs : list of `vector`
-       A set of orthonormal vectors, can be empty so that a set of vectors can be build via successive calls
-    new_vec : single `vector`
-       The vector to orthonormalize against old_vecs
+    U : list of `vector`
+        A set of orthonormal vectors, len(U) = l; satisfies ||I^{lxl}-U^tU|| < thresh
+    V : list of `vectors`
+        The vectors used to augment U
     thresh : float
        If the orthogonalized vector has a norm smaller than this value it is considered LD to the set
 
     Returns
     -------
-    new : single `vector` (if norm > thresh)
-       new_vec after all components from old_vec have been projected out and the result normalized
-    None: if (norm < thresh)
-       When the final vector has norm smaller than thresh and should be discarded, none is returned.
-
-    ..note:: Since discarded vectors are returned as None, when appending to a set with successive calls to the this function
-    the caller should check the return before appending.
+    U_aug : list of `vector`
+       The orthonormal set of vectors U' with span(U') = span(U) + span(V), len(U) <= len(U_aug) <= len(U) + len(V)
     """
-    for old in old_vecs:
-        dot = engine.vector_dot(old, new_vec)
-        new_vec = engine.vector_axpy(-1.0 * dot, old, new_vec)
-    norm = engine.vector_dot(new_vec, new_vec)
-    norm = np.sqrt(norm)
-    if norm >= thresh:
-        new_vec = engine.vector_scale(1.0 / norm, new_vec)
-        return new_vec
-    else:
-        return None
+    for vi in V:
+        for j in range(len(U)):
+            dij = engine.vector_dot(vi, U[j])
+            Vi = engine.vector_axpy(-1.0 * dij, U[j], vi)
+        norm_vi = np.sqrt(engine.vector_dot(vi, vi))
+        if norm_vi >= thresh:
+            U.append(engine.vector_scale(1.0 / norm_vi, vi))
+    return U
 
 
 def _best_vectors(engine, ss_vectors, basis_vectors):
-    """Best approximation of the true eigenvectors:
+    """Compute the best approximation of the true eigenvectors as a linear combination of basis vectors:
 
-    ..math:: V^{k} = \Sum_{i} \tilde{V}^{k}_{i}X_{i}
+    ..math:: V_{k} = \Sum_{i} \tilde{V}_{i,k}X_{i}
 
-    Where :math:`\tilde{V}^{k} is the `k`th eigenvector of the subspace problem and :math:`X_{i}` is an expansion vector
+    Where :math:`\tilde{V} is the matrix with columns that are eigenvectors of the subspace matrix. And
+    :math:`X_{i}` is a basis vector.
 
     Parameters
     ----------
@@ -547,7 +557,7 @@ def davidson_solver(engine,
         "delta_val": np.zeros((nk)),
         # conv defaults to true, and will be flipped when a non-conv root is hit
         "done": True,
-        "nvec": None,
+        "nvec": 0,
         "collapse": False,
         "product_count": 0,
     }
@@ -558,11 +568,10 @@ def davidson_solver(engine,
 
     _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
 
-    # NOTE: ignore passed guess always generate max_ss / vectors and force collapse on first iter
     vecs = guess
-
     stats = []
-
+    best_eigvecs = []
+    best_eigvals = []
     while iter_info['count'] < maxiter:
         # increment iteration/ save old vals
         iter_info['count'] += 1
@@ -579,17 +588,30 @@ def davidson_solver(engine,
         Ax = engine.compute_products(vecs)
         G = np.zeros((l, l))
         for i in range(l):
-            for j in range(l):
-                G[i, j] = engine.vector_dot(vecs[i], Ax[j])
+            for j in range(i):
+                G[i, j] = G[j, i] = engine.vector_dot(vecs[i], Ax[j])
+            G[i, i] = engine.vector_dot(vecs[i], Ax[i])
+
+        _print_array("SS transformed A", G, verbose)
 
         lam, alpha = np.linalg.eigh(G)
+
+        _print_array("SS eigenvectors", alpha, verbose)
+        _print_array("SS eigenvalues", lam, verbose)
+
+        # remove zeros/negatives
+        alpha = alpha[:, lam > 0.0]
+        lam = lam[lam > 0.0]
+        # sort/truncate to nroot
         idx = np.argsort(lam)
         lam = lam[idx]
         alpha = alpha[:, idx]
 
         # update best_solutions, failure return
         best_eigvecs = _best_vectors(engine, alpha[:, :nk], vecs)
+        best_eigvals = lam[:nk]
 
+        new_vecs = []
         for k in range(nk):
             Rk = engine.new_vector()
             lam_k = lam[k]
@@ -609,26 +631,21 @@ def davidson_solver(engine,
             if (not converged):
                 iter_info['done'] = False
                 Qk = engine.precondition(Rk, lam_k)
-                Qk = _gs_orth(engine, vecs, Qk, schmidt_add_tol)
-                if Qk is not None:
-                    vecs.append(Qk)
-
-        # no vectors added, force collapse
-        if len(vecs) == iter_info['nvec']:
-            iter_info['collapse'] = True
+                new_vecs.append(Qk)
 
         _diag_print_info(print_name, iter_info, verbose)
         stats.append(iter_info.copy())
+
+        # finished
         if iter_info['done']:
-            lam = lam[:nk]
-            _diag_print_converged(print_name, stats, lam, rvec=best_eigvecs, verbose=verbose)
-            return lam, best_eigvecs, stats
-        if iter_info['collapse']:
+            break
+        elif iter_info['collapse']:
             vecs = best_eigvecs
-            best_eigvecs = []
+        else:
+            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_add_tol)
 
     # If we get down here  we have exceeded max iterations without convergence, return None + stats, (let caller raise the error)
-    return None, None, stats
+    return best_eigvals, best_eigvecs, stats
 
 
 def hamiltonian_solver(engine,
@@ -753,10 +770,10 @@ def hamiltonian_solver(engine,
 
     _diag_print_heading(title_lines, print_name, ss_max, nroot, r_tol, e_tol, maxiter, verbose)
 
-    # NOTE: Ignore passed guess, always generate 1/2 * max ss size vectors and allow collapse on first iter
-    vecs = engine.generate_guess(nk * 8)
-    nk = min(nk, len(vecs))
-
+    vecs = guess
+    best_L = []
+    best_R = []
+    best_vals = []
     stats = []
     while iter_info['count'] < maxiter:
         # increment iteration/ save old vals
@@ -766,15 +783,15 @@ def hamiltonian_solver(engine,
         iter_info['collapse'] = False
         iter_info['done'] = True
 
-        # expand subspace
         l = len(vecs)
         if l >= ss_max:
             iter_info['collapse'] = True
 
         iter_info['nvec'] = l
-        # Step 2: compute (P)*bi and (M)*bi
+        # compute [A+B]*v(H1x) and [A-B]*v (H2x)
         H1x, H2x = engine.compute_products(vecs)
-        # Step 3: form Pss, Mss. The P/M matrices in the subspace
+
+        # form x*H1x (H1_ss) and x*H2x (H2_ss)
         H1_ss = np.zeros((l, l))
         H2_ss = np.zeros((l, l))
         for i in range(l):
@@ -782,37 +799,48 @@ def hamiltonian_solver(engine,
                 H1_ss[i, j] = engine.vector_dot(vecs[i], H1x[j])
                 H2_ss[i, j] = engine.vector_dot(vecs[i], H2x[j])
 
-        # Step 4: Hermitian Product (Subspace analog of M^{1/2} P M^{1/2})
+        _print_array("Subspace Transformed (A+B)", H1_ss, verbose)
+        _print_array("Subspace Transformed (A-B)", H2_ss, verbose)
+
+        #Build (A-B)^(1/2) [in the subspace]
         H2_ss_val, H2_ss_vec = np.linalg.eigh(H2_ss)
+        _print_array("eigenvalues H2_ss", H2_ss_val, verbose)
+        _print_array("eigenvectors H2_ss", H2_ss_vec, verbose)
         if any(H2_ss_val < 0.0):
             raise Exception("H2 is not Positive Definite")
-        H2_ss_half = np.einsum('ij,j,kj->ik', H2_ss_vec, np.sqrt(H2_ss_val), H2_ss_vec)
-        Hss = np.einsum('ij,jk,km->im', H2_ss_half, H1_ss, H2_ss_half)
 
-        # Step 5: diagonalize Hss -> w^2, Tss
-        w, Tss = np.linalg.eigh(Hss)
-        #break_err = 1.0 / 0.0
-        w = np.sqrt(w)
-        idx = np.argsort(w)
-        w = w[idx]
+        H2_ss_half = np.dot(H2_ss_vec, np.diag(np.sqrt(H2_ss_val))).dot(H2_ss_vec.T)
+        _print_array("SS Transformed (A-B)^(1/2)", H2_ss_half, verbose)
+
+        #Build Hermitian SS product (A-B)^(1/2)(A+B)(A-B)^(1/2)
+        Hss = np.einsum('ij,jk,km->im', H2_ss_half, H1_ss, H2_ss_half)
+        _print_array("(A-B)^(1/2)(A+B)(A-B)^(1/2)", Hss, verbose)
+
+        #diagonalize Hss -> w^2, Tss
+        w2, Tss = np.linalg.eigh(Hss)
+        _print_array("Eigenvalues (A-B)^(1/2)(A+B)(A-B)^(1/2)", w2, verbose)
+        _print_array("Eigvectors (A-B)^(1/2)(A+B)(A-B)^(1/2)", Tss, verbose)
+
+        # pick and sort roots
+        Tss = Tss[:, w2 > 0.0]
+        w2 = w2[w2 > 0.0]
+        # check for invalid eigvals
+        with np.errstate(invalid='raise'):
+            w = np.sqrt(w2)
+        idx = w.argsort()[:nk]
         Tss = Tss[:, idx]
+        w = w[idx]
 
         #Step 6a: extract Rss = H2_ss^{1/2}Tss
         Rss = np.dot(H2_ss_half, Tss)
-
-        #Step 6b: extract Lss = Pss Rss * w^-1
-        Lss = np.dot(H1_ss, Rss)
-        Lss = np.einsum('ij,j->ij', Lss, np.divide(1.0, w))
-
-        # #step 6c: R/L in the subspace are already biorthogonal, we need to normalize
-        for k in range(l):
-            dot = Rss[:, k].dot(Lss[:, k])
-            Rss[:, k] /= dot
-            Lss[:, k] /= dot
+        #Step 6b: extract Lss
+        Lss = np.dot(H1_ss, Rss).dot(np.diag(1.0 / w))
 
         best_R = _best_vectors(engine, Rss[:, :nk], vecs)
         best_L = _best_vectors(engine, Lss[:, :nk], vecs)
+        best_vals = w[:nk]
 
+        new_vecs = []
         # compute residuals
         for k in range(nk):
             WR_k = engine.new_vector()
@@ -835,6 +863,9 @@ def hamiltonian_solver(engine,
 
             norm = norm_R + norm_L
 
+            WL_k = engine.vector_scale(norm_L, WL_k)
+            WR_k = engine.vector_scale(norm_R, WR_k)
+
             iter_info['res_norm'][k] = norm
             iter_info['delta_val'][k] = np.abs(old_w[k] - w[k])
             iter_info['val'][k] = w[k]
@@ -843,36 +874,20 @@ def hamiltonian_solver(engine,
             if (iter_info['res_norm'][k] > r_tol) or (iter_info['delta_val'][k] > e_tol):
                 iter_info['done'] = False
 
-                QR_k = engine.precondition(WR_k, w[k])
-                QR_k = _gs_orth(engine, vecs, QR_k, schmidt_add_tol)
-                if QR_k is not None:
-                    vecs.append(QR_k)
-
-                QL_k = engine.precondition(WL_k, w[k])
-                QL_k = _gs_orth(engine, vecs, QL_k, schmidt_add_tol)
-                if QL_k is not None:
-                    vecs.append(QL_k)
-
-        if len(vecs) == iter_info['nvec']:
-            iter_info['collapse'] = True
+                new_vecs.append(engine.precondition(WR_k, w[k]))
+                new_vecs.append(engine.precondition(WL_k, w[k]))
 
         _diag_print_info(print_name, iter_info, verbose)
         stats.append(iter_info.copy())
         if iter_info['done']:
             _diag_print_converged(print_name, stats, w[:nk], rvec=best_R, lvec=best_L, verbose=verbose)
-            return w[:nk], best_R, best_L, stats
+            break
 
         # number of vectors hasn't changed (nothing new added), but we are not converged. Force collapse
-        if iter_info['collapse']:
-            vecs = []
-            for r in best_R:
-                new = _gs_orth(engine, vecs, r, schmidt_add_tol)
-                if new is not None:
-                    vecs.append(new)
-            for l in best_L:
-                new = _gs_orth(engine, vecs, l, schmidt_add_tol)
-                if new is not None:
-                    vecs.append(new)
+        if len(new_vecs) == 0 or iter_info['collapse']:
+            vecs = _gs_orth(engine, [], best_R + best_L, schmidt_add_tol)
+        else:
+            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_add_tol)
 
     # if we get down here we have exceeded max iterations without convergence, return none + stats
-    return None, None, None, stats
+    return best_vals, best_R, best_L, stats
