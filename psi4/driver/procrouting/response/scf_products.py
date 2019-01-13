@@ -236,6 +236,8 @@ class TDRSCFEngine(SingleMatPerVector):
         else:
             compute_vectors = vectors[n_old:]
 
+        n_prod = len(compute_vectors)
+
         # Build base one and two electron quantities
         Fx = self.wfn.onel_Hx(compute_vectors)
         twoel = self.wfn.twoel_Hx(compute_vectors, False, "SO")
@@ -251,14 +253,14 @@ class TDRSCFEngine(SingleMatPerVector):
 
             H1X_all = self.product_cache.add("H1", H1X_new)
             H2X_all = self.product_cache.add("H2", H2X_new)
-            return H1X_all, H2X_all
+            return H1X_all, H2X_all, n_prod
 
         else:
             AX_new = self._combine_A(Fx, Jx, Kx)
             for Ax in AX_new:
                 self.vector_scale(-1.0, Ax)
             AX_all = self.product_cache.add("A", AX_new)
-            return AX_all
+            return AX_all, n_prod
 
     def precondition(self, Rvec, shift):
         """Applies the preconditioner with a shift to a residual vector
@@ -461,6 +463,8 @@ class TDUSCFEngine(PairedMatPerVector):
         else:
             compute_vectors = vectors[n_old:]
 
+        n_prod = len(compute_vectors)
+
         # flatten list of [(A,B)_i, ...] to [A_i, B_i, ...]
         vec_flat = sum(compute_vectors, [])
 
@@ -476,13 +480,13 @@ class TDUSCFEngine(PairedMatPerVector):
                 self.vector_scale(-1.0, H2x)
             H1X_all = self.product_cache.add("H1", H1X_new)
             H2X_all = self.product_cache.add("H2", H2X_new)
-            return H1X_all, H2X_all
+            return H1X_all, H2X_all, n_prod
         else:
             AX_new = self._combine_A(Fx, Jx, Kx)
             for Ax in AX_new:
                 self.vector_scale(-1.0, Ax)
             AX_all = self.product_cache.add("A", AX_new)
-            return AX_all
+            return AX_all, n_prod
 
     def generate_guess(self, nguess):
         """Generate a set of guess vectors based on orbital energy differences

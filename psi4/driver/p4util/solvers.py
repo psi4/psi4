@@ -585,7 +585,8 @@ def davidson_solver(engine,
         if l >= max_ss_size:
             iter_info['collapse'] = True
 
-        Ax = engine.compute_products(vecs)
+        Ax, nprod = engine.compute_products(vecs)
+        iter_info['product_count'] += nprod
         G = np.zeros((l, l))
         for i in range(l):
             for j in range(i):
@@ -638,6 +639,7 @@ def davidson_solver(engine,
 
         # finished
         if iter_info['done']:
+            _diag_print_converged(print_name, stats, best_eigvals, verbose)
             break
         elif iter_info['collapse']:
             vecs = best_eigvecs
@@ -789,7 +791,8 @@ def hamiltonian_solver(engine,
 
         iter_info['nvec'] = l
         # compute [A+B]*v(H1x) and [A-B]*v (H2x)
-        H1x, H2x = engine.compute_products(vecs)
+        H1x, H2x, nprod = engine.compute_products(vecs)
+        iter_info['product_count'] += nprod
 
         # form x*H1x (H1_ss) and x*H2x (H2_ss)
         H1_ss = np.zeros((l, l))
