@@ -923,7 +923,7 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
             scheme, list(xtpl_procedures.keys())))
 
     if int(scheme.split('_')[-1]) != Nxtpl:
-        raise ValidationError("""Call to '%s' not valid with '%s' basis sets.""" % (scheme, len(basiszeta)))
+        raise ValidationError(f"""Call to '{scheme}' not valid with '{len(basiszeta)}' basis sets.""")
 
     NEED = {}
     for idx in range(Nxtpl):
@@ -1461,8 +1461,8 @@ class CBSComputer(BaseTask):
     @pydantic.validator('driver')
     def set_driver(cls, driver):
         if driver not in ['energy', 'gradient', 'hessian']:
-            raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
-                                     function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % driver)
+            raise ValidationError(f"""Wrapper complete_basis_set is unhappy to be calling
+                                     function '{driver}' instead of 'energy', 'gradient' or 'hessian'.""")
         return driver
 
     @pydantic.validator('molecule')

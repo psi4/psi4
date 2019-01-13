@@ -41,12 +41,13 @@ from psi4.driver.p4util.exceptions import UpgradeHelper
 from psi4.driver.task_base import SingleResult
 from psi4.driver.driver_nbody import NBodyComputer
 from psi4.driver.driver_cbs import CBSComputer, _cbs_text_parser
+from psi4.driver.driver_util import negotiate_derivative_type
 
 __all__ = ["task_planner"]
 
 
 def _expand_cbs_methods(method, basis, driver, **kwargs):
-    if method == 'cbs' and kwargs.get('cbsmeta', None):
+    if method == 'cbs' and kwargs.get('cbsmeta', False):
         return method, basis, kwargs['cbsmeta']
 
     # Expand CBS methods
@@ -78,7 +79,7 @@ def task_planner(driver, method, molecule, **kwargs):
     Parameters
     ----------
     driver : {"energy", "gradient", "hessian"}
-        The resulting type of computation.
+        The resulting type of computation. That is, target, not means.
     method : str
         A string representation of the method such as "HF" or "B3LYP". Special cases are:
         "cbs"
