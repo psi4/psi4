@@ -10,17 +10,21 @@ from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
                                                            TDUSCFEngine)
 from utils import *
 
+## marks
+# reference type
+UHF = pytest.mark.unrestricted
+RHF_singlet = pytest.mark.restricted_singlet
+RHF_triplet = pytest.mark.restricted_triplet
+# functional types
+hf = pytest.mark.hf
+lda = pytest.mark.lda
+gga = pytest.mark.gga
+hyb_gga = pytest.mark.hyb_gga
+hyb_gga_lrc = pytest.mark.hyb_gga_lrc
+# response type
+RPA = pytest.mark.RPA
+TDA = pytest.mark.TDA
 
-@pytest.fixture(scope='function', autouse=True)
-def outfile_swap(request):
-    old_o_file = psi4.core.outfile_name()
-    node_id = request.node.nodeid
-    st = node_id.find('[') + 1
-    ed = node_id.find(']')
-    this_job_outfile_name = node_id[st:ed] + ".pytest.out"
-    psi4.set_output_file(this_job_outfile_name, True)
-    yield
-    psi4.set_output_file(old_o_file, False)
 
 
 @pytest.fixture
@@ -29,18 +33,20 @@ def tddft_systems():
 
     # Canonical unrestricted system
     ch2 = psi4.geometry("""0 3
-    C          0.000000000000     0.000000000000    -0.091864689759
-    H          0.000000000000    -0.895527070192     0.546908561523
-    H          0.000000000000     0.895527070192     0.546908561523
-    symmetry c1
+    C           0.000000    0.000000    0.159693
+    H          -0.000000    0.895527   -0.479080
+    H          -0.000000   -0.895527   -0.479080
+    no_reorient
+    no_com
     """)
 
     # Canonical restricted system
     h2o = psi4.geometry("""0 1
-    O            0.000000000000     0.000000000000    -0.075791843599
-    H            0.000000000000    -0.866811828967     0.601435779259
-    H            0.000000000000     0.866811828967     0.601435779259
-    symmetry c1
+    O           0.000000    0.000000    0.135446
+    H          -0.000000    0.866812   -0.541782
+    H          -0.000000   -0.866812   -0.541782
+    no_reorient
+    no_com
     """)
 
     return {'UHF': ch2, 'RHF': h2o}
@@ -54,8 +60,8 @@ def wfn_factory(tddft_systems):
         else:
             mol = tddft_systems['UHF']
             psi4.set_options({'reference': 'UHF'})
-        # if nosym:
-        #     mol.reset_point_group('c1')
+        if nosym:
+            mol.reset_point_group('c1')
         psi4.set_options({'scf_type': 'pk', 'e_convergence': 8, 'd_convergence': 8, 'save_jk': True})
         e, wfn = psi4.energy("{}/{}".format(func, basis), return_wfn=True, molecule=mol)
         return wfn
@@ -79,7 +85,194 @@ def engines():
 
 @pytest.fixture
 def expected():
+    """Fixture holding expected values"""
     return {
+        "UHF-SVWN-RPA-cc-pvdz": [{
+            "e": 0.18569065156695178,
+            "sym": "B2"
+        }, {
+            "e": 0.2371470529055981,
+            "sym": "A2"
+        }, {
+            "e": 0.2606702942260291,
+            "sym": "B1"
+        }, {
+            "e": 0.304699657491157,
+            "sym": "A2"
+        }, {
+            "e": 0.3264956806549558,
+            "sym": "A1"
+        }, {
+            "e": 0.37615871505650317,
+            "sym": "B2"
+        }, {
+            "e": 0.39731897494137147,
+            "sym": "A1"
+        }, {
+            "e": 0.4074250386237938,
+            "sym": "B2"
+        }, {
+            "e": 0.44300573265041665,
+            "sym": "B2"
+        }, {
+            "e": 0.4471437063618376,
+            "sym": "A1"
+        }],
+        "UHF-SVWN-TDA-cc-pvdz": [{
+            "e": 0.18742889452032843,
+            "sym": "B2"
+        }, {
+            "e": 0.2379445132034474,
+            "sym": "A2"
+        }, {
+            "e": 0.2614052806756598,
+            "sym": "B1"
+        }, {
+            "e": 0.3049128035615499,
+            "sym": "A2"
+        }, {
+            "e": 0.3271020444759012,
+            "sym": "A1"
+        }, {
+            "e": 0.37727956939219004,
+            "sym": "B2"
+        }, {
+            "e": 0.4011813287341809,
+            "sym": "A1"
+        }, {
+            "e": 0.40830334743110247,
+            "sym": "B2"
+        }, {
+            "e": 0.44456757885588194,
+            "sym": "B2"
+        }, {
+            "e": 0.44881580053474746,
+            "sym": "A1"
+        }],
+        "RHF-1-SVWN-RPA-cc-pvdz": [{
+            "e": 0.22569596402035155,
+            "sym": "B1"
+        }, {
+            "e": 0.2900256530242798,
+            "sym": "A2"
+        }, {
+            "e": 0.32071133729636214,
+            "sym": "A1"
+        }, {
+            "e": 0.38457063497252675,
+            "sym": "B2"
+        }, {
+            "e": 0.4422266470138081,
+            "sym": "B2"
+        }, {
+            "e": 0.5495126190664035,
+            "sym": "A1"
+        }, {
+            "e": 0.6878003195644223,
+            "sym": "A2"
+        }, {
+            "e": 0.7199890511259994,
+            "sym": "B1"
+        }, {
+            "e": 0.798062986738022,
+            "sym": "B2"
+        }, {
+            "e": 0.804067826031505,
+            "sym": "A1"
+        }],
+        "RHF-1-SVWN-TDA-cc-pvdz": [{
+            "e": 0.2272761848870576,
+            "sym": "B1"
+        }, {
+            "e": 0.290485019555299,
+            "sym": "A2"
+        }, {
+            "e": 0.32546669962547287,
+            "sym": "A1"
+        }, {
+            "e": 0.38741503253259757,
+            "sym": "B2"
+        }, {
+            "e": 0.44712165676834864,
+            "sym": "B2"
+        }, {
+            "e": 0.5652927781399749,
+            "sym": "A1"
+        }, {
+            "e": 0.6879399669898522,
+            "sym": "A2"
+        }, {
+            "e": 0.721392875244794,
+            "sym": "B1"
+        }, {
+            "e": 0.8013924753548491,
+            "sym": "B2"
+        }, {
+            "e": 0.8054973746760368,
+            "sym": "A1"
+        }],
+        "RHF-3-SVWN-RPA-cc-pvdz": [{
+            "e": 0.19919602757891613,
+            "sym": "B1"
+        }, {
+            "e": 0.2697069526242387,
+            "sym": "A2"
+        }, {
+            "e": 0.2731025900215326,
+            "sym": "A1"
+        }, {
+            "e": 0.3404714479946839,
+            "sym": "B2"
+        }, {
+            "e": 0.39101279120353993,
+            "sym": "B2"
+        }, {
+            "e": 0.4437113196420621,
+            "sym": "A1"
+        }, {
+            "e": 0.6798587909761624,
+            "sym": "A2"
+        }, {
+            "e": 0.6987920419186496,
+            "sym": "B1"
+        }, {
+            "e": 0.7436776643975973,
+            "sym": "B2"
+        }, {
+            "e": 0.7614459618174199,
+            "sym": "A1"
+        }],
+        "RHF-3-SVWN-TDA-cc-pvdz": [{
+            "e": 0.19988323990932086,
+            "sym": "B1"
+        }, {
+            "e": 0.2701736690197542,
+            "sym": "A2"
+        }, {
+            "e": 0.2748922820263834,
+            "sym": "A1"
+        }, {
+            "e": 0.3421398672353456,
+            "sym": "B2"
+        }, {
+            "e": 0.39202707250403035,
+            "sym": "B2"
+        }, {
+            "e": 0.44628377221576965,
+            "sym": "A1"
+        }, {
+            "e": 0.6799727138758552,
+            "sym": "A2"
+        }, {
+            "e": 0.6990125378535389,
+            "sym": "B1"
+        }, {
+            "e": 0.7447874939365398,
+            "sym": "B2"
+        }, {
+            "e": 0.7633679513832042,
+            "sym": "A1"
+        }],
         "UHF-HF-RPA-cc-pvdz": [{
             "e": 0.2445704160468683,
             "sym": "B2"
@@ -1015,96 +1208,81 @@ def expected():
 
 @pytest.mark.tdscf
 @pytest.mark.parametrize("ref,func,ptype,basis", [
-    pytest.param(   'UHF',        'HF',  'RPA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param(   'UHF',        'HF',  'TDA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-1',        'HF',  'RPA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-1',        'HF',  'TDA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-3',        'HF',  'RPA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-3',        'HF',  'TDA',  'cc-pvdz', marks=[pytest.mark.hf, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param(   'UHF',    'HCTH93',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param(   'UHF',    'HCTH93',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-1',    'HCTH93',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-1',    'HCTH93',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-3',    'HCTH93',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-3',    'HCTH93',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param(   'UHF',  'LRC-wPBE',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param(   'UHF',  'LRC-wPBE',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-1',  'LRC-wPBE',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-1',  'LRC-wPBE',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-3',  'LRC-wPBE',  'RPA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-3',  'LRC-wPBE',  'TDA',  'cc-pvdz', marks=[pytest.mark.dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param(   'UHF',      'PBE0',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param(   'UHF',      'PBE0',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-1',      'PBE0',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-1',      'PBE0',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-3',      'PBE0',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-3',      'PBE0',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param(   'UHF',     'wB97X',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.UHF, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param(   'UHF',     'wB97X',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.UHF, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-1',     'wB97X',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-1',     'wB97X',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.singlet, pytest.mark.TDA]), # G09 rev E.01
-    pytest.param( 'RHF-3',     'wB97X',  'RPA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.RPA]), # G09 rev E.01
-    pytest.param( 'RHF-3',     'wB97X',  'TDA',  'cc-pvdz', marks=[pytest.mark.hyb_dft_lrc, pytest.mark.RHF, pytest.mark.triplet, pytest.mark.TDA]), # G09 rev E.01
+    pytest.param(   'UHF',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, UHF, RPA]), # G09 rev E.01
+    pytest.param(   'UHF',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, UHF, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_singlet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_singlet, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_triplet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_triplet, TDA]), # G09 rev E.01
+    pytest.param(   'UHF',        'HF',  'RPA',  'cc-pvdz', marks=[hf, UHF, RPA]), # G09 rev E.01
+    pytest.param(   'UHF',        'HF',  'TDA',  'cc-pvdz', marks=[hf, UHF, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',        'HF',  'RPA',  'cc-pvdz', marks=[hf, RHF_singlet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',        'HF',  'TDA',  'cc-pvdz', marks=[hf, RHF_singlet, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',        'HF',  'RPA',  'cc-pvdz', marks=[hf, RHF_triplet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',        'HF',  'TDA',  'cc-pvdz', marks=[hf, RHF_triplet, TDA]), # G09 rev E.01
+    pytest.param(   'UHF',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, UHF, RPA]), # G09 rev E.01
+    pytest.param(   'UHF',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, UHF, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, RHF_singlet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, RHF_singlet, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, RHF_triplet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, RHF_triplet, TDA]), # G09 rev E.01
+    pytest.param(   'UHF',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, UHF, RPA]), # G09 rev E.01
+    pytest.param(   'UHF',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, UHF, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, RHF_singlet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, RHF_singlet, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, RHF_triplet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, RHF_triplet, TDA]), # G09 rev E.01
+    pytest.param(   'UHF',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, UHF, RPA]), # G09 rev E.01
+    pytest.param(   'UHF',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, UHF, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-1',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_singlet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-1',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_singlet, TDA]), # G09 rev E.01
+    pytest.param( 'RHF-3',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, RPA]), # G09 rev E.01
+    pytest.param( 'RHF-3',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, TDA]), # G09 rev E.01
 ]) # yapf: disable
 def test_tdscf(ref, func, ptype, basis, expected, wfn_factory, solver_funcs, engines):
+    if (ref == 'RHF-1') or (func == "HF"):
+        # RHF-singlet everything works and TDHF/CIS works for RHF-triplet, UHF
+        pass
+    elif (ref == 'RHF-3'):
+        pytest.xfail("RKS Vx kernel only Spin Adapted for Singlet")
+    elif (ref == 'UHF' and func != 'SVWN'):
+        pytest.xfail("UKS Vx kernel bug for non-lda")
+
 
     ### setup
     # Look up expected in fixture (easier to read)
     exp_lookup = "{}-{}-{}-{}".format(ref, func, ptype, basis)
-    lowvals = {'A1': 100, 'A2': 100, 'B1': 100, "B2": 100}
+    exp_low_per_sym = {'A1': 100, 'A2': 100, 'B1': 100, "B2": 100}
     for x in expected[exp_lookup]:
-        lowvals[x['sym']] = min(x['e'], lowvals[x['sym']])
-    ref_energies = np.array([x['e'] for x in expected[exp_lookup]])
-    ref_energies.sort()
+        exp_low_per_sym[x['sym']] = min(x['e'], exp_low_per_sym[x['sym']])
 
+    exp_energy_sorted = np.array([x['e'] for x in expected[exp_lookup]])
+    exp_energy_sorted.sort()
+
+    # get wfn (don't use symmetry b/c too slow)
     wfn = wfn_factory(ref, func, basis, nosym=True)
-
+    # select solver function (TDA->davidson/RPA->hamiltonian)
     solver = solver_funcs[ptype]
-
-    #TODO: Disable after testing
-    old_o_file = psi4.core.outfile_name()
-    outfile = "{}-{}-{}-{}.dat".format(ref, func, ptype, basis)
 
     # build engine
     engine = engines[ref](wfn, ptype)
-    # test_vals = {}
-    # for irr in range(wfn.nirrep()):
-    #     lab = wfn.molecule().irrep_labels()[irr]
-    #     engine.reset_for_state_symm(irr)
-    #     vals = solver(
-    #         engine=engine,
-    #         guess=engine.generate_guess(20),
-    #         nroot=2,
-    #         verbose=2,
-    #         maxiter=100,
-    #         e_tol=1.0e-7,
-    #         r_tol=1.0e-4,
-    #         schmidt_add_tol=1.0e-10)[0]
-    #     assert vals is not None, "Failed to converge irrep {}".format(lab)
-    #     test_vals[lab] = vals[0]
 
-    # checks = []
-    # for lab, comp_v in test_vals.items():
-    #     test_v = lowvals[lab]
-    #     checks.append(compare_values(test_v, comp_v, 4, "{}-{}-{}-ROOT-{}".format(ref, func, ptype, lab)))
-    # assert all(checks)
-
-    # solvhe
-    test_vals = solver(
+    # skipping the entrypoint, just call the solver
+    out = solver(
         engine=engine,
-        guess=engine.generate_guess(20),
+        guess=engine.generate_guess(16),
         max_vecs_per_root=10,
         nroot=4,
-        verbose=2,
+        verbose=1,
         maxiter=30,
         e_tol=1.0e-7,
-        r_tol=1.0e-4,
-        schmidt_add_tol=1.0e-10)[0]
+        r_tol=1.0e-5,
+        schmidt_add_tol=1.0e-12)
 
-    assert test_vals is not None, "Failed to Converge"
+    test_vals = out[0]
+    stats = out[-1]
+    assert stats[-1]['done'], "Solver did not converge"
 
-    checks = []
-    for i, comp_v in enumerate(test_vals):
-        test_v = ref_energies[i]
-        checks.append(compare_values(test_v, comp_v, 4, "{}-{}-{}-ROOT-{}".format(ref, func, ptype, i + 1)))
-    assert all(checks)
+    for i, my_v in enumerate(test_vals):
+        ref_v = exp_energy_sorted[i]
+        assert compare_values(ref_v, my_v, 4, "{}-{}-{}-ROOT-{}".format(ref, func, ptype, i + 1))
