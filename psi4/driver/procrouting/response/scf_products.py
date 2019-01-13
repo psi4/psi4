@@ -226,7 +226,6 @@ class TDRSCFEngine(SingleMatPerVector):
            Returns AX
         """
 
-        self.product_cache.reset()
         n_old = self.product_cache.count()
         n_new = len(vectors)
 
@@ -453,8 +452,6 @@ class TDUSCFEngine(PairedMatPerVector):
            returns Ax products.
         """
 
-        #TODO: product cache
-        self.product_cache.reset()
         n_old = self.product_cache.count()
         n_new = len(vectors)
         if n_new <= n_old:
