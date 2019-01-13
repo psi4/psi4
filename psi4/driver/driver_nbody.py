@@ -40,7 +40,7 @@ from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import driver_nbody_helper
 
-from psi4.driver.task_base import BaseTask
+from psi4.driver.task_base import BaseTask, unnp, plump_qcvar
 
 ### Math helper functions
 
@@ -49,8 +49,6 @@ def nCr(n, r):
     f = math.factorial
     return f(n) // f(r) // f(n - r)
 
-
-### Begin CBS gufunc data
 
 
 def _sum_cluster_ptype_data(ptype,
@@ -953,7 +951,6 @@ class NBodyComputer(BaseTask):
             metadata['driver'] = 'gradient'
             grad_result = assemble_nbody_components(metadata, tmp)
             nbody_results.update({
-                'gradient_body_dict': grad_result['ptype_body_dict'],
                 'ret_gradient': grad_result['ret_ptype']
             })
 
@@ -982,17 +979,14 @@ class NBodyComputer(BaseTask):
         }
 
         for k, val in results.items():
-            for k2, val2 in val.items():
-                if isinstance(val2, np.ndarray):
-                    val[k2] = val2.tolist()
             qcvars[k] = val
 
         qcvars['CURRENT ENERGY'] = ret_energy
         if self.driver == 'gradient':
-            qcvars['CURRENT GRADIENT'] = ret_ptype.tolist()
+            qcvars['CURRENT GRADIENT'] = ret_ptype
         elif self.driver == 'hessian':
-            qcvars['CURRENT GRADIENT'] = ret_gradient.tolist()
-            qcvars['CURRENT HESSIAN'] = ret_ptype.tolist()
+            qcvars['CURRENT GRADIENT'] = ret_gradient
+            qcvars['CURRENT HESSIAN'] = ret_ptype
 
         component_results = self.dict()['task_list']
         for k1, val1 in component_results.items():
@@ -1010,37 +1004,36 @@ class NBodyComputer(BaseTask):
             'provenance': p4util.provenance_stamp(__name__),
             'psi4:qcvars': qcvars,
             #'raw_output': None,
-            'return_result': ret_energy if self.driver == 'energy' else ret_ptype.tolist(),
+            'return_result': ret_ptype,
             'schema_name': 'qc_schema_output',
             'schema_version': 1,
             'success': True,
             'component_results': component_results
         }
+        data = unnp(data, flat=True) 
 
         return data
 
     def get_psi_results(self, return_wfn=False):
+
         nbody_results = self.get_results()
         ret = nbody_results['return_result']
         if self.driver == 'gradient':
-            ret = core.Matrix.from_array(np.array(ret).reshape((-1, 3)))
+            ret = plump_qcvar(ret, 'gradient', 'psi4')
         elif self.driver == 'hessian':
-            ret = core.Matrix.from_array(np.array(ret))
+            ret = plump_qcvar(ret, 'hessian', 'psi4')
 
         wfn = core.Wavefunction.build(self.molecule, 'def2-svp')
         dicts = [
             'energies', 'ptype', 'intermediates', 'intermediates2', 'intermediates_ptype', 'energy_body_dict',
-            'gradient_body_dict', 'hessian_body_dict', 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict',
-            'vmfc_energy_body_dict'
+            'gradient_body_dict', 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
         ]
         if self.driver == 'gradient':
             wfn.set_gradient(ret)
             nbody_results['psi4:qcvars']['gradient_body_dict'] = nbody_results['psi4:qcvars']['ptype_body_dict']
         elif self.driver == 'hessian':
-            nbody_results['psi4:qcvars']['hessian_body_dict'] = nbody_results['psi4:qcvars']['ptype_body_dict']
             wfn.set_hessian(ret)
-            g = np.array(nbody_results['psi4:qcvars']['CURRENT GRADIENT']).reshape((-1, 3))
-            wfn.set_gradient(core.Matrix.from_array(g))
+            wfn.set_gradient(plump_qcvar(nbody_results['psi4:qcvars']['CURRENT GRADIENT'], 'gradient', 'psi4'))
 
         for d in nbody_results['psi4:qcvars']:
             if d in dicts:
@@ -1049,8 +1042,7 @@ class NBodyComputer(BaseTask):
                         wfn.set_variable(str(var), value)
                         core.set_variable(str(var), value)
                     except:
-                        value = np.array(value)
-                        wfn.set_variable(self.driver + ' ' + str(var), core.Matrix.from_array(value))
+                        wfn.set_variable(self.driver + ' ' + str(var), plump_qcvar(value, self.driver, 'psi4'))
 
         core.set_variable("CURRENT ENERGY", nbody_results['properties']['return_energy'])
         wfn.set_variable("CURRENT ENERGY", nbody_results['properties']['return_energy'])

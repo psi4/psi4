@@ -44,7 +44,7 @@ from psi4.driver import psifiles as psif
 from psi4.driver.driver_cbs_helper import xtpl_procedures, register_xtpl_scheme
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import BaseTask, SingleResult, unnp
+from psi4.driver.task_base import BaseTask, SingleResult, unnp, plump_qcvar
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -1708,51 +1708,3 @@ class CBSComputer(BaseTask):
                 finalhessian.print_out()
 
         return wfn
-
-
-def plump_qcvar(val, shape_clue, ret='np'):
-    """Convert flat arra
-
-    Parameters
-    ----------
-    val : list or scalar
-        flat (?, ) list or scalar, probably from JSON storage.
-    shape_clue : str
-        Label that includes (case insensitive) one of the following as
-        a clue to the array's natural dimensions: 'gradient', 'hessian'
-    ret : {'np', 'psi4'}
-        Whether to return `np.ndarray` or `psi4.core.Matrix`.
-
-    Returns
-    -------
-    np.ndarray or psi4.core.Matrix
-        Reshaped array of type `ret` with natural dimensions of `shape_clue`.
-
-    Raises
-    ------
-    TODO
-
-    """
-    if isinstance(val, (np.ndarray, core.Matrix)):
-        raise TypeError
-    elif isinstance(val, list):
-        tgt = np.asarray(val)
-    else:
-        # presumably scalar
-        return val
-
-    if 'gradient' in shape_clue.lower():
-        reshaper = (-1, 3)
-    elif 'hessian' in shape_clue.lower():
-        ndof = int(math.sqrt(len(tgt)))
-        reshaper = (ndof, ndof)
-    else:
-        raise ValidationError(f'Uncertain how to reshape array: {shape_clue}')
-
-    if ret == 'np':
-        return tgt.reshape(reshaper)
-    elif ret == 'psi4':
-        return core.Matrix.from_array(tgt.reshape(reshaper))
-#wfn.gradient().np.ravel().tolist()
-    else:
-        raise ValidationError(f'Return type not among [np, psi4]: {ret}')
