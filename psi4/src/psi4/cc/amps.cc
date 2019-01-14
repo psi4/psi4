@@ -40,6 +40,9 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
     int** cachelist;
     auto cachefiles = std::vector<int>(PSIO_MAXUNIT);
     auto ref = options_.get_str("REFERENCE");
+    if (ref == "ROHF" && options_.get_bool("SEMICANONICAL")){
+      ref = "UHF";
+    }
     std::vector<DPDMOSpace> spaces;
     std::map<std::string, SharedMatrix> amps;
     if (dpd_list[0] == nullptr) {
@@ -48,7 +51,14 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
             Dimension virtpi_ = nmopi_ - nalphapi_;
             cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
             spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
-        } else /* UHF/ROHF */ {
+        } else if (ref == "ROHF") {
+            Dimension doccpi_ = nalphapi_;
+            Dimension soccpi_ = nbetapi_ - nalphapi_;
+            Dimension occpi_ = doccpi_ + soccpi_;
+            Dimension virtpi_ = (nmopi_ - doccpi_) + soccpi_;
+            cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
+            spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
+        } else /*UHF*/{
             Dimension aoccpi_ = nalphapi_;
             Dimension boccpi_ = nbetapi_;
             Dimension avirtpi_ = nmopi_ - nalphapi_;
@@ -88,19 +98,19 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
         amps["tIA"] = std::make_shared<Matrix>(&T1);
         global_dpd_->file2_close(&T1);
         outfile->Printf("Check ROHF Tia\n");
-        global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+        global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
         amps["tia"] = std::make_shared<Matrix>(&T1);
         global_dpd_->file2_close(&T1);
         outfile->Printf("Check ROHF TIjAb\n");
-        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
         amps["tIjAb"] = std::make_shared<Matrix>(&T2);
         global_dpd_->buf4_close(&T2);
         outfile->Printf("Check ROHF Tijab\n");
-        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tijab");
         amps["tijab"] = std::make_shared<Matrix>(&T2);
         global_dpd_->buf4_close(&T2);
         outfile->Printf("Check ROHF TIJAB\n");
-        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
         amps["tIJAB"] = std::make_shared<Matrix>(&T2);
         global_dpd_->buf4_close(&T2);
     } else {  // if ref == UHF
