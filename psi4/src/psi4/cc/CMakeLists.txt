@@ -7,7 +7,7 @@ list(APPEND _Clang_debug_flags
   "-g3"
   "-Wextra"
   "-Winit-self"
-  #"-Woverloaded-virtual"
+  "-Woverloaded-virtual"
   "-Wuninitialized"
   "-Wmissing-declarations"
   "-Wwrite-strings"

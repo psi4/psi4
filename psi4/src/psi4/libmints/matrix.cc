@@ -2038,7 +2038,9 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
     return X;
 }
 
-void Matrix::swap_rows(int h, int i, int j) { C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1); }
+void Matrix::swap_rows(int h, int i, int j) {
+    C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1);
+}
 
 void Matrix::swap_columns(int h, int i, int j) {
     C_DSWAP(rowspi_[h], &(matrix_[h][0][i]), colspi_[h ^ symmetry_], &(matrix_[h][0][j]), colspi_[h ^ symmetry_]);
@@ -2784,10 +2786,10 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
     global_dpd_->file2_mat_init(outFile);
 
     if (outFile->params->nirreps != nirrep_) {
-        char *str = new char[100];
-        sprintf(str, "Irrep count mismatch.  Matrix class has %d irreps, but dpdfile2 has %d.", nirrep_,
-                outFile->params->nirreps);
-        throw SanityCheckError(str, __FILE__, __LINE__);
+        std::stringstream msg;
+        msg << "Irrep count mismatch. Matrix class has " << nirrep_ << " irreps and dpdfile2 has "
+            << outFile->params->nirreps << ".";
+        throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
     }
 
     if (outFile->my_irrep != 0) {
@@ -2797,24 +2799,22 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
 
     for (int h = 0; h < nirrep_; ++h) {
         if (outFile->params->rowtot[h] != rowspi_[h]) {
-            char *str = new char[100];
-            sprintf(str, "Row count mismatch for irrep %d.  Matrix class has %d rows, but dpdfile2 has %d.", h,
-                    rowspi_[h], outFile->params->rowtot[h]);
-            throw SanityCheckError(str, __FILE__, __LINE__);
+            std::stringstream msg;
+            msg << "Row count mismatch for irrep block " << h << ". Matrix has " << rowspi_[h]
+                << " rows  and dpdfile2 has " << outFile->params->rowtot[h] << ".";
+            throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
         }
         if (outFile->params->coltot[h] != colspi_[h]) {
             char *str = new char[100];
-            sprintf(str, "Column count mismatch for irrep %d.  Matrix class has %d columns, but dpdfile2 has %d.", h,
-                    colspi_[h], outFile->params->coltot[h]);
-            throw SanityCheckError(str, __FILE__, __LINE__);
+            std::stringstream msg;
+            msg << "Column count mismatch for irrep " << h << ". Matrix has " << colspi_[h] << " cols and dpdfile2 has "
+                << outFile->params->coltot[h] << ".";
+            throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
         }
 
         // TODO: optimize this with memcopys
-        for (int row = 0; row < rowspi_[h]; ++row) {
-            for (int col = 0; col < colspi_[h]; ++col) {
-                outFile->matrix[h][row][col] = matrix_[h][row][col];
-            }
-        }
+        size_t size = rowspi_[h] * colspi_[h ^ symmetry_] * sizeof(double);
+        if (size) memcpy(&(outFile->matrix[h][0][0]), &(matrix_[h][0][0]), size);
     }
 
     global_dpd_->file2_mat_wrt(outFile);

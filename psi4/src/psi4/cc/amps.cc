@@ -93,23 +93,18 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
         amps["tIjAb"] = std::make_shared<Matrix>(&T2);
         global_dpd_->buf4_close(&T2);
     } else if (ref == "ROHF") {
-        outfile->Printf("Check ROHF TIA\n");
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
         amps["tIA"] = std::make_shared<Matrix>(&T1);
         global_dpd_->file2_close(&T1);
-        outfile->Printf("Check ROHF Tia\n");
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
         amps["tia"] = std::make_shared<Matrix>(&T1);
         global_dpd_->file2_close(&T1);
-        outfile->Printf("Check ROHF TIjAb\n");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
         amps["tIjAb"] = std::make_shared<Matrix>(&T2);
         global_dpd_->buf4_close(&T2);
-        outfile->Printf("Check ROHF Tijab\n");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tijab");
         amps["tijab"] = std::make_shared<Matrix>(&T2);
         global_dpd_->buf4_close(&T2);
-        outfile->Printf("Check ROHF TIJAB\n");
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
         amps["tIJAB"] = std::make_shared<Matrix>(&T2);
         global_dpd_->buf4_close(&T2);
