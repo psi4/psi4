@@ -112,7 +112,7 @@ def test_restricted_TDA_singlet_c1():
     eng = TDRSCFEngine(wfn, ptype='tda', triplet=False)
     # our "guess"" vectors
     ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
-    A_test = np.column_stack([x.to_array().flatten() for x in eng.compute_products(ID)])
+    A_test = np.column_stack([x.to_array().flatten() for x in eng.compute_products(ID)[0]])
     assert compare_arrays(A_ref, A_test, 8, "RHF Ax C1 products")
 
 
@@ -136,7 +136,7 @@ def test_restricted_TDA_triplet_c1():
     eng = TDRSCFEngine(wfn, ptype='tda', triplet=True)
     # our "guess"" vectors
     ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
-    A_test = np.column_stack([x.to_array().flatten() for x in eng.compute_products(ID)])
+    A_test = np.column_stack([x.to_array().flatten() for x in eng.compute_products(ID)[0]])
     assert compare_arrays(A_ref, A_test, 8, "RHF Ax C1 products")
 
 
@@ -169,9 +169,9 @@ def test_RU_TDA_C1():
     ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
     psi4.core.print_out("\nA sing:\n" + str(A_sing_ref) + "\n\n")
     psi4.core.print_out("\nA trip:\n" + str(A_trip_ref) + "\n\n")
-    A_trip_test = np.column_stack([x.to_array().flatten() for x in trip_eng.compute_products(ID)])
+    A_trip_test = np.column_stack([x.to_array().flatten() for x in trip_eng.compute_products(ID)[0]])
     assert compare_arrays(A_trip_ref, A_trip_test, 8, "Triplet Ax C1 products")
-    A_sing_test = np.column_stack([x.to_array().flatten() for x in sing_eng.compute_products(ID)])
+    A_sing_test = np.column_stack([x.to_array().flatten() for x in sing_eng.compute_products(ID)[0]])
     assert compare_arrays(A_sing_ref, A_sing_test, 8, "Singlet Ax C1 products")
 
     sing_vals_2, _ = np.linalg.eigh(A_sing_test)
@@ -215,7 +215,7 @@ def test_restricted_RPA_singlet_c1():
     eng = TDRSCFEngine(wfn, ptype='rpa', triplet=False)
     # our "guess"" vectors
     ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
-    Px, Mx = eng.compute_products(ID)
+    Px, Mx = eng.compute_products(ID)[:-1]
     P_test = np.column_stack([x.to_array().flatten() for x in Px])
     assert compare_arrays(P_ref, P_test, 8, "RHF (A+B)x C1 products")
     M_test = np.column_stack([x.to_array().flatten() for x in Mx])
@@ -245,7 +245,7 @@ def test_restricted_RPA_triplet_c1():
     eng = TDRSCFEngine(wfn, ptype='rpa', triplet=True)
     # our "guess"" vectors
     ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
-    Px, Mx = eng.compute_products(ID)
+    Px, Mx = eng.compute_products(ID)[:-1]
     P_test = np.column_stack([x.to_array().flatten() for x in Px])
     assert compare_arrays(P_ref, P_test, 8, "RHF (A+B)x C1 products")
     M_test = np.column_stack([x.to_array().flatten() for x in Mx])
@@ -283,10 +283,10 @@ def test_unrestricted_TDA_C1():
     # Products:
     # [ A{IA, KC}  A{IA, kc}] [ I{KC, JB} |  0{KC,jb}] = [A x X_I0] = [ A_IAJB, A_iaJB]
     # [ A{ia, KC}  A{ia, kc}] [ O{kc, JB} |  X{kc,jb}]   [A x X_0I] = [ A_IAjb, A_iajb]
-    X_I0 = list(zip(X_JB, zero_jb))
-    X_0I = list(zip(zero_JB, X_jb))
-    Ax_I0 = eng.compute_products(X_I0)
-    Ax_0I = eng.compute_products(X_0I)
+    X_I0 = [[x, zero] for x, zero in zip(X_JB, zero_jb)]
+    X_0I = [[zero, x] for zero, x in zip(zero_JB, X_jb)]
+    Ax_I0 = eng.compute_products(X_I0)[0]
+    Ax_0I = eng.compute_products(X_0I)[0]
     A_IAJB_test = np.column_stack([x[0].to_array().flatten() for x in Ax_I0])
     assert compare_arrays(A_ref['IAJB'].reshape(nIA, nIA), A_IAJB_test, 8, "A_IAJB")
     A_iaJB_test = np.column_stack([x[1].to_array().flatten() for x in Ax_I0])
@@ -331,10 +331,10 @@ def test_unrestricted_RPA_C1():
     # Products:
     # [ A+/-B{IA, KC}  A+/-B{IA, kc}] [ I{KC, JB} |  0{KC,jb}] = [A+/-B x X_I0] = [ (A+/-B)_IAJB, (A+/-B)_iaJB]
     # [ A+/-B{ia, KC}  A+/-B{ia, kc}] [ O{kc, JB} |  X{kc,jb}]   [A+/-B x X_0I] = [ (A+/-B)_IAjb, (A+/-B)_iajb]
-    X_I0 = list(zip(X_JB, zero_jb))
-    X_0I = list(zip(zero_JB, X_jb))
-    Px_I0, Mx_I0 = eng.compute_products(X_I0)
-    Px_0I, Mx_0I = eng.compute_products(X_0I)
+    X_I0 = [[x, zero] for x, zero in zip(X_JB, zero_jb)]
+    X_0I = [[zero, x] for zero, x in zip(zero_JB, X_jb)]
+    Px_I0, Mx_I0 = eng.compute_products(X_I0)[:-1]
+    Px_0I, Mx_0I = eng.compute_products(X_0I)[:-1]
 
     P_IAJB_test = np.column_stack([x[0].to_array().flatten() for x in Px_I0])
     assert compare_arrays(P_ref['IAJB'].reshape(nIA, nIA), P_IAJB_test, 8, "A_IAJB")
