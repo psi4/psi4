@@ -667,7 +667,7 @@ def hamiltonian_solver(engine,
     [A  B][X]  = [1   0](w)[X]
     [B  A][Y]    [0  -1](w)[Y]
 
-    Which can be written as the NxN, non-hermitan EVP:
+    Which can be written as the NxN, non-hermitian EVP:
     (A+B)(A-B)(X+Y) = w^2(X+Y)
 
 
@@ -679,10 +679,12 @@ def hamiltonian_solver(engine,
 
     Where T = (A-B)^-1/2(X+Y).
 
-    We use a Davidson like where we transform (A+B) (H1) and (A-B)(H2) in to the subspace defined by the trial vectors. Transform the subspace quantities and solve the
-    subspace analog of the NxN hermitian EVP, and back transform to extract X+Y, X-Y. The subspace is augmented to correct for both until convergence.
+    We use a Davidson like iteration where we transform (A+B) (H1) and (A-B) (H2) in to the subspace defined by the trial vectors.
+    The subspace analog of the NxN hermitian EVP is diagonalized and left (X-Y) and right (X+Y) eigenvectors of the NxN
+    non-hermitian EVP are approximated. Residual vectors are formed for both and the guess space is augmented with two
+    correction vectors per iteration.
 
-    Using the converged Left/Right eigenvectors of the NxN non-hermitian EVP, the components of the 2n*2N Hamiltonian problem (X, Y) are extracted.
+
 
     Parameters
     -----------
