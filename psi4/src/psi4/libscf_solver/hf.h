@@ -47,8 +47,6 @@ namespace scf {
 
 class HF : public Wavefunction {
    protected:
-    double Drms_;
-
     /// The kinetic energy matrix
     SharedMatrix T_;
     /// The 1e potential energy matrix

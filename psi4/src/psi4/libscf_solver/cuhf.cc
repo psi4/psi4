@@ -69,7 +69,6 @@ CUHF::~CUHF() {}
 
 void CUHF::common_init() {
     name_ = "CUHF";
-    Drms_ = 0.0;
 
     Fa_ = SharedMatrix(factory_->create_matrix("F alpha"));
     Fb_ = SharedMatrix(factory_->create_matrix("F beta"));
@@ -378,9 +377,6 @@ double CUHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
     SharedMatrix grad_a = form_FDSmSDF(Fa_, Da_);
     SharedMatrix grad_b = form_FDSmSDF(Fb_, Db_);
 
-    // Store the RMS gradient for convergence checking
-    double Drms = 0.5 * (grad_a->rms() + grad_b->rms());
-
     if (save_diis) {
         if (initialized_diis_manager_ == false) {
             diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
@@ -392,7 +388,11 @@ double CUHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
 
         diis_manager_->add_entry(4, grad_a.get(), grad_b.get(), Fa_.get(), Fb_.get());
     }
-    return Drms;
+
+    if (options_.get_bool("DIIS_RMS_ERROR"))
+        return std::sqrt(0.5 * (std::pow(grad_a->rms(), 2) + std::pow(grad_b->rms(), 2)));
+    else
+        return std::max(grad_a->absmax(), grad_b->absmax());
 }
 
 bool CUHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }

@@ -660,7 +660,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     double sum_of_squares();
     /// Returns the rms of this
     double rms();
-    /// Returns the absoluate maximum balue
+    /// Returns the absolute maximum value
     double absmax();
     /// Add val to an element of this
     void add(int h, int m, int n, double val) {

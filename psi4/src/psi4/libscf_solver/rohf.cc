@@ -328,7 +328,6 @@ double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
 
     // Back transform MOgradient
     SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);
-    double Drms = gradient->rms();
 
     if (save_diis) {
         if (initialized_diis_manager_ == false) {
@@ -340,7 +339,12 @@ double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
         }
         diis_manager_->add_entry(2, gradient.get(), soFeff_.get());
     }
-    return Drms;
+
+    if (options_.get_bool("DIIS_RMS_ERROR")) {
+        return gradient->rms();
+    } else {
+        return gradient->absmax();
+    }
 }
 
 bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
@@ -880,7 +884,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
     if (grad_rms < 1.e-14) {
         grad_rms = 1.e-14;  // Prevent rel denom from being too small
     }
-    double rms = sqrt(rconv / grad_rms);
+    double rms = std::sqrt(rconv / grad_rms);
     stop = std::time(nullptr);
     if (soscf_print) {
         outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop - start);
@@ -911,7 +915,7 @@ int ROHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter
 
         // Get residual
         double rconv = r->sum_of_squares();
-        double rms = sqrt(rconv / grad_rms);
+        double rms = std::sqrt(rconv / grad_rms);
         stop = std::time(nullptr);
         if (soscf_print) {
             outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop - start);
