@@ -236,8 +236,6 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
 }
 
 FCHKWriter::FCHKWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
-    SharedMatrix Ca = wavefunction_->Ca();
-    Ca->print();
 }
 
 void FCHKWriter::write_number(const char *label, double value) { fprintf(chk_, "%-43sR%27.15e\n", label, value); }
