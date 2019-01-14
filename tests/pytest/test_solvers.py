@@ -52,7 +52,7 @@ class DSProblemSimulate(SimulateBase):
     def compute_products(self, X):
         Xmat = np.column_stack(X)
         prods = self.A.dot(Xmat)
-        return list(prods.T)
+        return list(prods.T), len(X)
 
     def precondition(self, R, shift):
         return R / (shift - np.diag(self.A))
@@ -72,7 +72,7 @@ class HSProblemSimulate(SimulateBase):
         AmBx_prd = np.dot(self.A - self.B, Xmat)
         H1x = list(ApBx_prd.T)
         H2x = list(AmBx_prd.T)
-        return H1x, H2x
+        return H1x, H2x, len(X)
 
     def precondition(self, R, shift):
         return R / (shift - np.diag(self.A))
@@ -83,7 +83,7 @@ class HSProblemSimulate(SimulateBase):
 def test_davidson_solver_numpy():
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.random.randn(BIGDIM, nroot).T)
+    guess = list(np.random.randn(BIGDIM, nroot).T)
     test_engine = DSProblemSimulate(BIGDIM)
     test_vals, test_vectors, _ = davidson_solver(
         engine=test_engine,
@@ -113,7 +113,7 @@ def test_davidson_solver_numpy():
 def test_hamiltonian_solver():
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.eye(BIGDIM)[:, :nroot * 2].T)
+    guess = list(np.eye(BIGDIM)[:, :nroot * 2].T)
     test_engine = HSProblemSimulate(BIGDIM)
     test_vals, test_rvecs, test_lvecs, _ = hamiltonian_solver(
         engine=test_engine,
@@ -165,7 +165,7 @@ def test_hamiltonian_solver():
 def test_davidson_solver_stress_sparsity(sparsity):
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.random.randn(BIGDIM, nroot).T)
+    guess = list(np.random.randn(BIGDIM, nroot).T)
     test_engine = DSProblemSimulate(BIGDIM, scale=sparsity)
     test_vals, test_vectors, _ = davidson_solver(
         engine=test_engine,
@@ -197,7 +197,7 @@ def test_davidson_solver_stress_eigval_sep(sep):
     """Solver can miss "skip" a root if they are close in the range we are looking at"""
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.random.randn(BIGDIM, nroot).T)
+    guess = list(np.random.randn(BIGDIM, nroot).T)
     test_engine = DSProblemSimulate(BIGDIM, sep=sep)
     test_vals, test_vectors, _ = davidson_solver(
         engine=test_engine,
@@ -229,7 +229,7 @@ def test_hamiltonian_solver_stress_sparsity(sparsity):
     """Algorithm is challenged as the off diagonal elements approach the magnitude of the diagonal elements"""
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.random.randn(BIGDIM, nroot).T)
+    guess = list(np.random.randn(BIGDIM, nroot).T)
     test_engine = HSProblemSimulate(BIGDIM, scale=sparsity)
     test_vals, test_rvecs, test_lvecs, _ = hamiltonian_solver(
         engine=test_engine,
@@ -269,7 +269,7 @@ def test_hamiltonian_solver_stress_b_diag_grows(b_sep):
     """Solver encounters problems when the B diagonal elements approach A"""
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.random.randn(BIGDIM, nroot).T)
+    guess = list(np.random.randn(BIGDIM, nroot).T)
     test_engine = HSProblemSimulate(BIGDIM, b_sep=b_sep)
     test_vals, test_rvecs, test_lvecs, _ = hamiltonian_solver(
         engine=test_engine,
@@ -308,7 +308,7 @@ def test_hamiltonian_solver_stress_b_diag_grows(b_sep):
 def test_hamiltonian_solver_stress_eigval_sep(a_sep):
     BIGDIM = 100
     nroot = 3
-    guess = tuple(np.random.randn(BIGDIM, nroot).T)
+    guess = list(np.random.randn(BIGDIM, nroot).T)
     test_engine = HSProblemSimulate(BIGDIM, a_sep=a_sep, b_sep=a_sep / 10)
     test_vals, test_rvecs, test_lvecs, _ = hamiltonian_solver(
         engine=test_engine,
