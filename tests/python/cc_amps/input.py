@@ -23,7 +23,6 @@ D = mints.mo_eri(
 D = D.swapaxes(1, 2)
 
 RHF_ccsd_corr_e = 2 * np.einsum("ijab,ijab->", tau_IjAb, D) - np.einsum("ijab,ijba->", tau_IjAb, D)
-print(RHF_ccsd_corr_e)
 psi4.compare_values(RHF_ccsd_corr_e, psi4.variable('CCSD CORRELATION ENERGY'), 8, "RHF CCSD CORRELATION ENERGY")
 
 # END RHF
