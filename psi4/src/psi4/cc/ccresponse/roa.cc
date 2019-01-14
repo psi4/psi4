@@ -235,7 +235,7 @@ void roa() {
                             pert_y, moinfo.mu_irreps[beta], +params.omega[i]);
                 }
             }
-            psio_write_entry(PSIF_CC_INFO, lbl3, (char *)tensor_rr[0], 9 * sizeof(double));
+            psio_write_entry(PSIF_CC_INFO, lbl3, (char *)tensor_rr[i][0], 9 * sizeof(double));
 
             if (compute_rl) {
                 outfile->Printf("\tComputing %s tensor.\n", lbl1);
