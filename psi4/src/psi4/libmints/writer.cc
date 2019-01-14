@@ -318,7 +318,6 @@ void FCHKWriter::write(const std::string &filename) {
     chk_ = fopen(filename.c_str(), "w");
     std::shared_ptr<BasisSet> basis = wavefunction_->basisset();
     int maxam = basis->max_am();
-    if (maxam > 4) throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G functions");
     std::shared_ptr<Molecule> mol = wavefunction_->molecule();
     SharedMatrix Ca_ao = wavefunction_->Ca_subset("AO");
     SharedMatrix Cb_ao = wavefunction_->Cb_subset("AO");
@@ -469,18 +468,29 @@ void FCHKWriter::write(const std::string &filename) {
                     for (int col = 0; col < 3; ++col) transmat->set(offset + row, offset + col, pureP[row][col]);
             }
         } else {
-            // Cartesians - P orbitals are fine, but higher terms need reordering
-            if (am == 2) {
-                for (int row = 0; row < 6; ++row)
-                    for (int col = 0; col < 6; ++col) transmat->set(offset + row, offset + col, cartD[row][col]);
-            }
-            if (am == 3) {
-                for (int row = 0; row < 10; ++row)
-                    for (int col = 0; col < 10; ++col) transmat->set(offset + row, offset + col, cartF[row][col]);
-            }
-            if (am == 4) {
-                for (int row = 0; row < 15; ++row)
-                    for (int col = 0; col < 15; ++col) transmat->set(offset + row, offset + col, cartG[row][col]);
+            // Cartesians - S and P orbitals are fine, but higher terms need reordering
+            switch (am) {
+                case (0):
+                case (1):
+                    break;
+
+                case (2):
+                    for (int row = 0; row < 6; ++row)
+                        for (int col = 0; col < 6; ++col) transmat->set(offset + row, offset + col, cartD[row][col]);
+                    break;
+
+                case (3):
+                    for (int row = 0; row < 10; ++row)
+                        for (int col = 0; col < 10; ++col) transmat->set(offset + row, offset + col, cartF[row][col]);
+                    break;
+
+                case (4):
+                    for (int row = 0; row < 15; ++row)
+                        for (int col = 0; col < 15; ++col) transmat->set(offset + row, offset + col, cartG[row][col]);
+                    break;
+
+                default:
+                    throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G shell (l=4) cartesian functions");
             }
         }
         offset += nfunc;
