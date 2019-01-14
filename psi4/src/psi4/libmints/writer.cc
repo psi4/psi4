@@ -25,6 +25,7 @@
  *
  * @END LICENSE
  */
+#include <cassert>
 #include <cstdio>
 #include <utility>
 #include <algorithm>
@@ -328,6 +329,8 @@ void FCHKWriter::write(const std::string &filename) {
     Dtot_ao->add(Db_ao);
     Dspin_ao->subtract(Db_ao);
     int nbf = basis->nbf();
+    assert(Ca_ao->nrow() == nbf);
+    int nmo = Ca_ao->ncol();
     int nalpha = wavefunction_->nalpha();
     int nbeta = wavefunction_->nbeta();
     int natoms = mol->natom();
@@ -552,7 +555,7 @@ void FCHKWriter::write(const std::string &filename) {
     write_number("Number of alpha electrons", nalpha);
     write_number("Number of beta electrons", nbeta);
     write_number("Number of basis functions", nbf);
-    write_number("Number of independent functions", nbf);
+    write_number("Number of independent functions", nmo);
     write_matrix("Atomic numbers", atomic_numbers);
     write_matrix("Nuclear charges", nuc_charges);
     write_matrix("Current cartesian coordinates", coords);
