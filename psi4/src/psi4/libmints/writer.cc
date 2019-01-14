@@ -563,21 +563,15 @@ void FCHKWriter::write(const std::string &filename) {
     write_matrix("Contraction coefficients", coefficients);
     write_matrix("Coordinates of each shell", shell_coords);
     write_number("Total Energy", wavefunction_->energy());
-    // write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
-    write_matrix(wavefunction_->epsilon_a()->name().c_str(), wavefunction_->epsilon_a_subset("AO"));
-    // write_matrix("Alpha MO coefficients", reorderedCa);
-    write_matrix(wavefunction_->Ca()->name().c_str(), reorderedCa);
-    // write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
-    write_matrix(wavefunction_->epsilon_b()->name().c_str(), wavefunction_->epsilon_b_subset("AO"));
-    // write_matrix("Beta MO coefficients", reorderedCb);
-    write_matrix(wavefunction_->Cb()->name().c_str(), reorderedCb);
-    auto *label = new char[256];
-    std::string type = name == "DFT" ? "SCF" : name;
-    sprintf(label, "Total %s Density", type.c_str());
-    write_sym_matrix(label, reorderedDt);
-    sprintf(label, "Spin %s Density", type.c_str());
-    write_sym_matrix(label, reorderedDs);
-    delete[] label;
+
+    // This is the format expected in the formatted checkpoint file
+    write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
+    write_matrix("Alpha MO coefficients", reorderedCa);
+    write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
+    write_matrix("Beta MO coefficients", reorderedCb);
+    write_sym_matrix("Total SCF Density", reorderedDt);
+    write_sym_matrix("Spin SCF Density", reorderedDs);
+
     SharedMatrix gradient = wavefunction_->gradient();
     if (gradient) write_matrix("Cartesian Gradient", gradient);
 
