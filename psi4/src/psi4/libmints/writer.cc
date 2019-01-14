@@ -578,10 +578,13 @@ void FCHKWriter::write(const std::string &filename) {
     // This is the format expected in the formatted checkpoint file
     write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
     write_matrix("Alpha MO coefficients", reorderedCa);
-    write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
-    write_matrix("Beta MO coefficients", reorderedCb);
     write_sym_matrix("Total SCF Density", reorderedDt);
-    write_sym_matrix("Spin SCF Density", reorderedDs);
+    if(!wavefunction_->same_a_b_orbs() || !wavefunction_->same_a_b_dens()) {
+      // These are only printed out if the orbitals or density is not spin-restricted
+      write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
+      write_matrix("Beta MO coefficients", reorderedCb);
+      write_sym_matrix("Spin SCF Density", reorderedDs);
+    }
 
     SharedMatrix gradient = wavefunction_->gradient();
     if (gradient) write_matrix("Cartesian Gradient", gradient);
