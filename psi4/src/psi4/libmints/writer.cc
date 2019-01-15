@@ -236,8 +236,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     }
 }
 
-FCHKWriter::FCHKWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
-}
+FCHKWriter::FCHKWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
 
 void FCHKWriter::write_number(const char *label, double value) { fprintf(chk_, "%-43sR%27.15e\n", label, value); }
 
@@ -318,16 +317,55 @@ void FCHKWriter::write(const std::string &filename) {
     std::shared_ptr<BasisSet> basis = wavefunction_->basisset();
     int maxam = basis->max_am();
     std::shared_ptr<Molecule> mol = wavefunction_->molecule();
+    std::shared_ptr<Wavefunction> refwf = wavefunction_->reference_wavefunction();
+
+    // Orbitals
     SharedMatrix Ca_ao = wavefunction_->Ca_subset("AO");
     SharedMatrix Cb_ao = wavefunction_->Cb_subset("AO");
-    SharedMatrix Da_ao = wavefunction_->Da_subset("AO");
-    SharedMatrix Db_ao = wavefunction_->Db_subset("AO");
-    SharedMatrix Dtot_ao(Da_ao->clone());
-    SharedMatrix Dspin_ao(Da_ao->clone());
+
+    // SCF density matrices
+    SharedMatrix Da_ao;
+    SharedMatrix Db_ao;
+    // Post-Hartree-Fock density matrices
+    SharedMatrix DPHFa_ao;
+    SharedMatrix DPHFb_ao;
+
+    // Post Hartree Fock?
+    bool pHF = (refwf != NULL);
+
+    if (pHF) {
+        // Level of theory may be correlated
+        Da_ao = refwf->Da_subset("AO");
+        Db_ao = refwf->Db_subset("AO");
+
+        DPHFa_ao = wavefunction_->Da_subset("AO");
+        DPHFb_ao = wavefunction_->Db_subset("AO");
+    } else {
+        // SCF level of theory
+        Da_ao = wavefunction_->Da_subset("AO");
+        Db_ao = wavefunction_->Db_subset("AO");
+    }
+
+    // Total and spin density
+    SharedMatrix Dtot_ao;
+    SharedMatrix Dspin_ao;
+    SharedMatrix DPHFtot_ao;
+    SharedMatrix DPHFspin_ao;
+
+    Dtot_ao = Da_ao->clone();
+    Dtot_ao->add(Db_ao);
+    Dspin_ao = Da_ao->clone();
+    Dspin_ao->subtract(Db_ao);
+
+    if (pHF) {
+        DPHFtot_ao = DPHFa_ao->clone();
+        DPHFtot_ao->add(DPHFb_ao);
+        DPHFspin_ao = DPHFa_ao->clone();
+        DPHFspin_ao->subtract(DPHFb_ao);
+    }
+
     const std::string &name = wavefunction_->name();
     const std::string &basisname = basis->name();
-    Dtot_ao->add(Db_ao);
-    Dspin_ao->subtract(Db_ao);
     int nbf = basis->nbf();
     assert(Ca_ao->nrow() == nbf);
     int nmo = Ca_ao->ncol();
@@ -498,9 +536,19 @@ void FCHKWriter::write(const std::string &filename) {
     }
 
     SharedMatrix reorderedDt(Dtot_ao->clone());
-    SharedMatrix reorderedDs(Dtot_ao->clone());
     reorderedDt->back_transform(Dtot_ao, transmat);
+    SharedMatrix reorderedDs(Dspin_ao->clone());
     reorderedDs->back_transform(Dspin_ao, transmat);
+
+    SharedMatrix reorderedDPHFt;
+    SharedMatrix reorderedDPHFs;
+    if (pHF) {
+        reorderedDPHFt = (DPHFtot_ao->clone());
+        reorderedDPHFt->back_transform(DPHFtot_ao, transmat);
+        reorderedDPHFs = (DPHFspin_ao->clone());
+        reorderedDPHFs->back_transform(DPHFspin_ao, transmat);
+    }
+
     auto reorderedCa = std::make_shared<Matrix>("Reordered Ca", Ca_ao->ncol(), Ca_ao->nrow());
     auto reorderedCb = std::make_shared<Matrix>("Reordered Cb", Cb_ao->ncol(), Cb_ao->nrow());
     reorderedCa->gemm(true, true, 1.0, Ca_ao, transmat, 0.0);
@@ -579,11 +627,16 @@ void FCHKWriter::write(const std::string &filename) {
     write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
     write_matrix("Alpha MO coefficients", reorderedCa);
     write_sym_matrix("Total SCF Density", reorderedDt);
-    if(!wavefunction_->same_a_b_orbs() || !wavefunction_->same_a_b_dens()) {
-      // These are only printed out if the orbitals or density is not spin-restricted
-      write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
-      write_matrix("Beta MO coefficients", reorderedCb);
-      write_sym_matrix("Spin SCF Density", reorderedDs);
+    // In theory, the correlated density should be printed out with a
+    // legend depending on the method (MP2, MP3, MP4, CI, CC) but this
+    // is probably the most common anyhow
+    if (pHF) write_sym_matrix("Total CC Density", reorderedDPHFt);
+    if (!wavefunction_->same_a_b_orbs() || !wavefunction_->same_a_b_dens()) {
+        // These are only printed out if the orbitals or density is not spin-restricted
+        write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
+        write_matrix("Beta MO coefficients", reorderedCb);
+        write_sym_matrix("Spin SCF Density", reorderedDs);
+        if (pHF) write_sym_matrix("Spin CC Density", reorderedDPHFs);
     }
 
     SharedMatrix gradient = wavefunction_->gradient();
