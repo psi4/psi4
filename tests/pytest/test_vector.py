@@ -4,9 +4,11 @@ Tests for Vector class.
 
 import numpy as np
 import pytest
+
 from psi4.core import Dimension, Vector
 from utils import compare_arrays
 
+pytestmark = pytest.mark.quick
 
 def check_dense_vec(v, exp_d, exp_name=None):
     assert v.dim() == exp_d

@@ -1058,7 +1058,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param theta - the angle (in radians) about which to rotate
      */
     void rotate_columns(int h, int i, int j, double theta);
-    friend class Vector;
 
     PSI_DEPRECATED(
         "Using `Matrix::matrix` instead of `detail::matrix` is deprecated, and in 1.4 it will "
