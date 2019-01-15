@@ -27,7 +27,7 @@
  */
 
 #include "dcft.h"
-#include "defines.h"
+#include "psi4/psifiles.h"
 
 #include "psi4/libpsi4util/process.h"
 #include "psi4/psifiles.h"

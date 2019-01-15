@@ -37,7 +37,7 @@
 #include "psi4/libpsi4util/process.h"
 
 #include "dcft.h"
-#include "defines.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
 namespace dcft {

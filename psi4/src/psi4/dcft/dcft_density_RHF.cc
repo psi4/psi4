@@ -32,7 +32,7 @@
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdiis/diismanager.h"
 #include "dcft.h"
-#include "defines.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
 namespace dcft {

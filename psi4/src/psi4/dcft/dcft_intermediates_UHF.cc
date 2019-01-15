@@ -26,7 +26,7 @@
  * @END LICENSE
  */
 
-#include "defines.h"
+#include "psi4/psifiles.h"
 #include "dcft.h"
 
 #include "psi4/libdpd/dpd.h"

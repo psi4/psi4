@@ -40,8 +40,6 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-#define ZERO 1e-13
-
 /*!
 ** POPLE(): Uses Pople's method to iteratively solve linear equations
 **          Ax = b
@@ -98,11 +96,11 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance, 
 
     norm = 0.0;
     for (i = 0; i < dimen; i++) norm += x[i] * x[i];
-    if (norm < ZERO) quit = 1;
+    if (norm < PSI_ZERO) quit = 1;
 
     if (!quit) {
         for (i = 0; i < dimen; i++) {
-            if (A[i][i] > ZERO)
+            if (A[i][i] > PSI_ZERO)
                 sign[i] = 1.0;
             else
                 sign[i] = -1.0;

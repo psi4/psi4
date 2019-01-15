@@ -31,7 +31,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/psifiles.h"
-#include "defines.h"
+#include "psi4/psifiles.h"
 
 #include <cmath>
 
