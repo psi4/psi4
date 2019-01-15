@@ -255,6 +255,29 @@ def _print_output(complete_dict, output):
             _print_matrix(directions, output[i], var_name)
 
 
+def _print_tdscf_header(**options):
+    core.print_out('\n\n         ---------------------------------------------------------\n'
+                   '         {:^57}\n'.format('TDSCF excitation energies') + '         {:^57}\n'.format(
+                       'by Andrew M. James') + '         ---------------------------------------------------------\n')
+
+    core.print_out("\n\n")
+    core.print_out("        " + ("*" * 80) + "\n")
+    core.print_out("        " + "WARNING:".center(80) + "\n")
+    core.print_out("        " + "TDSCF is experimental results may be inaccurate at this point".center(80) + "\n")
+    core.print_out("        " + ("*" * 80) + "\n\n")
+
+    core.print_out("\n  ==> Requested Excitations <==\n\n")
+    state_info = options.pop('states')
+    for nstate, state_sym in state_info:
+        core.print_out("      {} states with {} symmetry\n".format(nstate, state_sym))
+
+    core.print_out("\n  ==> Options <==\n\n")
+    for k, v in options:
+        core.print_out("     {:<10s}:              {}\n".format(k, v))
+
+    core.print_out("\n")
+
+
 def tdscf_excitations(wfn, **kwargs):
     """Compute excitations from a scf(HF/KS) wavefunction:
 
@@ -262,9 +285,6 @@ def tdscf_excitations(wfn, **kwargs):
     -----------
     wfn : :py:class:`psi4.core.Wavefunction`
        The reference wavefunction
-    nstates : int {optional}
-       The number of states to find, if the system has symmetry this is the same as passing ``states_per_irrep`` with ``nstates``
-       as every element. (Convenient for C1 systems)
     states_per_irrep : list (int), {optional}
        The solver will find this many lowest excitations for each irreducible representation of the computational point group.
        The default is to find the lowest excitation of each symmetry. If this option is provided it must have the same number of elements
@@ -285,32 +305,26 @@ def tdscf_excitations(wfn, **kwargs):
     guess : str
        If string the guess that will be used. Allowed choices:
        - ``denominators``: {default} uses orbital energy differences to generate guess vectors.
-       - ``random``: generates random vectors
 
 
     ..note:: The algorithm employed to solve the non-Hermitian eigenvalue problem
              (when ``tda`` is False) will fail when the SCF wavefunction has a triplet instability.
     """
     # gather arguments
-    etol = kwargs.pop('e_tol', 1.0e-6)
+    e_tol = kwargs.pop('e_tol', 1.0e-6)
     rtol = kwargs.pop('r_tol', 1.0e-8)
     max_ss_vec = kwargs.pop('max_ss_vectors', 50)
 
-    # how many
-    passed_spi = kwargs.pop('states_per_irrep', [])
-    nstates = kwargs.pop('nstates', 1)
-    #states_per_irrep = _validate_states_args(wfn, passed_spi, nstates)
+    # how many states
+    passed_spi = kwargs.pop('states_per_irrep', [0 for _ in range(wfn.nirreps())])
+
+    #TODO:states_per_irrep = _validate_states_args(wfn, passed_spi, nstates)
     states_per_irrep = passed_spi
 
-    # guess
-    passed_guess = kwargs.pop('guess', 'random')
-    guess_type = None
-    if isinstance(passed_guess, (list, tuple)):
-        guess_vectors = _validate_user_guess(wfn, states_per_irrep, guess)
-        guess_type = 'user'
-    else:
-        guess_vectors = []
-        guess_type = 'random'
+    #TODO: guess types, user guess
+    guess_type = kwargs.pop("guess", "denominators")
+    if guess_type != "denominators":
+        raise ValidationError("Guess type {} is not valid".format(guess_type))
 
     # which problem
     ptype = 'rpa'
@@ -319,9 +333,25 @@ def tdscf_excitations(wfn, **kwargs):
         ptype = 'tda'
         solve_function = solvers.davidson_solver
 
+    restricted = wfn.same_a_b_orbs()
+    if restricted:
+        triplet = kwargs.pop('triplet', False)
+    else:
+        triplet = None
+
+    _print_tdscf_header(
+        etol=etol,
+        rtol=rtol,
+        states=[(count, label) for count, label in zip(state_per_irrep,
+                                                       wfn.molecule().irrep_labels())],
+        guess_type=guess_type,
+        restricted=restricted,
+        triplet=triplet,
+        ptype=ptype)
+
     # construct the engine
-    if wfn.same_a_b_orbs():
-        engine = TDRSCFEngine(wfn, triplet=kwargs.pop('triplet', False), ptype=ptype)
+    if restricted:
+        engine = TDRSCFEngine(wfn, triplet=triplet, ptype=ptype)
     else:
         engine = TDUSCFEngine(wfn, ptype=ptype)
 
@@ -334,7 +364,7 @@ def tdscf_excitations(wfn, **kwargs):
         guess_ = engine.generate_guess(nstates * 2)
 
         vecs_per_root = max_ss_vec // nstates
-        energies, *others = solve_function(
+        ret = solve_function(
             engine=engine,
             e_tol=etol,
             r_tol=rtol,
@@ -342,9 +372,12 @@ def tdscf_excitations(wfn, **kwargs):
             nroot=nstates,
             guess=guess_,
             verbose=2)
-        if energies is None:
-            raise Exception("Solver did not converge")
-        else:
-            solver_results.append(energies)
+        solver_results.append(ret)
+
+    #TODO: output table
+
+    #TODO: oscillator strengths
+
+    #TODO: check/handle convergence failures
 
     return solver_results
