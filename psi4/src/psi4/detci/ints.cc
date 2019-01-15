@@ -109,6 +109,7 @@ void CIWavefunction::transform_ci_integrals() {
                               IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
                               IntegralTransform::FrozenOrbitals::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
+    ints_->set_build_mo_fock(false);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
     // Incase we do two ci runs
