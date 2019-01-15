@@ -943,7 +943,7 @@ class BasisSet(object):
         text += '\n'
 
         if return_atomlist:
-            return atom_basis_list, text, None
+            return atom_basis_list, text, ecpbasisset
         else:
             return basisset, text, ecpbasisset
 
