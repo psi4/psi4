@@ -199,13 +199,13 @@ SharedMatrix SADGuess::form_D_AO() {
             nalpha[A] = nbeta[A] = 0.5 * nelec[A];
         } else {
             // Target ground spin state
-            if (Z+ECP >= reference_S.size()) {
+            if (Z + ECP >= reference_S.size()) {
                 std::ostringstream err;
                 err << " Only atoms up to Z = " << reference_S.size() - 1
                     << " are currently supported with SAD_SPIN_AVERAGE = false\n";
                 throw std::domain_error(err.str());
             }
-            int nhigh = reference_S[Z+ECP];
+            int nhigh = reference_S[Z + ECP];
             nalpha[A] = 0.5 * (nelec[A] + nhigh);
             nbeta[A] = 0.5 * (nelec[A] - nhigh);
         }
@@ -663,12 +663,12 @@ void HF::compute_SAD_guess() {
     if (sad_basissets_.empty()) {
         throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
     }
-    if ((options_.get_str("SAD_SCF_TYPE") == "DF") && sad_fitting_basissets_.empty()) {
-        throw PSIEXCEPTION("  SCF guess was set to SAD with DiskDFJK, but sad_fitting_basissets_ was empty!\n\n");
-    }
 
     auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, nalpha_, nbeta_, options_);
     if (options_.get_str("SAD_SCF_TYPE") == "DF") {
+        if (sad_fitting_basissets_.empty()) {
+            throw PSIEXCEPTION("  SCF guess was set to SAD with DiskDFJK, but sad_fitting_basissets_ was empty!\n\n");
+        }
         guess->set_atomic_fit_bases(sad_fitting_basissets_);
     }
 
