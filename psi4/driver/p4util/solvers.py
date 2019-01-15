@@ -25,8 +25,8 @@
 #
 # @END LICENSE
 #
-import math
 import time
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -34,7 +34,7 @@ from psi4 import core
 
 from .exceptions import ValidationError
 
-np.set_printoptions(precision=4, linewidth=240, suppress=True)
+
 """
 Generalized iterative solvers for Psi4.
 
@@ -461,6 +461,155 @@ def _best_vectors(engine, ss_vectors, basis_vectors):
     return new_vecs
 
 
+class SolverEngine(ABC):
+    """Abstract Base Class defining the API required by solver engines
+
+    Engines implement the correct product functions for iterative solvers that do not require the target matrix be stored directly.
+    Classes intended to be used as an `engine` for :func:`davidson_solver` or :func:`hamiltonian_solver` should inherit from this base class
+    to ensure that the required methods are defined.
+
+
+     ..note:: The `vector` referred to here is intentionally vague, the solver does not care what it is and only
+              holds individual or sets of them. In fact an individual `vector` could be split across two elements in a list,
+              such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
+              len(list) returns the number of vector-like objects.
+    """
+
+    @abstractmethod
+    def compute_products(self, X):
+        """Compute a Matrix * trial vector products
+        Parameters
+        ----------
+        X : list of `vectors`
+
+        Returns
+        -------
+        Expected by :func:`davidson_solver`
+
+        AX : list of `vectors`
+           The product :math:`A x X_{i}` for each `X_{i}` in `X`, in that order. Where `A` is the hermitian matrix to be diagonalized. `len(AX) == len(X)`
+        n : int
+           The number of products that were evaluated. If the object implements product caching this may be less than len(X)
+
+        Expected by :func:`hamiltonian_solver`
+
+        H1X : list of `vectors`
+           The product :math:`H1 x X_{i}` for each `X_{i}` in `X`, in that order. Where H1 is described in :func:`hamiltonian_solver`. `len(H1X) == len(X)`
+        H2X : list of `vectors`
+           The product :math:`H2 x X_{i}` for each `X_{i}` in `X`, in that order. Where H2 is described in :func:`hamiltonian_solver`. `len(H2X) == len(X)`
+        """
+        pass
+
+    @abstractmethod
+    def precondition(self, R_k, w_k):
+        """Apply the preconditioner to a Residual vector
+
+        The preconditioner is usually defined as :math:`(w_k - D_{i})^-1` where `D` is an approximation of the diagonal of the
+        matrix that is being diagonalized.
+
+        Parameters
+        ----------
+        R_k : single `vector`
+           The residual vector
+        w_k : float
+           The eigenvalue associated with this vector
+
+        Returns
+        -------
+        new_X_k : single `vector`
+           The preconditioned residual vector, a correction vector that will be used to augment the guess space
+        """
+        pass
+
+    @abstractmethod
+    def new_vector(self):
+        """Return a new `vector` object.
+
+        The solver is oblivious to the data structure used for a `vector` this method provides the engine with a means to create `vector`
+        like quantities.
+
+        Parameters
+        ----------
+        The engine calls this method with no arguments. So any defined by the engine for its own use should be optional
+
+        Returns
+        -------
+        X : singlet `vector`
+           This should be a new vector object with the correct dimensions, assumed to be zeroed out
+        """
+        pass
+
+    @abstractmethod
+    def vector_dot(X, Y):
+        """Compute a dot product between two `vectors`
+
+        Parameters
+        ----------
+        X : single `vector`
+        Y : single `vector`
+
+        Returns
+        -------
+        a : float
+           The dot product  (X x Y)
+        """
+        pass
+
+    @abstractmethod
+    def vector_axpy(a, X, Y):
+        """Compute scaled `vector` addition operation `a*X + Y`
+
+        Parameters
+        ----------
+        a : float
+          The scale factor applied to `X`
+        X : singlet `vector`
+          The `vector` which will be scaled and added to `Y`
+        Y : single `vector`
+          The `vector` which the result of `a*X` is added to
+
+        Returns
+        -------
+        Y : single `vector`
+          The solver assumes that Y is updated, and returned. So it is safe to avoid a copy of Y if possible
+        """
+        pass
+
+    @abstractmethod
+    def vector_scale(a, X):
+        """Scale a vector by some factor
+
+        Parameters
+        ----------
+        a : float
+           The scale facor
+        X : single `vector`
+           The vector that will be scaled
+
+        Returns
+        -------
+        X : single `vector`
+          The solver assumes that the passed vector is modifed. So it is save to avoid a copy of X if possible.
+        """
+        pass
+
+    @abstractmethod
+    def vector_copy(X):
+        """Make a copy of a `vector`
+
+        Parameters
+        ----------
+        X : single `vector`
+          The `vector` to copy
+
+        Returns
+        -------
+        X' : single `vector`
+           A copy of `X` should be distinct object that can be modified independently of the passed object, Has the same data when returned.
+        """
+        pass
+
+
 def davidson_solver(engine,
                     guess,
                     e_tol=1.0E-6,
@@ -469,7 +618,7 @@ def davidson_solver(engine,
                     max_vecs_per_root=20,
                     maxiter=100,
                     verbose=1,
-                    schmidt_add_tol=1.0e-8):
+                    schmidt_tol=1.0e-8):
     """
 
     Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
@@ -484,9 +633,8 @@ def davidson_solver(engine,
 
     Parameters
     -----------
-    engine : object
-       The engine drive all operations involving data structures that have one "large" dimension. The methods it is required
-       to provide and their signatures are detailed below.
+    engine : object (subclass of :class:`SolverEngine`)
+       The engine drive all operations involving data structures that have at least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
     e_tol : float
@@ -497,56 +645,30 @@ def davidson_solver(engine,
         Number of roots desired
     maxiter : int
         The maximum number of iterations
-    schmidt_add_tol : float
+    schmidt_tol : float
         Correction vectors must have norm larger than this value to be added to the guess space
     verbose : int
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
-    Requirements of engine
-    ----------------------
-    compute_products(X) -> AX :
-       X : list of `vectors`
-       AX : list of `vectors`
-           The product :math:`A x X_{i}` for each `X_{i}` in `X`, in that order. Where a is the hermitian matrix to be diagonalized.
+    Returns
+    -------
+    best_values : np.ndarray (nroots, )
+       The best approximation of the eigenvalues of A, computed on the last iteration of the solver
+    best_vectors: list of `vector` (nroots)
+       The best approximation of the eigenvectors of A, computed on the last iteration of the solver
+    stats : list of `dict`
+       Statistics collected on each iteration
 
-    precondition(R_k, w_k) -> new_X_k
-       R_k : single `vector`, the residual vector
-       w_k : float, the eigenvalue associated with this vector
-       new_X_k : single `vector`
-           This vector will be added to the guess space after orthogonalization
+       count : int, iteration number
+       res_norm : np.ndarray (nroots, ), the norm of residual vector for each roots
+       val : np.ndarray (nroots, ), the eigenvalue corresponding to each root
+       delta_val : np.ndarray (nroots, ), the change in eigenvalue from the last iteration to this ones
+       collapse : bool, if a subspace collapse was performed
+       product_count : int, the running total of product evaluations that was performed
+       done : bool, if all roots were converged
 
-    vector_dot(X, Y) -> a:
-       X : single `vector`
-       Y : single `vector`
-       a : float, the dot product  (X x Y)
-
-    vector_axpy(a, X, Y) - > Y':
-       a : float
-       X : single `vector`
-       Y : single `vector`
-       Y': single `vector`
-         Y' = Y + a*X (it is assumed that the vector passed as Y is modified. This may not be true)
-
-    vector_scale(a, X) -- > X':
-       a : float
-       X : single `vector`
-       X': single `vector`
-          X' = a * X (it is assumed that the vector passed as X is modified. This may not be true)
-
-    vector_copy(X) -- > X':
-       X : single `vector`
-       X': single `vector`
-         a copy of X
-
-     new_vector() -- > X:
-       X : single `vector`
-         A new object that has the same shape as `vector` like quantities.
-
-
-     ..note:: The `vector` referred to here is intentionally vague, the solver does not care what it is and only
-              holds individual or sets of them. In fact an individual `vector` could be split across two elements in a list,
-              such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
-              len(list) returns the number of vector-like objects.
+    .. note:: The solver will return even when ``maxiter`` iterations are performed without convergence. The caller should check `stats[-1]['done']`
+       for convergence/ failure and handle each case accordingly.
     """
     nk = nroot
 
@@ -611,8 +733,8 @@ def davidson_solver(engine,
         _print_array("SS eigenvalues", lam, verbose)
 
         # remove zeros/negatives
-        alpha = alpha[:, lam > 0.0]
-        lam = lam[lam > 0.0]
+        alpha = alpha[:, lam > 1.0e-10]
+        lam = lam[lam > 1.0e-10]
 
         # sort/truncate to nroot
         idx = np.argsort(lam)
@@ -667,7 +789,7 @@ def davidson_solver(engine,
         else:
 
             # Regular subspace update, orthonormalize preconditioned residuals and add to the trial set
-            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_add_tol)
+            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_tol)
 
     # always return, the caller should check stats[-1]['done'] == True for convergence
     return best_eigvals, best_eigvecs, stats
@@ -681,7 +803,7 @@ def hamiltonian_solver(engine,
                        max_vecs_per_root=20,
                        maxiter=100,
                        verbose=1,
-                       schmidt_add_tol=1.0e-8):
+                       schmidt_tol=1.0e-8):
     """
     Finds the smallest eigenvalues and associated right and left hand eigenvectors of a large real Hamiltonian eigenvalue problem
     emulated through an engine.
@@ -705,15 +827,14 @@ def hamiltonian_solver(engine,
     We use a Davidson like iteration where we transform (A+B) (H1) and (A-B) (H2) in to the subspace defined by the trial vectors.
     The subspace analog of the NxN hermitian EVP is diagonalized and left (X-Y) and right (X+Y) eigenvectors of the NxN
     non-hermitian EVP are approximated. Residual vectors are formed for both and the guess space is augmented with two
-    correction vectors per iteration.
+    correction vectors per iteration. The advantages and properties of this algorithm are described in the literature [stratmann:1998]_ .
 
 
 
     Parameters
     -----------
-    engine : object
-       The engine drive all operations involving data structures that have one "large" dimension. The methods it is required
-       to provide and their signatures are detailed below.
+    engine : object (subclass of :class:`SolverEngine`)
+       The engine drive all operations involving data structures that have at least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
     e_tol : float
@@ -724,59 +845,39 @@ def hamiltonian_solver(engine,
         Number of roots desired
     maxiter : int
         The maximum number of iterations
-    schmidt_add_tol : float
+    schmidt_tol : float
         Correction vectors must have norm larger than this value to be added to the guess space
     verbose : int
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
+    Returns
+    -------
+    best_values : np.ndarray (nroots, )
+       The best approximation of the eigenvalues of `w`, computed on the last iteration of the solver
+    best_R: list of `vector` (nroots)
+       The best approximation of the  right hand eigenvectors, `X+Y`, computed on the last iteration of the solver.
+    best_L: list of `vector` (nroots)
+       The best approximation of the left hand eigenvectors, `X-Y`, computed on the last iteration of the solver.
+    stats : list of `dict`
+       Statistics collected on each iteration
 
-    Requirements of engine
-    ----------------------
-    compute_products(X) -> H1X, H2X :
-       X : list of `vectors`
-       H1X : list of `vectors`
-           The product :math:`H1 x X_{i}` for each `X_{i}` in `X`, in that order. Where H1 is the sum (A+B) of the blocks described above.
-       H2X : list of `vectors`
-           The product :math:H2 x X_{i} for each `X_{i}` in  X, in that order. Where H2 is the difference (A-B) of the blocks described above.
+       count : int, iteration number
+       res_norm : np.ndarray (nroots, ), the norm of residual vector for each roots
+       val : np.ndarray (nroots, ), the eigenvalue corresponding to each root
+       delta_val : np.ndarray (nroots, ), the change in eigenvalue from the last iteration to this ones
+       collapse : bool, if a subspace collapse was performed
+       product_count : int, the running total of product evaluations that was performed
+       done : bool, if all roots were converged
 
-    precondition(R_k, w_k) -> new_X_k
-       R_k : single `vector`, the residual vector
-       w_k : float, the eigenvalue associated with this vector
-       new_X_k : single `vector`
-           This vector will be added to the guess space after orthogonalization
-
-    vector_dot(X, Y) -> a:
-       X : single `vector`
-       Y : single `vector`
-       a : float, the dot product  (X x Y)
-
-    vector_axpy(a, X, Y) - > Y':
-       a : float
-       X : single `vector`
-       Y : single `vector`
-       Y': single `vector`
-         Y' = Y + a*X (it is assumed that the vector passed as Y is modified. This may not be true)
-
-    vector_scale(a, X) -- > X':
-       a : float
-       X : single `vector`
-       X': single `vector`
-          X' = a * X (it is assumed that the vector passed as X is modified. This may not be true)
-
-    vector_copy(X) -- > X':
-       X : single `vector`
-       X': single `vector`
-         a copy of X
-
-     new_vector() -- > X:
-       X : single `vector`
-         A new object that has the same shape as `vector` like quantities.
+    .. note:: The solver will return even when ``maxiter`` iterations are performed without convergence. The caller should check `stats[-1]['done']`
+       for convergence/ failure and handle each case accordingly.
 
 
-     ..note:: The `vector` referred to here is intentionally vague, the solver does not care what it is and only
-              holds individual or sets of them. In fact an individual `vector` could be split across two elements in a list,
-              such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
-              len(list) returns the number of vector-like objects.
+    References
+    ----------
+
+    .. [stratmann:1998] R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch, "An efficient implementation of time-dependent density-functional
+       theory for the calculation of excitation energies of large molecules." J. Chem. Phys., 109, 8218 (1998)
     """
 
     nk = nroot
@@ -844,7 +945,7 @@ def hamiltonian_solver(engine,
         # Check H2 is PD
         # NOTE: If this triggers failure the SCF solution is not stable. A few ways to handle this
         # 1. Use davidson solver where product function evaluates (H2 * (H1 * X))
-        #    - Poor convergence, will take many iterations
+        #    - Poor convergen
         # 2. Switch to CIS/TDA
         #    - User would probably not expect this
         # 3. Perform Stability update and restart with new reference
@@ -865,8 +966,8 @@ def hamiltonian_solver(engine,
         _print_array("Eigvectors (A-B)^(1/2)(A+B)(A-B)^(1/2)", Tss, verbose)
 
         # pick positive roots
-        Tss = Tss[:, w2 > 0.0]
-        w2 = w2[w2 > 0.0]
+        Tss = Tss[:, w2 > 1.0e-10]
+        w2 = w2[w2 > 1.0e-10]
 
         # check for invalid eigvals
         with np.errstate(invalid='raise'):
@@ -938,11 +1039,11 @@ def hamiltonian_solver(engine,
         elif iter_info['collapse']:
 
             # need to orthonormalize union of the Left/Right solutions on restart
-            vecs = _gs_orth(engine, [], best_R + best_L, schmidt_add_tol)
+            vecs = _gs_orth(engine, [], best_R + best_L, schmidt_tol)
         else:
 
             # Regular subspace update, orthonormalize preconditioned residuals and add to the trial set
-            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_add_tol)
+            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_tol)
 
     # always return the caller should check stats[-1]['done'] == True for convergence
     return best_vals, best_R, best_L, stats

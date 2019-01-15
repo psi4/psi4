@@ -26,7 +26,6 @@ RPA = pytest.mark.RPA
 TDA = pytest.mark.TDA
 
 
-
 @pytest.fixture
 def tddft_systems():
     psi4.core.clean()
@@ -1248,7 +1247,6 @@ def test_tdscf(ref, func, ptype, basis, expected, wfn_factory, solver_funcs, eng
     elif (ref == 'UHF' and func != 'SVWN'):
         pytest.xfail("UKS Vx kernel bug for non-lda")
 
-
     ### setup
     # Look up expected in fixture (easier to read)
     exp_lookup = "{}-{}-{}-{}".format(ref, func, ptype, basis)
@@ -1277,7 +1275,7 @@ def test_tdscf(ref, func, ptype, basis, expected, wfn_factory, solver_funcs, eng
         maxiter=30,
         e_tol=1.0e-7,
         r_tol=1.0e-5,
-        schmidt_add_tol=1.0e-12)
+        schmidt_tol=1.0e-12)
 
     test_vals = out[0]
     stats = out[-1]

@@ -57,60 +57,6 @@ H1ia,jb =              A                    +       B
         = [(E_a - E_i) +  (ia|jb) - (ij|ab)] + [  (ai|bj)  - (aj|bi)]
         = [(E_a - E_i) +     J    -    K     -   K^T]
         = [(E_a - E_i) +  (ia|jb) - (ij|ab)  - (aj|bi)]
-
-
-General Requirements of an Engine
----------------------------------
-precondition(R_k, w_k) -> new_X_k
-   R_k : single `vector`, the residual vector
-   w_k : float, the eigenvalue associated with this vector
-   new_X_k : single `vector`
-       This vector will be added to the guess space after orthogonalization
-
-vector_dot(X, Y) -> a:
-   X : single `vector`
-   Y : single `vector`
-   a : float, the dot product  (X x Y)
-
-vector_axpy(a, X, Y) - > Y':
-   a : float
-   X : single `vector`
-   Y : single `vector`
-   Y': single `vector`
-     Y' = Y + a*X (it is assumed that the vector passed as Y is modified. This may not be true)
-
-vector_scale(a, X) -- > X':
-   a : float
-   X : single `vector`
-   X': single `vector`
-      X' = a * X (it is assumed that the vector passed as X is modified. This may not be true)
-
-vector_copy(X) -- > X':
-   X : single `vector`
-   X': single `vector`
-     a copy of X
-
-new_vector() -- > X:
-   X : single `vector`
-     A new object that has the same shape as `vector` like quantities.
-
-compute_products(X) -> AX, n :
-   Expected by :func:`~psi4.driver.p4util.solvers.davidson_solver`
-   X : list of `vectors`
-   AX : list of `vectors`
-       The product :math:`A x X_{i}` for each `X_{i}` in `X`, in that order. Where a is the hermitian matrix to be diagonalized.
-   n : int
-       The number of products that were evaluated. May be less than len(X) if products are cached between calls.
-
-compute_products(X) -> H1X, H2X, n :
-   Expected by :func:`~psi4.driver.p4util.solvers.hamiltonian_solver`
-   X : list of `vectors`
-   H1X : list of `vectors`
-       The product :math:`(A+B) x X_{i}` for each `X_{i}` in `X`, in that order. This is H1 defined above.
-   H2X : list of `vectors`
-       The product :math:`(A-B) x X_{i}` for each `X_{i}` in `X`, in that order. This is H2 defined above
-   n : int
-       The numebr of products that were evaluated. Maybe less than len(X) if products are cached between calls
 """
 
 
@@ -227,6 +173,9 @@ class ProductCache:
 class TDRSCFEngine(SingleMatPerVector):
     """Engine for R(HF/KS) products
 
+    Fulfills the API required by :class:`~psi4.driver.p4uitl.solvers.SolverEngine`
+
+
     Parameters
     ----------
     wfn : :py:class:`psi4.core.Wavefunction`
@@ -239,6 +188,7 @@ class TDRSCFEngine(SingleMatPerVector):
         Are products spin-adapted for triplet excitations?
 
     """
+
     def __init__(self, wfn, ptype, triplet=False):
 
         # primary data
@@ -461,6 +411,8 @@ class TDRSCFEngine(SingleMatPerVector):
 class TDUSCFEngine(PairedMatPerVector):
     """Engine for U(HF/KS) products
 
+    Fulfills the API required by :class:`~psi4.driver.p4uitl.solvers.SolverEngine`
+
     Parameters
     ----------
     wfn : :py:class:`psi4.core.Wavefunction`
@@ -471,6 +423,7 @@ class TDUSCFEngine(PairedMatPerVector):
         compute_products will be as expected by :func:`~psi4.driver.p4util.solvers.davidson_solver`.
 
     """
+
     def __init__(self, wfn, ptype):
 
         # Primary data
