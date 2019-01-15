@@ -1,0 +1,43 @@
+#! Test SAD SCF guesses on noble gas atom
+
+molecule {
+0 1
+Ar
+}
+
+ref_dfhf = -526.79986827914422
+ref_hf = -526.79986530974611
+ref_cdhf = -526.7998576526238139
+
+set {
+  basis cc-pVDZ
+  reference rhf
+  guess sad
+  sad_print 2
+  scf_type df
+  sad_scf_type df
+}
+energy('scf')
+compare_values(ref_dfhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD DF     guess (a.u.)");             #TEST
+
+set {
+  df_scf_guess false
+  scf_type pk
+  sad_scf_type pk
+}
+energy('scf')
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD PK     guess (a.u.)");             #TEST
+
+set {
+  scf_type direct
+  sad_scf_type direct
+}
+energy('scf')
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD DIRECT guess (a.u.)");             #TEST
+
+set {
+  scf_type cd
+  sad_scf_type cd
+}
+energy('scf')
+compare_values(ref_cdhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD     guess (a.u.)");             #TEST
