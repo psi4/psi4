@@ -516,6 +516,14 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             directjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         jk = std::unique_ptr<JK>(directjk);
+    } else if (options_.get_str("SAD_SCF_TYPE") == "CD") {
+        CDJK* cdjk(new CDJK(bas,options_.get_double("CHOLESKY_TOLERANCE")));
+        if (options_["DF_INTS_NUM_THREADS"].has_changed())
+            cdjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
+        jk = std::unique_ptr<JK>(cdjk);
+    } else if (options_.get_str("SAD_SCF_TYPE") == "PK") {
+        PKJK* pkjk(new PKJK(bas,options_));
+        jk = std::unique_ptr<JK>(pkjk);
     } else {
         std::stringstream msg;
         msg << "SAD: JK type of " << options_.get_str("SAD_SCF_TYPE") << " not understood.\n";
