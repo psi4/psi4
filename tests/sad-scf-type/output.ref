@@ -22,9 +22,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 15 January 2019 10:44AM
+    Psi4 started on: Tuesday, 15 January 2019 10:49AM
 
-    Process ID: 14517
+    Process ID: 15506
     Host:       dx7-lehtola.chem.helsinki.fi
     PSIDATADIR: /home/work/psi4/install.susi/share/psi4
     Memory:     500.0 MiB
@@ -46,6 +46,8 @@ ref_cdhf = -526.7998576526238139
 
 set {
   basis cc-pVDZ
+  df_basis_scf cc-pVDZ-JKfit
+  df_basis_sad cc-pVDZ-JKfit
   reference rhf
   guess sad
   sad_print 2
@@ -79,7 +81,7 @@ compare_values(ref_cdhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD  
 --------------------------------------------------------------------------
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Tue Jan 15 10:44:49 2019
+*** at Tue Jan 15 10:49:17 2019
 
    => Loading Basis Set <=
 
@@ -141,7 +143,7 @@ compare_values(ref_cdhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD  
 
    => Loading Basis Set <=
 
-    Name: (CC-PVDZ AUX)
+    Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
     atoms 1 entry AR         line   741 file /home/work/psi4/install.susi/share/psi4/basis/cc-pvdz-jkfit.gbs 
@@ -181,7 +183,7 @@ compare_values(ref_cdhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD  
 
    => Auxiliary Basis Set <=
 
-  Basis Set: (CC-PVDZ AUX)
+  Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 36
     Number of basis function: 112
@@ -239,11 +241,11 @@ compare_values(ref_cdhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD  
 
    => Auxiliary Basis Set <=
 
-  Basis Set: SAD-FIT
+  Basis Set: CC-PVDZ-JKFIT
     Blend: BASIS
-    Number of shells: 16
-    Number of basis function: 42
-    Number of Cartesian functions: 48
+    Number of shells: 36
+    Number of basis function: 112
+    Number of Cartesian functions: 130
     Spherical Harmonics?: true
     Max angular momentum: 3
 
@@ -251,24 +253,21 @@ compare_values(ref_cdhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD  
   Initial Atomic UHF Energy:    -373.7743024529
 
                                          Total Energy                 Delta E           RMS |[F,P]|  
-  @Atomic UHF iteration   1 energy:  -520.84767683571431     -147.07337438280592     0.09512449005492
-  @Atomic UHF iteration   2 energy:  -524.31155126480064       -3.46387442908633     0.03614751481831
-  @Atomic UHF iteration   3 energy:  -524.46063822261067       -0.14908695781003     0.00322183444960
-  @Atomic UHF iteration   4 energy:  -524.46206108007414       -0.00142285746347     0.00035380459160
-  @Atomic UHF iteration   5 energy:  -524.46206983946718       -0.00000875939304     0.00006452262209
-  @Atomic UHF iteration   6 energy:  -524.46207038554064       -0.00000054607347     0.00000072454274
-  @Atomic UHF Final Energy for atom AR:  -524.46207038554064
+  @Atomic UHF iteration   1 energy:  -523.38229308647215     -149.60799063356376     0.09331033847875
+  @Atomic UHF iteration   2 energy:  -526.68798296484010       -3.30568987836796     0.03093242015070
+  @Atomic UHF iteration   3 energy:  -526.79853916160585       -0.11055619676574     0.00305712162104
+  @Atomic UHF iteration   4 energy:  -526.79985534240984       -0.00131618080400     0.00035367063747
+  @Atomic UHF iteration   5 energy:  -526.79986787620669       -0.00001253379685     0.00005692184841
+  @Atomic UHF iteration   6 energy:  -526.79986827913751       -0.00000040293082     0.00000046114515
+  @Atomic UHF Final Energy for atom AR:  -526.79986827913751
 Finished UHF Computation!
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:  -526.79154714374693   -5.26792e+02   0.00000e+00 
-   @DF-RHF iter   1:  -526.79963652514039   -8.08938e-03   2.65725e-03 DIIS
-   @DF-RHF iter   2:  -526.79985568703978   -2.19162e-04   6.70310e-04 DIIS
-   @DF-RHF iter   3:  -526.79986827788775   -1.25908e-05   8.75547e-06 DIIS
-   @DF-RHF iter   4:  -526.79986827914433   -1.25658e-09   8.20250e-08 DIIS
+   @DF-RHF iter   0:  -526.79986827914433   -5.26800e+02   0.00000e+00 
+   @DF-RHF iter   1:  -526.79986827914422    1.13687e-13   2.93296e-09 DIIS
   Energy and wave function converged.
 
 
@@ -281,25 +280,25 @@ Finished UHF Computation!
 
        1Ag  -118.606289     2Ag   -12.317786     1B2u   -9.566314  
        1B1u   -9.566314     1B3u   -9.566314     3Ag    -1.274392  
-       2B3u   -0.588024     2B1u   -0.588024     2B2u   -0.588024  
+       2B1u   -0.588024     2B3u   -0.588024     2B2u   -0.588024  
 
     Virtual:                                                              
 
-       3B3u    0.797264     3B2u    0.797264     3B1u    0.797264  
-       4Ag     0.959751     5Ag     1.108403     1B2g    1.108403  
+       3B2u    0.797264     3B3u    0.797264     3B1u    0.797264  
+       4Ag     0.959750     1B2g    1.108403     5Ag     1.108403  
        1B3g    1.108403     1B1g    1.108403     6Ag     1.108403  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     3,    0,    0,    0,    0,    2,    2,    2 ]
 
-  @DF-RHF Final Energy:  -526.79986827914433
+  @DF-RHF Final Energy:  -526.79986827914422
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -728.2767710890284434
-    Two-Electron Energy =                 201.4769028098841659
+    One-Electron Energy =                -728.2767719238587460
+    Two-Electron Energy =                 201.4769036447145538
     Total Energy =                       -526.7998682791442207
 
 Computation Completed
@@ -322,19 +321,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:44:50 2019
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:49:19 2019
 Module time:
-	user time   =       2.27 seconds =       0.04 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.31 seconds =       0.04 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.27 seconds =       0.04 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.31 seconds =       0.04 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 	RHF  energy, SAD DF     guess (a.u.)..............................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Tue Jan 15 10:44:50 2019
+*** at Tue Jan 15 10:49:19 2019
 
    => Loading Basis Set <=
 
@@ -575,19 +574,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:44:51 2019
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:49:20 2019
 Module time:
-	user time   =       2.02 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.95 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.29 seconds =       0.07 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       4.26 seconds =       0.07 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 	RHF  energy, SAD PK     guess (a.u.)..............................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Tue Jan 15 10:44:51 2019
+*** at Tue Jan 15 10:49:20 2019
 
    => Loading Basis Set <=
 
@@ -790,19 +789,19 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:44:54 2019
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:49:22 2019
 Module time:
-	user time   =       3.77 seconds =       0.06 minutes
+	user time   =       3.89 seconds =       0.06 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       8.06 seconds =       0.13 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       8.15 seconds =       0.14 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 	RHF  energy, SAD DIRECT guess (a.u.)..............................PASSED
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Tue Jan 15 10:44:54 2019
+*** at Tue Jan 15 10:49:22 2019
 
    => Loading Basis Set <=
 
@@ -1017,18 +1016,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:44:55 2019
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Tue Jan 15 10:49:24 2019
 Module time:
-	user time   =       2.61 seconds =       0.04 minutes
+	user time   =       1.87 seconds =       0.03 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      10.68 seconds =       0.18 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =      10.03 seconds =       0.17 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 	RHF  energy, SAD CD     guess (a.u.)..............................PASSED
 
-    Psi4 stopped on: Tuesday, 15 January 2019 10:44AM
-    Psi4 wall time for execution: 0:00:06.70
+    Psi4 stopped on: Tuesday, 15 January 2019 10:49AM
+    Psi4 wall time for execution: 0:00:06.60
 
 *** Psi4 exiting successfully. Buy a developer a beer!

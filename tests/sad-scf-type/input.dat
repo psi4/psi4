@@ -11,6 +11,8 @@ ref_cdhf = -526.7998576526238139
 
 set {
   basis cc-pVDZ
+  df_basis_scf cc-pVDZ-JKfit
+  df_basis_sad cc-pVDZ-JKfit
   reference rhf
   guess sad
   sad_print 2
