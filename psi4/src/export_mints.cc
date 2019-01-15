@@ -357,14 +357,12 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
                       "The name of the Vector. Used in printing.")
-        .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m",
+        .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", "m"_a)
+        .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", "h"_a,
              "m"_a)
-        .def("get", vector_getitem_2(&Vector::get),
-             "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
-        .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a,
+        .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a, "val"_a)
+        .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
-        .def("set", vector_setitem_2(&Vector::set),
-             "Sets a single element value located at m in irrep h", "h"_a, "m"_a, "val"_a)
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a)
@@ -639,12 +637,11 @@ void export_mints(py::module& m) {
 
     // Free functions
     m.def("doublet", &doublet,
-          "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", py::arg("A"),
-          py::arg("B"), py::arg("transA") = false, py::arg("transB") = false);
+          "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a, "B"_a,
+          "transA"_a = false, "transB"_a = false);
     m.def("triplet", &triplet,
-          "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
-          py::arg("A"), py::arg("B"), py::arg("C"), py::arg("transA") = false, py::arg("transB") = false,
-          py::arg("transC") = false);
+          "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
+          "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "Computes gradients of wavefunctions")
         .def(py::init<std::shared_ptr<Wavefunction>>())

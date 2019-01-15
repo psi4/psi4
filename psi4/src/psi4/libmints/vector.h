@@ -221,6 +221,11 @@ class PSI_API Vector final {
      */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
+
+    PSI_DEPRECATED(
+        "Using `Vector::create` instead of `create` is deprecated, and in 1.4 it will "
+        "stop working")
+    static SharedVector create(const std::string &name, const Dimension &dim) { return create(name, dim); }
 };
 
 /**

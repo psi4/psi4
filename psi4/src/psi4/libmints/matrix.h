@@ -51,6 +51,20 @@ using SharedMatrix = std::shared_ptr<Matrix>;
 
 enum diagonalize_order { evals_only_ascending = 0, ascending = 1, evals_only_descending = 2, descending = 3 };
 
+namespace detail {
+/*!
+ * allocate a block matrix -- analogous to libciomr's block_matrix
+ */
+PSI_API
+double** matrix(int nrow, int ncol);
+
+/*!
+ * free a (block) matrix -- analogous to libciomr's free_block
+ */
+PSI_API
+void free(double** Block);
+}  // namespace detail
+
 /*! \ingroup MINTS
  *  \class Matrix
  *  \brief Makes using matrices just a little easier.
@@ -1045,19 +1059,50 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     void rotate_columns(int h, int i, int j, double theta);
     friend class Vector;
+
+    PSI_DEPRECATED(
+        "Using `Matrix::matrix` instead of `detail::matrix` is deprecated, and in 1.4 it will "
+        "stop working")
+    static double** matrix(int nrow, int ncol) { return detail::matrix(nrow, ncol); }
+
+    PSI_DEPRECATED(
+        "Using `Matrix::free` instead of `detail::free` is deprecated, and in 1.4 it will "
+        "stop working")
+    static void free(double** Block) { detail::free(Block); }
+
+    PSI_DEPRECATED(
+        "Using `Matrix::create` instead of `create` is deprecated, and in 1.4 it will "
+        "stop working")
+    static SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols) {
+        return create(name, rows, cols);
+    }
+
+    PSI_DEPRECATED(
+        "Using `Matrix::horzcat` instead of `horzcat` is deprecated, and in 1.4 it will "
+        "stop working")
+    static SharedMatrix horzcat(const std::vector<SharedMatrix>& mats) { return horzcat(mats); }
+
+    PSI_DEPRECATED(
+        "Using `Matrix::vertcat` instead of `vertcat` is deprecated, and in 1.4 it will "
+        "stop working")
+    static SharedMatrix vertcat(const std::vector<SharedMatrix>& mats) { return vertcat(mats); }
+
+    PSI_DEPRECATED(
+        "Using `Matrix::doublet` instead of `doublet` is deprecated, and in 1.4 it will "
+        "stop working")
+    static SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false,
+                                bool transB = false) {
+        return doublet(A, B, transA, transB);
+    }
+
+    PSI_DEPRECATED(
+        "Using `Matrix::triplet` instead of `triplet` is deprecated, and in 1.4 it will "
+        "stop working")
+    static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C,
+                                bool transA = false, bool transB = false, bool transC = false) {
+        return triplet(A, B, C, transA, transB, transC);
+    }
 };
-
-namespace detail {
-/*!
- * allocate a block matrix -- analogous to libciomr's block_matrix
- */
-double** matrix(int nrow, int ncol);
-
-/*!
- * free a (block) matrix -- analogous to libciomr's free_block
- */
-void free(double** Block);
-}  // namespace detail
 
 /**
  * Convenient creation function return SharedMatrix
