@@ -1046,6 +1046,7 @@ class LibmintsMolecule():
         else:
             raise ValidationError("Molecule::add_atom: Adding atom on top of an existing atom.")
 
+    # For use with atoms defined with ZMAT or variable values, i.e., not Cartesian and NumberValue
     def add_unsettled_atom(self, Z, anchor, symbol, mass=0.0, charge=0.0, label='', A=-1):
         self.lock_frame = False
         numEntries = len(anchor)

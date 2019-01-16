@@ -43,9 +43,6 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 
-/// masks for classes of fragments to be acted upon by molecule functions
-/// The next fragment type should be 4, and ALL should be 7.
-
 /**
  * An abstract class to handle storage of Cartesian coordinate values, which
  * may be defined in terms of other variables through this mechanism, greatly
@@ -55,15 +52,11 @@ class CoordValue {
    protected:
     /// Fixed coordinate?
     bool fixed_;
-    /// Whether the current value is up to date or not
-    bool computed_;
 
    public:
-    CoordValue() : fixed_(false), computed_(false) {}
+    CoordValue() : fixed_(false) {}
 
-    CoordValue(bool fixed) : fixed_(fixed), computed_(false) {}
-
-    CoordValue(bool fixed, bool computed) : fixed_(fixed), computed_(computed) {}
+    CoordValue(bool fixed) : fixed_(fixed) {}
 
     virtual ~CoordValue() {}
 
@@ -82,8 +75,6 @@ class CoordValue {
     virtual void set(double val) = 0;
     /// The type of variable representation
     virtual CoordValueType type() = 0;
-    /// Flag the current value as outdated
-    void invalidate() { computed_ = false; }
     /// Clones the current object, using a user-provided variable array, for deep copying
     virtual std::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) = 0;
 };
@@ -95,7 +86,7 @@ class NumberValue : public CoordValue {
     double value_;
 
    public:
-    NumberValue(double value, bool fixed = false) : CoordValue(fixed, true), value_(value) {}
+    NumberValue(double value, bool fixed = false) : CoordValue(fixed), value_(value) {}
     double compute() override { return value_; }
     void set(double val) override {
         if (!fixed_) value_ = val;
@@ -118,7 +109,7 @@ class VariableValue : public CoordValue {
    public:
     VariableValue(const std::string name, std::map<std::string, double>& geometryVariables, bool negate = false,
                   bool fixed = false)
-        : CoordValue(fixed, true), name_(name), geometryVariables_(geometryVariables), negate_(negate) {}
+        : CoordValue(fixed), name_(name), geometryVariables_(geometryVariables), negate_(negate) {}
     double compute() override;
     bool negated() const { return negate_; }
     const std::string& name() const { return name_; }
@@ -134,10 +125,6 @@ class VariableValue : public CoordValue {
 };
 
 class CoordEntry {
-    template <class Archive>
-    friend void save(Archive& ar, const psi::Vector3& t, size_t /*version*/);
-    template <class Archive>
-    friend void load(Archive& ar, psi::Vector3& t, size_t /*version*/);
 
    protected:
     int entry_number_;
@@ -217,7 +204,9 @@ class CoordEntry {
     /// Whether this atom has the same mass and basis sets as another atom
     bool is_equivalent_to(const std::shared_ptr<CoordEntry>& other) const;
     /// Flags the current coordinates as being outdated.
-    virtual void invalidate() = 0;
+    void invalidate() {
+        computed_ = false;
+    }
     /// Clones the current object, using a user-provided variable array, for deep copying
     virtual std::shared_ptr<CoordEntry> clone(std::vector<std::shared_ptr<CoordEntry> >& atoms,
                                               std::map<std::string, double>& map) = 0;
@@ -297,17 +286,12 @@ class CartesianEntry : public CoordEntry {
     CoordEntryType type() override { return CartesianCoord; }
     void print_in_input_format() override;
     std::string string_in_input_format() override;
-    void invalidate() override {
-        computed_ = false;
-        x_->invalidate();
-        y_->invalidate();
-        z_->invalidate();
-    }
     std::shared_ptr<CoordEntry> clone(std::vector<std::shared_ptr<CoordEntry> >& /*atoms*/,
                                       std::map<std::string, double>& map) override {
         std::shared_ptr<CoordEntry> temp =
             std::make_shared<CartesianEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, x_->clone(map),
                                              y_->clone(map), z_->clone(map), basissets_, shells_);
+        if (computed_) temp->compute(); // The constructor sets the coords we want, so this just sets computed_.
         return temp;
     }
 };
@@ -339,12 +323,6 @@ class ZMatrixEntry : public CoordEntry {
                  std::shared_ptr<CoordValue> dval = std::shared_ptr<CoordValue>());
 
     ~ZMatrixEntry() override;
-    void invalidate() override {
-        computed_ = false;
-        if (rval_ != 0) rval_->invalidate();
-        if (aval_ != 0) aval_->invalidate();
-        if (dval_ != 0) dval_->invalidate();
-    }
     const Vector3& compute() override;
     void print_in_input_format() override;
     std::string string_in_input_format() override;

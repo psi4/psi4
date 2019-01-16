@@ -335,6 +335,10 @@ void Molecule::add_unsettled_atom(double Z, std::vector<std::string> anchor, std
     } else {
         throw PSIEXCEPTION("Illegal geometry specification (neither Cartesian nor Z-Matrix)");
     }
+
+    if ((label != "X") && (label != "x")) {
+        atoms_.push_back(full_atoms_.back());
+    }
 }
 
 double Molecule::mass(int atom) const {
