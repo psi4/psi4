@@ -941,7 +941,7 @@ def test_harmonic_analysis_vs_cfour(subject, request):
     "subject", [
         pytest.param('co2'),
         pytest.param('c2h4', marks=pytest.mark.long),
-        pytest.param('ch4', marks=pytest.mark.quick),
+        pytest.param('ch4', marks=pytest.mark.xfail(reason="unaligned degen mode pair")),
         pytest.param('nh3'),
         pytest.param('h2co', marks=pytest.mark.quick),
         pytest.param('hooh'),

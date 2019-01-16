@@ -1220,11 +1220,8 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # If GUESS is auto guess what it should be
     if core.get_option('SCF', 'GUESS') == "AUTO":
-        if (core.get_option('SCF', 'REFERENCE') in ['RHF', 'RKS']) and \
-                ((scf_molecule.natom() > 1) or core.get_option('SCF', 'SAD_FRAC_OCC')):
+        if (scf_molecule.natom() > 1):
             core.set_local_option('SCF', 'GUESS', 'SAD')
-        elif core.get_option('SCF', 'REFERENCE') in ['ROHF', 'ROKS', 'UHF', 'UKS']:
-            core.set_local_option('SCF', 'GUESS', 'GWH')
         else:
             core.set_local_option('SCF', 'GUESS', 'CORE')
 

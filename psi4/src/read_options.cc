@@ -1434,9 +1434,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SCF type of SAD guess !expert -*/
         options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF");
         /*- Do force an even distribution of occupations across the last partially occupied orbital shell? !expert -*/
-        options.add_bool("SAD_FRAC_OCC", false);
-        /*- Do use spin-restricted occupations in fractional SAD? !expert -*/
-        options.add_bool("SAD_FRAC_SR_OCC", false);
+        options.add_bool("SAD_FRAC_OCC", true);
+        /*- Do use spin-averaged occupations instead of atomic ground spin state in fractional SAD? !expert -*/
+        options.add_bool("SAD_SPIN_AVERAGE", true);
         /*- Auxiliary basis for the SAD guess !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
