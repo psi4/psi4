@@ -504,32 +504,33 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     // Setup JK
     std::unique_ptr<JK> jk;
 
+    std::string jk_type(options_.get_str("SAD_SCF_TYPE"));
+
+    // Handle default cases for compatibility
+    if ((jk_type == "PK") || (jk_type == "OUT_OF_CORE")) {
+        jk_type = "DIRECT";
+    }
+
     // Need a very special auxiliary basis here
-    if (options_.get_str("SAD_SCF_TYPE") == "DF") {
+    if (jk_type == "DF") {
         MemDFJK* dfjk = new MemDFJK(bas, fit);
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         dfjk->dfh()->set_print_lvl(0);
         jk = std::unique_ptr<JK>(dfjk);
-    } else if (options_.get_str("SAD_SCF_TYPE") == "DIRECT") {
+    } else if (jk_type == "DIRECT") {
         DirectJK* directjk(new DirectJK(bas));
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             directjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         jk = std::unique_ptr<JK>(directjk);
-    } else if (options_.get_str("SAD_SCF_TYPE") == "CD") {
+    } else if (jk_type == "CD") {
         CDJK* cdjk(new CDJK(bas, options_.get_double("CHOLESKY_TOLERANCE")));
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             cdjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         jk = std::unique_ptr<JK>(cdjk);
-    } else if (options_.get_str("SAD_SCF_TYPE") == "PK") {
-        PKJK* pkjk(new PKJK(bas, options_));
-        jk = std::unique_ptr<JK>(pkjk);
-    } else if (options_.get_str("SAD_SCF_TYPE") == "OUT_OF_CORE") {
-        DiskJK* diskjk = new DiskJK(bas, options_);
-        jk = std::unique_ptr<JK>(diskjk);
     } else {
         std::stringstream msg;
-        msg << "SAD: JK type of " << options_.get_str("SAD_SCF_TYPE") << " not understood.\n";
+        msg << "SAD_SCF_TYPE " << jk_type << " not understood.\n";
         throw PSIEXCEPTION(msg.str());
     }
 
