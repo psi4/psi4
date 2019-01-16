@@ -180,8 +180,7 @@ void export_fock(py::module &m) {
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
-                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int i,
-                       int j) { return scf::SADGuess(basis, atomic_bases, i, j, Process::environment.options); })
+                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })
         .def("compute_guess", &scf::SADGuess::compute_guess)
         .def("set_print", &scf::SADGuess::set_print)
         .def("set_debug", &scf::SADGuess::set_debug)
