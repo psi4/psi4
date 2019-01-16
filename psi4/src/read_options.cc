@@ -1224,8 +1224,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SCF_MEM_SAFETY_FACTOR", 0.75);
         /*- SO orthogonalization: symmetric or canonical? -*/
         options.add_str("S_ORTHOGONALIZATION", "SYMMETRIC", "SYMMETRIC CANONICAL");
-        /*- Minimum S matrix eigenvalue to be used before compensating for linear
-        dependencies. -*/
+        /*- Minimum S matrix eigenvalue to allow before linear dependencies are removed. -*/
         options.add_double("S_TOLERANCE", 1E-7);
         /*- Minimum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
@@ -1406,8 +1405,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DF_INTS_NUM_THREADS", 0);
         /*- IO caching for CP corrections, etc !expert -*/
         options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
-        /*- Fitting Condition !expert -*/
-        options.add_double("DF_FITTING_CONDITION", 1.0E-12);
+        /*- Fitting Condition, i.e. eigenvalue threshold for RI basis. Analogous to S_TOLERANCE !expert -*/
+        options.add_double("DF_FITTING_CONDITION", 1.0E-10);
         /*- FastDF Fitting Metric -*/
         options.add_str("DF_METRIC", "COULOMB", "COULOMB EWALD OVERLAP");
         /*- FastDF SR Ewald metric range separation parameter -*/
