@@ -11,19 +11,29 @@ ref_cdhf = -526.7998576526238139
 
 set {
   basis cc-pVDZ
-  df_basis_scf cc-pVDZ-JKfit
-  df_basis_sad cc-pVDZ-JKfit
   reference rhf
   guess sad
   sad_print 2
+  # Use tight thresholds
+  e_convergence 10
+  d_convergence 10
+  sad_e_convergence 10
+  sad_d_convergence 10
+  # No DF guess
+  df_scf_guess false
+  # Make sure guess is exact: this is 2 since we don't have orbitals in the first iteration
+  maxiter 2
+
+  # First test: DF
   scf_type df
   sad_scf_type df
+  df_basis_scf cc-pVDZ-JKfit
+  df_basis_sad cc-pVDZ-JKfit
 }
 energy('scf')
 compare_values(ref_dfhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD DF          guess (a.u.)");             #TEST
 
 set {
-  df_scf_guess false
   scf_type pk
   sad_scf_type pk
 }
