@@ -803,5 +803,5 @@ def _core_triplet(A, B, C, transA, transB, transC):
     return core.triplet(A, B, C, transA, transB, transC)
 
 
-core.Matrix.doublet = _core_doublet
-core.Matrix.triplet = _core_triplet
+core.Matrix.doublet = staticmethod(_core_doublet)
+core.Matrix.triplet = staticmethod(_core_triplet)
