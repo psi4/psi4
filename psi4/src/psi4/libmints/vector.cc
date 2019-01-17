@@ -274,6 +274,4 @@ void Vector::axpy(double scale, const Vector &other) {
 
     C_DAXPY(v_.size(), scale, const_cast<double *>(other.v_.data()), 1, v_.data(), 1);
 }
-
-SharedVector create(const std::string &name, const Dimension &dim) { return std::make_shared<Vector>(name, dim); }
 }  // namespace psi

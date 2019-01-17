@@ -223,15 +223,13 @@ class PSI_API Vector final {
     std::vector<int> numpy_shape() { return numpy_shape_; }
 
     PSI_DEPRECATED(
-        "Using `Vector::create` instead of `create` is deprecated, and in 1.4 it will "
+        "Using `Vector::create` instead of `auto my_vec = std::make_shared<Vector>(name, dim);` "
+        "is deprecated, and in 1.4 it will "
         "stop working")
-    static SharedVector create(const std::string &name, const Dimension &dim) { return create(name, dim); }
+    static SharedVector create(const std::string &name, const Dimension &dim) {
+        return std::make_shared<Vector>(name, dim);
+    }
 };
-
-/**
- * Convenient creation function return SharedVector
- */
-SharedVector create(const std::string &name, const Dimension &dim);
 
 /*! \ingroup MINTS */
 class PSI_API IntVector {

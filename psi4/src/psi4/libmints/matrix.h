@@ -1070,10 +1070,11 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     static void free(double** Block) { detail::free(Block); }
 
     PSI_DEPRECATED(
-        "Using `Matrix::create` instead of `create` is deprecated, and in 1.4 it will "
+        "Using `Matrix::create` instead of `auto my_mat = std::make_shared<Matrix>(name, rows, cols);` "
+        "is deprecated, and in 1.4 it will "
         "stop working")
     static SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols) {
-        return create(name, rows, cols);
+        return std::make_shared<Matrix>(name, rows, cols);
     }
 
     PSI_DEPRECATED(
@@ -1102,11 +1103,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
         return triplet(A, B, C, transA, transB, transC);
     }
 };
-
-/**
- * Convenient creation function return SharedMatrix
- */
-SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols);
 
 /**
  * Horizontally concatenate matrices

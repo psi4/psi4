@@ -3165,10 +3165,6 @@ void free(double **Block) {
 }
 }  // namespace detail
 
-SharedMatrix create(const std::string &name, const Dimension &rows, const Dimension &cols) {
-    return std::make_shared<Matrix>(name, rows, cols);
-}
-
 SharedMatrix horzcat(const std::vector<SharedMatrix> &mats) {
     int nirrep = mats[0]->nirrep();
     for (size_t a = 0; a < mats.size(); ++a) {
