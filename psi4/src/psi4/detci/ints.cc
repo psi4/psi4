@@ -198,10 +198,10 @@ void CIWavefunction::rotate_mcscf_integrals(SharedMatrix k, SharedVector onel_ou
     SharedMatrix Cact = get_orbitals("ACT");
     SharedMatrix Crot = get_orbitals("ROT");
 
-    SharedMatrix H_rot_a = triplet(Crot, CalcInfo_->so_onel_ints, Cact, true, false, false);
+    SharedMatrix H_rot_a = linalg::triplet(Crot, CalcInfo_->so_onel_ints, Cact, true, false, false);
 
     // => Rotate onel ints <= //
-    SharedMatrix rot_onel = doublet(Uact, H_rot_a);
+    SharedMatrix rot_onel = linalg::doublet(Uact, H_rot_a);
     rot_onel->gemm(true, true, 1.0, H_rot_a, Uact, 1.0);
 
     auto tmponel = std::make_shared<Vector>("Temporary onel storage", CalcInfo_->num_ci_tri);
@@ -301,7 +301,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     double* aaQp = aaQ->pointer()[0];
     dfh_->fill_tensor("aaQ", aaQ);
 
-    SharedMatrix actMO = doublet(aaQ, aaQ, false, true);
+    SharedMatrix actMO = linalg::doublet(aaQ, aaQ, false, true);
     aaQ.reset();
 
     pitzer_to_ci_order_twoel(actMO, CalcInfo_->twoel_ints);
@@ -538,7 +538,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only) {
         int i = std::get<0>(D_vec[D_tasks]);
         int j = std::get<1>(D_vec[D_tasks]);
         SharedMatrix J = jk_->J()[D_tasks];
-        SharedMatrix half_trans = triplet(Crot, J, Cact, true, false, false);
+        SharedMatrix half_trans = linalg::triplet(Crot, J, Cact, true, false, false);
 #pragma omp parallel for schedule(static)
         for (size_t p = 0; p < nrot; p++) {
             for (size_t q = 0; q < nact; q++) {
@@ -713,7 +713,7 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact, SharedVector t
     // Uact_av DFERI_R_a_Q - > DFERI_a_aQ
 
     SharedMatrix dense_Uact = Uact->to_block_sharedmatrix();
-    SharedMatrix tmp_rot_aaQ = doublet(dense_Uact, RaQ);
+    SharedMatrix tmp_rot_aaQ = linalg::doublet(dense_Uact, RaQ);
     RaQ.reset();
 
     // Quv += Qvu
@@ -738,7 +738,7 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact, SharedVector t
     dfh_->fill_tensor("aaQ", aaQ);
 
     // Form ERI's
-    SharedMatrix rot_twoel = doublet(rot_aaQ, aaQ, false, true);
+    SharedMatrix rot_twoel = linalg::doublet(rot_aaQ, aaQ, false, true);
 
     rot_aaQ.reset();
     aaQ.reset();
@@ -808,7 +808,7 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix Uact, SharedVector two
 
     // Rotate the integrals
     SharedMatrix dense_Uact = Uact->to_block_sharedmatrix();
-    SharedMatrix half_rot_aaaa = doublet(aaar, dense_Uact, false, true);
+    SharedMatrix half_rot_aaaa = linalg::doublet(aaar, dense_Uact, false, true);
 
     aaar.reset();
 
@@ -1003,7 +1003,7 @@ void CIWavefunction::onel_ints_from_jk() {
     if (mcscf_object_init_) {
         somcscf_->set_AO_IFock(J[0]);
     }
-    SharedMatrix onel_ints = triplet(Cact, J[0], Cact, true, false, false);
+    SharedMatrix onel_ints = linalg::triplet(Cact, J[0], Cact, true, false, false);
 
     // Set 1D onel ints
     pitzer_to_ci_order_onel(onel_ints, CalcInfo_->onel_ints);
@@ -1012,7 +1012,7 @@ void CIWavefunction::onel_ints_from_jk() {
     J[0]->add(H_);
 
     SharedMatrix Cdrc = get_orbitals("DRC");
-    SharedMatrix D = doublet(Cdrc, Cdrc, false, true);
+    SharedMatrix D = linalg::doublet(Cdrc, Cdrc, false, true);
     CalcInfo_->edrc = J[0]->vector_dot(D);
 }
 

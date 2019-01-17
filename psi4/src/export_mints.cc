@@ -637,10 +637,10 @@ void export_mints(py::module& m) {
              py::return_value_policy::reference_internal);
 
     // Free functions
-    m.def("doublet", &doublet,
+    m.def("doublet", &linalg::doublet,
           "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a, "B"_a,
           "transA"_a = false, "transB"_a = false);
-    m.def("triplet", &triplet,
+    m.def("triplet", &linalg::triplet,
           "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
           "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
 

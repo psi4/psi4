@@ -2246,7 +2246,7 @@ bool DCFTSolver::augment_b(double *vec, double tol) {
         std::vector<SharedMatrix> mats;
         mats.push_back(b_);
         mats.push_back(bprime);
-        b_ = vertcat(mats);
+        b_ = linalg::vertcat(mats);
         b_->set_name("B");
         b_dim_++;
         return true;

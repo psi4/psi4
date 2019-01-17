@@ -185,7 +185,7 @@ IntegralTransform::IntegralTransform(SharedMatrix H, SharedMatrix c, SharedMatri
     Cs.push_back(i);
     Cs.push_back(a);
     Cs.push_back(v);
-    Ca_ = horzcat(Cs);
+    Ca_ = linalg::horzcat(Cs);
     Cb_ = Ca_;
     H_ = H;
 

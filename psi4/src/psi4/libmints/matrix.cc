@@ -371,7 +371,7 @@ void Matrix::alloc() {
     matrix_ = (double ***)malloc(sizeof(double ***) * nirrep_);
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] != 0 && colspi_[h ^ symmetry_] != 0)
-            matrix_[h] = detail::matrix(rowspi_[h], colspi_[h ^ symmetry_]);
+            matrix_[h] = linalg::detail::matrix(rowspi_[h], colspi_[h ^ symmetry_]);
         else {
             // Force rowspi_[h] and colspi_[h^symmetry] to hard 0
             // This solves an issue where a row can have 0 dim but a col does not (or the other way).
@@ -389,7 +389,7 @@ void Matrix::release() {
     if (!matrix_) return;
 
     for (int h = 0; h < nirrep_; ++h) {
-        if (matrix_[h]) detail::free(matrix_[h]);
+        if (matrix_[h]) linalg::detail::free(matrix_[h]);
     }
     ::free(matrix_);
     matrix_ = nullptr;
@@ -1449,11 +1449,11 @@ bool Matrix::add_and_orthogonalize_row(const SharedVector v) {
         throw PSIEXCEPTION("Matrix::schmidt_add_and_orthogonalize: Symmetry not allowed (yet).");
     if (v_copy.dimpi()[0] != colspi_[0])
         throw PSIEXCEPTION("Matrix::schmidt_add_and_orthogonalize: Incompatible dimensions.");
-    double **mat = detail::matrix(rowspi_[0] + 1, colspi_[0]);
+    double **mat = linalg::detail::matrix(rowspi_[0] + 1, colspi_[0]);
     size_t n = colspi_[0] * rowspi_[0] * sizeof(double);
     if (n) {
         ::memcpy(mat[0], matrix_[0][0], n);
-        detail::free(matrix_[0]);
+        linalg::detail::free(matrix_[0]);
     }
     matrix_[0] = mat;
     bool ret = schmidt_add_row(0, rowspi_[0], v_copy);
@@ -1692,7 +1692,7 @@ void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
         int n = colspi_[h ^ symmetry_];
         int k = (m < n ? m : n);
 
-        double **Ap = detail::matrix(m, n);
+        double **Ap = linalg::detail::matrix(m, n);
         ::memcpy((void *)Ap[0], (void *)matrix_[h][0], sizeof(double) * m * n);
         double *Sp = S->pointer(h);
         double **Up = U->pointer(h);
@@ -1724,7 +1724,7 @@ void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
                 abort();
             }
         }
-        detail::free(Ap);
+        linalg::detail::free(Ap);
     }
 }
 
@@ -1737,7 +1737,7 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
         if ((m != 0) && (n != 0)) {
             int k = (m < n ? m : n);
 
-            double **Ap = detail::matrix(m, n);
+            double **Ap = linalg::detail::matrix(m, n);
             ::memcpy((void *)Ap[0], (void *)matrix_[h][0], sizeof(double) * m * n);
             double *Sp = S->pointer(h);
             double **Up = U->pointer(h);
@@ -1769,7 +1769,7 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
                     abort();
                 }
             }
-            detail::free(Ap);
+            linalg::detail::free(Ap);
         } else if ((m != 0) && (n == 0)) {
             // There is nothing to SVD, but we need set the U block to the identity matrix
             double **Up = U->pointer(h);
@@ -1883,7 +1883,9 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
     return X;
 }
 
-void Matrix::swap_rows(int h, int i, int j) { C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1); }
+void Matrix::swap_rows(int h, int i, int j) {
+    C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1);
+}
 
 void Matrix::swap_columns(int h, int i, int j) {
     C_DSWAP(rowspi_[h], &(matrix_[h][0][i]), colspi_[h ^ symmetry_], &(matrix_[h][0][j]), colspi_[h ^ symmetry_]);
@@ -2151,8 +2153,8 @@ Dimension Matrix::power(double alpha, double cutoff) {
         int n = rowspi_[h];
         double **A = matrix_[h];
 
-        double **A1 = detail::matrix(n, n);
-        double **A2 = detail::matrix(n, n);
+        double **A1 = linalg::detail::matrix(n, n);
+        double **A2 = linalg::detail::matrix(n, n);
         double *a = new double[n];
 
         memcpy(static_cast<void *>(A1[0]), static_cast<void *>(A[0]), sizeof(double) * n * n);
@@ -2189,8 +2191,8 @@ Dimension Matrix::power(double alpha, double cutoff) {
         C_DGEMM('T', 'N', n, n, n, 1.0, A2[0], n, A1[0], n, 0.0, A[0], n);
 
         delete[] a;
-        detail::free(A1);
-        detail::free(A2);
+        linalg::detail::free(A1);
+        linalg::detail::free(A2);
     }
 
     return remaining;
@@ -2248,10 +2250,10 @@ void Matrix::expm(int m, bool scale) {
             C_DSCAL(n * (size_t)n, pow(2.0, -S), A[0], 1);
         }
 
-        double **T = detail::matrix(n, n);
-        double **U = detail::matrix(n, n);
-        double **X = detail::matrix(n, n);
-        double **Y = detail::matrix(n, n);
+        double **T = linalg::detail::matrix(n, n);
+        double **U = linalg::detail::matrix(n, n);
+        double **X = linalg::detail::matrix(n, n);
+        double **Y = linalg::detail::matrix(n, n);
 
         // Zero-th Order
         for (int i = 0; i < n; i++) {
@@ -2348,10 +2350,10 @@ void Matrix::expm(int m, bool scale) {
             }
         }
 
-        detail::free(X);
-        detail::free(Y);
-        detail::free(T);
-        detail::free(U);
+        linalg::detail::free(X);
+        linalg::detail::free(Y);
+        linalg::detail::free(T);
+        linalg::detail::free(U);
     }
 }
 
@@ -2726,7 +2728,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
                 }
             }
         }
-        detail::free(fullblock);
+        linalg::detail::free(fullblock);
     } else {
         if (saveLowerTriangle) {
             // Count the number of non-zero elements
@@ -2814,7 +2816,7 @@ void Matrix::save(psi::PSIO *const psio, size_t fileno, SaveType st) {
             psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)fullblock[0],
                               sizeof(double) * sizer * sizec);
 
-        detail::free(fullblock);
+        linalg::detail::free(fullblock);
     } else if (st == LowerTriangle) {
         double *lower = to_lower_triangle();
 
@@ -2886,7 +2888,7 @@ void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st) {
             psio->read_entry(fileno, name_.c_str(), (char *)fullblock[0], sizeof(double) * sizer * sizec);
 
         set(fullblock);
-        detail::free(fullblock);
+        linalg::detail::free(fullblock);
     } else if (st == LowerTriangle) {
         double *lower = to_lower_triangle();
 
@@ -2971,7 +2973,7 @@ void Matrix::load_mpqc(const std::string &filename) {
 
         // Allocate memory
         if (rowspi_[h] != 0 && colspi_[h ^ symmetry_] != 0)
-            matrix_[h] = detail::matrix(rowspi_[h], colspi_[h ^ symmetry_]);
+            matrix_[h] = linalg::detail::matrix(rowspi_[h], colspi_[h ^ symmetry_]);
         else
             matrix_[h] = nullptr;
 
@@ -3147,24 +3149,7 @@ void Matrix::rotate_columns(int h, int i, int j, double theta) {
     C_DROT(rowspi_[h], &matrix_[h][0][i], colspi_[h], &matrix_[h][0][j], colspi_[h], costheta, sintheta);
 }
 
-namespace detail {
-/// allocate a block matrix -- analogous to libciomr's block_matrix
-double **matrix(int nrow, int ncol) {
-    double **mat = (double **)malloc(sizeof(double *) * nrow);
-    const size_t size = sizeof(double) * nrow * ncol;
-    mat[0] = (double *)malloc(size);
-    ::memset((void *)mat[0], 0, size);
-    for (int r = 1; r < nrow; ++r) mat[r] = mat[r - 1] + ncol;
-    return mat;
-}
-
-/// free a (block) matrix -- analogous to libciomr's free_block
-void free(double **Block) {
-    ::free(Block[0]);
-    ::free(Block);
-}
-}  // namespace detail
-
+namespace linalg {
 SharedMatrix horzcat(const std::vector<SharedMatrix> &mats) {
     int nirrep = mats[0]->nirrep();
     for (size_t a = 0; a < mats.size(); ++a) {
@@ -3267,11 +3252,29 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
     return T;
 }
 
-SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA,
-                             bool transB, bool transC) {
-    SharedMatrix T = doublet(A, B, transA, transB);
-    SharedMatrix S = doublet(T, C, false, transC);
+SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
+                     bool transC) {
+    SharedMatrix T = linalg::doublet(A, B, transA, transB);
+    SharedMatrix S = linalg::doublet(T, C, false, transC);
     return S;
 }
 
+namespace detail {
+/// allocate a block matrix -- analogous to libciomr's block_matrix
+double **matrix(int nrow, int ncol) {
+    double **mat = (double **)malloc(sizeof(double *) * nrow);
+    const size_t size = sizeof(double) * nrow * ncol;
+    mat[0] = (double *)malloc(size);
+    ::memset((void *)mat[0], 0, size);
+    for (int r = 1; r < nrow; ++r) mat[r] = mat[r - 1] + ncol;
+    return mat;
+}
+
+/// free a (block) matrix -- analogous to libciomr's free_block
+void free(double **Block) {
+    ::free(Block[0]);
+    ::free(Block);
+}
+}  // namespace detail
+}  // namespace linalg
 }  // namespace psi

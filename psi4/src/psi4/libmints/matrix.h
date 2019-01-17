@@ -51,6 +51,42 @@ using SharedMatrix = std::shared_ptr<Matrix>;
 
 enum diagonalize_order { evals_only_ascending = 0, ascending = 1, evals_only_descending = 2, descending = 3 };
 
+namespace linalg {
+/**
+ * Horizontally concatenate matrices
+ * @param mats std::vector of Matrix objects to concatenate
+ */
+PSI_API
+SharedMatrix horzcat(const std::vector<SharedMatrix>& mats);
+
+/**
+ * Vertically concatenate matrices
+ * @param mats std::vector of Matrix objects to concatenate
+ */
+PSI_API
+SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
+
+/** Simple doublet GEMM with on-the-fly allocation
+ * \param A The first matrix
+ * \param B The second matrix
+ * \param transA Transpose the first matrix
+ * \param transB Transpose the second matrix
+ */
+PSI_API
+SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false, bool transB = false);
+
+/** Simple triplet GEMM with on-the-fly allocation
+ * \param A The first matrix
+ * \param B The second matrix
+ * \param C The third matrix
+ * \param transA Transpose the first matrix
+ * \param transB Transpose the second matrix
+ * \param transC Transpose the third matrix
+ */
+PSI_API
+SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false,
+                     bool transB = false, bool transC = false);
+
 namespace detail {
 /*!
  * allocate a block matrix -- analogous to libciomr's block_matrix
@@ -64,6 +100,7 @@ double** matrix(int nrow, int ncol);
 PSI_API
 void free(double** Block);
 }  // namespace detail
+}  // namespace linalg
 
 /*! \ingroup MINTS
  *  \class Matrix
@@ -1060,14 +1097,14 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void rotate_columns(int h, int i, int j, double theta);
 
     PSI_DEPRECATED(
-        "Using `Matrix::matrix` instead of `detail::matrix` is deprecated, and in 1.4 it will "
+        "Using `Matrix::matrix` instead of `linalg::detail::matrix` is deprecated, and in 1.4 it will "
         "stop working")
-    static double** matrix(int nrow, int ncol) { return detail::matrix(nrow, ncol); }
+    static double** matrix(int nrow, int ncol) { return linalg::detail::matrix(nrow, ncol); }
 
     PSI_DEPRECATED(
-        "Using `Matrix::free` instead of `detail::free` is deprecated, and in 1.4 it will "
+        "Using `Matrix::free` instead of `linalg::detail::free` is deprecated, and in 1.4 it will "
         "stop working")
-    static void free(double** Block) { detail::free(Block); }
+    static void free(double** Block) { linalg::detail::free(Block); }
 
     PSI_DEPRECATED(
         "Using `Matrix::create` instead of `auto my_mat = std::make_shared<Matrix>(name, rows, cols);` "
@@ -1078,21 +1115,21 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     }
 
     PSI_DEPRECATED(
-        "Using `Matrix::horzcat` instead of `horzcat` is deprecated, and in 1.4 it will "
+        "Using `Matrix::horzcat` instead of `linalg::horzcat` is deprecated, and in 1.4 it will "
         "stop working")
-    static SharedMatrix horzcat(const std::vector<SharedMatrix>& mats) { return horzcat(mats); }
+    static SharedMatrix horzcat(const std::vector<SharedMatrix>& mats) { return linalg::horzcat(mats); }
 
     PSI_DEPRECATED(
-        "Using `Matrix::vertcat` instead of `vertcat` is deprecated, and in 1.4 it will "
+        "Using `Matrix::vertcat` instead of `linalg::vertcat` is deprecated, and in 1.4 it will "
         "stop working")
-    static SharedMatrix vertcat(const std::vector<SharedMatrix>& mats) { return vertcat(mats); }
+    static SharedMatrix vertcat(const std::vector<SharedMatrix>& mats) { return linalg::vertcat(mats); }
 
     PSI_DEPRECATED(
         "Using `Matrix::doublet` instead of `doublet` is deprecated, and in 1.4 it will "
         "stop working")
     static SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false,
                                 bool transB = false) {
-        return doublet(A, B, transA, transB);
+        return linalg::doublet(A, B, transA, transB);
     }
 
     PSI_DEPRECATED(
@@ -1100,39 +1137,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
         "stop working")
     static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C,
                                 bool transA = false, bool transB = false, bool transC = false) {
-        return triplet(A, B, C, transA, transB, transC);
+        return linalg::triplet(A, B, C, transA, transB, transC);
     }
 };
-
-/**
- * Horizontally concatenate matrices
- * @param mats std::vector of Matrix objects to concatenate
- */
-SharedMatrix horzcat(const std::vector<SharedMatrix>& mats);
-
-/**
- * Vertically concatenate matrices
- * @param mats std::vector of Matrix objects to concatenate
- */
-SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
-
-/** Simple doublet GEMM with on-the-fly allocation
- * \param A The first matrix
- * \param B The second matrix
- * \param transA Transpose the first matrix
- * \param transB Transpose the second matrix
- */
-SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false, bool transB = false);
-
-/** Simple triplet GEMM with on-the-fly allocation
- * \param A The first matrix
- * \param B The second matrix
- * \param C The third matrix
- * \param transA Transpose the first matrix
- * \param transB Transpose the second matrix
- * \param transC Transpose the third matrix
- */
-SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false,
-                     bool transB = false, bool transC = false);
-
 }  // namespace psi

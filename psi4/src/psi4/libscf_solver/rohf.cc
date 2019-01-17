@@ -114,7 +114,7 @@ void ROHF::format_guess() {
 
         // Symmetric Orthogonalization
     } else {
-        Ct_ = triplet(X_, S_, Ca_);
+        Ct_ = linalg::triplet(X_, S_, Ca_);
     }
 }
 
@@ -327,7 +327,7 @@ double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
     SharedMatrix Cav = Ct_->get_block({dim_zero, nmopi_}, {doccpi_, doccpi_ + virpi});
 
     // Back transform MOgradient
-    SharedMatrix gradient = triplet(Cia, MOgradient, Cav, false, false, true);
+    SharedMatrix gradient = linalg::triplet(Cia, MOgradient, Cav, false, false, true);
 
     if (save_diis) {
         if (initialized_diis_manager_ == false) {
@@ -1013,7 +1013,7 @@ bool ROHF::stability_analysis() {
         std::vector<SharedMatrix> virandsoc;
         virandsoc.push_back(Ca_->get_block({zero, nsopi_}, {nalphapi_, nmopi_}));
         virandsoc.push_back(Ca_->get_block({zero, nsopi_}, {doccpi_, nalphapi_}));
-        SharedMatrix Cvir = horzcat(virandsoc);
+        SharedMatrix Cvir = linalg::horzcat(virandsoc);
         FIJ->transform(Fa_, Cocc);
         Fij->transform(Fb_, Cocc);
 
