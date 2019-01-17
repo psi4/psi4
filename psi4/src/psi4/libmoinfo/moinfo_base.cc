@@ -280,8 +280,7 @@ void MOInfoBase::correlate(char* ptgrp, int irrep, int& nirreps_old, int& nirrep
 
 intvec MOInfoBase::convert_int_array_to_vector(int n, const int* array) {
     // Read an integer array and save as a STL vector
-    intvec stl_vector(&array[0], &array[n]);
-    return (stl_vector);
+    return intvec(array, array + n);
 }
 
 }  // namespace psi
