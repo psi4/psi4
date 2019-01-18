@@ -13,11 +13,14 @@ symmetry c1
 
 set globals {
 scf_type df
-FREEZE_CORE true
+freeze_core true
+e_convergence 10
+d_convergence 10
+diis_rms_error false
 }
 
-ref_lanl = -0.10472432075265364
-ref_321g = -0.09561604218297935
+ref_321g = -0.09561567760757009
+ref_lanl = -0.10472408365123138
 
 E = energy('sapt0/3-21g')
 compare_values(ref_321g, E, 8, "SAPT0 energy with Ca2+, without ECP")                               #TEST
