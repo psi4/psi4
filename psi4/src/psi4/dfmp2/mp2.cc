@@ -313,6 +313,9 @@ SharedMatrix DFMP2::compute_gradient() {
     print_energies();
     energy_ = variables_["MP2 TOTAL ENERGY"];
 
+    // Symmetrize the gradient to remove noise
+    gradients_["Total"]->symmetrize_gradient(molecule_);
+
     print_gradients();
 
     return gradients_["Total"];
