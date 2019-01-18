@@ -302,6 +302,11 @@ SharedMatrix SADGuess::form_D_AO() {
                 nact = (*(++imagic)) / 2 - nfzc;
             }
 
+            // Sanity check: can't have more active orbitals than basis functions
+            if (nact > norbs - nfzc) {
+                nact = norbs - nfzc;
+            }
+
             // Number of occupied orbitals is
             nocc_a = nocc_b = nfzc + nact;
 
@@ -522,7 +527,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     if (print_ > 1) {
         std::string measure = diis_rms ? "RMS |[F,P]|  " : "MAX |[F,P]|  ";
         outfile->Printf("\n  Initial Atomic UHF Energy:    %14.10f\n\n", E);
-        outfile->Printf("  %33s %20s    %20s %20s\n", "","Total Energy   ","Delta E   ",measure.c_str());
+        outfile->Printf("  %33s %20s    %20s %20s\n", "", "Total Energy   ", "Delta E   ", measure.c_str());
     }
 
     // Run the iterations
