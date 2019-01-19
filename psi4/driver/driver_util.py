@@ -34,19 +34,6 @@ from psi4.driver.p4util.exceptions import ValidationError, MissingMethodError, M
 from psi4.driver.procrouting import *
 
 
-def _method_exists(ptype, method_name):
-    r"""
-    Quick check to see if this method exists, if it does not exist we raise a convenient flag.
-    """
-    if method_name not in procedures[ptype].keys():
-        alternatives = ""
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name,
-                                                                procedures[ptype].keys(), 2)
-        if len(alt_method_name) > 0:
-            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
-        raise ValidationError(f"""{ptype.capitalize()} method "{method_name}" is not available.{alternatives}""")
-
-
 def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec, verbose=1):
     r"""
     This function will set local SCF and global energy convergence criterion
@@ -70,9 +57,6 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
-
-    # Kind of want to move this out of here
-    _method_exists(ptype, method_name)
 
     if verbose >= 2:
         print('      Setting convergence', end=' ')
@@ -370,6 +354,10 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
 
     #if (core.get_global_option('PCM')) and (dertype != 0):
     #    core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
+    #    dertype = 0
+
+    #if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+    #    core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
     #    dertype = 0
 
     # Summary validation (superfluous)

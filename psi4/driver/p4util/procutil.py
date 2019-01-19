@@ -355,13 +355,20 @@ _modules = [
 ]
 
 
-def reset_pe_options(pofm):
+@contextlib.contextmanager
+def hold_options_state():
+    pofm = prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False, globalsOnly=False, stateInsteadMediated=True)
+    yield
+    _reset_pe_options(pofm)
+
+
+def _reset_pe_options(pofm):
     """Acts on Process::environment.options to clear it, the set it to state encoded in `pofm`.
 
     Parameters
     ----------
     pofm : dict
-        Result of psi4.driver.p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
+        Result of psi4.driver.p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False, stateInsteadMediated=True)
 
     Returns
     -------
@@ -379,52 +386,86 @@ def reset_pe_options(pofm):
             if dlo['has_changed']:
                 core.set_local_option(module, lo, dlo['value'])
 
+    ## this is a more defensive version if defaults may have changed
+    #for go, dgo in pofm['GLOBALS'].items():
+    #    core.set_global_option(go, dgo['value'])
+    #    if not dgo['has_changed']:
+    #        core.revoke_global_option_changed(go)
+    #for module in _modules:
+    #    for lo, dlo in pofm[module].items():
+    #        core.set_local_option(module, lo, dlo['value'])
+    #        if not dlo['has_changed']:
+    #            core.revoke_local_option_changed(module, lo)
 
-def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False, globalsOnly=False):
-    """Function to return a string of commands to replicate the
-    current state of user-modified options. Used to capture C++
-    options information for distributed (sow/reap) input files.
+
+def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False, globalsOnly=False, stateInsteadMediated=False):
+    """Capture current state of C++ psi4.core.Options information.
+
+    Parameters
+    ----------
+    changedOnly : bool, optional
+        Record info only for options that have been set (may still be default).
+        When False, records values for every option.
+    commandsInsteadDict : bool, optional
+        Return string of commands to exec to reset options in current form.
+        When False, return nested dictionary with globals in 'GLOBALS' subdictionary
+        and locals in subdictionaries by module.
+    globalsOnly : bool, optional
+        Record only global options to save time querying the psi4.core.Options object.
+        When False, record module-level options, too.
+    stateInsteadMediated : bool, optional
+        When querying this function for options to be *used*, what is wanted is the result of the globals/locals
+        handshake as computed by the Options object. That is, `dict[module][options][value]` is the value to be used
+        by module. Use the mediated values, False.
+        When querying this function for options to be later *reset* into the same state, what is wanted is the
+        raw values and has_changed status at the global and local levels. Use the state values, True.
+
+    Returns
+    -------
+    dict
+        When `commandsInsteadDict=False`.
+    str
+        When `commandsInsteadDict=True`.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - Need some option to get either all or changed
-
-       - Need some option to either get dict or set string or psimod command list
-
        - command return doesn't revoke has_changed setting for unchanged with changedOnly=False
+
+       - not all kwargs are independent
 
     """
     options = collections.defaultdict(dict)
     commands = ''
     for opt in core.get_global_option_list():
-        if core.has_global_option_changed(opt) or not changedOnly:
+        hoc = core.has_global_option_changed(opt)
+        if hoc or not changedOnly:
             if opt in ['DFT_CUSTOM_FUNCTIONAL', 'EXTERN']:  # Feb 2017 hack
                 continue
             val = core.get_global_option(opt)
-            options['GLOBALS'][opt] = {'value': val, 'has_changed': core.has_global_option_changed(opt)}
+            options['GLOBALS'][opt] = {'value': val, 'has_changed': hoc}
             if isinstance(val, str):
                 commands += """core.set_global_option('%s', '%s')\n""" % (opt, val)
             else:
                 commands += """core.set_global_option('%s', %s)\n""" % (opt, val)
-            #if changedOnly:
-            #    print('Appending module %s option %s value %s has_changed %s.' % \
-            #        ('GLOBALS', opt, core.get_global_option(opt), core.has_global_option_changed(opt)))
         if globalsOnly:
             continue
 
         for module in _modules:
             if core.option_exists_in_module(module, opt):
-                hoc = core.has_option_changed(module, opt)
+                if stateInsteadMediated:
+                    hoc = core.has_local_option_changed(module, opt)
+                else:
+                    hoc = core.has_option_changed(module, opt)
                 if hoc or not changedOnly:
-                    val = core.get_option(module, opt)
+                    if stateInsteadMediated:
+                        val = core.get_local_option(module, opt)
+                    else:
+                        val = core.get_option(module, opt)
                     options[module][opt] = {'value': val, 'has_changed': hoc}
                     if isinstance(val, str):
                         commands += """core.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
                     else:
                         commands += """core.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
-                    #if changedOnly:
-                    #    print('Appending module %s option %s value %s has_changed %s.' % \
-                    #        (module, opt, core.get_option(module, opt), hoc))
 
     if commandsInsteadDict:
         return commands

@@ -912,15 +912,15 @@ class NBodyComputer(BaseTask):
         return ret
 
     def compute(self):
-        all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
-        # gof = core.get_output_file()
-        # core.close_outfile()
-        for level in self.task_list:
-            for k, v in self.task_list[level].items():
-                v.compute()
+        with p4util.hold_options_state():
+            # gof = core.get_output_file()
+            # core.close_outfile()
+            for level in self.task_list:
+                for k, v in self.task_list[level].items():
+                    v.compute()
 
-        # core.set_output_file(gof, True)
-        p4util.reset_pe_options(all_options)
+            # core.set_output_file(gof, True)
+
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
 

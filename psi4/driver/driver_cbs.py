@@ -1533,15 +1533,14 @@ class CBSComputer(BaseTask):
         return [x.plan() for x in self.task_list]
 
     def compute(self):
-        all_options = p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
-        # gof = core.get_output_file()
-        # core.close_outfile()
+        with p4util.hold_options_state():
+            # gof = core.get_output_file()
+            # core.close_outfile()
 
-        for x in self.task_list:
-            x.compute()
+            for x in self.task_list:
+                x.compute()
 
-        # core.set_output_file(gof, True)
-        p4util.reset_pe_options(all_options)
+            # core.set_output_file(gof, True)
 
     def _prepare_results(self):
         results_list = [x.get_results() for x in self.task_list]

@@ -54,68 +54,6 @@ from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.mdi_engine import mdi_run
 
-# never import wrappers or aliases into this file
-
-
-def _find_derivative_type(ptype, method_name, user_dertype):
-    r"""
-    Figures out the derivative type (0, 1, 2) for a given method_name. Will
-    first use user default and then the highest available derivative type for
-    a given method.
-    """
-
-    derivatives = {"gradient": 1, "hessian": 2}
-
-    if ptype not in derivatives:
-        raise ValidationError("_find_derivative_type: ptype must either be gradient or hessian.")
-
-    dertype = "(auto)"
-
-    # If user type is None, try to find the highest derivative
-    if user_dertype is None:
-        if (ptype == 'hessian') and (method_name in procedures['hessian']):
-            dertype = 2
-            # Will need special logic if we ever have managed Hessians
-        elif method_name in procedures['gradient']:
-            dertype = 1
-            if procedures['gradient'][method_name].__name__.startswith('select_'):
-                try:
-                    procedures['gradient'][method_name](method_name, probe=True)
-                except ManagedMethodError:
-                    dertype = 0
-        elif method_name in procedures['energy']:
-            dertype = 0
-    else:
-        # Quick sanity check. Only *should* be able to be None or int, but hey, kids today...
-        if not isinstance(user_dertype, int):
-            raise ValidationError("_find_derivative_type: user_dertype should only be None or int!")
-        dertype = user_dertype
-
-    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
-        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
-
-    if (core.get_global_option('PCM')) and (dertype != 0):
-        core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
-        dertype = 0
-
-    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
-        core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
-        dertype = 0
-
-    # Summary validation
-    if dertype == '(auto)' or method_name not in procedures[['energy', 'gradient', 'hessian'][dertype]]:
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures['energy'].keys(), 2)
-
-        alternatives = ''
-        if len(alt_method_name) > 0:
-            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
-
-        raise ValidationError(f"""Derivative method ({method_name}) and derivative level ({dertype}) are not available.{alternatives}""")
-
-    dertype = min(dertype, derivatives[ptype])
-
-    return dertype
-
 
 def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
     """Polls options and probes `gradient` to return whether current method

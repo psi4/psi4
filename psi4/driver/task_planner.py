@@ -96,10 +96,8 @@ def task_planner(driver, method, molecule, **kwargs):
     """
 
     # Only pull the changed options
-    keywords = {
-        key: v['value']
-        for key, v in p4util.prepare_options_for_modules(changedOnly=True, globalsOnly=True)['GLOBALS'].items()
-    }
+    keywords = p4util.prepare_options_for_set_options()
+    print('task_planner()', keywords)
 
     try:
         method.lower()
