@@ -12,10 +12,17 @@ list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
 include(psi4OptionsTools)
 include(TestRestrict)
+include(TestBigEndian)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(custom_color_messages)
 test_restrict(restrict)
+test_big_endian(endianness)
+if(${endianness})
+    set(_endian_ext ".big")
+else()
+    set(_endian_ext ".little")
+endif()
 # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
 set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 
@@ -200,13 +207,6 @@ if(WIN32)
 endif()
 
     # <<<  install lib/  >>>
-install(DIRECTORY share/psi4/
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
-        PATTERN "*.pyc" EXCLUDE)
-
-install(DIRECTORY include/psi4/
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
-
 install(DIRECTORY driver
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         FILES_MATCHING PATTERN "*.py")
@@ -239,7 +239,16 @@ install(FILES ../tests/pytest/conftest.py
 install(DIRECTORY share/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
         MESSAGE_NEVER
+        PATTERN "*.bin" EXCLUDE
         PATTERN "*.pyc" EXCLUDE)
+
+install(FILES share/psi4/quadratures/1_x/R_avail${_endian_ext}.bin
+        RENAME quadratures/1_x/R_avail.bin
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4)
+
+install(FILES share/psi4/quadratures/1_x/error${_endian_ext}.bin
+        RENAME quadratures/1_x/error.bin
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4)
 
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
