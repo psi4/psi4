@@ -70,6 +70,8 @@ class BasisFamily(object):
         #self.ridef = ridef
         # zeta
         self.zeta = zeta
+        # guess
+        self.guess = None
 
     def __str__(self):
         text = ''
@@ -141,6 +143,13 @@ class BasisFamily(object):
 
         """
         self.ridef = sanitize_basisname(fit)
+
+    def add_guess(self, fit):
+        """Function to add basis *fit* as associated cast-up orbital basis
+        member *guess* to a BasisFamily object.
+
+        """
+        self.guess = sanitize_basisname(fit)
 
 
 def sanitize_basisname(name):
@@ -225,6 +234,8 @@ def corresponding_basis(name, role='BASIS'):
                 return fam.dualfit, fam.dualfit, None
             elif role == 'DECON':
                 return fam.decon + '-decon', fam.decon, BasisSet.decontract
+            elif role == 'GUESS':
+                return fam.guess, fam.guess, None
 
     # catches decontract signmal when name not in a BasisFamily entry
     if role == 'DECON':
