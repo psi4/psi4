@@ -1199,7 +1199,7 @@ def _build_cbs_compute(metameta, metadata):
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
     d_fields = [
-        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
+        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_alpha', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian'
     ]
     GRAND_NEED = []
 
@@ -1209,8 +1209,7 @@ def _build_cbs_compute(metameta, metadata):
         dict(
             zip(d_fields, [
                 'scf', metadata[0]["scheme"],
-                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
-                metadata[0]["alpha"]
+                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], metadata[0]["alpha"], NEED, +1, 0.0, None, None
             ])))
     if len(metadata) > 1:
         for delta in metadata[1:]:
@@ -1220,8 +1219,7 @@ def _build_cbs_compute(metameta, metadata):
                 dict(
                     zip(d_fields, [
                         delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
-                        delta["alpha"]
+                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], delta["alpha"], NEED, +1, 0.0, None, None
                     ])))
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
                                          False, natom)
@@ -1229,8 +1227,7 @@ def _build_cbs_compute(metameta, metadata):
                 dict(
                     zip(d_fields, [
                         delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
-                        delta["alpha"]
+                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], delta["alpha"], NEED, -1, 0.0, None, None
                     ])))
 
     # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
@@ -1512,7 +1509,6 @@ class CBSComputer(BaseTask):
                 keywords = copy.deepcopy(self.metameta['kwargs']['keywords'])
                 if job["f_options"] is not False:
                     stage_keywords = dict(job["f_options"].items())
-                    print('STAGE KEY', stage_keywords)
                     keywords = {**keywords, **stage_keywords}
                 task = SingleResult(
                     **{
@@ -1544,22 +1540,17 @@ class CBSComputer(BaseTask):
 
     def _prepare_results(self):
         results_list = [x.get_results() for x in self.task_list]
-        print(results_list)
-        energies = [x['properties']["return_energy"] for x in results_list]
-        print('ENE', energies)
-        for x in self.task_list:
-            print('\nTASK')
-            pprint.pprint(x)
-        for x in self.results_list:
-            print('\nRESULT')
-            pprint.pprint(x)
+        #for x in self.task_list:
+        #    print('\nTASK')
+        #    pprint.pprint(x)
+        #for x in self.results_list:
+        #    print('\nRESULT')
+        #    pprint.pprint(x)
 
         # load results_list numbers into compute_list (task_list is SingleResult-s)
         for itask, mc in enumerate(self.compute_list):
             task = results_list[itask]
             response = task['return_result']
-            print('ITASK:', itask, '\nRETURN', response, '\nTASK:')
-            pprint.pprint(task)
 
             if self.metameta['ptype'] == 'energy':
                 mc['f_energy'] = response
@@ -1665,45 +1656,46 @@ class CBSComputer(BaseTask):
     def get_psi_results(self, return_wfn=False):
         """Return CBS results in usual E/wfn interface."""
 
-        cbs_schema = self.get_results()
+        cbsjob = self.get_results()
 
-        ret_ptype = plump_qcvar(cbs_schema['return_result'], shape_clue=cbs_schema['driver'], ret='psi4')
-        wfn = self._cbs_schema_to_wfn(cbs_schema)
+        ret_ptype = plump_qcvar(cbsjob['return_result'], shape_clue=cbsjob['driver'], ret='psi4')
+        wfn = _cbs_schema_to_wfn(cbsjob)
 
+        print('FINDIF RET', ret_ptype)
         if return_wfn:
             return (ret_ptype, wfn)
         else:
             return ret_ptype
 
-    @staticmethod
-    def _cbs_schema_to_wfn(cbs_schema):
-        """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
 
-        # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-        mol = core.Molecule.from_schema(cbs_schema)
-        basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
-        wfn = core.Wavefunction(mol, basis)
+def _cbs_schema_to_wfn(cbsjob):
+    """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
 
-        for qcv, val in cbs_schema['psi4:qcvars'].items():
-            for obj in [core, wfn]:
-                obj.set_variable(qcv, plump_qcvar(val, qcv))
+    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+    mol = core.Molecule.from_schema(cbsjob)
+    basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
+    wfn = core.Wavefunction(mol, basis)
 
-        flat_grad = cbs_schema['psi4:qcvars'].get('CBS TOTAL GRADIENT')
-        if flat_grad is not None:
-            finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
-            wfn.set_gradient(finalgradient)
+    for qcv, val in cbsjob['psi4:qcvars'].items():
+        for obj in [core, wfn]:
+            obj.set_variable(qcv, plump_qcvar(val, qcv))
 
-            if finalgradient.rows(0) < 20:
-                core.print_out('CURRENT GRADIENT')
-                finalgradient.print_out()
+    flat_grad = cbsjob['psi4:qcvars'].get('CBS TOTAL GRADIENT')
+    if flat_grad is not None:
+        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
+        wfn.set_gradient(finalgradient)
 
-        flat_hess = cbs_schema['psi4:qcvars'].get('CBS TOTAL HESSIAN')
-        if flat_hess is not None:
-            finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
-            wfn.set_hessian(finalhessian)
+        if finalgradient.rows(0) < 20:
+            core.print_out('CURRENT GRADIENT')
+            finalgradient.print_out()
 
-            if finalhessian.rows(0) < 20:
-                core.print_out('CURRENT HESSIAN')
-                finalhessian.print_out()
+    flat_hess = cbsjob['psi4:qcvars'].get('CBS TOTAL HESSIAN')
+    if flat_hess is not None:
+        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
+        wfn.set_hessian(finalhessian)
 
-        return wfn
+        if finalhessian.rows(0) < 20:
+            core.print_out('CURRENT HESSIAN')
+            finalhessian.print_out()
+
+    return wfn

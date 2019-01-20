@@ -29,12 +29,13 @@
 import abc
 import math
 import json
-import itertools
-import pydantic
-
+import pprint
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 from typing import Dict, List, Any, Union
+import itertools
 
 import numpy as np
+import pydantic
 
 from psi4 import core
 from psi4.driver import p4util
@@ -100,10 +101,17 @@ class SingleResult(BaseTask):
         if self.computed:
             return
 
-        print(json.dumps(self.plan(), indent=2))
+        # gof = core.get_output_file()
+        # core.close_outfile()
+
         from psi4.driver import json_wrapper
+        print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
+        #print(json.dumps(self.plan(), indent=2))
         self.result = json_wrapper.run_json(self.plan())
+        print('... JSON returns >>>')
         self.computed = True
+
+        # core.set_output_file(gof, True)
 
     def get_results(self):
         return self.result
@@ -197,6 +205,5 @@ def plump_qcvar(val, shape_clue, ret='np'):
         return tgt.reshape(reshaper)
     elif ret == 'psi4':
         return core.Matrix.from_array(tgt.reshape(reshaper))
-#wfn.gradient().np.ravel().tolist()
     else:
         raise ValidationError(f'Return type not among [np, psi4]: {ret}')

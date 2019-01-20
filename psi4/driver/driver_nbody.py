@@ -457,7 +457,7 @@ def compute_nbody_components(func, method_string, metadata):
                                                                                 'charge_type',
                                                                                 'MULLIKEN_CHARGES').upper(), molecule)
     for count, n in enumerate(compute_list.keys()):
-        core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
+        core.print_out(f"\n   ==> N-Body: Now computing {n}-body complexes <==\n\n")
         total = len(compute_list[n])
         for num, pair in enumerate(compute_list[n]):
             core.print_out(
