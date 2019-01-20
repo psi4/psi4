@@ -35,10 +35,10 @@ from typing import Dict, List, Any, Union
 
 import numpy as np
 
-from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import UpgradeHelper
 from psi4.driver.task_base import SingleResult
+from psi4.driver.driver_findif import FinDifComputer
 from psi4.driver.driver_nbody import NBodyComputer
 from psi4.driver.driver_cbs import CBSComputer, _cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type
@@ -132,8 +132,10 @@ def task_planner(driver, method, molecule, **kwargs):
             packet.update({'method': method, 'basis': basis})
 
             if method == "cbs":
+                print('PLANNING NBody(CBS)', n)
                 plan.build_tasks(CBSComputer, **packet, **cbsmeta, max_nbody=n)
             else:
+                print('PLANNING NBody()', n)
                 plan.build_tasks(SingleResult, **packet, max_nbody=n)
 
         return plan
@@ -141,9 +143,16 @@ def task_planner(driver, method, molecule, **kwargs):
     # Check for CBS
     elif method == "cbs":
         kwargs.update(cbsmeta)
+        print('PLANNING CBS')
         return CBSComputer(**packet, **kwargs)
 
-    # Finally a single result
+    # Done with Wrappers -- know we want E, G, or H -- but may still be FinDif or SingleResult
     else:
+        dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1, return_strategy=True)
 
-        return SingleResult(**packet, **kwargs)
+        if dermode == 'analytic':
+            print('PLANNING ()')
+            return SingleResult(**packet, **kwargs)
+        else:
+            print('PLANNING FinDif', dermode)
+            return FinDifComputer(**packet, findif_mode=dermode, **kwargs)

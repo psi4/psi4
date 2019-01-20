@@ -26,12 +26,19 @@
 # @END LICENSE
 #
 
+import copy
+import pprint
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+from typing import Dict, List, Any
+
 import numpy as np
+import pydantic
+
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver import qcdb
-from psi4.driver.task_base import BaseTask
+from psi4.driver.task_base import BaseTask, SingleResult, unnp, plump_qcvar
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -84,7 +91,7 @@ def _displace_cart(mass, geom, salc_list, i_m, step_size):
     return disp_geom, label
 
 
-def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0):
+def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, verbose=0):
     """Perform initialization tasks needed by all primary functions.
 
     Parameters
@@ -97,6 +104,11 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
     mode : {"1_0", "2_0", "2_1"}
          The first number specifies the derivative level determined from
          displacements, and the second number is the level determined at.
+    stencil_size : {3, 5}
+        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
+    step_size : float
+        [a0]
+
     initialize_string : function
          A function that returns the string to print to show the caller was entered.
          The string is both caller-specific and dependent on values determined
@@ -118,10 +130,8 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
     core.print_out("         ---------------------------------------------------------\n\n")
 
     print_lvl = core.get_option("FINDIF", "PRINT")
-    num_pts = core.get_option("FINDIF", "POINTS")
-    disp_size = core.get_option("FINDIF", "DISP_SIZE")
 
-    data = {"print_lvl": print_lvl, "num_pts": num_pts, "disp_size": disp_size}
+    data = {"print_lvl": print_lvl, "stencil_size": stencil_size, "step_size": step_size}
 
     if print_lvl:
         core.print_out(initialize_string(data))
@@ -161,8 +171,10 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
         }
     }
 
-    if num_pts not in pts_dict:
-        raise ValidationError("FINDIF: Invalid number of points!")
+    try:
+        disps = pts_dict[stencil_size]
+    except KeyError:
+        raise ValidationError(f"FINDIF: Number of points ({stencil_size}) not among {pts_dict.keys()}!")
 
     # Convention: x_pi means x_per_irrep. The ith element is x for irrep i, with Cotton ordering.
     salc_indices_pi = [[] for h in range(n_irrep)]
@@ -172,7 +184,8 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
         salc_indices_pi[freq_irrep_only]
     except (TypeError, IndexError):
         if freq_irrep_only != -1:
-            raise ValidationError("FINDIF: Irrep value not in valid range.")
+            raise ValidationError(
+                f"FINDIF: 0-indexed Irrep value ({freq_irrep_only}) not in valid range: <{len(salc_indices_pi)}.")
 
     # Populate salc_indices_pi for all irreps.
     # * Python error if iterate through `salc_list`
@@ -198,7 +211,6 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
                 salc_indices_pi[h].clear()
 
     n_disp_pi = []
-    disps = pts_dict[num_pts]  # We previously validated num_pts in pts_dict.
 
     for irrep, indices in enumerate(salc_indices_pi):
         n_disp = len(indices) * len(disps["asym_irr" if irrep != 0 else "sym_irr"])
@@ -234,7 +246,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
     return data
 
 
-def _geom_generator(mol, freq_irrep_only, mode):
+def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
     """
     Generate geometries for the specified molecule and derivative levels.
     You probably want to instead use one of the convenience functions:
@@ -252,6 +264,10 @@ def _geom_generator(mol, freq_irrep_only, mode):
         The first number specifies the targeted derivative level. The
         second number is the compute derivative level. E.g., "2_0"
         is hessian from energies.
+    stencil_size : {3, 5}
+        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
+    step_size : float
+        Displacement size [a0].
 
     Returns
     -------
@@ -339,15 +355,15 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     def init_string(data):
         return f"""  Using finite-differences of {print_msg}.
-    Generating geometries for use with {data["num_pts"]}-point formula.
-    Displacement size will be {data["disp_size"]:6.2e}.\n"""
+    Generating geometries for use with {data["stencil_size"]}-point formula.
+    Displacement size will be {data["step_size"]:6.2e}.\n"""
 
     # Genuine support for qcdb molecules would be nice. But that requires qcdb CdSalc tech.
     # Until then, silently swap the qcdb molecule out for a psi4.core.molecule.
     if isinstance(mol, qcdb.Molecule):
         mol = core.Molecule.from_dict(mol.to_dict())
 
-    data = _initialize_findif(mol, freq_irrep_only, mode, init_string, 1)
+    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, 1)
 
     # We can finally start generating displacements.
     ref_geom = np.array(mol.geometry())
@@ -356,9 +372,9 @@ def _geom_generator(mol, freq_irrep_only, mode):
     findifrec = {
         "step": {
             "units": "bohr",
-            "size": data["disp_size"]
+            "size": data["step_size"]
         },
-        "stencil_size": data["num_pts"],
+        "stencil_size": data["stencil_size"],
         "displacement_space": "CdSALC",
         "project_translations": data["project_translations"],
         "project_rotations": data["project_rotations"],
@@ -371,10 +387,11 @@ def _geom_generator(mol, freq_irrep_only, mode):
         """Given a list of indices and a list of steps to displace each, append the corresponding geometry to the list."""
 
         # Next, to make this salc/magnitude composite.
-        disp_geom, label = _displace_cart(findifrec['molecule']['molecule']['masses'], ref_geom, data["salc_list"], zip(indices, steps), data["disp_size"])
+        disp_geom, label = _displace_cart(findifrec['molecule']['molecule']['masses'], ref_geom, data["salc_list"],
+                                          zip(indices, steps), data["step_size"])
         if data["print_lvl"] > 2:
             core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(disp_geom, **array_format)))
-        findifrec["displacements"][label] = {"geometry": disp_geom.ravel().tolist()}
+        findifrec["displacements"][label] = {"geometry": disp_geom}
 
     for h in range(data["n_irrep"]):
         active_indices = data["salc_indices_pi"][h]
@@ -395,7 +412,7 @@ def _geom_generator(mol, freq_irrep_only, mode):
 
     if data["print_lvl"] > 2:
         core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom, **array_format)))
-    findifrec["reference"]["geometry"] = ref_geom.ravel().tolist()
+    findifrec["reference"]["geometry"] = ref_geom
 
     if data["print_lvl"] > 1:
         core.print_out("\n-------------------------------------------------------------\n")
@@ -421,14 +438,13 @@ def assemble_gradient_from_energies(findifrec):
     mol = core.Molecule.from_schema(findifrec["molecule"], nonphysical=True, verbose=0)
 
     def init_string(data):
-        return ("  Computing gradient from energies.\n"
-                "    Using {:d}-point formula.\n"
-                "    Energy without displacement: {:15.10f}\n"
-                "    Check energies below for precision!\n"
-                "    Forces are for mass-weighted, symmetry-adapted cartesians (in au).\n".format(
-                    findifrec["stencil_size"], findifrec["reference"]["energy"]))
+        return f"""  Computing gradient from energies.
+    Using {findifrec["stencil_size"]}-point formula.
+    Energy without displacement: {findifrec["reference"]["energy"]:15.10f}
+    Check energies below for precision!
+    Forces are for mass-weighted, symmetry-adapted cartesians [a0]."""
 
-    data = _initialize_findif(mol, -1, "1_0", init_string)
+    data = _initialize_findif(mol, -1, "1_0", findifrec['stencil_size'], findifrec['step']['size'], init_string)
     salc_indices = data["salc_indices_pi"][0]
 
     # Extract the energies, and turn then into an ndarray for easy manipulating
@@ -607,7 +623,8 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
                 "  symmetry-adapted, cartesian coordinates.\n\n"
                 "  {:d} gradients passed in, including the reference geometry.\n".format(len(displacements) + 1))
 
-    data = _initialize_findif(mol, freq_irrep_only, "2_1", init_string)
+    data = _initialize_findif(mol, freq_irrep_only, "2_1", findifrec['stencil_size'], findifrec['step']['size'],
+                              init_string)
 
     # For non-totally symmetric CdSALCs, a symmetry operation can convert + and - displacements.
     # Good News: By taking advantage of that, we (potentially) ran less computations.
@@ -788,7 +805,8 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
                 "    Check energies below for precision!\n{}".format(
                     len(displacements) + 1, findifrec["stencil_size"], ref_energy, out_str))
 
-    data = _initialize_findif(mol, freq_irrep_only, "2_0", init_string)
+    data = _initialize_findif(mol, freq_irrep_only, "2_0", findifrec['stencil_size'], findifrec['step']['size'],
+                              init_string)
 
     massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
@@ -854,7 +872,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def gradient_from_energies_geometries(molecule):
+def gradient_from_energies_geometries(molecule, stencil_size=3, step_size=0.005):
     """
     Generate geometries for a gradient by finite difference of energies.
 
@@ -862,6 +880,10 @@ def gradient_from_energies_geometries(molecule):
     ----------
     molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
         The molecule to compute the gradient of.
+    stencil_size : {3, 5}, optional
+        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
+    step_size : float, optional
+        Displacement size [a0].
 
     Returns
     -------
@@ -873,10 +895,10 @@ def gradient_from_energies_geometries(molecule):
     Only symmetric displacements are necessary, so user specification of
     symmetry is disabled.
     """
-    return _geom_generator(molecule, -1, "1_0")
+    return _geom_generator(molecule, -1, "1_0", stencil_size, step_size)
 
 
-def hessian_from_gradients_geometries(molecule, irrep):
+def hessian_from_gradients_geometries(molecule, irrep, stencil_size=3, step_size=0.005):
     """
     Generate geometries for a hessian by finite difference of gradients.
 
@@ -887,16 +909,19 @@ def hessian_from_gradients_geometries(molecule, irrep):
     irrep : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
+    stencil_size : {3, 5}, optional
+        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
+    step_size : float, optional
 
     Returns
     -------
     findifrec : dict
         Dictionary of finite difference data, specified in _geom_generator docstring.
     """
-    return _geom_generator(molecule, irrep, "2_1")
+    return _geom_generator(molecule, irrep, "2_1", stencil_size, step_size)
 
 
-def hessian_from_energies_geometries(molecule, irrep):
+def hessian_from_energies_geometries(molecule, irrep, stencil_size=3, step_size=0.005):
     """
     Generate geometries for a hessian by finite difference of energies.
 
@@ -907,10 +932,301 @@ def hessian_from_energies_geometries(molecule, irrep):
     irrep : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
+    stencil_size : {3, 5}, optional
+        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
+    step_size : float, optional
 
     Returns
     -------
     findifrec : dict
         Dictionary of finite difference data, specified in _geom_generator docstring.
     """
-    return _geom_generator(molecule, irrep, "2_0")
+    return _geom_generator(molecule, irrep, "2_0", stencil_size, step_size)
+
+
+class FinDifComputer(BaseTask):
+
+    molecule: Any
+    driver: str
+    metameta: Dict[str, Any] = {}
+    task_list: Dict[str, SingleResult] = {}
+    findifrec: Dict[str, Any] = {}
+
+    @pydantic.validator('driver')
+    def set_driver(cls, driver):
+        egh = ['energy', 'gradient', 'hessian']
+        if driver not in egh:
+            raise ValidationError(f"""Wrapper is unhappy to be calling function ({driver}) not among {egh}.""")
+
+        return driver
+
+    @pydantic.validator('molecule')
+    def set_molecule(cls, mol):
+        mol.update_geometry()
+        mol.fix_com(True)
+        mol.fix_orientation(True)
+        return mol
+
+    def __init__(self, **data):
+        BaseTask.__init__(self, **data)
+
+        print('FINDIFREC CLASS INIT DATA')
+        pp.pprint(data)
+
+        self.metameta['mode'] = data['findif_mode']
+        self.metameta['irrep'] = data.pop('irrep', -1)
+
+        if self.metameta['mode'] == '1_0':
+            self.metameta['proxy_driver'] = 'energy'
+            self.findifrec = gradient_from_energies_geometries(self.molecule, data.pop('findif_stencil_size'),
+                                                               data.pop('findif_step_size'))
+
+        elif self.metameta['mode'] == '2_1':
+            self.metameta['proxy_driver'] = 'gradient'
+            self.findifrec = hessian_from_gradients_geometries(self.molecule, self.metameta['irrep'],
+                                                               data.pop('findif_stencil_size'),
+                                                               data.pop('findif_step_size'))
+
+        elif self.metameta['mode'] == '2_0':
+            self.metameta['proxy_driver'] = 'energy'
+            self.findifrec = hessian_from_energies_geometries(self.molecule, self.metameta['irrep'],
+                                                              data.pop('findif_stencil_size'),
+                                                              data.pop('findif_step_size'))
+
+        print('FINDIFREC CLASS META DATA')
+        pp.pprint(self.metameta)
+        print('FINDIFREC CLASS')
+        pp.pprint(self.findifrec)
+
+        ndisp = len(self.findifrec["displacements"]) + 1
+        print(f""" {ndisp} displacements needed ...""", end='')
+
+        # var_dict = core.variables()
+        reftask = SingleResult(
+            **{
+                "molecule": self.molecule,
+                "driver": self.metameta['proxy_driver'],
+                "method": data["method"],
+                "basis": data["basis"],
+                "keywords": data["keywords"] or {},
+            })
+        self.task_list["reference"] = reftask
+
+        parent_group = self.molecule.point_group()
+        for label, displacement in self.findifrec["displacements"].items():
+            clone = self.molecule.clone()
+            clone.reinterpret_coordentry(False)
+            #clone.fix_orientation(True)
+
+            # Load in displacement into the active molecule
+            clone.set_geometry(core.Matrix.from_array(displacement["geometry"]))
+
+            # If the user insists on symmetry, weaken it if some is lost when displacing.
+            # or 'fix_symmetry' in self.findifrec.molecule
+            print('SYMM', clone.schoenflies_symbol())
+            if self.molecule.symmetry_from_input():
+                disp_group = clone.find_highest_point_group()
+                new_bits = parent_group.bits() & disp_group.bits()
+                new_symm_string = qcdb.PointGroup.bits_to_full_name(new_bits)
+                clone.reset_point_group(new_symm_string)
+
+            self.task_list[label] = SingleResult(
+                **{
+                    "molecule": clone,
+                    "driver": self.metameta['proxy_driver'],
+                    "method": data["method"],
+                    "basis": data["basis"],
+                    "keywords": data["keywords"] or {},
+                })
+
+#        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
+#            _process_displacement(energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+
+    def build_tasks(self, obj, **kwargs):
+        # permanently a dummy function
+        pass
+
+    def plan(self):
+        return [x.plan() for x in self.task_list.values()]
+
+    def compute(self):
+        with p4util.hold_options_state():
+            # gof = core.get_output_file()
+            # core.close_outfile()
+
+            for x in self.task_list.values():
+                x.compute()
+
+            # core.set_output_file(gof, True)
+
+    def _prepare_results(self):
+        results_list = {k: v.get_results() for k, v in self.task_list.items()}
+
+        #for i, x in self.task_list.items():
+        #    print('\nTASK', i)
+        #    pprint.pprint(x)
+        #for i, x in results_list.items():
+        #    print('\nRESULT', i)
+        #    pp.pprint(x)
+
+        # load SingleResult results into findifrec[reference]
+        reference = self.findifrec["reference"]
+        task = results_list["reference"]
+        response = task['return_result']
+
+        if task['driver'] == 'energy':
+            reference['energy'] = response
+
+        elif task['driver'] == 'gradient':
+            reference['gradient'] = plump_qcvar(response, 'gradient')
+            reference['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
+
+        elif task['driver'] == 'hessian':
+            reference['hessian'] = plump_qcvar(response, 'hessian')
+            reference['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
+            if 'CURRENT GRADIENT' in task['psi4:qcvars']:
+                reference['gradient'] = plump_qcvar(task['psi4:qcvars']['CURRENT GRADIENT'], 'gradient')
+
+        # load SingleResult results into findifrec[displacements]
+        for label, displacement in self.findifrec["displacements"].items():
+            task = results_list[label]
+            response = task['return_result']
+
+            if task['driver'] == 'energy':
+                displacement['energy'] = response
+
+            elif task['driver'] == 'gradient':
+                displacement['gradient'] = plump_qcvar(response, 'gradient')
+                displacement['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
+
+            elif task['driver'] == 'hessian':
+                displacement['hessian'] = plump_qcvar(response, 'hessian')
+                displacement['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
+                if 'CURRENT GRADIENT' in task['psi4:qcvars']:
+                    displacement['gradient'] = plump_qcvar(task['psi4:qcvars']['CURRENT GRADIENT'], 'gradient')
+
+        # apply finite difference formulas and load derivatives into findifrec[reference]
+        if self.metameta['mode'] == '1_0':
+            G0 = assemble_gradient_from_energies(self.findifrec)
+            self.findifrec["reference"][self.driver] = G0
+
+        elif self.metameta['mode'] == '2_1':
+            H0 = assemble_hessian_from_gradients(self.findifrec, self.metameta['irrep'])
+            self.findifrec["reference"][self.driver] = H0
+
+        elif self.metameta['mode'] == '2_0':
+            try:
+                G0 = assemble_gradient_from_energies(self.findifrec)
+            except KeyError:
+                core.print_out("Unable to construct reference gradient from Hessian displacements.")
+                # TODO: this happens properly when a subset irrep doesn't
+                #  have the right displacements for grad. For both this case
+                #  and distributed computing are-we-there-yet? queries,
+                #  should have a probe as to whether all the
+                #  findif[displacement] labels are present and whether
+                #  all the findif[displacement][energy-or-gradient] values
+                #  are ready. Not sure what type of error/query is best,
+                #  so deferring for now. Also, possibly need to check if
+                #  step size matches before using values from one findifrec
+                #  to construct another quantity.
+            else:
+                self.findifrec["reference"]["gradient"] = G0
+
+            H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
+            self.findifrec["reference"][self.driver] = H0
+
+
+#        if core.get_option('FINDIF', 'GRADIENT_WRITE'):
+#            filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
+#            qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=molecule, energy=wfn.energy())
+
+        print('\nFINDIF_RESULTS POST-LOAD')
+        pp.pprint(self.findifrec)
+
+    def get_results(self):
+        assembled_results = self._prepare_results()
+
+        # load QCVariables
+        qcvars = self.task_list['reference'].get_results()['psi4:qcvars']
+
+        #qcvars['CURRENT REFERENCE ENERGY'] = self.grand_need[0]['d_energy']
+        #qcvars['CURRENT CORRELATION ENERGY'] = assembled_results['energy'] - self.grand_need[0]['d_energy']
+        qcvars['FINDIF NUMBER'] = len(self.task_list)
+        qcvars['NUCLEAR REPULSION ENERGY'] = self.molecule.nuclear_repulsion_energy()
+        qcvars['CURRENT ENERGY'] = self.findifrec['reference']['energy']
+
+        G0 = self.findifrec['reference'].get('gradient')
+        if G0 is not None:
+            qcvars['CURRENT GRADIENT'] = G0
+
+        H0 = self.findifrec['reference'].get('hessian')
+        if H0 is not None:
+            qcvars['CURRENT HESSIAN'] = H0
+
+        findifjob = {
+            'findif_record': copy.deepcopy(self.findifrec),
+            'driver': self.driver,
+            # 'keywords':
+            'model': {
+                # 'basis':
+                # 'method':
+            },
+            'molecule': self.molecule.to_schema(dtype=1)['molecule'],
+            # 'properties':
+            'provenance': p4util.provenance_stamp(__name__),
+            'psi4:qcvars': qcvars,
+            'return_result': self.findifrec['reference'][self.driver],
+            'schema_name': 'qc_schema_output',
+            'schema_version': 1,
+            # 'success': True,
+        }
+
+        findifjob = unnp(findifjob, flat=True)
+        print('\nFINDIF QCSchema:')
+        pp.pprint(findifjob)
+        return findifjob
+
+    def get_psi_results(self, return_wfn=False):
+
+        findifjob = self.get_results()
+
+        ret_ptype = plump_qcvar(findifjob['return_result'], shape_clue=findifjob['driver'], ret='psi4')
+        wfn = _findif_schema_to_wfn(findifjob)
+
+        if return_wfn:
+            return (ret_ptype, wfn)
+        else:
+            return ret_ptype
+
+
+def _findif_schema_to_wfn(findifjob):
+    """Helper function to keep Wavefunction dependent on FinDif-flavored QCSchemus."""
+
+    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+    mol = core.Molecule.from_schema(findifjob)
+    basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
+    wfn = core.Wavefunction(mol, basis)
+
+    for qcv, val in findifjob['psi4:qcvars'].items():
+        for obj in [core, wfn]:
+            obj.set_variable(qcv, plump_qcvar(val, qcv))
+
+    flat_grad = findifjob['psi4:qcvars'].get('CURRENT GRADIENT')
+    if flat_grad is not None:
+        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
+        wfn.set_gradient(finalgradient)
+
+        if finalgradient.rows(0) < 20:
+            core.print_out('CURRENT GRADIENT')
+            finalgradient.print_out()
+
+    flat_hess = findifjob['psi4:qcvars'].get('CURRENT HESSIAN')
+    if flat_hess is not None:
+        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
+        wfn.set_hessian(finalhessian)
+
+        if finalhessian.rows(0) < 20:
+            core.print_out('CURRENT HESSIAN')
+            finalhessian.print_out()
+
+    return wfn
