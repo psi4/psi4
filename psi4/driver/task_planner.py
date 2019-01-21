@@ -97,7 +97,6 @@ def task_planner(driver, method, molecule, **kwargs):
 
     # Only pull the changed options
     keywords = p4util.prepare_options_for_set_options()
-    print('task_planner()', keywords)
 
     try:
         method.lower()
@@ -132,10 +131,10 @@ def task_planner(driver, method, molecule, **kwargs):
             packet.update({'method': method, 'basis': basis})
 
             if method == "cbs":
-                print('PLANNING NBody(CBS)')
+                print('PLANNING NBody(CBS)', 'n=', n, 'keywords=', keywords)
                 plan.build_tasks(CBSComputer, **packet, **cbsmeta, max_nbody=n)
             else:
-                print('PLANNING NBody()')
+                print('PLANNING NBody()', 'n=', n, 'keywords=', keywords)
                 plan.build_tasks(SingleResult, **packet, max_nbody=n)
 
         return plan
@@ -143,7 +142,7 @@ def task_planner(driver, method, molecule, **kwargs):
     # Check for CBS
     elif method == "cbs":
         kwargs.update(cbsmeta)
-        print('PLANNING CBS')
+        print('PLANNING CBS', 'keywords=', keywords)
         return CBSComputer(**packet, **kwargs)
 
     # Done with Wrappers -- know we want E, G, or H -- but may still be FinDif or SingleResult
@@ -151,8 +150,8 @@ def task_planner(driver, method, molecule, **kwargs):
         dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1, return_strategy=True)
 
         if dermode == 'analytic':
-            print('PLANNING ()')
+            print('PLANNING ()', 'keywords=', keywords)
             return SingleResult(**packet, **kwargs)
         else:
-            print('PLANNING FinDif', dermode)
+            print('PLANNING FinDif', 'dermode=', dermode, 'keywords=', keywords)
             return FinDifComputer(**packet, findif_mode=dermode, **kwargs)

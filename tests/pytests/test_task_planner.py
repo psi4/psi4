@@ -7,11 +7,14 @@ from utils import *
 from addons import *
 import time
 
+import numpy as np
+
 import psi4
 from psi4.driver.task_planner import task_planner
 from psi4.driver.task_base import SingleResult
 from psi4.driver.driver_cbs import CBSComputer
 from psi4.driver.driver_nbody import NBodyComputer
+from psi4.driver.driver_findif import FinDifComputer
 
 pytestmark = pytest.mark.quick
 
@@ -134,3 +137,50 @@ def test_cbs_extrapolation_delta():
     assert isinstance(plan.task_list[2], SingleResult)
     assert plan.task_list[2].basis == "cc-pvqz"
     assert plan.task_list[2].method == "ccsd(t)"
+
+
+def test_findif_1_1():
+    mol = psi4.geometry("H\nH 1 2.0\nunits au")
+    plan = task_planner("gradient", "MP2/cc-pVDZ", mol)
+
+    assert isinstance(plan, SingleResult)
+    assert plan.basis == "cc-pvdz"
+    assert plan.method == "mp2"
+    assert plan.driver == "gradient"
+
+
+def test_findif_1_0():
+    mol = psi4.geometry("H\nH 1 2.0\nunits au")
+    plan = task_planner("gradient", "MP2/cc-pVDZ", mol, dertype=0, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+
+    displacements = {
+        '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
+        '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
+        'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+    }
+
+    assert isinstance(plan, FinDifComputer)
+    assert len(plan.task_list) == 3
+
+    key = 'reference'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+    key = '0: -1'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+    key = '0: 1'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+
