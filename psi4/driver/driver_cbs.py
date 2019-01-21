@@ -878,9 +878,6 @@ def cbs(func, label, **kwargs):
 ##  Aliases  ##
 complete_basis_set = cbs
 
-
-
-
 ######### OUTSOURCE
 ######### PARSE / PREPARE
 ######### PREPARE / COMPUTE
@@ -905,7 +902,7 @@ complete_basis_set = cbs
 #    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
 
 
-def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom):
+def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options):
     """Check that the length of *basiszeta* array matches the implied degree of
     extrapolation in *scheme* name. Return a dictionary of same length as
     basiszeta, with *basisname* and *basiszeta* distributed therein.
@@ -928,11 +925,7 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
     NEED = {}
     for idx in range(Nxtpl):
         NEED[_lmh_labels[Nxtpl][idx]] = dict(
-            zip(_f_fields, [
-                wfnname, basisname[idx], basiszeta[idx], options, 0.0,
-                np.zeros((natom, 3)),
-                np.zeros((3 * natom, 3 * natom))
-            ]))
+            zip(_f_fields, [wfnname, basisname[idx], basiszeta[idx], options, 0.0, None, None]))
     return NEED
 
 
@@ -1074,7 +1067,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
     if ptype is None:
         raise ValidationError("A CBS call was detected, but no ptyped was passed in. Please alert a dev.")
     elif ptype not in ["energy", "gradient", "hessian"]:
-        raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
+        raise ValidationError(f"{ptype.title()}: Cannot extrapolate or delta correct {ptype} yet.")
 
     # Catch kwarg issues for CBS methods only
     user_dertype = kwargs.pop('dertype', None)
@@ -1187,13 +1180,13 @@ def cbs_gufunc(func, total_method_name, **kwargs):
 
 def _build_cbs_compute(metameta, metadata):
     label = metameta['label']
-    natom = metameta['molecule'].natom()
+    nat = metameta['molecule'].natom()
     ptype = metameta['ptype']
 
     # Build string of title banner
     cbsbanners = ''
     cbsbanners += """core.print_out('\\n')\n"""
-    cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
+    cbsbanners += """p4util.banner(f' CBS Setup: {label} ')\n"""
     cbsbanners += """core.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
@@ -1204,30 +1197,33 @@ def _build_cbs_compute(metameta, metadata):
     GRAND_NEED = []
 
     NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
-                                 metadata[0]["wfn"], metadata[0]["options"], natom)
+                                 metadata[0]["wfn"], metadata[0]["options"])
     GRAND_NEED.append(
         dict(
             zip(d_fields, [
                 'scf', metadata[0]["scheme"],
-                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], metadata[0]["alpha"], NEED, +1, 0.0, None, None
+                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], metadata[0]["alpha"], NEED, +1,
+                0.0, None, None
             ])))
     if len(metadata) > 1:
         for delta in metadata[1:]:
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
-                                         delta["options"], natom)
+                                         delta["options"])
             GRAND_NEED.append(
                 dict(
                     zip(d_fields, [
                         delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], delta["alpha"], NEED, +1, 0.0, None, None
+                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], delta["alpha"], NEED, +1, 0.0,
+                        None, None
                     ])))
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
-                                         False, natom)
+                                         False)
             GRAND_NEED.append(
                 dict(
                     zip(d_fields, [
                         delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], delta["alpha"], NEED, -1, 0.0, None, None
+                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], delta["alpha"], NEED, -1,
+                        0.0, None, None
                     ])))
 
     # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
@@ -1280,13 +1276,7 @@ def _build_cbs_compute(metameta, metadata):
     TROVE = []
     for job in JOBS:
         for wfn in VARH[job['f_wfn']]:
-            TROVE.append(
-                dict(
-                    zip(_f_fields, [
-                        wfn, job['f_basis'], job['f_zeta'], job['f_options'], 0.0,
-                        np.zeros((natom, 3)),
-                        np.zeros((3 * natom, 3 * natom))
-                    ])))
+            TROVE.append(dict(zip(_f_fields, [wfn, job['f_basis'], job['f_zeta'], job['f_options'], 0.0, None, None])))
 
     instructions = """\n    Full listing of computations to be obtained (required and bonus).\n"""
     for mc in TROVE:
@@ -1304,13 +1294,13 @@ def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
 
     """
     label = metameta['label']
-    natom = metameta['molecule'].natom()
+    nat = metameta['molecule'].natom()
     ptype = metameta['ptype']
 
     # Build string of title banner
     cbsbanners = ''
     cbsbanners += """core.print_out('\\n')\n"""
-    cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
+    cbsbanners += """p4util.banner(f' CBS Results: {label} ')\n"""
     cbsbanners += """core.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
@@ -1330,25 +1320,29 @@ def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
 
     # Make xtpl() call
     finalenergy = 0.0
-    finalgradient = np.zeros((natom, 3))
-    finalhessian = np.zeros((3 * natom, 3 * natom))
+    finalgradient = None
+    finalhessian = None
 
     for stage in GRAND_NEED:
         hiloargs = {'alpha': stage['d_alpha']}
 
-        grad_available = all([np.count_nonzero(lmh['f_gradient']) for lmh in stage['d_need'].values()])
-        hess_available = all([np.count_nonzero(lmh['f_hessian']) for lmh in stage['d_need'].values()])
+        grad_available = all([lmh['f_gradient'] is not None for lmh in stage['d_need'].values()])
+        hess_available = all([lmh['f_hessian'] is not None for lmh in stage['d_need'].values()])
 
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
         stage['d_energy'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
         finalenergy += stage['d_energy'] * stage['d_coef']
 
         if ptype == 'gradient' or grad_available:
+            if finalgradient is None:
+                finalgradient = np.zeros((nat, 3))
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
             stage['d_gradient'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
             finalgradient += stage['d_gradient'] * stage['d_coef']
 
         if ptype == 'hessian' or hess_available:
+            if finalhessian is None:
+                finalhessian = np.zeros((3 * nat, 3 * nat))
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
             stage['d_hessian'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
             finalhessian += stage['d_hessian'] * stage['d_coef']
@@ -1496,12 +1490,12 @@ class CBSComputer(BaseTask):
                 for delta in self.metadata[1:]:
                     if delta["wfn"] not in VARH.keys():
                         raise ValidationError(
-                            """Requested higher %s method '%s' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
-                            % (delta["treatment"], delta["wfn"]))
+                            f"""Requested higher {delta["treatment"]} method '{delta["wfn"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
+                        )
                     if delta["wfn_lo"] not in VARH.keys():
                         raise ValidationError(
-                            """Requested lesser %s method '%s' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
-                            % (delta["treatment"], delta["wfn_lo"]))
+                            f"""Requested lesser {delta["treament"]} method '{delta["wfn_lo"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
+                        )
 
             self.grand_need, self.compute_list, self.trove = _build_cbs_compute(self.metameta, self.metadata)
 
