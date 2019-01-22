@@ -584,17 +584,16 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         // right_ov -= Fb_oi x_iv
         C_DGEMM('N', 'N', occpi[h], virpi[h], doccpi_[h], -0.5, Fbp[0], nmopi_[h], xp[0], virpi[h], 1.0, rightp[0],
                 virpi[h]);
+        if(soccpi_[h]){
+            // Socc terms
+            // left_av += 0.5 * x_oa.T Fb_ov
+            C_DGEMM('T', 'N', soccpi_[h], virpi[h], occpi[h], 0.5, xp[0], virpi[h], (Fbp[0] + doccpi_[h]), nmopi_[h], 1.0,
+                    leftp[doccpi_[h]], virpi[h]);
 
-        if (Hx_left->rowspi()[h] <= doccpi_[h]) exit(42);
-
-        // Socc terms
-        // left_av += 0.5 * x_oa.T Fb_ov
-        C_DGEMM('T', 'N', soccpi_[h], virpi[h], occpi[h], 0.5, xp[0], virpi[h], (Fbp[0] + doccpi_[h]), nmopi_[h], 1.0,
-                leftp[doccpi_[h]], virpi[h]);
-
-        // right_oa += 0.5 * Fb_op x_ap.T
-        C_DGEMM('N', 'T', occpi[h], soccpi_[h], pvir[h], 0.5, (Fbp[0] + occpi[h]), nmopi_[h],
-                (xp[doccpi_[h]] + soccpi_[h]), virpi[h], 1.0, rightp[0], virpi[h]);
+            // right_oa += 0.5 * Fb_op x_ap.T
+            C_DGEMM('N', 'T', occpi[h], soccpi_[h], pvir[h], 0.5, (Fbp[0] + occpi[h]), nmopi_[h],
+                    (xp[doccpi_[h]] + soccpi_[h]), virpi[h], 1.0, rightp[0], virpi[h]);
+        }
     }
 
     // => Two electron part <= //
