@@ -283,6 +283,11 @@ SharedMatrix SADGuess::form_D_AO() {
                 nact = (*(++imagic)) / 2 - nfzc;
             }
 
+            // Sanity check: can't have more active orbitals than basis functions
+            if (nact > norbs - nfzc) {
+                nact = norbs - nfzc;
+            }
+
             // Number of occupied orbitals is
             nocc_a = nocc_b = nfzc + nact;
 
