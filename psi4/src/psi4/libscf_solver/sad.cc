@@ -69,9 +69,9 @@ using namespace psi;
 namespace psi {
 namespace scf {
 
-SADGuess::SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int nalpha,
-                   int nbeta, Options& options)
-    : basis_(basis), atomic_bases_(atomic_bases), nalpha_(nalpha), nbeta_(nbeta), options_(options) {
+SADGuess::SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases,
+                   Options& options)
+    : basis_(basis), atomic_bases_(atomic_bases), options_(options) {
     common_init();
 }
 SADGuess::~SADGuess() {}
@@ -117,21 +117,8 @@ void SADGuess::form_D() {
     }
     delete[] temp;
 
-    // Scale Da to true electron count
-    double npair = 0.0;
-    for (int A = 0; A < molecule_->natom(); A++) {
-        npair += 0.5 * molecule_->Z(A);
-    }
-    Da_->scale(((double)nalpha_) / npair);
-
-    // Build/Scale Db if needed
-    if (nalpha_ == nbeta_) {
-        Db_ = Da_;
-    } else {
-        Db_ = SharedMatrix(Da_->clone());
-        Db_->set_name("Db SAD");
-        Db_->scale(((double)nbeta_) / ((double)nalpha_));
-    }
+    // Set Db to Da
+    Db_ = Da_;
 
     if (debug_) {
         Da_->print();
@@ -141,13 +128,7 @@ void SADGuess::form_D() {
 void SADGuess::form_C() {
     Ca_ = Da_->partial_cholesky_factorize(options_.get_double("SAD_CHOL_TOLERANCE"));
     Ca_->set_name("Ca SAD");
-    if (nalpha_ == nbeta_) {
-        Cb_ = Ca_;
-    } else {
-        Cb_ = SharedMatrix(Ca_->clone());
-        Cb_->set_name("Cb SAD");
-        Cb_->scale(std::sqrt(((double)nbeta_) / ((double)nalpha_)));
-    }
+    Cb_ = Ca_;
 
     if (debug_) {
         Ca_->print();
@@ -522,7 +503,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     if (print_ > 1) {
         std::string measure = diis_rms ? "RMS |[F,P]|  " : "MAX |[F,P]|  ";
         outfile->Printf("\n  Initial Atomic UHF Energy:    %14.10f\n\n", E);
-        outfile->Printf("  %33s %20s    %20s %20s\n", "","Total Energy   ","Delta E   ",measure.c_str());
+        outfile->Printf("  %33s %20s    %20s %20s\n", "", "Total Energy   ", "Delta E   ", measure.c_str());
     }
 
     // Run the iterations
@@ -668,7 +649,7 @@ void HF::compute_SAD_guess() {
         throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
     }
 
-    auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, nalpha_, nbeta_, options_);
+    auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, options_);
     if (options_.get_str("SAD_SCF_TYPE") == "DF") {
         if (sad_fitting_basissets_.empty()) {
             throw PSIEXCEPTION("  SCF guess was set to SAD with DiskDFJK, but sad_fitting_basissets_ was empty!\n\n");

@@ -47,9 +47,6 @@ class SADGuess {
     std::vector<std::shared_ptr<BasisSet>> atomic_fit_bases_;
     SharedMatrix AO2SO_;
 
-    int nalpha_;
-    int nbeta_;
-
     Options& options_;
 
     SharedMatrix Da_;
@@ -70,8 +67,7 @@ class SADGuess {
     void form_C();
 
    public:
-    SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int nalpha,
-             int nbeta, Options& options);
+    SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, Options& options);
     virtual ~SADGuess();
 
     void compute_guess();
