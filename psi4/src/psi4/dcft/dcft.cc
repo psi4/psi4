@@ -80,6 +80,14 @@ DCFTSolver::DCFTSolver(SharedWavefunction ref_wfn, Options &options) : Wavefunct
         options.get_str("DCFT_FUNCTIONAL") == "ODC-13")
         orbital_optimized_ = true;
 
+    if (ref_wfn->same_a_b_dens())
+        name_ = "R" + options.get_str("DCFT_FUNCTIONAL");
+    else {
+        // ROHF references may have the same orbitals, if not semicanonicalized
+        same_a_b_orbs_ = false;
+        name_ = "U" + options.get_str("DCFT_FUNCTIONAL");
+    }
+
     // Sets up the memory, and orbital info
     init();
 }
