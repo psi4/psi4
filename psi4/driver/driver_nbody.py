@@ -38,7 +38,6 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
-from psi4.driver import driver_nbody_helper
 
 from psi4.driver.task_base import BaseTask, unnp, plump_qcvar
 
@@ -164,7 +163,6 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
     core.print_out("\n")
 
 
-def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
     This is a generalized universal function for computing interaction and total quantities.
@@ -248,59 +246,6 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
         Default is ``MULLIKEN_CHARGES``
     """
-
-    kwargs = p4util.kwargs_lower(kwargs)
-    if kwargs.get('levels', False):
-        return driver_nbody_helper.multi_level(func, **kwargs)
-
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
-    if molecule.nfragments() == 1:
-        raise ValidationError("N-Body requires active molecule to have more than 1 fragment.")
-
-    ComputeInstance = NBodyComputer(molecule=molecule, driver=kwargs['ptype'], **kwargs)
-    ComputeInstance.build_tasks(kwargs['computer'], **kwargs['data'])
-    ComputeInstance.compute()
-
-    nbody_results = ComputeInstance.get_results()
-    ret = nbody_results['ret_ptype']
-    if kwargs['ptype'] in ['gradient', 'hessian']:
-        ret = core.Matrix.from_array(ret)
-
-    wfn = core.Wavefunction.build(molecule, 'def2-svp')
-    dicts = [
-        'energies', 'ptype', 'intermediates', 'intermediates2', 'intermediates_ptype', 'energy_body_dict',
-        'gradient_body_dict', 'hessian_body_dict', 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict',
-        'vmfc_energy_body_dict'
-    ]
-    if kwargs['ptype'] == 'gradient':
-        wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_ptype']))
-        nbody_results['gradient_body_dict'] = nbody_results['ptype_body_dict']
-    elif kwargs['ptype'] == 'hessian':
-        nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
-        wfn.set_hessian(core.Matrix.from_array(nbody_results['ret_ptype']))
-        wfn.set_gradient(core.Matrix.from_array(nbody_results['ret_gradient']))
-
-    for d in nbody_results:
-        if d in dicts:
-            for var, value in nbody_results[d].items():
-                try:
-                    wfn.set_variable(str(var), value)
-                    core.set_variable(str(var), value)
-                except Exception:
-                    wfn.set_array_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
-
-    core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
-    wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
-    if metadata['ptype'] == 'gradient':
-        core.set_variable("CURRENT GRADIENT", nbody_results['ret_ptype'])
-    elif metadata['ptype'] == 'hessian':
-        core.set_variable("CURRENT HESSIAN", nbody_results['ret_ptype'])
-
-    if kwargs.get('return_wfn', False):
-        return (ret, wfn)
-    else:
-        return ret
 
 
 def build_nbody_compute_list(bsse_type_list, max_nbody, max_frag):
@@ -401,95 +346,6 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
     }
 
     return compute_dict
-
-
-def compute_nbody_components(func, method_string, metadata):
-    """Computes requested N-body components.
-
-    Performs requested computations for psi4::Molecule object `molecule` according to
-    `compute_list` with function `func` at `method_string` level of theory.
-
-    Parameters
-    ----------
-    func : str
-        {'energy', 'gradient', 'hessian'}
-        Function object to be called within N-Body procedure.
-    method_string : str
-        Indicates level of theory to be passed to function `func`.
-    metadata : dict of str
-        Dictionary of N-body metadata.
-
-        Required ``'key': value`` pairs:
-        ``'compute_list'``: dict of int: set
-            List of computations to perform.  Keys indicate body-levels, e.g,. `compute_list[2]` is the
-            list of all 2-body computations required.
-        ``'kwargs'``: dict
-            Arbitrary keyword arguments to be passed to function `func`.
-
-    Returns
-    -------
-    dict of str: dict
-        Dictionary containing computed N-body components.
-
-        Contents:
-        ``'energies'``: dict of set: float64
-               Dictionary containing all energy components required for given N-body procedure.
-        ``'ptype'``: dict of set: float64 or dict of set: psi4.Matrix
-               Dictionary of returned quantities from calls of function `func` during N-body computations
-        ``'intermediates'``: dict of str: float64
-               Dictionary of psivars for intermediate N-body computations to be set at the end of the
-               N-body procedure.
-    """
-    # Get required metadata
-    kwargs = metadata['kwargs']
-    molecule = metadata['molecule']
-    #molecule = core.get_active_molecule()
-    compute_list = metadata['compute_dict']['all']
-
-    # Now compute the energies
-    energies_dict = {}
-    gradients_dict = {}
-    ptype_dict = {}
-    intermediates_dict = {}
-    if kwargs.get('charge_method', False) and not metadata['embedding_charges']:
-        metadata['embedding_charges'] = driver_nbody_helper.compute_charges(kwargs['charge_method'],
-                                                                            kwargs.get(
-                                                                                'charge_type',
-                                                                                'MULLIKEN_CHARGES').upper(), molecule)
-    for count, n in enumerate(compute_list.keys()):
-        core.print_out(f"\n   ==> N-Body: Now computing {n}-body complexes <==\n\n")
-        total = len(compute_list[n])
-        for num, pair in enumerate(compute_list[n]):
-            core.print_out(
-                "\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n\n" %
-                (num + 1, total, str(pair[0]), str(pair[1])))
-            ghost = list(set(pair[1]) - set(pair[0]))
-
-            current_mol = molecule.extract_subsets(list(pair[0]), ghost)
-            current_mol.set_name("%s_%i_%i" % (current_mol.name(), count, num))
-            if metadata['embedding_charges']: driver_nbody_helper.electrostatic_embedding(metadata, pair=pair)
-            # Save energies info
-            ptype_dict[pair], wfn = func(method_string, molecule=current_mol, return_wfn=True, **kwargs)
-            core.set_global_option_python('EXTERN', None)
-            energies_dict[pair] = core.variable("CURRENT ENERGY")
-            gradients_dict[pair] = wfn.gradient()
-            var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]),
-                                                         ', '.join([str(i) for i in pair[1]]))
-            intermediates_dict[var_key] = core.variable("CURRENT ENERGY")
-            core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" %
-                           (str(pair[0]), str(pair[1]), energies_dict[pair]))
-            # Flip this off for now, needs more testing
-            #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-            #    core.set_global_option('DF_INTS_IO', 'LOAD')
-
-            core.clean()
-
-    return {
-        'energies': energies_dict,
-        'gradients': gradients_dict,
-        'ptype': ptype_dict,
-        'intermediates': intermediates_dict
-    }
 
 
 def assemble_nbody_components(metadata, component_results):
@@ -791,26 +647,33 @@ def assemble_nbody_components(metadata, component_results):
     return results
 
 
+def electrostatic_embedding(embedding_charges):
+    """
+    Add atom-centered point charges
+    """
+    from psi4.driver import qmmm
+
+    # Add embedding point charges
+    Chrgfield = qmmm.QMMM()
+    for i in embedding_charges:
+        Chrgfield.extern.addCharge(i[0], i[1][0], i[1][1], i[1][2])
+    core.set_global_option_python('EXTERN', Chrgfield.extern)
+
+
 class NBodyComputer(BaseTask):
 
     molecule: Any
     driver: str
 
-    metadata: Dict[str, Any] = {}
-    component_results: Dict[str, Any] = {}
-    nbody_results: Dict[str, Any] = {}
+    # nbody kwargs
     bsse_type: List[str] = ["cp"]
-
     max_nbody: int = -1
     max_frag: int = None
-
     return_wfn: bool = False
     return_total_data: bool
     embedding_charges: Dict[int, list] = {}
-    charge_method: str = ''
-    charge_type: str = 'MULLIKEN_CHARGES'
-    task_list: Dict[Any, Dict[str, Any]] = {}
-    compute_dict: Dict[str, Any] = {}
+
+    task_list: Dict[str, Any] = {}
 
     def __init__(self, **data):
 
@@ -826,7 +689,7 @@ class NBodyComputer(BaseTask):
             self.max_nbody = min(self.max_nbody, self.max_frag)
 
         if not self.return_total_data:
-            if self.embedding_charges or self.charge_method:
+            if self.embedding_charges:
                 raise Exception('Cannot return interaction data when using embedding scheme.')
 
     @pydantic.validator('molecule')
@@ -860,31 +723,14 @@ class NBodyComputer(BaseTask):
         import json
         template = json.dumps(kwargs)
 
-        # Compute embedding charges
-        if self.charge_method and not self.embedding_charges:
-            self.embedding_charges = driver_nbody_helper.compute_charges(self.charge_method, self.charge_type,
-                                                                         self.molecule)
-        # Store tasks by level
-        level = kwargs.pop('max_nbody', self.max_nbody)
-        self.task_list[level] = {}
-
-        # Add supersystem computation if requested 
-        if level == 'supersystem':
-            data = json.loads(template)
-            data["molecule"] = self.molecule
-            self.task_list[level][self.max_frag] = obj(**data)
-            self.compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
-
-        else:
-            # Get compute list
-            self.compute_dict = build_nbody_compute_list(self.bsse_type, level, self.max_frag)
-
-        compute_list = self.compute_dict[bsse_type]
+        # Get compute list
+        compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
+        compute_list = compute_dict[bsse_type]
 
         counter = 0
         for count, n in enumerate(compute_list):
             for key, pair in enumerate(compute_list[n]):
-                if pair in self.task_list[level]:
+                if pair in self.task_list:
                     continue
                 print(pair)
                 data = json.loads(template)
@@ -898,7 +744,7 @@ class NBodyComputer(BaseTask):
                         charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
                     data['keywords'].update({'embedding_charges': charges})
 
-                self.task_list[level][pair] = obj(**data)
+                self.task_list[pair] = obj(**data)
                 counter += 1
 
 
@@ -906,31 +752,26 @@ class NBodyComputer(BaseTask):
 
     def plan(self):
         ret = []
-        for level in self.task_list:
-            for k, v in self.task_list[level].items():
-                ret.append(v.plan())
+        for k, v in self.task_list.items():
+            ret.append(v.plan())
         return ret
 
     def compute(self):
         with p4util.hold_options_state():
             # gof = core.get_output_file()
             # core.close_outfile()
-            for level in self.task_list:
-                for k, v in self.task_list[level].items():
-                    v.compute()
+            for k, v in self.task_list.items():
+                v.compute()
 
             # core.set_output_file(gof, True)
 
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
 
-    def prepare_results(self, results={}):
-
-        if len(self.task_list) > 1 and not results:
-            return driver_nbody_helper.prepare_results(self)
+    def prepare_results(self):
 
         metadata = self.dict().copy()
-        results_list = {k: v.get_results() for k, v in (results.items() or self.task_list[self.max_nbody].items())}
+        results_list = {k: v.get_results() for k, v in self.task_list.items()}
         energies = {k: v['properties']["return_energy"] for k, v in results_list.items()}
 
         ptype = None
@@ -945,6 +786,7 @@ class NBodyComputer(BaseTask):
         nbody_results = assemble_nbody_components(metadata.copy(), tmp)
 
         if self.driver == 'hessian':
+            # Compute nbody gradient
             gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
             tmp['ptype'] = gradient
             metadata = metadata.copy()
@@ -989,9 +831,8 @@ class NBodyComputer(BaseTask):
             qcvars['CURRENT HESSIAN'] = ret_ptype
 
         component_results = self.dict()['task_list']
-        for k1, val1 in component_results.items():
-            for k2 in val1:
-                val1[k2]['molecule'] = val1[k2]['molecule'].to_schema(dtype=1)['molecule']
+        for k, val in component_results.items():
+            val['molecule'] = val['molecule'].to_schema(dtype=1)['molecule']
 
         data = {
             'driver': self.driver,

@@ -35,14 +35,6 @@ comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}              
 for n, v in comparison_dict.items():                                                              #TEST  
     compare_values(v, wfn.variable(n+'nocp'), 6, 'Supersystem multi-level energy')            #TEST
 
-# Compute electrostatically embedded  many-body expansion energy.with Mulliken charges
-e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
-                max_nbody=2, charge_method='scf/sto-3g', charge_type='MULLIKEN_CHARGES')
-clean()
-comparison_dict = {'1': -224.911009557547, '2': -224.912828186182}                                #TEST
-for n, v in comparison_dict.items():                                                              #TEST
-    compare_values(v, wfn.variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST
-
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
 tip3p_charges = [-0.834, 0.417, 0.417]
 embedding_charges = {i: [j for j in tip3p_charges] for i in range(1, 4)}
