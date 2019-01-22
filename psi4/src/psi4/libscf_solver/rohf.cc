@@ -585,6 +585,8 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         C_DGEMM('N', 'N', occpi[h], virpi[h], doccpi_[h], -0.5, Fbp[0], nmopi_[h], xp[0], virpi[h], 1.0, rightp[0],
                 virpi[h]);
 
+        if (Hx_left->rowspi()[h] <= doccpi_[h]) exit(42);
+
         // Socc terms
         // left_av += 0.5 * x_oa.T Fb_ov
         C_DGEMM('T', 'N', soccpi_[h], virpi[h], occpi[h], 0.5, xp[0], virpi[h], (Fbp[0] + doccpi_[h]), nmopi_[h], 1.0,
