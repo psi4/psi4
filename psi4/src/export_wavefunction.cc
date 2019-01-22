@@ -43,6 +43,8 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/soscf.h"
 
+#include "psi4/cc/ccwave.h"
+
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
 
@@ -209,7 +211,8 @@ void export_wavefunction(py::module& m) {
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
-        .def("form_initial_C", &scf::HF::form_initial_C, "Forms the initial Orbital Matrices from the current Fock Matrices.")
+        .def("form_initial_C", &scf::HF::form_initial_C,
+             "Forms the initial Orbital Matrices from the current Fock Matrices.")
         .def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices")
         .def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
         .def("form_G", &scf::HF::form_G, "Forms the G matrix.")
@@ -230,7 +233,7 @@ void export_wavefunction(py::module& m) {
         .def_property("reset_occ_", &scf::HF::reset_occ, &scf::HF::set_reset_occ,
                       "Do reset the occupation after the guess to the inital occupation.")
         .def_property("sad_", &scf::HF::sad, &scf::HF::set_sad,
-                    "Do assume a non-idempotent density matrix and no orbitals after the guess.")
+                      "Do assume a non-idempotent density matrix and no orbitals after the guess.")
         .def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.")
         .def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets,
              "Sets the Superposition of Atomic Densities density-fitted basisset.")
@@ -414,4 +417,44 @@ void export_wavefunction(py::module& m) {
         .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
         .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
         .def_buffer([](detci::CIvect& vec) { return vec.array_interface(); });
+
+    py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(
+        m, "CCWavefunction", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
+        .def("get_amplitudes", &ccenergy::CCEnergyWavefunction::get_amplitudes, R"docstring(
+               Get dict of converged T amplitudes
+
+               Returns
+               -------
+               amps : dict (spacestr, SharedMatrix)
+                 `spacestr` is a description of the amplitude set using the following conventions.
+
+                 I,J,K -> alpha occupied
+                 i,j,k -> beta occupied
+                 A,B,C -> alpha virtual
+                 a,b,c -> beta virtual
+
+               The following entries are stored in the `amps`, depending on the reference type
+
+               RHF: "tIA", "tIjAb"
+               UHF: tIA, tia, tIjAb, tIJAB, tijab
+               ROHF: tIA, tia, tIjAb, tIJAB, tijab
+
+              Examples
+              --------
+              RHF T1 diagnostic = sqrt(sum_ia (T_ia * T_ia)/nelec)
+              >>> mol = """
+              ... 0 1
+              ... Ne 0.0 0.0 0.0
+              ... symmetry c1"""
+              >>> e, wfn = psi4.energy("CCSD/cc-pvdz", return_wfn=True)
+              >>> t1 = wfn.get_amplitudes()['tia'].to_array()
+              >>> t1_diagnostic = np.sqrt(np.dot(t1.ravel(),t1.ravel())/ (2 * wfn.nalpha())
+              >>> t1_diagnostic == psi4.variable("CC T1 DIAGNOSTIC")
+              True
+
+
+               .. warning:: Symmetry free calculations only (nirreps > 1 will cause error)
+               .. warning:: No checks that the amplitudes will fit in core. Do not use for proteins
+            )docstring");
 }

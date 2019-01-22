@@ -18,6 +18,10 @@ list(APPEND _Clang_debug_flags
   "-Qunused-arguments"
   "-fcolor-diagnostics"
   )
+target_sources(cc
+  PRIVATE
+  amps.cc
+  )
 target_compile_options(cc
   PRIVATE
   $<$<AND:$<CXX_COMPILER_ID:Clang>,$<CONFIG:Debug>>:${_Clang_debug_flags}>
