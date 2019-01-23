@@ -239,6 +239,14 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     ret = {}
     ret["Exch-Disp20,u"] = scalars["Exch-Disp20"]
     ret["Disp20,u"] = scalars["Disp20"]
+
+    fisapt.sinf_disp(matrix_cache, vector_cache, False)
+    scalars = fisapt.scalars()
+
+    core.print_out("\n")
+    core.print_out(print_sapt_var("Disp20 (MP2)", scalars["Disp20"], short=True) + "\n")
+    core.print_out(print_sapt_var("Exch-Disp20,u (S^inf)", scalars["Exch-Disp20 (S^inf)"], short=True) + "\n")
+
     return ret
 
 

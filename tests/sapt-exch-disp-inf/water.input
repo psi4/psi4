@@ -1,0 +1,32 @@
+memory 62 gb
+ 
+molecule dimer {
+0 1
+O -0.064997  0.000000  1.202015
+H  0.817736  0.000000  1.573527
+H  0.070857  0.000000  0.246803
+--
+0 1
+O  0.060546  0.000000 -1.130293
+H -0.408968 -0.760178 -1.479405
+H -0.408968  0.760178 -1.479405
+
+    units angstrom
+    no_reorient
+    symmetry c1
+}
+
+
+set globals {
+    reference RHF
+    e_convergence 1e-8
+    d_convergence 1e-8
+    basis jun-cc-pvdz
+    scf_type mem_df
+    df_basis_scf aug-cc-pvtz-jkfit
+    df_basis_mp2 aug-cc-pvtz-ri
+    SAPT_DFT_MP2_DISP_ALG fisapt
+}
+
+set SAPT_DFT_FUNCTIONAL HF
+energy('sapt(dft)', molecule=dimer)

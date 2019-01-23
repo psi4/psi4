@@ -2230,7 +2230,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
         outfile->Printf("\n");
     }
 }
-void FISAPT::total_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache, 
+void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache, 
                         bool do_print) {
     if (do_print) {
         outfile->Printf("  ==> Dispersion <==\n\n");
