@@ -113,7 +113,7 @@ void RBase::set_reference(SharedWavefunction ref_wfn) {
     Cs.push_back(Caocc_);
     Cs.push_back(Cavir_);
     Cs.push_back(Cfvir_);
-    C_ = Matrix::horzcat(Cs);
+    C_ = linalg::horzcat(Cs);
 }
 void RBase::preiterations() {
     if (!jk_) {
@@ -1149,7 +1149,7 @@ double RTDHF::compute_energy() {
         //    std::vector<SharedMatrix > t = H->unpack(triplets[N]);
         //    for (int h = 0; h < Caocc_->nirrep(); h++) {
         //        // Spurious zero eigenvalue due to not enough states
-        //        if (N >= triplets[N]->dimpi()[h]) continue;
+        //        if (N >= linalg::triplets[N]->dimpi()[h]) continue;
         //        triplets_.push_back(t[h]);
         //        E_triplets_.push_back(E_triplets[N][h]);
         //    }
@@ -1487,7 +1487,7 @@ double RTDDFT::compute_energy() {
         //    std::vector<SharedMatrix > t = H->unpack(triplets[N]);
         //    for (int h = 0; h < Caocc_->nirrep(); h++) {
         //        // Spurious zero eigenvalue due to not enough states
-        //        if (N >= triplets[N]->dimpi()[h]) continue;
+        //        if (N >= linalg::triplets[N]->dimpi()[h]) continue;
         //        triplets_.push_back(t[h]);
         //        E_triplets_.push_back(E_triplets[N][h]);
         //    }

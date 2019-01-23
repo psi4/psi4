@@ -34,7 +34,7 @@ mints = psi4.core.MintsHelper(scf_wfn.basisset())
 # RHS Dipoles
 dipoles_xyz = []
 for dip in mints.ao_dipole():
-    Fia = psi4.core.Matrix.triplet(Co, dip, Cv, True, False, False)
+    Fia = psi4.core.triplet(Co, dip, Cv, True, False, False)
     Fia.scale(-2.0)
     dipoles_xyz.append(Fia)
 

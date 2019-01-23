@@ -102,7 +102,7 @@ std::shared_ptr<Matrix> Localizer::fock_update(std::shared_ptr<Matrix> Fc) {
 
     if (nmo < 1) return Fc;
 
-    std::shared_ptr<Matrix> Fl = Matrix::triplet(U_, Fc, U_, true, false, false);
+    std::shared_ptr<Matrix> Fl = linalg::triplet(U_, Fc, U_, true, false, false);
     double** Fp = Fl->pointer();
     double** Lp = L_->pointer();
     double** Up = U_->pointer();

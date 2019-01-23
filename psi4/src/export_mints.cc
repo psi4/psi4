@@ -357,17 +357,16 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
                       "The name of the Vector. Used in printing.")
-        .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m",
+        .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", "m"_a)
+        .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", "h"_a,
              "m"_a)
-        .def("get", vector_getitem_2(&Vector::get),
-             "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
-        .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a,
+        .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a, "val"_a)
+        .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
-        .def("set", vector_setitem_2(&Vector::set),
-             "Sets a single element value located at m in irrep h", "h"_a, "m"_a, "val"_a)
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
-        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a)
+        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
+        .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
         .def("set_block", &Vector::set_block, "Set a vector block", "slice"_a, "block"_a)
@@ -562,13 +561,6 @@ void export_mints(py::module& m) {
         .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
         .def("power", &Matrix::power, "Takes the matrix to the alpha power with precision cutoff", "alpha"_a,
              "cutoff"_a = 1.0E-12)
-        .def_static("doublet", &Matrix::doublet,
-                    "Returns the multiplication of two matrices A and B, with options to transpose each beforehand",
-                    "A"_a, "B"_a, "transA"_a = false, "transB"_a = false)
-        .def_static(
-            "triplet", &Matrix::triplet,
-            "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
-            "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false)
         .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n",
              "h"_a, "m"_a, "n"_a)
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", "m"_a, "n"_a)
@@ -643,6 +635,14 @@ void export_mints(py::module& m) {
                  return ret;
              },
              py::return_value_policy::reference_internal);
+
+    // Free functions
+    m.def("doublet", &linalg::doublet,
+          "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a, "B"_a,
+          "transA"_a = false, "transB"_a = false);
+    m.def("triplet", &linalg::triplet,
+          "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
+          "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "Computes gradients of wavefunctions")
         .def(py::init<std::shared_ptr<Wavefunction>>())

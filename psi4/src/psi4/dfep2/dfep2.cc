@@ -190,7 +190,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
     // AO_Cvir_->print();
     // AO_CE->print();
 
-    SharedMatrix C_Full = Matrix::horzcat({AO_Cocc_, AO_Cvir_, AO_CE});
+    SharedMatrix C_Full = linalg::horzcat({AO_Cocc_, AO_Cvir_, AO_CE});
     C_Full->set_name("Full C matrix");
     // C_Full->print();
 

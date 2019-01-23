@@ -67,7 +67,7 @@ namespace scf {
 
 */
 
-class CUHF : public HF {
+class CUHF final : public HF {
    protected:
     SharedMatrix Dt_, Dt_old_;
     SharedMatrix Da_old_, Db_old_;
@@ -79,7 +79,7 @@ class CUHF : public HF {
     // Natural orbital occupations
     SharedVector No_;
 
-    void form_initial_F();
+    void form_initial_F() override;
     double compute_initial_E() override;
 
     void compute_spin_contamination() override;

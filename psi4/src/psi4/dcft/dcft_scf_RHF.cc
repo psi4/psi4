@@ -27,7 +27,7 @@
  */
 
 #include "dcft.h"
-#include "defines.h"
+#include "psi4/psifiles.h"
 
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libdpd/dpd.h"

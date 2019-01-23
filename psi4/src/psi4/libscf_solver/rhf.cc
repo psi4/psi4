@@ -389,10 +389,10 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
             Cv = Cvir_so;
         }
 
-        SharedMatrix tmp1 = Matrix::triplet(Co, F, Co, true, false, false);
-        SharedMatrix result = Matrix::doublet(tmp1, x_vec[i], false, false);
+        SharedMatrix tmp1 = linalg::triplet(Co, F, Co, true, false, false);
+        SharedMatrix result = linalg::doublet(tmp1, x_vec[i], false, false);
 
-        SharedMatrix tmp2 = Matrix::triplet(x_vec[i], Cv, F, false, true, false);
+        SharedMatrix tmp2 = linalg::triplet(x_vec[i], Cv, F, false, true, false);
         result->gemm(false, false, -1.0, tmp2, Cv, 1.0);
 
         ret.push_back(result);
@@ -455,7 +455,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
 
         Cl.push_back(Co);
-        SharedMatrix R = Matrix::doublet(Cv, x_vec[i], false, true);
+        SharedMatrix R = linalg::doublet(Cv, x_vec[i], false, true);
         R->scale(-1.0);
         Cr.push_back(R);
     }
@@ -471,7 +471,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     if (functional_->needs_xc()) {
         std::vector<SharedMatrix> Dx;
         for (size_t i = 0; i < x_vec.size(); i++) {
-            Dx.push_back(Matrix::doublet(Cl[i], Cr[i], false, true));
+            Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
             Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi()));
         }
         potential_->compute_Vx(Dx, Vx);
@@ -524,9 +524,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     } else if (return_basis == "MO") {
         for (size_t i = 0; i < ret.size(); i++) {
             if (c1_input_[i]) {
-                ret[i] = Matrix::triplet(Cocc_ao, ret[i], Cvir_ao, true, false, false);
+                ret[i] = linalg::triplet(Cocc_ao, ret[i], Cvir_ao, true, false, false);
             } else {
-                ret[i] = Matrix::triplet(Cocc_so, ret[i], Cvir_so, true, false, false);
+                ret[i] = linalg::triplet(Cocc_so, ret[i], Cvir_so, true, false, false);
             }
         }
     } else {
@@ -576,7 +576,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
         SharedMatrix Cocc_ao = Ca_subset("AO", "ALL");
         SharedMatrix F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        SharedMatrix IFock_ao = Matrix::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
+        SharedMatrix IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
         Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
         double* denomp = Precon_ao->pointer()[0];
@@ -592,7 +592,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     if (needs_so) {
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
         Dimension virpi = nmopi_ - nalphapi_;
-        SharedMatrix IFock_so = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
+        SharedMatrix IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
         Precon_so = std::make_shared<Matrix>("Precon", nirrep_, doccpi_, virpi);
 
         for (size_t h = 0; h < nirrep_; h++) {
@@ -802,7 +802,7 @@ int RHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
     SharedMatrix Cvir = Ca_subset("SO", "VIR");
 
     // Gradient RHS
-    SharedMatrix Gradient = Matrix::triplet(Cocc, Fa_, Cvir, true, false, false);
+    SharedMatrix Gradient = linalg::triplet(Cocc, Fa_, Cvir, true, false, false);
 
     // Make sure the MO gradient is reasonably small
     if (Gradient->absmax() > 0.3) {

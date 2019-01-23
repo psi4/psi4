@@ -336,7 +336,7 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     U->expm(4, true);
 
     // Need to build a new one here incase nmo != nso
-    SharedMatrix tmp = Matrix::doublet(C, U, false, false);
+    SharedMatrix tmp = linalg::doublet(C, U, false, false);
     C->copy(tmp);
 
     U.reset();

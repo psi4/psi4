@@ -158,8 +158,8 @@ void CIWavefunction::form_opdm() {
 
     SharedMatrix MO_Da = opdm_add_inactive(opdm_a_, 1.0, true);
     SharedMatrix MO_Db = opdm_add_inactive(opdm_b_, 1.0, true);
-    Da_ = Matrix::triplet(Ca_, MO_Da, Ca_, false, false, true);
-    Db_ = Matrix::triplet(Cb_, MO_Db, Cb_, false, false, true);
+    Da_ = linalg::triplet(Ca_, MO_Da, Ca_, false, false, true);
+    Db_ = linalg::triplet(Cb_, MO_Db, Cb_, false, false, true);
 
     opdm_called_ = true;
 }
@@ -570,7 +570,7 @@ void CIWavefunction::ci_nat_orbs() {
 
     // get a copy of the active orbitals and rotate them
     SharedMatrix Cactv = get_orbitals("ACT");
-    SharedMatrix Cnat = Matrix::doublet(Cactv, NO_vecs);
+    SharedMatrix Cnat = linalg::doublet(Cactv, NO_vecs);
 
     // set the active block of Ca_
     set_orbitals("ACT", Cnat);
@@ -595,7 +595,7 @@ void CIWavefunction::ci_nat_orbs() {
 
             // get a copy of the doubly occupied orbitals and rotate them
             SharedMatrix Cocc = get_orbitals("DOCC");
-            SharedMatrix Cocc_semi = Matrix::doublet(Cocc, evecs_o);
+            SharedMatrix Cocc_semi = linalg::doublet(Cocc, evecs_o);
 
             // set the doubly occupied orbitals block of Ca_
             set_orbitals("DOCC", Cocc_semi);
@@ -609,7 +609,7 @@ void CIWavefunction::ci_nat_orbs() {
 
             // get a copy of the virtual orbitals and rotate them
             SharedMatrix Cvir = get_orbitals("VIR");
-            SharedMatrix Cvir_semi = Matrix::doublet(Cvir, evecs_v);
+            SharedMatrix Cvir_semi = linalg::doublet(Cvir, evecs_v);
 
             // set the virtual orbitals block of Ca_
             set_orbitals("VIR", Cvir_semi);

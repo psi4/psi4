@@ -48,6 +48,9 @@ enum PsiReturnType { Success, Failure, Balk, EndLoop };
 // Very useful regex for matching floating point numbers
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
+// Hard zero
+#define PSI_ZERO 1.0E-14
+
 void die_if_not_converged();
 
 }  // End namespace psi

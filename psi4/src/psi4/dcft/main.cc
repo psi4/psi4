@@ -26,17 +26,15 @@
  * @END LICENSE
  */
 
-#include "defines.h"
 #include "dcft.h"
 
-#include "psi4/psi4-dec.h"
+#include <cstdio>
+#include <cstdlib>
+
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
-
-#include <cstdio>
-#include <cstdlib>
 
 using namespace psi;
 

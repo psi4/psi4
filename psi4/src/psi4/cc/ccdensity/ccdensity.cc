@@ -367,7 +367,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
         /* Transform Da/b to so basis and set in wfn */
         if (ref_wfn->same_a_b_dens()) {
             Pa->scale(0.5);
-            auto Pa_so = Matrix::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
+            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
             if (i == 0) {
                 auto ref_Da_so = ref_wfn->Da();
                 ref_Da_so->copy(Pa_so);
@@ -375,8 +375,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 ref_wfn->set_array_variable("CC ROOT " + std::to_string(i) + " Da", Pa_so);
             }
         } else {
-            auto Pa_so = Matrix::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
-            auto Pb_so = Matrix::triplet(ref_wfn->Cb(), Pb, ref_wfn->Cb(), false, false, true);
+            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
+            auto Pb_so = linalg::triplet(ref_wfn->Cb(), Pb, ref_wfn->Cb(), false, false, true);
             if (i == 0) {
                 auto ref_Da_so = ref_wfn->Da();
                 auto ref_Db_so = ref_wfn->Db();

@@ -27,7 +27,7 @@
  */
 
 #include "dcft.h"
-#include "defines.h"
+#include "psi4/psifiles.h"
 
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
@@ -2246,7 +2246,7 @@ bool DCFTSolver::augment_b(double *vec, double tol) {
         std::vector<SharedMatrix> mats;
         mats.push_back(b_);
         mats.push_back(bprime);
-        b_ = Matrix::vertcat(mats);
+        b_ = linalg::vertcat(mats);
         b_->set_name("B");
         b_dim_++;
         return true;

@@ -96,10 +96,10 @@ OrbitalSpace OrbitalSpace::transform(const OrbitalSpace &A, const std::shared_pt
     SBB->set_name("SBB^-1");
 
     // 2. Form T
-    SharedMatrix I = Matrix::create("I = SAB SBB SBA", SBA->colspi(), SBA->colspi());
+    auto I = std::make_shared<Matrix>("I = SAB SBB SBA", SBA->colspi(), SBA->colspi());
     I->transform(SBB, SBA);
 
-    SharedMatrix T = Matrix::create("T", A.dim(), A.dim());
+    auto T = std::make_shared<Matrix>("T", A.dim(), A.dim());
     T->transform(I, A.C());
     I.reset();  // release memory
 
@@ -108,15 +108,15 @@ OrbitalSpace OrbitalSpace::transform(const OrbitalSpace &A, const std::shared_pt
 
     // 4. Cb = [Sbb]^-1 Sba] Ca T^{-1/2}
     // 4a. Ca T^{-1/2}
-    SharedMatrix CaT = Matrix::create("Ca*T^{-1/2}", A.C()->rowspi(), A.C()->colspi());
+    auto CaT = std::make_shared<Matrix>("Ca*T^{-1/2}", A.C()->rowspi(), A.C()->colspi());
     CaT->gemm(false, false, 1.0, A.C(), T, 0.0);
 
     // 4b. Sba * 4a
-    SharedMatrix SbaCaT = Matrix::create("SbaCaT", SBB->rowspi(), A.C()->colspi());
+    auto SbaCaT = std::make_shared<Matrix>("SbaCaT", SBB->rowspi(), A.C()->colspi());
     SbaCaT->gemm(false, false, 1.0, SBA, CaT, 0.0);
 
     // 4c. [Sbb]^-1 * 4b
-    SharedMatrix Cb = Matrix::create("Cb", SBB->rowspi(), A.C()->colspi());
+    auto Cb = std::make_shared<Matrix>("Cb", SBB->rowspi(), A.C()->colspi());
     Cb->gemm(false, false, 1.0, SBB, SbaCaT, 0.0);
 
     auto i = std::make_shared<IntegralFactory>(B, B, B, B);
@@ -172,9 +172,9 @@ OrbitalSpace orthogonalize(const std::string &id, const std::string &name, const
 
     SharedMatrix overlap = OrbitalSpace::overlap(bs, bs);
     Dimension SODIM = overlap->rowspi();
-    SharedMatrix evecs = Matrix::create("evecs", SODIM, SODIM);
-    SharedMatrix sqrtm = Matrix::create("evecs", SODIM, SODIM);
-    SharedVector evals = Vector::create("evals", SODIM);
+    auto evecs = std::make_shared<Matrix>("evecs", SODIM, SODIM);
+    auto sqrtm = std::make_shared<Matrix>("evecs", SODIM, SODIM);
+    auto evals = std::make_shared<Vector>("evals", SODIM);
 
     int nlindep = 0;
     overlap->diagonalize(evecs, evals);
@@ -210,7 +210,7 @@ OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpac
 
     // O12 = O12
     SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
-    SharedMatrix C12 = Matrix::create("C12", space1.C()->colspi(), space2.C()->colspi());
+    auto C12 = std::make_shared<Matrix>("C12", space1.C()->colspi(), space2.C()->colspi());
 
     // C12 = C1t * S12 * C2
     // TODO: Try using the svd_a function of Matrix, however it calls dgesdd not dgesvd.
@@ -223,12 +223,12 @@ OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpac
 #else
     // We're interested in the right side vectors (V) of an SVD solution.
     // We don't need a full SVD solution just part of it. Do it by hand:
-    SharedMatrix D11 = Matrix::create("D11", C12->colspi(), C12->colspi());
+    auto D11 = std::make_shared<Matrix>("D11", C12->colspi(), C12->colspi());
     D11->gemm(true, false, 1.0, C12, C12, 0.0);
     //        D11->print();
 
-    SharedMatrix V11 = Matrix::create("V11", D11->rowspi(), D11->colspi());
-    SharedVector E1 = Vector::create("E1", D11->colspi());
+    auto V11 = std::make_shared<Matrix>("V11", D11->rowspi(), D11->colspi());
+    auto E1 = std::make_shared<Vector>("E1", D11->colspi());
     D11->diagonalize(V11, E1);
     //        V11->eivprint(E1);
 
@@ -251,7 +251,7 @@ OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpac
     SharedMatrix V = V11->get_block({dim_zero, V11->rowspi()}, {dim_zero, zeros});
 
     // Half-back transform to space2
-    SharedMatrix newC = Matrix::create("Transformation matrix", space2.C()->rowspi(), zeros);
+    auto newC = std::make_shared<Matrix>("Transformation matrix", space2.C()->rowspi(), zeros);
     newC->gemm(false, false, 1.0, space2.C(), V, 0.0);
 
     return OrbitalSpace(id, name, newC, space2.basisset(), space2.integral());

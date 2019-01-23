@@ -218,7 +218,7 @@ def mcscf_solver(ref_wfn):
 
             # Figure out DIIS error vector
             if mcscf_diis_error_type == "GRAD":
-                error = core.Matrix.triplet(ciwfn.get_orbitals("OA"),
+                error = core.triplet(ciwfn.get_orbitals("OA"),
                                             mcscf_obj.gradient(),
                                             ciwfn.get_orbitals("AV"),
                                             False, False, True)
@@ -238,13 +238,13 @@ def mcscf_solver(ref_wfn):
             xstep.axpy(-1.0, total_step)
             xstep.scale(-1.0)
             Ustep = mcscf_obj.form_rotation_matrix(xstep)
-            totalU = core.Matrix.doublet(totalU, Ustep, False, False)
+            totalU = core.doublet(totalU, Ustep, False, False)
 
         # Build the rotation directly (not recommended)
         # orbs_mat = mcscf_obj.Ck(start_orbs, total_step)
 
         # Finally rotate and set orbitals
-        orbs_mat = core.Matrix.doublet(start_orbs, totalU, False, False)
+        orbs_mat = core.doublet(start_orbs, totalU, False, False)
         ciwfn.set_orbitals("ROT", orbs_mat)
 
         # Figure out what the next step should be

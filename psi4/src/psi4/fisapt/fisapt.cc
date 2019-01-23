@@ -579,7 +579,7 @@ void FISAPT::nuclear() {
     }
 
     /// Nuclear repulsion for A, B, C,
-    std::shared_ptr<Matrix> Enucs = Matrix::triplet(Zs, Rinv, Zs, true, false, false);
+    std::shared_ptr<Matrix> Enucs = linalg::triplet(Zs, Rinv, Zs, true, false, false);
     Enucs->scale(0.5);
     Enucs->set_name("E Nuc");
     matrices_["E NUC"] = Enucs;
@@ -650,7 +650,7 @@ void FISAPT::scf() {
     Xs.push_back(matrices_["LoccA"]);
     Xs.push_back(matrices_["LoccB"]);
     Xs.push_back(matrices_["Cvir"]);
-    matrices_["XC"] = Matrix::horzcat(Xs);
+    matrices_["XC"] = linalg::horzcat(Xs);
     matrices_["XC"]->set_name("XC");
 
     // => Embedding Potential for C <= //
@@ -806,12 +806,12 @@ void FISAPT::unify() {
     std::shared_ptr<Matrix> Cocc_B = matrices_["Cocc0B"];
     std::shared_ptr<Matrix> Cocc_C = matrices_["LoccC"];
 
-    std::shared_ptr<Matrix> D_A = Matrix::doublet(Cocc_A, Cocc_A, false, true);
-    std::shared_ptr<Matrix> D_B = Matrix::doublet(Cocc_B, Cocc_B, false, true);
+    std::shared_ptr<Matrix> D_A = linalg::doublet(Cocc_A, Cocc_A, false, true);
+    std::shared_ptr<Matrix> D_B = linalg::doublet(Cocc_B, Cocc_B, false, true);
     std::shared_ptr<Matrix> D_C(D_A->clone());
     D_C->zero();
     if (Cocc_C->colspi()[0] > 0) {
-        D_C = Matrix::doublet(Cocc_C, Cocc_C, false, true);
+        D_C = linalg::doublet(Cocc_C, Cocc_C, false, true);
     }
 
     matrices_["D_A"] = D_A;
@@ -819,16 +819,16 @@ void FISAPT::unify() {
     matrices_["D_C"] = D_C;
 
     // Incorrect for this application: C is not frozen in these orbitals
-    // std::shared_ptr<Matrix> P_A = Matrix::doublet(matrices_["Cvir0A"], matrices_["Cvir0A"], false, true);
-    // std::shared_ptr<Matrix> P_B = Matrix::doublet(matrices_["Cvir0B"], matrices_["Cvir0B"], false, true);
+    // std::shared_ptr<Matrix> P_A = linalg::doublet(matrices_["Cvir0A"], matrices_["Cvir0A"], false, true);
+    // std::shared_ptr<Matrix> P_B = linalg::doublet(matrices_["Cvir0B"], matrices_["Cvir0B"], false, true);
 
     // PA and PB are used only to define the complement of DA and DB in the DCBS
     std::shared_ptr<Matrix> P_A =
-        Matrix::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
+        linalg::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
     P_A->subtract(D_A);
 
     std::shared_ptr<Matrix> P_B =
-        Matrix::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
+        linalg::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
     P_B->subtract(D_B);
 
     matrices_["P_A"] = P_A;
@@ -1001,8 +1001,8 @@ void FISAPT::dHF() {
     // Compute density from A HF localized orbitals
     std::shared_ptr<Matrix> LoccA = matrices_["LoccA"];
     std::shared_ptr<Matrix> LoccB = matrices_["LoccB"];
-    std::shared_ptr<Matrix> LD_A = Matrix::doublet(LoccA, LoccA, false, true);
-    std::shared_ptr<Matrix> LD_B = Matrix::doublet(LoccB, LoccB, false, true);
+    std::shared_ptr<Matrix> LD_A = linalg::doublet(LoccA, LoccA, false, true);
+    std::shared_ptr<Matrix> LD_B = linalg::doublet(LoccB, LoccB, false, true);
 
     // Get J and K from A and B HF localized orbitals while we are at it
     std::vector<SharedMatrix>& Cl = jk_->C_left();
@@ -1227,7 +1227,7 @@ void FISAPT::exch() {
 
     // ==> Exchange Terms (S^2, MCBS or DCBS) <== //
 
-    std::shared_ptr<Matrix> C_O = Matrix::triplet(D_B, S, Cocc_A);
+    std::shared_ptr<Matrix> C_O = linalg::triplet(D_B, S, Cocc_A);
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
     const std::vector<SharedMatrix>& J = jk_->J();
@@ -1243,17 +1243,17 @@ void FISAPT::exch() {
     std::vector<double> Exch10_2M_terms;
     Exch10_2M_terms.resize(6);
     Exch10_2M_terms[0] -= 2.0 * D_A->vector_dot(K_B);
-    Exch10_2M_terms[1] -= 2.0 * Matrix::triplet(D_A, S, D_B)->vector_dot(V_A);
-    Exch10_2M_terms[1] -= 4.0 * Matrix::triplet(D_A, S, D_B)->vector_dot(J_A);
-    Exch10_2M_terms[1] += 2.0 * Matrix::triplet(D_A, S, D_B)->vector_dot(K_A);
-    Exch10_2M_terms[2] -= 2.0 * Matrix::triplet(D_B, S, D_A)->vector_dot(V_B);
-    Exch10_2M_terms[2] -= 4.0 * Matrix::triplet(D_B, S, D_A)->vector_dot(J_B);
-    Exch10_2M_terms[2] += 2.0 * Matrix::triplet(D_B, S, D_A)->vector_dot(K_B);
-    Exch10_2M_terms[3] += 2.0 * Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, D_B)->vector_dot(V_A);
-    Exch10_2M_terms[3] += 4.0 * Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, D_B)->vector_dot(J_A);
-    Exch10_2M_terms[4] += 2.0 * Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, D_A)->vector_dot(V_B);
-    Exch10_2M_terms[4] += 4.0 * Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, D_A)->vector_dot(J_B);
-    Exch10_2M_terms[5] -= 2.0 * Matrix::triplet(D_A, S, D_B)->vector_dot(K_O);
+    Exch10_2M_terms[1] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(V_A);
+    Exch10_2M_terms[1] -= 4.0 * linalg::triplet(D_A, S, D_B)->vector_dot(J_A);
+    Exch10_2M_terms[1] += 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_A);
+    Exch10_2M_terms[2] -= 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(V_B);
+    Exch10_2M_terms[2] -= 4.0 * linalg::triplet(D_B, S, D_A)->vector_dot(J_B);
+    Exch10_2M_terms[2] += 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(K_B);
+    Exch10_2M_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(V_A);
+    Exch10_2M_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(J_A);
+    Exch10_2M_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(V_B);
+    Exch10_2M_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(J_B);
+    Exch10_2M_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_O);
     for (int k = 0; k < Exch10_2M_terms.size(); k++) {
         Exch10_2M += Exch10_2M_terms[k];
     }
@@ -1269,7 +1269,7 @@ void FISAPT::exch() {
 
     // => K_AS <= //
 
-    std::shared_ptr<Matrix> C_AS = Matrix::triplet(P_B, S, Cocc_A);
+    std::shared_ptr<Matrix> C_AS = linalg::triplet(P_B, S, Cocc_A);
     Cl.clear();
     Cr.clear();
     Cl.push_back(Cocc_A);
@@ -1282,11 +1282,11 @@ void FISAPT::exch() {
     double Exch10_2 = 0.0;
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
-    Exch10_2_terms[0] -= 2.0 * Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, P_A)->vector_dot(V_B);
-    Exch10_2_terms[0] -= 4.0 * Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, P_A)->vector_dot(J_B);
-    Exch10_2_terms[1] -= 2.0 * Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, P_B)->vector_dot(V_A);
-    Exch10_2_terms[1] -= 4.0 * Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, P_B)->vector_dot(J_A);
-    Exch10_2_terms[2] -= 2.0 * Matrix::triplet(P_A, S, D_B)->vector_dot(K_AS);
+    Exch10_2_terms[0] -= 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, P_A)->vector_dot(V_B);
+    Exch10_2_terms[0] -= 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, P_A)->vector_dot(J_B);
+    Exch10_2_terms[1] -= 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, P_B)->vector_dot(V_A);
+    Exch10_2_terms[1] -= 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, P_B)->vector_dot(J_A);
+    Exch10_2_terms[2] -= 2.0 * linalg::triplet(P_A, S, D_B)->vector_dot(K_AS);
     for (int k = 0; k < Exch10_2_terms.size(); k++) {
         Exch10_2 += Exch10_2_terms[k];
     }
@@ -1306,7 +1306,7 @@ void FISAPT::exch() {
     int nb = matrices_["Cocc0B"]->colspi()[0];
     int nbf = matrices_["Cocc0A"]->rowspi()[0];
 
-    std::shared_ptr<Matrix> Sab = Matrix::triplet(matrices_["Cocc0A"], S, matrices_["Cocc0B"], true, false, false);
+    std::shared_ptr<Matrix> Sab = linalg::triplet(matrices_["Cocc0A"], S, matrices_["Cocc0B"], true, false, false);
     double** Sabp = Sab->pointer();
     auto T = std::make_shared<Matrix>("T", na + nb, na + nb);
     T->identity();
@@ -1356,10 +1356,10 @@ void FISAPT::exch() {
     std::shared_ptr<Matrix> J_T_AB_n = J[1];
     std::shared_ptr<Matrix> K_T_AB_n = K[1];
 
-    std::shared_ptr<Matrix> T_A_n = Matrix::doublet(matrices_["Cocc0A"], C_T_A_n, false, true);
-    std::shared_ptr<Matrix> T_B_n = Matrix::doublet(matrices_["Cocc0B"], C_T_B_n, false, true);
-    std::shared_ptr<Matrix> T_BA_n = Matrix::doublet(matrices_["Cocc0B"], C_T_BA_n, false, true);
-    std::shared_ptr<Matrix> T_AB_n = Matrix::doublet(matrices_["Cocc0A"], C_T_AB_n, false, true);
+    std::shared_ptr<Matrix> T_A_n = linalg::doublet(matrices_["Cocc0A"], C_T_A_n, false, true);
+    std::shared_ptr<Matrix> T_B_n = linalg::doublet(matrices_["Cocc0B"], C_T_B_n, false, true);
+    std::shared_ptr<Matrix> T_BA_n = linalg::doublet(matrices_["Cocc0B"], C_T_BA_n, false, true);
+    std::shared_ptr<Matrix> T_AB_n = linalg::doublet(matrices_["Cocc0A"], C_T_AB_n, false, true);
 
     double Exch10_n = 0.0;
     std::vector<double> Exch10_n_terms;
@@ -1433,9 +1433,9 @@ void FISAPT::ind() {
 
     // => ExchInd perturbations <= //
 
-    std::shared_ptr<Matrix> C_O_A = Matrix::triplet(D_B, S, matrices_["Cocc_A"]);
-    std::shared_ptr<Matrix> C_P_A = Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, matrices_["Cocc_B"]);
-    std::shared_ptr<Matrix> C_P_B = Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, matrices_["Cocc_A"]);
+    std::shared_ptr<Matrix> C_O_A = linalg::triplet(D_B, S, matrices_["Cocc_A"]);
+    std::shared_ptr<Matrix> C_P_A = linalg::triplet(linalg::triplet(D_B, S, D_A), S, matrices_["Cocc_B"]);
+    std::shared_ptr<Matrix> C_P_B = linalg::triplet(linalg::triplet(D_A, S, D_B), S, matrices_["Cocc_A"]);
 
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
@@ -1688,7 +1688,7 @@ std::shared_ptr<Matrix> FISAPT::build_ind_pot(std::map<std::string, std::shared_
     W->scale(2.0);
     W->add(V_B);
 
-    return Matrix::triplet(Ca, W, Cr, true, false, false);
+    return linalg::triplet(Ca, W, Cr, true, false, false);
 }
 std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
     std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
@@ -1717,7 +1717,7 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::sh
     W->scale(-1.0);
 
     // 2
-    T = Matrix::triplet(S, D_B, J_A);
+    T = linalg::triplet(S, D_B, J_A);
     T->scale(-2.0);
     W->add(T);
 
@@ -1732,32 +1732,32 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::sh
     W->add(T);
 
     // 5
-    T = Matrix::triplet(S, D_B, K_A);
+    T = linalg::triplet(S, D_B, K_A);
     T->scale(1.0);
     W->add(T);
 
     // 6
-    T = Matrix::triplet(J_B, D_B, S);
+    T = linalg::triplet(J_B, D_B, S);
     T->scale(-2.0);
     W->add(T);
 
     // 7
-    T = Matrix::triplet(K_B, D_B, S);
+    T = linalg::triplet(K_B, D_B, S);
     T->scale(1.0);
     W->add(T);
 
     // 8
-    T = Matrix::triplet(Matrix::triplet(S, D_B, J_A), D_B, S);
+    T = linalg::triplet(linalg::triplet(S, D_B, J_A), D_B, S);
     T->scale(2.0);
     W->add(T);
 
     // 9
-    T = Matrix::triplet(Matrix::triplet(J_B, D_A, S), D_B, S);
+    T = linalg::triplet(linalg::triplet(J_B, D_A, S), D_B, S);
     T->scale(2.0);
     W->add(T);
 
     // 10
-    T = Matrix::triplet(K_O, D_B, S);
+    T = linalg::triplet(K_O, D_B, S);
     T->scale(-1.0);
     W->add(T);
 
@@ -1767,41 +1767,41 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::sh
     W->add(T);
 
     // 12
-    T = Matrix::triplet(Matrix::triplet(S, D_B, S), D_A, J_B);
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, J_B);
     T->scale(2.0);
     W->add(T);
 
     // 13
-    T = Matrix::triplet(S, D_B, K_O, false, false, true);
+    T = linalg::triplet(S, D_B, K_O, false, false, true);
     T->scale(-1.0);
     W->add(T);
 
     // 14
-    T = Matrix::triplet(S, D_B, V_A);
+    T = linalg::triplet(S, D_B, V_A);
     T->scale(-1.0);
     W->add(T);
 
     // 15
-    T = Matrix::triplet(V_B, D_B, S);
+    T = linalg::triplet(V_B, D_B, S);
     T->scale(-1.0);
     W->add(T);
 
     // 16
-    T = Matrix::triplet(Matrix::triplet(S, D_B, V_A), D_B, S);
+    T = linalg::triplet(linalg::triplet(S, D_B, V_A), D_B, S);
     T->scale(1.0);
     W->add(T);
 
     // 17
-    T = Matrix::triplet(Matrix::triplet(V_B, D_A, S), D_B, S);
+    T = linalg::triplet(linalg::triplet(V_B, D_A, S), D_B, S);
     T->scale(1.0);
     W->add(T);
 
     // 18
-    T = Matrix::triplet(Matrix::triplet(S, D_B, S), D_A, V_B);
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, V_B);
     T->scale(1.0);
     W->add(T);
 
-    return Matrix::triplet(Ca, W, Cr, true, false, false);
+    return linalg::triplet(Ca, W, Cr, true, false, false);
 }
 
 void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
@@ -1859,75 +1859,75 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 
     // => Auxiliary C matrices <= //
 
-    std::shared_ptr<Matrix> Cr1 = Matrix::triplet(D_B, S, Cvir0A);
+    std::shared_ptr<Matrix> Cr1 = linalg::triplet(D_B, S, Cvir0A);
     Cr1->scale(-1.0);
     Cr1->add(Cvir0A);
-    std::shared_ptr<Matrix> Cs1 = Matrix::triplet(D_A, S, Cvir0B);
+    std::shared_ptr<Matrix> Cs1 = linalg::triplet(D_A, S, Cvir0B);
     Cs1->scale(-1.0);
     Cs1->add(Cvir0B);
-    std::shared_ptr<Matrix> Ca2 = Matrix::triplet(D_B, S, Cocc0A);
-    std::shared_ptr<Matrix> Cb2 = Matrix::triplet(D_A, S, Cocc0B);
-    std::shared_ptr<Matrix> Cr3 = Matrix::triplet(D_B, S, Cvir0A);
-    std::shared_ptr<Matrix> CrX = Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, Cvir0A);
+    std::shared_ptr<Matrix> Ca2 = linalg::triplet(D_B, S, Cocc0A);
+    std::shared_ptr<Matrix> Cb2 = linalg::triplet(D_A, S, Cocc0B);
+    std::shared_ptr<Matrix> Cr3 = linalg::triplet(D_B, S, Cvir0A);
+    std::shared_ptr<Matrix> CrX = linalg::triplet(linalg::triplet(D_A, S, D_B), S, Cvir0A);
     Cr3->subtract(CrX);
     Cr3->scale(2.0);
-    std::shared_ptr<Matrix> Cs3 = Matrix::triplet(D_A, S, Cvir0B);
-    std::shared_ptr<Matrix> CsX = Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, Cvir0B);
+    std::shared_ptr<Matrix> Cs3 = linalg::triplet(D_A, S, Cvir0B);
+    std::shared_ptr<Matrix> CsX = linalg::triplet(linalg::triplet(D_B, S, D_A), S, Cvir0B);
     Cs3->subtract(CsX);
     Cs3->scale(2.0);
-    std::shared_ptr<Matrix> Ca4 = Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, Cocc0A);
+    std::shared_ptr<Matrix> Ca4 = linalg::triplet(linalg::triplet(D_A, S, D_B), S, Cocc0A);
     Ca4->scale(-2.0);
-    std::shared_ptr<Matrix> Cb4 = Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, Cocc0B);
+    std::shared_ptr<Matrix> Cb4 = linalg::triplet(linalg::triplet(D_B, S, D_A), S, Cocc0B);
     Cb4->scale(-2.0);
 
     // => Auxiliary V matrices <= //
 
-    std::shared_ptr<Matrix> Jbr = Matrix::triplet(Cocc0B, J_A, Cvir0A, true, false, false);
+    std::shared_ptr<Matrix> Jbr = linalg::triplet(Cocc0B, J_A, Cvir0A, true, false, false);
     Jbr->scale(2.0);
-    std::shared_ptr<Matrix> Kbr = Matrix::triplet(Cocc0B, K_A, Cvir0A, true, false, false);
+    std::shared_ptr<Matrix> Kbr = linalg::triplet(Cocc0B, K_A, Cvir0A, true, false, false);
     Kbr->scale(-1.0);
 
-    std::shared_ptr<Matrix> Jas = Matrix::triplet(Cocc0A, J_B, Cvir0B, true, false, false);
+    std::shared_ptr<Matrix> Jas = linalg::triplet(Cocc0A, J_B, Cvir0B, true, false, false);
     Jas->scale(2.0);
-    std::shared_ptr<Matrix> Kas = Matrix::triplet(Cocc0A, K_B, Cvir0B, true, false, false);
+    std::shared_ptr<Matrix> Kas = linalg::triplet(Cocc0A, K_B, Cvir0B, true, false, false);
     Kas->scale(-1.0);
 
-    std::shared_ptr<Matrix> KOas = Matrix::triplet(Cocc0A, K_O, Cvir0B, true, false, false);
+    std::shared_ptr<Matrix> KOas = linalg::triplet(Cocc0A, K_O, Cvir0B, true, false, false);
     KOas->scale(1.0);
-    std::shared_ptr<Matrix> KObr = Matrix::triplet(Cocc0B, K_O, Cvir0A, true, true, false);
+    std::shared_ptr<Matrix> KObr = linalg::triplet(Cocc0B, K_O, Cvir0A, true, true, false);
     KObr->scale(1.0);
 
-    std::shared_ptr<Matrix> JBas = Matrix::triplet(Matrix::triplet(Cocc0A, S, D_B, true, false, false), J_A, Cvir0B);
+    std::shared_ptr<Matrix> JBas = linalg::triplet(linalg::triplet(Cocc0A, S, D_B, true, false, false), J_A, Cvir0B);
     JBas->scale(-2.0);
-    std::shared_ptr<Matrix> JAbr = Matrix::triplet(Matrix::triplet(Cocc0B, S, D_A, true, false, false), J_B, Cvir0A);
+    std::shared_ptr<Matrix> JAbr = linalg::triplet(linalg::triplet(Cocc0B, S, D_A, true, false, false), J_B, Cvir0A);
     JAbr->scale(-2.0);
 
-    std::shared_ptr<Matrix> Jbs = Matrix::triplet(Cocc0B, J_A, Cvir0B, true, false, false);
+    std::shared_ptr<Matrix> Jbs = linalg::triplet(Cocc0B, J_A, Cvir0B, true, false, false);
     Jbs->scale(4.0);
-    std::shared_ptr<Matrix> Jar = Matrix::triplet(Cocc0A, J_B, Cvir0A, true, false, false);
+    std::shared_ptr<Matrix> Jar = linalg::triplet(Cocc0A, J_B, Cvir0A, true, false, false);
     Jar->scale(4.0);
 
-    std::shared_ptr<Matrix> JAas = Matrix::triplet(Matrix::triplet(Cocc0A, J_B, D_A, true, false, false), S, Cvir0B);
+    std::shared_ptr<Matrix> JAas = linalg::triplet(linalg::triplet(Cocc0A, J_B, D_A, true, false, false), S, Cvir0B);
     JAas->scale(-2.0);
-    std::shared_ptr<Matrix> JBbr = Matrix::triplet(Matrix::triplet(Cocc0B, J_A, D_B, true, false, false), S, Cvir0A);
+    std::shared_ptr<Matrix> JBbr = linalg::triplet(linalg::triplet(Cocc0B, J_A, D_B, true, false, false), S, Cvir0A);
     JBbr->scale(-2.0);
 
     // Get your signs right Hesselmann!
-    std::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc0B, V_A, Cvir0B, true, false, false);
+    std::shared_ptr<Matrix> Vbs = linalg::triplet(Cocc0B, V_A, Cvir0B, true, false, false);
     Vbs->scale(2.0);
-    std::shared_ptr<Matrix> Var = Matrix::triplet(Cocc0A, V_B, Cvir0A, true, false, false);
+    std::shared_ptr<Matrix> Var = linalg::triplet(Cocc0A, V_B, Cvir0A, true, false, false);
     Var->scale(2.0);
-    std::shared_ptr<Matrix> VBas = Matrix::triplet(Matrix::triplet(Cocc0A, S, D_B, true, false, false), V_A, Cvir0B);
+    std::shared_ptr<Matrix> VBas = linalg::triplet(linalg::triplet(Cocc0A, S, D_B, true, false, false), V_A, Cvir0B);
     VBas->scale(-1.0);
-    std::shared_ptr<Matrix> VAbr = Matrix::triplet(Matrix::triplet(Cocc0B, S, D_A, true, false, false), V_B, Cvir0A);
+    std::shared_ptr<Matrix> VAbr = linalg::triplet(linalg::triplet(Cocc0B, S, D_A, true, false, false), V_B, Cvir0A);
     VAbr->scale(-1.0);
-    std::shared_ptr<Matrix> VRas = Matrix::triplet(Matrix::triplet(Cocc0A, V_B, P_A, true, false, false), S, Cvir0B);
+    std::shared_ptr<Matrix> VRas = linalg::triplet(linalg::triplet(Cocc0A, V_B, P_A, true, false, false), S, Cvir0B);
     VRas->scale(1.0);
-    std::shared_ptr<Matrix> VSbr = Matrix::triplet(Matrix::triplet(Cocc0B, V_A, P_B, true, false, false), S, Cvir0A);
+    std::shared_ptr<Matrix> VSbr = linalg::triplet(linalg::triplet(Cocc0B, V_A, P_B, true, false, false), S, Cvir0A);
     VSbr->scale(1.0);
 
-    std::shared_ptr<Matrix> Sas = Matrix::triplet(Cocc0A, S, Cvir0B, true, false, false);
-    std::shared_ptr<Matrix> Sbr = Matrix::triplet(Cocc0B, S, Cvir0A, true, false, false);
+    std::shared_ptr<Matrix> Sas = linalg::triplet(Cocc0A, S, Cvir0B, true, false, false);
+    std::shared_ptr<Matrix> Sbr = linalg::triplet(Cocc0B, S, Cvir0A, true, false, false);
 
     std::shared_ptr<Matrix> Qbr(Jbr->clone());
     Qbr->zero();
@@ -1949,8 +1949,8 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     Qas->add(VBas);
     Qas->add(VRas);
 
-    std::shared_ptr<Matrix> SBar = Matrix::triplet(Matrix::triplet(Cocc0A, S, D_B, true, false, false), S, Cvir0A);
-    std::shared_ptr<Matrix> SAbs = Matrix::triplet(Matrix::triplet(Cocc0B, S, D_A, true, false, false), S, Cvir0B);
+    std::shared_ptr<Matrix> SBar = linalg::triplet(linalg::triplet(Cocc0A, S, D_B, true, false, false), S, Cvir0A);
+    std::shared_ptr<Matrix> SAbs = linalg::triplet(linalg::triplet(Cocc0B, S, D_A, true, false, false), S, Cvir0B);
 
     std::shared_ptr<Matrix> Qar(Jar->clone());
     Qar->zero();
@@ -2367,8 +2367,8 @@ void FISAPT::raw_plot(const std::string& filepath) {
     std::shared_ptr<Matrix> D_C = matrices_["D_C"];
 
     /// Fully interacting wavefunctions
-    std::shared_ptr<Matrix> DFA = Matrix::doublet(matrices_["LoccA"], matrices_["LoccA"], false, true);
-    std::shared_ptr<Matrix> DFB = Matrix::doublet(matrices_["LoccB"], matrices_["LoccB"], false, true);
+    std::shared_ptr<Matrix> DFA = linalg::doublet(matrices_["LoccA"], matrices_["LoccA"], false, true);
+    std::shared_ptr<Matrix> DFB = linalg::doublet(matrices_["LoccB"], matrices_["LoccB"], false, true);
 
     // => Density Fields <= //
 
@@ -2626,7 +2626,7 @@ void FISAPT::felst() {
         dfh_->fill_tensor("Abb", QbCp[b], {b, b + 1}, {b, b + 1});
     }
 
-    std::shared_ptr<Matrix> Elst10_3 = Matrix::doublet(QaC, QbC, false, true);
+    std::shared_ptr<Matrix> Elst10_3 = linalg::doublet(QaC, QbC, false, true);
     double** Elst10_3p = Elst10_3->pointer();
     for (int a = 0; a < na; a++) {
         for (int b = 0; b < nb; b++) {
@@ -2659,7 +2659,7 @@ void FISAPT::felst() {
         Zxyz2p[0][3] = mol->z(A);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbb =
-            Matrix::triplet(matrices_["Locc0B"], Vtemp2, matrices_["Locc0B"], true, false, false);
+            linalg::triplet(matrices_["Locc0B"], Vtemp2, matrices_["Locc0B"], true, false, false);
         double** Vbbp = Vbb->pointer();
         for (int b = 0; b < nb; b++) {
             double E = 2.0 * Vbbp[b][b];
@@ -2679,7 +2679,7 @@ void FISAPT::felst() {
         Zxyz2p[0][3] = mol->z(B);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vaa =
-            Matrix::triplet(matrices_["Locc0A"], Vtemp2, matrices_["Locc0A"], true, false, false);
+            linalg::triplet(matrices_["Locc0A"], Vtemp2, matrices_["Locc0A"], true, false, false);
         double** Vaap = Vaa->pointer();
         for (int a = 0; a < na; a++) {
             double E = 2.0 * Vaap[a][a];
@@ -2778,8 +2778,8 @@ void FISAPT::fexch() {
     W_B->scale(2.0);
     W_B->add(V_B);
 
-    std::shared_ptr<Matrix> WAbs = Matrix::triplet(LoccB, W_A, CvirB, true, false, false);
-    std::shared_ptr<Matrix> WBar = Matrix::triplet(LoccA, W_B, CvirA, true, false, false);
+    std::shared_ptr<Matrix> WAbs = linalg::triplet(LoccB, W_A, CvirB, true, false, false);
+    std::shared_ptr<Matrix> WBar = linalg::triplet(LoccA, W_B, CvirA, true, false, false);
     double** WBarp = WBar->pointer();
     double** WAbsp = WAbs->pointer();
 
@@ -2788,10 +2788,10 @@ void FISAPT::fexch() {
 
     // ==> Exchange S^2 Computation <== //
 
-    std::shared_ptr<Matrix> Sab = Matrix::triplet(LoccA, S, LoccB, true, false, false);
-    std::shared_ptr<Matrix> Sba = Matrix::triplet(LoccB, S, LoccA, true, false, false);
-    std::shared_ptr<Matrix> Sas = Matrix::triplet(LoccA, S, CvirB, true, false, false);
-    std::shared_ptr<Matrix> Sbr = Matrix::triplet(LoccB, S, CvirA, true, false, false);
+    std::shared_ptr<Matrix> Sab = linalg::triplet(LoccA, S, LoccB, true, false, false);
+    std::shared_ptr<Matrix> Sba = linalg::triplet(LoccB, S, LoccA, true, false, false);
+    std::shared_ptr<Matrix> Sas = linalg::triplet(LoccA, S, CvirB, true, false, false);
+    std::shared_ptr<Matrix> Sbr = linalg::triplet(LoccB, S, CvirA, true, false, false);
     double** Sabp = Sab->pointer();
     double** Sbap = Sba->pointer();
     double** Sasp = Sas->pointer();
@@ -2965,7 +2965,7 @@ void FISAPT::find() {
         Zxyz2p[0][2] = mol->y(A);
         Zxyz2p[0][3] = mol->z(A);
         Vint2->compute(Vtemp2);
-        std::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B, Vtemp2, Cvir_B, true, false, false);
+        std::shared_ptr<Matrix> Vbs = linalg::triplet(Cocc_B, Vtemp2, Cvir_B, true, false, false);
         dfh_->write_disk_tensor("WAbs", Vbs, {A, A + 1});
     }
 
@@ -2977,7 +2977,7 @@ void FISAPT::find() {
         Zxyz2p[0][2] = mol->y(B);
         Zxyz2p[0][3] = mol->z(B);
         Vint2->compute(Vtemp2);
-        std::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A, Vtemp2, Cvir_A, true, false, false);
+        std::shared_ptr<Matrix> Var = linalg::triplet(Cocc_A, Vtemp2, Cvir_A, true, false, false);
         dfh_->write_disk_tensor("WBar", Var, {B, B + 1});
     }
 
@@ -3186,7 +3186,7 @@ void FISAPT::find() {
         }
 
         // Backtransform the amplitude to LO
-        std::shared_ptr<Matrix> x2A = Matrix::doublet(Uocc_A, xA, true, false);
+        std::shared_ptr<Matrix> x2A = linalg::doublet(Uocc_A, xA, true, false);
         double** x2Ap = x2A->pointer();
 
         // Zip up the Ind20 contributions
@@ -3223,7 +3223,7 @@ void FISAPT::find() {
         }
 
         // Backtransform the amplitude to LO
-        std::shared_ptr<Matrix> x2B = Matrix::doublet(Uocc_B, xB, true, false);
+        std::shared_ptr<Matrix> x2B = linalg::doublet(Uocc_B, xB, true, false);
         double** x2Bp = x2B->pointer();
 
         // Zip up the Ind20 contributions
@@ -3362,7 +3362,7 @@ void FISAPT::find() {
 
             if (C < nB + nb) {
                 // Backtransform the amplitude to LO
-                std::shared_ptr<Matrix> x2A = Matrix::doublet(Uocc_A, xA, true, false);
+                std::shared_ptr<Matrix> x2A = linalg::doublet(Uocc_A, xA, true, false);
                 double** x2Ap = x2A->pointer();
 
                 // Zip up the Ind20 contributions
@@ -3380,7 +3380,7 @@ void FISAPT::find() {
 
             if (C < nA + na) {
                 // Backtransform the amplitude to LO
-                std::shared_ptr<Matrix> x2B = Matrix::doublet(Uocc_B, xB, true, false);
+                std::shared_ptr<Matrix> x2B = linalg::doublet(Uocc_B, xB, true, false);
                 double** x2Bp = x2B->pointer();
 
                 // Zip up the Ind20 contributions
@@ -3602,75 +3602,75 @@ void FISAPT::fdisp() {
 
     // => Auxiliary C matrices <= //
 
-    std::shared_ptr<Matrix> Cr1 = Matrix::triplet(D_B, S, Cavir_A);
+    std::shared_ptr<Matrix> Cr1 = linalg::triplet(D_B, S, Cavir_A);
     Cr1->scale(-1.0);
     Cr1->add(Cavir_A);
-    std::shared_ptr<Matrix> Cs1 = Matrix::triplet(D_A, S, Cavir_B);
+    std::shared_ptr<Matrix> Cs1 = linalg::triplet(D_A, S, Cavir_B);
     Cs1->scale(-1.0);
     Cs1->add(Cavir_B);
-    std::shared_ptr<Matrix> Ca2 = Matrix::triplet(D_B, S, Caocc_A);
-    std::shared_ptr<Matrix> Cb2 = Matrix::triplet(D_A, S, Caocc_B);
-    std::shared_ptr<Matrix> Cr3 = Matrix::triplet(D_B, S, Cavir_A);
-    std::shared_ptr<Matrix> CrX = Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, Cavir_A);
+    std::shared_ptr<Matrix> Ca2 = linalg::triplet(D_B, S, Caocc_A);
+    std::shared_ptr<Matrix> Cb2 = linalg::triplet(D_A, S, Caocc_B);
+    std::shared_ptr<Matrix> Cr3 = linalg::triplet(D_B, S, Cavir_A);
+    std::shared_ptr<Matrix> CrX = linalg::triplet(linalg::triplet(D_A, S, D_B), S, Cavir_A);
     Cr3->subtract(CrX);
     Cr3->scale(2.0);
-    std::shared_ptr<Matrix> Cs3 = Matrix::triplet(D_A, S, Cavir_B);
-    std::shared_ptr<Matrix> CsX = Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, Cavir_B);
+    std::shared_ptr<Matrix> Cs3 = linalg::triplet(D_A, S, Cavir_B);
+    std::shared_ptr<Matrix> CsX = linalg::triplet(linalg::triplet(D_B, S, D_A), S, Cavir_B);
     Cs3->subtract(CsX);
     Cs3->scale(2.0);
-    std::shared_ptr<Matrix> Ca4 = Matrix::triplet(Matrix::triplet(D_A, S, D_B), S, Caocc_A);
+    std::shared_ptr<Matrix> Ca4 = linalg::triplet(linalg::triplet(D_A, S, D_B), S, Caocc_A);
     Ca4->scale(-2.0);
-    std::shared_ptr<Matrix> Cb4 = Matrix::triplet(Matrix::triplet(D_B, S, D_A), S, Caocc_B);
+    std::shared_ptr<Matrix> Cb4 = linalg::triplet(linalg::triplet(D_B, S, D_A), S, Caocc_B);
     Cb4->scale(-2.0);
 
     // => Auxiliary V matrices <= //
 
-    std::shared_ptr<Matrix> Jbr = Matrix::triplet(Caocc_B, J_A, Cavir_A, true, false, false);
+    std::shared_ptr<Matrix> Jbr = linalg::triplet(Caocc_B, J_A, Cavir_A, true, false, false);
     Jbr->scale(2.0);
-    std::shared_ptr<Matrix> Kbr = Matrix::triplet(Caocc_B, K_A, Cavir_A, true, false, false);
+    std::shared_ptr<Matrix> Kbr = linalg::triplet(Caocc_B, K_A, Cavir_A, true, false, false);
     Kbr->scale(-1.0);
 
-    std::shared_ptr<Matrix> Jas = Matrix::triplet(Caocc_A, J_B, Cavir_B, true, false, false);
+    std::shared_ptr<Matrix> Jas = linalg::triplet(Caocc_A, J_B, Cavir_B, true, false, false);
     Jas->scale(2.0);
-    std::shared_ptr<Matrix> Kas = Matrix::triplet(Caocc_A, K_B, Cavir_B, true, false, false);
+    std::shared_ptr<Matrix> Kas = linalg::triplet(Caocc_A, K_B, Cavir_B, true, false, false);
     Kas->scale(-1.0);
 
-    std::shared_ptr<Matrix> KOas = Matrix::triplet(Caocc_A, K_O, Cavir_B, true, false, false);
+    std::shared_ptr<Matrix> KOas = linalg::triplet(Caocc_A, K_O, Cavir_B, true, false, false);
     KOas->scale(1.0);
-    std::shared_ptr<Matrix> KObr = Matrix::triplet(Caocc_B, K_O, Cavir_A, true, true, false);
+    std::shared_ptr<Matrix> KObr = linalg::triplet(Caocc_B, K_O, Cavir_A, true, true, false);
     KObr->scale(1.0);
 
-    std::shared_ptr<Matrix> JBas = Matrix::triplet(Matrix::triplet(Caocc_A, S, D_B, true, false, false), J_A, Cavir_B);
+    std::shared_ptr<Matrix> JBas = linalg::triplet(linalg::triplet(Caocc_A, S, D_B, true, false, false), J_A, Cavir_B);
     JBas->scale(-2.0);
-    std::shared_ptr<Matrix> JAbr = Matrix::triplet(Matrix::triplet(Caocc_B, S, D_A, true, false, false), J_B, Cavir_A);
+    std::shared_ptr<Matrix> JAbr = linalg::triplet(linalg::triplet(Caocc_B, S, D_A, true, false, false), J_B, Cavir_A);
     JAbr->scale(-2.0);
 
-    std::shared_ptr<Matrix> Jbs = Matrix::triplet(Caocc_B, J_A, Cavir_B, true, false, false);
+    std::shared_ptr<Matrix> Jbs = linalg::triplet(Caocc_B, J_A, Cavir_B, true, false, false);
     Jbs->scale(4.0);
-    std::shared_ptr<Matrix> Jar = Matrix::triplet(Caocc_A, J_B, Cavir_A, true, false, false);
+    std::shared_ptr<Matrix> Jar = linalg::triplet(Caocc_A, J_B, Cavir_A, true, false, false);
     Jar->scale(4.0);
 
-    std::shared_ptr<Matrix> JAas = Matrix::triplet(Matrix::triplet(Caocc_A, J_B, D_A, true, false, false), S, Cavir_B);
+    std::shared_ptr<Matrix> JAas = linalg::triplet(linalg::triplet(Caocc_A, J_B, D_A, true, false, false), S, Cavir_B);
     JAas->scale(-2.0);
-    std::shared_ptr<Matrix> JBbr = Matrix::triplet(Matrix::triplet(Caocc_B, J_A, D_B, true, false, false), S, Cavir_A);
+    std::shared_ptr<Matrix> JBbr = linalg::triplet(linalg::triplet(Caocc_B, J_A, D_B, true, false, false), S, Cavir_A);
     JBbr->scale(-2.0);
 
     // Get your signs right Hesselmann!
-    std::shared_ptr<Matrix> Vbs = Matrix::triplet(Caocc_B, V_A, Cavir_B, true, false, false);
+    std::shared_ptr<Matrix> Vbs = linalg::triplet(Caocc_B, V_A, Cavir_B, true, false, false);
     Vbs->scale(2.0);
-    std::shared_ptr<Matrix> Var = Matrix::triplet(Caocc_A, V_B, Cavir_A, true, false, false);
+    std::shared_ptr<Matrix> Var = linalg::triplet(Caocc_A, V_B, Cavir_A, true, false, false);
     Var->scale(2.0);
-    std::shared_ptr<Matrix> VBas = Matrix::triplet(Matrix::triplet(Caocc_A, S, D_B, true, false, false), V_A, Cavir_B);
+    std::shared_ptr<Matrix> VBas = linalg::triplet(linalg::triplet(Caocc_A, S, D_B, true, false, false), V_A, Cavir_B);
     VBas->scale(-1.0);
-    std::shared_ptr<Matrix> VAbr = Matrix::triplet(Matrix::triplet(Caocc_B, S, D_A, true, false, false), V_B, Cavir_A);
+    std::shared_ptr<Matrix> VAbr = linalg::triplet(linalg::triplet(Caocc_B, S, D_A, true, false, false), V_B, Cavir_A);
     VAbr->scale(-1.0);
-    std::shared_ptr<Matrix> VRas = Matrix::triplet(Matrix::triplet(Caocc_A, V_B, P_A, true, false, false), S, Cavir_B);
+    std::shared_ptr<Matrix> VRas = linalg::triplet(linalg::triplet(Caocc_A, V_B, P_A, true, false, false), S, Cavir_B);
     VRas->scale(1.0);
-    std::shared_ptr<Matrix> VSbr = Matrix::triplet(Matrix::triplet(Caocc_B, V_A, P_B, true, false, false), S, Cavir_A);
+    std::shared_ptr<Matrix> VSbr = linalg::triplet(linalg::triplet(Caocc_B, V_A, P_B, true, false, false), S, Cavir_A);
     VSbr->scale(1.0);
 
-    std::shared_ptr<Matrix> Sas = Matrix::triplet(Caocc_A, S, Cavir_B, true, false, false);
-    std::shared_ptr<Matrix> Sbr = Matrix::triplet(Caocc_B, S, Cavir_A, true, false, false);
+    std::shared_ptr<Matrix> Sas = linalg::triplet(Caocc_A, S, Cavir_B, true, false, false);
+    std::shared_ptr<Matrix> Sbr = linalg::triplet(Caocc_B, S, Cavir_A, true, false, false);
 
     std::shared_ptr<Matrix> Qbr(Jbr->clone());
     Qbr->zero();
@@ -3692,8 +3692,8 @@ void FISAPT::fdisp() {
     Qas->add(VBas);
     Qas->add(VRas);
 
-    std::shared_ptr<Matrix> SBar = Matrix::triplet(Matrix::triplet(Caocc_A, S, D_B, true, false, false), S, Cavir_A);
-    std::shared_ptr<Matrix> SAbs = Matrix::triplet(Matrix::triplet(Caocc_B, S, D_A, true, false, false), S, Cavir_B);
+    std::shared_ptr<Matrix> SBar = linalg::triplet(linalg::triplet(Caocc_A, S, D_B, true, false, false), S, Cavir_A);
+    std::shared_ptr<Matrix> SAbs = linalg::triplet(linalg::triplet(Caocc_B, S, D_A, true, false, false), S, Cavir_B);
 
     std::shared_ptr<Matrix> Qar(Jar->clone());
     Qar->zero();
@@ -4161,7 +4161,7 @@ void FISAPTSCF::compute_energy() {
     for (int iter = 1; iter <= maxiter; iter++) {
         // => Compute Density Matrix <= //
 
-        std::shared_ptr<Matrix> D = Matrix::doublet(Cocc2, Cocc2, false, true);
+        std::shared_ptr<Matrix> D = linalg::doublet(Cocc2, Cocc2, false, true);
 
         // => Compute Fock Matrix <= //
 
@@ -4196,10 +4196,10 @@ void FISAPTSCF::compute_energy() {
 
         // => Compute Orbital Gradient <= //
 
-        std::shared_ptr<Matrix> G1 = Matrix::triplet(F, D, S);
-        std::shared_ptr<Matrix> G2 = Matrix::triplet(S, D, F);
+        std::shared_ptr<Matrix> G1 = linalg::triplet(F, D, S);
+        std::shared_ptr<Matrix> G2 = linalg::triplet(S, D, F);
         G1->subtract(G2);
-        std::shared_ptr<Matrix> G3 = Matrix::triplet(X, G1, X, true, false, false);
+        std::shared_ptr<Matrix> G3 = linalg::triplet(X, G1, X, true, false, false);
         double Gnorm = G3->rms();
 
         // => Print and Check Convergence <= //
@@ -4220,11 +4220,11 @@ void FISAPTSCF::compute_energy() {
 
         // => Diagonalize Fock Matrix <= //
 
-        std::shared_ptr<Matrix> F2 = Matrix::triplet(X, F, X, true, false, false);
+        std::shared_ptr<Matrix> F2 = linalg::triplet(X, F, X, true, false, false);
         auto U2 = std::make_shared<Matrix>("C", nmo, nmo);
         auto e2 = std::make_shared<Vector>("eps", nmo);
         F2->diagonalize(U2, e2, ascending);
-        std::shared_ptr<Matrix> C = Matrix::doublet(X, U2, false, false);
+        std::shared_ptr<Matrix> C = linalg::doublet(X, U2, false, false);
 
         // => Assign New Orbitals <= //
 

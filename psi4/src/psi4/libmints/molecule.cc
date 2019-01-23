@@ -71,9 +71,6 @@ bool from_string(T &t, const std::string &s, std::ios_base &(*f)(std::ios_base &
 }
 }  // namespace
 
-// used by 'if_to_invert_axis' and 'inertia_tensor'
-#define ZERO 1.0E-14
-
 namespace psi {
 
 std::regex realNumber_(
@@ -116,7 +113,7 @@ void if_to_invert_axis(const Vector3 &v1, int &must_invert, int &should_invert, 
     for (xyz = 0; xyz < 3; xyz++) {
         vabs = std::fabs(v1[xyz]);
 
-        if (vabs < ZERO) nzero++;
+        if (vabs < PSI_ZERO) nzero++;
 
         if (vabs > std::fabs(maxproj)) {
             maxproj = v1[xyz];
@@ -1352,7 +1349,7 @@ Matrix *Molecule::inertia_tensor() const {
     // Check the elements for zero and make them a hard zero.
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            if (std::fabs(tensor->get(i, j)) < ZERO) tensor->set(i, j, 0.0);
+            if (std::fabs(tensor->get(i, j)) < PSI_ZERO) tensor->set(i, j, 0.0);
         }
     }
 

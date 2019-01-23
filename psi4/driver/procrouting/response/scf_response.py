@@ -157,7 +157,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
         shape = vectors[i].shape
 
         if shape == (nbf, nbf):
-            vectors[i] = core.Matrix.triplet(c_occ, vectors[i], c_vir, True, False, False)
+            vectors[i] = core.triplet(c_occ, vectors[i], c_vir, True, False, False)
 
         # verify that this vector already has the correct shape
         elif shape != (ndocc, nvirt):

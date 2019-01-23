@@ -770,7 +770,7 @@ void CIWavefunction::semicanonical_orbs() {
     }
 
     // rotate MOs and push them to the ciwfn
-    SharedMatrix Cnew = Matrix::doublet(get_orbitals("ROT"), U, false, false);
+    SharedMatrix Cnew = linalg::doublet(get_orbitals("ROT"), U, false, false);
     set_orbitals("ROT", Cnew);
     Cb_ = Ca_;
 }

@@ -33,12 +33,13 @@ import uuid
 import warnings
 
 import numpy as np
-import qcelemental as qcel
 
+import qcelemental as qcel
 from psi4 import core
 from psi4.driver import qcdb
+
 from . import optproc
-from .exceptions import ValidationError, TestComparisonError
+from .exceptions import TestComparisonError, ValidationError
 
 ## Python basis helps
 
@@ -784,3 +785,23 @@ def _core_set_gradient(val):
 
 core.get_gradient = _core_get_gradient
 core.set_gradient = _core_set_gradient
+
+
+def _core_doublet(A, B, transA, transB):
+    warnings.warn(
+        "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.doublet(A, B, transA, transB)
+
+
+def _core_triplet(A, B, C, transA, transB, transC):
+    warnings.warn(
+        "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return core.triplet(A, B, C, transA, transB, transC)
+
+
+core.Matrix.doublet = staticmethod(_core_doublet)
+core.Matrix.triplet = staticmethod(_core_triplet)

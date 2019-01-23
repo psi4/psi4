@@ -49,6 +49,14 @@
 #define dcft_timer_off(a)
 #endif
 
+#define ID(x) _ints->DPD_ID(x)
+
+#ifndef INDEX
+#define INDEX(i, j) (((i) > (j)) ? (((i) * ((i) + 1) / 2) + (j)) : (((j) * ((j) + 1) / 2) + (i)))
+#endif
+
+#define PRINT_ENERGY_COMPONENTS 0
+
 namespace psi {
 
 class Options;

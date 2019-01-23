@@ -30,7 +30,7 @@
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libtrans/integraltransform.h"
-#include "defines.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
 namespace dcft {
