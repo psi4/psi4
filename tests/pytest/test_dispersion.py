@@ -229,6 +229,27 @@ def test_11_dftd3_qmol(inp, eneyne_ne_qmolecules):
 
 @using_dftd3
 @using_psi4
+_dftd3_abc_paramset = [
+    ({'parent': 'eneyne', 'name': 'd3-b3lyp-d3', 'subject': 'dimer', 'lbl': 'B3LYP-D3'}),
+    #({'parent': 'eneyne', 'name': 'd3-b3lyp-atmgr', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
+    #({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
+    #({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}),
+    #({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}),
+    #({'parent': 'eneyne', 'name': 'd3-PBE-D2', 'subject': 'mAgB', 'lbl': 'PBE-D2'}),
+    #({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}),
+]
+
+@pytest.mark.parametrize("inp", _dftd3_abc_paramset)
+def test_11_dftd3_abc_qmol(inp, eneyne_ne_qmolecules):
+    subject = eneyne_ne_qmolecules[inp['parent']][inp['subject']]
+    expected = ref[inp['parent']][inp['lbl']][inp['subject']]
+
+    jrec = qcdb.intf_dftd3.run_dftd3(inp['name'], subject, options={}, ptype='energy')
+    assert compare_values(expected, jrec['qcvars']['CURRENT ENERGY'].data, 7, tnm())
+    assert compare_values(expected, jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(expected, jrec['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+
+
 @pytest.mark.parametrize("inp", _dftd3_paramset)
 def test_11_dftd3_pmol(inp, eneyne_ne_pmolecules):
     subject = eneyne_ne_pmolecules[inp['parent']][inp['subject']]
