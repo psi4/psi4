@@ -13,8 +13,8 @@ def build_RHF_AB_C1_singlet(wfn):
     Cv = wfn.Ca_subset("SO", "VIR")
     V_iajb = mints.mo_eri(Co, Cv, Co, Cv).to_array()
     V_abij = mints.mo_eri(Cv, Cv, Co, Co).to_array()
-    Fab = psi4.core.Matrix.triplet(Cv, wfn.Fa(), Cv, True, False, False).to_array()
-    Fij = psi4.core.Matrix.triplet(Co, wfn.Fa(), Co, True, False, False).to_array()
+    Fab = psi4.core.triplet(Cv, wfn.Fa(), Cv, True, False, False).to_array()
+    Fij = psi4.core.triplet(Co, wfn.Fa(), Co, True, False, False).to_array()
     ni = Fij.shape[0]
     na = Fab.shape[0]
     nia = ni * na
@@ -31,8 +31,8 @@ def build_RHF_AB_C1_triplet(wfn):
     Cv = wfn.Ca_subset("SO", "VIR")
     V_iajb = mints.mo_eri(Co, Cv, Co, Cv).to_array()
     V_abij = mints.mo_eri(Cv, Cv, Co, Co).to_array()
-    Fab = psi4.core.Matrix.triplet(Cv, wfn.Fa(), Cv, True, False, False).to_array()
-    Fij = psi4.core.Matrix.triplet(Co, wfn.Fa(), Co, True, False, False).to_array()
+    Fab = psi4.core.triplet(Cv, wfn.Fa(), Cv, True, False, False).to_array()
+    Fij = psi4.core.triplet(Co, wfn.Fa(), Co, True, False, False).to_array()
     ni = Fij.shape[0]
     na = Fab.shape[0]
     nia = ni * na
@@ -49,8 +49,8 @@ def build_UHF_AB_C1(wfn):
     CA = wfn.Ca_subset("SO", "VIR")
     V_IAJB = mints.mo_eri(CI, CA, CI, CA).to_array()
     V_ABIJ = mints.mo_eri(CA, CA, CI, CI).to_array()
-    FAB = psi4.core.Matrix.triplet(CA, wfn.Fa(), CA, True, False, False).to_array()
-    FIJ = psi4.core.Matrix.triplet(CI, wfn.Fa(), CI, True, False, False).to_array()
+    FAB = psi4.core.triplet(CA, wfn.Fa(), CA, True, False, False).to_array()
+    FIJ = psi4.core.triplet(CI, wfn.Fa(), CI, True, False, False).to_array()
     nI = FIJ.shape[0]
     nA = FAB.shape[0]
     nIA = nI * nA
@@ -69,8 +69,8 @@ def build_UHF_AB_C1(wfn):
     Ca = wfn.Cb_subset("SO", "VIR")
     V_iajb = mints.mo_eri(Ci, Ca, Ci, Ca).to_array()
     V_abij = mints.mo_eri(Ca, Ca, Ci, Ci).to_array()
-    Fab = psi4.core.Matrix.triplet(Ca, wfn.Fb(), Ca, True, False, False).to_array()
-    Fij = psi4.core.Matrix.triplet(Ci, wfn.Fb(), Ci, True, False, False).to_array()
+    Fab = psi4.core.triplet(Ca, wfn.Fb(), Ca, True, False, False).to_array()
+    Fij = psi4.core.triplet(Ci, wfn.Fb(), Ci, True, False, False).to_array()
     ni = Fij.shape[0]
     na = Fab.shape[0]
     nia = ni * na

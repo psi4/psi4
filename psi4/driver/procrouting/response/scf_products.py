@@ -382,7 +382,7 @@ class TDRSCFEngine(SingleMatPerVector):
 
     def _so_to_mo(self, X):
         """Transform (C_occ)^T X C_vir"""
-        return core.Matrix.triplet(self.Co, X, self.Cv, True, False, False)
+        return core.triplet(self.Co, X, self.Cv, True, False, False)
 
     def _split_twoel(self, twoel):
         """Unpack J and K matrices
@@ -605,7 +605,7 @@ class TDUSCFEngine(PairedMatPerVector):
 
     def _so_to_mo(self, X):
         """Transform (C_occ)^T X C_vir"""
-        return [core.Matrix.triplet(self.Co[i], X[i], self.Cv[i], True, False, False) for i in (0, 1)]
+        return [core.triplet(self.Co[i], X[i], self.Cv[i], True, False, False) for i in (0, 1)]
 
     def _pair_onel(self, onel):
         """Pair up A/B from onel_Hx return"""
