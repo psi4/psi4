@@ -184,7 +184,6 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
                 int Z = mol->true_atomic_number(atom) - ncore;
                 mol->set_nuclear_charge(atom, Z);
                 basisset->set_n_ecp_core(alabel, ncore);
-                printf("%s: %s %s %s :: %d, %d, %s, %d\n", totalncore ? "ECP" : "___", name.c_str(), key.c_str(), label.c_str(), atom, Z, alabel.c_str(), ncore);
             }
         }
     }

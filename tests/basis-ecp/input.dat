@@ -1,4 +1,4 @@
-memory 1000 mb
+#! check mixing ECP and non-ECP orbital/fitting basis sets in a session
 
 set df_fitting_condition 1e-12
 
