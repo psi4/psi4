@@ -324,6 +324,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             efp_Dt_psi4_yo.add(self.Db())
             SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
 
+        if (self.iteration_ == 0) and self.sad_:
+            # SAD gives a non-variational first energy in RHF and UHF,
+            # and a completely nonsensical one in ROHF/CUHF
+            SCFE = 0.0
+
         self.set_energies("Total Energy", SCFE)
         core.set_variable("SCF ITERATION ENERGY", SCFE)
         Ediff = SCFE - SCFE_old
@@ -441,7 +446,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             continue
 
         # Call any postiteration callbacks
-        if _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
+        if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
             break
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
