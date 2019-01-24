@@ -327,6 +327,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if (self.iteration_ == 0) and self.sad_:
             # SAD gives a non-variational first energy in RHF and UHF,
             # and a completely nonsensical one in ROHF/CUHF
+            core.print_out("    First iteration: building orbitals from the SAD guess.\n")
             SCFE = 0.0
 
         self.set_energies("Total Energy", SCFE)
