@@ -27,7 +27,7 @@ molecule ho2 {
 }
 
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
-scf_e = ccsd_wfn.get_variable('HF TOTAL ENERGY')
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
@@ -41,7 +41,7 @@ set {
 }
 
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
-scf_e = ccsd_wfn.get_variable('HF TOTAL ENERGY')
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
@@ -63,7 +63,7 @@ molecule ho2 {
 }
 
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
-scf_e = ccsd_wfn.get_variable('HF TOTAL ENERGY')
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
@@ -81,7 +81,7 @@ set {
 }
 
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
-scf_e = ccsd_wfn.get_variable('HF TOTAL ENERGY')
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
