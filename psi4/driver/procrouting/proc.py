@@ -1281,9 +1281,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
 
-    fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
-    psi_scratch = core.IOManager.shared_object().get_default_path()
-    read_filename = os.path.join(psi_scratch, fname + ".180.npy")
+    read_filename = scf_wfn.get_scratch_filename(180)
 
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
 
@@ -1402,8 +1400,8 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # Write out orbitals and basis; Can be disabled, e.g., for findif displacements
     if kwargs.get('write_orbitals', True):
-        fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
-        write_filename = os.path.join(psi_scratch, fname + ".180.npy")
+        write_filename = scf_wfn.get_scratch_filename(180)
+
         scf_wfn.to_file(write_filename)
         extras.register_numpy_file(write_filename)
 
