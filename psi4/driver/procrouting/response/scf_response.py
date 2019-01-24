@@ -29,10 +29,10 @@
 import numpy as np
 
 from psi4 import core
+from psi4.driver import constants
 from psi4.driver.p4util import solvers
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
-                                                           TDUSCFEngine)
+from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine, TDUSCFEngine)
 
 dipole = {
     'name': 'Dipole polarizabilities',
@@ -257,14 +257,14 @@ def _print_output(complete_dict, output):
 
 def _print_tdscf_header(**options):
     core.print_out('\n\n         ---------------------------------------------------------\n'
-                   '         {:^57}\n'.format('TDSCF excitation energies') + '         {:^57}\n'.format(
-                       'by Andrew M. James') + '         ---------------------------------------------------------\n')
+                   '         {:^57}\n'.format('TDSCF excitation energies') +
+                   '         {:^57}\n'.format('by Andrew M. James and Daniel G. A. Smith') +
+                   '         ---------------------------------------------------------\n')
 
-    core.print_out("\n\n")
-    core.print_out("        " + ("*" * 80) + "\n")
-    core.print_out("        " + "WARNING:".center(80) + "\n")
-    core.print_out("        " + "TDSCF is experimental results may be inaccurate at this point".center(80) + "\n")
-    core.print_out("        " + ("*" * 80) + "\n\n")
+    core.print_out("{}\n".format("*"*80) +
+                   "{}{:^60}{}\n".format("*"*10, "WARNING", "*"*10) +
+                   "{}{:^60}{}\n".format("*"*10, "TDSCF is experimental results may be inaccurate", "*"*10) +
+                   "{}\n".format("*"*80)) #yapf: disable
 
     core.print_out("\n  ==> Requested Excitations <==\n\n")
     state_info = options.pop('states')
@@ -272,7 +272,7 @@ def _print_tdscf_header(**options):
         core.print_out("      {} states with {} symmetry\n".format(nstate, state_sym))
 
     core.print_out("\n  ==> Options <==\n\n")
-    for k, v in options:
+    for k, v in options.items():
         core.print_out("     {:<10s}:              {}\n".format(k, v))
 
     core.print_out("\n")
@@ -312,11 +312,12 @@ def tdscf_excitations(wfn, **kwargs):
     """
     # gather arguments
     e_tol = kwargs.pop('e_tol', 1.0e-6)
-    rtol = kwargs.pop('r_tol', 1.0e-8)
+    r_tol = kwargs.pop('r_tol', 1.0e-8)
     max_ss_vec = kwargs.pop('max_ss_vectors', 50)
+    verbose = kwargs.pop('print_lvl', 0)
 
     # how many states
-    passed_spi = kwargs.pop('states_per_irrep', [0 for _ in range(wfn.nirreps())])
+    passed_spi = kwargs.pop('states_per_irrep', [0 for _ in range(wfn.nirrep())])
 
     #TODO:states_per_irrep = _validate_states_args(wfn, passed_spi, nstates)
     states_per_irrep = passed_spi
@@ -340,9 +341,9 @@ def tdscf_excitations(wfn, **kwargs):
         triplet = None
 
     _print_tdscf_header(
-        etol=etol,
-        rtol=rtol,
-        states=[(count, label) for count, label in zip(state_per_irrep,
+        etol=e_tol,
+        rtol=r_tol,
+        states=[(count, label) for count, label in zip(states_per_irrep,
                                                        wfn.molecule().irrep_labels())],
         guess_type=guess_type,
         restricted=restricted,
@@ -355,24 +356,57 @@ def tdscf_excitations(wfn, **kwargs):
     else:
         engine = TDUSCFEngine(wfn, ptype=ptype)
 
+    # just energies for now
     solver_results = []
     for state_sym, nstates in enumerate(states_per_irrep):
         if nstates == 0:
-            solver_results.append([])
             continue
         engine.reset_for_state_symm(state_sym)
         guess_ = engine.generate_guess(nstates * 2)
 
         vecs_per_root = max_ss_vec // nstates
+
+        # ret = (ee, rvecs, stats) (TDA)
+        # ret = (ee, rvecs, lvecs, stats) (full TDSCF)
         ret = solve_function(
             engine=engine,
-            e_tol=etol,
-            r_tol=rtol,
+            e_tol=e_tol,
+            r_tol=r_tol,
             max_vecs_per_root=vecs_per_root,
             nroot=nstates,
             guess=guess_,
-            verbose=2)
-        solver_results.append(ret)
+            verbose=verbose)
+
+        # store excitation energies tagged with final state symmetry (for printing)
+        # TODO: handle R eigvecs (TDA) R/L eigvecs(full TDSCF): solver maybe should return dicts
+        for ee in ret[0]:
+            solver_results.append((ee, state_sym))
+
+    # sort by energy symmetry is just meta data
+    solver_results.sort(key=lambda x: x[0])
+
+    # print excitation energies
+    core.print_out("\n\nFinal Energetic Summary:\n")
+    core.print_out("        " + (" " * 20) + " " + "Excitation Energy".center(31) + " {:^15}\n".format("Total Energy"))
+    core.print_out("    {:^4} {:^20} {:^15} {:^15} {:^15}\n".format("#", "Sym: GS->ES (Trans)", "[au]", "[eV]",
+                                                                    "(au)"))
+    core.print_out("    {:->4} {:->20} {:->15} {:->15} {:->15}\n".format("-", "-", "-", "-", "-"))
+
+    irrep_GS = wfn.molecule().irrep_labels()[engine.G_gs]
+    for i, (E_ex_au, final_sym) in enumerate(solver_results):
+        irrep_ES = wfn.molecule().irrep_labels()[final_sym]
+        irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ final_sym]
+        sym_descr = "{}->{} ({})".format(irrep_GS, irrep_ES, irrep_trans)
+
+        #TODO: psivars/wfnvars
+
+        E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
+
+        E_tot_au = wfn.energy() + E_ex_au
+        core.print_out("    {:^4} {:^20} {:< 15.5f} {:< 15.5f} {:< 15.5f}\n".format(
+            i + 1, sym_descr, E_ex_au, E_ex_ev, E_tot_au))
+
+    core.print_out("\n")
 
     #TODO: output table
 
