@@ -1281,6 +1281,8 @@ def scf_helper(name, post_scf=True, **kwargs):
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
 
+    # The wfn from_file routine adds the npy suffix if needed, but we add it here so that
+    # we can use os.path.isfile to query whether the file exists before attempting to read
     read_filename = scf_wfn.get_scratch_filename(180) + '.npy'
 
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
@@ -1399,7 +1401,7 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # Write out orbitals and basis; Can be disabled, e.g., for findif displacements
     if kwargs.get('write_orbitals', True):
-        write_filename = scf_wfn.get_scratch_filename(180) + '.npy'
+        write_filename = scf_wfn.get_scratch_filename(180)
 
         scf_wfn.to_file(write_filename)
         extras.register_numpy_file(write_filename)
