@@ -17,6 +17,7 @@ freeze_core true
 e_convergence 10
 d_convergence 10
 diis_rms_error false
+df_fitting_condition 1.e-12
 }
 
 ref_321g = -0.09561567760757009
