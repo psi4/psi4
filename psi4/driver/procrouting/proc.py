@@ -1281,10 +1281,9 @@ def scf_helper(name, post_scf=True, **kwargs):
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
 
-    read_filename = scf_wfn.get_scratch_filename(180)
+    read_filename = scf_wfn.get_scratch_filename(180) + '.npy'
 
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
-
         old_wfn = core.Wavefunction.from_file(read_filename)
         Ca_occ = old_wfn.Ca_subset("SO", "OCC")
         Cb_occ = old_wfn.Cb_subset("SO", "OCC")
@@ -1400,7 +1399,7 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # Write out orbitals and basis; Can be disabled, e.g., for findif displacements
     if kwargs.get('write_orbitals', True):
-        write_filename = scf_wfn.get_scratch_filename(180)
+        write_filename = scf_wfn.get_scratch_filename(180) + '.npy'
 
         scf_wfn.to_file(write_filename)
         extras.register_numpy_file(write_filename)
