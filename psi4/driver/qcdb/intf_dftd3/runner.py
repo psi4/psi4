@@ -25,7 +25,7 @@
 #
 # @END LICENSE
 #
-"""Module with functions that interface with Grimme's DFTD3 code."""
+"""Compute dispersion correction using Grimme's DFTD3 executable."""
 
 import re
 import sys
@@ -39,14 +39,11 @@ import numpy as np
 import qcelemental as qcel
 
 from .. import __version__
-#from .. import qcvars
 from ..util import parse_dertype
 from ..pdict import PreservingDict
 from ..exceptions import *
-from ..datastructures import QCAspect, print_variables
 from . import dashparam
 from .worker import dftd3_subprocess
-"""Compute dispersion correction using Grimme's DFTD3 executable."""
 
 
 def run_dftd3(name, molecule, options, **kwargs):
@@ -258,7 +255,7 @@ def dftd3_plant(jobrec):
 
 
 def dftd3_harvest(jobrec, dftd3rec):
-    """Process raw results from read-only `dftd3rec` into QCAspect
+    """Process raw results from read-only `dftd3rec` into Datum
     fields in returned `jobrec`: jobrec@i, dftd3rec@io -> jobrec@io.
 
     Parameters
@@ -356,30 +353,29 @@ def dftd3_harvest(jobrec, dftd3rec):
     # OLD WAY
     calcinfo = []
     if dftd3rec['dashlevel'] == 'atmgr':
-        calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', atm, ''))
-        calcinfo.append(QCAspect('3-BODY DISPERSION CORRECTION ENERGY', 'Eh', atm, ''))
-        calcinfo.append(QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION ENERGY', 'Eh', atm, ''))
+        calcinfo.append(qcel.Datum('DISPERSION CORRECTION ENERGY', 'Eh', atm))
+        calcinfo.append(qcel.Datum('3-BODY DISPERSION CORRECTION ENERGY', 'Eh', atm))
+        calcinfo.append(qcel.Datum('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION ENERGY', 'Eh', atm))
 
         if jobrec['driver'] == 'gradient':
-            calcinfo.append(QCAspect('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
-            calcinfo.append(QCAspect('3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
-            calcinfo.append(
-                QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+            calcinfo.append(qcel.Datum('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad))
+            calcinfo.append(qcel.Datum('3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad))
+            calcinfo.append(qcel.Datum('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad))
 
     else:
-        calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
-        calcinfo.append(QCAspect('2-BODY DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
+        calcinfo.append(qcel.Datum('DISPERSION CORRECTION ENERGY', 'Eh', ene))
+        calcinfo.append(qcel.Datum('2-BODY DISPERSION CORRECTION ENERGY', 'Eh', ene))
         if qcvkey:
-            calcinfo.append(QCAspect(f'{qcvkey} DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
+            calcinfo.append(qcel.Datum(f'{qcvkey} DISPERSION CORRECTION ENERGY', 'Eh', ene))
 
         if jobrec['driver'] == 'gradient':
-            calcinfo.append(QCAspect('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
-            calcinfo.append(QCAspect('2-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+            calcinfo.append(qcel.Datum('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad))
+            calcinfo.append(qcel.Datum('2-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad))
             if qcvkey:
-                calcinfo.append(QCAspect(f'{qcvkey} DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+                calcinfo.append(qcel.Datum(f'{qcvkey} DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad))
 
-    calcinfo = {info.lbl: info for info in calcinfo}
-    text += print_variables(calcinfo)
+    calcinfo = {info.label: info for info in calcinfo}
+    text += qcel.datum.print_variables(calcinfo)
 
     # NEW WAY
     #module_vars = {}
