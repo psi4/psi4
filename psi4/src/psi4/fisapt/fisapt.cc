@@ -2659,6 +2659,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20 (S^inf)"] = ExchDisp20;
+    Process::environment.globals["SAPT EXCH-DISP20(S^inf) ENERGY"] = scalars_["Exch-Disp20 (S^inf)"];
     if (do_print) {
         outfile->Printf("    Disp20              = %18.12lf [Eh]\n", Disp20);
         outfile->Printf("    Exch-Disp20 (S^inf) = %18.12lf [Eh]\n", ExchDisp20);

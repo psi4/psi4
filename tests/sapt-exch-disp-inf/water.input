@@ -1,4 +1,4 @@
-memory 62 gb
+memory 4 gb
  
 molecule dimer {
 0 1
@@ -30,3 +30,5 @@ set globals {
 
 set SAPT_DFT_FUNCTIONAL HF
 energy('sapt(dft)', molecule=dimer)
+
+compare_values(4.35491, variable('sapt exch-disp20(s^inf) energy'), 5, "SAPT EXCH-DISP20(S^inf) ENERGY")
