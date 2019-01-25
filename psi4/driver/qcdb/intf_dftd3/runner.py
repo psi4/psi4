@@ -32,11 +32,10 @@ import sys
 import copy
 import json
 import pprint
-pp = pprint.PrettyPrinter(width=120)
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 from decimal import Decimal
 
 import numpy as np
-
 import qcelemental as qcel
 
 from .. import __version__
@@ -86,7 +85,9 @@ def run_dftd3(name, molecule, options, **kwargs):
     else:
         jobrec['success'] = True
         jobrec['qcvars']['CURRENT ENERGY'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'])
-        
+        if jobrec['driver'] == 'gradient':
+            jobrec['qcvars']['CURRENT GRADIENT'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'])
+
     return jobrec
 
 
@@ -134,14 +135,25 @@ def run_dftd3_from_arrays(molrec,
         jobrec['error'] += repr(err)
     else:
         jobrec['success'] = True
-        if ptype == "energy":
-            jobrec['qcvars']['CURRENT ENERGY'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'])
-        
+        jobrec['qcvars']['CURRENT ENERGY'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'])
+        if jobrec['driver'] == 'gradient':
+            jobrec['qcvars']['CURRENT GRADIENT'] = copy.deepcopy(jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'])
+
     return jobrec
 
 
-def dftd3_driver(jobrec, verbose=4):
-    """Drive the jobrec@i (input) -> dftd3rec@i -> dftd3rec@io -> jobrec@io (returned) process.
+def dftd3_driver(jobrec, verbose=1):
+    """Drive the jobrec@i (input) -> dftd3rec@i -> dftd3rec@io -> jobrec@io (returned) process."""
+
+    return module_driver(jobrec=jobrec,
+                         module_label='dftd3',
+                         plant=dftd3_plant,
+                         run=dftd3_subprocess,
+                         harvest=dftd3_harvest,
+                         verbose=verbose)
+
+def module_driver(jobrec, module_label, plant, run, harvest, verbose=1):
+    """Drive the jobrec@i (input) -> modulerec@i -> modulerec@io -> jobrec@io (returned) process.
 
     Input Fields
     ------------
@@ -157,32 +169,32 @@ def dftd3_driver(jobrec, verbose=4):
 
     """
     if verbose > 2:
-        print('[1] {} JOBREC PRE-PLANT (j@i) <<<'.format('DFTD3'))
+        print(f'[1] {module_label.upper()} JOBREC PRE-PLANT (j@i) <<<')
         pp.pprint(jobrec)
         print('>>>')
 
-    dftd3rec = dftd3_plant(jobrec)
+    modulerec = plant(jobrec)
 
     # test json roundtrip
-    jdftd3rec = json.dumps(dftd3rec)
-    dftd3rec = json.loads(jdftd3rec)
+    jmodulerec = json.dumps(modulerec)
+    modulerec = json.loads(jmodulerec)
 
     if verbose > 3:
-        print('[2] {}REC PRE-SUBPROCESS (m@i) <<<'.format('DFTD3'))
-        pp.pprint(dftd3rec)
+        print(f'[2] {module_label.upper()}REC PRE-SUBPROCESS (m@i) <<<')
+        pp.pprint(modulerec)
         print('>>>\n')
 
-    dftd3_subprocess(dftd3rec)  # updates dftd3rec
+    run(modulerec)  # updates modulerec
 
     if verbose > 3:
-        print('[3] {}REC POST-SUBPROCESS (m@io) <<<'.format('DFTD3'))
-        pp.pprint(dftd3rec)
+        print(f'[3] {module_label.upper()}REC POST-SUBPROCESS (m@io) <<<')
+        pp.pprint(modulerec)
         print('>>>\n')
 
-    dftd3_harvest(jobrec, dftd3rec)  # updates jobrec
+    harvest(jobrec, modulerec)  # updates jobrec
 
     if verbose > 1:
-        print('[4] {} JOBREC POST-HARVEST (j@io) <<<'.format('DFTD3'))
+        print(f'[4] {module_label.upper()} JOBREC POST-HARVEST (j@io) <<<')
         pp.pprint(jobrec)
         print('>>>')
 
@@ -235,7 +247,8 @@ def dftd3_plant(jobrec):
     command = ['dftd3', 'dftd3_geometry.xyz']
     if jobrec['driver'] == 'gradient':
         command.append('-grad')
-    command.append('-abc')
+    if dftd3rec['dashlevel'] == 'atmgr':
+        command.append('-abc')
     dftd3rec['command'] = command
 
     return dftd3rec
@@ -260,6 +273,14 @@ def dftd3_harvest(jobrec, dftd3rec):
         Nested dictionary with input specification and output collection
         from DFTD3 in generic QC terms.
 
+    Notes
+    -----
+    Central to harvesting is the fact (to the planting, not to the DFTD3
+    program) that 2-body and 3-body are run separately. Because of how
+    damping functions work (see GH:psi4/psi4#1407), some 2-body damping
+    schemes can give wrong answers for 3-body. And because 3-body is
+    set to run with some dummy values, the 2-body values are no good.
+
     """
     try:
         jobrec['molecule']['real']
@@ -278,10 +299,10 @@ def dftd3_harvest(jobrec, dftd3rec):
     text = dftd3rec['stdout']
     text += '\n  <<<  DFTD3 Results  >>>\n'
 
-    for fl in ['dftd3_gradient']:
+    for fl in ['dftd3_gradient', 'dftd3_abc_gradient']:
         field = 'output_' + fl.lower()
         if field in dftd3rec:
-            text += '\n  DFTD3 scratch file {} has been read.\n'.format(fl)
+            text += f'\n  DFTD3 scratch file {fl} has been read.\n'
             text += dftd3rec[field]
 
     # parse energy output (could go further and break into E6, E8, E10 and Cn coeff)
@@ -294,12 +315,10 @@ def dftd3_harvest(jobrec, dftd3rec):
             version = ln.replace('DFTD3', '').replace('|', '').strip().lower()
         elif re.match(' Edisp /kcal,au', ln):
             ene = Decimal(ln.split()[3])
-        #elif re.match(r" E6\(ABC\) \"   :", ln):
-        elif re.match(r""" E6\(ABC\) """, ln):
-            #h2kcm = Decimal(qcel.constants.hartree2kcalmol)
+        elif re.match(r" E6\(ABC\) \"   :", ln):  # c. v3.2.0
+            raise ValidationError("Cannot process ATM results from DFTD3 prior to v3.2.1.")
+        elif re.match(r""" E6\(ABC\) /kcal,au:""", ln):
             atm = Decimal(ln.split()[-1])
-            print(ln)
-            #atm /= h2kcm
         elif re.match(' normal termination of dftd3', ln):
             break
     else:
@@ -314,11 +333,18 @@ def dftd3_harvest(jobrec, dftd3rec):
     elif real_nat == 1:
         realgrad = np.zeros((1, 3))
 
+    if 'output_dftd3_abc_gradient' in dftd3rec:
+        srealgrad = dftd3rec['output_dftd3_abc_gradient'].replace('D', 'E')
+        realgradabc = np.fromstring(srealgrad, count=3 * real_nat, sep=' ').reshape((-1, 3))
+    elif real_nat == 1:
+        realgradabc = np.zeros((1, 3))
+
     if jobrec['driver'] == 'gradient':
         ireal = np.argwhere(real).reshape((-1))
         fullgrad = np.zeros((full_nat, 3))
+        rg = realgradabc if (dftd3rec['dashlevel'] == 'atmgr') else realgrad
         try:
-            fullgrad[ireal, :] = realgrad
+            fullgrad[ireal, :] = rg
         except NameError as err:
             raise Dftd3Error('Unsuccessful gradient collection.') from err
 
@@ -326,16 +352,28 @@ def dftd3_harvest(jobrec, dftd3rec):
 
     # OLD WAY
     calcinfo = []
-    calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
-    if '-abc' in dftd3rec['command']:
-        calcinfo.append(QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION ENERGY', 'Eh', atm, ''))
-        calcinfo.append(QCAspect('{}ATM DISPERSION CORRECTION ENERGY'.format(qcvkey), 'Eh', atm, ''))
-    if qcvkey:
-        calcinfo.append(QCAspect('{} DISPERSION CORRECTION ENERGY'.format(qcvkey), 'Eh', ene, ''))
-    if jobrec['driver'] == 'gradient':
-        calcinfo.append(QCAspect('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+    if dftd3rec['dashlevel'] == 'atmgr':
+        calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', atm, ''))
+        calcinfo.append(QCAspect('3-BODY DISPERSION CORRECTION ENERGY', 'Eh', atm, ''))
+        calcinfo.append(QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION ENERGY', 'Eh', atm, ''))
+
+        if jobrec['driver'] == 'gradient':
+            calcinfo.append(QCAspect('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+            calcinfo.append(QCAspect('3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+            calcinfo.append(QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+
+    else:
+        calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
+        calcinfo.append(QCAspect('2-BODY DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
         if qcvkey:
-            calcinfo.append(QCAspect('{} DISPERSION CORRECTION GRADIENT'.format(qcvkey), 'Eh/a0', fullgrad, ''))
+            calcinfo.append(QCAspect(f'{qcvkey} DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
+
+        if jobrec['driver'] == 'gradient':
+            calcinfo.append(QCAspect('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+            calcinfo.append(QCAspect('2-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+            if qcvkey:
+                calcinfo.append(QCAspect(f'{qcvkey} DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+
     calcinfo = {info.lbl: info for info in calcinfo}
     text += print_variables(calcinfo)
 
@@ -374,7 +412,7 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
     d3bj:    s6      a1       s8      a2      alpha6=None version=4
     d3mzero: s6      sr6      s8      beta    alpha6=14.0 version=5
     d3mbj:   s6      a1       s8      a2      alpha6=None version=6
-    atmgr:   s6=None sr6=None s8=None a2=None alpha6     version=3
+    atmgr:   s6=1.0  sr6=None s8=None a2=None alpha6      version=3 (needs -abc, too)
 
     Parameters
     ----------
@@ -386,8 +424,8 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
     Notes
     -----
     The `atmgr` dashlvl is intended for use only to get the three-body Axilrod-Teller-Muto
-    three body dispersion correction; therefore, dummy parameters are passed for two-body damping
-    function, and will give garbage for two-body component of dispersion correction.
+    three body dispersion correction. Therefore, dummy parameters are passed for two-body damping
+    function, and it will give garbage for two-body component of dispersion correction.
 
     Returns
     -------
@@ -410,11 +448,11 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
     elif dashlvl == 'd3mbj':
         return dashformatter.format(dashcoeff['s6'], dashcoeff['a1'], dashcoeff['s8'], dashcoeff['a2'], 0.0, 6)
     elif dashlvl == 'atmgr':
-        # Need to set first four parameters to something other than None, otherwise Grimme is mad
-        return dashformatter.format(1.0, 2.0, 3.0, 4.0, dashcoeff['alpha6'], 3)
+        # need to set first four parameters to something other than None, otherwise DFTD3 gets mad or a bit wrong
+        return dashformatter.format(1.0, 0.0, 0.0, 0.0, dashcoeff['alpha6'], 3)
     else:
         raise ValidationError(
-            """-D correction level %s is not available. Choose among %s.""" % (dashlvl, dashcoeff.keys()))
+            f"""-D correction level {dashlvl} is not available. Choose among {dashcoeff.keys()}.""")
 
 
 """

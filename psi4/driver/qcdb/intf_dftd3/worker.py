@@ -34,7 +34,9 @@ def dftd3_subprocess(dftd3rec):  # dftd3rec@i -> dftd3rec@io
     Optional Output Fields
     ----------------------
     output_dftd3_gradient : str, optional
-        If `-grad` present in `command`, contents of file with real atom gradient.
+        If available, contents of file with real atom gradient.
+    output_dftd3_abc_gradient : str, optional
+        If available, contents of file with 3-body portion of real atom gradient.
 
     """
     try:
@@ -94,6 +96,12 @@ def dftd3_subprocess(dftd3rec):  # dftd3rec@i -> dftd3rec@io
     try:
         with open('dftd3_gradient', 'r') as handle:
             dftd3rec['output_dftd3_gradient'] = handle.read()
+    except (OSError, FileNotFoundError) as err:
+        pass
+
+    try:
+        with open('dftd3_abc_gradient', 'r') as handle:
+            dftd3rec['output_dftd3_abc_gradient'] = handle.read()
     except (OSError, FileNotFoundError) as err:
         pass
 

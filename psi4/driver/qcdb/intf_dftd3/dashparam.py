@@ -350,6 +350,7 @@ dashcoeff = {
         'bibtex'      : "Grimme:2004:1463",
         'default'     : collections.OrderedDict([("s6", 1.0)]),
         'definitions' : {
+            '***'     : {'params': {'s6': 1.0}},
         }
     },
     'chg': {
@@ -360,7 +361,7 @@ dashcoeff = {
         'bibtex'      : "Chai:2010:6615",
         'default'     : collections.OrderedDict([("s6", 1.0)]),
         'definitions' : {
-        #disp->d_ = 6.0;
+            '***'     : {'params': {'s6': 1.0}},  # disp->d_ = 6.0;
         }
     },
     'das2009': {
@@ -371,6 +372,7 @@ dashcoeff = {
         'bibtex'      : "Pernal:2009:263201",
         'default'     : collections.OrderedDict([("s6", 1.0)]),
         'definitions' : {
+            '***'     : {'params': {'s6': 1.0}},
         }
     },
     'das2010': {
@@ -381,17 +383,18 @@ dashcoeff = {
         'bibtex'      : "Podeszwa:2010:550",
         'default'     : collections.OrderedDict([("s6", 1.0)]),
         'definitions' : {
+            '***'     : {'params': {'s6': 1.0}},
         }
     },
     'atmgr': {
-        'formal'      : "ATM-Grimme",
+        'formal'      : "ATM(GR)",
         'alias'       : [],
         'description' : "    Grimme approximate Axilrod-Teller-Muto 3-body Dispersion Correction",
         'citation'    : "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n",
         'bibtex'      : "Grimme:2010:154104",
         'default'     : collections.OrderedDict([("alpha6", 14.0)]),
         'definitions' : {
-            'pbe'         : {'params': {'alpha6': 14.0}}, # alpha6 = 14 => damping parameter used is alp8 = 16
+            '***'     : {'params': {'alpha6': 14.0}, 'citation' : ''},  # alpha6 = 14 => damping parameter used is alp8 = 16
         }
     },
 } # yapf: disable
@@ -517,10 +520,15 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
         trial_split = name_hint.rsplit('-', 1)
 
         if name_hint in get_dispersion_aliases():
-            # case disp-only: d3, d3zero, d3(bj)
             dashlevel_candidate_2 = get_dispersion_aliases()[name_hint]
-            name_key = None
-            disp_params = {}
+            if list(dashcoeff[dashlevel_candidate_2]['definitions']) == ['***']:
+            # case disp-only fctl-indep: chg, atmgr
+                name_key = '***'
+                disp_params = dashcoeff[dashlevel_candidate_2]['definitions'][name_key]['params']
+            else:
+            # case disp-only: d3, d3zero, d3(bj)
+                name_key = None
+                disp_params = {}
         elif (dashcoeff_supplement is not None) and name_hint in supplement_dashlevel_lookup:
             # case fctldisp: wb97x-d, hf+d
             dashlevel_candidate_2 = supplement_dashlevel_lookup[name_hint]
@@ -532,6 +540,12 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
             dashlevel_candidate_2 = get_dispersion_aliases()[trial_split[1]]
             name_key = trial_split[0]
             disp_params = dashcoeff[dashlevel_candidate_2]['definitions'][trial_split[0]]['params']
+        elif (len(trial_split) == 2 and trial_split[1] in get_dispersion_aliases()
+              and list(dashcoeff[get_dispersion_aliases()[trial_split[1]]]['definitions']) == ['***']):
+            # case fctldisp: asdf-chg, pbe-atmgr
+            dashlevel_candidate_2 = get_dispersion_aliases()[trial_split[1]]
+            name_key = '***'
+            disp_params = dashcoeff[dashlevel_candidate_2]['definitions'][name_key]['params']
         elif (level_hint is not None) and name_hint in dashcoeff[dashlevel_candidate_1]['definitions']:
             # case fctl: b3lyp
             dashlevel_candidate_2 = None
@@ -586,11 +600,17 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
     if ((name_hint is not None) and (dashcoeff_supplement is not None)
             and (name_key in dashcoeff_supplement[dashleveleff]['definitions'])
             and (disp_params == dashcoeff_supplement[dashleveleff]['definitions'][name_key]['params'])):
-        fctldasheff = name_key
         citeff = dashcoeff_supplement[dashleveleff]['definitions'][name_key].get('citation', '')
+        if name_key == '***':
+            fctldasheff = ''
+        else:
+            fctldasheff = name_key
     elif name_hint not in [None, ''] and (disp_params == dashcoeff[dashleveleff]['definitions'][name_key]['params']):
-        fctldasheff = '-'.join([name_key, dashcoeff[dashleveleff]['formal'].lower()])
         citeff = dashcoeff[dashleveleff]['definitions'][name_key].get('citation', '')
+        if name_key == '***':
+            fctldasheff = dashcoeff[dashleveleff]['formal'].lower()
+        else:
+            fctldasheff = '-'.join([name_key, dashcoeff[dashleveleff]['formal'].lower()])
     else:
         if dashcoeff_supplement is not None:
             for func, params in dashcoeff_supplement[dashleveleff]['definitions'].items():
@@ -612,7 +632,7 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
     # TODO right now citation is empty if undefined. remove key or use None or False instead?
 
     if verbose > 1:
-        print('intf_dftd3.from_arrays RESOLVED:', dashleveleff, disp_params, fctldasheff, citeff)
+        print(f'intf_dftd3.from_arrays RESOLVED: dashlevel={dashleveleff}, dashparams={disp_params}, fctldash={fctldasheff}, dashparams_citation={citeff}')
 
     return {
         'dashlevel': dashleveleff,
