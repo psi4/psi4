@@ -350,7 +350,7 @@ void CUHF::form_D() {
     }
 }
 
-double CUHF::compute_initial_E() { return nuclearrep + Dt_->vector_dot(H_); }
+double CUHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 
 double CUHF::compute_E() {
     double DH = Dt_->vector_dot(H_);
