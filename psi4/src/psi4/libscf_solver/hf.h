@@ -207,7 +207,7 @@ class HF : public Wavefunction {
     int multiplicity_;
 
     /// SAD Guess and propagation
-    void compute_SAD_guess();
+    virtual void compute_SAD_guess();
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);

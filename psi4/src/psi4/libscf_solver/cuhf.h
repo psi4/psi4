@@ -107,6 +107,8 @@ class CUHF final : public HF {
     bool stability_analysis() override;
 
     std::shared_ptr<CUHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
+
+    void compute_SAD_guess() override;
 };
 }  // namespace scf
 }  // namespace psi

@@ -509,7 +509,7 @@ void ROHF::form_D() {
     }
 }
 
-double ROHF::compute_initial_E() { return 0.5 * (compute_E() + nuclearrep_); }
+double ROHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 
 double ROHF::compute_E() {
     double one_electron_E = Dt_->vector_dot(H_);
@@ -1332,6 +1332,14 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
 
     return hf_wfn;
+}
+
+void ROHF::compute_SAD_guess() {
+    // Form the SAD guess
+    HF::compute_SAD_guess();
+    // Form the total density matrix that's used in energy evaluation
+    Dt_->copy(Da_);
+    Dt_->add(Db_);
 }
 }  // namespace scf
 }  // namespace psi

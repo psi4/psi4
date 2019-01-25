@@ -350,12 +350,16 @@ void CUHF::form_D() {
     }
 }
 
-// TODO: Once Dt_ is refactored to D_ the only difference between this and RHF::compute_initial_E is a factor of 0.5
-double CUHF::compute_initial_E() { return nuclearrep_ + 0.5 * (Dt_->vector_dot(H_)); }
+double CUHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 
 double CUHF::compute_E() {
-    double one_electron_E = Dt_->vector_dot(H_);
-    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);
+    double DH = Dt_->vector_dot(H_);
+    double DFa = Da_->vector_dot(Fa_);
+    double DFb = Db_->vector_dot(Fb_);
+
+    double one_electron_E = DH;
+    double two_electron_E = 0.5 * (DFa + DFb - one_electron_E);
+    double Eelec = 0.5 * (DH + DFa + DFb);
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
@@ -364,10 +368,6 @@ double CUHF::compute_E() {
     energies_["VV10_E"] = 0.0;
     energies_["-D"] = 0.0;
 
-    double DH = Dt_->vector_dot(H_);
-    double DFa = Da_->vector_dot(Fa_);
-    double DFb = Db_->vector_dot(Fb_);
-    double Eelec = 0.5 * (DH + DFa + DFb);
     // outfile->Printf( "electronic energy = %20.14f\n", Eelec);
     double Etotal = nuclearrep_ + Eelec;
     return Etotal;
@@ -422,6 +422,14 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
 
     return hf_wfn;
+}
+
+void CUHF::compute_SAD_guess() {
+    // Form the SAD guess
+    HF::compute_SAD_guess();
+    // Form the total density used in energy evaluation
+    Dt_->copy(Da_);
+    Dt_->add(Db_);
 }
 }  // namespace scf
 }  // namespace psi
