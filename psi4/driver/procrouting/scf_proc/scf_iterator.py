@@ -324,12 +324,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             efp_Dt_psi4_yo.add(self.Db())
             SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
 
-        if (self.iteration_ == 0) and self.sad_:
-            # SAD gives a non-variational first energy in RHF and UHF,
-            # and a completely nonsensical one in ROHF/CUHF
-            core.print_out("    First iteration: building orbitals from the SAD guess.\n")
-            SCFE = 0.0
-
         self.set_energies("Total Energy", SCFE)
         core.set_variable("SCF ITERATION ENERGY", SCFE)
         Ediff = SCFE - SCFE_old
@@ -435,8 +429,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Db().print_out()
 
         # Print out the iteration
-        core.print_out("   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n" %
-                       ("DF-" if is_dfjk else "", reference, self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
+        core.print_out("   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+                       ("DF-" if is_dfjk else "", reference, "SAD" if ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
 
         # if a an excited MOM is requested but not started, don't stop yet
         if self.MOM_excited_ and not self.MOM_performed_:
