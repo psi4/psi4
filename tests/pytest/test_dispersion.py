@@ -11,7 +11,6 @@ import psi4
 from psi4.driver import qcdb
 from psi4.driver.qcdb import intf_dftd3
 
-
 ## Resources
 
 ref = {}
@@ -23,8 +22,10 @@ ref['eneyne']['B3LYP-D3(BJ)'] = dict(zip(dmm, [-0.00784595, -0.00394347, -0.0022
 ref['eneyne']['PBE-D2'] = dict(zip(dmm, [-0.00278650, -0.00118051, -0.00041513, -0.00118051, -0.00041513]))
 ref['eneyne']['PBE-D3'] = dict(zip(dmm, [-0.00175474, -0.00045421, -0.00016839, -0.00045421, -0.00016839]))
 ref['eneyne']['PBE-D3(BJ)'] = dict(zip(dmm, [-0.00475937, -0.00235265, -0.00131239, -0.00235265, -0.00131239]))
-ref['eneyne']['ATM'] = dict(zip(dmm, [-0.000000175571, 0.000000216003, -0.000000055859, 0.000000216003, -0.000000055859]))
-ref['eneyne']['MP2-DMP2'] = dict(zip(dmm, [0.00632174635953, 0.00265335573161, 0.00344334929607, 0.00265335573161, 0.00344334929607]))
+ref['eneyne']['ATM'] = dict(
+    zip(dmm, [-0.000000175571, 0.000000216003, -0.000000055859, 0.000000216003, -0.000000055859]))
+ref['eneyne']['MP2-DMP2'] = dict(
+    zip(dmm, [0.00632174635953, 0.00265335573161, 0.00344334929607, 0.00265335573161, 0.00344334929607]))
 ref['ne'] = {}
 ref['ne']['B3LYP-D3(BJ)'] = {'atom': 0.0}
 ref['ne']['MP2-DMP2'] = {'atom': 0.0}
@@ -78,7 +79,7 @@ gref['eneyne']['B3LYP-D2'] = dict(zip(dmm, [
   0.00000000000000E+00,  0.00000000000000E+00,  0.56456483332009E-03,
   0.00000000000000E+00,  0.00000000000000E+00,  0.53090524837336E-03,
   0.00000000000000E+00,  0.00000000000000E+00, -0.52841549233948E-03]).reshape((-1, 3)),
-]))
+]))  # yapf: disable
 gref['eneyne']['B3LYP-D3'] = dict(zip(dmm, [
     np.array([
   0.67762635780344E-20,  0.19657186672293E-03, -0.23180716200687E-03,
@@ -125,7 +126,7 @@ gref['eneyne']['B3LYP-D3'] = dict(zip(dmm, [
   0.00000000000000E+00,  0.00000000000000E+00,  0.21634915516554E-03,
   0.00000000000000E+00,  0.00000000000000E+00,  0.17823532330490E-03,
   0.00000000000000E+00,  0.00000000000000E+00, -0.17706161234922E-03]).reshape((-1, 3)),
-])),
+]))  # yapf: disable
 gref['eneyne']['B3LYP-D3(BJ)'] = dict(zip(dmm, [
     np.array([
   0.16940658945086E-20, -0.10896372137622E-03, -0.28496931787936E-03,
@@ -172,7 +173,7 @@ gref['eneyne']['B3LYP-D3(BJ)'] = dict(zip(dmm, [
   0.00000000000000E+00,  0.00000000000000E+00, -0.45561218665227E-04,
   0.00000000000000E+00,  0.00000000000000E+00, -0.69342175541743E-04,
   0.00000000000000E+00,  0.00000000000000E+00,  0.69351083220036E-04]).reshape((-1, 3)),
-]))
+]))  # yapf: disable
 gref['eneyne']['PBE-D2'] = dict(zip(dmm, [
     np.array([
   0.00000000000000E+00,  0.34868860375520E-03, -0.37603298259607E-03,
@@ -219,7 +220,7 @@ gref['eneyne']['PBE-D2'] = dict(zip(dmm, [
   0.00000000000000E+00,  0.00000000000000E+00,  0.40326061354193E-03,
   0.00000000000000E+00,  0.00000000000000E+00,  0.37921805177386E-03,
   0.00000000000000E+00,  0.00000000000000E+00, -0.37743965452603E-03]).reshape((-1, 3)),
-]))
+]))  # yapf: disable
 gref['eneyne']['PBE-D3'] = dict(zip(dmm, [
     np.array([
   0.33881317890172E-20,  0.97730853016389E-04, -0.71901324069440E-04,
@@ -266,7 +267,7 @@ gref['eneyne']['PBE-D3'] = dict(zip(dmm, [
   0.00000000000000E+00,  0.00000000000000E+00,  0.99340886211351E-04,
   0.00000000000000E+00,  0.00000000000000E+00,  0.67878928346081E-04,
   0.00000000000000E+00,  0.00000000000000E+00, -0.67318299245317E-04]).reshape((-1, 3)),
-]))
+]))  # yapf: disable
 gref['eneyne']['PBE-D3(BJ)'] = dict(zip(dmm, [
     np.array([
   0.00000000000000E+00, -0.61939589939064E-04, -0.16066534797355E-03,
@@ -313,7 +314,7 @@ gref['eneyne']['PBE-D3(BJ)'] = dict(zip(dmm, [
   0.00000000000000E+00,  0.00000000000000E+00, -0.25704336611069E-04,
   0.00000000000000E+00,  0.00000000000000E+00, -0.41528315631943E-04,
   0.00000000000000E+00,  0.00000000000000E+00,  0.41546767362234E-04]).reshape((-1, 3)),
-]))
+]))  # yapf: disable
 gref['eneyne']['ATM'] = dict(zip(dmm, [
     np.array([
   0.00000000000000E+00, -0.57988139838201E-06, -0.71628554331971E-06,
@@ -360,7 +361,7 @@ gref['eneyne']['ATM'] = dict(zip(dmm, [
   0.00000000000000E+00,  0.00000000000000E+00, -0.14067311316192E-07,
   0.00000000000000E+00,  0.00000000000000E+00,  0.67277034390041E-07,
   0.00000000000000E+00,  0.00000000000000E+00, -0.67289088637954E-07]).reshape((-1, 3)),
-]))
+]))  # yapf: disable
 gref['ne'] = {}
 gref['ne']['B3LYP-D3(BJ)'] = {'atom': np.zeros(3).reshape((-1, 3))}
 gref['ne']['MP2-DMP2'] = {'atom': np.zeros(3).reshape((-1, 3))}
@@ -474,6 +475,7 @@ def _compute_key(pjrec):
 
 ## Tests
 
+
 @pytest.mark.parametrize("inp,expected", [
     (({'name_hint': 'b3lyp', 'level_hint': 'd3bj'}, 'B3LYP-D3(BJ)'), db3lypd3bj),
     (({'name_hint': 'b3LYP', 'level_hint': 'D3bj'}, 'B3LYP-D3(BJ)'), db3lypd3bj),
@@ -488,7 +490,7 @@ def _compute_key(pjrec):
     (({'name_hint': 'atmgr'}, 'ATM(GR)'), atmgr),
     (({'name_hint': 'bp86-atmgr'}, 'ATM(GR)'), atmgr),
     (({'name_hint': 'asdf-chg'}, 'CHG'), chg),
-])
+])  # yapf: disable
 def test_intf_dftd3__from_arrays(inp, expected):
     res = intf_dftd3.from_arrays(**inp[0])
     assert compare_dicts(expected, res, 4, tnm())
@@ -505,14 +507,21 @@ def test_intf_dftd3__from_arrays(inp, expected):
     ({'name_hint': 'b3lyp-d3bj', 'param_tweaks': {'a2': 4.4211, 'zzz': 0.0}}),
     ({'name_hint': 'asdf-d4'}),
     ({'name_hint': 'atm(gr)', 'level_hint': 'chg'}),
-])
+])  # yapf:disable
 def test_intf_dftd3__from_arrays__error(inp):
     with pytest.raises(qcdb.ValidationError):
         intf_dftd3.from_arrays(**inp)
 
 
 def test_intf_dftd3__from_arrays__supplement():
-    ans = {'dashlevel': 'chg', 'dashparams': {'s6': 4.05}, 'fctldash': 'asdf-d4', 'dashparams_citation': '    mypaper\n'}
+    ans = {
+        'dashlevel': 'chg',
+        'dashparams': {
+            's6': 4.05
+        },
+        'fctldash': 'asdf-d4',
+        'dashparams_citation': '    mypaper\n'
+    }
     supp = {'chg': {'definitions': {'asdf-d4': {'params': {'s6': 4.05}, 'citation': '    mypaper\n'}}}}
 
     res = intf_dftd3.from_arrays(name_hint='asdf-d4', level_hint='chg', dashcoeff_supplement=supp)
@@ -537,29 +546,28 @@ def test_3():
     assert compare_strings('B3LYP-D3(BJ)', _compute_key(res['options']), 'key')
 
 
-
-
-
 @using_dftd3
 @pytest.mark.parametrize(
     "subjects", [
         pytest.param(eneyne_ne_pmolecules, marks=using_psi4),
         pytest.param(eneyne_ne_qmolecules),
-    ], ids=['qmol', 'pmol'])
-@pytest.mark.parametrize("inp", [
-    ({'first': 'b3lyp', 'second': 'd', 'parent': 'eneyne', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
-    ({'first': 'b3lyp', 'second': 'd3bj', 'parent': 'eneyne', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
-    ({'first': 'pbe', 'second': 'd3zero', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'PBE-D3'}),
-    ({'first': 'pbe', 'second': 'd3zero', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'PBE-D3'}),
-    ({'first': 'pbe', 'second': 'd2', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'PBE-D2'}),
-    ({'first': 'b3lyp', 'second': 'd3bj', 'parent': 'ne', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}),
-    #({'first': '', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'dimer', 'lbl': 'ATM'}),
-    #({'first': 'b3lyp', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'mA', 'lbl': 'ATM'}),
-    #({'first': 'pbe', 'second': 'atm(gr)', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'ATM'}),
-    #({'first': '', 'second': 'ATMgr', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'ATM'}),
-    ({'first': 'atmgr', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'ATM'}),
-    ({'first': 'pbe-atmgr', 'second': None, 'parent': 'ne', 'subject': 'atom', 'lbl': 'ATM'}),
-])
+    ],
+    ids=['qmol', 'pmol'])
+@pytest.mark.parametrize(
+    "inp", [
+        ({'first': 'b3lyp', 'second': 'd', 'parent': 'eneyne', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
+        ({'first': 'b3lyp', 'second': 'd3bj', 'parent': 'eneyne', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
+        ({'first': 'pbe', 'second': 'd3zero', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'PBE-D3'}),
+        ({'first': 'pbe', 'second': 'd3zero', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'PBE-D3'}),
+        ({'first': 'pbe', 'second': 'd2', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'PBE-D2'}),
+        ({'first': 'b3lyp', 'second': 'd3bj', 'parent': 'ne', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}),
+        #({'first': '', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'dimer', 'lbl': 'ATM'}),
+        #({'first': 'b3lyp', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'mA', 'lbl': 'ATM'}),
+        #({'first': 'pbe', 'second': 'atm(gr)', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'ATM'}),
+        #({'first': '', 'second': 'ATMgr', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'ATM'}),
+        ({'first': 'atmgr', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'ATM'}),
+        ({'first': 'pbe-atmgr', 'second': None, 'parent': 'ne', 'subject': 'atom', 'lbl': 'ATM'}),
+    ])  # yapf: disable
 def test_molecule__run_dftd3__23body(inp, subjects):
     subject = subjects()[inp['parent']][inp['subject']]
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
@@ -577,15 +585,19 @@ def test_qcdb__energy_d3():
 
     E, jrec = qcdb.energy('d3-b3lyp-d2', return_wfn=True)
     assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], E, 7, 'P: Ethene-Ethyne -D2')
-    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], jrec['qcvars']['B3LYP-D2 DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7,
+                          tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D2']['dimer'],
+                          jrec['qcvars']['B3LYP-D2 DISPERSION CORRECTION ENERGY'].data, 7, tnm())
 
     mA = eneyne.extract_subsets(1)
 
     E, jrec = qcdb.energy('d3-b3lyp-d3bj', return_wfn=True, molecule=mA)
     assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], E, 7, tnm())
-    assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-    assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['B3LYP-D3(BJ) DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'], jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7,
+                          tnm())
+    assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'],
+                          jrec['qcvars']['B3LYP-D3(BJ) DISPERSION CORRECTION ENERGY'].data, 7, tnm())
 
 
 @using_dftd3
@@ -593,7 +605,8 @@ def test_qcdb__energy_d3():
     "subjects", [
         pytest.param(eneyne_ne_pmolecules, marks=using_psi4),
         pytest.param(eneyne_ne_qmolecules),
-    ], ids=['qmol', 'pmol'])
+    ],
+    ids=['qmol', 'pmol'])
 @pytest.mark.parametrize("inp", [
     ({'parent': 'eneyne', 'name': 'd3-b3lyp-d', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
     ({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
@@ -601,7 +614,7 @@ def test_qcdb__energy_d3():
     ({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}),
     ({'parent': 'eneyne', 'name': 'd3-PBE-D2', 'subject': 'mAgB', 'lbl': 'PBE-D2'}),
     ({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}),
-])
+])  # yapf: disable
 def test_intf_dftd3__run_dftd3__2body(inp, subjects):
     subject = subjects()[inp['parent']][inp['subject']]
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
@@ -626,7 +639,8 @@ def test_intf_dftd3__run_dftd3__2body(inp, subjects):
     "subjects", [
         pytest.param(eneyne_ne_pmolecules, marks=using_psi4),
         pytest.param(eneyne_ne_qmolecules),
-    ], ids=['qmol', 'pmol'])
+    ],
+    ids=['qmol', 'pmol'])
 @pytest.mark.parametrize("inp", [
     ({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'dimer', 'lbl': 'ATM'}),
     ({'parent': 'eneyne', 'name': 'd3-b3lyp-atmgr', 'subject': 'mA', 'lbl': 'ATM'}),
@@ -634,7 +648,7 @@ def test_intf_dftd3__run_dftd3__2body(inp, subjects):
     ({'parent': 'eneyne', 'name': 'd3-ATMgr', 'subject': 'mAgB', 'lbl': 'ATM'}),
     ({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'gAmB', 'lbl': 'ATM'}),
     ({'parent': 'ne', 'name': 'd3-atmgr', 'subject': 'atom', 'lbl': 'ATM'}),
-])
+])  # yapf: disable
 def test_intf_dftd3__run_dftd3__3body(inp, subjects):
     subject = subjects()[inp['parent']][inp['subject']]
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
@@ -646,9 +660,11 @@ def test_intf_dftd3__run_dftd3__3body(inp, subjects):
     assert compare_values(expected, jrec['qcvars']['CURRENT ENERGY'].data, 7, tnm())
     assert compare_values(expected, jrec['qcvars']['DISPERSION CORRECTION ENERGY'].data, 7, tnm())
     assert compare_values(expected, jrec['qcvars']['3-BODY DISPERSION CORRECTION ENERGY'].data, 7, tnm())
-    assert compare_values(expected, jrec['qcvars']['AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+    assert compare_values(expected, jrec['qcvars']['AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION ENERGY'].data, 7,
+                          tnm())
 
     assert compare_arrays(gexpected, jrec['qcvars']['CURRENT GRADIENT'].data, 7, tnm())
     assert compare_arrays(gexpected, jrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data, 7, tnm())
     assert compare_arrays(gexpected, jrec['qcvars']['3-BODY DISPERSION CORRECTION GRADIENT'].data, 7, tnm())
-    assert compare_arrays(gexpected, jrec['qcvars']['AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION GRADIENT'].data, 7, tnm())
+    assert compare_arrays(gexpected, jrec['qcvars']['AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION GRADIENT'].data,
+                          7, tnm())

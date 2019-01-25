@@ -522,11 +522,11 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
         if name_hint in get_dispersion_aliases():
             dashlevel_candidate_2 = get_dispersion_aliases()[name_hint]
             if list(dashcoeff[dashlevel_candidate_2]['definitions']) == ['***']:
-            # case disp-only fctl-indep: chg, atmgr
+                # case disp-only fctl-indep: chg, atmgr
                 name_key = '***'
                 disp_params = dashcoeff[dashlevel_candidate_2]['definitions'][name_key]['params']
             else:
-            # case disp-only: d3, d3zero, d3(bj)
+                # case disp-only: d3, d3zero, d3(bj)
                 name_key = None
                 disp_params = {}
         elif (dashcoeff_supplement is not None) and name_hint in supplement_dashlevel_lookup:
@@ -632,7 +632,9 @@ def from_arrays(name_hint=None, level_hint=None, param_tweaks=None, dashcoeff_su
     # TODO right now citation is empty if undefined. remove key or use None or False instead?
 
     if verbose > 1:
-        print(f'intf_dftd3.from_arrays RESOLVED: dashlevel={dashleveleff}, dashparams={disp_params}, fctldash={fctldasheff}, dashparams_citation={citeff}')
+        print(
+            f'intf_dftd3.from_arrays RESOLVED: dashlevel={dashleveleff}, dashparams={disp_params}, fctldash={fctldasheff}, dashparams_citation={citeff}'
+        )
 
     return {
         'dashlevel': dashleveleff,

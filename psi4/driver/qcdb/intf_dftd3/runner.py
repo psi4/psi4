@@ -145,12 +145,14 @@ def run_dftd3_from_arrays(molrec,
 def dftd3_driver(jobrec, verbose=1):
     """Drive the jobrec@i (input) -> dftd3rec@i -> dftd3rec@io -> jobrec@io (returned) process."""
 
-    return module_driver(jobrec=jobrec,
-                         module_label='dftd3',
-                         plant=dftd3_plant,
-                         run=dftd3_subprocess,
-                         harvest=dftd3_harvest,
-                         verbose=verbose)
+    return module_driver(
+        jobrec=jobrec,
+        module_label='dftd3',
+        plant=dftd3_plant,
+        run=dftd3_subprocess,
+        harvest=dftd3_harvest,
+        verbose=verbose)
+
 
 def module_driver(jobrec, module_label, plant, run, harvest, verbose=1):
     """Drive the jobrec@i (input) -> modulerec@i -> modulerec@io -> jobrec@io (returned) process.
@@ -242,7 +244,8 @@ def dftd3_plant(jobrec):
 
     dftd3rec['dftd3par'] = dftd3_coeff_formatter(dftd3rec['dashlevel'], dftd3rec['dashparams'])
 
-    dftd3rec['dftd3_geometry'] = qcel.molparse.to_string(jobrec['molecule'], dtype='xyz', units='Angstrom', ghost_format='')
+    dftd3rec['dftd3_geometry'] = qcel.molparse.to_string(
+        jobrec['molecule'], dtype='xyz', units='Angstrom', ghost_format='')
 
     command = ['dftd3', 'dftd3_geometry.xyz']
     if jobrec['driver'] == 'gradient':
@@ -360,7 +363,8 @@ def dftd3_harvest(jobrec, dftd3rec):
         if jobrec['driver'] == 'gradient':
             calcinfo.append(QCAspect('DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
             calcinfo.append(QCAspect('3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
-            calcinfo.append(QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
+            calcinfo.append(
+                QCAspect('AXILROD-TELLER-MUTO 3-BODY DISPERSION CORRECTION GRADIENT', 'Eh/a0', fullgrad, ''))
 
     else:
         calcinfo.append(QCAspect('DISPERSION CORRECTION ENERGY', 'Eh', ene, ''))
@@ -451,8 +455,7 @@ def dftd3_coeff_formatter(dashlvl, dashcoeff):
         # need to set first four parameters to something other than None, otherwise DFTD3 gets mad or a bit wrong
         return dashformatter.format(1.0, 0.0, 0.0, 0.0, dashcoeff['alpha6'], 3)
     else:
-        raise ValidationError(
-            f"""-D correction level {dashlvl} is not available. Choose among {dashcoeff.keys()}.""")
+        raise ValidationError(f"""-D correction level {dashlvl} is not available. Choose among {dashcoeff.keys()}.""")
 
 
 """
