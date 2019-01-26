@@ -503,18 +503,24 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         for (size_t i = 0; i < x_vec.size(); i++) {
+            // always have a J-like piece (optionally include Xc)
+            if (functional_->needs_xc()) {
+                J[i]->add(Vx[i]);
+            }
             ret.push_back(J[i]);
+            // may have K^HF
             if (functional_->is_x_hybrid()) {
                 K[i]->scale(alpha);
-                ret.push_back(K[i]);
+                // may have K^HF + wK
                 if (functional_->is_x_lrc()) {
-                    wK[i]->scale(beta);
-                    ret.push_back(wK[i]);
+                    K[i]->axpy(beta, wK[i]);
                 }
-            }
-            if (functional_->needs_xc()) {
-                ret.push_back(Vx[i]);
-            }
+                ret.push_back(K[i]);
+                // could also have just wK
+            } else if (functional_->is_x_lrc()) {
+                wK[i]->scale(beta);
+                ret.push_back(wK[i]);
+            }  // also may have not k-like piece
         }
     }
 

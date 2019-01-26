@@ -455,11 +455,12 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         std::vector<SharedMatrix> Dx;
         // Gotta reorder the wizardry
         for (size_t i = 0; i < nvecs; i++) {
-            Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
-            Vx.push_back(std::make_shared<Matrix>("Vax Temp", Dx[i]->rowspi(), Dx[i]->colspi()));
-
-            Dx.push_back(linalg::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true));
-            Vx.push_back(std::make_shared<Matrix>("Vbx Temp", Dx[nvecs + i]->rowspi(), Dx[nvecs + i]->colspi()));
+            auto Dx_a = linalg::doublet(Cl[i], Cr[i], false, true);
+            auto Dx_b = linalg::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true);
+            Vx.push_back(std::make_shared<Matrix>("Vax temp", Dx_a->rowspi(), Dx_a->colspi(), Dx_a->symmetry()));
+            Vx.push_back(std::make_shared<Matrix>("Vbx temp", Dx_b->rowspi(), Dx_b->colspi(), Dx_b->symmetry()));
+            Dx.push_back(Dx_a);
+            Dx.push_back(Dx_b);
         }
         potential_->compute_Vx(Dx, Vx);
     }
@@ -499,21 +500,28 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         for (size_t i = 0; i < nvecs; i++) {
+            J[i]->add(J[nvecs + i]);
+            J[nvecs + i]->copy(J[i]);
+            if (functional_->needs_xc()) {
+                J[i]->add(Vx[2 * i]);
+                J[nvecs + i]->add(Vx[2 * i + 1]);
+            }
             ret.push_back(J[i]);
             ret.push_back(J[nvecs + i]);
             if (functional_->is_x_hybrid()) {
                 K[i]->scale(alpha);
-                ret.push_back(K[i]);
-
                 K[nvecs + i]->scale(alpha);
-                ret.push_back(K[nvecs + i]);
                 if (functional_->is_x_lrc()) {
                     K[i]->axpy(beta, wK[i]);
                     K[nvecs + i]->axpy(beta, wK[nvecs + i]);
                 }
-            }
-            if (functional_->needs_xc()) {
-                ret.push_back(Vx[i]);
+                ret.push_back(K[i]);
+                ret.push_back(K[nvecs + i]);
+            } else if (functional_->is_x_lrc()) {
+                wK[i]->scale(beta);
+                wK[nvecs + i]->scale(beta);
+                ret.push_back(wK[i]);
+                ret.push_back(wK[nvecs + i]);
             }
         }
     }

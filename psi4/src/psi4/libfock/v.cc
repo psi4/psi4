@@ -1902,8 +1902,8 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             }
             parallel_timer_off("Derivative Properties", rank);
 
-            // => LSDA contribution (symmetrized) <= //
             parallel_timer_on("V_XCd", rank);
+            // => LSDA contribution (symmetrized) <= //
             double tmp_val = 0.0, tmp_ab_val = 0.0;
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
@@ -2108,8 +2108,8 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 #pragma omp atomic update
                 Vbxp[mg][mg] += Vbx_localp[ml][ml];
             }
+            parallel_timer_off("V_XCd", rank);
         }
-        parallel_timer_off("V_XCd", rank);
     }
 
     // Set the result
@@ -2467,4 +2467,4 @@ SharedMatrix UV::compute_gradient() {
 
     return G;
 }
-}
+}  // namespace psi
