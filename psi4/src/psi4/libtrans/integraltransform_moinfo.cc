@@ -201,7 +201,7 @@ void IntegralTransform::process_spaces() {
             for (int h = 0; h < nirreps_; ++h) {
                 for (int n = 0; n < aOrbsPI[h]; ++n) {
                     if (transformationType_ == TransformationType::Restricted) {
-                        aPitzerCount = pitzerOffset + nalphapi_[h];
+                        aPitzerCount = pitzerOffset + nbetapi_[h];
                     } else {
                         aPitzerCount = pitzerOffset + nalphapi_[h];
                     }
