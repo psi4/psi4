@@ -1083,6 +1083,26 @@ void HF::guess() {
         sad_ = true;
         guess_E = compute_initial_E();
 
+    } else if (guess_type == "HUCKEL") {
+        if (print_) outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic UHF (doi:10.1021/acs.jctc.8b01089).\n\n");
+
+        // Huckel guess, written by Susi Lehtola 2019-01-27.  See "An
+        // assessment of initial guesses for self-consistent field
+        // calculations. Superposition of Atomic Potentials: simple
+        // yet efficient", JCTC 2019, doi: 10.1021/acs.jctc.8b01089.
+
+        if (!options_.get_bool("SAD_SPIN_AVERAGE")) {
+            throw PSIEXCEPTION("  Huckel guess requires SAD_SPIN_AVERAGE = True!");
+        }
+        if (!options_.get_bool("SAD_FRAC_OCC")) {
+            throw PSIEXCEPTION("  Huckel guess requires SAD_FRAC_OCC = True!");
+        }
+        compute_huckel_guess();
+
+        form_initial_C();
+        form_D();
+        guess_E = compute_initial_E();
+
     } else if (guess_type == "GWH") {
         // Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
         if (print_) outfile->Printf("  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");

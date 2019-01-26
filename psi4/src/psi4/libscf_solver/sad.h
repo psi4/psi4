@@ -56,12 +56,13 @@ class SADGuess {
 
     void common_init();
 
-    SharedMatrix form_D_AO();
+    void run_atomic_calculations(SharedMatrix& D_AO, SharedMatrix& Huckel_C, SharedVector& Huckel_E);
     void form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S, SharedMatrix X);
     void get_uhf_atomic_density(std::shared_ptr<BasisSet> atomic_basis, std::shared_ptr<BasisSet> fit_basis,
-                                SharedVector occ_a, SharedVector occ_b, SharedMatrix D);
-    void form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
-                      SharedMatrix D);
+                                SharedVector occ_a, SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel,
+                                SharedVector Ehuckel);
+    void form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedVector E, SharedMatrix Cocc,
+                      SharedVector occ, SharedMatrix D);
 
     void form_D();
     void form_C();
@@ -76,6 +77,8 @@ class SADGuess {
     SharedMatrix Db() const { return Db_; }
     SharedMatrix Ca() const { return Ca_; }
     SharedMatrix Cb() const { return Cb_; }
+
+    SharedMatrix huckel_guess();
 
     void set_atomic_fit_bases(std::vector<std::shared_ptr<BasisSet>> fit_bases) { atomic_fit_bases_ = fit_bases; }
     void set_print(int print) { print_ = print; }

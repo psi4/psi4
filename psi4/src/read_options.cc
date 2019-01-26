@@ -1237,7 +1237,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The type of guess orbitals.  Defaults to SAD for RHF, GWH for ROHF and UHF,
         and READ for geometry optimizations after the first step. -*/
 
-        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD READ");
+        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD HUCKEL READ");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
         Notice that this procedure is defined only for calculations in C1 symmetry. -*/
