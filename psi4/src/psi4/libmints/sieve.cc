@@ -56,10 +56,12 @@ void ERISieve::common_init() {
 
     Options &options = Process::environment.options;
     do_qqr_ = false;  // Code below for QQR was/is utterly broken.
+    do_csam_ = true;
 
     debug_ = 0;
 
     integrals();
+    if (do_csam_) csam_integrals();
     set_sieve(sieve_);
 }
 
@@ -236,6 +238,8 @@ void ERISieve::integrals() {
         }
     }
 
+
+
 // All this is broken (only built one shell-pair's info)
 #if 0
     if (do_qqr_) {
@@ -307,6 +311,41 @@ void ERISieve::integrals() {
 #endif
 }
 
+void ERISieve::csam_integrals(){
+
+    shell_minima_sqrt_.resize((size_t)nshell_);
+    shell_pair_exchange_values_.resize(nshell_*(size_t)nshell_);
+    ::memset(&shell_minima_sqrt_[0], '\0', sizeof(double) * nshell_);
+    ::memset(&shell_pair_exchange_values_[0], '\0', sizeof(double) * nshell_ * nshell_);
+
+    IntegralFactory csamfactory(primary_, primary_, primary_, primary_);
+    std::shared_ptr<TwoBodyAOInt> eri = std::shared_ptr<TwoBodyAOInt>(csamfactory.eri());
+    const double *buffer = eri->buffer();
+
+    for (int P = 0; P < nshell_; P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            int nP = primary_->shell(P).nfunction();
+            int nQ = primary_->shell(Q).nfunction();
+            eri->compute_shell(P, P, Q, Q);
+            double max_val = 0.0;
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    max_val = std::max(max_val, std::fabs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ * nQ + 1)]));
+                }
+            }
+            shell_pair_exchange_values_[P * nshell_ + Q] = shell_pair_exchange_values_[Q * nshell_ + P] = max_val;
+
+            if (P == Q) {
+                double min_val = std::fabs(buffer[0]);
+                for (int p = 1; p < nP; ++p){
+                    min_val = std::min(min_val, std::fabs(buffer[p * (nP * nP * nP + nP) + p * (nP * nP + 1)]));
+                }
+                shell_minima_sqrt_[P] = std::sqrt(min_val);
+            }
+        }
+    }
+}
+
 bool ERISieve::shell_significant_qqr(int M, int N, int R, int S) {
     double Q_mn = shell_pair_values_[N * (size_t)nshell_ + M];
     double Q_rs = shell_pair_values_[R * (size_t)nshell_ + S];
@@ -327,6 +366,33 @@ bool ERISieve::shell_significant_qqr(int M, int N, int R, int S) {
         std::cout << "sieve2: " << sieve2_ << "\n";
     }
     return est >= sieve2_;
+}
+
+bool ERISieve::shell_significant_csam(int M, int N, int R, int S) {
+    double mn_mn = shell_pair_values_[N * (size_t)nshell_ + M];
+    double rs_rs = shell_pair_values_[S * (size_t)nshell_ + R];
+
+    double mm_rr = shell_pair_exchange_values_[R * (size_t)nshell_ + M];
+    double nn_ss = shell_pair_exchange_values_[S * (size_t)nshell_ + N];
+    double mm_ss = shell_pair_exchange_values_[S * (size_t)nshell_ + M];
+    double nn_rr = shell_pair_exchange_values_[R * (size_t)nshell_ + N];
+
+    double mm_mm_sqrt = shell_minima_sqrt_[(size_t)M];
+    double nn_nn_sqrt = shell_minima_sqrt_[(size_t)N];
+    double rr_rr_sqrt = shell_minima_sqrt_[(size_t)R];
+    double ss_ss_sqrt = shell_minima_sqrt_[(size_t)S];
+    double denom = mm_mm_sqrt * nn_nn_sqrt * rr_rr_sqrt * ss_ss_sqrt;
+
+    double csam_2 = std::max(mm_rr*nn_ss,mm_ss*nn_rr)/denom;
+    double mnrs_2 = mn_mn*rs_rs*csam_2;
+
+    //outfile->Printf("schwarz %.12f \n", mn_mn*rs_rs);
+    //outfile->Printf("num %.12f \n", std::max(mm_rr*nn_ss,mm_ss*nn_rr));
+    //outfile->Printf("denom %.12f \n", denom);
+    //outfile->Printf("total %.12f \n", mnrs_2);
+    //outfile->Printf("sieve2_%.12f \n\n", sieve2_);
+
+    return std::fabs(mnrs_2) >= sieve2_;
 }
 
 double ERISieve::shell_pair_value(int m, int n) const { return shell_pair_values_[m * nshell_ + n]; }

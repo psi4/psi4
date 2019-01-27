@@ -159,7 +159,19 @@ class PSI_API ERISieve {
     std::vector<double> extents_;
 
     ////////////////////////////////////////
+    // adding stuff for CSAM sieving (DOI 10.1063/1.4994190)
+    
+    bool do_csam_;
 
+    /// max |(MM|NN)| values (nshell * nshell)
+    std::vector<double> shell_pair_exchange_values_;
+    /// min |(MM|MM)| values (nshell)
+    std::vector<double> shell_minima_sqrt_;
+    /// Compute csam sieve integrals (only done once)
+    void csam_integrals();
+
+    ///////////////////////////////////////
+    
     /// Set initial indexing
     void common_init();
     /// Compute sieve integrals (only done once)
@@ -200,6 +212,10 @@ class PSI_API ERISieve {
             bool res = shell_significant_qqr(M, N, R, S);
             // std::cout << "QQR prune: " << res << "\n";
             return res;
+        } else if(do_csam_ && schwarz_bound){
+            bool res = shell_significant_csam(M, N, R, S);
+            //printf("CSAM prune %s \n" , res ? "yes" : "no");
+            return res;
         } else {
             return schwarz_bound;
         }
@@ -207,6 +223,9 @@ class PSI_API ERISieve {
 
     // Implements the QQR sieve
     bool shell_significant_qqr(int M, int N, int R, int S);
+
+    // Implements the CSAM sieve
+    bool shell_significant_csam(int M, int N, int R, int S);
 
     /// Is the integral (mn|rs) significant according to sieve? (no restriction on mnrs order)
     inline bool function_significant(int m, int n, int r, int s) {
