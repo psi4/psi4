@@ -56,7 +56,7 @@ void ERISieve::common_init() {
 
     Options &options = Process::environment.options;
     do_qqr_ = false;  // Code below for QQR was/is utterly broken.
-    do_csam_ = true;
+    do_csam_ = false;
 
     debug_ = 0;
 
@@ -313,9 +313,9 @@ void ERISieve::integrals() {
 
 void ERISieve::csam_integrals(){
 
-    shell_minima_sqrt_.resize((size_t)nshell_);
+    function_sqrt_.resize((size_t)nbf_);
     shell_pair_exchange_values_.resize(nshell_*(size_t)nshell_);
-    ::memset(&shell_minima_sqrt_[0], '\0', sizeof(double) * nshell_);
+    ::memset(&function_sqrt_[0], '\0', sizeof(double) * nbf_);
     ::memset(&shell_pair_exchange_values_[0], '\0', sizeof(double) * nshell_ * nshell_);
 
     IntegralFactory csamfactory(primary_, primary_, primary_, primary_);
@@ -323,25 +323,30 @@ void ERISieve::csam_integrals(){
     const double *buffer = eri->buffer();
 
     for (int P = 0; P < nshell_; P++) {
-        for (int Q = 0; Q <= P; Q++) {
+        for (int Q = P; Q >= 0; Q--) {
             int nP = primary_->shell(P).nfunction();
             int nQ = primary_->shell(Q).nfunction();
+            int oP = primary_->shell(P).function_index();
+            int oQ = primary_->shell(Q).function_index();
             eri->compute_shell(P, P, Q, Q);
+
+            // Computing Q_mu_mu (for denominator of Eq.9)
+            if (Q == P) {
+                int oP = primary_->shell(P).function_index();
+                for (int p = 0; p < nP; ++p){
+                    function_sqrt_[oP+p] = std::sqrt(std::fabs(buffer[p * (nP * nP * nP + nP) + p * (nP * nP + 1)]));
+                }
+            }
+            
+            // Computing square of M~_mu_lam (defined in Eq. 9)
             double max_val = 0.0;
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    max_val = std::max(max_val, std::fabs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ * nQ + 1)]));
+                    max_val = std::max(max_val, std::fabs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ * nQ + 1)]) / (function_sqrt_[p+oP]*function_sqrt_[q+oQ]) );
                 }
             }
             shell_pair_exchange_values_[P * nshell_ + Q] = shell_pair_exchange_values_[Q * nshell_ + P] = max_val;
 
-            if (P == Q) {
-                double min_val = std::fabs(buffer[0]);
-                for (int p = 1; p < nP; ++p){
-                    min_val = std::min(min_val, std::fabs(buffer[p * (nP * nP * nP + nP) + p * (nP * nP + 1)]));
-                }
-                shell_minima_sqrt_[P] = std::sqrt(min_val);
-            }
         }
     }
 }
@@ -369,28 +374,22 @@ bool ERISieve::shell_significant_qqr(int M, int N, int R, int S) {
 }
 
 bool ERISieve::shell_significant_csam(int M, int N, int R, int S) {
+
+    // Square of standard Cauchy-Schwarz Q_mu_nu terms (Eq. 1)
     double mn_mn = shell_pair_values_[N * (size_t)nshell_ + M];
     double rs_rs = shell_pair_values_[S * (size_t)nshell_ + R];
-
+    
+    // Square of M~_mu_nu terms (Eq. 9)
     double mm_rr = shell_pair_exchange_values_[R * (size_t)nshell_ + M];
     double nn_ss = shell_pair_exchange_values_[S * (size_t)nshell_ + N];
     double mm_ss = shell_pair_exchange_values_[S * (size_t)nshell_ + M];
     double nn_rr = shell_pair_exchange_values_[R * (size_t)nshell_ + N];
 
-    double mm_mm_sqrt = shell_minima_sqrt_[(size_t)M];
-    double nn_nn_sqrt = shell_minima_sqrt_[(size_t)N];
-    double rr_rr_sqrt = shell_minima_sqrt_[(size_t)R];
-    double ss_ss_sqrt = shell_minima_sqrt_[(size_t)S];
-    double denom = mm_mm_sqrt * nn_nn_sqrt * rr_rr_sqrt * ss_ss_sqrt;
+    // Square of M_mu_nu_lam_sig (Eq. 12)
+    double csam_2 = std::max(mm_rr*nn_ss,mm_ss*nn_rr);
 
-    double csam_2 = std::max(mm_rr*nn_ss,mm_ss*nn_rr)/denom;
+    // Square of Eq. 11
     double mnrs_2 = mn_mn*rs_rs*csam_2;
-
-    //outfile->Printf("schwarz %.12f \n", mn_mn*rs_rs);
-    //outfile->Printf("num %.12f \n", std::max(mm_rr*nn_ss,mm_ss*nn_rr));
-    //outfile->Printf("denom %.12f \n", denom);
-    //outfile->Printf("total %.12f \n", mnrs_2);
-    //outfile->Printf("sieve2_%.12f \n\n", sieve2_);
 
     return std::fabs(mnrs_2) >= sieve2_;
 }

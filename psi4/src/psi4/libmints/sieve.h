@@ -165,8 +165,8 @@ class PSI_API ERISieve {
 
     /// max |(MM|NN)| values (nshell * nshell)
     std::vector<double> shell_pair_exchange_values_;
-    /// min |(MM|MM)| values (nshell)
-    std::vector<double> shell_minima_sqrt_;
+    /// sqrt|(mm|mm)| values (nshell)
+    std::vector<double> function_sqrt_;
     /// Compute csam sieve integrals (only done once)
     void csam_integrals();
 
@@ -214,7 +214,6 @@ class PSI_API ERISieve {
             return res;
         } else if(do_csam_ && schwarz_bound){
             bool res = shell_significant_csam(M, N, R, S);
-            //printf("CSAM prune %s \n" , res ? "yes" : "no");
             return res;
         } else {
             return schwarz_bound;
