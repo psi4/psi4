@@ -312,8 +312,8 @@ void ERISieve::integrals() {
 void ERISieve::csam_integrals() {
     function_sqrt_.resize((size_t)nbf_);
     shell_pair_exchange_values_.resize(nshell_ * (size_t)nshell_);
-    ::memset(&function_sqrt_[0], '\0', sizeof(double) * nbf_);
-    ::memset(&shell_pair_exchange_values_[0], '\0', sizeof(double) * nshell_ * nshell_);
+    std::fill(function_sqrt_.begin(), function_sqrt_.end(), 0.0);
+    std::fill(shell_pair_exchange_values_.begin(), shell_pair_exchange_values_.end(), 0.0);
 
     IntegralFactory csamfactory(primary_, primary_, primary_, primary_);
     std::shared_ptr<TwoBodyAOInt> eri = std::shared_ptr<TwoBodyAOInt>(csamfactory.eri());
