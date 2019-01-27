@@ -160,7 +160,7 @@ class PSI_API ERISieve {
 
     ////////////////////////////////////////
     // adding stuff for CSAM sieving (DOI 10.1063/1.4994190)
-    
+
     bool do_csam_;
 
     /// max |(MM|NN)| values (nshell * nshell)
@@ -171,7 +171,7 @@ class PSI_API ERISieve {
     void csam_integrals();
 
     ///////////////////////////////////////
-    
+
     /// Set initial indexing
     void common_init();
     /// Compute sieve integrals (only done once)
@@ -212,7 +212,7 @@ class PSI_API ERISieve {
             bool res = shell_significant_qqr(M, N, R, S);
             // std::cout << "QQR prune: " << res << "\n";
             return res;
-        } else if(do_csam_ && schwarz_bound){
+        } else if (do_csam_ && schwarz_bound) {
             bool res = shell_significant_csam(M, N, R, S);
             return res;
         } else {

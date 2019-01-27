@@ -238,8 +238,6 @@ void ERISieve::integrals() {
         }
     }
 
-
-
 // All this is broken (only built one shell-pair's info)
 #if 0
     if (do_qqr_) {
@@ -311,10 +309,9 @@ void ERISieve::integrals() {
 #endif
 }
 
-void ERISieve::csam_integrals(){
-
+void ERISieve::csam_integrals() {
     function_sqrt_.resize((size_t)nbf_);
-    shell_pair_exchange_values_.resize(nshell_*(size_t)nshell_);
+    shell_pair_exchange_values_.resize(nshell_ * (size_t)nshell_);
     ::memset(&function_sqrt_[0], '\0', sizeof(double) * nbf_);
     ::memset(&shell_pair_exchange_values_[0], '\0', sizeof(double) * nshell_ * nshell_);
 
@@ -333,20 +330,20 @@ void ERISieve::csam_integrals(){
             // Computing Q_mu_mu (for denominator of Eq.9)
             if (Q == P) {
                 int oP = primary_->shell(P).function_index();
-                for (int p = 0; p < nP; ++p){
-                    function_sqrt_[oP+p] = std::sqrt(std::fabs(buffer[p * (nP * nP * nP + nP) + p * (nP * nP + 1)]));
+                for (int p = 0; p < nP; ++p) {
+                    function_sqrt_[oP + p] = std::sqrt(std::fabs(buffer[p * (nP * nP * nP + nP) + p * (nP * nP + 1)]));
                 }
             }
-            
+
             // Computing square of M~_mu_lam (defined in Eq. 9)
             double max_val = 0.0;
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    max_val = std::max(max_val, std::fabs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ * nQ + 1)]) / (function_sqrt_[p+oP]*function_sqrt_[q+oQ]) );
+                    max_val = std::max(max_val, std::fabs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ * nQ + 1)]) /
+                                                    (function_sqrt_[p + oP] * function_sqrt_[q + oQ]));
                 }
             }
             shell_pair_exchange_values_[P * nshell_ + Q] = shell_pair_exchange_values_[Q * nshell_ + P] = max_val;
-
         }
     }
 }
@@ -374,11 +371,10 @@ bool ERISieve::shell_significant_qqr(int M, int N, int R, int S) {
 }
 
 bool ERISieve::shell_significant_csam(int M, int N, int R, int S) {
-
     // Square of standard Cauchy-Schwarz Q_mu_nu terms (Eq. 1)
     double mn_mn = shell_pair_values_[N * (size_t)nshell_ + M];
     double rs_rs = shell_pair_values_[S * (size_t)nshell_ + R];
-    
+
     // Square of M~_mu_nu terms (Eq. 9)
     double mm_rr = shell_pair_exchange_values_[R * (size_t)nshell_ + M];
     double nn_ss = shell_pair_exchange_values_[S * (size_t)nshell_ + N];
@@ -386,10 +382,10 @@ bool ERISieve::shell_significant_csam(int M, int N, int R, int S) {
     double nn_rr = shell_pair_exchange_values_[R * (size_t)nshell_ + N];
 
     // Square of M_mu_nu_lam_sig (Eq. 12)
-    double csam_2 = std::max(mm_rr*nn_ss,mm_ss*nn_rr);
+    double csam_2 = std::max(mm_rr * nn_ss, mm_ss * nn_rr);
 
     // Square of Eq. 11
-    double mnrs_2 = mn_mn*rs_rs*csam_2;
+    double mnrs_2 = mn_mn * rs_rs * csam_2;
 
     return std::fabs(mnrs_2) >= sieve2_;
 }
