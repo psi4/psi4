@@ -105,21 +105,7 @@ void SADGuess::form_D() {
 
     // Transform Neutral D from AO to SO basis
     Da_ = std::make_shared<Matrix>("Da SAD", AO2SO_->colspi(), AO2SO_->colspi());
-
-    auto* temp = new double[AO2SO_->rowspi()[0] * (size_t)AO2SO_->max_ncol()];
-    for (int h = 0; h < Da_->nirrep(); h++) {
-        int nao = AO2SO_->rowspi()[h];
-        int nso = AO2SO_->colspi()[h];
-        if (!nao || !nso) continue;
-
-        double** DAOp = DAO->pointer();
-        double** DSOp = Da_->pointer(h);
-        double** Up = AO2SO_->pointer(h);
-
-        C_DGEMM('N', 'N', nao, nso, nao, 1.0, DAOp[0], nao, Up[0], nso, 0.0, temp, nso);
-        C_DGEMM('T', 'N', nso, nso, nao, 1.0, Up[0], nso, temp, nso, 0.0, DSOp[0], nso);
-    }
-    delete[] temp;
+    Da_->apply_symmetry(DAO, AO2SO_);
 
     // Set Db to Da
     Db_ = Da_;
@@ -425,10 +411,10 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     IntegralFactory integral(bas, bas, bas, bas);
     MatrixFactory mat;
     mat.init_with(1, &nbf, &nbf);
-    OneBodyAOInt* S_ints = integral.ao_overlap();
-    OneBodyAOInt* T_ints = integral.ao_kinetic();
-    OneBodyAOInt* V_ints = integral.ao_potential();
-    OneBodyAOInt* ECP_ints = integral.ao_ecp();
+    std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
+    std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
+    std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
+    std::unique_ptr<OneBodyAOInt> ECP_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_ecp());
 
     // Compute overlap S and orthogonalizer X;
     SharedMatrix S(mat.create_matrix("Overlap Matrix"));
@@ -459,10 +445,6 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     T.reset();
     V.reset();
     ECP.reset();
-    delete S_ints;
-    delete T_ints;
-    delete V_ints;
-    delete ECP_ints;
 
     if (print_ > 6) {
         H->print();
@@ -724,12 +706,11 @@ SharedMatrix SADGuess::huckel_guess() {
 
     int nbf = basis_->nbf();
     mat.init_with(1, &nbf, &nbf);
-    OneBodyAOInt* S_ints = integral.ao_overlap();
+    std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
 
     // Compute overlap S
     SharedMatrix S(mat.create_matrix("Overlap Matrix"));
     S_ints->compute(S);
-    delete S_ints;
 
     // Compute Huckel basis overlap S*Chu
     int nhu = Chu->coldim();
@@ -762,21 +743,7 @@ SharedMatrix SADGuess::huckel_guess() {
 
     // Now, transform from AO to SO basis
     auto huckel = std::make_shared<Matrix>("Huckel SO matrix", AO2SO_->colspi(), AO2SO_->colspi());
-
-    auto* temp = new double[AO2SO_->rowspi()[0] * (size_t)AO2SO_->max_ncol()];
-    for (int h = 0; h < huckel->nirrep(); h++) {
-        int nao = AO2SO_->rowspi()[h];
-        int nso = AO2SO_->colspi()[h];
-        if (!nao || !nso) continue;
-
-        double** AOp = huckelao->pointer();
-        double** SOp = huckel->pointer(h);
-        double** Up = AO2SO_->pointer(h);
-
-        C_DGEMM('N', 'N', nao, nso, nao, 1.0, AOp[0], nao, Up[0], nso, 0.0, temp, nso);
-        C_DGEMM('T', 'N', nso, nso, nao, 1.0, Up[0], nso, temp, nso, 0.0, SOp[0], nso);
-    }
-    delete[] temp;
+    huckel->apply_symmetry(huckelao, AO2SO_);
 
     return huckel;
 }
