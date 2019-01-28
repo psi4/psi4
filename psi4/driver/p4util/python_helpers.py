@@ -123,6 +123,14 @@ def _core_wavefunction_build(mol, basis=None):
 
 core.Wavefunction.build = _core_wavefunction_build
 
+def _core_wavefunction_get_scratch_filename(self, filenumber):
+    """ Given a wavefunction and a scratch file number, canonicalizes the name
+        so that files can be consistently written and read """
+    fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(self.molecule().name())))[1]
+    psi_scratch = core.IOManager.shared_object().get_default_path()
+    return os.path.join(psi_scratch, fname + str(filenumber))
+
+core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
 @staticmethod
 def _core_wavefunction_from_file(wfn_data):
@@ -291,6 +299,7 @@ def _core_wavefunction_to_file(wfn, filename=None):
     }  # yapf: disable
 
     if filename is not None:
+        if not filename.endswith('.npy'): filename += '.npy'
         np.save(filename, wfn_data)
 
     return wfn_data

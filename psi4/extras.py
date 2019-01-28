@@ -36,6 +36,7 @@ from . import core
 # Numpy place holder for files and cleanup
 numpy_files = []
 def register_numpy_file(filename):
+    if not filename.endswith('.npy'): filename += '.npy'
     if filename not in numpy_files:
         numpy_files.append(filename)
 

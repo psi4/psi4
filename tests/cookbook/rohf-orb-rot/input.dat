@@ -26,8 +26,8 @@ molecule ho2 {
     H  0.9246056151  0.8646730647  0.0000000000
 }
 
-scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
@@ -40,8 +40,8 @@ set {
     socc [1, 0]
 }
 
-scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
@@ -62,45 +62,26 @@ molecule ho2 {
     symmetry c1
 }
 
-scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 # Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
-#orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
-Matrix.rotate_columns(scf_wfn.Ca(), 0, 7, 8, math.pi / 2.0)
+# N.B. the orbitals are numbered using zero based indexing.
+ccsd_wfn.Ca().rotate_columns(0, 7, 8, math.pi / 2.0)
 
-fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_wfn.molecule().name())))[1]
-filename = os.path.join(core.IOManager.shared_object().get_default_path(), fname + ".180.npz")
-data = {}
-data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
-data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
-
-Ca_occ = scf_wfn.Ca_subset("SO", "OCC")
-data.update(Ca_occ.np_write(None, prefix="Ca_occ"))
-
-Cb_occ = scf_wfn.Cb_subset("SO", "OCC")
-data.update(Cb_occ.np_write(None, prefix="Cb_occ"))
-
-data["reference"] = core.get_option('SCF', 'REFERENCE')
-data["nsoccpi"] = scf_wfn.soccpi().to_tuple()
-data["ndoccpi"] = scf_wfn.doccpi().to_tuple()
-data["nalphapi"] = scf_wfn.nalphapi().to_tuple()
-data["nbetapi"] = scf_wfn.nbetapi().to_tuple()
-data["symmetry"] = scf_wfn.molecule().schoenflies_symbol()
-data["BasisSet"] = scf_wfn.basisset().name()
-data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
-np.savez(filename, **data)
+# Serialize the wavefunction so that the SCF code can read it as a guess.
+ccsd_wfn.to_file(ccsd_wfn.get_scratch_filename(180))
 
 # Read in rotated guess and compute CCSD/6-31G energy of A state of HO2 in C1.
 set {
     guess read
 }
 
-scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
+scf_e = ccsd_wfn.variable('HF TOTAL ENERGY')
 
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
