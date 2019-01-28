@@ -103,7 +103,7 @@ def run_sapt_dft(name, **kwargs):
     if (sapt_dft_functional != "HF") and ((mon_a_shift == 0.0) or (mon_b_shift == 0.0)):
         raise ValidationError('SAPT(DFT): must set both "SAPT_DFT_GRAC_SHIFT_A" and "B".')
 
-    if (core.get_option('SCF', 'REFERENCE') != 'RHF'):
+    if (core.get_global_option('REFERENCE') != 'RHF'):
         raise ValidationError('SAPT(DFT) currently only supports restricted references.')
 
     core.IO.set_default_namespace('dimer')
