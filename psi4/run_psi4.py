@@ -294,27 +294,22 @@ except Exception as exception:
     tb_str = "Traceback (most recent call last):\n"
     tb_str += ''.join(traceback.format_tb(exc_traceback))
     tb_str += '\n'
-    tb_str += type(exception).__name__
-    tb_str += ': '
-    tb_str += str(exception)
+    tb_str += ''.join(traceback.format_exception_only(type(exception), exception))
     psi4.core.print_out("\n")
     psi4.core.print_out(tb_str)
     psi4.core.print_out("\n\n")
 
-    psi4.core.print_out("Printing out the relevant lines from the Psithon --> Python processed input file:\n")
+    in_str = "Printing out the relevant lines from the Psithon --> Python processed input file:\n"
     lines = content.splitlines()
     suspect_lineno = traceback.extract_tb(exc_traceback)[1].lineno - 1  # -1 for 0 indexing
     first_line = max(0, suspect_lineno - 5)  # Try to show five lines back...
     last_line = min(len(lines), suspect_lineno + 6)  # Try to show five lines forward
-    for line in lines[first_line:suspect_lineno]:
-        psi4.core.print_out("    " + line + "\n")
-    psi4.core.print_out("--> " + lines[suspect_lineno] + "\n")
-    for line in lines[suspect_lineno + 1:last_line]:
-        psi4.core.print_out("    " + line + "\n")
+    for lineno in range(first_line, last_line):
+        mark = "--> " if lineno == suspect_lineno else "    "
+        in_str += mark + lines[lineno] + "\n"
+    psi4.core.print_out(in_str)
 
     if psi4.core.get_output_file() != "stdout":
         print(tb_str)
+        print(in_str)
     sys.exit(1)
-
-#    elif '***HDF5 library version mismatched error***' in str(err):
-#        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))

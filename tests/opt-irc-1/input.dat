@@ -20,9 +20,11 @@ set {
   opt_type                   irc
   geom_maxiter               50
   irc_direction              backward
+  d_convergence              9
 }
 
-frequencies('scf', dertype=1)
+energy = frequencies('scf', dertype=1)
+compare_values(-150.80654621003299, energy, 7, "Energy of the TS point")  #TEST
 
 # Lower point group from C2v to C2
 h2o2.reset_point_group('c2')
