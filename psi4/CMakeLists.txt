@@ -152,7 +152,7 @@ else()
     message(STATUS "Disabled simint")
 endif()
 
-find_package(Libxc 4.0.2 CONFIG REQUIRED)
+find_package(Libxc 4.3.0 CONFIG REQUIRED)
 get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")

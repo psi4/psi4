@@ -35,13 +35,12 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include "libxc/xc.h"
 #include <cmath>
 #include <string>
 #include <algorithm>
 
 // LibXC helper utility for setter functions, not really supposed to do this
-#include "libxc/xc.h"
+#include <xc.h>
 
 using namespace psi;
 
