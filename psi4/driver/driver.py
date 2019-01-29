@@ -1738,7 +1738,9 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     >>> # [4] This WILL work, note the transformation of Da (SO->MO)
     >>> E, wfn = properties('ccsd', properties=['dipole'], return_wfn=True)
     >>> Da_so = wfn.Da()
-    >>> Da_mo = core.triplet(wfn.Ca(), Da_so, wfn.Ca(), True, False, False)
+    >>> SCa = Matrix("Overlap times Ca", nmopi, nmopi)
+    >>> SCa.gemm(False, False, 1.0, wfn.S(), wfn.Ca(), 0.0)
+    >>> Da_mo = Matrix.triplet(SCa, Da_so, SCa, True, False, False)
     >>> molden(wfn, 'ccsd_no.molden', density_a=Da_mo)
 
     """
