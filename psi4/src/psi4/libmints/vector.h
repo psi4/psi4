@@ -132,6 +132,10 @@ class PSI_API Vector final {
     void add(const SharedVector &other);
     void add(const Vector &other);
 
+    /// Subtracts other vector from this
+    void subtract(const SharedVector &other);
+    void subtract(const Vector &other);
+
     void axpy(double scale, const SharedVector &other);
     void axpy(double scale, const Vector &other);
 

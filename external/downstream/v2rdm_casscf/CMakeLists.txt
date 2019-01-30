@@ -17,7 +17,7 @@ if(${ENABLE_v2rdm_casscf})
         ExternalProject_Add(v2rdm_casscf_external
             DEPENDS psi4-core
             GIT_REPOSITORY https://github.com/edeprince3/v2rdm_casscf
-            GIT_TAG 976d8af  # v0.8 + 1 (internal version bump)
+            GIT_TAG 4375855  # v0.8 + 21
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
