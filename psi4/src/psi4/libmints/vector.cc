@@ -265,6 +265,10 @@ void Vector::add(const SharedVector &other) { axpy(1.0, *other.get()); }
 
 void Vector::add(const Vector &other) { axpy(1.0, other); }
 
+void Vector::subtract(const SharedVector &other) { axpy(-1.0, *other.get()); }
+
+void Vector::subtract(const Vector &other) { axpy(-1.0, other); }
+
 void Vector::axpy(double scale, const SharedVector &other) { axpy(scale, *other.get()); }
 
 void Vector::axpy(double scale, const Vector &other) {
