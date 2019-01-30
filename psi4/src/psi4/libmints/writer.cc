@@ -49,7 +49,7 @@ MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefun
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
                          std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA,
                          std::shared_ptr<Vector> OccB, bool dovirtual) {
-    auto mode = std::ostream::app;
+    auto mode = std::ostream::trunc;
     auto printer = std::make_shared<PsiOutStream>(filename, mode);
 
     int atom;
