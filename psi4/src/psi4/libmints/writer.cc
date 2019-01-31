@@ -367,7 +367,6 @@ void FCHKWriter::write(const std::string &filename) {
     const std::string &name = wavefunction_->name();
     const std::string &basisname = basis->name();
     int nbf = basis->nbf();
-    assert(Ca_ao->nrow() == nbf);
     int nmo = Ca_ao->ncol();
     int nalpha = wavefunction_->nalpha();
     int nbeta = wavefunction_->nbeta();
