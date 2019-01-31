@@ -508,28 +508,17 @@ void FCHKWriter::write(const std::string &filename) {
             }
         } else {
             // Cartesians - S and P orbitals are fine, but higher terms need reordering
-            switch (am) {
-                case (0):
-                case (1):
-                    break;
-
-                case (2):
-                    for (int row = 0; row < 6; ++row)
-                        for (int col = 0; col < 6; ++col) transmat->set(offset + row, offset + col, cartD[row][col]);
-                    break;
-
-                case (3):
-                    for (int row = 0; row < 10; ++row)
-                        for (int col = 0; col < 10; ++col) transmat->set(offset + row, offset + col, cartF[row][col]);
-                    break;
-
-                case (4):
-                    for (int row = 0; row < 15; ++row)
-                        for (int col = 0; col < 15; ++col) transmat->set(offset + row, offset + col, cartG[row][col]);
-                    break;
-
-                default:
-                    throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G shell (l=4) cartesian functions");
+            if (am == 2) {
+                for (int row = 0; row < 6; ++row)
+                    for (int col = 0; col < 6; ++col) transmat->set(offset + row, offset + col, cartD[row][col]);
+            } else if (am == 3) {
+                for (int row = 0; row < 10; ++row)
+                    for (int col = 0; col < 10; ++col) transmat->set(offset + row, offset + col, cartF[row][col]);
+            } else if (am == 4) {
+                for (int row = 0; row < 15; ++row)
+                    for (int col = 0; col < 15; ++col) transmat->set(offset + row, offset + col, cartG[row][col]);
+            } else if (am >= 5) {
+                throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G shell (l=4) cartesian functions");
             }
         }
         offset += nfunc;
