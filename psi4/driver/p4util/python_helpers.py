@@ -128,7 +128,7 @@ def _core_wavefunction_get_scratch_filename(self, filenumber):
         so that files can be consistently written and read """
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(self.molecule().name())))[1]
     psi_scratch = core.IOManager.shared_object().get_default_path()
-    return os.path.join(psi_scratch, fname + str(filenumber))
+    return os.path.join(psi_scratch, fname + '.' + str(filenumber))
 
 core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
