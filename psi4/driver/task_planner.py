@@ -40,7 +40,6 @@ from psi4.driver.p4util.exceptions import UpgradeHelper
 from psi4.driver.task_base import SingleResult
 from psi4.driver.driver_findif import FinDifComputer
 from psi4.driver.driver_nbody import NBodyComputer
-from psi4.driver.driver_nbody_multilevel import NBodyComputerMultiLevel
 from psi4.driver.driver_cbs import CBSComputer, _cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type
 
@@ -48,6 +47,9 @@ __all__ = ["task_planner"]
 
 
 def _expand_cbs_methods(method, basis, driver, **kwargs):
+    if method == 'cbs' and kwargs.get('cbsmeta', None):
+        return method, basis, kwargs['cbsmeta']
+
     # Expand CBS methods
     if "/" in method:
         kwargs["ptype"] = driver
@@ -118,34 +120,25 @@ def task_planner(driver, method, molecule, **kwargs):
 
     # First check for BSSE type
     if 'bsse_type' in kwargs:
-        # Multi-level MBE
-        if 'levels' in kwargs:
-            print('PLANNING Multi-level NBody')
-            plan = NBodyComputerMultiLevel(**packet, **kwargs)
-            packets = {}
-            for n, level in kwargs['levels'].items():
-                method, basis, cbsmeta = _expand_cbs_methods(level, basis, driver, **kwargs)
-                packets[n] = {'packet': packet.copy()}
-                packets[n]['packet'].update({'method': method, 'basis': basis, **cbsmeta})
-                packets[n]['computer'] = CBSComputer if method == 'cbs' else SingleResult
+        plan = NBodyComputer(**packet, **kwargs)
+        del packet["molecule"]
 
-            plan.build_tasks(packets, **kwargs)
+        # Add tasks for every nbody level requested
+        levels = kwargs.pop('levels', {plan.max_nbody: method})
+        plan.max_nbody = max([i for i in levels if isinstance(i, int)])
 
-            return plan
-
-        # Single level MBE
-        else:
-            plan = NBodyComputer(**packet, **kwargs)
-            del packet["molecule"]
+        for n, level in levels.items():
+            method, basis, cbsmeta = _expand_cbs_methods(level, basis, driver, cbsmeta=cbsmeta, **kwargs)
+            packet.update({'method': method, 'basis': basis})
 
             if method == "cbs":
                 print('PLANNING NBody(CBS)')
-                plan.build_tasks(CBSComputer, **packet, **cbsmeta)
+                plan.build_tasks(CBSComputer, **packet, **cbsmeta, max_nbody=n)
             else:
                 print('PLANNING NBody()')
-                plan.build_tasks(SingleResult, **packet)
+                plan.build_tasks(SingleResult, **packet, max_nbody=n)
 
-            return plan
+        return plan
 
     # Check for CBS
     elif method == "cbs":

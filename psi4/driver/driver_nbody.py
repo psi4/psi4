@@ -37,6 +37,7 @@ import numpy as np
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import constants
+from psi4.driver import driver_nbody_multilevel
 from psi4.driver.p4util.exceptions import *
 
 from psi4.driver.task_base import BaseTask, unnp, plump_qcvar
@@ -723,14 +724,26 @@ class NBodyComputer(BaseTask):
         import json
         template = json.dumps(kwargs)
 
-        # Get compute list
-        compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
+        # Store tasks by level
+        level = kwargs.pop('max_nbody', self.max_nbody)
+
+        # Add supersystem computation if requested 
+        if level == 'supersystem':
+            data = json.loads(template)
+            data["molecule"] = self.molecule
+            self.task_list[str(level) + '_' + str(self.max_frag)] = obj(**data)
+            compute_dict = build_nbody_compute_list(self.bsse_type, self.max_nbody, self.max_frag)
+
+        else:
+            # Get compute list
+            compute_dict = build_nbody_compute_list(self.bsse_type, level, self.max_frag)
+
         compute_list = compute_dict[bsse_type]
 
         counter = 0
         for count, n in enumerate(compute_list):
             for key, pair in enumerate(compute_list[n]):
-                if pair in self.task_list:
+                if (str(level) + '_' + str(pair)) in self.task_list:
                     continue
                 print(pair)
                 data = json.loads(template)
@@ -744,7 +757,7 @@ class NBodyComputer(BaseTask):
                         charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
                     data['keywords'].update({'embedding_charges': charges})
 
-                self.task_list[pair] = obj(**data)
+                self.task_list[str(level) + '_' + str(pair)] = obj(**data)
                 counter += 1
 
 
@@ -768,10 +781,14 @@ class NBodyComputer(BaseTask):
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
 
-    def prepare_results(self):
+    def prepare_results(self, results={}):
+
+        nlevels = len({i.split('_')[0] for i in self.task_list})
+        if nlevels > 1 and not results:
+            return driver_nbody_multilevel.prepare_results(self)
 
         metadata = self.dict().copy()
-        results_list = {k: v.get_results() for k, v in self.task_list.items()}
+        results_list = {eval(k.split('_')[1]): v.get_results() for k, v in (results.items() or self.task_list.items())}
         energies = {k: v['properties']["return_energy"] for k, v in results_list.items()}
 
         ptype = None
