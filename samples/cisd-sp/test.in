@@ -1,6 +1,6 @@
 #! 6-31G** H2O Test CISD Energy Point
 
-refnuc   =   8.8046866186391  #TEST
+refnuc   =   8.8046866532     #TEST
 refscf   = -76.0172965552830  #TEST
 refci    = -76.2198474486342  #TEST
 refcorr  = refci - refscf     #TEST
@@ -21,9 +21,9 @@ set {
 thisenergy = energy('cisd')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "[1] Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"), 9, "[1] SCF energy") #TEST
+compare_values(refscf, variable("SCF total energy"), 9, "[1] SCF energy") #TEST
 compare_values(refci, thisenergy, 7, "[1] CISD energy") #TEST
-compare_values(refcorr, get_variable("CISD CORRELATION ENERGY"), 7, "[1] CISD correlation energy") #TEST
+compare_values(refcorr, variable("CISD CORRELATION ENERGY"), 7, "[1] CISD correlation energy") #TEST
 
 clean()
 
@@ -41,6 +41,6 @@ set detci {
 thisenergy = energy('detci')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "[2] Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"), 9, "[2] SCF energy") #TEST
+compare_values(refscf, variable("SCF total energy"), 9, "[2] SCF energy") #TEST
 compare_values(refci, thisenergy, 7, "[2] CISD energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "[2] CISD correlation energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "[2] CISD correlation energy") #TEST

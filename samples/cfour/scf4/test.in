@@ -23,7 +23,7 @@ molecule h2o {
     H 1 R 2 A
 }
 
-print_stdout(" Testing Z-matrix coordinates") #TEST
+print(" Testing Z-matrix coordinates") #TEST
 
 count = 0
 
@@ -47,7 +47,7 @@ for R in Rvals:
 
 count = 0
 
-print_stdout(" Testing polar coordinates") #TEST
+print(" Testing polar coordinates") #TEST
 
 for R in Rvals:
     for A in Avals:

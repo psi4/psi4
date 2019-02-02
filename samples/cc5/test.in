@@ -35,7 +35,7 @@ set {
 energy('ccsd(t)')
 
 compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),        8, "Nuclear repulsion energy") #TEST
-compare_values(refscf,   get_variable("SCF total energy"),        8, "SCF energy")               #TEST
-compare_values(refccsd,  get_variable("CCSD correlation energy"), 8, "CCSD contribution")        #TEST
-compare_values(ref_t,    get_variable("(T) correction energy"),   8, "(T) contribution")         #TEST
-compare_values(reftotal, get_variable("Current energy"),          8, "Total energy")             #TEST
+compare_values(refscf,   variable("SCF total energy"),        8, "SCF energy")               #TEST
+compare_values(refccsd,  variable("CCSD correlation energy"), 8, "CCSD contribution")        #TEST
+compare_values(ref_t,    variable("(T) correction energy"),   8, "(T) contribution")         #TEST
+compare_values(reftotal, variable("Current energy"),          8, "Total energy")             #TEST

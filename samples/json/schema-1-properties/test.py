@@ -39,11 +39,11 @@ json_data = {
       "lowdin_charges",
       "wiberg_lowdin_indices",
       "mayer_indices",
-      "mayer_indices"
     ]
   },
   "keywords": {"scf_type": "df",
-               "mp2_type": "df"}
+               "mp2_type": "df",
+               "e_convergence": 9}
 }
 
 # Write expected output

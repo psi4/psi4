@@ -1,7 +1,7 @@
 #! PsiAPI pubchem access
 
 import psi4
-from psi4.driver.constants.physconst import hartree2ev
+hartree2ev = psi4.constants.hartree2ev
 
 psi4.set_output_file("output.dat", False)
 

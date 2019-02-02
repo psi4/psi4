@@ -69,7 +69,7 @@ def do_check(module, cc_typ, fc):
         dict(qc_module=module, cc_type=cc_typ, freeze_core=fc, basis='cc-pvdz', e_convergence=10, d_convergence=8))
     ret_e = energy('ccsd(t)', molecule=hf)
     for var_name, ref_val in refs[cc_typ][fc].items():
-        compare_values(ref_val, get_variable(var_name), 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc,  var_name))
+        compare_values(ref_val, variable(var_name), 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc,  var_name))
     compare_values(refs[cc_typ][fc]['CCSD(T) TOTAL ENERGY'],
             ret_e, 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc, 'return value'))
     clean_variables()

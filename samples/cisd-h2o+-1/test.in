@@ -1,6 +1,6 @@
 #! 6-31G** H2O+ Test CISD Energy Point
 
-refnuc   =   8.8046866186391  #TEST
+refnuc   =   8.8046866532     #TEST
 refscf   = -75.6213422266812  #TEST
 refci    = -75.7850671871149  #TEST
 refcorr  = refci - refscf     #TEST
@@ -22,11 +22,11 @@ set {
 thisenergy = energy('cisd')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"),     7, "SCF energy") #TEST
+compare_values(refscf, variable("SCF total energy"),     7, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
-compare_values(2.68224970371, get_variable("CISD DIPOLE Z"), 3, "CISD Z Dipole")
-compare_values(2.79760370969, get_variable("SCF DIPOLE Z"), 3, "SCF Z Dipole")
+compare_values(2.68224970371, variable("CISD DIPOLE Z"), 3, "CISD Z Dipole")
+compare_values(2.79760370969, variable("SCF DIPOLE Z"), 3, "SCF Z Dipole")
 
 

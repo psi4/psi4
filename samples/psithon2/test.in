@@ -1,7 +1,7 @@
 #! Accesses basis sets, databases, plugins, and executables in non-install locations
 
 import os
-os.environ['PSIPATH'] = 'psiaux1:psiaux2'
+os.environ['PSIPATH'] = os.path.pathsep.join(['psiaux1', 'psiaux2'])
 
 ###########################
 molecule h2o {
@@ -13,7 +13,7 @@ molecule h2o {
 set basis cc-pVDZ
 energy('scf')
 
-compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'Built-in energy')  #TEST
+compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'Built-in energy')  #TEST
 clean()
 
 refS22AmadSAPT0 = 2.105857433479                                                            #TEST
@@ -67,14 +67,14 @@ set myplugin1 {
 
 energy('myplugin1')
 
-compare_values(-74.9455096208439784, get_variable('CURRENT ENERGY'), 6, 'PSIPATH plugin')  #TEST
+compare_values(-74.9455096208439784, variable('CURRENT ENERGY'), 6, 'PSIPATH plugin')  #TEST
 clean()
 
 ###########################
 set basis mysto3g
 set df_basis_scf myccpvdzri
 energy('scf')
-compare_values(-74.9455096190513927, get_variable('CURRENT ENERGY'), 6, 'PSIPATH orbital and jk basis sets')  #TEST
+compare_values(-74.9455096190513927, variable('CURRENT ENERGY'), 6, 'PSIPATH orbital and jk basis sets')  #TEST
 clean()
 
 ###########################
@@ -89,7 +89,7 @@ set basis cc-pVDZ
 set df_basis_scf cc-pVDZ-JKFIT
 energy('scf')
 
-compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'Built-in energy again')  #TEST
+compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'Built-in energy again')  #TEST
 clean()
 
 

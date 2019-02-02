@@ -30,13 +30,13 @@ scf_e, scf_wfn = energy("VV10", return_wfn=True)
 set reference uks
 scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
-scf_nl=psi4.get_variable('TOTAL SCF ENERGY')
+scf_nl=psi4.variable('scf TOTAL ENERGY')
 
 # dft-nl tests:
 
 set reference rks
 scf_e, scf_wfn = energy("BLYP-NL", return_wfn=True)
-scf_nl=psi4.get_variable('TOTAL SCF ENERGY')
+scf_nl=psi4.variable('scf TOTAL ENERGY')
 
 # tuple modified b
 set nl_dispersion_parameters [5.0]

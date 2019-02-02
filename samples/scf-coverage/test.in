@@ -11,7 +11,6 @@ set d_convergence 8
 set stability_analysis check
 set basis cc-pVDZ
 set scf_type out_of_core
-set damping_percentage 50
 
 scf_e = energy("SCF")
 compare_values(-7.41681960717086, scf_e, 6, "Lithium anion stability")

@@ -15,7 +15,7 @@ set basis 6-31g
 set cfour_CALC_level=CCSD
 
 energy('cfour')
-compare_values(-76.119378156918, get_variable('current energy'), 5, 'Total Energy')
+compare_values(-76.119378156918, variable('current energy'), 5, 'Total Energy')
 
 clean()
 clean_variables()
@@ -24,5 +24,5 @@ set cfour_CALC_level=CCSD
 set cfour_cc_program ecc
 
 energy('cfour')
-compare_values(-76.119378156918, get_variable('current energy'), 5, 'Total Energy')
+compare_values(-76.119378156918, variable('current energy'), 5, 'Total Energy')
 

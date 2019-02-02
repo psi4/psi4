@@ -1,13 +1,17 @@
-#! He-Ne dimer MP2 energies with ECP, Ne electrons correlated then frozen.
+#! Ne-Xe dimer MP2 energies with ECP, with electrons correlated then frozen.
 
-refnuc =   45.86202474447                                                                #TEST
+refnuc =   45.862024925                                                                  #TEST
 refall = -457.47320868249                                                                #TEST
 reffzc = -457.38127218548                                                                #TEST
 reffHe = -457.47130951838                                                                #TEST
+refEin =    0.00468169972                                                                #TEST
 
 molecule dimer {
-    Ne
-    Xe 1 3.0
+    0 1
+    Ne 0.0 0.0 0.0
+    --
+    0 1
+    Xe 0.0 0.0 3.0
 }
 
 set {
@@ -17,14 +21,17 @@ set {
 
 # All electrons on Ne correlated, all non-ECP electrons on Xe correlated
 Eall = energy('mp2')
-compare_values(refnuc, dimer.nuclear_repulsion_energy(), 8, "Nuclear repulsion energy")  #TEST 
+compare_values(refnuc, dimer.nuclear_repulsion_energy(), 8, "Nuclear repulsion energy")  #TEST
 compare_values(refall, Eall, 8, "MP2 energy with all-electron Ne and ECP on Xe")         #TEST
 
 set freeze_core true
-set guess read
+set guess sad
 # [He] electrons on Ne frozen, [Kr] electrons on Xe frozen
 Efzc = energy('mp2')
 compare_values(reffzc, Efzc, 8, "MP2 energy with frozen [He] and [Kr]")                  #TEST
+Eint = energy('mp2',bsse_type=['cp'])
+compare_values(refEin, Eint, 8, "MP2 CP interaction energy frozen [He] and [Kr]")        #TEST
+
 
 set freeze_core false
 set num_frozen_docc 1
@@ -32,3 +39,27 @@ set guess read
 # [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
 EfHe = energy('mp2')
 compare_values(reffHe, EfHe, 8, "MP2 energy with frozen [He] and ECP")                   #TEST
+
+molecule ghne {
+    0 1
+    @Ne 0.0 0.0 0.0
+    --
+    0 1
+    Xe 0.0 0.0 3.0
+}
+
+molecule ghxe {
+    0 1
+    Ne 0.0 0.0 0.0
+    --
+    0 1
+    Gh(Xe) 0.0 0.0 3.0
+}
+
+set freeze_core true
+set num_frozen_docc 0
+set guess sad
+
+Eghne = energy('mp2', molecule=ghne)
+Eghxe = energy('mp2', molecule=ghxe)
+compare_values(refEin, Efzc - Eghne - Eghxe, 8, "MP2 CP interaction energy frozen [He] and [Kr] by hand")  #TEST

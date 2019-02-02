@@ -29,6 +29,6 @@ H -2.6301702073  0.6086421759  0.0000000000
 
 energy('mrccsdt(q)')
 
-compare_values(-225.566203961615, get_variable("CCSDT TOTAL ENERGY"), 6, 'ccsdt') #TEST
-compare_values(-225.566377483810, get_variable("CCSDT(Q)/A TOTAL ENERGY"), 6, 'ccsdt(q)/a') #TEST
-compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'ccsdt(q)/b') #TEST
+compare_values(-225.566203961615, variable("CCSDT TOTAL ENERGY"), 6, 'ccsdt') #TEST
+compare_values(-225.566377483810, variable("CCSDT(Q)/A TOTAL ENERGY"), 6, 'ccsdt(q)/a') #TEST
+compare_values(-225.566381521567, variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'ccsdt(q)/b') #TEST

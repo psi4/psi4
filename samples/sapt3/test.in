@@ -46,4 +46,4 @@ ref_dict = { #TEST
 
 
 for key, ref in ref_dict.items():  #TEST
-    compare_values(ref, psi4.get_variable(key), 6, key)  #TEST
+    compare_values(ref, psi4.variable(key), 6, key)  #TEST

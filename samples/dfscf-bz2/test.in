@@ -1,6 +1,6 @@
 #! Benzene Dimer DF-HF/cc-pVDZ
 
-refnuc =  618.28964308647255 #TEST
+refnuc =  618.2896455167     #TEST
 refscf = -461.43943376500806 #TEST
 
 molecule bz2 {
@@ -53,4 +53,4 @@ set {
 thisenergy = energy('scf')
 
 compare_values(refnuc, bz2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     6, "SCF energy") #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"),     6, "SCF energy") #TEST

@@ -22,8 +22,8 @@ set {
 }
 energy('ccd')
 
-compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST
-compare_values(refcc, get_variable("CCD TOTAL ENERGY"), 6, "DF-CCD Total Energy (a.u.)");               #TEST
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST
+compare_values(refcc, variable("CCD TOTAL ENERGY"), 6, "DF-CCD Total Energy (a.u.)");               #TEST
 
 

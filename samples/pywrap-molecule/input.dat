@@ -96,7 +96,7 @@ test_qcdb()
 
 mol = qcdb.Molecule(mol2)
 mol.update_geometry()
-ans = ["Mol2 Dimer", 256.652780316, 0, 1]
+ans = ["Mol2 Dimer", 256.6527813, 0, 1]
 origfrag = mol
 test_qcdb()
 ans = ["Mol2 MonoA CP", 144.483917787, 0, 1]

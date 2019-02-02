@@ -69,7 +69,6 @@ compare_values(ref_qmefp_scf - ref_disp, scf, 6, 'EFP SCF, diff opts')
 clean()
 
 # Part 4
-psi4.efp_init()  # Necessary. add to activate() ?
 set basis cc-pvdz
 set scf_type cd
 activate(qmefp2)

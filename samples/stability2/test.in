@@ -19,11 +19,10 @@ for h in range(0,nirrep):  #TEST
     for i in range(0,2):  #TEST
       ref.set(h,i,0,ref_vals_sym[h * 2 + i])  #TEST
 
-nucenergy =   18.91527043470638  #TEST
+nucenergy =   18.9152705091      #TEST
 refenergy =  -92.19555660616885  #TEST
 
 molecule cn {
-0 2
    C
    N 1 R
 
@@ -43,7 +42,7 @@ set = {
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 
 compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
