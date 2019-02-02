@@ -214,4 +214,6 @@ PSIF_DFOCC_ABIC             =  280  # DFOCC <AB|IC>
 PSIF_DFOCC_MIABC            =  281  # DFOCC M_iabc
 PSIF_DFOCC_TEMP             =  282  # DFOCC temporary storage
 PSIF_SAD                    =  300  # A SAD file (File for SAD related quantities
+PSIF_DCFT_DPD               =  400  # DCFT DPD handle
+PSIF_DCFT_DENSITY           =  401  # DCFT density
 
