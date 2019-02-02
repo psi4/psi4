@@ -1687,7 +1687,6 @@ def fchk(wfn, filename):
     * A description of the FCHK format is http://wild.life.nctu.edu.tw/~jsyu/compchem/g09/g09ur/f_formchk.htm
     * The allowed headers for methods are general and limited, i.e., "Total SCF|MP2|CI|CC Density",
       so "CC" is always used for the post-HF case.
-    * At present, only SCF quantities will appear in the FCHK.
 
     :examples:
 
