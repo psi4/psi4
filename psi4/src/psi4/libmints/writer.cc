@@ -201,14 +201,14 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
         int n = mos[i].second.second;
 
         printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-        printer->Printf(" Ene= %20.10f\n", Ea->get(h, n));
+        printer->Printf(" Ene= %24.17e\n", Ea->get(h, n));
         printer->Printf(" Spin= Alpha\n");
         if (Ca == Cb && Ea == Eb && SameOcc)
-            printer->Printf(" Occup= %7.4lf\n", OccA->get(h, n) + OccB->get(h, n));
+            printer->Printf(" Occup= %24.17e\n", OccA->get(h, n) + OccB->get(h, n));
         else
-            printer->Printf(" Occup= %7.4lf\n", OccA->get(h, n));
+            printer->Printf(" Occup= %24.17e\n", OccA->get(h, n));
         for (int so = 0; so < wavefunction_->nso(); ++so)
-            printer->Printf("%3d %20.12lf\n", so + 1, Ca_ao_mo->get(h, so, n));
+            printer->Printf("%3d %24.17e\n", so + 1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
@@ -226,11 +226,11 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
             int n = mos[i].second.second;
 
             printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-            printer->Printf(" Ene= %20.10lf\n", Eb->get(h, n));
+            printer->Printf(" Ene= %24.17e\n", Eb->get(h, n));
             printer->Printf(" Spin= Beta\n");
-            printer->Printf(" Occup= %7.4lf\n", OccB->get(h, n));
+            printer->Printf(" Occup= %24.17e\n", OccB->get(h, n));
             for (int so = 0; so < wavefunction_->nso(); ++so)
-                printer->Printf("%3d %20.12lf\n", so + 1, Cb_ao_mo->get(h, so, n));
+                printer->Printf("%3d %24.17e\n", so + 1, Cb_ao_mo->get(h, so, n));
         }
     }
 }
