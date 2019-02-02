@@ -25,7 +25,6 @@
  *
  * @END LICENSE
  */
-#include <cassert>
 #include <cstdio>
 #include <utility>
 #include <algorithm>
