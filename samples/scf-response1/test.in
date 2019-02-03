@@ -62,4 +62,4 @@ bench_vals = {                                  #TEST
     "TRACELESS QUADRUPOLE POLARIZABILITY ZZZZ" :   33.02770}   #TEST
 
 for k, v in bench_vals.items():                   #TEST
-    compare_values(get_variable(k), v, 3, k)      #TEST
+    compare_values(variable(k), v, 3, k)      #TEST

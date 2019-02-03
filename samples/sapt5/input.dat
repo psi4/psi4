@@ -28,7 +28,7 @@ set {
 
 energy('sapt0-ct')
 
-ECT = psi4.get_variable("SAPT CT ENERGY")
+ECT = psi4.variable("SAPT CT ENERGY")
 
 
 

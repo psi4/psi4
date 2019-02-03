@@ -25,12 +25,12 @@ set df_scf_guess false
 
 energy('efp')
 compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')  #TEST
-compare_values(-0.0004901368, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
-compare_values(-0.0003168768, get_variable('efp ind energy'), 6, 'EFP-EFP Indc')  #TEST
-compare_values(-0.0021985285, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
-compare_values( 0.0056859871, get_variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
-compare_values( 0.0026804450, get_variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST
-compare_values( 0.0026804450, get_variable('current energy'), 6, 'Current')  #TEST
+compare_values(-0.0004901368, variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
+compare_values(-0.0003168768, variable('efp ind energy'), 6, 'EFP-EFP Indc')  #TEST
+compare_values(-0.0021985285, variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
+compare_values( 0.0056859871, variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
+compare_values( 0.0026804450, variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST
+compare_values( 0.0026804450, variable('current energy'), 6, 'Current')  #TEST
 print_variables()
 
 clean()
@@ -42,13 +42,13 @@ set d_convergence 12
 energy('scf')
 
 compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')  #TEST
-#compare_values(-0.0004901368, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
-#compare_values( 0.2592625628, get_variable(''), 6, 'QM-EFP Elst')  #TEST  # from q-chem
-compare_values( 0.2622598847, get_variable('efp total energy') - get_variable('efp ind energy'), 6, 'EFP corr to SCF')  #TEST  # from q-chem
-compare_values(-0.0117694790, get_variable('efp ind energy'), 6, 'QM-EFP Indc')  #TEST  # from q-chem
-compare_values(-0.0021985285, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
-compare_values( 0.0056859871, get_variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
-compare_values( 0.2504904057, get_variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST  # from q-chem
-compare_values(-76.0139362744, get_variable('scf total energy'), 6, 'SCF')  #TEST  # from q-chem
+#compare_values(-0.0004901368, variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
+#compare_values( 0.2592625628, variable(''), 6, 'QM-EFP Elst')  #TEST  # from q-chem
+compare_values( 0.2622598847, variable('efp total energy') - variable('efp ind energy'), 6, 'EFP corr to SCF')  #TEST  # from q-chem
+compare_values(-0.0117694790, variable('efp ind energy'), 6, 'QM-EFP Indc')  #TEST  # from q-chem
+compare_values(-0.0021985285, variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
+compare_values( 0.0056859871, variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
+compare_values( 0.2504904057, variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST  # from q-chem
+compare_values(-76.0139362744, variable('scf total energy'), 6, 'SCF')  #TEST  # from q-chem
 print_variables()
 

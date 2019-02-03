@@ -1,0 +1,39 @@
+#! A range-seperated gradient for SO2 to test disk algorithms by explicitly setting low memory 
+
+core.set_memory_bytes(int(2.e6))
+
+df_ref = psi4.Matrix.from_list([                                      #TEST
+     [  0.00000007251927,    -0.00000002063582,   0.24707485405206],  #TEST
+     [ -0.00000003151920,     0.22044192419605,  -0.12353743327533],  #TEST
+     [ -0.00000004100007,    -0.22044190356027,  -0.12353742077688]]) #TEST
+
+molecule SO2 {
+S
+O 1 R
+O 1 R 2 119
+symmetry c1
+}
+
+SO2.R = 1.4 * 0.52917721067 / 0.52917720859
+
+set {
+    basis cc-pVDZ
+    points 5
+}
+
+func = {
+    "name": "random",
+    "x_hf": {
+        "alpha": 0.6,
+        "beta": 1.0,
+        "omega": 0.2
+    },
+    "c_functionals": {}
+}
+
+
+anl_grad = gradient('scf', dft_functional=func, dertype=1)
+compare_matrices(df_ref, anl_grad, 7, "DF Analytic Gradient vs Reference")    #TEST
+
+# fd_grad = gradient('scf', dft_functional=func, dertype=0)
+# compare_matrices(anl_grad, fd_grad, 3, "Analytic vs FD Gradients")    #TEST

@@ -39,7 +39,7 @@ molecule bz2 {
     RCC  = 1.3915
     RCH  = 2.4715
     RXX  = 1.00
-    D    = 3.9 
+    D    = 3.9
     DRXX = 4.90
 
 }
@@ -49,9 +49,11 @@ set {
   guess sad
   scf_type out_of_core
   print 2
+  d_convergence 8
+  e_convergence 8
 }
 
 thisenergy = energy('scf')
 
-compare_values(refnuc, bz2.nuclear_repulsion_energy(), 5, "Nuclear repulsion energy")       #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refnuc, bz2.nuclear_repulsion_energy(), 5, "Nuclear repulsion energy")       #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"),     7, "SCF energy") #TEST

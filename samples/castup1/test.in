@@ -1,6 +1,6 @@
 #! Test of SAD/Cast-up (mainly not dying due to file weirdness)
 
-nucenergy =   8.80146552997207 #TEST
+nucenergy =   8.8014655646     #TEST
 refenergy = -76.02141844515491 #TEST
 
 molecule h2o {

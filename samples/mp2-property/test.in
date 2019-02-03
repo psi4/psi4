@@ -14,7 +14,7 @@ set {
 
 nos.update_geometry()
 nos.print_out()
-compare_values(63.696959614277581, nos.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(63.6969598646, nos.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
@@ -22,13 +22,13 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'MULTIPOLE(3)', 'NO_OCCUPATIONS']
 
 mp2_e, mp2_wfn = prop('MP2', properties = props, return_wfn=True)
-compare_values(psi4.get_variable('CURRENT ENERGY'), -184.1840201594929454, 6, "MP2 Energy") #TEST
-compare_values(psi4.get_variable('MP2 DIPOLE X'), 0.000000000000, 4, "MP2 DIPOLE X") #TEST
-compare_values(psi4.get_variable('MP2 DIPOLE Y'), 0.000000000000, 4, "MP2 DIPOLE Y") #TEST
-compare_values(psi4.get_variable('MP2 DIPOLE Z'), 0.234000203994, 4, "MP2 DIPOLE Z") #TEST
-compare_values(psi4.get_variable('MP2 QUADRUPOLE XX'), -14.731131601691, 4, "MP2 QUADRUPOLE XX") #TEST
-compare_values(psi4.get_variable('MP2 QUADRUPOLE YY'), -14.731131601691, 4, "MP2 QUADRUPOLE YY") #TEST
-compare_values(psi4.get_variable('MP2 QUADRUPOLE ZZ'), -19.287283345539, 4, "MP2 QUADRUPOLE ZZ") #TEST
-compare_values(psi4.get_variable('MP2 QUADRUPOLE XY'), 0.000000000000, 4, "MP2 QUADRUPOLE XY") #TEST
-compare_values(psi4.get_variable('MP2 QUADRUPOLE XZ'), 0.000000000000, 4, "MP2 QUADRUPOLE XZ") #TEST
-compare_values(psi4.get_variable('MP2 QUADRUPOLE YZ'), 0.000000000000, 4, "MP2 QUADRUPOLE YZ") #TEST
+compare_values(-184.1840201594929454, psi4.variable('CURRENT ENERGY'), 6, "MP2 Energy") #TEST
+compare_values(0.000000000000, psi4.variable('MP2 DIPOLE X'), 4, "MP2 DIPOLE X") #TEST
+compare_values(0.000000000000, psi4.variable('MP2 DIPOLE Y'), 4, "MP2 DIPOLE Y") #TEST
+compare_values(0.234000203994, psi4.variable('MP2 DIPOLE Z'), 4, "MP2 DIPOLE Z") #TEST
+compare_values(-14.731131601691, psi4.variable('MP2 QUADRUPOLE XX'), 4, "MP2 QUADRUPOLE XX") #TEST
+compare_values(-14.731131601691, psi4.variable('MP2 QUADRUPOLE YY'), 4, "MP2 QUADRUPOLE YY") #TEST
+compare_values(-19.287283345539, psi4.variable('MP2 QUADRUPOLE ZZ'), 4, "MP2 QUADRUPOLE ZZ") #TEST
+compare_values(0.000000000000, psi4.variable('MP2 QUADRUPOLE XY'), 4, "MP2 QUADRUPOLE XY") #TEST
+compare_values(0.000000000000, psi4.variable('MP2 QUADRUPOLE XZ'), 4, "MP2 QUADRUPOLE XZ") #TEST
+compare_values(0.000000000000, psi4.variable('MP2 QUADRUPOLE YZ'), 4, "MP2 QUADRUPOLE YZ") #TEST

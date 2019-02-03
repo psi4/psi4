@@ -29,20 +29,20 @@ dto.set_mass(1, 2.014101779)
 dto.set_mass(2, 3.01604927)
 
 e, wfn = freq('hf', molecule=h2o, return_wfn=True)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 set t 400.0
 
 vibanal_wfn(wfn)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 set t 298.15
 
 vibanal_wfn(wfn, molecule=d2o)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 vibanal_wfn(wfn, molecule=hdo)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 # For a symmetry-lowering isotopic substitution like HDO, psi4 recomputes
 #  the rotational symmetry number with the lower point group. This only
@@ -53,13 +53,27 @@ entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - ge
 set rotational_symmetry_number 2
 
 vibanal_wfn(wfn, molecule=hdo)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 # Could just reset the symmetry number to 1 since that's the correct
 #  value for DTO. But the below will calculate the default.
 
 psi4.revoke_global_option_changed('rotational_symmetry_number')
 
+set hessian_write on
 vibanal_wfn(wfn, molecule=dto)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+
+# A. print all the vib-related info from original `e, wfn = freq()` call
+for k, v in wfn.frequency_analysis.items():
+    print(v)
+
+# B. `set hessian_write on` above wrote all the vib- & thermo-related info from last analysis.
+#    now, print all the vib- & thermo-related info from that file
+with open(core.get_writer_file_prefix(dto.name()) + ".vibrec") as handle:
+    import json
+    jsondata = json.load(handle)
+
+for k, v in jsondata.items():
+    print(k, v)
 

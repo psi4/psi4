@@ -18,7 +18,7 @@ energy('qcisd(t)')
 refqcisd  = -76.267121113654 #TEST
 refqcisdt = -76.272102955182 #TEST
 
-compare_values(refqcisd, get_variable("QCISD TOTAL ENERGY"), 9, "FNO-QCISD total energy") #TEST 
-compare_values(refqcisdt, get_variable("QCISD(T) TOTAL ENERGY"), 9, "FNO-QCISD(T) total energy") #TEST 
+compare_values(refqcisd, variable("QCISD TOTAL ENERGY"), 9, "FNO-QCISD total energy") #TEST
+compare_values(refqcisdt, variable("QCISD(T) TOTAL ENERGY"), 9, "FNO-QCISD(T) total energy") #TEST
 
 clean()

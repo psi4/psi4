@@ -39,12 +39,12 @@ set v2rdm_casscf {
 
 activate(n2)
 
-n2.r     = 0.5
+n2.r     = 0.5 * 0.52917721067 / 0.52917720859
 refscf   = -103.04337420425350 # TEST
 refv2rdm = -103.086205379481   # TEST
 
 energy('v2rdm-casscf', molecule=n2)
 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy") # TEST
-compare_values(refv2rdm, get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy") # TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 8, "SCF total energy") # TEST
+compare_values(refv2rdm, variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy") # TEST
 

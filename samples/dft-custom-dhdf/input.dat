@@ -40,40 +40,40 @@ set scf_type direct
 # ======= Ne tests =======
 activate(ne)
 edhdf = energy('b2plyp')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 clean()
 
 edhdf = energy('b2gpplyp')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 clean()
 
 #edhdf = energy('core-dsd-blyp')
-#e_dft=get_variable('SCF TOTAL ENERGY')
-#e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+#e_dft=variable('SCF TOTAL ENERGY')
+#e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 #clean()
 
 edhdf = energy('ptpss')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 
 edhdf = energy('pwpb95')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 clean()
 
 set freeze_core true 
 edhdf = energy('dsd-blyp')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 # new fctl definition, ref in ref_outputs/orca_rev_dsdblyp.out 
 # some old definition, ref in ref_outputs/orca_dsdblyp.ref
 clean()
 
 edhdf = energy('pbe0-dh')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 clean()
 set freeze_core false
 
@@ -140,6 +140,6 @@ e_dhdft = energy('DSD-PBEP86', bsse_type="nocp")
 #clean()
 
 #edhdf = energy('pwpb95')
-#e_dft=get_variable('SCF TOTAL ENERGY')
-#e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+#e_dft=variable('SCF TOTAL ENERGY')
+#e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 #clean()

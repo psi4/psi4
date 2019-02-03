@@ -1,6 +1,6 @@
 #! He2+ FCI/cc-pVDZ Transition Dipole Moment
 
-refnuc   =   0.705569611453  #TEST
+refnuc   =   0.7055696142    #TEST
 refscf   =  -4.816603103707  #TEST
 refci1   =  -4.883262085443  #TEST
 refcorr1 =  refci1 - refscf  #TEST
@@ -31,12 +31,12 @@ set {
 thisenergy = prop('fci', properties=['DIPOLE', 'QUADRUPOLE', 'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE'])
 
 compare_values(refnuc, he2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
 compare_values(refci1, thisenergy,                      7, "CI ROOT 0 ENERGY") #TEST
-compare_values(refci2,   get_variable("CI ROOT 1 TOTAL ENERGY"),       7, "CI ROOT 1 ENERGY") #TEST
-compare_values(refcorr1, get_variable("CI ROOT 0 CORRELATION ENERGY"), 7, "CI ROOT 0 correlation energy")  #TEST
-compare_values(refcorr2, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI ROOT 1 correlation energy")  #TEST
-compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
-compare_values(refDipCI1, get_variable("CI ROOT 0 DIPOLE Z"), 5, "CI ROOT 0 Z Component of dipole")        #TEST
-compare_values(refDipCI2, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
-compare_values(abs(refTDM), abs(get_variable("CI ROOT 0 -> ROOT 1 DIPOLE Z")), 5, "CI ROOT 0 -> ROOT 1 Z Component of dipole") #TEST
+compare_values(refci2,   variable("CI ROOT 1 TOTAL ENERGY"),       7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refcorr1, variable("CI ROOT 0 CORRELATION ENERGY"), 7, "CI ROOT 0 correlation energy")  #TEST
+compare_values(refcorr2, variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI ROOT 1 correlation energy")  #TEST
+compare_values(refDipHF, variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1, variable("CI ROOT 0 DIPOLE Z"), 5, "CI ROOT 0 Z Component of dipole")        #TEST
+compare_values(refDipCI2, variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(abs(refTDM), abs(variable("CI ROOT 0 -> ROOT 1 DIPOLE Z")), 5, "CI ROOT 0 -> ROOT 1 Z Component of dipole") #TEST

@@ -39,9 +39,9 @@ set detci {
 thisenergy, this_wfn = energy('detci', return_wfn=True)
 
 compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refscf, variable("SCF total energy"),     9, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
 ## Now, run the RASCI
 refnuc   =    0.0000000000    #TEST
@@ -82,6 +82,6 @@ set detci {
 thisenergy = energy('detci', ref_wfn=this_wfn)
 
 compare_values(refnuc, ne.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("current REFerence energy"),     9, "SCF energy") #TEST
+compare_values(refscf, variable("current REFerence energy"),     9, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST

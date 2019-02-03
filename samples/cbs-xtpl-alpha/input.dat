@@ -32,16 +32,16 @@ E = energy("SCF/aug-pcsseg-[123]")
 
 E = energy(cbs, scf_wfn='scf', scf_basis='def2-[st]zvpd', scf_scheme=scf_xtpl_helgaker_2,
                corl_wfn='mp2', corl_basis='def2-[st]zvpd', corl_scheme=corl_xtpl_helgaker_2)
-c = get_variable("CBS CORRELATION ENERGY")
+c = variable("CBS CORRELATION ENERGY")
 
 E = energy(cbs, scf_wfn='scf', scf_basis='def2-[st]zvpd', scf_scheme=scf_xtpl_helgaker_2,
                corl_wfn='mp2', corl_basis='def2-[st]zvpd', corl_scheme=corl_xtpl_helgaker_2, corl_alpha=2.4)
-c = get_variable("CBS CORRELATION ENERGY")
+c = variable("CBS CORRELATION ENERGY")
 
 E = energy(cbs, scf_wfn='scf', scf_basis='cc-pv[dt]z', scf_scheme=scf_xtpl_helgaker_2,
                corl_wfn='mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2, corl_alpha=3.1,
               delta_wfn='ccsd(t)', delta_basis='cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta_alpha=2.4)
-c = get_variable("CBS CORRELATION ENERGY")
+c = variable("CBS CORRELATION ENERGY")
 
 
 set scf_type pk

@@ -38,5 +38,5 @@ set dmrg_local_init         false
 energy("dmrg-scf")
 
 ref_energy = -109.1035023353  #TEST
-compare_values(ref_energy, get_variable("CURRENT ENERGY"), 6, "DMRG Energy")  #TEST
+compare_values(ref_energy, variable("CURRENT ENERGY"), 6, "DMRG Energy")  #TEST
 

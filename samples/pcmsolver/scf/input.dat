@@ -36,79 +36,109 @@ pcm = {
    }
 }
 
-print('PK-RHF-PCM, total algorithm')
+print_out('PK-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 set pcm_scf_type separate
-print('PK-RHF-PCM, separate algorithm')
+print_out('PK-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
 set reference uhf
-print('PK-UHF-PCM, total algorithm')
+print_out('PK-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('PK-ROHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Check SCF_TYPE OUT_OF_CORE
 set reference rhf
 set scf_type out_of_core
-print('OUT_OF_CORE-RHF-PCM, total algorithm')
+print_out('OUT_OF_CORE-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 set pcm_scf_type separate
-print('OUT_OF_CORE-RHF-PCM, separate algorithm')
+print_out('OUT_OF_CORE-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
 set reference uhf
-print('OUT_OF_CORE-UHF-PCM, total algorithm')
+print_out('OUT_OF_CORE-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('OUT_OF_CORE-ROHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Check SCF_TYPE DIRECT
 set reference rhf
 set scf_type direct
-print('DIRECT-RHF-PCM, total algorithm')
+print_out('DIRECT-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 set pcm_scf_type separate
-print('DIRECT-RHF-PCM, separate algorithm')
+print_out('DIRECT-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
 set reference uhf
-print('DIRECT-UHF-PCM, total algorithm')
+print_out('DIRECT-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('DIRECT-ROHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Check SCF_TYPE DF
 set reference rhf
 set scf_type df
-print('DF-RHF-PCM, total algorithm')
+print_out('DF-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 set pcm_scf_type separate
-print('DF-RHF-PCM, separate algorithm')
+print_out('DF-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
 set reference uhf
-print('DF-UHF-PCM, total algorithm')
+print_out('DF-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('DF-ROHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Check SCF_TYPE CD
 set reference rhf
 set scf_type cd
-print('CD-RHF-PCM, total algorithm')
+print_out('CD-RHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 set pcm_scf_type separate
-print('CD-RHF-PCM, separate algorithm')
+print_out('CD-RHF-PCM, separate algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)
 
 # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
 set reference uhf
-print('CD-UHF-PCM, total algorithm')
+print_out('CD-UHF-PCM, total algorithm')
+energy_scf, wfn = energy('scf', return_wfn=True)
+
+# Now force use of ROHF on NH3 to check sanity of the algorithm with PCM
+set pcm_scf_type total
+set reference rohf
+print_out('CD-ROHF-PCM, total algorithm')
 energy_scf, wfn = energy('scf', return_wfn=True)

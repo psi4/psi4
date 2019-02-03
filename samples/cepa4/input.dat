@@ -17,7 +17,7 @@ set {
 set qc_module fnocc
 energy('lccd')
 
-corr1 = get_variable("LCCD CORRELATION ENERGY")
+corr1 = variable("LCCD CORRELATION ENERGY")
 
 clean()
 
@@ -27,7 +27,7 @@ set dcft_functional cepa0
 set algorithm       twostep
 energy('dcft')
 
-corr2 = get_variable("DCFT LAMBDA ENERGY")
+corr2 = variable("DCFT LAMBDA ENERGY")
 
 
 clean()

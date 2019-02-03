@@ -22,7 +22,7 @@ molecule ethene_ethyne {
 # this molecule will crash test if molecule passing broken
 molecule barrier {
  0 1
- He
+ He  0, 0 0
 }
 
 set {
@@ -37,9 +37,9 @@ set {
 
 energy('sapt0', molecule=ethene_ethyne)
 
-Eelst = psi4.get_variable("SAPT ELST ENERGY")
-Eexch = psi4.get_variable("SAPT EXCH ENERGY")
-Eind  = psi4.get_variable("SAPT IND ENERGY")
-Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ET    = psi4.get_variable("SAPT0 TOTAL ENERGY")
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT0 TOTAL ENERGY")
 

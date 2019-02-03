@@ -6,10 +6,10 @@
 # The latter is somewhat dicey, you never know what 
 # you are going to find.
 
-Enuc        =   8.80146552997207 #TEST
+Enuc        =   8.8014655646     #TEST
 E0          = -76.02141844515498 #TEST 
-E56_singlet = -75.27755067036694 #TEST
-E46_singlet = -75.09192785217635 #TEST
+E56_singlet = -75.27755066735338 #TEST
+E46_singlet = -75.09192784859950 #TEST
 E56_triplet = -75.79200709963571 #TEST 
 
 # Standard water molecule

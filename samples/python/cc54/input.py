@@ -1,6 +1,8 @@
 #! CCSD dipole with user-specified basis set
 import psi4
 
+psi4.set_output_file("output.dat", False)
+
 h2o = psi4.geometry("""
   0 1
   H
