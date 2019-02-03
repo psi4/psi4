@@ -1,4 +1,4 @@
-# SCF/sto-3g optimization with a hessian every step
+#! SCF/sto-3g optimization with a hessian every step
 
 molecule h2o {
      O

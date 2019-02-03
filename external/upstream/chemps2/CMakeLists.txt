@@ -1,5 +1,5 @@
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 1.8.3 CONFIG QUIET)
+    find_package(CheMPS2 1.8.7 CONFIG QUIET)
 
     if(${CheMPS2_FOUND})
         get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
@@ -28,7 +28,7 @@ if(${ENABLE_CheMPS2})
             DEPENDS lapack_external
                     hdf5_external
             GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
-            GIT_TAG fc77bc4  # v1.8.7 + 5
+            GIT_TAG d8ac508  # v1.8.9 + 1
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

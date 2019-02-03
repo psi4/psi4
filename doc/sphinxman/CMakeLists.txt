@@ -139,7 +139,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
                 ${CCBD}/source/autodoc_glossary_options_c.rst
                 ${CCBD}/source/autodoc_options_c_bymodule.rst
                 ${CCBD}/source/autodir_options_c/module__scf.rst  # representative
-                ${CCBD}/source/autodir_options_c/scf__scf_type.rst  # representative
+                ${CCBD}/source/autodir_options_c/scf__guess.rst  # representative
         DEPENDS ${CCSD}/document_options_c.pl
                 ${psi4_SOURCE_DIR}/psi4/src/read_options.cc
         COMMENT "Autodoc options c-side")
@@ -318,7 +318,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
                 ${CCBD}/source/autodoc_glossary_options_c.rst
                 ${CCBD}/source/autodoc_options_c_bymodule.rst
                 ${CCBD}/source/autodir_options_c/module__scf.rst  # representative
-                ${CCBD}/source/autodir_options_c/scf__scf_type.rst  # representative
+                ${CCBD}/source/autodir_options_c/scf__guess.rst  # representative
                 ${CCBD}/source/autodoc_psivariables_bymodule.rst
                 ${CCBD}/source/autodir_psivariables/module__scf.rst  # representative
                 ${CCBD}/source/autodir_psivariables/module__cfour.rst

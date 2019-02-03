@@ -188,7 +188,7 @@ def print_math_ldd(args):
 
     module, sharedlibrary_woext = args.module.split('/')
     mod = importlib.import_module(module)
-    exts = [sysconfig.get_config_var("SO"), '.so']
+    exts = [sysconfig.get_config_var("EXT_SUFFIX"), '.so']
     for ext in exts:
         modcore = os.path.dirname(os.path.abspath(mod.__file__)) + os.path.sep + sharedlibrary_woext + ext
         if os.path.isfile(modcore):

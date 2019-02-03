@@ -72,7 +72,7 @@ else()
 endif ()
 
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 1.8.3 CONFIG REQUIRED)
+    find_package(CheMPS2 1.8.7 CONFIG REQUIRED)
     get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using CheMPS2${ColourReset}: ${_loc} (version ${CheMPS2_VERSION})")

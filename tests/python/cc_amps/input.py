@@ -1,3 +1,5 @@
+#! API access to CCSD amplitudes
+
 import numpy as np
 
 import psi4
