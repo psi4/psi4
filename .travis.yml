@@ -84,14 +84,14 @@ matrix:
         - python-numpy
         - libhdf5-serial-dev
         - liblapack-dev
-        - g++-6
-        - gcc-6
-        - gfortran-6
+        - g++-8
+        - gcc-8
+        - gfortran-8
     env:
-      - CXX_COMPILER='g++-6'
+      - CXX_COMPILER='g++-8'
       - PYTHON_VER='3.6'
-      - C_COMPILER='gcc-6'
-      - Fortran_COMPILER='gfortran-6'
+      - C_COMPILER='gcc-8'
+      - Fortran_COMPILER='gfortran-8'
       - BUILD_TYPE='release'
 
 #  - os: linux
