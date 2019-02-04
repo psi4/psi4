@@ -1682,6 +1682,12 @@ def fchk(wfn, filename):
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate fchk file
 
+    Notes
+    -----
+    * A description of the FCHK format is http://wild.life.nctu.edu.tw/~jsyu/compchem/g09/g09ur/f_formchk.htm
+    * The allowed headers for methods are general and limited, i.e., "Total SCF|MP2|CI|CC Density",
+      so "CC" is always used for the post-HF case.
+
     :examples:
 
     >>> # [1] FCHK file for DFT calculation
