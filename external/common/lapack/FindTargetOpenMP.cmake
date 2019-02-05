@@ -65,7 +65,7 @@ else()
     find_package (OpenMP MODULE COMPONENTS ${_${PN}_FIND_LIST})
 
     if(NOT OpenMP_FOUND)
-        message(WARNING "CMake FindOpenMP failed! Trying a custom OpenMP configuration...")
+        message("CMake FindOpenMP failed! Trying a custom OpenMP configuration...")
     endif()
 
     foreach(_lang IN LISTS _${PN}_FIND_LIST)
