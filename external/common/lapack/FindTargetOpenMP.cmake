@@ -62,10 +62,10 @@ if (OpenMP_LIBRARIES AND OpenMP_FLAGS)
     target_link_libraries(OpenMP::OpenMP INTERFACE ${OpenMP_LIBRARIES})
 else()
     # 2nd precedence - target from modern FindOpenMP.cmake
-    find_package (OpenMP MODULE COMPONENTS ${${PN}_FIND_COMPONENTS})
+    find_package (OpenMP MODULE COMPONENTS ${_${PN}_FIND_LIST})
 
     if(NOT OpenMP_FOUND)
-        message(WARNING "FindOpenMP failed! Trying a custom OpenMP configuration...")
+        message(WARNING "CMake FindOpenMP failed! Trying a custom OpenMP configuration...")
     endif()
 
     foreach(_lang IN LISTS _${PN}_FIND_LIST)
@@ -134,22 +134,21 @@ else()
     endforeach()
 endif()
 
+unset(_omp_target_for_sought_langs)
 add_library(OpenMP::OpenMP INTERFACE IMPORTED)
-set(_${PN}_REQUIRED 1)
 foreach(_lang C CXX Fortran)
-    if((NOT ${PN}_FIND_COMPONENTS AND CMAKE_${_lang}_COMPILER_LOADED) OR _lang IN_LIST _${PN}_FIND_LIST)
+    if((NOT ${PN}_FIND_COMPONENTS AND CMAKE_${_lang}_COMPILER_LOADED) OR _lang IN_LIST ${PN}_FIND_COMPONENTS)
         if (TARGET OpenMP::OpenMP_${_lang})
             set(${PN}_${_lang}_FOUND 1)
             set_property(TARGET OpenMP::OpenMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_${_lang})
-        else()
-            unset(_${PN}_REQUIRED)
         endif()
+        list(APPEND _omp_target_for_sought_langs "${PN}_${_lang}_FOUND")
     endif()
 endforeach()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(${PN}
-                                  REQUIRED_VARS _${PN}_REQUIRED
+                                  REQUIRED_VARS ${_omp_target_for_sought_langs}
                                   HANDLE_COMPONENTS)
 
 unset(_${PN}_FIND_LIST)
