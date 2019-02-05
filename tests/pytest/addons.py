@@ -8,7 +8,7 @@ import pytest
 def _which(command, return_bool=False):
     # environment is $PSIPATH:$PATH, less any None values
     lenv = {'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
-                    ':' + os.environ.get('PATH')}
+                    ':' + os.environ.get('PATH')}  # yapf: disable
     lenv = {k: v for k, v in lenv.items() if v is not None}
 
     ans = shutil.which(command, mode=os.F_OK | os.X_OK, path=lenv['PATH'])
@@ -50,9 +50,11 @@ def is_numpy_new_enough(version_feature_introduced):
 
 
 def is_dftd3_new_enough(version_feature_introduced):
+    if not _which('dftd3', return_bool=True):
+        return False
     # Note: anything below v3.2.1 will return the help menu here. but that's fine as version compare evals to False.
     command = [_which('dftd3'), '-version']
-    proc = subprocess.run(command, capture_output=True)
+    proc = subprocess.run(command, stdout=subprocess.PIPE)
     candidate_version = proc.stdout.decode('utf-8').strip()
 
     from pkg_resources import parse_version
