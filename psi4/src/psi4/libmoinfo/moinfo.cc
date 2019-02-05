@@ -254,6 +254,8 @@ void MOInfo::read_mo_spaces() {
         intvec fvir_ref;
         //        intvec actv_docc_ref;
 
+        if (ref_wfn.frzcpi().n() != nirreps_ref) exit(42);
+
         focc_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.frzcpi());
         docc_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.doccpi());
         actv_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.soccpi());
