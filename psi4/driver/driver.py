@@ -1638,8 +1638,9 @@ def gdma(wfn, datafile=""):
     if datafile:
         commands = datafile
     else:
-        densname = wfn.name()
-        if densname == "DFT":
+        if wfn.reference_wavefunction():
+            densname = "CC"
+        else:
             densname = "SCF"
         commands = 'psi4_dma_datafile.dma'
         radii = core.get_option('GDMA', 'GDMA_RADIUS')
