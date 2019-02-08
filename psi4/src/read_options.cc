@@ -104,14 +104,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Specifies how many core orbitals to freeze in correlated computations.
     ``TRUE`` or ``1`` will default to freezing the previous noble gas shell
-    on each atom. In case of positive charges on fragments, an additional 
-    shell may be unfrozen, to ensure there are valence electrons in each 
-    fragment. With ``FALSE`` or ``0``, no electrons are frozen (with the 
+    on each atom. In case of positive charges on fragments, an additional
+    shell may be unfrozen, to ensure there are valence electrons in each
+    fragment. With ``FALSE`` or ``0``, no electrons are frozen (with the
     exception of electrons treated by an ECP). With ``-1``, ``-2``, and ``-3``,
     the user might request strict freezing of the previous first/second/third
-    noble gas shell on every atom. In this case, when there are no valence 
-    electrons, the code raises an exception. More precise control over the 
-    number of frozen orbitals can be attained by using the keywords 
+    noble gas shell on every atom. In this case, when there are no valence
+    electrons, the code raises an exception. More precise control over the
+    number of frozen orbitals can be attained by using the keywords
     |globals__num_frozen_docc| (gives the total number of orbitals to freeze,
     program picks the lowest-energy orbitals) or |globals__frozen_docc| (gives
     the number of orbitals to freeze per irreducible representation) -*/
@@ -1221,8 +1221,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("MAX_MEM_BUF", 0);
         /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
         options.add_double("CHOLESKY_TOLERANCE", 1e-4);
-        /*- Use DF integrals tech to converge the SCF before switching to a conventional tech
-            in a |scf__scf_type| ``DIRECT`` calculation -*/
+        /*- Do a density fitting SCF calculation to converge the
+            orbitals before switching to the use of exact integrals in
+            a |scf__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
@@ -1234,10 +1235,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_TOLERANCE", 1E-7);
         /*- Minimum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
-        /*- The type of guess orbitals.  Defaults to SAD for RHF, GWH for ROHF and UHF,
-        and READ for geometry optimizations after the first step. -*/
-
-        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD READ");
+        /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
+          ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
+          like SAD, as described in doi:10.1021/acs.jctc.8b01089. -*/
+        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD HUCKEL READ");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
         Notice that this procedure is defined only for calculations in C1 symmetry. -*/
@@ -1251,9 +1252,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         even during a geometry optimization. -*/
         options.add_bool("GUESS_PERSIST", false);
 
-        /*- Flag to print the molecular orbitals. -*/
+        /*- Do print the molecular orbitals? -*/
         options.add_bool("PRINT_MOS", false);
-        /*- Flag to print the basis set. -*/
+        /*- Do print the basis set? -*/
         options.add_bool("PRINT_BASIS", false);
         /*- Do perform a QCHF computation?  -*/
         options.add_bool("QCHF", false);
@@ -1273,11 +1274,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         Convergence & Algorithm <table:conv_scf>` for default convergence
         criteria for different calculation types. -*/
         options.add_double("E_CONVERGENCE", 1e-6);
-        /*- Convergence criterion for SCF density, which is defined as the RMS
-        value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
-        <table:conv_scf>` for default convergence criteria for different
-        calculation types.
-        **Cfour Interface:** Keyword translates into |cfour__cfour_scf_conv|. -*/
+        /*- Convergence criterion for SCF density, defined as the RMS
+        or maximum absolute value of the orbital gradient.  See Table
+        :ref:`SCF Convergence & Algorithm <table:conv_scf>` for
+        default convergence criteria for different calculation types.
+        **Cfour Interface:** Keyword translates into
+        |cfour__cfour_scf_conv|. -*/
         options.add_double("D_CONVERGENCE", 1e-6);
         /*- The amount (percentage) of damping to apply to the early density updates.
             0 will result in a full update, 100 will completely stall the update.  A
@@ -1428,21 +1430,21 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- The amount of SAD information to print to the output !expert -*/
         options.add_int("SAD_PRINT", 0);
-        /*- Convergence criterion for SCF energy in SAD Guess. -*/
+        /*- Convergence criterion for SCF energy in the SAD guess, analogous to |scf__e_convergence|. -*/
         options.add_double("SAD_E_CONVERGENCE", 1E-5);
-        /*- Convergence criterion for SCF density in SAD Guess. -*/
+        /*- Convergence criterion for SCF density in the SAD guess, analogous to |scf__d_convergence|. -*/
         options.add_double("SAD_D_CONVERGENCE", 1E-5);
-        /*- Fitting SAD basis !expert -*/
+        /*- Density fitting basis used in SAD !expert -*/
         options.add_str("DF_BASIS_SAD", "SAD-FIT");
-        /*- Maximum number of SAD guess iterations !expert -*/
+        /*- Maximum number of atomic SCF iterations within SAD !expert -*/
         options.add_int("SAD_MAXITER", 50);
-        /*- SCF type of SAD guess !expert -*/
+        /*- SCF type used for atomic calculations in SAD guess !expert -*/
         options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF");
         /*- Do force an even distribution of occupations across the last partially occupied orbital shell? !expert -*/
         options.add_bool("SAD_FRAC_OCC", true);
         /*- Do use spin-averaged occupations instead of atomic ground spin state in fractional SAD? !expert -*/
         options.add_bool("SAD_SPIN_AVERAGE", true);
-        /*- Auxiliary basis for the SAD guess !expert -*/
+        /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
         /*- SUBSECTION DFT -*/
@@ -2058,7 +2060,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LEVEL_SHIFT", 0.0);
         /*- Convergence criterion for energy. -*/
         options.add_double("E_CONVERGENCE", 1e-6);
-        /*- Convergence criterion for density. -*/
+        /*- Convergence criterion for density, as measured by the orbital gradient. -*/
         options.add_double("D_CONVERGENCE", 1e-6);
         /*- Maximum number of iterations -*/
         options.add_int("MAXITER", 100);

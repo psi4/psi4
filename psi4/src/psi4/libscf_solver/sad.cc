@@ -33,7 +33,7 @@
  * and dual-basis projections
  *
  */
-
+#include <cassert>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -97,25 +97,15 @@ void SADGuess::compute_guess() {
 }
 void SADGuess::form_D() {
     // Build Neutral D in AO basis (block diagonal)
-    SharedMatrix DAO = form_D_AO();
+    SharedMatrix DAO;
+    // Huckel matrices
+    SharedMatrix HuckelC;
+    SharedVector HuckelE;
+    run_atomic_calculations(DAO, HuckelC, HuckelE);
 
     // Transform Neutral D from AO to SO basis
     Da_ = std::make_shared<Matrix>("Da SAD", AO2SO_->colspi(), AO2SO_->colspi());
-
-    auto* temp = new double[AO2SO_->rowspi()[0] * (size_t)AO2SO_->max_ncol()];
-    for (int h = 0; h < Da_->nirrep(); h++) {
-        int nao = AO2SO_->rowspi()[h];
-        int nso = AO2SO_->colspi()[h];
-        if (!nao || !nso) continue;
-
-        double** DAOp = DAO->pointer();
-        double** DSOp = Da_->pointer(h);
-        double** Up = AO2SO_->pointer(h);
-
-        C_DGEMM('N', 'N', nao, nso, nao, 1.0, DAOp[0], nao, Up[0], nso, 0.0, temp, nso);
-        C_DGEMM('T', 'N', nso, nso, nao, 1.0, Up[0], nso, temp, nso, 0.0, DSOp[0], nso);
-    }
-    delete[] temp;
+    Da_->apply_symmetry(DAO, AO2SO_);
 
     // Set Db to Da
     Db_ = Da_;
@@ -135,7 +125,7 @@ void SADGuess::form_C() {
         Cb_->print();
     }
 }
-SharedMatrix SADGuess::form_D_AO() {
+void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC, SharedVector& HuckelE) {
     if (print_ > 6) {
         for (int A = 0; A < molecule_->natom(); A++) {
             outfile->Printf("  SAD: Atomic Basis Set %d\n", A);
@@ -231,28 +221,26 @@ SharedMatrix SADGuess::form_D_AO() {
         }
     }
 
-    // Atomic D matrices within the atom specific AO basis
-    std::vector<SharedMatrix> atomic_D;
-    for (int A = 0; A < nunique; A++) {
-        int nbf = atomic_bases_[atomic_indices[A]]->nbf();
-        auto dtmp = std::make_shared<Matrix>("Atomic D", nbf, nbf);
-        atomic_D.push_back(dtmp);
-    }
+    // Atomic density matrices
+    std::vector<SharedMatrix> atomic_D(nunique);
+    // Atomic orbitals for Huckel
+    std::vector<SharedMatrix> atomic_Chu(nunique);
+    // Atomic orbital energies for Huckel
+    std::vector<SharedVector> atomic_Ehu(nunique);
 
     if (print_ > 1) outfile->Printf("\n  Performing Atomic UHF Computations:\n");
-    for (int A = 0; A < nunique; A++) {
-        int index = atomic_indices[A];
-        int norbs = atomic_bases_[index]->nbf();
+    for (int uniA = 0; uniA < nunique; uniA++) {
+        int index = atomic_indices[uniA];
+        int nbf = atomic_bases_[index]->nbf();
         int Z = molecule_->Z(index);
         if (nelec[index] == 0) {
             // No electrons on atom!
-            atomic_D[A]->zero();
             continue;
         }
 
         if (print_ > 1) {
-            outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:\n", A, index);
-            outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, norbs = %d\n", nalpha[A], nbeta[A], norbs);
+            outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:\n", uniA, index);
+            outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, nbf = %d\n", nalpha[uniA], nbeta[uniA], nbf);
         }
 
         // Occupation numbers
@@ -284,8 +272,8 @@ SharedMatrix SADGuess::form_D_AO() {
             }
 
             // Sanity check: can't have more active orbitals than basis functions
-            if (nact > norbs - nfzc) {
-                nact = norbs - nfzc;
+            if (nact > nbf - nfzc) {
+                nact = nbf - nfzc;
             }
 
             // Number of occupied orbitals is
@@ -321,35 +309,82 @@ SharedMatrix SADGuess::form_D_AO() {
             for (size_t x = 0; x < nocc_b; x++) occ_b->set(x, 1.0);
         }
 
+        int nhu = occ_a->dim();
+        atomic_D[uniA] = std::make_shared<Matrix>("Atomic D_AO", nbf, nbf);
+        atomic_Chu[uniA] = std::make_shared<Matrix>("Atomic Huckel C", nbf, nhu);
+        atomic_Ehu[uniA] = std::make_shared<Vector>("Atomic Huckel E", nhu);
+
         if (options_.get_str("SAD_SCF_TYPE") == "DF") {
-            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[A]);
+            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[uniA],
+                                   atomic_Chu[uniA], atomic_Ehu[uniA]);
         } else {
             std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
-            get_uhf_atomic_density(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[A]);
+            get_uhf_atomic_density(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[uniA], atomic_Chu[uniA], atomic_Ehu[uniA]);
         }
         if (print_ > 1) outfile->Printf("Finished UHF Computation!\n");
     }
     if (print_) outfile->Printf("\n");
 
     // Add atomic_D into D (scale by 1/2, we like effective pairs)
-    auto DAO = std::make_shared<Matrix>("D_SAD (AO)", basis_->nbf(), basis_->nbf());
+    DAO = std::make_shared<Matrix>("D_SAD (AO)", basis_->nbf(), basis_->nbf());
+    DAO->zero();
     for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
-        int norbs = atomic_bases_[A]->nbf();
+        if (nelec[A] == 0) {
+          // No electrons on atom!
+          continue;
+        }
+        int nbf = atomic_bases_[A]->nbf();
         int back_index = unique_indices[A];
-        for (int m = 0; m < norbs; m++)
-            for (int n = 0; n < norbs; n++)
+        for (int m = 0; m < nbf; m++)
+            for (int n = 0; n < nbf; n++)
                 DAO->set(0, m + offset, n + offset, 0.5 * atomic_D[offset_indices[back_index]]->get(m, n));
-        offset += norbs;
+        offset += nbf;
+    }
+
+    // Total number of Huckel orbitals
+    int nhuckel = 0;
+    for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
+        if (nelec[A] == 0) {
+          // No electrons on atom!
+          continue;
+        }
+        int back_index = unique_indices[A];
+        int uniA = offset_indices[back_index];
+        nhuckel += atomic_Chu[uniA]->coldim();
+    }
+
+    // Collect Huckel orbital coefficients
+    HuckelC = std::make_shared<Matrix>("C_Huckel (MINAO)", basis_->nbf(), nhuckel);
+    HuckelE = std::make_shared<Vector>("E_Huckel (MINAO)", nhuckel);
+    HuckelC->zero();
+    HuckelE->zero();
+    for (int A = 0, offset = 0, ioffset = 0; A < molecule_->natom(); A++) {
+        if (nelec[A] == 0) {
+          // No electrons on atom!
+          continue;
+        }
+        int nbf = atomic_bases_[A]->nbf();
+        int back_index = unique_indices[A];
+        int uniA = offset_indices[back_index];
+        int nhu = atomic_Chu[uniA]->coldim();
+        assert(atomic_Chu[uniA]->rowdim() == nbf);
+        for (int ibf = 0; ibf < nbf; ibf++)
+            for (int io = 0; io < nhu; io++)
+                HuckelC->set(0, ibf + offset, io + ioffset, atomic_Chu[uniA]->get(ibf, io));
+        for (int io = 0; io < nhu; io++) HuckelE->set(io + ioffset, atomic_Ehu[uniA]->get(io));
+
+        offset += nbf;
+        ioffset += nhu;
     }
 
     if (debug_) {
         DAO->print();
+        HuckelC->print();
+        HuckelE->print();
     }
-
-    return DAO;
 }
 void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, SharedVector occ_a,
-                                      SharedVector occ_b, SharedMatrix D) {
+                                      SharedVector occ_b, SharedMatrix D, SharedMatrix Chuckel, SharedVector Ehuckel) {
     std::shared_ptr<Molecule> mol = bas->molecule();
     mol->update_geometry();
     if (print_ > 1) {
@@ -357,11 +392,10 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     }
 
     int natom = mol->natom();
-    int norbs = bas->nbf();
+    int nbf = bas->nbf();
     int Z = bas->molecule()->Z(0);
 
-    if (occ_a->dim() > norbs || occ_b->dim() > norbs)
-        throw PSIEXCEPTION("Atom has more electrons than basis functions.");
+    if (occ_a->dim() > nbf || occ_b->dim() > nbf) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
 
     if (print_ > 1) {
         outfile->Printf("\n");
@@ -376,11 +410,11 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     IntegralFactory integral(bas, bas, bas, bas);
     MatrixFactory mat;
-    mat.init_with(1, &norbs, &norbs);
-    OneBodyAOInt* S_ints = integral.ao_overlap();
-    OneBodyAOInt* T_ints = integral.ao_kinetic();
-    OneBodyAOInt* V_ints = integral.ao_potential();
-    OneBodyAOInt* ECP_ints = integral.ao_ecp();
+    mat.init_with(1, &nbf, &nbf);
+    std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
+    std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
+    std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
+    std::unique_ptr<OneBodyAOInt> ECP_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_ecp());
 
     // Compute overlap S and orthogonalizer X;
     SharedMatrix S(mat.create_matrix("Overlap Matrix"));
@@ -411,10 +445,6 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     T.reset();
     V.reset();
     ECP.reset();
-    delete S_ints;
-    delete T_ints;
-    delete V_ints;
-    delete ECP_ints;
 
     if (print_ > 6) {
         H->print();
@@ -427,18 +457,21 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     SharedMatrix Da(mat.create_matrix("Da"));
     SharedMatrix Db(mat.create_matrix("Db"));
 
+    SharedVector Ea = std::make_shared<Vector>("Ea", nbf);
+    SharedVector Eb = std::make_shared<Vector>("Eb", nbf);
+
     SharedMatrix gradient_a(mat.create_matrix("gradient_a"));
     SharedMatrix gradient_b(mat.create_matrix("gradient_b"));
 
     SharedMatrix Fa(mat.create_matrix("Fa"));
     SharedMatrix Fb(mat.create_matrix("Fb"));
 
-    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", norbs, occ_a->dim());
-    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", norbs, occ_b->dim());
+    auto Ca_occ = std::make_shared<Matrix>("Ca occupied", nbf, occ_a->dim());
+    auto Cb_occ = std::make_shared<Matrix>("Cb occupied", nbf, occ_b->dim());
 
     // Compute initial Cx, Dx, and D from core guess
-    form_C_and_D(X, H, Ca, Ca_occ, occ_a, Da);
-    form_C_and_D(X, H, Cb, Cb_occ, occ_b, Db);
+    form_C_and_D(X, H, Ca, Ea, Ca_occ, occ_a, Da);
+    form_C_and_D(X, H, Cb, Eb, Cb_occ, occ_b, Db);
 
     D->zero();
     D->add(Da);
@@ -550,8 +583,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         diis_manager.extrapolate(2, Fa.get(), Fb.get());
 
         // Diagonalize Fa and Fb to from Ca and Cb and Da and Db
-        form_C_and_D(X, Fa, Ca, Ca_occ, occ_a, Da);
-        form_C_and_D(X, Fb, Cb, Cb_occ, occ_b, Db);
+        form_C_and_D(X, Fa, Ca, Ea, Ca_occ, occ_a, Da);
+        form_C_and_D(X, Fb, Cb, Eb, Cb_occ, occ_b, Db);
 
         // Form D
         D->copy(Da);
@@ -586,11 +619,23 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     if (converged && print_ > 1)
         outfile->Printf("  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(), E);
+
+    // Copy Huckel coefficients and energies
+    double** Coccp = Chuckel->pointer();
+    double** Cp = Ca->pointer();
+    for (int i = 0; i < nbf; i++) {
+        C_DCOPY(occ_a->dim(), Cp[i], 1, Coccp[i], 1);
+    }
+    double* Eoccp = Ehuckel->pointer();
+    double* Ep = Ea->pointer();
+    for (int i = 0; i < occ_a->dim(); i++) {
+        Eoccp[i] = Ep[i];
+    }
 }
 void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, SharedMatrix S, SharedMatrix X) {
-    int norbs = X->rowdim();
-    auto Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
-    auto Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
+    int nbf = X->rowdim();
+    auto Scratch1 = std::make_shared<Matrix>("Scratch1", nbf, nbf);
+    auto Scratch2 = std::make_shared<Matrix>("Scratch2", nbf, nbf);
 
     // FDS
     Scratch1->gemm(false, false, 1.0, F, D, 0.0);
@@ -612,22 +657,22 @@ void SADGuess::form_gradient(SharedMatrix grad, SharedMatrix F, SharedMatrix D, 
     Scratch2.reset();
 }
 
-void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedMatrix Cocc, SharedVector occ,
-                            SharedMatrix D) {
-    int norbs = X->rowdim();
+void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, SharedVector E, SharedMatrix Cocc,
+                            SharedVector occ, SharedMatrix D) {
+    int nbf = X->rowdim();
     int nocc = occ->dim();
     if (nocc == 0) return;
 
     // Forms C in the AO basis for SAD Guesses
-    auto Scratch1 = std::make_shared<Matrix>("Scratch1", norbs, norbs);
-    auto Scratch2 = std::make_shared<Matrix>("Scratch2", norbs, norbs);
+    auto Scratch1 = std::make_shared<Matrix>("Scratch1", nbf, nbf);
+    auto Scratch2 = std::make_shared<Matrix>("Scratch2", nbf, nbf);
 
     // Form Fp = XFX
     Scratch1->gemm(true, false, 1.0, X, F, 0.0);
     Scratch2->gemm(false, false, 1.0, Scratch1, X, 0.0);
 
-    auto eigvals = std::make_shared<Vector>("Eigenvalue scratch", norbs);
-    Scratch2->diagonalize(Scratch1, eigvals);
+    // Diagonalize
+    Scratch2->diagonalize(Scratch1, E);
 
     // Form C = XC'
     C->gemm(false, false, 1.0, X, Scratch1, 0.0);
@@ -635,12 +680,12 @@ void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, Shar
     // Copy over Cocc
     double** Coccp = Cocc->pointer();
     double** Cp = C->pointer();
-    for (int i = 0; i < norbs; i++) {
+    for (int i = 0; i < nbf; i++) {
         C_DCOPY(nocc, Cp[i], 1, Coccp[i], 1);
     }
     // Scale by occ
     for (int i = 0; i < nocc; i++) {
-        C_DSCAL(norbs, occ->get(i), &Coccp[0][i], nocc);
+        C_DSCAL(nbf, occ->get(i), &Coccp[0][i], nocc);
     }
     // Form D = Cocc*Cocc'
     D->gemm(false, true, 1.0, Cocc, Cocc, 0.0);
@@ -648,7 +693,60 @@ void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, Shar
     Scratch1.reset();
     Scratch2.reset();
 }
+SharedMatrix SADGuess::huckel_guess() {
+    // Build Neutral D in AO basis (block diagonal)
+    SharedMatrix DAO;
+    // Huckel matrices
+    SharedMatrix Chu;
+    SharedVector Ehu;
+    run_atomic_calculations(DAO, Chu, Ehu);
 
+    IntegralFactory integral(basis_, basis_, basis_, basis_);
+    MatrixFactory mat;
+
+    int nbf = basis_->nbf();
+    mat.init_with(1, &nbf, &nbf);
+    std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
+
+    // Compute overlap S
+    SharedMatrix S(mat.create_matrix("Overlap Matrix"));
+    S_ints->compute(S);
+
+    // Compute Huckel basis overlap S*Chu
+    int nhu = Chu->coldim();
+
+    // Compute S*Chu
+    auto SChu = std::make_shared<Matrix>("SChu", nbf, nhu);
+    SChu->gemm(false, false, 1.0, S, Chu, 0.0);
+
+    // Compute Chu^T*S*Chu
+    auto ChuSChu = std::make_shared<Matrix>("ChuSChu", nhu, nhu);
+    ChuSChu->gemm(true, false, 1.0, Chu, SChu, 0.0);
+
+    // Huckel matrix in Huckel basis
+    auto huckelmo = std::make_shared<Matrix>("Huckel MO matrix", nhu, nhu);
+    double** huckelmop = huckelmo->pointer();
+    for (int i = 0; i < nhu; i++) {
+        huckelmo->set(i, i, Ehu->get(i));
+        for (int j = 0; j < nhu; j++) {
+            huckelmo->set(i, j, 0.875 * ChuSChu->get(i, j) * (Ehu->get(i) + Ehu->get(j)));
+        }
+    }
+
+    // Half-transform
+    auto scratch = std::make_shared<Matrix>("Scratch memory", nbf, nhu);
+    scratch->gemm(false, false, 1.0, SChu, huckelmo, 0.0);
+
+    // Full transform to AO basis
+    auto huckelao = std::make_shared<Matrix>("Huckel AO matrix", nbf, nbf);
+    huckelao->gemm(false, true, 1.0, SChu, scratch, 0.0);
+
+    // Now, transform from AO to SO basis
+    auto huckel = std::make_shared<Matrix>("Huckel SO matrix", AO2SO_->colspi(), AO2SO_->colspi());
+    huckel->apply_symmetry(huckelao, AO2SO_);
+
+    return huckel;
+}
 void HF::compute_SAD_guess() {
     if (sad_basissets_.empty()) {
         throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
@@ -696,6 +794,25 @@ void HF::compute_SAD_guess() {
     nbeta_ = sad_dim.sum();
     doccpi_ = sad_dim;
     soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
+
+    energies_["Total Energy"] = 0.0;  // This is the -1th iteration
+}
+void HF::compute_huckel_guess() {
+    if (sad_basissets_.empty()) {
+        throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
+    }
+
+    auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, options_);
+    if (options_.get_str("SAD_SCF_TYPE") == "DF") {
+        if (sad_fitting_basissets_.empty()) {
+            throw PSIEXCEPTION("  SCF guess was set to SAD with DiskDFJK, but sad_fitting_basissets_ was empty!\n\n");
+        }
+        guess->set_atomic_fit_bases(sad_fitting_basissets_);
+    }
+
+    SharedMatrix Fhuckel = guess->huckel_guess();
+    Fa_->copy(Fhuckel);
+    Fb_->copy(Fhuckel);
 
     energies_["Total Energy"] = 0.0;  // This is the -1th iteration
 }
