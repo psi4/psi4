@@ -71,6 +71,7 @@ def print_header():
 
                          Additional Contributions by
     P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, and R. A. Shaw
+    A. Alenaizan, R. Galvelis, Z. Glick, S. Lehtola, J. Misiewicz
 
     -----------------------------------------------------------------------
 
