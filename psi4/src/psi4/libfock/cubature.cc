@@ -4402,10 +4402,13 @@ void OctreeGridBlocker::block() {
     for (size_t A = 0; A < completed_tree.size(); A++) {
         std::vector<int> block = completed_tree[A];
         if (!block.size()) continue;
-        blocks_.push_back(
-            std::make_shared<BlockOPoints>(A, block.size(), &x_[index], &y_[index], &z_[index], &w_[index], extents_));
-        if ((size_t)max_points_ < block.size()) {
-            max_points_ = block.size();
+        auto bop = std::make_shared<BlockOPoints>(A, block.size(), &x_[index], &y_[index], &z_[index], &w_[index], extents_);
+        // BlockOPoints construction performs additional pruning. Need to test if any points remain.
+        if (bop->local_nbf()) {
+            blocks_.push_back(bop);
+            if ((size_t)max_points_ < block.size()) {
+                max_points_ = block.size();
+            }
         }
         index += block.size();
     }
