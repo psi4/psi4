@@ -319,7 +319,8 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
                                    atomic_Chu[uniA], atomic_Ehu[uniA]);
         } else {
             std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
-            get_uhf_atomic_density(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[uniA], atomic_Chu[uniA], atomic_Ehu[uniA]);
+            get_uhf_atomic_density(atomic_bases_[index], zbas, occ_a, occ_b, atomic_D[uniA], atomic_Chu[uniA],
+                                   atomic_Ehu[uniA]);
         }
         if (print_ > 1) outfile->Printf("Finished UHF Computation!\n");
     }
@@ -329,28 +330,26 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
     DAO = std::make_shared<Matrix>("D_SAD (AO)", basis_->nbf(), basis_->nbf());
     DAO->zero();
     for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
-        if (nelec[A] == 0) {
-          // No electrons on atom!
-          continue;
-        }
         int nbf = atomic_bases_[A]->nbf();
-        int back_index = unique_indices[A];
-        for (int m = 0; m < nbf; m++)
-            for (int n = 0; n < nbf; n++)
-                DAO->set(0, m + offset, n + offset, 0.5 * atomic_D[offset_indices[back_index]]->get(m, n));
+        // Handle ghost atoms
+        if (nelec[A] > 0) {
+            int back_index = unique_indices[A];
+            for (int m = 0; m < nbf; m++)
+                for (int n = 0; n < nbf; n++)
+                    DAO->set(0, m + offset, n + offset, 0.5 * atomic_D[offset_indices[back_index]]->get(m, n));
+        }
         offset += nbf;
     }
 
     // Total number of Huckel orbitals
     int nhuckel = 0;
     for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
-        if (nelec[A] == 0) {
-          // No electrons on atom!
-          continue;
+        // Handle ghost atoms
+        if (nelec[A] > 0) {
+            int back_index = unique_indices[A];
+            int uniA = offset_indices[back_index];
+            nhuckel += atomic_Chu[uniA]->coldim();
         }
-        int back_index = unique_indices[A];
-        int uniA = offset_indices[back_index];
-        nhuckel += atomic_Chu[uniA]->coldim();
     }
 
     // Collect Huckel orbital coefficients
@@ -359,22 +358,20 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
     HuckelC->zero();
     HuckelE->zero();
     for (int A = 0, offset = 0, ioffset = 0; A < molecule_->natom(); A++) {
-        if (nelec[A] == 0) {
-          // No electrons on atom!
-          continue;
-        }
         int nbf = atomic_bases_[A]->nbf();
-        int back_index = unique_indices[A];
-        int uniA = offset_indices[back_index];
-        int nhu = atomic_Chu[uniA]->coldim();
-        assert(atomic_Chu[uniA]->rowdim() == nbf);
-        for (int ibf = 0; ibf < nbf; ibf++)
-            for (int io = 0; io < nhu; io++)
-                HuckelC->set(0, ibf + offset, io + ioffset, atomic_Chu[uniA]->get(ibf, io));
-        for (int io = 0; io < nhu; io++) HuckelE->set(io + ioffset, atomic_Ehu[uniA]->get(io));
-
+        // Handle ghost atoms
+        if (nelec[A] > 0) {
+            int back_index = unique_indices[A];
+            int uniA = offset_indices[back_index];
+            int nhu = atomic_Chu[uniA]->coldim();
+            assert(atomic_Chu[uniA]->rowdim() == nbf);
+            for (int ibf = 0; ibf < nbf; ibf++)
+                for (int io = 0; io < nhu; io++)
+                    HuckelC->set(0, ibf + offset, io + ioffset, atomic_Chu[uniA]->get(ibf, io));
+            for (int io = 0; io < nhu; io++) HuckelE->set(io + ioffset, atomic_Ehu[uniA]->get(io));
+            ioffset += nhu;
+        }
         offset += nbf;
-        ioffset += nhu;
     }
 
     if (debug_) {
