@@ -9,8 +9,42 @@ jobs:
   - job: 'build'
     pool:
       vmImage: 'vs2015-win2012r2'
-    timeoutInMinutes: 90
+    timeoutInMinutes: 360
     steps:
+
+      # Check ctest configuration
+      - script: |
+          setlocal EnableDelayedExpansion
+          if not defined CTEST_TYPE (
+            echo ERROR: Pipeline variable "ctest.type" is undefined. Define "ctest.type" with default value "quick".
+            exit 1
+          )
+          echo ctest.type: %CTEST_TYPE%
+          set VALID=false
+          if "%CTEST_TYPE%"=="quick" set VALID=true
+          if "%CTEST_TYPE%"=="full" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "ctest.type" value: "%CTEST_TYPE%". Valid values: "quick" and "full".
+            exit 1
+          )
+        displayName: "Check ctest configuration"
+
+      # Check pytest configuration
+      - script: |
+          setlocal EnableDelayedExpansion
+          if not defined PYTEST_TYPE (
+            echo ERROR: Pipeline variable "pytest.type" is undefined. Define "pytest.type" with default value "quick".
+            exit 1
+          )
+          echo pytest.type: %PYTEST_TYPE%
+          set VALID=false
+          if "%PYTEST_TYPE%"=="quick" set VALID=true
+          if "%PYTEST_TYPE%"=="full" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "pytest.type" value: "%PYTEST_TYPE%". Valid values: "quick" and "full".
+            exit 1
+          )
+        displayName: "Check pytest configuration"
 
       # Install Chocolatey (https://chocolatey.org/install#install-with-powershellexe)
       - powershell: |
@@ -101,19 +135,22 @@ jobs:
         displayName: "Test Psi4 (OpenMP)"
         workingDirectory: $(Build.BinariesDirectory)/install/lib
 
-      # Test (quick ctest)
+      # Test (ctest)
       - script: |
+          setlocal EnableDelayedExpansion
+          if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
           ctest --build-config Debug ^
-                --label-regex quick ^
+                --label-regex !CTEST_TYPE! ^
                 --output-on-failure ^
-                --parallel %NUMBER_OF_PROCESSORS%
-        displayName: "Test Psi4 (quick ctest)"
+                --parallel %NUMBER_OF_PROCESSORS% ^
+                --timeout 3000
+        displayName: "Test Psi4 (ctest $(ctest.type))"
         workingDirectory: $(Build.BinariesDirectory)/build
 
-      # Test (quick pytest)
+      # Test (pytest)
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --test quick
-        displayName: "Test Psi4 (quick pytest)"
+          psi4 --test %PYTEST_TYPE%
+        displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
