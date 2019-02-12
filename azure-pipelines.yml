@@ -101,15 +101,6 @@ jobs:
         displayName: "Test Psi4 (OpenMP)"
         workingDirectory: $(Build.BinariesDirectory)/install/lib
 
-      # Test (psimrcc-fd-freq2)
-      - script: |
-          ctest --build-config Debug ^
-                -R psimrcc-fd-freq2 ^
-                --output-on-failure ^
-                --parallel %NUMBER_OF_PROCESSORS%
-        displayName: "Test Psi4 (quick ctest)"
-        workingDirectory: $(Build.BinariesDirectory)/build
-
       # Test (quick ctest)
       - script: |
           ctest --build-config Debug ^
