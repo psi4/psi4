@@ -252,19 +252,22 @@ void MOInfo::read_mo_spaces() {
         intvec docc_ref;
         intvec actv_ref;
         intvec fvir_ref;
-        //        intvec actv_docc_ref;
 
-        focc_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.frzcpi());
-        docc_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.doccpi());
-        actv_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.soccpi());
-        fvir_ref.assign(nirreps_ref, 0);
-        //        actv_docc_ref.assign(nirreps_ref,0);
-
-        for (int h = 0; h < nirreps_ref; h++) docc_ref[h] -= focc_ref[h];
-
+        // Read the dimensioning information for the subgroup from the wfn object
+        focc_ref = convert_int_array_to_vector(nirreps, ref_wfn.frzcpi());
+        docc_ref = convert_int_array_to_vector(nirreps, ref_wfn.doccpi());
+        actv_ref = convert_int_array_to_vector(nirreps, ref_wfn.soccpi());
+        for (int h = 0; h < nirreps; h++) docc_ref[h] -= focc_ref[h];
         nfocc = std::accumulate(focc_ref.begin(), focc_ref.end(), 0);
         ndocc = std::accumulate(docc_ref.begin(), docc_ref.end(), 0);
         nactv = std::accumulate(actv_ref.begin(), actv_ref.end(), 0);
+
+        // Now resize the arrays to be able to accommodate the input arrays,
+        // which have the number of dimensions of the parent point group
+        focc_ref.assign(nirreps_ref, 0);
+        docc_ref.assign(nirreps_ref, 0);
+        actv_ref.assign(nirreps_ref, 0);
+        fvir_ref.assign(nirreps_ref, 0);
 
         read_mo_space(nirreps_ref, nfocc, focc_ref, "FROZEN_DOCC");
         read_mo_space(nirreps_ref, ndocc, docc_ref, "RESTRICTED_DOCC");
