@@ -2,12 +2,14 @@ dist: xenial
 language: cpp
 sudo: false
 python: 3.6.5
+
+before_cache:
+  - conda remove --name p4env --all
+
 cache:
   timeout: 1000
   directories:
     - $HOME/miniconda
-before_cache:
-  - conda remove --name p4env --all
 
 env:
   global:
