@@ -14,6 +14,75 @@ env:
   global:
     - CTEST_OUTPUT_ON_FAILURE=1
 
+vm-info: &vm-info
+  stage: Gather information on the VM
+  script:
+    - uname -a
+    - free -m
+    - df -h
+    - ulimit -a
+
+install-conda-pkgs: &install-conda-pkgs
+  stage: Install Conda packages
+  install:
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - source activate p4env
+    - conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
+    - conda list
+
+report-deps: &report-deps
+  stage: Report versions of dependencies
+  script:
+    - python -V
+    - python -c 'import numpy; print(numpy.version.version)'
+    - export CXX=${CXX_COMPILER}
+    - export CC=${C_COMPILER}
+    - export FC=${Fortran_COMPILER}
+    - ${CXX_COMPILER} --version
+    - ${Fortran_COMPILER} --version
+    - ${C_COMPILER} --version
+
+configure-psi4: &configure-psi4
+  stage: Run CMake to configure Psi4
+  script:
+    - cd ${TRAVIS_BUILD_DIR}
+    # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
+    #   b/c their c++ symbols don't mix with the different Travis compilers. for other
+    #   reasons, pkgs are being compiled less statically, sad for CI.
+    # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
+    - >
+        cmake -Bbuild -H.
+        -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
+        -DCMAKE_C_COMPILER=${C_COMPILER}
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+        -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
+        -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
+        -DENABLE_CheMPS2=OFF
+        -DENABLE_dkh=ON
+        -DENABLE_libefp=ON
+        -DENABLE_erd=OFF
+        -DENABLE_gdma=ON
+        -DENABLE_PCMSolver=OFF
+        -DENABLE_simint=ON
+        -DENABLE_snsmp2=OFF
+        -DENABLE_v2rdm_casscf=OFF
+        -DENABLE_PLUGIN_TESTING=ON
+        -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
+
+build-psi4: &build-psi4
+  stage: Build Psi4
+  script:
+    - cd build
+    - ../.scripts/travis_build.sh
+
+test-psi4: &test-psi4
+  stage: Test Psi4
+  script:
+    - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+    - python ../.scripts/travis_run_test.py
+    - python ../.scripts/travis_print_failing.py
+    - PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'quick' stage/lib/psi4/tests/
+
 jobs:
   include:
     - stage: Warm up cache
@@ -38,6 +107,12 @@ jobs:
         - C_COMPILER='clang-3.6'
         - Fortran_COMPILER='gfortran'
         - BUILD_TYPE='release'
+      <<: *vm-info
+      <<: *install-conda-pkgs
+      <<: *report-deps
+      <<: *configure-psi4
+      <<: *build-psi4
+      <<: *test-psi4
     - stage: Build and test
       compiler: gcc
       addons: &3
@@ -53,6 +128,12 @@ jobs:
         - C_COMPILER='gcc'
         - Fortran_COMPILER='gfortran'
         - BUILD_TYPE='release'
+      <<: *vm-info
+      <<: *install-conda-pkgs
+      <<: *report-deps
+      <<: *configure-psi4
+      <<: *build-psi4
+      <<: *test-psi4
     - stage: Build and test
       compiler: gcc
       addons: &4
@@ -72,59 +153,12 @@ jobs:
         - C_COMPILER='gcc-8'
         - Fortran_COMPILER='gfortran-8'
         - BUILD_TYPE='release'
-
-before_install:
-  - uname -a
-  - free -m
-  - df -h
-  - ulimit -a
-
-install:
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - source activate p4env
-  - conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
-  - conda list
-
-before_script:
-  - python -V
-  - python -c 'import numpy; print(numpy.version.version)'
-  - cd ${TRAVIS_BUILD_DIR}
-  - export CXX=${CXX_COMPILER}
-  - export CC=${C_COMPILER}
-  - export FC=${Fortran_COMPILER}
-  - ${CXX_COMPILER} --version
-  - ${Fortran_COMPILER} --version
-  - ${C_COMPILER} --version
-      # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
-      #   b/c their c++ symbols don't mix with the different Travis compilers. for other
-      #   reasons, pkgs are being compiled less statically, sad for CI.
-      # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
-  - >
-      cmake -Bbuild -H.
-      -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
-      -DCMAKE_C_COMPILER=${C_COMPILER}
-      -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-      -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
-      -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
-      -DENABLE_CheMPS2=OFF
-      -DENABLE_dkh=ON
-      -DENABLE_libefp=ON
-      -DENABLE_erd=OFF
-      -DENABLE_gdma=ON
-      -DENABLE_PCMSolver=OFF
-      -DENABLE_simint=ON
-      -DENABLE_snsmp2=OFF
-      -DENABLE_v2rdm_casscf=OFF
-      -DENABLE_PLUGIN_TESTING=ON
-      -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
-  - cd build
-  - ../.scripts/travis_build.sh
-
-script:
-  - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
-  - python ../.scripts/travis_run_test.py
-  - python ../.scripts/travis_print_failing.py
-  - PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'quick' stage/lib/psi4/tests/
+      <<: *vm-info
+      <<: *install-conda-pkgs
+      <<: *report-deps
+      <<: *configure-psi4
+      <<: *build-psi4
+      <<: *test-psi4
 
 # safelist
 branches:
