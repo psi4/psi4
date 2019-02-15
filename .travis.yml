@@ -78,7 +78,7 @@ jobs:
     - <<: *warm-up-cache
     - <<: *configure-build-test
       compiler: clang
-      addons: &1
+      addons:
         apt:
           packages:
           - liblapack-dev
@@ -93,7 +93,7 @@ jobs:
         - BUILD_TYPE='release'
     - <<: *configure-build-test
       compiler: gcc
-      addons: &3
+      addons:
         apt:
           packages:
           - python-numpy
@@ -108,7 +108,7 @@ jobs:
         - BUILD_TYPE='release'
     - <<: *configure-build-test
       compiler: gcc
-      addons: &4
+      addons:
         apt:
           sources:
           - ubuntu-toolchain-r-test
