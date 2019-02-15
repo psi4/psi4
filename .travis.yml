@@ -14,30 +14,26 @@ env:
   global:
     - CTEST_OUTPUT_ON_FAILURE=1
 
-get-the-cache: &get-the-cache
-  stage: Get the cache
+cache-warm-up: &cache-warm-up
+  stage: Warm up cache
   script:
     - mkdir -p $HOME/miniconda
     - ./.scripts/miniconda.sh
     - export PATH="$HOME/miniconda/bin:$PATH"
     - conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
 
-vm-info: &vm-info
-  script:
-    - uname -a
-    - free -m
-    - df -h
-    - ulimit -a
-
-install-conda-pkgs: &install-conda-pkgs
+configure-build-test: &configure-build-test
+  stage: Configure, build and test
   install:
     - export PATH="$HOME/miniconda/bin:$PATH"
     - source activate p4env
     - conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
     - conda list
-
-report-deps: &report-deps
-  script:
+  before_script:
+    - uname -a
+    - free -m
+    - df -h
+    - ulimit -a
     - python -V
     - python -c 'import numpy; print(numpy.version.version)'
     - export CXX=${CXX_COMPILER}
@@ -46,8 +42,6 @@ report-deps: &report-deps
     - ${CXX_COMPILER} --version
     - ${Fortran_COMPILER} --version
     - ${C_COMPILER} --version
-
-configure-psi4: &configure-psi4
   script:
     - cd ${TRAVIS_BUILD_DIR}
     # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
@@ -72,14 +66,8 @@ configure-psi4: &configure-psi4
         -DENABLE_v2rdm_casscf=OFF
         -DENABLE_PLUGIN_TESTING=ON
         -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
-
-build-psi4: &build-psi4
-  script:
     - cd build
     - ../.scripts/travis_build.sh
-
-test-psi4: &test-psi4
-  script:
     - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     - python ../.scripts/travis_run_test.py
     - python ../.scripts/travis_print_failing.py
@@ -87,8 +75,8 @@ test-psi4: &test-psi4
 
 jobs:
   include:
-    - <<: *get-the-cache
-    - stage: Build and test
+    - <<: *warm-up-cache
+    - <<: *configure-build-test
       compiler: clang
       addons: &1
         apt:
@@ -103,13 +91,7 @@ jobs:
         - C_COMPILER='clang-3.6'
         - Fortran_COMPILER='gfortran'
         - BUILD_TYPE='release'
-      <<: *vm-info
-      <<: *install-conda-pkgs
-      <<: *report-deps
-      <<: *configure-psi4
-      <<: *build-psi4
-      <<: *test-psi4
-    - stage: Build and test
+    - <<: *configure-build-test
       compiler: gcc
       addons: &3
         apt:
@@ -124,13 +106,7 @@ jobs:
         - C_COMPILER='gcc'
         - Fortran_COMPILER='gfortran'
         - BUILD_TYPE='release'
-      <<: *vm-info
-      <<: *install-conda-pkgs
-      <<: *report-deps
-      <<: *configure-psi4
-      <<: *build-psi4
-      <<: *test-psi4
-    - stage: Build and test
+    - <<: *configure-build-test
       compiler: gcc
       addons: &4
         apt:
@@ -149,12 +125,6 @@ jobs:
         - C_COMPILER='gcc-8'
         - Fortran_COMPILER='gfortran-8'
         - BUILD_TYPE='release'
-      <<: *vm-info
-      <<: *install-conda-pkgs
-      <<: *report-deps
-      <<: *configure-psi4
-      <<: *build-psi4
-      <<: *test-psi4
 
 # safelist
 branches:
