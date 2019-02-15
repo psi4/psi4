@@ -4,7 +4,7 @@ sudo: false
 python: 3.6.5
 before_cache:
   - conda deactivate
-  - conda remove --name p4env --all
+  - conda remove --name p4env --all --yes
 cache:
   timeout: 1000
   directories:
@@ -23,7 +23,6 @@ get-the-cache: &get-the-cache
     - conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
 
 vm-info: &vm-info
-  stage: Gather information on the VM
   script:
     - uname -a
     - free -m
@@ -31,7 +30,6 @@ vm-info: &vm-info
     - ulimit -a
 
 install-conda-pkgs: &install-conda-pkgs
-  stage: Install Conda packages
   install:
     - export PATH="$HOME/miniconda/bin:$PATH"
     - source activate p4env
@@ -39,7 +37,6 @@ install-conda-pkgs: &install-conda-pkgs
     - conda list
 
 report-deps: &report-deps
-  stage: Report versions of dependencies
   script:
     - python -V
     - python -c 'import numpy; print(numpy.version.version)'
@@ -51,7 +48,6 @@ report-deps: &report-deps
     - ${C_COMPILER} --version
 
 configure-psi4: &configure-psi4
-  stage: Run CMake to configure Psi4
   script:
     - cd ${TRAVIS_BUILD_DIR}
     # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
@@ -78,13 +74,11 @@ configure-psi4: &configure-psi4
         -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
 
 build-psi4: &build-psi4
-  stage: Build Psi4
   script:
     - cd build
     - ../.scripts/travis_build.sh
 
 test-psi4: &test-psi4
-  stage: Test Psi4
   script:
     - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     - python ../.scripts/travis_run_test.py
@@ -93,8 +87,7 @@ test-psi4: &test-psi4
 
 jobs:
   include:
-    - stage: Warm up cache
-      <<: *get-the-cache
+    - <<: *get-the-cache
     - stage: Build and test
       compiler: clang
       addons: &1
