@@ -14,7 +14,7 @@ env:
   global:
     - CTEST_OUTPUT_ON_FAILURE=1
 
-cache-warm-up: &cache-warm-up
+warm-up-cache: &warm-up-cache
   stage: Warm up cache
   script:
     - mkdir -p $HOME/miniconda
