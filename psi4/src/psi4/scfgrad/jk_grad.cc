@@ -115,7 +115,7 @@ void JKGrad::common_init()
     omp_num_threads_ = Process::environment.get_n_threads();
 #endif
 
-    cutoff_ = 0.0;
+    cutoff_ = 1E-12;
 
     do_J_ = true;
     do_K_ = true;
