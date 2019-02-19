@@ -433,7 +433,7 @@ SharedMatrix DFMP2::form_inverse_metric() {
     } else {
         // Form the inverse metric manually
         auto metric = std::make_shared<FittingMetric>(ribasis_, true);
-        metric->form_eig_inverse(1.0E-10);
+        metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
         SharedMatrix Jm12 = metric->get_metric();
 
         // Save inverse metric to the SCF three-index integral file if it exists
