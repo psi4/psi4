@@ -15,10 +15,6 @@ jobs:
       # Check ctest configuration
       - script: |
           setlocal EnableDelayedExpansion
-          if not defined CTEST_TYPE (
-            echo ERROR: Pipeline variable "ctest.type" is undefined. Define "ctest.type" with default value "quick".
-            exit 1
-          )
           echo ctest.type: %CTEST_TYPE%
           set VALID=false
           if "%CTEST_TYPE%"=="quick" set VALID=true
@@ -32,10 +28,6 @@ jobs:
       # Check pytest configuration
       - script: |
           setlocal EnableDelayedExpansion
-          if not defined PYTEST_TYPE (
-            echo ERROR: Pipeline variable "pytest.type" is undefined. Define "pytest.type" with default value "quick".
-            exit 1
-          )
           echo pytest.type: %PYTEST_TYPE%
           set VALID=false
           if "%PYTEST_TYPE%"=="quick" set VALID=true
