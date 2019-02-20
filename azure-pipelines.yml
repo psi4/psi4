@@ -15,10 +15,6 @@ jobs:
       # Check Python
       - script: |
           setlocal EnableDelayedExpansion
-          if not defined PYTHON_VERSION (
-            echo ERROR: Pipeline variable "python.version" is undefined. Define "python.version" with default value "3.6".
-            exit 1
-          )
           echo python.version: %PYTHON_VERSION%
           set VALID=false
           if "%PYTHON_VERSION%"=="3.6" set VALID=true
@@ -32,10 +28,6 @@ jobs:
       # Check cmake configuration
       - script: |
           setlocal EnableDelayedExpansion
-          if not defined CMAKE_BUILD_TYPE (
-            echo ERROR: Pipeline variable "cmake.build_type" is undefined. Define "cmake.build_type" with default value "Debug".
-            exit 1
-          )
           echo cmake.build_type: %CMAKE_BUILD_TYPE%
           set VALID=false
           if "%CMAKE_BUILD_TYPE%"=="Debug" set VALID=true
