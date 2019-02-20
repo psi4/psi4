@@ -394,6 +394,7 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'
             'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', ''),
             'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
             'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),
+            'psicode':   ('https://admiring-tesla-08529a.netlify.com/%s', 'psicode.org/'),
             'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
 
 # Example configuration for intersphinx: refer to the Python standard library.
