@@ -1435,8 +1435,8 @@ class CBSComputer(BaseTask):
     return_wfn: bool = False
     verbose: int = 0
 
-    # List of model chemistries with extrapolation scheme applied. Can reconstruct CBS. Keys are d_fields.
-    grand_need: List[Dict[str, Any]] = []
+    # List of model chemistries with extrapolation scheme applied. Can reconstruct CBS. Keys are d_fields. Formerly GRAND_NEED.
+    cbsrec: List[Dict[str, Any]] = []
 
     # Maximal list of model chemistries extractable from running `compute_list`. Keys are _f_fields. Formerly JOBS_EXT.
     trove: List[Dict[str, Any]] = []
@@ -1497,7 +1497,7 @@ class CBSComputer(BaseTask):
                             f"""Requested lesser {delta["treament"]} method '{delta["wfn_lo"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
                         )
 
-            self.grand_need, self.compute_list, self.trove = _build_cbs_compute(self.metameta, self.metadata)
+            self.cbsrec, self.compute_list, self.trove = _build_cbs_compute(self.metameta, self.metadata)
 
             for job in self.compute_list:
                 keywords = copy.deepcopy(self.metameta['kwargs']['keywords'])
@@ -1577,12 +1577,12 @@ class CBSComputer(BaseTask):
 
             print('MC:\n', mc)
 
-        cbs_results, self.grand_need = _assemble_cbs_components(self.metameta, self.trove, self.grand_need)
+        cbs_results, self.cbsrec = _assemble_cbs_components(self.metameta, self.trove, self.cbsrec)
 
-        core.print_out(_summary_table(self.metadata, self.trove, self.grand_need))
+        core.print_out(_summary_table(self.metadata, self.trove, self.cbsrec))
 
         print('\nCBS_RESULTS', cbs_results)
-        print('\nGRAND_NEED', self.grand_need)
+        print('\nGRAND_NEED', self.cbsrec)
 
         return cbs_results
 
@@ -1598,8 +1598,8 @@ class CBSComputer(BaseTask):
         }
 
         for qcv in ['CBS', 'CURRENT']:
-            qcvars[qcv + ' REFERENCE ENERGY'] = self.grand_need[0]['d_energy']
-            qcvars[qcv + ' CORRELATION ENERGY'] = assembled_results['energy'] - self.grand_need[0]['d_energy']
+            qcvars[qcv + ' REFERENCE ENERGY'] = self.cbsrec[0]['d_energy']
+            qcvars[qcv + ' CORRELATION ENERGY'] = assembled_results['energy'] - self.cbsrec[0]['d_energy']
             qcvars[qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY'] = assembled_results['energy']
 
         for idelta in range(int(len(cbs.grand_need) / 2)):
@@ -1616,9 +1616,9 @@ class CBSComputer(BaseTask):
             for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
                 qcvars[qcv] = assembled_results['hessian']
 
-        cbsrec = {
+        cbsjob = {
             #'cbs_jobs': copy.deepcopy(self.compute_list),
-            'cbs_record': copy.deepcopy(self.grand_need),
+            'cbs_record': copy.deepcopy(self.cbsrec),
             'driver': self.driver,
             #'keywords': self.keywords,
             #'model': {
@@ -1642,10 +1642,10 @@ class CBSComputer(BaseTask):
             'success': True,
         }
 
-        cbsrec = unnp(cbsrec, flat=True)
+        cbsjob = unnp(cbsjob, flat=True)
         print('\nCBS QCSchema:')
-        pp.pprint(cbsrec)
-        return cbsrec
+        pp.pprint(cbsjob)
+        return cbsjob
 
     def get_psi_results(self, return_wfn=False):
         """Return CBS results in usual E/wfn interface."""
