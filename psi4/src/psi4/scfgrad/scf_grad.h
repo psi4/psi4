@@ -51,7 +51,6 @@ protected:
     std::shared_ptr<VBase> potential_;
     std::map<std::string, SharedMatrix> gradients_;
     std::map<std::string, SharedMatrix> hessians_;
-    SharedMatrix dipole_gradient_;
 
 public:
     SCFDeriv(SharedWavefunction ref_wfn, Options& options);
@@ -61,7 +60,6 @@ public:
     virtual SharedMatrix compute_gradient() override;
     virtual SharedMatrix compute_hessian() override;
     virtual SharedMatrix hessian_response() { throw PSIEXCEPTION("SCFDeriv not implemented for the requested reference type."); }
-    SharedMatrix dipole_gradient() const { return dipole_gradient_; }
 };
 
 class RSCFDeriv : public SCFDeriv {
