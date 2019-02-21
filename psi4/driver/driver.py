@@ -58,7 +58,9 @@ def _find_derivative_type(ptype, method_name, user_dertype):
     a given method.
     """
 
-    if ptype not in ['gradient', 'hessian']:
+    derivatives = {"gradient": 1, "hessian": 2}
+
+    if ptype not in derivatives:
         raise ValidationError("_find_derivative_type: ptype must either be gradient or hessian.")
 
     dertype = "(auto)"
@@ -105,6 +107,8 @@ def _find_derivative_type(ptype, method_name, user_dertype):
 
         raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
                               % (method_name, str(dertype), alternatives))
+
+    dertype = min(dertype, derivatives[ptype])
 
     return dertype
 
