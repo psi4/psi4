@@ -1,5 +1,3 @@
-memory 4 gb
-
 molecule hcn_dimer {
 0 1
 H 0.000000 0.000000 3.409664
@@ -58,10 +56,10 @@ set SAPT_DFT_FUNCTIONAL HF
 set DO_DISP_EXCH_SINF true
 
 energy('sapt(dft)', molecule=hcn_dimer)
-compare_values(0.00271925, variable('sapt exch-disp20(s^inf) energy'), 8, "SAPT EXCH-DISP20(S^inf) ENERGY")
+compare_values(0.00271925, variable('sapt exch-disp20(s^inf) energy'), 7, "SAPT EXCH-DISP20(S^inf) ENERGY")
 
 energy('sapt(dft)', molecule=hf_dimer)
-compare_values(0.00211996, variable('sapt exch-disp20(s^inf) energy'), 8, "SAPT EXCH-DISP20(S^inf) ENERGY")
+compare_values(0.00211996, variable('sapt exch-disp20(s^inf) energy'), 7, "SAPT EXCH-DISP20(S^inf) ENERGY")
 
 energy('sapt(dft)', molecule=h2o_dimer)
-compare_values(0.00324766, variable('sapt exch-disp20(s^inf) energy'), 8, "SAPT EXCH-DISP20(S^inf) ENERGY")
+compare_values(0.00324766, variable('sapt exch-disp20(s^inf) energy'), 7, "SAPT EXCH-DISP20(S^inf) ENERGY")
