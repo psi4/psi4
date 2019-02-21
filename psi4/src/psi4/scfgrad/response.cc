@@ -1066,25 +1066,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
     jk->set_memory(mem);
     jk->initialize();
 
-
-    Dimension nvirpi = nmopi_ - doccpi_;
-    CdSalcList SALCList(molecule_, 0xFF, false, false);
-
-
-    /*
-     * The following quantities are only defined if symmetry is to be used
-     */
-    std::shared_ptr<Matrix> C_so;
-    std::shared_ptr<Matrix> Cocc_so;
-    // C1 MO -> AO (backward transformation)
-    std::shared_ptr<Matrix> Cinvao;
-    // C1 MO -> SO (backward transformation)
-    std::shared_ptr<Matrix> Cinvso;
-    // C1 MO -> Symmetrized MO
-    std::shared_ptr<Matrix> Cmo2mosym;
-    // SO -> C1 MO (forward transformation)
-    std::shared_ptr<Matrix> Cso2mofull;
-
     // => J2pi/K2pi <= //
     {
         std::vector<std::shared_ptr<Matrix> >& L = jk->C_left();
@@ -1195,14 +1176,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
     // => CPHF (Uai) <= //
     {
-        auto wfn = std::make_shared<Wavefunction>(options_);
-        wfn->shallow_copy(this);
-
-        auto cphf = std::make_shared<RCPHF>(wfn, options_, 0);
-        cphf->set_jk(jk);
-
-        std::map<std::string, SharedMatrix>& b = cphf->b();
-        std::map<std::string, SharedMatrix>& x = cphf->x();
+        rhf_wfn_->set_jk(jk);
 
         psio_address next_Bai = PSIO_ZERO;
         psio_address next_Uai = PSIO_ZERO;
@@ -1216,32 +1190,28 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 nA = 3 * natom - A;
             }
 
-            x.clear();
-            b.clear();
-
+            std::vector<SharedMatrix> b_vecs;
             // Fill b
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                std::shared_ptr<Matrix> B;
-                B = std::make_shared<Matrix>(ss.str(),nocc,nvir);
+                auto B = std::make_shared<Matrix>(ss.str(),nocc,nvir);
                 psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
                 double** Bp = B->pointer();
                 for (int i = 0; i < nocc; i++) {
                     C_DCOPY(nvir,&Tp[0][i],nocc,Bp[i],1);
                 }
-                //                B->print();
-                b[ss.str()] = B;
+                b_vecs.push_back(B);
             }
 
-            cphf->compute_energy();
+            auto u_matrices = rhf_wfn_->cphf_solve(b_vecs);
 
             // Result in x
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                std::shared_ptr<Matrix> X = x[ss.str()];
-                double** Xp = X->pointer();
+                u_matrices[a]->scale(-1);
+                double** Xp = u_matrices[a]->pointer();
                 for (int i = 0; i < nocc; i++) {
                     C_DCOPY(nvir,Xp[i],1,&Tp[0][i],nocc);
                 }
