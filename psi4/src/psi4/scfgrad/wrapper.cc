@@ -56,18 +56,15 @@ SharedMatrix scfhess(SharedWavefunction ref_wfn, Options &options)
 {
     tstart();
 
-    SharedMatrix H, dipole_gradient;
+    SharedMatrix H;
     if( ref_wfn->same_a_b_orbs() && ref_wfn->same_a_b_dens()) {
         // RHF
         RSCFDeriv hessian_computer(std::dynamic_pointer_cast<scf::RHF>(ref_wfn), options);
         H = hessian_computer.compute_hessian();
-        dipole_gradient = hessian_computer.dipole_gradient();
     } else {
         throw PSIEXCEPTION("Only RHF hessians are supported at this time.");
     }
     ref_wfn->set_hessian(H);
-    ref_wfn->set_array_variable("SCF DIPOLE GRADIENT", dipole_gradient);
-    ref_wfn->set_array_variable("CURRENT DIPOLE GRADIENT", dipole_gradient);
 
     tstop();
 

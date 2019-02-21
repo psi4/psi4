@@ -1288,7 +1288,8 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             pdip_grad[A][2] += 4*mu_z.vector_dot(Upi);
         }
     }
-    dipole_gradient_ = dipole_gradient;
+    rhf_wfn_->set_array_variable("SCF DIPOLE GRADIENT", dipole_gradient);
+    rhf_wfn_->set_array_variable("CURRENT DIPOLE GRADIENT", dipole_gradient);
 
     // => Qpi <= //
     {
