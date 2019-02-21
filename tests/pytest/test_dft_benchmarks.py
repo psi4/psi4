@@ -57,7 +57,7 @@ def name_dft_test(val):
     pytest.param(          'PWB6K',    0.4535664415, '6-31G', marks=pytest.mark.quick),  # Q-Chem
     pytest.param(         'PW6B95',    0.4566580191, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-D',    0.4575912358, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(        'revTPSS',    0.4499706673, '6-31G', marks=pytest.mark.quick),  # Q-Chem
+    pytest.param(        'revTPSS',    0.4499706673, '6-31G'),  # Q-Chem
     pytest.param(           'TPSS',    0.4510368445, '6-31G'),  # Q-Chem
     pytest.param(       'MGGA_MS2',    0.446697433,  '6-31G'),  # Q-Chem
     pytest.param(       'MGGA_MS1',    0.4464339073, '6-31G'),  # Q-Chem

@@ -195,8 +195,8 @@ def _core_wavefunction_from_file(wfn_data):
         wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup is not None else None
 
     for label in wfn_matrixarr:
-        array = wfn_dimension[label]
-        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array is not None else None
+        array = wfn_matrixarr[label]
+        wfn_matrixarr[label] = core.Matrix.from_array(array, name=label) if array is not None else None
 
     # make the wavefunction
     wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int, wfn_string,
