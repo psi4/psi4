@@ -77,25 +77,25 @@ matrix:
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
 
-  - os: linux
-    compiler: gcc
-    addons: &4
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - python-numpy
-        - libhdf5-serial-dev
-        - liblapack-dev
-        - g++-8
-        - gcc-8
-        - gfortran-8
-    env:
-      - CXX_COMPILER='g++-8'
-      - PYTHON_VER='3.6'
-      - C_COMPILER='gcc-8'
-      - Fortran_COMPILER='gfortran-8'
-      - BUILD_TYPE='release'
+#  - os: linux
+#    compiler: gcc
+#    addons: &4
+#      apt:
+#        sources:
+#        - ubuntu-toolchain-r-test
+#        packages:
+#        - python-numpy
+#        - libhdf5-serial-dev
+#        - liblapack-dev
+#        - g++-8
+#        - gcc-8
+#        - gfortran-8
+#    env:
+#      - CXX_COMPILER='g++-8'
+#      - PYTHON_VER='3.6'
+#      - C_COMPILER='gcc-8'
+#      - Fortran_COMPILER='gfortran-8'
+#      - BUILD_TYPE='release'
 
 #  - os: linux
 #    compiler: gcc
