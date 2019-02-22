@@ -358,12 +358,11 @@ SharedMatrix SCFDeriv::compute_hessian()
     std::shared_ptr<VBase> potential;
 
     if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("Missing XC derivatives for Hessians");
-        // if (options_.get_str("REFERENCE") == "RKS") {
-        //     potential_->set_D({Da_});
-        // } else {
-        //     potential_->set_D({Da_, Db_});
-        // }
+        if (options_.get_str("REFERENCE") == "RKS") {
+            potential_->set_D({Da_});
+        } else {
+            potential_->set_D({Da_, Db_});
+        }
     }
 
     // => Sizings <= //
@@ -376,7 +375,13 @@ SharedMatrix SCFDeriv::compute_hessian()
     hessians_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
     hessians_["Nuclear"]->set_name("Nuclear Hessian");
 
-    auto Zxyz = std::make_shared<Matrix>("Zxyz", 1, 4);
+    // => XC Hessian <= //
+    timer_on("Hess: XC");
+    if (functional_->needs_xc()) {
+        potential_->print_header();
+        hessians_["XC"] = potential_->compute_hessian();
+    }
+    timer_off("Hess: XC");
 
     // => Potential Hessian <= //
     timer_on("Hess: V");
@@ -1041,7 +1046,7 @@ SharedMatrix SCFDeriv::compute_hessian()
     timer_off("Hess: XC");
 
     // => Response Terms (Brace Yourself) <= //
-    if (options_.get_str("REFERENCE") == "RHF") {
+    if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
         hessians_["Response"] = hessian_response();
     } else {
         throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");

@@ -1208,8 +1208,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
             // Result in x
             for (int a = 0; a < nA; a++) {
-                std::stringstream ss;
-                ss << "Perturbation " << a + A;
                 u_matrices[a]->scale(-1);
                 double** Xp = u_matrices[a]->pointer();
                 for (int i = 0; i < nocc; i++) {
@@ -1288,7 +1286,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 L.resize(nA);
                 R.resize(nA);
             }
-            // TODO: To get symmetry working, we need to add in machinery to symmetrize and take SALCs, similar to above.
             for (int a = 0; a < nA; a++) {
                 psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
                 psio_->read(PSIF_HESS,"Upi^A",(char*)Upip[0],nmo*nocc*sizeof(double),next_Upi,&next_Upi);
