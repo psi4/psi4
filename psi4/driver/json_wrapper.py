@@ -241,7 +241,7 @@ def run_json_qc_schema(json_data, clean):
     _clean_psi_environ(clean)
 
     # This is currently a forced override
-    if json_data["schema_name"] != "qc_schema_input":
+    if json_data["schema_name"] not in ["qc_schema_input", "qcschema_input"]:
         raise KeyError("Schema name of '{}' not understood".format(json_data["schema_name"]))
 
     if json_data["schema_version"] != 1:
@@ -330,6 +330,6 @@ def run_json_qc_schema(json_data, clean):
     # Reset state
     _clean_psi_environ(clean)
 
-    json_data["schema_name"] = "qc_schema_output"
+    json_data["schema_name"] = "qcschema_output"
 
     return json_data
