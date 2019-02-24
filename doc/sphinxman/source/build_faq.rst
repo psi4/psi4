@@ -117,6 +117,7 @@ Runtime Setup
 #. :ref:`faq:psi4scratch`
 #. :ref:`faq:psidatadir`
 #. :ref:`faq:psi4psiapipath`
+#. :ref:`faq:modulenotfounderror`
 
 Running |PSIfour|
 -----------------
