@@ -80,8 +80,7 @@ class PeState {
      *  \param[in] D density matrix
      *  \param[in] type (total Fock contribution or electronic contribution only)
      */
-    std::pair<double, SharedMatrix> compute_pe_contribution(const SharedMatrix &D, CalcType type = CalcType::total,
-                                                            bool subtract_scf_density = false);
+    std::pair<double, SharedMatrix> compute_pe_contribution(const SharedMatrix &D, CalcType type = CalcType::total);
 
     /* \brief prints the summary table of PE energy contributions to the Psi4 output file
      */
@@ -94,9 +93,6 @@ class PeState {
     PeIntegralHelper int_helper_;
 
     SharedMatrix V_es_;
-    SharedMatrix D_scf_;
-
-    int iteration = 0;
 };
 
 }  // namespace psi

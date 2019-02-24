@@ -68,8 +68,7 @@ void export_cppe(py::module& m) {
 
     pe.def(py::init<libcppe::PeOptions, std::shared_ptr<BasisSet>>())
         .def("compute_pe_contribution", &PeState::compute_pe_contribution,
-             "Compute PE contributions to energy and Fock matrix", py::arg("D"), py::arg("type"),
-             py::arg("subtract_scf_density") = false)
+             "Compute PE contributions to energy and Fock matrix", py::arg("D"), py::arg("type"))
         .def("print_energy_summary", &PeState::print_energy_summary);
 }
 #endif

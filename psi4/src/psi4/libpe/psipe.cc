@@ -34,7 +34,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libmints/efpmultipolepotential.h"
+#include "psi4/libmints/multipolepotential.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/petitelist.h"
@@ -74,6 +74,8 @@ std::vector<double> mult_coeffs = {
 std::vector<int> from_alphabetical_to_psi4 = {
     0, 1, 2, 3, 4, 7, 9, 5, 6, 8  // 0, 3, 5, 1, 2, 4   += 4
 };
+
+int have_moment(int k, int max_k) { return k <= max_k; }
 }  // unnamed namespace
 
 PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset)
@@ -87,22 +89,19 @@ PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset)
     for (auto& p : potentials_) {
         Vector3 site(p.m_x, p.m_y, p.m_z);
         std::vector<double> moments;
+        int max_k = 0;
         for (auto& m : p.get_multipoles()) {
+            if (m.m_k > max_k) max_k = m.m_k;
             m.remove_trace();
             if (m.m_k > 2) throw std::runtime_error("PE is only implemented up to quadrupoles.");
             for (auto d : m.get_values()) moments.push_back(d);
         }
-        V_es_->add(int_helper_.compute_multipole_potential_integrals(site, 2, moments));
+        V_es_->add(int_helper_.compute_multipole_potential_integrals(site, max_k, moments));
     }
 }
 
-std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMatrix& Dm, CalcType type,
-                                                                 bool subtract_scf_density) {
-    SharedMatrix D = Dm;
-    if (subtract_scf_density && type == PeState::CalcType::electronic_only) {
-        D->subtract(D_scf_);
-    }
-    cppe_state_.get_energies().set("Electrostatic/Electronic", D->vector_dot(V_es_));
+std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMatrix& Dm, CalcType type) {
+    cppe_state_.get_energies().set("Electrostatic/Electronic", Dm->vector_dot(V_es_));
 
     size_t n_sitecoords = 3 * cppe_state_.get_polarizable_site_number();
 
@@ -114,7 +113,7 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
         for (auto& p : potentials_) {
             if (!p.is_polarizable()) continue;
             Vector3 site(p.m_x, p.m_y, p.m_z);
-            Vector elec_fields_s = int_helper_.compute_field(site, D);
+            Vector elec_fields_s = int_helper_.compute_field(site, Dm);
             elec_fields[current_polsite * 3] = elec_fields_s.get(0);
             elec_fields[current_polsite * 3 + 1] = elec_fields_s.get(1);
             elec_fields[current_polsite * 3 + 2] = elec_fields_s.get(2);
@@ -137,9 +136,7 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
 
     if (type == PeState::CalcType::total) {
         V_ind->add(V_es_);
-        D_scf_ = D;
     }
-    if (type == PeState::CalcType::total) iteration++;
 
     double energy_result =
         (type == PeState::CalcType::total ? cppe_state_.get_energies().get_total_energy()
@@ -152,40 +149,42 @@ void PeState::print_energy_summary() { cppe_state_.print_summary(); }
 SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 site, int order,
                                                                      std::vector<double>& moments) {
     auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    auto multipole_integrals = integrals->ao_efp_multipole_potential();
+    auto multipole_integrals = integrals->ao_multipole_potential(order);
 
-    // TODO: only compute up to the needed order!
     std::vector<SharedMatrix> mult;
-    mult.push_back(std::make_shared<Matrix>("AO EFP Charge 0", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole X", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole Y", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole Z", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole YY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole ZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole YZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXX", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole ZZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYZ", basisset_->nbf(), basisset_->nbf()));
-    multipole_integrals->set_origin(site);
-    multipole_integrals->compute(mult);
-
-    auto res = std::make_shared<Matrix>("result", basisset_->nbf(), basisset_->nbf());
-
     int total_components = 0;
     for (int i = 0; i <= order; ++i) {
         total_components += libcppe::multipole_components(i);
     }
 
+    mult.push_back(std::make_shared<Matrix>("AO Charge Potential 0", basisset_->nbf(), basisset_->nbf()));
+    if (have_moment(1, order)) {
+        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential X", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential Y", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential Z", basisset_->nbf(), basisset_->nbf()));
+    }
+    if (have_moment(2, order)) {
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XX", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YY", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential ZZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XY", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YZ", basisset_->nbf(), basisset_->nbf()));
+    }
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXX", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYY", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole ZZZ", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXY", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXZ", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYY", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYZ", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XZZ", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YZZ", basisset_->nbf(), basisset_->nbf()));
+    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYZ", basisset_->nbf(), basisset_->nbf()));
+    multipole_integrals->set_origin(site);
+    multipole_integrals->compute(mult);
+
+    auto res = std::make_shared<Matrix>("result", basisset_->nbf(), basisset_->nbf());
     for (int l = 0; l < total_components; ++l) {
         // std::cout << "---" << std::setprecision(12) << std::endl;
         // std::cout << "L: " << l << std::endl;
