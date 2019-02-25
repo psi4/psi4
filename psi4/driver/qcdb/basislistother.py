@@ -338,13 +338,13 @@ def load_basfam_other():
     basisfamily_list.append(basis_pcsseg4)
 
     # Minix
-    basis_def2msvp = BasisFamily('def2-mSVP', zeta=2)
+    basis_minix = BasisFamily('Minix', zeta=2)
     
-    basis_def2msvp.add_jfit('def2-SVP-JFIT')    
-    basis_def2msvp.add_jkfit('def2-SVP-JKFIT')    
-    basis_def2msvp.add_rifit('def2-SVP-RI')
+    basis_minix.add_jfit('def2-SVP-JFIT')    
+    basis_minix.add_jkfit('def2-SVP-JKFIT')    
+    basis_minix.add_rifit('def2-SVP-RI')
     
-    basisfamily_list.append(basis_def2msvp)
+    basisfamily_list.append(basis_minix)
     
     # Others
     basis_dz = BasisFamily('DZ')
