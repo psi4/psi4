@@ -279,11 +279,6 @@ SharedWavefunction py_psi_dfocc(SharedWavefunction ref_wfn) {
     return dfoccwave::dfoccwave(ref_wfn, Process::environment.options);
 }
 
-SharedWavefunction py_psi_libfock(SharedWavefunction ref_wfn) {
-    py_psi_prepare_options_for_module("CPHF");
-    return libfock::libfock(ref_wfn, Process::environment.options);
-}
-
 SharedWavefunction py_psi_mcscf(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("MCSCF");
     return mcscf::mcscf(ref_wfn, Process::environment.options);
@@ -1191,7 +1186,6 @@ PYBIND11_MODULE(core, core) {
 
     // core.def("scf", py_psi_scf, "Runs the SCF code.");
     core.def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
-    core.def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     core.def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
     core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
