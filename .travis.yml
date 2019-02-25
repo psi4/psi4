@@ -141,7 +141,7 @@ install:
   - ./.scripts/miniconda.sh
   - export PATH="$HOME/miniconda/bin:$PATH"
   - |
-    if [ $PROG == "CONDA" ]; then
+    if [ $LANE == "CONDA" ]; then
       conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 llvm-openmp cmake mkl-devel libint libxc gau2grid deepdiff networkx numpy -c psi4/label/dev
       source activate p4env
       export CXX_COMPILER=${GXX}
@@ -169,7 +169,7 @@ before_script:
     #   reasons, pkgs are being compiled less statically, sad for CI.
     # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
 - |
-  if [ $PROG == "CONDA" ]; then
+  if [ $LANE == "CONDA" ]; then
     cmake -Bbuild -H. \
     -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
     -DCMAKE_C_COMPILER=${C_COMPILER} \
@@ -218,7 +218,7 @@ before_script:
 script:
 - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - |
-  if [ $PROG == "CONDA" ]; then
+  if [ $LANE == "CONDA" ]; then
     python ../.scripts/travis_run_test.py addon
     python ../.scripts/travis_print_failing.py
     PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'smoke' stage/lib/psi4/tests/
