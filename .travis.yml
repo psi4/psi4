@@ -26,22 +26,22 @@ matrix:
 
   include:
 
-  - os: linux
-    compiler: clang
-    addons: &1
-      apt:
-        packages:
-        - liblapack-dev
-        - clang-3.6
-        - libhdf5-serial-dev
-        - gfortran
-    env:
-      - LANE='CLANG'
-      - CXX_COMPILER='clang++-3.6'
-      - PYTHON_VER='3.6'
-      - C_COMPILER='clang-3.6'
-      - Fortran_COMPILER='gfortran'
-      - BUILD_TYPE='release'
+#  - os: linux
+#    compiler: clang
+#    addons: &1
+#      apt:
+#        packages:
+#        - liblapack-dev
+#        - clang-3.6
+#        - libhdf5-serial-dev
+#        - gfortran
+#    env:
+#      - LANE='CLANG'
+#      - CXX_COMPILER='clang++-3.6'
+#      - PYTHON_VER='3.6'
+#      - C_COMPILER='clang-3.6'
+#      - Fortran_COMPILER='gfortran'
+#      - BUILD_TYPE='release'
 
   #- os: linux
   #  compiler: clang
@@ -62,22 +62,22 @@ matrix:
   #    - Fortran_COMPILER='gfortran'
   #    - BUILD_TYPE='release'
 
-  - os: linux
-    compiler: gcc
-    addons: &3
-      apt:
-        packages:
-        - python-numpy
-        - liblapack-dev
-        - libhdf5-serial-dev
-        - gfortran
-    env:
-      - LANE='GCC'
-      - CXX_COMPILER='g++'
-      - PYTHON_VER='3.7'
-      - C_COMPILER='gcc'
-      - Fortran_COMPILER='gfortran'
-      - BUILD_TYPE='release'
+#  - os: linux
+#    compiler: gcc
+#    addons: &3
+#      apt:
+#        packages:
+#        - python-numpy
+#        - liblapack-dev
+#        - libhdf5-serial-dev
+#        - gfortran
+#    env:
+#      - LANE='GCC'
+#      - CXX_COMPILER='g++'
+#      - PYTHON_VER='3.7'
+#      - C_COMPILER='gcc'
+#      - Fortran_COMPILER='gfortran'
+#      - BUILD_TYPE='release'
 
 #  - os: linux
 #    compiler: gcc
@@ -142,7 +142,7 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - |
     if [ $LANE == "CONDA" ]; then
-      conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 cmake mkl-devel libint libxc gau2grid deepdiff networkx numpy -c psi4/label/dev
+      conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 cmake mkl-devel hdf5 libint libxc gau2grid deepdiff networkx numpy -c psi4/label/dev
       source activate p4env
       export CXX_COMPILER=${GXX}
       export C_COMPILER=${GCC}
