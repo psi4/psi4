@@ -142,15 +142,14 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - |
     if [ $LANE == "CONDA" ]; then
-      conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 cmake mkl-devel hdf5 libint libxc gau2grid simint deepdiff networkx pint numpy -c psi4/label/dev
+      conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 cmake mkl-devel hdf5 libint libxc gau2grid simint dftd3 gcp resp deepdiff networkx pint numpy pytest -c psi4/label/dev
       source activate p4env
       export CXX_COMPILER=${GXX}
       export C_COMPILER=${GCC}
       export Fortran_COMPILER=${GFORTRAN}
     else
-      conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
+      conda create -q -n p4env python=$PYTHON_VER pybind11=2.2.3 psi4 --only-deps -c psi4/label/dev
       source activate p4env
-      conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
     fi
   - conda list
 
@@ -186,7 +185,7 @@ before_script:
     -DENABLE_PCMSolver=OFF \
     -DENABLE_simint=ON \
     -DENABLE_snsmp2=OFF \
-    -DENABLE_v2rdm_casscf=ON \
+    -DENABLE_v2rdm_casscf=OFF \
     -DENABLE_PLUGIN_TESTING=ON \
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
 
@@ -202,12 +201,12 @@ before_script:
     -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env \
     -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python" \
     -DENABLE_CheMPS2=OFF \
-    -DENABLE_dkh=ON \
-    -DENABLE_libefp=ON \
+    -DENABLE_dkh=OFF \
+    -DENABLE_libefp=OFF \
     -DENABLE_erd=OFF \
-    -DENABLE_gdma=ON \
+    -DENABLE_gdma=OFF \
     -DENABLE_PCMSolver=OFF \
-    -DENABLE_simint=ON \
+    -DENABLE_simint=OFF \
     -DENABLE_snsmp2=OFF \
     -DENABLE_v2rdm_casscf=OFF \
     -DENABLE_PLUGIN_TESTING=ON \
