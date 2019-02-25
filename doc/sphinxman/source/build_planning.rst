@@ -640,6 +640,18 @@ Run |PSIfour|. ::
 
 todo how to check if current py is compatible with compilation
 
+
+.. _`faq:modulenotfounderror`:
+
+How to solve ``ModuleNotFoundError: No module named 'psi4'``
+------------------------------------------------------------
+
+You're using |PSIfour| in PsiAPI mode (``python input.py`` where
+``input.py`` contains ``import psi4``) but the Python interpreter
+can't find the |PSIfour| Python module. Follow the directions at
+:ref:`faq:psi4psiapipath`.
+
+
 .. _`faq:psi4psiapipath`:
 
 How to configure paths for PsiAPI

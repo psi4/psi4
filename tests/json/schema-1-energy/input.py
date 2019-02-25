@@ -6,7 +6,7 @@ import json
 
 # Generate JSON data
 json_data = {
-  "schema_name": "qc_schema_input",
+  "schema_name": "qcschema_input",
   "schema_version": 1,
   "molecule": {
     "geometry": [
