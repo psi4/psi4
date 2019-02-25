@@ -142,7 +142,7 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - |
     if [ $LANE == "CONDA" ]; then
-      conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 llvm-openmp cmake mkl-devel libint libxc gau2grid deepdiff networkx numpy -c psi4/label/dev
+      conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 cmake mkl-devel libint libxc gau2grid deepdiff networkx numpy -c psi4/label/dev
       source activate p4env
       export CXX_COMPILER=${GXX}
       export C_COMPILER=${GCC}
