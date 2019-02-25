@@ -177,8 +177,8 @@ before_script:
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH=${CONDA_PREFIX} \
     -DPYTHON_EXECUTABLE="${CONDA_PREFIX}/bin/python" \
-    -DENABLE_ambit=OFF \
-    -DENABLE_CheMPS2=ON \
+    -DENABLE_ambit=ON \
+    -DENABLE_CheMPS2=OFF \
     -DENABLE_dkh=ON \
     -DENABLE_libefp=ON \
     -DENABLE_erd=OFF \
