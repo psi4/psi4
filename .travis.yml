@@ -36,6 +36,7 @@ matrix:
         - libhdf5-serial-dev
         - gfortran
     env:
+      - LANE='CLANG'
       - CXX_COMPILER='clang++-3.6'
       - PYTHON_VER='3.6'
       - C_COMPILER='clang-3.6'
@@ -71,6 +72,7 @@ matrix:
         - libhdf5-serial-dev
         - gfortran
     env:
+      - LANE='GCC'
       - CXX_COMPILER='g++'
       - PYTHON_VER='3.7'
       - C_COMPILER='gcc'
@@ -119,6 +121,15 @@ matrix:
 #      - Fortran_COMPILER='gfortran-6'
 #      - BUILD_TYPE='release'
 
+  - os: linux
+    env:
+      - LANE='CONDA'
+      #- CXX_COMPILER='g++'
+      - PYTHON_VER='3.7'
+      #- C_COMPILER='gcc'
+      #- Fortran_COMPILER='gfortran'
+      - BUILD_TYPE='release'
+
 before_install:
   - uname -a
   - free -m
@@ -129,9 +140,18 @@ before_install:
 install:
   - ./.scripts/miniconda.sh
   - export PATH="$HOME/miniconda/bin:$PATH"
-  - conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
-  - source activate p4env
-  - conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
+  - |
+    if [ $PROG == "CONDA" ]; then
+      conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 llvm-openmp cmake mkl-devel libint libxc gau2grid deepdiff networkx numpy -c psi4/label/dev
+      source activate p4env
+      export CXX_COMPILER=${GXX}
+      export C_COMPILER=${GCC}
+      export Fortran_COMPILER=${GFORTRAN}
+    else
+      conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
+      source activate p4env
+      conda install dftd3 gcp resp pylibefp pybind11=2.2.3 -c psi4/label/dev # snsmp2
+    fi
   - conda list
 
 before_script:
@@ -148,31 +168,65 @@ before_script:
     #   b/c their c++ symbols don't mix with the different Travis compilers. for other
     #   reasons, pkgs are being compiled less statically, sad for CI.
     # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
-- >
-    cmake -Bbuild -H.
-    -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
-    -DCMAKE_C_COMPILER=${C_COMPILER}
-    -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-    -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
-    -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
-    -DENABLE_CheMPS2=OFF
-    -DENABLE_dkh=ON
-    -DENABLE_libefp=ON
-    -DENABLE_erd=OFF
-    -DENABLE_gdma=ON
-    -DENABLE_PCMSolver=OFF
-    -DENABLE_simint=ON
-    -DENABLE_snsmp2=OFF
-    -DENABLE_v2rdm_casscf=OFF
-    -DENABLE_PLUGIN_TESTING=ON
+- |
+  if [ $PROG == "CONDA" ]; then
+    cmake -Bbuild -H. \
+    -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+    -DCMAKE_C_COMPILER=${C_COMPILER} \
+    -DCMAKE_Fortran_COMPILER=${Fortran_COMPILER} \
+    -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+    -DCMAKE_PREFIX_PATH=${CONDA_PREFIX} \
+    -DPYTHON_EXECUTABLE="${CONDA_PREFIX}/bin/python" \
+    -DENABLE_ambit=ON \
+    -DENABLE_CheMPS2=ON \
+    -DENABLE_dkh=ON \
+    -DENABLE_libefp=ON \
+    -DENABLE_erd=OFF \
+    -DENABLE_gdma=ON \
+    -DENABLE_PCMSolver=ON \
+    -DENABLE_simint=ON \
+    -DENABLE_snsmp2=OFF \
+    -DENABLE_v2rdm_casscf=ON \
+    -DENABLE_PLUGIN_TESTING=ON \
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
+
+        #-DPYTHON_LIBRARY="${PREFIX}/lib/lib${PY_ABBR}${SHLIB_EXT}" \
+        #-DPYTHON_INCLUDE_DIR="${PREFIX}/include/${PY_ABBR}" \
+        #-DLAPACK_LIBRARIES="${LAPACK_INTERJECT}" \
+
+  else
+    cmake -Bbuild -H. \
+    -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+    -DCMAKE_C_COMPILER=${C_COMPILER} \
+    -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+    -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env \
+    -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python" \
+    -DENABLE_CheMPS2=OFF \
+    -DENABLE_dkh=ON \
+    -DENABLE_libefp=ON \
+    -DENABLE_erd=OFF \
+    -DENABLE_gdma=ON \
+    -DENABLE_PCMSolver=OFF \
+    -DENABLE_simint=ON \
+    -DENABLE_snsmp2=OFF \
+    -DENABLE_v2rdm_casscf=OFF \
+    -DENABLE_PLUGIN_TESTING=ON \
+    -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
+  fi
 - cd build
 - ../.scripts/travis_build.sh
 script:
 - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
-- python ../.scripts/travis_run_test.py
-- python ../.scripts/travis_print_failing.py
-- PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'quick' stage/lib/psi4/tests/
+- |
+  if [ $PROG == "CONDA" ]; then
+    python ../.scripts/travis_run_test.py addon
+    python ../.scripts/travis_print_failing.py
+    PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'smoke' stage/lib/psi4/tests/
+  else
+    python ../.scripts/travis_run_test.py quick
+    python ../.scripts/travis_print_failing.py
+    PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'quick' stage/lib/psi4/tests/
+  fi
 
 # safelist
 branches:

@@ -6,7 +6,7 @@ import subprocess
 
 
 # <<<  run ctest  >>>
-retcode = subprocess.Popen(['ctest', '-j2', '-L', 'quick'], bufsize=0,
+retcode = subprocess.Popen(['ctest', '-j2', '-L', sys.argv[1]], bufsize=0,
                             stdout=subprocess.PIPE, universal_newlines=True)
 print_all = False
 ctestout = ''
