@@ -3,6 +3,9 @@
 trigger:
   - master
 
+variables:
+  mkl.version: '2018.0.3'
+
 jobs:
 
   # Configure, build, install, and test job
@@ -82,24 +85,31 @@ jobs:
           conda --version
         displayName: "Install Miniconda"
 
+      # Configure Miniconda
+      - script: |
+          conda config --set always_yes yes
+          conda config --append channels conda-forge
+          conda config --append channels psi4
+          conda info
+        displayName: "Configure Miniconda"
+
       # Create conda enviroment
       # Note: conda activate doesn't work here, because it creates a new shell!
       - script: |
-          conda config --set always_yes yes
-          conda install --channel conda-forge ^
-                        cmake ^
+          conda install cmake ^
+                        conda-build ^
+                        conda-verify ^
                         deepdiff ^
-                        intel-openmp=2018.0.3 ^
-                        mkl-devel=2018.0.3 ^
+                        intel-openmp=%MKL_VERSION% ^
+                        mkl-devel=%MKL_VERSION% ^
                         mpmath ^
                         networkx ^
                         ninja ^
                         numpy ^
-                        pint ^
                         pybind11 ^
                         pytest ^
-                        pytest-xdist ^
-                        python=%PYTHON_VERSION%
+                        python=%PYTHON_VERSION% ^
+                        qcelemental
           conda list
         displayName: "Install conda packages"
 
@@ -179,3 +189,17 @@ jobs:
           psi4 --test %PYTEST_TYPE%
         displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
+
+      # Build package
+      - script: |
+          set INSTALL_DIR=$(Build.BinariesDirectory)\install
+          conda build --python %PYTHON_VERSION% ^
+                      conda\win
+          copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
+        displayName: "Build Psi4 package"
+
+      # Publish package
+      - task: PublishBuildArtifacts@1
+        inputs:
+          artifactName: conda
+        displayName: "Publish Psi4 package"
