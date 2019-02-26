@@ -186,6 +186,7 @@ def load_basfam_other():
 
     # Ahlrichs
     basis_def2sv_p_ = BasisFamily('def2-SV(P)', zeta=2)
+    basis_def2msvp = BasisFamily('def2-mSVP', zeta=2)
     basis_def2svp = BasisFamily('def2-SVP', zeta=2)
     basis_def2svpd = BasisFamily('def2-SVPD', zeta=2)
     basis_def2tzvp = BasisFamily('def2-TZVP', zeta=3)
@@ -198,6 +199,7 @@ def load_basfam_other():
     basis_def2qzvppd = BasisFamily('def2-QZVPPD', zeta=4)
 
     basis_def2sv_p_.add_jfit('def2-SV(P)-JFIT')
+    basis_def2msvp.add_jfit('def2-SVP-JFIT')
     basis_def2svp.add_jfit('def2-SVP-JFIT')
     basis_def2svpd.add_jfit('def2-SVP-JFIT')
     basis_def2tzvp.add_jfit('def2-TZVP-JFIT')
@@ -210,6 +212,7 @@ def load_basfam_other():
     basis_def2qzvppd.add_jfit('def2-QZVPP-JFIT')
 
     basis_def2sv_p_.add_jkfit('def2-SV(P)-JKFIT')
+    basis_def2msvp.add_jkfit('def2-SVP-JKFIT')
     basis_def2svp.add_jkfit('def2-SVP-JKFIT')
     basis_def2svpd.add_jkfit('def2-SVP-JKFIT')
     basis_def2tzvp.add_jkfit('def2-TZVP-JKFIT')
@@ -222,6 +225,7 @@ def load_basfam_other():
     basis_def2qzvppd.add_jkfit('def2-QZVPP-JKFIT')
 
     basis_def2sv_p_.add_rifit('def2-SV(P)-RI')
+    basis_def2msvp.add_rifit('def2-SVP-RI')
     basis_def2svp.add_rifit('def2-SVP-RI')
     basis_def2svpd.add_rifit('def2-SVPD-RI')
     basis_def2tzvp.add_rifit('def2-TZVP-RI')
@@ -233,6 +237,7 @@ def load_basfam_other():
     basis_def2qzvppd.add_rifit('def2-QZVPPD-RI')
 
     basisfamily_list.append(basis_def2sv_p_)
+    basisfamily_list.append(basis_def2msvp)
     basisfamily_list.append(basis_def2svp)
     basisfamily_list.append(basis_def2svpd)
     basisfamily_list.append(basis_def2tzvp)
@@ -332,6 +337,15 @@ def load_basfam_other():
     basisfamily_list.append(basis_pcsseg3)
     basisfamily_list.append(basis_pcsseg4)
 
+    # Minix
+    basis_minix = BasisFamily('minix', zeta=2)
+    
+    basis_minix.add_jfit('def2-SVP-JFIT')    
+    basis_minix.add_jkfit('def2-SVP-JKFIT')    
+    basis_minix.add_rifit('def2-SVP-RI')
+    
+    basisfamily_list.append(basis_minix)
+    
     # Others
     basis_dz = BasisFamily('DZ')
     basis_dzp = BasisFamily('DZP')
