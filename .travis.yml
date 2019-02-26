@@ -42,6 +42,8 @@ matrix:
       - C_COMPILER='clang-3.6'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
+      - CMAKE_TEST='quick'
+      - PYTEST_TEST='quick'
 
   #- os: linux
   #  compiler: clang
@@ -78,6 +80,8 @@ matrix:
       - C_COMPILER='gcc'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
+      - CMAKE_TEST='quick'
+      - PYTEST_TEST='quick'
 
 #  - os: linux
 #    compiler: gcc
@@ -126,6 +130,8 @@ matrix:
       - LANE='CONDA'
       - PYTHON_VER='3.7'
       - BUILD_TYPE='release'
+      - CMAKE_TEST='addon'
+      - PYTEST_TEST='smoke'
 
 before_install:
   - uname -a
@@ -140,13 +146,15 @@ install:
   - |
     if [ $LANE == "CONDA" ]; then
       conda create -q -n p4env python=$PYTHON_VER gcc_linux-64 gxx_linux-64 gfortran_linux-64 cmake mkl-devel hdf5 libint libxc gau2grid simint dftd3 gcp resp deepdiff networkx pint numpy pytest -c psi4/label/dev
-      source activate p4env
+    else
+      conda create -q -n p4env python=$PYTHON_VER pybind11=2.2.3 psi4 --only-deps -c psi4/label/dev
+    fi
+  - source activate p4env
+  - |
+    if [ $LANE == "CONDA" ]; then
       export CXX_COMPILER=${GXX}
       export C_COMPILER=${GCC}
       export Fortran_COMPILER=${GFORTRAN}
-    else
-      conda create -q -n p4env python=$PYTHON_VER pybind11=2.2.3 psi4 --only-deps -c psi4/label/dev
-      source activate p4env
     fi
   - conda list
 
@@ -208,16 +216,9 @@ before_script:
 - ../.scripts/travis_build.sh
 script:
 - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
-- |
-  if [ $LANE == "CONDA" ]; then
-    python ../.scripts/travis_run_test.py addon
-    python ../.scripts/travis_print_failing.py
-    PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'smoke' stage/lib/psi4/tests/
-  else
-    python ../.scripts/travis_run_test.py quick
-    python ../.scripts/travis_print_failing.py
-    PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'quick' stage/lib/psi4/tests/
-  fi
+- python ../.scripts/travis_run_test.py ${CMAKE_TEST}
+- python ../.scripts/travis_print_failing.py
+- PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m ${PYTEST_TEST} stage/lib/psi4/tests/
 
 # safelist
 branches:
