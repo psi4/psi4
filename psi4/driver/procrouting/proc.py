@@ -2145,35 +2145,6 @@ def run_scf_hessian(name, **kwargs):
     return ref_wfn
 
 
-def run_libfock(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a calculation through libfock, namely RCPHF,
-    RCIS, RTDHF, RTDA, and RTDDFT.
-
-    """
-    if name == 'cphf':
-        core.set_global_option('MODULE', 'RCPHF')
-    if name == 'cis':
-        core.set_global_option('MODULE', 'RCIS')
-    if name == 'tdhf':
-        core.set_global_option('MODULE', 'RTDHF')
-    if name == 'cpks':
-        core.set_global_option('MODULE', 'RCPKS')
-    if name == 'tda':
-        core.set_global_option('MODULE', 'RTDA')
-    if name == 'tddft':
-        core.set_global_option('MODULE', 'RTDDFT')
-
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
-
-    libfock_wfn = core.libfock(ref_wfn)
-    libfock_wfn.compute_energy()
-    return libfock_wfn
-
-
 def run_mcscf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a multiconfigurational self-consistent-field calculation.

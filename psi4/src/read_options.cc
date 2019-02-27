@@ -897,7 +897,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         natural orbitals are discarded for in each of the above three truncations
         -*/
         options.add_double("OCC_TOLERANCE", 1.0E-6);
-        /*- Minimum absolute value below which all three-index DF integrals
+        /*- Schwarz screening threshold.
+        Minimum absolute value below which all three-index DF integrals
         and those contributing to four-index integrals are neglected. The
         default is conservative, but there isn't much to be gained from
         loosening it, especially for higher-order SAPT. -*/
@@ -972,7 +973,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("D_CONVERGENCE", 1E-8);
         /*- Maximum number of iterations for CPHF -*/
         options.add_int("MAXITER", 50);
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
 
         // => ISAPT Zero-th Order Wavefunction Options <= //
@@ -1109,7 +1110,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("IGNORE_TAU", false);
         /*- Controls how to cache quantities within the DPD library !expert-*/
         options.add_int("CACHELEVEL", 2);
-        /*- Minimum absolute value below which integrals are neglected !expert-*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. !expert -*/
         options.add_double("INTS_TOLERANCE", 1e-14);
         /*- Whether to read the orbitals from a previous computation, or to compute
             an MP2 guess !expert -*/
@@ -1233,7 +1234,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("S_ORTHOGONALIZATION", "SYMMETRIC", "SYMMETRIC CANONICAL");
         /*- Minimum S matrix eigenvalue to allow before linear dependencies are removed. -*/
         options.add_double("S_TOLERANCE", 1E-7);
-        /*- Minimum absolute value below which TEI are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
@@ -1552,66 +1553,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
         /*- Memory safety factor for allocating JK
         -*/
-        options.add_double("TDHF_MEM_SAFETY_FACTOR", 0.75);
-        /*- Memory safety factor for allocating JK
-        -*/
-        options.add_double("CIS_MEM_SAFETY_FACTOR", 0.75);
-        /*- Memory safety factor for allocating JK
-        -*/
         options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
-        /*- Which states to save AO OPDMs for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_OPDM_STATES", new ArrayType());
-        /*- Which states to save AO transition OPDMs for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_TOPDM_STATES", new ArrayType());
-        /*- Which states to save AO difference OPDMs for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_DOPDM_STATES", new ArrayType());
-        /*- Which states to save AO Natural Orbitals for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_NO_STATES", new ArrayType());
-        /*- Which states to save AD Matrices for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_AD_STATES", new ArrayType());
-        /*- Which tasks to run CPHF For
-         *  Valid choices:
-         *  -Polarizability
-         * -*/
-        options.add("CPHF_TASKS", new ArrayType());
-        /*- The maximum number of integral threads (0 for Process::environment.get_n_threads())
-         -*/
-        options.add_int("OMP_N_THREAD", 0);
-        /*- The Schwarz cutoff value
-         -*/
-        options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
-        /*- Do we do the QQR integral sieve of Maurer et al. When false, just uses
-         *  the Schwarz sieve.
-         -*/
-        options.add_bool("DO_QQR_SIEVE", false);
-        /*- The maximum reciprocal condition allowed in the fitting metric
-         -*/
-        options.add_double("FITTING_CONDITION", 1.0E-12);
-        /*- Fitting algorithm (0 for old, 1 for new)
-         -*/
-        options.add_int("FITTING_ALGORITHM", 0);
         /*- SCF Type
          -*/
         options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK");
-        /*- JK Independent options
-         -*/
-        options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
-        options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");
@@ -1691,7 +1636,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("WFN", "SCF");
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF");
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1e-14);
         /*- The amount of caching of data to perform -*/
         options.add_int("CACHELEVEL", 2);
@@ -2245,7 +2190,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MP2_SS_SCALE", 1.0 / 3.0);
         /*- \% of memory for DF-MP2 three-index buffers -*/
         options.add_double("DFMP2_MEM_FACTOR", 0.9);
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
         /*- Minimum error in the 2-norm of the P(2) matrix for corrections to Lia and P. -*/
         options.add_double("DFMP2_P2_TOLERANCE", 0.0);
@@ -2885,7 +2830,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         fort.56. -*/
         options.add_double("E_CONVERGENCE", 1e-6);
 
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1.0E-12);
 
         /*- Maximum excitation level. This is used ONLY if it is explicitly set by the user.
