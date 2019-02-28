@@ -67,6 +67,19 @@ jobs:
           )
         displayName: "Check pytest configuration"
 
+      # Check conda configuration
+      - script: |
+          setlocal EnableDelayedExpansion
+          echo conda.build: %CONDA_BUILD%
+          set VALID=false
+          if "%CONDA_BUILD%"=="true" set VALID=true
+          if "%CONDA_BUILD%"=="false" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "conda.build" value: "%CONDA_BUILD%". Valid values: "true" and "false".
+            exit 1
+          )
+        displayName: "Check conda configuration"
+
       # Install Chocolatey (https://chocolatey.org/install#install-with-powershellexe)
       - powershell: |
           Set-ExecutionPolicy Bypass -Scope Process -Force
@@ -196,10 +209,12 @@ jobs:
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
+        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
         displayName: "Build Psi4 package"
 
       # Publish package
       - task: PublishBuildArtifacts@1
         inputs:
           artifactName: conda
+        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
         displayName: "Publish Psi4 package"
