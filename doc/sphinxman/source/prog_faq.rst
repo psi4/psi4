@@ -64,6 +64,14 @@ Versioning |PSIfour|
 #. :ref:`faq:githubworkflow`
 #. :ref:`faq:psi4version`
 
+Releasing |PSIfour|
+-------------------
+
+#. :ref:`faq:annualprocedure`
+#. :ref:`faq:prereleaseprocedure`
+#. :ref:`faq:releaseprocedure`
+#. :ref:`faq:postreleaseprocedure`
+
 Workflow
 --------
 
