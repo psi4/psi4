@@ -42,7 +42,7 @@ set d_convergence 10
 e, wfn = frequency('SCF/DZ', return_wfn=True)
 
 # Convert dipole derivatives to Debye/Ang units
-dipder = wfn.get_array('SCF DIPOLE GRADIENT').np * psi_dipmom_au2debye / psi_bohr2angstroms
+dipder = wfn.variable('SCF DIPOLE GRADIENT').np * psi_dipmom_au2debye / psi_bohr2angstroms
 
 # The differences in values are due to updated CODATA physical constants
 compare_values(ref_energy, e, 1e-8, "SCF energy")                             #TEST
