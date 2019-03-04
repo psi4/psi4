@@ -37,13 +37,13 @@ spherical
 ! blank entries added
 ! 
 !
-! merged from tight-cc-pwcvtz.gbs and basis-blankhhe.gbs at Sun, 02:06 Jun 11, 2017
+! merged from tight-cc-pwcvtz.gbs and basis-blankhhe.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
-! merged from cc-pvtz.gbs and tight-cc-pwcvtz_autogen.gbs at Sun, 02:06 Jun 11, 2017
+! merged from cc-pvtz.gbs and tight-cc-pwcvtz_autogen.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
-! merged from partial-basis-cc-pwcvtz.gbs and otrpartial-basis-cc-pwcvtz_autogen.gbs at Sun, 02:06 Jun 11, 2017
+! merged from partial-basis-cc-pwcvtz.gbs and otrpartial-basis-cc-pwcvtz_autogen.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
 !  aug-cc-pVTZ Diffuse  EMSL  Basis Set Exchange Library   8/19/10 11:59 AM
@@ -57,7 +57,7 @@ spherical
 ! Sc - Zn: N.B. Balabanov and K.A. Peterson, J. Chem. Phys, 123, 064107 (2005)
 ! 
 !
-! merged from cc-pwcvtz.gbs and hold-diffuse-jun-cc-pvtz.gbs at Sun, 02:06 Jun 11, 2017
+! merged from cc-pwcvtz.gbs and hold-diffuse-jun-cc-pvtz.gbs at Mon, 19:41 Feb 25, 2019
 !
 
 
@@ -152,11 +152,11 @@ P   1   1.00
 D   1   1.00
       0.8500000              1.0000000e+00
 S   1   1.00
-      0.0076000              1.0000000        
+      0.0076000              1.0000000
 P   1   1.00
-      0.0091000              1.0000000        
+      0.0091000              1.0000000
 D   1   1.00
-      0.0371000              1.0000000        
+      0.0428000              1.0000000
 ****
 Be     0
 S   11   1.00
@@ -214,11 +214,11 @@ P   1   1.00
 D   1   1.00
       1.6193000              1.0000000e+00
 S   1   1.00
-      0.0150300              1.0000000        
+      0.0147000              1.0000000
 P   1   1.00
-      0.0070600              1.0000000        
+      0.0093000              1.0000000
 D   1   1.00
-      0.0654000              1.0000000        
+      0.0588000              1.0000000
 ****
 B     0
 S   8   1.00
@@ -647,11 +647,11 @@ D   1   1.00
 F   1   1.00
       3.2270000              1.0000000e+00
 S   1   1.00
-      0.0066500              1.0000000        
+      0.0067000              1.0000000
 P   1   1.00
-      0.0070000              1.0000000        
+      0.0100000              1.0000000
 D   1   1.00
-      0.0223000              1.0000000        
+      0.0225000              1.0000000
 ****
 Mg     0
 S   15   1.00
@@ -753,11 +753,11 @@ D   1   1.00
 F   1   1.00
       1.2985000              1.0000000e+00
 S   1   1.00
-      0.0129000              1.0000000        
+      0.0120000              1.0000000
 P   1   1.00
-      0.0074500              1.0000000        
+      0.0090000              1.0000000
 D   1   1.00
-      0.0468000              1.0000000        
+      0.0444000              1.0000000
 ****
 Al     0
 S   13   1.00

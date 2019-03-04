@@ -4,15 +4,15 @@
 ! H    :  T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).
 ! Diffuse s exponent - S. Mielke
 ! He   :  D.E. Woon and T.H. Dunning, Jr., J. Chem. Phys. 100, 2975 (1994).
-!
-! Li, Be : B. Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., and A.K. Wilson,
-!             Theor. Chem. Acc., DOI:10.1007/s00214-010-0764-0
 ! B - F:  R.A. Kendall, T.H. Dunning, Jr. and R.J. Harrison, J. Chem. Phys. 96,
 ! 6796 (1992).
 ! Al - Cl: D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 98, 1358 (1993).
 ! Sc - Zn: N.B. Balabanov and K.A. Peterson, J. Chem. Phys, 123, 064107 (2005)
-! 
-
+!
+! Added 30 Sep 2017
+! Li-Be,Na-Mg: B. Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., A.K. Wilson,
+!       Theor. Chem. Acc. 128, 69 (2011), DOI:10.1007/s00214-010-0764-0
+!
 
 
 ****
@@ -151,6 +151,34 @@ G   1   1.00
       0.8090000              1.0000000        
 H   1   1.00
       1.6280000              1.0000000        
+****
+Na     0
+S   1   1.00
+      0.0051000              1.0000000
+P   1   1.00
+      0.0055000              1.0000000
+D   1   1.00
+      0.0229000              1.0000000
+F   1   1.00
+      0.0414000              1.0000000
+G   1   1.00
+      0.0732000              1.0000000
+H   1   1.00
+      0.1048000              1.0000000
+****
+Mg     0
+S   1   1.00
+      0.0108000              1.0000000
+P   1   1.00
+      0.0071000              1.0000000
+D   1   1.00
+      0.0371000              1.0000000
+F   1   1.00
+      0.0579000              1.0000000
+G   1   1.00
+      0.0947000              1.0000000
+H   1   1.00
+      0.1577000              1.0000000
 ****
 Al     0 
 S   1   1.00

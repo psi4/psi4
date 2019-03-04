@@ -58,6 +58,8 @@ Automation is really only for the Dunning basis sets. For others, use emsl_manip
 
 [2]   Make the necessary hand edits to hold- files. Detailed instructions for first generation are 
       found in NOTES. Changes should only be necessary if their dependent basis sets from EMSL changed.
+      Note that changes to diffuse-* files will generally need to be propagated
+      by hand into hold-diffuse-* files.
 
 [3]   Run make_dunning.pl to generate the basis sets proper. dual adzp will be carried along but
       these need to be edited by hand to actually make changes.

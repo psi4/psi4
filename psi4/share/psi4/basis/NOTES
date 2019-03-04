@@ -1,6 +1,32 @@
 *******************************************************************************
 *******************************************************************************
 
+
+Friday, September 29, 2017 -- LAB (posted Feb 2019)
+
+[43] From Peterson alkali paper website: http://tyr0.chem.wsu.edu/~kipeters/basissets/alkal-nr.html
+
+        Added Be to cc-pV6Z (basis-cc-pv6z)
+        Added Na & Mg to cc-pV(X+d)Z X=DTQ5 (basis-cc-pv_xpd_z)
+        Replaced Li, Be, Na, Mg exponents for tight functions for cc-pCVXZ X=DTQ
+            from ones from EMSL to the ones from Peterson website (corevalence-cc-pcvxz, as separable)
+        Replaced Na & Mg to cc-pCVXZ X=5
+            (non-separable so deleted from corevalence-cc-pcv5z and added to partial-basis-cc-pcv5z)
+        Replaced Li, Be, Na, Mg exponents for diffuse of aug-cc-pvXZ X=DTQ
+            from ones from EMSL (lacking citation) to the ones from Peterson website (diffuse-aug-cc-pvxz)
+        Added Na & Mg to diffuse of aug-cc-pVXZ X=5 (Li & Be added in [39]) (diffuse-aug-cc-pv5z)
+        Added Na & Mg to aug-cc-pV(X+d)Z X=DTQ5 (diffuse-aug-cc-pv_xpd_z)
+
+     Propagated diffuse fns to hold-diffuse-[jun|may|apr|mar]-cc-pv[dtq5]z.gbs and _[dtq5]pd_z
+
+[42] @SinaMostafanejad filled in some 5-zeta Dunning holes.
+        Added Li & Be to cc-pCV5Z (to corevalence-cc-pcv5z, as separable)
+        Added Li & Be to aug-cc-pV5Z (diffuse-aug-cc-pv5z)
+
+
+*******************************************************************************
+*******************************************************************************
+
 Friday, Nov 11, 2018 -- hokru
 
 [41] Addition of the n-tuple augmented polarized augmented non-relativistic
