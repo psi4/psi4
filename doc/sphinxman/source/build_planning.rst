@@ -218,6 +218,8 @@ build system will automatically download and build.
 
 * QCElemental |w---w| `[what is this?] <https://qcelemental.readthedocs.io/en/latest/>`_
 
+* QCEngine |w---w| `[what is this?] <https://qcengine.readthedocs.io/en/latest/>`_
+
 Additionally, there are runtime-only dependencies:
 
 * NumPy http://www.numpy.org/
@@ -228,7 +230,7 @@ Additionally, there are runtime-only dependencies:
 
 * pint https://pint.readthedocs.io/en/latest/
 
-* pydantic (depending on your QCElemental version) https://pydantic-docs.helpmanual.io/#
+* pydantic https://pydantic-docs.helpmanual.io/#
 
 
 .. _`faq:addondepend`:
