@@ -162,7 +162,7 @@ Tag (pre)release
     # be on clean master up-to-date with upstream in both commits and tags
     # * mind which version strings get "v" and which don't
     # * if not fork, replace "upstream" with "origin"
-    
+
     >>> vi psi4/metadata.py
     >>> git diff
     diff --git a/psi4/metadata.py b/psi4/metadata.py
@@ -173,33 +173,33 @@ Tag (pre)release
     +__version__ = '1.3rc2'
     +__version_long = '1.3rc2+zzzzzzz'
     +__version_upcoming_annotated_v_tag = '1.3rc3'
-    
+
     >>> git add psi4/metadata.py
     >>> git commit -m "v1.3rc2"
     [master bc8d7f5] v1.3rc2
-    
+
     >>> git log --oneline | head -1
     bc8d7f5 v1.3rc2
     >>> git tag -a v1.3rc2 bc8d7f5 -m "v1.3rc2"
-    
+
     >>> vi psi4/metadata.py
     >>> git diff
     diff --git a/psi4/metadata.py b/psi4/metadata.py
     ...
     -__version_long = '1.3rc2+zzzzzzz'
     +__version_long = '1.3rc2+bc8d7f5'
-    
+
     >>> git add psi4/metadata.py
     >>> git commit -m "Records tag for v1.3rc2"
     [master 16dbd3e] Records tag for v1.3rc2
-    
+
     # goto GH:psi4/psi4 > Settings > Branches > master > Edit
     #      https://github.com/psi4/psi4/settings/branch_protection_rules/424295
     # uncheck "Include administrators" and Save changes
-    
+
     >>> git push upstream master
     >>> git push upstream v1.3rc2
-    
+
     # re-engage "Include administrators" protections
 
 
@@ -214,7 +214,7 @@ Initialize release branch
     >>> git log --online | head -2
     45315cb Records tag for v1.3
     20e5c7e v1.3
-    
+
     >>> git checkout 20e5c7e
     >>> git checkout -b 1.3.x
     Switched to a new branch '1.3.x'
@@ -230,7 +230,7 @@ By "Psi4 stack", mean packages ``psi4``, ``psi4-rt``, ``psi4-dev``, ``psi4-docs`
 Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) should be already built.
 
 * Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving deps (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
-* Nightly conda-builds work from ``master`` psi4. Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in: 
+* Nightly conda-builds work from ``master`` psi4. Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
 
   - psi4-multiout on Linux & Mac, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/meta.yaml#L10
   - psi4-docs on Linux, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-docs/meta.yaml#L10 on L
@@ -296,7 +296,7 @@ Generate download page for psicode.org
 * Copy and edit new file akin to https://github.com/psi4/psicode-hugo-website/blob/master/data/installs/v13rc2.yaml for menu and notes content
 * Enter ``scripts/`` dir and edit primarily https://github.com/psi4/psicode-hugo-website/blob/master/scripts/install-generator.py#L9 but also any other arrays or messages that should change.
 * Run the  ``install-generator.py`` in place. It will dump new files into ``data/installs/`` _subdirs_. Be sure to ``git add`` them.
-* Installer page is now ready. 
+* Installer page is now ready.
 * Shift "latest" alias in frontmatter from whichever page is currently active to the new page. This makes sure "Downloads" on the navigation bar points to new page.
 * Conscientiously, on should test
 
@@ -331,7 +331,9 @@ Publish psicode release
 Finalize release
 ----------------
 
-* Make new PR with edits to main ``README.md`` badges, python versions, etc.
+* Make new PR with
+  * edits to main ``README.md`` badges, python versions, etc.
+  * edits to ``CMakeLists.txt`` ``find_package(PythonLibsNew 3.6 REQUIRED)``
 * On godaddy, grab the exact tag 1.3 manual before it gets overwritten and preserve it: ``cp -pR master 1.3``
 * Tweet about release
 
