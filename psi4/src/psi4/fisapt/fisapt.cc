@@ -2230,6 +2230,442 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
         outfile->Printf("\n");
     }
 }
+void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache, 
+                        bool do_print) {
+    if (do_print) {
+        outfile->Printf("  ==> Dispersion <==\n\n");
+    }
+
+    // => Pointers <= //
+
+    std::shared_ptr<Matrix> Cocc0A = matrix_cache["Caocc0A"];
+    std::shared_ptr<Matrix> Cocc0B = matrix_cache["Caocc0B"];
+    std::shared_ptr<Matrix> Cvir0A = matrix_cache["Cvir0A"];
+    std::shared_ptr<Matrix> Cvir0B = matrix_cache["Cvir0B"];
+
+    std::shared_ptr<Vector> eps_occ0A = vector_cache["eps_aocc0A"];
+    std::shared_ptr<Vector> eps_occ0B = vector_cache["eps_aocc0B"];
+    std::shared_ptr<Vector> eps_vir0A = vector_cache["eps_vir0A"];
+    std::shared_ptr<Vector> eps_vir0B = vector_cache["eps_vir0B"];
+
+    // => Auxiliary Basis Set <= //
+    std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
+
+    // => Sizing <= //
+
+    int nn = primary_->nbf();
+    int na = Cocc0A->colspi()[0];
+    int nb = Cocc0B->colspi()[0];
+    int nr = Cvir0A->colspi()[0];
+    int ns = Cvir0B->colspi()[0];
+    int nQ = auxiliary->nbf();
+    size_t nrQ = nr * (size_t)nQ;
+    size_t nsQ = ns * (size_t)nQ;
+
+    int nT = 1;
+#ifdef _OPENMP
+    nT = Process::environment.get_n_threads();
+#endif
+
+    // => Stashed Variables <= //
+
+    std::shared_ptr<Matrix> S = matrix_cache["S"];
+    std::shared_ptr<Matrix> V_A = matrix_cache["V_A"];
+    std::shared_ptr<Matrix> V_B = matrix_cache["V_B"];
+
+    // => Intermolelcular overlap matrix and inverse <= //
+    std::shared_ptr<Matrix> Sab = Matrix::triplet(Cocc0A, S, Cocc0B, true, false, false);
+    double** Sabp = Sab->pointer();
+    auto D = std::make_shared<Matrix>("D", na + nb, na + nb);
+    D->identity();
+    double** Dp = D->pointer();
+    for (int a = 0; a < na; a++) {
+        for (int b = 0; b < nb; b++) {
+            Dp[a][b + na] = Dp[b + na][a] = Sabp[a][b];
+        }
+    }
+    D->power(-1.0, 1.0E-12);
+    Dp = D->pointer();
+
+    // => New Stuff <= //
+    // Start with T's
+    std::shared_ptr<Matrix> Sbr = Matrix::triplet(Cocc0B, S, Cvir0A, true, false, false);
+    std::shared_ptr<Matrix> Sas = Matrix::triplet(Cocc0A, S, Cvir0B, true, false, false);
+    auto Tar = std::make_shared<Matrix>("Tar", na, nr);
+    auto Tbr = std::make_shared<Matrix>("Tbr", nb, nr);
+    auto Tas = std::make_shared<Matrix>("Tas", na, ns);
+    auto Tbs = std::make_shared<Matrix>("Tbs", nb, ns);
+
+    C_DGEMM('N', 'N', na, nr, nb, 1.0, &Dp[0][na], na + nb, Sbr->pointer()[0], nr, 0.0,
+            Tar->pointer()[0], nr);
+    C_DGEMM('N', 'N', nb, nr, nb, 1.0, &Dp[na][na], na + nb, Sbr->pointer()[0], nr, 0.0,
+            Tbr->pointer()[0], nr);
+    C_DGEMM('N', 'N', na, ns, na, 1.0, &Dp[0][0], na + nb, Sas->pointer()[0], ns, 0.0,
+            Tas->pointer()[0], ns);
+    C_DGEMM('N', 'N', nb, ns, na, 1.0, &Dp[na][0], na + nb, Sas->pointer()[0], ns, 0.0,
+            Tbs->pointer()[0], ns);
+
+    // C1's and C2's from D's and C's.
+    // C1's are C times D diagonal blocks.
+    // C2's are times off-diagonal blocks.
+    auto C1a = std::make_shared<Matrix>("C1a", nn, na);
+    auto C1b = std::make_shared<Matrix>("C1b", nn, nb);
+    auto C2a = std::make_shared<Matrix>("C2a", nn, na);
+    auto C2b = std::make_shared<Matrix>("C2b", nn, nb);
+
+    C_DGEMM('N', 'N', nn, na, na, 1.0, Cocc0A->pointer()[0], na, &Dp[0][0], na + nb, 0.0,
+            C1a->pointer()[0], na);                                                  
+    C_DGEMM('N', 'N', nn, nb, nb, 1.0, Cocc0B->pointer()[0], nb, &Dp[na][na], na + nb, 0.0,
+            C1b->pointer()[0], nb);                                                  
+    C_DGEMM('N', 'N', nn, na, nb, 1.0, Cocc0B->pointer()[0], nb, &Dp[na][0], na + nb, 0.0,
+            C2a->pointer()[0], na);                                                  
+    C_DGEMM('N', 'N', nn, nb, na, 1.0, Cocc0A->pointer()[0], na, &Dp[0][na], na + nb, 0.0,
+            C2b->pointer()[0], nb);
+
+    // Coeffs for all occupied
+    std::vector<std::shared_ptr<Matrix> > hold_these;
+    hold_these.push_back(Cocc0A);
+    hold_these.push_back(Cocc0B);
+    
+    auto Cocc0AB = Matrix::horzcat(hold_these);
+    hold_these.clear();
+    
+    // Half transform D_ia and D_ib for JK
+    auto D_Ni_a = std::make_shared<Matrix>("D_Ni_a", nn, na + nb);
+    auto D_Ni_b = std::make_shared<Matrix>("D_Ni_b", nn, na + nb);
+    
+    C_DGEMM('N', 'N', nn, na + nb, na, 1.0, Cocc0A->pointer()[0], na, &Dp[0][0], na + nb, 0.0, 
+            D_Ni_a->pointer()[0], na + nb);
+    C_DGEMM('N', 'N', nn, na + nb, nb, 1.0, Cocc0B->pointer()[0], nb, &Dp[na][0], na + nb, 0.0,
+            D_Ni_b->pointer()[0], na + nb);
+
+    // Make JK's
+    jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_, false, doubles_);
+    jk_->set_memory(doubles_);
+    jk_->set_do_J(true);
+    jk_->set_do_K(true);
+    jk_->initialize();
+    jk_->print_header();
+
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(Cocc0AB);
+    Cr.push_back(D_Ni_a);
+    Cl.push_back(Cocc0AB);
+    Cr.push_back(D_Ni_b);
+    jk_->compute();
+    
+    std::shared_ptr<Matrix> J_D_ia = J[0];
+    std::shared_ptr<Matrix> K_D_ia = K[0];
+
+    std::shared_ptr<Matrix> J_D_ib = J[1];
+    std::shared_ptr<Matrix> K_D_ib = K[1];
+
+    // Finish D_ia and D_ib transformation to make tilded C's
+    auto D_ia = Matrix::doublet(Cocc0AB, D_Ni_a, false, true);
+    auto D_ib = Matrix::doublet(Cocc0AB, D_Ni_b, false, true);
+    
+    auto Ct_Kr = Matrix::triplet(D_ib, S, Cvir0A, false, false, false);
+    Ct_Kr->scale(-1);
+    Ct_Kr->add(Cvir0A);
+    auto Ct_Ks = Matrix::triplet(D_ia, S, Cvir0B, false, false, false);
+    Ct_Ks->scale(-1);
+    Ct_Ks->add(Cvir0B);
+
+    // Make omega cores
+    std::shared_ptr<Matrix> AJK(J_D_ia->clone());
+    AJK->zero();
+    AJK->add(J_D_ia);
+    AJK->scale(2);
+    AJK->add(V_A);
+    AJK->subtract(K_D_ia);
+    
+    auto AJK_ar = Matrix::triplet(C2a, AJK, Ct_Kr, true, false, false);
+    auto AJK_as = Matrix::triplet(C2a, AJK, Ct_Ks, true, false, false);
+    auto AJK_br = Matrix::triplet(C1b, AJK, Ct_Kr, true, false, false);
+    auto AJK_bs = Matrix::triplet(C1b, AJK, Ct_Ks, true, false, false);
+    
+    std::shared_ptr<Matrix> BJK(J_D_ib->clone());
+    BJK->zero();
+    BJK->add(J_D_ib);
+    BJK->scale(2);
+    BJK->add(V_B);
+    BJK->subtract(K_D_ib);
+    
+    auto BJK_ar = Matrix::triplet(C1a, BJK, Ct_Kr, true, false, false);
+    auto BJK_as = Matrix::triplet(C1a, BJK, Ct_Ks, true, false, false);
+    auto BJK_br = Matrix::triplet(C2b, BJK, Ct_Kr, true, false, false);
+    auto BJK_bs = Matrix::triplet(C2b, BJK, Ct_Ks, true, false, false);
+
+    // Finish omega terms
+    std::shared_ptr<Matrix> omega_ar(AJK_ar->clone());
+    omega_ar->zero();
+    omega_ar->add(AJK_ar);
+    omega_ar->add(BJK_ar);
+    omega_ar->scale(4);
+    
+    std::shared_ptr<Matrix> omega_as(AJK_as->clone());
+    omega_as->zero();
+    omega_as->add(AJK_as);
+    omega_as->add(BJK_as);
+    omega_as->scale(2);
+    
+    std::shared_ptr<Matrix> omega_br(AJK_br->clone());
+    omega_br->zero();
+    omega_br->add(AJK_br);
+    omega_br->add(BJK_br);
+    omega_br->scale(2);
+    
+    std::shared_ptr<Matrix> omega_bs(AJK_bs->clone());
+    omega_bs->zero();
+    omega_bs->add(AJK_bs);
+    omega_bs->add(BJK_bs);
+    omega_bs->scale(4);
+
+    D.reset();
+    Sbr.reset();
+    Sas.reset();
+    Cocc0AB.reset();
+    D_Ni_a.reset();
+    D_Ni_b.reset();
+    J_D_ia.reset();
+    K_D_ia.reset();
+    J_D_ib.reset();
+    K_D_ib.reset();
+    D_ia.reset();
+    D_ib.reset();
+    AJK.reset();
+    BJK.reset();
+    AJK_ar.reset();
+    AJK_as.reset();
+    AJK_br.reset();
+    AJK_bs.reset();
+    BJK_ar.reset();
+    BJK_as.reset();
+    BJK_br.reset();
+    BJK_bs.reset();
+
+    // => Memory <= //
+
+    std::vector<std::shared_ptr<Matrix> > Cs;
+    Cs.push_back(Cocc0A);
+    Cs.push_back(Cvir0A);
+    Cs.push_back(Cocc0B);
+    Cs.push_back(Cvir0B);
+    Cs.push_back(C1a);
+    Cs.push_back(C1b);
+    Cs.push_back(C2a);
+    Cs.push_back(C2b);
+    Cs.push_back(Ct_Kr);
+    Cs.push_back(Ct_Ks);
+
+    size_t max_MO = 0, ncol = 0;
+    for (auto& mat : Cs) {
+        max_MO = std::max(max_MO, (size_t)mat->ncol());
+        ncol += (size_t)mat->ncol();
+    }
+
+    // => Get integrals from DFHelper <= //
+    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary));
+    dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
+    dfh->set_method("DIRECT_iaQ");
+    dfh->set_nthreads(nT);
+    dfh->initialize();
+    dfh->print_header();
+
+    dfh->add_space("a", Cs[0]);
+    dfh->add_space("r", Cs[1]);
+    dfh->add_space("b", Cs[2]);
+    dfh->add_space("s", Cs[3]);
+    dfh->add_space("a1", Cs[4]);
+    dfh->add_space("b1", Cs[5]);
+    dfh->add_space("a2", Cs[6]);
+    dfh->add_space("b2", Cs[7]);
+    dfh->add_space("r1", Cs[8]);
+    dfh->add_space("s1", Cs[9]);
+
+    dfh->add_transformation("Aar", "a", "r");
+    dfh->add_transformation("Abs", "b", "s");
+    dfh->add_transformation("Bar", "a1", "r1");
+    dfh->add_transformation("Bbs", "b1", "s1");
+    dfh->add_transformation("Cbr", "b2", "r1");
+    dfh->add_transformation("Cas", "a2", "s1");
+    dfh->add_transformation("Das", "a1", "s1");
+    dfh->add_transformation("Dbr", "b1", "r1");
+    dfh->add_transformation("Ebs", "b2", "s1");
+    dfh->add_transformation("Ear", "a2", "r1");
+
+    dfh->transform();
+
+    C1a.reset();
+    C1b.reset();
+    C2a.reset();
+    C2b.reset();
+    Ct_Kr.reset();
+    Ct_Ks.reset();
+    Cs.clear();
+    dfh->clear_spaces();
+
+    // => Blocking <= //
+
+    long int overhead = 0L;
+    overhead += 2L * nT * nr * ns;
+    overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns;
+    long int rem = doubles_ - overhead;
+
+    if (rem < 0L) {
+        throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
+    }
+
+    long int cost_a = 2L * nr * nQ + 2L * ns * nQ;
+    long int max_a = rem / (2L * cost_a);
+    long int max_b = max_a;
+    max_a = (max_a > na ? na : max_a);
+    max_b = (max_b > nb ? nb : max_b);
+    if (max_a < 1L || max_b < 1L) {
+        throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
+    }
+
+    // => Tensor Slices <= //
+
+    auto Aar = std::make_shared<Matrix>("Aar", max_a * nr, nQ);
+    auto Abs = std::make_shared<Matrix>("Abs", max_b * ns, nQ);
+    auto Bar = std::make_shared<Matrix>("Bar", max_a * nr, nQ);
+    auto Bbs = std::make_shared<Matrix>("Bbs", max_b * ns, nQ);
+    auto Cbr = std::make_shared<Matrix>("Cbr", max_b * nr, nQ);
+    auto Cas = std::make_shared<Matrix>("Cas", max_a * ns, nQ);
+    auto Das = std::make_shared<Matrix>("Das", max_a * ns, nQ);
+    auto Dbr = std::make_shared<Matrix>("Dbr", max_b * nr, nQ);
+    auto Ebs = std::make_shared<Matrix>("Ebs", max_b * ns, nQ);
+    auto Ear = std::make_shared<Matrix>("Ear", max_a * nr, nQ);
+
+    // => Thread Work Arrays <= //
+
+    std::vector<std::shared_ptr<Matrix> > Trs;
+    std::vector<std::shared_ptr<Matrix> > Vrs;
+    for (int t = 0; t < nT; t++) {
+        Trs.push_back(std::make_shared<Matrix>("Trs", nr, ns));
+        Vrs.push_back(std::make_shared<Matrix>("Vrs", nr, ns));
+    }
+
+    // => Pointers <= //
+    double** Aarp = Aar->pointer();
+    double** Absp = Abs->pointer();
+    double** Barp = Bar->pointer();
+    double** Bbsp = Bbs->pointer();
+    double** Cbrp = Cbr->pointer();
+    double** Casp = Cas->pointer();
+    double** Dasp = Das->pointer();
+    double** Dbrp = Dbr->pointer();
+    double** Ebsp = Ebs->pointer();
+    double** Earp = Ear->pointer();
+
+    double** Tarp = Tar->pointer();
+    double** Tbrp = Tbr->pointer();
+    double** Tasp = Tas->pointer();
+    double** Tbsp = Tbs->pointer();
+
+    double** omega_arp = omega_ar->pointer();
+    double** omega_asp = omega_as->pointer();
+    double** omega_brp = omega_br->pointer();
+    double** omega_bsp = omega_bs->pointer();
+
+    double* eap = eps_occ0A->pointer();
+    double* ebp = eps_occ0B->pointer();
+    double* erp = eps_vir0A->pointer();
+    double* esp = eps_vir0B->pointer();
+
+    // => Targets <= //
+
+    double Disp20 = 0.0;
+    double CompleteDisp20 = 0.0;
+
+    // ==> Master Loop <== //
+
+    for (size_t astart = 0; astart < na; astart += max_a) {
+        size_t nablock = (astart + max_a >= na ? na - astart : max_a);
+
+        dfh->fill_tensor("Aar", Aar, {astart, astart + nablock});
+        dfh->fill_tensor("Bar", Bar, {astart, astart + nablock});
+        dfh->fill_tensor("Cas", Cas, {astart, astart + nablock});
+        dfh->fill_tensor("Das", Das, {astart, astart + nablock});
+        dfh->fill_tensor("Ear", Ear, {astart, astart + nablock});
+
+        for (size_t bstart = 0; bstart < nb; bstart += max_b) {
+            size_t nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
+
+            dfh->fill_tensor("Abs", Abs, {bstart, bstart + nbblock});
+            dfh->fill_tensor("Bbs", Bbs, {bstart, bstart + nbblock});
+            dfh->fill_tensor("Cbr", Cbr, {bstart, bstart + nbblock});
+            dfh->fill_tensor("Dbr", Dbr, {bstart, bstart + nbblock});
+            dfh->fill_tensor("Ebs", Ebs, {bstart, bstart + nbblock});
+
+            long int nab = nablock * nbblock;
+
+#pragma omp parallel for schedule(dynamic) reduction(+ : Disp20, CompleteDisp20)
+            for (long int ab = 0L; ab < nab; ab++) {
+                int a = ab / nbblock;
+                int b = ab % nbblock;
+
+                int thread = 0;
+#ifdef _OPENMP
+                thread = omp_get_thread_num();
+#endif
+
+                double** Trsp = Trs[thread]->pointer();
+                double** Vrsp = Vrs[thread]->pointer();
+
+                // => Amplitudes, Disp20 <= //
+
+                C_DGEMM('N', 'T', nr, ns, nQ, 1.0, Aarp[(a)*nr], nQ, Absp[(b)*ns], nQ, 0.0, Vrsp[0], ns);
+
+                for (int r = 0; r < nr; r++) {
+                    for (int s = 0; s < ns; s++) {
+                        Trsp[r][s] = Vrsp[r][s] / (eap[a + astart] + ebp[b + bstart] - erp[r] - esp[s]);
+                        Disp20 += 4.0 * Trsp[r][s] * Vrsp[r][s];
+                    }
+                }
+
+                // => Exch-Disp20 <= //
+
+                // > DF-Part < //
+
+                C_DGEMM('N', 'T', nr, ns, nQ, 4.0, Barp[(a)*nr], nQ, Bbsp[(b)*ns], nQ, 0.0, Vrsp[0], ns);
+                C_DGEMM('N', 'T', nr, ns, nQ, -2.0, Cbrp[(b)*nr], nQ, Casp[(a)*ns], nQ, 1.0, Vrsp[0], ns);
+                C_DGEMM('N', 'T', nr, ns, nQ, -2.0, Dbrp[(b)*nr], nQ, Dasp[(a)*ns], nQ, 1.0, Vrsp[0], ns);
+                C_DGEMM('N', 'T', nr, ns, nQ, 4.0, Earp[(a)*nr], nQ, Ebsp[(b)*ns], nQ, 1.0, Vrsp[0], ns);
+
+                // > AO-Part < //
+
+                C_DGER(nr, ns, 1.0, Tarp[a + astart], 1, omega_bsp[b + bstart], 1, Vrsp[0], ns);
+                C_DGER(nr, ns, -1.0, omega_brp[b + bstart], 1, Tasp[a + astart], 1, Vrsp[0], ns);
+                C_DGER(nr, ns, 1.0, omega_arp[a + astart], 1, Tbsp[b + bstart], 1, Vrsp[0], ns);
+                C_DGER(nr, ns, -1.0, Tbrp[b + bstart], 1, omega_asp[a + astart], 1, Vrsp[0], ns);
+                for (int r = 0; r < nr; r++) {
+                    for (int s = 0; s < ns; s++) {
+                        CompleteDisp20 += Trsp[r][s] * Vrsp[r][s];
+                    }
+                }
+            }
+        }
+    }
+
+    double ExchDisp20 = CompleteDisp20 - Disp20;
+
+    scalars_["Disp20"] = Disp20;
+    scalars_["Exch-Disp20 (S^inf)"] = ExchDisp20;
+    Process::environment.globals["SAPT EXCH-DISP20(S^INF) ENERGY"] = scalars_["Exch-Disp20 (S^inf)"];
+    if (do_print) {
+        outfile->Printf("    Disp20              = %18.12lf [Eh]\n", Disp20);
+        outfile->Printf("    Exch-Disp20 (S^inf) = %18.12lf [Eh]\n", ExchDisp20);
+        outfile->Printf("\n");
+    }
+}
 void FISAPT::print_trailer() {
     scalars_["Electrostatics"] = scalars_["Elst10,r"];
     scalars_["Exchange"] = scalars_["Exch10"];

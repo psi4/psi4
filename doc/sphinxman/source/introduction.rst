@@ -399,6 +399,18 @@ F/I-SAPT
   *J. Chem. Phys.* **143**, 051103 (2015).
   (doi: `10.1063/1.4927575 <http://dx.doi.org/10.1063/1.4927575>`_)
 
+The derivation of the second-order exchange terms without the single-exchange
+approximation are found in the following two works:
+
+* "Intermolecular exchange-induction energies without the overlap expansion,"
+  R. Sch\ |a_dots|\ ffer and G. Jansen, *Theor. Chem. Acc.* **131**, 1235 (2012).
+  (doi: `10.1007/s00214-012-1235-6 <http://dx.doi.org/10.1007/s00214-012-1235-6>`_)
+
+* "Single-determinant-based symmetry-adapted perturbation theory without
+  single-exchange approximation," 
+  R. Sch\ |a_dots|\ ffer and G. Jansen, *Mol. Phys.* **111**, 2570 (2013).
+  (doi: `10.1080/00268976.2013.827253 <http://dx.doi.org/10.1080/00268976.2013.827253>`_)
+
 Orbital-Optimized Post-Hartree |--| Fock Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Orbital-optimized second-order perturbation theory (OMP2)
