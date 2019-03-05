@@ -1752,37 +1752,37 @@ class LibmintsMolecule():
         """
         raise FeatureNotImplemented('Molecule::set_com_fixed')  # FINAL
 
-    def inertia_tensor(self):
-        """Compute inertia tensor.
-
-        >>> print(H2OH2O.inertia_tensor())
-        [[8.704574864178731, -8.828375721817082, 0.0], [-8.828375721817082, 280.82861714077666, 0.0], [0.0, 0.0, 281.249500988553]]
-
-        """
-        tensor = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-
-        for i in range(self.natom()):
-            # I(alpha, alpha)
-            tensor[0][0] += self.mass(i) * (self.y(i) * self.y(i) + self.z(i) * self.z(i))
-            tensor[1][1] += self.mass(i) * (self.x(i) * self.x(i) + self.z(i) * self.z(i))
-            tensor[2][2] += self.mass(i) * (self.x(i) * self.x(i) + self.y(i) * self.y(i))
-
-            # I(alpha, beta)
-            tensor[0][1] -= self.mass(i) * self.x(i) * self.y(i)
-            tensor[0][2] -= self.mass(i) * self.x(i) * self.z(i)
-            tensor[1][2] -= self.mass(i) * self.y(i) * self.z(i)
-
-        # mirror
-        tensor[1][0] = tensor[0][1]
-        tensor[2][0] = tensor[0][2]
-        tensor[2][1] = tensor[1][2]
-
-        # Check the elements for zero and make them a hard zero.
-        for i in range(3):
-            for j in range(3):
-                if math.fabs(tensor[i][j]) < ZERO:
-                    tensor[i][j] = 0.0
-        return tensor
+#    def inertia_tensor(self):
+#        """Compute inertia tensor.
+#
+#        >>> print(H2OH2O.inertia_tensor())
+#        [[8.704574864178731, -8.828375721817082, 0.0], [-8.828375721817082, 280.82861714077666, 0.0], [0.0, 0.0, 281.249500988553]]
+#
+#        """
+#        tensor = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+#
+#        for i in range(self.natom()):
+#            # I(alpha, alpha)
+#            tensor[0][0] += self.mass(i) * (self.y(i) * self.y(i) + self.z(i) * self.z(i))
+#            tensor[1][1] += self.mass(i) * (self.x(i) * self.x(i) + self.z(i) * self.z(i))
+#            tensor[2][2] += self.mass(i) * (self.x(i) * self.x(i) + self.y(i) * self.y(i))
+#
+#            # I(alpha, beta)
+#            tensor[0][1] -= self.mass(i) * self.x(i) * self.y(i)
+#            tensor[0][2] -= self.mass(i) * self.x(i) * self.z(i)
+#            tensor[1][2] -= self.mass(i) * self.y(i) * self.z(i)
+#
+#        # mirror
+#        tensor[1][0] = tensor[0][1]
+#        tensor[2][0] = tensor[0][2]
+#        tensor[2][1] = tensor[1][2]
+#
+#        # Check the elements for zero and make them a hard zero.
+#        for i in range(3):
+#            for j in range(3):
+#                if math.fabs(tensor[i][j]) < ZERO:
+#                    tensor[i][j] = 0.0
+#        return tensor
 
     def rotational_constants(self, tol=FULL_PG_TOL, return_units='cm^-1'):
         """Compute the rotational constants and moments of inertia.
@@ -1945,36 +1945,36 @@ class LibmintsMolecule():
 
     # <<< Methods for Saving >>>
 
-    def save_string_xyz(self, save_ghosts=True):
-        """Save a string for a XYZ-style file.
-
-        >>> H2OH2O.save_string_xyz()
-        6
-        _
-         O   -1.551007000000   -0.114520000000    0.000000000000
-         H   -1.934259000000    0.762503000000    0.000000000000
-         H   -0.599677000000    0.040712000000    0.000000000000
-         O    1.350625000000    0.111469000000    0.000000000000
-         H    1.680398000000   -0.373741000000   -0.758561000000
-         H    1.680398000000   -0.373741000000    0.758561000000
-
-        """
-        factor = 1.0 if self.PYunits == 'Angstrom' else qcel.constants.bohr2angstroms
-
-        N = self.natom()
-        if not save_ghosts:
-            N = 0
-            for i in range(self.natom()):
-                if self.Z(i):
-                    N += 1
-        text = "%d\n\n" % (N)
-
-        for i in range(self.natom()):
-            [x, y, z] = self.atoms[i].compute()
-            if save_ghosts or self.Z(i):
-                text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"), \
-                    x * factor, y * factor, z * factor)
-        return text
+#    def save_string_xyz(self, save_ghosts=True):
+#        """Save a string for a XYZ-style file.
+#
+#        >>> H2OH2O.save_string_xyz()
+#        6
+#        _
+#         O   -1.551007000000   -0.114520000000    0.000000000000
+#         H   -1.934259000000    0.762503000000    0.000000000000
+#         H   -0.599677000000    0.040712000000    0.000000000000
+#         O    1.350625000000    0.111469000000    0.000000000000
+#         H    1.680398000000   -0.373741000000   -0.758561000000
+#         H    1.680398000000   -0.373741000000    0.758561000000
+#
+#        """
+#        factor = 1.0 if self.PYunits == 'Angstrom' else qcel.constants.bohr2angstroms
+#
+#        N = self.natom()
+#        if not save_ghosts:
+#            N = 0
+#            for i in range(self.natom()):
+#                if self.Z(i):
+#                    N += 1
+#        text = "%d\n\n" % (N)
+#
+#        for i in range(self.natom()):
+#            [x, y, z] = self.atoms[i].compute()
+#            if save_ghosts or self.Z(i):
+#                text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"), \
+#                    x * factor, y * factor, z * factor)
+#        return text
 
     def save_xyz(self, filename, save_ghosts=True):
         """Save an XYZ file.

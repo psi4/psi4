@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from itertools import product
-
 import numpy as np
 
 from psi4 import core

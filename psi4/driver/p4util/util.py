@@ -286,7 +286,7 @@ def compare_matrices(expected, computed, digits, label):
                        (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
             raise TestComparisonError(message)
         if (expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
-            message = ("\t%s has %d columns in irrep, but %s has %d\n." %
+            message = ("\t%s has %d columns in irrep %d, but %s has %d\n." %
                        (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
             raise TestComparisonError(message)
         rows = expected.rows(irrep)
