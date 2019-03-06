@@ -199,6 +199,9 @@ procedures = {
 energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
 energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis']
 
+# Will complete modelchem spec with basis='(auto)' for following methods
+integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']
+
 # Integrate DFT with driver routines
 for key in functionals:
     ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]

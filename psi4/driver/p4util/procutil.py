@@ -32,9 +32,11 @@ import sys
 import pickle
 import inspect
 import warnings
+import contextlib
 import collections
 
 from psi4 import core
+from psi4.metadata import __version__
 from .exceptions import ValidationError
 from . import p4regex
 
@@ -69,7 +71,7 @@ def kwargs_lower(kwargs):
             elif p4regex.der2nd.match(str(lvalue)):
                 caseless_kwargs[lkey] = 2
             else:
-                raise KeyError('Derivative type key %s was not recognized' % str(key))
+                raise KeyError(f'Derivative type key {key} was not recognized')
 
         elif lvalue is None:
             caseless_kwargs[lkey] = None
@@ -202,10 +204,8 @@ def drop_duplicates(seq):
 
 
 def all_casings(input_string):
-    """Function to return a generator of all lettercase permutations
-    of *input_string*.
+    """Return a generator of all lettercase permutations of `input_string`."""
 
-    """
     if not input_string:
         yield ""
     else:
@@ -315,7 +315,7 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
 
 
 _modules = [
-    # PSI4 Modules
+    # Psi4 Modules
     "ADC",
     "CCENERGY",
     "CCEOM",
@@ -323,31 +323,31 @@ _modules = [
     "CCLAMBDA",
     "CCHBAR",
     "CCRESPONSE",
-    "CCSORT",
+    "CCTRANSORT",
     "CCTRIPLES",
-    "CLAG",
     "CPHF",
-    "CIS",
     "DCFT",
     "DETCI",
+    "DFEP2",
     "DFMP2",
-    "DFTSAPT",
+    "DFOCC",
+    "DMRG",
+    "EFP",
     "FINDIF",
+    "FISAPT",
     "FNOCC",
-    "LMP2",
+    "GDMA",
     "MCSCF",
     "MINTS",
     "MRCC",
     "OCC",
     "OPTKING",
+    "PCM",
     "PSIMRCC",
     "RESPONSE",
     "SAPT",
     "SCF",
-    "STABILITY",
     "THERMO",
-    "TRANSQT",
-    "TRANSQT2",
     # External Modules
     "CFOUR",
 ]
@@ -508,3 +508,13 @@ def expand_psivars(pvdefs):
             core.set_variable(pvar, result)
             if verbose >= 2:
                 print("""SUCCESS""")
+
+
+def provenance_stamp(routine):
+    """Return dictionary satisfying QCSchema,
+    https://github.com/MolSSI/QCSchema/blob/master/qcschema/dev/definitions.py#L23-L41
+    with Psi4's credentials for creator and version. The
+    generating routine's name is passed in through `routine`.
+
+    """
+    return {'creator': 'Psi4', 'version': __version__, 'routine': routine}

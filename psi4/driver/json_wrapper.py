@@ -206,8 +206,13 @@ def run_json(json_data, clean=True):
         json_data = run_json_qc_schema(copy.deepcopy(json_data), clean)
 
     except Exception as error:
-        json_data["error"] = repr(error)
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        json_data["error"] = repr(traceback.format_exception(exc_type, exc_value,
+                                          exc_traceback))
         json_data["success"] = False
+
+        with open(outfile, 'r') as f:
+            json_data["raw_output"] = f.read()
 
     if return_output:
         with open(outfile, 'r') as f:

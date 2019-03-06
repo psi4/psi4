@@ -88,8 +88,8 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time) {
     print_mrccsd_energy(cycle);
     if (converged) {
         print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);
-        Process::environment.globals["CURRENT ENERGY"] = current_energy;
-        Process::environment.globals["MRCC TOTAL ENERGY"] = current_energy;
+        ref_wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
+        ref_wfn_->set_scalar_variable("MRCC TOTAL ENERGY", current_energy);
     }
     return (converged);
 }

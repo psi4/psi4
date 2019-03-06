@@ -39,7 +39,7 @@ molecule.update_geometry()
 natom = molecule.natom()
 
 if sow:
-  findif_meta_dict = driver_findif.hessian_from_energy_geometries(molecule, irrep)
+  findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, irrep)
 
   with open("manual_findif.json", "w") as f:
       import json

@@ -278,13 +278,13 @@ class EmpiricalDispersion(object):
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
 
-        findif_meta_dict = driver_findif.hessian_from_gradient_geometries(molclone, -1)
+        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molclone, -1)
         for displacement in findif_meta_dict["displacements"].values():
             geom_array = np.reshape(displacement["geometry"], (-1, 3))
             molclone.set_geometry(core.Matrix.from_array(geom_array))
             molclone.update_geometry()
             displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
-        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, -1)
+        H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, -1)
         optstash.restore()
         return core.Matrix.from_array(H)
