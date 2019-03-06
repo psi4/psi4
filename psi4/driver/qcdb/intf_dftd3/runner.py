@@ -132,7 +132,6 @@ def run_dftd3_from_arrays(molrec,
     except Exception as err:
         jobrec['success'] = False
         jobrec['error'] += repr(err)
-        raise RuntimeError(err) from err
     else:
         jobrec['success'] = True
         if ptype == "energy":
@@ -141,7 +140,7 @@ def run_dftd3_from_arrays(molrec,
     return jobrec
 
 
-def dftd3_driver(jobrec, verbose=1):
+def dftd3_driver(jobrec, verbose=4):
     """Drive the jobrec@i (input) -> dftd3rec@i -> dftd3rec@io -> jobrec@io (returned) process.
 
     Input Fields
