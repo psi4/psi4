@@ -118,8 +118,8 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
         delta_e_kcal = delta_e * constants.hartree2kcalmol
         int_e_kcal = (
             energy_body_dict[n] - energy_body_dict[1]) * constants.hartree2kcalmol if not embedding else np.nan
-        core.print_out(
-            """     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal, delta_e_kcal))
+        core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal,
+                                                                      delta_e_kcal))
         previous_e = energy_body_dict[n]
     core.print_out("\n")
 
@@ -329,7 +329,7 @@ def build_nbody_compute_list(metadata):
     -------
     metadata : dict of str
         Dictionary containing N-body metadata.
-        
+
         New ``'key': value`` pair:
         ``'compute_dict'`` : dict of str: dict
             Dictionary containing subdicts enumerating compute lists for each possible BSSE treatment.
@@ -547,11 +547,11 @@ def assemble_nbody_components(metadata, component_results):
         ``'nbody_dict'``: dict of str: float64
             Dictionary of relevant N-body psivars to be set
         ``'energy_body_dict'``: dict of int: float64
-            Dictionary of total energies at each N-body level, i.e., ``results['energy_body_dict'][2]`` 
+            Dictionary of total energies at each N-body level, i.e., ``results['energy_body_dict'][2]``
             is the sum of all 2-body total energies for the supersystem.
         ``'ptype_body_dict'``: dict or dict of int: array_like
             Empty dictionary if `ptype is ``'energy'``, or dictionary of total ptype arrays at each
-            N-body level; i.e., ``results['ptype_body_dict'][2]`` for `ptype` ``'gradient'``is the 
+            N-body level; i.e., ``results['ptype_body_dict'][2]`` for `ptype` ``'gradient'``is the
             total 2-body gradient.
     """
     # Unpack metadata
@@ -734,7 +734,7 @@ def assemble_nbody_components(metadata, component_results):
         if metadata['ptype'] != 'energy':
             for n in nbody_range:
                 if n > 1:
-                    vmfc_ptype_body_dict[n] = vmfc_ptype_by_level[n-1]
+                    vmfc_ptype_body_dict[n] = vmfc_ptype_by_level[n - 1]
                 vmfc_ptype_body_dict[n] += vmfc_ptype_by_level[n]
 
         _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)",

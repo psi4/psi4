@@ -26,7 +26,7 @@
 # @END LICENSE
 #
 
-from .proc_table import procedures, hooks, energy_only_methods
+from .proc_table import procedures, hooks, energy_only_methods, integrated_basis_methods
 from .proc import scf_helper, scf_wavefunction_factory
 from .empirical_dispersion import EmpiricalDispersion
 from . import dft

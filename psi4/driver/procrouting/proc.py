@@ -1225,7 +1225,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         else:
             core.set_local_option('SCF', 'GUESS', 'CORE')
 
-    if core.get_global_option('BASIS') == '':
+    if core.get_global_option('BASIS') in ['', '(AUTO)']:
         if name in ['hf3c', 'hf-3c']:
             core.set_global_option('BASIS', 'minix')
         elif name in ['pbeh3c', 'pbeh-3c']:
@@ -3208,6 +3208,10 @@ def run_dmrgscf(name, **kwargs):
     dmrg_wfn = core.dmrg(ref_wfn)
     optstash.restore()
 
+    # Shove variables into global space
+    for k, v in dmrg_wfn.variables().items():
+        core.set_variable(k, v)
+
     return dmrg_wfn
 
 
@@ -3233,6 +3237,10 @@ def run_dmrgci(name, **kwargs):
     dmrg_wfn = core.dmrg(ref_wfn)
     optstash.restore()
 
+    # Shove variables into global space
+    for k, v in dmrg_wfn.variables().items():
+        core.set_variable(k, v)
+
     return dmrg_wfn
 
 
@@ -3243,6 +3251,10 @@ def run_psimrcc(name, **kwargs):
     """
     mcscf_wfn = run_mcscf(name, **kwargs)
     psimrcc_e = core.psimrcc(mcscf_wfn)
+
+    # Shove variables into global space
+    for k, v in mcscf_wfn.variables().items():
+        core.set_variable(k, v)
 
     return mcscf_wfn
 

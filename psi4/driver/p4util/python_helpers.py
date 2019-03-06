@@ -409,13 +409,52 @@ core.VBase.get_np_xyzw = _core_vbase_get_np_xyzw
 ## Python other helps
 
 
-def set_options(options_dict):
+def set_options(options_dict, verbose=1):
+    """Sets Psi4 options from an input dictionary.
+
+    Parameters
+    ----------
+    options_dict : dict
+        Dictionary where keys are "option_name" for global options or
+        "module_name__option_name" (double underscore separation) for
+        option local to "module_name". Values are the option value. All
+        are case insensitive.
+    verbose : int, optional
+        Control print volume.
+
+    Returns
+    -------
+    None
+
     """
-    Sets Psi4 global options from an input dictionary.
-    """
+    optionre = re.compile(r'\A(?P<module>\w+__)?(?P<option>\w+)\Z', re.IGNORECASE)
+    rejected = {}
 
     for k, v, in options_dict.items():
-        core.set_global_option(k.upper(), v)
+        mobj = optionre.match(k)
+        module = mobj.group('module').upper()[:-2] if mobj.group('module') else None
+        option = mobj.group('option').upper()
+
+        if module:
+            if (module, option, v) not in [('SCF', 'GUESS', 'READ')]:
+                # TODO guess/read exception is for distributed driver. should be handled differently.
+                try:
+                    core.set_local_option(module, option, v)
+                except RuntimeError as err:
+                    rejected[k] = v
+                if verbose > 1:
+                    print('Setting: core.set_local_option', module, option, v)
+        else:
+            try:
+                core.set_global_option(option, v)
+            except RuntimeError as err:
+                rejected[k] = v
+            if verbose > 1:
+                print('Setting: core.set_global_option', option, v)
+
+    if rejected:
+        raise ValidationError(f'Error setting options: {rejected}')
+        # TODO could subclass ValidationError and append rejected so that run_json could handle remanants.
 
 
 def set_module_options(module, options_dict):

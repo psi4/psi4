@@ -44,6 +44,7 @@ def run_gaussian_2(name, **kwargs):
     optstash = p4util.OptionsState(
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
+        ['BASIS'],
         ['FREEZE_CORE'],
         ['MP2_TYPE'],
         ['SCF_TYPE'])

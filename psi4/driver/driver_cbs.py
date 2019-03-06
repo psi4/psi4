@@ -28,6 +28,7 @@
 
 import re
 import sys
+import copy
 import math
 
 import numpy as np
@@ -40,9 +41,17 @@ from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
 
-zeta_values = ['d', 't', 'q', '5', '6', '7', '8']
-zeta_val2sym = {k + 2: v for k, v in zip(range(7), zeta_values)}
-zeta_sym2val = {v: k for k, v in zeta_val2sym.items()}
+zeta_values = 'dtq5678'
+_zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
+_zeta_sym2val = {v: k for k, v in _zeta_val2sym.items()}
+_addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
+_lmh_labels = {
+    1: ['HI'],
+    2: ['LO', 'HI'],
+    3: ['LO', 'MD', 'HI'],
+    4: ['LO', 'MD', 'M2', 'HI'],
+    5: ['LO', 'MD', 'M2', 'M3', 'HI']
+}
 
 
 def _expand_bracketed_basis(basisstring, molecule=None):
@@ -69,15 +78,15 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     -------
     tuple
         Tuple in the ``([basis set names], [basis set zetas])`` format.
-    """
 
+    """
     BSET = []
     ZSET = []
     legit_compound_basis = re.compile(
         r'^(?P<pre>.*cc-.*|def2-|.*pcs+eg-|.*)\[(?P<zeta>[dtq2345678,s1]*)\](?P<post>.*z.*|)$', re.IGNORECASE)
     pc_basis = re.compile(r'.*pcs+eg-$', re.IGNORECASE)
     def2_basis = re.compile(r'def2-', re.IGNORECASE)
-    zapa_basis = re.compile(r'.*zapa.*',re.IGNORECASE)
+    zapa_basis = re.compile(r'.*zapa.*', re.IGNORECASE)
 
     if legit_compound_basis.match(basisstring):
         basisname = legit_compound_basis.match(basisstring)
@@ -94,16 +103,16 @@ def _expand_bracketed_basis(basisstring, molecule=None):
         for b in zetas:
             if ZSET and (int(ZSET[len(ZSET) - 1]) - zeta_values.index(b)) != 1:
                 raise ValidationError("""Basis set '%s' has skipped zeta level '%s'.""" %
-                                      (basisstring, zeta_val2sym[zeta_sym2val[b] - 1]))
+                                      (basisstring, _zeta_val2sym[_zeta_sym2val[b] - 1]))
             # reassemble def2-svp* properly instead of def2-dzvp*
             if def2_basis.match(basisname.group('pre')) and b == "d":
                 BSET.append(basisname.group('pre') + "s" + basisname.group('post')[1:])
             # reassemble pc-n basis sets properly
             elif pc_basis.match(basisname.group('pre')):
-                BSET.append(basisname.group('pre') + "{0:d}".format(zeta_sym2val[b] - 1))
+                BSET.append(basisname.group('pre') + "{0:d}".format(_zeta_sym2val[b] - 1))
             # assemble nZaPa basis sets
             elif zapa_basis.match(basisname.group('post')):
-                bzapa = b.replace("d","2").replace("t","3").replace("q","4")
+                bzapa = b.replace("d", "2").replace("t", "3").replace("q", "4")
                 BSET.append(basisname.group('pre') + bzapa + basisname.group('post'))
             else:
                 BSET.append(basisname.group('pre') + b + basisname.group('post'))
@@ -111,7 +120,8 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
         raise ValidationError(
             """Basis series '%s' invalid. Specify a basis series matching"""
-            """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*' or '*pcs[s]eg-[1234]' or '[1234567]ZaPa' """ % (basisstring))
+            """ '*cc-*[dtq2345678,]*z*'. or 'def2-[sdtq]zvp*' or '*pcs[s]eg-[1234]' or '[1234567]ZaPa' """ %
+            (basisstring))
     else:
         BSET.append(basisstring)
         ZSET.append(0)
@@ -126,7 +136,7 @@ def _expand_bracketed_basis(basisstring, molecule=None):
             qcdb.BasisSet.pyconstruct(molecule, "BASIS", basis)
         except qcdb.BasisSetNotFound:
             e = sys.exc_info()[1]
-            raise ValidationError("""Basis set '%s' not available for molecule.""" % (basis))
+            raise ValidationError(f"""Basis set '{basis}' not available for molecule.""")
 
     return (BSET, ZSET)
 
@@ -266,7 +276,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -368,7 +378,7 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -470,7 +480,7 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -574,8 +584,8 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zMD].upper(),
-                                          zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zMD].upper(),
+                                          _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -675,7 +685,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
             #cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n""" % beta
             #cbsscheme += """   Extrapolated Correlation Energy:  % 16.12f\n\n""" % value
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (19 - len(name_str))
@@ -722,6 +732,8 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
         raise ValidationError("corl_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 def return_energy_components():
+    """Define some quantum chemical knowledge, namely what methods are subsumed in others."""
+
     # yapf: disable
     VARH = {}
     VARH['scf'] = {
@@ -882,22 +894,22 @@ def return_energy_components():
                      'mrccsdt(q)': 'CCSDT(Q) TOTAL ENERGY'}
 
     for cilevel in range(2, 99):
-        VARH['ci%s' % (str(cilevel))] = {
+        VARH[f'ci{cilevel}'] = {
                              'hf': 'HF TOTAL ENERGY',
-          'ci%s' % (str(cilevel)): 'CI TOTAL ENERGY'}
+                   f'ci{cilevel}': 'CI TOTAL ENERGY'}
 
     for mplevel in range(5, 99):
-        VARH['mp%s' % (str(mplevel))] = {
+        VARH[f'mp{mplevel}'] = {
                              'hf': 'HF TOTAL ENERGY',
-          'mp%s' % (str(mplevel)): 'MP%s TOTAL ENERGY' % (str(mplevel))}
+                   f'mp{mplevel}': f'MP{mplevel} TOTAL ENERGY'}
         for mplevel2 in range(2, mplevel):
-            VARH['mp%s' % (str(mplevel))]['mp%s' % (str(mplevel2))] = \
-                                      'MP%s TOTAL ENERGY' % (str(mplevel2))
+            VARH[f'mp{mplevel}'][f'mp{mplevel2}'] = f'MP{mplevel2} TOTAL ENERGY'
 
     # Integrate CFOUR methods
     VARH.update(cfour_psivar_list())
     return VARH
     # yapf: enable
+
 
 VARH = return_energy_components()
 
@@ -927,14 +939,14 @@ def _get_default_xtpl(nbasis, xtpl_type):
         elif nbasis == 3:
             return scf_xtpl_helgaker_3
         else:
-            raise ValidationError("Wrong number of basis sets supplied to scf_xtpl: %d" % nbasis)
+            raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
     elif xtpl_type == "corl":
         if nbasis == 2:
             return corl_xtpl_helgaker_2
         else:
-            raise ValidationError("Wrong number of basis sets supplied to corl_xtpl: %d" % nbasis)
+            raise ValidationError(f"Wrong number of basis sets supplied to corl_xtpl: {nbasis}")
     else:
-        raise ValidationError("Stage treatment must be 'corl' or 'scf', not '%s'" % xtpl_type)
+        raise ValidationError(f"Stage treatment must be 'corl' or 'scf', not '{xtpl_type}'")
 
 
 def _validate_cbs_inputs(cbs_metadata, molecule):
@@ -956,13 +968,13 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
     """
 
     metadata = []
-    for item in cbs_metadata:
+    for iitem, item in enumerate(cbs_metadata):
         # 1a) all items must have wfn
         if "wfn" not in item:
-            raise ValidationError("Stage {:d} doesn't have defined level of theory!".format(cbs_metadata.index(item)))
+            raise ValidationError(f"Stage {iitem} doesn't have defined level of theory!")
     # 1b) all items must have basis set
         if "basis" not in item:
-            raise ValidationError("Stage {:d} doesn't have defined basis sets!".format(cbs_metadata.index(item)))
+            raise ValidationError(f"Stage {iitem} doesn't have defined basis sets!")
     # 2a) process required stage parameters and assign defaults
         stage = {}
         stage["wfn"] = item["wfn"].lower()
@@ -990,14 +1002,14 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
             elif len(metadata) == 1:
                 stage["stage"] = "corl"
             else:
-                stage["stage"] = "delta{0:d}".format(len(metadata) - 1)
+                stage["stage"] = f"delta{len(metadata) - 1}"
         stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), stage["treatment"]))
         if len(metadata) > 0:
             stage["wfn_lo"] = item.get("wfn_lo", metadata[-1].get("wfn")).lower()
             stage["basis_lo"] = _expand_bracketed_basis(item.get("basis_lo", item["basis"]).lower(), molecule)
             if len(stage["basis"][0]) != len(stage["basis_lo"][0]):
                 raise ValidationError("""Number of basis sets inconsistent
-                                            between high ({0:d}) and low ({1:d}) levels.""".format(
+                                            between high ({}) and low ({}) levels.""".format(
                     len(stage["basis"][0]), len(stage["basis_lo"][0])))
         stage["alpha"] = item.get("alpha", None)
         stage["options"] = item.get("options", False)
@@ -1036,24 +1048,24 @@ def _process_cbs_kwargs(kwargs):
         possible_stages = ["scf", "corl"]
         while len(possible_stages) > 0:
             sn = possible_stages.pop(0)
-            # either both *_wfn and *_basis have to be specified
-            if "{:s}_wfn".format(sn) in kwargs and "{:s}_basis".format(sn) in kwargs:
-                stage = {"wfn": kwargs["{:s}_wfn".format(sn)], "basis": kwargs["{:s}_basis".format(sn)]}
-            # or we're at a scf stage which can be implied with a provided scf_basis
-            elif sn == "scf" and "{:s}_basis".format(sn) in kwargs:
-                stage = {"wfn": "hf", "basis": kwargs["{:s}_basis".format(sn)]}
-            # otherwise go to the next possible stage
+            if f"{sn}_wfn" in kwargs and f"{sn}_basis" in kwargs:
+                # either both *_wfn and *_basis have to be specified
+                stage = {"wfn": kwargs[f"{sn}_wfn"], "basis": kwargs[f"{sn}_basis"]}
+            elif sn == "scf" and f"{sn}_basis" in kwargs:
+                # or we're at a scf stage which can be implied with a provided scf_basis
+                stage = {"wfn": "hf", "basis": kwargs[f"{sn}_basis"]}
             else:
+                # otherwise go to the next possible stage
                 continue
             # if we made it here, stage exists - parse other keywords
-            if "{:s}_scheme".format(sn) in kwargs:
-                stage["scheme"] = kwargs["{:s}_scheme".format(sn)]
-            if "{:s}_wfn_lesser".format(sn) in kwargs:
-                stage["wfn_lo"] = kwargs["{:s}_wfn_lesser".format(sn)]
-            if "cbs_{:s}_alpha".format(sn) in kwargs:
-                stage["alpha"] = kwargs["cbs_{:s}_alpha".format(sn)]
-            elif "{:s}_alpha".format(sn) in kwargs:
-                stage["alpha"] = kwargs["{:s}_alpha".format(sn)]
+            if f"{sn}_scheme" in kwargs:
+                stage["scheme"] = kwargs[f"{sn}_scheme"]
+            if f"{sn}_wfn_lesser" in kwargs:
+                stage["wfn_lo"] = kwargs[f"{sn}_wfn_lesser"]
+            if f"cbs_{sn}_alpha" in kwargs:
+                stage["alpha"] = kwargs[f"cbs_{sn}_alpha"]
+            elif f"{sn}_alpha" in kwargs:
+                stage["alpha"] = kwargs[f"{sn}_alpha"]
             cbs_metadata.append(stage)
             if sn == "corl":
                 possible_stages.append("delta")
@@ -1763,13 +1775,8 @@ def cbs(func, label, **kwargs):
         return finalquantity
 
 
-_lmh_labels = {
-    1: ['HI'],
-    2: ['LO', 'HI'],
-    3: ['LO', 'MD', 'HI'],
-    4: ['LO', 'MD', 'M2', 'HI'],
-    5: ['LO', 'MD', 'M2', 'M3', 'HI']
-}
+######### COMPUTE / ASSEMBLE
+######### ASSEMBLE / REPORT
 
 
 def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom):
@@ -1821,7 +1828,7 @@ complete_basis_set = cbs
 
 def _cbs_wrapper_methods(**kwargs):
     """ A helper function for the driver to enumerate methods used in the
-    cbs calculation.
+    stages of a cbs calculation.
 
     Parameters
     ----------
@@ -1832,7 +1839,7 @@ def _cbs_wrapper_methods(**kwargs):
     Returns
     -------
     list
-        List containing method names.
+        List containing method name for each active stage.
     """
 
     cbs_methods = []
@@ -1841,7 +1848,7 @@ def _cbs_wrapper_methods(**kwargs):
             cbs_methods.append(item.get("wfn"))
     else:
         cbs_method_kwargs = ['scf_wfn', 'corl_wfn', 'delta_wfn']
-        cbs_method_kwargs += ['delta%d_wfn' % x for x in range(2, 6)]
+        cbs_method_kwargs += [f'delta{x}_wfn' for x in range(2, 6)]
         for method in cbs_method_kwargs:
             if method in kwargs:
                 cbs_methods.append(kwargs[method])
@@ -1876,10 +1883,10 @@ def _parse_cbs_gufunc_string(method_name):
     basis_list = []
     for num, method_str in enumerate(method_name_list):
         if (method_str.count("[") > 1) or (method_str.count("]") > 1):
-            raise ValidationError("""CBS gufunc: Too many brackets given! %s """ % method_str)
+            raise ValidationError(f"""CBS gufunc: Too many brackets given! {method_str}""")
 
         if method_str.count('/') != 1:
-            raise ValidationError("""CBS gufunc: All methods must specify a basis with '/'. %s""" % method_str)
+            raise ValidationError(f"""CBS gufunc: All methods must specify a basis with '/'. {method_str}""")
 
         if num > 0:
             method_str = method_str.strip()
@@ -1895,7 +1902,7 @@ def _parse_cbs_gufunc_string(method_name):
 
 def _cbs_gufunc(func, total_method_name, **kwargs):
     """
-    A text based wrapper of the CBS function. Provided to handle "method/basis"
+    A text based parser of the CBS method string. Provided to handle "method/basis"
     specification of the requested calculations. Also handles "simple" (i.e.
     one-method and one-basis) calls.
 
@@ -1993,7 +2000,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         stage['stage'] = "corl"
         stage['treatment'] = "corl"
     metadata.append(stage)
-    
+
     # "method/basis" syntax only allows for one delta correction
     # via "method/basis+D:delta/basis". Maximum length of method_list is 2.
     if len(method_list) == 2:

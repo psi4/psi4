@@ -34,6 +34,7 @@ properties, and vibrational frequency calculations.
 import os
 import re
 import sys
+import copy
 import json
 import shutil
 
@@ -705,7 +706,7 @@ def gradient(name, **kwargs):
             print('Performing finite difference calculations')
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.gradient_from_energy_geometries(molecule)
+        findif_meta_dict = driver_findif.gradient_from_energies_geometries(molecule)
         ndisp = len(findif_meta_dict["displacements"]) + 1
 
         print(""" %d displacements needed ...""" % (ndisp), end='')
@@ -724,7 +725,7 @@ def gradient(name, **kwargs):
 
         # Compute the gradient
         core.set_local_option('FINDIF', 'GRADIENT_WRITE', True)
-        G = driver_findif.compute_gradient_from_energies(findif_meta_dict)
+        G = driver_findif.assemble_gradient_from_energies(findif_meta_dict)
         grad_psi_matrix = core.Matrix.from_array(G)
         grad_psi_matrix.print_out()
         wfn.set_gradient(grad_psi_matrix)
@@ -1286,7 +1287,7 @@ def hessian(name, **kwargs):
             """hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_gradient_geometries(molecule, irrep)
+        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molecule, irrep)
 
         # Record undisplaced symmetry for projection of displaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
@@ -1309,7 +1310,7 @@ def hessian(name, **kwargs):
 
         # Assemble Hessian from gradients
         #   Final disp is undisp, so wfn has mol, G, H general to freq calc
-        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, irrep)
+        H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
@@ -1330,7 +1331,7 @@ def hessian(name, **kwargs):
         optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_energy_geometries(molecule, irrep)
+        findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, irrep)
 
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_parent_symmetry(molecule.schoenflies_symbol())
@@ -1352,7 +1353,7 @@ def hessian(name, **kwargs):
             core.set_variable(key, val)
 
         # Assemble Hessian from energies
-        H = driver_findif.compute_hessian_from_energies(findif_meta_dict, irrep)
+        H = driver_findif.assemble_hessian_from_energies(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
 
