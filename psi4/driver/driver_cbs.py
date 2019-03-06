@@ -28,6 +28,7 @@
 
 import re
 import sys
+import copy
 import math
 
 import numpy as np
@@ -40,9 +41,17 @@ from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
 
-zeta_values = ['d', 't', 'q', '5', '6', '7', '8']
-zeta_val2sym = {k + 2: v for k, v in zip(range(7), zeta_values)}
-zeta_sym2val = {v: k for k, v in zeta_val2sym.items()}
+zeta_values = 'dtq5678'
+_zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
+_zeta_sym2val = {v: k for k, v in _zeta_val2sym.items()}
+_addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
+_lmh_labels = {
+    1: ['HI'],
+    2: ['LO', 'HI'],
+    3: ['LO', 'MD', 'HI'],
+    4: ['LO', 'MD', 'M2', 'HI'],
+    5: ['LO', 'MD', 'M2', 'M3', 'HI']
+}
 
 
 def _expand_bracketed_basis(basisstring, molecule=None):
