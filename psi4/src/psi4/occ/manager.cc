@@ -222,6 +222,10 @@ void OCCWave::omp2_manager() {
         Process::environment.globals["SCSN-OMP2 TOTAL ENERGY"] = Escsnmp2;
         Process::environment.globals["SCS-OMP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
         Process::environment.globals["SOS-PI-OMP2 TOTAL ENERGY"] = Esospimp2;
+
+        // LAB: variables_ and energy_ here are what I vouch for and test.
+        //      The P::e.globals will diminish and go into the West and be
+        //      replaced by qcvar formulas computed py-side from wfn vars.
         energy_ = Emp2L;
         variables_["CURRENT ENERGY"] = Emp2L;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;

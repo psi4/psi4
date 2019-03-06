@@ -137,7 +137,7 @@ def multi_level(func, **kwargs):
                             is_embedded)
 
     if not kwargs['return_total_data']:
-        # Remove monomer cotribution for interaction data
+        # Remove monomer contribution for interaction data
         energy_result -= energy_body_dict[kwargs['bsse_type'][0]][1]
         if ptype in ['gradient', 'hessian']:
             gradient_result -= gradient1
@@ -146,10 +146,10 @@ def multi_level(func, **kwargs):
     wfn_out = core.Wavefunction.build(molecule, 'def2-svp')
     core.set_variable("CURRENT ENERGY", energy_result)
     wfn_out.set_variable("CURRENT ENERGY", energy_result)
-    gradient_result = core.Matrix.from_array(gradient_result) if gradient_result is not None else None
-    wfn_out.set_gradient(gradient_result)
-    hessian_result = core.Matrix.from_array(hessian_result) if hessian_result is not None else None
-    wfn_out.set_hessian(hessian_result)
+    if gradient_result is not None:
+        wfn_out.set_gradient(core.Matrix.from_array(gradient_result))
+    if hessian_result is not None:
+        wfn_out.set_hessian(core.Matrix.from_array(hessian_result) )
     ptype_result = eval(ptype + '_result')
     for b in kwargs['bsse_type']:
         for i in energy_body_dict[b]:
