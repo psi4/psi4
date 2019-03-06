@@ -1811,94 +1811,112 @@ def run_occ(name, **kwargs):
         ['OCC', 'WFN_TYPE'])
 
     if name == 'mp2':
+        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp2':
+        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'scs-omp2':
+        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif name == 'scs(n)-omp2':
+        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif name == 'scs-omp2-vdw':
+        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
     elif name == 'sos-omp2':
+        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif name == 'sos-pi-omp2':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     elif name == 'mp2.5':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp2.5':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
 
     elif name == 'mp3':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp3':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'scs-omp3':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif name == 'scs(n)-omp3':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif name == 'scs-omp3-vdw':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
     elif name == 'sos-omp3':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif name == 'sos-pi-omp3':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     elif name == 'lccd':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'olccd':
+        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
@@ -1920,7 +1938,7 @@ def run_occ(name, **kwargs):
     occ_wfn = core.occ(ref_wfn)
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2', 'scs-omp2', 'scs(n)-omp2', 'scs-omp2-vdw', 'sos-omp2']:
+    if vars_on_wfn:
         for k, v in occ_wfn.variables().items():
             core.set_variable(k, v)
 
