@@ -5,7 +5,7 @@ import psi4
 pytestmark = pytest.mark.quick
 
 
-def test_xtpl_fn_fn_error():
+def hide_test_xtpl_fn_fn_error():
     psi4.geometry('He')
 
     with pytest.raises(psi4.UpgradeHelper) as e:
@@ -14,7 +14,7 @@ def test_xtpl_fn_fn_error():
     assert 'Replace extrapolation function with function name' in str(e)
 
 
-def test_xtpl_cbs_fn_error():
+def hide_test_xtpl_cbs_fn_error():
     psi4.geometry('He')
 
     with pytest.raises(psi4.UpgradeHelper) as e:

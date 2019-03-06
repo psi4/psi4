@@ -847,7 +847,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def gradient_from_energy_geometries(molecule):
+def gradient_from_energies_geometries(molecule):
     """
     Generate geometries for a gradient by finite difference of energies.
     
@@ -869,7 +869,7 @@ def gradient_from_energy_geometries(molecule):
     return _geom_generator(molecule, -1, "1_0")
 
 
-def hessian_from_gradient_geometries(molecule, irrep):
+def hessian_from_gradients_geometries(molecule, irrep):
     """
     Generate geometries for a hessian by finite difference of energies.
     
@@ -889,7 +889,7 @@ def hessian_from_gradient_geometries(molecule, irrep):
     return _geom_generator(molecule, irrep, "2_1")
 
 
-def hessian_from_energy_geometries(molecule, irrep):
+def hessian_from_energies_geometries(molecule, irrep):
     """
     Generate geometries for a hessian by finite difference of energies.
     

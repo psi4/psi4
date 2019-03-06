@@ -276,7 +276,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -378,7 +378,7 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -480,7 +480,7 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -584,8 +584,8 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % (alpha)
             cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n\n""" % (beta)
 
-            name_str = "%s/(%s,%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zMD].upper(),
-                                          zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zMD].upper(),
+                                          _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (18 - len(name_str))
@@ -685,7 +685,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
             #cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n""" % beta
             #cbsscheme += """   Extrapolated Correlation Energy:  % 16.12f\n\n""" % value
 
-            name_str = "%s/(%s,%s)" % (functionname.upper(), zeta_val2sym[zLO].upper(), zeta_val2sym[zHI].upper())
+            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
             cbsscheme += name_str + ':'
             cbsscheme += " " * (19 - len(name_str))
