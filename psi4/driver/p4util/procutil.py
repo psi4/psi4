@@ -280,19 +280,14 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
         if allvital:
             raise ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (sowout))
         else:
-            ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (sowout))
             return 0.0
     else:
         while True:
             line = freagent.readline()
             if not line:
                 if E == 0.0:
-                    if allvital:
-                        raise ValidationError(
-                            'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
-                    else:
-                        ValidationError(
-                            'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
+                    raise ValidationError(
+                        'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
                 break
             s = line.strip().split(None, 10)
             if (len(s) != 0) and (s[0:3] == [quantity, 'RESULT:', 'computation']):

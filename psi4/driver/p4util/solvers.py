@@ -539,6 +539,7 @@ class SolverEngine(ABC):
         """
         pass
 
+    @staticmethod
     @abstractmethod
     def vector_dot(X, Y):
         """Compute a dot product between two `vectors`
