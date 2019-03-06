@@ -221,7 +221,7 @@ def test_ccl_functional(functional, ccl_functional):
         gamma_bb[index] = point['gamma_bb']
         index = index + 1
 
-    super = build_superfunctional(functional, True, N, 1)
+    super = build_superfunctional(functional, True, npoints=N, deriv=1)
     super.test_functional(rho_a, rho_b, gamma_aa, gamma_ab, gamma_bb, tau_a, tau_b)
 
     v = super.value('V')
