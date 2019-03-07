@@ -157,7 +157,7 @@ def mcscf_solver(ref_wfn):
 
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
-        ci_grad_rms = core.variable("DETCI AVG DVEC NORM")
+        ci_grad_rms = ciwfn.variable("DETCI AVG DVEC NORM")
 
         # Update MCSCF object
         Cocc = ciwfn.get_orbitals("DOCC")
@@ -167,7 +167,7 @@ def mcscf_solver(ref_wfn):
         tpdm = ciwfn.get_tpdm("SUM", True)
         mcscf_obj.update(Cocc, Cact, Cvir, opdm, tpdm)
 
-        current_energy = core.variable("MCSCF TOTAL ENERGY")
+        current_energy = ciwfn.variable("MCSCF TOTAL ENERGY")
 
         orb_grad_rms = mcscf_obj.gradient_rms()
         ediff = current_energy - eold
@@ -300,8 +300,9 @@ def mcscf_solver(ref_wfn):
         current_energy = mcscf_obj.current_total_energy()
         current_energy += mcscf_nuclear_energy
 
-        core.set_variable("CI ROOT %d TOTAL ENERGY" % 1, current_energy)
-        core.set_variable("CURRENT ENERGY", current_energy)
+        ciwfn.set_variable("CI ROOT %d TOTAL ENERGY" % 1, current_energy)
+        ciwfn.set_variable("CURRENT ENERGY", current_energy)
+        ciwfn.set_energy(current_energy)
 
         docc_energy = mcscf_obj.current_docc_energy()
         ci_energy = mcscf_obj.current_ci_energy()
@@ -373,7 +374,8 @@ def mcscf_solver(ref_wfn):
     proc_util.print_ci_results(ciwfn, "MCSCF", scf_energy, current_energy, print_opdm_no=True)
 
     # Set final energy
-    core.set_variable("CURRENT ENERGY", core.variable("MCSCF TOTAL ENERGY"))
+    ciwfn.set_variable("CURRENT ENERGY", ciwfn.variable("MCSCF TOTAL ENERGY"))
+    ciwfn.set_energy(ciwfn.variable("MCSCF TOTAL ENERGY"))
 
     # What do we need to cleanup?
     if core.get_option("DETCI", "MCSCF_CI_CLEANUP"):

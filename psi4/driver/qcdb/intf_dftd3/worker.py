@@ -68,7 +68,7 @@ def dftd3_subprocess(dftd3rec):  # dftd3rec@i -> dftd3rec@io
     if 'scratch_location' in dftd3rec:
         basedir = dftd3rec['scratch_location']
     else:
-        basedir = os.environ['HOME'] + os.sep
+        basedir = os.path.expanduser('~') + os.sep
     dftd3_tmpdir = basedir + 'dftd3_' + str(uuid.uuid4())[:8]
     if not os.path.exists(dftd3_tmpdir):
         os.mkdir(dftd3_tmpdir)
