@@ -29,12 +29,12 @@
 import collections
 
 import numpy as np
+import qcengine as qcng
 
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import driver_findif
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.qcdb import intf_dftd3
 from psi4.driver.qcdb import interface_gcp as gcp
 
 _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
@@ -77,11 +77,11 @@ class EmpiricalDispersion(object):
         corresponds to a defined, named, untweaked "functional-dashlevel"
         set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
-        See description in `qcdb.intf_dftd3.dashparam.from_arrays`. Used
+        See description in `qcengine.programs.dftd3.dashparam.from_arrays`. Used
         here to "bless" the dispersion definitions attached to
         the procedures/dft/*_functionals-defined dictionaries
         as legit, non-custom, and of equal validity to
-        `qcdb.intf_dftd3.dashparam.dashcoeff` itself for purposes of
+        `qcengine.programs.dftd3.dashparam.dashcoeff` itself for purposes of
         validating `fctldash`.
     engine : {'libdisp', 'dftd3', 'nl'}
         Compute engine for dispersion. One of Psi4's internal libdisp
@@ -121,7 +121,7 @@ class EmpiricalDispersion(object):
         from .dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
 
-        resolved = intf_dftd3.from_arrays(
+        resolved = qcng.programs.dftd3.from_arrays(
             name_hint=name_hint,
             level_hint=level_hint,
             param_tweaks=param_tweaks,
@@ -129,9 +129,9 @@ class EmpiricalDispersion(object):
         self.fctldash = resolved['fctldash']
         self.dashlevel = resolved['dashlevel']
         self.dashparams = resolved['dashparams']
-        self.description = intf_dftd3.dashcoeff[self.dashlevel]['description']
-        self.ordered_params = intf_dftd3.dashcoeff[self.dashlevel]['default'].keys()
-        self.dashlevel_citation = intf_dftd3.dashcoeff[self.dashlevel]['citation']
+        self.description = qcng.programs.dftd3.dashcoeff[self.dashlevel]['description']
+        self.ordered_params = qcng.programs.dftd3.dashcoeff[self.dashlevel]['default'].keys()
+        self.dashlevel_citation = qcng.programs.dftd3.dashcoeff[self.dashlevel]['citation']
         self.dashparams_citation = resolved['dashparams_citation']
 
         engine = kwargs.pop('engine', None)
@@ -185,7 +185,7 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine == 'dftd3':
-            jobrec = intf_dftd3.run_dftd3_from_arrays(
+            jobrec = qcng.programs.dftd3.run_dftd3_from_arrays(
                 molrec=molecule.to_dict(np_out=False),
                 name_hint=self.fctldash,
                 level_hint=self.dashlevel,
@@ -226,7 +226,7 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine == 'dftd3':
-            jobrec = intf_dftd3.run_dftd3_from_arrays(
+            jobrec = qcng.programs.dftd3.run_dftd3_from_arrays(
                 molrec=molecule.to_dict(np_out=False),
                 name_hint=self.fctldash,
                 level_hint=self.dashlevel,
