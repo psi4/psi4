@@ -194,10 +194,10 @@ class EmpiricalDispersion(object):
                 ptype='energy',
                 verbose=1)
 
-            dashd_part = float(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'].data)
-            for k, qca in jobrec['qcvars'].items():
-                if not isinstance(qca.data, np.ndarray):
-                    core.set_variable(k, qca.data)
+            dashd_part = float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
@@ -235,10 +235,10 @@ class EmpiricalDispersion(object):
                 ptype='gradient',
                 verbose=1)
 
-            dashd_part = core.Matrix.from_array(jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data)
-            for k, qca in jobrec['qcvars'].items():
-                if not isinstance(qca.data, np.ndarray):
-                    core.set_variable(k, qca.data)
+            dashd_part = core.Matrix.from_array(np.array(jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)
