@@ -19,8 +19,8 @@ else()
 
     ExternalProject_Add(qcengine_external
         BUILD_ALWAYS 1
-        GIT_REPOSITORY https://github.com/MolSSI/QCEngine
-        GIT_TAG v0.6.0
+        #URL https://github.com/MolSSI/QCEngine/archive/v0.6.0.tar.gz
+        URL https://github.com/loriab/QCEngine/archive/dftd3class.tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
