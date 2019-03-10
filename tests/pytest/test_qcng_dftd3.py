@@ -9,6 +9,7 @@ import qcengine as qcng
 from qcengine.programs import dftd3
 from qcengine.testing import is_psi4_new_enough, using_dftd3, using_dftd3_321, using_psi4, using_qcdb
 
+pytestmark = [pytest.mark.quick]
 
 @using_dftd3
 @pytest.mark.parametrize("method", [
