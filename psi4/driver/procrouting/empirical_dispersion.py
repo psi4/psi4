@@ -185,14 +185,24 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine == 'dftd3':
-            jobrec = qcng.programs.dftd3.run_dftd3_from_arrays(
-                molrec=molecule.to_dict(np_out=False),
-                name_hint=self.fctldash,
-                level_hint=self.dashlevel,
-                param_tweaks=self.dashparams,
-                dashcoeff_supplement=self.dashcoeff_supplement,
-                ptype='energy',
-                verbose=1)
+            resinp = {
+                'schema_name': 'qcschema_input',
+                'schema_version': 1,
+                'molecule': molecule.to_schema(dtype=2),
+                'driver': 'energy',
+                'model': {
+                    'method': self.fctldash,
+                    'basis': '(auto)',
+                },
+                'keywords': {
+                    'level_hint': self.dashlevel,
+                    'params_tweaks': self.dashparams,
+                    'dashcoeff_supplement': self.dashcoeff_supplement,
+                    'verbose': 1,
+                },
+            }
+            jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+            jobrec = jobrec.dict()
 
             dashd_part = float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
             for k, qca in jobrec['extras']['qcvars'].items():
@@ -226,14 +236,24 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine == 'dftd3':
-            jobrec = qcng.programs.dftd3.run_dftd3_from_arrays(
-                molrec=molecule.to_dict(np_out=False),
-                name_hint=self.fctldash,
-                level_hint=self.dashlevel,
-                param_tweaks=self.dashparams,
-                dashcoeff_supplement=self.dashcoeff_supplement,
-                ptype='gradient',
-                verbose=1)
+            resinp = {
+                'schema_name': 'qcschema_input',
+                'schema_version': 1,
+                'molecule': molecule.to_schema(dtype=2),
+                'driver': 'gradient',
+                'model': {
+                    'method': self.fctldash,
+                    'basis': '(auto)',
+                },
+                'keywords': {
+                    'level_hint': self.dashlevel,
+                    'params_tweaks': self.dashparams,
+                    'dashcoeff_supplement': self.dashcoeff_supplement,
+                    'verbose': 1,
+                },
+            }
+            jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+            jobrec = jobrec.dict()
 
             dashd_part = core.Matrix.from_array(np.array(jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
             for k, qca in jobrec['extras']['qcvars'].items():

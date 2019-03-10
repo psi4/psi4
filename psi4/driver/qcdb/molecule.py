@@ -1283,20 +1283,29 @@ class Molecule(LibmintsMolecule):
 
         """
         import qcengine as qcng
-        #from . import intf_dftd3
 
         if dertype is None:
             derint, derdriver = -1, 'gradient'
         else:
             derint, derdriver = parse_dertype(dertype, max_derivative=1)
 
-        jobrec = qcng.programs.dftd3.run_dftd3_from_arrays(
-            molrec=self.to_dict(np_out=False),
-            name_hint=func,
-            level_hint=dashlvl,
-            param_tweaks=dashparam,
-            ptype=derdriver,
-            verbose=verbose)
+        resinp = {
+            'schema_name': 'qcschema_input',
+            'schema_version': 1,
+            'molecule': self.to_schema(dtype=2),
+            'driver': derdriver,
+            'model': {
+                'method': func,
+                'basis': '(auto)',
+            },
+            'keywords': {
+                'level_hint': dashlvl,
+                'params_tweaks': dashparam,
+                'verbose': verbose,
+            },
+        }
+        jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+        jobrec = jobrec.dict()
 
         # hack as not checking type GRAD
         for k, qca in jobrec['extras']['qcvars'].items():

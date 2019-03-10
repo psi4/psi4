@@ -433,7 +433,6 @@ def eneyne_ne_psi4mols():
     if not is_psi4_new_enough("1.3rc2"):
         pytest.skip("Psi4 requires at least Psi4 v1.3rc2")
     import psi4
-    print(psi4.__file__, psi4.__version__)
 
     eneyne = psi4.core.Molecule.from_string(seneyne)
     ne = psi4.core.Molecule.from_string(sne)
@@ -454,19 +453,19 @@ def eneyne_ne_psi4mols():
 
 def eneyne_ne_qcschemamols():
 
-    eneyne = qcel.molparse.to_schema(qcel.molparse.from_string(seneyne)['qm'], dtype=1)
-    mA = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[:7]))['qm'], dtype=1)
-    mB = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[-4:]))['qm'], dtype=1)
-    ne = qcel.molparse.to_schema(qcel.molparse.from_string(sne)['qm'], dtype=1)
+    eneyne = qcel.molparse.to_schema(qcel.molparse.from_string(seneyne)['qm'], dtype=2)
+    mA = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[:7]))['qm'], dtype=2)
+    mB = qcel.molparse.to_schema(qcel.molparse.from_string('\n'.join(seneyne.splitlines()[-4:]))['qm'], dtype=2)
+    ne = qcel.molparse.to_schema(qcel.molparse.from_string(sne)['qm'], dtype=2)
 
     mAgB = qcel.molparse.from_string(seneyne)['qm']
     mAgB['real'] = [(iat < mAgB['fragment_separators'][0])
                     for iat in range(len(mAgB['elem']))]  # works b/c chgmult doesn't need refiguring
-    mAgB = qcel.molparse.to_schema(mAgB, dtype=1)
+    mAgB = qcel.molparse.to_schema(mAgB, dtype=2)
 
     gAmB = qcel.molparse.from_string(seneyne)['qm']
     gAmB['real'] = [(iat >= gAmB['fragment_separators'][0]) for iat in range(len(gAmB['elem']))]
-    gAmB = qcel.molparse.to_schema(gAmB, dtype=1)
+    gAmB = qcel.molparse.to_schema(gAmB, dtype=2)
 
     mols = {
         'eneyne': {
@@ -597,13 +596,27 @@ def test_dftd3__from_arrays__supplement():
     assert compare_recursive(ans, res, tnm() + ' idempotent', atol=1.e-4)
 
 
-# still trouble? let's try without @pytest.mark.xfail(True, reason='only on windows? this wont be around long', run=True)
 @using_dftd3
 def test_3():
     sys = qcel.molparse.from_string(seneyne)['qm']
 
-    res = dftd3.run_dftd3_from_arrays(molrec=sys, name_hint='b3lyp', level_hint='d3bj')
-    assert compare('B3LYP-D3(BJ)', _compute_key(res['keywords']), 'key')
+    resinp = {
+        'schema_name': 'qcschema_input',
+        'schema_version': 1,
+        'molecule': qcel.molparse.to_schema(sys, dtype=2),
+        'driver': 'energy',
+        'model': {
+            'method': 'b3lyp',
+        },
+        'keywords': {
+            'level_hint': 'd3bj'
+        },
+    }
+    res = qcng.compute(resinp, 'dftd3', raise_error=True)
+    res = res.dict()
+
+    #res = dftd3.run_dftd3_from_arrays(molrec=sys, name_hint='b3lyp', level_hint='d3bj')
+    assert compare('B3LYP-D3(BJ)', _compute_key(res['extras']['info']), 'key')
 
 
 @using_dftd3
@@ -628,8 +641,8 @@ def test_3():
         #({'first': 'pbe', 'second': 'atm(gr)', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'ATM'}),
         #({'first': '', 'second': 'ATMgr', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'ATM'}),
         # below two xfail until dftd3 that's only 2-body is out of psi4 proper
-        pytest.param({'first': 'atmgr', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'ATM'}, marks=[using_dftd3_321]),
-        pytest.param({'first': 'pbe-atmgr', 'second': None, 'parent': 'ne', 'subject': 'atom', 'lbl': 'ATM'}, marks=[using_dftd3_321]),
+        pytest.param({'first': 'atmgr', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'ATM'}, marks=[using_dftd3_321, pytest.mark.xfail]),
+        pytest.param({'first': 'pbe-atmgr', 'second': None, 'parent': 'ne', 'subject': 'atom', 'lbl': 'ATM'}, marks=[using_dftd3_321, pytest.mark.xfail]),
     ])  # yapf: disable
 def test_molecule__run_dftd3__23body(inp, subjects):
     subject = subjects()[inp['parent']][inp['subject']]
@@ -687,18 +700,22 @@ def test_dftd3__run_dftd3__2body(inp, subjects, request):
     gexpected = gref[inp['parent']][inp['lbl']][inp['subject']].ravel()
 
     if 'qcmol' in request.node.name:
-        subject.update({
-            'model': {
-                'method': inp['name']
-            },
-            'driver': 'gradient',
-            'keywords': {},
-            'schema_name': 'qcschema_input',
-            'schema_version': 1
-        })
-        jrec = dftd3.run_json(subject)
+        mol = subject
     else:
-        jrec = dftd3.run_dftd3(inp['name'], subject, options={}, ptype='gradient')
+        mol = subject.to_schema(dtype=2)
+
+    resinp = {
+        'schema_name': 'qcschema_input',
+        'schema_version': 1,
+        'molecule': mol,
+        'driver': 'gradient',
+        'model': {
+            'method': inp['name']
+        },
+        'keywords': {},
+    }
+    jrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+    jrec = jrec.dict()
 
     assert len(jrec['extras']['qcvars']) == 8
 
@@ -738,18 +755,22 @@ def test_dftd3__run_dftd3__3body(inp, subjects, request):
     gexpected = gref[inp['parent']][inp['lbl']][inp['subject']].ravel()
 
     if 'qcmol' in request.node.name:
-        subject.update({
-            'model': {
-                'method': inp['name']
-            },
-            'driver': 'gradient',
-            'keywords': {},
-            'schema_name': 'qcschema_input',
-            'schema_version': 1
-        })
-        jrec = dftd3.run_json(subject)
+        mol = subject
     else:
-        jrec = dftd3.run_dftd3(inp['name'], subject, options={}, ptype='gradient')
+        mol = subject.to_schema(dtype=2)
+
+    resinp = {
+        'schema_name': 'qcschema_input',
+        'schema_version': 1,
+        'molecule': mol,
+        'driver': 'gradient',
+        'model': {
+            'method': inp['name']
+        },
+        'keywords': {},
+    }
+    jrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+    jrec = jrec.dict()
 
     assert len(jrec['extras']['qcvars']) == 8
 
