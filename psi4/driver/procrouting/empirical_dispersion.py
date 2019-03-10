@@ -40,6 +40,7 @@ from psi4.driver.qcdb import interface_gcp as gcp
 _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
                                           ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
                                           ('nl', ['nl']),
+                                          ('mp2d', ['dmp2']),
                                         ]) # yapf: disable
 
 _capable_engines_for_disp = collections.defaultdict(list)
@@ -53,7 +54,7 @@ class EmpiricalDispersion(object):
 
     Attributes
     ----------
-    dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl'}
+    dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `dashparam.dashcoeff`.
@@ -184,7 +185,7 @@ class EmpiricalDispersion(object):
             Set if `fctldash` nonempty.
 
         """
-        if self.engine == 'dftd3':
+        if self.engine in ['dftd3', 'mp2d']:
             resinp = {
                 'schema_name': 'qcschema_input',
                 'schema_version': 1,
@@ -201,7 +202,7 @@ class EmpiricalDispersion(object):
                     'verbose': 1,
                 },
             }
-            jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
             jobrec = jobrec.dict()
 
             dashd_part = float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
@@ -214,6 +215,7 @@ class EmpiricalDispersion(object):
                 dashd_part += gcp_part
 
             return dashd_part
+
         else:
             ene = self.disp.compute_energy(molecule)
             core.set_variable('DISPERSION CORRECTION ENERGY', ene)
@@ -235,7 +237,7 @@ class EmpiricalDispersion(object):
             (nat, 3) dispersion gradient [Eh/a0].
 
         """
-        if self.engine == 'dftd3':
+        if self.engine in ['dftd3', 'mp2d']:
             resinp = {
                 'schema_name': 'qcschema_input',
                 'schema_version': 1,
@@ -252,7 +254,7 @@ class EmpiricalDispersion(object):
                     'verbose': 1,
                 },
             }
-            jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
             jobrec = jobrec.dict()
 
             dashd_part = core.Matrix.from_array(np.array(jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))

@@ -7,7 +7,7 @@ from qcelemental.testing import compare, compare_recursive, compare_values, tnm
 
 import qcengine as qcng
 from qcengine.programs import dftd3
-from qcengine.testing import is_psi4_new_enough, using_dftd3, using_dftd3_321, using_psi4, using_qcdb
+from qcengine.testing import is_psi4_new_enough, using_dftd3, using_dftd3_321, using_psi4, using_qcdb, using_mp2d
 
 pytestmark = [pytest.mark.quick]
 
@@ -529,6 +529,19 @@ chg = {
     'fctldash': 'chg',
 }
 
+dmp2dmp2 = {
+    'dashlevel': 'dmp2',
+    'dashparams': {
+        's8': 1.187,
+        'a1': 0.944,
+        'a2': 0.480,
+        'rcut': 0.72,
+        'w': 0.20,
+    },
+    'dashparams_citation': '',
+    'fctldash': 'mp2-dmp2'
+}
+
 
 def _compute_key(pjrec):
     return pjrec['fctldash'].upper()
@@ -551,6 +564,8 @@ def _compute_key(pjrec):
     (({'name_hint': 'atmgr'}, 'ATM(GR)'), atmgr),
     (({'name_hint': 'bp86-atmgr'}, 'ATM(GR)'), atmgr),
     (({'name_hint': 'asdf-chg'}, 'CHG'), chg),
+    (({'name_hint': 'mp2-dmp2'}, 'MP2-DMP2'), dmp2dmp2),
+    (({'name_hint': 'MP2', 'level_hint': 'dmp2'}, 'MP2-DMP2'), dmp2dmp2),
 ])  # yapf: disable
 def test_dftd3__from_arrays(inp, expected):
     res = dftd3.from_arrays(**inp[0])
@@ -675,6 +690,54 @@ def test_qcdb__energy_d3():
                           tnm())
     assert compare_values(ref['eneyne']['B3LYP-D3(BJ)']['mA'],
                           jrec['qcvars']['B3LYP-D3(BJ) DISPERSION CORRECTION ENERGY'].data, 7, tnm())
+
+
+@using_mp2d
+@pytest.mark.parametrize(
+    "subjects",
+    [
+        pytest.param(eneyne_ne_psi4mols, marks=using_psi4),
+        pytest.param(eneyne_ne_qcdbmols,
+                     marks=using_psi4),  # needs qcdb.Molecule, presently more common in psi4 than in qcdb
+        pytest.param(eneyne_ne_qcschemamols),
+    ],
+    ids=['qmol', 'pmol', 'qcmol'])
+@pytest.mark.parametrize("inp", [
+    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'dimer', 'lbl': 'MP2-DMP2'}),
+    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'mA', 'lbl': 'MP2-DMP2'}),
+    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'mB', 'lbl': 'MP2-DMP2'}),
+    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'gAmB', 'lbl': 'MP2-DMP2'}),
+    ({'parent': 'eneyne', 'name': 'mp2d-mp2-dmp2', 'subject': 'mAgB', 'lbl': 'MP2-DMP2'}),
+    ({'parent': 'ne', 'name': 'mp2d-mp2-dmp2', 'subject': 'atom', 'lbl': 'MP2-DMP2'}),
+])  # yapf: disable
+def test_mp2d__run_mp2d__2body(inp, subjects, request):
+    subject = subjects()[inp['parent']][inp['subject']]
+    expected = ref[inp['parent']][inp['lbl']][inp['subject']]
+    #gexpected = gref[inp['parent']][inp['lbl']][inp['subject']].ravel()
+
+    if 'qcmol' in request.node.name:
+        mol = subject
+    else:
+        mol = subject.to_schema(dtype=2)
+
+    resinp = {
+        'schema_name': 'qcschema_input',
+        'schema_version': 1,
+        'molecule': mol,
+        'driver': 'energy', #gradient',
+        'model': {
+            'method': inp['name']
+        },
+        'keywords': {},
+    }
+    jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
+    jrec = jrec.dict()
+
+    #assert len(jrec['extras']['qcvars']) == 8
+
+    assert compare_values(expected, jrec['extras']['qcvars']['CURRENT ENERGY'], atol=1.e-7)
+    assert compare_values(expected, jrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'], atol=1.e-7)
+    assert compare_values(expected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION ENERGY'], atol=1.e-7)
 
 
 @using_dftd3

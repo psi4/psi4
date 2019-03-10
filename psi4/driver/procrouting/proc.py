@@ -2094,6 +2094,25 @@ def run_scf(name, **kwargs):
         core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
         core.tstop()
 
+        if ssuper.name() == 'MP2D':
+            for pv, pvv in dfmp2_wfn.variables().items():
+                scf_wfn.set_variable(pv, pvv)
+
+            # Conversely, remove DFT qcvars from MP2D
+            for var in scf_wfn.variables():
+                if 'DFT ' in var or 'DOUBLE-HYBRID ' in var:
+                    scf_wfn.del_variable(var)
+
+            # DFT groups dispersion with SCF. Reshuffle so dispersion with MP2 for MP2D.
+            for pv in ['SCF TOTAL ENERGY', 'SCF ITERATION ENERGY', 'MP2 TOTAL ENERGY']:
+                scf_wfn.set_variable(pv, scf_wfn.variable(pv) - scf_wfn.variable('DISPERSION CORRECTION ENERGY'))
+
+            scf_wfn.set_variable('MP2D CORRELATION ENERGY', scf_wfn.variable('MP2 CORRELATION ENERGY') + scf_wfn.variable('DISPERSION CORRECTION ENERGY'))
+            scf_wfn.set_variable('MP2D TOTAL ENERGY', scf_wfn.variable('MP2D CORRELATION ENERGY') + scf_wfn.variable('HF TOTAL ENERGY'))
+            scf_wfn.set_variable('CURRENT ENERGY', scf_wfn.variable('MP2D TOTAL ENERGY'))
+            scf_wfn.set_variable('CURRENT CORRELATION ENERGY', scf_wfn.variable('MP2D CORRELATION ENERGY'))
+            scf_wfn.set_variable('CURRENT REFERENCE ENERGY', scf_wfn.variable('SCF TOTAL ENERGY'))
+
     # Shove variables into global space
     for k, v in scf_wfn.variables().items():
         core.set_variable(k, v)
@@ -2225,7 +2244,7 @@ def run_dfmp2_gradient(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'],
-        ['SCF_TYPE'])  # yes, this really must be global, not local to SCF
+        ['SCF_TYPE'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
