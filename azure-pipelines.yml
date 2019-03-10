@@ -123,6 +123,7 @@ jobs:
                         pytest ^
                         python=%PYTHON_VERSION% ^
                         qcelemental
+          conda remove qcelemental --force
           conda list
         displayName: "Install conda packages"
 

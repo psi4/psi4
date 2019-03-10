@@ -6,6 +6,8 @@ from addons import *
 import psi4
 import numpy as np
 
+pytestmark = [pytest.mark.quick]
+
 #! Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets.
 #! Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 

@@ -7,7 +7,7 @@ from qcelemental.testing import compare, compare_recursive, compare_values, tnm
 
 import qcengine as qcng
 from qcengine.programs import dftd3
-from qcengine.testing import is_psi4_new_enough, using_dftd3, using_dftd3_321, using_psi4, using_qcdb, using_mp2d
+from qcengine.testing import is_program_new_enough, using_dftd3, using_dftd3_321, using_psi4, using_qcdb, using_mp2d
 
 pytestmark = [pytest.mark.quick]
 
@@ -409,7 +409,7 @@ Ne 0 0 0
 
 
 def eneyne_ne_qcdbmols():
-    if not is_psi4_new_enough("1.3rc2"):
+    if not is_program_new_enough("psi4", "1.3rc2"):
         pytest.skip("Psi4 requires at least Psi4 v1.3rc2")
     from psi4.driver import qcdb
 
@@ -431,7 +431,7 @@ def eneyne_ne_qcdbmols():
 
 
 def eneyne_ne_psi4mols():
-    if not is_psi4_new_enough("1.3rc2"):
+    if not is_program_new_enough("psi4", "1.3rc2"):
         pytest.skip("Psi4 requires at least Psi4 v1.3rc2")
     import psi4
 
