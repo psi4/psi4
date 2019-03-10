@@ -122,8 +122,9 @@ jobs:
                         pybind11 ^
                         pytest ^
                         python=%PYTHON_VERSION% ^
-                        qcelemental
-          conda remove qcelemental --force
+                        qcelemental ^
+                        qcengine
+          conda remove qcelemental qcengine --force
           conda list
         displayName: "Install conda packages"
 
