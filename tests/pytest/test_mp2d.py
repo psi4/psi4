@@ -5,6 +5,7 @@ from addons import *
 
 import psi4
 import numpy as np
+from qcengine.testing import using_mp2d
 
 pytestmark = [pytest.mark.quick]
 
@@ -45,9 +46,9 @@ for bas in ['cc-pVDZ', 'cc-pVTZ']:
 
 @pytest.mark.parametrize("inp", [
     pytest.param({'driver': 'energy', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2 energy'),
-    pytest.param({'driver': 'energy', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d energy'),
+    pytest.param({'driver': 'energy', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d energy', marks=using_mp2d),
     pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2 gradient'),
-#    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d gradient'),  # not working even in findif
+#    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d gradient' marks=using_mp2d),  # not working even in findif
 #    ('mp2mp2'),
 #    ('mp2-dmp2'),
 ])
