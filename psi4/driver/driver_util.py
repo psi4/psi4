@@ -344,6 +344,15 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
         else:
             raise MissingMethodError(alternative_methods_message(method, user_dertype))
 
+    # hack section
+    if core.get_global_option('PCM') and dertype != 0:
+        core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
+        dertype = 0
+
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+        core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
+        dertype = 0
+
     if verbose > 1:
         print(
             f'Dertivative negotiations: target/driver={egh.index(ptype)}, best_available={highest_der_program_can_provide}, user_dertype={user_dertype}, FINAL={dertype}'
@@ -351,14 +360,6 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
 
     #if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
     #    raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
-
-    #if (core.get_global_option('PCM')) and (dertype != 0):
-    #    core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
-    #    dertype = 0
-
-    #if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
-    #    core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
-    #    dertype = 0
 
     # Summary validation (superfluous)
     if dertype == '(auto)' or method not in proc[['energy', 'gradient', 'hessian'][dertype]]:
