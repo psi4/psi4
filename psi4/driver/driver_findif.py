@@ -972,6 +972,8 @@ class FinDifComputer(BaseTask):
 
         print('FINDIFREC CLASS INIT DATA')
         pp.pprint(data)
+        if 'dft_functional' in data:
+            data['keywords']['dft_functional'] = data.pop('dft_functional')
 
         self.metameta['mode'] = data['findif_mode']
         self.metameta['irrep'] = data.pop('irrep', -1)
