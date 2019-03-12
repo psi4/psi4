@@ -93,6 +93,7 @@ class SingleResult(BaseTask):
                 "basis": self.basis
             },
             "keywords": self.keywords,
+            "return_output": True,
         }
 
         return data
@@ -108,6 +109,7 @@ class SingleResult(BaseTask):
         print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
         #print(json.dumps(self.plan(), indent=2))
         self.result = json_wrapper.run_json(self.plan())
+        pp.pprint(self.result)
         print('... JSON returns >>>')
         self.computed = True
 
