@@ -1289,21 +1289,18 @@ SharedMatrix Wavefunction::Db() const { return Db_; }
 SharedMatrix Wavefunction::X() const { return Lagrangian_; }
 
 void Wavefunction::set_energy(double ene) {
-    energy_ = ene;
     set_scalar_variable("CURRENT ENERGY", ene);
 }
 
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
 void Wavefunction::set_gradient(SharedMatrix grad) {
-    gradient_ = grad;
     set_array_variable("CURRENT GRADIENT", grad);
 }
 
 SharedMatrix Wavefunction::hessian() const { return hessian_; }
 
 void Wavefunction::set_hessian(SharedMatrix hess) {
-    hessian_ = hess;
     set_array_variable("CURRENT HESSIAN", hess);
 }
 
@@ -1393,10 +1390,17 @@ SharedMatrix Wavefunction::array_variable(const std::string &key) {
     }
 }
 
-void Wavefunction::set_scalar_variable(const std::string &key, double val) { variables_[to_upper_copy(key)] = val; }
+void Wavefunction::set_scalar_variable(const std::string &key, double val) {
+    variables_[to_upper_copy(key)] = val;
+
+    if (to_upper_copy(key) == "CURRENT ENERGY") energy_ = val;
+}
 
 void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) {
     arrays_[to_upper_copy(key)] = val->clone();
+
+    if (to_upper_copy(key) == "CURRENT GRADIENT") gradient_ = val->clone();
+    if (to_upper_copy(key) == "CURRENT HESSIAN") hessian_ = val->clone();
 }
 
 int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }
