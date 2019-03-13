@@ -263,7 +263,7 @@ class EmpiricalDispersion(object):
             (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
 
         """
-        optstash = p4util.OptionsState(['PRINT'])
+        optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
         core.print_out("\n\n   Analytical Dispersion Hessians are not supported by dftd3 or gcp.\n")
