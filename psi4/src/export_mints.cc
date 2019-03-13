@@ -1143,6 +1143,7 @@ void export_mints(py::module& m) {
         .def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group")
         .def("order", &PointGroup::order, "Return the order of the point group")
         .def("bits", &PointGroup::bits, "Return the bit representation of the point group")
+        .def("full_name", &PointGroup::full_name, "Return the Schoenflies symbol with direction")
         .def("char_table", &PointGroup::char_table, "Return the CharacterTable of the point group");
     // def("origin", &PointGroup::origin).
     //            def("set_symbol", &PointGroup::set_symbol);

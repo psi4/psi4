@@ -121,8 +121,9 @@ void HF::common_init() {
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
         // Map the symmetry of the input DOCC, to account for displacements
-        std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-        if (old_pg) {
+        auto ps = options_.get_str("PARENT_SYMMETRY");
+        if (ps != "") {
+            auto old_pg = std::make_shared<PointGroup> (ps);
             // This is one of a series of displacements;  check the dimension against the parent
             // point group
             size_t full_nirreps = old_pg->char_table().nirrep();
@@ -147,8 +148,9 @@ void HF::common_init() {
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
         // Map the symmetry of the input SOCC, to account for displacements
-        std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-        if (old_pg) {
+        auto ps = options_.get_str("PARENT_SYMMETRY");
+        if (ps != "") {
+            auto old_pg = std::make_shared<PointGroup> (ps);
             // This is one of a series of displacements;  check the dimension against the parent
             // point group
             size_t full_nirreps = old_pg->char_table().nirrep();

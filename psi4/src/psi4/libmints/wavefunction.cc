@@ -588,9 +588,12 @@ std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return d
 Wavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const { return dipole_field_type_; }
 
 Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
-    std::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+    auto ps = options_.get_str("PARENT_SYMMETRY");
+
     // If the parent symmetry hasn't been set, no displacements have been made
-    if (!full) return dimpi;
+    if (ps == "") return dimpi;
+
+    auto full = std::make_shared<PointGroup> (ps);
     std::shared_ptr<PointGroup> sub = molecule_->point_group();
 
     // If the point group between the full and sub are the same return

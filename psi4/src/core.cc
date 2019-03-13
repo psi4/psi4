@@ -839,15 +839,6 @@ void py_psi_set_legacy_molecule(std::shared_ptr<Molecule> legacy_molecule) {
     Process::environment.set_legacy_molecule(legacy_molecule);
 }
 
-void py_psi_set_parent_symmetry(std::string pg) {
-    std::shared_ptr<PointGroup> group = std::shared_ptr<PointGroup>();
-    if (pg != "") {
-        group = std::make_shared<PointGroup>(pg);
-    }
-
-    Process::environment.set_parent_symmetry(group);
-}
-
 std::shared_ptr<Molecule> py_psi_get_active_molecule() { return Process::environment.molecule(); }
 std::shared_ptr<Molecule> py_psi_get_legacy_molecule() { return Process::environment.legacy_molecule(); }
 
@@ -1060,9 +1051,6 @@ PYBIND11_MODULE(core, core) {
     core.def("get_num_threads", py_psi_get_n_threads,
              "Returns the number of threads to use in SMP parallel computations.");
     //    core.def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
-    core.def("set_parent_symmetry", py_psi_set_parent_symmetry,
-             "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a "
-             "finite difference computation.");
     core.def("print_options", py_psi_print_options,
              "Prints the currently set options (to the output file) for the current module.");
     core.def("print_global_options", py_psi_print_global_options,

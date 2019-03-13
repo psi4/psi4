@@ -134,6 +134,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_str("WFN", "SCF");
     /*- Derivative level !expert -*/
     options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
+    /*- For displacements, symmetry (Schoenflies symbol) of 'parent' (undisplaced)
+    reference molecule. Internal use only for finite difference. !expert -*/
+    options.add_str("PARENT_SYMMETRY", "");
     /*- Number of columns to print in calls to ``Matrix::print_mat``. !expert -*/
     options.add_int("MAT_NUM_COLUMN_PRINT", 5);
     /*- List of properties to compute -*/
