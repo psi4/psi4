@@ -30,7 +30,7 @@ import re
 
 from psi4 import core
 from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import ValidationError, MissingMethodError, ManagedMethodError
+from psi4.driver.p4util.exceptions import ValidationError, MissingMethodError, ManagedMethodError, UpgradeHelper
 from psi4.driver.procrouting import *
 
 
@@ -101,6 +101,20 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
     if verbose >= 2:
         print('')
     return optstash
+
+
+def upgrade_interventions(method):
+    try:
+        lowermethod = method.lower()
+    except AttributeError as e:
+        if method.__name__ == 'cbs':
+            raise UpgradeHelper(method, repr(method.__name__), 1.4, ' Replace cbs or complete_basis_set function with cbs string.')
+        elif method.__name__ in ['sherrill_gold_standard', 'allen_focal_point']:
+            raise UpgradeHelper('argument ' + method.__name__, 'function ' + method.__name__, 1.4, ' Replace `energy(sherrill_gold_standard)` with `sherrill_gold_standard(energy)` or similar.')
+        else:
+            raise e
+
+    return lowermethod
 
 
 def parse_arbitrary_order(name):

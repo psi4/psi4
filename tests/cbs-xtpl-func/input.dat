@@ -13,12 +13,18 @@ mol.A = 90.0
 
 set g_convergence gau_verytight
 
+E0 = -76.36457925
 E1 = energy("cbs", corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
-E2 = energy(sherrill_gold_standard, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+compare_values(E0, E1, 5, '[1a]')
+E2 = sherrill_gold_standard(energy, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
 compare_values(E1, E2, 5, '[1] Match gold_standard energy')  #TEST
 
+G0 = psi4.core.Matrix.from_list([[0.00000000000000,     0.00000000000000,    -0.06342827014937],
+                                 [0.00000000000000,    -0.00458359046476,     0.03171413507468],
+                                 [0.00000000000000,     0.00458359046476,     0.03171413507468]])
 G1 = gradient("cbs", corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g', dertype='energy')
-G2 = gradient(sherrill_gold_standard, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+compare_matrices(G0, G1, 5, '[2a] Match gold_standard gradient')  #TEST
+G2 = sherrill_gold_standard(gradient, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
 compare_matrices(G1, G2, 5, '[2] Match gold_standard gradient')  #TEST
 
 # Reset mol geometries
@@ -32,7 +38,7 @@ compare_values(103.436972667, mol.A, 2, '[3c] opt("cbs", sherrill) angle')  #TES
 # Reset mol geometries
 mol.R = 1.0
 mol.A = 100.0
-E = optimize(sherrill_gold_standard, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+E = sherrill_gold_standard(optimize, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
 compare_values(-76.3707500218, E, 5, '[4a] opt(sherrill) energy')  #TEST
 compare_values(0.960940174888, mol.R, 3, '[4b] opt(sherrill) bond')  #TEST
 compare_values(103.436972667, mol.A, 2, '[4c] opt(sherrill) angle')  #TEST

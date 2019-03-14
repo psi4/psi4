@@ -13,7 +13,7 @@ from psi4.driver import qcdb
 pytestmark = pytest.mark.quick
 
 
-def hide_test_xtpl_fn_fn_error():
+def test_xtpl_fn_fn_error():
     psi4.geometry('He')
 
     with pytest.raises(psi4.UpgradeHelper) as e:
@@ -22,7 +22,7 @@ def hide_test_xtpl_fn_fn_error():
     assert 'Replace extrapolation function with function name' in str(e.value)
 
 
-def hide_test_xtpl_cbs_fn_error():
+def test_xtpl_cbs_fn_error():
     psi4.geometry('He')
 
     with pytest.raises(psi4.UpgradeHelper) as e:
@@ -30,6 +30,16 @@ def hide_test_xtpl_cbs_fn_error():
         #psi4.energy(psi4.driver.driver_cbs.complete_basis_set, scf_basis='cc-pvdz')
 
     assert 'Replace cbs or complete_basis_set function with cbs string' in str(e.value)
+
+
+def test_xtpl_gold_fn_error():
+    psi4.geometry('He')
+    from psi4.driver.aliases import sherrill_gold_standard
+
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        psi4.energy(sherrill_gold_standard, scf_basis='cc-pvdz')
+
+    assert 'Replace `energy(sherrill_gold_standard)' in str(e)
 
 
 @pytest.mark.parametrize("inp,out", [

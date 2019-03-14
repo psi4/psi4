@@ -41,6 +41,7 @@ from psi4 import core
 from psi4.driver import qcdb
 from psi4.driver import p4util
 from psi4.driver import driver_util
+from psi4.driver.driver_util import UpgradeHelper
 from psi4.driver import psifiles as psif
 from psi4.driver.driver_cbs_helper import xtpl_procedures, register_xtpl_scheme
 from psi4.driver.p4util.exceptions import ValidationError
@@ -59,6 +60,18 @@ _lmh_labels = {
     4: ['LO', 'MD', 'M2', 'HI'],
     5: ['LO', 'MD', 'M2', 'M3', 'HI']
 }
+
+
+# remove in 1.5
+# these get input files to the point where they raise an UpgradeHelper
+def xtpl_highest_1():
+    pass
+
+scf_xtpl_helgaker_2 = xtpl_highest_1
+scf_xtpl_truhlar_2 = xtpl_highest_1
+scf_xtpl_karton_2 = xtpl_highest_1
+scf_xtpl_helgaker_3 = xtpl_highest_1
+corl_xtpl_helgaker_2 = xtpl_highest_1
 
 
 def _expand_bracketed_basis(basisstring: str, molecule=None):

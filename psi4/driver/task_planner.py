@@ -98,14 +98,6 @@ def task_planner(driver, method, molecule, **kwargs):
     # Only pull the changed options
     keywords = p4util.prepare_options_for_set_options()
 
-    try:
-        method.lower()
-    except AttributeError as e:
-        if method.__name__ == 'cbs':
-            raise UpgradeHelper(method, repr(method.__name__), 1.4, ' Replace cbs or complete_basis_set function with cbs string.')
-        else:
-            raise e
-
     # Pull basis out of kwargs, override globals if user specified
     basis = keywords.pop("BASIS", None)
     basis = kwargs.pop("basis", basis)
