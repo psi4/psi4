@@ -41,7 +41,7 @@ from psi4.driver.task_base import SingleResult
 from psi4.driver.driver_findif import FinDifComputer
 from psi4.driver.driver_nbody import NBodyComputer
 from psi4.driver.driver_cbs import CBSComputer, _cbs_text_parser
-from psi4.driver.driver_util import negotiate_derivative_type
+from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
 
 __all__ = ["task_planner"]
 
@@ -139,11 +139,13 @@ def task_planner(driver, method, molecule, **kwargs):
 
     # Done with Wrappers -- know we want E, G, or H -- but may still be FinDif or SingleResult
     else:
-        dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1, return_strategy=True)
+        dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1)
+        convcrit = negotiate_convergence_criterion(dermode, method, return_optstash=False)
 
-        if dermode == 'analytic':
+        if dermode[0] == dermode[1]:  # analytic
             print('PLANNING ()', 'keywords=', keywords)
             return SingleResult(**packet, **kwargs)
         else:
+            keywords.update(convcrit)
             print('PLANNING FinDif', 'dermode=', dermode, 'keywords=', keywords)
             return FinDifComputer(**packet, findif_mode=dermode, **kwargs)

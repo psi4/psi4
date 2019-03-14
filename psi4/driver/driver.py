@@ -507,7 +507,8 @@ def energy(name, **kwargs):
     #for precallback in hooks['energy']['pre']:
     #    precallback(lowername, **kwargs)
 
-    optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
+    # needed (+restore below) so long as SingleResults aren't run through json (where convcrit also lives)
+    optstash = driver_util.negotiate_convergence_criterion((0, 0), lowername, return_optstash=True)
     optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
 
     # Before invoking the procedure, we rename any file that should be read.
@@ -714,12 +715,11 @@ def gradient(name, **kwargs):
 #            optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
 #
 #    else:
-    if True:
 
 #        dertype = 1
 
-        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-        optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+    # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+    optstash = driver_util.negotiate_convergence_criterion((1, 1), lowername, return_optstash=True)
 
 
     # Commit to procedures[] call hereafter
@@ -911,7 +911,7 @@ def properties(*args, **kwargs):
         props += args[1:]
 
     kwargs['properties'] = p4util.drop_duplicates(props)
-    optstash = driver_util._set_convergence_criterion('properties', lowername, 6, 10, 6, 10, 8)
+    optstash = driver_util.negotiate_convergence_criterion('prop', lowername, return_optstash=True)
     wfn = procedures['properties'][lowername](lowername, **kwargs)
 
     optstash.restore()
@@ -1593,7 +1593,7 @@ def hessian(name, **kwargs):
         driver_nbody.electrostatic_embedding(kwargs['embedding_charges'])
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+    optstash_conv = driver_util.negotiate_convergence_criterion((2, 2), lowername, return_optstash=True)
 
     # At stationary point?
     if 'ref_gradient' in kwargs:

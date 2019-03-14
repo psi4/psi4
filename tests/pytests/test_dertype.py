@@ -42,49 +42,49 @@ mock_proc = {
 
 
 @pytest.mark.parametrize("inp,out", [
-    (('hessian', 'hf', None), "analytic"),
-    (('hessian', 'hf', 2), "analytic"),
-    (('hessian', 'hf', 1), "2_1"),
-    (('hessian', 'hf', 0), "2_0"),
-    (('gradient', 'hf', None), "analytic"),
-    (('gradient', 'hf', 1), "analytic"),
-    (('gradient', 'hf', 0), "1_0"),
-    (('energy', 'hf', None), "analytic"),
-    (('energy', 'hf', 0), "analytic"),
-    (('hessian', 'cc', None), "2_1"),
-    (('hessian', 'cc', 1), "2_1"),
-    (('hessian', 'cc', 0), "2_0"),
-    (('gradient', 'cc', None), "analytic"),
-    (('gradient', 'cc', 1), "analytic"),
-    (('gradient', 'cc', 0), "1_0"),
-    (('energy', 'cc', None), "analytic"),
-    (('energy', 'cc', 0), "analytic"),
-    (('hessian', 'EGh_man', None), "2_1"),
-    (('hessian', 'EGh_man', 1), "2_1"),
-    (('hessian', 'EGh_man', 0), "2_0"),
-    (('gradient', 'EGh_man', None), "analytic"),
-    (('gradient', 'EGh_man', 1), "analytic"),
-    (('gradient', 'EGh_man', 0), "1_0"),
-    (('energy', 'EGh_man', None), "analytic"),
-    (('energy', 'EGh_man', 0), "analytic"),
-    (('hessian', 'Egh_man2', None), "2_0"),
-    (('hessian', 'Egh_man2', 0), "2_0"),
-    (('gradient', 'Egh_man2', None), "1_0"),
-    (('gradient', 'Egh_man2', 0), "1_0"),
-    (('energy', 'Egh_man2', None), "analytic"),
-    (('energy', 'Egh_man2', 0), "analytic"),
-    (('hessian', 'mp4', None), "2_0"),
-    (('hessian', 'mp4', 0), "2_0"),
-    (('gradient', 'mp4', None), "1_0"),
-    (('gradient', 'mp4', 0), "1_0"),
-    (('energy', 'mp4', None), "analytic"),
-    (('energy', 'mp4', 0), "analytic"),
-    (('hessian', 'Eg_man', None), "2_0"),
-    (('hessian', 'Eg_man', 0), "2_0"),
-    (('gradient', 'Eg_man', None), "1_0"),
-    (('gradient', 'Eg_man', 0), "1_0"),
-    (('energy', 'Eg_man', None), "analytic"),
-    (('energy', 'Eg_man', 0), "analytic"),
+    (('hessian', 'hf', None), (2, 2)),  # analytic
+    (('hessian', 'hf', 2), (2, 2)),  # analytic
+    (('hessian', 'hf', 1), (2, 1)),
+    (('hessian', 'hf', 0), (2, 0)),
+    (('gradient', 'hf', None), (1, 1)),  # analytic
+    (('gradient', 'hf', 1), (1, 1)),  # analytic
+    (('gradient', 'hf', 0), (1, 0)),
+    (('energy', 'hf', None), (0, 0)),  # analytic
+    (('energy', 'hf', 0), (0, 0)),  # analytic
+    (('hessian', 'cc', None), (2, 1)),
+    (('hessian', 'cc', 1), (2, 1)),
+    (('hessian', 'cc', 0), (2, 0)),
+    (('gradient', 'cc', None), (1, 1)),  # analytic
+    (('gradient', 'cc', 1), (1, 1)),  # analytic
+    (('gradient', 'cc', 0), (1, 0)),
+    (('energy', 'cc', None), (0, 0)),  # analytic
+    (('energy', 'cc', 0), (0, 0)),  # analytic
+    (('hessian', 'EGh_man', None), (2, 1)),
+    (('hessian', 'EGh_man', 1), (2, 1)),
+    (('hessian', 'EGh_man', 0), (2, 0)),
+    (('gradient', 'EGh_man', None), (1, 1)),  # analytic
+    (('gradient', 'EGh_man', 1), (1, 1)),  # analytic
+    (('gradient', 'EGh_man', 0), (1, 0)),
+    (('energy', 'EGh_man', None), (0, 0)),  # analytic
+    (('energy', 'EGh_man', 0), (0, 0)),  # analytic
+    (('hessian', 'Egh_man2', None), (2, 0)),
+    (('hessian', 'Egh_man2', 0), (2, 0)),
+    (('gradient', 'Egh_man2', None), (1, 0)),
+    (('gradient', 'Egh_man2', 0), (1, 0)),
+    (('energy', 'Egh_man2', None), (0, 0)),  # analytic
+    (('energy', 'Egh_man2', 0), (0, 0)),  # analytic
+    (('hessian', 'mp4', None), (2, 0)),
+    (('hessian', 'mp4', 0), (2, 0)),
+    (('gradient', 'mp4', None), (1, 0)),
+    (('gradient', 'mp4', 0), (1, 0)),
+    (('energy', 'mp4', None), (0, 0)),  # analytic
+    (('energy', 'mp4', 0), (0, 0)),  # analytic
+    (('hessian', 'Eg_man', None), (2, 0)),
+    (('hessian', 'Eg_man', 0), (2, 0)),
+    (('gradient', 'Eg_man', None), (1, 0)),
+    (('gradient', 'Eg_man', 0), (1, 0)),
+    (('energy', 'Eg_man', None), (0, 0)),  # analytic
+    (('energy', 'Eg_man', 0), (0, 0)),  # analytic
 ])
 def test_negotiate(inp, out):
     dertype = negotiate_derivative_type(proc=mock_proc, return_strategy=True, *inp)

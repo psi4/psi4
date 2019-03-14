@@ -5,6 +5,8 @@ Tests the Psi4 task driver
 import pytest
 from utils import *
 from addons import *
+
+import math
 import time
 
 import numpy as np
@@ -147,6 +149,10 @@ def test_findif_1_1():
     assert plan.basis == "cc-pvdz"
     assert plan.method == "mp2"
     assert plan.driver == "gradient"
+    # below are now back to optstash
+    #assert plan.task_list[key].keywords['E_CONVERGENCE'] == 10
+    #assert plan.task_list[key].keywords['SCF__E_CONVERGENCE'] == 10
+    #assert plan.task_list[key].keywords['SCF__D_CONVERGENCE'] == 10
 
 
 def test_findif_1_0():
@@ -168,6 +174,9 @@ def test_findif_1_0():
     assert plan.task_list[key].method == "mp2"
     assert plan.task_list[key].driver == "energy"
     assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+    assert plan.task_list[key].keywords['SCF__E_CONVERGENCE'] == 1.e-10
+    assert plan.task_list[key].keywords['SCF__D_CONVERGENCE'] == 1.e-10
+    assert plan.task_list[key].keywords['E_CONVERGENCE'] == 1.e-8
 
     key = '0: -1'
     assert isinstance(plan.task_list[key], SingleResult)
@@ -183,4 +192,96 @@ def test_findif_1_0():
     assert plan.task_list[key].driver == "energy"
     assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
 
+
+def test_findif_2_1():
+    mol = psi4.geometry("H\nH 1 2.0\nunits au")
+    psi4.set_options({"E_CONVERGENCE": 6})
+    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, dertype=1, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+
+    displacements = {
+        '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
+        '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
+        'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+    }
+
+    assert isinstance(plan, FinDifComputer)
+    assert len(plan.task_list) == 3
+
+    key = 'reference'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "gradient"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+    assert plan.task_list[key].keywords['SCF__D_CONVERGENCE'] == 1.e-10
+    assert plan.task_list[key].keywords['E_CONVERGENCE'] == 1.e-6
+
+    key = '0: -1'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "gradient"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+    key = '0: 1'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "gradient"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+
+def test_findif_2_0():
+    mol = psi4.geometry("H\nH 1 2.0\nunits au")
+    psi4.set_options({"scf__E_CONVERGENCE": 6})
+    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, dertype=0, findif_stencil_size=5, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+
+    displacements = {
+        '0: -2': np.array([[ 0.    ,  0.    , -1.0050], [ 0.    ,  0.    ,  1.0050]]),
+        '0: 2':  np.array([[ 0.    ,  0.    , -0.9950], [ 0.    ,  0.    ,  0.9950]]),
+        '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
+        '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
+        'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+    }
+
+    assert isinstance(plan, FinDifComputer)
+    assert len(plan.task_list) == 5
+
+    key = 'reference'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+    assert plan.task_list[key].keywords['SCF__E_CONVERGENCE'] == 1.e-6
+    assert plan.task_list[key].keywords['SCF__D_CONVERGENCE'] == 1.e-11
+    assert plan.task_list[key].keywords['E_CONVERGENCE'] == 1.e-10
+
+    key = '0: -2'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+    key = '0: -1'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+    key = '0: 1'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
+
+    key = '0: 2'
+    assert isinstance(plan.task_list[key], SingleResult)
+    assert plan.task_list[key].basis == "cc-pvdz"
+    assert plan.task_list[key].method == "mp2"
+    assert plan.task_list[key].driver == "energy"
+    assert np.allclose(plan.task_list[key].molecule.geometry().np, displacements[key])
 

@@ -27,6 +27,7 @@
 #
 
 import re
+import math
 
 from psi4 import core
 from psi4.driver import p4util
@@ -34,7 +35,7 @@ from psi4.driver.p4util.exceptions import ValidationError, MissingMethodError, M
 from psi4.driver.procrouting import *
 
 
-def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec, verbose=1):
+def negotiate_convergence_criterion(dermode, method, return_optstash=False):
     r"""
     This function will set local SCF and global energy convergence criterion
     to the defaults listed at:
@@ -53,54 +54,41 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
     gen_Ec -        E convergence criterion for post-scf target method
 
     """
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
 
-    if verbose >= 2:
-        print('      Setting convergence', end=' ')
+    scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec = {(0, 0): [ 6,   8,   6,   8,   6],
+                                                (1, 0): [ 8,  10,   8,  10,   8],
+                                                (2, 0): [10,  11,  10,  11,  10],
+                                                (1, 1): [ 8,  10,   8,  10,   8],
+                                                (2, 1): [ 8,  10,   8,  10,   8],
+                                                (2, 2): [ 8,  10,   8,  10,   8],
+                                                'prop': [ 6,  10,   6,  10,   8]}[dermode]
+
     # Set method-dependent scf convergence criteria, check against energy routines
-    if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_tdscf_energy]:
-            core.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
-            if verbose >= 2:
-                print(scf_Ec, end=' ')
-        else:
-            core.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
-            if verbose >= 2:
-                print(pscf_Ec, end=' ')
-    else:
-        if verbose >= 2:
-            print('CUSTOM', core.get_option('SCF', 'E_CONVERGENCE'), end=' ')
-
-    if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_tdscf_energy]:
-            core.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
-            if verbose >= 2:
-                print(scf_Dc, end=' ')
-        else:
-            core.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
-            if verbose >= 2:
-                print(pscf_Dc, end=' ')
-    else:
-        if verbose >= 2:
-            print('CUSTOM', core.get_option('SCF', 'D_CONVERGENCE'), end=' ')
-
     # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not core.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][method_name] != proc.run_scf:
-            core.set_global_option('E_CONVERGENCE', gen_Ec)
-            if verbose >= 2:
-                print(gen_Ec, end=' ')
+    cc = {}
+    if procedures['energy'][method] in [proc.run_scf, proc.run_tdscf_energy]:
+        if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
+            cc['SCF__E_CONVERGENCE'] = math.pow(10, -scf_Ec)
+        if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
+            cc['SCF__D_CONVERGENCE'] = math.pow(10, -scf_Dc)
     else:
-        if procedures['energy'][method_name] != proc.run_scf:
-            if verbose >= 2:
-                print('CUSTOM', core.get_global_option('E_CONVERGENCE'), end=' ')
+        if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
+            cc['SCF__E_CONVERGENCE'] = math.pow(10, -pscf_Ec)
+        if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
+            cc['SCF__D_CONVERGENCE'] = math.pow(10, -pscf_Dc)
+        if not core.has_global_option_changed('E_CONVERGENCE'):
+            cc['E_CONVERGENCE'] = math.pow(10, -gen_Ec)
 
-    if verbose >= 2:
-        print('')
-    return optstash
+    if return_optstash:
+        optstash = p4util.OptionsState(
+            ['SCF', 'E_CONVERGENCE'],
+            ['SCF', 'D_CONVERGENCE'],
+            ['E_CONVERGENCE'])
+        p4util.set_options(cc)
+        return optstash
+
+    else:
+        return cc
 
 
 def upgrade_interventions(method):
@@ -238,7 +226,7 @@ def parse_cotton_irreps(irrep, point_group):
     raise ValidationError(f"""Irrep '{irrep}' not valid for point group '{point_group}'.""")
 
 
-def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_strategy=False, proc=None):
+def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, proc=None):
     r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
     for `method` to achieve `ptype` within constraints of `user_dertype`.
 
@@ -252,19 +240,16 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
         User input on which derivative level should be employed to achieve `ptype`.
     verbose : int, optional
         Control amount of output printing.
-    return_strategy : bool, optional
-        See below. Form in which to return negotiated dertype.
     proc : dict, optional
         For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
 
     Returns
     -------
-    int : {0, 1, 2}
-        When `return_strategy=False`, highest accessible derivative level
-        for `method` to achieve `ptype` within constraints of `user_dertype`.
-    str : {'analytic', '1_0', '2_1', '2_0'}
-        When `return_strategy=True`, highest accessible derivative strategy
-        for `method` to achieve `ptype` within constraints of `user_dertype`.
+    tuple : (int, int)
+        "second" is highest accessible derivative level for `method` to achieve
+        `ptype` "first" within constraints of `user_dertype`. When
+        "first" == "second", analytic is the best strategy, otherwise finite
+        difference of target "first" by means of "second".
 
     Raises
     ------
@@ -379,15 +364,11 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
     if dertype == '(auto)' or method not in proc[['energy', 'gradient', 'hessian'][dertype]]:
         raise MissingMethodError(alternative_methods_message(method, dertype))
 
-    if return_strategy:
-        if ptype == egh[dertype]:
-            return 'analytic'
-        elif ptype == 'gradient' and egh[dertype] == 'energy':
-            return '1_0'
-        elif ptype == 'hessian' and egh[dertype] == 'gradient':
-            return '2_1'
-        elif ptype == 'hessian' and egh[dertype] == 'energy':
-            return '2_0'
-
-    else:
-        return dertype
+    if ptype == egh[dertype]:
+        return (dertype, dertype)
+    elif ptype == 'gradient' and egh[dertype] == 'energy':
+        return (1, 0)
+    elif ptype == 'hessian' and egh[dertype] == 'gradient':
+        return (2, 1)
+    elif ptype == 'hessian' and egh[dertype] == 'energy':
+        return (2, 0)

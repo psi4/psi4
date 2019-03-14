@@ -976,7 +976,7 @@ class FinDifComputer(BaseTask):
             data['keywords']['dft_functional'] = data.pop('dft_functional')
         data['keywords']['PARENT_SYMMETRY'] = self.molecule.point_group().full_name()
 
-        self.metameta['mode'] = data['findif_mode']
+        self.metameta['mode'] = str(data['findif_mode'][0]) + '_' + str(data['findif_mode'][1])
         self.metameta['irrep'] = data.pop('irrep', -1)
 
         if self.metameta['mode'] == '1_0':
