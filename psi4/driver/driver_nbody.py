@@ -903,7 +903,7 @@ class NBodyComputer(BaseTask):
                         wfn.set_variable(self.driver + ' ' + str(var), plump_qcvar(value, self.driver, 'psi4'))
 
         core.set_variable("CURRENT ENERGY", nbody_results['properties']['return_energy'])
-        wfn.set_variable("CURRENT ENERGY", nbody_results['properties']['return_energy'])
+#        wfn.set_energy(nbody_results['properties']['return_energy'])  # catches CURRENT ENERGY on Wfn
 
         if return_wfn:
             return (ret, wfn)

@@ -1683,26 +1683,27 @@ def _cbs_schema_to_wfn(cbsjob):
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
+#    wfn.set_energy(cbsjob['psi4:qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
     for qcv, val in cbsjob['psi4:qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, plump_qcvar(val, qcv))
 
-    flat_grad = cbsjob['psi4:qcvars'].get('CBS TOTAL GRADIENT')
-    if flat_grad is not None:
-        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
-        wfn.set_gradient(finalgradient)
-
-        if finalgradient.rows(0) < 20:
-            core.print_out('CURRENT GRADIENT')
-            finalgradient.print_out()
-
-    flat_hess = cbsjob['psi4:qcvars'].get('CBS TOTAL HESSIAN')
-    if flat_hess is not None:
-        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
-        wfn.set_hessian(finalhessian)
-
-        if finalhessian.rows(0) < 20:
-            core.print_out('CURRENT HESSIAN')
-            finalhessian.print_out()
+#    flat_grad = cbsjob['psi4:qcvars'].get('CBS TOTAL GRADIENT')
+#    if flat_grad is not None:
+#        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
+#        wfn.set_gradient(finalgradient)
+#
+#        if finalgradient.rows(0) < 20:
+#            core.print_out('CURRENT GRADIENT')
+#            finalgradient.print_out()
+#
+#    flat_hess = cbsjob['psi4:qcvars'].get('CBS TOTAL HESSIAN')
+#    if flat_hess is not None:
+#        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
+#        wfn.set_hessian(finalhessian)
+#
+#        if finalhessian.rows(0) < 20:
+#            core.print_out('CURRENT HESSIAN')
+#            finalhessian.print_out()
 
     return wfn
