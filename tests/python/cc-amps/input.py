@@ -25,7 +25,7 @@ D = mints.mo_eri(
 D = D.swapaxes(1, 2)
 
 RHF_ccsd_corr_e = 2 * np.einsum("ijab,ijab->", tau_IjAb, D) - np.einsum("ijab,ijba->", tau_IjAb, D)
-psi4.compare_values(RHF_ccsd_corr_e, psi4.variable('CCSD CORRELATION ENERGY'), 8, "RHF CCSD CORRELATION ENERGY")
+psi4.compare_values(psi4.variable('CCSD CORRELATION ENERGY'), RHF_ccsd_corr_e, 8, "RHF CCSD CORRELATION ENERGY")
 
 # END RHF
 
@@ -67,7 +67,7 @@ E2BB = 0.5 * np.einsum("ijab,ijab->", tauijab, D_ijab)
 E2AB = np.einsum("IjAb,IjAb->", tauIjAb, D_IjAb)
 
 UHF_ccsd_corr_e = E2AA + E2BB + E2AB
-psi4.compare_values(UHF_ccsd_corr_e, psi4.variable("CCSD CORRELATION ENERGY"), 8, "UHF CCSD CORRELATION ENERGY")
+psi4.compare_values(psi4.variable("CCSD CORRELATION ENERGY"), UHF_ccsd_corr_e, 8, "UHF CCSD CORRELATION ENERGY")
 
 # END UHF
 
@@ -123,5 +123,5 @@ E2BB = 0.5 * np.einsum("ijab,ijab->", tauijab, D_ijab)
 E2AB = np.einsum("IjAb,IjAb->", tauIjAb, D_IjAb)
 
 ROHF_ccsd_corr_e = E2AA + E2BB + E2AB + E1_A + E1_B
-psi4.compare_values(ROHF_ccsd_corr_e, psi4.variable("CCSD CORRELATION ENERGY"), 8, "ROHF CCSD CORRELATION ENERGY")
+psi4.compare_values(psi4.variable("CCSD CORRELATION ENERGY"), ROHF_ccsd_corr_e, 8, "ROHF CCSD CORRELATION ENERGY")
 # END ROHF

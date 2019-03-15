@@ -1282,37 +1282,52 @@ class Molecule(LibmintsMolecule):
             When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
 
         """
-        from . import intf_dftd3
+        import qcengine as qcng
 
         if dertype is None:
             derint, derdriver = -1, 'gradient'
         else:
             derint, derdriver = parse_dertype(dertype, max_derivative=1)
 
-        jobrec = intf_dftd3.run_dftd3_from_arrays(
-            molrec=self.to_dict(np_out=False),
-            name_hint=func,
-            level_hint=dashlvl,
-            param_tweaks=dashparam,
-            ptype=derdriver,
-            verbose=verbose)
+        resinp = {
+            'schema_name': 'qcschema_input',
+            'schema_version': 1,
+            'molecule': self.to_schema(dtype=2),
+            'driver': derdriver,
+            'model': {
+                'method': func,
+                'basis': '(auto)',
+            },
+            'keywords': {
+                'level_hint': dashlvl,
+                'params_tweaks': dashparam,
+                'verbose': verbose,
+            },
+        }
+        jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+        jobrec = jobrec.dict()
+
+        # hack as not checking type GRAD
+        for k, qca in jobrec['extras']['qcvars'].items():
+            if isinstance(qca, (list, np.ndarray)):
+                jobrec['extras']['qcvars'][k] = np.array(qca).reshape(-1, 3)
 
         if isinstance(self, Molecule):
             pass
         else:
             from psi4 import core
 
-            for k, qca in jobrec['qcvars'].items():
-                if not isinstance(qca.data, np.ndarray):
-                    core.set_variable(k, float(qca.data))
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, float(qca))
 
         if derint == -1:
-            return (float(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'].data),
-                    jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data)
+            return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
+                    jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'])
         elif derint == 0:
-            return float(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'].data)
+            return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
         elif derint == 1:
-            return jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data
+            return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
 
     @staticmethod
     def from_schema(molschema, return_dict=False, verbose=1):
