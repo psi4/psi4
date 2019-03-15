@@ -149,10 +149,10 @@ def format_errors(err, mode=1):
         me = ' ----' if err['me'] is None else '%+.2f' % (err['me'])
         stde = '----' if err['stde'] is None else '%.2f' % (err['stde'])
         mae = '  ----' if err['mae'] is None else '%6.2f' % (err['mae'])
-        mape = '  ----  ' if err['mape'] is None else '%6.1f\%%' % (100 * err['mape'])
-        mapbe = '  ----  ' if err['mapbe'] is None else '%6.1f\%%' % (100 * err['mapbe'])
-        mapce = '  ----  ' if err['mapce'] is None else '%6.1f\%%' % (100 * err['mapce'])
-        text = """$\{%s; %s\}$ %s %s %s""" % \
+        mape = '  ----  ' if err['mape'] is None else '{:6.1f}%'.format(100 * err['mape'])
+        mapbe = '  ----  ' if err['mapbe'] is None else '{:6.1f}%'.format(100 * err['mapbe'])
+        mapce = '  ----  ' if err['mapce'] is None else '{:6.1f}%'.format(100 * err['mapce'])
+        text = r"""$\{%s; %s\}$ %s %s %s""" % \
                (me, stde, mae, mape, mapce)
         return text
 
@@ -2497,8 +2497,8 @@ reinitialize
     def table_reactions(self, modelchem, benchmark='default', sset='default',
                         failoninc=True,
                         columnplan=['indx', 'tagl', 'bm', 'mc', 'e', 'pe'],
-                        title="""Reaction energies [kcal/mol] for {sset} $\subset$ {dbse} with {mc}""",
-                        indextitle="""Detailed results for {sset} $\subset$ {dbse} with {mc}""",
+                        title=r"""Reaction energies [kcal/mol] for {sset} $\subset$ {dbse} with {mc}""",
+                        indextitle=r"""Detailed results for {sset} $\subset$ {dbse} with {mc}""",
                         plotpath='analysis/mols/',
                         standalone=True, theme='rxns', filename=None):
         r"""Prepare single LaTeX table to *filename* or return lines if None showing

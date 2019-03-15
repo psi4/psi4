@@ -18,6 +18,7 @@ else()
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
 
     ExternalProject_Add(qcengine_external
+        DEPENDS qcelemental_external
         BUILD_ALWAYS 1
         URL https://github.com/MolSSI/QCEngine/archive/v0.6.3.tar.gz
         CONFIGURE_COMMAND ""
