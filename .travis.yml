@@ -133,7 +133,6 @@ install:
   - source activate p4env
   - conda install dftd3 gcp resp pylibefp snsmp2 mp2d -c psi4/label/dev
   - conda install qcelemental qcengine pybind11 -c conda-forge  # even if name package removed later, this installs their deps
-  - conda remove qcelemental qcengine --force  # remove after internal builds no longer needed
   - conda list
 
 before_script:

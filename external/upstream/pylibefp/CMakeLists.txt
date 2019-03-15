@@ -20,8 +20,7 @@ if(${ENABLE_libefp})
             DEPENDS lapack_external
                     libefp_external
                     pybind11_external
-            GIT_REPOSITORY https://github.com/loriab/pylibefp
-            GIT_TAG v0.4
+            URL https://github.com/loriab/pylibefp/archive/v0.4.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

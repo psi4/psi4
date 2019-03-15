@@ -13,8 +13,7 @@ if(${ENABLE_gdma})
         include(ExternalProject)
         message(STATUS "Suitable gdma could not be located, ${Magenta}Building gdma${ColourReset} instead.")
         ExternalProject_Add(gdma_external
-            GIT_REPOSITORY https://github.com/psi4/gdma
-            GIT_TAG 9d607d7  # v2.2.6-2-g9d607d7
+            URL https://github.com/psi4/gdma/archive/9d607d7.tar.gz  # v2.2.6-2-g9d607d7
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

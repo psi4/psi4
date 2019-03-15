@@ -13,8 +13,7 @@ if(${ENABLE_erd})
         include(ExternalProject)
         message(STATUS "Suitable erd could not be located, ${Magenta}Building erd${ColourReset} instead.")
         ExternalProject_Add(erd_external
-            GIT_REPOSITORY https://github.com/psi4/erd
-            GIT_TAG v3.0.6
+            URL https://github.com/psi4/erd/archive/v3.0.6/tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -27,8 +27,7 @@ if(${ENABLE_ambit})
         ExternalProject_Add(ambit_external
             DEPENDS lapack_external
                     hdf5_external
-            GIT_REPOSITORY https://github.com/jturney/ambit
-            GIT_TAG 9c7049a  # v0.2 + 37
+            URL https://github.com/jturney/ambit/archive/9c7049a.tar.gz  # v0.2 + 37
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
