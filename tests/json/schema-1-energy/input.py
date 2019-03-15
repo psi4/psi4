@@ -8,6 +8,7 @@ import json
 json_data = {
   "schema_name": "qcschema_input",
   "schema_version": 1,
+  "return_output": True,
   "molecule": {
     "geometry": [
       0.0,
@@ -73,6 +74,8 @@ psi4.compare_integers(True, "MAYER_INDICES" in json_ret["psi4:qcvars"], "Mayer I
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
 
+assert "Density-Fitted Moller-Plesset Theory" in json_ret["raw_output"]
+
 # Expected output with exact MP2
 expected_return_result = -76.2283674281634
 expected_properties = {
@@ -97,6 +100,7 @@ expected_properties = {
 # Switch run to exact MP2
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
+json_data["return_output"] = True
 json_ret = psi4.json_wrapper.run_json(json_data)
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
@@ -107,4 +111,6 @@ psi4.compare_integers(True, "MAYER_INDICES" in json_ret["psi4:qcvars"], "Mayer I
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+
+assert "Ugur Bozkaya" in json_ret["raw_output"]
 

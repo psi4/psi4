@@ -34,7 +34,7 @@ import sys
 import copy
 import json
 import uuid
-import atexit
+import tempfile
 import traceback
 
 import numpy as np
@@ -187,8 +187,8 @@ def run_json(json_data, clean=True):
         psi4_io.set_default_path(json_data["scratch_location"])
 
     # Direct output
-    outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
-    core.set_output_file(outfile, False)
+    outfile = tempfile.NamedTemporaryFile()
+    core.set_output_file(outfile.name, False)
 
     # Set memory
     if "memory" in json_data:
@@ -214,13 +214,9 @@ def run_json(json_data, clean=True):
                                           exc_traceback))
         json_data["success"] = False
 
-        with open(outfile, 'r') as f:
-            json_data["raw_output"] = f.read()
-
     if return_output:
-        with open(outfile, 'r') as f:
-            json_data["raw_output"] = f.read()
-        atexit.register(os.unlink, outfile)
+        outfile.seek(0)
+        json_data["raw_output"] = outfile.read().decode('utf-8')
 
     return json_data
 
