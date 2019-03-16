@@ -849,11 +849,11 @@ class NBodyComputer(BaseTask):
 
         component_results = self.dict()['task_list']
         for k, val in component_results.items():
-            val['molecule'] = val['molecule'].to_schema(dtype=1)['molecule']
+            val['molecule'] = val['molecule'].to_schema(dtype=2)
 
         data = {
             'driver': self.driver,
-            'molecule': self.molecule.to_schema(dtype=1)['molecule'],
+            'molecule': self.molecule.to_schema(dtype=2),
             'properties': {
                 'calcinfo_natom': self.molecule.natom(),
                 'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),

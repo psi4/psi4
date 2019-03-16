@@ -378,7 +378,7 @@ def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
         "displacement_space": "CdSALC",
         "project_translations": data["project_translations"],
         "project_rotations": data["project_rotations"],
-        "molecule": mol.to_schema(dtype=1, units='Bohr'),
+        "molecule": mol.to_schema(dtype=2, units='Bohr'),
         "displacements": {},
         "reference": {}
     }
@@ -387,7 +387,7 @@ def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
         """Given a list of indices and a list of steps to displace each, append the corresponding geometry to the list."""
 
         # Next, to make this salc/magnitude composite.
-        disp_geom, label = _displace_cart(findifrec['molecule']['molecule']['masses'], ref_geom, data["salc_list"],
+        disp_geom, label = _displace_cart(findifrec['molecule']['masses'], ref_geom, data["salc_list"],
                                           zip(indices, steps), data["step_size"])
         if data["print_lvl"] > 2:
             core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(disp_geom, **array_format)))
@@ -1174,7 +1174,7 @@ class FinDifComputer(BaseTask):
                 # 'basis':
                 # 'method':
             },
-            'molecule': self.molecule.to_schema(dtype=1)['molecule'],
+            'molecule': self.molecule.to_schema(dtype=2),
             # 'properties':
             'provenance': p4util.provenance_stamp(__name__),
             'extras': {

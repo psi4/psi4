@@ -89,7 +89,7 @@ class SingleResult(BaseTask):
         data = {
             "schema_name": "qcschema_input",
             "schema_version": 1,
-            "molecule": self.molecule.to_schema(dtype=1)["molecule"],
+            "molecule": self.molecule.to_schema(dtype=2),
             "driver": self.driver,
             "model": {
                 "method": self.method,

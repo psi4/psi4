@@ -1639,7 +1639,7 @@ class CBSComputer(BaseTask):
             #    'method': self.method,
             #    'basis': self.basis
             #},
-            'molecule': self.molecule.to_schema(dtype=1)['molecule'],
+            'molecule': self.molecule.to_schema(dtype=2),
             'properties': {
                 #'calcinfo_nalpha': wfn.nalpha(),
                 #'calcinfo_nbeta': wfn.nbeta(),
@@ -1682,7 +1682,7 @@ def _cbs_schema_to_wfn(cbsjob):
     """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(cbsjob)
+    mol = core.Molecule.from_schema(cbsjob['molecule'])
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
