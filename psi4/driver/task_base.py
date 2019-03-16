@@ -36,6 +36,9 @@ import itertools
 
 import numpy as np
 import pydantic
+import qcelemental as qcel
+qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
+import qcengine as qcng
 
 from psi4 import core
 from psi4.driver import p4util
@@ -84,7 +87,7 @@ class SingleResult(BaseTask):
     def plan(self):
 
         data = {
-            "schema_name": "qc_schema_input",
+            "schema_name": "qcschema_input",
             "schema_version": 1,
             "molecule": self.molecule.to_schema(dtype=1)["molecule"],
             "driver": self.driver,
@@ -105,10 +108,21 @@ class SingleResult(BaseTask):
         # gof = core.get_output_file()
         # core.close_outfile()
 
-        from psi4.driver import json_wrapper
         print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
         #print(json.dumps(self.plan(), indent=2))
-        self.result = json_wrapper.run_json(self.plan())
+        #pp.pprint(self.plan())
+
+        # EITHER ...
+        #from psi4.driver import json_wrapper
+        #self.result = json_wrapper.run_json(self.plan())
+        # ... OR ...
+        newplan = self.plan()
+        newplan.pop('return_output', None)
+        newplan['keywords'] = {k.lower():v for k, v in newplan['keywords'].items()}  # drop after qcng 0.6.4
+        self.result = qcng.compute(newplan, 'psi4', raise_error=True)
+        self.result = self.result.dict()
+        # ... END
+
         pp.pprint(self.result)
         print('... JSON returns >>>')
         self.computed = True

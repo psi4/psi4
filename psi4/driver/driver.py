@@ -495,7 +495,8 @@ def energy(name, **kwargs):
         basis = plan.basis
         core.set_global_option("BASIS", basis)
         core_clean = True
-        print('ENERGY SingleResult', plan.method, plan.basis, plan.driver, plan.molecule)
+        print('ENERGY SingleResult', plan.method, plan.basis, plan.driver, plan.keywords) #plan.molecule)
+        #print(plan.dict())
 
     else:
         plan.compute()

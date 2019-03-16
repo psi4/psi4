@@ -1082,13 +1082,13 @@ class FinDifComputer(BaseTask):
 
         elif task['driver'] == 'gradient':
             reference['gradient'] = plump_qcvar(response, 'gradient')
-            reference['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
+            reference['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
 
         elif task['driver'] == 'hessian':
             reference['hessian'] = plump_qcvar(response, 'hessian')
-            reference['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
-            if 'CURRENT GRADIENT' in task['psi4:qcvars']:
-                reference['gradient'] = plump_qcvar(task['psi4:qcvars']['CURRENT GRADIENT'], 'gradient')
+            reference['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
+            if 'CURRENT GRADIENT' in task['extras']['qcvars']:
+                reference['gradient'] = plump_qcvar(task['extras']['qcvars']['CURRENT GRADIENT'], 'gradient')
 
         # load SingleResult results into findifrec[displacements]
         for label, displacement in self.findifrec["displacements"].items():
@@ -1100,13 +1100,13 @@ class FinDifComputer(BaseTask):
 
             elif task['driver'] == 'gradient':
                 displacement['gradient'] = plump_qcvar(response, 'gradient')
-                displacement['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
+                displacement['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
 
             elif task['driver'] == 'hessian':
                 displacement['hessian'] = plump_qcvar(response, 'hessian')
-                displacement['energy'] = task['psi4:qcvars']['CURRENT ENERGY']
-                if 'CURRENT GRADIENT' in task['psi4:qcvars']:
-                    displacement['gradient'] = plump_qcvar(task['psi4:qcvars']['CURRENT GRADIENT'], 'gradient')
+                displacement['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
+                if 'CURRENT GRADIENT' in task['extras']['qcvars']:
+                    displacement['gradient'] = plump_qcvar(task['extras']['qcvars']['CURRENT GRADIENT'], 'gradient')
 
         # apply finite difference formulas and load derivatives into findifrec[reference]
         if self.metameta['mode'] == '1_0':
@@ -1150,7 +1150,7 @@ class FinDifComputer(BaseTask):
         assembled_results = self._prepare_results()
 
         # load QCVariables
-        qcvars = self.task_list['reference'].get_results()['psi4:qcvars']
+        qcvars = self.task_list['reference'].get_results()['extras']['qcvars']
 
         #qcvars['CURRENT REFERENCE ENERGY'] = self.grand_need[0]['d_energy']
         #qcvars['CURRENT CORRELATION ENERGY'] = assembled_results['energy'] - self.grand_need[0]['d_energy']
@@ -1177,9 +1177,11 @@ class FinDifComputer(BaseTask):
             'molecule': self.molecule.to_schema(dtype=1)['molecule'],
             # 'properties':
             'provenance': p4util.provenance_stamp(__name__),
-            'psi4:qcvars': qcvars,
+            'extras': {
+                'qcvars': qcvars,
+            },
             'return_result': self.findifrec['reference'][self.driver],
-            'schema_name': 'qc_schema_output',
+            'schema_name': 'qcschema_output',
             'schema_version': 1,
             # 'success': True,
         }
@@ -1210,12 +1212,12 @@ def _findif_schema_to_wfn(findifjob):
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
-#    wfn.set_energy(findifjob['psi4:qcvars'].get('CURRENT ENERGY'))  # catches Wfn.energy_
-    for qcv, val in findifjob['psi4:qcvars'].items():
+#    wfn.set_energy(findifjob['extras']['qcvars'].get('CURRENT ENERGY'))  # catches Wfn.energy_
+    for qcv, val in findifjob['extras']['qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, plump_qcvar(val, qcv))
 
-#    flat_grad = findifjob['psi4:qcvars'].get('CURRENT GRADIENT')
+#    flat_grad = findifjob['extras']['qcvars'].get('CURRENT GRADIENT')
 #    if flat_grad is not None:
 #        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
 #        wfn.set_gradient(finalgradient)
@@ -1224,7 +1226,7 @@ def _findif_schema_to_wfn(findifjob):
 #            core.print_out('CURRENT GRADIENT')
 #            finalgradient.print_out()
 #
-#    flat_hess = findifjob['psi4:qcvars'].get('CURRENT HESSIAN')
+#    flat_hess = findifjob['extras']['qcvars'].get('CURRENT HESSIAN')
 #    if flat_hess is not None:
 #        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
 #        wfn.set_hessian(finalhessian)

@@ -804,7 +804,7 @@ class NBodyComputer(BaseTask):
 
         if self.driver == 'hessian':
             # Compute nbody gradient
-            gradient = {k: np.array(v['psi4:qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
+            gradient = {k: np.array(v['extras']['qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
             tmp['ptype'] = gradient
             metadata = metadata.copy()
             metadata['driver'] = 'gradient'
@@ -860,10 +860,12 @@ class NBodyComputer(BaseTask):
                 'return_energy': ret_energy,
             },
             'provenance': p4util.provenance_stamp(__name__),
-            'psi4:qcvars': qcvars,
+            'extras': {
+                'qcvars': qcvars,
+            },
             #'raw_output': None,
             'return_result': ret_ptype,
-            'schema_name': 'qc_schema_output',
+            'schema_name': 'qcschema_output',
             'schema_version': 1,
             'success': True,
             'component_results': component_results
@@ -888,14 +890,14 @@ class NBodyComputer(BaseTask):
         ]
         if self.driver == 'gradient':
             wfn.set_gradient(ret)
-            nbody_results['psi4:qcvars']['gradient_body_dict'] = nbody_results['psi4:qcvars']['ptype_body_dict']
+            nbody_results['extras']['qcvars']['gradient_body_dict'] = nbody_results['extras']['qcvars']['ptype_body_dict']
         elif self.driver == 'hessian':
             wfn.set_hessian(ret)
-            wfn.set_gradient(plump_qcvar(nbody_results['psi4:qcvars']['CURRENT GRADIENT'], 'gradient', 'psi4'))
+            wfn.set_gradient(plump_qcvar(nbody_results['extras']['qcvars']['CURRENT GRADIENT'], 'gradient', 'psi4'))
 
-        for d in nbody_results['psi4:qcvars']:
+        for d in nbody_results['extras']['qcvars']:
             if d in dicts:
-                for var, value in nbody_results['psi4:qcvars'][d].items():
+                for var, value in nbody_results['extras']['qcvars'][d].items():
                     try:
                         wfn.set_variable(str(var), value)
                         core.set_variable(str(var), value)

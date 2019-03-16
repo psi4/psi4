@@ -1547,6 +1547,7 @@ class CBSComputer(BaseTask):
 
     def _prepare_results(self):
         results_list = [x.get_results() for x in self.task_list]
+
         #for x in self.task_list:
         #    print('\nTASK')
         #    pp.pprint(x)
@@ -1564,13 +1565,13 @@ class CBSComputer(BaseTask):
 
             elif self.metameta['ptype'] == 'gradient':
                 mc['f_gradient'] = np.array(response).reshape((-1, 3))
-                mc['f_energy'] = task['psi4:qcvars']['CURRENT ENERGY']
+                mc['f_energy'] = task['extras']['qcvars']['CURRENT ENERGY']
 
             elif self.metameta['ptype'] == 'hessian':
                 mc['f_hessian'] = plump_qcvar(response, 'hessian')
-                mc['f_energy'] = task['psi4:qcvars']['CURRENT ENERGY']
-                if 'CURRENT GRADIENT' in task['psi4:qcvars']:
-                    mc['f_gradient'] = plump_qcvar(task['psi4:qcvars']['CURRENT GRADIENT'], 'gradient')
+                mc['f_energy'] = task['extras']['qcvars']['CURRENT ENERGY']
+                if 'CURRENT GRADIENT' in task['extras']['qcvars']:
+                    mc['f_gradient'] = plump_qcvar(task['extras']['qcvars']['CURRENT GRADIENT'], 'gradient')
 
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
@@ -1578,7 +1579,7 @@ class CBSComputer(BaseTask):
                     for job in self.trove:
                         if ((wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis'])
                                 and (mc['f_options'] == job['f_options'])):
-                            job['f_energy'] = task['psi4:qcvars'][VARH[wfn][wfn]]
+                            job['f_energy'] = task['extras']['qcvars'][VARH[wfn][wfn]]
 
             # Copy data from 'run' to 'obtained' table
             for mce in self.trove:
@@ -1647,10 +1648,12 @@ class CBSComputer(BaseTask):
                 'return_energy': assembled_results['energy'],
             },
             'provenance': p4util.provenance_stamp(__name__),
-            'psi4:qcvars': qcvars,
+            'extras': {
+                'qcvars': qcvars,
+            },
             #'raw_output': None,
             'return_result': assembled_results['ret_ptype'],
-            'schema_name': 'qc_schema_output',
+            'schema_name': 'qcschema_output',
             'schema_version': 1,
             'success': True,
         }
@@ -1683,12 +1686,12 @@ def _cbs_schema_to_wfn(cbsjob):
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
-#    wfn.set_energy(cbsjob['psi4:qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
-    for qcv, val in cbsjob['psi4:qcvars'].items():
+#    wfn.set_energy(cbsjob['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
+    for qcv, val in cbsjob['extras']['qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, plump_qcvar(val, qcv))
 
-#    flat_grad = cbsjob['psi4:qcvars'].get('CBS TOTAL GRADIENT')
+#    flat_grad = cbsjob['extras']['qcvars'].get('CBS TOTAL GRADIENT')
 #    if flat_grad is not None:
 #        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
 #        wfn.set_gradient(finalgradient)
@@ -1697,7 +1700,7 @@ def _cbs_schema_to_wfn(cbsjob):
 #            core.print_out('CURRENT GRADIENT')
 #            finalgradient.print_out()
 #
-#    flat_hess = cbsjob['psi4:qcvars'].get('CBS TOTAL HESSIAN')
+#    flat_hess = cbsjob['extras']['qcvars'].get('CBS TOTAL HESSIAN')
 #    if flat_hess is not None:
 #        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
 #        wfn.set_hessian(finalhessian)
