@@ -22,8 +22,7 @@
         endif()
 
         ExternalProject_Add(pcmsolver_external
-            GIT_REPOSITORY https://github.com/PCMSolver/pcmsolver
-            GIT_TAG v1.2.1
+            URL https://github.com/PCMSolver/pcmsolver/archive/v1.2.1.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

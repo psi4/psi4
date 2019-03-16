@@ -1877,7 +1877,7 @@ def _parse_cbs_gufunc_string(method_name):
         ``(["mp2", "ccsd(t)"], ["cc-pv[tq]z", "cc-pvtz"])``.
     """
 
-    method_name_list = re.split("""\+(?=\s*[Dd]:)""", method_name)
+    method_name_list = re.split(r"""\+(?=\s*[Dd]:)""", method_name)
     if len(method_name_list) > 2:
         raise ValidationError(
             "CBS gufunc: Text parsing is only valid for a single delta, please use the CBS wrapper directly")

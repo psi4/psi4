@@ -15,8 +15,7 @@ if(${ENABLE_gpu_dfcc})
 
         ExternalProject_Add(gpu_dfcc_external
             DEPENDS psi4-core
-            GIT_REPOSITORY https://github.com/edeprince3/gpu_dfcc
-            GIT_TAG b98c6f1  # v0.3 + 1 (install fix)
+            URL https://github.com/edeprince3/gpu_dfcc/archive/b98c6f1.tar.gz  # v0.3 + 1 (install fix)
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

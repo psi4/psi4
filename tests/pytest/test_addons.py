@@ -4,6 +4,8 @@ import pytest
 
 from addons import *
 
+import qcengine as qcng
+from qcengine.testing import using_mp2d
 
 pytestmark = pytest.mark.quick
 
@@ -167,6 +169,43 @@ def test_chemps2():
 
     ref_energy = -109.1035023353
     assert psi4.compare_values(ref_energy, psi4.variable("CURRENT ENERGY"), 6, "DMRG Energy")
+
+
+@pytest.mark.smoke
+@using_mp2d
+def test_mp2d():
+    eneyne = psi4.geometry("""
+    C   0.000000  -0.667578  -2.124659
+    C   0.000000   0.667578  -2.124659
+    H   0.923621  -1.232253  -2.126185
+    H  -0.923621  -1.232253  -2.126185
+    H  -0.923621   1.232253  -2.126185
+    H   0.923621   1.232253  -2.126185
+    --
+    C   0.000000   0.000000   2.900503
+    C   0.000000   0.000000   1.693240
+    H   0.000000   0.000000   0.627352
+    H   0.000000   0.000000   3.963929
+    """)
+    mol = eneyne.to_schema(dtype=2)
+    expected = 0.00632174635953
+
+    resinp = {
+        'schema_name': 'qcschema_input',
+        'schema_version': 1,
+        'molecule': mol,
+        'driver': 'energy', #gradient',
+        'model': {
+            'method': 'mp2d-mp2-dmp2'
+        },
+        'keywords': {},
+    }
+    jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
+    jrec = jrec.dict()
+
+    assert psi4.compare_values(expected, jrec['extras']['qcvars']['CURRENT ENERGY'], 7, 'E')
+    assert psi4.compare_values(expected, jrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'], 7, 'disp E')
+    assert psi4.compare_values(expected, jrec['extras']['qcvars']['MP2-DMP2 DISPERSION CORRECTION ENERGY'], 7, 'mp2d disp E')
 
 
 @pytest.mark.smoke

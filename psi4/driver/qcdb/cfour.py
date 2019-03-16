@@ -326,7 +326,7 @@ def harvest_outfile_pass(outtext):
         r'^\s*' +
         r'^\s*' + r'(?:\w+ iterations converged .*?)' +
         r'^\s*' +
-        r'^\s*' + r'(?:Total (?P<iterCC>\w+) energy:)' + r'\s+' + r'(?P<tot>' + NUMBER + ')\s*$',
+        r'^\s*' + r'(?:Total (?P<iterCC>\w+) energy:)' + r'\s+' + r'(?P<tot>' + NUMBER + r')\s*$',
         outtext, re.MULTILINE | re.DOTALL)
     if mobj:
         print('matched ncc cc iter')
@@ -423,9 +423,9 @@ def harvest_outfile_pass(outtext):
         r'^\s+' + r'(?P<fullCC>(?P<iterCC>CC(?:\w+))(?:\(T\))?)' + r'\s+(?:energy will be calculated.)\s*' +
         r'(?:.*?)' +
         r'^\s*' + r'(?:@CCENRG-I, Correlation energies.)' + r'\s+(?:ECCAA)\s+' + NUMBER + r'\s*' +
-        r'^\s+(?:ECCBB)\s+' + NUMBER + '\s*' +
-        r'^\s+(?:ECCAB)\s+' + NUMBER + '\s*' +
-        r'^\s+(?:Total)\s+' + NUMBER + '\s*',
+        r'^\s+(?:ECCBB)\s+' + NUMBER + r'\s*' +
+        r'^\s+(?:ECCAB)\s+' + NUMBER + r'\s*' +
+        r'^\s+(?:Total)\s+' + NUMBER + r'\s*',
         outtext, re.MULTILINE | re.DOTALL)
     if mobj:  # PRINT=2 to get SCS-CC components
         print('matched scscc')

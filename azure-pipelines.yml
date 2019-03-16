@@ -124,7 +124,6 @@ jobs:
                         python=%PYTHON_VERSION% ^
                         qcelemental ^
                         qcengine
-          conda remove qcelemental qcengine --force
           conda list
         displayName: "Install conda packages"
 
