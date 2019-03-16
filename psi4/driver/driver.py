@@ -1295,7 +1295,7 @@ def hessian(name, **kwargs):
         findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molecule, irrep)
 
         # Record undisplaced symmetry for projection of displaced point groups
-        core.set_parent_symmetry(molecule.schoenflies_symbol())
+        core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
 
         ndisp = len(findif_meta_dict["displacements"]) + 1
 
@@ -1323,7 +1323,7 @@ def hessian(name, **kwargs):
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
-        core.set_parent_symmetry('')
+        core.set_global_option("PARENT_SYMMETRY", "")
         optstash.restore()
         optstash_conv.restore()
 
@@ -1339,7 +1339,7 @@ def hessian(name, **kwargs):
         findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, irrep)
 
         # Record undisplaced symmetry for projection of diplaced point groups
-        core.set_parent_symmetry(molecule.schoenflies_symbol())
+        core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
 
         ndisp = len(findif_meta_dict["displacements"]) + 1
 
@@ -1366,7 +1366,7 @@ def hessian(name, **kwargs):
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
-        core.set_parent_symmetry('')
+        core.set_global_option("PARENT_SYMMETRY", "")
         optstash.restore()
         optstash_conv.restore()
 

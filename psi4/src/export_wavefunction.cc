@@ -134,11 +134,11 @@ void export_wavefunction(py::module& m) {
         .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
         .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
         .def("energy", &Wavefunction::energy, "Returns the Wavefunction's energy.")
-        .def("set_energy", &Wavefunction::set_energy, "Sets the Wavefunction's energy.")
+        .def("set_energy", &Wavefunction::set_energy, "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
         .def("gradient", &Wavefunction::gradient, "Returns the Wavefunction's gradient.")
-        .def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunction's gradient.")
+        .def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunction's gradient. Syncs with Wavefunction's QC variable ``CURRENT GRADIENT``.")
         .def("hessian", &Wavefunction::hessian, "Returns the Wavefunction's Hessian.")
-        .def("set_hessian", &Wavefunction::set_hessian, "Sets the Wavefunction's Hessian.")
+        .def("set_hessian", &Wavefunction::set_hessian, "Sets the Wavefunction's Hessian. Syncs with Wavefunction's QC variable ``CURRENT HESSIAN``.")
         .def("legacy_frequencies", &Wavefunction::frequencies, "Returns the frequencies of the Hessian.")
         .def("set_legacy_frequencies", &Wavefunction::set_frequencies, "Sets the frequencies of the Hessian.")
         .def("esp_at_nuclei", &Wavefunction::get_esp_at_nuclei, "returns electrostatic potentials at nuclei")
@@ -193,9 +193,9 @@ void export_wavefunction(py::module& m) {
         .def("array_variable", &Wavefunction::array_variable,
              "Returns copy of the requested (case-insensitive) Matrix QC variable.")
         .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
-             "Sets the requested (case-insensitive) double QC variable.")
+             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT ENERGY.")
         .def("set_array_variable", &Wavefunction::set_array_variable,
-             "Sets the requested (case-insensitive) Matrix QC variable.")
+             "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or ``hessian_`` if CURRENT GRADIENT or HESSIAN.")
         .def("del_scalar_variable", &Wavefunction::del_scalar_variable,
              "Removes the requested (case-insensitive) double QC variable.")
         .def("del_array_variable", &Wavefunction::del_array_variable,

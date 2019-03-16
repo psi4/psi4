@@ -285,7 +285,7 @@ class EmpiricalDispersion(object):
             (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
 
         """
-        optstash = p4util.OptionsState(['PRINT'])
+        optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
         core.print_out("\n\n   Analytical Dispersion Hessians are not supported by dftd3 or gcp.\n")
@@ -298,7 +298,7 @@ class EmpiricalDispersion(object):
         molclone.fix_com(True)
 
         # Record undisplaced symmetry for projection of diplaced point groups
-        core.set_parent_symmetry(molecule.schoenflies_symbol())
+        core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
 
         findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molclone, -1)
         for displacement in findif_meta_dict["displacements"].values():
