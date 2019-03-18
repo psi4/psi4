@@ -97,6 +97,7 @@ def task_planner(driver, method, molecule, **kwargs):
 
     # Only pull the changed options
     keywords = p4util.prepare_options_for_set_options()
+    keywords["function_kwargs"] = {}
 
     # Pull basis out of kwargs, override globals if user specified
     basis = keywords.pop("BASIS", None)
@@ -115,7 +116,9 @@ def task_planner(driver, method, molecule, **kwargs):
         del packet["molecule"]
 
         # Add tasks for every nbody level requested
-        levels = kwargs.pop('levels', {plan.max_nbody: method})
+        levels = kwargs.pop('levels', None)
+        if levels is None:
+            levels = {plan.max_nbody: method}
         plan.max_nbody = max([i for i in levels if isinstance(i, int)])
 
         for n, level in levels.items():

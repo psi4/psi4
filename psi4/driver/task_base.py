@@ -119,7 +119,10 @@ class SingleResult(BaseTask):
         newplan = self.plan()
         newplan.pop('return_output', None)
         newplan['keywords'] = {k.lower():v for k, v in newplan['keywords'].items()}  # drop after qcng 0.6.4
-        self.result = qcng.compute(newplan, 'psi4', raise_error=True)
+        self.result = qcng.compute(newplan, 'psi4', raise_error=True,
+                                   # local_options below suitable for continuous mode
+                                   local_options={"memory": core.get_memory()/1073741824, "ncores": core.get_num_threads()}
+                                  )
         self.result = self.result.dict()
         # ... END
 

@@ -737,11 +737,10 @@ def gradient(name, **kwargs):
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
 #    if dertype == 1:
-    if True:
-        core.print_out("""gradient() will perform analytic gradient computation.\n""")
+    core.print_out("""gradient() will perform analytic gradient computation.\n""")
 
-        # Perform the gradient calculation
-        wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
+    # Perform the gradient calculation
+    wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
 
 #    else:
 #        raise ValidationError("trying to run G_by_E through driver")

@@ -972,8 +972,11 @@ class FinDifComputer(BaseTask):
 
         print('FINDIFREC CLASS INIT DATA')
         pp.pprint(data)
-        if 'dft_functional' in data:
-            data['keywords']['dft_functional'] = data.pop('dft_functional')
+        for kwg in ['dft_functional']:
+            if kwg in data:
+                data['keywords']['function_kwargs'][kwg] = data.pop(kwg)
+        # I have the feeling the keywords.function_kwargs should be all left over in data
+        #   after the findif control ones are removed, not this by-name procedure
         data['keywords']['PARENT_SYMMETRY'] = self.molecule.point_group().full_name()
 
         self.metameta['mode'] = str(data['findif_mode'][0]) + '_' + str(data['findif_mode'][1])

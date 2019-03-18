@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+import numpy as np
 
 def prepare_results(self):
     """
@@ -93,11 +94,11 @@ def prepare_results(self):
                                                                        components['energy_body_dict'][self.max_nbody])
 
         if ptype == 'hessian':
-            gradient_result += supersystem_result['psi4:qcvars']['CURRENT GRADIENT'] - components['gradient_body_dict'][self.max_nbody]
+            gradient_result += supersystem_result['extras']['qcvars']['CURRENT GRADIENT'] - components['gradient_body_dict'][self.max_nbody]
             hessian_result += supersystem_result['return_result'] - components['ptype_body_dict'][self.max_nbody]
 
         elif ptype == 'gradient':
-            gradient_result += supersystem_result['return_result'] - components['ptype_body_dict'][self.max_nbody]
+            gradient_result += np.array(supersystem_result['return_result']).reshape((-1, 3)) - components['ptype_body_dict'][self.max_nbody]
 
 
     for b in self.bsse_type:
@@ -121,4 +122,4 @@ def prepare_results(self):
 
     energy_body_dict = {str(k) + b: v for b in energy_body_dict for k, v in energy_body_dict[b].items()}
 
-    return {'ret_energy': energy_result, 'ret_ptype': eval(ptype + '_result'), 'energy_body_dict': energy_body_dict, 'ptype_body_dict': {}}
+    return {'ret_energy': energy_result, 'ret_ptype': locals()[ptype + '_result'], 'energy_body_dict': energy_body_dict, 'ptype_body_dict': {}}
