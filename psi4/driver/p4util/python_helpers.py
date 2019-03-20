@@ -441,14 +441,14 @@ def set_options(options_dict, verbose=1):
                 try:
                     core.set_local_option(module, option, v)
                 except RuntimeError as err:
-                    rejected[k] = v
+                    rejected[k] = (v, err)
                 if verbose > 1:
                     print('Setting: core.set_local_option', module, option, v)
         else:
             try:
                 core.set_global_option(option, v)
             except RuntimeError as err:
-                rejected[k] = v
+                rejected[k] = (v, err)
             if verbose > 1:
                 print('Setting: core.set_global_option', option, v)
 

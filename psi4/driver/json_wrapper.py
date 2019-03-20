@@ -205,13 +205,14 @@ def run_json(json_data, clean=True):
 
     # Attempt to run the computer
     try:
-        # qc_schema should be copied
-        json_data = run_json_qc_schema(copy.deepcopy(json_data), clean)
+        # qcschema should be copied
+        json_data = run_json_qcschema(copy.deepcopy(json_data), clean)
 
-    except Exception as error:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        json_data["error"] = repr(traceback.format_exception(exc_type, exc_value,
-                                          exc_traceback))
+    except Exception as exc:
+        json_data["error"] = {
+            'error_type': type(exc).__name__,
+            'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
+        }
         json_data["success"] = False
 
         with open(outfile, 'r') as f:
@@ -225,7 +226,7 @@ def run_json(json_data, clean=True):
     return json_data
 
 
-def run_json_qc_schema(json_data, clean):
+def run_json_qcschema(json_data, clean):
     """
     An implementation of the QC JSON Schema (molssi-qc-schema.readthedocs.io/en/latest/index.html#) implementation in Psi4.
 
@@ -250,7 +251,7 @@ def run_json_qc_schema(json_data, clean):
 
     # This is currently a forced override
     if json_data["schema_name"] in ["qc_schema_input", "qcschema_input"]:
-        json_data["schema_name"] = "qc_schema_input"  # humor qcel 0.1.3
+        json_data["schema_name"] = "qcschema_input"
     else:
         raise KeyError("Schema name of '{}' not understood".format(json_data["schema_name"]))
 
@@ -263,19 +264,23 @@ def run_json_qc_schema(json_data, clean):
     json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 
     # Build molecule
-    mol = core.Molecule.from_schema(json_data)
+    if "schema_name" in json_data["molecule"]:
+        molschemus = json_data["molecule"]  # dtype >=2
+    else:
+        molschemus = json_data  # dtype =1
+    mol = core.Molecule.from_schema(molschemus)
 
     # Update molecule geometry as we orient and fix_com
     json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()
 
     # Set options
-    for k, v in json_data["keywords"].items():
-        core.set_global_option(k, v)
+    kwargs = json_data["keywords"].pop("function_kwargs", {})
+    psi4.set_options(json_data["keywords"])
 
     # Setup the computation
     method = json_data["model"]["method"]
     core.set_global_option("BASIS", json_data["model"]["basis"])
-    kwargs = {"return_wfn": True, "molecule": mol}
+    kwargs.update({"return_wfn": True, "molecule": mol})
 
     # Handle special properties case
     if json_data["driver"] == "properties":
@@ -291,14 +296,23 @@ def run_json_qc_schema(json_data, clean):
     # Actual driver run
     val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
 
-    # Pull out a standard set of Psi variables
-    psi_props = psi4.core.scalar_variables()
-    json_data["psi4:qcvars"] = psi_props
+    # Pull out a standard set of SCF properties
+    if "extras" not in json_data:
+        json_data["extras"] = {}
+    json_data["extras"]["qcvars"] = {}
+
+    if json_data["extras"].get("wfn_qcvars_only", False):
+        psi_props = wfn.variables()
+    else:
+        psi_props = psi4.core.variables()
+        for k, v in psi_props.items():
+            if k not in json_data["extras"]["qcvars"]:
+                json_data["extras"]["qcvars"][k] = _json_translation(v)
 
     # Still a bit of a mess at the moment add in local vars as well.
     for k, v in wfn.variables().items():
-        if k not in json_data["psi4:qcvars"]:
-            json_data["psi4:qcvars"][k] = _json_translation(v)
+        if k not in json_data["extras"]["qcvars"]:
+            json_data["extras"]["qcvars"][k] = _json_translation(v)
 
     # Handle the return result
     if json_data["driver"] == "energy":
@@ -328,7 +342,8 @@ def run_json_qc_schema(json_data, clean):
         "calcinfo_natom": mol.geometry().shape[0],
     }
     props.update(_convert_variables(psi_props, context="generics"))
-    props.update(_convert_variables(psi_props, context="scf"))
+    if not list(set(['CBS NUMBER', 'NBODY NUMBER', 'FINDIF NUMBER']) & set(json_data["extras"]["qcvars"].keys())):
+        props.update(_convert_variables(psi_props, context="scf"))
 
     # Write out MP2 keywords
     if "MP2 CORRELATION ENERGY" in psi_props:

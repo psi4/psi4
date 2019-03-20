@@ -775,9 +775,9 @@ void DFMP2::print_energies() {
     outfile->Printf("\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale", sss_);
     outfile->Printf("\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale", oss_);
     outfile->Printf("\t %-25s = %24.16f [Eh]\n", "SCS Same-Spin Energy",
-                    variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"]);
+                    sss_ * variables_["MP2 SAME-SPIN CORRELATION ENERGY"]);
     outfile->Printf("\t %-25s = %24.16f [Eh]\n", "SCS Opposite-Spin Energy",
-                    variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"]);
+                    oss_ * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"]);
     outfile->Printf("\t %-25s = %24.16f [Eh]\n", "SCS Correlation Energy", variables_["SCS-MP2 CORRELATION ENERGY"]);
     outfile->Printf("\t %-25s = %24.16f [Eh]\n", "SCS Total Energy", variables_["SCS-MP2 TOTAL ENERGY"]);
     outfile->Printf("\t-----------------------------------------------------------\n");
