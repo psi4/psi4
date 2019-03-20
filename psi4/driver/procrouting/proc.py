@@ -2217,6 +2217,9 @@ def run_scf_hessian(name, **kwargs):
     H = core.scfhess(ref_wfn)
     ref_wfn.set_hessian(H)
 
+    # Clearly, add some logic when the reach of this fn expands
+    ref_wfn.set_variable('HF TOTAL HESSIAN', H)
+
     optstash.restore()
     return ref_wfn
 
