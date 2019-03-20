@@ -68,7 +68,7 @@ with open("output.json", "w") as ofile:                                         
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
 psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
-psi4.compare_integers(True, "MAYER_INDICES" in json_ret["psi4:qcvars"], "Mayer Indices Found")                           #TEST
+psi4.compare_integers(True, "MAYER_INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
@@ -101,7 +101,7 @@ json_ret = psi4.json_wrapper.run_json(json_data)
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
 psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
-psi4.compare_integers(True, "MAYER_INDICES" in json_ret["psi4:qcvars"], "Mayer Indices Found")                           #TEST
+psi4.compare_integers(True, "MAYER_INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
 
 # print(json.dumps(json_ret, indent=2))
 

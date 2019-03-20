@@ -415,7 +415,30 @@ def set_options(options_dict):
     """
 
     for k, v, in options_dict.items():
-        core.set_global_option(k.upper(), v)
+        mobj = optionre.match(k)
+        module = mobj.group('module').upper()[:-2] if mobj.group('module') else None
+        option = mobj.group('option').upper()
+
+        if module:
+            if (module, option, v) not in [('SCF', 'GUESS', 'READ')]:
+                # TODO guess/read exception is for distributed driver. should be handled differently.
+                try:
+                    core.set_local_option(module, option, v)
+                except RuntimeError as err:
+                    rejected[k] = (v, err)
+                if verbose > 1:
+                    print('Setting: core.set_local_option', module, option, v)
+        else:
+            try:
+                core.set_global_option(option, v)
+            except RuntimeError as err:
+                rejected[k] = (v, err)
+            if verbose > 1:
+                print('Setting: core.set_global_option', option, v)
+
+    if rejected:
+        raise ValidationError(f'Error setting options: {rejected}')
+        # TODO could subclass ValidationError and append rejected so that run_json could handle remanants.
 
 
 def set_module_options(module, options_dict):
