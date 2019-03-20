@@ -67,6 +67,8 @@ class SingleResult(BaseTask):
     computed: bool = False
     result: Dict[str, Any] = None
 
+    result_id: str = None
+
     @pydantic.validator('basis')
     def set_basis(cls, basis):
         return basis.lower()
@@ -101,8 +103,26 @@ class SingleResult(BaseTask):
 
         return data
 
-    def compute(self):
+    def compute(self, client=None):
+
         if self.computed:
+            return
+
+        if client:
+
+            self.computed = True
+            from qcfractal.interface.models import KeywordSet
+            from qcfractal.interface import Molecule
+
+            # Build the keywords
+            keyword_id = client.add_keywords([KeywordSet(values=self.keywords)])[0]
+
+            # Build the molecule
+            mol = Molecule(**self.molecule.to_schema(dtype=2))
+
+            self.result_id = client.add_compute("psi4", self.method, self.basis, self.driver, keyword_id, [mol]).ids[0]
+            print("Submitting Single Result {}".format(self.result_id))
+
             return
 
         # gof = core.get_output_file()
@@ -132,8 +152,19 @@ class SingleResult(BaseTask):
 
         # core.set_output_file(gof, True)
 
-    def get_results(self):
-        return self.result
+    def get_results(self, client=None):
+        if self.result:
+            return self.result
+
+        if client:
+            result = client.query_results(id=self.result_id)
+            print("Querying Single Result {}".format(self.result_id))
+            if len(result) == 0:
+                return self.result
+
+            print(result[0])
+            self.result = result[0].json_dict()
+            return self.result
 
     def get_json_results(self):
         return self.result

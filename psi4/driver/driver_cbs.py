@@ -1535,18 +1535,18 @@ class CBSComputer(BaseTask):
     def plan(self):
         return [x.plan() for x in self.task_list]
 
-    def compute(self):
+    def compute(self, client=None):
         with p4util.hold_options_state():
             # gof = core.get_output_file()
             # core.close_outfile()
 
             for x in self.task_list:
-                x.compute()
+                x.compute(client=client)
 
             # core.set_output_file(gof, True)
 
-    def _prepare_results(self):
-        results_list = [x.get_results() for x in self.task_list]
+    def _prepare_results(self, client=None):
+        results_list = [x.get_results(client=client) for x in self.task_list]
 
         #for x in self.task_list:
         #    print('\nTASK')
@@ -1600,10 +1600,10 @@ class CBSComputer(BaseTask):
 
         return cbs_results
 
-    def get_results(self):
+    def get_results(self, client=None):
         """Return CBS results as CBS-flavored QCSchema."""
 
-        assembled_results = self._prepare_results()
+        assembled_results = self._prepare_results(client=client)
 
         # load QCVariables
         qcvars = {

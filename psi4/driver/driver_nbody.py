@@ -728,7 +728,7 @@ class NBodyComputer(BaseTask):
         # Store tasks by level
         level = kwargs.pop('max_nbody', self.max_nbody)
 
-        # Add supersystem computation if requested 
+        # Add supersystem computation if requested
         if level == 'supersystem':
             data = json.loads(template)
             data["molecule"] = self.molecule
@@ -770,26 +770,26 @@ class NBodyComputer(BaseTask):
             ret.append(v.plan())
         return ret
 
-    def compute(self):
+    def compute(self, client=None):
         with p4util.hold_options_state():
             # gof = core.get_output_file()
             # core.close_outfile()
             for k, v in self.task_list.items():
-                v.compute()
+                v.compute(client)
 
             # core.set_output_file(gof, True)
 
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
 
-    def prepare_results(self, results={}):
+    def prepare_results(self, results={}, client=None):
 
         nlevels = len({i.split('_')[0] for i in self.task_list})
         if nlevels > 1 and not results:
             return driver_nbody_multilevel.prepare_results(self)
 
         metadata = self.dict().copy()
-        results_list = {literal_eval(k.split('_')[1]): v.get_results() for k, v in (results.items() or self.task_list.items())}
+        results_list = {literal_eval(k.split('_')[1]): v.get_results(client=client) for k, v in (results.items() or self.task_list.items())}
         energies = {k: v['properties']["return_energy"] for k, v in results_list.items()}
 
         ptype = None
@@ -827,10 +827,10 @@ class NBodyComputer(BaseTask):
 
         return nbody_results
 
-    def get_results(self):
+    def get_results(self, client=None):
         """Return nbody results as nbody-flavored QCSchema."""
 
-        results = self.prepare_results()
+        results = self.prepare_results(client=client)
         ret_energy, ret_ptype, ret_gradient = results.pop('ret_energy'), results.pop('ret_ptype'), results.pop('ret_gradient', None)
 
         # load QCVariables
@@ -872,7 +872,7 @@ class NBodyComputer(BaseTask):
             'success': True,
             'component_results': component_results
         }
-        data = unnp(data, flat=True) 
+        data = unnp(data, flat=True)
 
         return data
 
