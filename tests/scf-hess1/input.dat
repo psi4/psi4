@@ -37,14 +37,13 @@ compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST
 compare_values(ref_ene, variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST
 compare_values(ref_ene, variable('current ENERGY'), 6, 'STO-3G energy')  #TEST
 compare_values(ref_ene, variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
-# waiting for #1445
 #compare_arrays(psi3_hess, variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
 #compare_arrays(psi3_hess, variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
-#compare_values(ref_ene, wfn.variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST
-#compare_values(ref_ene, wfn.variable('current ENERGY'), 6, 'STO-3G energy')  #TEST
-#compare_values(ref_ene, wfn.variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
-#compare_arrays(psi3_hess, wfn.variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
-#compare_arrays(psi3_hess, wfn.variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
+compare_values(ref_ene, wfn.variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, wfn.variable('current ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, wfn.variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_arrays(psi3_hess, wfn.variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
+compare_arrays(psi3_hess, wfn.variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
 
 # Clean out scratch files and go again with cc-pVDZ
 psi4.clean()
