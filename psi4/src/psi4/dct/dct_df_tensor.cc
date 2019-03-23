@@ -1544,20 +1544,20 @@ void DCTSolver::build_gbarGamma_RHF() {
         int hp = hq;
         if (nsopi_[hq] > 0) {
             double** tFAp = mo_gbarGamma_A_->pointer(hq);
-            double** bQpqAp = bQpqA_mo_->pointer(0);
-            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_);
+            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
+            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
             double** Qp = Q->pointer();
             // (Q) = b(Q|SR) gamma<R|S>
             for (int hr = 0; hr < nirrep_; ++hr) {
                 int hs = hr;
                 if (nsopi_[hr] > 0) {
                     double** gamma_rs_p = mo_gammaA_->pointer(hr);
-                    C_DGEMV('N', nQ_, nsopi_[hr] * nsopi_[hs], 1.0, bQpqAp[0] + block[0][hr].first,
-                            bQpqA_mo_->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
+                    C_DGEMV('N', nQ_scf_, nsopi_[hr] * nsopi_[hs], 1.0, bQpqAp[0] + block[0][hr].first,
+                            bQpqA_mo_scf_->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
                 }
             }
             // tilde_f <Q|P> = 2 b(QP|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_, nsopi_[hp] * nsopi_[hq], 2.0, bQpqAp[0] + block[0][hp].first, bQpqA_mo_->coldim(0), Qp[0],
+            C_DGEMV('T', nQ_scf_, nsopi_[hp] * nsopi_[hq], 2.0, bQpqAp[0] + block[0][hp].first, bQpqA_mo_scf_->coldim(0), Qp[0],
                     1, 0.0, tFAp[0], 1);
         }
     }
@@ -1569,7 +1569,7 @@ void DCTSolver::build_gbarGamma_RHF() {
             for (int hr = 0; hr < nirrep_; ++hr) {
                 int hs = hr;
                 if (nsopi_[hr] > 0) {
-                    double** bQpqAp = bQpqA_mo_->pointer(hq ^ hr);
+                    double** bQpqAp = bQpqA_mo_scf_->pointer(hq ^ hr);
                     double** gamma_rs_p = mo_gammaA_->pointer(hr);
 
                     std::vector<SharedMatrix> rs;
@@ -1587,9 +1587,9 @@ void DCTSolver::build_gbarGamma_RHF() {
                             double** rsp = rs[thread]->pointer();
 
                             // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
-                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_, 1.0,
-                                    bQpqAp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqA_mo_->coldim(hq ^ hr),
-                                    bQpqAp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqA_mo_->coldim(hp ^ hs),
+                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0,
+                                    bQpqAp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqA_mo_scf_->coldim(hq ^ hr),
+                                    bQpqAp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqA_mo_scf_->coldim(hp ^ hs),
                                     0.0, rsp[0], nsopi_[hs]);
                             // - <Q'P'|RS> * gamma<R|S>
                             double value = -C_DDOT(nsopi_[hr] * nsopi_[hs], rsp[0], 1, gamma_rs_p[0], 1);
@@ -1604,6 +1604,7 @@ void DCTSolver::build_gbarGamma_RHF() {
         }
     }
 
+    bQpqA_mo_scf_.reset();
     mo_gbarGamma_A_->add(mo_gbarKappa_A_);
 
     dct_timer_off("DCTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
@@ -1708,7 +1709,6 @@ void DCTSolver::build_gbarKappa_RHF() {
         }
     }
 
-    bQpqA_mo_scf_.reset();
 
     dct_timer_off("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
 }
@@ -2213,11 +2213,11 @@ void DCTSolver::build_gbarGamma_UHF() {
             double** tFAp = mo_gbarGamma_A_->pointer(hQ);
             double** tFBp = mo_gbarGamma_B_->pointer(hQ);
 
-            double** bQpqAp = bQpqA_mo_->pointer(0);
-            double** bQpqBp = bQpqB_mo_->pointer(0);
+            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
+            double** bQpqBp = bQpqB_mo_scf_->pointer(0);
 
             // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
-            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_);
+            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
             double** Qp = Q->pointer();
             for (int hR = 0; hR < nirrep_; ++hR) {
                 int hS = hR;
@@ -2225,20 +2225,20 @@ void DCTSolver::build_gbarGamma_UHF() {
                     double** gamma_rsAp = mo_gammaA_->pointer(hR);
                     double** gamma_rsBp = mo_gammaB_->pointer(hR);
                     // (Q) = b(Q|SR) gamma<R|S>
-                    C_DGEMV('N', nQ_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqAp[0] + block[0][hR].first,
-                            bQpqA_mo_->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
+                    C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqAp[0] + block[0][hR].first,
+                            bQpqA_mo_scf_->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
                     // (Q) += b(Q|sr) gamma<r|s>
-                    C_DGEMV('N', nQ_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqBp[0] + block[0][hR].first,
-                            bQpqB_mo_->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
+                    C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqBp[0] + block[0][hR].first,
+                            bQpqB_mo_scf_->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
                 }
             }
 
             // f_tilde <Q|P> = b(QP|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqAp[0] + block[0][hP].first, bQpqA_mo_->coldim(0), Qp[0],
+            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqAp[0] + block[0][hP].first, bQpqA_mo_scf_->coldim(0), Qp[0],
                     1, 0.0, tFAp[0], 1);
 
             // f_tilde <q|p> = b(qp|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqBp[0] + block[0][hP].first, bQpqB_mo_->coldim(0), Qp[0],
+            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqBp[0] + block[0][hP].first, bQpqB_mo_scf_->coldim(0), Qp[0],
                     1, 0.0, tFBp[0], 1);
         }
     }
@@ -2250,7 +2250,7 @@ void DCTSolver::build_gbarGamma_UHF() {
             for (int hR = 0; hR < nirrep_; ++hR) {
                 int hS = hR;
                 if (nsopi_[hR] > 0) {
-                    double** bQpqAp = bQpqA_mo_->pointer(hQ ^ hR);
+                    double** bQpqAp = bQpqA_mo_scf_->pointer(hQ ^ hR);
                     double** gamma_rsA_p = mo_gammaA_->pointer(hR);
 
                     std::vector<SharedMatrix> RS;
@@ -2268,9 +2268,9 @@ void DCTSolver::build_gbarGamma_UHF() {
                             double** RSp = RS[thread]->pointer();
 
                             // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
-                            C_DGEMM('T', 'N', nsopi_[hR], nsopi_[hS], nQ_, 1.0,
-                                    bQpqAp[0] + block[hQ ^ hR][hQ].first + Q * nsopi_[hR], bQpqA_mo_->coldim(hQ ^ hR),
-                                    bQpqAp[0] + block[hP ^ hS][hP].first + P * nsopi_[hS], bQpqA_mo_->coldim(hP ^ hS),
+                            C_DGEMM('T', 'N', nsopi_[hR], nsopi_[hS], nQ_scf_, 1.0,
+                                    bQpqAp[0] + block[hQ ^ hR][hQ].first + Q * nsopi_[hR], bQpqA_mo_scf_->coldim(hQ ^ hR),
+                                    bQpqAp[0] + block[hP ^ hS][hP].first + P * nsopi_[hS], bQpqA_mo_scf_->coldim(hP ^ hS),
                                     0.0, RSp[0], nsopi_[hS]);
                             // - <Q'P'|RS> * gamma<R|S>
                             double value = -C_DDOT(nsopi_[hR] * nsopi_[hS], RSp[0], 1, gamma_rsA_p[0], 1);
@@ -2292,7 +2292,7 @@ void DCTSolver::build_gbarGamma_UHF() {
             for (int hr = 0; hr < nirrep_; ++hr) {
                 int hs = hr;
                 if (nsopi_[hr] > 0) {
-                    double** bQpqBp = bQpqB_mo_->pointer(hq ^ hr);
+                    double** bQpqBp = bQpqB_mo_scf_->pointer(hq ^ hr);
                     double** gamma_rsB_p = mo_gammaB_->pointer(hr);
 
                     std::vector<SharedMatrix> rs;
@@ -2310,9 +2310,9 @@ void DCTSolver::build_gbarGamma_UHF() {
                             double** rsp = rs[thread]->pointer();
 
                             // <q'p'|rs> = b(q'r|Aux) b(Aux|p's)
-                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_, 1.0,
-                                    bQpqBp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqB_mo_->coldim(hq ^ hr),
-                                    bQpqBp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqB_mo_->coldim(hp ^ hs),
+                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0,
+                                    bQpqBp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqB_mo_scf_->coldim(hq ^ hr),
+                                    bQpqBp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqB_mo_scf_->coldim(hp ^ hs),
                                     0.0, rsp[0], nsopi_[hs]);
                             // - <q'p'|rs> * gamma<r|s>
                             double value = -C_DDOT(nsopi_[hr] * nsopi_[hs], rsp[0], 1, gamma_rsB_p[0], 1);
@@ -2327,6 +2327,8 @@ void DCTSolver::build_gbarGamma_UHF() {
         }
     }
 
+    bQpqA_mo_scf_.reset();
+    bQpqB_mo_scf_.reset();
     mo_gbarGamma_A_->add(mo_gbarKappa_A_);
     mo_gbarGamma_B_->add(mo_gbarKappa_B_);
 
@@ -2491,8 +2493,6 @@ void DCTSolver::build_gbarKappa_UHF() {
         }
     }
 
-    bQpqA_mo_scf_.reset();
-    bQpqB_mo_scf_.reset();
 
     dct_timer_off("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
 }
