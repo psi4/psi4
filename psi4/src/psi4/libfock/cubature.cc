@@ -3467,6 +3467,7 @@ class RadialPruneMgr {
     static const char *SchemeName(int which) { return pruneschemes[which].name; }
     RadialPruneMgr(MolecularGrid::MolecularGridOptions const &opt);
     int GetPrunedNumAngPts(double rho);
+    int TreutlerAtomicPruning(int ri, int Z, int radial_pts);
 };
 
 RadialPruneMgr::PruneSchemeTable RadialPruneMgr::pruneschemes[] = {{"FLAT", flat},
@@ -3492,6 +3493,26 @@ RadialPruneMgr::RadialPruneMgr(MolecularGrid::MolecularGridOptions const &opt) {
 }
 int RadialPruneMgr::GetPrunedNumAngPts(double rho) {
     int pruned_order = (int)ceil(nominal_order_ * pruneFn_(rho, alpha_) - 1.0E-10);
+    if (pruned_order > LebedevGridMgr::MaxOrder)
+        throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
+    return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
+}
+
+int RadialPruneMgr::TreutlerAtomicPruning(int ri, int Z, int radial_pts) {
+    if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
+    int pruned_order = nominal_order_;    
+    if(Z <= 2) { pruned_order = nominal_order_ - 1; };
+    // if(H_pruning and Z == 1) {int pruned_order = nominal_order_ - 1}; //ToDo
+    double nr3=(double)radial_pts/3.0;
+    double nr2=(double)radial_pts/2.0;
+    if (ri <= nr3 ) {
+        // pruned_order = 5;  
+        pruned_order = 19;  
+    } else if ( ri > nr3 && ri <= nr2 ){
+        // pruned_order = 11;
+        pruned_order = 25;
+    };
+    // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
@@ -3533,7 +3554,11 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             spherical_grids_[A] = spheres;
 
             for (int i = 0; i < opt.nradpts; i++) {
-                int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
+            // for (int i = opt.nradpts; i-- > 0; ) {
+                // if (opt.pruning_function) {int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);};
+                // if (opt.pruning_treutler) {int numAngPts = prune.TreutlerAtomicPruning(r[i], Z, opt.nradpts );};
+                int numAngPts = prune.TreutlerAtomicPruning(i, Z, opt.nradpts);
+                // int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
