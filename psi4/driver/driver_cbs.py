@@ -1587,7 +1587,7 @@ def cbs(func, label, **kwargs):
 
         # Stash and set options if any
         if mc["f_options"]:
-            optionstash = p4util.OptionsState(list(mc["f_options"]))
+            optionstash = p4util.OptionsState(*[[opt] for opt in list(mc["f_options"])])
             for k, v, in mc["f_options"].items():
                 core.set_global_option(k.upper(), v)
         else:
