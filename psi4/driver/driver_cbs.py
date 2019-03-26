@@ -1522,7 +1522,7 @@ def cbs(func, label, **kwargs):
         dups = -1
         for indx_job, job in enumerate(JOBS):
             if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
-               (job['f_options'] == mc['f_options']):
+               (job['f_options'] == mc['f_options']) and (job['f_options'] != False):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
@@ -1534,7 +1534,8 @@ def cbs(func, label, **kwargs):
                 for indx_job, job in enumerate(JOBS):
                     if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
                        (mc['f_basis'] == job['f_basis']) and not \
-                       (mc['f_wfn'] == job['f_wfn']):
+                       (mc['f_wfn'] == job['f_wfn']) and \
+                       (mc['f_options'] == False):
                         del JOBS[indx_job]
 
     instructions += """\n    Enlightened listing of computations required.\n"""
