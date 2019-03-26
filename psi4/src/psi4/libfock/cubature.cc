@@ -3531,7 +3531,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // H, He always 1 smaller
     if(Z <= 2) { pruned_order = nominal_order_ - 1; }; //ToDo: flag to enable/disable
 
-    int region1=7;
+    int region1=7; // TM has 7, but paper 5
     int region2=11;
 
     double nr3=(double)radial_pts/3.0; 
@@ -3541,7 +3541,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     } else if ( ri < 2*nr3 && ri >= nr2 ){
         pruned_order = region2;
     };
-    printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
+    // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
@@ -3612,7 +3612,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                                           wr.data(), alpha);
 
             // RMP: Want this stuff too
-            radial_grids_[A] = RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha);
+            radial_grids_[A] = RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha, Z);
             std::vector<std::shared_ptr<SphericalGrid>> spheres;
             spherical_grids_[A] = spheres;
             
@@ -3620,8 +3620,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             // for (int i = opt.nradpts; i-- > 0; ) {
                 // if (opt.pruning_function) {int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);};
                 // if (opt.pruning_treutler) {int numAngPts = prune.TreutlerAtomicPruning(r[i], Z, opt.nradpts );};
+                int numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);
                 // int numAngPts = prune.ShellPruning(i, Z, opt.nradpts);
-                int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
+                // int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
@@ -3712,7 +3713,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
         }
 
         // RMP: Want this stuff too
-        radial_grids_[A] = RadialGrid::build("Unknown", rs[A].size(), r.data(), wr.data(), alpha);
+        radial_grids_[A] = RadialGrid::build("Unknown", rs[A].size(), r.data(), wr.data(), alpha, Z);
         std::vector<std::shared_ptr<SphericalGrid>> spheres;
         spherical_grids_[A] = spheres;
 
@@ -4568,17 +4569,17 @@ void RadialGrid::print(std::string out, int level) const {
         printer->Printf("\n");
     }
 }
-std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npoints, double alpha) {
+std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npoints, double alpha, int Z) {
     if (scheme == "BECKE") {
-        return RadialGrid::build_becke(npoints, alpha);
+        return RadialGrid::build_becke(npoints, alpha, Z);
     } else if (scheme == "TREUTLER") {
-        return RadialGrid::build_becke(npoints, alpha);
+        return RadialGrid::build_becke(npoints, alpha, Z);
     } else {
         throw PSIEXCEPTION("RadialGrid::build: Unrecognized radial grid.");
     }
 }
 std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npoints, double *r, double *wr,
-                                              double alpha) {
+                                              double alpha, int Z) {
     RadialGrid *grid = new RadialGrid();
 
     grid->scheme_ = scheme;
@@ -4592,7 +4593,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npo
 
     return std::shared_ptr<RadialGrid>(grid);
 }
-std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha) {
+std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha, int Z) {
     RadialGrid *grid = new RadialGrid();
 
     grid->scheme_ = "BECKE";
@@ -4613,18 +4614,18 @@ std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha) {
 
     return std::shared_ptr<RadialGrid>(grid);
 }
-std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha) {
+std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha, int Z) {
     RadialGrid *grid = new RadialGrid();
 
     // Treutler/Ahlrichs 1995
     // clang-format off
-    // static const double M4radii[37] = {
-    //     1.0,
-    //     0.8,                                                                                0.9,
-    //     1.8, 1.4,                                                  1.3, 1.1, 0.9, 0.9, 0.9, 0.9,
-    //     1.4, 1.3,                                                  1.3, 1.2, 1.1, 1.0, 1.0, 1.0,
-    //     1.5, 1.4,1.3, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.0, 0.9, 0.9, 0.9, 0.9,
-    // };
+    static const double M4radii[37] = {
+        1.0,
+        0.8,                                                                                0.9,
+        1.8, 1.4,                                                  1.3, 1.1, 0.9, 0.9, 0.9, 0.9,
+        1.4, 1.3,                                                  1.3, 1.2, 1.1, 1.0, 1.0, 1.0,
+        1.5, 1.4,1.3, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.0, 0.9, 0.9, 0.9, 0.9,
+    };
     // clang-format on
 
     grid->scheme_ = "TREUTLER";
@@ -4633,8 +4634,8 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     grid->r_ = new double[npoints];
     grid->w_ = new double[npoints];
 
-    double INVLN2 = 0.9 / log(2.0);
-    // double INVLN2 = M4radii[Z] /  log(2.0);
+    // double INVLN2 = 0.9 / log(2.0);
+    double INVLN2 = M4radii[Z] /  log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {
         double x = cos(tau / (npoints + 1.0) * M_PI);

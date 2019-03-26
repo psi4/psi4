@@ -230,9 +230,9 @@ class RadialGrid {
     // ==> Standard Radial Grids <== //
 
     /// Build the Becke 1988 radial grid
-    static std::shared_ptr<RadialGrid> build_becke(int npoints, double alpha);
+    static std::shared_ptr<RadialGrid> build_becke(int npoints, double alpha, int Z);
     /// Build the Treutler-Ahlrichs 1995 radial grid (scale power = 0.6)
-    static std::shared_ptr<RadialGrid> build_treutler(int npoints, double alpha);
+    static std::shared_ptr<RadialGrid> build_treutler(int npoints, double alpha, int Z);
     // TODO: Add more grids
 
     /// Protected constructor
@@ -245,10 +245,10 @@ class RadialGrid {
     virtual ~RadialGrid();
 
     /// Master build routine
-    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double alpha);
+    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double alpha, int Z);
     /// Hack build routine (TODO: Remove ASAP)
     static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double* r, double* wr,
-                                             double alpha);
+                                             double alpha, int Z);
 
     // ==> Accessors <== //
 
