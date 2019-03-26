@@ -59,6 +59,12 @@ namespace {
 double GetBSRadius(unsigned Z) {
     // Not sure where these numbers come from...
     // clang-format off
+    static const double BSRadii2[19] = {
+  1.000,
+  0.350,                                                                                                               0.400, // He
+  1.450, 1.050,                                                               0.850, 0.700, 0.650, 0.600, 0.500, 0.550, // Ne
+  1.800, 1.500,                                                               1.250, 1.100, 1.000, 1.000, 1.000, 0.900, // Ar
+    };
     static const double BSRadii[55] = {
         1.000,
         1.001,                                                                                                                 1.012,
@@ -67,9 +73,9 @@ double GetBSRadius(unsigned Z) {
         1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
         1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
     };
-    // clang-format on
-    if (Z < sizeof BSRadii / sizeof BSRadii[0])
-        return BSRadii[Z];
+    
+    if (Z < sizeof BSRadii2 / sizeof BSRadii2[0])
+        return BSRadii2[Z];
     else
         return 1.881;
 };
@@ -3467,7 +3473,8 @@ class RadialPruneMgr {
     static const char *SchemeName(int which) { return pruneschemes[which].name; }
     RadialPruneMgr(MolecularGrid::MolecularGridOptions const &opt);
     int GetPrunedNumAngPts(double rho);
-    int TreutlerAtomicPruning(int ri, int Z, int radial_pts);
+    int ShellPruning(int ri, int Z, int radial_pts);
+    int TreutlerShellPruning(int ri, int Z, int radial_pts);
 };
 
 RadialPruneMgr::PruneSchemeTable RadialPruneMgr::pruneschemes[] = {{"FLAT", flat},
@@ -3507,37 +3514,67 @@ int RadialPruneMgr::GetPrunedNumAngPts(double rho) {
 //     double nr2=(double)radial_pts/2.0;
 //     if (ri <= nr3 ) {
 //         // pruned_order = 5;  
-//         pruned_order = 19;  
-//         // pruned_order = nominal_order_ - 3;  
 //     } else if ( ri > nr3 && ri <= nr2 ){
 //         // pruned_order = 11;
-//         pruned_order = 25;
-//         // pruned_order = nominal_order_ - 2;
 //     };
 //     // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
 //     if (pruned_order > LebedevGridMgr::MaxOrder)
 //         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
 //     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 // }
-int RadialPruneMgr::TreutlerAtomicPruning(int ri, int Z, int radial_pts) {
+int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // this assumes r goes from farthest to closest
+    // prunes grid based on 3 different regions. 
+    // no pruning for heavy atoms
     if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
     int pruned_order = nominal_order_;    
-    // return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
-    if(Z <= 2) { pruned_order = nominal_order_ - 1; };
-    // if(H_pruning and Z == 1) {int pruned_order = nominal_order_ - 1}; //ToDo
-    double nr3=2*(double)radial_pts/3.0;
-    double nr2=(double)radial_pts/2.0;
-    if (ri >= nr3 ) {
-        pruned_order = 11;  
-        // pruned_order = 19;  
-        pruned_order = std::max(11,nominal_order_ - 10);
-    } else if ( ri < nr3 && ri >= nr2*1.1 ){
-        // pruned_order = 19;
-        // pruned_order = 25;
-        pruned_order = nominal_order_ - 3;
+    // H, He always 1 smaller
+    if(Z <= 2) { pruned_order = nominal_order_ - 1; }; //ToDo: flag to enable/disable
+
+    int region1=7;
+    int region2=11;
+
+    double nr3=(double)radial_pts/3.0; 
+    double nr2=(double)radial_pts/2.0; 
+    if (ri >= 2*nr3 ) {
+        pruned_order = region1;
+    } else if ( ri < 2*nr3 && ri >= nr2 ){
+        pruned_order = region2;
     };
     printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
+    if (pruned_order > LebedevGridMgr::MaxOrder)
+        throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
+    return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
+}
+
+int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
+    // this assumes r goes from farthest to closest
+    // prunes grid based on 4 different regions.
+    // robust version of Treutler pruning
+    if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
+    int pruned_order = nominal_order_;    
+    // H, He always reduced by 1
+    if(Z <= 2) { pruned_order = nominal_order_ - 1; }; //ToDo: flag to enable/disable
+
+    // devide BS shell into 4 equal regions
+    double nr=(double)radial_pts/4.0; 
+    // int region1=nominal_order_ - 10;
+    // int region1= nominal_order_ - 14;
+    int region1= 7;
+    int region2= nominal_order_ - 6;
+    int region3=nominal_order_;
+    int region4=nominal_order_;
+    // S22 interaction energy OK with above
+    if (ri <= nr ) { // <= 25
+        pruned_order = region4; 
+    } else if ( ri > nr && ri <= 2*nr ){ // > 25 && <= 50
+        pruned_order = region3;
+    } else if ( ri > 2*nr && ri <= 3*nr ){ // > 50 && <= 75
+        pruned_order = region2;
+    } else if ( ri >= 3*nr ){
+        pruned_order = region1;
+    };
+    // printf("Z= %d ; pruned_order = %d ; i= %d \n",Z,pruned_order,ri);
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
@@ -3583,8 +3620,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             // for (int i = opt.nradpts; i-- > 0; ) {
                 // if (opt.pruning_function) {int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);};
                 // if (opt.pruning_treutler) {int numAngPts = prune.TreutlerAtomicPruning(r[i], Z, opt.nradpts );};
-                int numAngPts = prune.TreutlerAtomicPruning(i, Z, opt.nradpts);
-                // int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
+                // int numAngPts = prune.ShellPruning(i, Z, opt.nradpts);
+                int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
@@ -4579,13 +4616,25 @@ std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha) {
 std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha) {
     RadialGrid *grid = new RadialGrid();
 
+    // Treutler/Ahlrichs 1995
+    // clang-format off
+    // static const double M4radii[37] = {
+    //     1.0,
+    //     0.8,                                                                                0.9,
+    //     1.8, 1.4,                                                  1.3, 1.1, 0.9, 0.9, 0.9, 0.9,
+    //     1.4, 1.3,                                                  1.3, 1.2, 1.1, 1.0, 1.0, 1.0,
+    //     1.5, 1.4,1.3, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.0, 0.9, 0.9, 0.9, 0.9,
+    // };
+    // clang-format on
+
     grid->scheme_ = "TREUTLER";
     grid->npoints_ = npoints;
     grid->alpha_ = alpha;
     grid->r_ = new double[npoints];
     grid->w_ = new double[npoints];
 
-    double INVLN2 = 1.0 / log(2.0);
+    double INVLN2 = 0.9 / log(2.0);
+    // double INVLN2 = M4radii[Z] /  log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {
         double x = cos(tau / (npoints + 1.0) * M_PI);
