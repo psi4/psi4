@@ -3498,25 +3498,51 @@ int RadialPruneMgr::GetPrunedNumAngPts(double rho) {
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 }
 
+// int RadialPruneMgr::TreutlerAtomicPruning(int ri, int Z, int radial_pts) {
+//     if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
+//     int pruned_order = nominal_order_;    
+//     if(Z <= 2) { pruned_order = nominal_order_ - 1; };
+//     // if(H_pruning and Z == 1) {int pruned_order = nominal_order_ - 1}; //ToDo
+//     double nr3=(double)radial_pts/3.0;
+//     double nr2=(double)radial_pts/2.0;
+//     if (ri <= nr3 ) {
+//         // pruned_order = 5;  
+//         pruned_order = 19;  
+//         // pruned_order = nominal_order_ - 3;  
+//     } else if ( ri > nr3 && ri <= nr2 ){
+//         // pruned_order = 11;
+//         pruned_order = 25;
+//         // pruned_order = nominal_order_ - 2;
+//     };
+//     // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
+//     if (pruned_order > LebedevGridMgr::MaxOrder)
+//         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
+//     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
+// }
 int RadialPruneMgr::TreutlerAtomicPruning(int ri, int Z, int radial_pts) {
+    // this assumes r goes from farthest to closest
     if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
     int pruned_order = nominal_order_;    
+    // return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
     if(Z <= 2) { pruned_order = nominal_order_ - 1; };
     // if(H_pruning and Z == 1) {int pruned_order = nominal_order_ - 1}; //ToDo
-    double nr3=(double)radial_pts/3.0;
+    double nr3=2*(double)radial_pts/3.0;
     double nr2=(double)radial_pts/2.0;
-    if (ri <= nr3 ) {
-        // pruned_order = 5;  
-        pruned_order = 19;  
-    } else if ( ri > nr3 && ri <= nr2 ){
-        // pruned_order = 11;
-        pruned_order = 25;
+    if (ri >= nr3 ) {
+        pruned_order = 11;  
+        // pruned_order = 19;  
+        pruned_order = std::max(11,nominal_order_ - 10);
+    } else if ( ri < nr3 && ri >= nr2*1.1 ){
+        // pruned_order = 19;
+        // pruned_order = 25;
+        pruned_order = nominal_order_ - 3;
     };
-    // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
+    printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 }
+
 
 void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     options_ = opt;                                                // Save a copy
@@ -3552,7 +3578,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             radial_grids_[A] = RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha);
             std::vector<std::shared_ptr<SphericalGrid>> spheres;
             spherical_grids_[A] = spheres;
-
+            
             for (int i = 0; i < opt.nradpts; i++) {
             // for (int i = opt.nradpts; i-- > 0; ) {
                 // if (opt.pruning_function) {int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);};
