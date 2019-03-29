@@ -57,14 +57,33 @@ using namespace psi;
 namespace {
 
 double GetBSRadius(unsigned Z) {
-    // Not sure where these numbers come from...
+    // Turbomole [Angstrom??]
     // clang-format off
-    static const double BSRadii2[19] = {
-  1.000,
-  0.350,                                                                                                               0.400, // He
-  1.450, 1.050,                                                               0.850, 0.700, 0.650, 0.600, 0.500, 0.550, // Ne
-  1.800, 1.500,                                                               1.250, 1.100, 1.000, 1.000, 1.000, 0.900, // Ar
+    static const double BSRadii2[104] = {
+      1.000,
+      0.350,                                                                                                                 0.400, // He
+      1.450, 1.050,                                                                       0.850, 0.700, 0.650, 0.600, 0.500, 0.550, // Ne
+      1.800, 1.500,                                                                       1.250, 1.100, 1.000, 1.000, 1.000, 0.900, // Ar
+      2.200, 1.800, 1.600, 1.400, 1.350, 1.400, 1.400, 1.400, 1.350, 1.350, 1.350, 1.350, 1.300, 1.250, 1.150, 1.150, 1.150, 1.200, // Kr
+      2.350, 2.000, 1.800, 1.550, 1.450, 1.450, 1.350, 1.300, 1.350, 1.400, 1.600, 1.550, 1.550, 1.450, 1.450,1.400, 1.400, 1.400,// Xe
+      2.600, 2.150, 1.950, 1.850, 1.850, 1.850, 1.850, 1.850, 1.850, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, //  Lu
+      1.550, 1.450, 1.350, 1.350, 1.300, 1.350, 1.350, 1.350, 1.500, 1.900, 1.800, 1.600, 1.900, 1.900, 1.900, // Rn
+      2.900, 2.150,  1.950, 1.800, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750 // Lr
     };
+    // // Bragg-Slater radii  J.C. Slater JCP 41, (1964), 3199 [bohr]
+    static const double BraggRadius[104] ={ 1.00,
+      0.661,                                                                                                                0.661, // He
+      2.740, 1.984,                                                                      1.606, 1.323, 1.228, 1.134, 0.945, 0.900, //-Ne
+      3.402, 2.835,                                                                      2.362, 2.079, 1.890, 1.890, 1.890, 1.890, //Ar
+      4.157, 3.402, 3.024, 2.656, 2.551, 2.656, 2.656, 2.656, 2.551, 2.551, 2.551, 2551, 2.457, 2.362, 2.173, 2.173, 2.173, 2.173, //Kr
+      4.441, 3.780, 3.402, 2.929, 2.740, 2.740, 2.551, 2.457, 2.551, 2.646, 3.024, 2.929, 2.929, 2.740, 2.740, 2.646, 2.646, 2.646, // Xe
+      4.913, 4.063,                                                                //Ba
+             3.685, 3.496,3.496,3.496,3.496,3.496,3.496,3.402,3.307,3.307,3.307,3.307,3.307,3.307,3.307,//*La-Lu
+      2.929, 2.740, 2.551, 2.551, 2.457, 2.551, 2.551, 2.551, 2.835, 3.591, 3.024, 3.024, 3.591, 3.591, 3.591, // Rn
+      4.063, 4.063,                                                                //Fr-Ra
+             3.685, 3.401,3.401,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,//Ac-Lr
+    };
+    // Not sure where these numbers come from...
     static const double BSRadii[55] = {
         1.000,
         1.001,                                                                                                                 1.012,
@@ -73,11 +92,14 @@ double GetBSRadius(unsigned Z) {
         1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
         1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
     };
-    
-    if (Z < sizeof BSRadii2 / sizeof BSRadii2[0])
-        return BSRadii2[Z];
+    if (Z < sizeof BraggRadius / sizeof BraggRadius[0])
+        return BraggRadius[Z];
     else
-        return 1.881;
+        return 3.50; // ??
+    // if (Z < sizeof BSRadii / sizeof BSRadii[0])
+        // return BSRadii[Z];
+    // else
+        // return 1.881;
 };
 
 // LebedevGridMgr is a static class---all the members are static.
@@ -3505,23 +3527,7 @@ int RadialPruneMgr::GetPrunedNumAngPts(double rho) {
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 }
 
-// int RadialPruneMgr::TreutlerAtomicPruning(int ri, int Z, int radial_pts) {
-//     if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
-//     int pruned_order = nominal_order_;    
-//     if(Z <= 2) { pruned_order = nominal_order_ - 1; };
-//     // if(H_pruning and Z == 1) {int pruned_order = nominal_order_ - 1}; //ToDo
-//     double nr3=(double)radial_pts/3.0;
-//     double nr2=(double)radial_pts/2.0;
-//     if (ri <= nr3 ) {
-//         // pruned_order = 5;  
-//     } else if ( ri > nr3 && ri <= nr2 ){
-//         // pruned_order = 11;
-//     };
-//     // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
-//     if (pruned_order > LebedevGridMgr::MaxOrder)
-//         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
-//     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
-// }
+
 int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // this assumes r goes from farthest to closest
     // prunes grid based on 3 different regions. 
@@ -3541,6 +3547,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     } else if ( ri < 2*nr3 && ri >= nr2 ){
         pruned_order = region2;
     };
+    // debug
     // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
@@ -3574,6 +3581,7 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     } else if ( ri >= 3*nr ){
         pruned_order = region1;
     };
+    // debug
     // printf("Z= %d ; pruned_order = %d ; i= %d \n",Z,pruned_order,ri);
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
@@ -3620,7 +3628,12 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             // for (int i = opt.nradpts; i-- > 0; ) {
                 // if (opt.pruning_function) {int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);};
                 // if (opt.pruning_treutler) {int numAngPts = prune.TreutlerAtomicPruning(r[i], Z, opt.nradpts );};
-                int numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);
+                // int numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);
+                int numAngPts = 0;
+                if (opt.prunetype=="TREUTLER") {numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);}
+                else if (opt.prunetype=="ROBUST") {numAngPts = prune.ShellPruning(i, Z, opt.nradpts);}
+                else if (opt.prunetype=="FUNCTION") {numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);}
+                assert(numAngPts>0);
                 // int numAngPts = prune.ShellPruning(i, Z, opt.nradpts);
                 // int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
@@ -4030,7 +4043,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
                                    std::map<std::string, std::string> opts_map) {
     std::map<std::string, std::string> full_str_options;
     std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME",
-                                         "DFT_GRID_NAME"};
+                                         "DFT_GRID_NAME", "DFT_PRUNING_TYPE"};
     for (auto key : str_keys) {
         if (opts_map.find(key) != opts_map.end()) {
             full_str_options[key] = opts_map[key];
@@ -4061,6 +4074,8 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
     opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
+    // opt.prunetype = full_str_options["DFT_PRUNING_TYPE"];
+    opt.prunetype = options_.get_str("DFT_PRUNING_TYPE");
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
         LebedevGridMgr::PrintHelp();  // Tell what the admissible values are.
@@ -4617,17 +4632,22 @@ std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha, i
 std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha, int Z) {
     RadialGrid *grid = new RadialGrid();
 
-    // Treutler/Ahlrichs 1995
-    // clang-format off
-    static const double M4radii[37] = {
-        1.0,
-        0.8,                                                                                0.9,
-        1.8, 1.4,                                                  1.3, 1.1, 0.9, 0.9, 0.9, 0.9,
-        1.4, 1.3,                                                  1.3, 1.2, 1.1, 1.0, 1.0, 1.0,
-        1.5, 1.4,1.3, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.0, 0.9, 0.9, 0.9, 0.9,
+    // Treutler/Ahlrichs 1995 mapping parameters
+    static  const double TreutlerEta[104] =
+     { 1.0,
+      0.800, 0.900,                                                                
+      1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900, 
+      1.400, 1.300,                      1.300, 1.200, 1.100, 1.000, 1.000, 1.000, 
+      1.500, 1.400,1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100,1.100, 1.000, 0.900, 0.900, 0.900, 0.900,     
+      2.000, 1.700,1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,     
+      2.500, 2.200,                                                                
+             2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,                                                                             
+      1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 
+      2.500, 2.100,                                                                
+             3.685,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
     };
-    // clang-format on
 
+    // clang-format on
     grid->scheme_ = "TREUTLER";
     grid->npoints_ = npoints;
     grid->alpha_ = alpha;
@@ -4635,7 +4655,8 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     grid->w_ = new double[npoints];
 
     // double INVLN2 = 0.9 / log(2.0);
-    double INVLN2 = M4radii[Z] /  log(2.0);
+    // double INVLN2 = M4radii[Z] /  log(2.0);
+    double INVLN2 = TreutlerEta[Z] /  log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {
         double x = cos(tau / (npoints + 1.0) * M_PI);

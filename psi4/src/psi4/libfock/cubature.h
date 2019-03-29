@@ -120,6 +120,7 @@ class MolecularGrid {
         short namedGrid;  // -1 = None, 0 = SG-0, 1 = SG-1
         int nradpts;
         int nangpts;
+        std::string prunetype;
     };
 
    protected:

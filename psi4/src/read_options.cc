@@ -1497,6 +1497,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
                         "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
         /*- Spread alpha for logarithmic pruning. !expert -*/
         options.add_double("DFT_PRUNING_ALPHA", 1.0);
+        /*- type of pruning (temporary) -*/
+        options.add_str("DFT_PRUNING_TYPE", "FUNCTION",
+                                            "FUNCTION TREUTLER ROBUST");
         /*- The maximum number of grid points per evaluation block. !expert -*/
         options.add_int("DFT_BLOCK_MAX_POINTS", 256);
         /*- The minimum number of grid points per evaluation block. !expert -*/
