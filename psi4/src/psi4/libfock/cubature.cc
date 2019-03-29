@@ -57,7 +57,7 @@ using namespace psi;
 namespace {
 
 double GetBSRadius(unsigned Z) {
-    // Turbomole [Angstrom??]
+    // Turbomole [Angstrom??] THIS WORKS BEST?!?
     // clang-format off
     static const double BSRadii2[104] = {
       1.000,
@@ -92,10 +92,14 @@ double GetBSRadius(unsigned Z) {
         1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
         1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
     };
-    if (Z < sizeof BraggRadius / sizeof BraggRadius[0])
-        return BraggRadius[Z];
+    // if (Z < sizeof BraggRadius / sizeof BraggRadius[0])
+    //     return BraggRadius[Z];
+    // else
+    //     return 3.50; // ??
+    if (Z < sizeof BSRadii2 / sizeof BSRadii2[0])
+        return BSRadii2[Z];
     else
-        return 3.50; // ??
+        return 1.881;
     // if (Z < sizeof BSRadii / sizeof BSRadii[0])
         // return BSRadii[Z];
     // else
