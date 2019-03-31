@@ -38,7 +38,7 @@
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
 
-#include <cppe/core/multipole.hh>
+#include <cppe/core/potential.hh>
 #include <cppe/core/molecule.hh>
 #include <cppe/core/cppe_state.hh>
 #include <cppe/core/pe_options.hh>

@@ -1384,6 +1384,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         pol_embed_options.potfile = potfile_name
         pol_embed_options.print_level = core.get_option('SCF', "PRINT")
         pol_embed_options.induced_thresh = core.get_local_option('PE', 'CONVERGENCE_INDUCED')
+        pol_embed_options.iso_pol = core.get_local_option('PE', 'ISOTROPIC_POL')
         
         pol_embed_options.do_diis = core.get_local_option('PE', 'DIIS')
         pol_embed_options.diis_maxiter = core.get_local_option('PE', 'MAXITER')

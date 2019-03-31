@@ -273,6 +273,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("CONVERGENCE_INDUCED", 8);
         /*- Maximum number of iterations for induced moments -*/
         options.add_int("MAXITER", 50);
+        /*- Make polarizabilities isotropic -*/
+        options.add_bool("ISOTROPIC_POL", false);
 
         /*- Activate border options for sites in proximity to the QM/MM border -*/
         options.add_bool("BORDER", false);

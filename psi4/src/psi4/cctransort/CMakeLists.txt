@@ -26,3 +26,10 @@ if(TARGET PCMSolver::pcm)
         PCMSolver::pcm
       )
 endif()
+
+if(TARGET cppe::cppe)
+    target_link_libraries(cctransort
+      PUBLIC
+        cppe::cppe
+      )
+endif()

@@ -597,6 +597,13 @@ def scf_finalize_energy(self):
         _, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
         self.push_back_external_potential(Vpcm)
 
+    if core.get_option('SCF', 'PE'):
+        calc_type = core.PE.CalcType.total
+        Dt = self.Da().clone()
+        Dt.add(self.Db())
+        _, Vpe = self.get_PeState().compute_pe_contribution(Dt, calc_type)
+        self.push_back_external_potential(Vpe)
+
     # Properties
     #  Comments so that autodoc utility will find these PSI variables
     #  Process::environment.globals["SCF DIPOLE X"] =

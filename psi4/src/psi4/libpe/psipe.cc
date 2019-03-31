@@ -42,11 +42,6 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-// #include <cppe/libcppe.hh>
-#include <cppe/utils/potfile_reader.hh>
-#include <cppe/utils/pot_manipulation.hh>
-#include <cppe/core/multipole_expansion.hh>
-
 #include "psipe.h"
 
 // TODO: implement output stream option in CPPE for printing
@@ -63,7 +58,6 @@ libcppe::Molecule make_molecule(std::shared_ptr<Molecule> molecule) {
     return mol;
 }
 
-// TODO: generate these factors!
 namespace {
 std::vector<double> mult_coeffs = {
     1.0,                       // q
@@ -72,7 +66,7 @@ std::vector<double> mult_coeffs = {
 };
 
 std::vector<int> from_alphabetical_to_psi4 = {
-    0, 1, 2, 3, 4, 7, 9, 5, 6, 8  // 0, 3, 5, 1, 2, 4   += 4
+    0, 1, 2, 3, 4, 7, 9, 5, 6, 8  // 0, 3, 5, 1, 2, 4
 };
 
 int have_moment(int k, int max_k) { return k <= max_k; }
@@ -119,7 +113,6 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
             elec_fields[current_polsite * 3 + 2] = elec_fields_s.get(2);
             current_polsite += 1;
         }
-        // std::cout << "elec fields : " << n_sitecoords << std::endl << elec_fields << std::endl;
         cppe_state_.update_induced_moments(elec_fields, type == PeState::CalcType::electronic_only);
         Eigen::VectorXd induced_moments = cppe_state_.get_induced_moments_vec();
 
@@ -148,6 +141,11 @@ void PeState::print_energy_summary() { cppe_state_.print_summary(); }
 
 SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 site, int order,
                                                                      std::vector<double>& moments) {
+    if (order > 2) {
+        throw std::runtime_error(
+            "Can only compute multipole potential through "
+            "second order.");
+    }
     auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
     auto multipole_integrals = integrals->ao_multipole_potential(order);
 
@@ -171,31 +169,17 @@ SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 sit
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XZ", basisset_->nbf(), basisset_->nbf()));
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YZ", basisset_->nbf(), basisset_->nbf()));
     }
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXX", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYY", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole ZZZ", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXY", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXZ", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYY", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYZ", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XZZ", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YZZ", basisset_->nbf(), basisset_->nbf()));
-    // mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYZ", basisset_->nbf(), basisset_->nbf()));
     multipole_integrals->set_origin(site);
     multipole_integrals->compute(mult);
 
     auto res = std::make_shared<Matrix>("result", basisset_->nbf(), basisset_->nbf());
     for (int l = 0; l < total_components; ++l) {
-        // std::cout << "---" << std::setprecision(12) << std::endl;
-        // std::cout << "L: " << l << std::endl;
-        // std::cout << "coeff = " << mult_coeffs[l] << " moment = " << moments[from_alphabetical_to_psi4[l]] <<
-        // std::endl;
         mult[l]->scale(-1.0 * mult_coeffs[l] * moments[from_alphabetical_to_psi4[l]]);
         res->add(mult[l]);
     }
 
     return res;
-}
+}  // namespace pol_embed
 
 SharedMatrix PeIntegralHelper::compute_field_integrals(Vector3 site, Eigen::VectorXd moment) {
     std::vector<SharedMatrix> fields;
