@@ -56,10 +56,32 @@ using namespace psi;
 
 namespace {
 
-double GetBSRadius(unsigned Z) {
-    // Turbomole [Angstrom??] THIS WORKS BEST?!?
+// double TreutlerEta(unsigned Z) {
+// // Treutler/Ahlrichs 1995 mapping parameters
+//     static  const double Eta[104] =
+//      { 1.0,
+//       0.800, 0.900,                                                                
+//       1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900, 
+//       1.400, 1.300,                      1.300, 1.200, 1.100, 1.000, 1.000, 1.000, 
+//       1.500, 1.400,1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100,1.100, 1.000, 0.900, 0.900, 0.900, 0.900,     
+//       2.000, 1.700,1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,     
+//       2.500, 2.200,                                                                
+//              2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,                                                                             
+//       1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 
+//       2.500, 2.100,                                                                
+//              3.685,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
+//     };
+//     if (Z < sizeof Eta / sizeof Eta[0])
+//         return Eta[Z];
+//     else
+//         return 1.5;
+
+// }
+
+double GetBSRadiusNew(unsigned Z) {
+// Turbomole via private communication [in Angstrom??]. Somehow this works best!
     // clang-format off
-    static const double BSRadii2[104] = {
+    static const double BSRadiiTM[104] = {
       1.000,
       0.350,                                                                                                                 0.400, // He
       1.450, 1.050,                                                                       0.850, 0.700, 0.650, 0.600, 0.500, 0.550, // Ne
@@ -83,6 +105,28 @@ double GetBSRadius(unsigned Z) {
       4.063, 4.063,                                                                //Fr-Ra
              3.685, 3.401,3.401,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,//Ac-Lr
     };
+    // if (Z < sizeof BraggRadius / sizeof BraggRadius[0])
+    //     return BraggRadius[Z];
+    // else
+    //     return 3.50; // ??
+    if (Z < sizeof BSRadiiTM / sizeof BSRadiiTM[0])
+        return BSRadiiTM[Z];
+    else
+        return 1.750;
+};
+
+double GetBSRadius(unsigned Z) {
+    // static const double BSRadiiTM[104] = {
+    //   1.000,
+    //   0.350,                                                                                                                 0.400, // He
+    //   1.450, 1.050,                                                                       0.850, 0.700, 0.650, 0.600, 0.500, 0.550, // Ne
+    //   1.800, 1.500,                                                                       1.250, 1.100, 1.000, 1.000, 1.000, 0.900, // Ar
+    //   2.200, 1.800, 1.600, 1.400, 1.350, 1.400, 1.400, 1.400, 1.350, 1.350, 1.350, 1.350, 1.300, 1.250, 1.150, 1.150, 1.150, 1.200, // Kr
+    //   2.350, 2.000, 1.800, 1.550, 1.450, 1.450, 1.350, 1.300, 1.350, 1.400, 1.600, 1.550, 1.550, 1.450, 1.450,1.400, 1.400, 1.400,// Xe
+    //   2.600, 2.150, 1.950, 1.850, 1.850, 1.850, 1.850, 1.850, 1.850, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, //  Lu
+    //   1.550, 1.450, 1.350, 1.350, 1.300, 1.350, 1.350, 1.350, 1.500, 1.900, 1.800, 1.600, 1.900, 1.900, 1.900, // Rn
+    //   2.900, 2.150,  1.950, 1.800, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750 // Lr
+    // };
     // Not sure where these numbers come from...
     static const double BSRadii[55] = {
         1.000,
@@ -92,18 +136,14 @@ double GetBSRadius(unsigned Z) {
         1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
         1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
     };
-    // if (Z < sizeof BraggRadius / sizeof BraggRadius[0])
-    //     return BraggRadius[Z];
+    //     if (Z < sizeof BSRadiiTM / sizeof BSRadiiTM[0])
+    //     return BSRadiiTM[Z];
     // else
-    //     return 3.50; // ??
-    if (Z < sizeof BSRadii2 / sizeof BSRadii2[0])
-        return BSRadii2[Z];
+    //     return 1.881;
+    if (Z < sizeof BSRadii / sizeof BSRadii[0])
+        return BSRadii[Z];
     else
         return 1.881;
-    // if (Z < sizeof BSRadii / sizeof BSRadii[0])
-        // return BSRadii[Z];
-    // else
-        // return 1.881;
 };
 
 // LebedevGridMgr is a static class---all the members are static.
@@ -2730,7 +2770,8 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     } else if (scheme == BECKE || scheme == TREUTLER) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
-                double rad_ratio = GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
+                // double rad_ratio = GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
+                double rad_ratio = GetBSRadiusNew(mol->true_atomic_number(i)) / GetBSRadiusNew(mol->true_atomic_number(j));
                 double chi = (scheme == BECKE) ? rad_ratio : sqrt(rad_ratio);
                 double a = getAfromChi(chi);
                 amatrix_[i][j] = a;
@@ -2841,12 +2882,21 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
 
     double (*stepFunction)(double) = (scheme_ == STRATMANN) ? StratmannStepFunction : BeckeStepFunction;
 
+    double RCut=5.0;
+    double invRCut=1.0/RCut;
+
     double numerator = NAN;
     double denominator = 0;
     for (int i = 0; i < natom; i++) {
         double prod = 1;
         for (int j = 0; j < natom; j++) {
             if (i == j) continue;
+            // if ( dist[j] >= (dist[i]+RCut) ) continue; // sugested cutoff
+            // mod Becke after Ochsenfeld, max instead of min because of inverses
+            // double mu = (dist[i] - dist[j]) * std::max(inv_dist_[i][j],invRCut);
+            // if(mu <= -1.0) {mu = -1.0;}
+            // else if(mu >= 1.0 ) {mu = 1.0;}
+            // normal Becke
             double mu = (dist[i] - dist[j]) * inv_dist_[i][j];
             double nu = mu + amatrix_[i][j] * (1 - mu * mu);  // Adjust for ratios between atomic radii
             double s = stepFunction(nu);
@@ -3619,7 +3669,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
         if (opt.namedGrid == -1) {  // Not using a named grid
             std::vector<double> r(opt.nradpts), wr(opt.nradpts);
-            double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
+            // double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
+            double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
             RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r.data(),
                                           wr.data(), alpha);
 
@@ -3722,6 +3773,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
 
         std::vector<double> r(rs[A].size()), wr(rs[A].size());
         double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
+        // double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
 
         // Bloody great
         for (size_t i = 0; i < rs[A].size(); i++) {
@@ -4636,7 +4688,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha, i
 std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha, int Z) {
     RadialGrid *grid = new RadialGrid();
 
-    // Treutler/Ahlrichs 1995 mapping parameters
+    // // Treutler/Ahlrichs 1995 mapping parameters
     static  const double TreutlerEta[104] =
      { 1.0,
       0.800, 0.900,                                                                
@@ -4659,7 +4711,8 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     grid->w_ = new double[npoints];
 
     // double INVLN2 = 0.9 / log(2.0);
-    // double INVLN2 = M4radii[Z] /  log(2.0);
+
+    //ToDo: for diffuse basis sets one wants to add scale Eta (e.g. by 2). How?
     double INVLN2 = TreutlerEta[Z] /  log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {
