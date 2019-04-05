@@ -4,7 +4,8 @@
 # also see discussion in https://github.com/psi4/psi4/pull/339
 
 # @loriab conditions  #TEST
-set dft_pruning_type treutler
+#set DFT_NUCLEAR_SCHEME SBECKE
+#set dft_pruning_type treutler
 set scf_type pk
 set e_convergence 9
 set dft_spherical_points 590

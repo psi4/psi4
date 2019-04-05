@@ -1485,7 +1485,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Radial Scheme. -*/
         options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
         /*- Nuclear Scheme. -*/
-        options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
+        options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN SBECKE");
         /*- Factor for effective BS radius in radial grid. -*/
         options.add_double("DFT_BS_RADIUS_ALPHA", 1.0);
         /*- DFT basis cutoff. -*/

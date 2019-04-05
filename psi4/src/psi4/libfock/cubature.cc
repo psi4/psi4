@@ -2709,7 +2709,7 @@ void StandardGridMgr::Initialize_SG1() {
 }
 
 class NuclearWeightMgr {
-    enum NuclearSchemes { NAIVE, BECKE, TREUTLER, STRATMANN };  // Must match the nuclearschemenames array!
+    enum NuclearSchemes { NAIVE, BECKE, TREUTLER, STRATMANN, SBECKE };  // Must match the nuclearschemenames array!
     static const char *nuclearschemenames[];
 
     //// These are the member variables
@@ -2725,6 +2725,8 @@ class NuclearWeightMgr {
                     (mp.z - molecule_->z(A)) * (mp.z - molecule_->z(A)));
     }
 
+    static double BeckeMu(double ri, double rj ,double inv_rij);
+    static double SmoothBeckeMu(double ri, double rj ,double inv_rij);
     static double BeckeStepFunction(double x);
     static double StratmannStepFunction(double mu);
 
@@ -2746,7 +2748,7 @@ class NuclearWeightMgr {
 };
 
 const char *NuclearWeightMgr::nuclearschemenames[] = {"NAIVE", "BECKE", "TREUTLER",
-                                                      "STRATMANN"};  // Must match `enum NuclearSchemes' !
+                                                      "STRATMANN", "SBECKE"};  // Must match `enum NuclearSchemes' !
 
 NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     int natom = mol->natom();
@@ -2767,7 +2769,7 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     if (scheme == NAIVE || scheme == STRATMANN) {
         for (int i = 0; i < natom; i++)
             for (int j = 0; j < natom; j++) amatrix_[i][j] = 0;
-    } else if (scheme == BECKE || scheme == TREUTLER) {
+    } else if (scheme == BECKE || scheme == TREUTLER || SBECKE) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
                 // double rad_ratio = GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
@@ -2794,6 +2796,22 @@ int NuclearWeightMgr::WhichScheme(const char *schemename) {
     outfile->Printf("Unrecognized nuclear scheme %s!\n", schemename);
     throw PSIEXCEPTION("Unrecognized nuclear scheme!");
 }
+
+// See Becke, J. Chem. Phys. 88 (1988) 2547-2553 (standard mu)
+double NuclearWeightMgr::BeckeMu(double ri, double rj, double inv_rij) {
+    return (ri - rj) * inv_rij;
+}
+
+// smoother Becke (SBECKE) integration after Ochsenfeld J. Chem. Phys. 149, 204111 (2018); doi: 10.1063/1.5049435
+double NuclearWeightMgr::SmoothBeckeMu(double ri, double rj, double inv_rij) { 
+    static double RCut=5.0;
+    static double invRCut=1.0/RCut;
+    double mu = (ri - rj) * std::max(inv_rij,invRCut);
+    if(mu <= -1.0) {return  -1.0;}
+    else if(mu >= 1.0 ) {return 1.0;}
+    else {return mu;}
+}
+
 
 // See Becke, J. Chem. Phys. 88 (1988) 2547-2553
 double NuclearWeightMgr::BeckeStepFunction(double x) {
@@ -2881,9 +2899,7 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
     for (int l = 0; l < natom; l++) dist[l] = distToAtom(mp, l);
 
     double (*stepFunction)(double) = (scheme_ == STRATMANN) ? StratmannStepFunction : BeckeStepFunction;
-
-    double RCut=5.0;
-    double invRCut=1.0/RCut;
+    double (*muFunction)(double,double,double) = (scheme_ == SBECKE) ? SmoothBeckeMu : BeckeMu;
 
     double numerator = NAN;
     double denominator = 0;
@@ -2892,12 +2908,7 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
         for (int j = 0; j < natom; j++) {
             if (i == j) continue;
             // if ( dist[j] >= (dist[i]+RCut) ) continue; // sugested cutoff
-            // mod Becke after Ochsenfeld, max instead of min because of inverses
-            // double mu = (dist[i] - dist[j]) * std::max(inv_dist_[i][j],invRCut);
-            // if(mu <= -1.0) {mu = -1.0;}
-            // else if(mu >= 1.0 ) {mu = 1.0;}
-            // normal Becke
-            double mu = (dist[i] - dist[j]) * inv_dist_[i][j];
+            double mu = muFunction(dist[i],dist[j], inv_dist_[i][j] );
             double nu = mu + amatrix_[i][j] * (1 - mu * mu);  // Adjust for ratios between atomic radii
             double s = stepFunction(nu);
             prod *= s;
@@ -4286,7 +4297,10 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Molecular Quadrature <=\n\n");
     printer->Printf("    Radial Scheme          = %14s\n", RadialGridMgr::SchemeName(options_.radscheme));
-    printer->Printf("    Pruning Scheme         = %14s\n", RadialPruneMgr::SchemeName(options_.prunescheme));
+    printer->Printf("    Pruning Type           = %14s\n", options_.prunetype.c_str()); // prints garbage, why??
+    if(options_.prunetype == "FUNCTION" ) {
+    printer->Printf("    Pruning Scheme         = %14s\n", RadialPruneMgr::SchemeName(options_.prunescheme));    
+    }
     printer->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
     printer->Printf("\n");
     printer->Printf("    BS radius alpha        = %14g\n", options_.bs_radius_alpha);
