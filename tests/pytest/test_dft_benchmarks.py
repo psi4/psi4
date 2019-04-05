@@ -143,6 +143,8 @@ def name_dft_test(val):
     pytest.param(        'LC-VV10',    0.4556872545, '6-31G'),  # Q-Chem
     pytest.param(        'wB97M-V',    0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-V',    0.455302602,  '6-31G'),  # Q-Chem
+    pytest.param(           'SCAN',    0.4517181611, '6-31G'),  # Q-Chem
+    pytest.param(          'SCAN0',    0.4496859365, '6-31G'),  # Q-Chem
 ], ids=name_dft_test)
 def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request):
     """functionals ionization energies vs. Q-Chem"""
@@ -230,6 +232,29 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(      'TPSSh',  -0.0140808774, '6-31G'),  # Q-Chem
     pytest.param(      'B97-D',  -0.0140422551, '6-31G'),  # Q-Chem
     pytest.param(   'wB97X-D3',  -0.0148666307, '6-31G', marks=[using_dftd3, pytest.mark.xfail]),  # Q-Chem
+    pytest.param(      'SCAN0',  -0.0151046408, '6-31G'),  # Q-Chem
+    pytest.param(     'revPBE',  -0.0129363604, '6-31G'),  # Q-Chem
+    pytest.param(    'SOGGA11',  -0.0133998476, '6-31G'),  # Q-Chem
+    pytest.param(    'MN12-SX',  -0.0130140323, '6-31G'),  # Q-Chem
+    pytest.param(  'MGGA_MS2h',  -0.0138846318, '6-31G'),  # Q-Chem
+    pytest.param(     'MN12-L',  -0.0122476159, '6-31G'),  # Q-Chem
+    pytest.param(        'BMK',  -0.0134597648, '6-31G'),  # Q-Chem
+    pytest.param(        'N12',  -0.0153151670, '6-31G'),  # Q-Chem
+    pytest.param(   'MGGA_MVS',  -0.0145231638, '6-31G'),  # Q-Chem
+    pytest.param(       'PKZB',  -0.0107309601, '6-31G'),  # Q-Chem
+    pytest.param(      'SOGGA',  -0.0171800268, '6-31G'),  # Q-Chem
+    pytest.param(     'MN15-L',  -0.0122572417, '6-31G'),  # Q-Chem
+    pytest.param(      'PBE50',  -0.01474869,   '6-31G'),  # Q-Chem
+    pytest.param(  'MGGA_MVSh',  -0.0145138947, '6-31G'),  # Q-Chem
+    pytest.param(  'SOGGA11-X',  -0.0141398574, '6-31G'),  # Q-Chem
+    pytest.param(      'M06-L',  -0.0131734851, '6-31G'),  # Q-Chem
+    pytest.param(     'N12-SX',  -0.015641602,  '6-31G'),  # Q-Chem
+    pytest.param(      'PBEOP',  -0.0142184544, '6-31G'),  # Q-Chem
+    pytest.param(       'SCAN',  -0.0151696769, '6-31G'),  # Q-Chem
+    pytest.param(    'MPW1LYP',  -0.0156088011, '6-31G'),  # Q-Chem
+    pytest.param(        'GAM',  -0.0149107345, '6-31G'),  # Q-Chem
+
+    
 ], ids=name_dft_test)
 def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request):
     """functionals interaction energies vs. Q-Chem & Orca"""
@@ -248,11 +273,9 @@ def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request
 # ionization energy references for functionals not included in Psi4 at the moment.
     #pytest.param(       'wB97X-D3',    0.4570744381, '6-31G', marks=using_dftd3),  # Q-Chem  # needs tweaks in LibXC
     #pytest.param(            'BMK',    0.4586754862, '6-31G'),  # Q-Chem  # not in LibXC 3.0.0
-    #pytest.param(           'SCAN',    0.4517181611, '6-31G'),  # Q-Chem  # not in LibXC 3.0.0
     #pytest.param(         't-HCTH',    0.4623451143, '6-31G'),  # Q-Chem
     #pytest.param(         'B3TLAP',    0.4473764358, '6-31G'),  # Q-Chem
     #pytest.param(         'PBEsol',    0.455663707,  '6-31G'),  # Q-Chem
-    #pytest.param(          'SCAN0',    0.4496859365, '6-31G'),  # Q-Chem  # not in LibXC 3.0.0
     #pytest.param(        'LRC-BOP',    0.4595497115, '6-31G'),  # Q-Chem
     #pytest.param(        't-HCTHh',    0.4601544314, '6-31G'),  # Q-Chem
     #pytest.param(         'wM05-D',    0.4560790902, '6-31G'),  # Q-Chem
@@ -262,37 +285,16 @@ def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request
 # interaction energy references for functionals not included in Psi4 at the moment.
     #pytest.param(       'VSXC',  -0.0138314231, '6-31G'),  # Q-Chem
     #pytest.param(    'wM06-D3',  -0.0151611219, '6-31G'),  # Q-Chem
-    #pytest.param(      'SCAN0',  -0.0151046408, '6-31G'),  # Q-Chem
     #pytest.param(    'revPBE0',  -0.0131251963, '6-31G'),  # Q-Chem
-    #pytest.param(     'revPBE',  -0.0129363604, '6-31G'),  # Q-Chem
-    #pytest.param(    'SOGGA11',  -0.0133998476, '6-31G'),  # Q-Chem
     #pytest.param(   'MPW1PW91',  -0.0142534651, '6-31G'),  # Q-Chem
-    #pytest.param(    'MN12-SX',  -0.0130140323, '6-31G'),  # Q-Chem
-    #pytest.param(  'MGGA_MS2h',  -0.0138846318, '6-31G'),  # Q-Chem
-    #pytest.param(     'MN12-L',  -0.0122476159, '6-31G'),  # Q-Chem
-    #pytest.param(        'BMK',  -0.0134597648, '6-31G'),  # Q-Chem
-    #pytest.param(        'N12',  -0.0153151670, '6-31G'),  # Q-Chem
-    #pytest.param(   'MGGA_MVS',  -0.0145231638, '6-31G'),  # Q-Chem
     #pytest.param(    'MPW1PBE',  -0.0142137779, '6-31G'),  # Q-Chem
-    #pytest.param(       'PKZB',  -0.0107309601, '6-31G'),  # Q-Chem
-    #pytest.param(      'SOGGA',  -0.0171800268, '6-31G'),  # Q-Chem
-    #pytest.param(     'MN15-L',  -0.0122572417, '6-31G'),  # Q-Chem
     #pytest.param(     't-HCTH',  -0.0139348053, '6-31G'),  # Q-Chem
     #pytest.param(     'B3TLAP',  -0.0155221815, '6-31G'),  # Q-Chem
     #pytest.param(    'BP86VWN',  -0.0138884252, '6-31G'),  # Q-Chem
-    #pytest.param(      'PBE50',  -0.01474869,   '6-31G'),  # Q-Chem
     #pytest.param(    'LRC-BOP',  -0.0157298937, '6-31G'),  # Q-Chem
-    #pytest.param(  'MGGA_MVSh',  -0.0145138947, '6-31G'),  # Q-Chem
-    #pytest.param(  'SOGGA11-X',  -0.0141398574, '6-31G'),  # Q-Chem
     #pytest.param(    't-HCTHh',  -0.0143195773, '6-31G'),  # Q-Chem
     #pytest.param(     'PBEsol',  -0.0169733502, '6-31G'),  # Q-Chem
     #pytest.param(     'wM05-D',  -0.0147496512, '6-31G'),  # Q-Chem
-    #pytest.param(      'M06-L',  -0.0131734851, '6-31G'),  # Q-Chem
-    #pytest.param(     'N12-SX',  -0.015641602,  '6-31G'),  # Q-Chem
-    #pytest.param(      'PBEOP',  -0.0142184544, '6-31G'),  # Q-Chem
-    #pytest.param(       'SCAN',  -0.0151696769, '6-31G'),  # Q-Chem
-    #pytest.param(    'MPW1LYP',  -0.0156088011, '6-31G'),  # Q-Chem
-    #pytest.param(        'GAM',  -0.0149107345, '6-31G'),  # Q-Chem
 
 
 # ionization energy references from an older version of Psi4 (~April 2017, SHA: 53e752c)

@@ -47,6 +47,20 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "revM06-L",
+    "alias": ["revM06L"],
+    "x_functionals": {
+        "MGGA_X_REVM06_L": {}
+    },
+    "c_functionals": {
+        "MGGA_C_REVM06_L": {}
+    },
+    "description": '    Revised M06-L Meta-GGA XC Functional\n',
+    "citation": '    Y. Wang, X. Jin, H. S. Yu, D. G. Truhlar, X. He, Proc. Nat. Acad. Sci. 114, 8487, 2017\n',
+    "doi": "10.1073/pnas.1705670114",
+})
+
+funcs.append({
     "name": "M11-L",
     "alias": ["M11L"],
     "x_functionals": {
@@ -205,6 +219,32 @@ funcs.append({
     "citation": '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n'+
                 '    N. Mardirossian, M. Head-Gordon J. Chem. Phys. 142, 074111 (2015)\n',
 
+})
+
+funcs.append({
+    "name": "SCAN",
+    "x_functionals": {
+        "MGGA_X_SCAN": {}
+    },
+    "c_functionals": {
+        "MGGA_C_SCAN": {}
+    },
+    "description": '    SCAN Meta-GGA XC Functional\n',
+    "citation": '    J. Sun, A. Ruzsinszky, J. P. Perdew  Phys. Rev. Lett. 115, 036402, 2015\n',
+    "doi": "10.1103/PhysRevLett.115.036402",
+})
+
+funcs.append({
+    "name": "revSCAN",
+    "x_functionals": {
+        "MGGA_X_REVSCAN": {}
+    },
+    "c_functionals": {
+        "MGGA_C_REVSCAN": {}
+    },
+    "description": '    Revised SCAN Meta-GGA XC Functional\n',
+    "citation": '    P. D. Mezei, G. I. Csonka, M. Kallay J. Chem. Theory Comput. 14, 2469, 2018\n',
+    "doi": "10.1021/acs.jctc.8b00072",
 })
 
 functional_list = {}

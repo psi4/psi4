@@ -602,8 +602,35 @@ funcs.append({
                 '    N. Mardirossian, M. Head-Gordon, Phys. Chem. Chem. Phys, 16, 9904, 2014\n'
 })
 
+funcs.append({
+    "name": "SCAN0",
+    "x_functionals": {
+        "HYB_MGGA_X_SCAN0": {
+            "use_libxc": True
+        }
+    },
+    "c_functionals": {
+        "MGGA_C_SCAN": {}
+    },
+    "description": '    SCAN0 Hybrid Meta-GGA XC Functional\n',
+    "citation": '    K. Hui, J.-D. Chai, J. Chem. Phys. 144, 044114, 2016\n',
+    "doi": '10.1063/1.4940734',
+})
 
-
+funcs.append({
+    "name": "revSCAN0",
+    "x_functionals": {
+        "HYB_MGGA_X_REVSCAN0": {
+            "use_libxc": True
+        }
+    },
+    "c_functionals": {
+        "MGGA_C_REVSCAN": {}
+    },
+    "description": '    Revised SCAN0 Hybrid Meta-GGA XC Functional\n',
+    "citation": '    P. D. Mezei, G. I. Csonka, M. Kallay J. Chem. Theory Comput. 14, 2469, 2018\n',
+    "doi": "10.1021/acs.jctc.8b00072",
+})
 
 functional_list = {}
 for functional in funcs:
