@@ -732,6 +732,16 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
                 vibinfo['DQ0'].data[vib], '', width=width, prec=prec, colsp=colsp)
         text += '\n'
 
+        if 'IR_intensity' in vibinfo:
+            text += """{:{presp}}{:{prewidth}}""".format(
+                '', 'IR activ ' + _br(vibinfo['IR_intensity'].units), prewidth=prewidth, presp=presp)
+            for vib in row:
+                if vib is None:
+                    break
+                text += """{:^{width}.{prec}f}{:{colsp}}""".format(
+                    vibinfo['IR_intensity'].data[vib], '', width=width, prec=prec, colsp=colsp)
+            text += '\n'
+
         if 'theta_vib' in vibinfo:
             text += """{:{presp}}{:{prewidth}}""".format(
                 '', 'Char temp ' + _br(vibinfo['theta_vib'].units), prewidth=prewidth, presp=presp)
@@ -742,7 +752,6 @@ def print_vibs(vibinfo, atom_lbl=None, normco='x', shortlong=True, **kwargs):
                     vibinfo['theta_vib'].data[vib], '', width=width, prec=prec, colsp=colsp)
             text += '\n'
 
-        #text += 'IR activ [KM/mol]\n'
         #text += 'Raman activ [A^4/u]\n'
         text += ' ' * presp + '-' * (prewidth + groupby * (width + colsp) - colsp) + '\n'
 
