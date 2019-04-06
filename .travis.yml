@@ -2,7 +2,6 @@ dist: xenial
 language: cpp
 sudo: false
 python: 3.6.5
-ruby: 2.5.3
 before_cache:
   - conda deactivate
   - conda remove --name p4env --all
@@ -16,116 +15,47 @@ env:
   global:
     - CTEST_OUTPUT_ON_FAILURE=1
 
-matrix:
-  #allow_failures:
-  #  - compiler: clang
-  #    env:
-  #      - CXX_COMPILER='clang++-3.9'
-  #      - PYTHON_VER='3.5'
-  #      - C_COMPILER='clang-3.9'
-  #      - Fortran_COMPILER='gfortran'
-  #      - BUILD_TYPE='release'
-
+jobs:
   include:
-
-  - os: linux
-    compiler: clang
-    addons: &1
-      apt:
-        packages:
-        - liblapack-dev
-        - clang-3.6
-        - clang-format-3.6
-        - libhdf5-serial-dev
-        - gfortran
-    env:
-      - CXX_COMPILER='clang++-3.6'
-      - PYTHON_VER='3.6'
-      - C_COMPILER='clang-3.6'
-      - Fortran_COMPILER='gfortran'
-      - BUILD_TYPE='release'
-      - RUN_DANGER=true
-
-  #- os: linux
-  #  compiler: clang
-  #  addons: &2
-  #    apt:
-  #      sources:
-  #      - llvm-toolchain-precise-3.9
-  #      - ubuntu-toolchain-r-test
-  #      packages:
-  #      - liblapack-dev
-  #      - clang-3.9
-  #      - libhdf5-serial-dev
-  #      - gfortran
-  #  env:
-  #    - CXX_COMPILER='clang++-3.9'
-  #    - PYTHON_VER='3.5'
-  #    - C_COMPILER='clang-3.9'
-  #    - Fortran_COMPILER='gfortran'
-  #    - BUILD_TYPE='release'
-  #    - RUN_DANGER=false
-
-  - os: linux
-    compiler: gcc
-    addons: &3
-      apt:
-        packages:
-        - python-numpy
-        - liblapack-dev
-        - libhdf5-serial-dev
-        - gfortran
-    env:
-      - CXX_COMPILER='g++'
-      - PYTHON_VER='3.7'
-      - C_COMPILER='gcc'
-      - Fortran_COMPILER='gfortran'
-      - BUILD_TYPE='release'
-      - RUN_DANGER=false
-
-#  - os: linux
-#    compiler: gcc
-#    addons: &4
-#      apt:
-#        sources:
-#        - ubuntu-toolchain-r-test
-#        packages:
-#        - python-numpy
-#        - libhdf5-serial-dev
-#        - liblapack-dev
-#        - g++-8
-#        - gcc-8
-#        - gfortran-8
-#    env:
-#      - CXX_COMPILER='g++-8'
-#      - PYTHON_VER='3.6'
-#      - C_COMPILER='gcc-8'
-#      - Fortran_COMPILER='gfortran-8'
-#      - BUILD_TYPE='release'
-#      - RUN_DANGER=false
-
-#  - os: linux
-#    compiler: gcc
-#    addons: &5
-#      apt:
-#        sources:
-#        - ubuntu-toolchain-r-test
-#        packages:
-#        - python3
-#        - cmake
-#        - cmake-data
-#        - libhdf5-serial-dev
-#        - liblapack-dev
-#        - g++-6
-#        - gcc-6
-#        - gfortran-6
-#    env:
-#      - CXX_COMPILER='g++-6'
-#      - PYTHON_VER='3.5'
-#      - C_COMPILER='gcc-6'
-#      - Fortran_COMPILER='gfortran-6'
-#      - BUILD_TYPE='release'
-#      - RUN_DANGER=false
+    - addons: &1
+        apt:
+          packages:
+            - liblapack-dev
+            - clang-3.6
+            - clang-format-3.6
+            - libhdf5-serial-dev
+            - gfortran
+        env:
+          - CXX_COMPILER='clang++-3.6'
+          - PYTHON_VER='3.6'
+          - C_COMPILER='clang-3.6'
+          - Fortran_COMPILER='gfortran'
+          - BUILD_TYPE='release'
+    - addons: &2
+        apt:
+          packages:
+            - python-numpy
+            - liblapack-dev
+            - libhdf5-serial-dev
+            - gfortran
+        env:
+          - CXX_COMPILER='g++'
+          - PYTHON_VER='3.7'
+          - C_COMPILER='gcc'
+          - Fortran_COMPILER='gfortran'
+          - BUILD_TYPE='release'
+    - stage: Danger Bot
+      ruby: 2.5.3
+      addons:
+        apt:
+          packages:
+            - clang-format
+      if: commit_message !~ /(skip bot|bot skip|skip danger|danger skip)/
+      script:
+        - |
+          conda install -c conda-forge yapf
+          bundle install --gemfile=.ci/Gemfile
+          BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
 
 before_install:
   - uname -a
@@ -153,12 +83,6 @@ before_script:
   - ${CXX_COMPILER} --version
   - ${Fortran_COMPILER} --version
   - ${C_COMPILER} --version
-  - |
-    if [[ "${RUN_DANGER}" = true ]]; then
-      conda install -c conda-forge yapf
-      bundle install --gemfile=.ci/Gemfile
-      BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
-    fi
     # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
     #   b/c their c++ symbols don't mix with the different Travis compilers. for other
     #   reasons, pkgs are being compiled less statically, sad for CI.
