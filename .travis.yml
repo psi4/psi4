@@ -23,19 +23,14 @@ jobs:
         apt:
           packages:
             - clang-format
-            - gfortran
       if: commit_message !~ /(skip bot|bot skip|skip danger|danger skip)/
+      before_script:
+        - echo "Running the Danger bot"
       script:
         - |
           conda install -c conda-forge yapf
           bundle install --gemfile=.ci/Gemfile
           BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
-      env:
-        - CXX_COMPILER='g++'
-        - PYTHON_VER='3.7'
-        - C_COMPILER='gcc'
-        - Fortran_COMPILER='gfortran'
-        - BUILD_TYPE='release'
     - stage: Testing
       addons: &1
         apt:
