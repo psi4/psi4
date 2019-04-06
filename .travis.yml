@@ -25,12 +25,12 @@ jobs:
             - clang-format-3.6
             - libhdf5-serial-dev
             - gfortran
-        env:
-          - CXX_COMPILER='clang++-3.6'
-          - PYTHON_VER='3.6'
-          - C_COMPILER='clang-3.6'
-          - Fortran_COMPILER='gfortran'
-          - BUILD_TYPE='release'
+      env:
+        - CXX_COMPILER='clang++-3.6'
+        - PYTHON_VER='3.6'
+        - C_COMPILER='clang-3.6'
+        - Fortran_COMPILER='gfortran'
+        - BUILD_TYPE='release'
     - addons: &2
         apt:
           packages:
@@ -38,12 +38,12 @@ jobs:
             - liblapack-dev
             - libhdf5-serial-dev
             - gfortran
-        env:
-          - CXX_COMPILER='g++'
-          - PYTHON_VER='3.7'
-          - C_COMPILER='gcc'
-          - Fortran_COMPILER='gfortran'
-          - BUILD_TYPE='release'
+      env:
+        - CXX_COMPILER='g++'
+        - PYTHON_VER='3.7'
+        - C_COMPILER='gcc'
+        - Fortran_COMPILER='gfortran'
+        - BUILD_TYPE='release'
     - stage: Danger Bot
       ruby: 2.5.3
       addons:
