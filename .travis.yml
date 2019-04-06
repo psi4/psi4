@@ -17,7 +17,26 @@ env:
 
 jobs:
   include:
-    - addons: &1
+    - stage: Danger Bot
+      ruby: 2.5.3
+      addons:
+        apt:
+          packages:
+            - clang-format
+      if: commit_message !~ /(skip bot|bot skip|skip danger|danger skip)/
+      script:
+        - |
+          conda install -c conda-forge yapf
+          bundle install --gemfile=.ci/Gemfile
+          BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
+      env:
+        - CXX_COMPILER='g++'
+        - PYTHON_VER='3.7'
+        - C_COMPILER='gcc'
+        - Fortran_COMPILER='gfortran'
+        - BUILD_TYPE='release'
+    - stage: Testing
+      addons: &1
         apt:
           packages:
             - liblapack-dev
@@ -44,18 +63,6 @@ jobs:
         - C_COMPILER='gcc'
         - Fortran_COMPILER='gfortran'
         - BUILD_TYPE='release'
-    - stage: Danger Bot
-      ruby: 2.5.3
-      addons:
-        apt:
-          packages:
-            - clang-format
-      if: commit_message !~ /(skip bot|bot skip|skip danger|danger skip)/
-      script:
-        - |
-          conda install -c conda-forge yapf
-          bundle install --gemfile=.ci/Gemfile
-          BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
 
 before_install:
   - uname -a
