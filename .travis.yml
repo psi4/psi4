@@ -23,6 +23,7 @@ jobs:
         apt:
           packages:
             - clang-format
+            - gfortran
       if: commit_message !~ /(skip bot|bot skip|skip danger|danger skip)/
       script:
         - |
@@ -41,7 +42,6 @@ jobs:
           packages:
             - liblapack-dev
             - clang-3.6
-            - clang-format-3.6
             - libhdf5-serial-dev
             - gfortran
       env:
