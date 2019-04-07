@@ -1,4 +1,4 @@
-find_package(xtensor-blas 0.16.0 CONFIG QUIET)
+find_package(xtensor-blas 0.15.2 CONFIG QUIET)
 
 if(${xtensor-blas_FOUND})
   message(STATUS "${Cyan}Found xtensor-blas${ColourReset}: ${xtensor-blas_INCLUDE_DIR} (found version ${xtensor-blas_VERSION})")

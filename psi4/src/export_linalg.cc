@@ -129,7 +129,11 @@ struct DeclareTensor final {
         cls.def("__repr__", &Class::repr);
         cls.def("__str__", &Class::str);
         cls.def("__format__", &Class::format, "extra"_a = "");
+#if defined(PYBIND11_OVERLOAD_CAST)
         cls.def("__getitem__", py::overload_cast<size_t>(&Class::operator[]), "Return block at given irrep", "h"_a,
+#else
+        cls.def("__getitem__", static_cast<xt::xtensor<T, Rank>& (Class::*)(size_t)>(&Class::operator[]), "Return block at given irrep", "h"_a,
+#endif
                 py::is_operator(), py::return_value_policy::reference_internal);
         // FIXME Doesn't compile :/
         // cls.def("__setitem__", &Class::set_block, "Set block at given irrep", py::is_operator());

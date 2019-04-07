@@ -2,6 +2,13 @@
 ### >> This allow to propagate dependencies upwards sanely
 pybind11_add_module(core SHARED NO_EXTRAS core.cc)
 
+# Let clang-cl behave like MSVC when it comes to the preprocessor
+target_compile_options(core
+  PUBLIC
+    $<$<AND:$<C_COMPILER_ID:Clang>,$<BOOL:${WIN32}>>:-fms-compatibility>
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<BOOL:${WIN32}>>:-fms-compatibility>
+  )
+
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
 

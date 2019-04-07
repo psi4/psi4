@@ -1,4 +1,4 @@
-find_package(xtl 0.6.2 CONFIG QUIET)
+find_package(xtl 0.5.4 CONFIG QUIET)
 
 if(${xtl_FOUND})
   message(STATUS "${Cyan}Found xtl${ColourReset}: ${xtl_INCLUDE_DIR} (found version ${xtl_VERSION})")
