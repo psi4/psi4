@@ -1557,6 +1557,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             CIS analysis
          -*/
         options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
+        /*- Which tasks to run CPHF For
+         *  Valid choices:
+         *  -Polarizability
+         * -*/
+        options.add("CPHF_TASKS", new ArrayType());
         /*- Memory safety factor for allocating JK
         -*/
         options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
