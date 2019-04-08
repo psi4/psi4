@@ -995,6 +995,7 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
             scf["scheme"] = _get_default_xtpl(len(scf["basis"][1]), scf["treatment"])
             scf["alpha"] = None
             scf["options"] = False
+            scf["options_lo"] = False
             metadata.append(scf)
     # 2c) keep processing current stage
         stage["treatment"] = item.get("treatment", "scf" if len(metadata) == 0 else "corl")
@@ -1016,6 +1017,7 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
                     len(stage["basis"][0]), len(stage["basis_lo"][0])))
         stage["alpha"] = item.get("alpha", None)
         stage["options"] = item.get("options", False)
+        stage["options_lo"] = item.get("options_lo", False)
         metadata.append(stage)
     return (metadata)
 
@@ -1361,7 +1363,8 @@ def cbs(func, label, **kwargs):
         * ```scheme```: scf extrapolation scheme function, by default it is worked out from the number of
         basis sets (1 - 3) supplied as ```basis```.
         * ```alpha```: alpha for the above scheme, if the default is to be overriden
-        * ```options```: if special options are required for a step, they should be entered as a dict here.
+        * ```options```: if special options are required for a step, they should be entered as a dict here. If some options should be used for both parts of the stage, they should be entered
+        in both ```options``` and ```options_lo```.
         This is helpful for calculating all electron corrections in otherwise frozen core calculations, or
         relativistic (DKH) Hamiltionian corrections for otherwise 2-component Hamiltonians.
         * ```treatment```: treat extrapolation stage as ```scf``` or ```corl```, by default only the first
@@ -1490,7 +1493,7 @@ def cbs(func, label, **kwargs):
                         delta["alpha"]
                     ])))
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
-                                         False, natom)
+                                         delta["options_lo"], natom)
             GRAND_NEED.append(
                 dict(
                     zip(d_fields, [
@@ -1519,7 +1522,7 @@ def cbs(func, label, **kwargs):
         dups = -1
         for indx_job, job in enumerate(JOBS):
             if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
-               (job['f_options'] == mc['f_options']):
+               (job['f_options'] == mc['f_options']) and (job['f_options'] != False):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
@@ -1531,7 +1534,8 @@ def cbs(func, label, **kwargs):
                 for indx_job, job in enumerate(JOBS):
                     if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
                        (mc['f_basis'] == job['f_basis']) and not \
-                       (mc['f_wfn'] == job['f_wfn']):
+                       (mc['f_wfn'] == job['f_wfn']) and \
+                       (mc['f_options'] == False):
                         del JOBS[indx_job]
 
     instructions += """\n    Enlightened listing of computations required.\n"""
@@ -1587,7 +1591,7 @@ def cbs(func, label, **kwargs):
 
         # Stash and set options if any
         if mc["f_options"]:
-            optionstash = p4util.OptionsState(list(mc["f_options"]))
+            optionstash = p4util.OptionsState(*[[opt] for opt in list(mc["f_options"])])
             for k, v, in mc["f_options"].items():
                 core.set_global_option(k.upper(), v)
         else:
