@@ -2006,6 +2006,13 @@ void DCFTSolver::compute_TPDM_trace() {
 }
 
 void DCFTSolver::compute_oe_properties() {
+
+    if (options_.get_str("DCFT_TYPE") == "DF") {
+        outfile->Printf(
+            "\n\n\t**** Warning: Density-fitted DCFT properties are only approximate.\n"
+            "\t     Small errors are expected. ****\n");
+    }
+
     // Form one-particle density matrix
     auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
     auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);

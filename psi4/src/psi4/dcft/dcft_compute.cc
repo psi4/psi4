@@ -56,6 +56,9 @@ double DCFTSolver::compute_energy() {
     }
 
     if (options_.get_str("DCFT_TYPE") == "DF") {
+        outfile->Printf(
+            "\n\n\t**** Warning: The density-fitted DCFT cumulant is only approximately variational.\n"
+            "\t     The stationarity conditions, and thus DF-DCFT energy, are subject to change. ****\n");
         if (!options_["AO_BASIS"].has_changed())
             options_.set_str("DCFT", "AO_BASIS", "NONE");
         else if (options_.get_str("AO_BASIS") == "DISK") {
@@ -80,6 +83,11 @@ double DCFTSolver::compute_energy() {
         tstop();
         // Start the timers
         tstart();
+        if (options_.get_str("DCFT_TYPE") == "DF") {
+            outfile->Printf(
+                "\n\n\t**** Warning: Density-fitted DCFT analytic gradients are only approximate.\n"
+                "\t     Errors on the order of 10^-5 are expected. ****\n");
+        }
         // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
         compute_gradient();
         if (options_.get_str("REFERENCE") != "RHF") {
