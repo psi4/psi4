@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2017 The Psi4 Developers.
+.. # Copyright (c) 2007-2019 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -49,7 +49,7 @@ formatting of the code can be accomplished, in decreasing order of automation:
 2. By installing Git hooks to run the formatters when committing.
 3. By running the formatters manually on the modified files.
 
-.. _`faq:editor`:
+.. _`faq:editor_code_style`:
 
 How to impose code style through your editor
 --------------------------------------------
@@ -58,7 +58,7 @@ Both ``clang-format`` and ``yapf`` can be integrated into widely used editors.
 The `Neoformat <https://github.com/sbdchd/neoformat>`_ plugin can be configured
 to format files when saving them to disk.
 
-.. _`faq:githooks`:
+.. _`faq:githooks_code_style`:
 
 How to impose code style through Git hooks
 ------------------------------------------
@@ -91,7 +91,7 @@ Hooks are powerful, but integrating the formatter into your editor will prove
 to be better. Hooks need to be installed anew for every fresh clone of the
 repository you are working on.
 
-.. _`faq:manual`:
+.. _`faq:manual_code_style`:
 
 How to run code-style tools `clang-format` and `yapf` manually
 --------------------------------------------------------------
