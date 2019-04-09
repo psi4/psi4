@@ -1,6 +1,15 @@
 *******************************************************************************
 *******************************************************************************
 
+Tuesday, February 12, 2019 -- Jonathon Misiewicz
+
+[44] Added polarization functions to second-row atoms in Pople basis sets.
+Below paper gives some f coefficients and also the "factor of 4" rule for
+multiple polarization functions of the same shell
+(https://aip.scitation.org/doi/pdf/10.1063/1.447079)
+
+*******************************************************************************
+*******************************************************************************
 
 Friday, September 29, 2017 -- LAB (posted Feb 2019)
 
