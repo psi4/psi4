@@ -409,10 +409,23 @@ core.VBase.get_np_xyzw = _core_vbase_get_np_xyzw
 ## Python other helps
 
 
-def set_options(options_dict):
+def set_options(options_dict, verbose=1):
+    """Sets Psi4 options from an input dictionary.
+    Parameters
+    ----------
+    options_dict : dict
+        Dictionary where keys are "option_name" for global options or
+        "module_name__option_name" (double underscore separation) for
+        option local to "module_name". Values are the option value. All
+        are case insensitive.
+    verbose : int, optional
+        Control print volume.
+    Returns
+    -------
+    None
     """
-    Sets Psi4 global options from an input dictionary.
-    """
+    optionre = re.compile(r'\A(?P<module>\w+__)?(?P<option>\w+)\Z', re.IGNORECASE)
+    rejected = {}
 
     for k, v, in options_dict.items():
         mobj = optionre.match(k)

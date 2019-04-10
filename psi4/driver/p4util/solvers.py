@@ -430,7 +430,7 @@ def _gs_orth(engine, U, V, thresh):
 
 
 def _best_vectors(engine, ss_vectors, basis_vectors):
-    """Compute the best approximation of the true eigenvectors as a linear combination of basis vectors:
+    r"""Compute the best approximation of the true eigenvectors as a linear combination of basis vectors:
 
     ..math:: V_{k} = \Sum_{i} \tilde{V}_{i,k}X_{i}
 

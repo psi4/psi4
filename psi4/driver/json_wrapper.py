@@ -29,18 +29,21 @@
 Runs a JSON input psi file.
 """
 
-import atexit
+import os
+import sys
 import copy
 import json
-import numpy as np
-import os
 import uuid
+import atexit
+import traceback
+
+import numpy as np
 
 import psi4
-from psi4.driver import driver
 from psi4.driver import molutil
 from psi4.driver import p4util
 from psi4 import core
+from psi4.driver import driver
 
 ## Methods and properties blocks
 
@@ -211,6 +214,9 @@ def run_json(json_data, clean=True):
             'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
         }
         json_data["success"] = False
+
+        with open(outfile, 'r') as f:
+            json_data["raw_output"] = f.read()
 
     if return_output:
         with open(outfile, 'r') as f:
