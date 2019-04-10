@@ -96,26 +96,25 @@ LaplaceDenominator::LaplaceDenominator(std::shared_ptr<Vector> eps_occ, std::sha
 }
 
 void Denominator::debug() {
-    int nocc = eps_occ_->dimpi()[0];
-    int nvir = eps_vir_->dimpi()[0];
+    auto nocc = eps_occ_->dimpi()[0];
+    auto nvir = eps_vir_->dimpi()[0];
 
-    double *e_o = eps_occ_->pointer();
-    double *e_v = eps_vir_->pointer();
-    double **denp = denominator_->pointer();
+    auto denp = denominator_->pointer();
 
     auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
     auto app_denom = std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nvir, nocc * nvir);
     auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
-    double **tp = true_denom->pointer();
-    double **ap = app_denom->pointer();
-    double **ep = err_denom->pointer();
+    auto tp = true_denom->pointer();
+    auto ap = app_denom->pointer();
+    auto ep = err_denom->pointer();
 
     for (int i = 0; i < nocc; i++)
         for (int a = 0; a < nvir; a++)
             for (int j = 0; j < nocc; j++)
                 for (int b = 0; b < nvir; b++)
-                    tp[i * nvir + a][j * nvir + b] = 1.0 / (e_v[a] + e_v[b] - e_o[i] - e_o[j]);
+                    tp[i * nvir + a][j * nvir + b] =
+                        1.0 / (eps_vir_->get(a) + eps_vir_->get(b) - eps_occ_->get(i) - eps_occ_->get(j));
 
     for (int alpha = 0; alpha < nvector_; alpha++)
         for (int i = 0; i < nocc; i++)
