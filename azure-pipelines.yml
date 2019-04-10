@@ -119,6 +119,7 @@ jobs:
                         networkx ^
                         ninja ^
                         numpy ^
+                        pint ^
                         pybind11 ^
                         pytest ^
                         python=%PYTHON_VERSION% ^

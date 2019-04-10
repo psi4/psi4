@@ -1,6 +1,6 @@
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
-add_library(core SHARED "")
+add_library(core SHARED core.cc)
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
@@ -30,7 +30,6 @@ target_sources(core
     create_new_plugin.cc
     read_options.cc
     python_data_type.cc
-    core.cc
   )
 
 set_target_properties(core
