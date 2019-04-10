@@ -5,8 +5,8 @@ pybind11_add_module(core SHARED NO_EXTRAS core.cc)
 # Let clang-cl behave like MSVC when it comes to the preprocessor
 target_compile_options(core
   PUBLIC
-    $<$<AND:$<C_COMPILER_ID:Clang>,$<BOOL:${WIN32}>>:-fms-compatibility>
-    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<BOOL:${WIN32}>>:-fms-compatibility>
+    "$<$<AND:$<C_COMPILER_ID:Clang>,$<BOOL:${WIN32}>>:-Xclang;-fms-compatibility>"
+    "$<$<AND:$<CXX_COMPILER_ID:Clang>,$<BOOL:${WIN32}>>:-Xclang;-fms-compatibility>"
   )
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
@@ -47,11 +47,6 @@ set_target_properties(core
     VISIBILITY_INLINES_HIDDEN 1
   )
 
-target_include_directories(core
-  PRIVATE
-    ${NUMPY_INCLUDE_DIRS}
-  )
-
 get_property(psi4_binmodules GLOBAL PROPERTY LINKBINLIST)
 get_property(psi4_libmodules GLOBAL PROPERTY LINKLIBLIST)
 target_link_libraries(core
@@ -63,6 +58,7 @@ target_link_libraries(core
     ${LIBC_INTERJECT}
     xtensor
     xtensor-python
+    NumPy
     tgt::lapack # OpenMP flags to core.cc
   )
 
