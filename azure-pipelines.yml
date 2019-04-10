@@ -2,6 +2,7 @@
 
 trigger:
   - master
+  - 1.3.x
 
 variables:
   mkl.version: '2019.1'
