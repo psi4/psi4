@@ -643,7 +643,7 @@ funcs.append({
         "GGA_C_BMK": {}
     },
     "citation":
-    '    A. D. Boese, J. M. L. Martin, J. Chem. Phys. 121, 3405, 2004\n'
+    '    A. D. Boese, J. M. L. Martin, J. Chem. Phys. 121, 3405, 2004\n',
     "description":
     '    BMK Hybrid Meta-GGA XC Functional for kinetics\n',
 })
