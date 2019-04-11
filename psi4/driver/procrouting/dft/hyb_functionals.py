@@ -632,6 +632,22 @@ funcs.append({
     "doi": "10.1021/acs.jctc.8b00072",
 })
 
+funcs.append({
+    "name": "BMK",
+    "x_functionals": {
+        "HYB_MGGA_X_BMK": {
+            "use_libxc": True
+        }
+    },
+    "c_functionals": {
+        "GGA_C_BMK": {}
+    },
+    "citation":
+    '    A. D. Boese, J. M. L. Martin, J. Chem. Phys. 121, 3405, 2004\n'
+    "description":
+    '    BMK Hybrid Meta-GGA XC Functional for kinetics\n',
+})
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
