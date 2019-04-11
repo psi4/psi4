@@ -57,7 +57,9 @@ def format_option_for_cfour(opt, val):
                 # [3, 1, 0, 2] --> 3/1/0/2
                 text += '/'.join(map(str, val))
             elif opt == 'CFOUR_DROPMO':
-                text += ','.join(map(str, val))
+                text += '-'.join(map(str, val))
+                # NOTE: some versions of cfour (or maybe it's psi) need comma, not dash
+                #text += ','.join(map(str, val))
             else:
                 # [3, 1, 0, 2] --> 3-1-0-2
                 text += '-'.join(map(str, val))
