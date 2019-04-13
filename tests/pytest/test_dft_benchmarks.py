@@ -169,7 +169,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
         neutral = psi4.energy(func, molecule=mols['h2o'])
         assert compare_values(expected, cation - neutral, 4, request.node.name)
     else:
-        pytest.xfail("{0:s} not in Psi4.".format(func))
+        pytest.skip("{0:s} not in Psi4.".format(func))
 
 
 
@@ -288,7 +288,7 @@ def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request
         psi4_ie = psi4.energy(func, molecule=mols['h2o_dimer'], bsse_type='nocp')
         assert compare_values(expected, psi4_ie, 4, request.node.name)
     else:
-        pytest.xfail("{0:s} not in Psi4.".format(func))
+        pytest.skip("{0:s} not in Psi4.".format(func))
 
 # Current version of Psi4 does not match Q-Chem for these tests
 #expected_fail_qchem = ['B97-D', 'wB97X-D3'] #TEST
