@@ -29,8 +29,10 @@
 #ifndef Corr_GRAD_H
 #define Corr_GRAD_H
 
-#include "psi4/libmints/typedefs.h"
 #include <map>
+#include <string>
+
+#include "psi4/libmints/typedefs.h"
 
 namespace psi {
 

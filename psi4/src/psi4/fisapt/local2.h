@@ -29,9 +29,10 @@
 #ifndef FISAPT_LOCAL2_H
 #define FISAPT_LOCAL2_H
 
-#include <vector>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace psi {
 
@@ -109,7 +110,7 @@ class IBOLocalizer2 {
         double convergence,                                 // Convergence criterion
         int maxiter,                                        // Maximum number of iterations
         int power                                           // Localization metric power
-        );
+    );
     /// Energy-ordered local orbital permutation [nmo(local) x nmo(ordered)]
     static std::shared_ptr<Matrix> reorder_orbitals(std::shared_ptr<Matrix> F, const std::vector<int>& ranges);
     /// Orbital atomic charges (natom x nmo)
@@ -137,7 +138,7 @@ class IBOLocalizer2 {
         std::shared_ptr<Matrix> Focc,  // Fock matrix of orbitals to localize [nmo x nmo]
         const std::vector<int>& ranges =
             std::vector<int>()  // [0, nfocc, nocc] will separately localize core and valence
-        );
+    );
     /// Print the charges
     void print_charges(double scale = 2.0);
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -27,7 +27,6 @@
  */
 
 #include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
@@ -50,7 +49,7 @@ using namespace pybind11::literals;
 namespace {
 struct Rank1Decorator final {
     template <typename PyClass>
-    void operator()(PyClass& cls, const std::string& /* name */) const {
+    void operator()(py::module& /* mod */, PyClass& cls, const std::string& /* name */) const {
         cls.def(py::init<const std::string&, const Dimension&>(), "Labeled, blocked vector", "label"_a, "dimpi"_a);
         cls.def(py::init<const std::string&, int>(), "Labeled, 1-irrep vector", "label"_a, "dim"_a);
         cls.def(py::init<const Dimension&>(), "Unlabeled, blocked vector", "dimpi"_a);
@@ -62,7 +61,7 @@ struct Rank1Decorator final {
 
 struct Rank2Decorator final {
     template <typename PyClass>
-    void operator()(PyClass& cls, const std::string& /* name */) const {
+    void operator()(py::module& mod, PyClass& cls, const std::string& /* name */) const {
         cls.def(py::init<const std::string&, const Dimension&, const Dimension&, unsigned int>(),
                 "Labeled, blocked, symmetry-assigned matrix", "label"_a, "rowspi"_a, "colspi"_a, "symmetry"_a);
         cls.def(py::init<const std::string&, const Dimension&, const Dimension&>(), "Labeled, blocked matrix",
@@ -80,13 +79,24 @@ struct Rank2Decorator final {
                                   py::return_value_policy::copy, "Returns the columns per irrep array");
         cls.def("cols", [](const typename PyClass::type& obj, size_t h) { return obj.cols(h); },
                 "Returns the number of columns in given irrep", "h"_a = 0);
+
+        // Bind free functions to module
+        declareRank2FreeFunctions<typename PyClass::type::value_type>(mod);
+    }
+
+    template <typename T>
+    void declareRank2FreeFunctions(py::module& mod) const {
+        mod.def("doublet", &doublet<T>,
+                "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
+                "B"_a, "transA"_a = false, "transB"_a = false);
     }
 };
 
-template <size_t Rank>
 struct RankNDecorator final {
     template <typename PyClass>
-    void operator()(PyClass& cls, const std::string& name) const {
+    void operator()(py::module& /* mod */, PyClass& cls, const std::string& name) const {
+        static constexpr size_t Rank = PyClass::type::rank;
+
         cls.def(py::init<const std::string&, size_t, const std::array<Dimension, Rank>&, unsigned int>(),
                 ("Labeled, blocked, symmetry-assigned " + name).c_str(), "label"_a, "blocks"_a, "axes_dimpi"_a,
                 "symmetry"_a);
@@ -100,18 +110,11 @@ struct RankNDecorator final {
     }
 };
 
-template <typename T>
-void declareMatrixFreeFunctions(py::module& mod) {
-    mod.def("doublet", &doublet<T>,
-            "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
-            "B"_a, "transA"_a = false, "transB"_a = false);
-}
-
 template <typename T, size_t Rank>
 struct DeclareTensor final {
     using Class = Tensor<T, Rank>;
     using PyClass = py::class_<Class, std::shared_ptr<Class>>;
-    using SpecialBinder = std::function<void(PyClass&, const std::string&)>;
+    using SpecialBinder = std::function<void(py::module&, PyClass&, const std::string&)>;
 
     static void bind_tensor(py::module& mod, const SpecialBinder& decorate) {
         std::string name = Class::pyClassName();
@@ -132,33 +135,38 @@ struct DeclareTensor final {
 #if defined(PYBIND11_OVERLOAD_CAST)
         cls.def("__getitem__", py::overload_cast<size_t>(&Class::operator[]), "Return block at given irrep", "h"_a,
 #else
-        cls.def("__getitem__", static_cast<xt::xtensor<T, Rank>& (Class::*)(size_t)>(&Class::operator[]), "Return block at given irrep", "h"_a,
+        cls.def("__getitem__", static_cast<xt::xtensor<T, Rank>& (Class::*)(size_t)>(&Class::operator[]),
+                "Return block at given irrep", "h"_a,
 #endif
                 py::is_operator(), py::return_value_policy::reference_internal);
-        // FIXME Doesn't compile :/
-        // cls.def("__setitem__", &Class::set_block, "Set block at given irrep", py::is_operator());
+        cls.def("__setitem__",
+                [](Class& obj, size_t h, const xt::pytensor<T, Rank>& block) {
+                    if (h >= obj.nirrep()) throw py::index_error();
+                    obj.set_block(h, block);
+                },
+                "h"_a, "block"_a, "Set block at given irrep", py::is_operator());
 
         // Rank-dependent bindings, e.g. CTORs
-        decorate(cls, name);
+        decorate(mod, cls, name);
     }
 };
 }  // namespace
 
 void export_linalg(py::module& mod) {
     xt::import_numpy();
+
     // Rank-1 tensor, aka blocked vector
     auto decorate_v = Rank1Decorator();
     DeclareTensor<float, 1>::bind_tensor(mod, decorate_v);
     DeclareTensor<double, 1>::bind_tensor(mod, decorate_v);
+
     // Rank-2 tensor, aka blocked matrix
     auto decorate_m = Rank2Decorator();
     DeclareTensor<float, 2>::bind_tensor(mod, decorate_m);
-    declareMatrixFreeFunctions<float>(mod);
     DeclareTensor<double, 2>::bind_tensor(mod, decorate_m);
-    declareMatrixFreeFunctions<double>(mod);
+
     // Rank-3 tensor
-    // FIXME not ideal to have rank info spread out...
-    auto decorate_rankn = RankNDecorator<3>();
+    auto decorate_rankn = RankNDecorator();
     DeclareTensor<float, 3>::bind_tensor(mod, decorate_rankn);
     DeclareTensor<double, 3>::bind_tensor(mod, decorate_rankn);
 }

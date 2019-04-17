@@ -177,25 +177,25 @@ message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSI
 
 # <<< The whole xtensor stack >>>
 
-find_package(xtl 0.5.4 CONFIG REQUIRED)
+find_package(xtl 0.6.4 CONFIG REQUIRED)
 get_property(_loc TARGET xtl PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtl${ColourReset}: ${_loc} (version ${xtl_VERSION})")
 
-find_package(xsimd 7.1.3 CONFIG REQUIRED)
+find_package(xsimd 7.2.3 CONFIG REQUIRED)
 get_property(_loc TARGET xsimd PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xsimd${ColourReset}: ${_loc} (version ${xsimd_VERSION})")
 
-find_package(xtensor 0.19.4 CONFIG REQUIRED)
+find_package(xtensor 0.20.7 CONFIG REQUIRED)
 get_property(_loc TARGET xtensor PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor${ColourReset}: ${_loc} (version ${xtensor_VERSION})")
 
-find_package(xtensor-blas 0.15.2 CONFIG REQUIRED)
+find_package(xtensor-blas 0.16.1 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using xtensor-blas${ColourReset}: ${_loc} (version ${xtensor-blas_VERSION})")
 
-find_package(xtensor-python 0.22.1 CONFIG REQUIRED)
+find_package(xtensor-python 0.23.1 CONFIG REQUIRED)
 get_property(_loc TARGET xtensor-python PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor-python${ColourReset}: ${_loc} (version ${xtensor-python_VERSION})")
@@ -278,7 +278,8 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_qcel_molparse_to_string.py
               ../tests/pytests/test_matrix.py
               ../tests/pytests/test_vector.py
-              ../tests/pytests/test_tensor.py
+              ../tests/pytests/test_tensor_ctors.py
+              ../tests/pytests/test_tensor_2d_doublet.py
               ../tests/pytests/test_qcvars.py
               ../tests/pytests/test_dft_benchmarks.py
               ../tests/pytests/test_vibanalysis.py

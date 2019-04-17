@@ -1,8 +1,10 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR) # 3.8: CXX_STANDARD recognizes C++17
-                                              # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
-                                              # 3.2: continue()
-                                              # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+# 3.8: CXX_STANDARD recognizes C++17
+# 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
+# 3.2: continue()
+# 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
+
 project(psi4
         LANGUAGES C CXX)
 set(psi4_URL "http://www.psicode.org/")
