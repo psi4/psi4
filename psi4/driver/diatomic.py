@@ -85,7 +85,7 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     """
 
     angstrom_to_bohr = 1.0 / constants.bohr2angstroms
-    angstrom_to_meter = 10e-10;
+    angstrom_to_meter = 10e-10
 
     # Make sure the input is valid
     if len(rvals) != len(energies):
@@ -96,12 +96,12 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     core.print_out("\n\nPerforming a fit to %d data points\n" % npoints)
 
     # Sort radii and values first from lowest to highest radius
-    sortedtuples = sorted(zip(rvals,energies))
-    rvals = [i[0] for i in sortedtuples]
-    energies = [i[1] for i in sortedtuples]
+    indices = np.argsort(rvals)
+    rvals = np.array(rvals)[indices]
+    energies = np.array(energies)[indices]
 
     # Make sure the molecule the user provided is the active one
-    molecule = mol if mol is not None else core.get_active_molecule()
+    molecule = mol or core.get_active_molecule()
     molecule.update_geometry()
     natoms = molecule.natom()
     if natoms != 2:
@@ -110,16 +110,15 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     m2 = molecule.mass(1)
 
     # Find rval of the minimum of energies, check number of points left and right
-    minE = np.min(energies)
-    iminE = energies.index(minE)
-    if iminE < 3 :
+    min_index = np.argmin(energies)
+    if min_index < 3 :
         core.print_out("\nWarning: fewer than 3 points provided with a r < r(min(E))!\n")
-    if iminE >= len(energies) - 3:
+    if min_index >= len(energies) - 3:
         core.print_out("\nWarning: fewer than 3 points provided with a r > r(min(E))!\n")
 
     # Optimize the geometry, refitting the surface around each new geometry
-    core.print_out("\nOptimizing geometry based on current surface:\n\n");
-    re = rvals[iminE]
+    core.print_out("\nOptimizing geometry based on current surface:\n\n")
+    re = rvals[min_index]
     maxit = 30
     thres = 1.0e-9
     for i in range(maxit):
@@ -131,7 +130,7 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
         re -= g/H;
         if i == maxit-1:
             raise ConvergenceError("diatomic geometry optimization", maxit)
-    core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g));
+    core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))
     if re < min(rvals):
         raise Exception("Minimum energy point is outside range of points provided.  Use a lower range of r values.")
     if re > max(rvals):
@@ -249,7 +248,7 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
 
     core.print_out("\nre       = %10.6f A  check: %10.6f\n" % (re, recheck))
     core.print_out("r0       = %10.6f A\n" % r0)
-    core.print_out("E        = %17.10f Eh\n" % e)
+    core.print_out("E at re  = %17.10f Eh\n" % e)
     core.print_out("we       = %10.4f cm-1\n" % we)
     core.print_out("wexe     = %10.4f cm-1\n" % wexe)
     core.print_out("nu       = %10.4f cm-1\n" % nu)
@@ -265,7 +264,7 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
                "we"               :  we,
                "wexe"             :  wexe,
                "nu"               :  nu,
-               "E"                :  e,
+               "E(re)"            :  e,
                "ZPVE(harmonic)"   :  zpve_we,
                "ZPVE(anharmonic)" :  zpve_nu,
                "Be"               :  B,
