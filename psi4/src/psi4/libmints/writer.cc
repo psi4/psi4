@@ -638,7 +638,7 @@ NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_
 void NBOWriter::write(const std::string &filename) {
     int pure_order[][7] = {
         {1, 0, 0, 0, 0, 0, 0},        // s
-        {101, 102, 103, 0, 0, 0, 0},  // p
+        {103, 101, 102, 0, 0, 0, 0},  // p
         // z2  xz   yz  x2-y2 xy
         {255, 252, 253, 254, 251, 0, 0},  // d
         // z(z2-r2), x(z2-r2), y(z2-r2) z(x2-y2), xyz, x(x2-y2), y(x2-y2)
@@ -930,27 +930,25 @@ void NBOWriter::write(const std::string &filename) {
     printer->Printf("\n $END");
 
     // Alpha AO->MO transformation
-    SharedMatrix soalphac = wavefunction_->Ca();
-    const Dimension aos = helper.petite_list()->AO_basisdim();
-    const Dimension nmo = wavefunction_->Ca()->colspi();
-    auto alphac = std::make_shared<Matrix>("Ca AO x MO", aos, nmo);
-    alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
+    SharedMatrix alphac = wavefunction_->Ca_subset("AO", "ALL");
 
     printer->Printf("\n $LCAOMO");
+
+    // Now write out the coefficients. NBO expects all coefficients
+    // for one MO before writing coefficients for the next MO.
+
     if (wavefunction_->same_a_b_orbs()) {
         for (int i = 0; i < nbf; i++) {
             for (int j = 0; j < nbf; j++) {
                 if (((nbf * i + j + 1) % 5) == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E", alphac->get(0, i, j));
+                printer->Printf("%15.6E", alphac->get(0, j, i));
             }
         }
     }
 
     else {
         // Beta AO->MO transformation
-        auto betac = std::make_shared<Matrix>(nbf, nbf);
-        SharedMatrix sobetac = wavefunction_->Cb();
-        betac->gemm(true, false, 1.00, sotoao, sobetac, 0.00);
+        SharedMatrix betac = wavefunction_->Cb_subset("AO", "ALL");
 
         // Print the AO->MO coefficients
         int count = 0;
@@ -958,14 +956,14 @@ void NBOWriter::write(const std::string &filename) {
             for (int j = 0; j < nbf; j++) {
                 count++;
                 if (count % 5 == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E", alphac->get(0, i, j));
+                printer->Printf("%15.6E", alphac->get(0, j, i));
             }
         }
         for (int i = 0; i < nbf; i++) {
             for (int j = 0; j < nbf; j++) {
                 count++;
                 if (count % 5 == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E ", betac->get(0, i, j));
+                printer->Printf("%15.6E ", betac->get(0, j, i));
             }
         }
     }
