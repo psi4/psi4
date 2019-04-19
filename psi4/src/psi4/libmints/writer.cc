@@ -636,14 +636,18 @@ void FCHKWriter::write(const std::string &filename) {
 NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
 
 void NBOWriter::write(const std::string &filename) {
-    int pure_order[][7] = {
-        {1, 0, 0, 0, 0, 0, 0},        // s
-        {103, 101, 102, 0, 0, 0, 0},  // p
+    int pure_order[][11] = {
+        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},        // s
+        {103, 101, 102, 0, 0, 0, 0, 0, 0, 0, 0},  // p
         // z2  xz   yz  x2-y2 xy
-        {255, 252, 253, 254, 251, 0, 0},  // d
+        {255, 252, 253, 254, 251, 0, 0, 0, 0, 0, 0},  // d
         // z(z2-r2), x(z2-r2), y(z2-r2) z(x2-y2), xyz, x(x2-y2), y(x2-y2)
-        {351, 352, 353, 354, 355, 356, 357}  // f
+        {351, 352, 353, 354, 355, 356, 357, 0, 0, 0, 0},  // f
+        {451, 452, 453, 454, 455, 456, 457, 458, 459, 0, 0},  // g
+        {551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561}  // h
     };
+
+    int max_am = sizeof(pure_order)/sizeof(pure_order[0]) - 1;
 
     MintsHelper helper(wavefunction_->basisset(), wavefunction_->options(), 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
@@ -654,9 +658,9 @@ void NBOWriter::write(const std::string &filename) {
     BasisSet &basisset = *wavefunction_->basisset().get();
     Molecule &mol = *basisset.molecule().get();
 
-    // NBO can only handle up to f functions
-    if (basisset.max_am() > 3) {
-        throw PSIEXCEPTION("NBO cannot handle angular momentum above f functions. \n");
+    // NBO can only handle up to h functions
+    if (basisset.max_am() > max_am) {
+        throw PSIEXCEPTION("NBO cannot handle angular momentum above h functions. \n");
     }
     // print $GENNBO section of file
     // BOHR indicates atomic units for the coordinates; now ANG but not sure about keyword
@@ -692,8 +696,8 @@ void NBOWriter::write(const std::string &filename) {
     Vector angmom(nshells);       // Angular momentum of shell
     Vector nprimitives(nshells);  // Primitives per shell
     Vector exponents(nprim);      // Exponents of primitives
-    // Coefficient matrix; first row is S, second P, third D, fourth F
-    Matrix coefficient(4, nprim);
+    // Coefficient matrix; first row is S, second P, third D, fourth F, ect.
+    Matrix coefficient(max_am + 1, nprim);
     coefficient.zero();
     int fnindex = 0;
     int primindex = 0;
@@ -795,6 +799,9 @@ void NBOWriter::write(const std::string &filename) {
         }
         printer->Printf("%15.6E", exponents.get(0, i));
     }
+    // TODO: Rewrite to eliminate code duplication. The only thing changing between
+    // these coefficient blocks is the X in CX and the second argument to coefficient.
+
     // coefficients for s functions
     for (int i = 0; i < nprim; i++) {
         if ((i + 1) % 4 == 1) {
@@ -834,6 +841,26 @@ void NBOWriter::write(const std::string &filename) {
                 printer->Printf("\n          ");
         }
         printer->Printf("%15.6E", coefficient.get(0, 3, i));
+    }
+    // coefficients for g functions
+    for (int i = 0; i < nprim; i++) {
+        if ((i + 1) % 4 == 1) {
+            if (i == 0)
+                printer->Printf("\n      CG =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf("%15.6E", coefficient.get(0, 4, i));
+    }
+    // coefficients for h functions
+    for (int i = 0; i < nprim; i++) {
+        if ((i + 1) % 4 == 1) {
+            if (i == 0)
+                printer->Printf("\n      CH =");
+            else
+                printer->Printf("\n          ");
+        }
+        printer->Printf("%15.6E", coefficient.get(0, 5, i));
     }
     printer->Printf("\n $END");
 
@@ -937,36 +964,41 @@ void NBOWriter::write(const std::string &filename) {
     // Now write out the coefficients. NBO expects all coefficients
     // for one MO before writing coefficients for the next MO.
 
-    if (wavefunction_->same_a_b_orbs()) {
-        for (int i = 0; i < nbf; i++) {
-            for (int j = 0; j < nbf; j++) {
-                if (((nbf * i + j + 1) % 5) == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E", alphac->get(0, j, i));
-            }
+    int nmo = wavefunction_->nmo();
+    int count = 0;
+
+    // We always need alpha coefficeints.
+    for (int i = 0; i < nmo; i++) {
+        for (int j = 0; j < nbf; j++) {
+            count++;
+            if (count % 5 == 1) printer->Printf("\n  ");
+            printer->Printf("%15.6E", alphac->get(0, j, i));
         }
     }
+    // Pad with zeros if there are linear dependencies.
+    for (int i = 0; i < (nbf - nmo) * nbf; i++) {
+        count++;
+        if (count % 5 == 1) printer->Printf("\n  ");
+        printer->Printf("%15.6E", 0.0);
+    }
 
-    else {
-        // Beta AO->MO transformation
+    // We only write beta coefficients if they differ from alpha.
+    if (!wavefunction_->same_a_b_orbs()) {
         SharedMatrix betac = wavefunction_->Cb_subset("AO", "ALL");
-
-        // Print the AO->MO coefficients
-        int count = 0;
-        for (int i = 0; i < nbf; i++) {
+        for (int i = 0; i < nmo; i++) {
             for (int j = 0; j < nbf; j++) {
                 count++;
                 if (count % 5 == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E", alphac->get(0, j, i));
+                printer->Printf("%15.6E", betac->get(0, j, i));
             }
         }
-        for (int i = 0; i < nbf; i++) {
-            for (int j = 0; j < nbf; j++) {
-                count++;
-                if (count % 5 == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E ", betac->get(0, j, i));
-            }
+        for (int i = 0; i < (nbf - nmo) * nbf; i++) {
+            count++;
+            if (count % 5 == 1) printer->Printf("\n  ");
+            printer->Printf("%15.6E", 0.0);
         }
     }
+
     printer->Printf("\n $END\n");
 }
 
