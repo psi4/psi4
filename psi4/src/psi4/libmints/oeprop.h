@@ -384,7 +384,7 @@ class ESPPropCalc : public Prop {
  * The OEProp object, computes arbitrary expectation values (scalars)
  * analyses (typically vectors)
  **/
-class OEProp : public TaskListComputer {
+class PSI_API OEProp : public TaskListComputer {
    private:
     /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
     OEProp();
