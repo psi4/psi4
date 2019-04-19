@@ -80,6 +80,18 @@ Release (e.g., ``v1.3``)
 Post-Release (e.g., ``v1.3.1``)
 -------------------------------
 
+* `Assemble postrelease changes`_
+* `Tweak Conda for postrelease`_
+* `Do final pass before release tag`_
+* `Tag postrelease`_
+* `Build Conda Psi4 stack at specific commit`_
+* `Publish to main conda label`_
+* `Build Psi4conda set`_
+* `Generate download page for psicode.org`_
+* `Publish GitHub postrelease`_
+* `Publish psicode release`_
+** `Finalize release`_
+* `Reset psi4meta for nightly operation`_
 
 
 Update copyright year
@@ -124,6 +136,7 @@ Anticipate next release
 
 * Bump version in ``codemeta.json``, https://github.com/psi4/psi4/blob/master/codemeta.json#L9
 * Add to branch list in ``.travis.yml``, https://github.com/psi4/psi4/blob/master/.travis.yml#L179
+* Add to branch list in ``azure-pipelines.yml``, https://github.com/psi4/psi4/blob/master/azure-pipelines.yml#L4
 
 
 Build Conda ecosystem stack
@@ -139,9 +152,34 @@ By "ecosystem stack", mean packages that are upstream, downstream, required, and
 * Build L/DEV. If any trouble, edit psi4 build system, plugin system, or OpenMP setup. Iterate until builds and passes
 * Build L/DOCS. If any trouble, edit the docs or the tests. Iterate until builds and passes
 * Results of last should upload to psicode.org (docs) and codecov.io (coverage)
-* Changes to targets' "source" and "version" in individual recipes should be edited in psi4 ``external/`` CMakeLists.txt files
+* Changes to targets' "source" and "version" in individual recipes should be edited in psi4 ``external/*/*/CMakeLists.txt`` files
 * Once everything's working on Linux, repeat on Mac
 * At this point, ready to fine tune builds of "Psi4 stack"
+
+
+Assemble postrelease changes
+----------------------------
+
+* Collect PRs with "backport" label, and request other backport suggestions on upcoming RN issue
+* Cherry-pick backport PRs and commits, apply other changes manually, not forgetting CI files
+* Do the draft parts of `Publish GitHub postrelease`_
+* Test thoroughly locally, incl. psi4-rt (may have to step back for dep versions or builds)
+* Note that while can't change maintenance branch's history, can push to it directly on upstream
+* If want to do trial conda builds, requires ``source/git_tag: 1.3.x`` and fake ``package/version: v1.3.1rc1``
+
+
+Tweak Conda for postrelease
+---------------------------
+
+* In psi4-* recipes, find the best combination of master meta.yaml/build.sh and the v1N(x-1)-labeled ones
+
+  - comment out any deps in master but not yet in postrelease
+  - add ``{{ dep_bld }}`` entries if needed to step back build. make sure normal operation is ``''``
+
+* In cbcy,
+
+  - create a postrelease new line and record anything not in continuous order with <> or blanking
+  - step back any deps versions or build numbers to ones compatible with the postrelease
 
 
 Do final pass before release tag
@@ -203,6 +241,48 @@ Tag (pre)release
     # re-engage "Include administrators" protections
 
 
+Tag postrelease
+---------------
+
+  ::
+
+    # be on clean maintenance branch up-to-date with upstream in both commits and tags
+    # * mind which version strings get "v" and which don't
+    # * if not fork, replace "upstream" with "origin"
+
+    >>> git checkout 1.3.x
+    Switched to branch '1.3.x'
+
+    >>> vi psi4/metadata.py
+    >>> git diff
+    diff --git a/psi4/metadata.py b/psi4/metadata.py
+    ...
+    -__version__ = '1.3'
+    -__version_long = '1.3+zzzzzzz'
+    +__version__ = '1.3.1'
+    +__version_long = '1.3.1+zzzzzzz'
+
+    >>> git add psi4/metadata.py
+    >>> git commit -m "v1.3.1"
+    [1.3.x 2ce1c29] v1.3.1
+
+    >>> git log --oneline | head -1
+    786fb2b v1.3.1
+    >>> git tag -a v1.3.1 2ce1c29 -m "v1.3.1"
+
+    # skipping the hash recording and "upcoming" step b/c only tags matter on maintenance branch
+
+    # free pushing to maintenance branches at present so GH interface steps not needed
+    # goto GH:psi4/psi4 > Settings > Branches > 1.3.x > Edit
+    #      https://github.com/psi4/psi4/settings/branch_protection_rules/4385008  # !Varies!
+    # uncheck "Include administrators" and Save changes
+
+    >>> git push upstream 1.3.x
+    >>> git push upstream v1.3.1
+
+    # re-engage "Include administrators" protections
+
+
 Initialize release branch
 -------------------------
 
@@ -229,15 +309,21 @@ Build Conda Psi4 stack at specific commit
 By "Psi4 stack", mean packages ``psi4``, ``psi4-rt``, ``psi4-dev``, ``psi4-docs``.
 Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) should be already built.
 
+* Check poodle for stray channels that may have crept in for deps (like c-f for ACS season). Copy over new deps if needed to psi4 channel
 * Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving deps (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
-* Nightly conda-builds work from ``master`` psi4. Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
+* Nightly conda-builds work from ``master`` psi4. (Postrelease "practice" works from ``1.N.x`` psi4.)
 
-  - psi4-multiout on Linux & Mac, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/meta.yaml#L10
-  - psi4-docs on Linux, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-docs/meta.yaml#L10 on L
+  - Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
 
-* For releses (not prereleases), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new non-dev label (probably a ditto) matching the release (e.g., "1.3")
+    * psi4-multiout on Linux & Mac, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/meta.yaml#L10
+    * psi4-docs on Linux, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-docs/meta.yaml#L10 on L
+
+  - In cbcy, edit ``psi4ver`` to "v"-less tag
+
+* For releases and postreleases (not prereleases), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new non-dev label (probably a ditto) matching the release (e.g., "1.3")
 * Set ``kitandkapoodle.py`` to the normal ``***`` stack. Should be (``psi4``, ``psi4-rt``, ``psi4-dev``) * python_versions for Linux & Mac. Also single ``psi4-docs``     from Linux
 * Run ``kitandkapoodle.py`` and allow stack to upload to anaconda.org to ``psi4/label/dev``. Poodle emits with ``--label dev`` so will go to the subchannel. May need to delete packages to clear out space on anaconda.org
+* Copy ``meta.yaml`` and ``build.sh`` of at least ``psi4-multiout`` and ``psi4-rt`` to e.g., v121-build.sh files for easy reference or rebuilding as deps in master change.
 
 
 Publish to main conda label
@@ -265,23 +351,26 @@ Installers are build using the project ``constructor`` and build binary bash scr
   - Edit ``release`` field
   - Edit ``hash`` field. This is the 7-char hash that's on every psi4 conda pkg as part of version
   - Edit ``ltrtver`` field. This matches the current setting in ``conda_build_config.yaml``
-  - For prereleases, ``"channel_tag": "/label/dev"``, while for releases, it should be the empty string
+  - For prereleases, ``"channel_tag": "/label/dev"``, while for (post)releases, it should be the empty string
   - Leave this file set to a "rc" with Git, as that has more details
 
-* For releases (not prereleases), copy cookiecutter.json to cookiecutter.json-vXXX
+* For (post)releases (not prereleases), copy cookiecutter.json to cookiecutter.json-vXXX
 * Edit ``cookiecutter/{{.../construct.yaml`` for templating. This is rarely needed
 * If it's been a while or you need the space, clear out ``~/.conda/constructor``, where the downloaded packages are cached
 * Note that installers get written to ``build/`` and this gets regenerated each time. Clear out between runs.
 * ``python run.py``
-* Watch out for ``py_`` in buildstring as this means a noarch package has been pulled. It must be eliminated. Constructors can't handle "noarch" packages and will fail at runtime. If see a "noarch" package, must find the recipe and rebuild for all OS & Python combinations. Then run constructor again.
+* [Outdated] Watch out for ``py_`` in buildstring as this means a noarch package has been pulled. It must be eliminated. Constructors can't handle "noarch" packages and will fail at runtime. If see a "noarch" package, must find the recipe and rebuild for all OS & Python combinations. Then run constructor again.
+* [Replacement] After adding a post_install to reposition the noarch packages, they are safe to include.
 * If fetching times out, may have to run run.py several times. Clear out build/ in between. It's the fetching that takes a long time, not constucting
-* In the end, should have several installers ::
+* In the end, should have several installers
 
-  >>> lh build/psi4conda-1.3-py3.*/*64.sh
-  -rwxr-xr-x. 516M Feb 28 20:30 build/psi4conda-1.3-py3.6-linux-64/psi4conda-1.3-py36-Linux-x86_64.sh
-  -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.6-osx-64/psi4conda-1.3-py36-MacOSX-x86_64.sh
-  -rwxr-xr-x. 518M Feb 28 20:30 build/psi4conda-1.3-py3.7-linux-64/psi4conda-1.3-py37-Linux-x86_64.sh
-  -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.7-osx-64/psi4conda-1.3-py37-MacOSX-x86_64.sh
+  ::
+
+    >>> lh build/psi4conda-1.3-py3.*/*64.sh
+    -rwxr-xr-x. 516M Feb 28 20:30 build/psi4conda-1.3-py3.6-linux-64/psi4conda-1.3-py36-Linux-x86_64.sh
+    -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.6-osx-64/psi4conda-1.3-py36-MacOSX-x86_64.sh
+    -rwxr-xr-x. 518M Feb 28 20:30 build/psi4conda-1.3-py3.7-linux-64/psi4conda-1.3-py37-Linux-x86_64.sh
+    -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.7-osx-64/psi4conda-1.3-py37-MacOSX-x86_64.sh
 
 
 * Upload installer files to vergil, ``scp -r build/Psi4*/Psi4*sh root@vergil.chemistry.gatech.edu:/var/www/html/psicode-download/``
@@ -298,7 +387,7 @@ Generate download page for psicode.org
 * Run the  ``install-generator.py`` in place. It will dump new files into ``data/installs/`` _subdirs_. Be sure to ``git add`` them.
 * Installer page is now ready.
 * Shift "latest" alias in frontmatter from whichever page is currently active to the new page. This makes sure "Downloads" on the navigation bar points to new page.
-* Conscientiously, on should test
+* Conscientiously, one should test
 
   - installer downloads in Mac and Linux. And actually installing them and ``psi4 --test`` them.
   - that download button and ``curl`` downloading register on the download counters on vergil
@@ -317,6 +406,15 @@ Publish GitHub release
 * "publish" release. This establishes release date for GH api
 * Close the RN issue.
 * Close the milestone (should be 100% complete).
+
+
+Publish GitHub postrelease
+--------------------------
+
+* On GH site "Draft a New Release" for anticipated or newly minted tag
+* Fill in frontmatter style and links from previous GH release
+* Fill in RN as cherry-pick to or edit on branch
+* "publish" release. This establishes release date for GH api
 
 
 Publish psicode release
@@ -343,10 +441,13 @@ Reset psi4meta for nightly operation
 
 On both Linux and Mac:
 
-* After release (not prerelease), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new "release.dev" label
+* After (post)release (not prerelease), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new "release.dev" label
+* After postrelease, unpin any deps in cbcy that needed older either ver or bld (e.g., v2rdm_casscf_bld)
+* Edit ``psi4ver`` back to ``''`` in cbcy
 * Edit ``source/git_tag`` back to ``master`` for psi4-multiout, psi4-docs
 * Edit build string back to ``0`` if psi4-multiout needed multiple passes
 * Edit kitandkapoodle.py back to ``***`` stack
 * Check in all release, construct, recipe changes on Linux and Mac. Synchronize both to GH psi4meta
+* Copy meta.yaml and build.sh files to vMmp-prefixed files for the record.
 * Edit crontab back to 2am "norm". Comment out "anom"
 

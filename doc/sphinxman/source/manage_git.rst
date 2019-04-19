@@ -323,6 +323,9 @@ First, what's happening? ``sys.path`` (where modules can be imported from in pyt
 
 The way around this is to move the python file you're running to any other directory. Or, within the file, do ``sys.path.insert(0, {objdir}/stage/{prefix}/lib/{pymod_lib_dir}``.
 
+
+.. _`faq:findmissingoutputref`:
+
 How to find tests without output.ref
 ------------------------------------
 
@@ -331,3 +334,27 @@ Ideally, each new test or much-altered test should add its own
 
     find tests/ -mindepth 1 -maxdepth 1 -type d '!' -exec test -e "{}/output.ref" ";" -print
 
+.. _`faq:githubcodereview`:
+
+How to do GitHub issue management and code review
+-------------------------------------------------
+
+a) Anyone, core-dev or not, is encouraged to review PRs. It's actually good practice for interacting with other open-source projects, where you don't have the advantage of knowing or working with the contributors. Before venturing into projects on GitHub where you don't know the maintainers, it doesn't hurt to read https://snarky.ca/setting-expectations-for-open-source-participation/ .
+
+b) Psi4 is a learning tool for all involved, so partial reviews in areas of confidence and questions and comments on PRs in general are encouraged.
+
+c) Approving before CI completes is fine, though it can be mildly personally embarrasing when CI catches something you didn't.
+
+d) All main branches (master and `1.N.x` maintenance) are protected by GH, including administrators, so even with write access, no one can accidentally push or rewrite the history.
+
+e) GH enforces the 3-revs besides submitter, so fine to merge your own PRs when green.
+
+f) Unless there's been a lot of discussion on core-dev about merge order, generally the 3rd positive reviewer merges the PR. Also fine to add review and leave merge for later.
+
+g) Presently only Travis-CI is set up as a required-to-merge service. Incomplete Azure won't block merging, but we do usually let it complete before merging unless it's a trivial PR.
+
+h) We don't enforce branches to be up to date before merging since that'd be a lot of extra CI time and coordination when merging several PRs in a day. So, if a PR hasn't been updated in a while, and a reviewer is nervous about PR interference, fine to ask submitter to rebase. For this reason, we try to merge newer contributors first so the rebase falls on more experienced contributors.
+
+i) Ideally a PR consists of atomic, compilable commits. When the PR instead is many successive small changes toward a single goal, consider squashing the PR. For core-dev's PRs, there's implicit permission to squash (unless otherwise noted in PR intro), whereas for new contributors, we often let the commits be messy.
+
+j) When discussion on issue has overcome the original problem and settled on needing long-term work, fine to move the long-term item to Wish List and close issue.
