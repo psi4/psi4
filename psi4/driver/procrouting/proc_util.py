@@ -236,7 +236,7 @@ def prepare_sapt_molecule(sapt_dimer, sapt_basis):
             ztotal += midbond.Z(n)
 
         if ztotal > 0:
-            raise ValidationError("SAPT third monomr must be a midbond function (all ghosts).")
+            raise ValidationError("SAPT third monomer must be a midbond function (all ghosts).")
 
         ghosts = ([2, 3], [1, 3])
     elif nfrag == 2:

@@ -44,6 +44,8 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/extern.h"
+#include "psi4/libmints/factory.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
@@ -590,6 +592,55 @@ void FISAPT::nuclear() {
         for (int B = 0; B < 3; B++) {
             Etot += Enucsp[A][B];
         }
+    }
+
+    // => External potential <= //
+
+    // If an external field exists, add it to the one-electron Hamiltonian
+    if (reference_->external_pot()) {
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+        std::shared_ptr<Matrix> Vprime = reference_->external_pot()->computePotentialMatrix(primary_);
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+            // Attempt to apply symmetry. No error checking is performed.
+            std::shared_ptr<Matrix> Vprimesym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+            Vprimesym->apply_symmetry(Vprime, reference_->aotoso());
+            Vprime = Vprimesym;
+        }
+
+        if (reference_->get_print()) {
+            reference_->external_pot()->set_print(reference_->get_print());
+            reference_->external_pot()->print();
+        }
+        if (reference_->get_print() > 3) Vprime->print();
+
+        // Add external potential to one-electron Hamiltonian for each monomer
+        matrices_["VA"]->add(Vprime);
+        matrices_["VB"]->add(Vprime);
+        if (mol->nfragments() == 3) matrices_["VC"]->add(Vprime);
+
+        // Extra nuclear repulsion
+        std::vector<int> none;
+        std::vector<int> frag_list(1);
+        double Enuc_extern;
+        char frag = '@'; // Next characters are 'A', 'B', 'C'
+        for (int A = 0; A < mol->nfragments(); A++) {
+            frag++;
+            frag_list[0] = A;
+            std::shared_ptr<Molecule> mol_frag = mol->extract_subsets(frag_list, none);
+            Enuc_extern = reference_->external_pot()->computeNuclearEnergy(mol_frag);
+
+            outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", frag, Enucsp[A][A]);
+            outfile->Printf("    Additional Nuclear Repulsion %c: %24.16E [Eh]\n", frag, Enuc_extern);
+            outfile->Printf("         Total Nuclear Repulsion %c: %24.16E [Eh]\n", frag, Enucsp[A][A] + Enuc_extern);
+
+            Enucsp[A][A] += Enuc_extern;
+            Etot += Enuc_extern;
+        }
+        matrices_["E NUC"] = Enucs;
+        outfile->Printf("\n");
     }
 
     // => Print <= //
