@@ -636,18 +636,18 @@ void FCHKWriter::write(const std::string &filename) {
 NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
 
 void NBOWriter::write(const std::string &filename) {
-    int pure_order[][11] = {
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},        // s
-        {103, 101, 102, 0, 0, 0, 0, 0, 0, 0, 0},  // p
+    const std::vector<std::vector<int>> pure_order = {
+        {1},        // s
+        {103, 101, 102},  // p
         // z2  xz   yz  x2-y2 xy
-        {255, 252, 253, 254, 251, 0, 0, 0, 0, 0, 0},  // d
+        {255, 252, 253, 254, 251},  // d
         // z(z2-r2), x(z2-r2), y(z2-r2) z(x2-y2), xyz, x(x2-y2), y(x2-y2)
-        {351, 352, 353, 354, 355, 356, 357, 0, 0, 0, 0},  // f
-        {451, 452, 453, 454, 455, 456, 457, 458, 459, 0, 0},  // g
+        {351, 352, 353, 354, 355, 356, 357},  // f
+        {451, 452, 453, 454, 455, 456, 457, 458, 459},  // g
         {551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561}  // h
     };
 
-    int max_am = sizeof(pure_order)/sizeof(pure_order[0]) - 1;
+    int max_am = pure_order.size() - 1;
 
     MintsHelper helper(wavefunction_->basisset(), wavefunction_->options(), 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
