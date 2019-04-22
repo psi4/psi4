@@ -72,7 +72,7 @@ How to bump a version
     >>> git diff
 
   * Observe that current latest tag matches metadata scipt and git
-    describe, that GH releases matches metadata script, that upcoming in
+    describe, that GitHub releases matches metadata script, that upcoming in
     metadata script matches current versioner version.
 
   * Note that current tag is ``v1.1a1``. Decide on imminent tag, say ``v1.1rc1``.
@@ -343,11 +343,11 @@ a) Anyone, core-dev or not, is encouraged to review PRs. It's actually good prac
 
 b) Psi4 is a learning tool for all involved, so partial reviews in areas of confidence and questions and comments on PRs in general are encouraged.
 
-c) Approving before CI completes is fine, though it can be mildly personally embarrasing when CI catches something you didn't.
+c) Approving before CI completes is fine, though it can be mildly personally embarrassing when CI catches something you didn't.
 
-d) All main branches (master and `1.N.x` maintenance) are protected by GH, including administrators, so even with write access, no one can accidentally push or rewrite the history.
+d) All main branches (master and `1.N.x` maintenance) are protected by GitHub, including administrators, so even with write access, no one can accidentally push (master) or rewrite the history (master and maintenance).
 
-e) GH enforces the 3-revs besides submitter, so fine to merge your own PRs when green.
+e) PR owners who also have maintainer status can merge their PRs as GitHub enforces three external reviews.
 
 f) Unless there's been a lot of discussion on core-dev about merge order, generally the 3rd positive reviewer merges the PR. Also fine to add review and leave merge for later.
 
@@ -358,3 +358,4 @@ h) We don't enforce branches to be up to date before merging since that'd be a l
 i) Ideally a PR consists of atomic, compilable commits. When the PR instead is many successive small changes toward a single goal, consider squashing the PR. For core-dev's PRs, there's implicit permission to squash (unless otherwise noted in PR intro), whereas for new contributors, we often let the commits be messy.
 
 j) When discussion on issue has overcome the original problem and settled on needing long-term work, fine to move the long-term item to Wish List and close issue.
+

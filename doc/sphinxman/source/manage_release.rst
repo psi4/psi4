@@ -90,7 +90,7 @@ Post-Release (e.g., ``v1.3.1``)
 * `Generate download page for psicode.org`_
 * `Publish GitHub postrelease`_
 * `Publish psicode release`_
-** `Finalize release`_
+* `Finalize release`_
 * `Reset psi4meta for nightly operation`_
 
 
@@ -124,7 +124,7 @@ Update samples
 Collect new authors
 -------------------
 
-* Survey contributions to current Milestone. Add new contribs and PR lists to release notes GH issue
+* Survey contributions to current Milestone. Add new contribs and PR lists to release notes GitHub issue
 * Figure out any new "Additional Contributors" authors since last release
 * Edit ``psi4/header.py`` accordingly, make PR
 * Get permission of new authors and their particulars for ``codemeta.json``
@@ -154,7 +154,7 @@ By "ecosystem stack", mean packages that are upstream, downstream, required, and
 * Results of last should upload to psicode.org (docs) and codecov.io (coverage)
 * Changes to targets' "source" and "version" in individual recipes should be edited in psi4 ``external/*/*/CMakeLists.txt`` files
 * Once everything's working on Linux, repeat on Mac
-* At this point, ready to fine tune builds of "Psi4 stack"
+* At this point, ready to fine-tune builds of "Psi4 stack"
 
 
 Assemble postrelease changes
@@ -163,7 +163,7 @@ Assemble postrelease changes
 * Collect PRs with "backport" label, and request other backport suggestions on upcoming RN issue
 * Cherry-pick backport PRs and commits, apply other changes manually, not forgetting CI files
 * Do the draft parts of `Publish GitHub postrelease`_
-* Test thoroughly locally, incl. psi4-rt (may have to step back for dep versions or builds)
+* Test thoroughly locally, including psi4-rt (may have to step back for dependency versions or builds)
 * Note that while can't change maintenance branch's history, can push to it directly on upstream
 * If want to do trial conda builds, requires ``source/git_tag: 1.3.x`` and fake ``package/version: v1.3.1rc1``
 
@@ -173,13 +173,13 @@ Tweak Conda for postrelease
 
 * In psi4-* recipes, find the best combination of master meta.yaml/build.sh and the v1N(x-1)-labeled ones
 
-  - comment out any deps in master but not yet in postrelease
+  - comment out any dependencies in master but not yet in postrelease
   - add ``{{ dep_bld }}`` entries if needed to step back build. make sure normal operation is ``''``
 
 * In cbcy,
 
   - create a postrelease new line and record anything not in continuous order with <> or blanking
-  - step back any deps versions or build numbers to ones compatible with the postrelease
+  - step back any dependencies versions or build numbers to ones compatible with the postrelease
 
 
 Do final pass before release tag
@@ -272,7 +272,7 @@ Tag postrelease
 
     # skipping the hash recording and "upcoming" step b/c only tags matter on maintenance branch
 
-    # free pushing to maintenance branches at present so GH interface steps not needed
+    # free pushing to maintenance branches at present so GitHub interface steps not needed
     # goto GH:psi4/psi4 > Settings > Branches > 1.3.x > Edit
     #      https://github.com/psi4/psi4/settings/branch_protection_rules/4385008  # !Varies!
     # uncheck "Include administrators" and Save changes
@@ -287,7 +287,7 @@ Initialize release branch
 -------------------------
 
 * follow tagging procedure
-* before reengaing the "include admin" button, push a branch at the tag commit (not the records commit)
+* before re-engaing the "include admin" button, push a branch at the tag commit (not the records commit)
 
   ::
 
@@ -300,7 +300,7 @@ Initialize release branch
     Switched to a new branch '1.3.x'
     >>> git push upstream 1.3.x
 
-* set up new branch as protected branch through GH psi4 org Settings
+* set up new branch as protected branch through GitHub psi4 org Settings
 
 
 Build Conda Psi4 stack at specific commit
@@ -309,8 +309,8 @@ Build Conda Psi4 stack at specific commit
 By "Psi4 stack", mean packages ``psi4``, ``psi4-rt``, ``psi4-dev``, ``psi4-docs``.
 Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) should be already built.
 
-* Check poodle for stray channels that may have crept in for deps (like c-f for ACS season). Copy over new deps if needed to psi4 channel
-* Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving deps (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
+* Check poodle for stray channels that may have crept in for dependencies (like c-f for ACS season). Copy over new dependencies if needed to psi4 channel
+* Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving dependencies (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
 * Nightly conda-builds work from ``master`` psi4. (Postrelease "practice" works from ``1.N.x`` psi4.)
 
   - Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
@@ -323,7 +323,7 @@ Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) shoul
 * For releases and postreleases (not prereleases), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new non-dev label (probably a ditto) matching the release (e.g., "1.3")
 * Set ``kitandkapoodle.py`` to the normal ``***`` stack. Should be (``psi4``, ``psi4-rt``, ``psi4-dev``) * python_versions for Linux & Mac. Also single ``psi4-docs``     from Linux
 * Run ``kitandkapoodle.py`` and allow stack to upload to anaconda.org to ``psi4/label/dev``. Poodle emits with ``--label dev`` so will go to the subchannel. May need to delete packages to clear out space on anaconda.org
-* Copy ``meta.yaml`` and ``build.sh`` of at least ``psi4-multiout`` and ``psi4-rt`` to e.g., v121-build.sh files for easy reference or rebuilding as deps in master change.
+* Copy ``meta.yaml`` and ``build.sh`` of at least ``psi4-multiout`` and ``psi4-rt`` to e.g., v121-build.sh files for easy reference or rebuilding as dependencies in master change.
 
 
 Publish to main conda label
@@ -366,7 +366,7 @@ Installers are build using the project ``constructor`` and build binary bash scr
 
   ::
 
-    >>> lh build/psi4conda-1.3-py3.*/*64.sh
+    >>> ls -l build/psi4conda-1.3-py3.*/*64.sh
     -rwxr-xr-x. 516M Feb 28 20:30 build/psi4conda-1.3-py3.6-linux-64/psi4conda-1.3-py36-Linux-x86_64.sh
     -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.6-osx-64/psi4conda-1.3-py36-MacOSX-x86_64.sh
     -rwxr-xr-x. 518M Feb 28 20:30 build/psi4conda-1.3-py3.7-linux-64/psi4conda-1.3-py37-Linux-x86_64.sh
@@ -399,11 +399,11 @@ Generate download page for psicode.org
 Publish GitHub release
 ----------------------
 
-* On GH site "Draft a New Release" with newly minted tag
-* Fill in frontmatter style and links from previous GH release
+* On GitHub site "Draft a New Release" with newly minted tag
+* Fill in frontmatter style and links from previous GitHub release
 * Fill in RN from hopefully existing RN issue
 * Fill in RN by going through the top posts from all PRs from this milestone
-* "publish" release. This establishes release date for GH api
+* "publish" release. This establishes release date for GitHub API
 * Close the RN issue.
 * Close the milestone (should be 100% complete).
 
@@ -411,10 +411,10 @@ Publish GitHub release
 Publish GitHub postrelease
 --------------------------
 
-* On GH site "Draft a New Release" for anticipated or newly minted tag
-* Fill in frontmatter style and links from previous GH release
+* On GitHub site "Draft a New Release" for anticipated or newly minted tag
+* Fill in frontmatter style and links from previous GitHub release
 * Fill in RN as cherry-pick to or edit on branch
-* "publish" release. This establishes release date for GH api
+* "publish" release. This establishes release date for GitHub API
 
 
 Publish psicode release
@@ -442,12 +442,12 @@ Reset psi4meta for nightly operation
 On both Linux and Mac:
 
 * After (post)release (not prerelease), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new "release.dev" label
-* After postrelease, unpin any deps in cbcy that needed older either ver or bld (e.g., v2rdm_casscf_bld)
+* After postrelease, unpin any dependencies in cbcy that needed older either ver or bld (e.g., v2rdm_casscf_bld)
 * Edit ``psi4ver`` back to ``''`` in cbcy
 * Edit ``source/git_tag`` back to ``master`` for psi4-multiout, psi4-docs
 * Edit build string back to ``0`` if psi4-multiout needed multiple passes
 * Edit kitandkapoodle.py back to ``***`` stack
-* Check in all release, construct, recipe changes on Linux and Mac. Synchronize both to GH psi4meta
+* Check in all release, construct, recipe changes on Linux and Mac. Synchronize both to GitHub psi4meta
 * Copy meta.yaml and build.sh files to vMmp-prefixed files for the record.
 * Edit crontab back to 2am "norm". Comment out "anom"
 
