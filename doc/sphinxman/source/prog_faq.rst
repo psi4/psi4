@@ -81,8 +81,12 @@ Workflow
 #. :ref:`faq:vigitmerge`
 #. :ref:`faq:gdblldb`
 #. :ref:`faq:grepascii`
+#. :ref:`faq:ignoringadvice`
 
 Miscellaneous
 -------------
 
 #. :ref:`faq:add_tests`
+#. :ref:`faq:findmissingoutputref`
+#. :ref:`faq:githubcodereview`
+
