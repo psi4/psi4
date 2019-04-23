@@ -153,10 +153,10 @@ def _core_wavefunction_from_file(wfn_data):
     elif isinstance(wfn_data, str):
         if not wfn_data.endswith(".npy"):
             wfn_data = wfn_data + ".npy"
-        wfn_data = np.load(wfn_data).item()
+        wfn_data = np.load(wfn_data, allow_pickle=True).item()
     else:
         # Could be path-like or file-like, let `np.load` handle it
-        wfn_data = np.load(wfn_data).item()
+        wfn_data = np.load(wfn_data, allow_pickle=True).item()
 
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
