@@ -49,6 +49,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libscf_solver/rhf.h"
 
 #include <algorithm>
 
@@ -63,7 +64,7 @@ using namespace psi;
 namespace psi {
 namespace scfgrad {
 
-std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
+std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 {
     // => Control Parameters <= //
 
@@ -1065,85 +1066,6 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
     jk->set_memory(mem);
     jk->initialize();
 
-
-    /*
-     * This will not trigger currently; only OUT_OF_CORE actually uses symmetry and there's a catch
-     * Py-side to make sure that doesn't get us in here.
-     */
-    bool ignore_symmetry = nirrep_ == 1 || jk->C1();
-
-    Dimension nvirpi = nmopi_ - doccpi_;
-    CdSalcList SALCList(molecule_, 0xFF, false, false);
-
-
-    /*
-     * The following quantities are only defined if symmetry is to be used
-     */
-    std::shared_ptr<Matrix> C_so;
-    std::shared_ptr<Matrix> Cocc_so;
-    // C1 MO -> AO (backward transformation)
-    std::shared_ptr<Matrix> Cinvao;
-    // C1 MO -> SO (backward transformation)
-    std::shared_ptr<Matrix> Cinvso;
-    // C1 MO -> Symmetrized MO
-    std::shared_ptr<Matrix> Cmo2mosym;
-    // SO -> C1 MO (forward transformation)
-    std::shared_ptr<Matrix> Cso2mofull;
-
-    // for debugging
-    // ignore_symmetry = false;
-
-    if(ignore_symmetry){
-        // This JK object uses no symmetry, so we can just pass it C1 quantities
-        // jk->set_allow_desymmetrization(false);
-        // DGAS: ACS - this is now auto detected.
-    }else{
-        C_so = Ca_subset("SO");
-        Cocc_so = Ca_subset("SO", "OCC");
-
-        /*
-         * We need to be able to map symmetric MOs into C1 MOs and vice-versa.  If we call C' the MOs with
-         * symmetry and C the MOs without, we can use the orthonormality to define an inverse transformation matrix
-         *
-         *      Ct S C = 1   =>   Cinv = Ct S
-         *
-         * which allows us to roll back to the SO basis and then forward transform, to get a matrix that will
-         * correctly account for the ordering of the MOs with and without symmetry.
-         */
-        std::shared_ptr<OneBodyAOInt> aoSint(integral_->ao_overlap());
-        auto Sao = std::make_shared<Matrix>("Sao", nso, nso);
-        aoSint->compute(Sao);
-        double **pS = Sao->pointer();
-
-        // C1 MO -> AO (backward transformation)
-        Cinvao = std::make_shared<Matrix>("Cinvao = Ct_ao Sao", nmo, nso);
-        C_DGEMM('T', 'N', nmo, nso, nso, 1.0, Cp[0], nmo, pS[0], nso, 0.0, Cinvao->pointer()[0], nso);
-
-        // C1 MO -> SO (backward transformation)
-        Cinvso = std::make_shared<Matrix>(nirrep_, nmo, nsopi_);
-        for(int h = 0; h < nirrep_; ++h){
-            if(!nsopi_[h]) continue;
-            C_DGEMM('N', 'N', nmo, nsopi_[h], nso, 1.0, Cinvao->pointer()[0], nso, AO2SO_->pointer(h)[0],
-                    nsopi_[h], 0.0, Cinvso->pointer(h)[0], nsopi_[h]);
-        }
-
-        // C1 MO -> Symmetrized MO
-        Cmo2mosym = std::make_shared<Matrix>(nirrep_, nmo, nmopi_);
-        for(int h = 0; h < nirrep_; ++h){
-            if(!doccpi_[h] || !nsopi_[h]) continue;
-            C_DGEMM('N', 'N', nmo, nmopi_[h], nsopi_[h], 1.0, Cinvso->pointer(h)[0], nsopi_[h],
-                    C_so->pointer(h)[0], nmopi_[h], 0.0, Cmo2mosym->pointer(h)[0], nmopi_[h]);
-        }
-
-        // SO -> C1 MO (forward transformation)
-        Cso2mofull = std::make_shared<Matrix>(nirrep_, (int*)nsopi_, nmo);
-        for(int h = 0; h < nirrep_; ++h){
-            if(!nsopi_[h]) continue;
-            C_DGEMM('T', 'N', nsopi_[h], nmo, nso, 1.0, AO2SO_->pointer(h)[0],
-                    nsopi_[h], C->pointer()[0], nmo, 0.0, Cso2mofull->pointer(h)[0], nmo);
-        }
-    }
-
     // => J2pi/K2pi <= //
     {
         std::vector<std::shared_ptr<Matrix> >& L = jk->C_left();
@@ -1166,29 +1088,12 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
 
         for (int A = 0; A < max_A; A++) {
-            if(ignore_symmetry){
-                // Just pass C1 quantities in; this object doesn't respect symmetry anyway
-                L.push_back(Cocc);
-                R.push_back(std::make_shared<Matrix>("R",nso,nocc));
-            }else{
-                // Add symmetry back into the AO index of the quantities before calling.  The MO index doesn't
-                // matter too much here; it's contracted away during formation of the D matrices.
-                L.push_back(Cocc_so);
-                // This is just a placeholder; to be replaced below
-                R.push_back(Cocc_so);
-            }
+            // Just pass C1 quantities in; this object doesn't respect symmetry anyway
+            L.push_back(Cocc);
+            R.push_back(std::make_shared<Matrix>("R",nso,nocc));
         }
 
         jk->print_header();
-
-        if(!ignore_symmetry){
-            U->zero();
-            for (int a = 0; a < 3*natom; a++) {
-                // Initialize the C1 symmetry G2 contributions to zero
-                psio_address next_Gpi = psio_get_address(PSIO_ZERO, a * (size_t) nmo * nocc * sizeof(double));
-                psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
-            }
-        }
 
         for (int A = 0; A < 3 * natom; A+=max_A) {
             int nA = max_A;
@@ -1198,90 +1103,24 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                 R.resize(nA);
             }
             for (int a = 0; a < nA; a++) {
-                if(ignore_symmetry){
-                    psio_address next_Sij= psio_get_address(PSIO_ZERO,(A + a) * (size_t) nocc * nocc * sizeof(double));
-                    psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
-                    C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
-                }else{
-                    // Take SALCs of the C1 overlap derivatives, and add symmetry back in to the left index.
-                    // Transform the right index to SOs, analogous to the C1 treatment above.
-
-                    const CdSalc& thissalc = SALCList[a+A];
-                    int salcirrep = thissalc.irrep();
-                    R[a] = std::make_shared<Matrix>("R", nsopi_, doccpi_, salcirrep);
-                    auto Tmpij = std::make_shared<Matrix>(nirrep_, nocc, (int*)doccpi_);
-                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
-                        const CdSalc::Component& salccomponent = thissalc.component(comp);
-                        int salcatom = salccomponent.atom;
-                        int salcxyz = salccomponent.xyz;
-                        double coef = salccomponent.coef;
-                        int pert = 3*salcatom + salcxyz;
-                        psio_address next_Sij= psio_get_address(PSIO_ZERO,pert * (size_t) nocc * nocc * sizeof(double));
-                        psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
-
-                        for(int h = 0; h < nirrep_; ++h){
-                            if(!doccpi_[h]) continue;
-                            C_DGEMM('N', 'N', nocc, doccpi_[h], nocc, 1.0, Sijp[0], nocc,
-                                    Cmo2mosym->pointer(h)[0], nmopi_[h], 0.0, Tmpij->pointer(h)[0], doccpi_[h]);
-                        }
-                        for(int h = 0; h < nirrep_; ++h){
-                            if(!doccpi_[h^salcirrep] || !nsopi_[h]) continue;
-                            C_DGEMM('N', 'N', nsopi_[h], doccpi_[h^salcirrep], nocc, coef, Cso2mofull->pointer(h)[0], nmo,
-                                    Tmpij->pointer(h^salcirrep)[0], doccpi_[h^salcirrep], 1.0, R[a]->pointer(h)[0], doccpi_[h^salcirrep]);
-                        }
-                    }
-                }
-
+                psio_address next_Sij= psio_get_address(PSIO_ZERO,(A + a) * (size_t) nocc * nocc * sizeof(double));
+                psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
+                C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
             }
 
             jk->compute();
 
             for (int a = 0; a < nA; a++) {
-                if(ignore_symmetry){
-                    // Add the 2J contribution to G
-                    C_DGEMM('N','N',nso,nocc,nso,1.0,J[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
-                    C_DGEMM('T','N',nmo,nocc,nso,-2.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
+                // Add the 2J contribution to G
+                C_DGEMM('N','N',nso,nocc,nso,1.0,J[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
+                C_DGEMM('T','N',nmo,nocc,nso,-2.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
 
-                    // Subtract the K term from G
-                    C_DGEMM('N','N',nso,nocc,nso,1.0,K[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
-                    C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,1.0,Up[0],nocc);
+                // Subtract the K term from G
+                C_DGEMM('N','N',nso,nocc,nso,1.0,K[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
+                C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,1.0,Up[0],nocc);
 
-                    psio_address next_Gpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                    psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
-                }else{
-                    const CdSalc& thissalc = SALCList[a+A];
-                    int salcirrep = thissalc.irrep();
-                    J[a]->scale(-2.0);
-                    J[a]->add(K[a]);
-
-                    // Transform from SO to C1 MO basis
-                    auto Fmat = std::make_shared<Matrix>("F derivative", nmo, nocc);
-                    auto Tmpso_occ = std::make_shared<Matrix>(nirrep_, (int*)nsopi_, nocc);
-                    for(int h = 0; h < nirrep_; ++h){
-                        if(!nsopi_[h] || !nsopi_[h^salcirrep]) continue;
-                        C_DGEMM('N', 'N', nsopi_[h], nocc, nsopi_[h^salcirrep], 1.0, J[a]->pointer(h)[0], nsopi_[h^salcirrep],
-                                Cso2mofull->pointer(h^salcirrep)[0], nmo, 0.0, Tmpso_occ->pointer(h)[0], nocc);
-                    }
-                    for(int h = 0; h < nirrep_; ++h){
-                        if(!nsopi_[h]) continue;
-                        C_DGEMM('T', 'N', nmo, nocc, nsopi_[h], 1.0, Cso2mofull->pointer(h)[0], nmo,
-                                Tmpso_occ->pointer(h)[0], nocc, 1.0, Fmat->pointer()[0], nocc);
-                    }
-
-                    // Distribute from SALCs back to C1 Cartesian derivatives
-                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
-                        const CdSalc::Component& salccomponent = thissalc.component(comp);
-                        int salcatom = salccomponent.atom;
-                        int salcxyz = salccomponent.xyz;
-                        double coef = salccomponent.coef;
-                        int pert = 3*salcatom + salcxyz;
-                        psio_address next_Gpi = psio_get_address(PSIO_ZERO,pert * (size_t) nmo * nocc * sizeof(double));
-                        psio_->read(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
-                        C_DAXPY(nmo*nocc, coef, Fmat->pointer()[0], 1, Up[0], 1);
-                        next_Gpi = psio_get_address(PSIO_ZERO,pert * (size_t) nmo * nocc * sizeof(double));
-                        psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
-                    }
-                }
+                psio_address next_Gpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
+                psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
             }
         }
     }
@@ -1337,14 +1176,7 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     // => CPHF (Uai) <= //
     {
-        auto wfn = std::make_shared<Wavefunction>(options_);
-        wfn->shallow_copy(this);
-
-        auto cphf = std::make_shared<RCPHF>(wfn, options_, !ignore_symmetry);
-        cphf->set_jk(jk);
-
-        std::map<std::string, SharedMatrix>& b = cphf->b();
-        std::map<std::string, SharedMatrix>& x = cphf->x();
+        rhf_wfn_->set_jk(jk);
 
         psio_address next_Bai = PSIO_ZERO;
         psio_address next_Uai = PSIO_ZERO;
@@ -1352,117 +1184,38 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
         auto T = std::make_shared<Matrix>("T",nvir,nocc);
         double** Tp = T->pointer();
 
-        if(!ignore_symmetry){
-            T->zero();
-            for (int a = 0; a < 3*natom; a++) {
-                // Initialize the C1 symmetry U terms to zero
-                psio_address next_Uai = psio_get_address(PSIO_ZERO, a * (size_t) nvir * nocc * sizeof(double));
-                psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir*nocc*sizeof(double),next_Uai,&next_Uai);
-            }
-        }
-
-
         for (int A = 0; A < 3 * natom; A+=max_A) {
             int nA = max_A;
             if (A + max_A >= 3 * natom) {
                 nA = 3 * natom - A;
             }
 
-            x.clear();
-            b.clear();
-
+            std::vector<SharedMatrix> b_vecs;
             // Fill b
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                std::shared_ptr<Matrix> B;
-                if(ignore_symmetry){
-                    B = std::make_shared<Matrix>(ss.str(),nocc,nvir);
-                    psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
-                    double** Bp = B->pointer();
-                    for (int i = 0; i < nocc; i++) {
-                        C_DCOPY(nvir,&Tp[0][i],nocc,Bp[i],1);
-                    }
-                }else{
-                    const CdSalc& thissalc = SALCList[a+A];
-                    int salcirrep = thissalc.irrep();
-                    auto Tmpmo = std::make_shared<Matrix>(nirrep_, nocc, (int*)nvirpi);
-                    B = std::make_shared<Matrix>(ss.str(),doccpi_,nvirpi,salcirrep);
-                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
-                        const CdSalc::Component& salccomponent = thissalc.component(comp);
-                        int salcatom = salccomponent.atom;
-                        int salcxyz = salccomponent.xyz;
-                        double coef = salccomponent.coef;
-                        int pert = 3*salcatom + salcxyz;
-                        psio_address this_Bai = psio_get_address(PSIO_ZERO,pert * (size_t) nvir * nocc * sizeof(double));
-                        psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),this_Bai,&this_Bai);
-                        for(int h = 0; h < nirrep_; ++h){
-                            if(!nvirpi[h]) continue;
-
-                            C_DGEMM('T', 'N', nocc, nvirpi[h], nvir, 1.0, Tp[0], nocc,
-                                    &Cmo2mosym->pointer(h)[nocc][doccpi_[h]], nmopi_[h], 0.0, Tmpmo->pointer(h)[0], nvirpi[h]);
-                        }
-                        for(int h = 0; h < nirrep_; ++h){
-                            if(!doccpi_[h] || !nvirpi[h^salcirrep]) continue;
-
-                            C_DGEMM('T', 'N', doccpi_[h], nvirpi[h^salcirrep], nocc, coef, Cmo2mosym->pointer(h)[0],
-                                    nmopi_[h], Tmpmo->pointer(h^salcirrep)[0], nvirpi[h^salcirrep], 1.0, B->pointer(h)[0], nvirpi[h^salcirrep]);
-                        }
-
-                    }
-
-
+                auto B = std::make_shared<Matrix>(ss.str(),nocc,nvir);
+                psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
+                double** Bp = B->pointer();
+                for (int i = 0; i < nocc; i++) {
+                    C_DCOPY(nvir,&Tp[0][i],nocc,Bp[i],1);
                 }
-                //                B->print();
-                b[ss.str()] = B;
+                b_vecs.push_back(B);
             }
 
-            cphf->compute_energy();
+            auto u_matrices = rhf_wfn_->cphf_solve(b_vecs);
 
             // Result in x
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
-                std::shared_ptr<Matrix> X = x[ss.str()];
-                double** Xp = X->pointer();
-                if(ignore_symmetry){
-                    for (int i = 0; i < nocc; i++) {
-                        C_DCOPY(nvir,Xp[i],1,&Tp[0][i],nocc);
-                    }
-                    psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
-                }else{
-                    // Backtransform Uai from the symmetrized SALC to the C1 Cartesian basis (ACS note: this hasn't been fully tested, but seems correct)
-                    const CdSalc& thissalc = SALCList[a+A];
-                    int salcirrep = thissalc.irrep();
-
-                    auto Tmpmo_c1 = std::make_shared<Matrix>(nvir, nocc);
-                    auto Tmpso_occ = std::make_shared<Matrix>(nirrep_, nvir, (int*)doccpi_);
-                    for(int h = 0; h < nirrep_; ++h){
-                        if(!doccpi_[h] || !nvirpi[h^salcirrep]) continue;
-
-                        C_DGEMM('N', 'T', nvir, doccpi_[h], nvirpi[h^salcirrep], 1.0, &Cmo2mosym->pointer(h^salcirrep)[nocc][doccpi_[h^salcirrep]],
-                                nmopi_[h^salcirrep], X->pointer(h)[0], nvirpi[h^salcirrep], 0.0, Tmpso_occ->pointer(h)[0], doccpi_[h]);
-                    }
-                    for(int h = 0; h < nirrep_; ++h){
-                        if(!doccpi_[h]) continue;
-
-                        C_DGEMM('N', 'T', nvir, nocc, doccpi_[h], 1.0, Tmpso_occ->pointer(h)[0], doccpi_[h],
-                                Cmo2mosym->pointer(h)[0], nmopi_[h], 1.0, Tmpmo_c1->pointer()[0], nocc);
-                    }
-                    for(int comp = 0; comp < thissalc.ncomponent(); ++comp){
-                        const CdSalc::Component& salccomponent = thissalc.component(comp);
-                        int salcatom = salccomponent.atom;
-                        int salcxyz = salccomponent.xyz;
-                        double coef = salccomponent.coef;
-                        int pert = 3*salcatom + salcxyz;
-                        psio_address next_Uai = psio_get_address(PSIO_ZERO,pert * (size_t) nvir * nocc * sizeof(double));
-                        psio_->read(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir*nocc*sizeof(double),next_Uai,&next_Uai);
-                        C_DAXPY(nvir*nocc, coef, Tmpmo_c1->pointer()[0], 1, Tp[0], 1);
-                        next_Uai = psio_get_address(PSIO_ZERO,pert * (size_t) nvir * nocc * sizeof(double));
-                        psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir*nocc*sizeof(double),next_Uai,&next_Uai);
-                    }
+                u_matrices[a]->scale(-1);
+                double** Xp = u_matrices[a]->pointer();
+                for (int i = 0; i < nocc; i++) {
+                    C_DCOPY(nvir,Xp[i],1,&Tp[0][i],nocc);
                 }
-
+                psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
             }
 
         }
@@ -1505,7 +1258,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
             pdip_grad[A][2] += 4*mu_z.vector_dot(Upi);
         }
     }
-    dipole_gradient_ = dipole_gradient;
+    rhf_wfn_->set_array_variable("SCF DIPOLE GRADIENT", dipole_gradient);
+    rhf_wfn_->set_array_variable("CURRENT DIPOLE GRADIENT", dipole_gradient);
 
     // => Qpi <= //
     {
