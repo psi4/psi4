@@ -799,68 +799,21 @@ void NBOWriter::write(const std::string &filename) {
         }
         printer->Printf("%15.6E", exponents.get(0, i));
     }
-    // TODO: Rewrite to eliminate code duplication. The only thing changing between
-    // these coefficient blocks is the X in CX and the second argument to coefficient.
 
-    // coefficients for s functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CS =");
-            else
-                printer->Printf("\n          ");
+    // Basis set coefficients for each necessary angular momentum function
+    // coeff_labels should have the same length as pure_order
+    // If it does, we already validated coeff_labels[am] is defined.
+    std::string coeff_labels[] = {"S", "P", "D", "F", "G", "H"};
+    for (int am = 0; am <= basisset.max_am(); am++) {
+        for (int i = 0; i < nprim; i++) {
+            if ((i + 1) % 4 == 1) {
+                if (i == 0)
+                    printer->Printf("\n      C%s =", coeff_labels[am].c_str());
+                else
+                    printer->Printf("\n          ");
+            }
+            printer->Printf("%15.6E", coefficient.get(0, am, i));
         }
-        printer->Printf("%15.6E", coefficient.get(0, 0, i));
-    }
-    // coefficients for p functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CP =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 1, i));
-    }
-    // coefficients for d functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CD =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 2, i));
-    }
-    // coefficients for f functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CF =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 3, i));
-    }
-    // coefficients for g functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CG =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 4, i));
-    }
-    // coefficients for h functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CH =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 5, i));
     }
     printer->Printf("\n $END");
 
