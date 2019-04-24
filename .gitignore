@@ -147,3 +147,9 @@ cdash/cdash.run
 
 # Ignore Jet's Vagrantfile (might be added later for auto testing)
 Vagrantfile
+
+# gtags
+GTAGS
+GPATH
+GRTAGS
+Pipfile.lock

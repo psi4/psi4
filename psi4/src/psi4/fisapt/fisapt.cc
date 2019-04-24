@@ -2230,7 +2230,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
         outfile->Printf("\n");
     }
 }
-void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache, 
+void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
                         bool do_print) {
     if (do_print) {
         outfile->Printf("  ==> Dispersion <==\n\n");
@@ -2274,7 +2274,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     std::shared_ptr<Matrix> V_B = matrix_cache["V_B"];
 
     // => Intermolelcular overlap matrix and inverse <= //
-    std::shared_ptr<Matrix> Sab = Matrix::triplet(Cocc0A, S, Cocc0B, true, false, false);
+    std::shared_ptr<Matrix> Sab = linalg::triplet(Cocc0A, S, Cocc0B, true, false, false);
     double** Sabp = Sab->pointer();
     auto D = std::make_shared<Matrix>("D", na + nb, na + nb);
     D->identity();
@@ -2289,8 +2289,8 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
 
     // => New Stuff <= //
     // Start with T's
-    std::shared_ptr<Matrix> Sbr = Matrix::triplet(Cocc0B, S, Cvir0A, true, false, false);
-    std::shared_ptr<Matrix> Sas = Matrix::triplet(Cocc0A, S, Cvir0B, true, false, false);
+    std::shared_ptr<Matrix> Sbr = linalg::triplet(Cocc0B, S, Cvir0A, true, false, false);
+    std::shared_ptr<Matrix> Sas = linalg::triplet(Cocc0A, S, Cvir0B, true, false, false);
     auto Tar = std::make_shared<Matrix>("Tar", na, nr);
     auto Tbr = std::make_shared<Matrix>("Tbr", nb, nr);
     auto Tas = std::make_shared<Matrix>("Tas", na, ns);
@@ -2314,11 +2314,11 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     auto C2b = std::make_shared<Matrix>("C2b", nn, nb);
 
     C_DGEMM('N', 'N', nn, na, na, 1.0, Cocc0A->pointer()[0], na, &Dp[0][0], na + nb, 0.0,
-            C1a->pointer()[0], na);                                                  
+            C1a->pointer()[0], na);
     C_DGEMM('N', 'N', nn, nb, nb, 1.0, Cocc0B->pointer()[0], nb, &Dp[na][na], na + nb, 0.0,
-            C1b->pointer()[0], nb);                                                  
+            C1b->pointer()[0], nb);
     C_DGEMM('N', 'N', nn, na, nb, 1.0, Cocc0B->pointer()[0], nb, &Dp[na][0], na + nb, 0.0,
-            C2a->pointer()[0], na);                                                  
+            C2a->pointer()[0], na);
     C_DGEMM('N', 'N', nn, nb, na, 1.0, Cocc0A->pointer()[0], na, &Dp[0][na], na + nb, 0.0,
             C2b->pointer()[0], nb);
 
@@ -2326,15 +2326,15 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     std::vector<std::shared_ptr<Matrix> > hold_these;
     hold_these.push_back(Cocc0A);
     hold_these.push_back(Cocc0B);
-    
-    auto Cocc0AB = Matrix::horzcat(hold_these);
+
+    auto Cocc0AB = linalg::horzcat(hold_these);
     hold_these.clear();
-    
+
     // Half transform D_ia and D_ib for JK
     auto D_Ni_a = std::make_shared<Matrix>("D_Ni_a", nn, na + nb);
     auto D_Ni_b = std::make_shared<Matrix>("D_Ni_b", nn, na + nb);
-    
-    C_DGEMM('N', 'N', nn, na + nb, na, 1.0, Cocc0A->pointer()[0], na, &Dp[0][0], na + nb, 0.0, 
+
+    C_DGEMM('N', 'N', nn, na + nb, na, 1.0, Cocc0A->pointer()[0], na, &Dp[0][0], na + nb, 0.0,
             D_Ni_a->pointer()[0], na + nb);
     C_DGEMM('N', 'N', nn, na + nb, nb, 1.0, Cocc0B->pointer()[0], nb, &Dp[na][0], na + nb, 0.0,
             D_Ni_b->pointer()[0], na + nb);
@@ -2359,7 +2359,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     Cl.push_back(Cocc0AB);
     Cr.push_back(D_Ni_b);
     jk_->compute();
-    
+
     std::shared_ptr<Matrix> J_D_ia = J[0];
     std::shared_ptr<Matrix> K_D_ia = K[0];
 
@@ -2367,13 +2367,13 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     std::shared_ptr<Matrix> K_D_ib = K[1];
 
     // Finish D_ia and D_ib transformation to make tilded C's
-    auto D_ia = Matrix::doublet(Cocc0AB, D_Ni_a, false, true);
-    auto D_ib = Matrix::doublet(Cocc0AB, D_Ni_b, false, true);
-    
-    auto Ct_Kr = Matrix::triplet(D_ib, S, Cvir0A, false, false, false);
+    auto D_ia = linalg::doublet(Cocc0AB, D_Ni_a, false, true);
+    auto D_ib = linalg::doublet(Cocc0AB, D_Ni_b, false, true);
+
+    auto Ct_Kr = linalg::triplet(D_ib, S, Cvir0A, false, false, false);
     Ct_Kr->scale(-1);
     Ct_Kr->add(Cvir0A);
-    auto Ct_Ks = Matrix::triplet(D_ia, S, Cvir0B, false, false, false);
+    auto Ct_Ks = linalg::triplet(D_ia, S, Cvir0B, false, false, false);
     Ct_Ks->scale(-1);
     Ct_Ks->add(Cvir0B);
 
@@ -2384,23 +2384,23 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     AJK->scale(2);
     AJK->add(V_A);
     AJK->subtract(K_D_ia);
-    
-    auto AJK_ar = Matrix::triplet(C2a, AJK, Ct_Kr, true, false, false);
-    auto AJK_as = Matrix::triplet(C2a, AJK, Ct_Ks, true, false, false);
-    auto AJK_br = Matrix::triplet(C1b, AJK, Ct_Kr, true, false, false);
-    auto AJK_bs = Matrix::triplet(C1b, AJK, Ct_Ks, true, false, false);
-    
+
+    auto AJK_ar = linalg::triplet(C2a, AJK, Ct_Kr, true, false, false);
+    auto AJK_as = linalg::triplet(C2a, AJK, Ct_Ks, true, false, false);
+    auto AJK_br = linalg::triplet(C1b, AJK, Ct_Kr, true, false, false);
+    auto AJK_bs = linalg::triplet(C1b, AJK, Ct_Ks, true, false, false);
+
     std::shared_ptr<Matrix> BJK(J_D_ib->clone());
     BJK->zero();
     BJK->add(J_D_ib);
     BJK->scale(2);
     BJK->add(V_B);
     BJK->subtract(K_D_ib);
-    
-    auto BJK_ar = Matrix::triplet(C1a, BJK, Ct_Kr, true, false, false);
-    auto BJK_as = Matrix::triplet(C1a, BJK, Ct_Ks, true, false, false);
-    auto BJK_br = Matrix::triplet(C2b, BJK, Ct_Kr, true, false, false);
-    auto BJK_bs = Matrix::triplet(C2b, BJK, Ct_Ks, true, false, false);
+
+    auto BJK_ar = linalg::triplet(C1a, BJK, Ct_Kr, true, false, false);
+    auto BJK_as = linalg::triplet(C1a, BJK, Ct_Ks, true, false, false);
+    auto BJK_br = linalg::triplet(C2b, BJK, Ct_Kr, true, false, false);
+    auto BJK_bs = linalg::triplet(C2b, BJK, Ct_Ks, true, false, false);
 
     // Finish omega terms
     std::shared_ptr<Matrix> omega_ar(AJK_ar->clone());
@@ -2408,19 +2408,19 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     omega_ar->add(AJK_ar);
     omega_ar->add(BJK_ar);
     omega_ar->scale(4);
-    
+
     std::shared_ptr<Matrix> omega_as(AJK_as->clone());
     omega_as->zero();
     omega_as->add(AJK_as);
     omega_as->add(BJK_as);
     omega_as->scale(2);
-    
+
     std::shared_ptr<Matrix> omega_br(AJK_br->clone());
     omega_br->zero();
     omega_br->add(AJK_br);
     omega_br->add(BJK_br);
     omega_br->scale(2);
-    
+
     std::shared_ptr<Matrix> omega_bs(AJK_bs->clone());
     omega_bs->zero();
     omega_bs->add(AJK_bs);

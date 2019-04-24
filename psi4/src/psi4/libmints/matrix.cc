@@ -3303,10 +3303,10 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
     return T;
 }
 
-SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
-                     bool transC) {
-    SharedMatrix T = linalg::doublet(A, B, transA, transB);
-    SharedMatrix S = linalg::doublet(T, C, false, transC);
+SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA,
+                             bool transB, bool transC) {
+    SharedMatrix T = doublet(A, B, transA, transB);
+    SharedMatrix S = doublet(T, C, false, transC);
     return S;
 }
 

@@ -26,23 +26,22 @@
  * @END LICENSE
  */
 
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <memory>
-PRAGMA_WARNING_POP
-#include "psi4/libpsio/psio.hpp"
 #include "diismanager.h"
-#include <cstdarg>
-#include "psi4/libdpd/dpd.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/psifiles.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
 
 #include <cmath>
+#include <cstdarg>
+#include <memory>
+
+#include "psi4/psifiles.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
 
 using namespace psi;
 
@@ -339,11 +338,13 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
 
     timer_on("DIISManager::extrapolate");
 
-    int dimension = _subspace.size() + 1;
+    auto dimension = _subspace.size() + 1;
     auto B = std::make_shared<Matrix>("B (DIIS Connectivity Matrix", dimension, dimension);
-    double **bMatrix = B->pointer();
-    double *coefficients = init_array(dimension);
-    double *force = init_array(dimension);
+    auto bMatrix = B->pointer();
+    auto coefficients = new double[dimension];
+    std::fill_n(coefficients, dimension, 0.0);
+    auto force = new double[dimension];
+    std::fill_n(force, dimension, 0.0);
 
     timer_on("bMatrix setup");
 
@@ -510,9 +511,8 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     timer_off("New vector");
 
     if (print > 2) outfile->Printf("\n");
-    free(coefficients);
-    free(force);
-
+    delete[] coefficients;
+    delete[] force;
     timer_off("DIISManager::extrapolate");
 
     return true;

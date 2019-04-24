@@ -1,6 +1,6 @@
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
-add_library(core SHARED "")
+pybind11_add_module(core MODULE NO_EXTRAS core.cc)
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
@@ -30,7 +30,6 @@ target_sources(core
     create_new_plugin.cc
     read_options.cc
     python_data_type.cc
-    core.cc
   )
 
 set_target_properties(core
@@ -50,8 +49,6 @@ target_link_libraries(core
     ${POST_LIBRARY_OPTION}
     ${LIBC_INTERJECT}
     tgt::lapack # OpenMP flags to core.cc
-  PUBLIC
-    pybind11::module
   )
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)

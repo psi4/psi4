@@ -1140,10 +1140,10 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
 
         if (nocc == 0 || na == 0 || nb == 0) continue;
 
-        double **Ca = C_A->pointer(h);
-        double **Cb = C_B->pointer(h);
-        double **Sab = SAB->pointer(h);
-        double **Sbb = SBB->pointer(h);
+        auto Ca = C_A->pointer(h);
+        auto Cb = C_B->pointer(h);
+        auto Sab = SAB->pointer(h);
+        auto Sbb = SBB->pointer(h);
 
         int CholError = C_DPOTRF('L', nb, Sbb[0], nb);
         if (CholError != 0) throw std::domain_error("S_BB Matrix Cholesky failed!");
@@ -1192,7 +1192,7 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
             outfile->Printf("C_DSYEV failed\n");
             exit(PSI_RETURN_FAILURE);
         }
-        free(work);
+        delete[] work;
 
         // Now T contains the eigenvectors of the original T
         // Copy T to T_copy
