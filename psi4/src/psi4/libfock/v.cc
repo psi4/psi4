@@ -198,6 +198,7 @@ void VBase::print_header() const {
     outfile->Printf("  ==> DFT Potential <==\n\n");
     functional_->print("outfile", print_);
     grid_->print("outfile", print_);
+    if(print_ > 2)grid_->print_details("outfile", print_);
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
