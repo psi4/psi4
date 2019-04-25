@@ -34,7 +34,7 @@ import sys
 import copy
 import json
 import uuid
-import tempfile
+import atexit
 import traceback
 
 import numpy as np
@@ -178,6 +178,14 @@ def _clean_psi_environ(do_clean):
         psi4.core.clean_options()
         psi4.core.clean()
 
+def _read_output(outfile):
+    try:
+        with open(outfile, 'r') as f:
+            output = f.read()
+
+        return output
+    except OSError:
+        return "Could not read output file"
 
 def run_json(json_data, clean=True):
 
@@ -187,8 +195,8 @@ def run_json(json_data, clean=True):
         psi4_io.set_default_path(json_data["scratch_location"])
 
     # Direct output
-    outfile = tempfile.NamedTemporaryFile()
-    core.set_output_file(outfile.name, False)
+    outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".json_out")
+    core.set_output_file(outfile, False)
 
     # Set memory
     if "memory" in json_data:
@@ -214,9 +222,20 @@ def run_json(json_data, clean=True):
                                           exc_traceback))
         json_data["success"] = False
 
+        json_data["raw_output"] = _read_output(outfile)
+
+
     if return_output:
-        outfile.seek(0)
-        json_data["raw_output"] = outfile.read().decode('utf-8')
+        json_data["raw_output"] = _read_output(outfile)
+
+    # Destroy the created file at exit
+    def _quiet_remove(filename):
+        try:
+            os.unlink(filename)
+        except OSError:
+            pass
+
+    atexit.register(_quiet_remove, outfile)
 
     return json_data
 
