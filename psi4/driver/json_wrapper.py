@@ -101,7 +101,7 @@ _qcschema_translation = {
         "mp2_opposite_spin_correlation_energy": {"variables": "MP2 OPPOSITE-SPIN CORRELATION ENERGY"},
         "mp2_singles_energy": {"variables": "NYI", "default": 0.0},
         "mp2_doubles_energy": {"variables": "MP2 CORRELATION ENERGY"},
-        "mp2_total_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
         "mp2_total_energy": {"variables": "MP2 TOTAL ENERGY"},
     },
 

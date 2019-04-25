@@ -57,7 +57,7 @@ expected_properties = {
   "mp2_opposite_spin_correlation_energy": -0.1548891108392641,
   "mp2_singles_energy": 0.0,
   "mp2_doubles_energy": -0.20691671622148142,
-  "mp2_total_correlation_energy": -0.20691671622148142,
+  "mp2_correlation_energy": -0.20691671622148142,
   "mp2_total_energy": -76.22831410222477,
   "return_energy": expected_return_result
 }
@@ -92,7 +92,7 @@ expected_properties = {
   "mp2_opposite_spin_correlation_energy": -0.1549682679804691,
   "mp2_singles_energy": 0.0,
   "mp2_doubles_energy": -0.2069490608880642,
-  "mp2_total_correlation_energy": -0.2069490608880642,
+  "mp2_correlation_energy": -0.2069490608880642,
   "mp2_total_energy": -76.2283674281634,
   "return_energy": expected_return_result
 }
