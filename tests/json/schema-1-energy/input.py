@@ -8,6 +8,7 @@ import json
 json_data = {
   "schema_name": "qcschema_input",
   "schema_version": 1,
+  "return_output": True,
   "molecule": {
     "geometry": [
       0.0,
@@ -56,7 +57,7 @@ expected_properties = {
   "mp2_opposite_spin_correlation_energy": -0.1548891108392641,
   "mp2_singles_energy": 0.0,
   "mp2_doubles_energy": -0.20691671622148142,
-  "mp2_total_correlation_energy": -0.20691671622148142,
+  "mp2_correlation_energy": -0.20691671622148142,
   "mp2_total_energy": -76.22831410222477,
   "return_energy": expected_return_result
 }
@@ -72,6 +73,8 @@ psi4.compare_integers(True, "MAYER_INDICES" in json_ret["extras"]["qcvars"], "Ma
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+
+assert "Density-Fitted Moller-Plesset Theory" in json_ret["raw_output"]
 
 # Expected output with exact MP2
 expected_return_result = -76.2283674281634
@@ -89,7 +92,7 @@ expected_properties = {
   "mp2_opposite_spin_correlation_energy": -0.1549682679804691,
   "mp2_singles_energy": 0.0,
   "mp2_doubles_energy": -0.2069490608880642,
-  "mp2_total_correlation_energy": -0.2069490608880642,
+  "mp2_correlation_energy": -0.2069490608880642,
   "mp2_total_energy": -76.2283674281634,
   "return_energy": expected_return_result
 }
@@ -97,6 +100,7 @@ expected_properties = {
 # Switch run to exact MP2
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
+json_data["return_output"] = True
 json_ret = psi4.json_wrapper.run_json(json_data)
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
@@ -107,4 +111,6 @@ psi4.compare_integers(True, "MAYER_INDICES" in json_ret["extras"]["qcvars"], "Ma
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+
+assert "Ugur Bozkaya" in json_ret["raw_output"]
 
