@@ -101,7 +101,7 @@ _qcschema_translation = {
         "mp2_opposite_spin_correlation_energy": {"variables": "MP2 OPPOSITE-SPIN CORRELATION ENERGY"},
         "mp2_singles_energy": {"variables": "NYI", "default": 0.0},
         "mp2_doubles_energy": {"variables": "MP2 CORRELATION ENERGY"},
-        "mp2_total_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
         "mp2_total_energy": {"variables": "MP2 TOTAL ENERGY"},
     },
 
@@ -178,6 +178,14 @@ def _clean_psi_environ(do_clean):
         psi4.core.clean_options()
         psi4.core.clean()
 
+def _read_output(outfile):
+    try:
+        with open(outfile, 'r') as f:
+            output = f.read()
+
+        return output
+    except OSError:
+        return "Could not read output file"
 
 def run_json(json_data, clean=True):
 
@@ -215,13 +223,20 @@ def run_json(json_data, clean=True):
         }
         json_data["success"] = False
 
-        with open(outfile, 'r') as f:
-            json_data["raw_output"] = f.read()
+        json_data["raw_output"] = _read_output(outfile)
+
 
     if return_output:
-        with open(outfile, 'r') as f:
-            json_data["raw_output"] = f.read()
-        atexit.register(os.unlink, outfile)
+        json_data["raw_output"] = _read_output(outfile)
+
+    # Destroy the created file at exit
+    def _quiet_remove(filename):
+        try:
+            os.unlink(filename)
+        except OSError:
+            pass
+
+    atexit.register(_quiet_remove, outfile)
 
     return json_data
 

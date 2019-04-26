@@ -81,7 +81,7 @@
     "mp2_opposite_spin_correlation_energy": -0.1548891107732647,
     "mp2_singles_energy": 0.0,
     "mp2_doubles_energy": -0.2069167161016298,
-    "mp2_total_correlation_energy": -0.2069167161016298,
+    "mp2_correlation_energy": -0.2069167161016298,
     "mp2_total_energy": -76.2283141021049
   }
 }
