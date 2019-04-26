@@ -1204,7 +1204,8 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 b_vecs.push_back(B);
             }
 
-            auto u_matrices = rhf_wfn_->cphf_solve(b_vecs);
+            auto u_matrices = rhf_wfn_->cphf_solve(b_vecs, options_.get_double("SOLVER_CONVERGENCE"),
+                                                   options_.get_int("SOLVER_MAXITER"), print_);
 
             // Result in x
             for (int a = 0; a < nA; a++) {
