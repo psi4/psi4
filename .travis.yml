@@ -62,6 +62,7 @@ install:
       pylibefp
       snsmp2
       mp2d
+      pytest-xdist
       -c psi4/label/dev
       # * even if name package removed later, this installs their deps
   - >
@@ -110,7 +111,7 @@ script:
 - ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
-- PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -m 'quick' stage/lib/psi4/tests/
+- PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -n 2 -m 'quick' stage/lib/psi4/tests/
 
 # safelist
 branches:

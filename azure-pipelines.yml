@@ -123,6 +123,7 @@ jobs:
                         pint ^
                         pybind11 ^
                         pytest ^
+                        pytest-xdist ^
                         python=%PYTHON_VERSION% ^
                         qcelemental ^
                         qcengine
@@ -209,7 +210,7 @@ jobs:
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --test %PYTEST_TYPE%
+          psi4 --test %PYTEST_TYPE% -n %NUMBER_OF_PROCESSORS%
         displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
 
