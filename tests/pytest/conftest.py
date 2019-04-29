@@ -26,4 +26,7 @@ def tear_down():
     for pat in patterns:
         pytest_scratches.extend(glob.glob(pat))
     for fl in pytest_scratches:
-        os.unlink(fl)
+        try:
+            os.unlink(fl)
+        except (OSError, PermissionError):
+            pass

@@ -29,6 +29,6 @@ else()
         INSTALL_COMMAND ${PYTHON_EXECUTABLE} setup.py install
                                                       --record=record.txt
                                                       --single-version-externally-managed
-                                                      --install-bin=${_install_bin}
+                                                      --install-scripts=${_install_bin}
                                                       --install-lib=${_install_lib})
 endif()
