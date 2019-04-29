@@ -16,6 +16,7 @@ else()
     message(STATUS "Suitable qcengine could not be located, ${Magenta}Building qcengine${ColourReset} instead.")
 
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
+    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
 
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
@@ -28,5 +29,6 @@ else()
         INSTALL_COMMAND ${PYTHON_EXECUTABLE} setup.py install
                                                       --record=record.txt
                                                       --single-version-externally-managed
+                                                      --install-scripts=${_install_bin}
                                                       --install-lib=${_install_lib})
 endif()
