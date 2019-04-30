@@ -97,8 +97,8 @@ void PSI_API C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y) 
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
-        double *y_s = &y[block * inc_y * (size_t)INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DSWAP(&length_s, x_s, &inc_x, y_s, &inc_y);
     }
@@ -122,8 +122,8 @@ void PSI_API C_DAXPY(size_t length, double a, double *x, int inc_x, double *y, i
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
-        double *y_s = &y[block * inc_y * (size_t)INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
     }
@@ -146,8 +146,8 @@ void PSI_API C_DCOPY(size_t length, double *x, int inc_x, double *y, int inc_y) 
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
-        double *y_s = &y[block * inc_y * (size_t)INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DCOPY(&length_s, x_s, &inc_x, y_s, &inc_y);
     }
@@ -167,7 +167,7 @@ void PSI_API C_DSCAL(size_t length, double alpha, double *vec, int inc) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *vec_s = &vec[block * inc * (size_t)INT_MAX];
+        double *vec_s = &vec[static_cast<size_t>(block) * inc * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DSCAL(&length_s, &alpha, vec_s, &inc);
     }
@@ -189,8 +189,8 @@ void PSI_API C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y, d
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
-        double *y_s = &y[block * inc_y * (size_t)INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DROT(&length_s, x_s, &inc_x, y_s, &inc_y, &costheta, &sintheta);
     }
@@ -219,8 +219,8 @@ double PSI_API C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
-        double *y_s = &y[block * inc_y * (size_t)INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += ::F_DDOT(&length_s, x_s, &inc_x, y_s, &inc_y);
     }
@@ -248,7 +248,7 @@ double PSI_API C_DNRM2(size_t length, double *x, int inc_x) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += ::F_DNRM2(&length_s, x_s, &inc_x);
     }
@@ -276,7 +276,7 @@ double PSI_API C_DASUM(size_t length, double *x, int inc_x) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
+        double *x_s = &x[statc_cast<size_t>(block) * inc_x * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += ::F_DASUM(&length_s, x_s, &inc_x);
     }
@@ -305,9 +305,9 @@ size_t C_IDAMAX(size_t length, double *x, int inc_x) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[block * inc_x * (size_t)INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        reg2 = ::F_IDAMAX(&length_s, x_s, &inc_x) + block * inc_x * (size_t)INT_MAX;
+        reg2 = ::F_IDAMAX(&length_s, x_s, &inc_x) + static_cast<size_t>(block) * inc_x * INT_MAX;
         if (std::fabs(x[reg]) > std::fabs(x[reg2])) reg = reg2;
     }
 
