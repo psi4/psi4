@@ -499,7 +499,7 @@ void DPD::T3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K,
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (FBA->params->coltot[Gab] && avirtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, FBA->params->coltot[Gab] * avirtpi[Gc] * sizeof(double));
+            ::memset(W2[Gab][0], 0, sizeof(double) * FBA->params->coltot[Gab] * avirtpi[Gc]);
         }
     }
 
