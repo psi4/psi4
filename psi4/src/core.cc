@@ -621,12 +621,12 @@ bool py_psi_set_local_option_array(std::string const& module, std::string const&
             try {
                 std::string s = values[n].cast<std::string>();
                 Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
-            } catch (py::cast_error e) {
+            } catch (const py::cast_error &e) {
                 try {
                     // This is not a list or string; try to cast to an integer
                     int i = values[n].cast<int>();
                     Process::environment.options.set_local_array_int(module, nonconst_key, i, entry);
-                } catch (py::cast_error e) {
+                } catch (const py::cast_error &e) {
                     // This had better be castable to a float.  We don't catch the exception here
                     // because if we encounter one, something bad has happened
                     double f = values[n].cast<double>();
@@ -664,12 +664,12 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
             try {
                 std::string s = values[n].cast<std::string>();
                 Process::environment.options.set_global_array_string(nonconst_key, s, entry);
-            } catch (py::cast_error e) {
+            } catch (const py::cast_error &e) {
                 try {
                     // This is not a list or string; try to cast to an integer
                     int i = values[n].cast<int>();
                     Process::environment.options.set_global_array_int(nonconst_key, i, entry);
-                } catch (py::cast_error e) {
+                } catch (const py::cast_error &e) {
                     // This had better be castable to a float.  We don't catch the exception here
                     // because if we encounter one, something bad has happened
                     double f = values[n].cast<double>();
@@ -865,13 +865,13 @@ void py_psi_set_n_threads(size_t nthread, bool quiet) {
 #ifdef _OPENMP
     Process::environment.set_n_threads(nthread);
     if (!quiet) {
-        outfile->Printf("  Threads set to %d by Python driver.\n", nthread);
+        outfile->Printf("  Threads set to %zu by Python driver.\n", nthread);
     }
 #else
     Process::environment.set_n_threads(1);
     if (!quiet) {
         outfile->Printf(
-            "  Python driver attempted to set threads to %d.\n"
+            "  Python driver attempted to set threads to %zu.\n"
             "  Psi4 was compiled without OpenMP, setting threads to 1.\n",
             nthread);
     }
