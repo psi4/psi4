@@ -206,8 +206,8 @@ double SAPT2p::disp220s(int ampfile, const char *tlabel, const char *thetalabel,
 }
 
 double SAPT2p::disp220d_1(int ampfile, const char *tlabel, const char *thetalabel, int intfile, const char *ARlabel,
-                          int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                          size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double *xARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);

@@ -102,7 +102,7 @@ void SAPT2::amplitudes() {
           PSIF_SAPT_AMPS, "Theta 2 BS Intermediates");
 }
 
-void SAPT2::tOVOV(int intfileA, const char *ARlabel, size_t foccA, size_t noccA, size_t nvirA, double *evalsA, size_t size_tfileB,
+void SAPT2::tOVOV(int intfileA, const char *ARlabel, size_t foccA, size_t noccA, size_t nvirA, double *evalsA, int intfileB,
                   const char *BSlabel, size_t foccB, size_t noccB, size_t nvirB, double *evalsB, size_t ampout,
                   const char *amplabel) {
     size_t aoccA = noccA - foccA;
@@ -835,9 +835,9 @@ void SAPT2p3::amplitudes() {
 
 void SAPT2p3::Y3(int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel, int ampfile,
                  const char *qAAlabel, const char *qRRlabel, const char *qbarAAlabel, const char *qbarRRlabel,
-                 const char *thetalabel, const char *tlabel, int foccA, int noccA, int nvirA, double *evals, int ampout,
+                 const char *thetalabel, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA, double *evals, size_t ampout,
                  const char *Ylabel) {
-    int aoccA = noccA - foccA;
+    size_t aoccA = noccA - foccA;
 
     double **yAR = block_matrix(aoccA, nvirA);
 
@@ -973,7 +973,7 @@ void SAPT2p3::Y3_2(double **yAR, int intfile, const char *ARlabel, const char *R
 }
 
 void SAPT2p3::Y3_3(double **yAR, int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel,
-                   size_t ampfile, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA) {
+                   int ampfile, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA) {
     size_t aoccA = noccA - foccA;
 
     double *tARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);

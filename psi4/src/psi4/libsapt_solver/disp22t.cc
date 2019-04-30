@@ -256,7 +256,7 @@ void SAPT2p::natural_orbitalify_ccd() {
 }
 
 double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel, const char *RRlabel, int BBfile,
-                        const char *BSlabel, size_t ampfile, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA,
+                        const char *BSlabel, int ampfile, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA,
                         size_t foccB, size_t noccB, size_t nvirB, double *evalsA, double *evalsB) {
     double energy = 0.0;
 

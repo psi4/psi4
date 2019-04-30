@@ -113,24 +113,24 @@ class SAPT2 : public SAPT {
     void exch_ind20rA_B();
     void exch_ind20rB_A();
 
-    void tOVOV(int, const char *, int, int, int, double *, int, const char *, int, int, int, double *, int,
+    void tOVOV(int, const char *, size_t, size_t, size_t, double *, int, const char *, size_t, size_t, size_t, double *, size_t,
                const char *);
-    void pOOpVV(int, const char *, const char *, int, int, int, const char *, const char *);
-    void theta(int, const char *, const char, bool, int, int, int, int, const char *, int, const char *);
+    void pOOpVV(int, const char *, const char *, size_t, size_t, size_t, const char *, const char *);
+    void theta(int, const char *, const char, bool, size_t, size_t, size_t, size_t, const char *, size_t, const char *);
 
-    void Y2(int, const char *, const char *, const char *, int, const char *, const char *, const char *, int, int, int,
-            double *, int, const char *, const char *);
-    void Y2_1(double **, int, const char *, const char *, int, const char *, int, int, int);
-    void Y2_2(double **, int, const char *, const char *, int, const char *, int, int, int);
-    void Y2_3(double **, int, const char *, const char *, int, const char *, int, int, int);
+    void Y2(int, const char *, const char *, const char *, int, const char *, const char *, const char *, size_t, size_t, size_t,
+            double *, size_t, const char *, const char *);
+    void Y2_1(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    void Y2_2(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    void Y2_3(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
 
-    void t2OVOV(int, const char *, const char *, int, const char *, const char *, const char *, int, int, int, double *,
-                int, const char *);
+    void t2OVOV(int, const char *, const char *, int, const char *, const char *, const char *, size_t, size_t, size_t, double *,
+                size_t, const char *);
     void t2OVOV(int, const char *, const char *, const char *, int, const char *, const char *, const char *,
-                const char *, int, int, int, int, double *, double **, int, const char *);
+                const char *, size_t, size_t, size_t, size_t, double *, double **, size_t, const char *);
 
     void OVOpVp_to_OVpOpV(double *, int, int);
-    void ijkl_to_ikjl(double *, int, int, int, int);
+    void ijkl_to_ikjl(double *, size_t, size_t, size_t, size_t);
     void symmetrize(double *, int, int);
 
     void natural_orbitalify(int, const char *, double *evals, int, int, int, const char);
