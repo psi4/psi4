@@ -54,7 +54,7 @@ void overlap(int C_irr, int current) {
     dpdbuf4 R2_old, R2AA_old, R2BB_old, R2AB_old;
     char lbl[32];
 
-    outfile->Printf("Overlap of EOM state %d with saved wfns:\n");
+    outfile->Printf("Overlap of EOM state %d with saved wfns:\n",current);
 
     // Current wfn
     if (params.eom_ref == 0) {

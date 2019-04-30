@@ -31,6 +31,9 @@
     \brief Enter brief description of file here
 */
 
+#ifndef _psi_src_bin_cceom_globals_h
+#define _psi_src_bin_cceom_globals_h
+
 #include "psi4/psifiles.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -62,3 +65,5 @@ EXTERN struct Local local;
 EXTERN int ***dpd_dp;
 }
 }  // namespace psi
+
+#endif // _psi_src_bin_cceom_globals_h

@@ -563,13 +563,13 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval) {
         local.pairdom_len = init_int_array(nocc * nocc);
         local.pairdom_nrlen = init_int_array(nocc * nocc);
         local.eps_occ = init_array(nocc);
-        psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, nocc * nocc * sizeof(int));
+        psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, sizeof(int) * nocc * nocc);
         psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *)local.pairdom_nrlen,
-                        nocc * nocc * sizeof(int));
+                        sizeof(int) * nocc * nocc);
         psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local.eps_occ, nocc * sizeof(double));
-        local.W = (double ***)malloc(nocc * nocc * sizeof(double **));
-        local.V = (double ***)malloc(nocc * nocc * sizeof(double **));
-        local.eps_vir = (double **)malloc(nocc * nocc * sizeof(double *));
+        local.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+        local.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
+        local.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
         next = PSIO_ZERO;
         for (ij = 0; ij < nocc * nocc; ij++) {
             local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
@@ -580,13 +580,13 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval) {
         for (ij = 0; ij < nocc * nocc; ij++) {
             local.V[ij] = block_matrix(nvir, local.pairdom_len[ij]);
             psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local.V[ij][0],
-                      nvir * local.pairdom_len[ij] * sizeof(double), next, &next);
+                      sizeof(double) * nvir * local.pairdom_len[ij], next, &next);
         }
         next = PSIO_ZERO;
         for (ij = 0; ij < nocc * nocc; ij++) {
             local.W[ij] = block_matrix(local.pairdom_len[ij], local.pairdom_nrlen[ij]);
             psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local.W[ij][0],
-                      local.pairdom_len[ij] * local.pairdom_nrlen[ij] * sizeof(double), next, &next);
+                      sizeof(double) * local.pairdom_len[ij] * local.pairdom_nrlen[ij], next, &next);
         }
 
         global_dpd_->file2_mat_init(RIA);

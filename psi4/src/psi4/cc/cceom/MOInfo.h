@@ -31,6 +31,9 @@
     \brief Enter brief description of file here
 */
 
+#ifndef _psi_src_bin_cceom_moinfo_h
+#define _psi_src_bin_cceom_moinfo_h
+
 #include <string>
 #include <vector>
 
@@ -87,3 +90,5 @@ struct MOInfo {
 
 }  // namespace cceom
 }  // namespace psi
+
+#endif // _psi_src_bin_cceom_moinfo_h
