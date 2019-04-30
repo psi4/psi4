@@ -769,7 +769,7 @@ void HF::form_Shalf() {
             // descending order
             int start_index = 0;
             for (int i = 0; i < dimpi[h]; ++i) {
-                if (S_cutoff < eigval->get(h, i)) {
+                if (S_cutoff < eigval->get(h, i)) { // Include this empty block by analogy of prev. block
                 } else {
                     start_index++;
                 }

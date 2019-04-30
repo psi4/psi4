@@ -29,8 +29,6 @@
 #ifndef STABILITY_H
 #define STABILITY_H
 
-#endif  // STABILITY_H
-
 #include "psi4/libmints/wavefunction.h"
 
 namespace psi {
@@ -123,3 +121,5 @@ class UStab {
 }  // namespace scf
 
 }  // namespace psi
+
+#endif  // STABILITY_H
