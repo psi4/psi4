@@ -63,7 +63,7 @@ class SAPT2p3 : public SAPT2p {
     void Y3_3(double **, int, const char *, const char *, const char *, int, const char *, int, int, int);
     void Y3_4(double **, int, const char *, const char *, const char *, int, const char *, int, int, int);
 
-    double elst130(double **, double **, double **, int, const char *, const char *, const char *, int, int, int);
+    double elst130(double **, double **, double **, int, const char *, const char *, const char *, size_t, size_t, size_t);
 
     void ind30_amps(int, const char *, int, const char *, double **, double **, double **, double **, int, int,
                     double *, int, int, double *, int, const char *);
@@ -91,7 +91,7 @@ class SAPT2p3 : public SAPT2p {
     double exch_disp30_22();
 
     double ind30r_1(double **, double **, double **, double **, int, const char *, const char *, const char *, int,
-                    const char *, int, int, int, int);
+                    const char *, size_t, size_t, size_t, size_t);
 
    public:
     SAPT2p3(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
