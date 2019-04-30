@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void sort_rtd_uhf(struct TD_Params S) {
+void sort_rtd_uhf(const struct TD_Params& S) {
     int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
     int row, col, i, j, I, J, a, b, A, B, p, q;
     int *aoccpi, *avirtpi, *aocc_off, *avir_off;

@@ -55,7 +55,7 @@ namespace ccdensity {
 ** TDC, 2/2008
 */
 
-void Iij(struct RHO_Params rho_params) {
+void Iij(const struct RHO_Params& rho_params) {
     dpdfile2 I, F, D;
     dpdbuf4 G, Aints, Fints, Dints, Cints, Eints;
 

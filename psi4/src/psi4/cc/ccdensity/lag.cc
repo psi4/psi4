@@ -72,12 +72,12 @@ namespace ccdensity {
 ** open-shells in the ROHF-CCSD code as discussed in CCSORT for an
 ** explanation of why this is necessary.) */
 
-void Iij(struct RHO_Params rho_params);
-void Iab(struct RHO_Params rho_params);
-void Iai(struct RHO_Params rho_params);
-void Iia(struct RHO_Params rho_params);
+void Iij(const struct RHO_Params& rho_params);
+void Iab(const struct RHO_Params& rho_params);
+void Iai(const struct RHO_Params& rho_params);
+void Iia(const struct RHO_Params& rho_params);
 
-void lag(struct RHO_Params rho_params) {
+void lag(const struct RHO_Params& rho_params) {
     int h, nirreps, i, j, a, b;
     int *occpi, *virtpi, *openpi;
     dpdfile2 I;

@@ -60,7 +60,7 @@ namespace ccdensity {
  * RAK 2003
  */
 
-void x_onepdm_uhf(struct RHO_Params rho_params) {
+void x_onepdm_uhf(const struct RHO_Params& rho_params) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, I, XIJ, Xij;
     dpdbuf4 T2, L2, R2, I2;

@@ -76,7 +76,7 @@ the excited state onepdm */
  tautIJAB = tIJAB + 0.5 * (TIA * TJB - TIB * TJA)
 */
 
-void x_oe_intermediates(struct RHO_Params rho_params) {
+void x_oe_intermediates(const struct RHO_Params& rho_params) {
     dpdfile2 L1, R1, T1, I, LR1, LR2, LT1, LT2;
     dpdbuf4 L2, T2, R2;
     int L_irr, R_irr, G_irr;
