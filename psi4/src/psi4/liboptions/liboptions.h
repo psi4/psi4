@@ -248,6 +248,7 @@ class PSI_API Data {
     Data();
     Data(DataType* t);
     Data(const Data& copy);
+    Data& operator=(const Data& copy);
 
     std::string to_string() const;
     int to_integer() const;
