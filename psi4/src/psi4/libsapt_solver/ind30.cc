@@ -85,8 +85,8 @@ void SAPT2p3::ind30r() {
 }
 
 double SAPT2p3::ind30r_1(double **cAR, double **cBS, double **wBAA, double **wBRR, int intfileA, const char *AAlabel,
-                         const char *ARlabel, const char *RRlabel, int intfileB, const char *BSlabel, int noccA,
-                         int nvirA, int noccB, int nvirB) {
+                         const char *ARlabel, const char *RRlabel, int intfileB, const char *BSlabel, size_t noccA,
+                         size_t nvirA, size_t noccB, size_t nvirB) {
     double energy = 0.0;
 
     double **xAR = block_matrix(noccA, nvirA);

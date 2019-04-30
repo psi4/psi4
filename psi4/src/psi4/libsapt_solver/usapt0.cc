@@ -430,11 +430,11 @@ void USAPT0::fock_terms() {
     // => JK Object <= //
 
     // TODO: Recompute exactly how much memory is needed
-    int naA = Cocca_A_->ncol();
-    int nbA = Coccb_A_->ncol();
-    int naB = Cocca_B_->ncol();
-    int nbB = Coccb_B_->ncol();
-    int nso = Cocca_A_->nrow();
+    size_t naA = Cocca_A_->ncol();
+    size_t nbA = Coccb_A_->ncol();
+    size_t naB = Cocca_B_->ncol();
+    size_t nbB = Coccb_B_->ncol();
+    size_t nso = Cocca_A_->nrow();
     long int jk_memory = (long int)memory_;
     jk_memory -= 24 * nso * nso;
     // Not sure why it should be 4, just taken from DFTSAPT code.
@@ -1435,8 +1435,8 @@ void CPKS_USAPT0::compute_cpks() {
             if (alpha < 0.0) {
                 throw PSIEXCEPTION("Monomer A: A Matrix is not SPD");
             }
-            int no = xa_A_->nrow();
-            int nv = xa_A_->ncol();
+            size_t no = xa_A_->nrow();
+            size_t nv = xa_A_->ncol();
             double** xp = xa_A_->pointer();
             double** rp = ra_A->pointer();
             double** pp = pa_A->pointer();
