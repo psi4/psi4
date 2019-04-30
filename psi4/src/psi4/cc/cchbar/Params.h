@@ -52,3 +52,5 @@ struct Params {
 
 }  // namespace cchbar
 }  // namespace psi
+
+#endif

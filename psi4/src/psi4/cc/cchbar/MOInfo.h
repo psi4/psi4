@@ -72,3 +72,5 @@ struct MOInfo {
 
 }  // namespace cchbar
 }  // namespace psi
+
+#endif
