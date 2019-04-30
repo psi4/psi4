@@ -72,7 +72,7 @@ void CIWavefunction::H0block_init(size_t size) {
     else
         size2 = H0block_->size;
 
-    if (print_ > 1) outfile->Printf("    Total H0block size (including coupling): %d\n", size2);
+    if (print_ > 1) outfile->Printf("    Total H0block size (including coupling): %zu\n", size2);
 
     H0block_->osize = H0block_->size;
     H0block_->guess_size = Parameters_->h0guess_size;

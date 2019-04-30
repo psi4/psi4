@@ -103,7 +103,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
         init_stringwr_temps(Graph->num_el_expl, Graph->num_orb, nirreps * ncodes);
     } else {
         // CDS help: This effectively allocates Occs twice if alplist != betlist
-        Occs = (unsigned char ***)malloc(nirreps * ncodes * sizeof(unsigned char **));
+        Occs = (unsigned char ***)malloc(static_cast<size_t>(nirreps) * ncodes * sizeof(unsigned char **));
     }
 
     for (irrep = 0, listnum = 0; irrep < nirreps; irrep++) {

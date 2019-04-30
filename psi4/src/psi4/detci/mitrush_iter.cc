@@ -256,28 +256,29 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
         outfile->Printf("Straight y = %12.6lf\n", y);
     }
 
-    if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
-        detH0 = 1;
-        /*
-        detH0 = H0block_calc(E);
-        */
+    // [30 Apr 2019] CDS commenting b/c unreachable and noncomputing
+    //if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
+    //    detH0 = 1;
+    //    /*
+    //    detH0 = H0block_calc(E);
+    //    */
 
-        if (detH0 == 0) {
-            outfile->Printf("H0block inverse is nearly nonsingular:");
-            outfile->Printf(" initiating DAVIDSON preconditioner\n");
+    //    if (detH0 == 0) {
+    //        outfile->Printf("H0block inverse is nearly nonsingular:");
+    //        outfile->Printf(" initiating DAVIDSON preconditioner\n");
 
-            Parameters_->precon = PRECON_DAVIDSON;
-        }
-        if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
-            /*
-            H0block_xy(&x,&y,E);
-            */
-            if (print_ > 3) {
-                outfile->Printf("x = %12.6lf\n", x);
-                outfile->Printf("y = %12.6lf\n", y);
-            }
-        }
-    }
+    //        Parameters_->precon = PRECON_DAVIDSON;
+    //    }
+    //    if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
+    //        /*
+    //        H0block_xy(&x,&y,E);
+    //        */
+    //        if (print_ > 3) {
+    //            outfile->Printf("x = %12.6lf\n", x);
+    //            outfile->Printf("y = %12.6lf\n", y);
+    //        }
+    //    }
+    //}
 
     E_est = y / x; /* should I add fzc here? */
     if (print_ > 2) {
