@@ -290,8 +290,8 @@ void DCFTSolver::print_orbital_energies() {
         Ca_->print();
         Cb_->print();
     }
-    delete[] aIrrepCount;
-    delete[] bIrrepCount;
+    free(aIrrepCount);
+    free(bIrrepCount);
 }
 
 /**
