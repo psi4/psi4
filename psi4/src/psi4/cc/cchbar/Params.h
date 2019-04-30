@@ -32,6 +32,9 @@
 */
 #include <string>
 
+#ifndef CCHBAR_PARAMS_H
+#define CCHBAR_PARAMS_H
+
 namespace psi {
 namespace cchbar {
 
