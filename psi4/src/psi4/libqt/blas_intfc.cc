@@ -276,7 +276,7 @@ double PSI_API C_DASUM(size_t length, double *x, int inc_x) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[statc_cast<size_t>(block) * inc_x * INT_MAX];
+        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += ::F_DASUM(&length_s, x_s, &inc_x);
     }
