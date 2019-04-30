@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCDENSITY_MOINFO_H
+#define CCDENSITY_MOINFO_H
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here
@@ -112,3 +115,5 @@ struct MOInfo {
 
 }  // namespace ccdensity
 }  // namespace psi
+
+#endif

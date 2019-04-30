@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+#ifndef CCDENSITY_GLOBALS_H
+#define CCDENSITY_GLOBALS_H
+
 
 /*! \file
     \ingroup CCDENSITY
@@ -58,3 +61,5 @@ EXTERN struct TD_Params *td_params;
 // EXTERN std::vector<struct XTD_Params> xtd_params;
 }
 }  // namespace psi
+
+#endif
