@@ -53,7 +53,7 @@ void PSIO::tocprint(size_t unit) {
 
     this_entry = psio_unit[unit].toc;
 
-    outfile->Printf("\nTable of Contents for Unit %5u\n", unit);
+    outfile->Printf("\nTable of Contents for Unit %5zu\n", unit);
     outfile->Printf("----------------------------------------------------------------------------\n");
     outfile->Printf("Key                                   Spage    Soffset      Epage    Eoffset\n");
     outfile->Printf("----------------------------------------------------------------------------\n");
