@@ -203,9 +203,9 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
                         const char *GBSBS, const char *XARAR, const char *YARAR, const char *XAA, const char *XRR,
                         const char *XBSBS, const char *YBSBS, const char *XBB, const char *XSS, int AAfile,
                         const char *ARints, int BBfile, const char *BSints, double *evalsA_, double *evalsB_,
-                        int noccA_, int virA, int foccA_, int noccB_, int virB, int foccB_) {
-    int occA = noccA_ - foccA_;
-    int occB = noccB_ - foccB_;
+                        size_t noccA_, size_t virA, size_t foccA_, size_t noccB_, size_t virB, size_t foccB_) {
+    size_t occA = noccA_ - foccA_;
+    size_t occB = noccB_ - foccB_;
 
     double **B_p_AR = get_DF_ints_nongimp(AAfile, ARints, foccA_, noccA_, 0, virA);
     double **B_p_BS = get_DF_ints_nongimp(BBfile, BSints, foccB_, noccB_, 0, virB);
@@ -1126,7 +1126,7 @@ void SAPT2p::vvvv_prep(const char *RRRRp, const char *RRRRm,  //!
     std::shared_ptr<Matrix> B2;
     std::shared_ptr<Matrix> B3;
     double **B_p_RR2;
-    int virA2;
+    size_t virA2;
     if (mo2no) {
         virA2 = mo2no->colspi()[0];
         B3 = std::make_shared<Matrix>("B3", virA2 * virA, ndf);
@@ -1220,9 +1220,9 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
                           occA * virA * occA * virA * (size_t)sizeof(double));
     }
 
-    int occtri = occA * (occA + 1) / 2;
-    int virtri = virA2 * (virA2 + 1) / 2;
-    int svirtri = virA2 * (virA2 - 1) / 2;
+    size_t occtri = occA * (occA + 1) / 2;
+    size_t virtri = virA2 * (virA2 + 1) / 2;
+    size_t svirtri = virA2 * (virA2 - 1) / 2;
 
     double **tpAARR = block_matrix(occtri, virtri);
     double **tmAARR = block_matrix(occtri, svirtri);
@@ -1254,8 +1254,8 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
 
     free_block(tARAR);
 
-    int blocksize;
-    int loopsize;
+    size_t blocksize;
+    size_t loopsize;
 
     if (virA2 % 2 == 0) {
         blocksize = virA2 + 1;
@@ -1359,8 +1359,8 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
     }
 
     for (int a1 = 0; a1 < occA; a1++) {
-        int a1a1 = a1 * occA + a1;
-        int b1b1 = INDEX(a1, a1);
+        size_t a1a1 = a1 * occA + a1;
+        size_t b1b1 = INDEX(a1, a1);
         for (int r3 = 0; r3 < virA2; r3++) {
             for (int r4 = 0; r4 < r3; r4++) {
                 int r3r4 = r3 * virA2 + r4;
