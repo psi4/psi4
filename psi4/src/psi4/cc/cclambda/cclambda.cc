@@ -71,15 +71,15 @@ void overlap(int L_irr);
 void overlap_LAMPS(const struct L_Params& L_params);
 void Lsave_index(const struct L_Params& L_params);
 void Lamp_write(const struct L_Params& L_params);
-void check_ortho(const struct L_Params& pL_params);
-void projections(const struct L_Params& pL_params);
+void check_ortho(struct L_Params *pL_params);
+void projections(struct L_Params *pL_params);
 void L_zero(int irrep);
 void c_clean(dpdfile2 *LIA, dpdfile2 *Lia, dpdbuf4 *LIJAB, dpdbuf4 *Lijab, dpdbuf4 *LIjAb);
 void L_clean(const struct L_Params& pL_params);
 void zeta_norm(const struct L_Params& pL_params);
 void spinad_amps();
 void hbar_extra();
-void ortho_Rs(const struct L_Params& pL_params, int current_L);
+void ortho_Rs(struct L_Params *pL_params, int current_L);
 
 void cc2_L1_build(const struct L_Params& L_params);
 void cc2_L2_build(const struct L_Params& L_params);
@@ -386,13 +386,12 @@ void Lsave_index(const struct L_Params& L_params) {
     int L_irr;
     dpdfile2 L1;
     dpdbuf4 L2, LIjAb, LIjbA;
-    char *L1A_lbl, *L1B_lbl, *L2AA_lbl, *L2BB_lbl, *L2AB_lbl, *L2RHF_lbl, lbl[32];
-    L1A_lbl = L_params.L1A_lbl;
-    L1B_lbl = L_params.L1B_lbl;
-    L2AA_lbl = L_params.L2AA_lbl;
-    L2BB_lbl = L_params.L2BB_lbl;
-    L2AB_lbl = L_params.L2AB_lbl;
-    L2RHF_lbl = L_params.L2RHF_lbl;
+    const char *L1A_lbl = L_params.L1A_lbl;
+    const char *L1B_lbl = L_params.L1B_lbl;
+    const char *L2AA_lbl = L_params.L2AA_lbl;
+    const char *L2BB_lbl = L_params.L2BB_lbl;
+    const char *L2AB_lbl = L_params.L2AB_lbl;
+    const char *L2RHF_lbl = L_params.L2RHF_lbl;
     L_irr = L_params.irrep;
 
     if (params.ref == 0 || params.ref == 1) { /** ROHF **/

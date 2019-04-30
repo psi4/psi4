@@ -188,8 +188,8 @@ void local_filter_T2(dpdbuf4 *T2) {
                     nocc * nocc * sizeof(int));
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local.eps_occ, nocc * sizeof(double));
     psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *)local.weak_pairs, sizeof(int) * nocc * nocc);
-    local.W = (double ***)malloc(sizeof(double **)nocc * nocc);
-    local.V = (double ***)malloc(sizeof(double **)nocc * nocc);
+    local.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
     local.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
     next = PSIO_ZERO;
     for (ij = 0; ij < nocc * nocc; ij++) {
