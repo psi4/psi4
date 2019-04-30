@@ -72,8 +72,8 @@ void SAPT2p3::disp30() {
 
 double SAPT2p3::disp30_1(int ampfile, const char *amplabel, int AAintfile, const char *RRlabel, int BBintfile,
                          const char *SSlabel, int foccA, int noccA, int nvirA, int foccB, int noccB, int nvirB) {
-    int aoccA = noccA - foccA;
-    int aoccB = noccB - foccB;
+    size_t aoccA = noccA - foccA;
+    size_t aoccB = noccB - foccB;
 
     double **tARBS = block_matrix(aoccA_ * nvirA_, aoccB_ * nvirB_);
     psio_->read_entry(PSIF_SAPT_AMPS, "tARBS Amplitudes", (char *)tARBS[0],

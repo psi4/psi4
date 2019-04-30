@@ -58,7 +58,7 @@ void SAPT2::elst12() {
 }
 
 double SAPT2::elst120(double **wBAA, double **wBRR, double **CHFA, int ampfile, const char *pAAlabel,
-                      const char *pRRlabel, const char *Ylabel, int foccA, int noccA, int nvirA) {
+                      const char *pRRlabel, const char *Ylabel, size_t foccA, size_t noccA, size_t nvirA) {
     int aoccA = noccA - foccA;
 
     double **pAA = block_matrix(aoccA, aoccA);
