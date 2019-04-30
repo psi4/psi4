@@ -93,7 +93,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <time.h>
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -1011,9 +1010,6 @@ void timer_done() {
     host = (char *)malloc(40 * sizeof(char));
     gethostname(host, 40);
 
-    char on_buf[50];
-    char off_buf[50];
-
     /* Dump the timing data to timer.dat and free the timers */
     auto mode = std::ostream::app;
     auto printer = std::make_shared<PsiOutStream>("timer.dat", mode);
@@ -1021,9 +1017,9 @@ void timer_done() {
     printer->Printf("Host: %s\n", host);
     free(host);
     printer->Printf("\n");
-    printer->Printf("Timers On : %s", ctime_r(&timer_start, on_buf));
+    printer->Printf("Timers On : %s", ctime(&timer_start)); // lgtm[cpp/potentially-dangerous-function] 
     timer_end = std::time(nullptr);
-    printer->Printf("Timers Off: %s", ctime_r(&timer_end, off_buf));
+    printer->Printf("Timers Off: %s", ctime(&timer_end)); // lgtm[cpp/potentially-dangerous-function] 
     printer->Printf("\nWall Time:  %10.2f seconds\n\n",
                     std::chrono::duration_cast<std::chrono::duration<double>>(root_timer.get_total_wtime()).count());
     printer->Printf("                                                       Time (seconds)\n");
