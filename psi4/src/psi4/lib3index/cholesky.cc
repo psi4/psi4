@@ -163,7 +163,7 @@ CholeskyERI::CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz,
     basisset_ = integral_->basis();
 }
 CholeskyERI::~CholeskyERI() {}
-size_t CholeskyERI::N() { return ( size_t ) basisset_->nbf() * basisset_->nbf(); }
+size_t CholeskyERI::N() { return static_cast<size_t>  (basisset_->nbf()) * basisset_->nbf(); }
 void CholeskyERI::compute_diagonal(double* target) {
     const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
