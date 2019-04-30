@@ -95,19 +95,19 @@ void DIISManager::set_vector_size(int numQuantities, ...) {
             case DIISEntry::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4 *);
                 for (int h = 0; h < buf4->params->nirreps; ++h) {
-                    size += buf4->params->rowtot[h] * buf4->params->coltot[h];
+                    size += static_cast<unsigned long> (buf4->params->rowtot[h]) * buf4->params->coltot[h];
                 }
                 break;
             case DIISEntry::DPDFile2:
                 file2 = va_arg(args, dpdfile2 *);
                 for (int h = 0; h < file2->params->nirreps; ++h) {
-                    size += file2->params->rowtot[h] * file2->params->coltot[h];
+                    size += static_cast<unsigned long> (file2->params->rowtot[h]) * file2->params->coltot[h];
                 }
                 break;
             case DIISEntry::Matrix:
                 matrix = va_arg(args, Matrix *);
                 for (int h = 0; h < matrix->nirrep(); ++h) {
-                    size += matrix->rowspi()[h] * matrix->colspi()[h];
+                    size += static_cast<unsigned long> (matrix->rowspi()[h]) * matrix->colspi()[h];
                 }
                 break;
             case DIISEntry::Vector:
@@ -149,19 +149,19 @@ void DIISManager::set_error_vector_size(int numQuantities, ...) {
             case DIISEntry::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4 *);
                 for (int h = 0; h < buf4->params->nirreps; ++h) {
-                    size += buf4->params->rowtot[h] * buf4->params->coltot[h];
+                    size += static_cast<unsigned long> (buf4->params->rowtot[h]) * buf4->params->coltot[h];
                 }
                 break;
             case DIISEntry::DPDFile2:
                 file2 = va_arg(args, dpdfile2 *);
                 for (int h = 0; h < file2->params->nirreps; ++h) {
-                    size += file2->params->rowtot[h] * file2->params->coltot[h];
+                    size += static_cast<unsigned long> (file2->params->rowtot[h]) * file2->params->coltot[h];
                 }
                 break;
             case DIISEntry::Matrix:
                 matrix = va_arg(args, Matrix *);
                 for (int h = 0; h < matrix->nirrep(); ++h) {
-                    size += matrix->rowspi()[h] * matrix->colspi()[h];
+                    size += static_cast<unsigned long> (matrix->rowspi()[h]) * matrix->colspi()[h];
                 }
                 break;
             case DIISEntry::Vector:

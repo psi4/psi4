@@ -67,7 +67,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     xc_functional_ = std::unique_ptr<xc_func_type>(new xc_func_type);
 
     if (xc_func_init(xc_functional_.get(), func_id_, polar_value) != 0) {
-        outfile->Printf("Functional '%d' not found\n", xc_name.c_str());
+        outfile->Printf("Functional '%s' not found\n", xc_name.c_str());
         throw PSIEXCEPTION("Could not find required LibXC functional");
     }
 
@@ -89,16 +89,16 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         /* Range separation? */
         lrc_ = false;
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
-            outfile->Printf("Functional '%d' is a HYB_CAMY functional which is not supported in Psi4\n",
+            outfile->Printf("Functional '%s' is a HYB_CAMY functional which is not supported in Psi4\n",
                             xc_name.c_str());
             throw PSIEXCEPTION("HYB_CAMY functionals not supported in Psi4 at present");
         }
         if (xc_functional_->info->flags & XC_FLAGS_HYB_LC) {
-            outfile->Printf("Functional '%d' is a HYB_LC functional which is not supported in Psi4\n", xc_name.c_str());
+            outfile->Printf("Functional '%s' is a HYB_LC functional which is not supported in Psi4\n", xc_name.c_str());
             throw PSIEXCEPTION("HYB_LC functionals not supported in Psi4 at present");
         }
         if (xc_functional_->info->flags & XC_FLAGS_HYB_LCY) {
-            outfile->Printf("Functional '%d' is a HYB_LCY functional which is not supported in Psi4\n",
+            outfile->Printf("Functional '%s' is a HYB_LCY functional which is not supported in Psi4\n",
                             xc_name.c_str());
             throw PSIEXCEPTION("HYB_LCY functionals not supported in Psi4 at present");
         }
@@ -766,8 +766,8 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 }
             }
         }
-        if (deriv > 2) {
-            throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 3 ");
+        if (deriv > 2) { // lgtm[cpp/constant-comparison]
+            throw PSIEXCEPTION("TRYING TO COMPUTE DERIV > 3 ");
         }
     }  // End polarized
 }
