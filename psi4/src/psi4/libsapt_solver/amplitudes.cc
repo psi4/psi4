@@ -110,7 +110,7 @@ void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA, int n
 
     double **B_p_AR = get_DF_ints(intfileA, ARlabel, foccA, noccA, 0, nvirA);
     double **B_p_BS = get_DF_ints(intfileB, BSlabel, foccB, noccB, 0, nvirB);
-    double **tARBS = block_matrix(aoccA * nvirA, aoccB * nvirB);
+    double **tARBS = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccB) * nvirB);
 
     C_DGEMM('N', 'T', aoccA * nvirA, aoccB * nvirB, ndf_, 1.0, B_p_AR[0], ndf_ + 3, B_p_BS[0], ndf_ + 3, 0.0, tARBS[0],
             aoccB * nvirB);
@@ -134,10 +134,10 @@ void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA, int n
 
 void SAPT2::pOOpVV(int ampfile, const char *amplabel, const char *thetalabel, int aoccA, int nvirA, int ampout,
                    const char *OOlabel, const char *VVlabel) {
-    double **tARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
+    double **tARAR = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccA) * nvirA);
     psio_->read_entry(ampfile, amplabel, (char *)tARAR[0], sizeof(double) * aoccA * nvirA * aoccA * nvirA);
 
-    double **thetaARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
+    double **thetaARAR = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccA) * nvirA);
     psio_->read_entry(ampfile, thetalabel, (char *)thetaARAR[0], sizeof(double) * aoccA * nvirA * aoccA * nvirA);
     antisym(thetaARAR, aoccA, nvirA);
 
@@ -161,7 +161,7 @@ void SAPT2::pOOpVV(int ampfile, const char *amplabel, const char *thetalabel, in
 
 void SAPT2::theta(int ampfile, const char *amplabel, const char trans, bool antisymmetrized, int aoccA, int nvirA,
                   int aoccB, int nvirB, const char *OVlabel, int ampout, const char *thetalabel) {
-    double **tARBS = block_matrix(aoccA * nvirA, aoccB * nvirB);
+    double **tARBS = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccB) * nvirB);
     psio_->read_entry(ampfile, amplabel, (char *)tARBS[0], sizeof(double) * aoccA * nvirA * aoccB * nvirB);
 
     if (antisymmetrized) antisym(tARBS, aoccA, nvirA);
@@ -175,7 +175,7 @@ void SAPT2::theta(int ampfile, const char *amplabel, const char trans, bool anti
         throw PsiException("Those integrals do not exist", __FILE__, __LINE__);
 
     if (trans == 'N' || trans == 'n') {
-        double **T_p_OV = block_matrix(aoccA * nvirA, ndf_ + 3);
+        double **T_p_OV = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
 
         C_DGEMM('N', 'N', aoccA * nvirA, ndf_ + 3, aoccB * nvirB, 1.0, tARBS[0], aoccB * nvirB, B_p_OV[0], ndf_ + 3,
                 0.0, T_p_OV[0], ndf_ + 3);
@@ -184,7 +184,7 @@ void SAPT2::theta(int ampfile, const char *amplabel, const char trans, bool anti
 
         free_block(T_p_OV);
     } else if (trans == 'T' || trans == 't') {
-        double **T_p_OV = block_matrix(aoccB * nvirB, ndf_ + 3);
+        double **T_p_OV = block_matrix(static_cast<size_t>(aoccB) * nvirB, ndf_ + 3);
 
         C_DGEMM('T', 'N', aoccB * nvirB, ndf_ + 3, aoccA * nvirA, 1.0, tARBS[0], aoccB * nvirB, B_p_OV[0], ndf_ + 3,
                 0.0, T_p_OV[0], ndf_ + 3);
@@ -209,7 +209,7 @@ void SAPT2::Y2(int intfile, const char *AAlabel, const char *ARlabel, const char
 
     Y2_3(yAR, intfile, AAlabel, RRlabel, ampfile, thetalabel, foccA, noccA, nvirA);
 
-    C_DCOPY(aoccA * nvirA, yAR[0], 1, tAR[0], 1);
+    C_DCOPY(static_cast<size_t>(aoccA) * nvirA, yAR[0], 1, tAR[0], 1);
 
     for (int a = 0; a < aoccA; a++) {
         for (int r = 0; r < nvirA; r++) {
@@ -240,7 +240,7 @@ void SAPT2::Y2_1(double **yAR, int intfile, const char *ARlabel, const char *RRl
     double **B_p_RR = get_DF_ints(intfile, RRlabel, 0, nvirA, 0, nvirA);
 
     double *X = init_array(ndf_ + 3);
-    double **C_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
+    double **C_p_AR = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
 
     C_DGEMV('t', nvirA * nvirA, ndf_ + 3, 1.0, B_p_RR[0], ndf_ + 3, pRR[0], 1, 0.0, X, 1);
 
@@ -272,7 +272,7 @@ void SAPT2::Y2_2(double **yAR, int intfile, const char *AAlabel, const char *ARl
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
 
     double *X = init_array(ndf_ + 3);
-    double **C_p_AA = block_matrix(aoccA * aoccA, ndf_ + 3);
+    double **C_p_AA = block_matrix(static_cast<size_t>(aoccA) * aoccA, ndf_ + 3);
 
     C_DGEMV('t', aoccA * aoccA, ndf_ + 3, 1.0, B_p_AA[0], ndf_ + 3, pAA[0], 1, 0.0, X, 1);
 
@@ -297,7 +297,7 @@ void SAPT2::Y2_3(double **yAR, int intfile, const char *AAlabel, const char *RRl
                  const char *thetalabel, int foccA, int noccA, int nvirA) {
     int aoccA = noccA - foccA;
 
-    double **T_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
+    double **T_p_AR = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
     psio_->read_entry(ampfile, thetalabel, (char *)T_p_AR[0], sizeof(double) * aoccA * nvirA * (ndf_ + 3));
 
     double **B_p_AA = get_DF_ints(intfile, AAlabel, foccA, noccA, foccA, noccA);
@@ -323,7 +323,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *thetalabel, int 
 
     double *t2ARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
 
-    double **vAARR = block_matrix(aoccA * nvirA, aoccA * nvirA);
+    double **vAARR = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccA) * nvirA);
     double **B_p_AA = get_DF_ints(intfile, AAlabel, foccA, noccA, foccA, noccA);
     double **B_p_RR = get_DF_ints(intfile, RRlabel, 0, nvirA, 0, nvirA);
 
@@ -354,7 +354,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *thetalabel, int 
     free_block(vAARR);
 
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
-    double **T_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
+    double **T_p_AR = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
     psio_->read_entry(ampfile, thetalabel, (char *)T_p_AR[0], sizeof(double) * aoccA * nvirA * (ndf_ + 3));
 
     C_DGEMM('N', 'T', aoccA * nvirA, aoccA * nvirA, ndf_ + 3, 1.0, B_p_AR[0], ndf_ + 3, T_p_AR[0], ndf_ + 3, 1.0,
@@ -366,7 +366,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *thetalabel, int 
     ijkl_to_ikjl(tARAR, aoccA, nvirA, aoccA, nvirA);
     ijkl_to_ikjl(t2ARAR, aoccA, nvirA, aoccA, nvirA);
 
-    double **vAAAA = block_matrix(aoccA * aoccA, aoccA * aoccA);
+    double **vAAAA = block_matrix(static_cast<size_t>(aoccA) * aoccA, static_cast<size_t>(aoccA) * aoccA);
     B_p_AA = get_DF_ints(intfile, AAlabel, foccA, noccA, foccA, noccA);
 
     for (int a = 0, aa1 = 0; a < aoccA; a++) {
@@ -384,7 +384,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *thetalabel, int 
     free_block(vAAAA);
 
     B_p_RR = get_DF_ints(intfile, RRlabel, 0, nvirA, 0, nvirA);
-    double **xRRR = block_matrix(nvirA * nvirA, nvirA);
+    double **xRRR = block_matrix(static_cast<size_t>(nvirA) * nvirA, nvirA);
 
     for (int r = 0; r < nvirA; r++) {
         C_DGEMM('N', 'T', nvirA, nvirA * nvirA, ndf_ + 3, 1.0, &(B_p_RR[r * nvirA][0]), ndf_ + 3, &(B_p_RR[0][0]),
@@ -425,7 +425,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *no_tlabel, const
 
     double *t2ARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
 
-    double **vAARR = block_matrix(aoccA * nvirA, aoccA * nvirA);
+    double **vAARR = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccA) * nvirA);
     double **B_p_AA = get_DF_ints(intfile, AAlabel, foccA, noccA, foccA, noccA);
     double **B_p_RR = get_DF_ints(intfile, RRlabel, 0, nvirA, 0, nvirA);
 
@@ -456,7 +456,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *no_tlabel, const
     free_block(vAARR);
 
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
-    double **T_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
+    double **T_p_AR = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
     psio_->read_entry(ampfile, thetalabel, (char *)T_p_AR[0], sizeof(double) * aoccA * nvirA * (ndf_ + 3));
 
     C_DGEMM('N', 'T', aoccA * nvirA, aoccA * nvirA, ndf_ + 3, 1.0, B_p_AR[0], ndf_ + 3, T_p_AR[0], ndf_ + 3, 1.0,
@@ -468,7 +468,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *no_tlabel, const
     ijkl_to_ikjl(tARAR, aoccA, nvirA, aoccA, nvirA);
     ijkl_to_ikjl(t2ARAR, aoccA, nvirA, aoccA, nvirA);
 
-    double **vAAAA = block_matrix(aoccA * aoccA, aoccA * aoccA);
+    double **vAAAA = block_matrix(static_cast<size_t>(aoccA) * aoccA, static_cast<size_t>(aoccA) * aoccA);
     B_p_AA = get_DF_ints(intfile, AAlabel, foccA, noccA, foccA, noccA);
 
     for (int a = 0, aa1 = 0; a < aoccA; a++) {
@@ -486,8 +486,8 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *no_tlabel, const
     free(tARAR);
     free_block(vAAAA);
 
-    double **t2AArr = block_matrix(aoccA * aoccA, no_nvirA * no_nvirA);
-    double *xRR = init_array(nvirA * no_nvirA);
+    double **t2AArr = block_matrix(static_cast<size_t>(aoccA) * aoccA, static_cast<size_t>(no_nvirA) * no_nvirA);
+    double *xRR = init_array(static_cast<size_t>(nvirA) * no_nvirA);
 
     for (int a = 0, aaa = 0; a < aoccA; a++) {
         for (int aa = 0; aa < aoccA; aa++, aaa++) {
@@ -505,7 +505,7 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *no_tlabel, const
     ijkl_to_ikjl(tArAr, aoccA, no_nvirA, aoccA, no_nvirA);
 
     B_p_RR = get_DF_ints(intfile, no_RRlabel, 0, no_nvirA, 0, no_nvirA);
-    double **xRRR = block_matrix(no_nvirA * no_nvirA, no_nvirA);
+    double **xRRR = block_matrix(static_cast<size_t>(no_nvirA) * no_nvirA, no_nvirA);
 
     for (int r = 0; r < no_nvirA; r++) {
         C_DGEMM('N', 'T', no_nvirA, no_nvirA * no_nvirA, ndf_ + 3, 1.0, &(B_p_RR[r * no_nvirA][0]), ndf_ + 3,
@@ -574,12 +574,12 @@ void SAPT2::OVOpVp_to_OVpOpV(double *tARAR, int nocc, int nvir) {
 }
 
 void SAPT2::ijkl_to_ikjl(double *tARAR, int ilength, int jlength, int klength, int llength) {
-    double *X = init_array(jlength * klength);
+    double *X = init_array(static_cast<size_t>(jlength) * klength);
 
     for (int i = 0; i < ilength; i++) {
         for (int l = 0; l < llength; l++) {
             long int ijkl = (long int)i * jlength * klength * llength + l;
-            C_DCOPY(jlength * klength, &(tARAR[ijkl]), llength, X, 1);
+            C_DCOPY(static_cast<size_t>(jlength) * klength, &(tARAR[ijkl]), llength, X, 1);
             for (int j = 0; j < jlength; j++) {
                 for (int k = 0; k < klength; k++) {
                     long int ik = i * klength + k;
@@ -681,7 +681,7 @@ void SAPT2p::gARARxtARBS(int ampfile, const char *tlabel, const char trans, int 
     int aoccB = noccB - foccB;
 
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
-    double **gARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
+    double **gARAR = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccA) * nvirA);
 
     C_DGEMM('N', 'T', aoccA * nvirA, aoccA * nvirA, ndf_ + 3, 2.0, B_p_AR[0], ndf_ + 3, B_p_AR[0], ndf_ + 3, 0.0,
             gARAR[0], aoccA * nvirA);
@@ -705,15 +705,15 @@ void SAPT2p::gARARxtARBS(int ampfile, const char *tlabel, const char trans, int 
     double **xARBS;
 
     if (trans == 'n' || trans == 'N') {
-        tARBS = block_matrix(aoccA * nvirA, aoccB * nvirB);
-        xARBS = block_matrix(aoccA * nvirA, aoccB * nvirB);
+        tARBS = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccB) * nvirB);
+        xARBS = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccB) * nvirB);
         psio_->read_entry(ampfile, tlabel, (char *)tARBS[0], sizeof(double) * aoccA * nvirA * aoccB * nvirB);
 
         C_DGEMM('N', 'N', aoccA * nvirA, aoccB * nvirB, aoccA * nvirA, 1.0, gARAR[0], aoccA * nvirA, tARBS[0],
                 aoccB * nvirB, 0.0, xARBS[0], aoccB * nvirB);
     } else if (trans == 't' || trans == 'T') {
-        tARBS = block_matrix(aoccB * nvirB, aoccA * nvirA);
-        xARBS = block_matrix(aoccB * nvirB, aoccA * nvirA);
+        tARBS = block_matrix(static_cast<size_t>(aoccB) * nvirB, static_cast<size_t>(aoccA) * nvirA);
+        xARBS = block_matrix(static_cast<size_t>(aoccB) * nvirB, static_cast<size_t>(aoccA) * nvirA);
         psio_->read_entry(ampfile, tlabel, (char *)tARBS[0], sizeof(double) * aoccA * nvirA * aoccB * nvirB);
 
         C_DGEMM('N', 'N', aoccB * nvirB, aoccA * nvirA, aoccA * nvirA, 1.0, tARBS[0], aoccA * nvirA, gARAR[0],
@@ -874,7 +874,7 @@ void SAPT2p3::Y3_1(double **yAR, int intfile, const char *AAlabel, const char *A
     double **B_p_AA = get_DF_ints(intfile, AAlabel, foccA, noccA, foccA, noccA);
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
 
-    double **AAAR = block_matrix(aoccA * aoccA, aoccA * nvirA);
+    double **AAAR = block_matrix(static_cast<size_t>(aoccA) * aoccA, static_cast<size_t>(aoccA) * nvirA);
 
     C_DGEMM('N', 'T', aoccA * aoccA, aoccA * nvirA, ndf_ + 3, 1.0, B_p_AA[0], ndf_ + 3, B_p_AR[0], ndf_ + 3, 0.0,
             AAAR[0], aoccA * nvirA);
@@ -882,7 +882,7 @@ void SAPT2p3::Y3_1(double **yAR, int intfile, const char *AAlabel, const char *A
     free_block(B_p_AA);
     free_block(B_p_AR);
 
-    double **gAAAR = block_matrix(aoccA * aoccA, aoccA * nvirA);
+    double **gAAAR = block_matrix(static_cast<size_t>(aoccA) * aoccA, static_cast<size_t>(aoccA) * nvirA);
 
     for (int a = 0; a < aoccA; a++) {
         for (int a1 = 0; a1 < aoccA; a1++) {
@@ -914,9 +914,9 @@ void SAPT2p3::Y3_2(double **yAR, int intfile, const char *ARlabel, const char *R
     int virtri = nvirA * (nvirA + 1) / 2;
 
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
-    double **AAAR = block_matrix(aoccA, aoccA * aoccA * nvirA);
+    double **AAAR = block_matrix(aoccA, static_cast<size_t>(aoccA) * aoccA * nvirA);
     double **RRR = block_matrix(virtri, nvirA);
-    double **xRRR = block_matrix(nvirA, nvirA * nvirA);
+    double **xRRR = block_matrix(nvirA, static_cast<size_t>(nvirA) * nvirA);
     double **X_RR = block_matrix(nvirA, nvirA);
 
     double *tARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
@@ -953,9 +953,9 @@ void SAPT2p3::Y3_2(double **yAR, int intfile, const char *ARlabel, const char *R
 
     for (int a1 = 0, a1a2 = 0; a1 < aoccA; a1++) {
         for (int a2 = 0; a2 < aoccA; a2++, a1a2++) {
-            C_DCOPY(nvirA * nvirA, &(tARAR[(long int)a1a2 * nvirA * nvirA]), 1, &(X_RR[0][0]), 1);
+            C_DCOPY(static_cast<size_t>(nvirA) * nvirA, &(tARAR[(long int)a1a2 * nvirA * nvirA]), 1, &(X_RR[0][0]), 1);
             for (int r = 0; r < nvirA; r++) {
-                C_DCOPY(nvirA, &(X_RR[0][r]), nvirA, &(tARAR[(long int)a1a2 * nvirA * nvirA + r * nvirA]), 1);
+                C_DCOPY(nvirA, &(X_RR[0][r]), nvirA, &(tARAR[(long int)a1a2 * nvirA * nvirA + static_cast<size_t>(r) * nvirA]), 1);
             }
         }
     }
@@ -1001,7 +1001,7 @@ void SAPT2p3::Y3_3(double **yAR, int intfile, const char *AAlabel, const char *A
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
     double **B_p_RR = get_DF_ints(intfile, RRlabel, 0, nvirA, 0, nvirA);
 
-    double **Y_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
+    double **Y_p_AR = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
 
     C_DGEMM('N', 'N', aoccA * nvirA, ndf_ + 3, aoccA * nvirA, 1.0, yARAR, aoccA * nvirA, B_p_AR[0], ndf_ + 3, 0.0,
             Y_p_AR[0], ndf_ + 3);
@@ -1016,7 +1016,7 @@ void SAPT2p3::Y3_3(double **yAR, int intfile, const char *AAlabel, const char *A
 
     free_block(Y_p_AR);
 
-    double **Y_p_AA = block_matrix(aoccA * aoccA, ndf_ + 3);
+    double **Y_p_AA = block_matrix(static_cast<size_t>(aoccA) * aoccA, ndf_ + 3);
 
     ijkl_to_ikjl(yARAR, aoccA, nvirA, aoccA, nvirA);
 
@@ -1061,7 +1061,7 @@ void SAPT2p3::Y3_4(double **yAR, int intfile, const char *AAlabel, const char *A
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
     double **B_p_RR = get_DF_ints(intfile, RRlabel, 0, nvirA, 0, nvirA);
 
-    double **Y_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
+    double **Y_p_AR = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
 
     C_DGEMM('N', 'N', aoccA * nvirA, ndf_ + 3, aoccA * nvirA, 1.0, yARAR, aoccA * nvirA, B_p_AR[0], ndf_ + 3, 0.0,
             Y_p_AR[0], ndf_ + 3);
@@ -1076,7 +1076,7 @@ void SAPT2p3::Y3_4(double **yAR, int intfile, const char *AAlabel, const char *A
 
     free_block(Y_p_AR);
 
-    double **Y_p_AA = block_matrix(aoccA * aoccA, ndf_ + 3);
+    double **Y_p_AA = block_matrix(static_cast<size_t>(aoccA) * aoccA, ndf_ + 3);
 
     ijkl_to_ikjl(yARAR, aoccA, nvirA, aoccA, nvirA);
 
@@ -1136,7 +1136,7 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
 
     free(X);
 
-    double **tARBS = block_matrix(noccA * nvirA, noccB * nvirB);
+    double **tARBS = block_matrix(static_cast<size_t>(noccA) * nvirA, static_cast<size_t>(noccB) * nvirB);
 
     C_DGEMM('N', 'T', noccA * nvirA, noccB * nvirB, ndf_ + 3, 1.0, B_p_AR[0], ndf_ + 3, B_p_BS[0], ndf_ + 3, 0.0,
             tARBS[0], noccB * nvirB);
@@ -1186,7 +1186,7 @@ void SAPT2p3::inddisp30_ov(int AAfile, const char *AAlabel, const char *RRlabel,
     double **B_p_AA = get_DF_ints(AAfile, AAlabel, foccA, noccA, foccA, noccA);
     double **B_p_RR = get_DF_ints(AAfile, RRlabel, 0, nvirA, 0, nvirA);
 
-    double **T_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
+    double **T_p_AR = block_matrix(static_cast<size_t>(aoccA) * nvirA, ndf_ + 3);
     psio_->read_entry(ampfile, Tlabel, (char *)T_p_AR[0], sizeof(double) * aoccA * nvirA * (ndf_ + 3));
 
     double **uAR = block_matrix(aoccA, nvirA);
@@ -1327,7 +1327,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
     int aoccB = noccB - foccB;
 
     double **tARBS = block_matrix(aoccA_ * nvirA_, aoccB_ * nvirB_);
-    double **tABRS = block_matrix(aoccA * aoccB, nvirA * nvirB);
+    double **tABRS = block_matrix(static_cast<size_t>(aoccA) * aoccB, static_cast<size_t>(nvirA) * nvirB);
 
     psio_->read_entry(ampfile, amplabel, (char *)tARBS[0], sizeof(double) * aoccA_ * nvirA_ * aoccB_ * nvirB_);
 
@@ -1345,12 +1345,12 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
 
     free_block(tARBS);
 
-    double **t2RSAB = block_matrix(nvirA * nvirB, aoccA * aoccB);
+    double **t2RSAB = block_matrix(static_cast<size_t>(nvirA) * nvirB, static_cast<size_t>(aoccA) * aoccB);
 
     double **B_p_RR = block_matrix(nvirA, ndf_ + 3);
     double **B_p_SS = get_DF_ints(BBintfile, SSlabel, 0, nvirB, 0, nvirB);
 
-    double **X_RS = block_matrix(nvirA, nvirB * nvirB);
+    double **X_RS = block_matrix(nvirA, static_cast<size_t>(nvirB) * nvirB);
 
     psio_address next_RR = PSIO_ZERO;
     for (int r = 0; r < nvirA; r++) {
@@ -1366,16 +1366,16 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
     free_block(B_p_SS);
     free_block(X_RS);
 
-    double **t2ABRS = block_matrix(aoccA * aoccB, nvirA * nvirB);
+    double **t2ABRS = block_matrix(static_cast<size_t>(aoccA) * aoccB, static_cast<size_t>(nvirA) * nvirB);
     for (int rs = 0; rs < nvirA * nvirB; rs++) {
-        C_DCOPY(aoccA * aoccB, t2RSAB[rs], 1, &t2ABRS[0][rs], nvirA * nvirB);
+        C_DCOPY(static_cast<size_t>(aoccA) * aoccB, t2RSAB[rs], 1, &t2ABRS[0][rs], nvirA * nvirB);
     }
     free_block(t2RSAB);
 
     double **B_p_AA = get_DF_ints(AAintfile, AAlabel, foccA, noccA, foccA, noccA);
     double **B_p_BB = get_DF_ints(BBintfile, BBlabel, foccB, noccB, foccB, noccB);
 
-    double **ABAB = block_matrix(aoccA * aoccB, aoccA * aoccB);
+    double **ABAB = block_matrix(static_cast<size_t>(aoccA) * aoccB, static_cast<size_t>(aoccA) * aoccB);
 
     for (int a = 0, ab = 0; a < aoccA; a++) {
         for (int b = 0; b < aoccB; b++, ab++) {
@@ -1392,7 +1392,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
 
     free_block(ABAB);
 
-    double **tBRAS = block_matrix(aoccB * nvirA, aoccA * nvirB);
+    double **tBRAS = block_matrix(static_cast<size_t>(aoccB) * nvirA, static_cast<size_t>(aoccA) * nvirB);
 
     for (int a = 0, ab = 0; a < aoccA; a++) {
         for (int b = 0; b < aoccB; b++, ab++) {
@@ -1408,7 +1408,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
 
     free_block(tABRS);
 
-    double **t2BRAS = block_matrix(aoccB * nvirA, aoccA * nvirB);
+    double **t2BRAS = block_matrix(static_cast<size_t>(aoccB) * nvirA, static_cast<size_t>(aoccA) * nvirB);
 
     for (int a = 0, ab = 0; a < aoccA; a++) {
         for (int b = 0; b < aoccB; b++, ab++) {
@@ -1427,7 +1427,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
     B_p_BB = get_DF_ints(BBintfile, BBlabel, foccB, noccB, foccB, noccB);
     B_p_RR = get_DF_ints(AAintfile, RRlabel, 0, nvirA, 0, nvirA);
 
-    double **BRBR = block_matrix(aoccB * nvirA, aoccB * nvirA);
+    double **BRBR = block_matrix(static_cast<size_t>(aoccB) * nvirA, static_cast<size_t>(aoccB) * nvirA);
 
     for (int b = 0, br = 0; b < aoccB; b++) {
         for (int r = 0; r < nvirA; r++, br++) {
@@ -1447,7 +1447,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
     B_p_AA = get_DF_ints(AAintfile, AAlabel, foccA, noccA, foccA, noccA);
     B_p_SS = get_DF_ints(BBintfile, SSlabel, 0, nvirB, 0, nvirB);
 
-    double **ASAS = block_matrix(aoccA * nvirB, aoccA * nvirB);
+    double **ASAS = block_matrix(static_cast<size_t>(aoccA) * nvirB, static_cast<size_t>(aoccA) * nvirB);
 
     for (int a = 0, as = 0; a < aoccA; a++) {
         for (int s = 0; s < nvirB; s++, as++) {
@@ -1465,7 +1465,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, cons
     free_block(ASAS);
     free_block(tBRAS);
 
-    tARBS = block_matrix(aoccA * nvirA, aoccB * nvirB);
+    tARBS = block_matrix(static_cast<size_t>(aoccA) * nvirA, static_cast<size_t>(aoccB) * nvirB);
 
     for (int a = 0, ar = 0; a < aoccA; a++) {
         for (int r = 0; r < nvirA; r++, ar++) {
