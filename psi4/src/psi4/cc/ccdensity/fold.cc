@@ -64,11 +64,11 @@ namespace ccdensity {
 ** G'mpmr = Dpr + Gmpmr
 ** */
 
-void fold_RHF(struct RHO_Params rho_params);
-void fold_ROHF(struct RHO_Params rho_params);
-void fold_UHF(struct RHO_Params rho_params);
+void fold_RHF(const struct RHO_Params& rho_params);
+void fold_ROHF(const struct RHO_Params& rho_params);
+void fold_UHF(const struct RHO_Params& rho_params);
 
-void fold(struct RHO_Params rho_params) {
+void fold(const struct RHO_Params& rho_params) {
     if (params.ref == 0)
         fold_RHF(rho_params);
     else if (params.ref == 1)

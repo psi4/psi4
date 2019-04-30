@@ -73,7 +73,7 @@ namespace ccdensity {
 ** comments below.
 ** */
 
-void deanti_ROHF(struct RHO_Params rho_params) {
+void deanti_ROHF(const struct RHO_Params& rho_params) {
     dpdbuf4 G1, G2;
     dpdfile2 D, F;
     double one_energy = 0.0, two_energy = 0.0, total_two_energy = 0.0;

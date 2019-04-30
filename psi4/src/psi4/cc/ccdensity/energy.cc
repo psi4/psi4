@@ -70,11 +70,11 @@ namespace ccdensity {
 ** Individual spin cases are handled below.
 */
 
-void energy_RHF(struct RHO_Params rho_params);
-void energy_ROHF(struct RHO_Params rho_params);
-void energy_UHF(struct RHO_Params rho_params);
+void energy_RHF(const struct RHO_Params& rho_params);
+void energy_ROHF(const struct RHO_Params& rho_params);
+void energy_UHF(const struct RHO_Params& rho_params);
 
-void energy(struct RHO_Params rho_params) {
+void energy(const struct RHO_Params& rho_params) {
     if (params.ref == 0)
         energy_RHF(rho_params);
     else if (params.ref == 1)

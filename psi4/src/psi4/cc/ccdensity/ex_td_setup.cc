@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccdensity {
 
-void ex_td_setup(struct TD_Params S, struct TD_Params U) {
+void ex_td_setup(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 L1, R1;
     dpdbuf4 L2, R2;
 
