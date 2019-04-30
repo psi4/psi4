@@ -151,7 +151,7 @@ class PSI_API IntegralTransform {
     void update_orbitals();
     void transform_T_plus_V(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2);
     void transform_oei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                       std::array<std::string, 4> labels);
+                       const std::array<std::string, 4> &labels);
     void transform_tei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
                        const std::shared_ptr<MOSpace> s3, const std::shared_ptr<MOSpace> s4,
                        HalfTrans = HalfTrans::MakeAndNuke);

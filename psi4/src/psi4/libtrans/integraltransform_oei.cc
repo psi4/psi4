@@ -87,7 +87,7 @@ void IntegralTransform::transform_T_plus_V(const std::shared_ptr<MOSpace> s1, co
  * 3. labels[3] is the beta MO integrals label, for the unrestricted case
  */
 void IntegralTransform::transform_oei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                                      std::array<std::string, 4> labels) {
+                                      const std::array<std::string, 4> &labels) {
     check_initialized();
     std::vector<double> soInts(nTriSo_);
     if (print_ > 4) outfile->Printf("Grabbing " + labels[0] + "\n");
