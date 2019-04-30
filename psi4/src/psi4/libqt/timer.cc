@@ -93,6 +93,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <time.h>
 #ifdef _OPENMP
 #include <omp.h>
 #else
