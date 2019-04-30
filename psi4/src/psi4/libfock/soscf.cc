@@ -630,7 +630,7 @@ SharedMatrix SOMCSCF::Hk(SharedMatrix x) {
                     IFk->pointer(h)[noccpi_[h]], nmopi_[h], 0.0, Fkp[noccpi_[h]], nmopi_[h]);
 
             // OPDM_vw += Qk
-            C_DAXPY(nmopi_[h] * nactpi_[h], 1.0, Qkp[0], 1, Fkp[noccpi_[h]], 1);
+            C_DAXPY( static_cast<size_t> (nmopi_[h]) * nactpi_[h], 1.0, Qkp[0], 1, Fkp[noccpi_[h]], 1);
         }
 
         if (nvirpi_[h]) {
@@ -1061,7 +1061,7 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
         for (int w = 0; w < nact_; w++) {
             for (int x = 0; x < nact_; x++) {
                 for (int y = 0; y < nact_; y++) {
-                    Gleftp[target++] = Gnwxyp[w * nmo_ * nact2 + n * nact2 + x * nact_ + y];
+                    Gleftp[target++] = Gnwxyp[w * nmo_ * nact2 + static_cast<unsigned long> (n) * nact2 + x * nact_ + y];
                 }
             }
         }

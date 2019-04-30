@@ -75,8 +75,8 @@ void DiskJK::preiterations() {
 
     std::shared_ptr<SOBasisSet> bas = mints->sobasisset();
 
-    so2symblk_ = new int[primary_->nbf()];
-    so2index_ = new int[primary_->nbf()];
+    so2symblk_ = new int[primary_->nbf()]; // lgtm [cpp/resource-not-released-in-destructor]
+    so2index_ = new int[primary_->nbf()]; // lgtm [cpp/resource-not-released-in-destructor]
     size_t so_count = 0;
     size_t offset = 0;
     for (int h = 0; h < bas->nirrep(); ++h) {

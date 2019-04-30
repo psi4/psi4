@@ -184,7 +184,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
     if (debug_) {
         outfile->Printf("  ==> DirectJK: Task Blocking <==\n\n");
         for (size_t task = 0; task < ntask; task++) {
-            outfile->Printf("  Task: %3d, Task Start: %4d, Task End: %4d\n", task, task_starts[task],
+            outfile->Printf("  Task: %3zu, Task Start: %4d, Task End: %4d\n", task, task_starts[task],
                             task_starts[task + 1]);
             for (int P2 = task_starts[task]; P2 < task_starts[task + 1]; P2++) {
                 int P = task_shells[P2];
@@ -328,17 +328,17 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
                             const double* buffer2 = buffer;
 
                             if (!touched) {
-                                ::memset((void*)JKTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));
-                                ::memset((void*)JKTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));
-                                ::memset((void*)JKTp[2L * max_task], '\0', dPsize * dRsize * sizeof(double));
-                                ::memset((void*)JKTp[3L * max_task], '\0', dPsize * dSsize * sizeof(double));
-                                ::memset((void*)JKTp[4L * max_task], '\0', dQsize * dRsize * sizeof(double));
-                                ::memset((void*)JKTp[5L * max_task], '\0', dQsize * dSsize * sizeof(double));
+                                ::memset((void*)JKTp[0L * max_task], '\0', static_cast<unsigned long> (dPsize) * dQsize * sizeof(double));
+                                ::memset((void*)JKTp[1L * max_task], '\0', static_cast<unsigned long> (dRsize) * dSsize * sizeof(double));
+                                ::memset((void*)JKTp[2L * max_task], '\0', static_cast<unsigned long> (dPsize) * dRsize * sizeof(double));
+                                ::memset((void*)JKTp[3L * max_task], '\0', static_cast<unsigned long> (dPsize) * dSsize * sizeof(double));
+                                ::memset((void*)JKTp[4L * max_task], '\0', static_cast<unsigned long> (dQsize) * dRsize * sizeof(double));
+                                ::memset((void*)JKTp[5L * max_task], '\0', static_cast<unsigned long> (dQsize) * dSsize * sizeof(double));
                                 if (!lr_symmetric_) {
-                                    ::memset((void*)JKTp[6L * max_task], '\0', dRsize * dPsize * sizeof(double));
-                                    ::memset((void*)JKTp[7L * max_task], '\0', dSsize * dPsize * sizeof(double));
-                                    ::memset((void*)JKTp[8L * max_task], '\0', dRsize * dQsize * sizeof(double));
-                                    ::memset((void*)JKTp[9L * max_task], '\0', dSsize * dQsize * sizeof(double));
+                                    ::memset((void*)JKTp[6L * max_task], '\0', static_cast<unsigned long> (dRsize) * dPsize * sizeof(double));
+                                    ::memset((void*)JKTp[7L * max_task], '\0', static_cast<unsigned long> (dSsize) * dPsize * sizeof(double));
+                                    ::memset((void*)JKTp[8L * max_task], '\0', static_cast<unsigned long> (dRsize) * dQsize * sizeof(double));
+                                    ::memset((void*)JKTp[9L * max_task], '\0', static_cast<unsigned long> (dSsize) * dQsize * sizeof(double));
                                 }
                             }
 

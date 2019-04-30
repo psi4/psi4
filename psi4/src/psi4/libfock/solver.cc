@@ -418,7 +418,7 @@ void CGRSolver::alpha() {
     if (debug_) {
         outfile->Printf("  > Alpha <\n\n");
         for (size_t N = 0; N < alpha_.size(); N++) {
-            outfile->Printf("Alpha %d = %24.16E\n", N + 1, alpha_[N]);
+            outfile->Printf("Alpha %zu = %24.16E\n", N + 1, alpha_[N]);
         }
     }
 }
@@ -563,7 +563,7 @@ void CGRSolver::beta() {
     if (debug_) {
         outfile->Printf("  > Beta <\n\n");
         for (size_t N = 0; N < beta_.size(); N++) {
-            outfile->Printf("Beta %d = %24.16E\n", N + 1, beta_[N]);
+            outfile->Printf("Beta %zu = %24.16E\n", N + 1, beta_[N]);
         }
     }
 }
@@ -962,7 +962,7 @@ void DLRSolver::eigenvals() {
         outfile->Printf("   > Eigenvalues <\n\n");
         for (size_t m = 0; m < E_.size(); m++) {
             for (size_t h = 0; h < E_[0].size(); ++h) {
-                outfile->Printf("    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf("    Eigenvalue %zu, Irrep %zu = %24.16E\n", m, h, E_[m][h]);
             }
         }
         outfile->Printf("\n");
@@ -1029,7 +1029,7 @@ void DLRSolver::residuals() {
             r_[i]->print();
         }
         for (size_t i = 0; i < n_.size(); i++) {
-            outfile->Printf("    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf("    Residual %zu = %24.16E\n", i, n_[i]);
         }
         outfile->Printf("\n");
         outfile->Printf("    %d of %d roots converged, we are %s\n\n", nconverged_, nroot_,
@@ -1786,7 +1786,7 @@ void DLRXSolver::eigenvals() {
         outfile->Printf("   > Eigenvalues <\n\n");
         for (size_t m = 0; m < E_.size(); m++) {
             for (size_t h = 0; h < E_[0].size(); ++h) {
-                outfile->Printf("    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf("    Eigenvalue %zu, Irrep %zu = %24.16E\n", m, h, E_[m][h]);
             }
         }
         outfile->Printf("\n");
@@ -1854,7 +1854,7 @@ void DLRXSolver::residuals() {
             r_[i]->print();
         }
         for (size_t i = 0; i < n_.size(); i++) {
-            outfile->Printf("    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf("    Residual %zu = %24.16E\n", i, n_[i]);
         }
         outfile->Printf("\n");
         outfile->Printf("    %d of %d roots converged, we are %s\n\n", nconverged_, nroot_,
@@ -2642,7 +2642,7 @@ void DLUSolver::eigenvals() {
         outfile->Printf("   > Eigenvalues <\n\n");
         for (size_t m = 0; m < E_.size(); m++) {
             for (size_t h = 0; h < E_[0].size(); ++h) {
-                outfile->Printf("    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf("    Eigenvalue %zu, Irrep %zu = %24.16E\n", m, h, E_[m][h]);
             }
         }
         outfile->Printf("\n");
@@ -2710,7 +2710,7 @@ void DLUSolver::residuals() {
             r_[i]->print();
         }
         for (size_t i = 0; i < n_.size(); i++) {
-            outfile->Printf("    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf("    Residual %zu = %24.16E\n", i, n_[i]);
         }
         outfile->Printf("\n");
         outfile->Printf("    %d of %d roots converged, we are %s\n\n", nconverged_, nroot_,
