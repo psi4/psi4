@@ -27,6 +27,7 @@
  */
 
 #include "dpd.h"
+#include "psi4/libpsi4util/exception.h"
 using std::string;
 using std::vector;
 namespace psi {
