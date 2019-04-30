@@ -238,7 +238,7 @@ void DFHelper::print_header() {
     outfile->Printf("    Schwarz Cutoff:          %11.0E\n", cutoff_);
     outfile->Printf("    Mask sparsity (%%):       %11.0f\n", 100. * ao_sparsity());
     outfile->Printf("    DFH Avail. Memory [GiB]: %11.3f\n", (memory_ * 8L) / ((double)(1024L * 1024L * 1024L)));
-    outfile->Printf("    OpenMP threads:          %11d\n", nthreads_);
+    outfile->Printf("    OpenMP threads:          %11d\n", static_cast<int> (nthreads_));
     outfile->Printf("    Algorithm:               %11s\n", method_.c_str());
     outfile->Printf("    AO Core:                 %11s\n", (AO_core_ ? "True" : "False"));
     outfile->Printf("    MO Core:                 %11s\n", (MO_core_ ? "True" : "False"));

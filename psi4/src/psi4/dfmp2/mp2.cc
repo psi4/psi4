@@ -1158,7 +1158,7 @@ void RDFMP2::form_Pab() {
 
     // Memory
     size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    doubles -= navir * navir;
+    doubles -= static_cast<unsigned long> (navir) * navir;
     double C = -(double)doubles;
     double B = 4.0 * navir * naux;
     double A = 2.0 * navir * (double)navir;
@@ -1167,7 +1167,6 @@ void RDFMP2::form_Pab() {
     if (max_i <= 0) {
         throw PSIEXCEPTION("Not enough memory in DFMP2");
     }
-    max_i = (max_i <= 0 ? 1 : max_i);
     max_i = (max_i > naocc ? naocc : max_i);
 
     // Blocks
@@ -1350,7 +1349,7 @@ void RDFMP2::form_Pij() {
 
     // Memory
     size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    doubles -= naocc * naocc;
+    doubles -= static_cast<unsigned long> (naocc) * naocc;
     double C = -(double)doubles;
     double B = 2.0 * naocc * naux;
     double A = 2.0 * naocc * (double)naocc;
@@ -1359,7 +1358,6 @@ void RDFMP2::form_Pij() {
     if (max_a <= 0) {
         throw PSIEXCEPTION("Not enough memory in DFMP2");
     }
-    max_a = (max_a <= 0 ? 1 : max_a);
     max_a = (max_a > navir ? navir : max_a);
 
     // Blocks
@@ -1728,7 +1726,7 @@ void RDFMP2::form_Amn_x_terms() {
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
@@ -1830,9 +1828,9 @@ void RDFMP2::form_L() {
     // => Memory Constraints <= //
 
     size_t memory = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    memory -= naocc * nso;
-    memory -= navir * nso;
-    memory -= naocc * navir;
+    memory -= static_cast<unsigned long> (naocc) * nso;
+    memory -= static_cast<unsigned long> (navir) * nso;
+    memory -= static_cast<unsigned long> (naocc) * navir;
     int max_rows;
     int maxP = ribasis_->max_function_per_shell();
     size_t row_cost = 0L;
@@ -1926,7 +1924,7 @@ void RDFMP2::form_L() {
         // > Integrals < //
         Gmn->zero();
 #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
