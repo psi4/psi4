@@ -257,7 +257,7 @@ void DPD::file4_cache_print_screen() {
     outfile->Printf("Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
     outfile->Printf("--------------------------------------------------------------------------------\n");
     while (this_entry != nullptr) {
-        outfile->Printf("%-22s  %1d   %3d   %1d   %2d  %2d  %3d %3d    %1d  %6d   %1d  %8.1f\n", this_entry->label,
+        outfile->Printf("%-22s  %1d   %3d   %1d   %2d  %2d  %3zu %3zu    %1d  %6zu   %1d  %8.1f\n", this_entry->label,
                         this_entry->dpdnum, this_entry->filenum, this_entry->irrep, this_entry->pqnum,
                         this_entry->rsnum, this_entry->usage, this_entry->access, this_entry->clean,
                         this_entry->priority, this_entry->lock, (this_entry->size) * sizeof(double) / 1e3);
@@ -265,17 +265,17 @@ void DPD::file4_cache_print_screen() {
         this_entry = this_entry->next;
     }
     outfile->Printf("--------------------------------------------------------------------------------\n");
-    outfile->Printf("Total cached: %9.1f kB; MRU = %6d; LRU = %6d\n", (total_size * sizeof(double)) / 1e3,
+    outfile->Printf("Total cached: %9.1f kB; MRU = %6zu; LRU = %6zu\n", (total_size * sizeof(double)) / 1e3,
                     dpd_main.file4_cache_most_recent, dpd_main.file4_cache_least_recent);
-    outfile->Printf("#LRU deletions = %6d; #Low-priority deletions = %6d\n", dpd_main.file4_cache_lru_del,
+    outfile->Printf("#LRU deletions = %6zu; #Low-priority deletions = %6zu\n", dpd_main.file4_cache_lru_del,
                     dpd_main.file4_cache_low_del);
     outfile->Printf("Core max size:  %9.1f kB\n", (dpd_main.memory) * sizeof(double) / 1e3);
     outfile->Printf("Core used:      %9.1f kB\n", (dpd_main.memused) * sizeof(double) / 1e3);
     outfile->Printf("Core available: %9.1f kB\n", dpd_memfree() * sizeof(double) / 1e3);
     outfile->Printf("Core cached:    %9.1f kB\n", (dpd_main.memcache) * sizeof(double) / 1e3);
     outfile->Printf("Locked cached:  %9.1f kB\n", (dpd_main.memlocked) * sizeof(double) / 1e3);
-    outfile->Printf("Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
-    outfile->Printf("Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
+    outfile->Printf("Most recent entry  = %zu\n", dpd_main.file4_cache_most_recent);
+    outfile->Printf("Least recent entry = %zu\n", dpd_main.file4_cache_least_recent);
 }
 
 void DPD::file4_cache_print(std::string out) {
@@ -289,7 +289,7 @@ void DPD::file4_cache_print(std::string out) {
     printer->Printf("Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
     printer->Printf("--------------------------------------------------------------------------------\n");
     while (this_entry != nullptr) {
-        printer->Printf("%-22s  %1d   %3d   %1d   %2d  %2d  %3d %3d    %1d  %6d   %1d  %8.1f\n", this_entry->label,
+        printer->Printf("%-22s  %1d   %3d   %1d   %2d  %2d  %3zu %3zu    %1d  %6zu   %1d  %8.1f\n", this_entry->label,
                         this_entry->dpdnum, this_entry->filenum, this_entry->irrep, this_entry->pqnum,
                         this_entry->rsnum, this_entry->usage, this_entry->access, this_entry->clean,
                         this_entry->priority, this_entry->lock, (this_entry->size) * sizeof(double) / 1e3);
@@ -297,17 +297,17 @@ void DPD::file4_cache_print(std::string out) {
         this_entry = this_entry->next;
     }
     printer->Printf("--------------------------------------------------------------------------------\n");
-    printer->Printf("Total cached: %8.1f kB; MRU = %6d; LRU = %6d\n", (total_size * sizeof(double)) / 1e3,
+    printer->Printf("Total cached: %8.1f kB; MRU = %6zu; LRU = %6zu\n", (total_size * sizeof(double)) / 1e3,
                     dpd_main.file4_cache_most_recent, dpd_main.file4_cache_least_recent);
-    printer->Printf("#LRU deletions = %6d; #Low-priority deletions = %6d\n", dpd_main.file4_cache_lru_del,
+    printer->Printf("#LRU deletions = %6zu; #Low-priority deletions = %6zu\n", dpd_main.file4_cache_lru_del,
                     dpd_main.file4_cache_low_del);
     printer->Printf("Core max size:  %9.1f kB\n", (dpd_main.memory) * sizeof(double) / 1e3);
     printer->Printf("Core used:      %9.1f kB\n", (dpd_main.memused) * sizeof(double) / 1e3);
     printer->Printf("Core available: %9.1f kB\n", dpd_memfree() * sizeof(double) / 1e3);
     printer->Printf("Core cached:    %9.1f kB\n", (dpd_main.memcache) * sizeof(double) / 1e3);
     printer->Printf("Locked cached:  %9.1f kB\n", (dpd_main.memlocked) * sizeof(double) / 1e3);
-    printer->Printf("Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
-    printer->Printf("Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
+    printer->Printf("Most recent entry  = %zu\n", dpd_main.file4_cache_most_recent);
+    printer->Printf("Least recent entry = %zu\n", dpd_main.file4_cache_least_recent);
 }
 
 dpd_file4_cache_entry *DPD::file4_cache_find_lru() {
@@ -502,7 +502,7 @@ void DPD::file4_cache_lock(dpdfile4 *File) {
     if (this_entry != nullptr && !this_entry->lock) {
         /* Increment the locked cache memory counter */
         for (h = 0; h < File->params->nirreps; h++) {
-            dpd_main.memlocked += File->params->rowtot[h] * File->params->coltot[h ^ (File->my_irrep)];
+            dpd_main.memlocked += static_cast<size_t>(File->params->rowtot[h]) * File->params->coltot[h ^ (File->my_irrep)];
         }
 
         this_entry->lock = 1;
@@ -521,7 +521,7 @@ void DPD::file4_cache_unlock(dpdfile4 *File) {
 
         /* Decrement the locked cache memory counter */
         for (h = 0; h < File->params->nirreps; h++) {
-            dpd_main.memlocked -= File->params->rowtot[h] * File->params->coltot[h ^ (File->my_irrep)];
+            dpd_main.memlocked -= static_cast<size_t>(File->params->rowtot[h]) * File->params->coltot[h ^ (File->my_irrep)];
         }
     }
 }

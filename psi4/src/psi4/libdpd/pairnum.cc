@@ -54,7 +54,7 @@ int DPD::pairnum(string pair) {
             if (v[2] == moSpaces[i]) right = i;
         }
         if (left != right) {
-            throw;
+            throw PSIEXCEPTION("");
         }
         if (v[3] == "+")
             return left * 5 + 1;
@@ -66,7 +66,7 @@ int DPD::pairnum(string pair) {
             if (v[3] == moSpaces[i]) right = i;
         }
         if (left != right) {
-            throw;
+            throw PSIEXCEPTION("");
         }
         if (v[4] == "+")
             return left * 5 + 3;
