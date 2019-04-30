@@ -171,7 +171,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
         W2[Gab] = global_dpd_->dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
 
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            memset(W1[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            memset(W1[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 
@@ -400,7 +400,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk; /* assumes totally symmetric! */
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 

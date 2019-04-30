@@ -41,7 +41,7 @@
 namespace psi {
 namespace cclambda {
 
-double pseudoenergy(struct L_Params L_params) {
+double pseudoenergy(const struct L_Params& L_params) {
     double LIJAB_energy, Lijab_energy, LIjAb_energy;
     double LIA_energy = 0.0, Lia_energy = 0.0, tval;
     dpdbuf4 LIJAB, Lijab, LIjAb, D;

@@ -40,7 +40,7 @@
 namespace psi {
 namespace cclambda {
 
-void overlap_LAMPS(struct L_Params L_params) {
+void overlap_LAMPS(const struct L_Params& L_params) {
     int h, nirreps, L_irr;
     int row, col;
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;

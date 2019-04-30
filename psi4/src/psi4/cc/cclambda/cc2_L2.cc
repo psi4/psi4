@@ -41,7 +41,7 @@
 namespace psi {
 namespace cclambda {
 
-void DL2(struct L_Params L_params);
+void DL2(const struct L_Params& L_params);
 void cc2_faeL2(int L_irr);
 void cc2_fmiL2(int L_irr);
 void WijmnL2(int L_irr);
@@ -53,7 +53,7 @@ void dijabL2(int L_irr);
 
 void BL2_AO(int L_irr);
 
-void CCLambdaWavefunction::cc2_L2_build(struct L_Params L_params) {
+void CCLambdaWavefunction::cc2_L2_build(const struct L_Params& L_params) {
     int L_irr;
     L_irr = L_params.irrep;
 
