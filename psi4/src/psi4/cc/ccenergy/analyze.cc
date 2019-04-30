@@ -63,7 +63,7 @@ void CCEnergyWavefunction::analyze() {
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     global_dpd_->buf4_mat_irrep_init(&T2, 0);
     global_dpd_->buf4_mat_irrep_rd(&T2, 0);
-    auto T2trans = block_matrix(nocc * nocc, nso * nso);
+    auto T2trans = block_matrix(static_cast<size_t>(nocc) * nocc, static_cast<size_t>(nso) * nso);
     auto tmp = block_matrix(nvir, nso);
     auto tot1 = 0;
     auto tot2 = 0;
