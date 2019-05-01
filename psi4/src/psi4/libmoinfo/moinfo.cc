@@ -133,7 +133,7 @@ void MOInfo::read_info() {
         scf_irrep[i] = nullptr;
         if (sopi[i] && mopi[i]) {
             scf_irrep[i] = block_matrix(sopi[i], mopi[i]);
-            size_t size = static_cast<size_t>(mopi[i]) * sopi[i] * sizeof(double);
+            size_t size = sizeof(double) * mopi[i] * sopi[i];
             ::memcpy(scf_irrep[i][0], matCa->pointer(i)[0], size);
         }
     }
