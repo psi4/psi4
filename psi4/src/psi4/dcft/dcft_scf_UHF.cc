@@ -238,8 +238,8 @@ void DCFTSolver::print_orbital_energies() {
     std::sort(aPairs.begin(), aPairs.end());
     std::sort(bPairs.begin(), bPairs.end());
 
-    int *aIrrepCount = init_int_array(nirrep_);
-    int *bIrrepCount = init_int_array(nirrep_);
+    auto aIrrepCount = std::vector<int>(nirrep_, 0);
+    auto bIrrepCount = std::vector<int>(nirrep_, 0);
     std::vector<std::string> irrepLabels = molecule_->irrep_labels();
 
     outfile->Printf("\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
@@ -290,8 +290,6 @@ void DCFTSolver::print_orbital_energies() {
         Ca_->print();
         Cb_->print();
     }
-    free(aIrrepCount);
-    free(bIrrepCount);
 }
 
 /**
