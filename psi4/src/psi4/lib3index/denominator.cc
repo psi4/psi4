@@ -123,8 +123,8 @@ void Denominator::debug() {
                     for (int b = 0; b < nvir; b++)
                         ap[i * nvir + a][j * nvir + b] += denp[alpha][i * nvir + a] * denp[alpha][j * nvir + b];
 
-    C_DCOPY(nocc * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(nocc * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
@@ -172,7 +172,7 @@ void LaplaceDenominator::decompose() {
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
-    err_table_file.read((char *)err_tablep[0], nR * nk * sizeof(double));
+    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long> (nR) * nk * sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();
@@ -347,8 +347,8 @@ void LaplaceDenominator::debug() {
                         ap[i * nvir + a][j * nvir + b] +=
                             denop[alpha][i] * denop[alpha][j] * denvp[alpha][a] * denvp[alpha][b];
 
-    C_DCOPY(nocc * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(nocc * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
@@ -526,8 +526,8 @@ void SAPTDenominator::check_denom(std::shared_ptr<Vector> eps_occ, std::shared_p
                     for (int b = 0; b < nvir; b++)
                         ap[i * nvir + a][j * nvir + b] += denp[alpha][i * nvir + a] * denp[alpha][j * nvir + b];
 
-    C_DCOPY(nocc * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(nocc * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
@@ -588,7 +588,7 @@ void SAPTLaplaceDenominator::decompose() {
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
-    err_table_file.read((char *)err_tablep[0], nR * nk * sizeof(double));
+    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long> (nR) * nk * sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();
@@ -791,8 +791,8 @@ void SAPTLaplaceDenominator::check_split(std::shared_ptr<Vector> eps_occ, std::s
                         ap[i * nvir + a][j * nvir + b] +=
                             denop[alpha][i] * denop[alpha][j] * denvp[alpha][a] * denvp[alpha][b];
 
-    C_DCOPY(nocc * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(nocc * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
@@ -929,12 +929,12 @@ void SAPTCholeskyDenominator::decompose() {
         }
 
         for (int P = 0; P < Q; P++) {
-            C_DAXPY(noccA * nvirA, -L_PQ[P], denA[P], 1, denA[Q], 1);
-            C_DAXPY(noccB * nvirB, -L_PQ[P], denB[P], 1, denB[Q], 1);
+            C_DAXPY(static_cast<size_t> (noccA) * nvirA, -L_PQ[P], denA[P], 1, denA[Q], 1);
+            C_DAXPY(static_cast<size_t> (noccB) * nvirB, -L_PQ[P], denB[P], 1, denB[Q], 1);
         }
 
-        C_DSCAL(noccA * nvirA, 1.0 / L_QQ, denA[Q], 1);
-        C_DSCAL(noccB * nvirB, 1.0 / L_QQ, denB[Q], 1);
+        C_DSCAL(static_cast<size_t> (noccA) * nvirA, 1.0 / L_QQ, denA[Q], 1);
+        C_DSCAL(static_cast<size_t> (noccB) * nvirB, 1.0 / L_QQ, denB[Q], 1);
 
         for (int P = 0; P < Q; P++) {
             bool PonB = w_order[P].first;
@@ -995,8 +995,8 @@ void SAPTCholeskyDenominator::decompose() {
     double **denBp = denominatorB_->pointer();
 
     for (int P = 0; P < nvector_; P++) {
-        ::memcpy(static_cast<void *>(denAp[P]), static_cast<void *>(denA[P]), noccA * nvirA * sizeof(double));
-        ::memcpy(static_cast<void *>(denBp[P]), static_cast<void *>(denB[P]), noccB * nvirB * sizeof(double));
+        ::memcpy(static_cast<void *>(denAp[P]), static_cast<void *>(denA[P]), static_cast<unsigned long> (noccA) * nvirA * sizeof(double));
+        ::memcpy(static_cast<void *>(denBp[P]), static_cast<void *>(denB[P]), static_cast<unsigned long> (noccB) * nvirB * sizeof(double));
 
         delete[] denA[P];
         delete[] denB[P];
@@ -1055,7 +1055,7 @@ void TLaplaceDenominator::decompose() {
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
-    err_table_file.read((char *)err_tablep[0], nR * nk * sizeof(double));
+    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long> (nR) * nk * sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();

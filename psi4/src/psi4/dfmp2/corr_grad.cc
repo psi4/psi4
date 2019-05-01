@@ -310,7 +310,7 @@ void DFCorrGrad::build_Amn_terms() {
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(df_ints_num_threads_)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
@@ -910,7 +910,7 @@ void DFCorrGrad::build_Amn_x_terms() {
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(df_ints_num_threads_)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
