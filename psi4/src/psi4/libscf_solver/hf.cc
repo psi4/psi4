@@ -116,7 +116,6 @@ void HF::common_init() {
     energies_["Total Energy"] = 0.0;
 
     // Read in DOCC and SOCC from memory
-    int nirreps = factory_->nirrep();
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
@@ -137,8 +136,8 @@ void HF::common_init() {
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
-            if (options_["DOCC"].size() != nirreps) throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            for (int h = 0; h < nirreps; ++h) {
+            if (options_["DOCC"].size() != nirrep_) throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            for (int h = 0; h < nirrep_; ++h) {
                 doccpi_[h] = options_["DOCC"][h].to_integer();
             }
         }
@@ -164,15 +163,15 @@ void HF::common_init() {
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
-            if (options_["SOCC"].size() != nirreps) throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            for (int h = 0; h < nirreps; ++h) {
+            if (options_["SOCC"].size() != nirrep_) throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
+            for (int h = 0; h < nirrep_; ++h) {
                 soccpi_[h] = options_["SOCC"][h].to_integer();
             }
         }
     }  // else take the reference wavefunctions soccpi
 
     // Check that we have enough basis functions
-    for (int h = 0; h < nirreps; ++h) {
+    for (int h = 0; h < nirrep_; ++h) {
         if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
             throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
         }
