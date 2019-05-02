@@ -519,21 +519,6 @@ void HF::print_header() {
     basisset_->print_by_level("outfile", print_);
 }
 
-void HF::print_preiterations() {
-    CharacterTable ct = molecule_->point_group()->char_table();
-
-    outfile->Printf("   -------------------------------------------------------\n");
-    outfile->Printf("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
-    outfile->Printf("   -------------------------------------------------------\n");
-    for (int h = 0; h < nirrep_; h++) {
-        outfile->Printf("     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h],
-                        nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
-    }
-    outfile->Printf("   -------------------------------------------------------\n");
-    outfile->Printf("    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_ - nbeta_);
-    outfile->Printf("   -------------------------------------------------------\n\n");
-}
-
 void HF::form_H() {
     T_ = SharedMatrix(factory_->create_matrix(PSIF_SO_T));
     V_ = SharedMatrix(factory_->create_matrix(PSIF_SO_V));

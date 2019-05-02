@@ -670,6 +670,25 @@ def scf_print_energies(self):
     self.set_variable('SCF ITERATIONS', self.iteration_)
 
 
+def scf_print_preiterations(self):
+    ct = self.molecule().point_group().char_table()
+
+    core.print_out("   -------------------------------------------------------\n")
+    core.print_out("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n")
+    core.print_out("   -------------------------------------------------------\n")
+
+    for h in range(self.nirrep()):
+        core.print_out(
+            f"     {ct.gamma(h).symbol():<3s}   {self.nsopi()[h]:6d}  {self.nmopi()[h]:6d}  {self.nalphapi()[h]:6d}  {self.nbetapi()[h]:6d}  {self.doccpi()[h]:6d}  {self.soccpi()[h]:6d}\n"
+        )
+
+    core.print_out("   -------------------------------------------------------\n")
+    core.print_out(
+        f"    Total  {self.nso():6d}  {self.nmo():6d}  {self.nalpha():6d}  {self.nbeta():6d}  {self.nbeta():6d}  {self.nalpha() - self.nbeta():6d}\n"
+    )
+    core.print_out("   -------------------------------------------------------\n\n")
+
+
 # Bind functions to core.HF class
 core.HF.initialize = scf_initialize
 core.HF.initialize_jk = initialize_jk
@@ -677,6 +696,7 @@ core.HF.iterations = scf_iterate
 core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy
 core.HF.print_energies = scf_print_energies
+core.HF.print_preiterations = scf_print_preiterations
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
