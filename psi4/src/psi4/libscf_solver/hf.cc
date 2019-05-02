@@ -116,7 +116,6 @@ void HF::common_init() {
     energies_["Total Energy"] = 0.0;
 
     // Read in DOCC and SOCC from memory
-    int nirreps = factory_->nirrep();
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
@@ -137,8 +136,8 @@ void HF::common_init() {
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
-            if (options_["DOCC"].size() != nirreps) throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            for (int h = 0; h < nirreps; ++h) {
+            if (options_["DOCC"].size() != nirrep_) throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            for (int h = 0; h < nirrep_; ++h) {
                 doccpi_[h] = options_["DOCC"][h].to_integer();
             }
         }
@@ -164,24 +163,31 @@ void HF::common_init() {
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
-            if (options_["SOCC"].size() != nirreps) throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            for (int h = 0; h < nirreps; ++h) {
+            if (options_["SOCC"].size() != nirrep_) throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
+            for (int h = 0; h < nirrep_; ++h) {
                 soccpi_[h] = options_["SOCC"][h].to_integer();
             }
         }
     }  // else take the reference wavefunctions soccpi
 
     // Check that we have enough basis functions
-    for (int h = 0; h < nirreps; ++h) {
+    for (int h = 0; h < nirrep_; ++h) {
         if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
             throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
         }
     }
 
     if (input_socc_ || input_docc_) {
+        int alphacount = 0;
+        int betacount = 0;
         for (int h = 0; h < nirrep_; h++) {
             nalphapi_[h] = doccpi_[h] + soccpi_[h];
             nbetapi_[h] = doccpi_[h];
+            alphacount += nalphapi_[h];
+            betacount += nbetapi_[h];
+        }
+        if (alphacount != nalpha_ || betacount != nbeta_) {
+            throw PSIEXCEPTION("DOCC and SOCC must specify the occupation of all electrons or none.");
         }
     }
 
@@ -517,21 +523,6 @@ void HF::print_header() {
     outfile->Printf("  ==> Primary Basis <==\n\n");
 
     basisset_->print_by_level("outfile", print_);
-}
-
-void HF::print_preiterations() {
-    CharacterTable ct = molecule_->point_group()->char_table();
-
-    outfile->Printf("   -------------------------------------------------------\n");
-    outfile->Printf("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
-    outfile->Printf("   -------------------------------------------------------\n");
-    for (int h = 0; h < nirrep_; h++) {
-        outfile->Printf("     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h],
-                        nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
-    }
-    outfile->Printf("   -------------------------------------------------------\n");
-    outfile->Printf("    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_ - nbeta_);
-    outfile->Printf("   -------------------------------------------------------\n\n");
 }
 
 void HF::form_H() {
