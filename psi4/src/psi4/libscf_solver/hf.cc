@@ -178,9 +178,16 @@ void HF::common_init() {
     }
 
     if (input_socc_ || input_docc_) {
+        int alphacount = 0;
+        int betacount = 0;
         for (int h = 0; h < nirrep_; h++) {
             nalphapi_[h] = doccpi_[h] + soccpi_[h];
             nbetapi_[h] = doccpi_[h];
+            alphacount += nalphapi_[h];
+            betacount += nbetapi_[h];
+        }
+        if (alphacount != nalpha_ || betacount != nbeta_) {
+            throw PSIEXCEPTION("DOCC and SOCC must specify the occupation of all electrons or none.");
         }
     }
 
