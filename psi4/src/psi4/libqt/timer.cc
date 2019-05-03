@@ -1017,6 +1017,7 @@ void timer_done() {
     printer->Printf("Host: %s\n", host);
     free(host);
     printer->Printf("\n");
+    // NOTE: ctime is not thread-safe and could potentially cause overwriting of the return strings. 
     printer->Printf("Timers On : %s", ctime(&timer_start)); // lgtm[cpp/potentially-dangerous-function] 
     timer_end = std::time(nullptr);
     printer->Printf("Timers Off: %s", ctime(&timer_end)); // lgtm[cpp/potentially-dangerous-function] 
