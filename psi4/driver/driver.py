@@ -1740,24 +1740,34 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
     :examples:
 
-    >>> # [1] Molden file for DFT calculation
-    >>> E, wfn = energy('b3lyp', return_wfn=True)
-    >>> molden(wfn, 'mycalc.molden')
+    1. Molden file for DFT calculation.
 
-    >>> # [2] Molden file for CI/MCSCF computation using NO roots
-    >>> E, wfn = energy('ci', return_wfn=True)
-    >>> molden(wfn, 'no_root1.molden', density_a=wfn.opdm(0, 0, "A", True))
+       >>> E, wfn = energy('b3lyp', return_wfn=True)
+       >>> molden(wfn, 'mycalc.molden')
 
-    >>> # [3] The following does NOT work, please see below
-    >>> E, wfn = energy('ccsd', return_wfn=True)
-    >>> molden(wfn, 'ccsd_no.molden', density_a=wfn.Da())
+    2. Molden file for CI/MCSCF computation using NO roots.
+       Any method returning a ``CIWavefunction`` object will work: ``detci``,
+       ``fci``, ``casscf``, etc. The first two arguments of ``get_opdm`` can be
+       set to ``n, n`` with n > 0 to write densities for higher roots, provided
+       these roots were computed, see :term:`NUM_ROOTS <NUM_ROOTS (DETCI)>`. The
+       third argument controls the spin (``A``, ``B`` or ``SUM``) and the final
+       boolean option determines whether inactive orbitals are included.
 
-    >>> # [4] This WILL work, note the transformation of Da (SO->MO)
-    >>> E, wfn = properties('ccsd', properties=['dipole'], return_wfn=True)
-    >>> Da_so = wfn.Da()
-    >>> SCa = core.doublet(wfn.S(), wfn.Ca(), False, False)
-    >>> Da_mo = core.triplet(SCa, Da_so, SCa, True, False, False)
-    >>> molden(wfn, 'ccsd_no.molden', density_a=Da_mo)
+       >>> E, wfn = energy('detci', return_wfn=True)
+       >>> molden(wfn, 'no_root1.molden', density_a=wfn.get_opdm(0, 0, "A", True))
+
+    3. The following **does NOT work**, please see below.
+
+       >>> E, wfn = energy('ccsd', return_wfn=True)
+       >>> molden(wfn, 'ccsd_no.molden', density_a=wfn.Da())
+
+    4. This WILL work. Note the transformation of Da (SO->MO).
+
+       >>> E, wfn = properties('ccsd', properties=['dipole'], return_wfn=True)
+       >>> Da_so = wfn.Da()
+       >>> SCa = core.doublet(wfn.S(), wfn.Ca(), False, False)
+       >>> Da_mo = core.triplet(SCa, Da_so, SCa, True, False, False)
+       >>> molden(wfn, 'ccsd_no.molden', density_a=Da_mo)
 
     """
 
