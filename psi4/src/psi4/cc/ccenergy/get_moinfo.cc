@@ -196,7 +196,7 @@ void CCEnergyWavefunction::get_moinfo() {
             if (moinfo_.sopi[h] && moinfo_.occpi[h]) {
                 Co[h] = block_matrix(moinfo_.sopi[h], moinfo_.occpi[h]);
                 psio_read(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *)Co[h][0],
-                          moinfo_.sopi[h] * moinfo_.occpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo_.sopi[h] * moinfo_.occpi[h], next, &next);
             }
         }
         moinfo_.Co = Co;
@@ -207,7 +207,7 @@ void CCEnergyWavefunction::get_moinfo() {
             if (moinfo_.sopi[h] && moinfo_.virtpi[h]) {
                 Cv[h] = block_matrix(moinfo_.sopi[h], moinfo_.virtpi[h]);
                 psio_read(PSIF_CC_INFO, "RHF/ROHF Active Virtual Orbitals", (char *)Cv[h][0],
-                          moinfo_.sopi[h] * moinfo_.virtpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo_.sopi[h] * moinfo_.virtpi[h], next, &next);
             }
         }
         moinfo_.Cv = Cv;
@@ -219,7 +219,7 @@ void CCEnergyWavefunction::get_moinfo() {
             if (moinfo_.sopi[h] && moinfo_.avirtpi[h]) {
                 Ca[h] = block_matrix(moinfo_.sopi[h], moinfo_.avirtpi[h]);
                 psio_read(PSIF_CC_INFO, "UHF Active Alpha Virtual Orbs", (char *)Ca[h][0],
-                          moinfo_.sopi[h] * moinfo_.avirtpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo_.sopi[h] * moinfo_.avirtpi[h], next, &next);
             }
         }
         moinfo_.Cav = Ca;
@@ -230,7 +230,7 @@ void CCEnergyWavefunction::get_moinfo() {
             if (moinfo_.sopi[h] && moinfo_.bvirtpi[h]) {
                 Cb[h] = block_matrix(moinfo_.sopi[h], moinfo_.bvirtpi[h]);
                 psio_read(PSIF_CC_INFO, "UHF Active Beta Virtual Orbs", (char *)Cb[h][0],
-                          moinfo_.sopi[h] * moinfo_.bvirtpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo_.sopi[h] * moinfo_.bvirtpi[h], next, &next);
             }
         }
         moinfo_.Cbv = Cb;
