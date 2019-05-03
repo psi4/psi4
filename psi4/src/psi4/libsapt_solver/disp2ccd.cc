@@ -1360,7 +1360,7 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
 
     for (int a1 = 0; a1 < occA; a1++) {
         size_t a1a1 = a1 * occA + a1;
-        size_t b1b1 = INDEX(a1, a1);
+        size_t b1b1 = INDEX(a1, a1); // lgtm [cpp/comparison-of-identical-expressions]
         for (int r3 = 0; r3 < virA2; r3++) {
             for (int r4 = 0; r4 < r3; r4++) {
                 int r3r4 = r3 * virA2 + r4;
