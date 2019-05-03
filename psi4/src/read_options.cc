@@ -1358,7 +1358,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("FRAC_START", 0);
         /*- The absolute indices of occupied orbitals to fractionally occupy (+/- for alpha/beta) -*/
         options.add("FRAC_OCC", new ArrayType());
-        /*- The occupations of the orbital indices specified above ($0.0\ge occ \ge 1.0$) -*/
+        /*- The occupations of the orbital indices specified above ($0.0\le {\rm occ} \le 1.0$) -*/
         options.add("FRAC_VAL", new ArrayType());
         /*- Do use DIIS extrapolation to accelerate convergence in frac? -*/
         options.add_bool("FRAC_DIIS", true);
