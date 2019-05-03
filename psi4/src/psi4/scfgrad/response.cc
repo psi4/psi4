@@ -125,16 +125,16 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         psio_address next_Smi = PSIO_ZERO;
         psio_address next_Spi = PSIO_ZERO;
         for (int A = 0; A < 3*natom; A++) {
-            psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0], static_cast<size_t> (nso) * nocc * sizeof(double),next_Smi,&next_Smi);
         }
         for (int A = 0; A < 3*natom; A++) {
-            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Sai,&next_Sai);
         }
         for (int A = 0; A < 3*natom; A++) {
-            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0], static_cast<size_t> (nocc) * nocc * sizeof(double),next_Sij,&next_Sij);
         }
         for (int A = 0; A < 3*natom; A++) {
-            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
+            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Spi,&next_Spi);
         }
         next_Smi = PSIO_ZERO;
         next_Sai = PSIO_ZERO;
@@ -211,41 +211,41 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 }
             }
             // Smi_x
-            psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0], static_cast<size_t> (nso) * nocc * sizeof(double),next_Smi,&next_Smi);
             // Smi_y
-            psio_->write(PSIF_HESS,"Smi^A",(char*)Smiyp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smiyp[0], static_cast<size_t> (nso) * nocc * sizeof(double),next_Smi,&next_Smi);
             // Smi_z
-            psio_->write(PSIF_HESS,"Smi^A",(char*)Smizp[0],nso * nocc * sizeof(double),next_Smi,&next_Smi);
+            psio_->write(PSIF_HESS,"Smi^A",(char*)Smizp[0], static_cast<size_t> (nso) * nocc * sizeof(double),next_Smi,&next_Smi);
 
             // Sai_x
             C_DGEMM('T','N',nvir,nocc,nso,0.5,Cvp[0],nvir,Smixp[0],nocc,0.0,Saip[0],nocc);
-            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Sai,&next_Sai);
             // Sai_y
             C_DGEMM('T','N',nvir,nocc,nso,0.5,Cvp[0],nvir,Smiyp[0],nocc,0.0,Saip[0],nocc);
-            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Sai,&next_Sai);
             // Sai_z
             C_DGEMM('T','N',nvir,nocc,nso,0.5,Cvp[0],nvir,Smizp[0],nocc,0.0,Saip[0],nocc);
-            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0],nvir * nocc * sizeof(double),next_Sai,&next_Sai);
+            psio_->write(PSIF_HESS,"Sai^A",(char*)Saip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Sai,&next_Sai);
 
             // Sij_x
             C_DGEMM('T','N',nocc,nocc,nso,0.5,Cop[0],nocc,Smixp[0],nocc,0.0,Sijp[0],nocc);
-            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0], static_cast<size_t> (nocc) * nocc * sizeof(double),next_Sij,&next_Sij);
             // Sij_y
             C_DGEMM('T','N',nocc,nocc,nso,0.5,Cop[0],nocc,Smiyp[0],nocc,0.0,Sijp[0],nocc);
-            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0], static_cast<size_t> (nocc) * nocc * sizeof(double),next_Sij,&next_Sij);
             // Sij_z
             C_DGEMM('T','N',nocc,nocc,nso,0.5,Cop[0],nocc,Smizp[0],nocc,0.0,Sijp[0],nocc);
-            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc * nocc * sizeof(double),next_Sij,&next_Sij);
+            psio_->write(PSIF_HESS,"Sij^A",(char*)Sijp[0], static_cast<size_t> (nocc) * nocc * sizeof(double),next_Sij,&next_Sij);
 
             // Spi_x
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Smixp[0],nocc,0.0,Spip[0],nocc);
-            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
+            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Spi,&next_Spi);
             // Spi_y
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Smiyp[0],nocc,0.0,Spip[0],nocc);
-            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
+            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Spi,&next_Spi);
             // Spi_z
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Smizp[0],nocc,0.0,Spip[0],nocc);
-            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0],nmo * nocc * sizeof(double),next_Spi,&next_Spi);
+            psio_->write(PSIF_HESS,"Spi^A",(char*)Spip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Spi,&next_Spi);
         }
     }
 
@@ -339,13 +339,13 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
             // Tpi_x
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmixp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
+            psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
             // Tpi_y
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmiyp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
+            psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
             // Tpi_z
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmizp[0],nocc,0.0,Tpip[0],nocc);
-            psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
+            psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
         }
     }
 
@@ -411,13 +411,13 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
             // Vpi_x
             C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Vmixp[0],nocc,0.0,Vpip[0],nocc);
-            psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0],nmo * nocc * sizeof(double),next_Vpi,&next_Vpi);
+            psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
             // Vpi_y
             C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Vmiyp[0],nocc,0.0,Vpip[0],nocc);
-            psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0],nmo * nocc * sizeof(double),next_Vpi,&next_Vpi);
+            psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
             // Vpi_z
             C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Vmizp[0],nocc,0.0,Vpip[0],nocc);
-            psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0],nmo * nocc * sizeof(double),next_Vpi,&next_Vpi);
+            psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
         }
     }
     // => Jpi/Kpi <= //
@@ -440,7 +440,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         psio_address next_Gpi = PSIO_ZERO;
         // Write some junk for now, to set the sizing for PSIO
         for(int pert = 0; pert < 3*natom; ++pert){
-            psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+            psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
         }
         next_Gpi = PSIO_ZERO;
 
@@ -563,7 +563,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                         int Qy = 3 * Qcenter + 1;
                         int Qz = 3 * Qcenter + 2;
 
-                        size_t stride = Pncart * Qncart;
+                        size_t stride = static_cast<size_t> (Pncart) * Qncart;
 
                         if(!pert_incore[Pcenter] && !pert_incore[Qcenter])
                             continue;
@@ -656,7 +656,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                             int ny = 3 * Ncenter + 1;
                             int nz = 3 * Ncenter + 2;
 
-                            size_t stride = Pncart * Mncart * Nncart;
+                            size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
 
                             if(!pert_incore[Pcenter] &&
                                     !pert_incore[Mcenter] &&
@@ -775,7 +775,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     G->add(G->transpose());
                     Gpi->transform(C, G, Cocc);
                     Gpi->scale(0.5);
-                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
                 }
 
             } // End loop over A batches
@@ -877,7 +877,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     if (R != S)   prefactor *= 2.0;
                     if (PQ != RS) prefactor *= 2.0;
 
-                    size_t stride = Pncart * Qncart * Rncart * Sncart;
+                    size_t stride = static_cast<size_t> (Pncart) * Qncart * Rncart * Sncart;
 
                     double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
                     size_t delta;
@@ -1048,7 +1048,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     G->add(G->transpose());
                     Gpi->transform(C, G, Cocc);
                     Gpi->scale(0.5);
-                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
                 }
             } // End loop over A batches
 
@@ -1085,7 +1085,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         // Write some placeholder data to PSIO, to get the sizing right
         psio_address next_Gpi = PSIO_ZERO;
         for (int A = 0; A < 3 * natom; A++)
-            psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
+            psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_Gpi,&next_Gpi);
 
         for (int A = 0; A < max_A; A++) {
             // Just pass C1 quantities in; this object doesn't respect symmetry anyway
@@ -1104,7 +1104,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             }
             for (int a = 0; a < nA; a++) {
                 psio_address next_Sij= psio_get_address(PSIO_ZERO,(A + a) * (size_t) nocc * nocc * sizeof(double));
-                psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0],nocc*nocc*sizeof(double),next_Sij, &next_Sij);
+                psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0], static_cast<size_t> (nocc)*nocc*sizeof(double),next_Sij, &next_Sij);
                 C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
             }
 
@@ -1120,7 +1120,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,1.0,Up[0],nocc);
 
                 psio_address next_Gpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Gpi,&next_Gpi);
+                psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_Gpi,&next_Gpi);
             }
         }
     }
@@ -1138,12 +1138,12 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         psio_address next_Fpi = PSIO_ZERO;
 
         for (int A = 0; A < 3*natom; A++) {
-            psio_->read(PSIF_HESS,"Tpi^A",(char*)Fpip[0],nmo * nocc * sizeof(double),next_Tpi,&next_Tpi);
-            psio_->read(PSIF_HESS,"Vpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Vpi,&next_Vpi);
+            psio_->read(PSIF_HESS,"Tpi^A",(char*)Fpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
+            psio_->read(PSIF_HESS,"Vpi^A",(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
             Fpi->add(Tpi);
-            psio_->read(PSIF_HESS,"Gpi^A",(char*)Tpip[0],nmo * nocc * sizeof(double),next_Jpi,&next_Jpi);
+            psio_->read(PSIF_HESS,"Gpi^A",(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Jpi,&next_Jpi);
             Fpi->add(Tpi);
-            psio_->write(PSIF_HESS,"Fpi^A",(char*)Fpip[0],nmo * nocc * sizeof(double),next_Fpi,&next_Fpi);
+            psio_->write(PSIF_HESS,"Fpi^A",(char*)Fpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Fpi,&next_Fpi);
         }
     }
 
@@ -1161,16 +1161,16 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
         for (int A = 0; A < 3*natom; A++) {
             next_Fpi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
-            psio_->read(PSIF_HESS,"Fpi^A",(char*)Baip[0],nvir * nocc * sizeof(double),next_Fpi,&next_Fpi);
+            psio_->read(PSIF_HESS,"Fpi^A",(char*)Baip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Fpi,&next_Fpi);
             next_Spi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
-            psio_->read(PSIF_HESS,"Spi^A",(char*)Taip[0],nvir * nocc * sizeof(double),next_Spi,&next_Spi);
+            psio_->read(PSIF_HESS,"Spi^A",(char*)Taip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Spi,&next_Spi);
             for (int i = 0; i < nocc; i++)
                 C_DAXPY(nvir,-eop[i],&Taip[0][i],nocc,&Baip[0][i],nocc);
             next_G2pi = psio_get_address(PSIO_ZERO,sizeof(double)*(A * (size_t) nmo * nocc + nocc * nocc));
-            psio_->read(PSIF_HESS,"G2pi^A",(char*)Taip[0],nvir * nocc * sizeof(double),next_G2pi,&next_G2pi);
+            psio_->read(PSIF_HESS,"G2pi^A",(char*)Taip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_G2pi,&next_G2pi);
             Bai->add(Tai);
             Bai->scale(-1.0);
-            psio_->write(PSIF_HESS,"Bai^A",(char*)Baip[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
+            psio_->write(PSIF_HESS,"Bai^A",(char*)Baip[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Bai,&next_Bai);
         }
     }
 
@@ -1196,7 +1196,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
                 auto B = std::make_shared<Matrix>(ss.str(),nocc,nvir);
-                psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Bai,&next_Bai);
+                psio_->read(PSIF_HESS,"Bai^A",(char*)Tp[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Bai,&next_Bai);
                 double** Bp = B->pointer();
                 for (int i = 0; i < nocc; i++) {
                     C_DCOPY(nvir,&Tp[0][i],nocc,Bp[i],1);
@@ -1216,7 +1216,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 for (int i = 0; i < nocc; i++) {
                     C_DCOPY(nvir,Xp[i],1,&Tp[0][i],nocc);
                 }
-                psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
+                psio_->write(PSIF_HESS,"Uai^A",(char*)Tp[0], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Uai,&next_Uai);
             }
 
         }
@@ -1250,10 +1250,10 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         psio_address next_Upi = PSIO_ZERO;
 
         for (int A = 0; A < 3*natom; A++) {
-            psio_->read(PSIF_HESS,"Sij^A",(char*)Upqp[0],nocc * nocc * sizeof(double),next_Spi,&next_Spi);
+            psio_->read(PSIF_HESS,"Sij^A",(char*)Upqp[0], static_cast<size_t> (nocc) * nocc * sizeof(double),next_Spi,&next_Spi);
             C_DSCAL(nocc * (size_t) nocc,-0.5, Upqp[0], 1);
-            psio_->read(PSIF_HESS,"Uai^A",(char*)Upqp[nocc],nvir * nocc * sizeof(double),next_Uai,&next_Uai);
-            psio_->write(PSIF_HESS,"Upi^A",(char*)Upqp[0],nmo * nocc * sizeof(double),next_Upi,&next_Upi);
+            psio_->read(PSIF_HESS,"Uai^A",(char*)Upqp[nocc], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Uai,&next_Uai);
+            psio_->write(PSIF_HESS,"Upi^A",(char*)Upqp[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Upi,&next_Upi);
             pdip_grad[A][0] += 4*mu_x.vector_dot(Upi);
             pdip_grad[A][1] += 4*mu_y.vector_dot(Upi);
             pdip_grad[A][2] += 4*mu_z.vector_dot(Upi);
@@ -1292,7 +1292,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             // TODO: To get symmetry working, we need to add in machinery to symmetrize and take SALCs, similar to above.
             for (int a = 0; a < nA; a++) {
                 psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->read(PSIF_HESS,"Upi^A",(char*)Upip[0],nmo*nocc*sizeof(double),next_Upi,&next_Upi);
+                psio_->read(PSIF_HESS,"Upi^A",(char*)Upip[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_Upi,&next_Upi);
                 C_DGEMM('N','N',nso,nocc,nmo,1.0,Cp[0],nmo,Upip[0],nocc,0.0,R[a]->pointer()[0],nocc);
             }
 
@@ -1303,7 +1303,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 C_DGEMM('T','N',nso,nocc,nso,-1.0,K[a]->pointer()[0],nso,Cop[0],nocc,1.0,Tp[0],nocc);
                 C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
                 psio_address next_Qpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
-                psio_->write(PSIF_HESS,"Qpi^A",(char*)Up[0],nmo*nocc*sizeof(double),next_Qpi,&next_Qpi);
+                psio_->write(PSIF_HESS,"Qpi^A",(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_Qpi,&next_Qpi);
             }
         }
     }
@@ -1371,7 +1371,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             psio_->read(PSIF_HESS,"Spi^A",(char*)Tp[0],sizeof(double) * nA * npi,nextA,&junk);
             L->add(T);
             for (int i = 0; i < nocc; i++)
-                C_DSCAL(nA*nmo,eop[i],&Lp[0][i],nocc);
+                C_DSCAL(static_cast<size_t> (nA)*nmo,eop[i],&Lp[0][i],nocc);
             for (int B = 0; B < 3 * natom; B+=max_a) {
                 int nB = (B + max_a >= 3 * natom ? 3 * natom - B : max_a);
                 psio_address nextB = psio_get_address(PSIO_ZERO, B * npi * sizeof(double));
@@ -1393,7 +1393,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             psio_address nextA = psio_get_address(PSIO_ZERO, A * npi * sizeof(double));
             psio_->read(PSIF_HESS,"Spi^A",(char*)Lp[0],sizeof(double) * nA * npi,nextA,&nextA);
             for (int i = 0; i < nocc; i++)
-                C_DSCAL(nA*nmo,eop[i],&Lp[0][i],nocc);
+                C_DSCAL(static_cast<size_t> (nA)*nmo,eop[i],&Lp[0][i],nocc);
             for (int B = 0; B < 3 * natom; B+=max_a) {
                 int nB = (B + max_a >= 3 * natom ? 3 * natom - B : max_a);
                 psio_address nextB = psio_get_address(PSIO_ZERO, B * npi * sizeof(double));

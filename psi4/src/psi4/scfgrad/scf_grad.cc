@@ -413,7 +413,7 @@ SharedMatrix SCFDeriv::compute_hessian()
 
                 double perm = (P == Q ? 1.0 : 2.0);
 
-                size_t offset = nP*nQ;
+                size_t offset = static_cast<size_t> (nP)*nQ;
 #define DEBUGINTS 0
 
 #if DEBUGINTS
@@ -695,7 +695,7 @@ SharedMatrix SCFDeriv::compute_hessian()
                 int Qy = 3 * aQ + 1;
                 int Qz = 3 * aQ + 2;
 
-                size_t offset = nP*nQ;
+                size_t offset = static_cast<size_t> (nP)*nQ;
 
                 double perm = (P == Q ? 1.0 : 2.0);
 
@@ -868,7 +868,7 @@ SharedMatrix SCFDeriv::compute_hessian()
                 int Qy = 3 * aQ + 1;
                 int Qz = 3 * aQ + 2;
 
-                size_t offset = nP*nQ;
+                size_t offset = static_cast<size_t> (nP)*nQ;
 
                 double perm = (P == Q ? 1.0 : 2.0);
 
