@@ -1286,7 +1286,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         if cast is True:
             guessbasis = corresponding_basis(core.get_global_option('BASIS'), 'GUESS')[0]
             if guessbasis is None:
-                guessbasis = '3-21G'
+                guessbasis = '3-21G'  # guess of last resort
         else:
             guessbasis = cast
         core.set_global_option('BASIS', guessbasis)

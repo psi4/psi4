@@ -237,7 +237,7 @@ def load_basfam_other():
     basis_def2qzvpp.add_rifit('def2-QZVPP-RI')
     basis_def2qzvppd.add_rifit('def2-QZVPPD-RI')
 
-    basis_def2sv_p_.add_guess('def2-SV(P)')
+    # def2sv_p_ too small for add_guess
     basis_def2svp.add_guess('def2-SV(P)')
     basis_def2svpd.add_guess('def2-SV(P)')
     basis_def2tzvp.add_guess('def2-SV(P)')
@@ -356,7 +356,7 @@ def load_basfam_other():
     basis_augpcsseg2.add_guess('pcseg-0')
     basis_augpcsseg3.add_guess('pcseg-0')
     basis_augpcsseg4.add_guess('pcseg-0')
-    #basis_pcseg0.add_guess('pcseg-0')
+    # pcseg0 too small for add_guess
     basis_pcseg1.add_guess('pcseg-0')
     basis_pcseg2.add_guess('pcseg-0')
     basis_pcseg3.add_guess('pcseg-0')
@@ -394,6 +394,7 @@ def load_basfam_other():
     basis_minix.add_jfit('def2-universal-JFIT')
     basis_minix.add_jkfit('def2-universal-JKFIT')
     basis_minix.add_rifit('def2-SVP-RI')
+    # mixix too small for add_guess
     
     basisfamily_list.append(basis_minix)
     
@@ -425,8 +426,10 @@ def load_basfam_other():
 
     basis_sto3g.add_jkfit('def2-universal-JKFIT')
     basis_sto3g.add_rifit('def2-SVP-RIFIT')
+    # sto3g too small for add_guess
     basis_321g.add_jkfit('def2-universal-JKFIT')
     basis_321g.add_rifit('def2-SVP-RIFIT')
+    # 321g too small for add_guess
 
     basis_631g.add_jkfit('cc-pvdz-jkfit')
     basis_631g_d_.add_jkfit('cc-pvdz-jkfit')
@@ -438,6 +441,11 @@ def load_basfam_other():
     basis_631g_d_p_.add_rifit('cc-pvdz-ri')
     basis_631gs.add_rifit('cc-pvdz-ri')
     basis_631gss.add_rifit('cc-pvdz-ri')
+    basis_631g.add_guess('3-21g')
+    basis_631g_d_.add_guess('3-21g')
+    basis_631g_d_p_.add_guess('3-21g')
+    basis_631gs.add_guess('3-21g')
+    basis_631gss.add_guess('3-21g')
 
     basis_631pg.add_jkfit('heavy-aug-cc-pvdz-jkfit')
     basis_631pg_d_.add_jkfit('heavy-aug-cc-pvdz-jkfit')
@@ -449,6 +457,11 @@ def load_basfam_other():
     basis_631pg_d_p_.add_rifit('heavy-aug-cc-pvdz-ri')
     basis_631pgs.add_rifit('heavy-aug-cc-pvdz-ri')
     basis_631pgss.add_rifit('heavy-aug-cc-pvdz-ri')
+    basis_631pg.add_guess('3-21g')
+    basis_631pg_d_.add_guess('3-21g')
+    basis_631pg_d_p_.add_guess('3-21g')
+    basis_631pgs.add_guess('3-21g')
+    basis_631pgss.add_guess('3-21g')
 
     basis_631ppg.add_jkfit('aug-cc-pvdz-jkfit')
     basis_631ppg_d_.add_jkfit('aug-cc-pvdz-jkfit')
@@ -460,6 +473,11 @@ def load_basfam_other():
     basis_631ppg_d_p_.add_rifit('aug-cc-pvdz-ri')
     basis_631ppgs.add_rifit('aug-cc-pvdz-ri')
     basis_631ppgss.add_rifit('aug-cc-pvdz-ri')
+    basis_631ppg.add_guess('3-21g')
+    basis_631ppg_d_.add_guess('3-21g')
+    basis_631ppg_d_p_.add_guess('3-21g')
+    basis_631ppgs.add_guess('3-21g')
+    basis_631ppgss.add_guess('3-21g')
 
     basis_6311g.add_jkfit('cc-pvtz-jkfit')
     basis_6311g_d_.add_jkfit('cc-pvtz-jkfit')
@@ -497,6 +515,24 @@ def load_basfam_other():
     basis_6311g_3df_2pd_.add_rifit('cc-pvtz-ri')
     basis_6311g_3df_3pd_.add_rifit('cc-pvtz-ri')
 
+    basis_6311g.add_guess('3-21g')
+    basis_6311g_d_.add_guess('3-21g')
+    basis_6311g_d_p_.add_guess('3-21g')
+    basis_6311gs.add_guess('3-21g')
+    basis_6311gss.add_guess('3-21g')
+    basis_6311g_2d_.add_guess('3-21g')
+    basis_6311g_2d_p_.add_guess('3-21g')
+    basis_6311g_2d_2p_.add_guess('3-21g')
+    basis_6311g_2df_.add_guess('3-21g')
+    basis_6311g_2df_p_.add_guess('3-21g')
+    basis_6311g_2df_2p_.add_guess('3-21g')
+    basis_6311g_2df_2pd_.add_guess('3-21g')
+    basis_6311g_3df_.add_guess('3-21g')
+    basis_6311g_3df_p_.add_guess('3-21g')
+    basis_6311g_3df_2p_.add_guess('3-21g')
+    basis_6311g_3df_2pd_.add_guess('3-21g')
+    basis_6311g_3df_3pd_.add_guess('3-21g')
+
     basis_6311pg.add_jkfit('heavy-aug-cc-pvtz-jkfit')
     basis_6311pg_d_.add_jkfit('heavy-aug-cc-pvtz-jkfit')
     basis_6311pg_d_p_.add_jkfit('heavy-aug-cc-pvtz-jkfit')
@@ -533,6 +569,24 @@ def load_basfam_other():
     basis_6311pg_3df_2pd_.add_rifit('heavy-aug-cc-pvtz-ri')
     basis_6311pg_3df_3pd_.add_rifit('heavy-aug-cc-pvtz-ri')
 
+    basis_6311pg.add_guess('3-21g')
+    basis_6311pg_d_.add_guess('3-21g')
+    basis_6311pg_d_p_.add_guess('3-21g')
+    basis_6311pgs.add_guess('3-21g')
+    basis_6311pgss.add_guess('3-21g')
+    basis_6311pg_2d_.add_guess('3-21g')
+    basis_6311pg_2d_p_.add_guess('3-21g')
+    basis_6311pg_2d_2p_.add_guess('3-21g')
+    basis_6311pg_2df_.add_guess('3-21g')
+    basis_6311pg_2df_p_.add_guess('3-21g')
+    basis_6311pg_2df_2p_.add_guess('3-21g')
+    basis_6311pg_2df_2pd_.add_guess('3-21g')
+    basis_6311pg_3df_.add_guess('3-21g')
+    basis_6311pg_3df_p_.add_guess('3-21g')
+    basis_6311pg_3df_2p_.add_guess('3-21g')
+    basis_6311pg_3df_2pd_.add_guess('3-21g')
+    basis_6311pg_3df_3pd_.add_guess('3-21g')
+
     basis_6311ppg.add_jkfit('aug-cc-pvtz-jkfit')
     basis_6311ppg_d_.add_jkfit('aug-cc-pvtz-jkfit')
     basis_6311ppg_d_p_.add_jkfit('aug-cc-pvtz-jkfit')
@@ -568,6 +622,24 @@ def load_basfam_other():
     basis_6311ppg_3df_2p_.add_rifit('aug-cc-pvtz-ri')
     basis_6311ppg_3df_2pd_.add_rifit('aug-cc-pvtz-ri')
     basis_6311ppg_3df_3pd_.add_rifit('aug-cc-pvtz-ri')
+
+    basis_6311ppg.add_guess('3-21g')
+    basis_6311ppg_d_.add_guess('3-21g')
+    basis_6311ppg_d_p_.add_guess('3-21g')
+    basis_6311ppgs.add_guess('3-21g')
+    basis_6311ppgss.add_guess('3-21g')
+    basis_6311ppg_2d_.add_guess('3-21g')
+    basis_6311ppg_2d_p_.add_guess('3-21g')
+    basis_6311ppg_2d_2p_.add_guess('3-21g')
+    basis_6311ppg_2df_.add_guess('3-21g')
+    basis_6311ppg_2df_p_.add_guess('3-21g')
+    basis_6311ppg_2df_2p_.add_guess('3-21g')
+    basis_6311ppg_2df_2pd_.add_guess('3-21g')
+    basis_6311ppg_3df_.add_guess('3-21g')
+    basis_6311ppg_3df_p_.add_guess('3-21g')
+    basis_6311ppg_3df_2p_.add_guess('3-21g')
+    basis_6311ppg_3df_2pd_.add_guess('3-21g')
+    basis_6311ppg_3df_3pd_.add_guess('3-21g')
 
     # Petersson's nZaPa-NR basis sets
     basis_2zapa_nr = BasisFamily('2zapa-nr',zeta=2)
@@ -632,6 +704,10 @@ def load_basfam_other():
     basis_cc_pvdz_f12.add_rifit('cc-pvtz-ri')
     basis_cc_pvtz_f12.add_rifit('cc-pvqz-ri')
     basis_cc_pvqz_f12.add_rifit('cc-pv5z-ri')
+
+    basis_cc_pvdz_f12.add_guess('pcseg-0')
+    basis_cc_pvtz_f12.add_guess('pcseg-0')
+    basis_cc_pvqz_f12.add_guess('pcseg-0')
 
     basisfamily_list.append(basis_cc_pvqz_f12)
     basisfamily_list.append(basis_cc_pvtz_f12)

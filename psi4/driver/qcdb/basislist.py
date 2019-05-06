@@ -144,12 +144,12 @@ class BasisFamily(object):
         """
         self.ridef = sanitize_basisname(fit)
 
-    def add_guess(self, fit):
-        """Function to add basis *fit* as associated cast-up orbital basis
+    def add_guess(self, aux):
+        """Function to add basis *aux* as associated cast-up orbital basis
         member *guess* to a BasisFamily object.
 
         """
-        self.guess = sanitize_basisname(fit)
+        self.guess = sanitize_basisname(aux)
 
 
 def sanitize_basisname(name):

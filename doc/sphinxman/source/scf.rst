@@ -506,7 +506,7 @@ These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
 casting up to the true basis. This can be done by adding
 |scf__basis_guess| = SMALL_BASIS to the options list. We recommend the
-3-21G basis for the small basis due to its efficient mix of flexibility and
+3-21G or pcseg-0 basis for the small basis due to its efficient mix of flexibility and
 compactness. An example of performing an RHF solution of water by SAD guessing
 in a 3-21G basis and then casting up to cc-pVTZ is shown below::
 
