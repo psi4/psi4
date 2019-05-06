@@ -99,12 +99,12 @@ void local_init() {
         /* Virtual Part */
         local.pairdom_len = init_int_array(nocc * nocc);
         local.pairdom_nrlen = init_int_array(nocc * nocc);
-        psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, nocc * nocc * sizeof(int));
+        psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, sizeof(int) * nocc * nocc);
         psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *)local.pairdom_nrlen,
-                        nocc * nocc * sizeof(int));
-        local.W = (double ***)malloc(nocc * nocc * sizeof(double **));
-        local.V = (double ***)malloc(nocc * nocc * sizeof(double **));
-        local.eps_vir = (double **)malloc(nocc * nocc * sizeof(double *));
+                        sizeof(int) * nocc * nocc);
+        local.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+        local.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
+        local.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
         next = PSIO_ZERO;
         for (ij = 0; ij < nocc * nocc; ij++) {
             local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
@@ -115,13 +115,13 @@ void local_init() {
         for (ij = 0; ij < nocc * nocc; ij++) {
             local.V[ij] = block_matrix(nvir, local.pairdom_len[ij]);
             psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local.V[ij][0],
-                      nvir * local.pairdom_len[ij] * sizeof(double), next, &next);
+                      sizeof(double) * nvir * local.pairdom_len[ij], next, &next);
         }
         next = PSIO_ZERO;
         for (ij = 0; ij < nocc * nocc; ij++) {
             local.W[ij] = block_matrix(local.pairdom_len[ij], local.pairdom_nrlen[ij]);
             psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local.W[ij][0],
-                      local.pairdom_len[ij] * local.pairdom_nrlen[ij] * sizeof(double), next, &next);
+                      sizeof(double) * local.pairdom_len[ij] * local.pairdom_nrlen[ij], next, &next);
         }
 
         global_dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
@@ -186,14 +186,14 @@ void local_filter_T1(dpdfile2 *T1) {
     local.pairdom_len = init_int_array(nocc * nocc);
     local.pairdom_nrlen = init_int_array(nocc * nocc);
     local.eps_occ = init_array(nocc);
-    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, nocc * nocc * sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *)local.pairdom_nrlen,
-                    nocc * nocc * sizeof(int));
+                    sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local.eps_occ, nocc * sizeof(double));
 
-    local.W = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local.V = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local.eps_vir = (double **)malloc(nocc * nocc * sizeof(double *));
+    local.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
     next = PSIO_ZERO;
     for (ij = 0; ij < nocc * nocc; ij++) {
         local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
@@ -204,13 +204,13 @@ void local_filter_T1(dpdfile2 *T1) {
     for (ij = 0; ij < nocc * nocc; ij++) {
         local.V[ij] = block_matrix(nvir, local.pairdom_len[ij]);
         psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local.V[ij][0],
-                  nvir * local.pairdom_len[ij] * sizeof(double), next, &next);
+                  sizeof(double) * nvir * local.pairdom_len[ij], next, &next);
     }
     next = PSIO_ZERO;
     for (ij = 0; ij < nocc * nocc; ij++) {
         local.W[ij] = block_matrix(local.pairdom_len[ij], local.pairdom_nrlen[ij]);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local.W[ij][0],
-                  local.pairdom_len[ij] * local.pairdom_nrlen[ij] * sizeof(double), next, &next);
+                  sizeof(double) * local.pairdom_len[ij] * local.pairdom_nrlen[ij], next, &next);
     }
 
     global_dpd_->file2_mat_init(T1);
@@ -282,14 +282,14 @@ void local_filter_T2(dpdbuf4 *T2) {
     local.pairdom_nrlen = init_int_array(nocc * nocc);
     local.eps_occ = init_array(nocc);
     local.weak_pairs = init_int_array(nocc * nocc);
-    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, nocc * nocc * sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *)local.pairdom_nrlen,
-                    nocc * nocc * sizeof(int));
+                    sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local.eps_occ, nocc * sizeof(double));
-    psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *)local.weak_pairs, nocc * nocc * sizeof(int));
-    local.W = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local.V = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local.eps_vir = (double **)malloc(nocc * nocc * sizeof(double *));
+    psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *)local.weak_pairs, sizeof(int) * nocc * nocc);
+    local.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
     next = PSIO_ZERO;
     for (ij = 0; ij < nocc * nocc; ij++) {
         local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
@@ -300,13 +300,13 @@ void local_filter_T2(dpdbuf4 *T2) {
     for (ij = 0; ij < nocc * nocc; ij++) {
         local.V[ij] = block_matrix(nvir, local.pairdom_len[ij]);
         psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local.V[ij][0],
-                  nvir * local.pairdom_len[ij] * sizeof(double), next, &next);
+                  sizeof(double) * nvir * local.pairdom_len[ij], next, &next);
     }
     next = PSIO_ZERO;
     for (ij = 0; ij < nocc * nocc; ij++) {
         local.W[ij] = block_matrix(local.pairdom_len[ij], local.pairdom_nrlen[ij]);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local.W[ij][0],
-                  local.pairdom_len[ij] * local.pairdom_nrlen[ij] * sizeof(double), next, &next);
+                  sizeof(double) * local.pairdom_len[ij] * local.pairdom_nrlen[ij], next, &next);
     }
 
     /* Grab the MO-basis T2's */
@@ -353,7 +353,7 @@ void local_filter_T2(dpdbuf4 *T2) {
                 C_DGEMM('n', 't', nvir, nvir, local.pairdom_len[ij], 1.0, &(X2[0][0]), nso, &(local.V[ij][0][0]),
                         local.pairdom_len[ij], 0.0, &(T2->matrix[0][ij][0]), nvir);
             } else /* This must be a neglected weak pair; force it to zero */
-                memset((void *)T2->matrix[0][ij], 0, nvir * nvir * sizeof(double));
+                memset((void *)T2->matrix[0][ij], 0, sizeof(double) * nvir * nvir);
         }
     }
     free_block(X1);
