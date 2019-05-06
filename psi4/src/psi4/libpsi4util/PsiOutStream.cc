@@ -69,12 +69,14 @@ void PsiOutStream::Printf(const char* format, ...) {
 
     if (left < 0) {
         // Encoding error?!?
+        va_end(args);
         throw PSIEXCEPTION("PsiOutStream: vsnprintf encoding error!");
     } else if (left >= buffer_.size()) {
         // Buffer was too small! Try again
         std::vector<char> tmp_buffer(left + 1);
         left = vsnprintf(tmp_buffer.data(), left + 1, format, args);
         if (left < 0) {
+            va_end(args);
             throw PSIEXCEPTION("PsiOutStream: vsnprintf encoding error!");
         }
     }
