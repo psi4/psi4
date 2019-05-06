@@ -84,7 +84,7 @@ double ADCWfn::rhf_init_tensors() {
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "MO Ints 2 V1234 - V1243");
     global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "MO Ints V1243)");
+                           "MO Ints V1243");
     global_dpd_->buf4_axpy(&V, &K, -1);
     global_dpd_->buf4_close(&V);
     global_dpd_->buf4_close(&K);
