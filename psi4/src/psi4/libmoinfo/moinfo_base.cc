@@ -62,11 +62,10 @@ void MOInfoBase::startup() {
     wfn_sym = 0;
 
     guess_occupation = true;
-    PSI_nullptr(ioff);
     compute_ioff();
 }
 
-void MOInfoBase::cleanup() { PSI_DELETE_ARRAY(ioff); }
+void MOInfoBase::cleanup() {} 
 
 void MOInfoBase::read_data() {
     nirreps = ref_wfn.nirrep();
@@ -93,7 +92,7 @@ void MOInfoBase::compute_number_of_electrons() {
 }
 
 void MOInfoBase::compute_ioff() {
-    ioff = new size_t[IOFF];
+    ioff.resize(IOFF);
     ioff[0] = 0;
     for (size_t i = 1; i < IOFF; i++) ioff[i] = ioff[i - 1] + i;
 }
