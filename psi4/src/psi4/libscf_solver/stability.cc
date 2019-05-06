@@ -196,7 +196,7 @@ double UStab::compute_energy() {
 
     if (debug_ > 1) {
         for (size_t i = 0; i < eval_temp.size(); ++i) {
-            outfile->Printf("Eigenvalue %4i: %.12f\n", i, vals_[i]);
+            outfile->Printf("Eigenvalue %4lu: %.12f\n", i, vals_[i]);
         }
     }
 

@@ -760,8 +760,7 @@ void HF::form_Shalf() {
             // descending order
             int start_index = 0;
             for (int i = 0; i < dimpi[h]; ++i) {
-                if (S_cutoff < eigval->get(h, i)) {
-                } else {
+                if (S_cutoff >= eigval->get(h, i)) {
                     start_index++;
                 }
             }
