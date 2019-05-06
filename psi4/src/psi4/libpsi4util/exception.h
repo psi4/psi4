@@ -102,7 +102,7 @@ class PSI_API PsiException : public std::runtime_error {
     * Accessor method
     * @return A string description of line and file that threw exception
     */
-    const char *location() const noexcept;
+    std::string location() const noexcept;
 
     /**
     * Accessor method

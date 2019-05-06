@@ -101,11 +101,11 @@ const char *PsiException::file() const noexcept { return file_; }
 
 int PsiException::line() const noexcept { return line_; }
 
-const char *PsiException::location() const noexcept {
+std::string PsiException::location() const noexcept {
     std::stringstream sstr;
     sstr << "file: " << file_ << "\n";
     sstr << "line: " << line_;
-    return sstr.str().c_str();
+    return sstr.str();
 }
 
 PsiException::~PsiException() noexcept {}
