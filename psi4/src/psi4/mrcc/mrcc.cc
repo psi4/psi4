@@ -629,6 +629,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     if (restricted) {
         load_restricted(wave, ccdensities, options.get_double("INTS_TOLERANCE"), active_mopi, ints);
     } else {
+        free(ccdensities);
         throw PSIEXCEPTION("MRCC: Load unrestricted does not work.");
     }
     //    else
