@@ -64,7 +64,7 @@ void mrccsd(SharedWavefunction ref_wfn, Options& options) {
 
     options.print();
     // Initialize the appropriate updater
-    Updater* updater;
+    Updater* updater = nullptr;
     //  if(options_get_str("CORR_ANSATZ")=="SR")
     //    updater = static_cast<Updater*>(new MkUpdater());
     if (options.get_str("CORR_ANSATZ") == "MK") updater = dynamic_cast<Updater*>(new MkUpdater(options));
