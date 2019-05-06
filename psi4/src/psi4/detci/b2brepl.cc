@@ -89,7 +89,8 @@ void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij, int **Jridx
     int J_n1, J_n2, J_n3, J_n4;
     int D_n1, D_n2, D_n3, D_n4;
     int Ilist_ir, Jlist_ir;
-    int nel, Icode, Jcode, ijsym, up, down;
+    int nel, Icode, Jcode, ijsym;
+    int up = 0, down = 0;
     struct level *subgr_head;
 
     /* zero out Jcnt so there's no mistake */
