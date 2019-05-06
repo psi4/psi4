@@ -112,6 +112,8 @@ void DCFTSolver::init() {
     avir_off_ = new int[nirrep_];
     double ocount = naoccpi_[0];
     double vcount = navirpi_[0];
+    aocc_off_[0] = 0;
+    avir_off_[0] = 0;
     for (int h = 1; h < nirrep_; h++) {
         aocc_off_[h] = ocount;
         ocount += naoccpi_[h];
@@ -123,6 +125,8 @@ void DCFTSolver::init() {
     bvir_off_ = new int[nirrep_];
     ocount = nboccpi_[0];
     vcount = nbvirpi_[0];
+    bocc_off_[0] = 0;
+    bvir_off_[0] = 0;
     for (int h = 1; h < nirrep_; h++) {
         bocc_off_[h] = ocount;
         ocount += nboccpi_[h];
