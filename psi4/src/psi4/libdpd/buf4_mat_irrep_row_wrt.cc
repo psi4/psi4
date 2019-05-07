@@ -41,7 +41,8 @@
 namespace psi {
 
 int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq) {
-    int method, filerow, all_buf_irrep;
+    int method = 0;
+    int filerow, all_buf_irrep;
     int rs;           /* dpdfile row and column indices */
     int p, q, r, s;   /* orbital indices */
     int bufpq, bufrs; /* Input dpdbuf row and column indices */

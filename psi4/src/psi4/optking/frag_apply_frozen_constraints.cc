@@ -321,7 +321,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
 template <typename T>
 T StringToNumber ( const string & Text ) {
   std::stringstream ss(Text);
-  T result;
+  T result = -1;
   return ss >> result ? result : -1;
 }
 

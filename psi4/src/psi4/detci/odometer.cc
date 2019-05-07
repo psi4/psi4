@@ -243,7 +243,7 @@ unsigned Odometer::boundscheck() {
 }
 
 #ifdef STANDALONE
-main() {
+int main() {
     Odometer od;
     int maxvals[] = {7, 6, 5};
     int minvals[] = {3, 2, 1};
@@ -260,6 +260,7 @@ main() {
         od.increment_lex();
     }
     od.print();
+    return 0;
 }
 #endif
 }

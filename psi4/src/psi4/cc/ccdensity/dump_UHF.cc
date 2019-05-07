@@ -57,22 +57,15 @@ namespace ccdensity {
 ** integrals.
 */
 
-#define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
-#define IOFF_MAX 32641
+#define INDEX(i, j) ((i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i))
 
 void dump_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB, const struct RHO_Params& rho_params) {
     int nirreps, nmo, h, row, col;
     int *qt_aocc, *qt_avir;
     int *qt_bocc, *qt_bvir;
-    int *ioff;
     int p, q, r, s, P, Q, R, S, pr, qs;
     double value;
     dpdbuf4 G;
-
-    /* initialize the ioff array */
-    ioff = init_int_array(IOFF_MAX);
-    ioff[0] = 0;
-    for (p = 1; p < IOFF_MAX; p++) ioff[p] = ioff[p - 1] + p;
 
     qt_aocc = moinfo.qt_aocc;
     qt_avir = moinfo.qt_avir;
@@ -506,8 +499,6 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
         }
         global_dpd_->buf4_close(&G);
     }
-
-    free(ioff);
 }
 }
 }  // namespace psi

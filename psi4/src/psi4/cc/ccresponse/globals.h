@@ -45,7 +45,6 @@ namespace ccresponse {
 #define EXTERN
 #endif
 
-EXTERN int *ioff;
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 EXTERN struct Local local;

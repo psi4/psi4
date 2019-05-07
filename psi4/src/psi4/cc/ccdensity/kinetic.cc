@@ -48,22 +48,16 @@
 namespace psi {
 namespace ccdensity {
 
-#define IOFF_MAX 32641
-#define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
+#define INDEX(i, j) ((i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i))
 
 void kinetic(std::shared_ptr<Wavefunction> wfn) {
     int nmo, noei, stat, i, I, h, j, nclsd;
-    int *order, *doccpi, *ioff;
+    int *order, *doccpi;
     double junk, tcorr, vcorr, tref, vref, ttot, vtot;
     double *s, *t, **T, **S, **scf_pitzer, **scf_qt, **X;
 
     /* RHF/ROHF only for now */
     if (params.ref == 2) return;
-
-    /*** Build ioff ***/
-    ioff = init_int_array(IOFF_MAX);
-    ioff[0] = 0;
-    for (i = 1; i < IOFF_MAX; i++) ioff[i] = ioff[i - 1] + i;
 
     nmo = moinfo.nmo;
     noei = nmo * (nmo + 1) / 2;
@@ -143,7 +137,6 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     free_block(scf_pitzer);
     free(doccpi);
     free(order);
-    free(ioff);
 }
 }
 }  // namespace psi

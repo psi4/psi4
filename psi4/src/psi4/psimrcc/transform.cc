@@ -65,7 +65,6 @@ CCTransform::CCTransform() : fraction_of_memory_for_presorting(0.75) {
     tei_mo_indexing = blas->get_index("[n>=n]");
     tei_so_indexing = blas->get_index("[s>=s]");
     oei_so_indexing = blas->get_index("[s]");
-    ioff = moinfo->get_ioff();
     first_irrep_in_core = 0;
     last_irrep_in_core = 0;
     s_so = nullptr;
