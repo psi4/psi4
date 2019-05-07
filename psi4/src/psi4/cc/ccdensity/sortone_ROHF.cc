@@ -59,7 +59,7 @@ namespace ccdensity {
 ** TDC, 1/03
 */
 
-void sortone_ROHF(struct RHO_Params rho_params) {
+void sortone_ROHF(const struct RHO_Params& rho_params) {
     int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
     int row, col, i, j, I, J, a, b, A, B, p, q;
     int *occpi, *virtpi, *occ_off, *vir_off;

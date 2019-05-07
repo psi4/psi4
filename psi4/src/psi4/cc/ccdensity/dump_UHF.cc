@@ -60,7 +60,7 @@ namespace ccdensity {
 #define INDEX(i, j) ((i > j) ? (ioff[(i)] + (j)) : (ioff[(j)] + (i)))
 #define IOFF_MAX 32641
 
-void dump_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB, struct RHO_Params rho_params) {
+void dump_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB, const struct RHO_Params& rho_params) {
     int nirreps, nmo, h, row, col;
     int *qt_aocc, *qt_avir;
     int *qt_bocc, *qt_bvir;

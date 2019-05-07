@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void rtdensity(struct TD_Params S) {
+void rtdensity(const struct TD_Params& S) {
     dpdfile2 D, T1, L1, Z;
     dpdbuf4 T2, L2;
 

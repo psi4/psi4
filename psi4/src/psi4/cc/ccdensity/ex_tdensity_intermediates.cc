@@ -71,7 +71,7 @@ namespace ccdensity {
 /* LT_OO = LT1_OO + LT2_OO */
 /* LT_oo = LT1_oo + LT2_oo */
 
-void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U) {
+void ex_tdensity_intermediates(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 L1, R1, T1, I, LR1, LR2, LT1, LT2;
     dpdbuf4 L2, T2, R2;
     int rohf = 0;

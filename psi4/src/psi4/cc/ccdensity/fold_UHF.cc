@@ -67,7 +67,7 @@ namespace ccdensity {
 ** G'mpmr = Dpr + Gmpmr
 ** */
 
-void fold_UHF(struct RHO_Params rho_params) {
+void fold_UHF(const struct RHO_Params& rho_params) {
     int h, nirreps;
     int i, j, k, l, m, a, b;
     int I, J, K, L, M, A, B;

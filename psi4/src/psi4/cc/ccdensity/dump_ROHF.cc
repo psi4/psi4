@@ -66,7 +66,7 @@ namespace ccdensity {
 ** I really need to give an example of this problem using specific
 ** elements of GIJKA so that the code below will be clearer.*/
 
-void dump_ROHF(struct iwlbuf *OutBuf, struct RHO_Params rho_params) {
+void dump_ROHF(struct iwlbuf *OutBuf, const struct RHO_Params& rho_params) {
     int nirreps, nmo, nfzv;
     int *qt_occ, *qt_vir;
     int h, row, col, p, q, r, s;

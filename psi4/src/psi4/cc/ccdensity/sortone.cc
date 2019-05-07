@@ -39,11 +39,11 @@
 namespace psi {
 namespace ccdensity {
 
-void sortone_RHF(struct RHO_Params rho_params);
-void sortone_ROHF(struct RHO_Params rho_params);
-void sortone_UHF(struct RHO_Params rho_params);
+void sortone_RHF(const struct RHO_Params& rho_params);
+void sortone_ROHF(const struct RHO_Params& rho_params);
+void sortone_UHF(const struct RHO_Params& rho_params);
 
-void sortone(struct RHO_Params rho_params) {
+void sortone(const struct RHO_Params& rho_params) {
     if (params.ref == 0)
         sortone_RHF(rho_params);
     else if (params.ref == 1)

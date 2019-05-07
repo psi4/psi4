@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCDENSITY_PARAMS_H
+#define CCDENSITY_PARAMS_H
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here
@@ -150,3 +153,5 @@ struct XTD_Params {
 
 }  // namespace ccdensity
 }  // namespace psi
+
+#endif

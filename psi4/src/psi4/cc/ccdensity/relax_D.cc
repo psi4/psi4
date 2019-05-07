@@ -49,7 +49,7 @@ namespace ccdensity {
 **
 ** */
 
-void relax_D(struct RHO_Params rho_params) {
+void relax_D(const struct RHO_Params& rho_params) {
     dpdfile2 D1, D2, I1, I2;
 
     if (params.ref == 0) {

@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCDENSITY_FROZEN_H
+#define CCDENSITY_FROZEN_H
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here
@@ -70,3 +73,5 @@ struct Frozen {
 
 }  // namespace ccdensity
 }  // namespace psi
+
+#endif
