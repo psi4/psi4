@@ -1,6 +1,6 @@
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
-pybind11_add_module(core MODULE NO_EXTRAS core.cc)
+pybind11_add_module(core SHARED NO_EXTRAS core.cc)
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
