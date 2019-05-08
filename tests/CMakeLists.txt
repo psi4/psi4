@@ -265,4 +265,4 @@ if(ENABLE_PLUGIN_TESTING)
 endif()
 
 # pytest regime
-add_subdirectory(pytest)
+add_subdirectory(pytests)
