@@ -28,23 +28,30 @@
 
 import os
 import atexit
-import shutil
 import datetime
+from typing import Union
+
+from qcelemental.util import which, which_import
 
 from . import core
 
 # Numpy place holder for files and cleanup
 numpy_files = []
+
+
 def register_numpy_file(filename):
     if not filename.endswith('.npy'): filename += '.npy'
     if filename not in numpy_files:
         numpy_files.append(filename)
 
+
 def clean_numpy_files():
     for nfile in numpy_files:
         os.unlink(nfile)
 
+
 atexit.register(clean_numpy_files)
+
 
 def exit_printing(start_time=None):
     """Prints the exit time and status.
@@ -60,23 +67,24 @@ def exit_printing(start_time=None):
  
     """
     end_time = datetime.datetime.now()
-    core.print_out( "\n    Psi4 stopped on: {}".format(end_time.strftime('%A, %d %B %Y %I:%M%p')))
+    core.print_out("\n    Psi4 stopped on: {}".format(end_time.strftime('%A, %d %B %Y %I:%M%p')))
     if start_time is not None:
         run_time = end_time - start_time
         run_time = str(run_time).split('.')
         run_time = run_time[0] + '.' + run_time[1][:2]
-        core.print_out( "\n    Psi4 wall time for execution: {}\n".format(run_time))
+        core.print_out("\n    Psi4 wall time for execution: {}\n".format(run_time))
     if _success_flag_:
-        core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
+        core.print_out("\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
     else:
-        core.print_out( "\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
-        core.print_out( "*** Resources and help at github.com/psi4/psi4.\n")
+        core.print_out("\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
+        core.print_out("*** Resources and help at github.com/psi4/psi4.\n")
+
 
 _success_flag_ = False
 
-
 # Working directory
 _input_dir_ = os.getcwd()
+
 
 def get_input_directory():
     return _input_dir_
@@ -90,53 +98,50 @@ def _CMake_to_Py_boolean(cmakevar):
         return False
 
 
-def _psi4_which(command, return_bool=False):
-    # environment is $PSIPATH:$PATH, less any None values
-    lenv = {'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
-                    ':' + os.environ.get('PATH')}
-    lenv = {k: v for k, v in lenv.items() if v is not None}
+def psi4_which(command, *, return_bool: bool = False, raise_error: bool = False,
+               raise_msg: str = None) -> Union[bool, None, str]:
+    """Test to see if a command is available in Psi4 search path.
 
-    ans = shutil.which(command, mode=os.F_OK | os.X_OK, path=lenv['PATH'])
+    Returns
+    -------
+    str or None
+        By default, returns command path if command found or `None` if not.
+        Environment is $PSIPATH:$PATH, less any None values.
+    bool
+        When `return_bool=True`, returns whether or not found.
 
-    if return_bool:
-        return bool(ans)
-    else:
-        return ans
+    Raises
+    ------
+    ModuleNotFoundError
+        When `raises_error=True` and command not found.
 
+    """
+    lenv = (os.pathsep.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(os.pathsep) if x != '']) +
+            os.pathsep + os.environ.get('PATH', ''))
 
-def _plugin_import(plug):
-    import sys
-    if sys.version_info >= (3, 4):
-        from importlib import util
-        plug_spec = util.find_spec(plug)
-    else:
-        import pkgutil
-        plug_spec = pkgutil.find_loader(plug)
-    if plug_spec is None:
-        return False
-    else:
-        return True
+    return which(command=command, return_bool=return_bool, raise_error=raise_error, raise_msg=raise_msg, env=lenv)
 
 
 _addons_ = {
     "ambit": _CMake_to_Py_boolean("@ENABLE_ambit@"),
     "chemps2": _CMake_to_Py_boolean("@ENABLE_CheMPS2@"),
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
-    "libefp": _plugin_import("pylibefp"),
+    "libefp": which_import("pylibefp", return_bool=True),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
-    "dftd3": _psi4_which("dftd3", return_bool=True),
-    "cfour": _psi4_which("xcfour", return_bool=True),
-    "mrcc": _psi4_which("dmrcc", return_bool=True),
-    "gcp": _psi4_which("gcp", return_bool=True),
-    "v2rdm_casscf": _plugin_import("v2rdm_casscf"),
-    "gpu_dfcc": _plugin_import("gpu_dfcc"),
-    "forte": _plugin_import("forte"),
-    "snsmp2": _plugin_import("snsmp2"),
-    "resp": _plugin_import("resp"),
+    "dftd3": psi4_which("dftd3", return_bool=True),
+    "cfour": psi4_which("xcfour", return_bool=True),
+    "mrcc": psi4_which("dmrcc", return_bool=True),
+    "gcp": psi4_which("gcp", return_bool=True),
+    "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
+    "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
+    "forte": which_import("forte", return_bool=True),
+    "snsmp2": which_import("snsmp2", return_bool=True),
+    "resp": which_import("resp", return_bool=True),
 }
+
 
 def addons(request=None):
     """Returns boolean of whether Add-On *request* is available to Psi4,
