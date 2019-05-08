@@ -4046,10 +4046,14 @@ def run_sapt(name, **kwargs):
     core.print_out('\n')
 
     # Compute dimer wavefunction
+    
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
+    core.timer_on("SAPT: Dimer SCF")
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+    core.timer_off("SAPT: Dimer SCF")
+
     if do_delta_mp2:
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
@@ -4057,6 +4061,7 @@ def run_sapt(name, **kwargs):
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
+    
     # Compute Monomer A wavefunction
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.IO.change_file_namespace(97, 'dimer', 'monomerA')
@@ -4065,7 +4070,11 @@ def run_sapt(name, **kwargs):
     core.print_out('\n')
     p4util.banner('Monomer A HF')
     core.print_out('\n')
+    
+    core.timer_on("SAPT: Monomer A SCF")
     monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
+    core.timer_off("SAPT: Monomer A SCF")
+
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerA_wfn, **kwargs)
         mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
@@ -4077,7 +4086,10 @@ def run_sapt(name, **kwargs):
     core.print_out('\n')
     p4util.banner('Monomer B HF')
     core.print_out('\n')
+
+    core.timer_on("SAPT: Monomer B SCF")
     monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
+    core.timer_off("SAPT: Monomer B SCF")
 
     # Delta MP2
     if do_delta_mp2:
