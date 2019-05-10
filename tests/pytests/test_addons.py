@@ -1,11 +1,12 @@
-import json
-import psi4
 import pytest
+from .addons import hardware_nvidia_gpu, using_dftd3, using_gcp
 
-from addons import *
+import json
 
 import qcengine as qcng
 from qcengine.testing import using_mp2d
+
+import psi4
 
 pytestmark = pytest.mark.quick
 

@@ -1,8 +1,8 @@
 import pytest
+from .utils import *
+from .addons import using_dftd3
 
-from utils import *
-from addons import *
-
+import psi4
 
 @using_dftd3
 def test_dftd3_dft_grad_lr3():

@@ -3,9 +3,12 @@ This is a simple script that verifies several ways of accessing numpy arrays
 and ensures that their memory is properly cleaned.
 """
 
-from addons import *
-import psi4
+import pytest
+from .addons import using_memory_profiler
+
 import numpy as np
+
+import psi4
 
 pytestmark = pytest.mark.quick
 

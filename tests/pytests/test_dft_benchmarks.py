@@ -1,8 +1,8 @@
 import numpy as np
 
 import pytest
-from utils import *
-from addons import *
+from .utils import *
+from .addons import using_dftd3
 
 import psi4
 

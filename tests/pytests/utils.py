@@ -5,7 +5,12 @@ pp = pprint.PrettyPrinter(width=120)
 import psi4
 from psi4.driver import qcdb
 
+__all__ = [
+    'a2a', 'compare_arrays', 'compare_cubes', 'compare_integers', 'compare_matrices', 'compare_strings',
+    'compare_values', 'compare_vectors', 'compare_wavefunctions', 'tnm'
+]
 
+# CODATA ratio 2014 / 2010 Bohr to Angstroms conversion factor
 a2a = 0.52917721067 / 0.52917720859
 
 def true_false_decorator(compare_fn, *args, **kwargs):

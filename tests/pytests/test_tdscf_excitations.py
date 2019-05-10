@@ -4,11 +4,10 @@ import numpy as np
 import pytest
 
 import psi4
-from addons import *
 from psi4.driver.p4util.solvers import davidson_solver, hamiltonian_solver
 from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
                                                            TDUSCFEngine)
-from utils import *
+from .utils import *
 
 ## marks
 # reference type

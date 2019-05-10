@@ -1,8 +1,11 @@
-import pint
 import pytest
+from .utils import *
+from .addons import using_psi4
 
-from utils import *
-from addons import *
+import pint
+
+import psi4
+from psi4.driver import qcdb
 
 pytestmark = pytest.mark.quick
 
