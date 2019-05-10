@@ -1741,12 +1741,10 @@ class Molecule(LibmintsMolecule):
             determined by `concern_mol` type.
 
         """
-        from .align import B787
-
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         cgeom, cmass, celem, celez, cuniq = concern_mol.to_arrays()
 
-        rmsd, solution = B787(
+        rmsd, solution = qcel.molutil.B787(
             cgeom=cgeom,
             rgeom=rgeom,
             cuniq=cuniq,
@@ -1846,12 +1844,10 @@ class Molecule(LibmintsMolecule):
         None
 
         """
-        from .align import compute_scramble
-
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         nat = rgeom.shape[0]
 
-        perturbation = compute_scramble(
+        perturbation = qcel.molutil.compute_scramble(
             rgeom.shape[0],
             do_shift=do_shift,
             do_rotate=do_rotate,

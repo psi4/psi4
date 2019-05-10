@@ -1,6 +1,14 @@
 import pytest
+from .addons import using_networkx
+from .utils import *
+
+import math
+
+import numpy as np
+import qcelemental as qcel
 
 import psi4
+from psi4.driver import qcdb
 
 pytestmark = pytest.mark.quick
 
@@ -45,3 +53,45 @@ def test_parse_cotton_irreps_error(inp):
         psi4.driver.driver_util.parse_cotton_irreps(*inp)
 
     assert 'not valid for point group' in str(e)
+
+
+# <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
+
+@using_networkx
+def test_deprecated_qcdb_align_b787():
+
+    soco10 = """
+    O  1.0 0.0 0.0
+    C  0.0 0.0 0.0
+    O -1.0 0.0 0.0
+    units ang
+    """
+
+    sooc12 = """
+    O  1.2 4.0 0.0
+    O -1.2 4.0 0.0
+    C  0.0 4.0 0.0
+    units ang
+    """
+
+    ref_rmsd = math.sqrt(2. * 0.2 * 0.2 / 3.)  # RMSD always in Angstroms
+
+    oco10 = qcel.molparse.from_string(soco10)
+    oco12 = qcel.molparse.from_string(sooc12)
+
+    oco10_geom_au = oco10['qm']['geom'].reshape((-1, 3)) / qcel.constants.bohr2angstroms
+    oco12_geom_au = oco12['qm']['geom'].reshape((-1, 3)) / qcel.constants.bohr2angstroms
+
+    with pytest.warns(FutureWarning) as err:
+        rmsd, mill = qcdb.align.B787(
+            oco10_geom_au, oco12_geom_au, np.array(['O', 'C', 'O']), np.array(['O', 'O', 'C']), verbose=4, do_plot=False)
+
+    assert compare_values(ref_rmsd, rmsd, 6, 'known rmsd B787')
+
+
+
+def test_deprecated_qcdb_align_scramble():
+    with pytest.warns(FutureWarning) as err:
+        mill = qcdb.align.compute_scramble(4, do_resort=False, do_shift=False, do_rotate=False, deflection=1.0, do_mirror=False)
+
+    assert compare_arrays([0,1,2,3], mill.atommap, 4, 'atommap')
