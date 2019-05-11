@@ -90,7 +90,7 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist, int *Iai
         outfile->Printf("    %c", found_inblock ? ' ' : '*');
 #endif
 
-        outfile->Printf("%4d  %10.6lf  (%5lu,%5lu)  ", i + 1, coeff[i], Ia_abs, Ib_abs);
+        outfile->Printf("%4zu  %10.6lf  (%5d,%5d)  ", i + 1, coeff[i], Ia_abs, Ib_abs);
 
         std::string configstring(print_config(AlphaG_->num_orb, AlphaG_->num_el_expl, BetaG_->num_el_expl,
                                               alplist_[Ialist[i]] + Iaidx[i], betlist_[Iblist[i]] + Ibidx[i],

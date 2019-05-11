@@ -692,7 +692,7 @@ void CIWavefunction::print_parameters() {
                     Parameters_->nprint);
     outfile->Printf("    NUM ROOTS      =   %6d      ICORE         =   %6d\n", Parameters_->num_roots,
                     Parameters_->icore);
-    outfile->Printf("    PRINT LVL      =   %6d      FCI           =   %6s\n", print_, Parameters_->fci ? "YES" : "NO");
+    outfile->Printf("    PRINT LVL      =   %6lu      FCI           =   %6s\n", print_, Parameters_->fci ? "YES" : "NO");
     outfile->Printf("    R CONV         = %6.2e      MIXED         =   %6s\n", Parameters_->convergence,
                     Parameters_->mixed ? "YES" : "NO");
     outfile->Printf("    E CONV         = %6.2e      MIXED4        =   %6s\n", Parameters_->energy_convergence,

@@ -327,7 +327,7 @@ Data::Data(DataType* t) { ptr_ = std::shared_ptr<DataType>(t); }
 
 Data::Data(const Data& copy) { ptr_ = copy.ptr_; }
 
-Data& Data::operator=(const Data& copy) { reset(); ptr_ = copy.ptr_; return *this; }
+Data& Data::operator=(const Data& copy) { ptr_ = copy.ptr_; return *this; }
 
 std::string Data::to_string() const { return ptr_->to_string(); }
 
