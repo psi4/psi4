@@ -944,11 +944,11 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
     switch (timer.get_status()) {
         case ON:
         case OFF:
-            printer->Printf("%s: %10.3fu %10.3fs %10.3fw %6d calls\n", key.c_str(), timer.get_utime(),
+            printer->Printf("%s: %10.3fu %10.3fs %10.3fw %6zu calls\n", key.c_str(), timer.get_utime(),
                             timer.get_stime(), wtime, timer.get_n_calls());
             break;
         case PARALLEL:
-            printer->Printf("%s: %10.3fp                         %6d calls\n", key.c_str(), wtime, timer.get_n_calls());
+            printer->Printf("%s: %10.3fp                         %6zu calls\n", key.c_str(), wtime, timer.get_n_calls());
         default:
             break;
     }
@@ -1017,9 +1017,10 @@ void timer_done() {
     printer->Printf("Host: %s\n", host);
     free(host);
     printer->Printf("\n");
-    printer->Printf("Timers On : %s", ctime(&timer_start));
+    // NOTE: ctime is not thread-safe and could potentially cause overwriting of the return strings. 
+    printer->Printf("Timers On : %s", ctime(&timer_start)); // lgtm[cpp/potentially-dangerous-function] 
     timer_end = std::time(nullptr);
-    printer->Printf("Timers Off: %s", ctime(&timer_end));
+    printer->Printf("Timers Off: %s", ctime(&timer_end)); // lgtm[cpp/potentially-dangerous-function] 
     printer->Printf("\nWall Time:  %10.2f seconds\n\n",
                     std::chrono::duration_cast<std::chrono::duration<double>>(root_timer.get_total_wtime()).count());
     printer->Printf("                                                       Time (seconds)\n");
