@@ -55,7 +55,7 @@ int DPD::pairnum(string pair) {
             if (v[2] == moSpaces[i]) right = i;
         }
         if (left != right) {
-            throw PSIEXCEPTION("");
+            throw PSIEXCEPTION("Invalid pair " + pair + " encountered in DPD::pairnum().");
         }
         if (v[3] == "+")
             return left * 5 + 1;
