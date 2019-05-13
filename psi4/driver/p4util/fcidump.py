@@ -32,7 +32,7 @@ from datetime import datetime
 import numpy as np
 
 from psi4.driver import psifiles as psif
-from psi4.driver.p4util.util import compare_values, success
+from psi4.driver.p4util.testing import compare_integers, compare_values, compare_recursive
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
 from psi4 import core
@@ -342,26 +342,16 @@ def compare_fcidumps(expected, computed, label):
     :param label: string labelling the test
     """
 
-    try:
-        from deepdiff import DeepDiff
-    except ImportError:
-        raise ImportError(
-            """Python module deepdiff not found. Solve by installing it: `conda install deepdiff -c conda-forge` or `pip install deepdiff`"""
-        )
-
     # Grab expected header and integrals
     ref_intdump = fcidump_from_file(expected)
     intdump = fcidump_from_file(computed)
 
     # Compare headers
-    header_diff = DeepDiff(
+    compare_recursive(
         ref_intdump,
         intdump,
-        ignore_order=True,
-        exclude_paths={"root['enuc']", "root['hcore']", "root['eri']", "root['epsilon']"})
-    if header_diff:
-        message = ("\tComputed FCIDUMP file header does not match expected header.\n")
-        raise TestComparisonError(header_diff)
+        'FCIDUMP header',
+        forgive=['enuc', 'hcore', 'eri', 'epsilon'])
 
     ref_energies = energies_from_fcidump(ref_intdump)
     energies = energies_from_fcidump(intdump)
@@ -375,10 +365,7 @@ def compare_fcidumps(expected, computed, label):
     pass_mp2 = compare_values(ref_energies['MP2 CORRELATION ENERGY'], energies['MP2 CORRELATION ENERGY'], 10,
                               label + '. MP2 correlation energy')
 
-    if (pass_1el and pass_2el and pass_scf and pass_mp2):
-        success(label)
-
-    return True
+    compare_integers(True, (pass_1el and pass_2el and pass_scf and pass_mp2), label)
 
 
 def energies_from_fcidump(intdump):

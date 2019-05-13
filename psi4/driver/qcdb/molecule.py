@@ -36,7 +36,7 @@ import qcelemental as qcel
 
 from .util import parse_dertype
 from .libmintsmolecule import *
-from .psiutil import compare_values, compare_integers, compare_molrecs
+from .testing import compare_values, compare_integers, compare_molrecs
 from .bfs import BFS
 
 
@@ -1473,7 +1473,7 @@ class Molecule(LibmintsMolecule):
             validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
-        compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
+        compare_molrecs(validated_molrec, molrec, 'to_dict', atol=1.e-6, forgive=forgive, verbose=0)
 
         # from_arrays overwrites provenance
         validated_molrec['provenance'] = copy.deepcopy(molrec['provenance'])
