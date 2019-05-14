@@ -104,6 +104,17 @@ def _mergedapis_compare_values(expected, computed, *args, **kwargs):
     return qcel.testing.compare_values(expected, computed, **kwargs)
 
 
+def _mergedapis_compare_recursive(expected, computed, *args, **kwargs):
+
+    if (len(args) > 0) and not isinstance(args[0], str):
+        raise UpgradeHelper(
+            'qcdb.compare_recursive', 'qcdb.compare_recursive', 1.4,
+            ' Use the new `qcel.testing.compare_recursive` API, being sure to convert positional arg `digits` decimal places to keyword arg `atol` literal absolute tolerance.'
+        )
+
+    return qcel.testing.compare_molrecs(expected, computed, *args, **kwargs)
+
+
 def _mergedapis_compare_molrecs(expected, computed, *args, **kwargs):
 
     if (len(args) > 0) and not isinstance(args[0], str):
@@ -116,14 +127,14 @@ def _mergedapis_compare_molrecs(expected, computed, *args, **kwargs):
     return qcel.testing.compare_molrecs(expected, computed, **kwargs)
 
 
-def compare_matrices(expected, computed, digits: float, label: str, verbose: int = 1):
+def compare_matrices(expected, computed, *args, **kwargs):
     raise UpgradeHelper(
         'qcdb.compare_matrices', 'qcdb.compare_values', 1.4,
         ' Use the new qcel.testing.compare_values` API, being sure to convert `digits` decimal places to `atol` literal absolute tolerance.'
     )
 
 
-def compare_dicts(expected, computed, tol: float, label: str, forgive=None, verbose: int = 1):
+def compare_dicts(expected, computed, *args, **kwargs):
 
     raise UpgradeHelper(
         'qcdb.compare_dicts', 'qcdb.compare_recursive', 1.4,
@@ -153,7 +164,7 @@ compare_strings = compare_integers
 compare_values = partial(_mergedapis_compare_values, return_handler=_qcdb_true_raise_handler)
 compare_arrays = compare_values
 
-compare_recursive = partial(qcel.testing.compare_recursive, return_handler=_qcdb_true_raise_handler)
+compare_recursive = partial(_mergedapis_compare_recursive, return_handler=_qcdb_true_raise_handler)
 compare_molrecs = partial(_mergedapis_compare_molrecs, return_handler=_qcdb_true_raise_handler)
 
 # Notes on testing fns migration

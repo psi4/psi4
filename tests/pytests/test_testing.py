@@ -7,6 +7,8 @@ import numpy as np
 import psi4
 from psi4.driver import qcdb
 
+pytestmark = pytest.mark.quick
+
 _arrs = {
     'a1234_14': np.arange(4),
     'blip14': np.arange(4) + [0., 0.02, 0.005, 0.02],
@@ -38,10 +40,6 @@ _mats = {
 @pytest.mark.parametrize(
     "fn,args,kwargs",
     [
-        #(psi4.compare_strings, ['a', 'a'], {'quiet': True}),
-        #(psi4.compare, [1, 1], {'verbose': 2}),
-        #(psi4.compare_values, [4.0, 4.001, 3], {'atol': 1.e-1}),
-
         # scalar int
         (psi4.compare_integers, [1, 1, 'labeled'], {}),
         (psi4.compare_integers, [1, 1], {'verbose': 2}),
@@ -82,7 +80,6 @@ _mats = {
         # dicts
         (psi4.compare_recursive, [_dcts['ell'], _dcts['ell'], 'labeled'], {}),
         (psi4.compare_recursive, [_dcts['ell'], _dcts['ell']], {}),
-        (psi4.compare_recursive, [_dcts['ell'], _dcts['ell'], 1.e-4], {}),
 
     ])  # yapf: disable
 def test_psi4_compare_true(fn, args, kwargs):
@@ -120,6 +117,11 @@ def test_psi4_compare_true(fn, args, kwargs):
         (qcdb.compare_values, [_arrs['a1234_22'], _arrs['blip22']], {'atol': 0.1, 'quiet': True}),
         (qcdb.compare_arrays, [[-1.2, 1.2], [-1.2, 1.20000000002]], {}),
         (qcdb.compare_arrays, [[-1.2, 1.2], [-1.2, 1.20000000002], 6], {}),
+
+        # dicts
+        (qcdb.compare_recursive, [_dcts['ell'], _dcts['ell'], 'labeled'], {}),
+        (qcdb.compare_recursive, [_dcts['ell'], _dcts['ell']], {}),
+
     ])  # yapf: disable
 def test_qcdb_compare_true(fn, args, kwargs):
     assert fn(*args, **kwargs)
@@ -146,6 +148,7 @@ def test_qcdb_compare_true(fn, args, kwargs):
         (psi4.compare_values, [4.0, 4.1, 2], {}),
         (psi4.compare_values, [4.0, 4.1], {'atol': 1.e-2}),
         (psi4.compare_values, [4.0, 4.0001], {}),
+        (psi4.compare_values, [4.0, 4.001, 4], {'atol': 1.e-1}),  # arg trumps kwarg
 
         # array float
         (psi4.compare_values, [_arrs['a1234_22'], _arrs['blip22'], 'labeled'], {}),
@@ -169,8 +172,6 @@ def test_qcdb_compare_true(fn, args, kwargs):
 
         # dicts
         (psi4.compare_recursive, [_dcts['elll'], _dcts['ell']], {}),
-#        (psi4.compare_recursive, [_dcts['ell'], _dcts['ell'], 4], {}),
-
 
     ])  # yapf: disable
 def test_psi4_compare_raise(fn, args, kwargs):
@@ -199,6 +200,7 @@ def test_psi4_compare_raise(fn, args, kwargs):
         (qcdb.compare_values, [4.0, 4.1, 2], {}),
         (qcdb.compare_values, [4.0, 4.1], {'atol': 1.e-2}),
         (qcdb.compare_values, [4.0, 4.0001], {}),
+        (qcdb.compare_values, [4.0, 4.001, 4], {'atol': 1.e-1}),  # arg trumps kwarg
 
         # array float
         (qcdb.compare_values, [_arrs['a1234_22'], _arrs['blip22'], 'labeled'], {}),
@@ -210,9 +212,26 @@ def test_psi4_compare_raise(fn, args, kwargs):
         (qcdb.compare_arrays, [[-1.2, 1.2], [-1.2, 1.2002]], {}),
         (qcdb.compare_arrays, [[-1.2, 1.2], [-1.2, 1.20000000002], 12], {}),
         (qcdb.compare_arrays, [[-1.2, 1.2], [-1.2, 1.2002, 2.4]], {}),
+
+        # dicts
+        (qcdb.compare_recursive, [_dcts['elll'], _dcts['ell']], {}),
+
     ])  # yapf: disable
 def test_qcdb_compare_raise(fn, args, kwargs):
     with pytest.raises(qcdb.TestComparisonError):
+        fn(*args, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "fn,args,kwargs",
+    [
+        (psi4.compare_recursive, [_dcts['ell'], _dcts['ell'], 4], {}),
+        (qcdb.compare_recursive, [_dcts['ell'], _dcts['ell'], 4], {}),
+        (qcdb.compare_matrices, [None, None], {}),
+        (qcdb.compare_dicts, [None, None], {}),
+    ])  # yapf: disable
+def test_compare_upgrade(fn, args, kwargs):
+    with pytest.raises(qcdb.UpgradeHelper):
         fn(*args, **kwargs)
 
 
@@ -221,12 +240,12 @@ def _true_false_handler(passfail, label, message, return_message=False, quiet=Fa
     return passfail
 
 
-tf_compare_integers = partial(qcdb.testing._psi4_compare_integers, return_handler=_true_false_handler)
+_tf_compare_integers = partial(qcdb.testing._psi4_compare_integers, return_handler=_true_false_handler)
 
 
 def test_alt_handler_compare_true():
-    assert tf_compare_integers(1, 1) is True
+    assert _tf_compare_integers(1, 1) is True
 
 
 def test_alt_handler_compare_false():
-    assert tf_compare_integers(1, 2) is False
+    assert _tf_compare_integers(1, 2) is False

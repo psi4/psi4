@@ -204,7 +204,7 @@ compare_matrices = partial(_mergedapis_compare_matrices, return_handler=_psi4_tr
 compare_wavefunctions = partial(_mergedapis_compare_wavefunctions, return_handler=_psi4_true_raise_handler)
 
 # dict-like, QCEl API only
-compare_recursive = partial(qcel.testing.compare_recursive, return_handler=_psi4_true_raise_handler)
+compare_recursive = partial(qcdb.testing._mergedapis_compare_recursive, return_handler=_psi4_true_raise_handler)
 compare_molrecs = partial(qcdb.testing._mergedapis_compare_molrecs, return_handler=_psi4_true_raise_handler)
 
 # docstring notes
