@@ -85,7 +85,12 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     }
 
     // Extract variables
-    if (xc_functional_->info->family == XC_FAMILY_HYB_GGA || xc_functional_->info->family == XC_FAMILY_HYB_MGGA) {
+    if (xc_functional_->info->family == XC_FAMILY_HYB_GGA
+        || xc_functional_->info->family == XC_FAMILY_HYB_MGGA
+#ifdef XC_FAMILY_HYB_LDA
+        || xc_functional_->info->family == XC_FAMILY_HYB_LDA
+#endif
+        ) {
         /* Range separation? */
         lrc_ = false;
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
