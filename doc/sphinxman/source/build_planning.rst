@@ -218,19 +218,24 @@ build system will automatically download and build.
 
 * QCElemental |w---w| `[what is this?] <https://qcelemental.readthedocs.io/en/latest/>`_
 
-* QCEngine |w---w| `[what is this?] <https://qcengine.readthedocs.io/en/latest/>`_
+* QCEngine |w---w| `[what is this?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
 
 Additionally, there are runtime-only dependencies:
 
 * NumPy http://www.numpy.org/
 
-* networkx https://github.com/networkx/networkx
+* networkx https://github.com/networkx/networkx (transitive dependency of QCElemental)
 
-* deepdiff https://github.com/seperman/deepdiff
+* pint https://pint.readthedocs.io/en/latest/ (transitive dependency of QCElemental)
 
-* pint https://pint.readthedocs.io/en/latest/
+* pydantic https://pydantic-docs.helpmanual.io/# (transitive dependency of QCElemental)
 
-* pydantic https://pydantic-docs.helpmanual.io/#
+Dropped Dependencies:
+
+* Boost (September 2016; dropped by v1.1)
+
+* deepdiff https://github.com/seperman/deepdiff (May 2019; dropped by v1.4)
+
 
 
 .. _`faq:addondepend`:

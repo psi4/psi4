@@ -36,7 +36,7 @@ import qcelemental as qcel
 
 from .util import parse_dertype
 from .libmintsmolecule import *
-from .psiutil import compare_values, compare_integers, compare_molrecs
+from .testing import compare_values, compare_integers, compare_molrecs
 from .bfs import BFS
 
 
@@ -1232,10 +1232,14 @@ class Molecule(LibmintsMolecule):
         else:
             return Molecule.from_dict(molrec)
 
-    def to_string(self, dtype, units='Angstrom', atom_format=None, ghost_format=None, width=17, prec=12):
+    def to_string(self, dtype, units=None, atom_format=None, ghost_format=None, width=17, prec=12):
         """Format a string representation of QM molecule."""
 
         molrec = self.to_dict(np_out=True)
+
+        # flip zeros
+        molrec['geom'][np.abs(molrec['geom']) < 5**(-(ZERO))] = 0
+
         smol = qcel.molparse.to_string(
             molrec,
             dtype=dtype,
@@ -1473,7 +1477,7 @@ class Molecule(LibmintsMolecule):
             validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
-        compare_molrecs(validated_molrec, molrec, 6, 'to_dict', forgive=forgive, verbose=0)
+        compare_molrecs(validated_molrec, molrec, 'to_dict', atol=1.e-6, forgive=forgive, verbose=0)
 
         # from_arrays overwrites provenance
         validated_molrec['provenance'] = copy.deepcopy(molrec['provenance'])
@@ -1741,12 +1745,10 @@ class Molecule(LibmintsMolecule):
             determined by `concern_mol` type.
 
         """
-        from .align import B787
-
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         cgeom, cmass, celem, celez, cuniq = concern_mol.to_arrays()
 
-        rmsd, solution = B787(
+        rmsd, solution = qcel.molutil.B787(
             cgeom=cgeom,
             rgeom=rgeom,
             cuniq=cuniq,
@@ -1846,12 +1848,10 @@ class Molecule(LibmintsMolecule):
         None
 
         """
-        from .align import compute_scramble
-
         rgeom, rmass, relem, relez, runiq = ref_mol.to_arrays()
         nat = rgeom.shape[0]
 
-        perturbation = compute_scramble(
+        perturbation = qcel.molutil.compute_scramble(
             rgeom.shape[0],
             do_shift=do_shift,
             do_rotate=do_rotate,
