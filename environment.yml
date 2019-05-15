@@ -1,0 +1,8 @@
+name: p4env37
+channels:
+  - psi4
+  - defaults
+dependencies:
+  - python=3.7
+  - psi4
+  - dftd3

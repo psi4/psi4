@@ -185,7 +185,7 @@ def test_to_string_error(inp):
     (("subject2", {'dtype': 'nwchem'}), "ans2_nwchem_ang"),
     (("subject1", {'dtype': 'xyz', 'units': 'nm', 'prec': 8, 'atom_format': '{elea}{elem}{elbl}'}), "ans1c_nm"),
 ])  # yapf: disable
-def test_to_string_xyz_qmol(inp, expected):
+def hide_test_to_string_xyz_qmol(inp, expected):
     mol = qcdb.Molecule(_results[inp[0]])
     smol = mol.to_string(**inp[1])
 
@@ -204,7 +204,7 @@ def test_to_string_xyz_qmol(inp, expected):
     (("subject2", {'dtype': 'nwchem'}), "ans2_nwchem_ang"),
     (("subject1", {'dtype': 'xyz', 'units': 'nm', 'prec': 8, 'atom_format': '{elea}{elem}{elbl}'}), "ans1c_nm"),
 ])  # yapf: disable
-def test_to_string_xyz_pmol(inp, expected):
+def hide_test_to_string_xyz_pmol(inp, expected):
     import psi4
 
     mol = psi4.core.Molecule.from_string(_results[inp[0]])
