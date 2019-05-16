@@ -85,7 +85,7 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     """
 
     angstrom_to_bohr = 1.0 / constants.bohr2angstroms
-    angstrom_to_meter = 10e-10;
+    angstrom_to_meter = 10e-10
 
     # Make sure the input is valid
     if len(rvals) != len(energies):
@@ -95,8 +95,13 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
         raise ValidationError("At least 5 data points must be provided to compute anharmonicity")
     core.print_out("\n\nPerforming a fit to %d data points\n" % npoints)
 
+    # Sort radii and values first from lowest to highest radius
+    indices = np.argsort(rvals)
+    rvals = np.array(rvals)[indices]
+    energies = np.array(energies)[indices]
+
     # Make sure the molecule the user provided is the active one
-    molecule = mol if mol is not None else core.get_active_molecule()
+    molecule = mol or core.get_active_molecule()
     molecule.update_geometry()
     natoms = molecule.natom()
     if natoms != 2:
@@ -104,9 +109,16 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     m1 = molecule.mass(0)
     m2 = molecule.mass(1)
 
+    # Find rval of the minimum of energies, check number of points left and right
+    min_index = np.argmin(energies)
+    if min_index < 3 :
+        core.print_out("\nWarning: fewer than 3 points provided with a r < r(min(E))!\n")
+    if min_index >= len(energies) - 3:
+        core.print_out("\nWarning: fewer than 3 points provided with a r > r(min(E))!\n")
+
     # Optimize the geometry, refitting the surface around each new geometry
-    core.print_out("\nOptimizing geometry based on current surface:\n\n");
-    re = np.mean(rvals)
+    core.print_out("\nOptimizing geometry based on current surface:\n\n")
+    re = rvals[min_index]
     maxit = 30
     thres = 1.0e-9
     for i in range(maxit):
@@ -118,7 +130,7 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
         re -= g/H;
         if i == maxit-1:
             raise ConvergenceError("diatomic geometry optimization", maxit)
-    core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g));
+    core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))
     if re < min(rvals):
         raise Exception("Minimum energy point is outside range of points provided.  Use a lower range of r values.")
     if re > max(rvals):
@@ -149,12 +161,13 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     B0 = B - ae / 2.0
     r0 = np.sqrt(constants.h / (8.0 * np.pi**2 * mu * constants.c * B0))
     recheck = np.sqrt(constants.h / (8.0 * np.pi**2 * mu * constants.c * B))
-    r0 /= angstrom_to_meter;
-    recheck /= angstrom_to_meter;
+    r0 /= angstrom_to_meter
+    recheck /= angstrom_to_meter
 
     # Fundamental frequency nu
-    nu = we - 2.0 * wexe;
-    zpve_nu = 0.5 * we - 0.25 * wexe;
+    nu = we - 2.0 * wexe
+    zpve_nu = 0.5 * we - 0.25 * wexe
+    zpve_we = 0.5 * we
 
     # Generate pretty pictures, if requested
     if(plot_fit):
@@ -233,11 +246,13 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
             plt.savefig(plot_fit)
             core.print_out("\n\tPES fit saved to %s.\n\n" % plot_fit)
 
-    core.print_out("\nre     = %10.6f A  check: %10.6f\n" % (re, recheck))
+    core.print_out("\nre       = %10.6f A  check: %10.6f\n" % (re, recheck))
     core.print_out("r0       = %10.6f A\n" % r0)
+    core.print_out("E at re  = %17.10f Eh\n" % e)
     core.print_out("we       = %10.4f cm-1\n" % we)
     core.print_out("wexe     = %10.4f cm-1\n" % wexe)
     core.print_out("nu       = %10.4f cm-1\n" % nu)
+    core.print_out("ZPVE(we) = %10.4f cm-1\n" % zpve_we)
     core.print_out("ZPVE(nu) = %10.4f cm-1\n" % zpve_nu)
     core.print_out("Be       = %10.4f cm-1\n" % B)
     core.print_out("B0       = %10.4f cm-1\n" % B0)
@@ -249,7 +264,8 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
                "we"               :  we,
                "wexe"             :  wexe,
                "nu"               :  nu,
-               "ZPVE(harmonic)"   :  zpve_nu,
+               "E(re)"            :  e,
+               "ZPVE(harmonic)"   :  zpve_we,
                "ZPVE(anharmonic)" :  zpve_nu,
                "Be"               :  B,
                "B0"               :  B0,

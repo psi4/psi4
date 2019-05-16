@@ -1,14 +1,16 @@
 # Configure LGTM for this package
 
 extraction:
-  python:  # Configure Python
-    python_setup:  # Configure the setup
-      version: 3  # Specify Version 3
+  python:
+    python_setup:
+      version: 3
+  cpp:
+    prepare:
+      packages:
+        - python3-pint
+        - python3-numpy
 path_classifiers:
   library:
     - psi4/versioner.py
     - samples/*
     - conda/*
-  #generated:
-  #  - nist_data/*
-  #  - qcelemental/_version.py

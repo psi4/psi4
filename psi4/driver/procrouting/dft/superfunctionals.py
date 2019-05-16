@@ -36,9 +36,9 @@ from psi4 import core
 from psi4.driver.p4util.exceptions import *
 from . import dft_builder
 
-def build_superfunctional(name, restricted):
-    npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS")
-    deriv = 1  # Default depth for now
+def build_superfunctional(name, restricted, npoints=None, deriv=1):
+    if npoints is None:
+        npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS")
 
     # We are a XC generating function
 
@@ -221,7 +221,7 @@ def test_ccl_functional(functional, ccl_functional):
         gamma_bb[index] = point['gamma_bb']
         index = index + 1
 
-    super = build_superfunctional(functional, N, 1)
+    super = build_superfunctional(functional, True, npoints=N, deriv=1)
     super.test_functional(rho_a, rho_b, gamma_aa, gamma_ab, gamma_bb, tau_a, tau_b)
 
     v = super.value('V')

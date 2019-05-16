@@ -76,7 +76,7 @@ namespace ccdensity {
 ** TDC, last updated 2/08
 */
 
-void dump_RHF(struct iwlbuf *OutBuf, struct RHO_Params rho_params) {
+void dump_RHF(struct iwlbuf *OutBuf, const struct RHO_Params& rho_params) {
     int nirreps, nmo, nfzv;
     int *qt_occ, *qt_vir;
     int h, row, col, p, q, r, s;

@@ -77,8 +77,9 @@ void get_eom_params(SharedWavefunction ref_wfn, Options &options) {
     // Number of excited states per irrep
     if (options["ROOTS_PER_IRREP"].has_changed()) {
         // map the symmetry of the input ROOTS_PER_IRREP to account for displacements.
-        std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-        if (old_pg) {
+        auto ps = options.get_str("PARENT_SYMMETRY");
+        if (ps != "") {
+            auto old_pg = std::make_shared<PointGroup> (ps);
             // This is one of a series of displacements;  check the dimension against the parent point group
             size_t full_nirreps = old_pg->char_table().nirrep();
             if (options["ROOTS_PER_IRREP"].size() != full_nirreps)

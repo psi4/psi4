@@ -372,7 +372,7 @@ def run_cfour(name, **kwargs):
         core.get_gradient().print_out()
 
     # Quit if Cfour threw error
-    if core.variable('CFOUR ERROR CODE'):
+    if 'CFOUR ERROR CODE' in core.variables():
         raise ValidationError("""Cfour exited abnormally.""")
 
     P4C4_INFO.clear()

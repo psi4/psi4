@@ -588,9 +588,12 @@ std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return d
 Wavefunction::FieldType Wavefunction::get_dipole_perturbation_type() const { return dipole_field_type_; }
 
 Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
-    std::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+    auto ps = options_.get_str("PARENT_SYMMETRY");
+
     // If the parent symmetry hasn't been set, no displacements have been made
-    if (!full) return dimpi;
+    if (ps == "") return dimpi;
+
+    auto full = std::make_shared<PointGroup> (ps);
     std::shared_ptr<PointGroup> sub = molecule_->point_group();
 
     // If the point group between the full and sub are the same return
@@ -1137,10 +1140,10 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
 
         if (nocc == 0 || na == 0 || nb == 0) continue;
 
-        double **Ca = C_A->pointer(h);
-        double **Cb = C_B->pointer(h);
-        double **Sab = SAB->pointer(h);
-        double **Sbb = SBB->pointer(h);
+        auto Ca = C_A->pointer(h);
+        auto Cb = C_B->pointer(h);
+        auto Sab = SAB->pointer(h);
+        auto Sbb = SBB->pointer(h);
 
         int CholError = C_DPOTRF('L', nb, Sbb[0], nb);
         if (CholError != 0) throw std::domain_error("S_BB Matrix Cholesky failed!");
@@ -1189,7 +1192,7 @@ SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, 
             outfile->Printf("C_DSYEV failed\n");
             exit(PSI_RETURN_FAILURE);
         }
-        free(work);
+        delete[] work;
 
         // Now T contains the eigenvectors of the original T
         // Copy T to T_copy
@@ -1285,13 +1288,21 @@ SharedMatrix Wavefunction::Db() const { return Db_; }
 
 SharedMatrix Wavefunction::X() const { return Lagrangian_; }
 
+void Wavefunction::set_energy(double ene) {
+    set_scalar_variable("CURRENT ENERGY", ene);
+}
+
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
-void Wavefunction::set_gradient(SharedMatrix grad) { gradient_ = grad; }
+void Wavefunction::set_gradient(SharedMatrix grad) {
+    set_array_variable("CURRENT GRADIENT", grad);
+}
 
 SharedMatrix Wavefunction::hessian() const { return hessian_; }
 
-void Wavefunction::set_hessian(SharedMatrix hess) { hessian_ = hess; }
+void Wavefunction::set_hessian(SharedMatrix hess) {
+    set_array_variable("CURRENT HESSIAN", hess);
+}
 
 SharedVector Wavefunction::frequencies() const { return frequencies_; }
 
@@ -1379,10 +1390,17 @@ SharedMatrix Wavefunction::array_variable(const std::string &key) {
     }
 }
 
-void Wavefunction::set_scalar_variable(const std::string &key, double val) { variables_[to_upper_copy(key)] = val; }
+void Wavefunction::set_scalar_variable(const std::string &key, double val) {
+    variables_[to_upper_copy(key)] = val;
+
+    if (to_upper_copy(key) == "CURRENT ENERGY") energy_ = val;
+}
 
 void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) {
     arrays_[to_upper_copy(key)] = val->clone();
+
+    if (to_upper_copy(key) == "CURRENT GRADIENT") gradient_ = val->clone();
+    if (to_upper_copy(key) == "CURRENT HESSIAN") hessian_ = val->clone();
 }
 
 int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }

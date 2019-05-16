@@ -58,8 +58,8 @@ macro(psi4_add_module binlib libname sources)
     )
 
   # This provides OpenMP flags and access to BLAS/LAPACK headers
-  target_link_libraries(${libname} 
-    PRIVATE 
+  target_link_libraries(${libname}
+    PRIVATE
       tgt::lapack
     )
 

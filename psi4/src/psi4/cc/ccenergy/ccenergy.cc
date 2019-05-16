@@ -171,6 +171,8 @@ double CCEnergyWavefunction::compute_energy() {
         psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *)&(moinfo_.emp2), sizeof(double));
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.emp2 + moinfo_.eref;
+        set_scalar_variable("MP2 CORRELATION ENERGY", moinfo_.emp2);
+        set_scalar_variable("MP2 TOTAL ENERGY", moinfo_.emp2 + moinfo_.eref);
     }
 
     if (params_.print_mp2_amps) amp_write();
@@ -356,6 +358,10 @@ double CCEnergyWavefunction::compute_energy() {
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo_.emp2_ss;
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.emp2;
+        set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", moinfo_.emp2_os);
+        set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", moinfo_.emp2_ss);
+        set_scalar_variable("MP2 CORRELATION ENERGY", moinfo_.emp2);
+        set_scalar_variable("MP2 TOTAL ENERGY", moinfo_.eref + moinfo_.emp2);
     }
     if (params_.wfn == "CC3" || params_.wfn == "EOM_CC3") {
         outfile->Printf("    CC3 correlation energy                    = %20.15f\n", moinfo_.ecc);
@@ -363,12 +369,16 @@ double CCEnergyWavefunction::compute_energy() {
 
         Process::environment.globals["CC3 CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CC3 TOTAL ENERGY"] = moinfo_.eref + moinfo_.ecc;
+        set_scalar_variable("CC3 CORRELATION ENERGY", moinfo_.ecc);
+        set_scalar_variable("CC3 TOTAL ENERGY", moinfo_.eref + moinfo_.ecc);
     } else if (params_.wfn == "CC2" || params_.wfn == "EOM_CC2") {
         outfile->Printf("    CC2 correlation energy                    = %20.15f\n", moinfo_.ecc);
         outfile->Printf("      * CC2 total energy                      = %20.15f\n", moinfo_.eref + moinfo_.ecc);
 
         Process::environment.globals["CC2 CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CC2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.ecc;
+        set_scalar_variable("CC2 CORRELATION ENERGY", moinfo_.ecc);
+        set_scalar_variable("CC2 TOTAL ENERGY", moinfo_.eref + moinfo_.ecc);
 
         if (params_.local && local_.weakp == "MP2")
             outfile->Printf("      * LCC2 (+LMP2) total energy             = %20.15f\n",
@@ -407,6 +417,10 @@ double CCEnergyWavefunction::compute_energy() {
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo_.ecc_ss;
         Process::environment.globals["CCSD CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CCSD TOTAL ENERGY"] = moinfo_.ecc + moinfo_.eref;
+        set_scalar_variable("CCSD OPPOSITE-SPIN CORRELATION ENERGY", moinfo_.ecc_os);
+        set_scalar_variable("CCSD SAME-SPIN CORRELATION ENERGY", moinfo_.ecc_ss);
+        set_scalar_variable("CCSD CORRELATION ENERGY", moinfo_.ecc);
+        set_scalar_variable("CCSD TOTAL ENERGY", moinfo_.ecc + moinfo_.eref);
 
         if (params_.local && local_.weakp == "MP2")
             outfile->Printf("      * LCCSD (+LMP2) total energy            = %20.15f\n",
@@ -460,6 +474,8 @@ double CCEnergyWavefunction::compute_energy() {
     name_ = "CCSD";
     Process::environment.globals["CURRENT ENERGY"] = moinfo_.ecc + moinfo_.eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = moinfo_.ecc;
+    set_scalar_variable("CURRENT ENERGY", moinfo_.ecc + moinfo_.eref);
+    set_scalar_variable("CURRENT CORRELATION ENERGY", moinfo_.ecc);
     // Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;
     // Process::environment.globals["CC CORRELATION ENERGY"] = moinfo.ecc;
 
@@ -470,10 +486,16 @@ double CCEnergyWavefunction::compute_energy() {
 
     if ((options_.get_str("WFN") == "CCSD_T")) {
         // Run cctriples
-        if (psi::cctriples::cctriples(reference_wavefunction_, options_) == Success)
+        if (psi::cctriples::cctriples(reference_wavefunction_, options_) == Success) {
             energy_ = Process::environment.globals["CURRENT ENERGY"];
-        else
+            set_scalar_variable("(T) CORRECTION ENERGY", reference_wavefunction_->scalar_variable("(T) CORRECTION ENERGY"));
+            set_scalar_variable("CCSD(T) CORRELATION ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("CCSD(T) TOTAL ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) TOTAL ENERGY"));
+            set_scalar_variable("CURRENT CORRELATION ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("CURRENT ENERGY", reference_wavefunction_->scalar_variable("CCSD(T) TOTAL ENERGY"));
+        } else {
             energy_ = 0.0;
+        }
     }
 
     return energy_;

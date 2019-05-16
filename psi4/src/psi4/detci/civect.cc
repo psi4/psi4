@@ -630,7 +630,7 @@ void CIvect::symnormalize(double a, int tvec) {
 
             if (ac > bc) { /* off-diagonal block */
                 // xeax(blocks_[blk][0], a, Ia_size_[blk] * Ib_size_[blk]);
-                C_DSCAL(Ia_size_[blk] * Ib_size_[blk], a, blocks_[blk][0], 1);
+                C_DSCAL(static_cast<size_t>(Ia_size_[blk]) * Ib_size_[blk], a, blocks_[blk][0], 1);
                 upper = decode_[bc][ac];
                 if (upper >= 0) {
                     zero_blocks_[upper] = zero_blocks_[blk];
@@ -4164,8 +4164,8 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist, double **
                         outfile->Printf("tval_ssq = %lf\n", -tval);
                         outfile->Printf("CR = %lf\n", CR[Ia_idx][Ib_idx]);
                         outfile->Printf("LR = %lf\n", CL[Ja_idx][Jb_idx]);
-                        outfile->Printf("Ja_sgn = %lf\n", Ja_sgn);
-                        outfile->Printf("Jb_sgn = %lf\n", Jb_sgn);
+                        outfile->Printf("Ja_sgn = %d\n", Ja_sgn);
+                        outfile->Printf("Jb_sgn = %d\n", Jb_sgn);
                     }
                 }
                 smin_spls += tval;

@@ -43,9 +43,7 @@ PRAGMA_WARNING_POP
 namespace psi {
 class Molecule;
 class Wavefunction;
-class PointGroup;
 class Matrix;
-class Vector;
 
 class PSI_API Process {
    public:
@@ -57,18 +55,12 @@ class PSI_API Process {
 
         std::shared_ptr<Molecule> molecule_;
         SharedMatrix gradient_;
-        std::shared_ptr<PointGroup> parent_symmetry_;
 
         std::shared_ptr<Molecule> legacy_molecule_;
         std::shared_ptr<Wavefunction> legacy_wavefunction_;
 
        public:
         void initialize();
-
-        /// The symmetry of the molecule, before any displacements have been made
-        std::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
-        /// Set the "parent" symmetry
-        void set_parent_symmetry(std::shared_ptr<PointGroup> pg) { parent_symmetry_ = pg; }
 
         /// Set active molecule
         void set_molecule(const std::shared_ptr<Molecule>& molecule);

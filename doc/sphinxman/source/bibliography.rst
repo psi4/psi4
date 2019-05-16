@@ -419,3 +419,10 @@ Bibliography
    R. Podeszwa, K. Pernal, K. Patkowski, K. Szalewicz
    *J. Phys. Chem. Lett.* **1** 550 (2010).
 
+.. [Schaffer:2012:1235]
+   R. Sch\ |a_dots|\ ffer and G. Jansen
+   *Theor. Chem. Acc.* **131**, 1235 (2012).
+
+.. [Schaffer:2013:2570]
+   R. Sch\ |a_dots|\ ffer and G. Jansen
+   *Mol. Phys.* **111**, 2570 (2013).

@@ -68,11 +68,11 @@ namespace ccdensity {
 ** comments below.
 ** */
 
-void deanti_RHF(struct RHO_Params rho_params);
-void deanti_ROHF(struct RHO_Params rho_params);
-void deanti_UHF(struct RHO_Params rho_params);
+void deanti_RHF(const struct RHO_Params& rho_params);
+void deanti_ROHF(const struct RHO_Params& rho_params);
+void deanti_UHF(const struct RHO_Params& rho_params);
 
-void deanti(struct RHO_Params rho_params) {
+void deanti(const struct RHO_Params& rho_params) {
     if (params.ref == 0)
         deanti_RHF(rho_params);
     else if (params.ref == 1)

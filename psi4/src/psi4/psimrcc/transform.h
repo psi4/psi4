@@ -62,7 +62,6 @@ class CCTransform {
     double tei_mrpt2(int p, int q, int r, int s);
 
    private:
-    size_t* ioff;
     double** s_so;
     double** oei_mo;
     double** oei_so;

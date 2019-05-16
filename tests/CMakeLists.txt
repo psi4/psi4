@@ -67,9 +67,9 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2
-                  mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
-                  mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
-                  nbody-cp-gradient nbody-vmfc-gradient nbody-convergence
+                  mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
+                  mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient 
+                  nbo nbody-cp-gradient nbody-vmfc-gradient nbody-convergence
                   nbody-freq nbody-multi-level numpy-array-interface
                   ocepa-freq1 ocepa-grad1 ocepa-grad2 ocepa1 ocepa2 ocepa3
                   omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2
@@ -87,6 +87,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o
                   rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
+                  sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
                   scf-guess-read2 scf-bs scf1 scf-occ
                   scf2 scf3 scf4 scf5 scf6 scf7 scf-property serial-wfn soscf-large soscf-ref
@@ -264,4 +265,4 @@ if(ENABLE_PLUGIN_TESTING)
 endif()
 
 # pytest regime
-add_subdirectory(pytest)
+add_subdirectory(pytests)

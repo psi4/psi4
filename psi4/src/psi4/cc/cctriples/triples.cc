@@ -35,6 +35,7 @@
 #include "MOInfo.h"
 #include "globals.h"
 
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
@@ -150,6 +151,9 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
             Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
             Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
             Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+            reference_wavefunction->set_scalar_variable("(T) CORRECTION ENERGY", ET);
+            reference_wavefunction->set_scalar_variable("CCSD(T) CORRELATION ENERGY", ET + moinfo.ecc);
+            reference_wavefunction->set_scalar_variable("CCSD(T) TOTAL ENERGY", ET + moinfo.ecc + moinfo.eref);
         } else if (params.wfn == "CCSD_AT") {
             ET = EaT_RHF();
             outfile->Printf("    (aT) energy                                = %20.15f\n", ET);
@@ -188,6 +192,9 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
         Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
         Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
         Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+        reference_wavefunction->set_scalar_variable("(T) CORRECTION ENERGY", ET);
+        reference_wavefunction->set_scalar_variable("CCSD(T) CORRELATION ENERGY", ET + moinfo.ecc);
+        reference_wavefunction->set_scalar_variable("CCSD(T) TOTAL ENERGY", ET + moinfo.ecc + moinfo.eref);
     } else if (params.ref == 2) { /** UHF **/
 
         if (params.dertype == 0) {
@@ -231,6 +238,9 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
         Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
         Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
         Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+        reference_wavefunction->set_scalar_variable("(T) CORRECTION ENERGY", ET);
+        reference_wavefunction->set_scalar_variable("CCSD(T) CORRELATION ENERGY", ET + moinfo.ecc);
+        reference_wavefunction->set_scalar_variable("CCSD(T) TOTAL ENERGY", ET + moinfo.ecc + moinfo.eref);
 
     }  // UHF
 
@@ -241,6 +251,8 @@ PsiReturnType cctriples(std::shared_ptr<Wavefunction> reference_wavefunction, Op
 
     Process::environment.globals["CURRENT ENERGY"] = ET + moinfo.ecc + moinfo.eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = ET + moinfo.ecc;
+    reference_wavefunction->set_scalar_variable("CURRENT ENERGY", ET + moinfo.ecc + moinfo.eref);
+    reference_wavefunction->set_scalar_variable("CURRENT CORRELATION ENERGY", ET + moinfo.ecc);
 
     dpd_close(0);
 

@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """
 The SCF iteration functions
 """
@@ -100,13 +99,14 @@ def scf_compute_energy(self):
     scf_energy = self.finalize_energy()
     return scf_energy
 
+
 def _build_jk(wfn, memory):
-    jk = core.JK.build(
-        wfn.get_basisset("ORBITAL"),
-        aux=wfn.get_basisset("DF_BASIS_SCF"),
-        do_wK=wfn.functional().is_x_lrc(),
-        memory=memory)
+    jk = core.JK.build(wfn.get_basisset("ORBITAL"),
+                       aux=wfn.get_basisset("DF_BASIS_SCF"),
+                       do_wK=wfn.functional().is_x_lrc(),
+                       memory=memory)
     return jk
+
 
 def initialize_jk(self, memory, jk=None):
 
@@ -139,9 +139,9 @@ def scf_initialize(self):
     if vbase:
         collocation_size = vbase.grid().collocation_size()
         if vbase.functional().ansatz() == 1:
-            collocation_size *= 4 # First derivs
+            collocation_size *= 4  # First derivs
         elif vbase.functional().ansatz() == 2:
-            collocation_size *= 10 # Second derivs
+            collocation_size *= 10  # Second derivs
     else:
         collocation_size = 0
 
@@ -207,7 +207,7 @@ def scf_initialize(self):
             # EFP: Add in permanent moment contribution and cache
             core.timer_on("HF: Form Vefp")
             verbose = core.get_option('SCF', "PRINT")
-            Vefp = modify_Fock_permanent(self.molecule(), mints, verbose=verbose-1)
+            Vefp = modify_Fock_permanent(self.molecule(), mints, verbose=verbose - 1)
             Vefp = core.Matrix.from_array(Vefp)
             self.H().add(Vefp)
             Horig = self.H().clone()
@@ -228,14 +228,12 @@ def scf_initialize(self):
         self.form_D()
         self.set_energies("Total Energy", self.compute_initial_E())
 
-
     # turn off VV10 for iterations
     if core.get_option('SCF', "DFT_VV10_POSTSCF") and self.functional().vv10_b() > 0.0:
         core.print_out("  VV10: post-SCF option active \n \n")
         self.functional().set_lock(False)
         self.functional().set_do_vv10(False)
         self.functional().set_lock(True)
-
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
@@ -256,8 +254,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
     if self.iteration_ < 2:
         core.print_out("  ==> Iterations <==\n\n")
-        core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" % ("   "
-                                                                                                     if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+        core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+                       ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
     # SCF iterations!
     SCFE_old = 0.0
@@ -278,7 +276,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.H().copy(self.Horig)
             global mints_psi4_yo
             mints_psi4_yo = core.MintsHelper(self.basisset())
-            Vefp = modify_Fock_induced(self.molecule().EFP, mints_psi4_yo, verbose=verbose-1)
+            Vefp = modify_Fock_induced(self.molecule().EFP, mints_psi4_yo, verbose=verbose - 1)
             Vefp = core.Matrix.from_array(Vefp)
             self.H().add(Vefp)
 
@@ -341,12 +339,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 base_name = "SOSCF, nmicro="
 
             if not _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
-                nmicro = self.soscf_update(
-                    core.get_option('SCF', 'SOSCF_CONV'),
-                    core.get_option('SCF', 'SOSCF_MIN_ITER'),
-                    core.get_option('SCF', 'SOSCF_MAX_ITER'), core.get_option('SCF', 'SOSCF_PRINT'))
+                nmicro = self.soscf_update(core.get_option('SCF', 'SOSCF_CONV'),
+                                           core.get_option('SCF', 'SOSCF_MIN_ITER'),
+                                           core.get_option('SCF', 'SOSCF_MAX_ITER'),
+                                           core.get_option('SCF', 'SOSCF_PRINT'))
                 # if zero, the soscf call bounced for some reason
-                soscf_performed = (nmicro>0)
+                soscf_performed = (nmicro > 0)
 
                 if soscf_performed:
                     self.find_occupation()
@@ -416,6 +414,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_D()
         core.timer_off("HF: Form D")
 
+        self.set_variable("SCF ITERATION ENERGY", SCFE)
+
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Dnorm > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
             damping_percentage = core.get_option('SCF', "DAMPING_PERCENTAGE")
@@ -429,8 +429,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Db().print_out()
 
         # Print out the iteration
-        core.print_out("   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
-                       ("DF-" if is_dfjk else "", reference, "SAD" if ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
+        core.print_out(
+            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+            ("DF-" if is_dfjk else "", reference, "SAD" if
+             ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
 
         # if a an excited MOM is requested but not started, don't stop yet
         if self.MOM_excited_ and not self.MOM_performed_:
@@ -534,12 +536,14 @@ def scf_finalize_energy(self):
         self.set_energies("Total Energy", SCFE)
         core.print_out(efpobj.energy_summary(scfefp=SCFE, label='psi'))
 
-        core.set_variable('EFP ELST ENERGY', efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
-        core.set_variable('EFP IND ENERGY', efpene['polarization'])
-        core.set_variable('EFP DISP ENERGY', efpene['dispersion'])
-        core.set_variable('EFP EXCH ENERGY', efpene['exchange_repulsion'])
-        core.set_variable('EFP TOTAL ENERGY', efpene['total'])
-        core.set_variable('CURRENT ENERGY', efpene['total'])
+        self.set_variable(
+            'EFP ELST ENERGY',
+            efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
+        self.set_variable('EFP IND ENERGY', efpene['polarization'])
+        self.set_variable('EFP DISP ENERGY', efpene['dispersion'])
+        self.set_variable('EFP EXCH ENERGY', efpene['exchange_repulsion'])
+        self.set_variable('EFP TOTAL ENERGY', efpene['total'])
+        self.set_variable('CURRENT ENERGY', efpene['total'])
 
     core.print_out("\n  ==> Post-Iterations <==\n\n")
 
@@ -550,16 +554,16 @@ def scf_finalize_energy(self):
 
     energy = self.get_energies("Total Energy")
 
-#    fail_on_maxiter = core.get_option("SCF", "FAIL_ON_MAXITER")
-#    if converged or not fail_on_maxiter:
-#
-#        if print_lvl > 0:
-#            self.print_orbitals()
-#
-#        if converged:
-#            core.print_out("  Energy converged.\n\n")
-#        else:
-#            core.print_out("  Energy did not converge, but proceeding anyway.\n\n")
+    #    fail_on_maxiter = core.get_option("SCF", "FAIL_ON_MAXITER")
+    #    if converged or not fail_on_maxiter:
+    #
+    #        if print_lvl > 0:
+    #            self.print_orbitals()
+    #
+    #        if converged:
+    #            core.print_out("  Energy converged.\n\n")
+    #        else:
+    #            core.print_out("  Energy did not converge, but proceeding anyway.\n\n")
 
     if core.get_option('SCF', 'PRINT') > 0:
         self.print_orbitals()
@@ -618,7 +622,7 @@ def scf_print_energies(self):
     e2 = self.get_energies('Two-Electron')
     exc = self.get_energies('XC')
     ed = self.get_energies('-D')
-    #self.del_variable('-D Energy')
+    self.del_variable('-D Energy')
     evv10 = self.get_energies('VV10')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
@@ -665,6 +669,26 @@ def scf_print_energies(self):
 
     self.set_variable('SCF ITERATIONS', self.iteration_)
 
+
+def scf_print_preiterations(self):
+    ct = self.molecule().point_group().char_table()
+
+    core.print_out("   -------------------------------------------------------\n")
+    core.print_out("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n")
+    core.print_out("   -------------------------------------------------------\n")
+
+    for h in range(self.nirrep()):
+        core.print_out(
+            f"     {ct.gamma(h).symbol():<3s}   {self.nsopi()[h]:6d}  {self.nmopi()[h]:6d}  {self.nalphapi()[h]:6d}  {self.nbetapi()[h]:6d}  {self.doccpi()[h]:6d}  {self.soccpi()[h]:6d}\n"
+        )
+
+    core.print_out("   -------------------------------------------------------\n")
+    core.print_out(
+        f"    Total  {self.nso():6d}  {self.nmo():6d}  {self.nalpha():6d}  {self.nbeta():6d}  {self.nbeta():6d}  {self.nalpha() - self.nbeta():6d}\n"
+    )
+    core.print_out("   -------------------------------------------------------\n\n")
+
+
 # Bind functions to core.HF class
 core.HF.initialize = scf_initialize
 core.HF.initialize_jk = initialize_jk
@@ -672,6 +696,7 @@ core.HF.iterations = scf_iterate
 core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy
 core.HF.print_energies = scf_print_energies
+core.HF.print_preiterations = scf_print_preiterations
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
@@ -739,8 +764,8 @@ def _validate_diis():
 
         maxvecs = core.get_option('SCF', 'DIIS_MAX_VECS')
         if maxvecs < minvecs:
-            raise ValidationError(
-                'SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(maxvecs, minvecs))
+            raise ValidationError('SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(
+                maxvecs, minvecs))
 
     return enabled
 
@@ -817,8 +842,8 @@ def _validate_soscf():
 
         maxiter = core.get_option('SCF', 'SOSCF_MAX_ITER')
         if maxiter < miniter:
-            raise ValidationError(
-                'SCF SOSCF_MAX_ITER ({}) must be at least SOSCF_MIN_ITER ({})'.format(maxiter, miniter))
+            raise ValidationError('SCF SOSCF_MAX_ITER ({}) must be at least SOSCF_MIN_ITER ({})'.format(
+                maxiter, miniter))
 
         conv = core.get_option('SCF', 'SOSCF_CONV')
         if conv < 1.e-10:
@@ -862,9 +887,11 @@ def field_fn(xyz):
         # get electric field integrals from Psi4
         p4_field_ints = mints_psi4_yo.electric_field(origin=points[ipt])
 
-        field[ipt] = [np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[0])),  # Ex
-                      np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[1])),  # Ey
-                      np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[2]))]  # Ez
+        field[ipt] = [
+            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[0])),  # Ex
+            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[1])),  # Ey
+            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[2]))
+        ]  # Ez
 
     field = np.reshape(field, 3 * npt)
 

@@ -64,6 +64,14 @@ Versioning |PSIfour|
 #. :ref:`faq:githubworkflow`
 #. :ref:`faq:psi4version`
 
+Releasing |PSIfour|
+-------------------
+
+#. :ref:`faq:annualprocedure`
+#. :ref:`faq:prereleaseprocedure`
+#. :ref:`faq:releaseprocedure`
+#. :ref:`faq:postreleaseprocedure`
+
 Workflow
 --------
 
@@ -73,8 +81,12 @@ Workflow
 #. :ref:`faq:vigitmerge`
 #. :ref:`faq:gdblldb`
 #. :ref:`faq:grepascii`
+#. :ref:`faq:ignoringadvice`
 
 Miscellaneous
 -------------
 
 #. :ref:`faq:add_tests`
+#. :ref:`faq:findmissingoutputref`
+#. :ref:`faq:githubcodereview`
+

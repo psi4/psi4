@@ -42,7 +42,6 @@ output = subprocess.check_output("ls -1 *cc-*.gbs | grep -v 'autogen' | grep -v 
 real_dunnings = output.decode().split('\n')
 
 parser = Gaussian94BasisSetParser()
-elements = qcdb.periodictable._temp_symbol
 os.system("echo '#differing basis sets' > basisdunningfiles.txt")
 
 for bfl in real_dunnings:

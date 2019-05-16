@@ -174,6 +174,7 @@ void SCF::iterate_scf_equations() {
         outfile->Printf("\n  sym  = %d", sym);
     }
 
+    set_scalar_variable("SCF ITERATIONS", cycle);
     outfile->Printf("\n\n  End of SCF");
 }
 

@@ -134,11 +134,11 @@ void export_wavefunction(py::module& m) {
         .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
         .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
         .def("energy", &Wavefunction::energy, "Returns the Wavefunction's energy.")
-        .def("set_energy", &Wavefunction::set_energy, "Sets the Wavefunction's energy.")
+        .def("set_energy", &Wavefunction::set_energy, "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
         .def("gradient", &Wavefunction::gradient, "Returns the Wavefunction's gradient.")
-        .def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunction's gradient.")
+        .def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunction's gradient. Syncs with Wavefunction's QC variable ``CURRENT GRADIENT``.")
         .def("hessian", &Wavefunction::hessian, "Returns the Wavefunction's Hessian.")
-        .def("set_hessian", &Wavefunction::set_hessian, "Sets the Wavefunction's Hessian.")
+        .def("set_hessian", &Wavefunction::set_hessian, "Sets the Wavefunction's Hessian. Syncs with Wavefunction's QC variable ``CURRENT HESSIAN``.")
         .def("legacy_frequencies", &Wavefunction::frequencies, "Returns the frequencies of the Hessian.")
         .def("set_legacy_frequencies", &Wavefunction::set_frequencies, "Sets the frequencies of the Hessian.")
         .def("esp_at_nuclei", &Wavefunction::get_esp_at_nuclei, "returns electrostatic potentials at nuclei")
@@ -193,9 +193,9 @@ void export_wavefunction(py::module& m) {
         .def("array_variable", &Wavefunction::array_variable,
              "Returns copy of the requested (case-insensitive) Matrix QC variable.")
         .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
-             "Sets the requested (case-insensitive) double QC variable.")
+             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT ENERGY.")
         .def("set_array_variable", &Wavefunction::set_array_variable,
-             "Sets the requested (case-insensitive) Matrix QC variable.")
+             "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or ``hessian_`` if CURRENT GRADIENT or HESSIAN.")
         .def("del_scalar_variable", &Wavefunction::del_scalar_variable,
              "Removes the requested (case-insensitive) double QC variable.")
         .def("del_array_variable", &Wavefunction::del_array_variable,
@@ -267,7 +267,6 @@ void export_wavefunction(py::module& m) {
         .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
              "Add an external potential to the private external_potentials list", "V"_a)
-        .def("print_preiterations", &scf::HF::print_preiterations, "docstring")
         .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
         .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
         .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")
@@ -345,6 +344,7 @@ void export_wavefunction(py::module& m) {
         .def("exch", &fisapt::FISAPT::exch, "SAPT0 exchange.")
         .def("ind", &fisapt::FISAPT::ind, "SAPT0 induction.")
         .def("disp", &fisapt::FISAPT::disp, "Computes the MP2-based DispE20 and Exch-DispE20 energy.")
+        .def("sinf_disp", &fisapt::FISAPT::sinf_disp, "Computes the MP2-based DispE20 and Exch-DispE20 energy without S^2.")
         .def("flocalize", &fisapt::FISAPT::flocalize, "F-SAPT0 localize.")
         .def("felst", &fisapt::FISAPT::felst, "F-SAPT0 electrostatics.")
         .def("fexch", &fisapt::FISAPT::fexch, "F-SAPT0 exchange.")

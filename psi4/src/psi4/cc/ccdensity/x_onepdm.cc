@@ -41,10 +41,10 @@
 namespace psi {
 namespace ccdensity {
 
-void x_onepdm_rohf(struct RHO_Params rho_params);
-extern void x_onepdm_uhf(struct RHO_Params rho_params);
+void x_onepdm_rohf(const struct RHO_Params& rho_params);
+extern void x_onepdm_uhf(const struct RHO_Params& rho_params);
 
-void x_onepdm(struct RHO_Params rho_params) {
+void x_onepdm(const struct RHO_Params& rho_params) {
     if (params.ref == 0 || params.ref == 1)
         x_onepdm_rohf(rho_params);
     else
@@ -71,7 +71,7 @@ void x_onepdm(struct RHO_Params rho_params) {
  * RAK 2003
  */
 
-void x_onepdm_rohf(struct RHO_Params rho_params) {
+void x_onepdm_rohf(const struct RHO_Params& rho_params) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, I, XIJ, Xij;
     dpdbuf4 T2, L2, R2, I2;

@@ -68,7 +68,7 @@ std::string Options::to_string() const {
     for (const_iterator local_iter = keyvals.begin(); local_iter != keyvals.end(); ++local_iter) {
         std::stringstream line;
         std::string value;
-        bool option_specified;
+        bool option_specified = false;
         const std::string &name = local_iter->first;
         const_iterator global_iter = globals_.find(name);
         if (local_iter->second.has_changed()) {

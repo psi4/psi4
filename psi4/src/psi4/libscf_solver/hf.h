@@ -275,9 +275,6 @@ class HF : public Wavefunction {
     /// Prints some opening information
     void print_header();
 
-    /// Prints some details about nsopi/nmopi, and initial occupations
-    void print_preiterations();
-
     /** Compute/print spin contamination information (if unrestricted) **/
     virtual void compute_spin_contamination();
 

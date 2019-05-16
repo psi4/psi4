@@ -36,6 +36,7 @@ from psi4.driver import psifiles as psif
 from psi4.driver.molutil import *
 from psi4.driver.inputparser import process_input
 from psi4.driver.p4util.util import *
+from psi4.driver.p4util.testing import *
 from psi4.driver.p4util.fcidump import *
 from psi4.driver.p4util.text import *
 from psi4.driver.qmmm import QMMM

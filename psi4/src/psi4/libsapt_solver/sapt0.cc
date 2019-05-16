@@ -408,7 +408,7 @@ void SAPT0::df_integrals() {
 
     // Get fitting metric
     auto metric = std::make_shared<FittingMetric>(ribasis_);
-    metric->form_eig_inverse();
+    metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
     double **J_temp = metric->get_metric()->pointer();
     double **J_mhalf = block_matrix(ndf_, ndf_);
     C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);
@@ -870,7 +870,7 @@ void SAPT0::df_integrals_aio() {
 
     // Get fitting metric
     auto metric = std::make_shared<FittingMetric>(ribasis_);
-    metric->form_eig_inverse();
+    metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
     double **J_temp = metric->get_metric()->pointer();
     double **J_mhalf = block_matrix(ndf_, ndf_);
     C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);
@@ -1614,7 +1614,7 @@ void SAPT0::oo_df_integrals() {
 
     // Get fitting metric
     auto metric = std::make_shared<FittingMetric>(elstbasis_);
-    metric->form_eig_inverse();
+    metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
     double **J_temp = metric->get_metric()->pointer();
     double **J_mhalf = block_matrix(ndf_, ndf_);
     C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);

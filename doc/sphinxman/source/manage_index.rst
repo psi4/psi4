@@ -37,4 +37,5 @@ Managing: Git, Conda, CMake and all that
 
    manage_addon
    manage_git
+   manage_release
 

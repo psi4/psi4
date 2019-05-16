@@ -100,4 +100,4 @@ Ean, anwfn = freq('scf', return_wfn=True)
 fdwfn.frequencies().print_out()
 anwfn.frequencies().print_out()
 
-compare_arrays(fdwfn.frequencies(), anwfn.frequencies(), 0.05, "DF frequencies, Analytic vs. Finite Difference")     #TEST
+compare_arrays(fdwfn.frequencies(), anwfn.frequencies(), 0.1, "DF frequencies, Analytic vs. Finite Difference")  #TEST

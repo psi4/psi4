@@ -430,7 +430,7 @@ def _gs_orth(engine, U, V, thresh):
 
 
 def _best_vectors(engine, ss_vectors, basis_vectors):
-    """Compute the best approximation of the true eigenvectors as a linear combination of basis vectors:
+    r"""Compute the best approximation of the true eigenvectors as a linear combination of basis vectors:
 
     ..math:: V_{k} = \Sum_{i} \tilde{V}_{i,k}X_{i}
 
@@ -477,7 +477,7 @@ class SolverEngine(ABC):
 
     @abstractmethod
     def compute_products(self, X):
-        """Compute a Matrix * trial vector products
+        r"""Compute a Matrix * trial vector products
         Parameters
         ----------
         X : list of `vectors`
@@ -502,7 +502,7 @@ class SolverEngine(ABC):
 
     @abstractmethod
     def precondition(self, R_k, w_k):
-        """Apply the preconditioner to a Residual vector
+        r"""Apply the preconditioner to a Residual vector
 
         The preconditioner is usually defined as :math:`(w_k - D_{i})^-1` where `D` is an approximation of the diagonal of the
         matrix that is being diagonalized.
@@ -539,6 +539,7 @@ class SolverEngine(ABC):
         """
         pass
 
+    @staticmethod
     @abstractmethod
     def vector_dot(X, Y):
         """Compute a dot product between two `vectors`

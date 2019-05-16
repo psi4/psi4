@@ -31,6 +31,9 @@
     \brief Enter brief description of file here
 */
 
+#ifndef CCHBAR_MOINFO_H
+#define CCHBAR_MOINFO_H
+
 #include <string>
 #include <vector>
 
@@ -69,3 +72,5 @@ struct MOInfo {
 
 }  // namespace cchbar
 }  // namespace psi
+
+#endif

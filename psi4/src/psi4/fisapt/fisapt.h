@@ -154,6 +154,8 @@ class FISAPT {
     /// Dispersion
     void disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
               bool do_print);
+    void sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
+              bool do_print);
 
     /// Return arrays
     std::map<std::string, double>& scalars() { return scalars_; }

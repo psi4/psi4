@@ -734,8 +734,8 @@ void DCFTSolver::print_opdm() {
     sort(aPairs.begin(), aPairs.end(), std::greater<std::pair<double, int> >());
     sort(bPairs.begin(), bPairs.end(), std::greater<std::pair<double, int> >());
 
-    int *aIrrepCount = init_int_array(nirrep_);
-    int *bIrrepCount = init_int_array(nirrep_);
+    auto aIrrepCount = std::vector<int>(nirrep_, 0);
+    auto bIrrepCount = std::vector<int>(nirrep_, 0);
     std::vector<std::string> irrepLabels = molecule_->irrep_labels();
 
     outfile->Printf("\n\tOrbital occupations:\n\t\tAlpha occupied orbitals\n\t\t");
@@ -763,8 +763,6 @@ void DCFTSolver::print_opdm() {
         if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
     }
     outfile->Printf("\n\n");
-    free(aIrrepCount);
-    free(bIrrepCount);
 }
 
 void DCFTSolver::refine_tau() {

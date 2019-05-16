@@ -115,7 +115,7 @@ suppress_warnings = ['image.nonlocal_uri']
 
 # General information about the project.
 project = u'Psi4'  # u'P\uA731\u026A4'
-copyright = u'2018, The {0} Project'.format(project)
+copyright = u'2019, The {0} Project'.format(project)
 
 def get_version_info():
     import psi4
@@ -394,6 +394,7 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'
             'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', ''),
             'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
             'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),
+            'psicode':   ('https://admiring-tesla-08529a.netlify.com/%s', 'psicode.org/'),
             'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
 
 # Example configuration for intersphinx: refer to the Python standard library.

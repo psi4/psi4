@@ -257,6 +257,8 @@ def run_sapt_dft(name, **kwargs):
 
     core.tstop()
 
+    optstash.restore()
+
     return dimer_wfn
 
 

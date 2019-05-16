@@ -14,8 +14,7 @@ if(${ENABLE_libefp})
         message(STATUS "Suitable libefp could not be located, ${Magenta}Building libefp${ColourReset} instead.")
         ExternalProject_Add(libefp_external
             DEPENDS lapack_external
-            GIT_REPOSITORY https://github.com/ilyak/libefp
-            GIT_TAG 15cd7ce  # v1.5.0 + 10 (docs and a cmake lapack patch)
+            URL https://github.com/ilyak/libefp/archive/15cd7ce.tar.gz  # v1.5.0 + 10 (docs and a cmake lapack patch)
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

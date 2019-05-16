@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef PSI4_CCHBAR_GLOBALS_H
+#define PSI4_CCHBAR_GLOBALS_H
+
 /*! \file
     \ingroup CCHBAR
     \brief Enter brief description of file here
@@ -50,3 +53,5 @@ EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 }
 }  // namespace psi
+
+#endif

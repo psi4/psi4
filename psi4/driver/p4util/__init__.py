@@ -30,6 +30,7 @@ from .optproc import *
 from .text import *
 from .procutil import *
 from .util import *
+from .testing import *
 from .exceptions import *
 from .inpsight import *
 from .numpy_helper import *

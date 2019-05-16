@@ -77,7 +77,7 @@ namespace ccdensity {
 ** spin-adaptation is allowed for UHF cases).
 ** */
 
-void deanti_UHF(struct RHO_Params rho_params) {
+void deanti_UHF(const struct RHO_Params& rho_params) {
     dpdfile2 h, d;
     dpdbuf4 G, G2, A, B, C, D, E, F;
 

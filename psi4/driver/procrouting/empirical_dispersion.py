@@ -29,17 +29,18 @@
 import collections
 
 import numpy as np
+import qcengine as qcng
 
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import driver_findif
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.qcdb import intf_dftd3
 from psi4.driver.qcdb import interface_gcp as gcp
 
 _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
                                           ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
                                           ('nl', ['nl']),
+                                          ('mp2d', ['dmp2']),
                                         ]) # yapf: disable
 
 _capable_engines_for_disp = collections.defaultdict(list)
@@ -53,7 +54,7 @@ class EmpiricalDispersion(object):
 
     Attributes
     ----------
-    dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl'}
+    dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `dashparam.dashcoeff`.
@@ -77,11 +78,11 @@ class EmpiricalDispersion(object):
         corresponds to a defined, named, untweaked "functional-dashlevel"
         set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
-        See description in `qcdb.intf_dftd3.dashparam.from_arrays`. Used
+        See description in `qcengine.programs.dftd3.dashparam.from_arrays`. Used
         here to "bless" the dispersion definitions attached to
         the procedures/dft/*_functionals-defined dictionaries
         as legit, non-custom, and of equal validity to
-        `qcdb.intf_dftd3.dashparam.dashcoeff` itself for purposes of
+        `qcengine.programs.dftd3.dashparam.dashcoeff` itself for purposes of
         validating `fctldash`.
     engine : {'libdisp', 'dftd3', 'nl'}
         Compute engine for dispersion. One of Psi4's internal libdisp
@@ -121,7 +122,7 @@ class EmpiricalDispersion(object):
         from .dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
 
-        resolved = intf_dftd3.from_arrays(
+        resolved = qcng.programs.dftd3.from_arrays(
             name_hint=name_hint,
             level_hint=level_hint,
             param_tweaks=param_tweaks,
@@ -129,9 +130,9 @@ class EmpiricalDispersion(object):
         self.fctldash = resolved['fctldash']
         self.dashlevel = resolved['dashlevel']
         self.dashparams = resolved['dashparams']
-        self.description = intf_dftd3.dashcoeff[self.dashlevel]['description']
-        self.ordered_params = intf_dftd3.dashcoeff[self.dashlevel]['default'].keys()
-        self.dashlevel_citation = intf_dftd3.dashcoeff[self.dashlevel]['citation']
+        self.description = qcng.programs.dftd3.dashcoeff[self.dashlevel]['description']
+        self.ordered_params = qcng.programs.dftd3.dashcoeff[self.dashlevel]['default'].keys()
+        self.dashlevel_citation = qcng.programs.dftd3.dashcoeff[self.dashlevel]['citation']
         self.dashparams_citation = resolved['dashparams_citation']
 
         engine = kwargs.pop('engine', None)
@@ -184,26 +185,37 @@ class EmpiricalDispersion(object):
             Set if `fctldash` nonempty.
 
         """
-        if self.engine == 'dftd3':
-            jobrec = intf_dftd3.run_dftd3_from_arrays(
-                molrec=molecule.to_dict(np_out=False),
-                name_hint=self.fctldash,
-                level_hint=self.dashlevel,
-                param_tweaks=self.dashparams,
-                dashcoeff_supplement=self.dashcoeff_supplement,
-                ptype='energy',
-                verbose=1)
+        if self.engine in ['dftd3', 'mp2d']:
+            resinp = {
+                'schema_name': 'qcschema_input',
+                'schema_version': 1,
+                'molecule': molecule.to_schema(dtype=2),
+                'driver': 'energy',
+                'model': {
+                    'method': self.fctldash,
+                    'basis': '(auto)',
+                },
+                'keywords': {
+                    'level_hint': self.dashlevel,
+                    'params_tweaks': self.dashparams,
+                    'dashcoeff_supplement': self.dashcoeff_supplement,
+                    'verbose': 1,
+                },
+            }
+            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
+            jobrec = jobrec.dict()
 
-            dashd_part = float(jobrec['qcvars']['DISPERSION CORRECTION ENERGY'].data)
-            for k, qca in jobrec['qcvars'].items():
-                if not isinstance(qca.data, np.ndarray):
-                    core.set_variable(k, qca.data)
+            dashd_part = float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
                 dashd_part += gcp_part
 
             return dashd_part
+
         else:
             ene = self.disp.compute_energy(molecule)
             core.set_variable('DISPERSION CORRECTION ENERGY', ene)
@@ -225,20 +237,30 @@ class EmpiricalDispersion(object):
             (nat, 3) dispersion gradient [Eh/a0].
 
         """
-        if self.engine == 'dftd3':
-            jobrec = intf_dftd3.run_dftd3_from_arrays(
-                molrec=molecule.to_dict(np_out=False),
-                name_hint=self.fctldash,
-                level_hint=self.dashlevel,
-                param_tweaks=self.dashparams,
-                dashcoeff_supplement=self.dashcoeff_supplement,
-                ptype='gradient',
-                verbose=1)
+        if self.engine in ['dftd3', 'mp2d']:
+            resinp = {
+                'schema_name': 'qcschema_input',
+                'schema_version': 1,
+                'molecule': molecule.to_schema(dtype=2),
+                'driver': 'gradient',
+                'model': {
+                    'method': self.fctldash,
+                    'basis': '(auto)',
+                },
+                'keywords': {
+                    'level_hint': self.dashlevel,
+                    'params_tweaks': self.dashparams,
+                    'dashcoeff_supplement': self.dashcoeff_supplement,
+                    'verbose': 1,
+                },
+            }
+            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
+            jobrec = jobrec.dict()
 
-            dashd_part = core.Matrix.from_array(jobrec['qcvars']['DISPERSION CORRECTION GRADIENT'].data)
-            for k, qca in jobrec['qcvars'].items():
-                if not isinstance(qca.data, np.ndarray):
-                    core.set_variable(k, qca.data)
+            dashd_part = core.Matrix.from_array(np.array(jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)
@@ -263,7 +285,7 @@ class EmpiricalDispersion(object):
             (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
 
         """
-        optstash = p4util.OptionsState(['PRINT'])
+        optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
         core.print_out("\n\n   Analytical Dispersion Hessians are not supported by dftd3 or gcp.\n")
@@ -276,15 +298,15 @@ class EmpiricalDispersion(object):
         molclone.fix_com(True)
 
         # Record undisplaced symmetry for projection of diplaced point groups
-        core.set_parent_symmetry(molecule.schoenflies_symbol())
+        core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
 
-        findif_meta_dict = driver_findif.hessian_from_gradient_geometries(molclone, -1)
+        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molclone, -1)
         for displacement in findif_meta_dict["displacements"].values():
             geom_array = np.reshape(displacement["geometry"], (-1, 3))
             molclone.set_geometry(core.Matrix.from_array(geom_array))
             molclone.update_geometry()
             displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
-        H = driver_findif.compute_hessian_from_gradients(findif_meta_dict, -1)
+        H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, -1)
         optstash.restore()
         return core.Matrix.from_array(H)

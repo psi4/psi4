@@ -160,23 +160,23 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater) {
     //  %-20.15f",options_.get_str("CORR_ANSATZ").c_str(),options_.get_str("CORR_WFN").c_str(),scs_pseudo_second_order_energy);
 
     if (options_.get_str("PT_ENERGY") == "SECOND_ORDER") {
-        Process::environment.globals["CURRENT ENERGY"] = second_order_energy;
-        Process::environment.globals["MRPT TOTAL ENERGY"] = second_order_energy;
+        ref_wfn_->set_scalar_variable("CURRENT ENERGY", second_order_energy);
+        ref_wfn_->set_scalar_variable("MRPT TOTAL ENERGY", second_order_energy);
         outfile->Printf("\n\n  Wrote second order energy to checkpoint file");
     }
     if (options_.get_str("PT_ENERGY") == "SCS_SECOND_ORDER") {
-        Process::environment.globals["CURRENT ENERGY"] = scs_second_order_energy;
-        Process::environment.globals["MRPT TOTAL ENERGY"] = scs_second_order_energy;
+        ref_wfn_->set_scalar_variable("CURRENT ENERGY", scs_second_order_energy);
+        ref_wfn_->set_scalar_variable("MRPT TOTAL ENERGY", scs_second_order_energy);
         outfile->Printf("\n\n  Wrote spin-component-scaled second order energy to checkpoint file");
     }
     if (options_.get_str("PT_ENERGY") == "PSEUDO_SECOND_ORDER") {
-        Process::environment.globals["CURRENT ENERGY"] = pseudo_second_order_energy;
-        Process::environment.globals["MRPT TOTAL ENERGY"] = pseudo_second_order_energy;
+        ref_wfn_->set_scalar_variable("CURRENT ENERGY", pseudo_second_order_energy);
+        ref_wfn_->set_scalar_variable("MRPT TOTAL ENERGY", pseudo_second_order_energy);
         outfile->Printf("\n\n  Wrote pseudo-second order energy to checkpoint file");
     }
     if (options_.get_str("PT_ENERGY") == "SCS_PSEUDO_SECOND_ORDER") {
-        Process::environment.globals["CURRENT ENERGY"] = scs_pseudo_second_order_energy;
-        Process::environment.globals["MRPT TOTAL ENERGY"] = scs_pseudo_second_order_energy;
+        ref_wfn_->set_scalar_variable("CURRENT ENERGY", scs_pseudo_second_order_energy);
+        ref_wfn_->set_scalar_variable("MRPT TOTAL ENERGY", scs_pseudo_second_order_energy);
         outfile->Printf("\n\n  Wrote spin-component-scaled pseudo-second order energy to checkpoint file");
     }
 

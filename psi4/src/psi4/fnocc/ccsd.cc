@@ -171,6 +171,14 @@ double CoupledCluster::compute_energy() {
         Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
         Process::environment.globals["CURRENT ENERGY"] = emp2 + escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2;
+
+        energy_ = emp2 + escf;
+        set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
+        set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
+        set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
+        set_scalar_variable("MP2 TOTAL ENERGY", emp2 + escf);
+        set_scalar_variable("CURRENT ENERGY", emp2 + escf);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", emp2);
         tstop();
         return emp2 + escf;
     }
@@ -265,8 +273,10 @@ double CoupledCluster::compute_energy() {
         }
 
         // now there should be space for t2
+        std::vector<double> buffer;
         if (t2_on_disk) {
-            tb = (double *)malloc(o * o * v * v * sizeof(double));
+            buffer.resize(o * o * v * v);
+            tb = buffer.data();
             auto psio = std::make_shared<PSIO>();
             psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
             psio->read_entry(PSIF_DCC_T2, "t2", (char *)&tb[0], o * o * v * v * sizeof(double));
@@ -333,11 +343,6 @@ double CoupledCluster::compute_energy() {
                 Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + emp4_t;
                 Process::environment.globals["CURRENT ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + emp4_t + escf;
             }
-        }
-
-        // if we allocated t2 just for triples, free it
-        if (t2_on_disk) {
-            free(tb);
         }
     }
 

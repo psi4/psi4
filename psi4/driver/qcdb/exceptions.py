@@ -158,3 +158,20 @@ class FeatureDeprecated(QcdbException):
         QcdbException.__init__(self, msg)
         self.msg = msg
         print('\nFeature deprecated: {}\n\n'.format(msg))
+
+
+class UpgradeHelper(QcdbException):
+    """Error called on previously valid syntax that now isn't and a
+    simple syntax transition is possible.
+
+    It is much preferred to leave the old syntax valid for a release
+    cycle and have the old syntax raise a deprecation FutureWarning. For
+    cases where the syntax just has to jump, this can be used to trap
+    the old syntax at first error and suggest the new.
+
+    """
+
+    def __init__(self, old, new, version, elaboration):
+        msg = "Using `{}` instead of `{}` is obsolete as of {}.{}".format(old, new, version, elaboration)
+        QcdbException.__init__(self, msg)
+        print('\nQcdbException: %s\n\n' % (msg))

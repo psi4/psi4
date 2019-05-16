@@ -399,6 +399,18 @@ F/I-SAPT
   *J. Chem. Phys.* **143**, 051103 (2015).
   (doi: `10.1063/1.4927575 <http://dx.doi.org/10.1063/1.4927575>`_)
 
+The derivation of the second-order exchange terms without the single-exchange
+approximation are found in the following two works:
+
+* "Intermolecular exchange-induction energies without the overlap expansion,"
+  R. Sch\ |a_dots|\ ffer and G. Jansen, *Theor. Chem. Acc.* **131**, 1235 (2012).
+  (doi: `10.1007/s00214-012-1235-6 <http://dx.doi.org/10.1007/s00214-012-1235-6>`_)
+
+* "Single-determinant-based symmetry-adapted perturbation theory without
+  single-exchange approximation," 
+  R. Sch\ |a_dots|\ ffer and G. Jansen, *Mol. Phys.* **111**, 2570 (2013).
+  (doi: `10.1080/00268976.2013.827253 <http://dx.doi.org/10.1080/00268976.2013.827253>`_)
+
 Orbital-Optimized Post-Hartree |--| Fock Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Orbital-optimized second-order perturbation theory (OMP2)
@@ -564,7 +576,7 @@ Architectures
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
-    C++11 compliance (*i.e.*, GCC version 4.9 or above).
+    C++14 compliance (*i.e.*, GCC version 5.1 or above).
     For some architectures, a :ref:`precompiled binary
     <sec:conda>` is available. See :ref:`Compiling and Installing
     <sec:installFile>` for details.
@@ -572,8 +584,9 @@ Python
     |PSIfour| 1.1 and 1.2 are supported on Python 2.7, 3.5,
     and 3.6. After 1.2, only Python 3 will be supported
     `in accordance with other scientific software projects
-    <https://python3statement.org/>`_). Once Python 3.7 is released,
+    <https://python3statement.org/>`_). Now that Python 3.7 is released,
     the plan is to support >=3.6 or at least two Python versions.
+    |PSIfour| 1.3 supports Python 3.6 and 3.7.
 
 .. index:: license
 
