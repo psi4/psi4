@@ -81,7 +81,7 @@ def name_dft_test(val):
     pytest.param(           'BP86', 0.4599766012, '6-31G'),  # Q-Chem
     pytest.param(        'BP86VWN', 0.4588991901, '6-31G'),  # Q-Chem
     pytest.param(      'CAM-B3LYP', 0.4568003604, '6-31G'),  # Q-Chem
-#    pytest.param(       'CAM-LDA0', 0.4688834734, '6-31G'),  # ERKALE
+    pytest.param(       'CAM-LDA0', 0.4688834734, '6-31G'),  # ERKALE
     pytest.param(           'dlDF', 0.4620507089, '6-31G'),  # Q-Chem
     pytest.param('DSD-PBEB95-D3BJ', 0.44615418,   '6-31G', marks=using_dftd3),  # Q-Chem
     pytest.param('DSD-PBEP86-D3BJ', 0.44599836,   '6-31G', marks=using_dftd3),  # Q-Chem
@@ -94,7 +94,7 @@ def name_dft_test(val):
     pytest.param(        'HCTH407', 0.4627707723, '6-31G'),  # Q-Chem
     pytest.param(         'HCTH93', 0.4587611969, '6-31G'),  # Q-Chem
     pytest.param(        'LC-VV10', 0.4556872545, '6-31G'),  # Q-Chem
-#    pytest.param(           'LDA0', 0.4506129625, '6-31G'),  # ERKALE
+    pytest.param(           'LDA0', 0.4506129625, '6-31G'),  # ERKALE
     pytest.param(        'LRC-BOP', 0.4595497115, '6-31G'),  # Q-Chem
     pytest.param(       'LRC-wPBE', 0.4580992958, '6-31G'),  # Q-Chem
     pytest.param(      'LRC-wPBEh', 0.4549011451, '6-31G', marks=pytest.mark.quick),  # Q-Chem
@@ -205,7 +205,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(      'BP86', -0.0138889593,  '6-31G'),  #   Q-Chem
     pytest.param(   'BP86VWN', -0.0138884252,  '6-31G'),  #   Q-Chem
     pytest.param( 'CAM-B3LYP', -0.0159494700,  '6-31G'),  #   Q-Chem
-#    pytest.param(  'CAM-LDA0', -0.0172600346,  '6-31G'),  #   ERKALE
+    pytest.param(  'CAM-LDA0', -0.0172600346,  '6-31G'),  #   ERKALE
     pytest.param(      'dlDF', -0.0100880118,  '6-31G'),  #   Q-Chem
     pytest.param(      'EDF1', -0.0112660306,  '6-31G'),  #   Q-Chem
     pytest.param(      'EDF2', -0.0155177142,  '6-31G'),  #   Q-Chem
@@ -215,7 +215,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(   'HCTH407', -0.0135769693,  '6-31G'),  #   Q-Chem
     pytest.param(    'HCTH93', -0.0110370744,  '6-31G'),  #   Q-Chem
     pytest.param(   'LC-VV10', -0.0156463704,  '6-31G'),  #   Q-Chem
-#    pytest.param(      'LDA0', -0.0178827299,  '6-31G'),  #   ERKALE
+    pytest.param(      'LDA0', -0.0178827299,  '6-31G'),  #   ERKALE
     pytest.param(   'LRC-BOP', -0.0157298937,  '6-31G'),  #   Q-Chem
     pytest.param(  'LRC-wPBE', -0.0147152576,  '6-31G'),  #   Q-Chem
     pytest.param( 'LRC-wPBEh', -0.0147072182,  '6-31G'),  #   Q-Chem
