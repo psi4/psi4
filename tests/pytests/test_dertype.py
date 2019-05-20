@@ -87,7 +87,7 @@ mock_proc = {
     (('energy', 'Eg_man', 0), (0, 0)),  # analytic
 ])
 def test_negotiate(inp, out):
-    dertype = negotiate_derivative_type(proc=mock_proc, return_strategy=True, *inp)
+    dertype = negotiate_derivative_type(proc=mock_proc, *inp)
     assert dertype == out
 
 
@@ -108,7 +108,7 @@ def test_negotiate(inp, out):
 ])
 def test_negotiate_missing_error(inp):
     with pytest.raises(psi4.MissingMethodError) as e:
-        negotiate_derivative_type(proc=mock_proc, return_strategy=True, *inp)
+        negotiate_derivative_type(proc=mock_proc, *inp)
 
 
 @pytest.mark.parametrize("inp", [
@@ -133,6 +133,6 @@ def test_negotiate_missing_error(inp):
 ])
 def test_negotiate_excessive_error(inp):
     with pytest.raises(psi4.ValidationError) as e:
-        negotiate_derivative_type(proc=mock_proc, return_strategy=True, *inp)
+        negotiate_derivative_type(proc=mock_proc, *inp)
 
     assert 'excessive for target calculation' in str(e.value)

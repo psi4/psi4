@@ -1231,7 +1231,7 @@ def _build_cbs_compute(metameta, metadata):
                         None, None
                     ])))
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
-                                         False)
+                                         delta["options_lo"])
             GRAND_NEED.append(
                 dict(
                     zip(d_fields, [
@@ -1260,7 +1260,7 @@ def _build_cbs_compute(metameta, metadata):
         dups = -1
         for indx_job, job in enumerate(JOBS):
             if ((job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis'])
-                    and (job['f_options'] == mc['f_options'])):
+                    and (job['f_options'] == mc['f_options']) and (job['f_options'] is not False)):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
@@ -1277,7 +1277,7 @@ def _build_cbs_compute(metameta, metadata):
             for wfn in VARH[mc['f_wfn']]:
                 for indx_job, job in enumerate(JOBS):
                     if ((VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']])
-                            and (mc['f_basis'] == job['f_basis']) and not (mc['f_wfn'] == job['f_wfn'])):
+                            and (mc['f_basis'] == job['f_basis']) and not (mc['f_wfn'] == job['f_wfn']) and (mc['f_options'] is False)):
                         del JOBS[indx_job]
 
     instructions += """\n    Enlightened listing of computations required.\n"""
