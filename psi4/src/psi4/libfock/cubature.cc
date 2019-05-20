@@ -56,44 +56,10 @@ using namespace psi;
 
 namespace {
 
-// double TreutlerEta(unsigned Z) {
-// // Treutler/Ahlrichs 1995 mapping parameters
-//     static  const double Eta[104] =
-//      { 1.0,
-//       0.800, 0.900,                                                                
-//       1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900, 
-//       1.400, 1.300,                      1.300, 1.200, 1.100, 1.000, 1.000, 1.000, 
-//       1.500, 1.400,1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100,1.100, 1.000, 0.900, 0.900, 0.900, 0.900,     
-//       2.000, 1.700,1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,     
-//       2.500, 2.200,                                                                
-//              2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,                                                                             
-//       1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 
-//       2.500, 2.100,                                                                
-//              3.685,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
-//     };
-//     if (Z < sizeof Eta / sizeof Eta[0])
-//         return Eta[Z];
-//     else
-//         return 1.5;
-
-// }
-
+// clang-format off
 double GetBSRadiusNew(unsigned Z) {
-// Turbomole via private communication [in Angstrom??]. Somehow this works best!
-    // clang-format off
-    static const double BSRadiiTM[104] = {
-      1.000,
-      0.350,                                                                                                                 0.400, // He
-      1.450, 1.050,                                                                       0.850, 0.700, 0.650, 0.600, 0.500, 0.550, // Ne
-      1.800, 1.500,                                                                       1.250, 1.100, 1.000, 1.000, 1.000, 0.900, // Ar
-      2.200, 1.800, 1.600, 1.400, 1.350, 1.400, 1.400, 1.400, 1.350, 1.350, 1.350, 1.350, 1.300, 1.250, 1.150, 1.150, 1.150, 1.200, // Kr
-      2.350, 2.000, 1.800, 1.550, 1.450, 1.450, 1.350, 1.300, 1.350, 1.400, 1.600, 1.550, 1.550, 1.450, 1.450,1.400, 1.400, 1.400,// Xe
-      2.600, 2.150, 1.950, 1.850, 1.850, 1.850, 1.850, 1.850, 1.850, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, //  Lu
-      1.550, 1.450, 1.350, 1.350, 1.300, 1.350, 1.350, 1.350, 1.500, 1.900, 1.800, 1.600, 1.900, 1.900, 1.900, // Rn
-      2.900, 2.150,  1.950, 1.800, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750 // Lr
-    };
-    // // Bragg-Slater radii  J.C. Slater JCP 41, (1964), 3199 [bohr]
-    static const double BraggRadius[104] ={ 1.00,
+    // Bragg-Slater radii  J.C. Slater JCP 41, (1964), 3199 [bohr]
+    static const std::vector<double> BSRadius ={ 1.00,
       0.661,                                                                                                                0.661, // He
       2.740, 1.984,                                                                      1.606, 1.323, 1.228, 1.134, 0.945, 0.900, //-Ne
       3.402, 2.835,                                                                      2.362, 2.079, 1.890, 1.890, 1.890, 1.890, //Ar
@@ -105,30 +71,18 @@ double GetBSRadiusNew(unsigned Z) {
       4.063, 4.063,                                                                //Fr-Ra
              3.685, 3.401,3.401,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,3.307,//Ac-Lr
     };
-    // if (Z < sizeof BraggRadius / sizeof BraggRadius[0])
-    //     return BraggRadius[Z];
-    // else
-    //     return 3.50; // ??
-    if (Z < sizeof BSRadiiTM / sizeof BSRadiiTM[0])
-        return BSRadiiTM[Z];
+    if (Z < BSRadius.size())
+       {
+        // outfile->Printf("BS radii debug: %i %f!\n", Z,BSRadius.data()[Z]);
+        return BSRadius.data()[Z];
+        }
     else
-        return 1.750;
+        return 3.30; // just a guess
 };
 
 double GetBSRadius(unsigned Z) {
-    // static const double BSRadiiTM[104] = {
-    //   1.000,
-    //   0.350,                                                                                                                 0.400, // He
-    //   1.450, 1.050,                                                                       0.850, 0.700, 0.650, 0.600, 0.500, 0.550, // Ne
-    //   1.800, 1.500,                                                                       1.250, 1.100, 1.000, 1.000, 1.000, 0.900, // Ar
-    //   2.200, 1.800, 1.600, 1.400, 1.350, 1.400, 1.400, 1.400, 1.350, 1.350, 1.350, 1.350, 1.300, 1.250, 1.150, 1.150, 1.150, 1.200, // Kr
-    //   2.350, 2.000, 1.800, 1.550, 1.450, 1.450, 1.350, 1.300, 1.350, 1.400, 1.600, 1.550, 1.550, 1.450, 1.450,1.400, 1.400, 1.400,// Xe
-    //   2.600, 2.150, 1.950, 1.850, 1.850, 1.850, 1.850, 1.850, 1.850, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, //  Lu
-    //   1.550, 1.450, 1.350, 1.350, 1.300, 1.350, 1.350, 1.350, 1.500, 1.900, 1.800, 1.600, 1.900, 1.900, 1.900, // Rn
-    //   2.900, 2.150,  1.950, 1.800, 1.800, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750, 1.750 // Lr
-    // };
     // Not sure where these numbers come from...
-    static const double BSRadii[55] = {
+    static const std::vector<double> BSRadii = {
         1.000,
         1.001,                                                                                                                 1.012,
         0.825, 1.408,                                                                       1.485, 1.452, 1.397, 1.342, 1.287, 1.243,
@@ -136,11 +90,7 @@ double GetBSRadius(unsigned Z) {
         1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
         1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
     };
-    //     if (Z < sizeof BSRadiiTM / sizeof BSRadiiTM[0])
-    //     return BSRadiiTM[Z];
-    // else
-    //     return 1.881;
-    if (Z < sizeof BSRadii / sizeof BSRadii[0])
+    if (Z < BSRadii.size())
         return BSRadii[Z];
     else
         return 1.881;
@@ -3597,12 +3547,14 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // this assumes r goes from farthest to closest
     // prunes grid based on 3 different regions. 
     // no pruning for heavy atoms
+    // Turbomole appears to use BS radii in Angstrom. The smaller sphere appears
+    // to make this more stable. At least for non-diffuse densities.
     if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
     int pruned_order = nominal_order_;    
     // H, He always 1 smaller
     if(Z <= 2) { pruned_order = nominal_order_ - 1; }; //ToDo: flag to enable/disable
 
-    int region1=7; // TM has 7, but paper 5
+    int region1=7; // 5, as in the paper, is too small. 7 appears to favored also by other programs.
     int region2=11;
 
     double nr3=(double)radial_pts/3.0; 
@@ -3612,8 +3564,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     } else if ( ri < 2*nr3 && ri >= nr2 ){
         pruned_order = region2;
     };
-    // debug
-    // printf("Z= %d ; pruned_order = %d ; r= %d | %f %f %d \n",Z,pruned_order,ri,nr3,nr2,radial_pts);
+
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
@@ -3621,7 +3572,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
 
 int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // this assumes r goes from farthest to closest
-    // prunes grid based on 4 different regions.
+    // prunes grid based on (in principle) 4 different regions.
     // robust version of Treutler pruning
     if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
     int pruned_order = nominal_order_;    
@@ -3630,11 +3581,9 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
 
     // devide BS shell into 4 equal regions
     double nr=(double)radial_pts/4.0; 
-    // int region1=nominal_order_ - 10;
-    // int region1= nominal_order_ - 14;
-    int region1= 7;
-    int region2= nominal_order_ - 6;
-    int region3=nominal_order_;
+    int region1= 7; // appears safe
+    int region2= nominal_order_ - 6; // could be further tuned but little influence.
+    int region3=nominal_order_; // not reducing the grid for this quarter reduces the error greatly.
     int region4=nominal_order_;
     // S22 interaction energy OK with above
     if (ri <= nr ) { // <= 25
@@ -3646,8 +3595,6 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     } else if ( ri >= 3*nr ){
         pruned_order = region1;
     };
-    // debug
-    // printf("Z= %d ; pruned_order = %d ; i= %d \n",Z,pruned_order,ri);
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
@@ -3783,8 +3730,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
 
         std::vector<double> r(rs[A].size()), wr(rs[A].size());
-        double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
-        // double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
+        // double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
+        double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
 
         // Bloody great
         for (size_t i = 0; i < rs[A].size(); i++) {
@@ -4703,8 +4650,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     RadialGrid *grid = new RadialGrid();
 
     // // Treutler/Ahlrichs 1995 mapping parameters
-    static  const double TreutlerEta[104] =
-     { 1.0,
+    static const std::vector<double> TreutlerEta =  { 1.0,
       0.800, 0.900,                                                                
       1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900, 
       1.400, 1.300,                      1.300, 1.200, 1.100, 1.000, 1.000, 1.000, 
@@ -4726,8 +4672,8 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
 
     // double INVLN2 = 0.9 / log(2.0);
 
-    //ToDo: for diffuse basis sets one wants to add scale Eta (e.g. by 2). How?
-    double INVLN2 = TreutlerEta[Z] /  log(2.0);
+    //ToDo: for diffuse basis sets one might want to add scale Eta (e.g. by 2). How?
+    double INVLN2 = TreutlerEta.data()[Z] /  log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {
         double x = cos(tau / (npoints + 1.0) * M_PI);
