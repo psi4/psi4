@@ -5,6 +5,7 @@ trigger:
   - 1.3.x
 
 variables:
+  llvm.version: '7.0.1' # Note: LLVM 8.0.0 fails to build the optimized libint
   mkl.version: '2019.1'
 
 jobs:
@@ -133,7 +134,7 @@ jobs:
       # Install LLVM
       # Note: LLVM distributed by conda is too old
       - script: |
-          choco install llvm --yes
+          choco install llvm --version %LLVM_VERSION% --yes
           set PATH=C:\Program Files\LLVM\bin;%PATH%
           echo '##vso[task.setvariable variable=PATH]%PATH%'
           clang-cl --version

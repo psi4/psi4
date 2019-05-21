@@ -21,8 +21,8 @@ requirements:
 build:
   string: py{{ environ['PY_VER'].replace('.', '') }}_{{ 'debug' if environ['CMAKE_BUILD_TYPE'] == 'Debug' else '0' }}
   script:
-    - copy /y {{ INSTALL_DIR }}\bin\psi4     {{ PREFIX }}\Scripts
-    - copy /y {{ INSTALL_DIR }}\bin\psi4.bat {{ PREFIX }}\Scripts
+    - md {{ PREFIX }}\Scripts
+    - copy /y {{ INSTALL_DIR }}\bin\psi4 {{ PREFIX }}\Scripts
     - echo __pycache__ > exclude.txt
     - xcopy /f /i /s /exclude:exclude.txt {{ INSTALL_DIR }}\lib\psi4 {{ SP_DIR }}\psi4
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\basis       {{ PREFIX }}\Lib\share\psi4\basis
