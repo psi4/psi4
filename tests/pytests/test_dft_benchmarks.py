@@ -38,7 +38,6 @@ def dft_bench_systems():
     psi4.set_options({
        'dft_radial_points': 200,
        'dft_spherical_points': 590,
-       'dft_pruning_type': 'robust',
        'guess': 'sad',
        'e_convergence': 9,
        'd_convergence': 9,
