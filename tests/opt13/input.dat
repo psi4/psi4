@@ -1,6 +1,7 @@
 #! B3LYP cc-pVDZ geometry optimzation of phenylacetylene, starting from
 #! not quite linear structure
-b3lyp_E  = -308.4136960
+#! updated reference due to new BraggSlater radii
+b3lyp_E  = -308.4136912294716808
 
 molecule {
 0 1
