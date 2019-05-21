@@ -1492,14 +1492,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
         /*- The DFT grid specification, such as SG1.!expert -*/
         options.add_str("DFT_GRID_NAME", "", "SG0 SG1");
-        /*- Pruning Scheme. !expert -*/
-        options.add_str("DFT_PRUNING_SCHEME", "FLAT",
+        /*- Select function for Pruning Scheme=FUNCTION. !expert -*/
+        options.add_str("DFT_PRUNING_FUNCTION", "FLAT",
                         "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
         /*- Spread alpha for logarithmic pruning. !expert -*/
         options.add_double("DFT_PRUNING_ALPHA", 1.0);
-        /*- type of pruning (temporary) -*/
-        options.add_str("DFT_PRUNING_TYPE", "FUNCTION",
-                                            "FUNCTION TREUTLER ROBUST");
+        /*- select type of pruning -*/
+        options.add_str("DFT_PRUNING_SCHEME", "FUNCTION",
+                                            "FUNCTION REGION NONE");
+        /*- Select approach for Pruning Scheme=REGION. -*/
+        options.add_str("DFT_PRUNING_REGION", "ROBUST",
+                                            "ROBUST TREUTLER");
         /*- The maximum number of grid points per evaluation block. !expert -*/
         options.add_int("DFT_BLOCK_MAX_POINTS", 256);
         /*- The minimum number of grid points per evaluation block. !expert -*/

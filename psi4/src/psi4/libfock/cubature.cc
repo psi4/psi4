@@ -3499,22 +3499,22 @@ class RadialPruneMgr {
     static double d_gaussian(double rho, double /*alpha*/) { return rho * rho * exp(1 - rho * rho); }
     static double log_gaussian(double rho, double alpha) { return exp(-alpha * log(rho) * log(rho)); }
 
-    struct PruneSchemeTable {
+    struct PruneFunctionTable {
         const char *name;
         double (*scalFn)(double, double);
     };
-    static PruneSchemeTable pruneschemes[];
+    static PruneFunctionTable prunefunctions[];
 
    public:
-    static int WhichPruneScheme(const char *schemename);
-    static const char *SchemeName(int which) { return pruneschemes[which].name; }
+    static int WhichPruneFunction(const char *functionname);
+    static const char *FunctionName(int which) { return prunefunctions[which].name; }
     RadialPruneMgr(MolecularGrid::MolecularGridOptions const &opt);
     int GetPrunedNumAngPts(double rho);
     int ShellPruning(int ri, int Z, int radial_pts);
     int TreutlerShellPruning(int ri, int Z, int radial_pts);
 };
 
-RadialPruneMgr::PruneSchemeTable RadialPruneMgr::pruneschemes[] = {{"FLAT", flat},
+RadialPruneMgr::PruneFunctionTable RadialPruneMgr::prunefunctions[] = {{"FLAT", flat},
                                                                    {"P_SLATER", p_slater},
                                                                    {"D_SLATER", d_slater},
                                                                    {"LOG_SLATER", log_slater},
@@ -3523,16 +3523,16 @@ RadialPruneMgr::PruneSchemeTable RadialPruneMgr::pruneschemes[] = {{"FLAT", flat
                                                                    {"LOG_GAUSSIAN", log_gaussian},
                                                                    {nullptr, nullptr}};
 
-int RadialPruneMgr::WhichPruneScheme(const char *schemename) {
-    for (size_t i = 0; i < sizeof(pruneschemes) / sizeof(pruneschemes[0]); i++)
-        if (strcmp(pruneschemes[i].name, schemename) == 0) return i;
-    outfile->Printf("Unrecognized pruning scheme %s!\n", schemename);
-    throw PSIEXCEPTION("Unrecognized pruning scheme!");
+int RadialPruneMgr::WhichPruneFunction(const char *functionname) {
+    for (size_t i = 0; i < sizeof(prunefunctions) / sizeof(prunefunctions[0]); i++)
+        if (strcmp(prunefunctions[i].name, functionname) == 0) return i;
+    outfile->Printf("Unrecognized pruning function name  %s!\n", functionname);
+    throw PSIEXCEPTION("Unrecognized pruning function name!");
 }
 
 RadialPruneMgr::RadialPruneMgr(MolecularGrid::MolecularGridOptions const &opt) {
     nominal_order_ = LebedevGridMgr::findOrderByNPoints(opt.nangpts);
-    pruneFn_ = pruneschemes[opt.prunescheme].scalFn;
+    pruneFn_ = prunefunctions[opt.prunefunction].scalFn;
     alpha_ = opt.pruning_alpha;
 }
 int RadialPruneMgr::GetPrunedNumAngPts(double rho) {
@@ -3638,17 +3638,13 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             spherical_grids_[A] = spheres;
             
             for (int i = 0; i < opt.nradpts; i++) {
-            // for (int i = opt.nradpts; i-- > 0; ) {
-                // if (opt.pruning_function) {int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);};
-                // if (opt.pruning_treutler) {int numAngPts = prune.TreutlerAtomicPruning(r[i], Z, opt.nradpts );};
-                // int numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);
                 int numAngPts = 0;
-                if (opt.prunetype=="TREUTLER") {numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);}
-                else if (opt.prunetype=="ROBUST") {numAngPts = prune.ShellPruning(i, Z, opt.nradpts);}
-                else if (opt.prunetype=="FUNCTION") {numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);}
+                if (opt.prunescheme=="REGION") {
+                    if (opt.pruneregion=="TREUTLER") {numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);}
+                    else if (opt.pruneregion=="ROBUST") {numAngPts = prune.ShellPruning(i, Z, opt.nradpts);}    
+                }
+                else if (opt.prunescheme=="FUNCTION" || opt.prunescheme=="NONE" ) {numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);}
                 assert(numAngPts>0);
-                // int numAngPts = prune.ShellPruning(i, Z, opt.nradpts);
-                // int numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
@@ -4057,7 +4053,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
                                    std::map<std::string, std::string> opts_map) {
     std::map<std::string, std::string> full_str_options;
     std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME",
-                                         "DFT_GRID_NAME", "DFT_PRUNING_TYPE"};
+                                         "DFT_GRID_NAME", "DFT_PRUNING_REGION", "DFT_PRUNING_FUNCTION"};
     for (auto key : str_keys) {
         if (opts_map.find(key) != opts_map.end()) {
             full_str_options[key] = opts_map[key];
@@ -4083,13 +4079,20 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     opt.bs_radius_alpha = options_.get_double("DFT_BS_RADIUS_ALPHA");
     opt.pruning_alpha = options_.get_double("DFT_PRUNING_ALPHA");
     opt.radscheme = RadialGridMgr::WhichScheme(full_str_options["DFT_RADIAL_SCHEME"].c_str());
-    opt.prunescheme = RadialPruneMgr::WhichPruneScheme(full_str_options["DFT_PRUNING_SCHEME"].c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(full_str_options["DFT_NUCLEAR_SCHEME"].c_str());
     opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
     opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
-    // opt.prunetype = full_str_options["DFT_PRUNING_TYPE"];
-    opt.prunetype = options_.get_str("DFT_PRUNING_TYPE");
+
+    // handle pruning options
+    opt.prunescheme = options_.get_str("DFT_PRUNING_SCHEME");
+    opt.prunefunction = RadialPruneMgr::WhichPruneFunction(full_str_options["DFT_PRUNING_FUNCTION"].c_str());
+    opt.pruneregion = options_.get_str("DFT_PRUNING_REGION");
+    if (opt.prunescheme=="NONE"){
+        // opt.prunescheme = "FUNCTION";
+        opt.prunefunction = RadialPruneMgr::WhichPruneFunction("FLAT");
+    }
+    
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
         LebedevGridMgr::PrintHelp();  // Tell what the admissible values are.
@@ -4119,7 +4122,7 @@ void PseudospectralGrid::buildGridFromOptions() {
     opt.bs_radius_alpha = options_.get_double("PS_BS_RADIUS_ALPHA");
     opt.pruning_alpha = options_.get_double("PS_PRUNING_ALPHA");
     opt.radscheme = RadialGridMgr::WhichScheme(options_.get_str("PS_RADIAL_SCHEME").c_str());
-    opt.prunescheme = RadialPruneMgr::WhichPruneScheme(options_.get_str("PS_PRUNING_SCHEME").c_str());
+    opt.prunefunction = RadialPruneMgr::WhichPruneFunction(options_.get_str("PS_PRUNING_SCHEME").c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(options_.get_str("PS_NUCLEAR_SCHEME").c_str());
     opt.namedGrid = StandardGridMgr::WhichGrid(options_.get_str("PS_GRID_NAME").c_str());
     opt.nradpts = options_.get_int("PS_RADIAL_POINTS");
@@ -4244,9 +4247,12 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Molecular Quadrature <=\n\n");
     printer->Printf("    Radial Scheme          = %14s\n", RadialGridMgr::SchemeName(options_.radscheme));
-    printer->Printf("    Pruning Type           = %14s\n", options_.prunetype.c_str()); // prints garbage, why??
-    if(options_.prunetype == "FUNCTION" ) {
-    printer->Printf("    Pruning Scheme         = %14s\n", RadialPruneMgr::SchemeName(options_.prunescheme));    
+    printer->Printf("    Pruning Scheme         = %14s\n", options_.prunescheme.c_str()); 
+    if(options_.prunescheme == "FUNCTION" ) {
+    printer->Printf("    Pruning Function       = %14s\n", RadialPruneMgr::FunctionName(options_.prunefunction));    
+    }
+    else if(options_.prunescheme == "REGION" ) {
+    printer->Printf("    Pruning Region         = %14s\n", options_.pruneregion.c_str());
     }
     printer->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
     printer->Printf("\n");
@@ -4670,9 +4676,6 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     grid->r_ = new double[npoints];
     grid->w_ = new double[npoints];
 
-    // double INVLN2 = 0.9 / log(2.0);
-
-    //ToDo: for diffuse basis sets one might want to add scale Eta (e.g. by 2). How?
     double INVLN2 = TreutlerEta.data()[Z] /  log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {

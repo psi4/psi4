@@ -115,12 +115,13 @@ class MolecularGrid {
         double bs_radius_alpha;
         double pruning_alpha;
         short radscheme;  // Effectively an enumeration
-        short prunescheme;
+        short prunefunction;
         short nucscheme;
         short namedGrid;  // -1 = None, 0 = SG-0, 1 = SG-1
         int nradpts;
         int nangpts;
-        std::string prunetype;
+        std::string pruneregion;
+        std::string prunescheme;
     };
 
    protected:
