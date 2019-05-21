@@ -154,7 +154,7 @@ void DPD::T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int
         W2[Gab] = dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
 
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W1[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            ::memset(W1[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 
@@ -203,7 +203,7 @@ void DPD::T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            ::memset(W2[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 
@@ -254,7 +254,7 @@ void DPD::T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            ::memset(W2[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 
@@ -305,7 +305,7 @@ void DPD::T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            ::memset(W2[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 
@@ -355,7 +355,7 @@ void DPD::T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            ::memset(W2[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 
@@ -405,7 +405,7 @@ void DPD::T3_RHF_ic(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            ::memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            ::memset(W2[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 

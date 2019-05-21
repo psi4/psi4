@@ -61,8 +61,8 @@ int DPD::file4_mat_irrep_row_rd(dpdfile4 *File, int irrep, int row) {
             dpd_error("dpd_file4_mat_irrep_row_rd", "outfile");
         }
         for (; row > seek_block; row -= seek_block)
-            row_ptr = psio_get_address(row_ptr, seek_block * coltot * sizeof(double));
-        row_ptr = psio_get_address(row_ptr, row * coltot * sizeof(double));
+            row_ptr = psio_get_address(row_ptr, sizeof(double) * seek_block * coltot);
+        row_ptr = psio_get_address(row_ptr, sizeof(double) * row * coltot);
     }
 
     if (coltot)
