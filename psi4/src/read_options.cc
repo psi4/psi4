@@ -1496,7 +1496,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         ``FLAT`` ``P_GAUSSIAN`` ``D_GAUSSIAN`` ``P_SLATER`` ``D_SLATER`` ``LOG_GAUSSIAN`` ``LOG_SLATER`` prune based on decaying functions (experts only!).
         The recommended option are ``ROBUST`` or ``TREUTLER``.
          -*/
-        options.add_str("DFT_PRUNING_SCHEME", "ROBUST",
+        options.add_str("DFT_PRUNING_SCHEME", "NONE",
                         "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Spread alpha for logarithmic pruning. !expert -*/
         options.add_double("DFT_PRUNING_ALPHA", 1.0);

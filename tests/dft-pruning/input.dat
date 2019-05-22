@@ -1,0 +1,31 @@
+#! Tests all grid pruning options available and check grid size
+
+molecule water{ 
+0 1
+ O  -1.551007  -0.114520   0.000000
+ H  -1.934259   0.762503   0.000000
+ H  -0.599677   0.040712   0.000000
+}
+
+set scf_type pk
+set maxiter 1
+set FAIL_ON_MAXITER false
+
+SCHEMES={
+"NONE" : 66989, #TEST
+"FLAT" : 66989, #TEST
+"TREUTLER" : 37217, #TEST
+"ROBUST" : 45929, #TEST
+"P_SLATER" : 21465, #TEST
+"D_SLATER" : 15681, #TEST
+"LOG_SLATER" : 13377, #TEST
+"P_GAUSSIAN" : 16059, #TEST
+"D_GAUSSIAN" : 11727, #TEST
+"LOG_GAUSSIAN" : 15948, #TEST
+}
+
+for scheme in SCHEMES:
+  set DFT_PRUNING_SCHEME $scheme
+  energy('pbe/sto-3g')
+  points=variable('XC GRID TOTAL POINTS')
+  compare_values(SCHEMES[scheme],points,2,'grid points for '+scheme) #TEST
