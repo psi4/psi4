@@ -1492,17 +1492,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
         /*- The DFT grid specification, such as SG1.!expert -*/
         options.add_str("DFT_GRID_NAME", "", "SG0 SG1");
-        /*- Select function for Pruning Scheme=FUNCTION. !expert -*/
+        /*- Select approach for pruning. Options ``ROBUST`` and ``TREUTLER`` prune based on regions (proximity to nucleus) while
+        ``FLAT`` ``P_GAUSSIAN`` ``D_GAUSSIAN`` ``P_SLATER`` ``D_SLATER`` ``LOG_GAUSSIAN`` ``LOG_SLATER`` prune based on decaying functions (experts only!).
+        The recommended option are ``ROBUST`` or ``TREUTLER``.
+         -*/
         options.add_str("DFT_PRUNING_SCHEME", "ROBUST",
-                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
+                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Spread alpha for logarithmic pruning. !expert -*/
         options.add_double("DFT_PRUNING_ALPHA", 1.0);
-        /*- select type of pruning -*/
-        // options.add_str("DFT_PRUNING_SCHEME", "FUNCTION",
-        //                                     "FUNCTION REGION NONE");
-        // - Select approach for Pruning Scheme=REGION. -
-        // options.add_str("DFT_PRUNING_REGION", "ROBUST",
-        //                                     "ROBUST TREUTLER");
         // /*- The maximum number of grid points per evaluation block. !expert -*/
         options.add_int("DFT_BLOCK_MAX_POINTS", 256);
         /*- The minimum number of grid points per evaluation block. !expert -*/
