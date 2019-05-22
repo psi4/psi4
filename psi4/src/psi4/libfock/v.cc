@@ -715,6 +715,171 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     }
     timer_off("RV: Form V");
 }
+
+std::vector<SharedMatrix> RV::compute_fock_derivatives() {
+    timer_on("RV: Form Fx");
+
+    int natoms = primary_->molecule()->natom();
+    std::vector<SharedMatrix> ret(3*natoms);
+    if (D_AO_.size() != 1) {
+        throw PSIEXCEPTION("DFT Hessian: RKS should have only one D Matrix");
+    }
+
+    if (functional_->needs_vv10()) {
+        throw PSIEXCEPTION("DFT Hessian: RKS cannot compute VV10 Fx contribution.");
+    }
+
+    // Thread info
+    int rank = 0;
+
+    // What local XC ansatz are we in?
+    int ansatz = functional_->ansatz();
+    if (ansatz >= 1) {
+        throw PSIEXCEPTION("DFT Hessian: RKS does not support GGAs or MGGAs yet");
+    }
+
+    int old_func_deriv = functional_->deriv();
+
+    // How many functions are there (for lda in Vtemp, T)
+    int max_functions = grid_->max_functions();
+    int max_points = grid_->max_points();
+
+    // Set pointers to SCF density
+    for (size_t i = 0; i < num_threads_; i++) {
+        point_workers_[i]->set_pointers(D_AO_[0]);
+    }
+
+    // Per [R]ank quantities
+    std::vector<std::shared_ptr<Vector>> R_rho;
+    std::vector<SharedMatrix> R_Vx_local;
+    for (size_t i = 0; i < num_threads_; i++) {
+        R_Vx_local.push_back(std::make_shared<Matrix>("Vx Temp", nbf_, nbf_));
+        R_rho.push_back(std::make_shared<Vector>("Rho Temp", max_points));
+
+        functional_workers_[i]->set_deriv(2);
+        functional_workers_[i]->allocate();
+    }
+
+    // Output quantities
+    std::vector<SharedMatrix> Vx_AO;
+    for (size_t i = 0; i < 3*natoms; i++) {
+        Vx_AO.push_back(std::make_shared<Matrix>("Vx AO Temp", nbf_, nbf_));
+    }
+
+// Traverse the blocks of points
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+// Get thread info
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        // => Setup <= //
+        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
+        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+        double** Vx_localp = R_Vx_local[rank]->pointer();
+
+        // => Compute blocks <= //
+        double** Tp = pworker->scratch()[0]->pointer();
+
+        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
+        int npoints = block->npoints();
+        double* w = block->w();
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        int nlocal = function_map.size();
+
+        // Compute Rho, Phi, etc
+        parallel_timer_on("Properties", rank);
+        pworker->compute_points(block);
+        parallel_timer_off("Properties", rank);
+
+        // Compute functional values
+
+        parallel_timer_on("Functional", rank);
+        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        parallel_timer_off("Functional", rank);
+
+        // => Grab quantities <= //
+        // LDA
+        double** phi = pworker->basis_value("PHI")->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->pointer();
+        double* v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
+        double* rho_k = R_rho[rank]->pointer();
+        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
+
+        // Loop over perturbation tensors
+        parallel_timer_on("Derivative Properties", rank);
+        // Rho_a = D^k_xy phi_xa phi_ya
+//        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 0.0, Tp[0],
+//                max_functions);
+//        C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 1.0, Tp[0],
+//                max_functions);
+
+//        for (int P = 0; P < npoints; P++) {
+//            rho[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
+//        }
+
+        parallel_timer_off("Derivative Properties", rank);
+
+        // => LSDA contribution (symmetrized) <= //
+        parallel_timer_on("V_XCd", rank);
+        // parallel_timer_on("LSDA", rank);
+        for (int P = 0; P < npoints; P++) {
+            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
+            if (rho_a[P] < v2_rho_cutoff_) continue;
+            C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P] * rho_k[P], phi[P], 1, Tp[P], 1);
+        }
+        // parallel_timer_off("LSDA", rank);
+
+        // Put it all together
+        // parallel_timer_on("LSDA", rank);
+        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, Vx_localp[0],
+                max_functions);
+        // parallel_timer_off("LSDA", rank);
+
+        // Symmetrization (V is *always* Hermitian)
+        for (int m = 0; m < nlocal; m++) {
+            for (int n = 0; n <= m; n++) {
+                Vx_localp[m][n] = Vx_localp[n][m] = Vx_localp[m][n] + Vx_localp[n][m];
+            }
+        }
+
+        // => Unpacking <= //
+        int dindex = 1;
+        double** Vxp = Vx_AO[dindex]->pointer();
+        for (int ml = 0; ml < nlocal; ml++) {
+            int mg = function_map[ml];
+            for (int nl = 0; nl < ml; nl++) {
+                int ng = function_map[nl];
+#pragma omp atomic update
+                Vxp[mg][ng] += Vx_localp[ml][nl];
+#pragma omp atomic update
+                Vxp[ng][mg] += Vx_localp[ml][nl];
+            }
+#pragma omp atomic update
+            Vxp[mg][mg] += Vx_localp[ml][ml];
+        }
+        parallel_timer_off("V_XCd", rank);
+    }
+
+//     Set the result
+//    for (size_t i = 0; i < Dx.size(); i++) {
+//        if (Dx[i]->nirrep() != 1) {
+//            ret[i]->apply_symmetry(Vx_AO[i], AO2USO_);
+//        } else {
+//            ret[i]->copy(Vx_AO[i]);
+//        }
+//    }
+
+    // Reset the workers
+    for (size_t i = 0; i < num_threads_; i++) {
+        functional_workers_[i]->set_deriv(old_func_deriv);
+        functional_workers_[i]->allocate();
+    }
+    timer_off("RV: Form Fx");
+    return ret;
+}
+
 void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
     timer_on("RV: Form Vx");
 

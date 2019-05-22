@@ -1125,6 +1125,11 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         }
     }
 
+    // => XC Gradient <= //
+    if (functional_->needs_xc()) {
+        auto terms = potential_->compute_fock_derivatives();
+    }
+
     // => Fpi <= //
     {
         auto Tpi = std::make_shared<Matrix>("Tpi",nmo,nocc);
