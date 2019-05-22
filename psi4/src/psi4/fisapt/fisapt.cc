@@ -195,7 +195,7 @@ void FISAPT::partition() {
         outfile->Printf("    Charge Completeness = %5.3f\n\n", delta);
         for (int a = 0; a < na; a++) {
             if (QFp[0][a] > delta || QFp[1][a] > delta || QFp[2][a] > delta) {
-                continue;
+                ;
             } else if (QFp[0][a] + QFp[2][a] > delta) {
                 link_orbs.push_back(a);
                 link_types.push_back("AC");
@@ -206,7 +206,7 @@ void FISAPT::partition() {
                 link_orbs.push_back(a);
                 link_types.push_back("AB");
             } else if (QFp[0][a] + QFp[1][a] > delta) {
-                continue;
+                ;
             } else {
                 throw PSIEXCEPTION("FISAPT: A, B, and C are bonded?! 3c-2e bonds are not cool.");
             }
