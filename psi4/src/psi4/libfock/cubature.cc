@@ -3639,11 +3639,11 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = 0;
-                if (opt.prunescheme=="REGION") {
-                    if (opt.pruneregion=="TREUTLER") {numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);}
-                    else if (opt.pruneregion=="ROBUST") {numAngPts = prune.ShellPruning(i, Z, opt.nradpts);}    
+                if (opt.prunetype=="REGION") {
+                    if (opt.prunescheme=="TREUTLER") {numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);}
+                    else if (opt.prunescheme=="ROBUST") {numAngPts = prune.ShellPruning(i, Z, opt.nradpts);}    
                 }
-                else if (opt.prunescheme=="FUNCTION" || opt.prunescheme=="NONE" ) {numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);}
+                else if (opt.prunetype=="FUNCTION" || opt.prunescheme=="NONE" ) {numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);}
                 assert(numAngPts>0);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
@@ -4053,7 +4053,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
                                    std::map<std::string, std::string> opts_map) {
     std::map<std::string, std::string> full_str_options;
     std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME",
-                                         "DFT_GRID_NAME", "DFT_PRUNING_REGION", "DFT_PRUNING_FUNCTION"};
+                                         "DFT_GRID_NAME"};
     for (auto key : str_keys) {
         if (opts_map.find(key) != opts_map.end()) {
             full_str_options[key] = opts_map[key];
@@ -4084,15 +4084,27 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
     opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
 
+
     // handle pruning options
+    static const std::vector<std::string> function_names = {"FLAT","P_SLATER","D_SLATER","LOG_SLATER","P_GAUSSIAN","D_GAUSSIAN","LOG_GAUSSIAN"};
+    static const std::vector<std::string> region_names = {"ROBUST", "TREUTLER"};
     opt.prunescheme = options_.get_str("DFT_PRUNING_SCHEME");
-    opt.prunefunction = RadialPruneMgr::WhichPruneFunction(full_str_options["DFT_PRUNING_FUNCTION"].c_str());
-    opt.pruneregion = options_.get_str("DFT_PRUNING_REGION");
-    if (opt.prunescheme=="NONE"){
-        // opt.prunescheme = "FUNCTION";
-        opt.prunefunction = RadialPruneMgr::WhichPruneFunction("FLAT");
+
+    for (auto key : region_names) {        
+        if (opt.prunescheme == key) {
+            opt.prunetype="REGION";
+        }
     }
-    
+    for (auto key : function_names) {        
+        if (opt.prunescheme == key) {
+            opt.prunetype="FUNCTION";
+            opt.prunefunction=RadialPruneMgr::WhichPruneFunction(opt.prunescheme.c_str());
+        }
+    }
+    if (opt.prunescheme == "NONE"){
+        opt.prunetype="FUNCTION";
+        opt.prunefunction=RadialPruneMgr::WhichPruneFunction("FLAT");
+    }
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
         LebedevGridMgr::PrintHelp();  // Tell what the admissible values are.
@@ -4247,12 +4259,9 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => Molecular Quadrature <=\n\n");
     printer->Printf("    Radial Scheme          = %14s\n", RadialGridMgr::SchemeName(options_.radscheme));
-    printer->Printf("    Pruning Scheme         = %14s\n", options_.prunescheme.c_str()); 
-    if(options_.prunescheme == "FUNCTION" ) {
-    printer->Printf("    Pruning Function       = %14s\n", RadialPruneMgr::FunctionName(options_.prunefunction));    
-    }
-    else if(options_.prunescheme == "REGION" ) {
-    printer->Printf("    Pruning Region         = %14s\n", options_.pruneregion.c_str());
+    printer->Printf("    Pruning Scheme         = %14s\n", options_.prunescheme.c_str());
+    if(options_.prunescheme != "NONE" ) {
+        printer->Printf("    Pruning Type           = %14s\n", options_.prunetype.c_str());
     }
     printer->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
     printer->Printf("\n");
@@ -4266,6 +4275,9 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     printer->Printf("    Max Functions          = %14d\n", max_functions_);
     // printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
     printer->Printf("\n");
+    Process::environment.globals["XC GRID TOTAL POINTS"] = npoints_;
+    Process::environment.globals["XC GRID SPHERICAL POINTS"] =options_.nangpts;
+    Process::environment.globals["XC GRID RADIAL POINTS"] = options_.nradpts;
 }
 void MolecularGrid::print_details(std::string out, int /*print*/) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
