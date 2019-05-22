@@ -3739,8 +3739,8 @@ void FISAPT::find() {
         // => JK Object <= //
 
         // TODO: Account for 2-index overhead in memory
-        long int nso = primary_->nbf();
-        long int jk_memory = (long int)doubles_;
+        auto nso = primary_->nbf();
+        auto jk_memory = (long int)doubles_;
         jk_memory -= 24 * nso * nso;
         jk_memory -= 4 * na * nso;
         jk_memory -= 4 * nb * nso;
