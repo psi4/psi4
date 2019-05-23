@@ -2722,7 +2722,6 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     } else if (scheme == BECKE || scheme == TREUTLER || SBECKE) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
-                // double rad_ratio = GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
                 double rad_ratio = GetBSRadiusNew(mol->true_atomic_number(i)) / GetBSRadiusNew(mol->true_atomic_number(j));
                 double chi = (scheme == BECKE) ? rad_ratio : sqrt(rad_ratio);
                 double a = getAfromChi(chi);
@@ -3573,7 +3572,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
 int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // this assumes r goes from farthest to closest
     // prunes grid based on (in principle) 4 different regions.
-    // robust version of Treutler pruning
+    // robust version of Treutler pruning.
     if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
     int pruned_order = nominal_order_;    
     // H, He always reduced by 1
@@ -3627,7 +3626,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
         if (opt.namedGrid == -1) {  // Not using a named grid
             std::vector<double> r(opt.nradpts), wr(opt.nradpts);
-            // double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
             double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
             RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r.data(),
                                           wr.data(), alpha);
@@ -3726,7 +3724,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
 
         std::vector<double> r(rs[A].size()), wr(rs[A].size());
-        // double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
         double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
 
         // Bloody great
