@@ -2675,8 +2675,8 @@ class NuclearWeightMgr {
                     (mp.z - molecule_->z(A)) * (mp.z - molecule_->z(A)));
     }
 
-    static double BeckeMu(double ri, double rj ,double inv_rij);
-    static double SmoothBeckeMu(double ri, double rj ,double inv_rij);
+    static double BeckeMu(double ri, double rj, double inv_rij);
+    static double SmoothBeckeMu(double ri, double rj, double inv_rij);
     static double BeckeStepFunction(double x);
     static double StratmannStepFunction(double mu);
 
@@ -2697,8 +2697,8 @@ class NuclearWeightMgr {
     double computeNuclearWeight(MassPoint mp, int A, double stratmannCutoff) const;
 };
 
-const char *NuclearWeightMgr::nuclearschemenames[] = {"NAIVE", "BECKE", "TREUTLER",
-                                                      "STRATMANN", "SBECKE"};  // Must match `enum NuclearSchemes' !
+const char *NuclearWeightMgr::nuclearschemenames[] = {"NAIVE", "BECKE", "TREUTLER", "STRATMANN",
+                                                      "SBECKE"};  // Must match `enum NuclearSchemes' !
 
 NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     int natom = mol->natom();
@@ -2722,7 +2722,8 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     } else if (scheme == BECKE || scheme == TREUTLER || SBECKE) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
-                double rad_ratio = GetBSRadiusNew(mol->true_atomic_number(i)) / GetBSRadiusNew(mol->true_atomic_number(j));
+                double rad_ratio =
+                    GetBSRadiusNew(mol->true_atomic_number(i)) / GetBSRadiusNew(mol->true_atomic_number(j));
                 double chi = (scheme == BECKE) ? rad_ratio : sqrt(rad_ratio);
                 double a = getAfromChi(chi);
                 amatrix_[i][j] = a;
@@ -2747,20 +2748,21 @@ int NuclearWeightMgr::WhichScheme(const char *schemename) {
 }
 
 // See Becke, J. Chem. Phys. 88 (1988) 2547-2553 (standard mu)
-double NuclearWeightMgr::BeckeMu(double ri, double rj, double inv_rij) {
-    return (ri - rj) * inv_rij;
-}
+double NuclearWeightMgr::BeckeMu(double ri, double rj, double inv_rij) { return (ri - rj) * inv_rij; }
 
 // smoother Becke (SBECKE) integration after Ochsenfeld J. Chem. Phys. 149, 204111 (2018); doi: 10.1063/1.5049435
-double NuclearWeightMgr::SmoothBeckeMu(double ri, double rj, double inv_rij) { 
-    static double RCut=5.0;
-    static double invRCut=1.0/RCut;
-    double mu = (ri - rj) * std::max(inv_rij,invRCut);
-    if(mu <= -1.0) {return  -1.0;}
-    else if(mu >= 1.0 ) {return 1.0;}
-    else {return mu;}
+double NuclearWeightMgr::SmoothBeckeMu(double ri, double rj, double inv_rij) {
+    static double RCut = 5.0;
+    static double invRCut = 1.0 / RCut;
+    double mu = (ri - rj) * std::max(inv_rij, invRCut);
+    if (mu <= -1.0) {
+        return -1.0;
+    } else if (mu >= 1.0) {
+        return 1.0;
+    } else {
+        return mu;
+    }
 }
-
 
 // See Becke, J. Chem. Phys. 88 (1988) 2547-2553
 double NuclearWeightMgr::BeckeStepFunction(double x) {
@@ -2848,7 +2850,7 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
     for (int l = 0; l < natom; l++) dist[l] = distToAtom(mp, l);
 
     double (*stepFunction)(double) = (scheme_ == STRATMANN) ? StratmannStepFunction : BeckeStepFunction;
-    double (*muFunction)(double,double,double) = (scheme_ == SBECKE) ? SmoothBeckeMu : BeckeMu;
+    double (*muFunction)(double, double, double) = (scheme_ == SBECKE) ? SmoothBeckeMu : BeckeMu;
 
     double numerator = NAN;
     double denominator = 0;
@@ -2857,7 +2859,7 @@ double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratm
         for (int j = 0; j < natom; j++) {
             if (i == j) continue;
             // if ( dist[j] >= (dist[i]+RCut) ) continue; // sugested cutoff
-            double mu = muFunction(dist[i],dist[j], inv_dist_[i][j] );
+            double mu = muFunction(dist[i], dist[j], inv_dist_[i][j]);
             double nu = mu + amatrix_[i][j] * (1 - mu * mu);  // Adjust for ratios between atomic radii
             double s = stepFunction(nu);
             prod *= s;
@@ -3473,7 +3475,7 @@ OrientationMgr::OrientationMgr(std::shared_ptr<Molecule> mol) {
     rotation_ = Q;
 }
 
-}  // Local namespace
+}  // namespace
 
 namespace psi {
 
@@ -3514,13 +3516,13 @@ class RadialPruneMgr {
 };
 
 RadialPruneMgr::PruneFunctionTable RadialPruneMgr::prunefunctions[] = {{"FLAT", flat},
-                                                                   {"P_SLATER", p_slater},
-                                                                   {"D_SLATER", d_slater},
-                                                                   {"LOG_SLATER", log_slater},
-                                                                   {"P_GAUSSIAN", p_gaussian},
-                                                                   {"D_GAUSSIAN", d_gaussian},
-                                                                   {"LOG_GAUSSIAN", log_gaussian},
-                                                                   {nullptr, nullptr}};
+                                                                       {"P_SLATER", p_slater},
+                                                                       {"D_SLATER", d_slater},
+                                                                       {"LOG_SLATER", log_slater},
+                                                                       {"P_GAUSSIAN", p_gaussian},
+                                                                       {"D_GAUSSIAN", d_gaussian},
+                                                                       {"LOG_GAUSSIAN", log_gaussian},
+                                                                       {nullptr, nullptr}};
 
 int RadialPruneMgr::WhichPruneFunction(const char *functionname) {
     for (size_t i = 0; i < sizeof(prunefunctions) / sizeof(prunefunctions[0]); i++)
@@ -3541,26 +3543,29 @@ int RadialPruneMgr::GetPrunedNumAngPts(double rho) {
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 }
 
-
 int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // this assumes r goes from farthest to closest
-    // prunes grid based on 3 different regions. 
+    // prunes grid based on 3 different regions.
     // no pruning for heavy atoms
     // Turbomole appears to use BS radii in Angstrom. The smaller sphere appears
     // to make this more stable. At least for non-diffuse densities.
-    if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
-    int pruned_order = nominal_order_;    
+    if (Z >= 36) {
+        LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);
+    }
+    int pruned_order = nominal_order_;
     // H, He always 1 smaller
-    if(Z <= 2) { pruned_order = nominal_order_ - 1; }; //ToDo: flag to enable/disable
+    if (Z <= 2) {
+        pruned_order = nominal_order_ - 1;
+    };  // ToDo: flag to enable/disable
 
-    int region1=7; // 5, as in the paper, is too small. 7 appears to favored also by other programs.
-    int region2=11;
+    int region1 = 7;  // 5, as in the paper, is too small. 7 appears to favored also by other programs.
+    int region2 = 11;
 
-    double nr3=(double)radial_pts/3.0; 
-    double nr2=(double)radial_pts/2.0; 
-    if (ri >= 2*nr3 ) {
+    double nr3 = (double)radial_pts / 3.0;
+    double nr2 = (double)radial_pts / 2.0;
+    if (ri >= 2 * nr3) {
         pruned_order = region1;
-    } else if ( ri < 2*nr3 && ri >= nr2 ){
+    } else if (ri < 2 * nr3 && ri >= nr2) {
         pruned_order = region2;
     };
 
@@ -3573,32 +3578,35 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // this assumes r goes from farthest to closest
     // prunes grid based on (in principle) 4 different regions.
     // robust version of Treutler pruning.
-    if(Z >= 36) {LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);}
-    int pruned_order = nominal_order_;    
+    if (Z >= 36) {
+        LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);
+    }
+    int pruned_order = nominal_order_;
     // H, He always reduced by 1
-    if(Z <= 2) { pruned_order = nominal_order_ - 1; }; //ToDo: flag to enable/disable
+    if (Z <= 2) {
+        pruned_order = nominal_order_ - 1;
+    };  // ToDo: flag to enable/disable
 
     // devide BS shell into 4 equal regions
-    double nr=(double)radial_pts/4.0; 
-    int region1= 7; // appears safe
-    int region2= nominal_order_ - 6; // could be further tuned but little influence.
-    int region3=nominal_order_; // not reducing the grid for this quarter reduces the error greatly.
-    int region4=nominal_order_;
+    double nr = (double)radial_pts / 4.0;
+    int region1 = 7;                   // appears safe
+    int region2 = nominal_order_ - 6;  // could be further tuned but little influence.
+    int region3 = nominal_order_;      // not reducing the grid for this quarter reduces the error greatly.
+    int region4 = nominal_order_;
     // S22 interaction energy OK with above
-    if (ri <= nr ) { // <= 25
-        pruned_order = region4; 
-    } else if ( ri > nr && ri <= 2*nr ){ // > 25 && <= 50
+    if (ri <= nr) {  // <= 25
+        pruned_order = region4;
+    } else if (ri > nr && ri <= 2 * nr) {  // > 25 && <= 50
         pruned_order = region3;
-    } else if ( ri > 2*nr && ri <= 3*nr ){ // > 50 && <= 75
+    } else if (ri > 2 * nr && ri <= 3 * nr) {  // > 50 && <= 75
         pruned_order = region2;
-    } else if ( ri >= 3*nr ){
+    } else if (ri >= 3 * nr) {
         pruned_order = region1;
     };
     if (pruned_order > LebedevGridMgr::MaxOrder)
         throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
     return LebedevGridMgr::findNPointsByOrder_roundUp(pruned_order);
 }
-
 
 void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     options_ = opt;                                                // Save a copy
@@ -3634,15 +3642,19 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             radial_grids_[A] = RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha, Z);
             std::vector<std::shared_ptr<SphericalGrid>> spheres;
             spherical_grids_[A] = spheres;
-            
+
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = 0;
-                if (opt.prunetype=="REGION") {
-                    if (opt.prunescheme=="TREUTLER") {numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);}
-                    else if (opt.prunescheme=="ROBUST") {numAngPts = prune.ShellPruning(i, Z, opt.nradpts);}    
+                if (opt.prunetype == "REGION") {
+                    if (opt.prunescheme == "TREUTLER") {
+                        numAngPts = prune.TreutlerShellPruning(i, Z, opt.nradpts);
+                    } else if (opt.prunescheme == "ROBUST") {
+                        numAngPts = prune.ShellPruning(i, Z, opt.nradpts);
+                    }
+                } else if (opt.prunetype == "FUNCTION" || opt.prunescheme == "NONE") {
+                    numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);
                 }
-                else if (opt.prunetype=="FUNCTION" || opt.prunescheme=="NONE" ) {numAngPts = prune.GetPrunedNumAngPts(r[i] / alpha);}
-                assert(numAngPts>0);
+                assert(numAngPts > 0);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
@@ -4081,26 +4093,26 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
     opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
 
-
     // handle pruning options
-    static const std::vector<std::string> function_names = {"FLAT","P_SLATER","D_SLATER","LOG_SLATER","P_GAUSSIAN","D_GAUSSIAN","LOG_GAUSSIAN"};
+    static const std::vector<std::string> function_names = {"FLAT",       "P_SLATER",   "D_SLATER",    "LOG_SLATER",
+                                                            "P_GAUSSIAN", "D_GAUSSIAN", "LOG_GAUSSIAN"};
     static const std::vector<std::string> region_names = {"ROBUST", "TREUTLER"};
     opt.prunescheme = options_.get_str("DFT_PRUNING_SCHEME");
 
-    for (auto key : region_names) {        
+    for (auto key : region_names) {
         if (opt.prunescheme == key) {
-            opt.prunetype="REGION";
+            opt.prunetype = "REGION";
         }
     }
-    for (auto key : function_names) {        
+    for (auto key : function_names) {
         if (opt.prunescheme == key) {
-            opt.prunetype="FUNCTION";
-            opt.prunefunction=RadialPruneMgr::WhichPruneFunction(opt.prunescheme.c_str());
+            opt.prunetype = "FUNCTION";
+            opt.prunefunction = RadialPruneMgr::WhichPruneFunction(opt.prunescheme.c_str());
         }
     }
-    if (opt.prunescheme == "NONE"){
-        opt.prunetype="FUNCTION";
-        opt.prunefunction=RadialPruneMgr::WhichPruneFunction("FLAT");
+    if (opt.prunescheme == "NONE") {
+        opt.prunetype = "FUNCTION";
+        opt.prunefunction = RadialPruneMgr::WhichPruneFunction("FLAT");
     }
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
@@ -4257,7 +4269,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     printer->Printf("   => Molecular Quadrature <=\n\n");
     printer->Printf("    Radial Scheme          = %14s\n", RadialGridMgr::SchemeName(options_.radscheme));
     printer->Printf("    Pruning Scheme         = %14s\n", options_.prunescheme.c_str());
-    if(options_.prunescheme != "NONE" ) {
+    if (options_.prunescheme != "NONE") {
         printer->Printf("    Pruning Type           = %14s\n", options_.prunetype.c_str());
     }
     printer->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
@@ -4273,7 +4285,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     // printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
     printer->Printf("\n");
     Process::environment.globals["XC GRID TOTAL POINTS"] = npoints_;
-    Process::environment.globals["XC GRID SPHERICAL POINTS"] =options_.nangpts;
+    Process::environment.globals["XC GRID SPHERICAL POINTS"] = options_.nangpts;
     Process::environment.globals["XC GRID RADIAL POINTS"] = options_.nradpts;
 }
 void MolecularGrid::print_details(std::string out, int /*print*/) const {
@@ -4538,7 +4550,8 @@ void OctreeGridBlocker::block() {
     for (size_t A = 0; A < completed_tree.size(); A++) {
         std::vector<int> block = completed_tree[A];
         if (!block.size()) continue;
-        auto bop = std::make_shared<BlockOPoints>(A, block.size(), &x_[index], &y_[index], &z_[index], &w_[index], extents_);
+        auto bop =
+            std::make_shared<BlockOPoints>(A, block.size(), &x_[index], &y_[index], &z_[index], &w_[index], extents_);
         // BlockOPoints construction performs additional pruning. Need to test if any points remain.
         if (bop->local_nbf()) {
             blocks_.push_back(bop);
@@ -4665,6 +4678,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     RadialGrid *grid = new RadialGrid();
 
     // // Treutler/Ahlrichs 1995 mapping parameters
+    // clang-format off
     static const std::vector<double> TreutlerEta =  { 1.0,
       0.800, 0.900,                                                                
       1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900, 
@@ -4685,7 +4699,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     grid->r_ = new double[npoints];
     grid->w_ = new double[npoints];
 
-    double INVLN2 = TreutlerEta.data()[Z] /  log(2.0);
+    double INVLN2 = TreutlerEta.data()[Z] / log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {
         double x = cos(tau / (npoints + 1.0) * M_PI);
@@ -4839,4 +4853,4 @@ void SphericalGrid::lebedev_error() {
     outfile->Printf("    In Soviet Russia, grid build you!\n\n");
     throw PSIEXCEPTION("SphericalGrid: Bad Lebedev number requested, see outfile for details.");
 }
-}
+}  // namespace psi
