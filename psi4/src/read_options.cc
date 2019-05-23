@@ -1494,8 +1494,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DFT_GRID_NAME", "", "SG0 SG1");
         /*- Select approach for pruning. Options ``ROBUST`` and ``TREUTLER`` prune based on regions (proximity to nucleus) while
         ``FLAT`` ``P_GAUSSIAN`` ``D_GAUSSIAN`` ``P_SLATER`` ``D_SLATER`` ``LOG_GAUSSIAN`` ``LOG_SLATER`` prune based on decaying functions (experts only!).
-        The recommended option are ``ROBUST`` or ``TREUTLER``.
-         -*/
+        The recommended option are ``ROBUST`` or ``TREUTLER``. -*/
         options.add_str("DFT_PRUNING_SCHEME", "NONE",
                         "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Spread alpha for logarithmic pruning. !expert -*/

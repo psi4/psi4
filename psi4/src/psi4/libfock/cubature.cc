@@ -73,28 +73,28 @@ double GetBSRadiusNew(unsigned Z) {
     };
     if (Z < BSRadius.size())
        {
-        // outfile->Printf("BS radii debug: %i %f!\n", Z,BSRadius.data()[Z]);
         return BSRadius.data()[Z];
         }
     else
         return 3.30; // just a guess
 };
 
-double GetBSRadius(unsigned Z) {
-    // Not sure where these numbers come from...
-    static const std::vector<double> BSRadii = {
-        1.000,
-        1.001,                                                                                                                 1.012,
-        0.825, 1.408,                                                                       1.485, 1.452, 1.397, 1.342, 1.287, 1.243,
-        1.144, 1.364,                                                                       1.639, 1.716, 1.705, 1.683, 1.639, 1.595,
-        1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
-        1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
-    };
-    if (Z < BSRadii.size())
-        return BSRadii[Z];
-    else
-        return 1.881;
-};
+// legacy BS radii
+// double GetBSRadius(unsigned Z) {
+//     // Not sure where these numbers come from...
+//     static const std::vector<double> BSRadii = {
+//         1.000,
+//         1.001,                                                                                                                 1.012,
+//         0.825, 1.408,                                                                       1.485, 1.452, 1.397, 1.342, 1.287, 1.243,
+//         1.144, 1.364,                                                                       1.639, 1.716, 1.705, 1.683, 1.639, 1.595,
+//         1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
+//         1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
+//     };
+//     if (Z < BSRadii.size())
+//         return BSRadii[Z];
+//     else
+//         return 1.881;
+// };
 
 // LebedevGridMgr is a static class---all the members are static.
 // These functions don't necessarily *belong* in a class, but

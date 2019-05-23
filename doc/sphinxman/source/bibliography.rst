@@ -426,3 +426,7 @@ Bibliography
 .. [Schaffer:2013:2570]
    R. Sch\ |a_dots|\ ffer and G. Jansen
    *Mol. Phys.* **111**, 2570 (2013).
+
+.. [Laqua:2018:204111]
+   H. Laque, J. Kussmann and C. Ochsenfeld
+   *J. Chem. Phys.* **149**, 204111 (2018) 
