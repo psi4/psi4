@@ -102,11 +102,11 @@ void SAPT2::amplitudes() {
           PSIF_SAPT_AMPS, "Theta 2 BS Intermediates");
 }
 
-void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA, int nvirA, double *evalsA, int intfileB,
-                  const char *BSlabel, int foccB, int noccB, int nvirB, double *evalsB, int ampout,
+void SAPT2::tOVOV(int intfileA, const char *ARlabel, size_t foccA, size_t noccA, size_t nvirA, double *evalsA, int intfileB,
+                  const char *BSlabel, size_t foccB, size_t noccB, size_t nvirB, double *evalsB, size_t ampout,
                   const char *amplabel) {
-    int aoccA = noccA - foccA;
-    int aoccB = noccB - foccB;
+    size_t aoccA = noccA - foccA;
+    size_t aoccB = noccB - foccB;
 
     double **B_p_AR = get_DF_ints(intfileA, ARlabel, foccA, noccA, 0, nvirA);
     double **B_p_BS = get_DF_ints(intfileB, BSlabel, foccB, noccB, 0, nvirB);
@@ -132,7 +132,7 @@ void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA, int n
     free_block(tARBS);
 }
 
-void SAPT2::pOOpVV(int ampfile, const char *amplabel, const char *thetalabel, int aoccA, int nvirA, int ampout,
+void SAPT2::pOOpVV(int ampfile, const char *amplabel, const char *thetalabel, size_t aoccA, size_t nvirA, size_t ampout,
                    const char *OOlabel, const char *VVlabel) {
     double **tARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
     psio_->read_entry(ampfile, amplabel, (char *)tARAR[0], sizeof(double) * aoccA * nvirA * aoccA * nvirA);
@@ -159,8 +159,8 @@ void SAPT2::pOOpVV(int ampfile, const char *amplabel, const char *thetalabel, in
     free_block(pVV);
 }
 
-void SAPT2::theta(int ampfile, const char *amplabel, const char trans, bool antisymmetrized, int aoccA, int nvirA,
-                  int aoccB, int nvirB, const char *OVlabel, int ampout, const char *thetalabel) {
+void SAPT2::theta(int ampfile, const char *amplabel, const char trans, bool antisymmetrized, size_t aoccA, size_t nvirA,
+                  size_t aoccB, size_t nvirB, const char *OVlabel, size_t ampout, const char *thetalabel) {
     double **tARBS = block_matrix(aoccA * nvirA, aoccB * nvirB);
     psio_->read_entry(ampfile, amplabel, (char *)tARBS[0], sizeof(double) * aoccA * nvirA * aoccB * nvirB);
 
@@ -200,9 +200,9 @@ void SAPT2::theta(int ampfile, const char *amplabel, const char trans, bool anti
 }
 
 void SAPT2::Y2(int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel, int ampfile,
-               const char *pAAlabel, const char *pRRlabel, const char *thetalabel, int foccA, int noccA, int nvirA,
-               double *evals, int ampout, const char *Ylabel, const char *tlabel) {
-    int aoccA = noccA - foccA;
+               const char *pAAlabel, const char *pRRlabel, const char *thetalabel, size_t foccA, size_t noccA, size_t nvirA,
+               double *evals, size_t ampout, const char *Ylabel, const char *tlabel) {
+    size_t aoccA = noccA - foccA;
 
     double **yAR = block_matrix(aoccA, nvirA);
     double **tAR = block_matrix(aoccA, nvirA);
@@ -230,8 +230,8 @@ void SAPT2::Y2(int intfile, const char *AAlabel, const char *ARlabel, const char
 }
 
 void SAPT2::Y2_1(double **yAR, int intfile, const char *ARlabel, const char *RRlabel, int ampfile, const char *pRRlabel,
-                 int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                 size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double **pRR = block_matrix(nvirA, nvirA);
     psio_->read_entry(ampfile, pRRlabel, (char *)pRR[0], sizeof(double) * nvirA * nvirA);
@@ -262,8 +262,8 @@ void SAPT2::Y2_1(double **yAR, int intfile, const char *ARlabel, const char *RRl
 }
 
 void SAPT2::Y2_2(double **yAR, int intfile, const char *AAlabel, const char *ARlabel, int ampfile, const char *pAAlabel,
-                 int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                 size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double **pAA = block_matrix(aoccA, aoccA);
     psio_->read_entry(ampfile, pAAlabel, (char *)pAA[0], sizeof(double) * aoccA * aoccA);
@@ -294,8 +294,8 @@ void SAPT2::Y2_2(double **yAR, int intfile, const char *AAlabel, const char *ARl
 }
 
 void SAPT2::Y2_3(double **yAR, int intfile, const char *AAlabel, const char *RRlabel, int ampfile,
-                 const char *thetalabel, int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                 const char *thetalabel, size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double **T_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
     psio_->read_entry(ampfile, thetalabel, (char *)T_p_AR[0], sizeof(double) * aoccA * nvirA * (ndf_ + 3));
@@ -317,9 +317,9 @@ void SAPT2::Y2_3(double **yAR, int intfile, const char *AAlabel, const char *RRl
 }
 
 void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *thetalabel, int intfile, const char *AAlabel,
-                   const char *ARlabel, const char *RRlabel, int foccA, int noccA, int nvirA, double *evalsA,
-                   int ampout, const char *t2label) {
-    int aoccA = noccA - foccA;
+                   const char *ARlabel, const char *RRlabel, size_t foccA, size_t noccA, size_t nvirA, double *evalsA,
+                   size_t ampout, const char *t2label) {
+    size_t aoccA = noccA - foccA;
 
     double *t2ARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
 
@@ -419,9 +419,9 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *thetalabel, int 
 }
 
 void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *no_tlabel, const char *thetalabel, int intfile,
-                   const char *AAlabel, const char *ARlabel, const char *RRlabel, const char *no_RRlabel, int foccA,
-                   int noccA, int nvirA, int no_nvirA, double *evalsA, double **CA, int ampout, const char *t2label) {
-    int aoccA = noccA - foccA;
+                   const char *AAlabel, const char *ARlabel, const char *RRlabel, const char *no_RRlabel, size_t foccA,
+                   size_t noccA, size_t nvirA, size_t no_nvirA, double *evalsA, double **CA, size_t ampout, const char *t2label) {
+    size_t aoccA = noccA - foccA;
 
     double *t2ARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
 
@@ -573,7 +573,7 @@ void SAPT2::OVOpVp_to_OVpOpV(double *tARAR, int nocc, int nvir) {
     }
 }
 
-void SAPT2::ijkl_to_ikjl(double *tARAR, int ilength, int jlength, int klength, int llength) {
+void SAPT2::ijkl_to_ikjl(double *tARAR, size_t ilength, size_t jlength, size_t klength, size_t llength) {
     double *X = init_array(jlength * klength);
 
     for (int i = 0; i < ilength; i++) {
@@ -675,10 +675,10 @@ void SAPT2p::amplitudes() {
 }
 
 void SAPT2p::gARARxtARBS(int ampfile, const char *tlabel, const char trans, int intfile, const char *AAlabel,
-                         const char *ARlabel, const char *RRlabel, int foccA, int noccA, int nvirA, int foccB,
-                         int noccB, int nvirB, int ampout, const char *labelout) {
-    int aoccA = noccA - foccA;
-    int aoccB = noccB - foccB;
+                         const char *ARlabel, const char *RRlabel, size_t foccA, size_t noccA, size_t nvirA, size_t foccB,
+                         size_t noccB, size_t nvirB, size_t ampout, const char *labelout) {
+    size_t aoccA = noccA - foccA;
+    size_t aoccB = noccB - foccB;
 
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
     double **gARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
@@ -835,9 +835,9 @@ void SAPT2p3::amplitudes() {
 
 void SAPT2p3::Y3(int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel, int ampfile,
                  const char *qAAlabel, const char *qRRlabel, const char *qbarAAlabel, const char *qbarRRlabel,
-                 const char *thetalabel, const char *tlabel, int foccA, int noccA, int nvirA, double *evals, int ampout,
+                 const char *thetalabel, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA, double *evals, size_t ampout,
                  const char *Ylabel) {
-    int aoccA = noccA - foccA;
+    size_t aoccA = noccA - foccA;
 
     double **yAR = block_matrix(aoccA, nvirA);
 
@@ -857,8 +857,8 @@ void SAPT2p3::Y3(int intfile, const char *AAlabel, const char *ARlabel, const ch
 }
 
 void SAPT2p3::Y3_1(double **yAR, int intfile, const char *AAlabel, const char *ARlabel, int ampfile, const char *tlabel,
-                   int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                   size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double *tARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
     psio_->read_entry(ampfile, tlabel, (char *)tARAR, sizeof(double) * aoccA * nvirA * aoccA * nvirA);
@@ -909,9 +909,9 @@ void SAPT2p3::Y3_1(double **yAR, int intfile, const char *AAlabel, const char *A
 }
 
 void SAPT2p3::Y3_2(double **yAR, int intfile, const char *ARlabel, const char *RRlabel, int ampfile, const char *tlabel,
-                   int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
-    int virtri = nvirA * (nvirA + 1) / 2;
+                   size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
+    size_t virtri = nvirA * (nvirA + 1) / 2;
 
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
     double **AAAR = block_matrix(aoccA, aoccA * aoccA * nvirA);
@@ -973,8 +973,8 @@ void SAPT2p3::Y3_2(double **yAR, int intfile, const char *ARlabel, const char *R
 }
 
 void SAPT2p3::Y3_3(double **yAR, int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel,
-                   int ampfile, const char *tlabel, int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                   int ampfile, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double *tARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
     psio_->read_entry(ampfile, tlabel, (char *)tARAR, sizeof(double) * aoccA * nvirA * aoccA * nvirA);
@@ -1043,8 +1043,8 @@ void SAPT2p3::Y3_3(double **yAR, int intfile, const char *AAlabel, const char *A
 }
 
 void SAPT2p3::Y3_4(double **yAR, int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel,
-                   int ampfile, const char *tlabel, int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                   int ampfile, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double *tARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
     psio_->read_entry(ampfile, tlabel, (char *)tARAR, sizeof(double) * aoccA * nvirA * aoccA * nvirA);
@@ -1103,8 +1103,8 @@ void SAPT2p3::Y3_4(double **yAR, int intfile, const char *AAlabel, const char *A
 }
 
 void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char *BSlabel, double **wBAA, double **wBAR,
-                         double **wBRR, double **wABS, int noccA, int nvirA, double *evalsA, int noccB, int nvirB,
-                         double *evalsB, int ampout, const char *amplabel) {
+                         double **wBRR, double **wABS, size_t noccA, size_t nvirA, double *evalsA, size_t noccB, size_t nvirB,
+                         double *evalsB, size_t ampout, const char *amplabel) {
     double **sAR = block_matrix(noccA, nvirA);
     double **sBS = block_matrix(noccB, nvirB);
 
@@ -1180,8 +1180,8 @@ void SAPT2p3::inddisp30_amps() {
 }
 
 void SAPT2p3::inddisp30_ov(int AAfile, const char *AAlabel, const char *RRlabel, int ampfile, const char *Tlabel,
-                           int foccA, int noccA, int nvirA, double *evalsA, int ampout, const char *amplabel) {
-    int aoccA = noccA - foccA;
+                           size_t foccA, size_t noccA, size_t nvirA, double *evalsA, size_t ampout, const char *amplabel) {
+    size_t aoccA = noccA - foccA;
 
     double **B_p_AA = get_DF_ints(AAfile, AAlabel, foccA, noccA, foccA, noccA);
     double **B_p_RR = get_DF_ints(AAfile, RRlabel, 0, nvirA, 0, nvirA);
@@ -1320,11 +1320,11 @@ void SAPT2p3::inddisp30_ovov() {
 }
 
 void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile, const char *AAlabel, const char *RRlabel,
-                          int BBintfile, const char *BBlabel, const char *SSlabel, int foccA, int noccA, int nvirA,
-                          double *evalsA, int foccB, int noccB, int nvirB, double *evalsB, int ampout,
+                          int BBintfile, const char *BBlabel, const char *SSlabel, size_t foccA, size_t noccA, size_t nvirA,
+                          double *evalsA, size_t foccB, size_t noccB, size_t nvirB, double *evalsB, size_t ampout,
                           const char *tlabel) {
-    int aoccA = noccA - foccA;
-    int aoccB = noccB - foccB;
+    size_t aoccA = noccA - foccA;
+    size_t aoccB = noccB - foccB;
 
     double **tARBS = block_matrix(aoccA_ * nvirA_, aoccB_ * nvirB_);
     double **tABRS = block_matrix(aoccA * aoccB, nvirA * nvirB);

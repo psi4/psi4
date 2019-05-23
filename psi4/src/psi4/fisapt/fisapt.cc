@@ -151,9 +151,9 @@ void FISAPT::partition() {
     }
 
     outfile->Printf("   => Atomic Partitioning <= \n\n");
-    outfile->Printf("    Monomer A: %3d atoms\n", indA.size());
-    outfile->Printf("    Monomer B: %3d atoms\n", indB.size());
-    outfile->Printf("    Monomer C: %3d atoms\n", indC.size());
+    outfile->Printf("    Monomer A: %3zu atoms\n", indA.size());
+    outfile->Printf("    Monomer B: %3zu atoms\n", indB.size());
+    outfile->Printf("    Monomer C: %3zu atoms\n", indC.size());
     outfile->Printf("\n");
 
     // => Fragment Orbital Charges <= //
@@ -194,9 +194,8 @@ void FISAPT::partition() {
         double delta = options_.get_double("FISAPT_CHARGE_COMPLETENESS");
         outfile->Printf("    Charge Completeness = %5.3f\n\n", delta);
         for (int a = 0; a < na; a++) {
-            if (QFp[0][a] > delta) {
-            } else if (QFp[1][a] > delta) {
-            } else if (QFp[2][a] > delta) {
+            if (QFp[0][a] > delta || QFp[1][a] > delta || QFp[2][a] > delta) {
+                ;
             } else if (QFp[0][a] + QFp[2][a] > delta) {
                 link_orbs.push_back(a);
                 link_types.push_back("AC");
@@ -207,6 +206,7 @@ void FISAPT::partition() {
                 link_orbs.push_back(a);
                 link_types.push_back("AB");
             } else if (QFp[0][a] + QFp[1][a] > delta) {
+                ;
             } else {
                 throw PSIEXCEPTION("FISAPT: A, B, and C are bonded?! 3c-2e bonds are not cool.");
             }
@@ -474,11 +474,11 @@ void FISAPT::partition() {
     double YC = round(2.0 * orbsC.size());
 
     outfile->Printf("   => Partition Summary <=\n\n");
-    outfile->Printf("    Monomer A: %2d charge, %3d protons, %3d electrons, %3d docc\n", (int)(ZA - YA), (int)ZA,
+    outfile->Printf("    Monomer A: %2d charge, %3d protons, %3d electrons, %3zu docc\n", (int)(ZA - YA), (int)ZA,
                     (int)YA, orbsA.size());
-    outfile->Printf("    Monomer B: %2d charge, %3d protons, %3d electrons, %3d docc\n", (int)(ZB - YB), (int)ZB,
+    outfile->Printf("    Monomer B: %2d charge, %3d protons, %3d electrons, %3zu docc\n", (int)(ZB - YB), (int)ZB,
                     (int)YB, orbsB.size());
-    outfile->Printf("    Monomer C: %2d charge, %3d protons, %3d electrons, %3d docc\n", (int)(ZC - YC), (int)ZC,
+    outfile->Printf("    Monomer C: %2d charge, %3d protons, %3d electrons, %3zu docc\n", (int)(ZC - YC), (int)ZC,
                     (int)YC, orbsC.size());
     outfile->Printf("\n");
 }
@@ -3739,8 +3739,8 @@ void FISAPT::find() {
         // => JK Object <= //
 
         // TODO: Account for 2-index overhead in memory
-        int nso = primary_->nbf();
-        long int jk_memory = (long int)doubles_;
+        auto nso = primary_->nbf();
+        auto jk_memory = (long int)doubles_;
         jk_memory -= 24 * nso * nso;
         jk_memory -= 4 * na * nso;
         jk_memory -= 4 * nb * nso;
@@ -3765,7 +3765,7 @@ void FISAPT::find() {
             if (C < nB + nb) dfh_->fill_tensor("WBar", wB, {C, C + 1});
             if (C < nA + na) dfh_->fill_tensor("WAbs", wB, {C, C + 1});
 
-            outfile->Printf("    Responses for (A <- Source B = %3d) and (B <- Source A = %3d)\n\n",
+            outfile->Printf("    Responses for (A <- Source B = %3zu) and (B <- Source A = %3zu)\n\n",
                             (C < nB + nb ? C : nB + nb - 1), (C < nA + na ? C : nA + na - 1));
 
             auto cphf = std::make_shared<CPHF_FISAPT>();
@@ -4830,8 +4830,8 @@ void CPHF_FISAPT::compute_cphf() {
             if (alpha < 0.0) {
                 throw PSIEXCEPTION("Monomer A: A Matrix is not SPD");
             }
-            int no = x_A_->nrow();
-            int nv = x_A_->ncol();
+            size_t no = x_A_->nrow();
+            size_t nv = x_A_->ncol();
             double** xp = x_A_->pointer();
             double** rp = r_A->pointer();
             double** pp = p_A->pointer();

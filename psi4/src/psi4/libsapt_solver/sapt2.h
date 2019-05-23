@@ -105,38 +105,38 @@ class SAPT2 : public SAPT {
 
     double **get_DF_ints(int, const char *, int, int, int, int);
     double **get_DF_ints_nongimp(int, const char *, int, int, int, int);
-    void antisym(double *, int, int);
-    void antisym(double **, int, int);
+    void antisym(double *, size_t, size_t);
+    void antisym(double **, size_t, size_t);
 
-    void cphf_solver(double **, double **, double *, int, const char *, const char *, const char *, int, int);
+    void cphf_solver(double **, double **, double *, int, const char *, const char *, const char *, size_t, size_t);
 
     void exch_ind20rA_B();
     void exch_ind20rB_A();
 
-    void tOVOV(int, const char *, int, int, int, double *, int, const char *, int, int, int, double *, int,
+    void tOVOV(int, const char *, size_t, size_t, size_t, double *, int, const char *, size_t, size_t, size_t, double *, size_t,
                const char *);
-    void pOOpVV(int, const char *, const char *, int, int, int, const char *, const char *);
-    void theta(int, const char *, const char, bool, int, int, int, int, const char *, int, const char *);
+    void pOOpVV(int, const char *, const char *, size_t, size_t, size_t, const char *, const char *);
+    void theta(int, const char *, const char, bool, size_t, size_t, size_t, size_t, const char *, size_t, const char *);
 
-    void Y2(int, const char *, const char *, const char *, int, const char *, const char *, const char *, int, int, int,
-            double *, int, const char *, const char *);
-    void Y2_1(double **, int, const char *, const char *, int, const char *, int, int, int);
-    void Y2_2(double **, int, const char *, const char *, int, const char *, int, int, int);
-    void Y2_3(double **, int, const char *, const char *, int, const char *, int, int, int);
+    void Y2(int, const char *, const char *, const char *, int, const char *, const char *, const char *, size_t, size_t, size_t,
+            double *, size_t, const char *, const char *);
+    void Y2_1(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    void Y2_2(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    void Y2_3(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
 
-    void t2OVOV(int, const char *, const char *, int, const char *, const char *, const char *, int, int, int, double *,
-                int, const char *);
+    void t2OVOV(int, const char *, const char *, int, const char *, const char *, const char *, size_t, size_t, size_t, double *,
+                size_t, const char *);
     void t2OVOV(int, const char *, const char *, const char *, int, const char *, const char *, const char *,
-                const char *, int, int, int, int, double *, double **, int, const char *);
+                const char *, size_t, size_t, size_t, size_t, double *, double **, size_t, const char *);
 
     void OVOpVp_to_OVpOpV(double *, int, int);
-    void ijkl_to_ikjl(double *, int, int, int, int);
+    void ijkl_to_ikjl(double *, size_t, size_t, size_t, size_t);
     void symmetrize(double *, int, int);
 
-    void natural_orbitalify(int, const char *, double *evals, int, int, int, const char);
+    void natural_orbitalify(int, const char *, double *evals, int, int, size_t, const char);
     void natural_orbitalify_df_ints();
 
-    double elst120(double **, double **, double **, int, const char *, const char *, const char *, int, int, int);
+    double elst120(double **, double **, double **, int, const char *, const char *, const char *, size_t, size_t, size_t);
 
     double exch110(int, const char *);
     double exch101(int, const char *);
@@ -159,14 +159,14 @@ class SAPT2 : public SAPT {
     double ind220();
     double ind202();
     double ind220_1(int, const char *, const char *, const char *, int, const char *, double **, double **, double **,
-                    int, int, int, double *);
-    double ind220_2(int, const char *, double **, double **, double **, int, int, int);
-    double ind220_3(int, const char *, const char *, double **, double **, int, int, int);
-    double ind220_4(int, const char *, int, const char *, double **, int, int, int);
-    double ind220_5(int, const char *, double **, int, int, int, double *);
-    double ind220_6(int, const char *, const char *, const char *, int, const char *, double **, int, int, int);
+                    size_t, size_t, size_t, double *);
+    double ind220_2(int, const char *, double **, double **, double **, size_t, size_t, size_t);
+    double ind220_3(int, const char *, const char *, double **, double **, size_t, size_t, size_t);
+    double ind220_4(int, const char *, int, const char *, double **, size_t, size_t, size_t);
+    double ind220_5(int, const char *, double **, size_t, size_t, size_t, double *);
+    double ind220_6(int, const char *, const char *, const char *, int, const char *, double **, size_t, size_t, size_t);
     double ind220_7(int, const char *, const char *, const char *, int, const char *, int, const char *, const char *,
-                    const char *, double **, int, int, int, int, int, int);
+                    const char *, double **, size_t, size_t, size_t, size_t, size_t, size_t);
 
    public:
     SAPT2(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
