@@ -221,7 +221,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
             if (moinfo.sopi[h] && moinfo.virtpi[h]) {
                 C[h] = block_matrix(moinfo.sopi[h], moinfo.virtpi[h]);
                 psio_read(PSIF_CC_INFO, "RHF/ROHF Active Virtual Orbitals", (char *)C[h][0],
-                          moinfo.sopi[h] * moinfo.virtpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo.sopi[h] * moinfo.virtpi[h], next, &next);
             }
         }
         moinfo.C = C;
