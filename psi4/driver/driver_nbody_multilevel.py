@@ -28,7 +28,7 @@
 
 import numpy as np
 
-def prepare_results(self):
+def prepare_results(self, client=None):
     """
     Use different levels of theory for different expansion levels
     See kwargs description in driver_nbody.nbody_gufunc
@@ -56,7 +56,8 @@ def prepare_results(self):
         energy_bsse_dict = {b: 0 for b in self.bsse_type}
         self.max_nbody = n
         results = {k: v for k, v in self.task_list.items() if k.startswith(str(n))}
-        results = self.prepare_results(results=results)
+        results = self.prepare_results(results=results, client=client)
+        
 
         for m in range(n - 1, n + 1):
             if m == 0: continue
@@ -84,9 +85,9 @@ def prepare_results(self):
 
     if supersystem:
         # Super system recovers higher order effects at a lower level
-        supersystem_result = supersystem.pop('supersystem_' + str(self.max_frag)).get_results()
+        supersystem_result = supersystem.pop('supersystem_' + str(self.max_frag)).get_results(client=client)
         self.max_nbody = max(levels)
-        components = self.prepare_results(results=supersystem)
+        components = self.prepare_results(results=supersystem, client=client)
 
         energy_result += supersystem_result['properties']['return_energy'] - components['energy_body_dict'][self.max_nbody]
         for b in self.bsse_type:

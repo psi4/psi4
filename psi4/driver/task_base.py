@@ -120,8 +120,13 @@ class SingleResult(BaseTask):
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=2))
 
-            self.result_id = client.add_compute("psi4", self.method, self.basis, self.driver, keyword_id, [mol]).ids[0]
-            print("Submitting Single Result {}".format(self.result_id))
+            r = client.add_compute("psi4", self.method, self.basis, self.driver, keyword_id, [mol])
+            self.result_id = r.ids[0]
+
+            if self.result_id in r.existing:
+                print("Job already completed {}".format(self.result_id))
+            else:
+                print("Submitting Single Result {}".format(self.result_id))
 
             return
 

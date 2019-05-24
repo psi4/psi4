@@ -786,7 +786,7 @@ class NBodyComputer(BaseTask):
 
         nlevels = len({i.split('_')[0] for i in self.task_list})
         if nlevels > 1 and not results:
-            return driver_nbody_multilevel.prepare_results(self)
+            return driver_nbody_multilevel.prepare_results(self, client)
 
         metadata = self.dict().copy()
         results_list = {literal_eval(k.split('_')[1]): v.get_results(client=client) for k, v in (results.items() or self.task_list.items())}
