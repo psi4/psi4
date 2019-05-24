@@ -95,7 +95,7 @@ void local_filter_T1(dpdfile2 *T1) {
 
     local.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
     local.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
-    local.eps_vir = (double **)malloc(sizeof(double) * nocc * nocc);
+    local.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
     next = PSIO_ZERO;
     for (ij = 0; ij < nocc * nocc; ij++) {
         local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
