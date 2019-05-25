@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCLAMBDA_GLOBALS_H
+#define CCLAMBDA_GLOBALS_H
+
 /*! \file
     \ingroup CCLAMBDA
     \brief Enter brief description of file here
@@ -57,3 +60,5 @@ EXTERN struct Local local;
 void check_sum(char *lbl, int L_irr);
 }
 }  // namespace psi
+
+#endif

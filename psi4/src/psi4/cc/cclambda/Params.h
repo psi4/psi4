@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCLAMBDA_PARAMS_H
+#define CCLAMBDA_PARAMS_H
+
 /*! \file
     \ingroup CCLAMBDA
     \brief Enter brief description of file here
@@ -76,3 +79,5 @@ struct L_Params {
 
 }  // namespace cclambda
 }  // namespace psi
+
+#endif
