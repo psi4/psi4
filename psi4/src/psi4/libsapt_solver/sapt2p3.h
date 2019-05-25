@@ -72,9 +72,9 @@ class SAPT2p3 : public SAPT2p {
     void inddisp30_ov(int, const char *, const char *, int, const char *, size_t, size_t, size_t, double *, size_t, const char *);
     void inddisp30_ovov();
 
-    double disp30_1(int, const char *, int, const char *, int, const char *, int, int, int, int, int, int);
-    double disp30_2(int, const char *, int, const char *, const char *, int, const char *, const char *, int, int, int,
-                    int, int, int);
+    double disp30_1(int, const char *, int, const char *, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t);
+    double disp30_2(int, const char *, int, const char *, const char *, int, const char *, const char *, size_t, size_t, size_t,
+                    size_t, size_t, size_t);
 
     void disp30_amps(int, const char *, int, const char *, const char *, int, const char *, const char *, size_t, size_t, size_t,
                      double *, size_t, size_t, size_t, double *, size_t, const char *);

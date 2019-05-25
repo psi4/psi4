@@ -339,8 +339,8 @@ double SAPT2p::disp220q_1(int ampfile, const char *tlabel, const char *Tlabel, c
 }
 
 double SAPT2p::disp220q_2(int ampfile, const char *pAAlabel, const char *pRRlabel, const char *Tlabel, int intfile,
-                          const char *ARlabel, int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                          const char *ARlabel, size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double **pAA = block_matrix(aoccA, aoccA);
     double **pRR = block_matrix(nvirA, nvirA);

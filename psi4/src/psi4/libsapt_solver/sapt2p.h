@@ -58,7 +58,7 @@ class SAPT2p : public SAPT2 {
     double disp220d_2(int, const char *, const char *, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t, double *,
                       double *, const char);
     double disp220q_1(int, const char *, const char *, const char *, size_t, size_t);
-    double disp220q_2(int, const char *, const char *, const char *, int, const char *, int, int, int);
+    double disp220q_2(int, const char *, const char *, const char *, int, const char *, size_t, size_t, size_t);
     double disp220q_3(int, const char *, const char *, const char, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t);
     double disp220q_4(int, const char *, const char *, const char, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t);
 
@@ -88,35 +88,35 @@ class SAPT2p : public SAPT2 {
                     const char *, const char *, const char *, const char *, const char *, const char *, const char *,
                     const char *, const char *, const char *, int, const char *, int, const char *, double *, double *,
                     size_t, size_t, size_t, size_t, size_t, size_t);
-    double r_ccd_energy(const char *, const char *, int, int, int, int);
+    double r_ccd_energy(const char *, const char *, size_t, size_t, size_t, size_t);
     double r_ccd_iterate(const char *, const char *, const char *, const char *, const char *, const char *,
                          const char *, const char *, const char *, const char *, const char *, const char *, double *,
                          double *, int, int, int, int, int, int);
     double r_ccd_amplitudes(const char *, const char *, const char *, const char *, const char *, const char *,
                             const char *, const char *, const char *, const char *, const char *, double *, double *,
-                            int, int, int, int, int, int);
+                            size_t, size_t, size_t, size_t, size_t, size_t);
 
     void s_ccd_prep(const char *, const char *, const char *, const char *, const char *, const char *, const char *,
-                    double *, int, int, int, int, int, int);
+                    double *, size_t, size_t, size_t, size_t, size_t, size_t);
     double s_ccd_iterate(const char *, const char *, const char *, const char *, const char *, const char *,
                          const char *, const char *, const char *, const char *, const char *, const char *,
                          const char *, const char *, const char *, double *, int, int, int, std::shared_ptr<Matrix>);
     double s_ccd_amplitudes(const char *, const char *, const char *, const char *, const char *, const char *,
                             const char *, const char *, const char *, const char *, const char *, const char *,
-                            const char *, const char *, const char *, double *, int, int, int, std::shared_ptr<Matrix>);
+                            const char *, const char *, const char *, double *, size_t, size_t, size_t, std::shared_ptr<Matrix>);
 
     void ccd_prep(const char *, const char *, const char *, const char *, const char *, const char *, const char *,
-                  const char *, const char *, int, const char *, const char *, const char *, double *, int, int, int,
+                  const char *, const char *, int, const char *, const char *, const char *, double *, size_t, size_t, size_t,
                   std::shared_ptr<Matrix>, const char *);
-    double ccd_energy(const char *, const char *, int, int);
+    double ccd_energy(const char *, const char *, size_t, size_t);
     void ccd_iterate(const char *, const char *, const char *, const char *, const char *, const char *, const char *,
                      const char *, const char *, const char *, double *, int, int, int, std::shared_ptr<Matrix>);
     double ccd_amplitudes(const char *, const char *, const char *, const char *, const char *, const char *,
-                          const char *, const char *, const char *, const char *, double *, int, int, int,
+                          const char *, const char *, const char *, const char *, double *, size_t, size_t, size_t,
                           std::shared_ptr<Matrix>);
 
     void vvvv_prep(const char *, const char *, double **, int, int, std::shared_ptr<Matrix>);
-    double **vvvv_ccd(const char *, const char *, const char *, int, int, std::shared_ptr<Matrix>);
+    double **vvvv_ccd(const char *, const char *, const char *, size_t, size_t, std::shared_ptr<Matrix>);
     std::shared_ptr<Matrix> mo2no(int ampfile, const char *VV_opdm, int nvir, double cutoff);
 
     double **read_IJKL(int, char *, int, int);
@@ -124,7 +124,7 @@ class SAPT2p : public SAPT2 {
 
     // CCD (S)
     void disp_s_prep(const char *, const char *, const char *, const char *, int, const char *, const char *,
-                     const char *, int, const char *, double *, int, int, int, int, int, int);
+                     const char *, int, const char *, double *, size_t, size_t, size_t, size_t, size_t, size_t);
 
     // CCD (T)
     void natural_orbitalify_ccd();
