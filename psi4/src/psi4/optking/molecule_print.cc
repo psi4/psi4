@@ -203,7 +203,7 @@ std::string MOLECULE::get_coord_definition_from_global_index(int index) const{
 
 void MOLECULE::print_coords(std::string psi_fp, FILE *qc_fp) const {
   for (std::size_t i=0; i<fragments.size(); ++i) {
-    oprintf(psi_fp, qc_fp, "\t---Fragment %d Intrafragment Coordinates---\n", i+1);
+    oprintf(psi_fp, qc_fp, "\t---Fragment %zu Intrafragment Coordinates---\n", i+1);
     offlush_out();
     fragments[i]->print_simples(psi_fp, qc_fp, g_atom_offset(i));
 
@@ -214,7 +214,7 @@ void MOLECULE::print_coords(std::string psi_fp, FILE *qc_fp) const {
         fragments[i]->print_combinations(psi_fp, qc_fp);
     }
     else if ( Opt_params.coordinates == OPT_PARAMS::NATURAL)  {
-      oprintf_out("\tThere are %d natural coordinates formed from these simples.\n");
+      oprintf_out("\tThere are %d natural coordinates formed from these simples.\n", Ncoord());
     }
   }
   for (std::size_t i=0; i<interfragments.size(); ++i) {
@@ -223,14 +223,14 @@ void MOLECULE::print_coords(std::string psi_fp, FILE *qc_fp) const {
     interfragments[i]->print_coords(psi_fp, qc_fp, g_atom_offset(a), g_atom_offset(b));
   }
   for (std::size_t i=0; i<fb_fragments.size(); ++i) {
-    oprintf(psi_fp, qc_fp,"\t---Fragment %d FB fragment Coordinates---\n", i+1);
+    oprintf(psi_fp, qc_fp,"\t---Fragment %zu FB fragment Coordinates---\n", i+1);
     fb_fragments[i]->print_coords(psi_fp, qc_fp);
   }
 }
 
 void MOLECULE::print_simples(std::string psi_fp, FILE *qc_fp) const {
   for (std::size_t i=0; i<fragments.size(); ++i) {
-    oprintf(psi_fp, qc_fp, "\t---Fragment %d Intrafragment Coordinates---\n", i+1);
+    oprintf(psi_fp, qc_fp, "\t---Fragment %zu Intrafragment Coordinates---\n", i+1);
     fragments[i]->print_simples(psi_fp, qc_fp, g_atom_offset(i));
   }
   for (std::size_t i=0; i<interfragments.size(); ++i) {
@@ -242,7 +242,7 @@ void MOLECULE::print_simples(std::string psi_fp, FILE *qc_fp) const {
   }
 
   for (std::size_t i=0; i<fb_fragments.size(); ++i) {
-    oprintf(psi_fp, qc_fp,"\t---Fragment %d FB fragment Coordinates---\n", i+1);
+    oprintf(psi_fp, qc_fp,"\t---Fragment %zu FB fragment Coordinates---\n", i+1);
     fb_fragments[i]->print_simples(psi_fp, qc_fp);
   }
 }

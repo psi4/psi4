@@ -313,7 +313,7 @@ void MOLECULE::symmetrize_geom(bool flexible) {
       symmetrized = true;
       free_matrix(geom_2D);
     }
-    catch (psi::PsiException exc) {
+    catch (const psi::PsiException& exc) {
       oprintf_out("\tUnable to symmetrize geometry.\n");
       if (flexible && iter < 10) {
         symm_tol *= 1.5;

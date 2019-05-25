@@ -129,7 +129,7 @@ class SAPT2p : public SAPT2 {
     // CCD (T)
     void natural_orbitalify_ccd();
     double disp220tccd(int, const char *, int, const char *, const char *, int, const char *, int, const char *,
-                       const char *, double *, double *, int, int, int, int, int, int);
+                       const char *, double *, double *, size_t, size_t, size_t, size_t, size_t, size_t);
 
    public:
     SAPT2p(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
