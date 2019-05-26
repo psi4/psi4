@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -90,9 +90,9 @@ SharedWavefunction mcscf(SharedWavefunction ref_wfn, Options& options) {
         moinfo_scf = new psi::MOInfoSCF(*(wfn.get()), options);
         wfn->compute_energy();
 
-        Process::environment.globals["CURRENT ENERGY"] = wfn->energy();
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->energy();
-        Process::environment.globals["SCF TOTAL ENERGY"] = wfn->energy();
+        wfn->set_scalar_variable("CURRENT ENERGY", wfn->energy());
+        wfn->set_scalar_variable("CURRENT REFERENCE ENERGY", wfn->energy());
+        wfn->set_scalar_variable("SCF TOTAL ENERGY", wfn->energy());
 
     } else if (options.get_str("REFERENCE") == "MCSCF") {
         throw PSIEXCEPTION("REFERENCE = MCSCF not implemented yet");

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -680,7 +680,8 @@ void SortAllIntegrals(iwlbuf *Buf, int nfzc, int nfzv, int norbs, int ndoccact, 
     /**
       *  Sort ABCI2 integrals (actually, just ABCI2-2*ABCI3)
       */
-    size_t nbins, binsize, lastbin;
+    size_t nbins = 0;
+    size_t binsize, lastbin;
     for (size_t i = 1; i <= o * v * v * v; i++) {
         if (maxelem >= (double)o * v * v * v / i) {
             binsize = o * v * v * v / i;
@@ -921,7 +922,7 @@ void akjc_terms(double val, size_t p, size_t q, size_t r, size_t s, size_t o, si
 }
 void ijak2_terms(double val, size_t p, size_t q, size_t r, size_t s, size_t o, size_t v, size_t &nijak2,
                  struct integral *ijak2) {
-    size_t i, j, a, k;
+    size_t i = 0, j = 0, a = 0, k = 0;
     if (p >= o) {
         a = p - o;
         i = q;
@@ -952,7 +953,7 @@ void ijak2_terms(double val, size_t p, size_t q, size_t r, size_t s, size_t o, s
 }
 void ijak_terms(double val, size_t p, size_t q, size_t r, size_t s, size_t o, size_t v, size_t &nijak,
                 struct integral *ijak) {
-    size_t i, j, a, k;
+    size_t i = 0, j = 0, a = 0, k = 0;
     if (p >= o) {
         a = p - o;
         i = q;
@@ -985,7 +986,7 @@ void abci5_terms_new(double val, size_t p, size_t q, size_t r, size_t s, size_t 
                      size_t *totalnabci5, struct integral **abci5, size_t binsize, size_t bucketsize,
                      psio_address *addr, size_t filestart, size_t nfiles) {
     size_t k, rem;
-    size_t i, a, b, c;
+    size_t i = 0, a = 0, b = 0, c = 0;
     if (p < o) {
         i = p;
         b = q - o;
@@ -1034,7 +1035,7 @@ void abci5_terms_new(double val, size_t p, size_t q, size_t r, size_t s, size_t 
 }
 void abci5_terms(double val, size_t p, size_t q, size_t r, size_t s, size_t o, size_t v, size_t &nabci5,
                  struct integral *abci5) {
-    size_t i, a, b, c;
+    size_t i = 0, a = 0, b = 0, c = 0;
     if (p < o) {
         i = p;
         b = q - o;
@@ -1067,7 +1068,7 @@ void abci3_terms_new(double val, size_t p, size_t q, size_t r, size_t s, size_t 
                      size_t *totalnabci3, struct integral **abci3, size_t binsize, size_t bucketsize,
                      psio_address *addr, size_t filestart, size_t nfiles) {
     size_t k, rem;
-    size_t a, f, m, e;
+    size_t a = 0, f = 0, m = 0, e = 0;
     if (p < o) {
         m = p;
         e = q - o;
@@ -1965,7 +1966,8 @@ void SortBlockNewNew(size_t *nelem, size_t blockdim, struct integral *buffer, do
                      const char *string, size_t maxdim, size_t filestart, size_t nfiles) {
     auto psio = std::make_shared<PSIO>();
     // bins are coreloads
-    size_t nbins, binsize, lastbin;
+    size_t nbins = 0;
+    size_t binsize, lastbin;
     for (size_t i = 1; i <= blockdim; i++) {
         if (maxdim >= (double)blockdim / i) {
             binsize = blockdim / i;
@@ -2059,7 +2061,8 @@ void SortBlockNew(size_t nelem, size_t blockdim, struct integral *buffer, double
             memset((void *)buffer2[i], '\0', bucketsize * sizeof(struct integral));
         }
 
-        size_t initialnbins, initialbinsize, initiallastbin;
+        size_t initialnbins = 0;
+        size_t initialbinsize, initiallastbin;
         for (size_t i = 1; i <= nelem; i++) {
             if (maxdim >= (double)nelem / i) {
                 initialbinsize = nelem / i;
@@ -2221,7 +2224,8 @@ void SortBlock(size_t nelem, size_t blockdim, struct integral *buffer, double *t
         }
         lastbin = blockdim - (nbins - 1) * binsize;
 
-        size_t initialnbins, initialbinsize, initiallastbin;
+        size_t initialnbins = 0;
+        size_t initialbinsize, initiallastbin;
         for (size_t i = 1; i <= nelem; i++) {
             if (maxdim >= (double)nelem / i) {
                 initialbinsize = nelem / i;

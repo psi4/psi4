@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1323,7 +1323,7 @@ double **SAPT2::get_DF_ints_nongimp(int filenum, const char *label, int startA, 
     return AA;
 }
 
-void SAPT2::antisym(double *A, int nocc, int nvir) {
+void SAPT2::antisym(double *A, size_t nocc, size_t nvir) {
     double *X = init_array(nvir);
 
     for (int a = 0; a < nocc; a++) {
@@ -1345,7 +1345,7 @@ void SAPT2::antisym(double *A, int nocc, int nvir) {
     free(X);
 }
 
-void SAPT2::antisym(double **A, int nocc, int nvir) {
+void SAPT2::antisym(double **A, size_t nocc, size_t nvir) {
     double *X = init_array(nvir);
 
     for (int a = 0; a < nocc; a++) {

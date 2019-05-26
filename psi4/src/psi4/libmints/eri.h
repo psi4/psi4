@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,7 +30,7 @@
 #define _psi_src_lib_libmints_eri_h
 
 #include <libint/libint.h>
-#include <libint/libderiv.h>
+#include <libderiv/libderiv.h>
 #include "psi4/libmints/twobody.h"
 
 namespace psi {

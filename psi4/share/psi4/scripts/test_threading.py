@@ -7,6 +7,7 @@ import time
 import importlib
 import sysconfig
 import subprocess
+import collections
 
 if sys.version_info <= (3, 0):
     print('Much of this script needs py3')
@@ -188,7 +189,7 @@ def print_math_ldd(args):
 
     module, sharedlibrary_woext = args.module.split('/')
     mod = importlib.import_module(module)
-    exts = [sysconfig.get_config_var("SO"), '.so']
+    exts = [sysconfig.get_config_var("EXT_SUFFIX"), '.so']
     for ext in exts:
         modcore = os.path.dirname(os.path.abspath(mod.__file__)) + os.path.sep + sharedlibrary_woext + ext
         if os.path.isfile(modcore):
@@ -212,6 +213,29 @@ def print_math_ldd(args):
               'omp': lddout.count('libomp'),
               'gomp': lddout.count('libgomp')}
     print(report)
+    
+    if sys.platform.startswith('linux'):
+        slddout = collections.defaultdict(list)
+        key = ''
+        for ln in lddout.splitlines():
+            if ':' in ln:
+                key = ln.strip()
+            else:
+                slddout[key].append(ln.strip())
+
+        for k, v in slddout.items():
+            if modcore in k:
+                tlddout = '\n'.join(v)
+        treport = {'mkl': tlddout.count('libmkl'),
+                   'iomp5': tlddout.count('libiomp5'),
+                   'openblas': tlddout.count('libopenblas'),
+                   'omp': tlddout.count('libomp'),
+                   'gomp': tlddout.count('libgomp')}
+        print(treport)
+        if args.passfail:
+            if sys.platform.startswith('linux'):
+                assert (not treport['iomp5'] and not treport['omp'] and not treport['gomp']) is False
+
     report = {k : bool(v) for k, v in report.items()}
     okmkl = report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
     okiomp5 = not report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']

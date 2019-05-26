@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,7 +56,6 @@ SCF::~SCF() {
 }
 
 void SCF::startup() {
-    ioff = moinfo_scf->get_ioff();
     nirreps = moinfo_scf->get_nirreps();
     nso = moinfo_scf->get_nso();
     sopi = moinfo_scf->get_sopi();

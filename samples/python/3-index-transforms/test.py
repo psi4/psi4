@@ -4,6 +4,8 @@ import psi4
 import numpy as np
 from collections import OrderedDict
 
+psi4.set_output_file("output.dat", False)
+
 mol = psi4.geometry("""
 0 2
 H 0.0  2.0 0.0    

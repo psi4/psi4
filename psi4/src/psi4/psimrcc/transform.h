@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -62,7 +62,6 @@ class CCTransform {
     double tei_mrpt2(int p, int q, int r, int s);
 
    private:
-    size_t* ioff;
     double** s_so;
     double** oei_mo;
     double** oei_so;

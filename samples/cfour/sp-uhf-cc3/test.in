@@ -21,10 +21,10 @@ MEMORY=20000000)
 
 energy('cfour')
 
-compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TEST
-compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
-compare_values(-55.807963384933, get_variable('cc3 total energy'), 6, 'CC3')  #TEST
-compare_values(-0.218616416146, get_variable('current correlation energy'), 6, 'Current corl')  #TEST
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
 
 clean()
 clean_variables()
@@ -55,10 +55,10 @@ cfour_CC_CONV=12
 
 energy('cfour')
 
-compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TEST
-compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
-compare_values(-55.807963384933, get_variable('cc3 total energy'), 6, 'CC3')  #TEST
-compare_values(-0.218616416146, get_variable('current correlation energy'), 6, 'Current corl')  #TEST
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
 
 clean()
 clean_variables()
@@ -86,10 +86,10 @@ cfour_CC_CONV=12
 
 energy('c4-cc3')
 
-compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TEST
-compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
-compare_values(-55.807963384933, get_variable('cc3 total energy'), 6, 'CC3')  #TEST
-compare_values(-0.218616416146, get_variable('current correlation energy'), 6, 'Current corl')  #TEST
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
 
 clean()
 clean_variables()
@@ -120,8 +120,8 @@ cfour_CC_CONV=12
 
 energy('cfour')
 
-compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TEST
-compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
-compare_values(-55.807963384933, get_variable('cc3 total energy'), 6, 'CC3')  #TEST
-compare_values(-0.218616416146, get_variable('current correlation energy'), 6, 'Current corl')  #TEST
+compare_values(-55.5893469688, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-55.784877360093, variable('mp2 total energy'), 6, 'MP2')  #TEST
+compare_values(-55.807963384933, variable('cc3 total energy'), 6, 'CC3')  #TEST
+compare_values(-0.218616416146, variable('current correlation energy'), 6, 'Current corl')  #TEST
 

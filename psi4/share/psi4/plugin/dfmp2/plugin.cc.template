@@ -5,7 +5,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -204,7 +204,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     double E_MP2 = E_MP2J + E_MP2K;
 
     outfile->Printf("    @DF-MP2 Correlation Energy: %24.16f\n", E_MP2);
-    ref_wfn->set_variable("MP2 CORRELATION ENERGY", E_MP2); 
+    ref_wfn->set_scalar_variable("MP2 CORRELATION ENERGY", E_MP2);
 
     // Typically you would build a new wavefunction and populate it with data
     return ref_wfn;

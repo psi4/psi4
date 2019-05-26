@@ -1,0 +1,108 @@
+#! STO-3g benzene (6,6) guess orbital rotation test DQG
+
+# job description:
+print('        benzene (6,6), scf_type = PK')
+
+sys.path.insert(0, '../../..')
+import v2rdm_casscf
+
+# orbital rotation needed before MCSCF calculation
+molecule benzene_c1 {
+0 1
+symmetry c1
+ C                  0.00000000    1.38980400    0.00000000
+ C                  1.20360500    0.69490200    0.00000000
+ C                  1.20360500   -0.69490200    0.00000000
+ C                  0.00000000   -1.38980400    0.00000000
+ C                 -1.20360500   -0.69490200    0.00000000
+ C                 -1.20360500    0.69490200    0.00000000
+ H                  0.00000000    2.47523400    0.00000000
+ H                  2.14361600    1.23761700    0.00000000
+ H                  2.14361600   -1.23761700    0.00000000
+ H                  0.00000000   -2.47523400    0.00000000
+ H                 -2.14361600   -1.23761700    0.00000000
+ H                 -2.14361600    1.23761700    0.00000000
+}
+
+set {
+  basis sto-3g
+  scf_type pk
+  d_convergence      1e-10
+  maxiter 500
+  restricted_docc [ 18 ]
+  active          [ 6  ]
+}
+
+energy ('hf')
+
+set v2rdm_casscf {
+# Switch the 17th (index 16) and the 19th (index 18) orbitals of the 1st irrep (index 0)
+# If more than one set of orbitals need to be rotated, use the following syntex
+# mcscf_rotate [[irrep_1, orb1_1, orb2_1, theta_1], [irrep_2, orb1_2, orb2_2, theta2],...]
+# Setting theta to 90 would switch the orbitals, setting it to 0 does nothing.
+  mcscf_rotate [[ 0, 16, 18, 90 ]]
+  positivity dq
+  r_convergence  1e-5
+  e_convergence  1e-6
+  maxiter 20000
+  guess_orbitals_write false
+  molden_write false
+}
+
+activate(benzene_c1)
+
+E_c1=energy('v2rdm-casscf')
+
+
+clean()
+
+# reference calculation, no need to rotate orbitals for MCSCF
+molecule benzene_d2h {
+0 1
+symmetry d2h
+ C                  0.00000000    1.38980400    0.00000000
+ C                  1.20360500    0.69490200    0.00000000
+ C                  1.20360500   -0.69490200    0.00000000
+ C                  0.00000000   -1.38980400    0.00000000
+ C                 -1.20360500   -0.69490200    0.00000000
+ C                 -1.20360500    0.69490200    0.00000000
+ H                  0.00000000    2.47523400    0.00000000
+ H                  2.14361600    1.23761700    0.00000000
+ H                  2.14361600   -1.23761700    0.00000000
+ H                  0.00000000   -2.47523400    0.00000000
+ H                 -2.14361600   -1.23761700    0.00000000
+ H                 -2.14361600    1.23761700    0.00000000
+}
+
+set {
+  basis sto-3g
+  scf_type pk
+  d_convergence      1e-10
+  maxiter 500
+  restricted_docc [ 6, 3, 0, 0, 0, 0, 5, 4 ]
+  active          [ 0, 0, 1, 2, 1, 2, 0, 0 ]
+}
+
+energy('hf')
+
+set v2rdm_casscf {
+# Note that when mcscf_rotate is set for the previous molecule, the calculations afterwards
+#   also use this input, unless you overwrite it. A safe way to unset it is to overwrite it
+#   with mcscf_rotate [[0, 0, 0, 0]], which should work as long as your molecule has at 
+#   least 1 orbital in the 1st irrep. This problem can also be simply avoided by calculating 
+#   the molecules that do not require orbital rotations first.
+  mcscf_rotate [[ 0, 0, 0, 0 ]]
+  positivity dq
+  r_convergence  1e-5
+  e_convergence  1e-6
+  maxiter 20000
+  guess_orbitals_write false
+  molden_write false
+}
+
+activate(benzene_d2h)
+
+E_d2h=energy('v2rdm-casscf')
+
+compare_values(E_c1, E_d2h, 4, "v2RDM-CASSCF total energy") # TEST
+

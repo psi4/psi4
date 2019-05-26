@@ -60,5 +60,5 @@ for m in ['HF', 'B3LYP']:
     set perturb_h false
     e, wfn = energy(m, return_wfn=True)
     oeprop(wfn, 'MULTIPOLES(1)')
-    analytic = get_variable('SCF DIPOLE Z')
+    analytic = variable('SCF DIPOLE Z')
 

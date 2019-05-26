@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -854,7 +854,7 @@ void DiskDFJK::initialize_JK_disk() {
 
     // Form the J symmetric inverse
     auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
-    Jinv->form_eig_inverse();
+    Jinv->form_eig_inverse(condition_);
     double** Jinvp = Jinv->get_metric()->pointer();
 
     // Synch up

@@ -1,0 +1,25 @@
+#! DF-MP2 frequency by difference of energies for H2O
+
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess sad
+  freeze_core true
+  cc_type df
+  qc_module occ
+}
+
+e, wfn = frequencies('mp2', dertype=0, return_wfn=True)
+fd_freqs = wfn.frequencies().to_array() # TEST
+compare_arrays([1635.3, 3933.1, 4071.9], fd_freqs, 1, # TEST
+               "Frequencies vs. reference frequencies 07/2018") # TEST

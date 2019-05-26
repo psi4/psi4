@@ -24,5 +24,3 @@ reference rohf
 
 energy("SF-SAPT")
 
-for k, v in compare_dict.items():
-

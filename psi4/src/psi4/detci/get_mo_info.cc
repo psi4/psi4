@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -79,7 +79,8 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->docc = doccpi();
     CalcInfo_->socc = soccpi();
     CalcInfo_->enuc = molecule()->nuclear_repulsion_energy(dipole_field_strength_);
-    CalcInfo_->escf = energy();
+    // with post-SCF Wfns (incl. RASCI) setting energy_, input wfns may not have HF energy in that slot
+    CalcInfo_->escf = scalar_variable("SCF TOTAL ENERGY");
     CalcInfo_->edrc = 0.0;
 
     if (CalcInfo_->iopen && Parameters_->opentype == PARM_OPENTYPE_NONE) {

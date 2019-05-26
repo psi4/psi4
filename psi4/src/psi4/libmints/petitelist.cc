@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -305,9 +305,7 @@ void delete_atom_map(int **atom_map, const std::shared_ptr<Molecule> &molecule) 
     delete_atom_map(atom_map, molecule.get());
 }
 
-int **compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &basis) {
-    int **shell_map;
-
+ShellMapType compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &basis) {
     BasisSet &gbs = *basis.get();
     Molecule &mol = *gbs.molecule().get();
 
@@ -318,8 +316,7 @@ int **compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &basis) 
     int ng = ct.order();
 
     int nshell = basis->nshell();
-    shell_map = new int *[nshell];
-    for (int i = 0; i < nshell; i++) shell_map[i] = new int[ng];
+    ShellMapType shell_map(nshell, pgZeros);
 
     for (int i = 0; i < natom; i++) {
         // hopefully, shells on equivalent centers will be numbered in the same
@@ -335,13 +332,7 @@ int **compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &basis) 
     return shell_map;
 }
 
-void delete_shell_map(int **shell_map, const std::shared_ptr<BasisSet> &basis) {
-    int nshell = basis->nshell();
-    if (shell_map) {
-        for (int i = 0; i < nshell; i++) delete[] shell_map[i];
-        delete[] shell_map;
-    }
-}
+void delete_shell_map(ShellMapType shell_map, const std::shared_ptr<BasisSet> &) {}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -400,11 +391,6 @@ PetiteList::~PetiteList() {
         delete[] atom_map_;
     }
 
-    if (shell_map_) {
-        for (int i = 0; i < nshell_; i++) delete[] shell_map_[i];
-        delete[] shell_map_;
-    }
-
     if (unique_shell_map_) {
         for (int i = 0; i < nunique_shell_; i++) delete[] unique_shell_map_[i];
         delete[] unique_shell_map_;
@@ -419,7 +405,6 @@ PetiteList::~PetiteList() {
     nirrep_ = 0;
     p1_ = nullptr;
     atom_map_ = nullptr;
-    shell_map_ = nullptr;
 
     lamij_ = nullptr;
     nbf_in_ir_ = nullptr;
@@ -455,7 +440,7 @@ void PetiteList::init(double tol) {
 
         p1_ = nullptr;
         atom_map_ = nullptr;
-        shell_map_ = nullptr;
+        shell_map_.clear();
         unique_shell_map_ = nullptr;
         lamij_ = nullptr;
         nbf_in_ir_ = nullptr;
@@ -476,8 +461,7 @@ void PetiteList::init(double tol) {
     atom_map_ = new int *[natom_];
     for (i = 0; i < natom_; i++) atom_map_[i] = new int[ng_];
 
-    shell_map_ = new int *[nshell_];
-    for (i = 0; i < nshell_; i++) shell_map_[i] = new int[ng_];
+    shell_map_ = ShellMapType(nshell_, pgZeros);
 
     unique_shell_map_ = new int *[nunique_shell_];
     for (i = 0; i < nunique_shell_; i++) unique_shell_map_[i] = new int[ng_];

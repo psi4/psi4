@@ -35,6 +35,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - deepdiff (runtime only; e.g., `conda install deepdiff -c conda-forge`)
 #    - networkx (runtime only; e.g., `conda install networkx`)
 #    - pint (runtime only; e.g., `conda install pint -c conda-forge`)
+#    - pydantic (runtime only; e.g., `conda install pydantic -c conda-forge`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -55,7 +56,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint, PCMSolver, pybind11, pylibefp,
-#                         qcelemental, simint, Libxc
+#                         qcelemental, qcengine, simint, Libxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -164,8 +165,8 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5)  # adjust with CMake minimum FindPythonInterp
-find_package(PythonLibsNew 3.5 REQUIRED)
+set(Python_ADDITIONAL_VERSIONS 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
+find_package(PythonLibsNew 3.6 REQUIRED)
 message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
@@ -194,6 +195,7 @@ ExternalProject_Add(psi4-core
            pybind11_external
            pylibefp_external
            qcelemental_external
+           qcengine_external
            simint_external
            libxc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4

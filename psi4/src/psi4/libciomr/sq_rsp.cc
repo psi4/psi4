@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -110,7 +110,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
         // LAPACK stores eigenvectors in rows, we need them in columns
         // This overhead is why you should always call DSYEV!
         double** T_sqrsp_2 = block_matrix(n, n);
-        C_DCOPY(n * n, &Temp_sqrsp[0][0], 1, &T_sqrsp_2[0][0], 1);
+        C_DCOPY(static_cast<size_t>(n) * n, &Temp_sqrsp[0][0], 1, &T_sqrsp_2[0][0], 1);
         for (int r = 0; r < n; r++) C_DCOPY(n, &T_sqrsp_2[r][0], 1, &Temp_sqrsp[0][r], n);
         free_block(T_sqrsp_2);
 

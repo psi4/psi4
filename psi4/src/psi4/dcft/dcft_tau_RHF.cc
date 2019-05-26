@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -332,16 +332,12 @@ void DCFTSolver::print_opdm_RHF() {
             aPairs.push_back(std::make_pair(T_VV.matrix[h][row][row], h));
     }
 
-    std::vector<std::pair<double, int> > bPairs(aPairs);
-
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
     sort(aPairs.begin(), aPairs.end(), std::greater<std::pair<double, int> >());
-    sort(bPairs.begin(), bPairs.end(), std::greater<std::pair<double, int> >());
 
-    int *aIrrepCount = init_int_array(nirrep_);
-    int *bIrrepCount = init_int_array(nirrep_);
+    auto aIrrepCount = std::vector<int>(nirrep_, 0);
     std::vector<std::string> irrepLabels = molecule_->irrep_labels();
 
     outfile->Printf("\n\tOrbital occupations:\n\t\tDoubly occupied orbitals\n\t\t");
@@ -357,8 +353,6 @@ void DCFTSolver::print_opdm_RHF() {
         if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
     }
     outfile->Printf("\n\n");
-    free(aIrrepCount);
-    free(bIrrepCount);
 }
 }  // namespace dcft
 }  // namespace psi

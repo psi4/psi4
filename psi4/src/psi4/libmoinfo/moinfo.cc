@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -133,7 +133,7 @@ void MOInfo::read_info() {
         scf_irrep[i] = nullptr;
         if (sopi[i] && mopi[i]) {
             scf_irrep[i] = block_matrix(sopi[i], mopi[i]);
-            ::memcpy(scf_irrep[i][0], matCa->pointer(i)[0], mopi[i] * sopi[i] * sizeof(double));
+            ::memcpy(scf_irrep[i][0], matCa->pointer(i)[0], sizeof(double) * mopi[i] * sopi[i]);
         }
     }
 
@@ -143,8 +143,9 @@ void MOInfo::read_info() {
     std::string wavefunction_sym_str = options.get_str("WFN_SYM");
     bool wfn_sym_found = false;
 
-    std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-    if (old_pg) {
+    auto ps = options.get_str("PARENT_SYMMETRY");
+    if (ps != "") {
+        auto old_pg = std::make_shared<PointGroup> (ps);
         for (int h = 0; h < nirreps; ++h) {
             std::string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
             trim_spaces(irr_label_str);
@@ -244,34 +245,38 @@ void MOInfo::read_mo_spaces() {
     actv_docc.assign(nirreps, 0);
 
     // Map the symmetry of the input occupations, to account for displacements
-    std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-    if (old_pg) {
+    auto ps = options.get_str("PARENT_SYMMETRY");
+    if (ps != "") {
+        auto old_pg = std::make_shared<PointGroup> (ps);
         // This is one of a series of displacements;  check the dimension against the parent point group
         int nirreps_ref = old_pg->char_table().nirrep();
         intvec focc_ref;
         intvec docc_ref;
         intvec actv_ref;
         intvec fvir_ref;
-        //        intvec actv_docc_ref;
 
-        focc_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.frzcpi());
-        docc_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.doccpi());
-        actv_ref = convert_int_array_to_vector(nirreps_ref, ref_wfn.soccpi());
-        fvir_ref.assign(nirreps_ref, 0);
-        //        actv_docc_ref.assign(nirreps_ref,0);
-
-        for (int h = 0; h < nirreps_ref; h++) docc_ref[h] -= focc_ref[h];
-
+        // Read the dimensioning information for the subgroup from the wfn object
+        focc_ref = convert_int_array_to_vector(nirreps, ref_wfn.frzcpi());
+        docc_ref = convert_int_array_to_vector(nirreps, ref_wfn.doccpi());
+        actv_ref = convert_int_array_to_vector(nirreps, ref_wfn.soccpi());
+        for (int h = 0; h < nirreps; h++) docc_ref[h] -= focc_ref[h];
         nfocc = std::accumulate(focc_ref.begin(), focc_ref.end(), 0);
         ndocc = std::accumulate(docc_ref.begin(), docc_ref.end(), 0);
         nactv = std::accumulate(actv_ref.begin(), actv_ref.end(), 0);
+
+        // Now resize the arrays to be able to accommodate the input arrays,
+        // which have the number of dimensions of the parent point group
+        focc_ref.assign(nirreps_ref, 0);
+        docc_ref.assign(nirreps_ref, 0);
+        actv_ref.assign(nirreps_ref, 0);
+        fvir_ref.assign(nirreps_ref, 0);
 
         read_mo_space(nirreps_ref, nfocc, focc_ref, "FROZEN_DOCC");
         read_mo_space(nirreps_ref, ndocc, docc_ref, "RESTRICTED_DOCC");
         read_mo_space(nirreps_ref, nactv, actv_ref, "ACTIVE");
         read_mo_space(nirreps_ref, nfvir, fvir_ref, "FROZEN_UOCC");
 
-        std::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+        auto full = std::make_shared<PointGroup> (options.get_str("PARENT_SYMMETRY"));
         std::shared_ptr<PointGroup> sub = ref_wfn.molecule()->point_group();
         // Build the correlation table between full, and subgroup
         CorrelationTable corrtab(full, sub);

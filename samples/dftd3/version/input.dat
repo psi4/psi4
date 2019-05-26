@@ -40,12 +40,12 @@ fctl = 'b3lyp'
 der = 0
 hasD3M = True
 try:
-    for dlvl in ['d2gr', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+    for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
         E = eeee.run_dftd3(fctl, dlvl, dertype=der)
         E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
         E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
 except qcdb.Dftd3Error as e:
-    print_stdout("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
+    print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
     hasD3M = False
 
 #hasD3M = False  # temporary until fctl released into superfunctionals list
@@ -61,7 +61,7 @@ set dft_radial_points 50  # use really bad grid for speed since all we want is t
 set dft_spherical_points 110
 #set scf print 3  # will print dftd3 program output to psi4 output file
 
-energy('b3lyp-d2gr', molecule=eeee)
+energy('b3lyp-d2', molecule=eeee)
 # single test below fails for mysterious dft reasons
 
 energy('b3lyp-d3', molecule=mAuncp)
@@ -105,7 +105,7 @@ qmBuncp.update_geometry()
 qmAcp.update_geometry()
 qmBcp.update_geometry()
 
-levels = ['d2gr', 'd3zero', 'd3bj']
+levels = ['d2', 'd3zero', 'd3bj']
 if hasD3M:
     levels.extend(['d3mzero', 'd3mbj'])
 for dlvl in levels:

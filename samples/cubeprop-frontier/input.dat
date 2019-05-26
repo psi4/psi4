@@ -1,0 +1,40 @@
+#! ROHF frontier orbitals of CH2(s) and CH2(t).
+
+molecule ch2s {
+0 1
+ C
+ H 1 R
+ H 1 R 2 109.5
+}
+
+
+molecule ch2t {
+0 3
+ C
+ H 1 R
+ H 1 R 2 109.5
+}
+
+ch2s.R = 1.109 * 0.52917721067 / 0.52917720859
+ch2t.R = 1.109 * 0.52917721067 / 0.52917720859
+
+set basis cc-pvdz
+set df_scf_guess  false
+set scf_type pk
+set cubeprop_tasks ['frontier_orbitals']
+set cubic_grid_overage [1.0,1.0,1.0]
+set e_convergence 12
+set d_convergence 12
+set DOCC [3, 0, 0, 1]
+
+set reference rhf
+scf_e, scf_wfn = energy('scf', return_wfn=True, molecule=ch2s)
+cubeprop(scf_wfn)
+
+
+set reference rohf
+set DOCC [2, 0, 0, 1]
+set SOCC [1, 0, 1, 0]
+scf_e, scf_wfn = energy('scf', return_wfn=True, molecule=ch2t)
+cubeprop(scf_wfn)
+

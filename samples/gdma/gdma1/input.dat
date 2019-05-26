@@ -21,5 +21,5 @@ set {
 energy, wfn = energy('scf', return_wfn=True)
 
 gdma(wfn)
-dmavals = get_array_variable("DMA DISTRIBUTED MULTIPOLES")
-totvals = get_array_variable("DMA TOTAL MULTIPOLES")
+dmavals = variable("DMA DISTRIBUTED MULTIPOLES")
+totvals = variable("DMA TOTAL MULTIPOLES")

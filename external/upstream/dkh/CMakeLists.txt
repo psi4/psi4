@@ -13,8 +13,7 @@ if(${ENABLE_dkh})
         include(ExternalProject)
         message(STATUS "Suitable dkh could not be located, ${Magenta}Building dkh${ColourReset} instead.")
         ExternalProject_Add(dkh_external
-            GIT_REPOSITORY https://github.com/psi4/dkh
-            GIT_TAG v1.2
+            URL https://github.com/psi4/dkh/archive/v1.2.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

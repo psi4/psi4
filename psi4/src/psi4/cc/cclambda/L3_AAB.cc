@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -198,7 +198,7 @@ void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
         Gc = Gab ^ Gijk; /* assumes totally symmetric! */
 
         if (FAA->params->coltot[Gab] && bvirtpi[Gc]) {
-            memset(W1[Gab][0], 0, FAA->params->coltot[Gab] * bvirtpi[Gc] * sizeof(double));
+            memset(W1[Gab][0], 0, sizeof(double) * FAA->params->coltot[Gab] * bvirtpi[Gc]);
         }
     }
 
@@ -365,7 +365,7 @@ void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk; /* assumes totally symmetric! */
         if (FAB->params->coltot[Gab] && avirtpi[Gc]) {
-            memset(W2[Gab][0], 0, FAB->params->coltot[Gab] * avirtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * FAB->params->coltot[Gab] * avirtpi[Gc]);
         }
     }
 
@@ -502,7 +502,7 @@ void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk; /* assumes totally symmetric! */
         if (FBA->params->coltot[Gab] && avirtpi[Gc]) {
-            memset(W2[Gab][0], 0, FBA->params->coltot[Gab] * avirtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * FBA->params->coltot[Gab] * avirtpi[Gc]);
         }
     }
 

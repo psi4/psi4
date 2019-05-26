@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,6 +30,9 @@
     \ingroup CCEOM
     \brief Enter brief description of file here
 */
+
+#ifndef _psi_src_bin_cceom_globals_h
+#define _psi_src_bin_cceom_globals_h
 
 #include "psi4/psifiles.h"
 #include "psi4/libdpd/dpd.h"
@@ -62,3 +65,5 @@ EXTERN struct Local local;
 EXTERN int ***dpd_dp;
 }
 }  // namespace psi
+
+#endif // _psi_src_bin_cceom_globals_h

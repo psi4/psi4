@@ -21,7 +21,7 @@ set globals = {
 }
 
 ch2.update_geometry()
-compare_values(6.648418918908746, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(6.6484189450, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
@@ -30,26 +30,26 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
 
 properties('scf', properties=props)
 
-compare_values(psi4.get_variable("CURRENT ENERGY"), -38.91591819679808, 6, "SCF energy")         #TEST
-compare_values(psi4.get_variable('SCF DIPOLE X'), 0.000000000000, 4, "SCF DIPOLE X")    #TEST
-compare_values(psi4.get_variable('SCF DIPOLE Y'), 0.000000000000, 4, "SCF DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('SCF DIPOLE Z'), 0.572697798348, 4, "SCF DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('SCF QUADRUPOLE XX'), -7.664066833060, 4, "SCF QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('SCF QUADRUPOLE YY'), -6.097755074075, 4, "SCF QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('SCF QUADRUPOLE ZZ'), -7.074596012050, 4, "SCF QUADRUPOLE ZZ")    #TEST
-compare_values(psi4.get_variable('SCF QUADRUPOLE XY'), 0.000000000000, 4, "SCF QUADRUPOLE XY")    #TEST
-compare_values(psi4.get_variable('SCF QUADRUPOLE XZ'), 0.000000000000, 4, "SCF QUADRUPOLE XZ")    #TEST
-compare_values(psi4.get_variable('SCF QUADRUPOLE YZ'), 0.000000000000, 4, "SCF QUADRUPOLE YZ")    #TEST
+compare_values(psi4.variable("CURRENT ENERGY"), -38.91591819679808, 6, "SCF energy")         #TEST
+compare_values(psi4.variable('SCF DIPOLE X'), 0.000000000000, 4, "SCF DIPOLE X")    #TEST
+compare_values(psi4.variable('SCF DIPOLE Y'), 0.000000000000, 4, "SCF DIPOLE Y")    #TEST
+compare_values(psi4.variable('SCF DIPOLE Z'), 0.572697798348, 4, "SCF DIPOLE Z")    #TEST
+compare_values(psi4.variable('SCF QUADRUPOLE XX'), -7.664066833060, 4, "SCF QUADRUPOLE XX")    #TEST
+compare_values(psi4.variable('SCF QUADRUPOLE YY'), -6.097755074075, 4, "SCF QUADRUPOLE YY")    #TEST
+compare_values(psi4.variable('SCF QUADRUPOLE ZZ'), -7.074596012050, 4, "SCF QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.variable('SCF QUADRUPOLE XY'), 0.000000000000, 4, "SCF QUADRUPOLE XY")    #TEST
+compare_values(psi4.variable('SCF QUADRUPOLE XZ'), 0.000000000000, 4, "SCF QUADRUPOLE XZ")    #TEST
+compare_values(psi4.variable('SCF QUADRUPOLE YZ'), 0.000000000000, 4, "SCF QUADRUPOLE YZ")    #TEST
 
 properties('B3LYP', properties=props)
 
-compare_values(psi4.get_variable('CURRENT ENERGY'), -39.14134740550916, 6, "B3LYP energy")    #TEST
-compare_values(psi4.get_variable('B3LYP DIPOLE X'), 0.000000000000, 4, "B3LYP DIPOLE X")    #TEST
-compare_values(psi4.get_variable('B3LYP DIPOLE Y'), -0.000000000000, 4, "B3LYP DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('B3LYP DIPOLE Z'), 0.641741521158, 4, "B3LYP DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('B3LYP QUADRUPOLE XX'), -7.616483183211, 4, "B3LYP QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('B3LYP QUADRUPOLE YY'), -6.005896804551, 4, "B3LYP QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('B3LYP QUADRUPOLE ZZ'), -7.021817489904, 4, "B3LYP QUADRUPOLE ZZ")    #TEST
-compare_values(psi4.get_variable('B3LYP QUADRUPOLE XY'), 0.000000000000, 4, "B3LYP QUADRUPOLE XY")    #TEST
-compare_values(psi4.get_variable('B3LYP QUADRUPOLE XZ'), 0.000000000000, 4, "B3LYP QUADRUPOLE XZ")    #TEST
-compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3LYP QUADRUPOLE YZ")    #TEST
+compare_values(psi4.variable('CURRENT ENERGY'), -39.14134740550916, 6, "B3LYP energy")    #TEST
+compare_values(psi4.variable('B3LYP DIPOLE X'), 0.000000000000, 4, "B3LYP DIPOLE X")    #TEST
+compare_values(psi4.variable('B3LYP DIPOLE Y'), -0.000000000000, 4, "B3LYP DIPOLE Y")    #TEST
+compare_values(psi4.variable('B3LYP DIPOLE Z'), 0.641741521158, 4, "B3LYP DIPOLE Z")    #TEST
+compare_values(psi4.variable('B3LYP QUADRUPOLE XX'), -7.616483183211, 4, "B3LYP QUADRUPOLE XX")    #TEST
+compare_values(psi4.variable('B3LYP QUADRUPOLE YY'), -6.005896804551, 4, "B3LYP QUADRUPOLE YY")    #TEST
+compare_values(psi4.variable('B3LYP QUADRUPOLE ZZ'), -7.021817489904, 4, "B3LYP QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.variable('B3LYP QUADRUPOLE XY'), 0.000000000000, 4, "B3LYP QUADRUPOLE XY")    #TEST
+compare_values(psi4.variable('B3LYP QUADRUPOLE XZ'), 0.000000000000, 4, "B3LYP QUADRUPOLE XZ")    #TEST
+compare_values(psi4.variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3LYP QUADRUPOLE YZ")    #TEST

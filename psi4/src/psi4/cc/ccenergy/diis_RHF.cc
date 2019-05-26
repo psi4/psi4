@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -124,7 +124,7 @@ void CCEnergyWavefunction::diis_RHF(int iter) {
     }
     global_dpd_->buf4_close(&T2b);
 
-    start = psio_get_address(PSIO_ZERO, diis_cycle * vector_length * sizeof(double));
+    start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
     psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)error[0], vector_length * sizeof(double), start, &end);
 
     /* Store the current amplitude vector on disk */
@@ -149,7 +149,7 @@ void CCEnergyWavefunction::diis_RHF(int iter) {
     }
     global_dpd_->buf4_close(&T2a);
 
-    start = psio_get_address(PSIO_ZERO, diis_cycle * vector_length * sizeof(double));
+    start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
     psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)error[0], vector_length * sizeof(double), start,
                &end);
 
@@ -167,7 +167,7 @@ void CCEnergyWavefunction::diis_RHF(int iter) {
     vector = global_dpd_->dpd_block_matrix(2, vector_length);
     B = block_matrix(nvector + 1, nvector + 1);
     for (int p = 0; p < nvector; p++) {
-        start = psio_get_address(PSIO_ZERO, p * vector_length * sizeof(double));
+        start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
         psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)vector[0], vector_length * sizeof(double), start,
                   &end);
@@ -178,7 +178,7 @@ void CCEnergyWavefunction::diis_RHF(int iter) {
         B[p][p] = product;
 
         for (int q = 0; q < p; q++) {
-            start = psio_get_address(PSIO_ZERO, q * vector_length * sizeof(double));
+            start = psio_get_address(PSIO_ZERO, sizeof(double) * q * vector_length);
 
             psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *)vector[1], vector_length * sizeof(double), start,
                       &end);
@@ -218,7 +218,7 @@ void CCEnergyWavefunction::diis_RHF(int iter) {
     vector = global_dpd_->dpd_block_matrix(1, vector_length);
     for (int p = 0; p < vector_length; p++) error[0][p] = 0.0;
     for (int p = 0; p < nvector; p++) {
-        start = psio_get_address(PSIO_ZERO, p * vector_length * sizeof(double));
+        start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
         psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *)vector[0], vector_length * sizeof(double), start,
                   &end);

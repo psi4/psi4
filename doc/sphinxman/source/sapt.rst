@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2018 The Psi4 Developers.
+.. # Copyright (c) 2007-2019 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -808,4 +808,24 @@ picture with a single coupling strength parameter determining all the
 splittings. This method can be invoked with `energy("SF-SAPT")` and
 publications resulting from the use of the SF-SAPT code should cite the
 following publications: [Patkowski:2018:164110]_
+
+Second-Order Exchange Terms without Single-Exchange Approximation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Recently, the SAPT second-order exchange terms have been derived without
+the :math:`S^{2}` approximation in the works [Schaffer:2012:1235] and 
+[Schaffer:2013:2570]. These new terms can be computed with the following 
+settings::
+
+    set SAPT_DFT_FUNCTIONAL HF
+    set DO_IND_EXCH_SINF true        # calculate Exch-Ind20 (S^inf) 
+    set SAPT_DFT_MP2_DISP_ALG fisapt 
+    set DO_DISP_EXCH_SINF true       # calculate Exch-Disp20 (S^inf)
+    energy('sapt(dft)')
+                                            
+These calculations are performed with the atomic orbital and 
+density-fitting scheme of [J. M. Waldrop et al., to be published].
+
+.. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
+.. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst
 

@@ -18,8 +18,8 @@ refscf    = -76.02141844515494 #TEST
 refqcisd  =  -0.214455072238 #TEST
 refqcisdt =  -0.217610678343 #TEST
 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy") #TEST
-compare_values(refqcisd, get_variable("QCISD CORRELATION ENERGY"), 8, "QCISD correlation energy") #TEST
-compare_values(refqcisdt, get_variable("QCISD(T) CORRELATION ENERGY"), 8, "QCISD(T) correlation energy") #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 8, "SCF total energy") #TEST
+compare_values(refqcisd, variable("QCISD CORRELATION ENERGY"), 8, "QCISD correlation energy") #TEST
+compare_values(refqcisdt, variable("QCISD(T) CORRELATION ENERGY"), 8, "QCISD(T) correlation energy") #TEST
 
 clean()

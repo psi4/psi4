@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,7 +42,7 @@
 namespace psi {
 namespace ccdensity {
 
-void setup_LR(struct RHO_Params rho_params) {
+void setup_LR(const struct RHO_Params& rho_params) {
     dpdfile2 L1, R1, Z1, F;
     dpdbuf4 L2, R2, Z2;
     int i, j, L_irr, R_irr, G_irr, L_root, R_root;
@@ -177,23 +177,23 @@ void setup_LR(struct RHO_Params rho_params) {
     /* symmetry of L must be same as density */
 
     if ((!rho_params.L_ground) && (!params.calc_xi)) {
-        if (params.connect_xi) rho_params.R0 = 0.0;
+        if (params.connect_xi) R0 = 0.0;
         if ((params.ref == 0) || (params.ref == 1)) {
             if (L_irr == G_irr) {
                 global_dpd_->file2_init(&L1, PSIF_CC_GLG, L_irr, 0, 1, "LIA");
-                global_dpd_->file2_scm(&L1, rho_params.R0);
+                global_dpd_->file2_scm(&L1, R0);
                 global_dpd_->file2_close(&L1);
                 global_dpd_->file2_init(&L1, PSIF_CC_GLG, L_irr, 0, 1, "Lia");
-                global_dpd_->file2_scm(&L1, rho_params.R0);
+                global_dpd_->file2_scm(&L1, R0);
                 global_dpd_->file2_close(&L1);
                 global_dpd_->buf4_init(&L2, PSIF_CC_GLG, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-                global_dpd_->buf4_scm(&L2, rho_params.R0);
+                global_dpd_->buf4_scm(&L2, R0);
                 global_dpd_->buf4_close(&L2);
                 global_dpd_->buf4_init(&L2, PSIF_CC_GLG, L_irr, 2, 7, 2, 7, 0, "Lijab");
-                global_dpd_->buf4_scm(&L2, rho_params.R0);
+                global_dpd_->buf4_scm(&L2, R0);
                 global_dpd_->buf4_close(&L2);
                 global_dpd_->buf4_init(&L2, PSIF_CC_GLG, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-                global_dpd_->buf4_scm(&L2, rho_params.R0);
+                global_dpd_->buf4_scm(&L2, R0);
                 global_dpd_->buf4_close(&L2);
             } else {
                 global_dpd_->file2_init(&L1, PSIF_CC_GLG, G_irr, 0, 1, "LIA");
@@ -242,19 +242,19 @@ void setup_LR(struct RHO_Params rho_params) {
         } else if (params.ref == 2) {
             if (L_irr == G_irr) {
                 global_dpd_->file2_init(&L1, PSIF_CC_GLG, G_irr, 0, 1, "LIA");
-                global_dpd_->file2_scm(&L1, rho_params.R0);
+                global_dpd_->file2_scm(&L1, R0);
                 global_dpd_->file2_close(&L1);
                 global_dpd_->file2_init(&L1, PSIF_CC_GLG, G_irr, 2, 3, "Lia");
-                global_dpd_->file2_scm(&L1, rho_params.R0);
+                global_dpd_->file2_scm(&L1, R0);
                 global_dpd_->file2_close(&L1);
                 global_dpd_->buf4_init(&L2, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
-                global_dpd_->buf4_scm(&L2, rho_params.R0);
+                global_dpd_->buf4_scm(&L2, R0);
                 global_dpd_->buf4_close(&L2);
                 global_dpd_->buf4_init(&L2, PSIF_CC_GLG, G_irr, 12, 17, 12, 17, 0, "Lijab");
-                global_dpd_->buf4_scm(&L2, rho_params.R0);
+                global_dpd_->buf4_scm(&L2, R0);
                 global_dpd_->buf4_close(&L2);
                 global_dpd_->buf4_init(&L2, PSIF_CC_GLG, G_irr, 22, 28, 22, 28, 0, "LIjAb");
-                global_dpd_->buf4_scm(&L2, rho_params.R0);
+                global_dpd_->buf4_scm(&L2, R0);
                 global_dpd_->buf4_close(&L2);
             } else {
                 global_dpd_->file2_init(&L1, PSIF_CC_GLG, G_irr, 0, 1, "LIA");

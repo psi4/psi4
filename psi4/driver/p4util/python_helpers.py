@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -123,6 +123,14 @@ def _core_wavefunction_build(mol, basis=None):
 
 core.Wavefunction.build = _core_wavefunction_build
 
+def _core_wavefunction_get_scratch_filename(self, filenumber):
+    """ Given a wavefunction and a scratch file number, canonicalizes the name
+        so that files can be consistently written and read """
+    fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(self.molecule().name())))[1]
+    psi_scratch = core.IOManager.shared_object().get_default_path()
+    return os.path.join(psi_scratch, fname + '.' + str(filenumber))
+
+core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
 @staticmethod
 def _core_wavefunction_from_file(wfn_data):
@@ -145,10 +153,10 @@ def _core_wavefunction_from_file(wfn_data):
     elif isinstance(wfn_data, str):
         if not wfn_data.endswith(".npy"):
             wfn_data = wfn_data + ".npy"
-        wfn_data = np.load(wfn_data).item()
+        wfn_data = np.load(wfn_data, allow_pickle=True).item()
     else:
         # Could be path-like or file-like, let `np.load` handle it
-        wfn_data = np.load(wfn_data).item()
+        wfn_data = np.load(wfn_data, allow_pickle=True).item()
 
     # variable type specific dictionaries to be passed into C++ constructor
     wfn_matrix = wfn_data['matrix']
@@ -187,8 +195,8 @@ def _core_wavefunction_from_file(wfn_data):
         wfn_dimension[label] = core.Dimension.from_list(tup, name=label) if tup is not None else None
 
     for label in wfn_matrixarr:
-        array = wfn_dimension[label]
-        wfn_dimension[label] = core.Matrix.from_array(array, name=label) if array is not None else None
+        array = wfn_matrixarr[label]
+        wfn_matrixarr[label] = core.Matrix.from_array(array, name=label) if array is not None else None
 
     # make the wavefunction
     wfn = core.Wavefunction(molecule, basisset, wfn_matrix, wfn_vector, wfn_dimension, wfn_int, wfn_string,
@@ -291,6 +299,7 @@ def _core_wavefunction_to_file(wfn, filename=None):
     }  # yapf: disable
 
     if filename is not None:
+        if not filename.endswith('.npy'): filename += '.npy'
         np.save(filename, wfn_data)
 
     return wfn_data
@@ -400,13 +409,52 @@ core.VBase.get_np_xyzw = _core_vbase_get_np_xyzw
 ## Python other helps
 
 
-def set_options(options_dict):
+def set_options(options_dict, verbose=1):
+    """Sets Psi4 options from an input dictionary.
+
+    Parameters
+    ----------
+    options_dict : dict
+        Dictionary where keys are "option_name" for global options or
+        "module_name__option_name" (double underscore separation) for
+        option local to "module_name". Values are the option value. All
+        are case insensitive.
+    verbose : int, optional
+        Control print volume.
+
+    Returns
+    -------
+    None
+
     """
-    Sets Psi4 global options from an input dictionary.
-    """
+    optionre = re.compile(r'\A(?P<module>\w+__)?(?P<option>\w+)\Z', re.IGNORECASE)
+    rejected = {}
 
     for k, v, in options_dict.items():
-        core.set_global_option(k.upper(), v)
+        mobj = optionre.match(k)
+        module = mobj.group('module').upper()[:-2] if mobj.group('module') else None
+        option = mobj.group('option').upper()
+
+        if module:
+            if (module, option, v) not in [('SCF', 'GUESS', 'READ')]:
+                # TODO guess/read exception is for distributed driver. should be handled differently.
+                try:
+                    core.set_local_option(module, option, v)
+                except RuntimeError as err:
+                    rejected[k] = (v, err)
+                if verbose > 1:
+                    print('Setting: core.set_local_option', module, option, v)
+        else:
+            try:
+                core.set_global_option(option, v)
+            except RuntimeError as err:
+                rejected[k] = (v, err)
+            if verbose > 1:
+                print('Setting: core.set_global_option', option, v)
+
+    if rejected:
+        raise ValidationError(f'Error setting options: {rejected}')
+        # TODO could subclass ValidationError and append rejected so that run_json could handle remanants.
 
 
 def set_module_options(module, options_dict):

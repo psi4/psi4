@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -108,10 +108,12 @@ void DCFTSolver::init() {
     bvir_tau_ = std::make_shared<Matrix>("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
 
     // Compute MO offsets
-    aocc_off_ = init_int_array(nirrep_);
-    avir_off_ = init_int_array(nirrep_);
+    aocc_off_ = new int[nirrep_];
+    avir_off_ = new int[nirrep_];
     double ocount = naoccpi_[0];
     double vcount = navirpi_[0];
+    aocc_off_[0] = 0;
+    avir_off_[0] = 0;
     for (int h = 1; h < nirrep_; h++) {
         aocc_off_[h] = ocount;
         ocount += naoccpi_[h];
@@ -119,10 +121,12 @@ void DCFTSolver::init() {
         vcount += navirpi_[h];
     }
 
-    bocc_off_ = init_int_array(nirrep_);
-    bvir_off_ = init_int_array(nirrep_);
+    bocc_off_ = new int[nirrep_];
+    bvir_off_ = new int[nirrep_];
     ocount = nboccpi_[0];
     vcount = nbvirpi_[0];
+    bocc_off_[0] = 0;
+    bvir_off_[0] = 0;
     for (int h = 1; h < nirrep_; h++) {
         bocc_off_[h] = ocount;
         ocount += nboccpi_[h];

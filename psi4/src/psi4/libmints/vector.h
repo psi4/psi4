@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -131,6 +131,10 @@ class PSI_API Vector final {
     /// Adds other vector to this
     void add(const SharedVector &other);
     void add(const Vector &other);
+
+    /// Subtracts other vector from this
+    void subtract(const SharedVector &other);
+    void subtract(const Vector &other);
 
     void axpy(double scale, const SharedVector &other);
     void axpy(double scale, const Vector &other);

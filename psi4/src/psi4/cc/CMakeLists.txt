@@ -8,6 +8,7 @@ list(APPEND _Clang_debug_flags
   "-Wextra"
   "-Winit-self"
   "-Woverloaded-virtual"
+  "-Wunused"
   "-Wuninitialized"
   "-Wmissing-declarations"
   "-Wwrite-strings"
@@ -39,3 +40,5 @@ list(APPEND _ccmodules
 foreach(dir_name IN LISTS _ccmodules)
   add_subdirectory(${dir_name})
 endforeach ()
+
+set_property(GLOBAL APPEND PROPERTY BINLIST cc)

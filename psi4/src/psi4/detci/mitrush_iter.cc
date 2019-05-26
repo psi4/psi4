@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -256,28 +256,29 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
         outfile->Printf("Straight y = %12.6lf\n", y);
     }
 
-    if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
-        detH0 = 1;
-        /*
-        detH0 = H0block_calc(E);
-        */
+    // [30 Apr 2019] CDS commenting b/c unreachable and noncomputing
+    //if (Parameters_->precon >= PRECON_GEN_DAVIDSON && H0block_->size) {
+    //    detH0 = 1;
+    //    /*
+    //    detH0 = H0block_calc(E);
+    //    */
 
-        if (detH0 == 0) {
-            outfile->Printf("H0block inverse is nearly nonsingular:");
-            outfile->Printf(" initiating DAVIDSON preconditioner\n");
+    //    if (detH0 == 0) {
+    //        outfile->Printf("H0block inverse is nearly nonsingular:");
+    //        outfile->Printf(" initiating DAVIDSON preconditioner\n");
 
-            Parameters_->precon = PRECON_DAVIDSON;
-        }
-        if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
-            /*
-            H0block_xy(&x,&y,E);
-            */
-            if (print_ > 3) {
-                outfile->Printf("x = %12.6lf\n", x);
-                outfile->Printf("y = %12.6lf\n", y);
-            }
-        }
-    }
+    //        Parameters_->precon = PRECON_DAVIDSON;
+    //    }
+    //    if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
+    //        /*
+    //        H0block_xy(&x,&y,E);
+    //        */
+    //        if (print_ > 3) {
+    //            outfile->Printf("x = %12.6lf\n", x);
+    //            outfile->Printf("y = %12.6lf\n", y);
+    //        }
+    //    }
+    //}
 
     E_est = y / x; /* should I add fzc here? */
     if (print_ > 2) {
@@ -311,7 +312,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
     outfile->Printf("Iter  0  ROOT 1 ECI = %14.9lf", enuc + E);
     outfile->Printf("    Delta_E %10.3E   Delta_C %10.3E\n", E - E_last, c1norm);
-    Process::environment.globals["DETCI AVG DVEC NORM"] = c1norm;
+    set_scalar_variable("DETCI AVG DVEC NORM", c1norm);
 
     iter = 1;
     if (Parameters_->diag_method == METHOD_MITRUSHENKOV) {

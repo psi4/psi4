@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -169,8 +169,8 @@ double SAPT2p::disp211() {
 }
 
 double SAPT2p::disp220s(int ampfile, const char *tlabel, const char *thetalabel, int intfile, const char *AAlabel,
-                        const char *RRlabel, int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                        const char *RRlabel, size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double **yAR = block_matrix(aoccA, nvirA);
 
@@ -206,8 +206,8 @@ double SAPT2p::disp220s(int ampfile, const char *tlabel, const char *thetalabel,
 }
 
 double SAPT2p::disp220d_1(int ampfile, const char *tlabel, const char *thetalabel, int intfile, const char *ARlabel,
-                          int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                          size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double *xARAR = init_array((long int)aoccA * nvirA * aoccA * nvirA);
     double **B_p_AR = get_DF_ints(intfile, ARlabel, foccA, noccA, 0, nvirA);
@@ -239,10 +239,10 @@ double SAPT2p::disp220d_1(int ampfile, const char *tlabel, const char *thetalabe
 }
 
 double SAPT2p::disp220d_2(int ampfile, const char *glabel, const char *thetalabel, int intfile, const char *BSlabel,
-                          int foccA, int noccA, int nvirA, int foccB, int noccB, int nvirB, double *evalsA,
+                          size_t foccA, size_t noccA, size_t nvirA, size_t foccB, size_t noccB, size_t nvirB, double *evalsA,
                           double *evalsB, const char trans) {
-    int aoccA = noccA - foccA;
-    int aoccB = noccB - foccB;
+    size_t aoccA = noccA - foccA;
+    size_t aoccB = noccB - foccB;
 
     double energy = 0.0;
 
@@ -305,8 +305,8 @@ double SAPT2p::disp220d_2(int ampfile, const char *glabel, const char *thetalabe
     return (energy);
 }
 
-double SAPT2p::disp220q_1(int ampfile, const char *tlabel, const char *Tlabel, const char *thetalabel, int aoccA,
-                          int nvirA) {
+double SAPT2p::disp220q_1(int ampfile, const char *tlabel, const char *Tlabel, const char *thetalabel, size_t aoccA,
+                          size_t nvirA) {
     double energy = 0.0;
 
     double **thetaARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
@@ -382,9 +382,9 @@ double SAPT2p::disp220q_2(int ampfile, const char *pAAlabel, const char *pRRlabe
 }
 
 double SAPT2p::disp220q_3(int ampfile, const char *tARARlabel, const char *tARBSlabel, const char trans, int intfile,
-                          const char *ARlabel, int foccA, int noccA, int nvirA, int foccB, int noccB, int nvirB) {
-    int aoccA = noccA - foccA;
-    int aoccB = noccB - foccB;
+                          const char *ARlabel, size_t foccA, size_t noccA, size_t nvirA, size_t foccB, size_t noccB, size_t nvirB) {
+    size_t aoccA = noccA - foccA;
+    size_t aoccB = noccB - foccB;
 
     double **xARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
 
@@ -437,8 +437,8 @@ double SAPT2p::disp220q_3(int ampfile, const char *tARARlabel, const char *tARBS
 }
 
 double SAPT2p::disp220q_4(int ampfile, const char *tARARlabel, const char *tARBSlabel, const char trans, int intfile,
-                          const char *ARlabel, int foccA, int noccA, int nvirA, int foccB, int noccB, int nvirB) {
-    int aoccA = noccA - foccA;
+                          const char *ARlabel, size_t foccA, size_t noccA, size_t nvirA, size_t foccB, size_t noccB, size_t nvirB) {
+    size_t aoccA = noccA - foccA;
     int aoccB = noccB - foccB;
 
     double **rAA = block_matrix(aoccA, aoccA);

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -65,7 +65,6 @@ CCTransform::CCTransform() : fraction_of_memory_for_presorting(0.75) {
     tei_mo_indexing = blas->get_index("[n>=n]");
     tei_so_indexing = blas->get_index("[s>=s]");
     oei_so_indexing = blas->get_index("[s]");
-    ioff = moinfo->get_ioff();
     first_irrep_in_core = 0;
     last_irrep_in_core = 0;
     s_so = nullptr;

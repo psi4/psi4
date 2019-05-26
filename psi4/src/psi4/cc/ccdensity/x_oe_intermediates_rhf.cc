@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -45,7 +45,7 @@ namespace ccdensity {
    spin-adapted for RHF functions as well. At that time, x_oe_intermediates()
    should be replaced by only this function. */
 
-void x_oe_intermediates_rhf(struct RHO_Params rho_params) {
+void x_oe_intermediates_rhf(const struct RHO_Params& rho_params) {
     dpdfile2 L1, R1, T1, I, LR1, LR2, LT1, LT2;
     dpdbuf4 L2, T2, R2;
     int L_irr, R_irr, G_irr;

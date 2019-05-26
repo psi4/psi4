@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -58,8 +58,8 @@ void SAPT2p3::elst13() {
 }
 
 double SAPT2p3::elst130(double **wBAA, double **wBRR, double **CHFA, int ampfile, const char *pAAlabel,
-                        const char *pRRlabel, const char *Ylabel, int foccA, int noccA, int nvirA) {
-    int aoccA = noccA - foccA;
+                        const char *pRRlabel, const char *Ylabel, size_t foccA, size_t noccA, size_t nvirA) {
+    size_t aoccA = noccA - foccA;
 
     double **pAA = block_matrix(aoccA, aoccA);
     psio_->read_entry(ampfile, pAAlabel, (char *)pAA[0], sizeof(double) * aoccA * aoccA);

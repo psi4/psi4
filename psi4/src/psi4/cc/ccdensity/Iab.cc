@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -51,7 +51,7 @@ namespace ccdensity {
 ** TDC, 2/2008
 */
 
-void Iab(struct RHO_Params rho_params) {
+void Iab(const struct RHO_Params& rho_params) {
     int a, b, c, A, B, C, Ga, Gb, Gc, Gac, Gbc;
     int *vir_off, *virtpi, nirreps, length, col;
     dpdfile2 F, D, I;

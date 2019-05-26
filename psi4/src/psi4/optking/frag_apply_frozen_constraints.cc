@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -321,7 +321,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
 template <typename T>
 T StringToNumber ( const string & Text ) {
   std::stringstream ss(Text);
-  T result;
+  T result = -1;
   return ss >> result ? result : -1;
 }
 

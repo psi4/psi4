@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -90,14 +90,15 @@ void CIWavefunction::form_opdm() {
         Parameters_->average_weights[0] = 1.0;
 
         /* correct "the" energy in the checkpoint file */
-        Process::environment.globals["CURRENT ENERGY"] = overlap;
-        Process::environment.globals["CI TOTAL ENERGY"] = overlap;
+        set_energy(overlap);
+        set_scalar_variable("CURRENT ENERGY", overlap);
+        set_scalar_variable("CI TOTAL ENERGY", overlap);
 
         // eref is wrong for open-shells so replace it with escf until
         // I fix it, CDS 11/5/11
-        Process::environment.globals["CI CORRELATION ENERGY"] = overlap - CalcInfo_->escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = overlap - CalcInfo_->escf;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = CalcInfo_->escf;
+        set_scalar_variable("CI CORRELATION ENERGY", overlap - CalcInfo_->escf);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", overlap - CalcInfo_->escf);
+        set_scalar_variable("CURRENT REFERENCE ENERGY", CalcInfo_->escf);
     }
 
     SharedCIVector Ivec = new_civector(Parameters_->num_roots, Parameters_->d_filenum);

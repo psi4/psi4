@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -57,8 +57,8 @@ void SAPT2p::disp21() {
     }
 }
 
-double SAPT2p::disp21_1(int ampfile, const char *glabel, const char *tlabel, int aoccA, int nvirA, int aoccB,
-                        int nvirB) {
+double SAPT2p::disp21_1(int ampfile, const char *glabel, const char *tlabel, size_t aoccA, size_t nvirA, size_t aoccB,
+                        size_t nvirB) {
     double **tARBS = block_matrix(aoccA * nvirA, aoccB * nvirB);
     psio_->read_entry(ampfile, tlabel, (char *)tARBS[0], sizeof(double) * aoccA * nvirA * aoccB * nvirB);
 
@@ -77,7 +77,7 @@ double SAPT2p::disp21_1(int ampfile, const char *glabel, const char *tlabel, int
     return (energy);
 }
 
-double SAPT2p::disp21_2(int ampfile, const char *tlabel, const char *thetalabel, int aoccA, int nvirA) {
+double SAPT2p::disp21_2(int ampfile, const char *tlabel, const char *thetalabel, size_t aoccA, size_t nvirA) {
     double **T_p_AR = block_matrix(aoccA * nvirA, ndf_ + 3);
     psio_->read_entry(ampfile, tlabel, (char *)T_p_AR[0], sizeof(double) * aoccA * nvirA * (ndf_ + 3));
 

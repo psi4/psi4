@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -127,8 +127,7 @@ class OptionsState(object):
 
         if key in self.data:
             raise ValidationError(
-                'Malformed options state, duplicate key adds of "%s". This should not happen, please raise a issue on github.com/psi4/psi4'
-                % key)
+                'Malformed options state, duplicate key adds of "{}". This should not happen, please raise a issue on github.com/psi4/psi4'.format(key))
         else:
             self.data[key] = OptionState(*key)
 

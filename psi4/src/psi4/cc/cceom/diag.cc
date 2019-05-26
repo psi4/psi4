@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -930,10 +930,12 @@ void diag() {
 
         outfile->Printf("\nProcedure converged for %d root(s).\n", num_converged);
         if (num_converged == eom_params.cs_per_irrep[C_irr]) {
+            // all good
         } else if (iter == eom_params.max_iter) {
             outfile->Printf("\nMaximum number of iterations exceeded, ");
             outfile->Printf("so not all roots converged!\n\n");
         } else if ((params.wfn == "EOM_CC3") && (num_converged == 1)) {
+            // all good
         } else {
             outfile->Printf("\nAlgorithm failure: No vectors could be added, ");
             outfile->Printf("though not all roots converged!\n\n");

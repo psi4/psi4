@@ -61,26 +61,26 @@ dto.set_mass(1, 2.014101779)
 dto.set_mass(2, 3.01604927)
 
 e, wfn = freq('hf', molecule=h2o, return_wfn=True)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 clean()
 
 set t 400.0
 
 vibanal_wfn(wfn)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 clean()
 
 set t 298.15
 
 freq('hf', molecule=d2o)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 clean()
 
 e, wfn = freq('hf', molecule=hdo, return_wfn=True)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 # For a symmetry-lowering isotopic substitution like HDO, psi4 recomputes
 #  the rotational symmetry number with the lower point group. This only
@@ -91,7 +91,7 @@ entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - ge
 set rotational_symmetry_number 2
 
 vibanal_wfn(wfn)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 
 clean()
 
@@ -101,5 +101,5 @@ clean()
 psi4.revoke_global_option_changed('rotational_symmetry_number')
 
 freq('hf', molecule=dto)
-entropy = 1000 * psi_hartree2kcalmol * (get_variable('enthalpy correction') - get_variable('gibbs free energy correction')) / get_global_option('t')
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
 

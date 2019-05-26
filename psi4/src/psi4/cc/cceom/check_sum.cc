@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,7 +54,8 @@ void check_sum(const char *term_lbl, int index, int irrep) {
     dpdfile2 Sia, SIA;
     dpdbuf4 SIJAB, Sijab, SIjAb, SIjbA;
     static double old_norm = 0;
-    double norm, dotval, S0;
+    double norm = 0;
+    double dotval, S0;
     char lbl[80];
 
     if (!strcmp(term_lbl, "reset")) {

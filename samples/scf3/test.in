@@ -1,6 +1,6 @@
 #! File retention, docc, socc, and bond distances specified explicitly.
 
-nucenergy =   6.648418918908746 #TEST
+nucenergy =   6.6484189450      #TEST
 refenergy = -38.91591819679808  #TEST
 
 molecule ch2 {

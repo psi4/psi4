@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -84,7 +84,7 @@ std::smatch reMatches_;
  * Interprets a string as an integer, throwing if it's unsuccesful.
  */
 int str_to_int(const std::string &s) {
-    int i;
+    int i = 0;
     std::istringstream iss(s);
     if ((iss >> std::dec >> i).fail()) throw PSIEXCEPTION("Unable to convert " + s + " to an integer");
     return i;
@@ -94,7 +94,7 @@ int str_to_int(const std::string &s) {
  * Interprets a string as an double, throwing if it's unsuccesful.
  */
 double str_to_double(const std::string &s) {
-    double d;
+    double d = 0;
     std::istringstream iss(s);
     if ((iss >> std::dec >> d).fail()) throw PSIEXCEPTION("Unable to convert " + s + " to a double");
     return d;

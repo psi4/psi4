@@ -4,6 +4,8 @@ import psi4
 import time
 import numpy as np
 
+psi4.set_output_file("output.dat", False)
+
 mol = psi4.geometry("""
   H      0.5288      0.1610      0.9359
   C      0.0000      0.0000      0.0000

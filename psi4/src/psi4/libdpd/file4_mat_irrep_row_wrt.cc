@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -59,8 +59,8 @@ int DPD::file4_mat_irrep_row_wrt(dpdfile4 *File, int irrep, int row) {
             dpd_error("dpd_file4_mat_irrep_row_wrt", "outfile");
         }
         for (; row > seek_block; row -= seek_block)
-            row_ptr = psio_get_address(row_ptr, seek_block * coltot * sizeof(double));
-        row_ptr = psio_get_address(row_ptr, row * coltot * sizeof(double));
+            row_ptr = psio_get_address(row_ptr, sizeof(double) * seek_block * coltot);
+        row_ptr = psio_get_address(row_ptr, sizeof(double) * row * coltot);
     }
 
     if (coltot)

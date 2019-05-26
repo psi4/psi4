@@ -2,8 +2,6 @@
 #! after three opt cycles are compared with those from psi4.
 
 
-
-
 molecule watdim {
 0 1
 H  -1.934259   0.762503   0.000000
@@ -15,6 +13,7 @@ H  -0.599677   0.040712   0.000000
 @O   1.350625   0.111469   0.000000
 @H   1.680398  -0.373741   0.758561
 }
+c4watdim = watdim.clone()
 
 molecule methdim {
 0 1
@@ -31,6 +30,7 @@ H  -0.888551  -0.513060  -1.494685
 H   0.888551  -0.513060  -1.494685
 H   0.000000   1.026339  -1.494868
 }
+c4methdim = methdim.clone()
 
 set basis 6-31g*
 set cfour_SCF_CONV=12
@@ -39,16 +39,34 @@ set geom_maxiter 3
 set mp2_type conv
 set scf_type pk
 
-activate(watdim)
 try:
-    optimize('c4-mp2')
-except psi4.ConvergenceError:
+    optimize('mp2', molecule=watdim)
+except psi4.OptimizationConvergenceError as oce:
+    grad_p4_mA = oce.wfn.gradient()
+
+clean()
+opt_clean()
+
+try:
+    optimize('c4-mp2', molecule=c4watdim)
+except psi4.OptimizationConvergenceError as oce:
+    #c4grad = wfn.gradient()
     pass
+
 
 clean()
 opt_clean()
 
 activate(methdim)
+try:
+    optimize('mp2', return_wfn=True)
+except psi4.OptimizationConvergenceError as oce:
+    grad_p4_mB = oce.wfn.gradient()
+
+clean()
+opt_clean()
+
+activate(c4methdim)
 try:
     optimize('c4-mp2')
 except psi4.ConvergenceError:

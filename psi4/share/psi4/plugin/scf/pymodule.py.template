@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -57,7 +57,7 @@ def run_@plugin@(name, **kwargs):
     new_wfn = psi4.core.Wavefunction.build(@plugin@_molecule, psi4.core.get_global_option('BASIS'))
 
     @plugin@_wfn = psi4.core.plugin('@plugin@.so', new_wfn)
-    psi4.set_variable('CURRENT ENERGY', @plugin@_wfn.energy())
+    psi4.set_scalar_variable('CURRENT ENERGY', @plugin@_wfn.energy())
 
     if kwargs.get('ref_wfn', False):
         return (@plugin@_wfn, @plugin@_wfn.energy())

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,6 +36,8 @@
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+
+// clang-format off
 
 namespace psi {
 
@@ -102,14 +104,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Specifies how many core orbitals to freeze in correlated computations.
     ``TRUE`` or ``1`` will default to freezing the previous noble gas shell
-    on each atom. In case of positive charges on fragments, an additional 
-    shell may be unfrozen, to ensure there are valence electrons in each 
-    fragment. With ``FALSE`` or ``0``, no electrons are frozen (with the 
+    on each atom. In case of positive charges on fragments, an additional
+    shell may be unfrozen, to ensure there are valence electrons in each
+    fragment. With ``FALSE`` or ``0``, no electrons are frozen (with the
     exception of electrons treated by an ECP). With ``-1``, ``-2``, and ``-3``,
     the user might request strict freezing of the previous first/second/third
-    noble gas shell on every atom. In this case, when there are no valence 
-    electrons, the code raises an exception. More precise control over the 
-    number of frozen orbitals can be attained by using the keywords 
+    noble gas shell on every atom. In this case, when there are no valence
+    electrons, the code raises an exception. More precise control over the
+    number of frozen orbitals can be attained by using the keywords
     |globals__num_frozen_docc| (gives the total number of orbitals to freeze,
     program picks the lowest-energy orbitals) or |globals__frozen_docc| (gives
     the number of orbitals to freeze per irreducible representation) -*/
@@ -132,6 +134,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_str("WFN", "SCF");
     /*- Derivative level !expert -*/
     options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
+    /*- For displacements, symmetry (Schoenflies symbol) of 'parent' (undisplaced)
+    reference molecule. Internal use only for finite difference. !expert -*/
+    options.add_str("PARENT_SYMMETRY", "");
     /*- Number of columns to print in calls to ``Matrix::print_mat``. !expert -*/
     options.add_int("MAT_NUM_COLUMN_PRINT", 5);
     /*- List of properties to compute -*/
@@ -850,6 +855,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- For SAPT(DFT) computes the S^inf Exchange-Induction terms !expert -*/
         options.add_bool("DO_IND_EXCH_SINF", false);
 
+        /*- For SAPT(DFT) computes the S^inf Exchange-Dispersion terms !expert -*/
+        options.add_bool("DO_DISP_EXCH_SINF", false);
+
         /*- Do use asynchronous disk I/O in the solution of the CPHF equations?
         Use may speed up the computation slightly at the cost of spawning an
         additional thread. -*/
@@ -895,7 +903,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         natural orbitals are discarded for in each of the above three truncations
         -*/
         options.add_double("OCC_TOLERANCE", 1.0E-6);
-        /*- Minimum absolute value below which all three-index DF integrals
+        /*- Schwarz screening threshold.
+        Minimum absolute value below which all three-index DF integrals
         and those contributing to four-index integrals are neglected. The
         default is conservative, but there isn't much to be gained from
         loosening it, especially for higher-order SAPT. -*/
@@ -970,7 +979,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("D_CONVERGENCE", 1E-8);
         /*- Maximum number of iterations for CPHF -*/
         options.add_int("MAXITER", 50);
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
 
         // => ISAPT Zero-th Order Wavefunction Options <= //
@@ -1107,7 +1116,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("IGNORE_TAU", false);
         /*- Controls how to cache quantities within the DPD library !expert-*/
         options.add_int("CACHELEVEL", 2);
-        /*- Minimum absolute value below which integrals are neglected !expert-*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. !expert -*/
         options.add_double("INTS_TOLERANCE", 1e-14);
         /*- Whether to read the orbitals from a previous computation, or to compute
             an MP2 guess !expert -*/
@@ -1219,8 +1228,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("MAX_MEM_BUF", 0);
         /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
         options.add_double("CHOLESKY_TOLERANCE", 1e-4);
-        /*- Use DF integrals tech to converge the SCF before switching to a conventional tech
-            in a |scf__scf_type| ``DIRECT`` calculation -*/
+        /*- Do a density fitting SCF calculation to converge the
+            orbitals before switching to the use of exact integrals in
+            a |scf__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
@@ -1230,12 +1240,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("S_ORTHOGONALIZATION", "SYMMETRIC", "SYMMETRIC CANONICAL");
         /*- Minimum S matrix eigenvalue to allow before linear dependencies are removed. -*/
         options.add_double("S_TOLERANCE", 1E-7);
-        /*- Minimum absolute value below which TEI are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
-        /*- The type of guess orbitals.  Defaults to SAD for RHF, GWH for ROHF and UHF,
-        and READ for geometry optimizations after the first step. -*/
-
-        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD READ");
+        /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
+          ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
+          like SAD, as described in doi:10.1021/acs.jctc.8b01089. -*/
+        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD HUCKEL READ");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
         Notice that this procedure is defined only for calculations in C1 symmetry. -*/
@@ -1249,9 +1259,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         even during a geometry optimization. -*/
         options.add_bool("GUESS_PERSIST", false);
 
-        /*- Flag to print the molecular orbitals. -*/
+        /*- Do print the molecular orbitals? -*/
         options.add_bool("PRINT_MOS", false);
-        /*- Flag to print the basis set. -*/
+        /*- Do print the basis set? -*/
         options.add_bool("PRINT_BASIS", false);
         /*- Do perform a QCHF computation?  -*/
         options.add_bool("QCHF", false);
@@ -1271,11 +1281,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         Convergence & Algorithm <table:conv_scf>` for default convergence
         criteria for different calculation types. -*/
         options.add_double("E_CONVERGENCE", 1e-6);
-        /*- Convergence criterion for SCF density, which is defined as the RMS
-        value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
-        <table:conv_scf>` for default convergence criteria for different
-        calculation types.
-        **Cfour Interface:** Keyword translates into |cfour__cfour_scf_conv|. -*/
+        /*- Convergence criterion for SCF density, defined as the RMS
+        or maximum absolute value of the orbital gradient.  See Table
+        :ref:`SCF Convergence & Algorithm <table:conv_scf>` for
+        default convergence criteria for different calculation types.
+        **Cfour Interface:** Keyword translates into
+        |cfour__cfour_scf_conv|. -*/
         options.add_double("D_CONVERGENCE", 1e-6);
         /*- The amount (percentage) of damping to apply to the early density updates.
             0 will result in a full update, 100 will completely stall the update.  A
@@ -1347,7 +1358,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("FRAC_START", 0);
         /*- The absolute indices of occupied orbitals to fractionally occupy (+/- for alpha/beta) -*/
         options.add("FRAC_OCC", new ArrayType());
-        /*- The occupations of the orbital indices specified above ($0.0\ge occ \ge 1.0$) -*/
+        /*- The occupations of the orbital indices specified above ($0.0\le {\rm occ} \le 1.0$) -*/
         options.add("FRAC_VAL", new ArrayType());
         /*- Do use DIIS extrapolation to accelerate convergence in frac? -*/
         options.add_bool("FRAC_DIIS", true);
@@ -1426,21 +1437,21 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- The amount of SAD information to print to the output !expert -*/
         options.add_int("SAD_PRINT", 0);
-        /*- Convergence criterion for SCF energy in SAD Guess. -*/
+        /*- Convergence criterion for SCF energy in the SAD guess, analogous to |scf__e_convergence|. -*/
         options.add_double("SAD_E_CONVERGENCE", 1E-5);
-        /*- Convergence criterion for SCF density in SAD Guess. -*/
+        /*- Convergence criterion for SCF density in the SAD guess, analogous to |scf__d_convergence|. -*/
         options.add_double("SAD_D_CONVERGENCE", 1E-5);
-        /*- Fitting SAD basis !expert -*/
+        /*- Density fitting basis used in SAD !expert -*/
         options.add_str("DF_BASIS_SAD", "SAD-FIT");
-        /*- Maximum number of SAD guess iterations !expert -*/
+        /*- Maximum number of atomic SCF iterations within SAD !expert -*/
         options.add_int("SAD_MAXITER", 50);
-        /*- SCF type of SAD guess !expert -*/
+        /*- SCF type used for atomic calculations in SAD guess !expert -*/
         options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF");
         /*- Do force an even distribution of occupations across the last partially occupied orbital shell? !expert -*/
         options.add_bool("SAD_FRAC_OCC", true);
         /*- Do use spin-averaged occupations instead of atomic ground spin state in fractional SAD? !expert -*/
         options.add_bool("SAD_SPIN_AVERAGE", true);
-        /*- Auxiliary basis for the SAD guess !expert -*/
+        /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
         /*- SUBSECTION DFT -*/
@@ -1546,68 +1557,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             CIS analysis
          -*/
         options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
-        /*- Memory safety factor for allocating JK
-        -*/
-        options.add_double("TDHF_MEM_SAFETY_FACTOR", 0.75);
-        /*- Memory safety factor for allocating JK
-        -*/
-        options.add_double("CIS_MEM_SAFETY_FACTOR", 0.75);
-        /*- Memory safety factor for allocating JK
-        -*/
-        options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
-        /*- Which states to save AO OPDMs for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_OPDM_STATES", new ArrayType());
-        /*- Which states to save AO transition OPDMs for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_TOPDM_STATES", new ArrayType());
-        /*- Which states to save AO difference OPDMs for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_DOPDM_STATES", new ArrayType());
-        /*- Which states to save AO Natural Orbitals for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_NO_STATES", new ArrayType());
-        /*- Which states to save AD Matrices for?
-         *   Positive - Singlets
-         *   Negative - Triplets
-         * -*/
-        options.add("CIS_AD_STATES", new ArrayType());
         /*- Which tasks to run CPHF For
          *  Valid choices:
          *  -Polarizability
          * -*/
         options.add("CPHF_TASKS", new ArrayType());
-        /*- The maximum number of integral threads (0 for Process::environment.get_n_threads())
-         -*/
-        options.add_int("OMP_N_THREAD", 0);
-        /*- The Schwarz cutoff value
-         -*/
-        options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
-        /*- Do we do the QQR integral sieve of Maurer et al. When false, just uses
-         *  the Schwarz sieve.
-         -*/
-        options.add_bool("DO_QQR_SIEVE", false);
-        /*- The maximum reciprocal condition allowed in the fitting metric
-         -*/
-        options.add_double("FITTING_CONDITION", 1.0E-12);
-        /*- Fitting algorithm (0 for old, 1 for new)
-         -*/
-        options.add_int("FITTING_ALGORITHM", 0);
+        /*- Memory safety factor for allocating JK
+        -*/
+        options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
         /*- SCF Type
          -*/
         options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK");
-        /*- JK Independent options
-         -*/
-        options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
-        options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");
@@ -1687,7 +1647,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("WFN", "SCF");
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF");
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1e-14);
         /*- The amount of caching of data to perform -*/
         options.add_int("CACHELEVEL", 2);
@@ -2056,7 +2016,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LEVEL_SHIFT", 0.0);
         /*- Convergence criterion for energy. -*/
         options.add_double("E_CONVERGENCE", 1e-6);
-        /*- Convergence criterion for density. -*/
+        /*- Convergence criterion for density, as measured by the orbital gradient. -*/
         options.add_double("D_CONVERGENCE", 1e-6);
         /*- Maximum number of iterations -*/
         options.add_int("MAXITER", 100);
@@ -2241,7 +2201,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MP2_SS_SCALE", 1.0 / 3.0);
         /*- \% of memory for DF-MP2 three-index buffers -*/
         options.add_double("DFMP2_MEM_FACTOR", 0.9);
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
         /*- Minimum error in the 2-norm of the P(2) matrix for corrections to Lia and P. -*/
         options.add_double("DFMP2_P2_TOLERANCE", 0.0);
@@ -2454,9 +2414,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
         unless |optking__flexible_g_convergence| is also on.      See Table :ref:`Geometry Convergence
         <table:optkingconv>` for details. -*/
-        options.add_str(
-            "G_CONVERGENCE", "QCHEM",
-            "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT INTERFRAG_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
+        options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT INTERFRAG_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
         /*- Convergence criterion for geometry optmization: maximum force
         (internal coordinates, atomic units). -*/
         options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
@@ -2883,7 +2841,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         fort.56. -*/
         options.add_double("E_CONVERGENCE", 1e-6);
 
-        /*- Minimum absolute value below which integrals are neglected. -*/
+        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1.0E-12);
 
         /*- Maximum excitation level. This is used ONLY if it is explicitly set by the user.
@@ -4597,4 +4555,5 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
 }  // namespace psi
 
+// clang-format on
 //  LocalWords:  Psi4

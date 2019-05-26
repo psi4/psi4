@@ -41,6 +41,6 @@ set dmrg_caspt2_imag          0.0
 
 energy("dmrg-caspt2")
 
-compare_values(-107.2576689206, get_variable("DMRG-SCF ENERGY"), 5, "DMRG-SCF Energy")   #TEST
-compare_values(-107.5036855148, get_variable("CURRENT ENERGY"), 5, "DMRG-CASPT2 Energy")   #TEST
+compare_values(-107.2576689206, variable("DMRG-SCF ENERGY"), 5, "DMRG-SCF Energy")   #TEST
+compare_values(-107.5036855148, variable("CURRENT ENERGY"), 5, "DMRG-CASPT2 Energy")   #TEST
 

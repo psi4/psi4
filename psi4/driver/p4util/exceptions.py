@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -82,6 +82,23 @@ class TestComparisonError(PsiException):
         self.message = '\nPsiException: %s\n\n' % msg
 
 
+class UpgradeHelper(PsiException):
+    """Error called on previously valid syntax that now isn't and a
+    simple syntax transition is possible.
+
+    It is much preferred to leave the old syntax valid for a release
+    cycle and have the old syntax raise a deprecation FutureWarning. For
+    cases where the syntax just has to jump, this can be used to trap
+    the old syntax at first error and suggest the new.
+
+    """
+
+    def __init__(self, old, new, version, elaboration):
+        msg = "Using `{}` instead of `{}` is obsolete as of {}.{}".format(old, new, version, elaboration)
+        PsiException.__init__(self, msg)
+        core.print_out('\nPsiException: %s\n\n' % (msg))
+
+
 class ConvergenceError(PsiException):
     """Error called for problems with converging and iterative method.
 
@@ -139,6 +156,16 @@ class CSXError(PsiException):
     def __init__(self, msg):
         PsiException.__init__(self, msg)
         self.message = '\nCSXException: %s\n\n' % msg
+
+
+class MissingMethodError(ValidationError):
+    """Error called when method not available.
+
+    """
+
+    def __init__(self, msg):
+        ValidationError.__init__(self, msg)
+        self.message = '\nMissingMethodError: %s\n\n' % msg
 
 
 class ManagedMethodError(PsiException):

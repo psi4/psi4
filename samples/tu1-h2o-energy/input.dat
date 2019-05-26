@@ -12,7 +12,3 @@ molecule h2o {
 set basis cc-pVDZ
 energy('scf')
 
-
-
-
-

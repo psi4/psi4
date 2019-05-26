@@ -41,4 +41,3 @@ compare_matrices(ref, anl_grad, 6, "Analytic vs Reference wB97X-D Gradients")   
 
 #fd_grad = gradient('wB97X-D', dertype=1)
 #compare_matrices(fd, anl_grad, 4, "Analytic vs FD wB97X-D Gradients")    #TEST
-

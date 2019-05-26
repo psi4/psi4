@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,10 +35,13 @@
 namespace psi {
 class SuperFunctional;
 class VBase;
+namespace scf {
+    class RHF;
+}
 
 namespace scfgrad {
 
-class SCFGrad : public Wavefunction {
+class SCFDeriv : public Wavefunction {
 
 protected:
 
@@ -48,21 +51,24 @@ protected:
     std::shared_ptr<VBase> potential_;
     std::map<std::string, SharedMatrix> gradients_;
     std::map<std::string, SharedMatrix> hessians_;
-    SharedMatrix dipole_gradient_;
 
 public:
-    SCFGrad(SharedWavefunction ref_wfn, Options& options);
-    ~SCFGrad() override;
+    SCFDeriv(SharedWavefunction ref_wfn, Options& options);
+    ~SCFDeriv() override;
 
-    double compute_energy() override { throw PSIEXCEPTION("SCFGrad needs a rehash, call Rob."); }
+    double compute_energy() override { throw PSIEXCEPTION("SCFDeriv not implemented for the requested reference type."); }
+    virtual SharedMatrix compute_gradient() override;
+    virtual SharedMatrix compute_hessian() override;
+    virtual SharedMatrix hessian_response() { throw PSIEXCEPTION("SCFDeriv not implemented for the requested reference type."); }
+};
 
-    SharedMatrix compute_gradient() override;
-
-    SharedMatrix compute_hessian() override;
-
-    SharedMatrix rhf_hessian_response();
-
-    SharedMatrix dipole_gradient() const { return dipole_gradient_; }
+class RSCFDeriv : public SCFDeriv {
+protected:
+    std::shared_ptr<scf::RHF> rhf_wfn_;
+public:
+    RSCFDeriv(std::shared_ptr<scf::RHF> rhf_wfn, Options& options): SCFDeriv(std::dynamic_pointer_cast<Wavefunction>(rhf_wfn), options), rhf_wfn_(rhf_wfn) {}
+    ~RSCFDeriv() override {}
+    virtual SharedMatrix hessian_response() override;
 };
 
 }} // Namespaces

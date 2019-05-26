@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,7 +26,5 @@
 # @END LICENSE
 #
 
-from .np_blockwise import blockwise_expand, blockwise_contract
-from .np_rand3drot import random_rotation_matrix
 from .mpl import plot_coord
 from .regex import yes, no, parse_dertype

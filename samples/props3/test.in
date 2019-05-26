@@ -11,7 +11,7 @@ refs = {                                 #TEST
  "HEXADECAPOLE YYYY" :    -125.8099936,  #TEST
  "HEXADECAPOLE YYZZ" :    -173.3928634,  #TEST
  "HEXADECAPOLE ZZZZ" :    -734.9573332,  #TEST
- "64-pole XXXXXX"    :  -21130.5034747,  #TEST
+ "64-pole XXXXXX"    :  -21130.5032507,  #TEST
  "64-pole XXXXYY"    :   -2311.6456652,  #TEST
  "64-pole XXXXZZ"    :   -3874.2709600,  #TEST
  "64-pole XXYYYY"    :    -719.9876535,  #TEST
@@ -20,7 +20,7 @@ refs = {                                 #TEST
  "64-pole YYYYYY"    :   -1078.4447403,  #TEST
  "64-pole YYYYZZ"    :    -719.9876489,  #TEST
  "64-pole YYZZZZ"    :   -2311.6456540,  #TEST
- "64-pole ZZZZZZ"    :  -20544.1205697   #TEST
+ "64-pole ZZZZZZ"    :  -20544.1203620   #TEST
 }                                        #TEST
 esps =  [-14.719268873580, -14.719268873580, -14.719268878548, -14.719268873580, #TEST
          -14.719268878548, -14.719268873580, -1.093963383542, -1.093963383542,   #TEST
@@ -55,11 +55,11 @@ scf_e, scf_wfn = energy('scf', return_wfn=True)
 oeprop(scf_wfn, "MULTIPOLES(7)", "ESP_AT_NUCLEI")
 
 for mpole,val in reversed(sorted(refs.items())):        #TEST
-    compare_values(val, get_variable(mpole),  4, mpole) #TEST
+    compare_values(val, variable(mpole),  4, mpole) #TEST
 
 for n in range(1,13):                                   #TEST
     st = "ESP AT CENTER %d" % n                         #TEST
-    compare_values(esps[n-1], get_variable(st),  4, st) #TEST
+    compare_values(esps[n-1], variable(st),  4, st) #TEST
     
 clean()
 

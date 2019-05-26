@@ -38,13 +38,13 @@ spherical
 ! blank entries added
 ! 
 !
-! merged from tight-cc-pwcvqz.gbs and basis-blankhhe.gbs at Sun, 02:06 Jun 11, 2017
+! merged from tight-cc-pwcvqz.gbs and basis-blankhhe.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
-! merged from cc-pvqz.gbs and tight-cc-pwcvqz_autogen.gbs at Sun, 02:06 Jun 11, 2017
+! merged from cc-pvqz.gbs and tight-cc-pwcvqz_autogen.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
-! merged from partial-basis-cc-pwcvqz.gbs and otrpartial-basis-cc-pwcvqz_autogen.gbs at Sun, 02:06 Jun 11, 2017
+! merged from partial-basis-cc-pwcvqz.gbs and otrpartial-basis-cc-pwcvqz_autogen.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
 !  aug-cc-pVQZ Diffuse  EMSL  Basis Set Exchange Library   8/19/10 11:59 AM
@@ -56,9 +56,13 @@ spherical
 ! 6796 (1992).
 ! Al - Cl: D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 98, 1358 (1993).
 ! Sc - Zn: N.B. Balabanov and K.A. Peterson, J. Chem. Phys, 123, 064107 (2005)
-! 
 !
-! merged from cc-pwcvqz.gbs and diffuse-aug-cc-pvqz.gbs at Sun, 02:06 Jun 11, 2017
+! Overwrote 30 Sep 2017
+! Li-Be,Na-Mg: B. Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., A.K. Wilson,
+!       Theor. Chem. Acc. 128, 69 (2011), DOI:10.1007/s00214-010-0764-0
+!
+!
+! merged from cc-pwcvqz.gbs and diffuse-aug-cc-pvqz.gbs at Mon, 19:42 Feb 25, 2019
 !
 !
 !  cc-pVQZ  EMSL  Basis Set Exchange Library   8/12/10 2:36 AM
@@ -76,7 +80,7 @@ spherical
 ! Updated 6/2/17
 ! Li, Be, Na, and Mg: Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., A.K. Wilson, Theor. Chem. Acc. 128, 69 (2011).
 !
-! merged from aug-cc-pwcvqz.gbs and cc-pvqz.gbs at Sun, 02:06 Jun 11, 2017
+! merged from aug-cc-pwcvqz.gbs and cc-pvqz.gbs at Mon, 19:42 Feb 25, 2019
 !
 
 
@@ -208,15 +212,15 @@ D   1   1.00
 F   1   1.00
       0.9696000              1.0000000e+00
 S   1   1.00
-      0.0063600              1.0000000        
+      0.0064000              1.0000000        
 P   1   1.00
-      0.0075600              1.0000000        
+      0.0075000              1.0000000        
 D   1   1.00
-      0.0266000              1.0000000        
+      0.0272000              1.0000000        
 F   1   1.00
-      0.0552000              1.0000000        
+      0.0504000              1.0000000        
 G   1   1.00
-      0.1050000              1.0000000        
+      0.1041000              1.0000000        
 ****
 Be     0
 S   12   1.00
@@ -295,15 +299,15 @@ D   1   1.00
 F   1   1.00
       1.9050000              1.0000000e+00
 S   1   1.00
-      0.0143900              1.0000000        
+      0.0141000              1.0000000        
 P   1   1.00
-      0.0065000              1.0000000        
+      0.0084000              1.0000000        
 D   1   1.00
-      0.0554000              1.0000000        
+      0.0556000              1.0000000        
 F   1   1.00
-      0.0930000              1.0000000        
+      0.0905000              1.0000000        
 G   1   1.00
-      0.1834000              1.0000000        
+      0.1654000              1.0000000        
 ****
 B     0
 S   9   1.00
@@ -909,15 +913,15 @@ F   1   1.00
 G   1   1.00
       4.3396000              1.0000000e+00
 S   1   1.00
-      0.0050300              1.0000000        
+      0.0050000              1.0000000        
 P   1   1.00
-      0.0077200              1.0000000        
+      0.0072000              1.0000000        
 D   1   1.00
-      0.0210000              1.0000000        
+      0.0253000              1.0000000        
 F   1   1.00
-      0.0453000              1.0000000        
+      0.0447000              1.0000000        
 G   1   1.00
-      0.0866000              1.0000000        
+      0.0872000              1.0000000        
 ****
 Mg     0
 S   16   1.00
@@ -1046,15 +1050,15 @@ F   1   1.00
 G   1   1.00
       1.4617000              1.0000000e+00
 S   1   1.00
-      0.0123900              1.0000000        
+      0.0109000              1.0000000        
 P   1   1.00
-      0.0070600              1.0000000        
+      0.0081000              1.0000000        
 D   1   1.00
-      0.0382000              1.0000000        
+      0.0350000              1.0000000        
 F   1   1.00
-      0.0700000              1.0000000        
+      0.0658000              1.0000000        
 G   1   1.00
-      0.1480000              1.0000000        
+      0.1252000              1.0000000        
 ****
 Al     0
 S   13   1.00

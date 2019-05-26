@@ -24,9 +24,9 @@ thisenergy = prop('fci')
 
 # 7 digits on CI seems ok, but we may need to back it down to 6 later #TEST
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
 compare_values(refci, thisenergy,                      7, "CI energy")                                 #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy")             #TEST
-compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 3, "SCF Z Component of dipole")                 #TEST
-compare_values(refDipCI, get_variable("CI DIPOLE Z"), 3, "CI Z Component of dipole")                   #TEST
-compare_values(refQdpCI, get_variable("CI QUADRUPOLE ZZ"), 3, "CI ZZ Component of quadrupole")  #TEST
+compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy")             #TEST
+compare_values(refDipHF, variable("SCF DIPOLE Z"), 3, "SCF Z Component of dipole")                 #TEST
+compare_values(refDipCI, variable("CI DIPOLE Z"), 3, "CI Z Component of dipole")                   #TEST
+compare_values(refQdpCI, variable("CI QUADRUPOLE ZZ"), 3, "CI ZZ Component of quadrupole")  #TEST

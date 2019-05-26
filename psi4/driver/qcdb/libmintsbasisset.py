@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -189,7 +189,7 @@ class BasisSet(object):
 
         # Add a dummy atom at the origin, to hold this basis function
         self.molecule = Molecule()
-        self.molecule.add_atom(0, 0.0, 0.0, 0.0)
+        self.molecule.add_atom(0, 0.0, 0.0, 0.0, 'X')
         # Fill with data representing a single S function, at the origin, with 0 exponent
         self.n_uprimitive = 1
         self.n_shells = 1
@@ -1076,7 +1076,7 @@ class BasisSet(object):
             si += self.center_to_shell[center]
         if si < 0 or si > self.nshell():
             text = """BasisSet::shell(si = %d), requested a shell out-of-bound.\n   Max shell size: %d\n   Name: %s\n""" % \
-                (si, self.nshell(), self.name())
+                (si, self.nshell(), self.name)
             raise ValidationError("BasisSet::shell: requested shell is out-of-bounds:\n%s" % (text))
         return self.shells[si]
 

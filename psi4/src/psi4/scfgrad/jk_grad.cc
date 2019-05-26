@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -76,8 +76,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<BasisSet
             jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed())
             jk->set_bench(options.get_int("BENCH"));
-        if (options["DF_FITTING_CONDITION"].has_changed())
-            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
@@ -391,7 +390,7 @@ void DFJKGrad::build_Amn_terms()
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
 
             int thread = 0;
 #ifdef _OPENMP
@@ -564,7 +563,7 @@ void DFJKGrad::build_Amn_lr_terms()
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
 
             int thread = 0;
 #ifdef _OPENMP
@@ -1214,7 +1213,7 @@ void DFJKGrad::build_Amn_x_terms()
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
 
             int thread = 0;
 #ifdef _OPENMP
@@ -1590,7 +1589,7 @@ void DFJKGrad::compute_hessian()
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
 
-                size_t stride = Pncart * Mncart * Nncart;
+                size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
 
                 Pmnint->compute_shell_deriv1(P,0,M,N);
                 const double* buffer = Pmnint->buffer();
@@ -1684,7 +1683,7 @@ void DFJKGrad::compute_hessian()
             int Qy = 3 * Qcenter + 1;
             int Qz = 3 * Qcenter + 2;
 
-            size_t stride = Pncart * Qncart;
+            size_t stride = static_cast<size_t> (Pncart) * Qncart;
 
             PQint->compute_shell_deriv1(P,0,Q,0);
             const double* buffer = PQint->buffer();
@@ -1743,7 +1742,7 @@ void DFJKGrad::compute_hessian()
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
 
-                size_t stride = Pncart * Mncart * Nncart;
+                size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
 
                 Pmnint->compute_shell_deriv2(P,0,M,N);
                 const double* buffer = Pmnint->buffer();
@@ -1987,7 +1986,7 @@ void DFJKGrad::compute_hessian()
             int Qy = 3 * Qcenter + 1;
             int Qz = 3 * Qcenter + 2;
 
-            size_t stride = Pncart * Qncart;
+            size_t stride = static_cast<size_t> (Pncart) * Qncart;
 
             PQint->compute_shell_deriv2(P,0,Q,0);
             const double* buffer = PQint->buffer();
@@ -2130,10 +2129,10 @@ void DFJKGrad::compute_hessian()
 
             // K terms
             C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, dAijp[y], na*na, 0.0, ptmp[0], na*na);
-            KHessp[x][y] += 2.0*C_DDOT(np*na*na, dAijp[x], 1, ptmp[0], 1);
+            KHessp[x][y] += 2.0*C_DDOT(static_cast<size_t> (np)*na*na, dAijp[x], 1, ptmp[0], 1);
             C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, deijp[y], na*na, 0.0, ptmp[0], na*na);
-            KHessp[x][y] -= 4.0*C_DDOT(np*na*na, dAijp[x], 1, ptmp[0], 1);
-            KHessp[x][y] += 2.0*C_DDOT(np*na*na, deijp[x], 1, ptmp[0], 1);
+            KHessp[x][y] -= 4.0*C_DDOT(static_cast<size_t> (np)*na*na, dAijp[x], 1, ptmp[0], 1);
+            KHessp[x][y] += 2.0*C_DDOT(static_cast<size_t> (np)*na*na, deijp[x], 1, ptmp[0], 1);
         }
     }
 
@@ -2305,7 +2304,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
         if (R != S)   prefactor *= 2.0;
         if (PQ != RS) prefactor *= 2.0;
 
-        size_t stride = Pncart * Qncart * Rncart * Sncart;
+        size_t stride = static_cast<size_t> (Pncart) * Qncart * Rncart * Sncart;
 
         double val;
         double Dpq, Drs;
@@ -2575,7 +2574,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vect
         if (R == S)   prefactor *= 0.5;
         if (PQ == RS) prefactor *= 0.5;
 
-        size_t stride = Pncart * Qncart * Rncart * Sncart;
+        size_t stride = static_cast<size_t> (Pncart) * Qncart * Rncart * Sncart;
 
         double val;
         double Dpq, Drs;

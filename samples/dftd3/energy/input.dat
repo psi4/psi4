@@ -17,11 +17,11 @@ H   0.000000   0.000000   3.963929
 }
 
 eneyne.update_geometry()
-E, G = eneyne.run_dftd3('b3lyp', 'd2gr')
+E, G = eneyne.run_dftd3('b3lyp', 'd2')
 mA = eneyne.extract_subsets(1)
-E, G = mA.run_dftd3('b3lyp', 'd2gr')
+E, G = mA.run_dftd3('b3lyp', 'd2')
 mB = eneyne.extract_subsets(2)
-E, G = mB.run_dftd3('b3lyp', 'd2gr')
+E, G = mB.run_dftd3('b3lyp', 'd2')
 
 E, G = eneyne.run_dftd3('b3lyp', 'd3zero')
 mA = eneyne.extract_subsets(1)
@@ -47,8 +47,8 @@ set dft_spherical_points 110
 
 
 activate(mA)
-energy('b3lyp-d2p4')
-energy('b3lyp-d2gr')
+energy('b3lyp-d2', engine='libdisp')
+energy('b3lyp-d2', engine='dftd3')
 energy('b3lyp-d3zero')
 energy('b3lyp-d3bj')
 
@@ -59,13 +59,13 @@ energy('wb97x-d')
 
 activate(mB)
 set dft_dispersion_parameters [0.75]
-energy('b3lyp-d2p4')
+energy('b3lyp-d', engine='libdisp')
 set dft_dispersion_parameters [0.75, 20.0]
-energy('b3lyp-d2gr')
+energy('b3lyp-d2', engine='dftd3')
 set dft_dispersion_parameters [1.0,  0.722, 1.217, 14.0]
 energy('b3lyp-d3zero')
 set dft_dispersion_parameters [1.000, 0.7875, 0.4289, 4.4407]
-energy('b3lyp-d3bj')
+energy('b3lyp-d3(bj)')
 
 set dft_dispersion_parameters [0.75]
 energy('b3lyp-d2')
@@ -78,11 +78,11 @@ set dft_dispersion_parameters [1.0]
 energy('wb97x-d')
 
 eneyne.update_geometry()
-eneyne.run_dftd3('b3lyp', 'd2gr', {'s6': 0.75})
+eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 mA = eneyne.extract_subsets(1)
-mA.run_dftd3('b3lyp', 'd2gr', {'s6': 0.75})
+mA.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 mB = eneyne.extract_subsets(2)
-mB.run_dftd3('b3lyp', 'd2gr', {'s6': 0.75})
+mB.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 
 eneyne.run_dftd3('b3lyp', 'd3zero', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6': 14.0})
 mA = eneyne.extract_subsets(1)

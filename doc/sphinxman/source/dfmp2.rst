@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2018 The Psi4 Developers.
+.. # Copyright (c) 2007-2019 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -195,9 +195,11 @@ documented in the Appendix :ref:`apdx:dfmp2`). Some basic recommendations are in
 
 * DFMP2 should be run with the :math:`ov`-type RI or MP2FIT auxiliary
   basis sets, *not* the -JKFIT basis sets. The automatic basis selector
-  should work fine for all of the Dunning and Pople bases (provided the auxiliary
-  basis exists for the atom in question). If it does not, use the
-  |dfmp2__df_basis_mp2| keyword to manually specify the basis.
+  should work fine for most all bases (exceptions are less common elements
+  at higher than quadruple-zeta). Generally, it is always better to specify
+  only the orbital basis set and let the auxiliary bases be chosen
+  automatically. If you want to specify manually, use the
+  |dfmp2__df_basis_mp2| keyword.
 
 * DFMP2 likes memory. At a minimum, :math:`2Q^2` doubles are required,
   where :math:`Q` is the size of the auxiliary basis set. However, there is

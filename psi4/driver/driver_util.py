@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -128,6 +128,7 @@ def parse_arbitrary_order(name):
     """
 
     name = name.lower()
+    mtdlvl_mobj = re.match(r"""\A(?P<method>[a-z]+)(?P<level>\d+)\Z""", name)
 
     # matches 'mrccsdt(q)'
     if name.startswith('mrcc'):
@@ -171,18 +172,17 @@ def parse_arbitrary_order(name):
             'sdtq-3'      : { 'method': 8, 'order':  4, 'fullname': 'CCSDTQ-3'     },
             'sdtqp-3'     : { 'method': 8, 'order':  5, 'fullname': 'CCSDTQP-3'    },
             'sdtqph-3'    : { 'method': 8, 'order':  6, 'fullname': 'CCSDTQPH-3'   }
-        }
+        }  # yapf: disable
 
         # looks for 'sdt(q)' in dictionary
         if ccfullname in methods:
             return 'mrcc', methods[ccfullname]
         else:
-            raise ValidationError('MRCC method \'%s\' invalid.' % (name))
+            raise ValidationError(f"""MRCC method '{name}' invalid.""")
 
-    elif re.match(r'^[a-z]+\d+$', name):
-        decompose = re.compile(r'^([a-z]+)(\d+)$').match(name)
-        namestump = decompose.group(1)
-        namelevel = int(decompose.group(2))
+    elif mtdlvl_mobj:
+        namestump = mtdlvl_mobj.group('method')
+        namelevel = int(mtdlvl_mobj.group('level'))
 
         if namestump in ['mp', 'zapt', 'ci']:
             # Let mp2, mp3, mp4 pass through to select functions
@@ -198,84 +198,195 @@ def parse_arbitrary_order(name):
 
 
 def parse_cotton_irreps(irrep, point_group):
-    r"""Function to return validated Cotton ordering index for molecular
-    *point_group* from string or integer irreducible representation *irrep*.
+    """Return validated Cotton ordering index of `irrep` within `point_group`.
+
+    Parameters
+    ----------
+    irrep : str or int
+        Irreducible representation. Either label (case-insensitive) or 1-based index (int or str).
+    point_group : str
+        Molecular point group label (case-insensitive).
+
+    Returns
+    -------
+    int
+        1-based index for `irrep` within `point_group` in Cotton ordering.
+
+    Raises
+    ------
+    ValidationError
+        If `irrep` out-of-bounds or invalid or if `point_group` doesn't exist.
 
     """
     cotton = {
-        'c1': {
-            'a': 1,
-            '1': 1
-        },
-        'ci': {
-            'ag': 1,
-            'au': 2,
-            '1': 1,
-            '2': 2
-        },
-        'c2': {
-            'a': 1,
-            'b': 2,
-            '1': 1,
-            '2': 2
-        },
-        'cs': {
-            'ap': 1,
-            'app': 2,
-            '1': 1,
-            '2': 2
-        },
-        'd2': {
-            'a': 1,
-            'b1': 2,
-            'b2': 3,
-            'b3': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4
-        },
-        'c2v': {
-            'a1': 1,
-            'a2': 2,
-            'b1': 3,
-            'b2': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4
-        },
-        'c2h': {
-            'ag': 1,
-            'bg': 2,
-            'au': 3,
-            'bu': 4,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-        },
-        'd2h': {
-            'ag': 1,
-            'b1g': 2,
-            'b2g': 3,
-            'b3g': 4,
-            'au': 5,
-            'b1u': 6,
-            'b2u': 7,
-            'b3u': 8,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-            '5': 5,
-            '6': 6,
-            '7': 7,
-            '8': 8
-        }
+        'c1': ['a'],
+        'ci': ['ag', 'au'],
+        'c2': ['a', 'b'],
+        'cs': ['ap', 'app'],
+        'd2': ['a', 'b1', 'b2', 'b3'],
+        'c2v': ['a1', 'a2', 'b1', 'b2'],
+        'c2h': ['ag', 'bg', 'au', 'bu'],
+        'd2h': ['ag', 'b1g', 'b2g', 'b3g', 'au', 'b1u', 'b2u', 'b3u'],
     }
 
-    try:
-        return cotton[point_group.lower()][str(irrep).lower()]
-    except KeyError:
-        raise ValidationError("""Irrep '%s' not valid for point group '%s'.""" % (str(irrep), point_group))
+    boll = cotton[point_group.lower()]
+
+    if str(irrep).isdigit():
+        irrep = int(irrep)
+        if irrep > 0 and irrep <= len(boll):
+            return irrep
+    else:
+        if irrep.lower() in boll:
+            return boll.index(irrep.lower()) + 1
+
+    raise ValidationError(f"""Irrep '{irrep}' not valid for point group '{point_group}'.""")
+
+
+def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_strategy=False, proc=None):
+    r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
+    for `method` to achieve `ptype` within constraints of `user_dertype`.
+
+    Procedures
+    ----------
+    ptype : {'energy', 'gradient', 'hessian'}
+        Type of calculation targeted by driver.
+    method : str
+        Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
+    user_dertype : int or None
+        User input on which derivative level should be employed to achieve `ptype`. 
+    verbose : int, optional
+        Control amount of output printing.
+    return_strategy : bool, optional
+        See below. Form in which to return negotiated dertype.
+    proc : dict, optional
+        For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
+
+    Returns
+    -------
+    int : {0, 1, 2}
+        When `return_strategy=False`, highest accessible derivative level
+        for `method` to achieve `ptype` within constraints of `user_dertype`.
+    str : {'analytic', '1_0', '2_1', '2_0'}
+        When `return_strategy=True`, highest accessible derivative strategy
+        for `method` to achieve `ptype` within constraints of `user_dertype`.
+
+    Raises
+    ------
+    ValidationError
+        When input validation fails. When `user_dertype` exceeds `ptype`.
+    MissingMethodError
+        When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
+
+    """
+    egh = ['energy', 'gradient', 'hessian']
+
+    def alternative_methods_message(method_name, dertype):
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc['energy'].keys(), 2)
+
+        alternatives = ''
+        if len(alt_method_name) > 0:
+            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
+
+        return f"""Derivative method ({method_name}) and derivative level ({dertype}) are not available.{alternatives}"""
+
+    # Validate input dertypes
+    if ptype not in egh:
+        raise ValidationError("_find_derivative_type: ptype must either be gradient or hessian.")
+
+    if not (user_dertype is None or isinstance(user_dertype, int)):
+        raise ValidationError(f"user_dertype ({user_dertype}) should only be None or int!")
+
+    if proc is None:
+        proc = procedures
+
+    dertype = "(auto)"
+
+    # Find the highest dertype program can provide for method, as encoded in procedures and managed methods
+    #   Managed methods return finer grain "is available" info. For example, "is analytic ROHF DF HF gradient available?"
+    #   from managed method, not just "is HF gradient available?" from procedures.
+    if method in proc['hessian']:
+        dertype = 2
+        if proc['hessian'][method].__name__.startswith('select_'):
+            try:
+                proc['hessian'][method](method, probe=True)
+            except ManagedMethodError:
+                dertype = 1
+                if proc['gradient'][method].__name__.startswith('select_'):
+                    try:
+                        proc['gradient'][method](method, probe=True)
+                    except ManagedMethodError:
+                        dertype = 0
+                        if proc['energy'][method].__name__.startswith('select_'):
+                            try:
+                                proc['energy'][method](method, probe=True)
+                            except ManagedMethodError:
+                                raise MissingMethodError(alternative_methods_message(method, 'any'))
+
+    elif method in proc['gradient']:
+        dertype = 1
+        if proc['gradient'][method].__name__.startswith('select_'):
+            try:
+                proc['gradient'][method](method, probe=True)
+            except ManagedMethodError:
+                dertype = 0
+                if proc['energy'][method].__name__.startswith('select_'):
+                    try:
+                        proc['energy'][method](method, probe=True)
+                    except ManagedMethodError:
+                        raise MissingMethodError(alternative_methods_message(method, 'any'))
+
+    elif method in proc['energy']:
+        dertype = 0
+        if proc['energy'][method].__name__.startswith('select_'):
+            try:
+                proc['energy'][method](method, probe=True)
+            except ManagedMethodError:
+                raise MissingMethodError(alternative_methods_message(method, 'any'))
+
+    highest_der_program_can_provide = dertype
+
+    # Negotiations. In particular:
+    # * don't return higher derivative than targeted by driver
+    # * don't return higher derivative than spec'd by user. that is, user can downgrade derivative
+    # * alert user to conflict between driver and user_dertype
+
+    if user_dertype is not None and user_dertype > egh.index(ptype):
+        raise ValidationError(f'User dertype ({user_dertype}) excessive for target calculation ({ptype})')
+
+    if dertype != "(auto)" and egh.index(ptype) < dertype:
+        dertype = egh.index(ptype)
+
+    if dertype != "(auto)" and user_dertype is not None:
+        if user_dertype <= dertype:
+            dertype = user_dertype
+        else:
+            raise MissingMethodError(alternative_methods_message(method, user_dertype))
+
+    if verbose > 1:
+        print(
+            f'Dertivative negotiations: target/driver={egh.index(ptype)}, best_available={highest_der_program_can_provide}, user_dertype={user_dertype}, FINAL={dertype}'
+        )
+
+    #if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
+    #    raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
+
+    #if (core.get_global_option('PCM')) and (dertype != 0):
+    #    core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
+    #    dertype = 0
+
+    # Summary validation (superfluous)
+    if dertype == '(auto)' or method not in proc[['energy', 'gradient', 'hessian'][dertype]]:
+        raise MissingMethodError(alternative_methods_message(method, dertype))
+
+    if return_strategy:
+        if ptype == egh[dertype]:
+            return 'analytic'
+        elif ptype == 'gradient' and egh[dertype] == 'energy':
+            return '1_0'
+        elif ptype == 'hessian' and egh[dertype] == 'gradient':
+            return '2_1'
+        elif ptype == 'hessian' and egh[dertype] == 'energy':
+            return '2_0'
+
+    else:
+        return dertype

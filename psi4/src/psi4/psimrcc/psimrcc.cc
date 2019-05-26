@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -64,7 +64,7 @@ void mrccsd(SharedWavefunction ref_wfn, Options& options) {
 
     options.print();
     // Initialize the appropriate updater
-    Updater* updater;
+    Updater* updater = nullptr;
     //  if(options_get_str("CORR_ANSATZ")=="SR")
     //    updater = static_cast<Updater*>(new MkUpdater());
     if (options.get_str("CORR_ANSATZ") == "MK") updater = dynamic_cast<Updater*>(new MkUpdater(options));

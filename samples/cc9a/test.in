@@ -24,14 +24,14 @@ set {
 
 energy('ccsd(t)')
 
-enuc   =  18.91527043470638   #TEST
-escf   = -92.19555660616878   #TEST
-eccsd  =  -0.28492292236582   #TEST
-e_t    =  -0.01406303578471   #TEST
-etotal = -92.49454256431926   #TEST
+enuc   =   18.915270509055325   #TEST
+escf   =  -92.195556606951840   #TEST
+eccsd  =   -0.284922921400590   #TEST
+e_t    =   -0.014063035624904   #TEST
+etotal =  -92.494542563977362   #TEST
 
 compare_values(enuc, CN.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(escf, get_variable("SCF total energy"), 9, "SCF energy")               #TEST
-compare_values(eccsd, get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
-compare_values(e_t, get_variable("(T) correction energy"), 9, "(T) contribution")         #TEST
-compare_values(etotal, get_variable("Current energy"), 9, "Total energy")             #TEST
+compare_values(escf, variable("SCF total energy"), 9, "SCF energy")               #TEST
+compare_values(eccsd, variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(e_t, variable("(T) correction energy"), 9, "(T) contribution")         #TEST
+compare_values(etotal, variable("Current energy"), 9, "Total energy")             #TEST

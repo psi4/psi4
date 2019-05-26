@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2018 The Psi4 Developers.
+.. # Copyright (c) 2007-2019 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -64,6 +64,14 @@ Versioning |PSIfour|
 #. :ref:`faq:githubworkflow`
 #. :ref:`faq:psi4version`
 
+Releasing |PSIfour|
+-------------------
+
+#. :ref:`faq:annualprocedure`
+#. :ref:`faq:prereleaseprocedure`
+#. :ref:`faq:releaseprocedure`
+#. :ref:`faq:postreleaseprocedure`
+
 Workflow
 --------
 
@@ -73,8 +81,12 @@ Workflow
 #. :ref:`faq:vigitmerge`
 #. :ref:`faq:gdblldb`
 #. :ref:`faq:grepascii`
+#. :ref:`faq:ignoringadvice`
 
 Miscellaneous
 -------------
 
 #. :ref:`faq:add_tests`
+#. :ref:`faq:findmissingoutputref`
+#. :ref:`faq:githubcodereview`
+

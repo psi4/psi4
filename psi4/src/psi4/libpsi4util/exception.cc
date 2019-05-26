@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -101,11 +101,11 @@ const char *PsiException::file() const noexcept { return file_; }
 
 int PsiException::line() const noexcept { return line_; }
 
-const char *PsiException::location() const noexcept {
+std::string PsiException::location() const noexcept {
     std::stringstream sstr;
     sstr << "file: " << file_ << "\n";
     sstr << "line: " << line_;
-    return sstr.str().c_str();
+    return sstr.str();
 }
 
 PsiException::~PsiException() noexcept {}

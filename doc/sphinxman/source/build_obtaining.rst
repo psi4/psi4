@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2018 The Psi4 Developers.
+.. # Copyright (c) 2007-2019 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -36,14 +36,17 @@ Obtaining |PSIfour|
 How to obtain Psi4: start with find-the-code quiz, end in ``{top-level-psi4-dir}``
 ----------------------------------------------------------------------------------
 
+A better decision tree is available at :psicode:`installs/latest`,
+though the below remains valid.
+
 Take a :ref:`quiz <faq:quiz>` to find the best version of the codebase for
 your needs, be it binary, tarball, or version-controlled repository. Or,
 select outright among:
 
 #. :ref:`faq:binary`
-#. :ref:`faq:condapkg`
-#. :ref:`faq:clonepsi4public` (*read-only* unless core developer)
-#. :ref:`faq:forkpsi4public`
+#. :ref:`faq:binarypackage`
+#. :ref:`faq:clonepsi4public`
+#. :ref:`faq:forkpsi4public` (only path to develop |PSIfour|)
 #. :ref:`faq:tarballpsi4public`
 #. :ref:`faq:psi3sourceforge`
 
@@ -53,11 +56,16 @@ select outright among:
 Find-the-code Quiz
 ------------------
 
+A better decision tree is available at :psicode:`installs/latest`,
+though the below remains valid.
+
 * I just want to run the code. I may tweak the Python, but I'm not
   developing anything to contribute back to the code base.
 
-  * Provided I still get good, threaded BLAS/LAPACK, I'm willing to
-    sacrifice processor architecture fine tuning to avoid compiling it myself.
+  * Provided I still get good, threaded BLAS/LAPACK, OpenMP parallelism,
+    and optimization for a variety of processor architectures (except
+    Mac, which is least common denominator), I'm willing to forgo
+    architecture tuning wizardry to avoid compiling it myself.
 
     * I'm on Linux or Mac or Windows with Ubuntu Bash Shell.
 
@@ -68,7 +76,9 @@ Find-the-code Quiz
       * I just want a |PSIfour| installer. |w---w| :ref:`Goto
         Binary-Installer <faq:binary>`
 
-  * I want to compile it myself for best performance on my computer.
+  * I want to compile it myself to eke out best performance on my
+    computer. I accept responsibility for navigating compiler, threading,
+    and BLAS/LAPACK compatibility
 
     * I'm willing to have minimal dealings with git (e.g., commands ``git
       clone`` and ``git pull``) in return for easy access in future to new
@@ -195,6 +205,15 @@ Clone from GitHub Repository
   Contributions cannot be made directly to the main repository. :ref:`Fork
   instead <faq:forkpsi4public>`.
 
+  To convert clone to fork, go to https://github.com/psi4/psi4, and
+  hit the `Fork <https://help.github.com/articles/fork-a-repo/>`_
+  button to store a |PSIfour| repository in your GitHub account.
+
+  .. code-block:: bash
+
+     >>> git remote rename origin upstream
+     >>> git remote add origin https://github.com/johndoe/psi4.git
+
 
 .. _`faq:forkpsi4public`:
 
@@ -236,7 +255,7 @@ Fork from GitHub Repository
      # on branch working_branch
      >>> git pull --rebase upstream master
      >>> git push origin working_branch
-  
+
   Remember: Working in the master branch of a fork is considered bad practice.
 
 * **Contribute Back**

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,24 +46,24 @@ class SAPT2p : public SAPT2 {
     double e_est_disp22t_;
     double e_sapt2p_;
 
-    void gARARxtARBS(int, const char *, const char, int, const char *, const char *, const char *, int, int, int, int,
-                     int, int, int, const char *);
+    void gARARxtARBS(int, const char *, const char, int, const char *, const char *, const char *, size_t, size_t, size_t, size_t,
+                     size_t, size_t, size_t, const char *);
 
-    double disp21_1(int, const char *, const char *, int, int, int, int);
-    double disp21_2(int, const char *, const char *, int, int);
+    double disp21_1(int, const char *, const char *, size_t, size_t, size_t, size_t);
+    double disp21_2(int, const char *, const char *, size_t, size_t);
 
     double disp211();
-    double disp220s(int, const char *, const char *, int, const char *, const char *, int, int, int);
-    double disp220d_1(int, const char *, const char *, int, const char *, int, int, int);
-    double disp220d_2(int, const char *, const char *, int, const char *, int, int, int, int, int, int, double *,
+    double disp220s(int, const char *, const char *, int, const char *, const char *, size_t, size_t, size_t);
+    double disp220d_1(int, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    double disp220d_2(int, const char *, const char *, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t, double *,
                       double *, const char);
-    double disp220q_1(int, const char *, const char *, const char *, int, int);
+    double disp220q_1(int, const char *, const char *, const char *, size_t, size_t);
     double disp220q_2(int, const char *, const char *, const char *, int, const char *, int, int, int);
-    double disp220q_3(int, const char *, const char *, const char, int, const char *, int, int, int, int, int, int);
-    double disp220q_4(int, const char *, const char *, const char, int, const char *, int, int, int, int, int, int);
+    double disp220q_3(int, const char *, const char *, const char, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t);
+    double disp220q_4(int, const char *, const char *, const char, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t);
 
-    double disp220t(int, const char *, const char *, const char *, int, const char *, int, const char *, int, int, int,
-                    int, int, int, double *, double *);
+    double disp220t(int, const char *, const char *, const char *, int, const char *, int, const char *, size_t, size_t, size_t,
+                    size_t, size_t, size_t, double *, double *);
 
     // CCD Dispersion Values
     double e_disp2d_ccd_;
@@ -87,7 +87,7 @@ class SAPT2p : public SAPT2 {
     void r_ccd_prep(const char *, const char *, const char *, const char *, const char *, const char *, const char *,
                     const char *, const char *, const char *, const char *, const char *, const char *, const char *,
                     const char *, const char *, const char *, int, const char *, int, const char *, double *, double *,
-                    int, int, int, int, int, int);
+                    size_t, size_t, size_t, size_t, size_t, size_t);
     double r_ccd_energy(const char *, const char *, int, int, int, int);
     double r_ccd_iterate(const char *, const char *, const char *, const char *, const char *, const char *,
                          const char *, const char *, const char *, const char *, const char *, const char *, double *,

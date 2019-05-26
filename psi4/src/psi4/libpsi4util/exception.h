@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -102,7 +102,7 @@ class PSI_API PsiException : public std::runtime_error {
     * Accessor method
     * @return A string description of line and file that threw exception
     */
-    const char *location() const noexcept;
+    std::string location() const noexcept;
 
     /**
     * Accessor method
@@ -181,11 +181,11 @@ class LimitExceeded : public PsiException {
     * Accessor method
     * @return A string description of the limit that was exceeded
     */
-    const char *description() const noexcept {
+    std::string description() const noexcept {
         std::stringstream sstr;
         sstr << "value for " << resource_name_ << " exceeded.\n"
              << "allowed: " << maxval_ << " actual: " << errorval_;
-        return sstr.str().c_str();
+        return sstr.str();
     }
 
    public:

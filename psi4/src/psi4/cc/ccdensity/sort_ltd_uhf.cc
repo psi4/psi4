@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,7 +41,7 @@
 namespace psi {
 namespace ccdensity {
 
-void sort_ltd_uhf(struct TD_Params S) {
+void sort_ltd_uhf(const struct TD_Params& S) {
     int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
     int row, col, i, j, I, J, a, b, A, B, p, q;
     int *aoccpi, *avirtpi, *aocc_off, *avir_off;

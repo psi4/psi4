@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -378,7 +378,7 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
                 //          bcopy((char *) SigmaData_->transp_tmp[0], (char *) C.blocks_[cblock][0],
                 //            cnas * cnbs * sizeof(double));
                 //          bcopy is non-ANSI.  memcpy reverses the arguments.
-                memcpy((void *)C.blocks_[cblock][0], (void *)SigmaData_->transp_tmp[0], cnas * cnbs * sizeof(double));
+                memcpy((void *)C.blocks_[cblock][0], (void *)SigmaData_->transp_tmp[0], sizeof(double) * cnas * cnbs);
                 /* set_row_ptrs(cnbs, cnas, C.blocks_[cblock]); */
                 if (SigmaData_->cprime != nullptr) set_row_ptrs(cnbs, cnas, SigmaData_->cprime);
                 sigma_block(alplist, betlist, C.blocks_[cblock2], S.blocks_[sblock], oei, tei, fci, cblock2, sblock,

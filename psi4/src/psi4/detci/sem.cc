@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -993,7 +993,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             for (i = 0; i < Parameters_->average_num; i++) {
                 avg_vec_norm += dvecnorm[Parameters_->average_states[i]] * Parameters_->average_weights[i]; 
             }
-            Process::environment.globals["DETCI AVG DVEC NORM"] = avg_vec_norm;
+            set_scalar_variable("DETCI AVG DVEC NORM", avg_vec_norm);
             Parameters_->diag_h_converged = true;
         }
 

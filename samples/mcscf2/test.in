@@ -1,7 +1,7 @@
 #! TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
 
-nucenergy =   68.2595076754  #TEST
-refenergy = -224.3593901378  #TEST
+nucenergy =   68.25950794368 #TEST
+refenergy =  -224.359390138403 #TEST
 
 molecule ozone {
    O

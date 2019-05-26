@@ -3,11 +3,11 @@
 #! that are updated during the potential energy surface scan, and then the same procedure is performed
 #! using polar coordinates, converted to Cartesian coordinates.
 
-refENuc = [ 9.785885838936569, 9.780670106434425, 8.807297255042920,     #TEST
-            8.802603095790996, 8.006633868220828, 8.002366450719077 ]    #TEST
+refENuc = [ 9.78588587740,  9.780670144878629, 8.807297289661147,     #TEST
+             8.802603130390768, 8.006633899691952,  8.002366482173423 ] #TEST
 
-refSCF  = [ -76.02132544789552, -76.02170973316878, -76.02148196836463,  #TEST
-            -76.02145796257284, -75.99010402297635, -75.98979578551810 ] #TEST
+refSCF  = [ -76.02132544702374, -76.02170973231352, -76.02148196912412,  #TEST
+            -76.0214579633461369, -75.99010402473729, -75.98979578728871 ] #TEST
 
 # Define the points on the potential energy surface using standard Python list functions
 Rvals = [ 0.9, 1.0, 1.1 ]
@@ -21,7 +21,7 @@ molecule h2o {
     H 1 R 2 A
 }
 
-print_stdout(" Testing Z-matrix coordinates") #TEST
+print(" Testing Z-matrix coordinates") #TEST
 
 count = 0
 
@@ -46,7 +46,7 @@ for R in Rvals:
 
 count = 0
 
-print_stdout(" Testing polar coordinates") #TEST
+print(" Testing polar coordinates") #TEST
 
 for R in Rvals:
     for A in Avals:

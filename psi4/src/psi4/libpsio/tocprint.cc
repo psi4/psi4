@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -53,7 +53,7 @@ void PSIO::tocprint(size_t unit) {
 
     this_entry = psio_unit[unit].toc;
 
-    outfile->Printf("\nTable of Contents for Unit %5u\n", unit);
+    outfile->Printf("\nTable of Contents for Unit %5zu\n", unit);
     outfile->Printf("----------------------------------------------------------------------------\n");
     outfile->Printf("Key                                   Spage    Soffset      Epage    Eoffset\n");
     outfile->Printf("----------------------------------------------------------------------------\n");

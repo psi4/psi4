@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,8 +67,7 @@ std::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(std::shared_ptr<BasisSet> pri
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-        if (options["DF_FITTING_CONDITION"].has_changed())
-            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
@@ -311,7 +310,7 @@ void DFCorrGrad::build_Amn_terms() {
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(df_ints_num_threads_)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
@@ -911,7 +910,7 @@ void DFCorrGrad::build_Amn_x_terms() {
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(df_ints_num_threads_)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();

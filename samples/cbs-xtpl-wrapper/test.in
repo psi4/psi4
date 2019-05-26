@@ -4,7 +4,7 @@ import numpy as np
 
 # <<<  energies  >>>
 
-nucenergy_ref =   8.801465529972    #TEST
+nucenergy_ref =   8.8014655646      #TEST
 scf_dz_ref =    -76.0213974638      #TEST
 scf_tzvp_ref =  -76.0531455176      #TEST
 scf_adtz_ref =  -76.059124724830    #TEST
@@ -87,7 +87,7 @@ ref_mp2_dtz = psi4.core.Matrix.from_list([  #TEST
     [0.0, 0.0, -0.01155124]  #TEST
 ])  #TEST
 
-nucenergy_ref = 1.17594935242
+nucenergy_ref = 1.1759493570
 
 molecule he_dimer {
     He 0 0 0
@@ -145,7 +145,7 @@ set {
 }
 
 h2.update_geometry()
-compare_values(0.529177208590000, h2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(0.5291772107, h2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
 optimize(cbs, scf_wfn='SCF', scf_basis='cc-pvdz')
 compare_values(0.747953788665, h2.R, 4, "[17] SCF/cc-pVDZ Optimized R")  #TEST

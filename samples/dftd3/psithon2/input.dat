@@ -60,14 +60,14 @@ set myplugin1 {
 
 energy('myplugin1')
 
-compare_values(-74.9455096208439784, get_variable('CURRENT ENERGY'), 6, 'PSIPATH plugin')
+compare_values(-74.9455096208439784, variable('CURRENT ENERGY'), 6, 'PSIPATH plugin')
 clean()
 
 ###########################
 set basis mysto3g
 set df_basis_scf myccpvdzri
 energy('scf')
-compare_values(-74.9455096190513927, get_variable('CURRENT ENERGY'), 6, 'PSIPATH orbital and jk basis sets')
+compare_values(-74.9455096190513927, variable('CURRENT ENERGY'), 6, 'PSIPATH orbital and jk basis sets')
 clean()
 
 ###########################
@@ -87,7 +87,7 @@ H   0.000000   0.000000   3.963929
 }
 
 eneyne.update_geometry()
-E, G = eneyne.run_dftd3('b3lyp', 'd2gr')
+E, G = eneyne.run_dftd3('b3lyp', 'd2')
 clean()
 
 ###########################

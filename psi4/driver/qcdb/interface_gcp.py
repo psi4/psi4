@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -159,7 +159,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
         gcp_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
             '.gcp.' + str(uuid.uuid4())[:8]
     else:
-        gcp_tmpdir = os.environ['HOME'] + os.sep + 'gcp_' + str(uuid.uuid4())[:8]
+        gcp_tmpdir = os.path.expanduser('~') + os.sep + 'gcp_' + str(uuid.uuid4())[:8]
     if os.path.exists(gcp_tmpdir) is False:
         os.mkdir(gcp_tmpdir)
     os.chdir(gcp_tmpdir)

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,7 +67,7 @@ class MOInfoBase {
     int get_nirreps() const { return (nirreps); }
     int get_nso() const { return (nso); }
 
-    size_t* get_ioff() const { return (ioff); }
+    const size_t* get_ioff() const { return (ioff.data()); }
     intvec get_sopi() const { return (sopi); }
     intvec get_docc() const { return (docc); }
     intvec get_actv() const { return (actv); }
@@ -115,7 +115,7 @@ class MOInfoBase {
     int nactive_ael;
     int nactive_bel;
 
-    size_t* ioff;
+    std::vector<size_t> ioff;
     intvec sopi;
     intvec docc;
     intvec actv;

@@ -1,8 +1,5 @@
 #! apply linear fragmentation algorithm to a water cluster
 
-import math
-import numpy as np
-import psi4
 from psi4.driver import qcdb
 
 s22_12 = qcdb.Molecule("""
@@ -85,41 +82,24 @@ trop_gs_c2v = qcdb.Molecule("""
 rmsd, mill, mol = trop_cs.B787(trop_gs_c2v, do_plot=False, verbose=0, uno_cutoff=0.5)
 compare_values(0.1413, rmsd, 2, 'cs<-->c2v tropolones align')
 
-soco10 = """
+oco10 = qcdb.Molecule("""
 O  1.0 0.0 0.0
 C  0.0 0.0 0.0
 O -1.0 0.0 0.0
-"""
+""")
 
-soco12 = """
-O 4.0  1.2 0.0
-O 4.0 -1.2 0.0
-C 4.0  0.0 0.0
-"""
-
-ans12onto10 = np.array([[1.2, 0.0, 0.0], [0.0, 0.0, 0.0], [-1.2, 0.0, 0.0]])
-ans12onto10 /= psi_bohr2angstroms
-
-qoco10 = qcdb.Molecule(soco10)
-qoco12 = qcdb.Molecule(soco12)
+oco12 = qcdb.Molecule("""
+O  1.2 4.0 0.0
+O -1.2 4.0 0.0
+C  0.0 4.0 0.0
+""")
 
 ref_rmsd = math.sqrt(2. * 0.2 * 0.2 / 3.)
 
-rmsd, mill, mol = qoco12.B787(qoco10, verbose=0)
-qcdb.compare_values(ref_rmsd, rmsd, 6, 'Q: known rmsd Mol.B787')  #TEST
-
-compare_integers(True, type(mol) == qcdb.Molecule, 'Q return type')  #TEST
-compare_arrays(ans12onto10, np.array(mol.geometry()), 4, 'Q: matched geom')  #TEST
+rmsd, mill, mol = oco12.B787(oco10, verbose=0)
+qcdb.compare_values(ref_rmsd, rmsd, 6, 'known rmsd Mol.B787')
 
 from psi4.driver.qcdb.align import B787
-rmsd, mill = B787(qoco10.geometry(np_out=True), qoco12.geometry(np_out=True), np.array(['O', 'C', 'O']), np.array(['O', 'O', 'C']), verbose=0, do_plot=False)
+rmsd, mill = B787(oco10.geometry(np_out=True), oco12.geometry(np_out=True), np.array(['O', 'C', 'O']), np.array(['O', 'O', 'C']), verbose=0, do_plot=False)
 qcdb.compare_values(ref_rmsd, rmsd, 6, 'known rmsd B787')
-
-poco10 = psi4.geometry(soco10)
-poco12 = psi4.geometry(soco12)
-
-rmsd, mill, mol = poco12.B787(poco10, verbose=0, do_plot=False)
-qcdb.compare_values(ref_rmsd, rmsd, 6, 'P: known rmsd Mol.B787')  #TEST
-compare_integers(True, type(mol) == psi4.core.Molecule, 'P return type')  #TEST
-compare_arrays(ans12onto10, np.array(mol.geometry()), 4, 'P: matched geom')  #TEST
 

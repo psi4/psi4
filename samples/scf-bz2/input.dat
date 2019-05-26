@@ -37,7 +37,7 @@ molecule bz2 {
     RCC  = 1.3915
     RCH  = 2.4715
     RXX  = 1.00
-    D    = 3.9 
+    D    = 3.9
     DRXX = 4.90
 
 }
@@ -47,6 +47,8 @@ set {
   guess sad
   scf_type out_of_core
   print 2
+  d_convergence 8
+  e_convergence 8
 }
 
 thisenergy = energy('scf')

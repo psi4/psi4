@@ -10,7 +10,6 @@ nirrep = 4
 
 
 molecule cn {
-0 2
    C
    N 1 R
 
@@ -30,5 +29,5 @@ set = {
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 

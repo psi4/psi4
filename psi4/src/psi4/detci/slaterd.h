@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -88,6 +88,7 @@ class SlaterDeterminant {
     void set(size_t nalp, unsigned char* alpoccs, size_t nbet, unsigned char* betoccs);
     void print();
     void print_config();
+    SlaterDeterminant(const SlaterDeterminant& s);
     SlaterDeterminant& operator=(const SlaterDeterminant& s);
     friend int operator==(SlaterDeterminant& s1, SlaterDeterminant& s2);
     friend double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J);

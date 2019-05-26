@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -76,7 +76,7 @@ void CCEnergyWavefunction::local_init() {
 
     local_.weak_pairs = init_int_array(nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *)local_.weak_pairs,
-                    local_.nocc * local_.nocc * sizeof(int));
+                    sizeof(int) * local_.nocc * local_.nocc);
 
     outfile->Printf("    Localization parameters ready.\n\n");
 }
@@ -97,14 +97,14 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1) {
     local_.eps_occ = init_array(nocc);
     /*   psio_read_entry(CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs, */
     /* 		  local.nocc*local.nocc*sizeof(int)); */
-    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local_.pairdom_len, nocc * nocc * sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local_.pairdom_len, sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *)local_.pairdom_nrlen,
-                    nocc * nocc * sizeof(int));
+                    sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local_.eps_occ, nocc * sizeof(double));
 
-    local_.W = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local_.V = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local_.eps_vir = (double **)malloc(nocc * nocc * sizeof(double *));
+    local_.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local_.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local_.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
     next = PSIO_ZERO;
     for (int ij = 0; ij < nocc * nocc; ij++) {
         local_.eps_vir[ij] = init_array(local_.pairdom_nrlen[ij]);
@@ -115,13 +115,13 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1) {
     for (int ij = 0; ij < nocc * nocc; ij++) {
         local_.V[ij] = block_matrix(nvir, local_.pairdom_len[ij]);
         psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local_.V[ij][0],
-                  nvir * local_.pairdom_len[ij] * sizeof(double), next, &next);
+                  sizeof(double) * nvir * local_.pairdom_len[ij], next, &next);
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < nocc * nocc; ij++) {
         local_.W[ij] = block_matrix(local_.pairdom_len[ij], local_.pairdom_nrlen[ij]);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local_.W[ij][0],
-                  local_.pairdom_len[ij] * local_.pairdom_nrlen[ij] * sizeof(double), next, &next);
+                  sizeof(double) * local_.pairdom_len[ij] * local_.pairdom_nrlen[ij], next, &next);
     }
 
     global_dpd_->file2_mat_init(T1);
@@ -192,14 +192,14 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2) {
     local_.eps_occ = init_array(nocc);
     /*   psio_read_entry(CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs, */
     /* 		  local.nocc*local.nocc*sizeof(int)); */
-    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local_.pairdom_len, nocc * nocc * sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local_.pairdom_len, sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *)local_.pairdom_nrlen,
-                    nocc * nocc * sizeof(int));
+                    sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local_.eps_occ, nocc * sizeof(double));
 
-    local_.W = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local_.V = (double ***)malloc(nocc * nocc * sizeof(double **));
-    local_.eps_vir = (double **)malloc(nocc * nocc * sizeof(double *));
+    local_.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local_.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local_.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
     next = PSIO_ZERO;
     for (int ij = 0; ij < nocc * nocc; ij++) {
         local_.eps_vir[ij] = init_array(local_.pairdom_nrlen[ij]);
@@ -210,13 +210,13 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2) {
     for (int ij = 0; ij < nocc * nocc; ij++) {
         local_.V[ij] = block_matrix(nvir, local_.pairdom_len[ij]);
         psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local_.V[ij][0],
-                  nvir * local_.pairdom_len[ij] * sizeof(double), next, &next);
+                  sizeof(double) * nvir * local_.pairdom_len[ij], next, &next);
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < nocc * nocc; ij++) {
         local_.W[ij] = block_matrix(local_.pairdom_len[ij], local_.pairdom_nrlen[ij]);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local_.W[ij][0],
-                  local_.pairdom_len[ij] * local_.pairdom_nrlen[ij] * sizeof(double), next, &next);
+                  sizeof(double) * local_.pairdom_len[ij] * local_.pairdom_nrlen[ij], next, &next);
     }
 
     /* Grab the MO-basis T2's */
@@ -261,7 +261,7 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2) {
                 C_DGEMM('n', 't', nvir, nvir, local_.pairdom_len[ij], 1.0, &(X2[0][0]), nso, &(local_.V[ij][0][0]),
                         local_.pairdom_len[ij], 0.0, &(T2->matrix[0][ij][0]), nvir);
             } else /* This must be a neglected weak pair; force it to zero */
-                memset((void *)T2->matrix[0][ij], 0, nvir * nvir * sizeof(double));
+                memset((void *)T2->matrix[0][ij], 0, sizeof(double) * nvir * nvir);
         }
     }
 

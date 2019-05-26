@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -27,6 +27,7 @@
  */
 
 #include "dpd.h"
+#include "psi4/libpsi4util/exception.h"
 using std::string;
 using std::vector;
 namespace psi {
@@ -54,7 +55,7 @@ int DPD::pairnum(string pair) {
             if (v[2] == moSpaces[i]) right = i;
         }
         if (left != right) {
-            throw;
+            throw PSIEXCEPTION("Invalid pair " + pair + " encountered in DPD::pairnum().");
         }
         if (v[3] == "+")
             return left * 5 + 1;
@@ -66,7 +67,7 @@ int DPD::pairnum(string pair) {
             if (v[3] == moSpaces[i]) right = i;
         }
         if (left != right) {
-            throw;
+            throw PSIEXCEPTION("Invalid pair " + pair + " encountered in DPD::pairnum().");
         }
         if (v[4] == "+")
             return left * 5 + 3;

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -50,7 +50,7 @@ void MOInfo::print_model_space() {
     outfile->Printf("\n  ------------------------------------------------------------------------------");
     if (references.size() <= 20) {
         for (size_t i = 0; i < references.size(); ++i) {
-            outfile->Printf("\n  %2d  %s", i, references[i].get_label().c_str());
+            outfile->Printf("\n  %2zu  %s", i, references[i].get_label().c_str());
         }
     } else {
         outfile->Printf("\n  There are %d determinants in the model space", static_cast<int>(references.size()));

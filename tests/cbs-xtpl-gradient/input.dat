@@ -37,7 +37,7 @@ compare_values(nucenergy_ref, he_dimer.nuclear_repulsion_energy(), 9, "Nuclear r
 # SCF TESTS
 
 scf_dz = gradient('SCF/cc-pVDZ')
-compare_matrices(ref_scf_dz, scf_dz, 6, "SCF/cc-pVDZ Gradient")  #TEST
+compare_matrices(ref_scf_dz, scf_dz, 6, "[1] SCF/cc-pVDZ Gradient")  #TEST
 
 scf_tz = gradient('SCF/cc-pVTZ', dertype=0)
 compare_matrices(ref_scf_tz, scf_tz, 6, "SCF/cc-pVTZ Gradient, dertype=0")  #TEST
@@ -46,16 +46,16 @@ scf_dtz = gradient('SCF/cc-pV[23]Z', dertype=0)
 compare_matrices(ref_scf_dtz, scf_dtz, 6, "SCF/cc-pV[DT]Z Gradient, dertype=0")  #TEST
 
 scf_dtz = gradient('SCF/cc-pV[23]Z')
-compare_matrices(ref_scf_dtz, scf_dtz, 6, "SCF/cc-pV[DT]Z Gradient, dertype=1")  #TEST
+compare_matrices(ref_scf_dtz, scf_dtz, 6, "[4] SCF/cc-pV[DT]Z Gradient, dertype=1")  #TEST
 
 # We do not currently test at this high of angular momentum
 # scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
-# compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "SCF/cc-pV[DTQ]Z Gradient")  #TEST
+# compare_matrices(ref_scf_dtqz, scf_dtqz, 6, "[5] SCF/cc-pV[DTQ]Z Gradient")  #TEST
 
 
 # MP2 TESTS
 mp2_dtz = gradient('MP2/cc-pV[DT]Z')
-compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "MP2/cc-pV[DT]Z Gradient")  #TEST
+compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "[6] MP2/cc-pV[DT]Z Gradient")  #TEST
 
 mp2_dtz = gradient('MP2/cc-pV[DT]Z', dertype='energy')
 compare_matrices(ref_mp2_dtz, mp2_dtz, 6, "MP2/cc-pV[DT]Z Gradient, dertype=0")  #TEST

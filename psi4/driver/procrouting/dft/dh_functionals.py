@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -30,6 +30,42 @@ List of double-hybrid functionals
 """
 
 funcs = []
+
+funcs.append({
+    "name": "MP2MP2",
+    "x_hf": {
+        "alpha": 1.0
+    },
+    "c_functionals": {},
+    "c_mp2": {
+        "alpha": 1.0
+    },
+})
+
+
+funcs.append({
+    "name": "MP2D",
+    "alias": ["MP2-D"],
+    "x_hf": {
+        "alpha": 1.0
+    },
+    "c_functionals": {},
+    "c_mp2": {
+        "alpha": 1.0
+    },
+    "dispersion": {
+        "type": "dmp2",
+        "params": {
+            "s8": 1.187,
+            "a1": 0.944,
+            "a2": 0.480,
+            "rcut": 0.72,
+            "w": 0.20,
+        },
+        "citation": "    Rezac, J.; Greenwell, C.; Beran, G. (2018), J. Chem. Theory Comput., 14: 4711-4721\n",
+    },
+})
+
 
 funcs.append({
     "name": "B2PLYP",

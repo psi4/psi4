@@ -29,6 +29,6 @@ set dmrg_mps_write            false
 energy("dmrg-ci")
 
 ref_energy = -76.1261102339  #TEST
-compare_values(-76.02141840825, get_variable('SCF TOTAL ENERGY'), 6, 'SCF Energy')  #TEST
-compare_values(ref_energy, get_variable("CURRENT ENERGY"), 6, "DMRG CI Energy")  #TEST
+compare_values(-76.02141840825, variable('SCF TOTAL ENERGY'), 6, 'SCF Energy')  #TEST
+compare_values(ref_energy, variable("CURRENT ENERGY"), 6, "DMRG CI Energy")  #TEST
 

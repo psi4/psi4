@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,13 +41,13 @@
 namespace psi {
 namespace ccdensity {
 
-void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U);
-void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U);
-void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U);
+void ex_tdensity_rohf(const struct TD_Params& S, const struct TD_Params& U);
+void ex_tdensity_uhf(const struct TD_Params& S, const struct TD_Params& U);
+void ex_tdensity_intermediates(const struct TD_Params& S, const struct TD_Params& U);
 void ex_sort_td_rohf(char hand, int Tirrep);
 void ex_sort_td_uhf(char hand, int Tirrep);
 
-void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U) {
+void ex_tdensity_rohf(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
     dpdbuf4 T2, L2, R2, I2;
@@ -495,7 +495,7 @@ void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U) {
     return;
 }
 
-void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U) {
+void ex_tdensity_uhf(const struct TD_Params& S, const struct TD_Params& U) {
     dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
     dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
     dpdbuf4 T2, L2, R2, I2;

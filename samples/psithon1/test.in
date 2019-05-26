@@ -36,8 +36,8 @@ compare_values(ref_re, phys_consts['re'], 5, "Equilibrium bond length")         
 compare_values(ref_r0, phys_consts['r0'], 5, "Zero-point corrected bond length")          #TEST
 compare_values(ref_Be, phys_consts['Be'], 5, "Equilibrium rotational constant")           #TEST
 compare_values(ref_B0, phys_consts['B0'], 5, "Zero-point corrected rotational constant")  #TEST
-compare_values(ref_we, phys_consts['we'], 5, "Harmonic vibrational frequency")            #TEST
-compare_values(ref_wexe, phys_consts['wexe'], 5, "Anharmonicity")                         #TEST
-compare_values(ref_nu, phys_consts['nu'], 5, "Anharmonic vibrational frequency")          #TEST
+compare_values(ref_we, phys_consts['we'], 4, "Harmonic vibrational frequency")            #TEST
+compare_values(ref_wexe, phys_consts['wexe'], 4, "Anharmonicity")                         #TEST
+compare_values(ref_nu, phys_consts['nu'], 4, "Anharmonic vibrational frequency")          #TEST
 compare_values(ref_ae, phys_consts['ae'], 5, "Vibration-rotation interaction constant")   #TEST
 compare_values(ref_De, phys_consts['De'], 5, "Quartic centrifugal distortion constant")   #TEST

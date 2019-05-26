@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -220,7 +220,7 @@ void DCFTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Bas
 
     auto sieve = std::make_shared<ERISieve>(primary, 1.0E-20);
     const std::vector<std::pair<int, int>>& shell_pairs = sieve->shell_pairs();
-    int npairs = shell_pairs.size();
+    size_t npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
     int max_rows;
@@ -312,7 +312,7 @@ void DCFTSolver::df_memory() {
 #endif
 
     outfile->Printf("\t => Sizing <=\n\n");
-    outfile->Printf("\t  Memory   = %11d MB\n", long(memory) / (1024L * 1024L));
+    outfile->Printf("\t  Memory   = %11ld MB\n", long(memory) / (1024L * 1024L));
     outfile->Printf("\t  Threads  = %11d\n", nthreads);
     outfile->Printf("\t  nn       = %11d\n", nn_);
     outfile->Printf("\t  nQ       = %11d\n\n", nQ_);

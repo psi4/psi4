@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,7 +41,7 @@
 namespace psi {
 namespace cclambda {
 
-void CCLambdaWavefunction::init_amps(struct L_Params L_params) {
+void CCLambdaWavefunction::init_amps(const struct L_Params& L_params) {
     double norm;
     dpdfile2 T1, R1, LIA, Lia, dIA, dia, XIA, Xia;
     dpdbuf4 T2, R2, LIJAB, Lijab, LIjAb, dIJAB, dijab, dIjAb, XIJAB, Xijab, XIjAb;

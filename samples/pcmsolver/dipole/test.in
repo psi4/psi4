@@ -69,7 +69,7 @@ for m in ['HF', 'B3LYP']:
     set perturb_h false
     e, wfn = energy(m, return_wfn=True)
     oeprop(wfn, 'MULTIPOLES(1)')
-    analytic = get_variable('SCF DIPOLE Z')
+    analytic = variable('SCF DIPOLE Z')
 
     compare_values(ref_3pt[m], dm_z_3point, 8, 'Z dipole moment, using 3-point stencil %s' % m) # TEST
     compare_values(ref_5pt[m], dm_z_5point, 8, 'Z dipole moment, using 5-point stencil %s' % m) # TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,6 +48,7 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
+#include "psi4/libscf_solver/rhf.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
@@ -56,7 +57,7 @@
 namespace psi {
 namespace scfgrad {
 
-SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
+SCFDeriv::SCFDeriv(SharedWavefunction ref_wfn, Options& options) :
     Wavefunction(options)
 {
     shallow_copy(ref_wfn);
@@ -72,17 +73,17 @@ SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
     }
 
 }
-SCFGrad::~SCFGrad()
+SCFDeriv::~SCFDeriv()
 {
 }
-void SCFGrad::common_init()
+void SCFDeriv::common_init()
 {
 
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
-SharedMatrix SCFGrad::compute_gradient()
+SharedMatrix SCFDeriv::compute_gradient()
 {
     // => Echo <= //
 
@@ -286,7 +287,7 @@ SharedMatrix SCFGrad::compute_gradient()
 
     return gradients_["Total"];
 }
-SharedMatrix SCFGrad::compute_hessian()
+SharedMatrix SCFDeriv::compute_hessian()
 {
     // => Echo <= //
 
@@ -412,7 +413,7 @@ SharedMatrix SCFGrad::compute_hessian()
 
                 double perm = (P == Q ? 1.0 : 2.0);
 
-                size_t offset = nP*nQ;
+                size_t offset = static_cast<size_t> (nP)*nQ;
 #define DEBUGINTS 0
 
 #if DEBUGINTS
@@ -694,7 +695,7 @@ SharedMatrix SCFGrad::compute_hessian()
                 int Qy = 3 * aQ + 1;
                 int Qz = 3 * aQ + 2;
 
-                size_t offset = nP*nQ;
+                size_t offset = static_cast<size_t> (nP)*nQ;
 
                 double perm = (P == Q ? 1.0 : 2.0);
 
@@ -867,7 +868,7 @@ SharedMatrix SCFGrad::compute_hessian()
                 int Qy = 3 * aQ + 1;
                 int Qz = 3 * aQ + 2;
 
-                size_t offset = nP*nQ;
+                size_t offset = static_cast<size_t> (nP)*nQ;
 
                 double perm = (P == Q ? 1.0 : 2.0);
 
@@ -1041,7 +1042,7 @@ SharedMatrix SCFGrad::compute_hessian()
 
     // => Response Terms (Brace Yourself) <= //
     if (options_.get_str("REFERENCE") == "RHF") {
-        hessians_["Response"] = rhf_hessian_response();
+        hessians_["Response"] = hessian_response();
     } else {
         throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
     }

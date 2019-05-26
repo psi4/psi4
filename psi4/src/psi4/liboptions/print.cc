@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -68,7 +68,7 @@ std::string Options::to_string() const {
     for (const_iterator local_iter = keyvals.begin(); local_iter != keyvals.end(); ++local_iter) {
         std::stringstream line;
         std::string value;
-        bool option_specified;
+        bool option_specified = false;
         const std::string &name = local_iter->first;
         const_iterator global_iter = globals_.find(name);
         if (local_iter->second.has_changed()) {

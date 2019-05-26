@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,16 +41,16 @@
 namespace psi {
 namespace ccdensity {
 
-void ltdensity_rohf(struct TD_Params S);
-void ltdensity_uhf(struct TD_Params S);
-void ltdensity_intermediates(struct TD_Params S);
-void sort_ltd_rohf(struct TD_Params S);
-void sort_ltd_uhf(struct TD_Params S);
-void rtdensity(struct TD_Params S);
-void sort_rtd_rohf(struct TD_Params S);
-void sort_rtd_uhf(struct TD_Params S);
+void ltdensity_rohf(const struct TD_Params& S);
+void ltdensity_uhf(const struct TD_Params& S);
+void ltdensity_intermediates(const struct TD_Params& S);
+void sort_ltd_rohf(const struct TD_Params& S);
+void sort_ltd_uhf(const struct TD_Params& S);
+void rtdensity(const struct TD_Params& S);
+void sort_rtd_rohf(const struct TD_Params& S);
+void sort_rtd_uhf(const struct TD_Params& S);
 
-void tdensity(struct TD_Params S) {
+void tdensity(const struct TD_Params& S) {
     if (params.ref == 0 || params.ref == 1) {
         ltdensity_rohf(S);
         sort_ltd_rohf(S);

@@ -26,7 +26,7 @@ MEMORY=20000000)
 energy('cfour')
 
 for vari in test_psivars:  #TEST
-    store[vari] = get_variable(vari)  #TEST
+    store[vari] = variable(vari)  #TEST
     set_variable(vari, 0.0)  #TEST
 
 clean()
@@ -53,8 +53,8 @@ print(test_psivars)  #TEST
 print_variables()
 for vari in test_psivars:  #TEST
     if vari == 'nuclear repulsion energy':  #TEST
-        compare_values(store[vari], get_variable(vari), 4, vari.upper())  #TEST
+        compare_values(store[vari], variable(vari), 4, vari.upper())  #TEST
     else:  #TEST
-        compare_values(store[vari], get_variable(vari), 6, vari.upper())  #TEST
+        compare_values(store[vari], variable(vari), 6, vari.upper())  #TEST
 
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,12 +54,8 @@
 namespace psi {
 namespace ccresponse {
 
-/* Max length of ioff array */
-#define IOFF_MAX 32641
-
 /* Function prototypes */
 void init_io();
-void init_ioff();
 void title();
 void get_moinfo(std::shared_ptr<Wavefunction>);
 void get_params(std::shared_ptr<Wavefunction>, Options &);
@@ -87,7 +83,6 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     int **cachelist, *cachefiles;
 
     init_io();
-    init_ioff();
     title();
     get_moinfo(ref_wfn);
     get_params(ref_wfn, options);
@@ -186,11 +181,5 @@ void exit_io() {
     timer_off("ccresponse");
 }
 
-void init_ioff() {
-    int i;
-    ioff = init_int_array(IOFF_MAX);
-    ioff[0] = 0;
-    for (i = 1; i < IOFF_MAX; i++) ioff[i] = ioff[i - 1] + i;
-}
 }
 }  // namespace psi

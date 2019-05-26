@@ -17,7 +17,7 @@ ref_mp2_dtz = psi4.core.Matrix.from_list(    #TEST
                [[ 0.0,  0.0,   0.01155124],  #TEST
                 [ 0.0,  0.0,  -0.01155124]]) #TEST
 
-nucenergy_ref = 1.17594935242
+nucenergy_ref = 1.1759493570
 
 molecule he_dimer {
     He 0 0 0

@@ -42,13 +42,13 @@ for convcrit in convmat:
     
     print('')  #TEST
     energy('scf')
-    compare_values(e_dfscf, get_variable('CURRENT ENERGY'), convcrit[3], '  scf sp %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
+    compare_values(e_dfscf, variable('CURRENT ENERGY'), convcrit[3], '  scf sp %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
     clean()
 
     energy('cisd')
-    compare_values(e_pkscf, get_variable('CURRENT REFERENCE ENERGY'), convcrit[4], 'cisd scf %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
+    compare_values(e_pkscf, variable('CURRENT REFERENCE ENERGY'), convcrit[4], 'cisd scf %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
     clean()
-    compare_values(e_cisd, get_variable('CURRENT CORRELATION ENERGY'), convcrit[5], ' cisd sp %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
+    compare_values(e_cisd, variable('CURRENT CORRELATION ENERGY'), convcrit[5], ' cisd sp %d %d %d to %d %d %d' % (convcrit[0], convcrit[1], convcrit[2], convcrit[3], convcrit[4], convcrit[5]))  #TEST
     
     revoke_global_option_changed('E_CONVERGENCE')
     revoke_local_option_changed('SCF', 'E_CONVERGENCE')

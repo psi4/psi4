@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,11 +42,11 @@
 namespace psi {
 namespace cclambda {
 
-void denom_rhf(struct L_Params);
-void denom_rohf(struct L_Params);
-void denom_uhf(struct L_Params);
+void denom_rhf(const struct L_Params&);
+void denom_rohf(const struct L_Params&);
+void denom_uhf(const struct L_Params&);
 
-void CCLambdaWavefunction::denom(struct L_Params L_params) {
+void CCLambdaWavefunction::denom(const struct L_Params& L_params) {
     if (params.ref == 0)
         denom_rhf(L_params);
     else if (params.ref == 1)
@@ -55,7 +55,7 @@ void CCLambdaWavefunction::denom(struct L_Params L_params) {
         denom_uhf(L_params);
 }
 
-void denom_rhf(struct L_Params L_params) {
+void denom_rhf(const struct L_Params& L_params) {
     dpdfile2 FAE, FMI;
     dpdfile2 dIA;
     dpdfile4 dIjAb;
@@ -149,7 +149,7 @@ void denom_rhf(struct L_Params L_params) {
     return;
 }
 
-void denom_uhf(struct L_Params L_params) {
+void denom_uhf(const struct L_Params& L_params) {
     int nirreps, h, i, j, a, b, ij, ab, I, J, A, B, isym, jsym, asym, bsym, m, e;
     int *aoccpi, *boccpi, *avirtpi, *bvirtpi;
     int *aocc_off, *bocc_off, *avir_off, *bvir_off, L_irr;
@@ -390,7 +390,7 @@ void denom_uhf(struct L_Params L_params) {
     return;
 }
 
-void denom_rohf(struct L_Params L_params) {
+void denom_rohf(const struct L_Params& L_params) {
     dpdfile2 LFAEt, LFaet, LFMIt, LFmit;
     dpdfile2 dIA, dia;
     dpdfile4 dIJAB, dijab, dIjAb;

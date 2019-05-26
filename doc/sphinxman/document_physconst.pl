@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -71,21 +71,21 @@ printf RSTOUT ".. _`table:physconst`:\n\n";
 printf RSTOUT "Physical Constants\n";
 printf RSTOUT "==================\n\n";
 printf RSTOUT ".. table:: Physical constants in |PSIfour|\n\n";
-printf RSTOUT "   +-%-60s-+-%-20s-+-%-100s-+\n", ('-' x 60), ('-' x 20), ('-' x 100);
-printf RSTOUT "   | %-60s | %-20s | %-100s |\n", "Label", "Value", "Description";
-printf RSTOUT "   +=%60s=+=%20s=+=%100s=+\n", ('=' x 60), ('=' x 20), ('=' x 100);
+printf RSTOUT "   +-%-60s-+-%-40s-+-%-100s-+\n", ('-' x 60), ('-' x 40), ('-' x 100);
+printf RSTOUT "   | %-60s | %-40s | %-100s |\n", "Label", "Value", "Description";
+printf RSTOUT "   +=%60s=+=%40s=+=%100s=+\n", ('=' x 60), ('=' x 40), ('=' x 100);
 while(<PHYSCONST>){
     next unless /\s*#define\s+pc_(\w+)\s+([-+Ee0-9.]+)\s+\/\*-(.*)-\*\//;
     my $Var     = $1;
     my $Val     = $2;
     my $Comment = $3;
-    printf PYOUT "%-25s = %-20s #%-40s\n", $Var, $Val, $Comment;
-    printf RSTOUT "   | %60s | %-20s | %-100s |\n", $Var, $Val, $Comment;
-    printf RSTOUT "   +-%-60s-+-%-20s-+-%-100s-+\n", ('-' x 60), ('-' x 20), ('-' x 100);
+    printf PYOUT "%-25s = %-40s #%-40s\n", $Var, $Val, $Comment;
+    printf RSTOUT "   | %60s | %-40s | %-100s |\n", $Var, $Val, $Comment;
+    printf RSTOUT "   +-%-60s-+-%-40s-+-%-100s-+\n", ('-' x 60), ('-' x 40), ('-' x 100);
     $Var =~ s/_/\\_/g; # Make things TeX-friendly
     $Comment =~ s/_/\\_/g; # Make things TeX-friendly
     $Comment =~ s/@@/_/g;  # process @@ as math mode subscript in tex
-    printf TEXOUT "psi%-25s & %-20s & %-40s\\\\\n", $Var, $Val, $Comment;
+    printf TEXOUT "psi%-25s & %-40s & %-40s\\\\\n", $Var, $Val, $Comment;
 }
 print "Auto-documenting constants file physconst.h\n";
 close PHYSCONST;

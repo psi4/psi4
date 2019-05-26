@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -81,9 +81,6 @@ double DCFTSolver::compute_energy_UHF() {
         throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" &&
-        options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-        throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
     if (!(options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12" ||
@@ -92,6 +89,16 @@ double DCFTSolver::compute_energy_UHF() {
         throw FeatureNotImplemented("ODC-13/CEPA0", "Density Fitting", __FILE__, __LINE__);
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE" && options_.get_str("DCFT_TYPE") == "DF")
         throw FeatureNotImplemented("Three-particle energy correction", "Density Fitting", __FILE__, __LINE__);
+    if (options_.get_str("ALGORITHM") == "QC") {
+        if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
+            throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
+        if (options_.get_str("DCFT_TYPE") == "DF")
+            throw FeatureNotImplemented("QC algorithm", "Density Fitting", __FILE__, __LINE__);
+        if (options_.get_str("DCFT_FUNCTIONAL") != "DC-06")
+            outfile->Printf(
+                "\n\n\t**** Warning: Using DC-06 hessian, as others not implemented. Quadratic convergence is not "
+                "guaranteed. ****\n");
+    }
 
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)

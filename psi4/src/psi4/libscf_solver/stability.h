@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -28,8 +28,6 @@
 
 #ifndef STABILITY_H
 #define STABILITY_H
-
-#endif  // STABILITY_H
 
 #include "psi4/libmints/wavefunction.h"
 
@@ -123,3 +121,5 @@ class UStab {
 }  // namespace scf
 
 }  // namespace psi
+
+#endif  // STABILITY_H

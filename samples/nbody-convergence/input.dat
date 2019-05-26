@@ -1,0 +1,28 @@
+#! Convergence of many-body gradients of different BSSE schemes
+
+
+
+gradients['NoCP_cc-pV[T, Q]Z'] = [
+]
+
+
+
+]
+
+
+molecule trimer {
+O            0.000000000000     0.000000000000    -0.065775570547
+H            0.000000000000    -0.759061990794     0.521953018286
+H            0.000000000000     0.759061990794     0.521953018286
+--
+He 2 0 0
+--
+He -2 0 0
+}
+
+for bsse in ['NoCP', 'CP', 'VMFC']:
+    for basis in ['cc-pV[D, T]Z', 'cc-pV[T, Q]Z']:
+        g = gradient('SCF/' + basis, molecule=trimer, bsse_type=bsse,
+                                     max_nbody=2, return_total_data=True)
+        core.clean()
+

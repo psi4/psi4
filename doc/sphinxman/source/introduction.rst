@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2018 The Psi4 Developers.
+.. # Copyright (c) 2007-2019 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -43,7 +43,7 @@ the code feature shared-memory parallelization to run efficiently on
 multi-core machines (see Sec. :ref:`sec:threading`).
 An advanced parser written in Python allows the user
 input to have a very simple style for routine computations, but it can also
-automate very complex tasks with ease. 
+automate very complex tasks with ease.
 
 |PSIfour| is, in many ways, a whole new package compared to Psi3.
 While some libraries and modules remain the same, the majority of the code has
@@ -81,7 +81,7 @@ keywords for each module, as well as tables of available basis sets and
 a listing of the sample input files available under :source:`samples`.
 The user is urged to examine this directory of sample inputs, as
 most common types of computations are represented there.
-For the latest |PSIfour| documentation, check 
+For the latest |PSIfour| documentation, check
 `www.psicode.org <http://www.psicode.org>`_.
 
 Citing |PSIfour|
@@ -114,12 +114,36 @@ The following citation covers |PSIfour| alpha and beta versions:
   D. Crawford, *WIREs Comput. Mol. Sci.* **2**, 556 (2012).
   (doi: `10.1002/wcms.93 <http://dx.doi.org/10.1002/wcms.93>`_).
 
-
 Depending on the particular modules used, the user may also wish to
 cite some of the following references for theoretical, algorithmic,
 or implementation contributions specific to |PSIfour| (in addition to
 appropriate references for the underlying theory, which are not necessarily
 included in the list below).
+
+Regardless of the type of the calculation, an initial guess is
+necessary. |PSIfour| features several initial guesses for the
+molecular orbitals. The default guess is the superposition of atomic
+densities (SAD), discussed in
+
+* "Principles for a direct SCF approach to LCAO-MO ab-initio
+  calculations", J. Almlöf, K. Faegri, and K. Korsell,
+  *J. Comput. Chem.* **3**, 385 (1982).
+  (doi: `10.1002/jcc.540030314 <http://dx.doi.org/10.1002/jcc.540030314>`_).
+
+* "Starting SCF calculations by superposition of atomic
+  densities", J. H. Van Lenthe, R. Zwaans, H. J. J. Van Dam,
+  and M. F. Guest, *J. Comput. Chem.* **27**, 926 (2006).
+  (doi: `10.1002/jcc.20393 <http://dx.doi.org/10.1002/jcc.20393>`_).
+
+|PSIfour| also features an extended Hückel guess, which employs
+on-the-fly atomic calculations alike the SAD guess. The Hückel guess
+has been described in
+
+* "An assessment of initial guesses for self-consistent field
+  calculations. Superposition of Atomic Potentials: simple yet
+  efficient", S. Lehtola, *J. Chem. Theory Comput.* (2019)
+  (doi: `10.1021/acs.jctc.8b01089 <http://dx.doi.org/10.1021/acs.jctc.8b01089>`_).
+
 
 Density Cumulant Functional Theory (DCFT)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -138,23 +162,23 @@ DC-06 (also known as DCFT-06):
   **133**, 174122 (2010).
   (doi: `10.1063/1.3503657 <http://dx.doi.org/10.1063/1.3503657>`_).
 
-* "Analytic gradients for density cumulant functional theory: The 
-  DCFT-06 model," A. Yu. Sokolov, J. J. Wilke, A. C. Simmonett, 
+* "Analytic gradients for density cumulant functional theory: The
+  DCFT-06 model," A. Yu. Sokolov, J. J. Wilke, A. C. Simmonett,
   and H. F. Schaefer, *J. Chem. Phys.* **137**, 054105 (2012).
   (doi: `10.1063/1.4739423 <http://dx.doi.org/10.1063/1.4739423>`_).
 
 DC-12:
 
-* "Density cumulant functional theory: The DC-12 method, an improved 
-  description of the one-particle density matrix," A. Yu. Sokolov, 
-  A. C. Simmonett, and H. F. Schaefer, *J. Chem. Phys.*  **138**, 024107 
+* "Density cumulant functional theory: The DC-12 method, an improved
+  description of the one-particle density matrix," A. Yu. Sokolov,
+  A. C. Simmonett, and H. F. Schaefer, *J. Chem. Phys.*  **138**, 024107
   (2013).
   (doi: `10.1063/1.4773580 <http://dx.doi.org/10.1063/1.4773580>`_).
 
 ODC-06 and ODC-12:
 
 * "Orbital-optimized density cumulant functional theory," A. Yu. Sokolov, and
-  H. F. Schaefer, *J. Chem. Phys.*  **139**, 204110 (2013). 
+  H. F. Schaefer, *J. Chem. Phys.*  **139**, 204110 (2013).
   (doi: `10.1063/1.4833138 <http://dx.doi.org/10.1063/1.4833138>`_).
 
 ODC-13:
@@ -162,7 +186,7 @@ ODC-13:
 * "Density cumulant functional theory from a unitary transformation:
   N-representability, three-particle correlation effects, and application
   to O4+," A. Yu. Sokolov, H. F. Schaefer, and W. Kutzelnigg,
-  *J. Chem. Phys.*  **141**, 074111 (2014). 
+  *J. Chem. Phys.*  **141**, 074111 (2014).
   (doi: `10.1063/1.4892946 <http://dx.doi.org/10.1063/1.4892946>`_).
 
 Configuration Interaction (CI)
@@ -171,7 +195,7 @@ Configuration Interaction (CI)
 PSI has a highly optimized code for full configuration interaction
 and highly correlated configuration interaction, as described in
 
-* "The Configuration Interaction Method: Advances in Highly 
+* "The Configuration Interaction Method: Advances in Highly
   Correlated Approaches," C. D. Sherrill and H. F. Schaefer, in
   *Adv. Quantum Chem.*, vol. 34, P.-O. L\ |o_dots|\ wdin, Ed.
   (Academic Press, New York, 1999), pp. 143-269.
@@ -184,7 +208,7 @@ Coupled Cluster (CC)
 A general discussion of coupled cluster theory is given in
 
 * "An Introduction to Coupled Cluster Theory for Computational
-  Chemists," T. D. Crawford and H. F. Schaefer, *Rev. Comp. Chem.* 
+  Chemists," T. D. Crawford and H. F. Schaefer, *Rev. Comp. Chem.*
   **14**, 33-136 (2000).
   (doi: `10.1002/9780470125915.ch2
   <http://dx.doi.org/10.1002/9780470125915.ch2>`_).
@@ -193,7 +217,7 @@ Implementation of frozen natural orbital (FNO) coupled cluster theory
 in PSI and its performance for non-covalent interactions is discussed
 in
 
-* "Accurate Noncovalent Interaction Energies Using Truncated Basis Sets 
+* "Accurate Noncovalent Interaction Energies Using Truncated Basis Sets
   Based on Frozen Natural Orbitals," A. E. DePrince and C. D. Sherrill,
   *J. Chem. Theory Comput.* **9**, 293-299 (2013).
   (doi: `10.1021/ct300780u <http://dx.doi.org/10.1021/ct300780u>`_).
@@ -208,42 +232,42 @@ and reaction energies, is discussed in
   *J. Chem. Theory Comput.* **9**, 2687-2696 (2013).
   (doi: `10.1021/ct400250u <http://dx.doi.org/10.1021/ct400250u>`_).
 
-Implementation of the asymmetric triples correction for the density-fitted 
+Implementation of the asymmetric triples correction for the density-fitted
 and cholesky-decomposed coupled-cluster singles and doubles method
 
 * "A noniterative asymmetric triple excitation correction for the density-fitted
-  coupled-cluster singles and doubles method: Preliminary applications," 
+  coupled-cluster singles and doubles method: Preliminary applications,"
   U. Bozkaya,   *J. Chem. Phys.* **144**, 144108 (2016).
   (doi: `10.1063/1.4945706 <http://dx.doi.org/10.1063/1.4945706>`_).
 
-Implementation of analytic gradients for the density-fitted 
+Implementation of analytic gradients for the density-fitted
 coupled-cluster singles and doubles method
 
 * "Analytic energy gradients for the coupled-cluster singles and doubles method with
-  the density-fitting approximation," 
+  the density-fitting approximation,"
   U. Bozkaya and C. D. Sherrill,   *J. Chem. Phys.* **144**, 174103 (2016).
   (doi: `10.1063/1.4948318 <http://dx.doi.org/10.1063/1.4948318>`_).
 
-Implementation of analytic gradients for the density-fitted 
+Implementation of analytic gradients for the density-fitted
 coupled-cluster singles and doubles with perturbative triples method
 
-* "Analytic energy gradients for the coupled-cluster singles and doubles 
-  with perturbative triples method with the density-fitting approximation," 
+* "Analytic energy gradients for the coupled-cluster singles and doubles
+  with perturbative triples method with the density-fitting approximation,"
   U. Bozkaya and C. D. Sherrill,   *J. Chem. Phys.* **147**, 044104 (2017).
   (doi: `10.1063/1.4994918 <http://dx.doi.org/10.1063/1.4994918>`_).
- 
+
 Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-|PSIfour| features production-level Mukherjee-style state-specific 
+|PSIfour| features production-level Mukherjee-style state-specific
 coupled-cluster theory, including perturbative triples and also associated
-multi-reference perturbation theories.  The theory and |PSIfour| 
+multi-reference perturbation theories.  The theory and |PSIfour|
 implementation of these methods is discussed in the following papers.
 
 General Mk-MRCC
 
 * "Coupling Term Derivation and General Implementation of
   State-Specific Multireference Coupled-Cluster Theories,"
-  F. A. Evangelista, W. D. Allen, and H. F. Schaefer, 
+  F. A. Evangelista, W. D. Allen, and H. F. Schaefer,
   *J. Chem. Phys.* **127**, 024102 (2007).
   (doi: `10.1063/1.2743014 <http://dx.doi.org/10.1063/1.2743014>`_).
 
@@ -277,26 +301,26 @@ Symmetry-Adapted Perturbation Theory (SAPT)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |PSIfour| features an extremely efficient code to perform wavefunction-based
-Symmetry Adapted Perturbation Theory (SAPT). A good review article for this 
+Symmetry Adapted Perturbation Theory (SAPT). A good review article for this
 method is as follows:
 
 * "Perturbation Theory Approach to Intermolecular Potential Energy
   Surfaces of van der Waals Complexes," B. Jeziorski, R. Moszynski,
-  and K. Szalewicz, *Chem. Rev.* **94**, 1887-1930 (1994).   
+  and K. Szalewicz, *Chem. Rev.* **94**, 1887-1930 (1994).
   (doi: `10.1021/cr00031a008 <http://dx.doi.org/10.1021/cr00031a008>`_).
 
 |PSIfour| benefits enormously from the introduction of density fitting (DF)
-into SAPT. There are several SAPT truncations available in |PSIfour|. For 
+into SAPT. There are several SAPT truncations available in |PSIfour|. For
 guidance on which one to choose, see the SAPT section of the manual
 and refer to the following systematic study:
 
 * "Levels of  Symmetry Adapted Perturbation Theory (SAPT). I. Efficiency and
   Performance for Interaction Energies,'' T. M. Parker, L. A. Burns, R. M.
-  Parrish, A. G. Ryno, and C. D. Sherrill, *J. Chem. Phys.* **140**, 
+  Parrish, A. G. Ryno, and C. D. Sherrill, *J. Chem. Phys.* **140**,
   094106 (2014).
   (doi: `10.1063/1.4867135 <http://dx.doi.org/10.1063/1.4867135>`_).
 
-The theory and implementation of DF-SAPT is discussed 
+The theory and implementation of DF-SAPT is discussed
 in the following papers for various levels of SAPT.
 
 DF-SAPT0
@@ -346,7 +370,7 @@ SAPT2+(CCD), SAPT2+(3)(CCD), and SAPT2+3(CCD)
 
 * "Tractability Gains in Symmetry-Adapted Perturbation Theory Including
   Coupled Double Excitations: CCD+ST(CCD) Dispersion with Natural Orbital
-  Truncations,'' R. M. Parrish, E. G. Hohenstein, and C. D. Sherrill, 
+  Truncations,'' R. M. Parrish, E. G. Hohenstein, and C. D. Sherrill,
   *J. Chem. Phys.* **139**, 174102 (2013).
   (doi: `10.1063/1.4826520 <http://dx.doi.org/10.1063/1.4826520>`_).
 
@@ -375,18 +399,30 @@ F/I-SAPT
   *J. Chem. Phys.* **143**, 051103 (2015).
   (doi: `10.1063/1.4927575 <http://dx.doi.org/10.1063/1.4927575>`_)
 
+The derivation of the second-order exchange terms without the single-exchange
+approximation are found in the following two works:
+
+* "Intermolecular exchange-induction energies without the overlap expansion,"
+  R. Sch\ |a_dots|\ ffer and G. Jansen, *Theor. Chem. Acc.* **131**, 1235 (2012).
+  (doi: `10.1007/s00214-012-1235-6 <http://dx.doi.org/10.1007/s00214-012-1235-6>`_)
+
+* "Single-determinant-based symmetry-adapted perturbation theory without
+  single-exchange approximation," 
+  R. Sch\ |a_dots|\ ffer and G. Jansen, *Mol. Phys.* **111**, 2570 (2013).
+  (doi: `10.1080/00268976.2013.827253 <http://dx.doi.org/10.1080/00268976.2013.827253>`_)
+
 Orbital-Optimized Post-Hartree |--| Fock Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Orbital-optimized second-order perturbation theory (OMP2)
 
-* "Quadratically convergent algorithm for orbital optimization in the 
-  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+* "Quadratically convergent algorithm for orbital optimization in the
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized
   second-order |MollerPlesset| perturbation theory,"
   U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
   (doi: `10.1063/1.3631129 <http://dx.doi.org/10.1063/1.3631129>`_).
 
-* "Analytic energy gradients for the orbital-optimized second-order 
+* "Analytic energy gradients for the orbital-optimized second-order
   |MollerPlesset| perturbation theory," U. Bozkaya and
   C. D. Sherrill, *J. Chem. Phys.* **138**, 184103 (2013).
   (doi: `10.1063/1.4803662 <http://dx.doi.org/10.1063/1.4803662>`_).
@@ -399,26 +435,26 @@ Orbital-optimized second-order perturbation theory (OMP2)
 Orbital-optimized third-order perturbation theory (OMP3)
 
 * "Orbital-Optimized Third-Order |MollerPlesset| Perturbation
-  Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application 
+  Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application
   to Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
   (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
 
 * "Assessment of Orbital-Optimized Third-Order |MollerPlesset|
-  Perturbation Theory and Its Spin-Component and Spin-Opposite Scaled Variants 
-  for Thermochemistry and Kinetics," E. Soydas and U. Bozkaya,  
+  Perturbation Theory and Its Spin-Component and Spin-Opposite Scaled Variants
+  for Thermochemistry and Kinetics," E. Soydas and U. Bozkaya,
   *J. Chem. Theory Comput.* **9**, 1452 (2013).
   (doi: `10.1021/ct301078q <http://dx.doi.org/10.1021/ct301078q>`_).
 
 * "Analytic energy gradients for the orbital-optimized third-order |MollerPlesset|
-  Perturbation Theory," U. Bozkaya,  
+  Perturbation Theory," U. Bozkaya,
   *J. Chem. Phys.* **139**, 104116 (2013).
   (doi: `10.1063/1.4820877 <http://dx.doi.org/10.1063/1.4820877>`_).
 
 Orbital-optimized linearized coupled-cluster doubles method (OLCCD)
 
-* "Orbital-optimized coupled-electron pair theory and its analytic gradients: 
-  Accurate equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer 
+* "Orbital-optimized coupled-electron pair theory and its analytic gradients:
+  Accurate equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer
   reactions," U. Bozkaya and C. D. Sherrill,
   *J. Chem. Phys.* **139**, 054104 (2013).
   (doi: `10.1063/1.4816628 <http://dx.doi.org/10.1063/1.4816628>`_).
@@ -426,14 +462,14 @@ Orbital-optimized linearized coupled-cluster doubles method (OLCCD)
 Orbital-optimized MP2.5 (OMP2.5)
 
 * "Orbital-optimized MP2.5 and its analytic gradients: Approaching CCSD(T)
-  quality for noncovalent interactions," U. Bozkaya and C. D. Sherrill, 
+  quality for noncovalent interactions," U. Bozkaya and C. D. Sherrill,
   *J. Chem. Phys.* **141**, 204105 (2014).
   (doi: `10.1063/1.4902226 <http://dx.doi.org/10.1063/1.4902226>`_).
 
 Extended Koopmans' Theorem
 
-* "The extended Koopmans' theorem for orbital-optimized methods: Accurate 
-  computation of ionization potentials," U. Bozkaya,  *J. Chem. Phys.* 
+* "The extended Koopmans' theorem for orbital-optimized methods: Accurate
+  computation of ionization potentials," U. Bozkaya,  *J. Chem. Phys.*
   **139**, 154105 (2013).
   (doi: `10.1063/1.4825041 <http://dx.doi.org/10.1063/1.4825041>`_).
 
@@ -443,27 +479,27 @@ Extended Koopmans' Theorem
 
 Density-Fitted and Cholesky-Decomposed Orbital-optimized second-order perturbation theory (DF-OMP2)
 
-* "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting 
-  and Cholesky Decomposition Approximations: An Efficient Implementation," 
+* "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting
+  and Cholesky Decomposition Approximations: An Efficient Implementation,"
   U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2371 (2014).
   (doi: `10.1021/ct500231c <http://dx.doi.org/10.1021/ct500231c>`_).
 
-* "Analytic Energy Gradients and Spin Multiplicities for Orbital-Optimized 
-  Second-Order Perturbation Theory with Density-Fitting Approximation: An 
+* "Analytic Energy Gradients and Spin Multiplicities for Orbital-Optimized
+  Second-Order Perturbation Theory with Density-Fitting Approximation: An
   Efficient Implementation," U. Bozkaya, *J. Chem. Theory Comput.* **10**, 4389 (2014).
   (doi: `10.1021/ct500634s <http://dx.doi.org/10.1021/ct500634s>`_).
 
 Density-Fitted and Cholesky-Decomposed Orbital-optimized MP3 and MP2.5 (DF-OMP3 and DF-OMP2.5)
 
-* "Orbital-Optimized MP3 and MP2.5 with Density-Fitting 
-  and Cholesky Decomposition Approximations," 
+* "Orbital-Optimized MP3 and MP2.5 with Density-Fitting
+  and Cholesky Decomposition Approximations,"
   U. Bozkaya,   *J. Chem. Theory Comput.* **12**, 1179 (2016).
   (doi: `10.1021/acs.jctc.5b01128 <http://dx.doi.org/10.1021/acs.jctc.5b01128>`_).
 
 Density-Fitted and Cholesky-Decomposed Orbital-Optimized Linearized Coupled-Cluster Doubles Method (DF-OLCCD)
 
-* "Orbital-optimized linearized coupled-cluster doubles with density-fitting 
-  and Cholesky decomposition approximations: an efficient implementation," 
+* "Orbital-optimized linearized coupled-cluster doubles with density-fitting
+  and Cholesky decomposition approximations: an efficient implementation,"
   U. Bozkaya,   *Phys. Chem. Chem. Phys.* **18**, 11362 (2016).
   (doi: `10.1039/c6cp00164e <http://dx.doi.org/10.1039/c6cp00164e>`_).
 
@@ -473,7 +509,7 @@ Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
 
 General ADC(2) theory
 
-* "Intermediate state representation approach to physical properties of 
+* "Intermediate state representation approach to physical properties of
   electronically excited molecules,"
   J. Schirmer, and A. B. Trofimov, *J. Chem. Phys.* **120**,
   11449-11464 (2004).
@@ -485,13 +521,13 @@ and their implementation in |PSIfour|
 * "Excited State Calculation for Free-Base and Metalloporphyrins with
   the Partially Renormalized Polarization Propagator Approach,"
   M. Saitow and Y. Mochizuki, *Chem. Phys. Lett.* **525**, 144-149
-  (2012).  
-  (doi: `10.1016/j.cplett.2011.12.063 
+  (2012).
+  (doi: `10.1016/j.cplett.2011.12.063
   <http://dx.doi.org/10.1016/j.cplett.2011.12.063>`_).
 
 Density Matrix Renormalization Group (DMRG)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* "CheMPS2: a free open-source spin-adapted implementation of the density 
+* "CheMPS2: a free open-source spin-adapted implementation of the density
   matrix renormalization group for ab initio quantum chemistry,"
   S. Wouters, W. Poelmans, P. W. Ayers and D. Van Neck,
   *Comput. Phys. Commun.* **185** (6), 1501-1514 (2014).
@@ -527,7 +563,7 @@ Implementation within Psi4
 Supported Systems
 =================
 
-Architectures 
+Architectures
     The majority of |PSIfour| was developed on Mac and Linux machines; in
     principle, it should work on any Unix system. The latest version of the
     |PSIfour| program package may be obtained at `psicode.org <http://psicode.org>`_.
@@ -540,7 +576,7 @@ Architectures
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
-    C++11 compliance (*i.e.*, GCC version 4.9 or above).
+    C++14 compliance (*i.e.*, GCC version 5.1 or above).
     For some architectures, a :ref:`precompiled binary
     <sec:conda>` is available. See :ref:`Compiling and Installing
     <sec:installFile>` for details.
@@ -548,8 +584,9 @@ Python
     |PSIfour| 1.1 and 1.2 are supported on Python 2.7, 3.5,
     and 3.6. After 1.2, only Python 3 will be supported
     `in accordance with other scientific software projects
-    <https://python3statement.org/>`_). Once Python 3.7 is released,
+    <https://python3statement.org/>`_). Now that Python 3.7 is released,
     the plan is to support >=3.6 or at least two Python versions.
+    |PSIfour| 1.3 supports Python 3.6 and 3.7.
 
 .. index:: license
 
@@ -571,9 +608,9 @@ orbital quantum number. Many parts of |PSIfour| can recognize and
 exploit the largest Abelian subgroup of the molecular point group.
 Table :ref:`Methods <table:methods>` displays the range of theoretical methods
 available in |PSIfour|.
-For more details, see Tables :ref:`Energy <table:energy_gen>`, 
+For more details, see Tables :ref:`Energy <table:energy_gen>`,
 :ref:`Energy (DFT) <table:energy_dft>`, :ref:`Energy (MRCC) <table:energy_mrcc>`,
-:ref:`Energy (CFOUR) <table:energy_cfour>`, :ref:`Gradient <table:grad_gen>`, 
+:ref:`Energy (CFOUR) <table:energy_cfour>`, :ref:`Gradient <table:grad_gen>`,
 :ref:`Gradient (CFOUR) <table:grad_cfour>`, and :ref:`Frequency <table:freq_gen>`.
 
 .. _`table:methods`:

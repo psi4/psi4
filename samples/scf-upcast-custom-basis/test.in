@@ -19,7 +19,7 @@ core.IO.set_default_namespace("low")
 set basis low
 energy('hf')
 
-compare_values(-74.9634059, get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+compare_values(-74.9634059, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
 
 
 core.IO.set_default_namespace('high')
@@ -29,4 +29,4 @@ set basis high
 energy('hf')
 
 
-compare_values(-76.02663273485877, get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+compare_values(-76.02663273485877, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST

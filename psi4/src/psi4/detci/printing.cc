@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -71,7 +71,7 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist, int *Iai
     int Ia_abs, Ib_abs;
 
     /* print out the list of most important determinants */
-    outfile->Printf("\n   The %d most important determinants:\n\n", nprint);
+    outfile->Printf("\n   The %zu most important determinants:\n\n", nprint);
     for (size_t i = 0; i < nprint; i++) {
         if (std::fabs(coeff[i]) < MIN_COEFF) continue;
 
@@ -90,7 +90,7 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist, int *Iai
         outfile->Printf("    %c", found_inblock ? ' ' : '*');
 #endif
 
-        outfile->Printf("%4d  %10.6lf  (%5d,%5d)  ", i + 1, coeff[i], Ia_abs, Ib_abs);
+        outfile->Printf("%4d  %10.6lf  (%5lu,%5lu)  ", i + 1, coeff[i], Ia_abs, Ib_abs);
 
         std::string configstring(print_config(AlphaG_->num_orb, AlphaG_->num_el_expl, BetaG_->num_el_expl,
                                               alplist_[Ialist[i]] + Iaidx[i], betlist_[Iblist[i]] + Ibidx[i],

@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -39,6 +39,7 @@ qcdb_module = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + '../
 sys.path.append(qcdb_module)
 import qcdb
 from qcdb.libmintsbasissetparser import Gaussian94BasisSetParser
+import qcelemental as qcel
 
 
 class bcolors:
@@ -59,7 +60,7 @@ def bas_sanitize(fl):
 
 
 parser = Gaussian94BasisSetParser()
-elements = qcdb.periodictable._temp_symbol
+elements = qcel.periodictable.E
 os.system("echo '#differing basis sets' > basisdunningdiffer.txt")
 
 with open(sys.argv[1], 'r') as basfile:
@@ -88,10 +89,10 @@ for el in elements:
     if el.upper() == "RB":
         postKr = True
 
-    shells, msg, ecp_shells, ecp_msg, ecp_ncore = parser.parse(el, bascontents)
+    shells, msg, ecp_shells, ecp_msg, ecp_ncore = parser.parse(el.upper(), bascontents)
 
     if isdiff:
-        rshells, rmsg, recp_shells, recp_msg, recp_ncore = parser.parse(el, refcontents)
+        rshells, rmsg, recp_shells, recp_msg, recp_ncore = parser.parse(el.upper(), refcontents)
         if not shells and not rshells:
             print('%s' % ('' if postKr else '   '), end='')
             continue

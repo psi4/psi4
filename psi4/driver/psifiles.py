@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -214,4 +214,6 @@ PSIF_DFOCC_ABIC             =  280  # DFOCC <AB|IC>
 PSIF_DFOCC_MIABC            =  281  # DFOCC M_iabc
 PSIF_DFOCC_TEMP             =  282  # DFOCC temporary storage
 PSIF_SAD                    =  300  # A SAD file (File for SAD related quantities
+PSIF_DCFT_DPD               =  400  # DCFT DPD handle
+PSIF_DCFT_DENSITY           =  401  # DCFT density
 

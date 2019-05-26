@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+
+#ifndef CCDENSITY_FROZEN_H
+#define CCDENSITY_FROZEN_H
 
 /*! \file
     \ingroup CCDENSITY
@@ -70,3 +73,5 @@ struct Frozen {
 
 }  // namespace ccdensity
 }  // namespace psi
+
+#endif

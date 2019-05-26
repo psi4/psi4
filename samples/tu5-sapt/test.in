@@ -26,13 +26,13 @@ set {
 
 energy('sapt0')
 
-Eelst = psi4.get_variable("SAPT ELST ENERGY")   #TEST
-Eexch = psi4.get_variable("SAPT EXCH ENERGY")   #TEST
-Eind  = psi4.get_variable("SAPT IND ENERGY")    #TEST
-Edisp = psi4.get_variable("SAPT DISP ENERGY")   #TEST
-ET    = psi4.get_variable("SAPT0 TOTAL ENERGY")  #TEST
+Eelst = psi4.variable("SAPT ELST ENERGY")   #TEST
+Eexch = psi4.variable("SAPT EXCH ENERGY")   #TEST
+Eind  = psi4.variable("SAPT IND ENERGY")    #TEST
+Edisp = psi4.variable("SAPT DISP ENERGY")   #TEST
+ET    = psi4.variable("SAPT0 TOTAL ENERGY")  #TEST
 
-Eref = [ 85.189064196429,  -0.003378388762,  0.003704416103,  #TEST
+Eref = [ 85.1890645313,  -0.003378388762,  0.003704416103,  #TEST
          -0.000889316601,  -0.001672292164, -0.002235581423 ] #TEST
 
 #psi4.print_variables() #TEST

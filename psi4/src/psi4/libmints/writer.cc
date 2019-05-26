@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,7 +49,7 @@ MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefun
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
                          std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA,
                          std::shared_ptr<Vector> OccB, bool dovirtual) {
-    auto mode = std::ostream::app;
+    auto mode = std::ostream::trunc;
     auto printer = std::make_shared<PsiOutStream>(filename, mode);
 
     int atom;
@@ -201,14 +201,14 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
         int n = mos[i].second.second;
 
         printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-        printer->Printf(" Ene= %20.10f\n", Ea->get(h, n));
+        printer->Printf(" Ene= %24.17e\n", Ea->get(h, n));
         printer->Printf(" Spin= Alpha\n");
         if (Ca == Cb && Ea == Eb && SameOcc)
-            printer->Printf(" Occup= %7.4lf\n", OccA->get(h, n) + OccB->get(h, n));
+            printer->Printf(" Occup= %24.17e\n", OccA->get(h, n) + OccB->get(h, n));
         else
-            printer->Printf(" Occup= %7.4lf\n", OccA->get(h, n));
+            printer->Printf(" Occup= %24.17e\n", OccA->get(h, n));
         for (int so = 0; so < wavefunction_->nso(); ++so)
-            printer->Printf("%3d %20.12lf\n", so + 1, Ca_ao_mo->get(h, so, n));
+            printer->Printf("%3d %24.17e\n", so + 1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
@@ -226,19 +226,16 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
             int n = mos[i].second.second;
 
             printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-            printer->Printf(" Ene= %20.10lf\n", Eb->get(h, n));
+            printer->Printf(" Ene= %24.17e\n", Eb->get(h, n));
             printer->Printf(" Spin= Beta\n");
-            printer->Printf(" Occup= %7.4lf\n", OccB->get(h, n));
+            printer->Printf(" Occup= %24.17e\n", OccB->get(h, n));
             for (int so = 0; so < wavefunction_->nso(); ++so)
-                printer->Printf("%3d %20.12lf\n", so + 1, Cb_ao_mo->get(h, so, n));
+                printer->Printf("%3d %24.17e\n", so + 1, Cb_ao_mo->get(h, so, n));
         }
     }
 }
 
-FCHKWriter::FCHKWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
-    SharedMatrix Ca = wavefunction_->Ca();
-    Ca->print();
-}
+FCHKWriter::FCHKWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
 
 void FCHKWriter::write_number(const char *label, double value) { fprintf(chk_, "%-43sR%27.15e\n", label, value); }
 
@@ -318,19 +315,58 @@ void FCHKWriter::write(const std::string &filename) {
     chk_ = fopen(filename.c_str(), "w");
     std::shared_ptr<BasisSet> basis = wavefunction_->basisset();
     int maxam = basis->max_am();
-    if (maxam > 4) throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G functions");
     std::shared_ptr<Molecule> mol = wavefunction_->molecule();
+    std::shared_ptr<Wavefunction> refwf = wavefunction_->reference_wavefunction();
+
+    // Orbitals
     SharedMatrix Ca_ao = wavefunction_->Ca_subset("AO");
     SharedMatrix Cb_ao = wavefunction_->Cb_subset("AO");
-    SharedMatrix Da_ao = wavefunction_->Da_subset("AO");
-    SharedMatrix Db_ao = wavefunction_->Db_subset("AO");
-    SharedMatrix Dtot_ao(Da_ao->clone());
-    SharedMatrix Dspin_ao(Da_ao->clone());
+
+    // SCF density matrices
+    SharedMatrix Da_ao;
+    SharedMatrix Db_ao;
+    // Post-Hartree-Fock density matrices
+    SharedMatrix DPHFa_ao;
+    SharedMatrix DPHFb_ao;
+
+    // Post Hartree Fock?
+    bool pHF = (refwf != NULL);
+
+    if (pHF) {
+        // Level of theory may be correlated
+        Da_ao = refwf->Da_subset("AO");
+        Db_ao = refwf->Db_subset("AO");
+
+        DPHFa_ao = wavefunction_->Da_subset("AO");
+        DPHFb_ao = wavefunction_->Db_subset("AO");
+    } else {
+        // SCF level of theory
+        Da_ao = wavefunction_->Da_subset("AO");
+        Db_ao = wavefunction_->Db_subset("AO");
+    }
+
+    // Total and spin density
+    SharedMatrix Dtot_ao;
+    SharedMatrix Dspin_ao;
+    SharedMatrix DPHFtot_ao;
+    SharedMatrix DPHFspin_ao;
+
+    Dtot_ao = Da_ao->clone();
+    Dtot_ao->add(Db_ao);
+    Dspin_ao = Da_ao->clone();
+    Dspin_ao->subtract(Db_ao);
+
+    if (pHF) {
+        DPHFtot_ao = DPHFa_ao->clone();
+        DPHFtot_ao->add(DPHFb_ao);
+        DPHFspin_ao = DPHFa_ao->clone();
+        DPHFspin_ao->subtract(DPHFb_ao);
+    }
+
     const std::string &name = wavefunction_->name();
     const std::string &basisname = basis->name();
-    Dtot_ao->add(Db_ao);
-    Dspin_ao->subtract(Db_ao);
     int nbf = basis->nbf();
+    int nmo = Ca_ao->ncol();
     int nalpha = wavefunction_->nalpha();
     int nbeta = wavefunction_->nbeta();
     int natoms = mol->natom();
@@ -469,27 +505,37 @@ void FCHKWriter::write(const std::string &filename) {
                     for (int col = 0; col < 3; ++col) transmat->set(offset + row, offset + col, pureP[row][col]);
             }
         } else {
-            // Cartesians - P orbitals are fine, but higher terms need reordering
+            // Cartesians - S and P orbitals are fine, but higher terms need reordering
             if (am == 2) {
                 for (int row = 0; row < 6; ++row)
                     for (int col = 0; col < 6; ++col) transmat->set(offset + row, offset + col, cartD[row][col]);
-            }
-            if (am == 3) {
+            } else if (am == 3) {
                 for (int row = 0; row < 10; ++row)
                     for (int col = 0; col < 10; ++col) transmat->set(offset + row, offset + col, cartF[row][col]);
-            }
-            if (am == 4) {
+            } else if (am == 4) {
                 for (int row = 0; row < 15; ++row)
                     for (int col = 0; col < 15; ++col) transmat->set(offset + row, offset + col, cartG[row][col]);
+            } else if (am >= 5) {
+                throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G shell (l=4) cartesian functions");
             }
         }
         offset += nfunc;
     }
 
     SharedMatrix reorderedDt(Dtot_ao->clone());
-    SharedMatrix reorderedDs(Dtot_ao->clone());
     reorderedDt->back_transform(Dtot_ao, transmat);
+    SharedMatrix reorderedDs(Dspin_ao->clone());
     reorderedDs->back_transform(Dspin_ao, transmat);
+
+    SharedMatrix reorderedDPHFt;
+    SharedMatrix reorderedDPHFs;
+    if (pHF) {
+        reorderedDPHFt = (DPHFtot_ao->clone());
+        reorderedDPHFt->back_transform(DPHFtot_ao, transmat);
+        reorderedDPHFs = (DPHFspin_ao->clone());
+        reorderedDPHFs->back_transform(DPHFspin_ao, transmat);
+    }
+
     auto reorderedCa = std::make_shared<Matrix>("Reordered Ca", Ca_ao->ncol(), Ca_ao->nrow());
     auto reorderedCb = std::make_shared<Matrix>("Reordered Cb", Cb_ao->ncol(), Cb_ao->nrow());
     reorderedCa->gemm(true, true, 1.0, Ca_ao, transmat, 0.0);
@@ -544,7 +590,7 @@ void FCHKWriter::write(const std::string &filename) {
     write_number("Number of alpha electrons", nalpha);
     write_number("Number of beta electrons", nbeta);
     write_number("Number of basis functions", nbf);
-    write_number("Number of independent functions", nbf);
+    write_number("Number of independent functions", nmo);
     write_matrix("Atomic numbers", atomic_numbers);
     write_matrix("Nuclear charges", nuc_charges);
     write_matrix("Current cartesian coordinates", coords);
@@ -563,21 +609,23 @@ void FCHKWriter::write(const std::string &filename) {
     write_matrix("Contraction coefficients", coefficients);
     write_matrix("Coordinates of each shell", shell_coords);
     write_number("Total Energy", wavefunction_->energy());
-    // write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
-    write_matrix(wavefunction_->epsilon_a()->name().c_str(), wavefunction_->epsilon_a_subset("AO"));
-    // write_matrix("Alpha MO coefficients", reorderedCa);
-    write_matrix(wavefunction_->Ca()->name().c_str(), reorderedCa);
-    // write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
-    write_matrix(wavefunction_->epsilon_b()->name().c_str(), wavefunction_->epsilon_b_subset("AO"));
-    // write_matrix("Beta MO coefficients", reorderedCb);
-    write_matrix(wavefunction_->Cb()->name().c_str(), reorderedCb);
-    auto *label = new char[256];
-    std::string type = name == "DFT" ? "SCF" : name;
-    sprintf(label, "Total %s Density", type.c_str());
-    write_sym_matrix(label, reorderedDt);
-    sprintf(label, "Spin %s Density", type.c_str());
-    write_sym_matrix(label, reorderedDs);
-    delete[] label;
+
+    // This is the format expected in the formatted checkpoint file
+    write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
+    write_matrix("Alpha MO coefficients", reorderedCa);
+    write_sym_matrix("Total SCF Density", reorderedDt);
+    // In theory, the correlated density should be printed out with a
+    // legend depending on the method (MP2, MP3, MP4, CI, CC) but this
+    // is probably the most common anyhow
+    if (pHF) write_sym_matrix("Total CC Density", reorderedDPHFt);
+    if (!wavefunction_->same_a_b_orbs() || !wavefunction_->same_a_b_dens()) {
+        // These are only printed out if the orbitals or density is not spin-restricted
+        write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
+        write_matrix("Beta MO coefficients", reorderedCb);
+        write_sym_matrix("Spin SCF Density", reorderedDs);
+        if (pHF) write_sym_matrix("Spin CC Density", reorderedDPHFs);
+    }
+
     SharedMatrix gradient = wavefunction_->gradient();
     if (gradient) write_matrix("Cartesian Gradient", gradient);
 
@@ -588,14 +636,18 @@ void FCHKWriter::write(const std::string &filename) {
 NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
 
 void NBOWriter::write(const std::string &filename) {
-    int pure_order[][7] = {
-        {1, 0, 0, 0, 0, 0, 0},        // s
-        {101, 102, 103, 0, 0, 0, 0},  // p
+    const std::vector<std::vector<int>> pure_order = {
+        {1},        // s
+        {103, 101, 102},  // p
         // z2  xz   yz  x2-y2 xy
-        {255, 252, 253, 254, 251, 0, 0},  // d
+        {255, 252, 253, 254, 251},  // d
         // z(z2-r2), x(z2-r2), y(z2-r2) z(x2-y2), xyz, x(x2-y2), y(x2-y2)
-        {351, 352, 353, 354, 355, 356, 357}  // f
+        {351, 352, 353, 354, 355, 356, 357},  // f
+        {451, 452, 453, 454, 455, 456, 457, 458, 459},  // g
+        {551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561}  // h
     };
+
+    int max_am = pure_order.size() - 1;
 
     MintsHelper helper(wavefunction_->basisset(), wavefunction_->options(), 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
@@ -606,9 +658,9 @@ void NBOWriter::write(const std::string &filename) {
     BasisSet &basisset = *wavefunction_->basisset().get();
     Molecule &mol = *basisset.molecule().get();
 
-    // NBO can only handle up to f functions
-    if (basisset.max_am() > 3) {
-        throw PSIEXCEPTION("NBO cannot handle angular momentum above f functions. \n");
+    // NBO can only handle up to h functions
+    if (basisset.max_am() > max_am) {
+        throw PSIEXCEPTION("NBO cannot handle angular momentum above h functions. \n");
     }
     // print $GENNBO section of file
     // BOHR indicates atomic units for the coordinates; now ANG but not sure about keyword
@@ -644,8 +696,8 @@ void NBOWriter::write(const std::string &filename) {
     Vector angmom(nshells);       // Angular momentum of shell
     Vector nprimitives(nshells);  // Primitives per shell
     Vector exponents(nprim);      // Exponents of primitives
-    // Coefficient matrix; first row is S, second P, third D, fourth F
-    Matrix coefficient(4, nprim);
+    // Coefficient matrix; first row is S, second P, third D, fourth F, ect.
+    Matrix coefficient(max_am + 1, nprim);
     coefficient.zero();
     int fnindex = 0;
     int primindex = 0;
@@ -747,45 +799,21 @@ void NBOWriter::write(const std::string &filename) {
         }
         printer->Printf("%15.6E", exponents.get(0, i));
     }
-    // coefficients for s functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CS =");
-            else
-                printer->Printf("\n          ");
+
+    // Basis set coefficients for each necessary angular momentum function
+    // coeff_labels should have the same length as pure_order
+    // If it does, we already validated coeff_labels[am] is defined.
+    std::string coeff_labels[] = {"S", "P", "D", "F", "G", "H"};
+    for (int am = 0; am <= basisset.max_am(); am++) {
+        for (int i = 0; i < nprim; i++) {
+            if ((i + 1) % 4 == 1) {
+                if (i == 0)
+                    printer->Printf("\n      C%s =", coeff_labels[am].c_str());
+                else
+                    printer->Printf("\n          ");
+            }
+            printer->Printf("%15.6E", coefficient.get(0, am, i));
         }
-        printer->Printf("%15.6E", coefficient.get(0, 0, i));
-    }
-    // coefficients for p functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CP =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 1, i));
-    }
-    // coefficients for d functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CD =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 2, i));
-    }
-    // coefficients for f functions
-    for (int i = 0; i < nprim; i++) {
-        if ((i + 1) % 4 == 1) {
-            if (i == 0)
-                printer->Printf("\n      CF =");
-            else
-                printer->Printf("\n          ");
-        }
-        printer->Printf("%15.6E", coefficient.get(0, 3, i));
     }
     printer->Printf("\n $END");
 
@@ -882,45 +910,48 @@ void NBOWriter::write(const std::string &filename) {
     printer->Printf("\n $END");
 
     // Alpha AO->MO transformation
-    SharedMatrix soalphac = wavefunction_->Ca();
-    const Dimension aos = helper.petite_list()->AO_basisdim();
-    const Dimension nmo = wavefunction_->Ca()->colspi();
-    auto alphac = std::make_shared<Matrix>("Ca AO x MO", aos, nmo);
-    alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
+    SharedMatrix alphac = wavefunction_->Ca_subset("AO", "ALL");
 
     printer->Printf("\n $LCAOMO");
-    if (wavefunction_->same_a_b_orbs()) {
-        for (int i = 0; i < nbf; i++) {
-            for (int j = 0; j < nbf; j++) {
-                if (((nbf * i + j + 1) % 5) == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E", alphac->get(0, i, j));
-            }
+
+    // Now write out the coefficients. NBO expects all coefficients
+    // for one MO before writing coefficients for the next MO.
+
+    int nmo = wavefunction_->nmo();
+    int count = 0;
+
+    // We always need alpha coefficeints.
+    for (int i = 0; i < nmo; i++) {
+        for (int j = 0; j < nbf; j++) {
+            count++;
+            if (count % 5 == 1) printer->Printf("\n  ");
+            printer->Printf("%15.6E", alphac->get(0, j, i));
         }
     }
+    // Pad with zeros if there are linear dependencies.
+    for (int i = 0; i < (nbf - nmo) * nbf; i++) {
+        count++;
+        if (count % 5 == 1) printer->Printf("\n  ");
+        printer->Printf("%15.6E", 0.0);
+    }
 
-    else {
-        // Beta AO->MO transformation
-        auto betac = std::make_shared<Matrix>(nbf, nbf);
-        SharedMatrix sobetac = wavefunction_->Cb();
-        betac->gemm(true, false, 1.00, sotoao, sobetac, 0.00);
-
-        // Print the AO->MO coefficients
-        int count = 0;
-        for (int i = 0; i < nbf; i++) {
+    // We only write beta coefficients if they differ from alpha.
+    if (!wavefunction_->same_a_b_orbs()) {
+        SharedMatrix betac = wavefunction_->Cb_subset("AO", "ALL");
+        for (int i = 0; i < nmo; i++) {
             for (int j = 0; j < nbf; j++) {
                 count++;
                 if (count % 5 == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E", alphac->get(0, i, j));
+                printer->Printf("%15.6E", betac->get(0, j, i));
             }
         }
-        for (int i = 0; i < nbf; i++) {
-            for (int j = 0; j < nbf; j++) {
-                count++;
-                if (count % 5 == 1) printer->Printf("\n  ");
-                printer->Printf("%15.6E ", betac->get(0, i, j));
-            }
+        for (int i = 0; i < (nbf - nmo) * nbf; i++) {
+            count++;
+            if (count % 5 == 1) printer->Printf("\n  ");
+            printer->Printf("%15.6E", 0.0);
         }
     }
+
     printer->Printf("\n $END\n");
 }
 

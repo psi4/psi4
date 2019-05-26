@@ -18,8 +18,8 @@ for h in range(0,4):                                       #TEST
     for i in range(0,2):                                   #TEST
       ref.set(h,i,0,ref_vals_sym[h * 2 + i])               #TEST
 
-nucenergy =   2.64588604295000  #TEST
-refenergy =  -24.6562185615315  #TEST
+nucenergy =   2.6458860533      #TEST
+refenergy =  -24.65621856015634 #TEST
 
 molecule bh {
     1  2
@@ -41,7 +41,7 @@ set = {
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 
 compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
@@ -53,7 +53,7 @@ ref_vals_sym = [ [ 0.128037 ],             #TEST
 
 ref = psi4.Matrix.from_list(ref_vals_sym)  #TEST
 
-refenergy =  -24.78964070898462 #TEST
+refenergy =  -24.78964070773015 #TEST
 
 molecule bh {
     1  2
@@ -76,7 +76,7 @@ set = {
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 
 compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
@@ -86,7 +86,7 @@ set scf_type pk
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 
 compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST

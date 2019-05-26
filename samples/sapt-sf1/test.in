@@ -31,6 +31,5 @@ compare_dict = { #TEST
 
 energy("SF-SAPT")
 
-for k, v in compare_dict.items():
-    compare_values(v / 1000.0, psi4.get_variable(k), 6, k) # TEST
-
+for k, v in compare_dict.items():  #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k)  #TEST

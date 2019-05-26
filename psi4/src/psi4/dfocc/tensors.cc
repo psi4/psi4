@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -2009,7 +2009,7 @@ void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
 
 void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     // Form Lower triangular part
-    int ntri_row, ntri_col;
+    int ntri_row = 0, ntri_col = 0;
     if (dim1_ > 1) {
         ntri_row = 0.5 * d1_ * (d1_ - 1);
     } else if (dim1_ == 1) {
@@ -2170,7 +2170,7 @@ void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
 
 void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     // Form Lower triangular part
-    int ntri_row, ntri_col;
+    int ntri_row = 0, ntri_col = 0;
     if (dim1_ > 1) {
         ntri_row = 0.5 * d1_ * (d1_ - 1);
     } else if (dim1_ == 1) {
@@ -4681,11 +4681,11 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
     char ta, tb;
     int nca, ncb, ncc;
     int m, n, k;
-    int r1, r2, c1, c2;
+    int r1 = 0, r2 = 0, c1 = 0, c2 = 0;
     int rr1, rr2, cc1, cc2;
     int dim_t, dim_u;
-    int t_a1, t_a2, f_a1, f_a2;
-    int t_b1, t_b2, f_b1, f_b2;
+    int t_a1 = 0, t_a2 = 0, f_a1 = 0, f_a2 = 0;
+    int t_b1 = 0, t_b2 = 0, f_b1 = 0, f_b2 = 0;
 
     // Expected order: C(pq,rs) = \sum_{tu} A(pq,tu) B(tu,rs)
     /*
@@ -5025,11 +5025,11 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
     char ta, tb;
     int nca, ncb, ncc;
     int m, n, k;
-    int r1, r2, c1, c2;
+    int r1 = 0, r2 = 0, c1 = 0, c2 = 0;
     int rr1, rr2, cc1, cc2;
     int dim_t, dim_u;
-    int t_a1, t_a2, f_a1, f_a2;
-    int t_b1, t_b2, f_b1, f_b2;
+    int t_a1 = 0, t_a2 = 0, f_a1 = 0, f_a2 = 0;
+    int t_b1 = 0, t_b2 = 0, f_b1 = 0, f_b2 = 0;
     int d1_a, d2_a, d3_a, d4_a;  // Dimensions of sorted A tensor
     int d1_b, d2_b, d3_b, d4_b;
     int sort_a, sort_b;

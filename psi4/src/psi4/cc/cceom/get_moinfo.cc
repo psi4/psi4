@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -182,7 +182,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
             if (moinfo.sopi[h] && moinfo.virtpi[h]) {
                 C[h] = block_matrix(moinfo.sopi[h], moinfo.virtpi[h]);
                 psio_read(PSIF_CC_INFO, "RHF/ROHF Active Virtual Orbitals", (char *)C[h][0],
-                          moinfo.sopi[h] * moinfo.virtpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo.sopi[h] * moinfo.virtpi[h], next, &next);
             }
         }
         moinfo.C = C;
@@ -194,7 +194,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
             if (moinfo.sopi[h] && moinfo.avirtpi[h]) {
                 Ca[h] = block_matrix(moinfo.sopi[h], moinfo.avirtpi[h]);
                 psio_read(PSIF_CC_INFO, "UHF Active Alpha Virtual Orbs", (char *)Ca[h][0],
-                          moinfo.sopi[h] * moinfo.avirtpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo.sopi[h] * moinfo.avirtpi[h], next, &next);
             }
         }
         moinfo.Ca = Ca;
@@ -205,7 +205,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
             if (moinfo.sopi[h] && moinfo.bvirtpi[h]) {
                 Cb[h] = block_matrix(moinfo.sopi[h], moinfo.bvirtpi[h]);
                 psio_read(PSIF_CC_INFO, "UHF Active Beta Virtual Orbs", (char *)Cb[h][0],
-                          moinfo.sopi[h] * moinfo.bvirtpi[h] * sizeof(double), next, &next);
+                          sizeof(double) * moinfo.sopi[h] * moinfo.bvirtpi[h], next, &next);
             }
         }
         moinfo.Cb = Cb;

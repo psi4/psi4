@@ -1,7 +1,7 @@
 #! Accesses basis sets, databases, plugins, and executables in non-install locations
 
 import os
-os.environ['PSIPATH'] = 'psiaux1:psiaux2'
+os.environ['PSIPATH'] = os.path.pathsep.join(['psiaux1', 'psiaux2'])
 
 ###########################
 molecule h2o {

@@ -112,16 +112,19 @@ edft = energy('mgga_ms0')
 val = -76.3991175407000043    #TEST
 compare_values(val, edft, 5, "water: MGGA_MS0")  #TEST
 clean()
+
 edft = energy('mgga_ms1')
 val = -76.3862902532000021    #TEST
 compare_values(val, edft, 5, "water: MGGA_MS1")  #TEST
 clean()
+
 edft = energy('mgga_ms2')
 val = -76.3944104108999937    #TEST
 compare_values(val, edft, 5, "water: MGGA_MS2")  #TEST
 clean()
+
 #edft = energy('m11-l')
 #val =  -76.3618441219000061   #TEST
 #compare_values(val, edft, 4, "water: MGGA_M11-L")  #TEST
-clean()
+#clean()
 

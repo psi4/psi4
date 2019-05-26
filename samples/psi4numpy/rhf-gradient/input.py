@@ -21,6 +21,8 @@ import numpy as np
 np.set_printoptions(precision=15, linewidth=200, suppress=True)
 import psi4
 
+psi4.set_output_file("output.dat", False)
+
 mol = psi4.geometry("""
 O
 H 1 1.1
@@ -154,8 +156,8 @@ G_python_V_mat = psi4.core.Matrix.from_array(Gradient["V"])
 
 # PSI4's Total Gradient 
 Total_G_psi4 = psi4.core.Matrix.from_list([                                     
-             [ 0.000000000000, -0.000000000000, -0.097441440379], 
-             [-0.000000000000, -0.086300100260,  0.048720720189],
-             [-0.000000000000,  0.086300100260,  0.048720720189]
+             [ 0.000000000000,     0.00000000000000,    -0.09744143723018],
+             [ 0.000000000000,    -0.08630009812231,     0.04872071861516],
+             [ 0.000000000000,     0.08630009812231,     0.04872071861516],
        ])
 G_python_Total_mat = psi4.core.Matrix.from_array(Gradient["Total"])

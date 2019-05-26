@@ -99,10 +99,13 @@ set basis 6-31G
 
 edft = energy('mgga_ms0')
 clean()
+
 edft = energy('mgga_ms1')
 clean()
+
 edft = energy('mgga_ms2')
 clean()
+
 #edft = energy('m11-l')
-clean()
+#clean()
 

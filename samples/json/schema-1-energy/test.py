@@ -6,7 +6,7 @@ import json
 
 # Generate JSON data
 json_data = {
-  "schema_name": "qc_schema_input",
+  "schema_name": "qcschema_input",
   "schema_version": 1,
   "molecule": {
     "geometry": [
@@ -24,6 +24,10 @@ json_data = {
       "O",
       "H",
       "H"
+    ],
+    "connectivity" : [
+    (0, 1, 1.0),
+    (0, 2, 1.0)
     ]
   },
   "driver": "energy",
@@ -32,7 +36,8 @@ json_data = {
     "basis": "cc-pVDZ"
   },
   "keywords": {"scf_type": "df",
-               "mp2_type": "df"}
+               "mp2_type": "df",
+               "scf_properties": ["mayer_indices"]}
 }
 
 # Write expected output
@@ -63,6 +68,7 @@ with open("output.json", "w") as ofile:                                         
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
 psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
+psi4.compare_integers(True, "MAYER_INDICES" in json_ret["psi4:qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
@@ -95,6 +101,9 @@ json_ret = psi4.json_wrapper.run_json(json_data)
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
 psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
+psi4.compare_integers(True, "MAYER_INDICES" in json_ret["psi4:qcvars"], "Mayer Indices Found")                           #TEST
+
+# print(json.dumps(json_ret, indent=2))
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,7 +42,8 @@
 namespace psi {
 
 int DPD::buf4_mat_irrep_row_rd(dpdbuf4 *Buf, int irrep, int pq) {
-    int method, filerow, all_buf_irrep;
+    int method = 0;
+    int filerow, all_buf_irrep;
     int rs;                     /* dpdbuf row and column indices */
     int p, q, r, s;             /* orbital indices */
     int filepq, filers, filesr; /* Input dpdfile row and column indices */

@@ -1,0 +1,25 @@
+#! Vibrational and thermo analysis of water trimer (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+
+molecule h2o_trimer {
+O      -2.76373224  -1.24377706  -0.15444566 
+H      -1.12357791  -2.06227970  -0.05243799 
+H      -3.80792362  -2.08705525   1.06090407 
+--
+O       2.46924614  -1.75437739  -0.17092884 
+H       3.76368260  -2.21425403   1.00846104 
+H       2.30598330   0.07098445  -0.03942473 
+--
+O       0.29127930   3.00875625   0.20308515 
+H      -1.21253048   1.95820900   0.10303324 
+H       0.10002049   4.24958115  -1.10222079 
+units bohr
+}
+
+set basis sto-3g
+set e_convergence 9
+set g_convergence gau_verytight
+set scf_type pk
+set geom_maxiter 100
+
+optimize('hf', molecule=h2o_trimer, bsse_type='nocp', max_nbody=2, return_total_data=True)
+e, wfn = freq('hf', molecule=h2o_trimer, return_wfn=True, bsse_type='nocp', max_nbody=2, return_total_data=True)

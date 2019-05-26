@@ -23,7 +23,7 @@ set {
 
 energy('ccsd(t)')
 
-compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD");               #TEST
-compare_values(refcc_t, get_variable("CCSD(T) TOTAL ENERGY"), 6, "DF-CCSD(T)");               #TEST
+compare_values(refcc, variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD");               #TEST
+compare_values(refcc_t, variable("CCSD(T) TOTAL ENERGY"), 6, "DF-CCSD(T)");               #TEST
 
 

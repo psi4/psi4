@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -208,6 +208,8 @@ class HF : public Wavefunction {
 
     /// SAD Guess and propagation
     virtual void compute_SAD_guess();
+    /// Huckel guess
+    virtual void compute_huckel_guess();
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
@@ -272,9 +274,6 @@ class HF : public Wavefunction {
 
     /// Prints some opening information
     void print_header();
-
-    /// Prints some details about nsopi/nmopi, and initial occupations
-    void print_preiterations();
 
     /** Compute/print spin contamination information (if unrestricted) **/
     virtual void compute_spin_contamination();

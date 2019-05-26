@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -293,7 +293,7 @@ SharedMatrix Prop::Db_ao() {
     if (same_dens_) throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
     std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
-    double* temp_ptr;
+    double* temp_ptr = temp.data();
     auto D = std::make_shared<Matrix>("Db (AO basis)", basisset_->nbf(), basisset_->nbf());
     int symm = Db_so_->symmetry();
     for (int h = 0; h < AO2USO_->nirrep(); ++h) {

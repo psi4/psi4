@@ -6,12 +6,12 @@
 #! are transformed into MO basis.
 
 # UHF-ODC-12                            #TEST
-refscf_uhf      = -76.0266030959050312  #TEST 
+refscf_uhf      = -76.0266030961285679  #TEST
 refmp2_uhf      = -76.230809106995821   #TEST
 refodc12_uhf    = -76.241636548124134   #TEST
 
 # RHF-ODC-12                            #TEST
-refscf_rhf      = -76.0266030959050596  #TEST
+refscf_rhf      = -76.02660309612853    #TEST
 refmp2_rhf      = -76.230809106995864   #TEST
 refodc12_rhf    = -76.241636548124106   #TEST 
 
@@ -33,24 +33,24 @@ set {
 set reference uhf
 set ao_basis disk
 energy('dcft')
-compare_values(refscf_uhf, get_variable("SCF TOTAL ENERGY"), 10, "UHF Energy");                                       #TEST
-compare_values(refmp2_uhf, get_variable("MP2 TOTAL ENERGY"), 10, "UHF-MP2 Energy");                                             #TEST
-compare_values(refodc12_uhf, get_variable("CURRENT ENERGY"), 10, "UHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refscf_uhf, variable("SCF TOTAL ENERGY"), 10, "UHF Energy");                                       #TEST
+compare_values(refmp2_uhf, variable("MP2 TOTAL ENERGY"), 10, "UHF-MP2 Energy");                                             #TEST
+compare_values(refodc12_uhf, variable("CURRENT ENERGY"), 10, "UHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
 clean()
 
 set reference rhf
 set ao_basis disk
 energy('dcft')
-compare_values(refscf_rhf, get_variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
-compare_values(refmp2_rhf, get_variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
-compare_values(refodc12_rhf, get_variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refscf_rhf, variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
+compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
+compare_values(refodc12_rhf, variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=disk)");     #TEST
 clean()
 
 set reference rhf
 set ao_basis none
 energy('dcft')
-compare_values(refscf_rhf, get_variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
-compare_values(refmp2_rhf, get_variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
-compare_values(refodc12_rhf, get_variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refscf_rhf, variable("SCF TOTAL ENERGY"), 10, "RHF Energy");                                       #TEST
+compare_values(refmp2_rhf, variable("MP2 TOTAL ENERGY"), 10, "RHF-MP2 Energy");                                             #TEST
+compare_values(refodc12_rhf, variable("CURRENT ENERGY"), 10, "RHF-ODC-12 Total Energy (simultaneous, ao_basis=none)");     #TEST
 clean()
 

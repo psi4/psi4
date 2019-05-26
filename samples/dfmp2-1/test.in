@@ -1,7 +1,7 @@
 #! Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy
 #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
-Enuc = 235.946620315069168 #TEST
+Enuc = 235.94662124        #TEST
 Ecp  = -0.0224119246       #TEST
 
 molecule formic_dim {

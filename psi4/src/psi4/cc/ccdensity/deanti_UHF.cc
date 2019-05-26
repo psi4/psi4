@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -77,7 +77,7 @@ namespace ccdensity {
 ** spin-adaptation is allowed for UHF cases).
 ** */
 
-void deanti_UHF(struct RHO_Params rho_params) {
+void deanti_UHF(const struct RHO_Params& rho_params) {
     dpdfile2 h, d;
     dpdbuf4 G, G2, A, B, C, D, E, F;
 

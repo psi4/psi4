@@ -3,10 +3,10 @@
 #! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
 #! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
  
-refENuc   = [ 268.617178206587084, 13.021346299597003,  #TEST
-              258.850941286554473, 13.021346299596999 ] #TEST
-refESCF   = [ -303.20625701081264, -75.32040649154762,  #TEST
-              -303.20499967316636, -75.32040649154514 ] #TEST
+refENuc   = [ 268.6171792624, 13.021346350778909,  #TEST
+              258.850942303987608, 13.0213463507789093 ] #TEST
+refESCF   = [ -303.20625701463621, -75.32040649282145,  #TEST
+              -303.20499967720298, -75.32040649282028 ] #TEST
 refDipY   = [ 17.7759552887,  2.2770512884, 21.6845920985,  2.2770512884 ]  #TEST
 refQuadYY = [ 25.4523671288, -5.5116358496, 57.3954213176, -5.5116358496 ]  #TEST
  
@@ -71,9 +71,9 @@ for R in Rvals:
     compare_values(refENuc[count], dimer.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
     compare_values(refESCF[count], eehf, 9, "Reference energy %d" % count)                           #TEST
-    compare_values(refDipY[count], get_variable("SCF DIPOLE Y"),                                     #TEST
+    compare_values(refDipY[count], variable("SCF DIPOLE Y"),                                     #TEST
                       5, "Y Component of Dipole %d" % count)                                         #TEST
-    compare_values(refQuadYY[count], get_variable("BZH3O+ SCF QUADRUPOLE YY"),                       #TEST
+    compare_values(refQuadYY[count], variable("BZH3O+ SCF QUADRUPOLE YY"),                       #TEST
                       5, "YY Component of Quadrupole %d" % count)                                    #TEST
 
     clean()
@@ -90,9 +90,9 @@ for R in Rvals:
     compare_values(refENuc[count], monoB.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
     compare_values(refESCF[count], eehf, 9, "Reference energy %d" % count)                           #TEST
-    compare_values(refDipY[count], get_variable("SCF DIPOLE Y"),                                     #TEST
+    compare_values(refDipY[count], variable("SCF DIPOLE Y"),                                     #TEST
                       5, "Y Component of Dipole %d" % count)                                         #TEST
-    compare_values(refQuadYY[count], get_variable("H3O+ SCF QUADRUPOLE YY"),                         #TEST
+    compare_values(refQuadYY[count], variable("H3O+ SCF QUADRUPOLE YY"),                         #TEST
                       5, "YY Component of Quadrupole %d" % count)                                    #TEST
 
     clean()

@@ -38,6 +38,5 @@ clean()
 energy('b2plyp')
 clean()
 
-
 energy('b2plyp-d')
 

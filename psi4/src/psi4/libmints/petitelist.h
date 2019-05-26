@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -50,6 +50,9 @@ class IntegralFactory;
 class Matrix;
 class Dimension;
 
+using ShellMapType = std::vector<std::array<int, 8>>;
+static const std::array<int, 8> pgZeros{0, 0, 0, 0, 0, 0, 0, 0};
+
 inline int64_t ij_offset64(int64_t i, int64_t j) {
     return (i > j) ? (((i * (i + 1)) >> 1) + j) : (((j * (j + 1)) >> 1) + i);
 }
@@ -80,8 +83,11 @@ void delete_atom_map(int **atom_map, const std::shared_ptr<Molecule> &mol);
 void delete_atom_map(int **atom_map, const Molecule *mol);
 /// @}
 
-int **compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &);
-void delete_shell_map(int **shell_map, const std::shared_ptr<BasisSet> &);
+ShellMapType compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &);
+PSI_DEPRECATED(
+    "Calling `PetiteList.delete_shell_map` is no longer necessary.  In the version "
+    " of Psi4 following 1.4 this function will no longer be provided.")
+void delete_shell_map(ShellMapType shell_map, const std::shared_ptr<BasisSet> &);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -161,7 +167,7 @@ class PSI_API PetiteList {
 
     char *p1_;
     int **atom_map_;
-    int **shell_map_;
+    ShellMapType shell_map_;
     int **unique_shell_map_;
     char *lamij_;
     int *nbf_in_ir_;

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -147,7 +147,7 @@ void CCEnergyWavefunction::BT2() {
                 row_start = m * rows_per_bucket;
                 nrows = rows_per_bucket;
                 if (nrows && ncols && nlinks) {
-                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], nrows * nlinks * sizeof(double), next,
+                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], sizeof(double) * nrows * nlinks, next,
                               &next);
                     C_DGEMM('n', 't', nrows, ncols, nlinks, -0.25, B_diag[0], nlinks, tau_diag[0], nlinks, 1,
                             S.matrix[0][row_start], ncols);
@@ -157,7 +157,7 @@ void CCEnergyWavefunction::BT2() {
                 row_start = m * rows_per_bucket;
                 nrows = rows_left;
                 if (nrows && ncols && nlinks) {
-                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], nrows * nlinks * sizeof(double), next,
+                    psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], sizeof(double) * nrows * nlinks, next,
                               &next);
                     C_DGEMM('n', 't', nrows, ncols, nlinks, -0.25, B_diag[0], nlinks, tau_diag[0], nlinks, 1,
                             S.matrix[0][row_start], ncols);

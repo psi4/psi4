@@ -6,7 +6,7 @@ import json
 
 # Generate JSON data
 json_data = {
-  "schema_name": "qc_schema_input",
+  "schema_name": "qcschema_input",
   "schema_version": 1,
   "molecule": {
     "geometry": [
@@ -24,6 +24,10 @@ json_data = {
       "O",
       "H",
       "H"
+    ],
+    "connectivity" : [
+    (0, 1, 1.0),
+    (0, 2, 1.0)
     ]
   },
   "driver": "energy",
@@ -32,7 +36,8 @@ json_data = {
     "basis": "cc-pVDZ"
   },
   "keywords": {"scf_type": "df",
-               "mp2_type": "df"}
+               "mp2_type": "df",
+               "scf_properties": ["mayer_indices"]}
 }
 
 # Write expected output
@@ -87,5 +92,7 @@ json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
 json_ret = psi4.json_wrapper.run_json(json_data)
 
+
+# print(json.dumps(json_ret, indent=2))
 
 

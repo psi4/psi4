@@ -29,13 +29,13 @@ spherical
 ! blank entries added
 ! 
 !
-! merged from tight-cc-pwcvdz.gbs and basis-blankhhe.gbs at Sun, 02:06 Jun 11, 2017
+! merged from tight-cc-pwcvdz.gbs and basis-blankhhe.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
-! merged from cc-pvdz.gbs and tight-cc-pwcvdz_autogen.gbs at Sun, 02:06 Jun 11, 2017
+! merged from cc-pvdz.gbs and tight-cc-pwcvdz_autogen.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
-! merged from partial-basis-cc-pwcvdz.gbs and otrpartial-basis-cc-pwcvdz_autogen.gbs at Sun, 02:06 Jun 11, 2017
+! merged from partial-basis-cc-pwcvdz.gbs and otrpartial-basis-cc-pwcvdz_autogen.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
 !  aug-cc-pVDZ Diffuse  EMSL  Basis Set Exchange Library   5/17/11 12:08 PM
@@ -48,9 +48,13 @@ spherical
 ! Al - Cl: D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 98, 1358 (1993).
 ! Sc - Zn: N.B. Balabanov and K.A. Peterson, J. Chem. Phys. 123, 064107 (2005),
 ! N.B. Balabanov and K.A. Peterson, J. Chem. Phys. 125, 074110 (2006).
-! 
 !
-! merged from cc-pwcvdz.gbs and diffuse-aug-cc-pvdz.gbs at Sun, 02:06 Jun 11, 2017
+! Overwrote 30 Sep 2017
+! Li-Be,Na-Mg: B. Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., A.K. Wilson,
+!       Theor. Chem. Acc. 128, 69 (2011), DOI:10.1007/s00214-010-0764-0
+!
+!
+! merged from cc-pwcvdz.gbs and diffuse-aug-cc-pvdz.gbs at Mon, 19:41 Feb 25, 2019
 !
 !
 !  cc-pVDZ  EMSL  Basis Set Exchange Library   5/17/11 11:50 AM
@@ -67,7 +71,7 @@ spherical
 ! Updated 6/2/17
 ! Li, Be, Na, and Mg: Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., A.K. Wilson, Theor. Chem. Acc. 128, 69 (2011).
 !
-! merged from aug-cc-pwcvdz.gbs and cc-pvdz.gbs at Sun, 02:06 Jun 11, 2017
+! merged from aug-cc-pwcvdz.gbs and cc-pvdz.gbs at Mon, 19:41 Feb 25, 2019
 !
 
 
@@ -130,11 +134,11 @@ S   1   1.00
 P   1   1.00
       1.0891000              1.0000000e+00
 S   1   1.00
-      0.0086400              1.0000000        
+      0.0086000              1.0000000        
 P   1   1.00
-      0.0057900              1.0000000        
+      0.0058000              1.0000000        
 D   1   1.00
-      0.0725000              1.0000000        
+      0.0733000              1.0000000        
 ****
 Be     0
 S   9   1.00
@@ -173,11 +177,11 @@ S   1   1.00
 P   1   1.00
       2.4428000              1.0000000e+00
 S   1   1.00
-      0.0187700              1.0000000        
+      0.0179000              1.0000000        
 P   1   1.00
-      0.0085000              1.0000000        
+      0.0111000              1.0000000        
 D   1   1.00
-      0.0740000              1.0000000        
+      0.0722000              1.0000000        
 ****
 B     0
 S   8   1.00
@@ -490,11 +494,11 @@ P   1   1.00
 D   1   1.00
       0.9901000              1.0000000e+00
 S   1   1.00
-      0.0072500              1.0000000        
+      0.0072000              1.0000000        
 P   1   1.00
-      0.0063300              1.0000000        
+      0.0057000              1.0000000        
 D   1   1.00
-      0.0468000              1.0000000        
+      0.0480000              1.0000000        
 ****
 Mg     0
 S   12   1.00
@@ -567,11 +571,11 @@ P   1   1.00
 D   1   1.00
       1.3702000              1.0000000e+00
 S   1   1.00
-      0.0148800              1.0000000        
+      0.0142000              1.0000000        
 P   1   1.00
-      0.0093500              1.0000000        
+      0.0105000              1.0000000        
 D   1   1.00
-      0.0595000              1.0000000        
+      0.0605000              1.0000000        
 ****
 Al     0
 S   11   1.00

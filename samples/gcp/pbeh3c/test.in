@@ -103,65 +103,65 @@ compare_values(0.001995109, E, 5, 'S22-16 pbeh-3c gcp')  #TEST
 
 
 E = energy('pbeh3c', molecule=s2di)
-D = get_variable('DISPERSION CORRECTION ENERGY')
+D = variable('DISPERSION CORRECTION ENERGY')
 compare_values(-152.5317809, E - D, 3, 'S22-2 pbeh-3c df-scf')  #TEST
 E = energy('pbeh3c/def2-msvp', molecule=s2ma)
-D = get_variable('DISPERSION CORRECTION ENERGY')
+D = variable('DISPERSION CORRECTION ENERGY')
 compare_values(-76.25917393, E - D, 3, 'S22-2 pbeh-3c df-scf')  #TEST
 E = energy('pbeh3c/def2-msvp', molecule=s2mb)
-D = get_variable('DISPERSION CORRECTION ENERGY')
+D = variable('DISPERSION CORRECTION ENERGY')
 compare_values(-76.25916677, E - D, 3, 'S22-2 pbeh-3c df-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s4di)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-339.1053347, E - D, 3, 'S22-4 pbeh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4ma)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-169.5357145, E - D, 3, 'S22-4 pbeh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4mb)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-169.5357145, E - D, 3, 'S22-4 pbeh-3c df-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s16di)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-155.5555081, E - D, 3, 'S22-16 pbeh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16ma)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-78.40891313, E - D, 3, 'S22-16 pbeh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16mb)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-77.1436109,  E - D, 3, 'S22-16 pbeh-3c df-scf')  #TEST
 
 set scf_type pk
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s2di)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-152.5315952, E - D, 5, 'S22-2 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s2ma)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-76.25907424, E - D, 4, 'S22-2 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s2mb)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-76.25906757, E - D, 4, 'S22-2 pbeh-3c cv-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s4di)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-339.1049866, E - D, 5, 'S22-4 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4ma)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-169.5355168, E - D, 5, 'S22-4 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4mb)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-169.5355168, E - D, 5, 'S22-4 pbeh-3c cv-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s16di)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-155.5553632, E - D, 5, 'S22-16 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16ma)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-78.40881566, E - D, 5, 'S22-16 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16mb)
-###D = get_variable('DISPERSION CORRECTION ENERGY')
+###D = variable('DISPERSION CORRECTION ENERGY')
 ###compare_values(-77.14356134, E - D, 4, 'S22-16 pbeh-3c cv-scf')  #TEST
 
 set scf_type df

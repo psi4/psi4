@@ -39,14 +39,14 @@ set sapt {
 
 energy('sapt2+(3)')
 
-Eelst = psi4.get_variable("SAPT ELST ENERGY")
-Eexch = psi4.get_variable("SAPT EXCH ENERGY")
-Eind = psi4.get_variable("SAPT IND ENERGY")
-Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ESAPT0 = psi4.get_variable("SAPT0 TOTAL ENERGY")
-ESAPT2 = psi4.get_variable("SAPT2 TOTAL ENERGY")
-ESAPT2p = psi4.get_variable("SAPT2+ TOTAL ENERGY")
-ESAPT2pp3 = psi4.get_variable("SAPT2+(3) TOTAL ENERGY")
-ESAPT = psi4.get_variable("SAPT TOTAL ENERGY")
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ESAPT0 = psi4.variable("SAPT0 TOTAL ENERGY")
+ESAPT2 = psi4.variable("SAPT2 TOTAL ENERGY")
+ESAPT2p = psi4.variable("SAPT2+ TOTAL ENERGY")
+ESAPT2pp3 = psi4.variable("SAPT2+(3) TOTAL ENERGY")
+ESAPT = psi4.variable("SAPT TOTAL ENERGY")
 
 

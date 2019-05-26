@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -917,8 +917,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     }
 
     outfile->Printf("The DMRG-SCF energy = %3.10f \n", Energy);
-    Process::environment.globals["CURRENT ENERGY"] = Energy;
-    Process::environment.globals["DMRG-SCF ENERGY"] = Energy;
+    wfn->set_energy(Energy);
+    wfn->set_scalar_variable("CURRENT ENERGY", Energy);
+    wfn->set_scalar_variable("DMRG-SCF TOTAL ENERGY", Energy);
 
     if ((( dmrg_molden ) || (( dmrg_caspt2 ) && ( PSEUDOCANONICAL ))) && ( nIterations > 0 )){
 
@@ -1111,8 +1112,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
        outfile->Printf("The DMRG-CASPT2 variational correction energy = %3.10f \n", E_CASPT2);
        outfile->Printf("The DMRG-CASPT2 energy = %3.10f \n", Energy + E_CASPT2);
-       Process::environment.globals["CURRENT ENERGY"]    = Energy + E_CASPT2;
-       Process::environment.globals["DMRG-CASPT2 ENERGY"] = Energy + E_CASPT2;
+       wfn->set_energy(Energy + E_CASPT2);
+       wfn->set_scalar_variable("CURRENT ENERGY", Energy + E_CASPT2);
+       wfn->set_scalar_variable("DMRG-CASPT2 TOTAL ENERGY", Energy + E_CASPT2);
 
     }
 

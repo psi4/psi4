@@ -48,7 +48,7 @@ mp2_atqz = energy(cbs, corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z')
 # <<<  gradients  >>>
 
 
-nucenergy_ref = 1.17594935242
+nucenergy_ref = 1.1759493570
 
 molecule he_dimer {
     He 0 0 0

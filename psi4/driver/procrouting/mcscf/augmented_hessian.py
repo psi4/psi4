@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2018 The Psi4 Developers.
+# Copyright (c) 2007-2019 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -113,7 +113,7 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
                                "Try starting AH when the MCSCF wavefunction is more converged.")
 
         if np.sum(np.abs(vectors[0]) > min_lambda) > 1 and not warning_mult:
-            core.print_out("   Warning! Multiple eigenvectors found to follow. Following closest to \lambda = 1.\n")
+            core.print_out(r"   Warning! Multiple eigenvectors found to follow. Following closest to \lambda = 1.\n")
             warning_mult = True
 
         idx = (np.abs(1 - np.abs(vectors[0]))).argmin()

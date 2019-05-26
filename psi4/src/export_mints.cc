@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -174,15 +174,16 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     auto basisset = std::make_shared<BasisSet>(key, mol, basis_atom_shell, basis_atom_ecpshell);
 
     // Modify the nuclear charges, to account for the ECP.
-    if (totalncore) {
+    if (key == "BASIS") {
         for (int atom = 0; atom < mol->natom(); ++atom) {
+            int ncore = 0;
             if (mol->Z(atom) > 0) {
                 const std::string& basis = mol->basis_on_atom(atom);
-                const std::string& label = mol->label(atom);
-                int ncore = basis_atom_ncore[basis][label];
+                const std::string& alabel = mol->label(atom);
+                if (totalncore) ncore = basis_atom_ncore[basis][alabel];
                 int Z = mol->true_atomic_number(atom) - ncore;
                 mol->set_nuclear_charge(atom, Z);
-                basisset->set_n_ecp_core(label, ncore);
+                basisset->set_n_ecp_core(alabel, ncore);
             }
         }
     }
@@ -1142,6 +1143,7 @@ void export_mints(py::module& m) {
         .def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group")
         .def("order", &PointGroup::order, "Return the order of the point group")
         .def("bits", &PointGroup::bits, "Return the bit representation of the point group")
+        .def("full_name", &PointGroup::full_name, "Return the Schoenflies symbol with direction")
         .def("char_table", &PointGroup::char_table, "Return the CharacterTable of the point group");
     // def("origin", &PointGroup::origin).
     //            def("set_symbol", &PointGroup::set_symbol);

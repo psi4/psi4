@@ -44,22 +44,24 @@ Eref = {  #TEST
 
 Epsi = {  #TEST
     'Enuc'  : mol.nuclear_repulsion_energy(),           #TEST
-    'Eelst' : get_variable("SAPT ELST ENERGY"),    #TEST
-    'Eexch' : get_variable("SAPT EXCH ENERGY"),    #TEST    
-    'Eind'  : get_variable("SAPT IND ENERGY"),     #TEST   
-    'Edisp' : get_variable("SAPT DISP ENERGY"),    #TEST   
-    'Etot'  : get_variable("SAPT0 TOTAL ENERGY"),  #TEST   
+    'Eelst' : variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : variable("SAPT EXCH ENERGY"),    #TEST
+    'Eind'  : variable("SAPT IND ENERGY"),     #TEST
+    'Edisp' : variable("SAPT DISP ENERGY"),    #TEST
+    'Etot'  : variable("SAPT0 TOTAL ENERGY"),  #TEST
     }  #TEST
 
 for key in keys:  #TEST
     compare_values(Eref[key], Epsi[key], 6, key)  #TEST
 
 import os
+import sys
+import subprocess
 
-os.chdir('fsapt/')
+os.chdir('fsapt')
 with open('fA.dat', 'w') as fA: fA.write("MethylA 1 2 3 4 5")
 with open('fB.dat', 'w') as fB: fB.write("MethylB 6 7 8 9 10")
-os.system('../fsapt.py')
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
 
 fEnergies = {}
 fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEtot']    #TEST 

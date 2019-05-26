@@ -100,8 +100,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[0], get_variable('nuclear repulsion energy'), 3, '[1]  NRE: zmat, external values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[0], variable('nuclear repulsion energy'), 3, '[1]  NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 
@@ -122,8 +122,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[1], get_variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[1], variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')  #TEST
 clean()
 opt_clean()
 
@@ -138,8 +138,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[2], get_variable('nuclear repulsion energy'), 3, '[3]  NRE: cartesian, pure')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[2], variable('nuclear repulsion energy'), 3, '[3]  NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -156,8 +156,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[3], get_variable('nuclear repulsion energy'), 3, '[4]  NRE: cartesian, external values, +/-')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[3], variable('nuclear repulsion energy'), 3, '[4]  NRE: cartesian, external values, +/-')  #TEST
 clean()
 opt_clean()
 
@@ -172,8 +172,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[4], get_variable('nuclear repulsion energy'), 3, '[5]  NRE: cartesian, external values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[4], variable('nuclear repulsion energy'), 3, '[5]  NRE: cartesian, external values')  #TEST
 clean()
 opt_clean()
 
@@ -187,8 +187,8 @@ opt_clean()
 ###}
 ###set reference uhf
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')  #TEST
-###compare_values(nre3_ref[5], get_variable('nuclear repulsion energy'), 3, '[6]  NRE: cartesian, external values')  #TEST
+###print variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[5], variable('nuclear repulsion energy'), 3, '[6]  NRE: cartesian, external values')  #TEST
 ###clean()
 ###opt_clean()
 ###set reference rhf
@@ -206,8 +206,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[6], get_variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[6], variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 set basis 6-31g
@@ -224,8 +224,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[7], get_variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[7], variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -242,8 +242,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[8], get_variable('nuclear repulsion energy'), 3, '[8b]  NRE: zmat, external and internal values, +/-')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[8], variable('nuclear repulsion energy'), 3, '[8b]  NRE: zmat, external and internal values, +/-')  #TEST
 clean()
 opt_clean()
 
@@ -257,8 +257,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[9], get_variable('nuclear repulsion energy'), 3, '[9]  NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[9], variable('nuclear repulsion energy'), 3, '[9]  NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -282,8 +282,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[10], get_variable('nuclear repulsion energy'), 3, '[10] NRE: cartesian, pure, bohr')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[10], variable('nuclear repulsion energy'), 3, '[10] NRE: cartesian, pure, bohr')  #TEST
 clean()
 opt_clean()
 
@@ -303,8 +303,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[11], get_variable('nuclear repulsion energy'), 3, '[11] NRE: cartesian, pure')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[11], variable('nuclear repulsion energy'), 3, '[11] NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -319,8 +319,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[12], get_variable('nuclear repulsion energy'), 3, '[12] NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[12], variable('nuclear repulsion energy'), 3, '[12] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -336,8 +336,8 @@ opt_clean()
 ###  H 5 1.0 2 110.0 3 0.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')  #TEST
-###compare_values(nre3_ref[13], get_variable('nuclear repulsion energy'), 3, '[13] NRE: zmat, internal values, w/dummy')  #TEST
+###print variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[13], variable('nuclear repulsion energy'), 3, '[13] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -351,8 +351,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[14], get_variable('nuclear repulsion energy'), 3, '[14] NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[14], variable('nuclear repulsion energy'), 3, '[14] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -369,8 +369,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[15], get_variable('nuclear repulsion energy'), 3, '[15] NRE: cartesian, pure, bohr')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[15], variable('nuclear repulsion energy'), 3, '[15] NRE: cartesian, pure, bohr')  #TEST
 clean()
 opt_clean()
 
@@ -389,8 +389,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[16], get_variable('nuclear repulsion energy'), 3, '[16] NRE: zmat, external & internal values, w/dummy')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[16], variable('nuclear repulsion energy'), 3, '[16] NRE: zmat, external & internal values, w/dummy')  #TEST
 clean()
 opt_clean()
 
@@ -406,8 +406,8 @@ opt_clean()
 #####}
 #####set basis 3-21g
 #####opt('c4-scf')
-#####print get_variable('nuclear repulsion energy')  #TEST
-######compare_values(nre3_ref[17], get_variable('nuclear repulsion energy'), 3, '[17] NRE: zmat, external & internal values')  #TEST
+#####print variable('nuclear repulsion energy')  #TEST
+######compare_values(nre3_ref[17], variable('nuclear repulsion energy'), 3, '[17] NRE: zmat, external & internal values')  #TEST
 #####clean()
 #####opt_clean()
 #####set basis 6-31g
@@ -427,8 +427,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[18], get_variable('nuclear repulsion energy'), 3, '[18] NRE: zmat, external values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[18], variable('nuclear repulsion energy'), 3, '[18] NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 set guess sad
@@ -445,8 +445,8 @@ set guess sad
 ###  H 5 1.0 2 110.0 3 0.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')  #TEST
-###compare_values(nre3_ref[19], get_variable('nuclear repulsion energy'), 3, '[19] NRE: zmat, internal values, w/dummy')  #TEST
+###print variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[19], variable('nuclear repulsion energy'), 3, '[19] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -473,8 +473,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[20], get_variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[20], variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -510,8 +510,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[21], get_variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[21], variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')  #TEST
 clean()
 opt_clean()
 
@@ -532,8 +532,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[22], get_variable('nuclear repulsion energy'), 3, '[22] NRE: zmat, external values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[22], variable('nuclear repulsion energy'), 3, '[22] NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 
@@ -552,8 +552,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[23], get_variable('nuclear repulsion energy'), 3, '[23] NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[23], variable('nuclear repulsion energy'), 3, '[23] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -571,8 +571,8 @@ opt_clean()
 ###  D    = 90.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')  #TEST
-###compare_values(nre3_ref[24], get_variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')  #TEST
+###print variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[24], variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -590,8 +590,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[25], get_variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[25], variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -610,8 +610,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[26], get_variable('nuclear repulsion energy'), 3, '[26] NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[26], variable('nuclear repulsion energy'), 3, '[26] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -632,8 +632,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[27], get_variable('nuclear repulsion energy'), 3, '[27] NRE: zmat, external values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[27], variable('nuclear repulsion energy'), 3, '[27] NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 
@@ -652,8 +652,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[28], get_variable('nuclear repulsion energy'), 3, '[28] NRE: zmat, internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[28], variable('nuclear repulsion energy'), 3, '[28] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -668,8 +668,8 @@ opt_clean()
 ### H 2 1.0 1 90.0 3 -90.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')  #TEST
-###compare_values(nre3_ref[29], get_variable('nuclear repulsion energy'), 3, '[29] NRE: zmat, internal values, w/dummy')  #TEST
+###print variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[29], variable('nuclear repulsion energy'), 3, '[29] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -686,8 +686,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[30], get_variable('nuclear repulsion energy'), 3, '[30] NRE: zmat, external and internal values, w/TDA')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[30], variable('nuclear repulsion energy'), 3, '[30] NRE: zmat, external and internal values, w/TDA')  #TEST
 clean()
 opt_clean()
 
@@ -706,8 +706,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[31], get_variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[31], variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')  #TEST
 clean()
 opt_clean()
 
@@ -733,8 +733,8 @@ try:
     opt('c4-scf')
 except psi4.ConvergenceError:
     pass
-print(get_variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[32], get_variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')  #TEST
+print(variable('nuclear repulsion energy'))  #TEST
+compare_values(nre3_ref[32], variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')  #TEST
 clean()
 opt_clean()
 

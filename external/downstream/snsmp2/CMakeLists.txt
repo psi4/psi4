@@ -19,8 +19,7 @@ if(${ENABLE_snsmp2})
         ExternalProject_Add(snsmp2_external
             DEPENDS qcelemental_external
             BUILD_ALWAYS 1
-            GIT_REPOSITORY https://github.com/DEShawResearch/sns-mp2
-            GIT_TAG 99e2a9c  # v1.0 + 16
+            URL https://github.com/DEShawResearch/sns-mp2/archive/fcce1d0.tar.gz  # v1.0 + 24
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build

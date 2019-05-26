@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -89,6 +89,17 @@ Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
     name_ = c.name();
     alloc();
     copy_from(c.matrix_);
+}
+
+Matrix& Matrix::operator=(const Matrix& c) {
+    release();
+    nirrep_ = c.nirrep_;
+    symmetry_ = c.symmetry_;
+    name_ = c.name();
+    alloc();
+    copy_from(c.matrix_);
+
+    return *this;
 }
 
 Matrix::Matrix(const SharedMatrix &c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
@@ -3303,10 +3314,10 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
     return T;
 }
 
-SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
-                     bool transC) {
-    SharedMatrix T = linalg::doublet(A, B, transA, transB);
-    SharedMatrix S = linalg::doublet(T, C, false, transC);
+SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA,
+                             bool transB, bool transC) {
+    SharedMatrix T = doublet(A, B, transA, transB);
+    SharedMatrix S = doublet(T, C, false, transC);
     return S;
 }
 

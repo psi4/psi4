@@ -1,8 +1,11 @@
 #! A simple Psi 4 input script to compute a SCF reference using Psi4's libJK
 
 import time
+
 import numpy as np
 import psi4
+
+psi4.set_output_file("output.dat", False)
 
 # Benzene
 mol = psi4.geometry("""

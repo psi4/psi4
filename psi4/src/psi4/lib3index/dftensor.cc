@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2018 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -118,7 +118,7 @@ void DFTensor::print_header() {
 }
 void DFTensor::build_metric() {
     auto met = std::make_shared<FittingMetric>(auxiliary_, true);
-    met->form_eig_inverse();
+    met->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
     metric_ = met->get_metric();
 
     if (debug_) {

@@ -39,11 +39,11 @@ json_data = {
       "lowdin_charges",
       "wiberg_lowdin_indices",
       "mayer_indices",
-      "mayer_indices"
     ]
   },
   "keywords": {"scf_type": "df",
-               "mp2_type": "df"}
+               "mp2_type": "df",
+               "e_convergence": 9}
 }
 
 # Write expected output
@@ -115,7 +115,7 @@ with open("output.json", "w") as ofile:                                         
     json.dump(json_ret, ofile, indent=2)                                                   #TEST
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
-psi4.compare_strings("qc_schema_output", json_ret["schema_name"], "Schema Name")           #TEST
+psi4.compare_strings("qcschema_output", json_ret["schema_name"], "Schema Name")            #TEST
 for k in expected_return_result.keys():                                                     #TEST
     psi4.compare_arrays(expected_return_result[k], json_ret["return_result"][k], 5, "Result: " + k.upper())  #TEST
 
