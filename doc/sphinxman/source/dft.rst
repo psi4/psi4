@@ -545,16 +545,16 @@ the |scf__dft_bs_radius_alpha| option may be increased from 1.0 to a larger valu
 
 The atomic weighting scheme is controlled by the |scf__dft_nuclear_scheme|
 option, which may be one of ``TREUTLER``, ``BECKE``, ``STRATMANN``, ``NAIVE``,
-or ``SBECKE``. The latter is a smoother variant of the BECKE scheme recently introduced 
+or ``SBECKE``. The last is a smoother variant of the BECKE scheme recently introduced 
 by Laqua [Laqua:2018:204111]_ that should behave better for weak interactions.
 
 Pruning of the quadrature grid is controlled by the |scf__dft_pruning_scheme|
-option. The options ``ROBUST`` and ``TREUTLER`` devide the grid into spherical regions
+option. The options ``ROBUST`` and ``TREUTLER`` divide the grid into spherical regions
 based on the Bragg-Slater radius of each atom and apply different orders to them.
 The ``ROBUST`` scheme is a less aggressive variant of the ``TREUTLER`` approach and
 suitable for benchmark-level quality (MAD < 0.002 kcal/mol for the S22 with PBE/aug-cc-pVTZ
 for pruned versus unpruned grid). Our implementation of the ``TREUTLER`` scheme shows an 
-error of 0.02 kcal/mol for the same bechmark. Both also reduce the grid order by 1 for H 
+error of 0.02 kcal/mol for the same benchmark. Both also reduce the grid order by 1 for H 
 and He atoms and avoid any pruning of heavy atoms (Z >= 36) Other schemes mentioned in 
 the keyword documentation (e.g. P_SLATER) are experimental and should be considered expert-only.
 

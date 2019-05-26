@@ -3556,7 +3556,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // H, He always 1 smaller
     if (Z <= 2) {
         pruned_order = nominal_order_ - 1;
-    };  // ToDo: flag to enable/disable
+    }; 
 
     int region1 = 7;  // 5, as in the paper, is too small. 7 appears to favored also by other programs.
     int region2 = 11;
@@ -3565,7 +3565,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     double nr2 = (double)radial_pts / 2.0;
     if (ri >= 2 * nr3) {
         pruned_order = region1;
-    } else if (ri < 2 * nr3 && ri >= nr2) {
+    } else if (ri >= nr2) {
         pruned_order = region2;
     };
 
@@ -3585,9 +3585,9 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // H, He always reduced by 1
     if (Z <= 2) {
         pruned_order = nominal_order_ - 1;
-    };  // ToDo: flag to enable/disable
+    };  
 
-    // devide BS shell into 4 equal regions
+    // dvide BS shell into 4 equal regions
     double nr = (double)radial_pts / 4.0;
     int region1 = 7;                   // appears safe
     int region2 = nominal_order_ - 6;  // could be further tuned but little influence.
@@ -3596,9 +3596,9 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // S22 interaction energy OK with above
     if (ri <= nr) {  // <= 25
         pruned_order = region4;
-    } else if (ri > nr && ri <= 2 * nr) {  // > 25 && <= 50
+    } else if (ri <= 2 * nr) {  // > 25 && <= 50
         pruned_order = region3;
-    } else if (ri > 2 * nr && ri <= 3 * nr) {  // > 50 && <= 75
+    } else if (ri <= 3 * nr) {  // > 50 && <= 75
         pruned_order = region2;
     } else if (ri >= 3 * nr) {
         pruned_order = region1;
