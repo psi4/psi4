@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCRESPONSE_MOINFO_H
+#define CCRESPONSE_MOINFO_H
+
 /*! \file
     \ingroup ccresponse
     \brief Enter brief description of file here
@@ -107,3 +110,4 @@ struct MOInfo {
 
 }  // namespace ccresponse
 }  // namespace psi
+#endif

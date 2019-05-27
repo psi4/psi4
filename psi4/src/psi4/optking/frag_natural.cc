@@ -188,11 +188,11 @@ int FRAG::form_natural_coord_combinations() {
       rings.push_back(rings_full[i]);
   }
 
-  oprintf_out(" %d rings were detected\n", rings.size());
+  oprintf_out(" %zu rings were detected\n", rings.size());
   for (std::size_t i=0; i<rings.size(); ++i) {
     oprintf_out(" Ring %d : \n", i+1);
     for (std::size_t j=0; j<rings.size(); ++j)
-      oprintf_out(" %d ", rings[i][j]);
+      oprintf_out(" %zu ", rings[i][j]);
   }
 
   // Array of ring / non-ring atoms.
@@ -238,7 +238,7 @@ int FRAG::form_natural_coord_combinations() {
   rings     # rings         ring atoms
   inR       all             is atom in ring?
 */
-  oprintf_out(" %d simple stretches retained.\n");
+  oprintf_out(" %d simple stretches retained.\n", coords.simples.size());
   for (std::size_t i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == stre_type)
       add_trivial_coord_combination(i);
@@ -257,7 +257,7 @@ int FRAG::form_natural_coord_combinations() {
     // Number of terminal and non-terminal atoms
     std::size_t num_T = bond_to_T[i].size();
     int num_nonT = CN[i] - num_T;
-    oprintf_out("Atom %d has %d non-terminal and %d terminal connections\n", i+1, num_T, num_nonT);
+    oprintf_out("Atom %zu has %zu non-terminal and %zu terminal connections\n", i+1, num_T, num_nonT);
 
     // This is a ring atom; handle separately
     if (inR[i]) {
@@ -454,9 +454,7 @@ int FRAG::form_natural_coord_combinations() {
 
       // choose one other atom to 'anchor' -CH3 group
       if (num_nonT > 0) {
-
-
-
+        ;
       }
     }
 

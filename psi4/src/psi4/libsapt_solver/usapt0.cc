@@ -1464,8 +1464,8 @@ void CPKS_USAPT0::compute_cpks() {
             if (alpha < 0.0) {
                 throw PSIEXCEPTION("Monomer B: A Matrix is not SPD");
             }
-            int no = xa_B_->nrow();
-            int nv = xa_B_->ncol();
+            size_t no = xa_B_->nrow();
+            size_t nv = xa_B_->ncol();
             double** xp = xa_B_->pointer();
             double** rp = ra_B->pointer();
             double** pp = pa_B->pointer();
@@ -1501,8 +1501,8 @@ void CPKS_USAPT0::compute_cpks() {
             double beta = zr_new / zr_old_A;
             zr_old_A = zr_new;
 
-            int no = pa_A->nrow();
-            int nv = pa_A->ncol();
+            size_t no = pa_A->nrow();
+            size_t nv = pa_A->ncol();
             double** pp = pa_A->pointer();
             double** zp = za_A->pointer();
             C_DSCAL(no * nv, beta, pp[0], 1);
@@ -1523,8 +1523,8 @@ void CPKS_USAPT0::compute_cpks() {
             double beta = zr_new / zr_old_B;
             zr_old_B = zr_new;
 
-            int no = pa_B->nrow();
-            int nv = pa_B->ncol();
+            size_t no = pa_B->nrow();
+            size_t nv = pa_B->ncol();
             double** pp = pa_B->pointer();
             double** zp = za_B->pointer();
             C_DSCAL(no * nv, beta, pp[0], 1);
@@ -1576,9 +1576,9 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
     if (do_A) {
         Cl.push_back(Cocca_A_);
         Cl.push_back(Coccb_A_);
-        int no = b["Aa"]->nrow();
-        int nv = b["Aa"]->ncol();
-        int nso = Cvira_A_->nrow();
+        size_t no = b["Aa"]->nrow();
+        size_t nv = b["Aa"]->ncol();
+        size_t nso = Cvira_A_->nrow();
         double** Cp = Cvira_A_->pointer();
         double** bp = b["Aa"]->pointer();
         auto T = std::make_shared<Matrix>("T", nso, no);
@@ -1599,9 +1599,9 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
     if (do_B) {
         Cl.push_back(Cocca_B_);
         Cl.push_back(Coccb_B_);
-        int no = b["Ba"]->nrow();
-        int nv = b["Ba"]->ncol();
-        int nso = Cvira_B_->nrow();
+        size_t no = b["Ba"]->nrow();
+        size_t nv = b["Ba"]->ncol();
+        size_t nso = Cvira_B_->nrow();
         double** Cp = Cvira_B_->pointer();
         double** bp = b["Ba"]->pointer();
         auto T = std::make_shared<Matrix>("T", nso, no);

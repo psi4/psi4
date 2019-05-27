@@ -127,7 +127,7 @@ void MOLECULE::fragmentize() {
 
   // print out fragment information
   for (std::size_t i=0; i<fatoms.size(); ++i) {
-    oprintf_out( "\tDetected frag %d with atoms: ", i+1);
+    oprintf_out( "\tDetected frag %zu with atoms: ", i+1);
     int cnt = 0;
     for (int j=0; j<(int) fatoms[i].size(); ++j) {
       oprintf_out(" %d", fatoms[i][j]+1);
@@ -481,9 +481,9 @@ void MOLECULE::add_interfragment() {
               }
           }
           if (Opt_params.print_lvl >= 3) {
-              oprintf_out( "\tReference points are linear combination on fragment A(%d)\n", frag_i);
+              oprintf_out( "\tReference points are linear combination on fragment A(%zu)\n", frag_i);
               oprint_matrix_out(weight_A, 3, nA);
-              oprintf_out( "\tReference points are linear combination on fragment B(%d)\n", frag_i+1);
+              oprintf_out( "\tReference points are linear combination on fragment B(%zu)\n", frag_i+1);
               oprint_matrix_out(weight_B, 3, nB);
           }
 
@@ -570,9 +570,9 @@ void MOLECULE::freeze_interfragment_asymm() {
   // not implemented yet
 #endif
       if (symmetric_intco)
-        oprintf_out("\tInterfragment coordinate %d(%d) is symmetric.\n", I+1, i+1);
+        oprintf_out("\tInterfragment coordinate %zu(%d) is symmetric.\n", I+1, i+1);
       else {
-        oprintf_out("\tInterfragment coordinate %d(%d) breaks symmetry - freezing.\n", I+1, i+1);
+        oprintf_out("\tInterfragment coordinate %zu(%d) breaks symmetry - freezing.\n", I+1, i+1);
         interfragments[I]->freeze(i);
       }
       free(coord);

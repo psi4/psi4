@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCRESPONSE_PARAMS_H
+#define CCRESPONSE_PARAMS_H
+
 /*! \file
     \ingroup ccresponse
     \brief Enter brief description of file here
@@ -59,3 +62,5 @@ struct Params {
 
 }  // namespace ccresponse
 }  // namespace psi
+#endif
+
