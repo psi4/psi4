@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCRESPONSE_LOCAL_H
+#define CCRESPONSE_LOCAL_H
+
 /*! \file
     \ingroup ccresponse
     \brief Enter brief description of file here
@@ -62,3 +65,4 @@ struct Local {
 
 }  // namespace ccresponse
 }  // namespace psi
+#endif

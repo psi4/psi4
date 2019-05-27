@@ -304,7 +304,7 @@ void X2_build(const char *pert, int irrep, double omega) {
             row_start = m * rows_per_bucket;
             nrows = rows_per_bucket;
             if (nrows && ncols && nlinks) {
-                psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], nrows * nlinks * sizeof(double), next,
+                psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], sizeof(double) * nrows * nlinks, next,
                           &next);
                 C_DGEMM('n', 't', nrows, ncols, nlinks, -0.25, B_diag[0], nlinks, X_diag[0], nlinks, 1,
                         S.matrix[0][row_start], ncols);
@@ -314,7 +314,7 @@ void X2_build(const char *pert, int irrep, double omega) {
             row_start = m * rows_per_bucket;
             nrows = rows_left;
             if (nrows && ncols && nlinks) {
-                psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], nrows * nlinks * sizeof(double), next,
+                psio_read(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *)B_diag[0], sizeof(double) * nrows * nlinks, next,
                           &next);
                 C_DGEMM('n', 't', nrows, ncols, nlinks, -0.25, B_diag[0], nlinks, X_diag[0], nlinks, 1,
                         S.matrix[0][row_start], ncols);
