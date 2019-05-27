@@ -567,7 +567,7 @@ OptReturnType optking(void) {
     }
   }
 #if defined (OPTKING_PACKAGE_PSI)
-  catch (psi::PsiException e){
+  catch (const psi::PsiException& e){
       oprintf_out("\t%s", e.what());
   }
 #endif

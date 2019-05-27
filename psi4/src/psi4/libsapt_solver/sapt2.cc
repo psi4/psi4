@@ -929,7 +929,7 @@ void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, double *evals, 
     }
 
     if (print_) {
-        outfile->Printf("    Monomer %c: %d virtual orbitals dropped\n", monomer, nvirA - num_no_vir);
+        outfile->Printf("    Monomer %c: %zu virtual orbitals dropped\n", monomer, nvirA - num_no_vir);
     }
 
     double **Fock_MO = block_matrix(nvirA, nvirA);

@@ -625,11 +625,11 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
       opt_io_close(0); // close and delete
     }
     else { // read in old optimization data
-      opt_io_read_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
+      opt_io_read_entry("H", (char *) H[0], sizeof(double) * Nintco * Nintco);
       opt_io_read_entry("iteration", (char *) &iteration, sizeof(int));
       opt_io_read_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
-      opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
+      opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, sizeof(double) * Nintco);
       for (int i=0; i<iteration; ++i) {
         auto *one_step = new STEP_DATA(Nintco, Ncart);
         one_step->read(i+1, Nintco, Ncart);
@@ -653,11 +653,11 @@ void OPT_DATA::write() {
   oprintf_out("\tWriting optimization data to binary file.\n");
   opt_io_write_entry("Nintco", (char *) &Nintco, sizeof(int));
   opt_io_write_entry("Ncart" , (char *) &Ncart , sizeof(int));
-  opt_io_write_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
+  opt_io_write_entry("H", (char *) H[0],  sizeof(double) * Nintco * Nintco);
   opt_io_write_entry("iteration", (char *) &iteration, sizeof(int));
   opt_io_write_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
   opt_io_write_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
-  opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, Nintco*sizeof(double));
+  opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, sizeof(double) * Nintco);
 
   for (std::size_t i=0; i<steps.size(); ++i)
     steps[i]->write(i+1, Nintco, Ncart);

@@ -136,7 +136,7 @@ void COMBO_COORDINATES::erase_combo(int cc) {
 void COMBO_COORDINATES::print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
   oprintf(psi_fp, qc_fp, "\t---S vectors for internals---\n");
   for(std::size_t cc=0; cc<index.size(); ++cc) {
-    oprintf_out("Coordinate %d\n", cc+1);
+    oprintf_out("Coordinate %zu\n", cc+1);
     for(std::size_t s=0; s<index[cc].size(); ++s) {
       oprintf_out("\tCoeff %15.10lf\n", coeff.at(cc).at(s));
       simples[ index[cc][s] ]->print_s(psi_fp, qc_fp, geom);

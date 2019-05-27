@@ -104,7 +104,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
     if (i == 0) DE = g_step(i).g_energy();
     else DE = g_step(i).g_energy() - g_step(i-1).g_energy();
 
-    oprintf_out("@IRC  %3d %18.12lf  %18.12lf\n", i, g_step(i).g_energy(), DE);
+    oprintf_out("@IRC  %3zu %18.12lf  %18.12lf\n", i, g_step(i).g_energy(), DE);
   }
   oprintf_out("@IRC ----------------------------------------------\n\n");
 
@@ -129,7 +129,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
     oprintf_out("\n");
     for (std::size_t i=0; i<steps.size(); ++i)
     {
-      oprintf_out("@IRC  %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      oprintf_out("@IRC  %3zu %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (j*blocks); k < ((j+1)*blocks); k++)
         oprintf_out("%13.8f",g_step(i).g_q()[k]);
       oprintf_out("\n");
@@ -157,7 +157,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
     oprintf_out("\n");
     for (std::size_t i=0; i<steps.size(); ++i)
     {
-      oprintf_out("@IRC  %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      oprintf_out("@IRC  %3zu %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
       for(int k = (dim - (dim % blocks)); k < dim; k++)
         oprintf_out("%13.8f",g_step(i).g_q()[k]);
       oprintf_out("\n");
@@ -330,14 +330,14 @@ void MOLECULE::irc_step()
     // RAK 11-14 Try to calculate xyz coordinates of the pivot point
     for (std::size_t f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        oprintf_out("    Displacements for frozen fragment %d skipped.\n", f+1);
+        oprintf_out("    Displacements for frozen fragment %zu skipped.\n", f+1);
         continue;
       }
       fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
     }
     for (std::size_t I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        oprintf_out("    Displacements for frozen interfragment %d skipped.\n", I+1);
+        oprintf_out("    Displacements for frozen interfragment %zu skipped.\n", I+1);
         continue;
       }
       interfragments[I]->orient_fragment( &(dq_pivot[g_interfragment_coord_offset(I)]), &(f_q[g_interfragment_coord_offset(I)]) );
@@ -381,7 +381,7 @@ void MOLECULE::irc_step()
     // Take step of dq_pivot length again since dq is 2*dq_pivot
     for (std::size_t f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        oprintf_out("    Displacements for frozen fragment %d skipped.\n", f+1);
+        oprintf_out("    Displacements for frozen fragment %zu skipped.\n", f+1);
         continue;
       }
       fragments[f]->displace(&(dq_pivot[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
@@ -389,7 +389,7 @@ void MOLECULE::irc_step()
     // Do displacements for interfragment coordinates.
     for (std::size_t I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        oprintf_out("    Displacements for frozen interfragment %d skipped.\n", I+1);
+        oprintf_out("    Displacements for frozen interfragment %zu skipped.\n", I+1);
         continue;
       }
       interfragments[I]->orient_fragment( &(dq_pivot[g_interfragment_coord_offset(I)]),
@@ -655,7 +655,7 @@ void MOLECULE::irc_step()
   // Do displacements for each fragment separately.
   for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      oprintf_out("  Displacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("  Displacements for frozen fragment %zu skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
@@ -663,7 +663,7 @@ void MOLECULE::irc_step()
   // Do displacements for interfragment coordinates.
   for (std::size_t I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      oprintf_out("  Displacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("  Displacements for frozen interfragment %zu skipped.\n", I+1);
       continue;
     }
     interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),

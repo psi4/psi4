@@ -583,7 +583,7 @@ int FRAG::form_delocalized_coord_combinations(void) {
   free_matrix(BBt);
   free_array(evals);
 
-  oprintf_out("\tInitially, formed %d delocalized coordinates for fragment.\n", coords.index.size());
+  oprintf_out("\tInitially, formed %zu delocalized coordinates for fragment.\n", coords.index.size());
   return coords.index.size();
 }
 
