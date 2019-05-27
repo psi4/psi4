@@ -2719,12 +2719,12 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     if (scheme == NAIVE || scheme == STRATMANN) {
         for (int i = 0; i < natom; i++)
             for (int j = 0; j < natom; j++) amatrix_[i][j] = 0;
-    } else if (scheme == BECKE || scheme == TREUTLER || SBECKE) {
+    } else if (scheme == BECKE || scheme == TREUTLER || scheme == SBECKE) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
                 double rad_ratio =
                     GetBSRadiusNew(mol->true_atomic_number(i)) / GetBSRadiusNew(mol->true_atomic_number(j));
-                double chi = (scheme == BECKE) ? rad_ratio : sqrt(rad_ratio);
+                double chi = (scheme == BECKE || scheme == SBECKE) ? rad_ratio : sqrt(rad_ratio);
                 double a = getAfromChi(chi);
                 amatrix_[i][j] = a;
                 amatrix_[j][i] = -a;
@@ -3550,7 +3550,9 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // Turbomole appears to use BS radii in Angstrom. The smaller sphere appears
     // to make this more stable. At least for non-diffuse densities.
     if (Z >= 36) {
-        LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);
+        if (nominal_order_ > LebedevGridMgr::MaxOrder)
+            throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
+        return LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);
     }
     int pruned_order = nominal_order_;
     // H, He always 1 smaller
@@ -3579,7 +3581,9 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // prunes grid based on (in principle) 4 different regions.
     // robust version of Treutler pruning.
     if (Z >= 36) {
-        LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);
+        if (nominal_order_ > LebedevGridMgr::MaxOrder)
+            throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
+        return LebedevGridMgr::findNPointsByOrder_roundUp(nominal_order_);
     }
     int pruned_order = nominal_order_;
     // H, He always reduced by 1
@@ -4110,6 +4114,8 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
             opt.prunefunction = RadialPruneMgr::WhichPruneFunction(opt.prunescheme.c_str());
         }
     }
+    //note: NONE is just FLAT in hiding but meant to make it clear to the user that
+    // no pruning is done
     if (opt.prunescheme == "NONE") {
         opt.prunetype = "FUNCTION";
         opt.prunefunction = RadialPruneMgr::WhichPruneFunction("FLAT");
