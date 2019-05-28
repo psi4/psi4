@@ -101,9 +101,9 @@ class PSI_API ERISieve {
     std::shared_ptr<BasisSet> primary_;
 
     /// Number of basis functions
-    int nbf_;
+    size_t nbf_;
     /// Number of shells
-    int nshell_;
+    size_t nshell_;
 
     /// Cutoff values
     double sieve_;
@@ -179,7 +179,7 @@ class PSI_API ERISieve {
 
    public:
     /// Constructor, basis set and first sieve cutoff
-    ERISieve(std::shared_ptr<BasisSet> primary, double sieve = 0.0);
+    ERISieve(std::shared_ptr<BasisSet> primary, double sieve = 0.0, bool do_csam = false);
     /// Destructor, frees memory
     virtual ~ERISieve();
 
@@ -189,17 +189,19 @@ class PSI_API ERISieve {
     double sieve() const { return sieve_; }
     /// Global maximum |(mn|rs)|
     double max() const { return max_; }
+    /// Get whether this sieve performs CSAM screening (as opposed to vanilla Schwarz)
+    bool do_csam() const { return do_csam_; }
 
     // => Significance Checks <= //
 
     /// Square of ceiling of shell quartet (MN|RS)
     inline double shell_ceiling2(int M, int N, int R, int S) {
-        return shell_pair_values_[N * (size_t)nshell_ + M] * shell_pair_values_[R * (size_t)nshell_ + S];
+        return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
     }
 
     /// Square of ceiling of integral (mn|rs)
     inline double function_ceiling2(int m, int n, int r, int s) {
-        return function_pair_values_[m * (size_t)nbf_ + n] * function_pair_values_[r * (size_t)nbf_ + s];
+        return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
     }
 
     /// Is the shell quartet (MN|RS) significant according to sieve? (no restriction on MNRS order)
@@ -207,14 +209,11 @@ class PSI_API ERISieve {
     // inline bool shell_significant(int M, int N, int R, int S) {
     bool shell_significant(int M, int N, int R, int S) {
         bool schwarz_bound =
-            shell_pair_values_[N * (size_t)nshell_ + M] * shell_pair_values_[R * (size_t)nshell_ + S] >= sieve2_;
+            shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= sieve2_;
         if (do_qqr_ && schwarz_bound) {
-            bool res = shell_significant_qqr(M, N, R, S);
-            // std::cout << "QQR prune: " << res << "\n";
-            return res;
+            return shell_significant_qqr(M, N, R, S);
         } else if (do_csam_ && schwarz_bound) {
-            bool res = shell_significant_csam(M, N, R, S);
-            return res;
+            return shell_significant_csam(M, N, R, S);
         } else {
             return schwarz_bound;
         }
@@ -228,17 +227,17 @@ class PSI_API ERISieve {
 
     /// Is the integral (mn|rs) significant according to sieve? (no restriction on mnrs order)
     inline bool function_significant(int m, int n, int r, int s) {
-        return function_pair_values_[m * (size_t)nbf_ + n] * function_pair_values_[r * (size_t)nbf_ + s] >= sieve2_;
+        return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s] >= sieve2_;
     }
 
     /// Is the shell pair (MN| ever significant according to sieve (no restriction on MN order)
     inline bool shell_pair_significant(int M, int N) {
-        return shell_pair_values_[M * (size_t)nshell_ + N] * max_ >= sieve2_;
+        return shell_pair_values_[M * nshell_ + N] * max_ >= sieve2_;
     }
 
     /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
     inline bool function_pair_significant(int m, int n) {
-        return function_pair_values_[m * (size_t)nbf_ + n] * max_ >= sieve2_;
+        return function_pair_values_[m * nbf_ + n] * max_ >= sieve2_;
     }
     // => Indexing [these change after a call to sieve()] <= //
 

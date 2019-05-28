@@ -81,7 +81,7 @@ void DirectJK::print_header() const {
         outfile->Printf("    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
-void DirectJK::preiterations() { sieve_ = std::make_shared<ERISieve>(primary_, cutoff_); }
+void DirectJK::preiterations() { sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, false); }
 void DirectJK::compute_JK() {
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
 
