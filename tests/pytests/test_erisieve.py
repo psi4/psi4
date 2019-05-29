@@ -28,7 +28,7 @@ def test_no_screening_schwarz():
         if not sieve_schwarz.shell_significant(m, n, r, s):
             screen_count += 1
 
-    assert compare_integers(0, screen_count, 'Quartets Schwarz Screened, Cutoff 0')  #TEST
+    assert compare_integers(0, screen_count, 'Quartets Schwarz Screened, Cutoff 0')
 
 
 def test_no_screening_csam():
@@ -53,7 +53,7 @@ def test_no_screening_csam():
         if not sieve_csam.shell_significant(m, n, r, s):
             screen_count += 1
 
-    assert compare_integers(0, screen_count, 'Quartets CSAM Screened, Cutoff 0')  #TEST
+    assert compare_integers(0, screen_count, 'Quartets CSAM Screened, Cutoff 0')
 
 
 def test_schwarz_vs_csam():
@@ -93,7 +93,7 @@ def test_schwarz_vs_csam():
         else:
             screen_count_none += 1
 
-    assert psi4.compare_integers(75792, screen_count_both, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
-    assert psi4.compare_integers(1344, screen_count_csam, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
-    assert psi4.compare_integers(0, screen_count_schwarz, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
-    assert psi4.compare_integers(27840, screen_count_none, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
+    assert compare_integers(75792, screen_count_both, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
+    assert compare_integers(1344, screen_count_csam, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
+    assert compare_integers(0, screen_count_schwarz, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
+    assert compare_integers(27840, screen_count_none, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
