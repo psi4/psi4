@@ -1,6 +1,7 @@
 import pytest
 import psi4
 import itertools
+from .utils import compare_integers
 
 pytestmark = pytest.mark.quick
 
@@ -9,7 +10,7 @@ def test_no_screening_schwarz():
     """Checks the number of shell quartets screened with Schwarz screening.
     No shell quartets should be screened with a threshold of 0.0"""
 
-    Ne = psi4.geometry("""
+    psi4.geometry("""
       Ne 0.0 0.0 0.0
       Ne 4.0 0.0 0.0
       Ne 8.0 0.0 0.0
@@ -27,14 +28,14 @@ def test_no_screening_schwarz():
         if not sieve_schwarz.shell_significant(m, n, r, s):
             screen_count += 1
 
-    assert psi4.compare_values(0, screen_count, 'Quartets Schwarz Screened, Cutoff 0')  #TEST
+    assert compare_integers(0, screen_count, 'Quartets Schwarz Screened, Cutoff 0')  #TEST
 
 
 def test_no_screening_csam():
     """Checks the number of shell quartets screened with CSAM screening.
     No shell quartets should be screened with a threshold of 0.0"""
 
-    Ne = psi4.geometry("""
+    psi4.geometry("""
       Ne 0.0 0.0 0.0
       Ne 4.0 0.0 0.0
       Ne 8.0 0.0 0.0
@@ -52,7 +53,7 @@ def test_no_screening_csam():
         if not sieve_csam.shell_significant(m, n, r, s):
             screen_count += 1
 
-    assert psi4.compare_values(0, screen_count, 'Quartets CSAM Screened, Cutoff 0')  #TEST
+    assert compare_integers(0, screen_count, 'Quartets CSAM Screened, Cutoff 0')  #TEST
 
 
 def test_schwarz_vs_csam():
@@ -60,7 +61,7 @@ def test_schwarz_vs_csam():
     CSAM is strictly tighter than Schwarz and should screen at least all of the same shell pairs.
     Default threshhold of 1.0E-12 is used"""
 
-    Ne = psi4.geometry("""
+    psi4.geometry("""
       Ne 0.0 0.0 0.0
       Ne 4.0 0.0 0.0
       Ne 8.0 0.0 0.0
@@ -92,7 +93,7 @@ def test_schwarz_vs_csam():
         else:
             screen_count_none += 1
 
-    assert psi4.compare_values(75792, screen_count_both, 'Quartets CSAM Screened, Cutoff 0')  #TEST
-    assert psi4.compare_values(1344, screen_count_csam, 'Quartets CSAM Screened, Cutoff 0')  #TEST
-    assert psi4.compare_values(0, screen_count_schwarz, 'Quartets CSAM Screened, Cutoff 0')  #TEST
-    assert psi4.compare_values(27840, screen_count_none, 'Quartets CSAM Screened, Cutoff 0')  #TEST
+    assert psi4.compare_integers(75792, screen_count_both, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
+    assert psi4.compare_integers(1344, screen_count_csam, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
+    assert psi4.compare_integers(0, screen_count_schwarz, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
+    assert psi4.compare_integers(27840, screen_count_none, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')  #TEST
