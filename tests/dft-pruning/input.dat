@@ -27,5 +27,4 @@ SCHEMES={
 for scheme in SCHEMES:
   set DFT_PRUNING_SCHEME $scheme
   energy('pbe/sto-3g')
-  points=variable('XC GRID TOTAL POINTS')
-  compare_values(SCHEMES[scheme],points,2,'grid points for '+scheme) #TEST
+  compare_integers(SCHEMES[scheme], int(variable('XC GRID TOTAL POINTS')), 'grid porints for '+scheme) #TEST

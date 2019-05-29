@@ -46,10 +46,10 @@ Both density functional theory and Hartree--Fock theory are controlled
 through the SCF module, and the :ref:`SCF Introduction <sec:scfintro>`
 section is also relevant here.
 
-.. note:: Starting version 1.4, |PSIfour| uses an updated and extended (to 104 elements) set
+.. note:: Starting version 1.4 (tag v1.4a1 in the development repository), |PSIfour| uses an updated and extended (to 104 elements) set
           of Bragg-Slater radii. This leads to minimal deviations in absolute energies (1E-06 au) and
           relative energies (below 0.002 kcal/mol for S22), depending also on the applied grid, compared
-          to older versions. We advice not to mix absolute energies from 1.4 and pre-1.4 for the
+          to older versions. We advise not to mix absolute energies absolute energies from before and after this change for the
           calculation of relative energies.
 
 .. note:: After May 2017 (anytime after the v1.1 release), |PSIfour|

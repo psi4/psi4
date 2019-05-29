@@ -57,7 +57,7 @@ using namespace psi;
 namespace {
 
 // clang-format off
-double GetBSRadiusNew(unsigned Z) {
+double GetBSRadius(unsigned Z) {
     // Bragg-Slater radii  J.C. Slater JCP 41, (1964), 3199 [bohr]
     static const std::vector<double> BSRadius ={ 1.00,
       0.661,                                                                                                                0.661, // He
@@ -2723,7 +2723,7 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
                 double rad_ratio =
-                    GetBSRadiusNew(mol->true_atomic_number(i)) / GetBSRadiusNew(mol->true_atomic_number(j));
+                    GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
                 double chi = (scheme == BECKE || scheme == SBECKE) ? rad_ratio : sqrt(rad_ratio);
                 double a = getAfromChi(chi);
                 amatrix_[i][j] = a;
@@ -3638,7 +3638,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
         if (opt.namedGrid == -1) {  // Not using a named grid
             std::vector<double> r(opt.nradpts), wr(opt.nradpts);
-            double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
+            double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
             RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r.data(),
                                           wr.data(), alpha);
 
@@ -3740,7 +3740,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
 
         std::vector<double> r(rs[A].size()), wr(rs[A].size());
-        double alpha = GetBSRadiusNew(Z) * opt.bs_radius_alpha;
+        double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
 
         // Bloody great
         for (size_t i = 0; i < rs[A].size(); i++) {
