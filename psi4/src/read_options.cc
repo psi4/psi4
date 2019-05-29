@@ -909,6 +909,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         default is conservative, but there isn't much to be gained from
         loosening it, especially for higher-order SAPT. -*/
         options.add_double("INTS_TOLERANCE", 1.0E-12);
+        /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
+        two-electron integrals. This is a slightly tighter bound than that of
+        default Schwarz screening. -*/
+        options.add_str("SCREENING", "SCHWARZ" "SCHWARZ CSAM");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
