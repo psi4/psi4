@@ -1,7 +1,7 @@
 #! B3LYP cc-pVDZ geometry optimzation of phenylacetylene, starting from
 #! not quite linear structure
 #! updated reference due to new BraggSlater radii
-b3lyp_E  = -308.4136912294716808
+b3lyp_E  =-308.41369122979387 
 
 molecule {
 0 1
@@ -28,6 +28,5 @@ set {
 
 energy('scf')
 thisenergy = optimize('B3LYP')
-
 compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                                #TEST
 

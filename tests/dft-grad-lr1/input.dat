@@ -2,14 +2,14 @@
 #! update df/pk_ref values due to new BraggSlater radii
 
 df_ref = psi4.Matrix.from_list([                 #TEST
-      [-0.001998570885,  0.029838720809,  0.0],  #TEST
-      [ 0.002460269285, -0.036877494737,  0.0],  #TEST
-      [-0.000457904789,  0.006980039373,  0.0]]) #TEST
+       [-0.0019985711,  0.0298387231,  0.0000000000],   #TEST
+       [ 0.0024602692, -0.0368774931,  0.0000000000],   #TEST
+       [-0.0004579045,  0.0069800355,  0.0000000000]]) #TEST
 
-pk_ref = psi4.Matrix.from_list([                                    #TEST
-      [  -0.002000961258,     0.029873999654,     0.000000000000],  #TEST
-      [   0.002463811822,    -0.036929571622,     0.000000000000],  #TEST
-      [  -0.000459059144,     0.006996868712,     0.000000000000]]) #TEST
+pk_ref = psi4.Matrix.from_list([                  #TEST
+       [-0.0020009614,  0.0298740015,  0.0000000000],   #TEST
+       [ 0.0024638117, -0.0369295696,  0.0000000000],   #TEST
+       [-0.0004590588,  0.0069968649,  0.0000000000]]) #TEST
 
 molecule {
   0 1
@@ -29,7 +29,6 @@ set {
 
 anl_grad = gradient('wB97X-D', dertype=1)
 compare_matrices(df_ref, anl_grad, 7, "DF Analytic Gradient vs Reference")    #TEST
-
 # fd_grad = gradient('wB97X-D', dertype=0)
 # compare_matrices(anl_grad, fd_grad, 3, "Analytic vs FD Gradients")    #TEST
 

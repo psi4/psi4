@@ -81,14 +81,13 @@ set basis aug-cc-pvdz
 set scf_type df
 set dft_radial_points 99
 set dft_spherical_points 302
-
 edft = energy('dldf+d')
-val = -153.8043949582914820    #TEST
+val = -153.8043949584337    #TEST
 compare_values(val, edft, 8, "dlDF+D (2010 +D correction)")  #TEST
 clean()
 
 edft = energy('dldf+d09')
-val = -153.8046378916172614   #TEST
+val = -153.80463789175926     #TEST
 compare_values(val, edft, 8, "dlDF+D09 (2009 +D correction)")  #TEST
 clean()
 
