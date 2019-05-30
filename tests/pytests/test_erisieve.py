@@ -1,7 +1,7 @@
 import pytest
 import psi4
 import itertools
-from .utils import compare_integers
+from .utils import compare_integers, compare_values
 
 pytestmark = pytest.mark.quick
 
@@ -56,7 +56,7 @@ def test_no_screening_csam():
     assert compare_integers(0, screen_count, 'Quartets CSAM Screened, Cutoff 0')
 
 
-def test_schwarz_vs_csam():
+def test_schwarz_vs_csam_quartets():
     """Checks difference between the number of shell quartets screened with Schwarz and CSAM screening. 
     CSAM is strictly tighter than Schwarz and should screen at least all of the same shell pairs.
     Default threshhold of 1.0E-12 is used"""
@@ -97,3 +97,28 @@ def test_schwarz_vs_csam():
     assert compare_integers(1344, screen_count_csam, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
     assert compare_integers(0, screen_count_schwarz, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
     assert compare_integers(27840, screen_count_none, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
+
+
+def test_schwarz_vs_csam_energy():
+    """Checks difference in Hartree-Fock energy between Schwarz and CSAM screening, which should be
+    insignificant. """
+
+    psi4.geometry("""
+      Ne 0.0 0.0 0.0
+      Ne 4.0 0.0 0.0
+      Ne 8.0 0.0 0.0
+    """)
+
+    psi4.set_options({'scf_type' : 'direct',
+                      'ints_tolerance' : 1.0e-12,
+                      'screening' : 'schwarz'})
+    e_schwarz = psi4.energy('hf/cc-pvdz')
+
+    psi4.core.clean()
+
+    psi4.set_options({'scf_type' : 'direct',
+                      'ints_tolerance' : 1.0e-12,
+                      'screening' : 'csam'})
+    e_csam = psi4.energy('hf/cc-pvdz')
+
+    assert compare_values(e_schwarz, e_csam, 11, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
