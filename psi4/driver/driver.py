@@ -1556,7 +1556,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
 
     vibinfo, vibtext = qcdb.vib.harmonic_analysis(
         nmwhess, geom, m, wfn.basisset(), irrep_labels, dipder=dipder, project_trans=project_trans, project_rot=project_rot)
-    vibrec.update({k: qca.to_dict() for k, qca in vibinfo.items()})
+    vibrec.update({k: qca.json() for k, qca in vibinfo.items()})
 
     core.print_out(vibtext)
     core.print_out(qcdb.vib.print_vibs(vibinfo, shortlong=True, normco='x', atom_lbl=symbols))
@@ -1577,7 +1577,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
             rotor_type=mol.rotor_type(),
             rot_const=np.asarray(mol.rotational_constants()),
             E0=core.variable('CURRENT ENERGY'))  # someday, wfn.energy()
-        vibrec.update({k: qca.to_dict() for k, qca in therminfo.items()})
+        vibrec.update({k: qca.json() for k, qca in therminfo.items()})
 
         core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
         core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
