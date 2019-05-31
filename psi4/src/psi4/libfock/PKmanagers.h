@@ -97,6 +97,8 @@ class PKManager {
     Options& options_;
     /// Integral cutoff to apply
     double cutoff_;
+    /// CSAM Screening (defaults to false)
+    bool do_csam_;
     std::shared_ptr<BasisSet> primary_;
     int nthreads_;
     /// Number of basis functions

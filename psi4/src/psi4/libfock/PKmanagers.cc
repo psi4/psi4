@@ -158,11 +158,15 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
     pk_pairs_ = (size_t)nbf_ * ((size_t)nbf_ + 1) / 2;
     pk_size_ = pk_pairs_ * (pk_pairs_ + 1) / 2;
     cutoff_ = 1.0e-12;
+    do_csam_ = false;
     if (options["INTS_TOLERANCE"].has_changed()) {
         cutoff_ = options.get_double("INTS_TOLERANCE");
     }
+    if (options["SCREENING"].has_changed()) {
+        do_csam_ = (options.get_str("SCREENING") == "CSAM");
+    }
     ntasks_ = 0;
-    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
+    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_);
 
     if (memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm\n");

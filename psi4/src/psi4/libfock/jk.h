@@ -240,6 +240,8 @@ class PSI_API JK {
     int omp_nthread_;
     /// Integral cutoff (defaults to 0.0)
     double cutoff_;
+    /// CSAM Screening (defaults to false)
+    double do_csam_;
     /// Whether to all desymmetrization, for cases when it's already been performed elsewhere
     std::vector<bool> input_symmetry_cast_map_;
 
@@ -380,6 +382,12 @@ class PSI_API JK {
      */
     void set_cutoff(double cutoff) { cutoff_ = cutoff; }
     double get_cutoff() const { return cutoff_; }
+    /**
+     * @param do_csam whether to perform CSAM screening instead of
+     *      classic Schwarz screening
+     */
+    void set_csam(bool do_csam) { do_csam_ = do_csam; }
+    double get_csam() const { return do_csam_; }
     /**
      * Maximum memory to use, in doubles (for tensor-based methods,
      * integral generation objects typically ignore this)
