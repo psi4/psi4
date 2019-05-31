@@ -1,16 +1,17 @@
 #! dipole moment for HF and B3LYP in presence of perturbation
+#! updated B3LYP values due to new BraggSlater radii
 
 ref_energies = { 'HF'    : [-76.0203919443, -76.0223213132,  # TEST
                             -76.0194350648, -76.0232937811], # TEST
-                 'B3LYP' : [-76.4174428941, -76.4192585316,  # TEST
-                            -76.4165433643, -76.4201746101]  # TEST
+                 'B3LYP' : [-76.41744282969275, -76.41925846700227,  # TEST
+                            -76.4165432999241, -76.42017454551062]  # TEST
                }
 # Reference values, in atomic units, for finite difference formulas
 ref_3pt = { 'HF'    : 0.9646844572, # TEST
-            'B3LYP' : 0.9078187054  # TEST
+            'B3LYP' : 0.9078186547597511  # TEST
           }
 ref_5pt = { 'HF'    : 0.9646862512, # TEST
-            'B3LYP' : 0.9078211247  # TEST
+            'B3LYP' : 0.9078210741364501  # TEST
           }
 
 molecule h2o {

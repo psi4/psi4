@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.2rc4.dev2 
+                               Psi4 1.4a1.dev189 
 
-                         Git: Rev {fexp} 9cbd6ec 
+                         Git: Rev {HEAD} d6ce54b dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -17,18 +17,19 @@
 
 
                          Additional Contributions by
-    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, and R. A. Shaw
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 02 July 2018 04:18PM
+    Psi4 started on: Monday, 20 May 2019 11:25PM
 
-    Process ID: 8543
-    Host:       psinet
-    PSIDATADIR: /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4
+    Process ID: 31827
+    Host:       hokru
+    PSIDATADIR: /usr/qc/psi4fork.bin/share/psi4
     Memory:     500.0 MiB
-    Threads:    1
+    Threads:    4
     
   ==> Input File <==
 
@@ -49,7 +50,7 @@
 #-> MN15L
 ## Notes
 # M11L only up to 4 decimals even for Ne with fine grid
-
+#! updated dldf reference to new BraggSlater radii 
 
 molecule ne {
   0 1
@@ -118,12 +119,12 @@ set dft_radial_points 99
 set dft_spherical_points 302
 
 edft = energy('dldf+d')
-val = -153.80439592484987    #TEST
+val = -153.8043949582914820    #TEST
 compare_values(val, edft, 8, "dlDF+D (2010 +D correction)")  #TEST
 clean()
 
 edft = energy('dldf+d09')
-val = -153.8046388583318276   #TEST
+val = -153.8046378916172614   #TEST
 compare_values(val, edft, 8, "dlDF+D09 (2009 +D correction)")  #TEST
 clean()
 
@@ -147,38 +148,41 @@ edft = energy('mgga_ms0')
 val = -76.3991175407000043    #TEST
 compare_values(val, edft, 5, "water: MGGA_MS0")  #TEST
 clean()
+
 edft = energy('mgga_ms1')
 val = -76.3862902532000021    #TEST
 compare_values(val, edft, 5, "water: MGGA_MS1")  #TEST
 clean()
+
 edft = energy('mgga_ms2')
 val = -76.3944104108999937    #TEST
 compare_values(val, edft, 5, "water: MGGA_MS2")  #TEST
 clean()
+
 #edft = energy('m11-l')
 #val =  -76.3618441219000061   #TEST
 #compare_values(val, edft, 4, "water: MGGA_M11-L")  #TEST
-clean()
+#clean()
 
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:18:57 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:39 2019
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry NE         line   258 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry NE         line   258 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -188,7 +192,7 @@ clean()
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         NE           0.000000000000     0.000000000000     0.000000000000    19.992440175420
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
 
   Running in d2h symmetry.
 
@@ -229,7 +233,7 @@ clean()
 
     TPSS Meta-GGA XC Functional
 
-   J. Tao, et al., Phys. Rev. Lett., 91, 146401, 2003
+    J. Tao, et al., Phys. Rev. Lett., 91, 146401, 2003
 
 
     Deriv               =              1
@@ -249,18 +253,19 @@ clean()
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            770
-    Total Points        =          66220
-    Total Blocks        =            555
-    Max Points          =            253
-    Max Functions       =             14
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            770
+    Total Points           =          70840
+    Total Blocks           =            580
+    Max Points             =            256
+    Max Functions          =             14
 
   ==> Pre-Iterations <==
 
@@ -286,8 +291,10 @@ clean()
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    Integrals threads:           1
+    Integrals threads:           4
     Schwarz Cutoff:          1E-12
+
+  Cached 100.0% of DFT collocation blocks in 0.071 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 1.9330486283E-01.
   Using Symmetric Orthogonalization.
@@ -298,13 +305,15 @@ clean()
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:  -123.12952594522324   -1.23130e+02   5.11491e-01 
-   @RKS iter   2:  -124.52384080700996   -1.39431e+00   6.16271e-01 DIIS
-   @RKS iter   3:  -128.87332061829147   -4.34948e+00   6.26739e-02 DIIS
-   @RKS iter   4:  -128.91088466680665   -3.75640e-02   2.35709e-03 DIIS
-   @RKS iter   5:  -128.91093945125198   -5.47844e-05   5.05333e-04 DIIS
-   @RKS iter   6:  -128.91094197195480   -2.52070e-06   1.45153e-05 DIIS
-   @RKS iter   7:  -128.91094197402333   -2.06853e-09   3.78937e-07 DIIS
+   @RKS iter   1:  -123.12952158448880   -1.23130e+02   5.11494e-01 DIIS
+   @RKS iter   2:  -124.52227043256900   -1.39275e+00   6.16350e-01 DIIS
+   @RKS iter   3:  -128.87323935386246   -4.35097e+00   6.27417e-02 DIIS
+   @RKS iter   4:  -128.91088446026779   -3.76451e-02   2.36133e-03 DIIS
+   @RKS iter   5:  -128.91093943593751   -5.49757e-05   5.06863e-04 DIIS
+   @RKS iter   6:  -128.91094197191939   -2.53598e-06   1.45788e-05 DIIS
+   @RKS iter   7:  -128.91094197400605   -2.08667e-09   3.82120e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -313,33 +322,32 @@ clean()
 
     Doubly Occupied:                                                      
 
-       1Ag   -30.648981     2Ag    -1.325928     1B2u   -0.451730  
-       1B3u   -0.451730     1B1u   -0.451730  
+       1Ag   -30.648981     2Ag    -1.325928     1B1u   -0.451730  
+       1B2u   -0.451730     1B3u   -0.451730  
 
     Virtual:                                                              
 
-       2B2u    1.331179     2B1u    1.331179     2B3u    1.331179  
-       3Ag     1.776694     1B1g    4.683976     1B2g    4.683976  
-       1B3g    4.683976     4Ag     4.683976     5Ag     4.683976  
+       2B1u    1.331179     2B2u    1.331179     2B3u    1.331179  
+       3Ag     1.776694     4Ag     4.683976     1B2g    4.683976  
+       1B3g    4.683976     5Ag     4.683976     1B1g    4.683976  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
 
-  Energy converged.
-
-  @RKS Final Energy:  -128.91094197402333
+  @RKS Final Energy:  -128.91094197400605
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.5994831036879873
-    Two-Electron Energy =                  66.2305514952949608
-    DFT Exchange-Correlation Energy =     -12.5420103656302917
+    One-Electron Energy =                -182.5994831937717322
+    Two-Electron Energy =                  66.2305515985734417
+    DFT Exchange-Correlation Energy =     -12.5420103788077704
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -128.9109419740233307
+    Total Energy =                       -128.9109419740060503
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -359,34 +367,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Mon Jul  2 16:18:59 2018
+*** tstop() called on hokru at Mon May 20 23:25:39 2019
 Module time:
-	user time   =       1.63 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.88 seconds =       0.05 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.63 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-	Ne: TPSS..........................................................PASSED
+	user time   =       2.88 seconds =       0.05 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    Ne: TPSS..........................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:18:59 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:39 2019
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry NE         line   258 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry NE         line   258 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -396,7 +404,7 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         NE           0.000000000000     0.000000000000     0.000000000000    19.992440175420
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
 
   Running in d2h symmetry.
 
@@ -437,7 +445,7 @@ Total time:
 
     revised TPSS Meta-GGA XC Functional
 
-   J. Sun  et. al., Phys. Rev. B, 84, 035117, 2011
+    J. Sun  et. al., Phys. Rev. B, 84, 035117, 2011
 
 
     Deriv               =              1
@@ -457,18 +465,19 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            770
-    Total Points        =          66220
-    Total Blocks        =            555
-    Max Points          =            253
-    Max Functions       =             14
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            770
+    Total Points           =          70840
+    Total Blocks           =            580
+    Max Points             =            256
+    Max Functions          =             14
 
   ==> Pre-Iterations <==
 
@@ -494,8 +503,10 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    Integrals threads:           1
+    Integrals threads:           4
     Schwarz Cutoff:          1E-12
+
+  Cached 100.0% of DFT collocation blocks in 0.071 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 1.9330486283E-01.
   Using Symmetric Orthogonalization.
@@ -506,13 +517,15 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:  -123.04880530701357   -1.23049e+02   5.11989e-01 
-   @RKS iter   2:  -124.52283371782011   -1.47403e+00   6.12400e-01 DIIS
-   @RKS iter   3:  -128.81962883710105   -4.29680e+00   6.05066e-02 DIIS
-   @RKS iter   4:  -128.85458225676177   -3.49534e-02   2.01180e-03 DIIS
-   @RKS iter   5:  -128.85462268825188   -4.04315e-05   2.26404e-04 DIIS
-   @RKS iter   6:  -128.85462319293407   -5.04682e-07   4.56602e-06 DIIS
-   @RKS iter   7:  -128.85462319313859   -2.04523e-10   3.12021e-08 DIIS
+   @RKS iter   1:  -123.04880044970237   -1.23049e+02   5.11993e-01 DIIS
+   @RKS iter   2:  -124.52167763883941   -1.47288e+00   6.12459e-01 DIIS
+   @RKS iter   3:  -128.81957119479821   -4.29789e+00   6.05565e-02 DIIS
+   @RKS iter   4:  -128.85458214893183   -3.50110e-02   2.01442e-03 DIIS
+   @RKS iter   5:  -128.85462268451877   -4.05356e-05   2.27239e-04 DIIS
+   @RKS iter   6:  -128.85462319294905   -5.08430e-07   4.57668e-06 DIIS
+   @RKS iter   7:  -128.85462319315448   -2.05432e-10   3.14253e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -521,33 +534,32 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1Ag   -30.687161     2Ag    -1.333348     1B3u   -0.450475  
-       1B1u   -0.450475     1B2u   -0.450475  
+       1Ag   -30.687161     2Ag    -1.333348     1B1u   -0.450475  
+       1B3u   -0.450475     1B2u   -0.450475  
 
     Virtual:                                                              
 
-       2B3u    1.345050     2B1u    1.345050     2B2u    1.345050  
-       3Ag     1.791556     1B2g    4.699269     1B3g    4.699269  
-       4Ag     4.699269     1B1g    4.699269     5Ag     4.699269  
+       2B1u    1.345050     2B3u    1.345050     2B2u    1.345050  
+       3Ag     1.791556     1B1g    4.699269     1B2g    4.699269  
+       4Ag     4.699269     1B3g    4.699269     5Ag     4.699269  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
 
-  Energy converged.
-
-  @RKS Final Energy:  -128.85462319313859
+  @RKS Final Energy:  -128.85462319315448
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.5377756420417370
-    Two-Electron Energy =                  66.1603541254937397
-    DFT Exchange-Correlation Energy =     -12.4772016765905835
+    One-Electron Energy =                -182.5377756510761742
+    Two-Electron Energy =                  66.1603541358232405
+    DFT Exchange-Correlation Energy =     -12.4772016779015402
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -128.8546231931385933
+    Total Energy =                       -128.8546231931544810
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -567,34 +579,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:00 2018
+*** tstop() called on hokru at Mon May 20 23:25:40 2019
 Module time:
-	user time   =       1.51 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       3.06 seconds =       0.05 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.15 seconds =       0.05 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
-	Ne: revTPSS.......................................................PASSED
+	user time   =       5.97 seconds =       0.10 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    Ne: revTPSS.......................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:00 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:40 2019
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry NE         line   258 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry NE         line   258 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -604,7 +616,7 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         NE           0.000000000000     0.000000000000     0.000000000000    19.992440175420
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
 
   Running in d2h symmetry.
 
@@ -665,18 +677,19 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            770
-    Total Points        =          66220
-    Total Blocks        =            555
-    Max Points          =            253
-    Max Functions       =             14
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            770
+    Total Points           =          70840
+    Total Blocks           =            580
+    Max Points             =            256
+    Max Functions          =             14
 
   ==> Pre-Iterations <==
 
@@ -702,8 +715,10 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    Integrals threads:           1
+    Integrals threads:           4
     Schwarz Cutoff:          1E-12
+
+  Cached 100.0% of DFT collocation blocks in 0.071 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 1.9330486283E-01.
   Using Symmetric Orthogonalization.
@@ -714,14 +729,16 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:  -123.39313036475086   -1.23393e+02   4.89784e-01 
-   @RKS iter   2:  -124.59733783396166   -1.20421e+00   5.90572e-01 DIIS
-   @RKS iter   3:  -128.75910761850901   -4.16177e+00   1.04935e-01 DIIS
-   @RKS iter   4:  -128.87037414705915   -1.11267e-01   1.68085e-02 DIIS
-   @RKS iter   5:  -128.87304948543812   -2.67534e-03   9.30763e-04 DIIS
-   @RKS iter   6:  -128.87305351266579   -4.02723e-06   2.65369e-04 DIIS
-   @RKS iter   7:  -128.87305422586883   -7.13203e-07   1.11531e-05 DIIS
-   @RKS iter   8:  -128.87305422711751   -1.24868e-09   8.39494e-07 DIIS
+   @RKS iter   1:  -123.39309737900732   -1.23393e+02   4.89854e-01 DIIS
+   @RKS iter   2:  -124.60673232573534   -1.21363e+00   5.90136e-01 DIIS
+   @RKS iter   3:  -128.76009135920910   -4.15336e+00   1.04478e-01 DIIS
+   @RKS iter   4:  -128.87050255630132   -1.10411e-01   1.64254e-02 DIIS
+   @RKS iter   5:  -128.87304953007927   -2.54697e-03   9.24652e-04 DIIS
+   @RKS iter   6:  -128.87305350933295   -3.97925e-06   2.62785e-04 DIIS
+   @RKS iter   7:  -128.87305420841443   -6.99081e-07   1.13717e-05 DIIS
+   @RKS iter   8:  -128.87305420971236   -1.29793e-09   8.49889e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -730,33 +747,32 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1Ag   -31.265832     2Ag    -1.563259     1B3u   -0.524508  
-       1B1u   -0.524508     1B2u   -0.524508  
+       1Ag   -31.265832     2Ag    -1.563259     1B2u   -0.524508  
+       1B1u   -0.524508     1B3u   -0.524508  
 
     Virtual:                                                              
 
-       2B2u    1.420089     2B1u    1.420089     2B3u    1.420089  
-       3Ag     1.825595     1B3g    4.832048     4Ag     4.832048  
-       1B1g    4.832048     1B2g    4.832048     5Ag     4.832048  
+       2B2u    1.420089     2B3u    1.420089     2B1u    1.420089  
+       3Ag     1.825595     1B1g    4.832048     1B3g    4.832048  
+       4Ag     4.832048     1B2g    4.832048     5Ag     4.832048  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
 
-  Energy converged.
-
-  @RKS Final Energy:  -128.87305422711751
+  @RKS Final Energy:  -128.87305420971236
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.6414843996327875
-    Two-Electron Energy =                  66.2983608126920387
-    DFT Exchange-Correlation Energy =     -12.5299306401767634
+    One-Electron Energy =                -182.6414841601998091
+    Two-Electron Energy =                  66.2983605413816690
+    DFT Exchange-Correlation Energy =     -12.5299305908942173
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -128.8730542271175068
+    Total Energy =                       -128.8730542097123646
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -776,34 +792,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:02 2018
+*** tstop() called on hokru at Mon May 20 23:25:41 2019
 Module time:
-	user time   =       1.55 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       3.30 seconds =       0.06 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.71 seconds =       0.08 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
-	Ne: M11-L.........................................................PASSED
+	user time   =       9.30 seconds =       0.15 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+    Ne: M11-L.........................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:02 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:41 2019
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry NE         line   258 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry NE         line   258 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -813,7 +829,7 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         NE           0.000000000000     0.000000000000     0.000000000000    19.992440175420
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
 
   Running in d2h symmetry.
 
@@ -874,18 +890,19 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            770
-    Total Points        =          66220
-    Total Blocks        =            555
-    Max Points          =            253
-    Max Functions       =             14
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            770
+    Total Points           =          70840
+    Total Blocks           =            580
+    Max Points             =            256
+    Max Functions          =             14
 
   ==> Pre-Iterations <==
 
@@ -911,8 +928,10 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    Integrals threads:           1
+    Integrals threads:           4
     Schwarz Cutoff:          1E-12
+
+  Cached 100.0% of DFT collocation blocks in 0.071 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 1.9330486283E-01.
   Using Symmetric Orthogonalization.
@@ -923,14 +942,16 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:  -123.24537016805753   -1.23245e+02   5.05026e-01 
-   @RKS iter   2:  -124.41099686601285   -1.16563e+00   6.17488e-01 DIIS
-   @RKS iter   3:  -128.84120659694503   -4.43021e+00   8.13836e-02 DIIS
-   @RKS iter   4:  -128.90265603349658   -6.14494e-02   7.29952e-03 DIIS
-   @RKS iter   5:  -128.90317970444741   -5.23671e-04   1.53623e-03 DIIS
-   @RKS iter   6:  -128.90320204289119   -2.23384e-05   3.60381e-05 DIIS
-   @RKS iter   7:  -128.90320205552177   -1.26306e-08   6.20240e-06 DIIS
-   @RKS iter   8:  -128.90320205589919   -3.77412e-10   2.94419e-07 DIIS
+   @RKS iter   1:  -123.24534304792387   -1.23245e+02   5.05122e-01 DIIS
+   @RKS iter   2:  -124.41460171863616   -1.16926e+00   6.17360e-01 DIIS
+   @RKS iter   3:  -128.84141025107934   -4.42681e+00   8.12592e-02 DIIS
+   @RKS iter   4:  -128.90264820862112   -6.12380e-02   7.35251e-03 DIIS
+   @RKS iter   5:  -128.90318017524513   -5.31967e-04   1.51651e-03 DIIS
+   @RKS iter   6:  -128.90320191017787   -2.17349e-05   3.57759e-05 DIIS
+   @RKS iter   7:  -128.90320192261569   -1.24378e-08   6.21996e-06 DIIS
+   @RKS iter   8:  -128.90320192299521   -3.79515e-10   2.96877e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -939,33 +960,32 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1Ag   -30.753856     2Ag    -1.412405     1B2u   -0.483850  
-       1B3u   -0.483850     1B1u   -0.483850  
+       1Ag   -30.753855     2Ag    -1.412405     1B3u   -0.483850  
+       1B2u   -0.483850     1B1u   -0.483850  
 
     Virtual:                                                              
 
-       2B1u    1.359989     2B3u    1.359989     2B2u    1.359989  
-       3Ag     1.796309     1B1g    4.734151     4Ag     4.734151  
-       1B2g    4.734151     1B3g    4.734151     5Ag     4.734151  
+       2B3u    1.359989     2B2u    1.359989     2B1u    1.359989  
+       3Ag     1.796309     4Ag     4.734151     1B1g    4.734151  
+       1B3g    4.734151     1B2g    4.734151     5Ag     4.734151  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
 
-  Energy converged.
-
-  @RKS Final Energy:  -128.90320205589919
+  @RKS Final Energy:  -128.90320192299521
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.5678497919977872
-    Two-Electron Energy =                  66.1970935316940512
-    DFT Exchange-Correlation Energy =     -12.5324457955954554
+    One-Electron Energy =                -182.5678506203346387
+    Two-Electron Energy =                  66.1970944514388719
+    DFT Exchange-Correlation Energy =     -12.5324457540994345
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -128.9032020558991860
+    Total Energy =                       -128.9032019229952084
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -985,34 +1005,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:04 2018
+*** tstop() called on hokru at Mon May 20 23:25:42 2019
 Module time:
-	user time   =       1.43 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.90 seconds =       0.05 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.15 seconds =       0.10 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
-	Ne: M06-L.........................................................PASSED
+	user time   =      12.23 seconds =       0.20 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+    Ne: M06-L.........................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:04 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:42 2019
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry NE         line   258 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry NE         line   258 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1022,7 +1042,7 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         NE           0.000000000000     0.000000000000     0.000000000000    19.992440175420
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
 
   Running in d2h symmetry.
 
@@ -1083,18 +1103,19 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            770
-    Total Points        =          66220
-    Total Blocks        =            555
-    Max Points          =            253
-    Max Functions       =             14
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            770
+    Total Points           =          70840
+    Total Blocks           =            580
+    Max Points             =            256
+    Max Functions          =             14
 
   ==> Pre-Iterations <==
 
@@ -1120,8 +1141,10 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    Integrals threads:           1
+    Integrals threads:           4
     Schwarz Cutoff:          1E-12
+
+  Cached 100.0% of DFT collocation blocks in 0.071 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 1.9330486283E-01.
   Using Symmetric Orthogonalization.
@@ -1132,14 +1155,16 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:  -123.06996953761907   -1.23070e+02   5.14130e-01 
-   @RKS iter   2:  -124.30399571618001   -1.23403e+00   6.07196e-01 DIIS
-   @RKS iter   3:  -128.75417347709651   -4.45018e+00   1.09020e-01 DIIS
-   @RKS iter   4:  -128.86964122660339   -1.15468e-01   6.01016e-03 DIIS
-   @RKS iter   5:  -128.86967339053348   -3.21639e-05   3.67403e-03 DIIS
-   @RKS iter   6:  -128.86980071384414   -1.27323e-04   9.23584e-05 DIIS
-   @RKS iter   7:  -128.86980079644883   -8.26047e-08   4.13903e-06 DIIS
-   @RKS iter   8:  -128.86980079660415   -1.55325e-10   1.09665e-07 DIIS
+   @RKS iter   1:  -123.06992484006044   -1.23070e+02   5.14176e-01 DIIS
+   @RKS iter   2:  -124.30649552190978   -1.23657e+00   6.07087e-01 DIIS
+   @RKS iter   3:  -128.75442072226889   -4.44793e+00   1.08903e-01 DIIS
+   @RKS iter   4:  -128.86963731152159   -1.15217e-01   6.04007e-03 DIIS
+   @RKS iter   5:  -128.86967396550764   -3.66540e-05   3.66546e-03 DIIS
+   @RKS iter   6:  -128.86980069558595   -1.26730e-04   9.19121e-05 DIIS
+   @RKS iter   7:  -128.86980077740088   -8.18149e-08   4.11489e-06 DIIS
+   @RKS iter   8:  -128.86980077755442   -1.53534e-10   1.08666e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -1148,12 +1173,12 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1Ag   -31.623876     2Ag    -1.439884     1B3u   -0.499397  
-       1B2u   -0.499397     1B1u   -0.499397  
+       1Ag   -31.623876     2Ag    -1.439884     1B1u   -0.499397  
+       1B3u   -0.499397     1B2u   -0.499397  
 
     Virtual:                                                              
 
-       2B3u    1.422265     2B2u    1.422265     2B1u    1.422265  
+       2B2u    1.422265     2B3u    1.422265     2B1u    1.422265  
        3Ag     1.950982     4Ag     5.007764     1B1g    5.007764  
        1B2g    5.007764     1B3g    5.007764     5Ag     5.007764  
 
@@ -1161,20 +1186,19 @@ Total time:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
 
-  Energy converged.
-
-  @RKS Final Energy:  -128.86980079660415
+  @RKS Final Energy:  -128.86980077755442
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.6288224679096572
-    Two-Electron Energy =                  66.2616830735236988
-    DFT Exchange-Correlation Energy =     -12.5026614022181910
+    One-Electron Energy =                -182.6288225196026076
+    Two-Electron Energy =                  66.2616831328443823
+    DFT Exchange-Correlation Energy =     -12.5026613907961952
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -128.8698007966041530
+    Total Energy =                       -128.8698007775544170
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -1194,34 +1218,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:05 2018
+*** tstop() called on hokru at Mon May 20 23:25:42 2019
 Module time:
-	user time   =       1.52 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       3.17 seconds =       0.05 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.68 seconds =       0.13 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
-	Ne: MN12-L........................................................PASSED
+	user time   =      15.42 seconds =       0.26 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+    Ne: MN12-L........................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:05 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:42 2019
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry NE         line   258 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry NE         line   258 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1231,7 +1255,7 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         NE           0.000000000000     0.000000000000     0.000000000000    19.992440175420
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
 
   Running in d2h symmetry.
 
@@ -1292,18 +1316,19 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            770
-    Total Points        =          66220
-    Total Blocks        =            555
-    Max Points          =            253
-    Max Functions       =             14
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            770
+    Total Points           =          70840
+    Total Blocks           =            580
+    Max Points             =            256
+    Max Functions          =             14
 
   ==> Pre-Iterations <==
 
@@ -1329,8 +1354,10 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    Integrals threads:           1
+    Integrals threads:           4
     Schwarz Cutoff:          1E-12
+
+  Cached 100.0% of DFT collocation blocks in 0.071 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 1.9330486283E-01.
   Using Symmetric Orthogonalization.
@@ -1341,13 +1368,15 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:  -123.02523015501805   -1.23025e+02   5.16025e-01 
-   @RKS iter   2:  -125.09208246153885   -2.06685e+00   5.74939e-01 DIIS
-   @RKS iter   3:  -128.77599540493597   -3.68391e+00   7.25894e-02 DIIS
-   @RKS iter   4:  -128.82681381439559   -5.08184e-02   2.31974e-03 DIIS
-   @RKS iter   5:  -128.82686507807966   -5.12637e-05   5.48610e-04 DIIS
-   @RKS iter   6:  -128.82686800519579   -2.92712e-06   6.11770e-06 DIIS
-   @RKS iter   7:  -128.82686800556317   -3.67379e-10   1.61468e-07 DIIS
+   @RKS iter   1:  -123.02518130734704   -1.23025e+02   5.16044e-01 DIIS
+   @RKS iter   2:  -125.10413175570970   -2.07895e+00   5.74211e-01 DIIS
+   @RKS iter   3:  -128.77674919497792   -3.67262e+00   7.20458e-02 DIIS
+   @RKS iter   4:  -128.82681763354654   -5.00684e-02   2.23569e-03 DIIS
+   @RKS iter   5:  -128.82686518109614   -4.75475e-05   5.38600e-04 DIIS
+   @RKS iter   6:  -128.82686800241703   -2.82132e-06   6.00290e-06 DIIS
+   @RKS iter   7:  -128.82686800277065   -3.53623e-10   1.56637e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -1356,33 +1385,32 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1Ag   -30.802234     2Ag    -1.464035     1B2u   -0.501412  
-       1B3u   -0.501412     1B1u   -0.501412  
+       1Ag   -30.802234     2Ag    -1.464035     1B1u   -0.501412  
+       1B3u   -0.501412     1B2u   -0.501412  
 
     Virtual:                                                              
 
-       2B2u    1.457611     2B3u    1.457611     2B1u    1.457611  
-       3Ag     1.920938     4Ag     4.884173     1B1g    4.884173  
-       1B2g    4.884173     1B3g    4.884173     5Ag     4.884173  
+       2B1u    1.457611     2B3u    1.457611     2B2u    1.457611  
+       3Ag     1.920938     1B3g    4.884173     4Ag     4.884173  
+       1B2g    4.884173     1B1g    4.884173     5Ag     4.884173  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
 
-  Energy converged.
-
-  @RKS Final Energy:  -128.82686800556317
+  @RKS Final Energy:  -128.82686800277065
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.4318603798177492
-    Two-Electron Energy =                  66.0362059146263931
-    DFT Exchange-Correlation Energy =     -12.4312135403718145
+    One-Electron Energy =                -182.4318602723299136
+    Two-Electron Energy =                  66.0362057920317511
+    DFT Exchange-Correlation Energy =     -12.4312135224724898
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -128.8268680055631705
+    Total Energy =                       -128.8268680027706523
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -1402,35 +1430,35 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:07 2018
+*** tstop() called on hokru at Mon May 20 23:25:43 2019
 Module time:
-	user time   =       1.37 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.82 seconds =       0.05 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       9.06 seconds =       0.15 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
-	Ne: MN15-L........................................................PASSED
+	user time   =      18.27 seconds =       0.30 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+    Ne: MN15-L........................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:07 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:43 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4     entry O          line   250 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
-    atoms 2-3, 5-6 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1, 4     entry O          line   254 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3, 5-6 entry H          line    40 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1442,18 +1470,18 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         O           -1.485163346097    -0.114724564047     0.000000000000    15.994914619560
-         H           -1.868415346097     0.762298435953     0.000000000000     1.007825032070
-         H           -0.533833346097     0.040507435953     0.000000000000     1.007825032070
-         O            1.416468653903     0.111264435953     0.000000000000    15.994914619560
-         H            1.746241653903    -0.373945564047    -0.758561000000     1.007825032070
-         H            1.746241653903    -0.373945564047     0.758561000000     1.007825032070
+         O           -1.485163346101    -0.114724564047     0.000000000000    15.994914619570
+         H           -1.868415346101     0.762298435953     0.000000000000     1.007825032230
+         H           -0.533833346101     0.040507435953     0.000000000000     1.007825032230
+         O            1.416468653899     0.111264435953     0.000000000000    15.994914619570
+         H            1.746241653899    -0.373945564047    -0.758561000000     1.007825032230
+         H            1.746241653899    -0.373945564047     0.758561000000     1.007825032230
 
   Running in cs symmetry.
 
   Rotational constants: A =      7.15151  B =      0.21457  C =      0.21447 [cm^-1]
-  Rotational constants: A = 214396.91676  B =   6432.69056  C =   6429.61813 [MHz]
-  Nuclear repulsion =   36.662847852755299
+  Rotational constants: A = 214396.91837  B =   6432.69061  C =   6429.61818 [MHz]
+  Nuclear repulsion =   36.662847996863405
 
   Charge       = 0
   Multiplicity = 1
@@ -1512,33 +1540,34 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            302
-    Total Points        =         179388
-    Total Blocks        =           1391
-    Max Points          =            256
-    Max Functions       =             82
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            302
+    Total Points           =         179388
+    Total Blocks           =           1368
+    Max Points             =            256
+    Max Functions          =             82
 
-   => -DAS2010: Empirical Dispersion <=
+   => DLDF+D10: Empirical Dispersion <=
 
     Podeszwa and Szalewicz Dispersion Correction
     Podeszwa, R.; Pernal, K.; Patkowski, K.; Szalewicz, K. (2010), J. Phys. Chem. Lett., 1: 550
 
-        S6 =   1.000000E+00
+        s6 =       1.000000
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4     entry O          line   270 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-    atoms 2-3, 5-6 entry H          line    70 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 1, 4     entry O          line   270 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line    70 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1553,17 +1582,19 @@ Total time:
 
   ==> Integral Setup <==
 
+  DFHelper Memory: AOs need 0.017 GiB; user supplied 0.017 GiB. Using in-core AOs.
+
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               1
-    Memory (MB):                375
+    OpenMP threads:               4
+    Memory [MiB]:                17
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
     Mask sparsity (%):       0.0000
-    Fitting Condition:        1E-12
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -1575,7 +1606,9 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 1.5458174156E-03.
+  Cached 50.0% of DFT collocation blocks in 0.467 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5458173868E-03.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1584,15 +1617,17 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -153.69911676596413   -1.53699e+02   3.84295e-02 
-   @DF-RKS iter   1:  -153.71155198284376   -1.24352e-02   7.84253e-03 
-   @DF-RKS iter   2:  -153.71625056981449   -4.69859e-03   8.05582e-03 DIIS
-   @DF-RKS iter   3:  -153.80417298117325   -8.79224e-02   3.08694e-04 DIIS
-   @DF-RKS iter   4:  -153.80437312833266   -2.00147e-04   8.24228e-05 DIIS
-   @DF-RKS iter   5:  -153.80439208016941   -1.89518e-05   4.61062e-05 DIIS
-   @DF-RKS iter   6:  -153.80439550105407   -3.42088e-06   1.21480e-05 DIIS
-   @DF-RKS iter   7:  -153.80439591337776   -4.12324e-07   1.53056e-06 DIIS
-   @DF-RKS iter   8:  -153.80439592508867   -1.17109e-08   4.01147e-07 DIIS
+   @DF-RKS iter SAD:  -152.90011991568184   -1.52900e+02   0.00000e+00 
+   @DF-RKS iter   1:  -153.56925381662603   -6.69134e-01   1.27280e-02 DIIS
+   @DF-RKS iter   2:  -153.54377380314338    2.54800e-02   1.37237e-02 DIIS
+   @DF-RKS iter   3:  -153.80412994925760   -2.60356e-01   2.99309e-04 DIIS
+   @DF-RKS iter   4:  -153.80435954859786   -2.29599e-04   1.44677e-04 DIIS
+   @DF-RKS iter   5:  -153.80438688447461   -2.73359e-05   7.16345e-05 DIIS
+   @DF-RKS iter   6:  -153.80439476338691   -7.87891e-06   7.49169e-06 DIIS
+   @DF-RKS iter   7:  -153.80439495057536   -1.87188e-07   1.36635e-06 DIIS
+   @DF-RKS iter   8:  -153.80439495829305   -7.71769e-09   1.74085e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -1602,55 +1637,54 @@ Total time:
     Doubly Occupied:                                                      
 
        1Ap   -19.942636     2Ap   -19.887575     3Ap    -1.233033  
-       4Ap    -1.177413     1App   -0.673580     5Ap    -0.625449  
-       6Ap    -0.545570     7Ap    -0.492001     8Ap    -0.462881  
+       4Ap    -1.177414     1App   -0.673580     5Ap    -0.625449  
+       6Ap    -0.545570     7Ap    -0.492002     8Ap    -0.462880  
        2App   -0.414529  
 
     Virtual:                                                              
 
        9Ap    -0.017524    10Ap     0.018453     3App    0.026017  
-      11Ap     0.059748    12Ap     0.101915    13Ap     0.122652  
+      11Ap     0.059748    12Ap     0.101914    13Ap     0.122652  
        4App    0.151034    14Ap     0.152936     5App    0.164882  
-      15Ap     0.169742    16Ap     0.195031     6App    0.196850  
-      17Ap     0.227033    18Ap     0.248180    19Ap     0.263623  
-       7App    0.278654    20Ap     0.293603    21Ap     0.354295  
-       8App    0.354436    22Ap     0.397080    23Ap     0.431545  
-       9App    0.447738    10App    0.463809    24Ap     0.516739  
-      25Ap     0.538790    11App    0.562446    26Ap     0.571401  
-      12App    0.661978    27Ap     0.674905    28Ap     0.784500  
+      15Ap     0.169741    16Ap     0.195030     6App    0.196851  
+      17Ap     0.227032    18Ap     0.248180    19Ap     0.263622  
+       7App    0.278655    20Ap     0.293603    21Ap     0.354295  
+       8App    0.354436    22Ap     0.397080    23Ap     0.431546  
+       9App    0.447739    10App    0.463810    24Ap     0.516739  
+      25Ap     0.538790    11App    0.562447    26Ap     0.571400  
+      12App    0.661978    27Ap     0.674904    28Ap     0.784499  
       29Ap     0.819279    30Ap     0.885077    13App    0.980017  
-      31Ap     1.002113    14App    1.008004    32Ap     1.037412  
-      33Ap     1.066601    15App    1.081373    34Ap     1.178475  
-      35Ap     1.215984    16App    1.262566    36Ap     1.298212  
+      31Ap     1.002114    14App    1.008005    32Ap     1.037411  
+      33Ap     1.066602    15App    1.081372    34Ap     1.178475  
+      35Ap     1.215982    16App    1.262566    36Ap     1.298211  
       37Ap     1.399900    17App    1.410487    38Ap     1.451241  
-      18App    1.763535    39Ap     1.793659    19App    1.816115  
-      40Ap     1.840570    20App    1.866247    41Ap     1.950517  
-      21App    2.065664    42Ap     2.127504    22App    2.219149  
-      43Ap     2.260442    44Ap     2.336618    45Ap     2.383882  
-      23App    2.434410    46Ap     2.503191    47Ap     2.549866  
-      48Ap     2.766751    49Ap     2.856899    24App    3.417563  
+      18App    1.763535    39Ap     1.793661    19App    1.816116  
+      40Ap     1.840569    20App    1.866245    41Ap     1.950516  
+      21App    2.065664    42Ap     2.127503    22App    2.219149  
+      43Ap     2.260443    44Ap     2.336616    45Ap     2.383882  
+      23App    2.434410    46Ap     2.503191    47Ap     2.549860  
+      48Ap     2.766750    49Ap     2.856897    24App    3.417564  
       50Ap     3.418437    25App    3.435274    51Ap     3.461582  
-      26App    3.493141    52Ap     3.510566    53Ap     3.726856  
-      54Ap     3.836639    27App    3.928745    55Ap     4.056958  
+      26App    3.493140    52Ap     3.510567    53Ap     3.726854  
+      54Ap     3.836637    27App    3.928744    55Ap     4.056953  
 
     Final Occupation by Irrep:
              Ap   App 
     DOCC [     8,    2 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:  -153.80439592508867
+  @DF-RKS Final Energy:  -153.80439495829305
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             36.6628478527552986
-    One-Electron Energy =                -282.6716225742210327
-    Two-Electron Energy =                 100.8239648670623438
-    DFT Exchange-Correlation Energy =      -8.6159434550988010
-    Empirical Dispersion Energy =          -0.0036426155864924
+    Nuclear Repulsion Energy =             36.6628479968634053
+    One-Electron Energy =                -282.6716167864270233
+    Two-Electron Energy =                 100.8239569886412710
+    DFT Exchange-Correlation Energy =      -8.6159405417121100
+    Empirical Dispersion Energy =          -0.0036426156585808
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -153.8043959250886985
+    Total Energy =                       -153.8043949582930452
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -1670,35 +1704,35 @@ Properties computed using the SCF density matrix
      X:     2.5555      Y:     0.0793      Z:     0.0000     Total:     2.5567
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:21 2018
+*** tstop() called on hokru at Mon May 20 23:25:49 2019
 Module time:
-	user time   =      12.71 seconds =       0.21 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =      23.55 seconds =       0.39 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =      21.78 seconds =       0.36 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =         24 seconds =       0.40 minutes
-	dlDF+D (2010 +D correction).......................................PASSED
+	user time   =      41.85 seconds =       0.70 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =         10 seconds =       0.17 minutes
+    dlDF+D (2010 +D correction).......................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:21 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:49 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4     entry O          line   250 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
-    atoms 2-3, 5-6 entry H          line    36 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1, 4     entry O          line   254 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3, 5-6 entry H          line    40 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1710,18 +1744,18 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         O           -1.485163346097    -0.114724564047     0.000000000000    15.994914619560
-         H           -1.868415346097     0.762298435953     0.000000000000     1.007825032070
-         H           -0.533833346097     0.040507435953     0.000000000000     1.007825032070
-         O            1.416468653903     0.111264435953     0.000000000000    15.994914619560
-         H            1.746241653903    -0.373945564047    -0.758561000000     1.007825032070
-         H            1.746241653903    -0.373945564047     0.758561000000     1.007825032070
+         O           -1.485163346101    -0.114724564047     0.000000000000    15.994914619570
+         H           -1.868415346101     0.762298435953     0.000000000000     1.007825032230
+         H           -0.533833346101     0.040507435953     0.000000000000     1.007825032230
+         O            1.416468653899     0.111264435953     0.000000000000    15.994914619570
+         H            1.746241653899    -0.373945564047    -0.758561000000     1.007825032230
+         H            1.746241653899    -0.373945564047     0.758561000000     1.007825032230
 
   Running in cs symmetry.
 
   Rotational constants: A =      7.15151  B =      0.21457  C =      0.21447 [cm^-1]
-  Rotational constants: A = 214396.91676  B =   6432.69056  C =   6429.61813 [MHz]
-  Nuclear repulsion =   36.662847852755299
+  Rotational constants: A = 214396.91837  B =   6432.69061  C =   6429.61818 [MHz]
+  Nuclear repulsion =   36.662847996863405
 
   Charge       = 0
   Multiplicity = 1
@@ -1780,33 +1814,34 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            302
-    Total Points        =         179388
-    Total Blocks        =           1391
-    Max Points          =            256
-    Max Functions       =             82
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            302
+    Total Points           =         179388
+    Total Blocks           =           1368
+    Max Points             =            256
+    Max Functions          =             82
 
-   => -DAS2009: Empirical Dispersion <=
+   => DLDF+D09: Empirical Dispersion <=
 
     Podeszwa and Szalewicz Dispersion Correction
     Pernal, K.; Podeszwa, R.; Patkowski, K.; Szalewicz, K. (2009), Phys. Rev. Lett., 103: 263201
 
-        S6 =   1.000000E+00
+        s6 =       1.000000
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4     entry O          line   270 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-    atoms 2-3, 5-6 entry H          line    70 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 1, 4     entry O          line   270 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line    70 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1821,17 +1856,19 @@ Total time:
 
   ==> Integral Setup <==
 
+  DFHelper Memory: AOs need 0.017 GiB; user supplied 0.017 GiB. Using in-core AOs.
+
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               1
-    Memory (MB):                375
+    OpenMP threads:               4
+    Memory [MiB]:                17
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
     Mask sparsity (%):       0.0000
-    Fitting Condition:        1E-12
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -1843,7 +1880,9 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 1.5458174156E-03.
+  Cached 50.0% of DFT collocation blocks in 0.467 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5458173868E-03.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1852,15 +1891,17 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -153.69935969928051   -1.53699e+02   3.84295e-02 
-   @DF-RKS iter   1:  -153.71179491616013   -1.24352e-02   7.84253e-03 
-   @DF-RKS iter   2:  -153.71649350313086   -4.69859e-03   8.05582e-03 DIIS
-   @DF-RKS iter   3:  -153.80441591448962   -8.79224e-02   3.08694e-04 DIIS
-   @DF-RKS iter   4:  -153.80461606164903   -2.00147e-04   8.24228e-05 DIIS
-   @DF-RKS iter   5:  -153.80463501348578   -1.89518e-05   4.61062e-05 DIIS
-   @DF-RKS iter   6:  -153.80463843437045   -3.42088e-06   1.21480e-05 DIIS
-   @DF-RKS iter   7:  -153.80463884669413   -4.12324e-07   1.53056e-06 DIIS
-   @DF-RKS iter   8:  -153.80463885840504   -1.17109e-08   4.01147e-07 DIIS
+   @DF-RKS iter SAD:  -152.90036284900748   -1.52900e+02   0.00000e+00 
+   @DF-RKS iter   1:  -153.56949674995190   -6.69134e-01   1.27280e-02 DIIS
+   @DF-RKS iter   2:  -153.54401673646893    2.54800e-02   1.37237e-02 DIIS
+   @DF-RKS iter   3:  -153.80437288258292   -2.60356e-01   2.99309e-04 DIIS
+   @DF-RKS iter   4:  -153.80460248192404   -2.29599e-04   1.44677e-04 DIIS
+   @DF-RKS iter   5:  -153.80462981780025   -2.73359e-05   7.16345e-05 DIIS
+   @DF-RKS iter   6:  -153.80463769671266   -7.87891e-06   7.49169e-06 DIIS
+   @DF-RKS iter   7:  -153.80463788390117   -1.87189e-07   1.36635e-06 DIIS
+   @DF-RKS iter   8:  -153.80463789161882   -7.71766e-09   1.74085e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -1870,55 +1911,54 @@ Total time:
     Doubly Occupied:                                                      
 
        1Ap   -19.942636     2Ap   -19.887575     3Ap    -1.233033  
-       4Ap    -1.177413     1App   -0.673580     5Ap    -0.625449  
-       6Ap    -0.545570     7Ap    -0.492001     8Ap    -0.462881  
+       4Ap    -1.177414     1App   -0.673580     5Ap    -0.625449  
+       6Ap    -0.545570     7Ap    -0.492002     8Ap    -0.462880  
        2App   -0.414529  
 
     Virtual:                                                              
 
        9Ap    -0.017524    10Ap     0.018453     3App    0.026017  
-      11Ap     0.059748    12Ap     0.101915    13Ap     0.122652  
+      11Ap     0.059748    12Ap     0.101914    13Ap     0.122652  
        4App    0.151034    14Ap     0.152936     5App    0.164882  
-      15Ap     0.169742    16Ap     0.195031     6App    0.196850  
-      17Ap     0.227033    18Ap     0.248180    19Ap     0.263623  
-       7App    0.278654    20Ap     0.293603    21Ap     0.354295  
-       8App    0.354436    22Ap     0.397080    23Ap     0.431545  
-       9App    0.447738    10App    0.463809    24Ap     0.516739  
-      25Ap     0.538790    11App    0.562446    26Ap     0.571401  
-      12App    0.661978    27Ap     0.674905    28Ap     0.784500  
+      15Ap     0.169741    16Ap     0.195030     6App    0.196851  
+      17Ap     0.227032    18Ap     0.248180    19Ap     0.263622  
+       7App    0.278655    20Ap     0.293603    21Ap     0.354295  
+       8App    0.354436    22Ap     0.397080    23Ap     0.431546  
+       9App    0.447739    10App    0.463810    24Ap     0.516739  
+      25Ap     0.538790    11App    0.562447    26Ap     0.571400  
+      12App    0.661978    27Ap     0.674904    28Ap     0.784499  
       29Ap     0.819279    30Ap     0.885077    13App    0.980017  
-      31Ap     1.002113    14App    1.008004    32Ap     1.037412  
-      33Ap     1.066601    15App    1.081373    34Ap     1.178475  
-      35Ap     1.215984    16App    1.262566    36Ap     1.298212  
+      31Ap     1.002114    14App    1.008005    32Ap     1.037411  
+      33Ap     1.066602    15App    1.081372    34Ap     1.178475  
+      35Ap     1.215982    16App    1.262566    36Ap     1.298211  
       37Ap     1.399900    17App    1.410487    38Ap     1.451241  
-      18App    1.763535    39Ap     1.793659    19App    1.816115  
-      40Ap     1.840570    20App    1.866247    41Ap     1.950517  
-      21App    2.065664    42Ap     2.127504    22App    2.219149  
-      43Ap     2.260442    44Ap     2.336618    45Ap     2.383882  
-      23App    2.434410    46Ap     2.503191    47Ap     2.549866  
-      48Ap     2.766751    49Ap     2.856899    24App    3.417563  
+      18App    1.763535    39Ap     1.793661    19App    1.816116  
+      40Ap     1.840569    20App    1.866245    41Ap     1.950516  
+      21App    2.065664    42Ap     2.127503    22App    2.219149  
+      43Ap     2.260443    44Ap     2.336616    45Ap     2.383882  
+      23App    2.434410    46Ap     2.503191    47Ap     2.549860  
+      48Ap     2.766750    49Ap     2.856897    24App    3.417564  
       50Ap     3.418437    25App    3.435274    51Ap     3.461582  
-      26App    3.493141    52Ap     3.510566    53Ap     3.726856  
-      54Ap     3.836639    27App    3.928745    55Ap     4.056958  
+      26App    3.493140    52Ap     3.510567    53Ap     3.726854  
+      54Ap     3.836637    27App    3.928744    55Ap     4.056953  
 
     Final Occupation by Irrep:
              Ap   App 
     DOCC [     8,    2 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:  -153.80463885840504
+  @DF-RKS Final Energy:  -153.80463789161882
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             36.6628478527552986
-    One-Electron Energy =                -282.6716225742210327
-    Two-Electron Energy =                 100.8239648670623438
-    DFT Exchange-Correlation Energy =      -8.6159434550988010
-    Empirical Dispersion Energy =          -0.0038855489028651
+    Nuclear Repulsion Energy =             36.6628479968634053
+    One-Electron Energy =                -282.6716167864270801
+    Two-Electron Energy =                 100.8239569886413136
+    DFT Exchange-Correlation Energy =      -8.6159405417121100
+    Empirical Dispersion Energy =          -0.0038855489843686
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -153.8046388584050703
+    Total Energy =                       -153.8046378916188530
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -1938,35 +1978,35 @@ Properties computed using the SCF density matrix
      X:     2.5555      Y:     0.0793      Z:     0.0000     Total:     2.5567
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:34 2018
+*** tstop() called on hokru at Mon May 20 23:25:55 2019
 Module time:
-	user time   =      12.54 seconds =       0.21 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =      23.62 seconds =       0.39 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =      34.33 seconds =       0.57 minutes
-	system time =       0.36 seconds =       0.01 minutes
-	total time  =         37 seconds =       0.62 minutes
-	dlDF+D09 (2009 +D correction).....................................PASSED
+	user time   =      65.49 seconds =       1.09 minutes
+	system time =       0.67 seconds =       0.01 minutes
+	total time  =         16 seconds =       0.27 minutes
+    dlDF+D09 (2009 +D correction).....................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:34 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:55 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   117 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
-    atoms 2-3 entry H          line    26 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 1   entry O          line   117 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1978,15 +2018,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         O            0.000000000000     0.000000000000    -0.068516219310    15.994914619560
-         H            0.000000000000    -0.790689573744     0.543701060724     1.007825032070
-         H            0.000000000000     0.790689573744     0.543701060724     1.007825032070
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
 
   Running in c2v symmetry.
 
   Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
-  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
-  Nuclear repulsion =    8.801465529972067
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567374
 
   Charge       = 0
   Multiplicity = 1
@@ -2041,26 +2081,27 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            302
-    Total Points        =          86383
-    Total Blocks        =            703
-    Max Points          =            256
-    Max Functions       =             13
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            302
+    Total Points           =          88613
+    Total Blocks           =            708
+    Max Points             =            256
+    Max Functions          =             13
 
    => Loading Basis Set <=
 
     Name: (6-31G AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -2077,18 +2118,19 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.284 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               290
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -2100,7 +2142,9 @@ Total time:
     Spherical Harmonics?: false
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 7.3923789377E-02.
+  Cached 100.0% of DFT collocation blocks in 0.082 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 7.3923788795E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -2109,13 +2153,15 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:   -76.41256753823291   -7.64126e+01   1.72945e-01 
-   @DF-RKS iter   1:   -76.32400928217939    8.85583e-02   5.23426e-02 
-   @DF-RKS iter   2:   -76.21000024161009    1.14009e-01   8.25812e-02 DIIS
-   @DF-RKS iter   3:   -76.39903967303496   -1.89039e-01   1.59147e-03 DIIS
-   @DF-RKS iter   4:   -76.39911447234502   -7.47993e-05   5.36378e-05 DIIS
-   @DF-RKS iter   5:   -76.39911454601688   -7.36719e-08   8.75473e-06 DIIS
-   @DF-RKS iter   6:   -76.39911454826021   -2.24334e-09   2.94350e-07 DIIS
+   @DF-RKS iter SAD:   -76.09691879500308   -7.60969e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.25011790205950   -1.53199e-01   7.48895e-02 DIIS
+   @DF-RKS iter   2:   -76.01134540281419    2.38772e-01   1.16118e-01 DIIS
+   @DF-RKS iter   3:   -76.39869695695944   -3.87352e-01   3.63492e-03 DIIS
+   @DF-RKS iter   4:   -76.39911887544687   -4.21918e-04   2.46520e-04 DIIS
+   @DF-RKS iter   5:   -76.39912070770384   -1.83226e-06   1.30428e-05 DIIS
+   @DF-RKS iter   6:   -76.39912071213359   -4.42975e-09   9.85926e-07 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -2124,33 +2170,32 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -18.949735     2A1    -0.972448     1B2    -0.479483  
-       3A1    -0.322126     1B1    -0.251598  
+       1A1   -18.949650     2A1    -0.972457     1B2    -0.479480  
+       3A1    -0.322123     1B1    -0.251593  
 
     Virtual:                                                              
 
-       4A1     0.043319     2B2     0.129789     3B2     0.813188  
-       5A1     0.852052     2B1     0.908919     6A1     0.978541  
-       4B2     1.088783     7A1     1.458604  
+       4A1     0.043309     2B2     0.129786     3B2     0.813183  
+       5A1     0.852040     2B1     0.908920     6A1     0.978542  
+       4B2     1.088782     7A1     1.458584  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:   -76.39911454826021
+  @DF-RKS Final Energy:   -76.39912071213359
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.3162263517562991
-    Two-Electron Energy =                  46.4504217741364656
-    DFT Exchange-Correlation Energy =      -9.3347755006124480
+    Nuclear Repulsion Energy =              8.8014655645673745
+    One-Electron Energy =                -122.3162764147109840
+    Two-Electron Energy =                  46.4504795243007820
+    DFT Exchange-Correlation Energy =      -9.3347893862907583
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3991145482602150
+    Total Energy =                        -76.3991207121335947
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -2164,41 +2209,41 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.0817
 
   Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     0.9373     Total:     0.9373
+     X:     0.0000      Y:     0.0000      Z:     0.9374     Total:     0.9374
 
   Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     2.3825     Total:     2.3825
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:36 2018
+*** tstop() called on hokru at Mon May 20 23:25:56 2019
 Module time:
-	user time   =       1.59 seconds =       0.03 minutes
+	user time   =       2.98 seconds =       0.05 minutes
 	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      35.93 seconds =       0.60 minutes
-	system time =       0.40 seconds =       0.01 minutes
-	total time  =         39 seconds =       0.65 minutes
-	water: MGGA_MS0...................................................PASSED
+	user time   =      68.51 seconds =       1.14 minutes
+	system time =       0.71 seconds =       0.01 minutes
+	total time  =         17 seconds =       0.28 minutes
+    water: MGGA_MS0...................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:36 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:56 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   117 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
-    atoms 2-3 entry H          line    26 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 1   entry O          line   117 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2210,15 +2255,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         O            0.000000000000     0.000000000000    -0.068516219310    15.994914619560
-         H            0.000000000000    -0.790689573744     0.543701060724     1.007825032070
-         H            0.000000000000     0.790689573744     0.543701060724     1.007825032070
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
 
   Running in c2v symmetry.
 
   Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
-  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
-  Nuclear repulsion =    8.801465529972067
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567374
 
   Charge       = 0
   Multiplicity = 1
@@ -2273,26 +2318,27 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            302
-    Total Points        =          86383
-    Total Blocks        =            703
-    Max Points          =            256
-    Max Functions       =             13
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            302
+    Total Points           =          88613
+    Total Blocks           =            708
+    Max Points             =            256
+    Max Functions          =             13
 
    => Loading Basis Set <=
 
     Name: (6-31G AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -2309,18 +2355,19 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.284 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               290
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -2332,7 +2379,9 @@ Total time:
     Spherical Harmonics?: false
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 7.3923789377E-02.
+  Cached 100.0% of DFT collocation blocks in 0.082 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 7.3923788795E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -2341,13 +2390,16 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:   -76.40130687668847   -7.64013e+01   1.72655e-01 
-   @DF-RKS iter   1:   -76.31220487861820    8.91020e-02   5.19947e-02 
-   @DF-RKS iter   2:   -76.19467313508875    1.17532e-01   8.30906e-02 DIIS
-   @DF-RKS iter   3:   -76.38621415131097   -1.91541e-01   1.57438e-03 DIIS
-   @DF-RKS iter   4:   -76.38628798305761   -7.38317e-05   5.95261e-05 DIIS
-   @DF-RKS iter   5:   -76.38628806984940   -8.67918e-08   9.20470e-06 DIIS
-   @DF-RKS iter   6:   -76.38628807228359   -2.43419e-09   2.10340e-07 DIIS
+   @DF-RKS iter SAD:   -76.08866346634248   -7.60887e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.23814552705926   -1.49482e-01   7.46800e-02 DIIS
+   @DF-RKS iter   2:   -75.99099127356241    2.47154e-01   1.17127e-01 DIIS
+   @DF-RKS iter   3:   -76.38585245686477   -3.94861e-01   3.69627e-03 DIIS
+   @DF-RKS iter   4:   -76.38629207867064   -4.39622e-04   2.63265e-04 DIIS
+   @DF-RKS iter   5:   -76.38629418457322   -2.10590e-06   1.39480e-05 DIIS
+   @DF-RKS iter   6:   -76.38629418948422   -4.91100e-09   1.06304e-06 DIIS
+   @DF-RKS iter   7:   -76.38629418951678   -3.25571e-11   5.57073e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -2356,33 +2408,32 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -18.929070     2A1    -0.965771     1B2    -0.476943  
-       3A1    -0.319000     1B1    -0.248110  
+       1A1   -18.928985     2A1    -0.965780     1B2    -0.476940  
+       3A1    -0.318997     1B1    -0.248106  
 
     Virtual:                                                              
 
-       4A1     0.042778     2B2     0.128848     3B2     0.808503  
-       5A1     0.846565     2B1     0.906129     6A1     0.975168  
-       4B2     1.084651     7A1     1.451296  
+       4A1     0.042769     2B2     0.128845     3B2     0.808498  
+       5A1     0.846554     2B1     0.906130     6A1     0.975168  
+       4B2     1.084650     7A1     1.451276  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:   -76.38628807228359
+  @DF-RKS Final Energy:   -76.38629418951678
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.3049087725153612
-    Two-Electron Energy =                  46.4374013599592388
-    DFT Exchange-Correlation Energy =      -9.3202461896995281
+    Nuclear Repulsion Energy =              8.8014655645673745
+    One-Electron Energy =                -122.3049954972204318
+    Two-Electron Energy =                  46.4375003151230956
+    DFT Exchange-Correlation Energy =      -9.3202645719868311
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3862880722835911
+    Total Energy =                        -76.3862941895167751
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -2402,35 +2453,35 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3778     Total:     2.3778
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:39 2018
+*** tstop() called on hokru at Mon May 20 23:25:57 2019
 Module time:
-	user time   =       1.65 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       3.14 seconds =       0.05 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      37.59 seconds =       0.63 minutes
-	system time =       0.43 seconds =       0.01 minutes
-	total time  =         42 seconds =       0.70 minutes
-	water: MGGA_MS1...................................................PASSED
+	user time   =      71.67 seconds =       1.19 minutes
+	system time =       0.77 seconds =       0.01 minutes
+	total time  =         18 seconds =       0.30 minutes
+    water: MGGA_MS1...................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon Jul  2 16:19:39 2018
+*** tstart() called on hokru
+*** at Mon May 20 23:25:57 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   117 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
-    atoms 2-3 entry H          line    26 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 1   entry O          line   117 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    26 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2442,15 +2493,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         O            0.000000000000     0.000000000000    -0.068516219310    15.994914619560
-         H            0.000000000000    -0.790689573744     0.543701060724     1.007825032070
-         H            0.000000000000     0.790689573744     0.543701060724     1.007825032070
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
 
   Running in c2v symmetry.
 
   Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
-  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
-  Nuclear repulsion =    8.801465529972067
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567374
 
   Charge       = 0
   Multiplicity = 1
@@ -2505,26 +2556,27 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             99
-    Spherical Points    =            302
-    Total Points        =          86383
-    Total Blocks        =            703
-    Max Points          =            256
-    Max Functions       =             13
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             99
+    Spherical Points       =            302
+    Total Points           =          88613
+    Total Blocks           =            708
+    Max Points             =            256
+    Max Functions          =             13
 
    => Loading Basis Set <=
 
     Name: (6-31G AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /home/psilocaluser/gits/hrw-patch/objdir-intel4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /usr/qc/psi4fork.bin/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -2541,18 +2593,19 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.284 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               290
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -2564,7 +2617,9 @@ Total time:
     Spherical Harmonics?: false
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 7.3923789377E-02.
+  Cached 100.0% of DFT collocation blocks in 0.082 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 7.3923788795E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -2573,13 +2628,16 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:   -76.40975642027898   -7.64098e+01   1.71917e-01 
-   @DF-RKS iter   1:   -76.31906767544967    9.06887e-02   5.24905e-02 
-   @DF-RKS iter   2:   -76.19412697281820    1.24941e-01   8.48334e-02 DIIS
-   @DF-RKS iter   3:   -76.39432344284498   -2.00196e-01   1.74249e-03 DIIS
-   @DF-RKS iter   4:   -76.39441365061697   -9.02078e-05   6.44147e-05 DIIS
-   @DF-RKS iter   5:   -76.39441374921974   -9.86028e-08   9.75225e-06 DIIS
-   @DF-RKS iter   6:   -76.39441375189355   -2.67381e-09   1.33050e-07 DIIS
+   @DF-RKS iter SAD:   -76.09787545248764   -7.60979e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.24509098216595   -1.47216e-01   7.50206e-02 DIIS
+   @DF-RKS iter   2:   -75.98579363002375    2.59297e-01   1.18865e-01 DIIS
+   @DF-RKS iter   3:   -76.39389228103373   -4.08099e-01   4.06664e-03 DIIS
+   @DF-RKS iter   4:   -76.39441660115328   -5.24320e-04   2.61036e-04 DIIS
+   @DF-RKS iter   5:   -76.39441869855898   -2.09741e-06   1.35845e-05 DIIS
+   @DF-RKS iter   6:   -76.39441870316014   -4.60116e-09   1.22933e-06 DIIS
+   @DF-RKS iter   7:   -76.39441870320263   -4.24905e-11   8.09489e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
@@ -2588,33 +2646,32 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -18.910776     2A1    -0.962078     1B2    -0.475163  
-       3A1    -0.317187     1B1    -0.245610  
+       1A1   -18.911049     2A1    -0.962084     1B2    -0.475162  
+       3A1    -0.317189     1B1    -0.245614  
 
     Virtual:                                                              
 
-       4A1     0.041427     2B2     0.127607     3B2     0.805480  
-       5A1     0.842979     2B1     0.906252     6A1     0.973617  
-       4B2     1.081868     7A1     1.447742  
+       4A1     0.041422     2B2     0.127609     3B2     0.805472  
+       5A1     0.842976     2B1     0.906274     6A1     0.973630  
+       4B2     1.081895     7A1     1.447742  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:   -76.39441375189355
+  @DF-RKS Final Energy:   -76.39441870320263
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.3045571889386594
-    Two-Electron Energy =                  46.4376502827675850
-    DFT Exchange-Correlation Energy =      -9.3289723756945495
+    Nuclear Repulsion Energy =              8.8014655645673745
+    One-Electron Energy =                -122.3041808599142399
+    Two-Electron Energy =                  46.4372207541614443
+    DFT Exchange-Correlation Energy =      -9.3289241620172163
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3944137518935520
+    Total Energy =                        -76.3944187032026321
 
+Computation Completed
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -2625,27 +2682,27 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.0887
+     X:     0.0000      Y:     0.0000      Z:    -0.0886
 
   Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9304     Total:     0.9304
 
   Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     2.3649     Total:     2.3649
+     X:     0.0000      Y:     0.0000      Z:     2.3650     Total:     2.3650
 
 
-*** tstop() called on psinet at Mon Jul  2 16:19:41 2018
+*** tstop() called on hokru at Mon May 20 23:25:58 2019
 Module time:
-	user time   =       1.72 seconds =       0.03 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       3.10 seconds =       0.05 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      39.32 seconds =       0.66 minutes
-	system time =       0.48 seconds =       0.01 minutes
-	total time  =         44 seconds =       0.73 minutes
-	water: MGGA_MS2...................................................PASSED
+	user time   =      74.80 seconds =       1.25 minutes
+	system time =       0.85 seconds =       0.01 minutes
+	total time  =         19 seconds =       0.32 minutes
+    water: MGGA_MS2...................................................PASSED
 
-    Psi4 stopped on: Monday, 02 July 2018 04:19PM
-    Psi4 wall time for execution: 0:00:43.44
+    Psi4 stopped on: Monday, 20 May 2019 11:25PM
+    Psi4 wall time for execution: 0:00:19.11
 
 *** Psi4 exiting successfully. Buy a developer a beer!

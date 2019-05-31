@@ -1,4 +1,5 @@
 #! Exercises the various DFT-D corrections, both through python directly and through c++
+#! all dft values updated to new BraggSlater radii
 
 # S22-9, B3LYP
 refs = {}  #TEST
@@ -18,9 +19,9 @@ refs['d3mbj'] = {}  #TEST
 refs['d3mbj']['d'] = -0.01326079  #TEST
 refs['d3mbj']['m'] = -0.00497578  #TEST
 refs['dft'] = {}  #TEST
-refs['dft']['d'] =  -155.24553444959105  #TEST
-refs['dft']['muncp'] = -77.62304008349764  #TEST
-refs['dft']['mcp'] = -77.62336232317983  #TEST
+refs['dft']['d'] = -155.2455137399915 #TEST 
+refs['dft']['muncp'] =-77.62306905309855  #TEST
+refs['dft']['mcp'] =-77.62335197195613  #TEST
 
 # S22-9 monomer, all fctl
 refs2 = {}  #TEST
@@ -42,14 +43,14 @@ refs2['dash']['pbe-d3mzero'] = -0.00810989  #-0.00809474  #TEST
 refs2['dash']['wpbe-d3mbj'] = -0.00318894  #TEST
 refs2['dash']['wpbe-d3mzero'] = -0.00070448  #TEST
 refs2['dft'] = {}  #TEST
-refs2['dft']['blyp'] = -77.56630317897022  #TEST
-refs2['dft']['b3lyp'] = -77.62304008350138  #TEST
-refs2['dft']['b2plyp'] = -77.47610050785633  #TEST
-refs2['dft']['bp86'] = -77.62185514347549  #TEST
-refs2['dft']['pbe'] = -77.50927778642937  #TEST
-refs2['dft']['pbe0'] = -77.52833997197943  #TEST
-refs2['dft']['wpbe'] = -77.56684350092559  #TEST
-refs2['dft']['b97'] = -77.5885046174022  #TEST
+refs2['dft']['blyp']   =  -77.56633838169991 #TEST
+refs2['dft']['b3lyp']  =  -77.62306905310584 #TEST
+refs2['dft']['b2plyp'] =  -77.47611926361498 #TEST
+refs2['dft']['bp86']   =  -77.62188101028227 #TEST
+refs2['dft']['pbe']    =  -77.50930706641002 #TEST
+refs2['dft']['pbe0']   =  -77.52836073109854 #TEST
+refs2['dft']['wpbe']   =  -77.56686976670161 #TEST
+refs2['dft']['b97']    =  -77.58852577708896 #TEST
 
 
 # <<<  Part 1  >>>
@@ -189,6 +190,7 @@ for dlvl in levels:
 # <<<  Part 4  >>>
 
 print('  Part IV: -D correction from C-side, all functionals')  #TEST
+set freeze_core false
 if hasD3M:
     for fl in ['blyp', 'b3lyp', 'b2plyp', 'bp86', 'pbe', 'pbe0', 'b97', 'wpbe']:
         energy(fl + '-d3mbj', molecule=mBuncp)

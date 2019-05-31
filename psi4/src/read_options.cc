@@ -1489,16 +1489,18 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Radial Scheme. -*/
         options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
         /*- Nuclear Scheme. -*/
-        options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
+        options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN SBECKE");
         /*- Factor for effective BS radius in radial grid. -*/
         options.add_double("DFT_BS_RADIUS_ALPHA", 1.0);
         /*- DFT basis cutoff. -*/
         options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
         /*- The DFT grid specification, such as SG1.!expert -*/
         options.add_str("DFT_GRID_NAME", "", "SG0 SG1");
-        /*- Pruning Scheme. !expert -*/
-        options.add_str("DFT_PRUNING_SCHEME", "FLAT",
-                        "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
+        /*- Select approach for pruning. Options ``ROBUST`` and ``TREUTLER`` prune based on regions (proximity to nucleus) while
+        ``FLAT`` ``P_GAUSSIAN`` ``D_GAUSSIAN`` ``P_SLATER`` ``D_SLATER`` ``LOG_GAUSSIAN`` ``LOG_SLATER`` prune based on decaying functions (experts only!).
+        The recommended scheme is ``ROBUST``. -*/
+        options.add_str("DFT_PRUNING_SCHEME", "NONE",
+                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Spread alpha for logarithmic pruning. !expert -*/
         options.add_double("DFT_PRUNING_ALPHA", 1.0);
         /*- The maximum number of grid points per evaluation block. !expert -*/

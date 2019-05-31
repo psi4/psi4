@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.2a1.dev997 
+                               Psi4 1.4a1.dev189 
 
-                         Git: Rev {vv10mod_fix} 52348f1 dirty
+                         Git: Rev {HEAD} d6ce54b dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -15,14 +15,19 @@
     J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
     (doi: 10.1021/acs.jctc.7b00174)
 
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 28 April 2018 06:49PM
+    Psi4 started on: Monday, 20 May 2019 06:11PM
 
-    Process ID: 32671
-    Host:       think
-    PSIDATADIR: /usr/qc/psi4.bin/share/psi4
+    Process ID: 24277
+    Host:       hokru
+    PSIDATADIR: /usr/qc/psi4fork.bin/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -31,11 +36,19 @@
 --------------------------------------------------------------------------
 #! He Dimer VV10 functional test.
 #! notes: DFT_VV10_B/C overwrites the NL_.. tuple
+#! updated 'bench' reference values for new BraggSlater radii.
+
+bench = {"DFT VV10 ENERGY": 0.01879662804, # TEST
+         "DFT XC ENERGY":  -2.16100113313, # TEST
+         "CURRENT ENERGY": -5.8199583320852053} # TEST
 #
 
-bench = {"DFT VV10 ENERGY": 0.0187968521080026, # TEST
-         "DFT XC ENERGY":  -2.1610005616974943, # TEST
-         "CURRENT ENERGY": -5.8199580945288449} # TEST
+# references (from psi4)
+Enl_blypnl_b50_c01=0.0246749861696854
+Enl_blypnl_b50=0.0238582087067217
+Enl_blypnl_b40=0.0328523506642702
+Enl_blypnl_post=0.0328533763822404
+Enl_wb97mv_b50=0.0238946401121507
 
 molecule ne {
   0 1
@@ -54,69 +67,78 @@ set D_CONVERGENCE 1.e-10
 scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
 for k, v in bench.items():                        # TEST
-    compare_values(v, psi4.get_variable(k), 9, k) # TEST
+    compare_values(v, psi4.variable(k), 9, k) # TEST
 
+set reference uks
+scf_e, scf_wfn = energy("VV10", return_wfn=True)
 
+for k, v in bench.items():                        # TEST
+    compare_values(v, psi4.variable(k), 9, k) # TEST
+scf_nl=psi4.variable('scf TOTAL ENERGY')
+
+# dft-nl tests:
+
+set reference rks
 scf_e, scf_wfn = energy("BLYP-NL", return_wfn=True)
-compare_values(0.032852665973, psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL dashtest') # TEST
-scf_nl=psi4.get_variable('TOTAL SCF ENERGY')
+compare_values(Enl_blypnl_b40, psi4.variable('DFT VV10 ENERGY') , 6, 'BLYP-NL dashtest') # TEST
+scf_nl=psi4.variable('scf TOTAL ENERGY')
 
 # tuple modified b
 set nl_dispersion_parameters [5.0]
 scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
-compare_values(0.0238582087067217, psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL tuple b ') # TEST
+compare_values(Enl_blypnl_b50, psi4.variable('DFT VV10 ENERGY') , 6, 'BLYP-NL tuple b ') # TEST
 revoke_global_option_changed('nl_dispersion_parameters')
 
 #tuple modified b and C
 set nl_dispersion_parameters [5.0, 0.1]
 scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
-compare_values(0.0246750, psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL tuple b and C ') # TEST
+compare_values(Enl_blypnl_b50_c01, psi4.variable('DFT VV10 ENERGY') , 6, 'BLYP-NL tuple b and C ') # TEST
 revoke_global_option_changed('nl_dispersion_parameters')
 
 #modified b and C
 set DFT_VV10_B  5.0
 set DFT_VV10_C  0.1
 scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
-compare_values(0.0246750, psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL custom b and C ') # TEST
+compare_values(Enl_blypnl_b50_c01, psi4.variable('DFT VV10 ENERGY') , 6, 'BLYP-NL custom b and C ') # TEST
 revoke_global_option_changed('DFT_VV10_C') 
 revoke_global_option_changed('DFT_VV10_B') 
 
 # add VV10 without dashparam. Here scf_nl is saved
 set DFT_VV10_B  4.0
 scf_nl, scf_wfn = energy("BLYP", return_wfn=True)
-compare_values(0.032852665973, psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP + custom VV10 ENERGY') # TEST
+compare_values(Enl_blypnl_b40, psi4.variable('DFT VV10 ENERGY') , 6, 'BLYP + custom VV10 ENERGY') # TEST
 revoke_global_option_changed('DFT_VV10_B') 
 
 #modify libxc func containing vv10
 set nl_dispersion_parameters [5.0]
 scf_e, scf_wfn = energy("wb97m-v", return_wfn=True)
-compare_values(0.0238946401122, psi4.get_variable('DFT VV10 ENERGY') , 6, 'wB97M-V tuple b') # TEST
+compare_values(Enl_wb97mv_b50, psi4.variable('DFT VV10 ENERGY') , 6, 'wB97M-V tuple b') # TEST
 revoke_global_option_changed('nl_dispersion_parameters')
-
 
 # POST-SCF VV10 correction
 set DFT_VV10_POSTSCF true
 post_nl, scf_wfn = energy("BLYP-NL", return_wfn=True)
-compare_values(0.0328533763822404, psi4.get_variable('DFT VV10 ENERGY') , 6, 'BLYP-NL postscf 1') # TEST
-# check if result is sensible
+compare_values(Enl_blypnl_post, psi4.variable('DFT VV10 ENERGY') , 6, 'BLYP-NL postscf 1') # TEST
+
+# check if result is sensible and total scf is ok
 compare_values(scf_nl, post_nl, 6, 'BLYP-NL postscf 2') # TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on think
-*** at Sat Apr 28 18:49:17 2018
+*** tstart() called on hokru
+*** at Mon May 20 18:11:11 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -130,14 +152,14 @@ compare_values(scf_nl, post_nl, 6, 'BLYP-NL postscf 2') # TEST
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
 
   Running in d2h symmetry.
 
   Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
 
   Charge       = 0
   Multiplicity = 1
@@ -196,25 +218,26 @@ compare_values(scf_nl, post_nl, 6, 'BLYP-NL postscf 2') # TEST
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -235,18 +258,19 @@ compare_values(scf_nl, post_nl, 6, 'BLYP-NL postscf 2') # TEST
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -258,7 +282,9 @@ compare_values(scf_nl, post_nl, 6, 'BLYP-NL postscf 2') # TEST
     Spherical Harmonics?: true
     Max angular momentum: 2
 
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -267,18 +293,20 @@ compare_values(scf_nl, post_nl, 6, 'BLYP-NL postscf 2') # TEST
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.81845100888130   -5.81845e+00   4.66154e-03 
-   @DF-RKS iter   1:    -5.81995325099751   -1.50224e-03   4.26151e-04 
-   @DF-RKS iter   2:    -5.81995736507167   -4.11407e-06   1.50825e-04 DIIS
-   @DF-RKS iter   3:    -5.81995809207184   -7.27000e-07   9.13153e-06 DIIS
-   @DF-RKS iter   4:    -5.81995809452886   -2.45703e-09   8.46387e-09 DIIS
-   @DF-RKS iter   5:    -5.81995809452887   -4.44089e-15   1.14044e-09 DIIS
-   @DF-RKS iter   6:    -5.81995809452887   -3.55271e-15   4.12515e-11 DIIS
+   @DF-RKS iter SAD:    -5.81845120247064   -5.81845e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.81995348970135   -1.50229e-03   4.26101e-04 DIIS
+   @DF-RKS iter   2:    -5.81995760271582   -4.11301e-06   1.50816e-04 DIIS
+   @DF-RKS iter   3:    -5.81995832963013   -7.26914e-07   9.12780e-06 DIIS
+   @DF-RKS iter   4:    -5.81995833208521   -2.45508e-09   8.37513e-09 DIIS
+   @DF-RKS iter   5:    -5.81995833208521    0.00000e+00   1.13402e-09 DIIS
+   @DF-RKS iter   6:    -5.81995833208521    2.66454e-15   4.10456e-11 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -286,78 +314,352 @@ compare_values(scf_nl, post_nl, 6, 'BLYP-NL postscf 2') # TEST
 
     Virtual:                                                              
 
-       2Ag     0.073640     2B1u    0.120363     3Ag     0.344981  
-       1B2u    0.354201     1B3u    0.354201     1B3g    0.356839  
-       1B2g    0.356839     3B1u    0.376553     4Ag     1.346435  
-       4B1u    1.383914     5Ag     2.604236     2B2u    2.611342  
-       2B3u    2.611342     2B2g    2.613142     2B3g    2.613142  
-       5B1u    2.627664  
+       2Ag     0.073643     2B1u    0.120363     3Ag     0.344983  
+       1B3u    0.354200     1B2u    0.354200     1B2g    0.356838  
+       1B3g    0.356838     3B1u    0.376553     4Ag     1.346438  
+       4B1u    1.383916     5Ag     2.604233     2B3u    2.611342  
+       2B2u    2.611342     2B2g    2.613142     2B3g    2.613142  
+       5B1u    2.627660  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.81995809452887
+  @DF-RKS Final Energy:    -5.81995833208521
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.8000083423393196
-    Two-Electron Energy =                   4.5930767488099455
-    DFT Exchange-Correlation Energy =      -2.1610005616974988
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.8000087715160653
+    Two-Electron Energy =                   4.5930777338575606
+    DFT Exchange-Correlation Energy =      -2.1610011331331282
     Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0187968521080026
-    Total Energy =                         -5.8199580945288707
+    VV10 Nonlocal Energy =                  0.0187966280364281
+    Total Energy =                         -5.8199583320852053
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on think at Sat Apr 28 18:49:18 2018
+*** tstop() called on hokru at Mon May 20 18:11:12 2019
 Module time:
-	user time   =       1.08 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.94 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.08 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.94 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-	DFT VV10 ENERGY...................................................PASSED
-	DFT XC ENERGY.....................................................PASSED
-	CURRENT ENERGY....................................................PASSED
+    DFT VV10 ENERGY...................................................PASSED
+    DFT XC ENERGY.....................................................PASSED
+    CURRENT ENERGY....................................................PASSED
 
-*** tstart() called on think
-*** at Sat Apr 28 18:49:18 2018
+*** tstart() called on hokru
+*** at Mon May 20 18:11:12 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 10
+    Number of basis function: 18
+    Number of Cartesian functions: 18
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => Composite Functional: VV10 <= 
+
+    VV10 GGA Exchange-Correlation Functional
+
+    O. A. Vydrov and T. Van Voorhis, J. Chem. Phys. 133, 244103 (2010)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000   Refitted Perdew & Wang 86
+
+   => Correlation Functionals <=
+
+    1.0000   Perdew, Burke & Ernzerhof
+
+   => VV10 Non-Local Parameters <=
+
+    VV10 B              =     5.9000E+00
+    VV10 C              =     9.3000E-03
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
+
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         5       5       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        2       2       0       0       0       0
+     B3g        2       2       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        5       5       0       0       0       0
+     B2u        2       2       0       0       0       0
+     B3u        2       2       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 18
+    Number of basis function: 46
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UKS iter SAD:    -5.81845120247064   -5.81845e+00   0.00000e+00 
+   @DF-UKS iter   1:    -5.81995348970135   -1.50229e-03   4.26101e-04 DIIS
+   @DF-UKS iter   2:    -5.81995760271582   -4.11301e-06   1.50816e-04 DIIS
+   @DF-UKS iter   3:    -5.81995832963013   -7.26914e-07   9.12780e-06 DIIS
+   @DF-UKS iter   4:    -5.81995833208521   -2.45508e-09   8.37513e-09 DIIS
+   @DF-UKS iter   5:    -5.81995833208521    1.77636e-15   1.13402e-09 DIIS
+   @DF-UKS iter   6:    -5.81995833208520    3.55271e-15   4.10457e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   3.774758284E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                3.774758284E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ag    -0.585291     1B1u   -0.584859  
+
+    Alpha Virtual:                                                        
+
+       2Ag     0.073643     2B1u    0.120363     3Ag     0.344983  
+       1B3u    0.354200     1B2u    0.354200     1B2g    0.356838  
+       1B3g    0.356838     3B1u    0.376553     4Ag     1.346438  
+       4B1u    1.383916     5Ag     2.604233     2B2u    2.611342  
+       2B3u    2.611342     2B2g    2.613142     2B3g    2.613142  
+       5B1u    2.627660  
+
+    Beta Occupied:                                                        
+
+       1Ag    -0.585291     1B1u   -0.584859  
+
+    Beta Virtual:                                                         
+
+       2Ag     0.073643     2B1u    0.120363     3Ag     0.344983  
+       1B3u    0.354200     1B2u    0.354200     1B2g    0.356838  
+       1B3g    0.356838     3B1u    0.376553     4Ag     1.346438  
+       4B1u    1.383916     5Ag     2.604233     2B2u    2.611342  
+       2B3u    2.611342     2B2g    2.613142     2B3g    2.613142  
+       5B1u    2.627660  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+    SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
+
+  @DF-UKS Final Energy:    -5.81995833208520
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.8000087715160653
+    Two-Electron Energy =                   4.5930777338575624
+    DFT Exchange-Correlation Energy =      -2.1610011331331282
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0187966280364281
+    Total Energy =                         -5.8199583320852035
+
+  UHF NO Occupations:
+  HONO-1 :    1 Ag 2.0000000
+  HONO-0 :    1B1u 2.0000000
+  LUNO+0 :    2 Ag 0.0000000
+  LUNO+1 :    2B1u 0.0000000
+  LUNO+2 :    3 Ag 0.0000000
+  LUNO+3 :    3B1u 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on hokru at Mon May 20 18:11:13 2019
+Module time:
+	user time   =       0.94 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.89 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+    DFT VV10 ENERGY...................................................PASSED
+    DFT XC ENERGY.....................................................PASSED
+    CURRENT ENERGY....................................................PASSED
+
+*** tstart() called on hokru
+*** at Mon May 20 18:11:13 2019
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -371,14 +673,14 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
 
   Running in d2h symmetry.
 
   Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
 
   Charge       = 0
   Multiplicity = 1
@@ -439,34 +741,35 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
 
-   => -NL: Empirical Dispersion <=
+   => BLYP-NL: Empirical Dispersion <=
 
-    Grimme's -NL (DFT plus  VV10 correlation) 
-    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 
+    Grimme's -NL (DFT plus VV10 correlation) 
+    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866
+    Parametrisation from:    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011
 
-    Parametrisation from: 
-    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 
-
+         b =       4.000000
+         c =       0.009300
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -487,18 +790,19 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -510,7 +814,9 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 2
 
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -519,18 +825,20 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.76659528067616   -5.76660e+00   5.08341e-03 
-   @DF-RKS iter   1:    -5.76863051510802   -2.03523e-03   9.91993e-04 
-   @DF-RKS iter   2:    -5.76865442104858   -2.39059e-05   4.29102e-04 DIIS
-   @DF-RKS iter   3:    -5.76866030480159   -5.88375e-06   4.11363e-06 DIIS
-   @DF-RKS iter   4:    -5.76866030532112   -5.19528e-10   1.85042e-08 DIIS
-   @DF-RKS iter   5:    -5.76866030532112   -7.99361e-15   5.30742e-10 DIIS
-   @DF-RKS iter   6:    -5.76866030532113   -3.55271e-15   6.32511e-12 DIIS
+   @DF-RKS iter SAD:    -5.76659563382805   -5.76660e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.76863097800845   -2.03534e-03   9.91931e-04 DIIS
+   @DF-RKS iter   2:    -5.76865488181903   -2.39038e-05   4.29087e-04 DIIS
+   @DF-RKS iter   3:    -5.76866076517029   -5.88335e-06   4.10980e-06 DIIS
+   @DF-RKS iter   4:    -5.76866076568886   -5.18573e-10   1.83702e-08 DIIS
+   @DF-RKS iter   5:    -5.76866076568887   -1.06581e-14   5.29496e-10 DIIS
+   @DF-RKS iter   6:    -5.76866076568886    3.55271e-15   6.31146e-12 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -538,76 +846,75 @@ Total time:
 
     Virtual:                                                              
 
-       2Ag     0.068211     2B1u    0.112998     3Ag     0.345064  
-       1B2u    0.354298     1B3u    0.354298     1B3g    0.356941  
-       1B2g    0.356941     3B1u    0.376799     4Ag     1.356529  
-       4B1u    1.393533     5Ag     2.609797     2B2u    2.616819  
-       2B3u    2.616819     2B3g    2.618603     2B2g    2.618603  
-       5B1u    2.633059  
+       2Ag     0.068211     2B1u    0.112998     3Ag     0.345066  
+       1B2u    0.354296     1B3u    0.354296     1B3g    0.356939  
+       1B2g    0.356939     3B1u    0.376798     4Ag     1.356534  
+       4B1u    1.393537     5Ag     2.609791     2B3u    2.616819  
+       2B2u    2.616819     2B2g    2.618603     2B3g    2.618603  
+       5B1u    2.633052  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.76866030532113
+  @DF-RKS Final Energy:    -5.76866076568886
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7921415374883303
-    Two-Electron Energy =                   4.5786826871901445
-    DFT Exchange-Correlation Energy =      -2.1172310142772108
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.7921419388627733
+    Two-Electron Energy =                   4.5786837914577809
+    DFT Exchange-Correlation Energy =      -2.1172317603170718
     Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0328523506642702
-    Total Energy =                         -5.7686603053211272
+    VV10 Nonlocal Energy =                  0.0328519313631998
+    Total Energy =                         -5.7686607656888649
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on think at Sat Apr 28 18:49:19 2018
+*** tstop() called on hokru at Mon May 20 18:11:14 2019
 Module time:
-	user time   =       1.00 seconds =       0.02 minutes
+	user time   =       0.80 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.09 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-	BLYP-NL dashtest..................................................PASSED
+	user time   =       2.70 seconds =       0.05 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+    BLYP-NL dashtest..................................................PASSED
 
-*** tstart() called on think
-*** at Sat Apr 28 18:49:19 2018
+*** tstart() called on hokru
+*** at Mon May 20 18:11:14 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -621,14 +928,14 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
 
   Running in d2h symmetry.
 
   Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
 
   Charge       = 0
   Multiplicity = 1
@@ -689,34 +996,35 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
 
-   => -NL: Empirical Dispersion <=
+   => BLYP-NL: Empirical Dispersion <=
 
-    Grimme's -NL (DFT plus  VV10 correlation) 
-    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 
+    Grimme's -NL (DFT plus VV10 correlation) 
+    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866
+    Parametrisation from:    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011
 
-    Parametrisation from: 
-    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 
-
+         b =       4.000000
+         c =       0.009300
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -737,18 +1045,19 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -760,7 +1069,9 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 2
 
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -769,18 +1080,20 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.77559359830673   -5.77559e+00   5.09299e-03 
-   @DF-RKS iter   1:    -5.77762611464429   -2.03252e-03   9.72313e-04 
-   @DF-RKS iter   2:    -5.77764909390121   -2.29793e-05   4.20976e-04 DIIS
-   @DF-RKS iter   3:    -5.77765475745570   -5.66355e-06   3.97339e-06 DIIS
-   @DF-RKS iter   4:    -5.77765475794101   -4.85313e-10   1.86131e-08 DIIS
-   @DF-RKS iter   5:    -5.77765475794103   -1.33227e-14   5.20463e-10 DIIS
-   @DF-RKS iter   6:    -5.77765475794103    8.88178e-16   6.19474e-12 DIIS
+   @DF-RKS iter SAD:    -5.77559385801706   -5.77559e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.77762645226920   -2.03259e-03   9.72265e-04 DIIS
+   @DF-RKS iter   2:    -5.77764942990126   -2.29776e-05   4.20964e-04 DIIS
+   @DF-RKS iter   3:    -5.77765509314274   -5.66324e-06   3.97064e-06 DIIS
+   @DF-RKS iter   4:    -5.77765509362739   -4.84651e-10   1.85162e-08 DIIS
+   @DF-RKS iter   5:    -5.77765509362740   -1.24345e-14   5.19437e-10 DIIS
+   @DF-RKS iter   6:    -5.77765509362740    5.32907e-15   6.18301e-12 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -788,326 +1101,75 @@ Total time:
 
     Virtual:                                                              
 
-       2Ag     0.066154     2B1u    0.110918     3Ag     0.343264  
-       1B3u    0.352498     1B2u    0.352498     1B3g    0.355141  
-       1B2g    0.355141     3B1u    0.375002     4Ag     1.354577  
-       4B1u    1.391560     5Ag     2.607811     2B2u    2.614834  
-       2B3u    2.614834     2B3g    2.616618     2B2g    2.616618  
-       5B1u    2.631075  
+       2Ag     0.066154     2B1u    0.110918     3Ag     0.343266  
+       1B2u    0.352496     1B3u    0.352496     1B3g    0.355139  
+       1B2g    0.355139     3B1u    0.375003     4Ag     1.354580  
+       4B1u    1.391563     5Ag     2.607807     2B2u    2.614833  
+       2B3u    2.614833     2B2g    2.616617     2B3g    2.616617  
+       5B1u    2.631070  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.77765475794103
+  @DF-RKS Final Energy:    -5.77765509362740
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7923958174323253
-    Two-Electron Energy =                   4.5791820431958197
-    DFT Exchange-Correlation Energy =      -2.1174764010012406
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.7923961381084474
+    Two-Electron Energy =                   4.5791829034978910
+    DFT Exchange-Correlation Energy =      -2.1174769830258424
     Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0238582087067217
-    Total Energy =                         -5.7776547579410256
+    VV10 Nonlocal Energy =                  0.0238579133390028
+    Total Energy =                         -5.7776550936273958
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on think at Sat Apr 28 18:49:20 2018
+*** tstop() called on hokru at Mon May 20 18:11:15 2019
 Module time:
-	user time   =       1.00 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       3.10 seconds =       0.05 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
-	BLYP-NL tuple b ..................................................PASSED
-
-*** tstart() called on think
-*** at Sat Apr 28 18:49:20 2018
-
-   => Loading Basis Set <=
-
-    Name: AUG-CC-PVDZ
-    Role: ORBITAL
-    Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
-                              RKS Reference
-                        1 Threads,    500 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: d2h
-    Full point group: D_inf_h
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
-
-  Running in d2h symmetry.
-
-  Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
-
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 4
-  Nalpha       = 2
-  Nbeta        = 2
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is DF.
-  DIIS enabled.
-  MOM disabled.
-  Fractional occupation disabled.
-  Guess Type is SAD.
-  Energy threshold   = 1.00e-12
-  Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis <==
-
-  Basis Set: AUG-CC-PVDZ
-    Blend: AUG-CC-PVDZ
-    Number of shells: 10
-    Number of basis function: 18
-    Number of Cartesian functions: 18
-    Spherical Harmonics?: true
-    Max angular momentum: 1
-
-  ==> DFT Potential <==
-
-   => Composite Functional: BLYP-NL <= 
-
-    BLYP GGA Exchange-Correlation Functional
-
-    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
-    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989
-
-
-    Deriv               =              1
-    GGA                 =           TRUE
-    Meta                =          FALSE
-
-    Exchange Hybrid     =          FALSE
-    MP2 Hybrid          =          FALSE
-
-   => Exchange Functionals <=
-
-    1.0000     XC_GGA_X_B88
-
-   => Correlation Functionals <=
-
-    1.0000     XC_GGA_C_LYP
-
-   => VV10 Non-Local Parameters <=
-
-    VV10 B              =     5.0000E+00
-    VV10 C              =     1.0000E-01
-
-   => Molecular Quadrature <=
-
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
-
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
-
-   => -NL: Empirical Dispersion <=
-
-    Grimme's -NL (DFT plus  VV10 correlation) 
-    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 
-
-    Parametrisation from: 
-    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 
-
-
-   => Loading Basis Set <=
-
-    Name: (AUG-CC-PVDZ AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     Ag         5       5       0       0       0       0
-     B1g        0       0       0       0       0       0
-     B2g        2       2       0       0       0       0
-     B3g        2       2       0       0       0       0
-     Au         0       0       0       0       0       0
-     B1u        5       5       0       0       0       0
-     B2u        2       2       0       0       0       0
-     B3u        2       2       0       0       0       0
-   -------------------------------------------------------
-    Total      18      18       2       2       2       0
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: (AUG-CC-PVDZ AUX)
-    Blend: DEF2-QZVPP-JKFIT
-    Number of shells: 18
-    Number of basis function: 46
-    Number of Cartesian functions: 50
-    Spherical Harmonics?: true
-    Max angular momentum: 2
-
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
-  Using Symmetric Orthogonalization.
-
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   @DF-RKS iter   0:    -5.77479560715294   -5.77480e+00   5.08297e-03 
-   @DF-RKS iter   1:    -5.77681064482151   -2.01504e-03   9.52157e-04 
-   @DF-RKS iter   2:    -5.77683271026324   -2.20654e-05   4.12243e-04 DIIS
-   @DF-RKS iter   3:    -5.77683814208618   -5.43182e-06   3.81097e-06 DIIS
-   @DF-RKS iter   4:    -5.77683814253304   -4.46865e-10   1.91385e-08 DIIS
-   @DF-RKS iter   5:    -5.77683814253306   -1.50990e-14   5.10073e-10 DIIS
-   @DF-RKS iter   6:    -5.77683814253306   -8.88178e-16   6.20938e-12 DIIS
-
-  ==> Post-Iterations <==
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Doubly Occupied:                                                      
-
-       1Ag    -0.577619     1B1u   -0.577162  
-
-    Virtual:                                                              
-
-       2Ag     0.067026     2B1u    0.111682     3Ag     0.344010  
-       1B2u    0.353234     1B3u    0.353234     1B3g    0.355876  
-       1B2g    0.355876     3B1u    0.375745     4Ag     1.355155  
-       4B1u    1.392110     5Ag     2.608215     2B2u    2.615236  
-       2B3u    2.615236     2B3g    2.617020     2B2g    2.617020  
-       5B1u    2.631482  
-
-    Final Occupation by Irrep:
-             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
-    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
-
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.77683814253306
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7926972800567533
-    Two-Electron Energy =                   4.5797384809549246
-    DFT Exchange-Correlation Energy =      -2.1177315381909128
-    Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0246749861696854
-    Total Energy =                         -5.7768381425330571
-
-
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
-
-
-*** tstop() called on think at Sat Apr 28 18:49:21 2018
-Module time:
-	user time   =       1.00 seconds =       0.02 minutes
+	user time   =       0.80 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.11 seconds =       0.07 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       3.51 seconds =       0.06 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
-	BLYP-NL tuple b and C ............................................PASSED
+    BLYP-NL tuple b ..................................................PASSED
 
-*** tstart() called on think
-*** at Sat Apr 28 18:49:21 2018
+*** tstart() called on hokru
+*** at Mon May 20 18:11:15 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -1121,14 +1183,14 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
 
   Running in d2h symmetry.
 
   Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
 
   Charge       = 0
   Multiplicity = 1
@@ -1189,34 +1251,35 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
 
-   => -NL: Empirical Dispersion <=
+   => BLYP-NL: Empirical Dispersion <=
 
-    Grimme's -NL (DFT plus  VV10 correlation) 
-    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 
+    Grimme's -NL (DFT plus VV10 correlation) 
+    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866
+    Parametrisation from:    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011
 
-    Parametrisation from: 
-    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 
-
+         b =       4.000000
+         c =       0.009300
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1237,18 +1300,19 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -1260,7 +1324,9 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 2
 
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1269,95 +1335,351 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.77479560715294   -5.77480e+00   5.08297e-03 
-   @DF-RKS iter   1:    -5.77681064482151   -2.01504e-03   9.52157e-04 
-   @DF-RKS iter   2:    -5.77683271026324   -2.20654e-05   4.12243e-04 DIIS
-   @DF-RKS iter   3:    -5.77683814208618   -5.43182e-06   3.81097e-06 DIIS
-   @DF-RKS iter   4:    -5.77683814253304   -4.46865e-10   1.91385e-08 DIIS
-   @DF-RKS iter   5:    -5.77683814253306   -1.50990e-14   5.10073e-10 DIIS
-   @DF-RKS iter   6:    -5.77683814253306   -8.88178e-16   6.20938e-12 DIIS
+   @DF-RKS iter SAD:    -5.77479570910985   -5.77480e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.77681084126582   -2.01513e-03   9.52097e-04 DIIS
+   @DF-RKS iter   2:    -5.77683290422643   -2.20630e-05   4.12222e-04 DIIS
+   @DF-RKS iter   3:    -5.77683833549430   -5.43127e-06   3.80939e-06 DIIS
+   @DF-RKS iter   4:    -5.77683833594080   -4.46502e-10   1.90625e-08 DIIS
+   @DF-RKS iter   5:    -5.77683833594081   -1.24345e-14   5.08953e-10 DIIS
+   @DF-RKS iter   6:    -5.77683833594081    2.66454e-15   6.19515e-12 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
-       1Ag    -0.577619     1B1u   -0.577162  
+       1Ag    -0.577618     1B1u   -0.577162  
 
     Virtual:                                                              
 
-       2Ag     0.067026     2B1u    0.111682     3Ag     0.344010  
-       1B2u    0.353234     1B3u    0.353234     1B3g    0.355876  
-       1B2g    0.355876     3B1u    0.375745     4Ag     1.355155  
-       4B1u    1.392110     5Ag     2.608215     2B2u    2.615236  
-       2B3u    2.615236     2B3g    2.617020     2B2g    2.617020  
-       5B1u    2.631482  
+       2Ag     0.067024     2B1u    0.111683     3Ag     0.344012  
+       1B2u    0.353233     1B3u    0.353233     1B3g    0.355874  
+       1B2g    0.355874     3B1u    0.375747     4Ag     1.355158  
+       4B1u    1.392113     5Ag     2.608210     2B2u    2.615235  
+       2B3u    2.615235     2B2g    2.617019     2B3g    2.617019  
+       5B1u    2.631477  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.77683814253306
+  @DF-RKS Final Energy:    -5.77683833594081
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7926972800567533
-    Two-Electron Energy =                   4.5797384809549246
-    DFT Exchange-Correlation Energy =      -2.1177315381909128
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.7926976455348385
+    Two-Electron Energy =                   4.5797395008431634
+    DFT Exchange-Correlation Energy =      -2.1177322349243699
     Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0246749861696854
-    Total Energy =                         -5.7768381425330571
+    VV10 Nonlocal Energy =                  0.0246748330052386
+    Total Energy =                         -5.7768383359408073
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on think at Sat Apr 28 18:49:22 2018
+*** tstop() called on hokru at Mon May 20 18:11:16 2019
 Module time:
-	user time   =       0.99 seconds =       0.02 minutes
+	user time   =       0.81 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       5.11 seconds =       0.09 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       4.32 seconds =       0.07 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
-	BLYP-NL custom b and C ...........................................PASSED
+    BLYP-NL tuple b and C ............................................PASSED
 
-*** tstart() called on think
-*** at Sat Apr 28 18:49:22 2018
+*** tstart() called on hokru
+*** at Mon May 20 18:11:16 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 10
+    Number of basis function: 18
+    Number of Cartesian functions: 18
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => Composite Functional: BLYP-NL <= 
+
+    BLYP GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000     XC_GGA_X_B88
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_LYP
+
+   => VV10 Non-Local Parameters <=
+
+    VV10 B              =     5.0000E+00
+    VV10 C              =     1.0000E-01
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
+
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
+
+   => BLYP-NL: Empirical Dispersion <=
+
+    Grimme's -NL (DFT plus VV10 correlation) 
+    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866
+    Parametrisation from:    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011
+
+         b =       4.000000
+         c =       0.009300
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         5       5       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        2       2       0       0       0       0
+     B3g        2       2       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        5       5       0       0       0       0
+     B2u        2       2       0       0       0       0
+     B3u        2       2       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 18
+    Number of basis function: 46
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter SAD:    -5.77479570910985   -5.77480e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.77681084126582   -2.01513e-03   9.52097e-04 DIIS
+   @DF-RKS iter   2:    -5.77683290422643   -2.20630e-05   4.12222e-04 DIIS
+   @DF-RKS iter   3:    -5.77683833549430   -5.43127e-06   3.80939e-06 DIIS
+   @DF-RKS iter   4:    -5.77683833594080   -4.46502e-10   1.90625e-08 DIIS
+   @DF-RKS iter   5:    -5.77683833594081   -1.24345e-14   5.08953e-10 DIIS
+   @DF-RKS iter   6:    -5.77683833594081    2.66454e-15   6.19515e-12 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.577618     1B1u   -0.577162  
+
+    Virtual:                                                              
+
+       2Ag     0.067024     2B1u    0.111683     3Ag     0.344012  
+       1B2u    0.353233     1B3u    0.353233     1B3g    0.355874  
+       1B2g    0.355874     3B1u    0.375747     4Ag     1.355158  
+       4B1u    1.392113     5Ag     2.608210     2B2u    2.615235  
+       2B3u    2.615235     2B2g    2.617019     2B3g    2.617019  
+       5B1u    2.631477  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+
+  @DF-RKS Final Energy:    -5.77683833594081
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.7926976455348385
+    Two-Electron Energy =                   4.5797395008431634
+    DFT Exchange-Correlation Energy =      -2.1177322349243699
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0246748330052386
+    Total Energy =                         -5.7768383359408073
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on hokru at Mon May 20 18:11:16 2019
+Module time:
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       5.15 seconds =       0.09 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+    BLYP-NL custom b and C ...........................................PASSED
+
+*** tstart() called on hokru
+*** at Mon May 20 18:11:16 2019
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 SCF: VV10_C not specified. Using default (C=0.0093)!
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -1371,14 +1693,14 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
 
   Running in d2h symmetry.
 
   Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
 
   Charge       = 0
   Multiplicity = 1
@@ -1439,25 +1761,26 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1478,18 +1801,19 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -1501,7 +1825,9 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
     Spherical Harmonics?: true
     Max angular momentum: 2
 
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1510,18 +1836,20 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.76659528067616   -5.76660e+00   5.08341e-03 
-   @DF-RKS iter   1:    -5.76863051510802   -2.03523e-03   9.91993e-04 
-   @DF-RKS iter   2:    -5.76865442104858   -2.39059e-05   4.29102e-04 DIIS
-   @DF-RKS iter   3:    -5.76866030480159   -5.88375e-06   4.11363e-06 DIIS
-   @DF-RKS iter   4:    -5.76866030532112   -5.19528e-10   1.85042e-08 DIIS
-   @DF-RKS iter   5:    -5.76866030532112   -7.99361e-15   5.30742e-10 DIIS
-   @DF-RKS iter   6:    -5.76866030532113   -3.55271e-15   6.32511e-12 DIIS
+   @DF-RKS iter SAD:    -5.76659563382805   -5.76660e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.76863097800845   -2.03534e-03   9.91931e-04 DIIS
+   @DF-RKS iter   2:    -5.76865488181904   -2.39038e-05   4.29087e-04 DIIS
+   @DF-RKS iter   3:    -5.76866076517029   -5.88335e-06   4.10980e-06 DIIS
+   @DF-RKS iter   4:    -5.76866076568886   -5.18569e-10   1.83702e-08 DIIS
+   @DF-RKS iter   5:    -5.76866076568887   -9.76996e-15   5.29496e-10 DIIS
+   @DF-RKS iter   6:    -5.76866076568887    0.00000e+00   6.31135e-12 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -1529,76 +1857,75 @@ SCF: VV10_C not specified. Using default (C=0.0093)!
 
     Virtual:                                                              
 
-       2Ag     0.068211     2B1u    0.112998     3Ag     0.345064  
-       1B2u    0.354298     1B3u    0.354298     1B3g    0.356941  
-       1B2g    0.356941     3B1u    0.376799     4Ag     1.356529  
-       4B1u    1.393533     5Ag     2.609797     2B2u    2.616819  
-       2B3u    2.616819     2B3g    2.618603     2B2g    2.618603  
-       5B1u    2.633059  
+       2Ag     0.068211     2B1u    0.112998     3Ag     0.345066  
+       1B3u    0.354296     1B2u    0.354296     1B3g    0.356939  
+       1B2g    0.356939     3B1u    0.376798     4Ag     1.356534  
+       4B1u    1.393537     5Ag     2.609791     2B3u    2.616819  
+       2B2u    2.616819     2B2g    2.618603     2B3g    2.618603  
+       5B1u    2.633052  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.76866030532113
+  @DF-RKS Final Energy:    -5.76866076568887
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7921415374883303
-    Two-Electron Energy =                   4.5786826871901445
-    DFT Exchange-Correlation Energy =      -2.1172310142772108
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.7921419388627839
+    Two-Electron Energy =                   4.5786837914577889
+    DFT Exchange-Correlation Energy =      -2.1172317603170727
     Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0328523506642702
-    Total Energy =                         -5.7686603053211272
+    VV10 Nonlocal Energy =                  0.0328519313631998
+    Total Energy =                         -5.7686607656888684
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on think at Sat Apr 28 18:49:23 2018
+*** tstop() called on hokru at Mon May 20 18:11:17 2019
 Module time:
-	user time   =       1.01 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.80 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.13 seconds =       0.10 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       5.96 seconds =       0.10 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          6 seconds =       0.10 minutes
-	BLYP + custom VV10 ENERGY.........................................PASSED
+    BLYP + custom VV10 ENERGY.........................................PASSED
 
-*** tstart() called on think
-*** at Sat Apr 28 18:49:23 2018
+*** tstart() called on hokru
+*** at Mon May 20 18:11:17 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -1612,14 +1939,14 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
 
   Running in d2h symmetry.
 
   Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
 
   Charge       = 0
   Multiplicity = 1
@@ -1652,9 +1979,9 @@ Total time:
 
    => Composite Functional: WB97M-V <= 
 
-    WB97M-V Hyb-GGA Exchange-Correlation Functional
+    wB97M-V Hyb-GGA Exchange-Correlation Functional
 
-    N. Mardirossian and M. Head-Gordon, (2016)
+    N. Mardirossian and M. Head-Gordon, J. Chem. Phys. 144, 214110 (2016)
 
     Deriv               =              1
     GGA                 =           TRUE
@@ -1679,25 +2006,26 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1718,7 +2046,7 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
@@ -1726,11 +2054,11 @@ Total time:
     Omega:               3.000E-01
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               375
+    Memory [MiB]:              324
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
@@ -1742,7 +2070,9 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 2
 
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Cached 100.0% of DFT collocation blocks in 0.050 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1751,19 +2081,21 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.77747882815834   -5.77748e+00   3.46767e-03 
-   @DF-RKS iter   1:    -5.77816337168116   -6.84544e-04   5.25364e-04 
-   @DF-RKS iter   2:    -5.77818392682149   -2.05551e-05   9.79113e-05 DIIS
-   @DF-RKS iter   3:    -5.77818454320872   -6.16387e-07   3.69628e-06 DIIS
-   @DF-RKS iter   4:    -5.77818454358416   -3.75439e-10   1.44473e-07 DIIS
-   @DF-RKS iter   5:    -5.77818454358551   -1.34559e-12   7.64589e-09 DIIS
-   @DF-RKS iter   6:    -5.77818454358551   -3.55271e-15   3.98649e-10 DIIS
-   @DF-RKS iter   7:    -5.77818454358551    2.66454e-15   6.14804e-12 DIIS
+   @DF-RKS iter SAD:    -5.77747905008490   -5.77748e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.77816364036646   -6.84590e-04   5.25367e-04 DIIS
+   @DF-RKS iter   2:    -5.77818419598743   -2.05556e-05   9.79119e-05 DIIS
+   @DF-RKS iter   3:    -5.77818481236833   -6.16381e-07   3.69679e-06 DIIS
+   @DF-RKS iter   4:    -5.77818481274386   -3.75530e-10   1.44420e-07 DIIS
+   @DF-RKS iter   5:    -5.77818481274521   -1.35358e-12   7.64327e-09 DIIS
+   @DF-RKS iter   6:    -5.77818481274521    0.00000e+00   3.98663e-10 DIIS
+   @DF-RKS iter   7:    -5.77818481274522   -4.44089e-15   6.14915e-12 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -1771,76 +2103,75 @@ Total time:
 
     Virtual:                                                              
 
-       2Ag     0.117219     2B1u    0.169383     3Ag     0.466547  
-       1B2u    0.476993     1B3u    0.476993     1B3g    0.479837  
-       1B2g    0.479837     3B1u    0.500397     4Ag     1.523857  
-       4B1u    1.559915     5Ag     2.798510     2B2u    2.805551  
-       2B3u    2.805551     2B3g    2.807327     2B2g    2.807327  
-       5B1u    2.821646  
+       2Ag     0.117220     2B1u    0.169383     3Ag     0.466549  
+       1B3u    0.476991     1B2u    0.476991     1B2g    0.479836  
+       1B3g    0.479836     3B1u    0.500397     4Ag     1.523860  
+       4B1u    1.559918     5Ag     2.798506     2B2u    2.805551  
+       2B3u    2.805551     2B2g    2.807327     2B3g    2.807327  
+       5B1u    2.821641  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.77818454358551
+  @DF-RKS Final Energy:    -5.77818481274522
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.8075298174937267
-    Two-Electron Energy =                   3.7633341830486731
-    DFT Exchange-Correlation Energy =      -1.2870607578426037
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.8075302662495467
+    Two-Electron Energy =                   3.7633351725882278
+    DFT Exchange-Correlation Energy =      -1.2870612957434679
     Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0238946401121507
-    Total Energy =                         -5.7781845435855068
+    VV10 Nonlocal Energy =                  0.0238943659895694
+    Total Energy =                         -5.7781848127452182
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on think at Sat Apr 28 18:49:25 2018
+*** tstop() called on hokru at Mon May 20 18:11:19 2019
 Module time:
-	user time   =       2.21 seconds =       0.04 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.29 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       8.34 seconds =       0.14 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       7.25 seconds =       0.12 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          8 seconds =       0.13 minutes
-	wB97M-V tuple b...................................................PASSED
+    wB97M-V tuple b...................................................PASSED
 
-*** tstart() called on think
-*** at Sat Apr 28 18:49:25 2018
+*** tstart() called on hokru
+*** at Mon May 20 18:11:19 2019
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry HE         line    50 file /usr/qc/psi4.bin/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1-2 entry HE         line    54 file /usr/qc/psi4fork.bin/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, Andy Simmonett
-                             and Daniel Smith
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -1854,14 +2185,14 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
-          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+         HE           0.000000000000     0.000000000000    -2.000000000000     4.002603254130
+         HE           0.000000000000     0.000000000000     2.000000000000     4.002603254130
 
   Running in d2h symmetry.
 
   Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
-  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
-  Nuclear repulsion =    0.529177208590000
+  Rotational constants: A = ************  B =  15782.82235  C =  15782.82235 [MHz]
+  Nuclear repulsion =    0.529177210670000
 
   Charge       = 0
   Multiplicity = 1
@@ -1922,34 +2253,35 @@ Total time:
 
    => Molecular Quadrature <=
 
-    Radial Scheme       =       TREUTLER
-    Pruning Scheme      =           FLAT
-    Nuclear Scheme      =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha     =              1
-    Pruning alpha       =              1
-    Radial Points       =             75
-    Spherical Points    =            302
-    Total Points        =          45300
-    Total Blocks        =            418
-    Max Points          =            251
-    Max Functions       =             18
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          45300
+    Total Blocks           =            410
+    Max Points             =            252
+    Max Functions          =             18
 
-   => -NL: Empirical Dispersion <=
+   => BLYP-NL: Empirical Dispersion <=
 
-    Grimme's -NL (DFT plus  VV10 correlation) 
-    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866 
+    Grimme's -NL (DFT plus VV10 correlation) 
+    Hujo, W.; Grimme, S; (2011), J. Chem. Theory Comput.; 7:3866
+    Parametrisation from:    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011
 
-    Parametrisation from: 
-    W. Hujo, S. Grimme J. Chem. Theory Comput. 7, 3866-3871, 2011 
-
+         b =       4.000000
+         c =       0.009300
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry HE         line    39 file /usr/qc/psi4.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 1-2 entry HE         line    39 file /usr/qc/psi4fork.bin/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1970,18 +2302,19 @@ Total time:
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.346 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                   No
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               354
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       9.8765
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
@@ -1993,29 +2326,35 @@ Total time:
     Spherical Harmonics?: true
     Max angular momentum: 2
 
-  Minimum eigenvalue in the overlap matrix is 1.5587581359E-01.
+  Cached 100.0% of DFT collocation blocks in 0.020 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5587581336E-01.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
+  VV10: post-SCF option active 
+ 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:    -5.79946701401161   -5.79947e+00   5.09802e-03 
-   @DF-RKS iter   1:    -5.80148640702209   -2.01939e-03   9.39222e-04 
-   @DF-RKS iter   2:    -5.80150787282039   -2.14658e-05   4.07065e-04 DIIS
-   @DF-RKS iter   3:    -5.80151316857888   -5.29576e-06   3.73723e-06 DIIS
-   @DF-RKS iter   4:    -5.80151316900892   -4.30042e-10   1.93456e-08 DIIS
-   @DF-RKS iter   5:    -5.80151316900893   -8.88178e-15   5.02251e-10 DIIS
-   @DF-RKS iter   6:    -5.80151316900893   -2.66454e-15   6.04371e-12 DIIS
-  ==> calculating VV10 correction on post-scf density <==
+   @DF-RKS iter SAD:    -5.79946703786433   -5.79947e+00   0.00000e+00 
+   @DF-RKS iter   1:    -5.80148644578884   -2.01941e-03   9.39231e-04 DIIS
+   @DF-RKS iter   2:    -5.80150791230629   -2.14665e-05   4.07074e-04 DIIS
+   @DF-RKS iter   3:    -5.80151320829008   -5.29598e-06   3.73593e-06 DIIS
+   @DF-RKS iter   4:    -5.80151320871984   -4.29752e-10   1.92815e-08 DIIS
+   @DF-RKS iter   5:    -5.80151320871984   -8.88178e-15   5.01322e-10 DIIS
+   @DF-RKS iter   6:    -5.80151320871984    0.00000e+00   6.03174e-12 DIIS
+  Energy and wave function converged.
+
+  ==> Computing Non-Self-Consistent VV10 Energy Correction <==
 
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -2023,62 +2362,62 @@ Total time:
 
     Virtual:                                                              
 
-       2Ag     0.060873     2B1u    0.105528     3Ag     0.338093  
-       1B2u    0.347313     1B3u    0.347313     1B3g    0.349955  
-       1B2g    0.349955     3B1u    0.369831     4Ag     1.349146  
-       4B1u    1.386091     5Ag     2.602267     2B2u    2.609289  
-       2B3u    2.609289     2B3g    2.611073     2B2g    2.611073  
+       2Ag     0.060872     2B1u    0.105528     3Ag     0.338092  
+       1B2u    0.347314     1B3u    0.347314     1B3g    0.349955  
+       1B2g    0.349955     3B1u    0.369832     4Ag     1.349146  
+       4B1u    1.386091     5Ag     2.602266     2B3u    2.609289  
+       2B2u    2.609289     2B2g    2.611073     2B3g    2.611073  
        5B1u    2.625534  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
     DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
 
-  Energy converged.
-
-  @DF-RKS Final Energy:    -5.76865979261557
+  @DF-RKS Final Energy:    -5.76866025433863
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              0.5291772085899999
-    One-Electron Energy =                  -8.7928445147714598
-    Two-Electron Energy =                   4.5800423706621611
-    DFT Exchange-Correlation Energy =      -2.1178882334785154
+    Nuclear Repulsion Energy =              0.5291772106699999
+    One-Electron Energy =                  -8.7928444199454283
+    Two-Electron Energy =                   4.5800421851907824
+    DFT Exchange-Correlation Energy =      -2.1178881846241175
     Empirical Dispersion Energy =           0.0000000000000000
-    VV10 Nonlocal Energy =                  0.0328533763822404
-    Total Energy =                         -5.7686597926155745
+    VV10 Nonlocal Energy =                  0.0328529543701369
+    Total Energy =                         -5.7686602543386272
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on think at Sat Apr 28 18:49:26 2018
+*** tstop() called on hokru at Mon May 20 18:11:19 2019
 Module time:
-	user time   =       0.88 seconds =       0.01 minutes
+	user time   =       0.77 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.23 seconds =       0.15 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
-	BLYP-NL postscf 1.................................................PASSED
-	BLYP-NL postscf 2.................................................PASSED
+	user time   =       8.02 seconds =       0.13 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+    BLYP-NL postscf 1.................................................PASSED
+    BLYP-NL postscf 2.................................................PASSED
 
-    Psi4 stopped on: Saturday, 28 April 2018 06:49PM
+    Psi4 stopped on: Monday, 20 May 2019 06:11PM
+    Psi4 wall time for execution: 0:00:08.13
 
 *** Psi4 exiting successfully. Buy a developer a beer!

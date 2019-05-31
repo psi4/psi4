@@ -1,12 +1,13 @@
 #! Test omega is setable
+#! updated wb97x_20,wb97x_03 to account for new BraggSlater radii
 
 # Psi4 1.0.24
 #   Note that 1.0 thinks x default omega is 0.4, not 0.3
-wb97_04 = -39.135882184
-wb97x_04 = -39.1373952015
-wb97_20 = -39.130109968
-wb97x_20 = -39.1554628912
-wb97x_03 = -39.1362781691
+wb97_04 = -39.13588187279116
+#wb97x_04 = -39.1373952015
+wb97_20 = -39.130109569530745
+wb97x_20 = -39.155461727515664
+wb97x_03 = -39.1362770521167
 
 
 molecule ch2 {
