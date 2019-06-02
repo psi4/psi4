@@ -507,8 +507,11 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::string jk_type(options_.get_str("SAD_SCF_TYPE"));
 
     // Handle default cases for compatibility
-    if ((jk_type == "PK") || (jk_type == "OUT_OF_CORE") || (jk_type == "CD")) {
+    if ((jk_type == "PK") || (jk_type == "OUT_OF_CORE") || (jk_type == "CD") || (jk_type == "GTFOCK")) {
         jk_type = "DIRECT";
+    }
+    if ((jk_type == "MEM_DF") || (jk_type == "DISK_DF")) {
+        jk_type = "DF";
     }
 
     // Need a very special auxiliary basis here
