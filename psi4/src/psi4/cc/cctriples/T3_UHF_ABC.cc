@@ -188,9 +188,9 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
         Gk = Gij ^ Gabc ^ GX3; /* changed */
         W2[Gij] = global_dpd_->dpd_block_matrix(C2->params->coltot[Gij], occpi[Gk]);
         if (C2->params->coltot[Gij] && occpi[Gk]) {
-            memset(W[Gij][0], 0, C2->params->coltot[Gij] * occpi[Gk] * sizeof(double));
-            memset(W2[Gij][0], 0, C2->params->coltot[Gij] * occpi[Gk] * sizeof(double));
-            if (disc) memset(V[Gij][0], 0, C2->params->coltot[Gij] * occpi[Gk] * sizeof(double));
+            memset(W[Gij][0], 0,  sizeof(double) * C2->params->coltot[Gij] * occpi[Gk]);
+            memset(W2[Gij][0], 0, sizeof(double) * C2->params->coltot[Gij] * occpi[Gk]);
+            if (disc) memset(V[Gij][0], 0, sizeof(double) * C2->params->coltot[Gij] * occpi[Gk]);
         }
     } /* Gij */
 
@@ -482,7 +482,7 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
     for (Gij = 0; Gij < nirreps; ++Gij) {
         Gk = Gij ^ Gabc ^ GX3; /* changed */
         if (C2->params->coltot[Gij] && occpi[Gk]) {
-            memset(W2[Gij][0], 0, C2->params->coltot[Gij] * occpi[Gk] * sizeof(double));
+            memset(W2[Gij][0], 0, sizeof(double) * C2->params->coltot[Gij] * occpi[Gk]);
         }
     } /* Gij */
 
@@ -1026,8 +1026,8 @@ void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
         Gk = Gabc ^ Gij ^ GX3; /* assumes totally symmetric! */
 
         if (T2AA->params->coltot[Gij] && boccpi[Gk]) {
-            memset(W[Gij][0], 0, T2AA->params->coltot[Gij] * boccpi[Gk] * sizeof(double));
-            memset(V[Gij][0], 0, T2AA->params->coltot[Gij] * boccpi[Gk] * sizeof(double));
+            memset(W[Gij][0], 0, sizeof(double) * T2AA->params->coltot[Gij] * boccpi[Gk]);
+            memset(V[Gij][0], 0, sizeof(double) * T2AA->params->coltot[Gij] * boccpi[Gk]);
         }
     }
 
@@ -1206,7 +1206,7 @@ void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
     for (Gij = 0; Gij < nirreps; ++Gij) {
         Gk = Gabc ^ Gij ^ GX3;
         if (T2BA->params->coltot[Gij] && aoccpi[Gk]) {
-            memset(W2[Gij][0], 0, T2BA->params->coltot[Gij] * aoccpi[Gk] * sizeof(double));
+            memset(W2[Gij][0], 0, sizeof(double) * T2BA->params->coltot[Gij] * aoccpi[Gk]);
         }
     }
 
@@ -1353,7 +1353,7 @@ void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
     for (Gij = 0; Gij < nirreps; ++Gij) {
         Gk = Gabc ^ Gij ^ GX3;
         if (T2BA->params->coltot[Gij] && aoccpi[Gk]) {
-            memset(W2[Gij][0], 0, T2BA->params->coltot[Gij] * aoccpi[Gk] * sizeof(double));
+            memset(W2[Gij][0], 0, sizeof(double) * T2BA->params->coltot[Gij] * aoccpi[Gk]);
         }
     }
 
@@ -1388,7 +1388,7 @@ void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
     for (Gij = 0; Gij < nirreps; ++Gij) {
         Gk = Gabc ^ Gij ^ GX3;
         if (T2AB->params->coltot[Gij] && aoccpi[Gk]) {
-            memset(W2[Gij][0], 0, T2AB->params->coltot[Gij] * aoccpi[Gk] * sizeof(double));
+            memset(W2[Gij][0], 0, sizeof(double) * T2AB->params->coltot[Gij] * aoccpi[Gk]);
         }
     }
 
@@ -1469,7 +1469,7 @@ void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps, int A, int 
     for (Gij = 0; Gij < nirreps; ++Gij) {
         Gk = Gabc ^ Gij ^ GX3;
         if (T2AB->params->coltot[Gij] && aoccpi[Gk]) {
-            memset(W2[Gij][0], 0, T2AB->params->coltot[Gij] * aoccpi[Gk] * sizeof(double));
+            memset(W2[Gij][0], 0, sizeof(double) * T2AB->params->coltot[Gij] * aoccpi[Gk]);
         }
     }
 

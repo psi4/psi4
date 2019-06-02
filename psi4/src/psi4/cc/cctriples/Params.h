@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCTRIPLES_PARAMS_H
+#define CCTRIPLES_PARAMS_H
+
 /*! \file
     \ingroup CCTRIPLES
     \brief Enter brief description of file here
@@ -45,3 +48,5 @@ struct Params {
 
 }  // namespace cctriples
 }  // namespace psi
+
+#endif

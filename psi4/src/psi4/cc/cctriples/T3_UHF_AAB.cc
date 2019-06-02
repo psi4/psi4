@@ -225,8 +225,8 @@ void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, int I, int Gi, 
         Gc = Gab ^ Gijk ^ GX3; /* assumes totally symmetric! */
 
         if (FAA->params->coltot[Gab] && bvirtpi[Gc]) {
-            memset(W[Gab][0], 0, FAA->params->coltot[Gab] * bvirtpi[Gc] * sizeof(double));
-            memset(V[Gab][0], 0, FAA->params->coltot[Gab] * bvirtpi[Gc] * sizeof(double));
+            memset(W[Gab][0], 0, sizeof(double) * FAA->params->coltot[Gab] * bvirtpi[Gc]);
+            memset(V[Gab][0], 0, sizeof(double) * FAA->params->coltot[Gab] * bvirtpi[Gc]);
         }
     }
 
@@ -401,7 +401,7 @@ void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, int I, int Gi, 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (FAB->params->coltot[Gab] && avirtpi[Gc]) {
-            memset(W2[Gab][0], 0, FAB->params->coltot[Gab] * avirtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * FAB->params->coltot[Gab] * avirtpi[Gc]);
         }
     }
 
@@ -544,7 +544,7 @@ void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, int I, int Gi, 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
         if (FBA->params->coltot[Gab] && avirtpi[Gc]) {
-            memset(W2[Gab][0], 0, FBA->params->coltot[Gab] * avirtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * FBA->params->coltot[Gab] * avirtpi[Gc]);
         }
     }
 
