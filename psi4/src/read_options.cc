@@ -1449,7 +1449,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DF_BASIS_SAD", "SAD-FIT");
         /*- Maximum number of atomic SCF iterations within SAD !expert -*/
         options.add_int("SAD_MAXITER", 50);
-        /*- SCF type of SAD guess !expert -*/
+        /*- SCF type used for atomic calculations in SAD guess !expert -*/
         options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
         /*- Do force an even distribution of occupations across the last partially occupied orbital shell? !expert -*/
         options.add_bool("SAD_FRAC_OCC", true);
