@@ -1157,8 +1157,8 @@ void RDFMP2::form_Pab() {
 #endif
 
     // Memory
-    size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    doubles -= static_cast<unsigned long> (navir) * navir;
+    size_t doubles = static_cast<size_t> (options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L);
+    doubles -= static_cast<size_t> (navir) * navir;
     double C = -(double)doubles;
     double B = 4.0 * navir * naux;
     double A = 2.0 * navir * (double)navir;
@@ -1828,9 +1828,9 @@ void RDFMP2::form_L() {
     // => Memory Constraints <= //
 
     size_t memory = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    memory -= static_cast<unsigned long> (naocc) * nso;
-    memory -= static_cast<unsigned long> (navir) * nso;
-    memory -= static_cast<unsigned long> (naocc) * navir;
+    memory -= static_cast<size_t> (naocc) * nso;
+    memory -= static_cast<size_t> (navir) * nso;
+    memory -= static_cast<size_t> (naocc) * navir;
     int max_rows;
     int maxP = ribasis_->max_function_per_shell();
     size_t row_cost = 0L;
