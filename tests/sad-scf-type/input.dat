@@ -7,7 +7,6 @@ Ar
 
 ref_dfhf = -526.79986827914422
 ref_hf = -526.79986530974611
-ref_cdhf = -526.7998576526238139
 
 set {
   basis cc-pVDZ
@@ -51,13 +50,14 @@ set {
   scf_type out_of_core
   sad_scf_type out_of_core
 }
-# This test fails since apparently out_of_core isn't thread safe
-#energy('scf')
-#compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD OUT_OF_CORE guess (a.u.)");             #TEST
+energy('scf')
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD OUT_OF_CORE guess (a.u.)");             #TEST
 
 set {
   scf_type cd
   sad_scf_type cd
+  # Need a tight tolerance since SAD actually uses exact integrals
+  cholesky_tolerance 1e-8
 }
 energy('scf')
-compare_values(ref_cdhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD          guess (a.u.)");             #TEST
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD          guess (a.u.)");             #TEST
