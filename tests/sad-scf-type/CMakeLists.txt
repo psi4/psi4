@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(scf-guess "psi;quicktests;scf")
+add_regression_test(sad-scf-type "psi;quicktests;scf")
