@@ -185,7 +185,7 @@ void local_filter_T2(dpdbuf4 *T2) {
     local.eps_occ = init_array(nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *)local.pairdom_len, sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *)local.pairdom_nrlen,
-                    nocc * nocc * sizeof(int));
+                    sizeof(int) * nocc * nocc);
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local.eps_occ, nocc * sizeof(double));
     psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *)local.weak_pairs, sizeof(int) * nocc * nocc);
     local.W = (double ***)malloc(sizeof(double **) * nocc * nocc);

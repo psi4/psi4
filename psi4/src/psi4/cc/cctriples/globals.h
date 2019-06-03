@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCTRIPLES_GLOBALS_H  
+#define CCTRIPLES_GLOBALS_H  
+
 /*! \file
     \ingroup CCTRIPLES
     \brief Enter brief description of file here
@@ -52,3 +55,4 @@ EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 }
 }  // namespace psi
+#endif

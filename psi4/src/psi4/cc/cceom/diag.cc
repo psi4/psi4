@@ -195,65 +195,66 @@ void diag() {
         /* Store approximate diagonal elements of Hbar */
         form_diagonal(C_irr);
 
-        if (eom_params.restart_eom_cc3) {
-        } else if (params.local) {
-            if (eom_params.guess == "DISK") { /* only do this if we don't already have guesses on disk */
-                outfile->Printf("\n\tUsing C1 vectors on disk as initial guesses.\n");
+        if (!eom_params.restart_eom_cc3) {
+            if (params.local) {
+                if (eom_params.guess == "DISK") { /* only do this if we don't already have guesses on disk */
+                    outfile->Printf("\n\tUsing C1 vectors on disk as initial guesses.\n");
+                } else {
+                    local_guess();
+                    if (local.do_singles) diagSS(C_irr);
+                }
             } else {
-                local_guess();
-                if (local.do_singles) diagSS(C_irr);
-            }
-        } else {
-            if (eom_params.guess == "SINGLES") {
-                /* Diagonalize Hbar-SS to obtain initial CME and Cme guess */
-                outfile->Printf("Obtaining initial guess from singles-singles block of Hbar...");
-                diagSS(C_irr);
-                if (!eom_params.print_singles) outfile->Printf("Done.\n\n");
-            }
-            //      else if(eom_params.guess == "INPUT") {
-            //        read_guess(C_irr);
-            //      }
-            else if (eom_params.guess == "DISK" && params.ref == 0) {
-                outfile->Printf("Using C1 vectors on disk as initial guesses.\n");
-                /* normalize first guess */
-                sprintf(lbl, "%s %d", "CME", 0);
-                global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-                norm = norm_C1_rhf(&CME);
-                global_dpd_->file2_scm(&CME, 1.0 / norm);
-                global_dpd_->file2_close(&CME);
-                /* reorthoganalize and normalize other guesses */
-                for (i = 1; i < eom_params.cs_per_irrep[C_irr]; i++) {
-                    sprintf(lbl, "%s %d", "CME", i);
+                if (eom_params.guess == "SINGLES") {
+                    /* Diagonalize Hbar-SS to obtain initial CME and Cme guess */
+                    outfile->Printf("Obtaining initial guess from singles-singles block of Hbar...");
+                    diagSS(C_irr);
+                    if (!eom_params.print_singles) outfile->Printf("Done.\n\n");
+                }
+                //      else if(eom_params.guess == "INPUT") {
+                //        read_guess(C_irr);
+                //      }
+                else if (eom_params.guess == "DISK" && params.ref == 0) {
+                    outfile->Printf("Using C1 vectors on disk as initial guesses.\n");
+                    /* normalize first guess */
+                    sprintf(lbl, "%s %d", "CME", 0);
                     global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-                    for (j = 0; j < i; j++) {
-                        sprintf(lbl, "%s %d", "CME", j);
-                        global_dpd_->file2_init(&CME2, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-                        norm = 2.0 * global_dpd_->file2_dot(&CME, &CME2);
-                        global_dpd_->file2_axpy(&CME2, &CME, -1.0 * norm, 0);
-                        global_dpd_->file2_close(&CME2);
-                    }
                     norm = norm_C1_rhf(&CME);
                     global_dpd_->file2_scm(&CME, 1.0 / norm);
                     global_dpd_->file2_close(&CME);
-                }
-#ifdef EOM_DEBUG
-                /* check initial guesses - overlap matrix */
-                outfile->Printf("Checking overlap of orthogonalized initial guesses\n");
-                for (i = 0; i < eom_params.cs_per_irrep[C_irr]; i++) {
-                    sprintf(lbl, "%s %d", "CME", i);
-                    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-                    for (j = 0; j < eom_params.cs_per_irrep[C_irr]; j++) {
-                        sprintf(lbl, "%s %d", "CME", j);
-                        dpd_file2_init(&CME2, EOM_CME, C_irr, 0, 1, lbl);
-                        outfile->Printf("C[%d][%d] = %15.10lf\n", i, j, 2.0 * dpd_file2_dot(&CME, &CME2));
-                        dpd_file2_close(&CME2);
+                    /* reorthoganalize and normalize other guesses */
+                    for (i = 1; i < eom_params.cs_per_irrep[C_irr]; i++) {
+                        sprintf(lbl, "%s %d", "CME", i);
+                        global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+                        for (j = 0; j < i; j++) {
+                            sprintf(lbl, "%s %d", "CME", j);
+                            global_dpd_->file2_init(&CME2, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+                            norm = 2.0 * global_dpd_->file2_dot(&CME, &CME2);
+                            global_dpd_->file2_axpy(&CME2, &CME, -1.0 * norm, 0);
+                            global_dpd_->file2_close(&CME2);
+                        }
+                        norm = norm_C1_rhf(&CME);
+                        global_dpd_->file2_scm(&CME, 1.0 / norm);
+                        global_dpd_->file2_close(&CME);
                     }
-                    dpd_file2_close(&CME);
-                }
+#ifdef EOM_DEBUG
+                    /* check initial guesses - overlap matrix */
+                    outfile->Printf("Checking overlap of orthogonalized initial guesses\n");
+                    for (i = 0; i < eom_params.cs_per_irrep[C_irr]; i++) {
+                        sprintf(lbl, "%s %d", "CME", i);
+                        dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+                        for (j = 0; j < eom_params.cs_per_irrep[C_irr]; j++) {
+                            sprintf(lbl, "%s %d", "CME", j);
+                            dpd_file2_init(&CME2, EOM_CME, C_irr, 0, 1, lbl);
+                            outfile->Printf("C[%d][%d] = %15.10lf\n", i, j, 2.0 * dpd_file2_dot(&CME, &CME2));
+                            dpd_file2_close(&CME2);
+                        }
+                        dpd_file2_close(&CME);
+                    }
 #endif
-            } else {
-                outfile->Printf("Invalid initial guess method.\n");
-                exit(PSI_RETURN_FAILURE);
+                } else {
+                    outfile->Printf("Invalid initial guess method.\n");
+                    exit(PSI_RETURN_FAILURE);
+                }
             }
         }
 

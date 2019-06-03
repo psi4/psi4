@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCTRIPLES_MOINFO_H
+#define CCTRIPLES_MOINFO_H
+
 /*! \file
     \ingroup CCTRIPLES
     \brief Enter brief description of file here
@@ -75,3 +78,5 @@ struct MOInfo {
 
 }  // namespace cctriples
 }  // namespace psi
+
+#endif
