@@ -3619,6 +3619,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     OrientationMgr std_orientation(molecule_);
     RadialPruneMgr prune(opt);
     NuclearWeightMgr nuc(molecule_, opt.nucscheme);
+    double weightcut = opt.weights_cutoff;
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
@@ -3669,7 +3670,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                     mp = std_orientation.MoveIntoPosition(mp, A);
                     mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);  // This ain't gonna fly. Must abate this
                                                                                // mickey mouse a most rikky tikki tavi.
-                    grid[A].push_back(mp);
+                    if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
                     assert(!std::isnan(mp.w));
                 }
             }
@@ -3684,7 +3685,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 mp.w *= nuc.computeNuclearWeight(
                     mp, A,
                     stratmannCutoff);  // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                grid[A].push_back(mp);
+                if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
                 assert(!std::isnan(mp.w));
             }
         }
@@ -3724,6 +3725,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
     OrientationMgr std_orientation(molecule_);
     RadialPruneMgr prune(opt);
     NuclearWeightMgr nuc(molecule_, opt.nucscheme);
+    double weightcut=opt.weights_cutoff;
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
@@ -3766,7 +3768,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
                 mp.w *= nuc.computeNuclearWeight(
                     mp, A,
                     stratmannCutoff);  // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                grid[A].push_back(mp);
+                if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
                 assert(!std::isnan(mp.w));
             }
         }
@@ -4096,6 +4098,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
     opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
+    opt.weights_cutoff = options_.get_double("DFT_WEIGHTS_TOLERANCE");
 
     // handle pruning options
     static const std::vector<std::string> function_names = {"FLAT",       "P_SLATER",   "D_SLATER",    "LOG_SLATER",
@@ -4288,6 +4291,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     printer->Printf("    Total Blocks           = %14zu\n", blocks_.size());
     printer->Printf("    Max Points             = %14d\n", max_points_);
     printer->Printf("    Max Functions          = %14d\n", max_functions_);
+    printer->Printf("    Weights Tolerance      = %14.2E\n", options_.weights_cutoff);
     // printer->Printf("    Collocation Size [MiB] = %14d\n", (int)((8.0 * collocation_size_) / (1024.0 * 1024.0)));
     printer->Printf("\n");
     Process::environment.globals["XC GRID TOTAL POINTS"] = npoints_;
