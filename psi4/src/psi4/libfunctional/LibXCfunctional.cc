@@ -767,7 +767,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
         }
         if (deriv > 2) { // lgtm[cpp/constant-comparison]
-            throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 3 ");
+            throw PSIEXCEPTION("TRYING TO COMPUTE DERIV > 3 ");
         }
     }  // End polarized
 }
