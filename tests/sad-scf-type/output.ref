@@ -1,0 +1,1262 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4a2.dev16 
+
+                         Git: Rev {sadscf} b67c96d dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 03 June 2019 04:53PM
+
+    Process ID: 7011
+    Host:       dx7-lehtola.chem.helsinki.fi
+    PSIDATADIR: /home/work/psi4/install/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test SAD SCF guesses on noble gas atom
+
+molecule {
+0 1
+Ar
+}
+
+ref_dfhf = -526.79986827914422
+ref_hf = -526.79986530974611
+
+set {
+  basis cc-pVDZ
+  reference rhf
+  guess sad
+  sad_print 2
+  # Use tight thresholds
+  e_convergence 10
+  d_convergence 10
+  sad_e_convergence 10
+  sad_d_convergence 10
+  # No DF guess
+  df_scf_guess false
+  # Make sure guess is exact: this is 2 since we don't have orbitals in the first iteration
+  maxiter 2
+
+  # First test: DF
+  scf_type df
+  sad_scf_type df
+  df_basis_scf cc-pVDZ-JKfit
+  df_basis_sad cc-pVDZ-JKfit
+}
+energy('scf')
+compare_values(ref_dfhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD DF          guess (a.u.)");             #TEST
+
+set {
+  scf_type pk
+  sad_scf_type pk
+}
+energy('scf')
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD PK          guess (a.u.)");             #TEST
+
+set {
+  scf_type direct
+  sad_scf_type direct
+}
+energy('scf')
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD DIRECT      guess (a.u.)");             #TEST
+
+set {
+  scf_type out_of_core
+  sad_scf_type out_of_core
+}
+energy('scf')
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD OUT_OF_CORE guess (a.u.)");             #TEST
+
+set {
+  scf_type cd
+  sad_scf_type cd
+  # Need a tight tolerance since SAD actually uses exact integrals
+  cholesky_tolerance 1e-8
+}
+energy('scf')
+compare_values(ref_hf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAD CD          guess (a.u.)");             #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Mon Jun  3 16:53:36 2019
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry AR         line   718 file /home/work/psi4/install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry AR         line   741 file /home/work/psi4/install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         6       6       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        1       1       0       0       0       0
+     B3g        1       1       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        3       3       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 36
+    Number of basis function: 112
+    Number of Cartesian functions: 130
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.1016109502E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Determining Atomic Occupations
+  Atom 0, Z = 18, nalpha = 9.0, nbeta = 9.0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Occupation: nalpha = 9.0, nbeta = 9.0, nbf = 18
+  0 fully and 9 partially occupied orbitals with  1.000 alpha and  1.000 beta electrons each
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+
+  Basis Set: CC-PVDZ
+    Blend: BASIS
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  Atom:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               250
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Blend: BASIS
+    Number of shells: 36
+    Number of basis function: 112
+    Number of Cartesian functions: 130
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+
+  Initial Atomic UHF Energy:    -373.7743024529
+
+                                         Total Energy                 Delta E           RMS |[F,P]|  
+  @Atomic UHF iteration   1 energy:  -523.38229308647851     -149.60799063357035     0.09331033847874
+  @Atomic UHF iteration   2 energy:  -526.68798296484522       -3.30568987836671     0.03093242015067
+  @Atomic UHF iteration   3 energy:  -526.79853916161107       -0.11055619676586     0.00305712162104
+  @Atomic UHF iteration   4 energy:  -526.79985534241416       -0.00131618080309     0.00035367063747
+  @Atomic UHF iteration   5 energy:  -526.79986787621112       -0.00001253379696     0.00005692184841
+  @Atomic UHF iteration   6 energy:  -526.79986827914263       -0.00000040293151     0.00000046114515
+  @Atomic UHF iteration   7 energy:  -526.79986827914922       -0.00000000000659     0.00000000676240
+  @Atomic UHF iteration   8 energy:  -526.79986827914911        0.00000000000011     0.00000000000653
+  @Atomic UHF Final Energy for atom AR:  -526.79986827914911
+Finished UHF Computation!
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:  -526.79986827914922   -5.26800e+02   0.00000e+00 
+   @DF-RHF iter   1:  -526.79986827914990   -6.82121e-13   9.14959e-15 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag  -118.606289     2Ag   -12.317786     1B2u   -9.566314  
+       1B3u   -9.566314     1B1u   -9.566314     3Ag    -1.274392  
+       2B1u   -0.588024     2B3u   -0.588024     2B2u   -0.588024  
+
+    Virtual:                                                              
+
+       3B3u    0.797264     3B2u    0.797264     3B1u    0.797264  
+       4Ag     0.959750     5Ag     1.108403     1B2g    1.108403  
+       1B3g    1.108403     6Ag     1.108403     1B1g    1.108403  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    2,    2 ]
+
+  @DF-RHF Final Energy:  -526.79986827914990
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -728.2767716897639048
+    Two-Electron Energy =                 201.4769034106139713
+    Total Energy =                       -526.7998682791499050
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Mon Jun  3 16:53:37 2019
+Module time:
+	user time   =       1.48 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.48 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    RHF  energy, SAD DF          guess (a.u.).........................PASSED
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Mon Jun  3 16:53:37 2019
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry AR         line   718 file /home/work/psi4/install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         6       6       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        1       1       0       0       0       0
+     B3g        1       1       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        3       3       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:               8
+      Number of primitives:             50
+      Number of atomic orbitals:        19
+      Number of basis functions:        18
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 29412 doubles for integral storage.
+  We computed 666 shell quartets total.
+  Whereas there are 666 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 1.1016109502E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Determining Atomic Occupations
+  Atom 0, Z = 18, nalpha = 9.0, nbeta = 9.0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Occupation: nalpha = 9.0, nbeta = 9.0, nbf = 18
+  0 fully and 9 partially occupied orbitals with  1.000 alpha and  1.000 beta electrons each
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+
+  Basis Set: CC-PVDZ
+    Blend: BASIS
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  Atom:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+
+  Initial Atomic UHF Energy:    -373.7743024529
+
+                                         Total Energy                 Delta E           RMS |[F,P]|  
+  @Atomic UHF iteration   1 energy:  -523.38213389102839     -149.60783143812023     0.09329494926362
+  @Atomic UHF iteration   2 energy:  -526.68765298092205       -3.30551908989366     0.03096956697805
+  @Atomic UHF iteration   3 energy:  -526.79853449613734       -0.11088151521528     0.00305957891684
+  @Atomic UHF iteration   4 energy:  -526.79985231304045       -0.00131781690311     0.00035445666695
+  @Atomic UHF iteration   5 energy:  -526.79986490683609       -0.00001259379565     0.00005698020356
+  @Atomic UHF iteration   6 energy:  -526.79986530973883       -0.00000040290274     0.00000046235649
+  @Atomic UHF iteration   7 energy:  -526.79986530974611       -0.00000000000728     0.00000000675966
+  @Atomic UHF iteration   8 energy:  -526.79986530974588        0.00000000000023     0.00000000000664
+  @Atomic UHF Final Energy for atom AR:  -526.79986530974588
+Finished UHF Computation!
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:  -526.79986530974577   -5.26800e+02   0.00000e+00 
+   @RHF iter   1:  -526.79986530974656   -7.95808e-13   1.28927e-14 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag  -118.606338     2Ag   -12.317827     1B2u   -9.566358  
+       1B3u   -9.566358     1B1u   -9.566358     3Ag    -1.274404  
+       2B3u   -0.588036     2B2u   -0.588036     2B1u   -0.588036  
+
+    Virtual:                                                              
+
+       3B3u    0.797192     3B1u    0.797192     3B2u    0.797192  
+       4Ag     0.959563     5Ag     1.108303     1B1g    1.108303  
+       1B2g    1.108303     1B3g    1.108303     6Ag     1.108303  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    2,    2 ]
+
+  @RHF Final Energy:  -526.79986530974656
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -728.2762291801225274
+    Two-Electron Energy =                 201.4763638703759341
+    Total Energy =                       -526.7998653097465649
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Mon Jun  3 16:53:39 2019
+Module time:
+	user time   =       2.05 seconds =       0.03 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       3.53 seconds =       0.06 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+    RHF  energy, SAD PK          guess (a.u.).........................PASSED
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Mon Jun  3 16:53:39 2019
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry AR         line   718 file /home/work/psi4/install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         6       6       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        1       1       0       0       0       0
+     B3g        1       1       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        3       3       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 1.1016109502E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Determining Atomic Occupations
+  Atom 0, Z = 18, nalpha = 9.0, nbeta = 9.0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Occupation: nalpha = 9.0, nbeta = 9.0, nbf = 18
+  0 fully and 9 partially occupied orbitals with  1.000 alpha and  1.000 beta electrons each
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+
+  Basis Set: CC-PVDZ
+    Blend: BASIS
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  Atom:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+
+  Initial Atomic UHF Energy:    -373.7743024529
+
+                                         Total Energy                 Delta E           RMS |[F,P]|  
+  @Atomic UHF iteration   1 energy:  -523.38213389102839     -149.60783143812023     0.09329494926362
+  @Atomic UHF iteration   2 energy:  -526.68765298092205       -3.30551908989366     0.03096956697805
+  @Atomic UHF iteration   3 energy:  -526.79853449613734       -0.11088151521528     0.00305957891684
+  @Atomic UHF iteration   4 energy:  -526.79985231304045       -0.00131781690311     0.00035445666695
+  @Atomic UHF iteration   5 energy:  -526.79986490683609       -0.00001259379565     0.00005698020356
+  @Atomic UHF iteration   6 energy:  -526.79986530973883       -0.00000040290274     0.00000046235649
+  @Atomic UHF iteration   7 energy:  -526.79986530974611       -0.00000000000728     0.00000000675966
+  @Atomic UHF iteration   8 energy:  -526.79986530974588        0.00000000000023     0.00000000000664
+  @Atomic UHF Final Energy for atom AR:  -526.79986530974588
+Finished UHF Computation!
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:  -526.79986530974577   -5.26800e+02   0.00000e+00 
+   @RHF iter   1:  -526.79986530974634   -5.68434e-13   1.13523e-14 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag  -118.606338     2Ag   -12.317827     1B2u   -9.566358  
+       1B3u   -9.566358     1B1u   -9.566358     3Ag    -1.274404  
+       2B3u   -0.588036     2B1u   -0.588036     2B2u   -0.588036  
+
+    Virtual:                                                              
+
+       3B3u    0.797192     3B1u    0.797192     3B2u    0.797192  
+       4Ag     0.959563     5Ag     1.108303     1B3g    1.108303  
+       1B1g    1.108303     1B2g    1.108303     6Ag     1.108303  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    2,    2 ]
+
+  @RHF Final Energy:  -526.79986530974634
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -728.2762291801221863
+    Two-Electron Energy =                 201.4763638703757920
+    Total Energy =                       -526.7998653097463375
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Mon Jun  3 16:53:41 2019
+Module time:
+	user time   =       2.19 seconds =       0.04 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       5.72 seconds =       0.10 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+    RHF  energy, SAD DIRECT      guess (a.u.).........................PASSED
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Mon Jun  3 16:53:41 2019
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry AR         line   718 file /home/work/psi4/install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         6       6       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        1       1       0       0       0       0
+     B3g        1       1       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        3       3       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 1.1016109502E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Determining Atomic Occupations
+  Atom 0, Z = 18, nalpha = 9.0, nbeta = 9.0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Occupation: nalpha = 9.0, nbeta = 9.0, nbf = 18
+  0 fully and 9 partially occupied orbitals with  1.000 alpha and  1.000 beta electrons each
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+
+  Basis Set: CC-PVDZ
+    Blend: BASIS
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  Atom:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+
+  Initial Atomic UHF Energy:    -373.7743024529
+
+                                         Total Energy                 Delta E           RMS |[F,P]|  
+  @Atomic UHF iteration   1 energy:  -523.38213389102839     -149.60783143812023     0.09329494926362
+  @Atomic UHF iteration   2 energy:  -526.68765298092205       -3.30551908989366     0.03096956697805
+  @Atomic UHF iteration   3 energy:  -526.79853449613734       -0.11088151521528     0.00305957891684
+  @Atomic UHF iteration   4 energy:  -526.79985231304045       -0.00131781690311     0.00035445666695
+  @Atomic UHF iteration   5 energy:  -526.79986490683609       -0.00001259379565     0.00005698020356
+  @Atomic UHF iteration   6 energy:  -526.79986530973883       -0.00000040290274     0.00000046235649
+  @Atomic UHF iteration   7 energy:  -526.79986530974611       -0.00000000000728     0.00000000675966
+  @Atomic UHF iteration   8 energy:  -526.79986530974588        0.00000000000023     0.00000000000664
+  @Atomic UHF Final Energy for atom AR:  -526.79986530974588
+Finished UHF Computation!
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:  -526.79986530974566   -5.26800e+02   0.00000e+00 
+   @RHF iter   1:  -526.79986530974656   -9.09495e-13   8.17208e-15 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag  -118.606338     2Ag   -12.317827     1B3u   -9.566358  
+       1B2u   -9.566358     1B1u   -9.566358     3Ag    -1.274404  
+       2B3u   -0.588036     2B2u   -0.588036     2B1u   -0.588036  
+
+    Virtual:                                                              
+
+       3B2u    0.797192     3B1u    0.797192     3B3u    0.797192  
+       4Ag     0.959563     1B2g    1.108303     1B3g    1.108303  
+       1B1g    1.108303     5Ag     1.108303     6Ag     1.108303  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    2,    2 ]
+
+  @RHF Final Energy:  -526.79986530974656
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -728.2762291801225274
+    Two-Electron Energy =                 201.4763638703759341
+    Total Energy =                       -526.7998653097465649
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Mon Jun  3 16:53:43 2019
+Module time:
+	user time   =       1.96 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       7.68 seconds =       0.13 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
+    RHF  energy, SAD OUT_OF_CORE guess (a.u.).........................PASSED
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Mon Jun  3 16:53:43 2019
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry AR         line   718 file /home/work/psi4/install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is CD.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         6       6       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        1       1       0       0       0       0
+     B3g        1       1       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        3       3       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> CDJK: Cholesky-decomposed J/K Matrices <==
+
+    J tasked:                     Yes
+    K tasked:                     Yes
+    wK tasked:                     No
+    OpenMP threads:                 1
+    Integrals threads:              1
+    Memory [MiB]:                 375
+    Algorithm:                   Core
+    Integral Cache:              NONE
+    Schwarz Cutoff:             1E-12
+    Cholesky tolerance:      1.00E-08
+    No. Cholesky vectors:         121
+
+  Minimum eigenvalue in the overlap matrix is 1.1016109502E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  Determining Atomic Occupations
+  Atom 0, Z = 18, nalpha = 9.0, nbeta = 9.0
+
+  Performing Atomic UHF Computations:
+
+  UHF Computation for Unique Atom 0 which is Atom 0:
+  Occupation: nalpha = 9.0, nbeta = 9.0, nbf = 18
+  0 fully and 9 partially occupied orbitals with  1.000 alpha and  1.000 beta electrons each
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+
+  Basis Set: CC-PVDZ
+    Blend: BASIS
+    Number of shells: 8
+    Number of basis function: 18
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+
+  Atom:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         AR           0.000000000000     0.000000000000     0.000000000000    39.962383123700
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+
+  Initial Atomic UHF Energy:    -373.7743024529
+
+                                         Total Energy                 Delta E           RMS |[F,P]|  
+  @Atomic UHF iteration   1 energy:  -523.38213389102839     -149.60783143812023     0.09329494926362
+  @Atomic UHF iteration   2 energy:  -526.68765298092205       -3.30551908989366     0.03096956697805
+  @Atomic UHF iteration   3 energy:  -526.79853449613734       -0.11088151521528     0.00305957891684
+  @Atomic UHF iteration   4 energy:  -526.79985231304045       -0.00131781690311     0.00035445666695
+  @Atomic UHF iteration   5 energy:  -526.79986490683609       -0.00001259379565     0.00005698020356
+  @Atomic UHF iteration   6 energy:  -526.79986530973883       -0.00000040290274     0.00000046235649
+  @Atomic UHF iteration   7 energy:  -526.79986530974611       -0.00000000000728     0.00000000675966
+  @Atomic UHF iteration   8 energy:  -526.79986530974588        0.00000000000023     0.00000000000664
+  @Atomic UHF Final Energy for atom AR:  -526.79986530974588
+Finished UHF Computation!
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:  -526.79986529616474   -5.26800e+02   0.00000e+00 
+   @RHF iter   1:  -526.79986529616565   -9.09495e-13   4.15479e-10 DIIS
+   @RHF iter   2:  -526.79986529616531    3.41061e-13   7.54815e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag  -118.606338     2Ag   -12.317827     1B2u   -9.566358  
+       1B3u   -9.566358     1B1u   -9.566358     3Ag    -1.274404  
+       2B3u   -0.588036     2B2u   -0.588036     2B1u   -0.588036  
+
+    Virtual:                                                              
+
+       3B1u    0.797192     3B2u    0.797192     3B3u    0.797192  
+       4Ag     0.959563     1B1g    1.108303     1B3g    1.108303  
+       1B2g    1.108303     5Ag     1.108303     6Ag     1.108303  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    2,    2 ]
+
+  @RHF Final Energy:  -526.79986529616531
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -728.2762292543294507
+    Two-Electron Energy =                 201.4763639581641712
+    Total Energy =                       -526.7998652961653079
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Mon Jun  3 16:53:46 2019
+Module time:
+	user time   =       2.26 seconds =       0.04 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       9.94 seconds =       0.17 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
+    RHF  energy, SAD CD          guess (a.u.).........................PASSED
+
+    Psi4 stopped on: Monday, 03 June 2019 04:53PM
+    Psi4 wall time for execution: 0:00:10.00
+
+*** Psi4 exiting successfully. Buy a developer a beer!

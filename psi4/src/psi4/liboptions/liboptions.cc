@@ -52,7 +52,7 @@ void DataType::changed() { changed_ = true; }
 
 void DataType::dechanged() { changed_ = false; }
 
-void DataType::to_upper(std::string& str) { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
+void DataType::to_upper(std::string& str) const { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
 
 void DataType::add_choices(std::string str) {
     printf("I am here!\n");
@@ -85,7 +85,7 @@ void DataType::add(std::string, double) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
 void DataType::add(std::string, std::string, std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
-bool DataType::exists(std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
+bool DataType::exists(std::string) const { throw NOT_IMPLEMENTED_EXCEPTION(); }
 
 std::string DataType::to_string() const { throw DataTypeException("don't know how to convert to a string"); }
 
@@ -327,7 +327,10 @@ Data::Data(DataType* t) { ptr_ = std::shared_ptr<DataType>(t); }
 
 Data::Data(const Data& copy) { ptr_ = copy.ptr_; }
 
-Data& Data::operator=(const Data& copy) { ptr_ = copy.ptr_; return *this; }
+Data& Data::operator=(const Data& copy) {
+    ptr_ = copy.ptr_;
+    return *this;
+}
 
 std::string Data::to_string() const { return ptr_->to_string(); }
 
@@ -456,9 +459,9 @@ void MapType::add(std::string key, double d) { add(key, new DoubleDataType(d)); 
 
 void MapType::add(std::string key, std::string s, std::string c) { add(key, new StringDataType(s, c)); }
 
-bool MapType::exists(std::string key) {
+bool MapType::exists(std::string key) const {
     to_upper(key);
-    iterator pos = keyvals_.find(key);
+    const_iterator pos = keyvals_.find(key);
     if (pos != keyvals_.end()) return true;
     return false;
 }
@@ -506,7 +509,7 @@ void Options::set_current_module(const std::string s) {
     all_local_options_.clear();
 }
 
-void Options::to_upper(std::string& str) { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
+void Options::to_upper(std::string& str) const { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
 
 void Options::validate_options() {
     std::map<std::string, Data>::const_iterator iter = locals_[current_module_].begin();
@@ -681,22 +684,23 @@ void Options::clear() {
     locals_.clear();
 }
 
-bool Options::exists_in_active(std::string key) {
+bool Options::exists_in_active(std::string key) const {
     to_upper(key);
 
     if (!locals_.count(current_module_)) return false;
-    return (locals_[current_module_].count(key));
+
+    return locals_.at(current_module_).count(key);
 }
 
-bool Options::exists_in_global(std::string key) {
+bool Options::exists_in_global(std::string key) const {
     to_upper(key);
 
-    iterator pos = globals_.find(key);
+    const_iterator pos = globals_.find(key);
     if (pos != globals_.end()) return true;
     return false;
 }
 
-bool Options::exists(std::string key) { return exists_in_active(key) || exists_in_global(key); }
+bool Options::exists(std::string key) const { return exists_in_active(key) || exists_in_global(key); }
 
 Data& Options::get(std::string key) {
     to_upper(key);
@@ -720,6 +724,11 @@ Data& Options::get_local(std::string& key) {
 Data& Options::get(std::map<std::string, Data>& m, std::string& key) {
     to_upper(key);
     return m[key];
+}
+
+Data Options::get(const std::map<std::string, Data>& m, std::string& key) const {
+    to_upper(key);
+    return m.at(key);
 }
 
 Data& Options::get_global(std::string key) {
@@ -830,15 +839,84 @@ Data& Options::use(std::string& key) {
         return get(locals_[current_module_], key);
 }
 
-bool Options::get_bool(std::string key) { return (static_cast<bool>(use(key).to_integer())); }
+Data Options::use(std::string& key) const {
+    to_upper(key);
 
-int Options::get_int(std::string key) { return (use(key).to_integer()); }
+    // edit globals being true overrides everything
+    if (edit_globals_) {
+        return get(globals_, key);
+    }
 
-double Options::get_double(std::string key) { return (use(key).to_double()); }
+    if (!exists_in_active(key) && !exists_in_global(key)) {
+        printf("\nError: option %s is not contained in the list of available options.\n", key.c_str());
+        outfile->Printf("\nError: option %s is not contained in the list of available options.\n", key.c_str());
 
-std::string Options::get_str(std::string key) { return (use(key).to_string()); }
+        std::vector<std::string> choices;
 
-int* Options::get_int_array(std::string key) {
+        /// "Active" set of options
+        {
+            std::map<std::string, Data>::const_iterator it = locals_.at(current_module_).begin();
+            std::map<std::string, Data>::const_iterator endit = locals_.at(current_module_).end();
+            for (; it != endit; ++it) {
+                size_t distance = edit_distance(it->first, key);
+                if (distance < 3) {
+                    choices.push_back(it->first);
+                }
+            }
+        }
+        /// "Global" set of options
+        {
+            std::map<std::string, Data>::const_iterator it = globals_.begin();
+            std::map<std::string, Data>::const_iterator endit = globals_.end();
+            for (; it != endit; ++it) {
+                size_t distance = edit_distance(it->first, key);
+                if (distance < 3) {
+                    choices.push_back(it->first);
+                }
+            }
+        }
+
+        std::string choices_joined;
+        std::accumulate(std::begin(choices), std::end(choices), 0, [&choices_joined](int&, std::string& s) {
+            if (!choices_joined.empty()) {
+                choices_joined.append(" ");
+            }
+            choices_joined.append(s);
+            return 0;
+        });
+
+        printf("\nDid you mean? %s\n\n", choices_joined.c_str());
+        outfile->Printf("\nDid you mean? %s\n\n", choices_joined.c_str());
+        throw IndexException(key);
+    } else if (!exists_in_active(key) && exists_in_global(key))
+        return get(globals_, key);
+    else if (exists_in_active(key) && exists_in_global(key)) {
+        Data active = get(locals_.at(current_module_), key);
+        Data global = get(globals_, key);
+
+        if (active.has_changed()) {
+            // Pull from keyvals
+            return active;
+        } else if (global.has_changed()) {
+            // Pull from globals
+            return global;
+        } else {
+            // No user input - the default should come from local vals
+            return active;
+        }
+    } else
+        return get(locals_.at(current_module_), key);
+}
+
+bool Options::get_bool(std::string key) const { return (static_cast<bool>(use(key).to_integer())); }
+
+int Options::get_int(std::string key) const { return (use(key).to_integer()); }
+
+double Options::get_double(std::string key) const { return (use(key).to_double()); }
+
+std::string Options::get_str(std::string key) const { return (use(key).to_string()); }
+
+int* Options::get_int_array(std::string key) const {
     int* array = new int[use(key).size()];
     for (size_t i = 0; i < use(key).size(); ++i) {
         array[i] = use(key)[i].to_integer();
@@ -846,13 +924,13 @@ int* Options::get_int_array(std::string key) {
     return array;
 }
 
-void Options::fill_int_array(std::string key, int* empty_array) {
+void Options::fill_int_array(std::string key, int* empty_array) const {
     for (size_t i = 0; i < use(key).size(); ++i) {
         empty_array[i] = use(key)[i].to_integer();
     }
 }
 
-std::vector<int> Options::get_int_vector(std::string key) {
+std::vector<int> Options::get_int_vector(std::string key) const {
     std::vector<int> array;
     for (size_t i = 0; i < use(key).size(); ++i) {
         array.push_back(use(key)[i].to_integer());
@@ -860,7 +938,7 @@ std::vector<int> Options::get_int_vector(std::string key) {
     return array;
 }
 
-double* Options::get_double_array(std::string key) {
+double* Options::get_double_array(std::string key) const {
     double* array = new double[use(key).size()];
     for (size_t i = 0; i < use(key).size(); ++i) {
         array[i] = use(key)[i].to_double();
@@ -868,7 +946,7 @@ double* Options::get_double_array(std::string key) {
     return array;
 }
 
-std::vector<double> Options::get_double_vector(std::string key) {
+std::vector<double> Options::get_double_vector(std::string key) const {
     std::vector<double> array;
     for (size_t i = 0; i < use(key).size(); ++i) {
         array.push_back(use(key)[i].to_double());
@@ -876,7 +954,7 @@ std::vector<double> Options::get_double_vector(std::string key) {
     return array;
 }
 
-const char* Options::get_cstr(std::string key) { return (use(key).to_string().c_str()); }
+const char* Options::get_cstr(std::string key) const { return (use(key).to_string().c_str()); }
 
 Data& Options::operator[](std::string key) { return use(key); }
 }  // namespace psi
