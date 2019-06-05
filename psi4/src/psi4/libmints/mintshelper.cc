@@ -1495,6 +1495,35 @@ std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vec
     return mult;
 }
 
+std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int max_k, int deriv) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+
+    std::vector<SharedMatrix> mult;
+    bool do_dipole = (max_k >= 1);
+    bool do_quadrupole = (max_k >= 2);
+    mult.push_back(std::make_shared<Matrix>("AO Charge Potential 0", basisset_->nbf(), basisset_->nbf()));
+    if (do_dipole) {
+        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential X", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential Y", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential Z", basisset_->nbf(), basisset_->nbf()));
+    }
+    if (do_quadrupole) {
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XX", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YY", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential ZZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XY", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YZ", basisset_->nbf(), basisset_->nbf()));
+    }
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_multipole_potential(max_k, deriv));
+    ints->set_origin(v3origin);
+    ints->compute(mult);
+
+    return mult;
+}
+
 std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> &origin, int deriv) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
     Vector3 v3origin(origin[0], origin[1], origin[2]);

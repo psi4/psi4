@@ -985,6 +985,8 @@ void export_mints(py::module& m) {
         .def("so_angular_momentum", &MintsHelper::so_angular_momentum, "Vector SO angular momentum integrals")
         .def("ao_efp_multipole_potential", &MintsHelper::ao_efp_multipole_potential,
              "Vector AO EFP multipole integrals", "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
+         .def("ao_multipole_potential", &MintsHelper::ao_multipole_potential,
+              "Vector AO multipole potential integrals", "origin"_a = std::vector<double>{0, 0, 0}, "max_k"_a = 0, "deriv"_a = 0)
         .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
              "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
 

@@ -246,6 +246,9 @@ class PSI_API MintsHelper {
     /// AO EFP Multipole Potential Integrals
     std::vector<SharedMatrix> ao_efp_multipole_potential(const std::vector<double>& origin = {0., 0., 0.},
                                                          int deriv = 0);
+    // AO EFP Multipole Potential Integrals
+    std::vector<SharedMatrix> ao_multipole_potential(const std::vector<double>& origin = {0., 0., 0.}, int max_k = 0,
+                                                     int deriv = 0);
     /// Electric Field Integrals
     std::vector<SharedMatrix> electric_field(const std::vector<double>& origin = {0., 0., 0.}, int deriv = 0);
     /// Vector AO Angular Momentum Integrals
