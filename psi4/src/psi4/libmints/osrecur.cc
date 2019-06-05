@@ -1246,6 +1246,7 @@ ObaraSaikaTwoCenterMultipolePotentialRecursion::ObaraSaikaTwoCenterMultipolePote
 
     do_dipole = (max_k >= 1);
     do_quadrupole = (max_k >= 2);
+    do_octupole = (max_k >= 3);
     size_ = max_am1 > max_am2 ? max_am1 : max_am2;
     size_ += 1;
     size_ = (size_ - 1) * size_ * (size_ + 1) + 1;
@@ -1259,16 +1260,16 @@ ObaraSaikaTwoCenterMultipolePotentialRecursion::ObaraSaikaTwoCenterMultipolePote
     xy_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
     xz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
     yz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
-    // xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    // xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
 }
 
 ObaraSaikaTwoCenterMultipolePotentialRecursion::~ObaraSaikaTwoCenterMultipolePotentialRecursion() {
@@ -1282,16 +1283,16 @@ ObaraSaikaTwoCenterMultipolePotentialRecursion::~ObaraSaikaTwoCenterMultipolePot
     free_box(xy_, size_, size_);
     free_box(xz_, size_, size_);
     free_box(yz_, size_, size_);
-    // free_box(xxx_, size_, size_);
-    // free_box(yyy_, size_, size_);
-    // free_box(zzz_, size_, size_);
-    // free_box(xxy_, size_, size_);
-    // free_box(xxz_, size_, size_);
-    // free_box(xyy_, size_, size_);
-    // free_box(yyz_, size_, size_);
-    // free_box(xzz_, size_, size_);
-    // free_box(yzz_, size_, size_);
-    // free_box(xyz_, size_, size_);
+    free_box(xxx_, size_, size_);
+    free_box(yyy_, size_, size_);
+    free_box(zzz_, size_, size_);
+    free_box(xxy_, size_, size_);
+    free_box(xxz_, size_, size_);
+    free_box(xyy_, size_, size_);
+    free_box(yyz_, size_, size_);
+    free_box(xzz_, size_, size_);
+    free_box(yzz_, size_, size_);
+    free_box(xyz_, size_, size_);
 }
 
 #define EPS 1.0e-17
@@ -1379,27 +1380,27 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
             xz_[0][0][m] = 4.0 * zeta * zeta * PC[0] * PC[2] * q_[0][0][m + 2];
             yz_[0][0][m] = 4.0 * zeta * zeta * PC[1] * PC[2] * q_[0][0][m + 2];
         }
-    // for (m = 0; m <= mmax - 3; ++m) {
-    //     xxx_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[0] * q_[0][0][m + 3] -
-    //                     12.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
-    //     yyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[1] * q_[0][0][m + 3] -
-    //                     12.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
-    //     zzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[2] * PC[2] * PC[2] * q_[0][0][m + 3] -
-    //                     12.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
-    //     xxy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[1] * q_[0][0][m + 3] -
-    //                     4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
-    //     xxz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[2] * q_[0][0][m + 3] -
-    //                     4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
-    //     xyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[1] * q_[0][0][m + 3] -
-    //                     4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
-    //     yyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[2] * q_[0][0][m + 3] -
-    //                     4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
-    //     xzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[2] * PC[2] * q_[0][0][m + 3] -
-    //                     4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
-    //     yzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[2] * PC[2] * q_[0][0][m + 3] -
-    //                     4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
-    //     xyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[2] * q_[0][0][m + 3];
-    // }
+    for (m = 0; m <= mmax - 3; ++m) {
+        xxx_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[0] * q_[0][0][m + 3] -
+                        12.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
+        yyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[1] * q_[0][0][m + 3] -
+                        12.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
+        zzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[2] * PC[2] * PC[2] * q_[0][0][m + 3] -
+                        12.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
+        xxy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[1] * q_[0][0][m + 3] -
+                        4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
+        xxz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[2] * q_[0][0][m + 3] -
+                        4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
+        xyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[1] * q_[0][0][m + 3] -
+                        4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
+        yyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[2] * q_[0][0][m + 3] -
+                        4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
+        xzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[2] * PC[2] * q_[0][0][m + 3] -
+                        4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
+        yzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[2] * PC[2] * q_[0][0][m + 3] -
+                        4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
+        xyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[2] * q_[0][0][m + 3];
+    }
 
     // Perform recursion in b with a=0
     //  subset of A19
@@ -1435,24 +1436,25 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                             yz_[0][bind][m] = PB[2] * yz_[0][bind - bzm][m] - PC[2] * yz_[0][bind - bzm][m + 1] +
                                               y_[0][bind - bzm][m + 1];
                         }
-                    // for (m = 0; m <= mmax - b - 3; ++m) { /* Hessians of the electric field */
-                    //     xxx_[0][bind][m] = PB[2] * xxx_[0][bind - bzm][m] - PC[2] * xxx_[0][bind - bzm][m + 1];
-                    //     yyy_[0][bind][m] = PB[2] * yyy_[0][bind - bzm][m] - PC[2] * yyy_[0][bind - bzm][m + 1];
-                    //     zzz_[0][bind][m] = PB[2] * zzz_[0][bind - bzm][m] - PC[2] * zzz_[0][bind - bzm][m + 1] +
-                    //                        3 * zz_[0][bind - bzm][m + 1];
-                    //     xxy_[0][bind][m] = PB[2] * xxy_[0][bind - bzm][m] - PC[2] * xxy_[0][bind - bzm][m + 1];
-                    //     xxz_[0][bind][m] = PB[2] * xxz_[0][bind - bzm][m] - PC[2] * xxz_[0][bind - bzm][m + 1] +
-                    //                        1 * xx_[0][bind - bzm][m + 1];
-                    //     xyy_[0][bind][m] = PB[2] * xyy_[0][bind - bzm][m] - PC[2] * xyy_[0][bind - bzm][m + 1];
-                    //     yyz_[0][bind][m] = PB[2] * yyz_[0][bind - bzm][m] - PC[2] * yyz_[0][bind - bzm][m + 1] +
-                    //                        1 * yy_[0][bind - bzm][m + 1];
-                    //     xzz_[0][bind][m] = PB[2] * xzz_[0][bind - bzm][m] - PC[2] * xzz_[0][bind - bzm][m + 1] +
-                    //                        2 * xz_[0][bind - bzm][m + 1];
-                    //     yzz_[0][bind][m] = PB[2] * yzz_[0][bind - bzm][m] - PC[2] * yzz_[0][bind - bzm][m + 1] +
-                    //                        2 * yz_[0][bind - bzm][m + 1];
-                    //     xyz_[0][bind][m] = PB[2] * xyz_[0][bind - bzm][m] - PC[2] * xyz_[0][bind - bzm][m + 1] +
-                    //                        1 * xy_[0][bind - bzm][m + 1];
-                    // }
+                    if (do_octupole)
+                        for (m = 0; m <= mmax - b - 3; ++m) { /* Hessians of the electric field */
+                            xxx_[0][bind][m] = PB[2] * xxx_[0][bind - bzm][m] - PC[2] * xxx_[0][bind - bzm][m + 1];
+                            yyy_[0][bind][m] = PB[2] * yyy_[0][bind - bzm][m] - PC[2] * yyy_[0][bind - bzm][m + 1];
+                            zzz_[0][bind][m] = PB[2] * zzz_[0][bind - bzm][m] - PC[2] * zzz_[0][bind - bzm][m + 1] +
+                                               3 * zz_[0][bind - bzm][m + 1];
+                            xxy_[0][bind][m] = PB[2] * xxy_[0][bind - bzm][m] - PC[2] * xxy_[0][bind - bzm][m + 1];
+                            xxz_[0][bind][m] = PB[2] * xxz_[0][bind - bzm][m] - PC[2] * xxz_[0][bind - bzm][m + 1] +
+                                               1 * xx_[0][bind - bzm][m + 1];
+                            xyy_[0][bind][m] = PB[2] * xyy_[0][bind - bzm][m] - PC[2] * xyy_[0][bind - bzm][m + 1];
+                            yyz_[0][bind][m] = PB[2] * yyz_[0][bind - bzm][m] - PC[2] * yyz_[0][bind - bzm][m + 1] +
+                                               1 * yy_[0][bind - bzm][m + 1];
+                            xzz_[0][bind][m] = PB[2] * xzz_[0][bind - bzm][m] - PC[2] * xzz_[0][bind - bzm][m + 1] +
+                                               2 * xz_[0][bind - bzm][m + 1];
+                            yzz_[0][bind][m] = PB[2] * yzz_[0][bind - bzm][m] - PC[2] * yzz_[0][bind - bzm][m + 1] +
+                                               2 * yz_[0][bind - bzm][m + 1];
+                            xyz_[0][bind][m] = PB[2] * xyz_[0][bind - bzm][m] - PC[2] * xyz_[0][bind - bzm][m + 1] +
+                                               1 * xy_[0][bind - bzm][m + 1];
+                        }
                     if (bz > 1) {
                         for (m = 0; m <= mmax - b; ++m) {
                             q_[0][bind][m] +=
@@ -1482,28 +1484,29 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                 yz_[0][bind][m] +=
                                     ooz * (bz - 1) * (yz_[0][bind - 2 * bzm][m] - yz_[0][bind - 2 * bzm][m + 1]);
                             }
-                        // for (m = 0; m <= mmax - b - 3; m++) {
-                        //     xxx_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (xxx_[0][bind - 2 * bzm][m] - xxx_[0][bind - 2 * bzm][m + 1]);
-                        //     yyy_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (yyy_[0][bind - 2 * bzm][m] - yyy_[0][bind - 2 * bzm][m + 1]);
-                        //     zzz_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (zzz_[0][bind - 2 * bzm][m] - zzz_[0][bind - 2 * bzm][m + 1]);
-                        //     xxy_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (xxy_[0][bind - 2 * bzm][m] - xxy_[0][bind - 2 * bzm][m + 1]);
-                        //     xxz_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (xxz_[0][bind - 2 * bzm][m] - xxz_[0][bind - 2 * bzm][m + 1]);
-                        //     xyy_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (xyy_[0][bind - 2 * bzm][m] - xyy_[0][bind - 2 * bzm][m + 1]);
-                        //     yyz_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (yyz_[0][bind - 2 * bzm][m] - yyz_[0][bind - 2 * bzm][m + 1]);
-                        //     xzz_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (xzz_[0][bind - 2 * bzm][m] - xzz_[0][bind - 2 * bzm][m + 1]);
-                        //     yzz_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (yzz_[0][bind - 2 * bzm][m] - yzz_[0][bind - 2 * bzm][m + 1]);
-                        //     xyz_[0][bind][m] +=
-                        //         ooz * (bz - 1) * (xyz_[0][bind - 2 * bzm][m] - xyz_[0][bind - 2 * bzm][m + 1]);
-                        // }
+                        if (do_octupole)
+                            for (m = 0; m <= mmax - b - 3; m++) {
+                                xxx_[0][bind][m] +=
+                                    ooz * (bz - 1) * (xxx_[0][bind - 2 * bzm][m] - xxx_[0][bind - 2 * bzm][m + 1]);
+                                yyy_[0][bind][m] +=
+                                    ooz * (bz - 1) * (yyy_[0][bind - 2 * bzm][m] - yyy_[0][bind - 2 * bzm][m + 1]);
+                                zzz_[0][bind][m] +=
+                                    ooz * (bz - 1) * (zzz_[0][bind - 2 * bzm][m] - zzz_[0][bind - 2 * bzm][m + 1]);
+                                xxy_[0][bind][m] +=
+                                    ooz * (bz - 1) * (xxy_[0][bind - 2 * bzm][m] - xxy_[0][bind - 2 * bzm][m + 1]);
+                                xxz_[0][bind][m] +=
+                                    ooz * (bz - 1) * (xxz_[0][bind - 2 * bzm][m] - xxz_[0][bind - 2 * bzm][m + 1]);
+                                xyy_[0][bind][m] +=
+                                    ooz * (bz - 1) * (xyy_[0][bind - 2 * bzm][m] - xyy_[0][bind - 2 * bzm][m + 1]);
+                                yyz_[0][bind][m] +=
+                                    ooz * (bz - 1) * (yyz_[0][bind - 2 * bzm][m] - yyz_[0][bind - 2 * bzm][m + 1]);
+                                xzz_[0][bind][m] +=
+                                    ooz * (bz - 1) * (xzz_[0][bind - 2 * bzm][m] - xzz_[0][bind - 2 * bzm][m + 1]);
+                                yzz_[0][bind][m] +=
+                                    ooz * (bz - 1) * (yzz_[0][bind - 2 * bzm][m] - yzz_[0][bind - 2 * bzm][m + 1]);
+                                xyz_[0][bind][m] +=
+                                    ooz * (bz - 1) * (xyz_[0][bind - 2 * bzm][m] - xyz_[0][bind - 2 * bzm][m + 1]);
+                            }
                     }
                 } else if (by > 0) {
                     for (m = 0; m <= mmax - b; ++m) {
@@ -1528,24 +1531,25 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                             yz_[0][bind][m] = PB[1] * yz_[0][bind - bym][m] - PC[1] * yz_[0][bind - bym][m + 1] +
                                               z_[0][bind - bym][m + 1];
                         }
-                    // for (m = 0; m <= mmax - b - 3; ++m) {
-                    //     xxx_[0][bind][m] = PB[1] * xxx_[0][bind - bym][m] - PC[1] * xxx_[0][bind - bym][m + 1];
-                    //     yyy_[0][bind][m] = PB[1] * yyy_[0][bind - bym][m] - PC[1] * yyy_[0][bind - bym][m + 1] +
-                    //                        3 * yy_[0][bind - bym][m + 1];
-                    //     zzz_[0][bind][m] = PB[1] * zzz_[0][bind - bym][m] - PC[1] * zzz_[0][bind - bym][m + 1];
-                    //     xxy_[0][bind][m] = PB[1] * xxy_[0][bind - bym][m] - PC[1] * xxy_[0][bind - bym][m + 1] +
-                    //                        1 * xx_[0][bind - bym][m + 1];
-                    //     xxz_[0][bind][m] = PB[1] * xxz_[0][bind - bym][m] - PC[1] * xxz_[0][bind - bym][m + 1];
-                    //     xyy_[0][bind][m] = PB[1] * xyy_[0][bind - bym][m] - PC[1] * xyy_[0][bind - bym][m + 1] +
-                    //                        2 * xy_[0][bind - bym][m + 1];
-                    //     yyz_[0][bind][m] = PB[1] * yyz_[0][bind - bym][m] - PC[1] * yyz_[0][bind - bym][m + 1] +
-                    //                        2 * yz_[0][bind - bym][m + 1];
-                    //     xzz_[0][bind][m] = PB[1] * xzz_[0][bind - bym][m] - PC[1] * xzz_[0][bind - bym][m + 1];
-                    //     yzz_[0][bind][m] = PB[1] * yzz_[0][bind - bym][m] - PC[1] * yzz_[0][bind - bym][m + 1] +
-                    //                        1 * zz_[0][bind - bym][m + 1];
-                    //     xyz_[0][bind][m] = PB[1] * xyz_[0][bind - bym][m] - PC[1] * xyz_[0][bind - bym][m + 1] +
-                    //                        1 * xz_[0][bind - bym][m + 1];
-                    // }
+                    if (do_octupole)
+                        for (m = 0; m <= mmax - b - 3; ++m) {
+                            xxx_[0][bind][m] = PB[1] * xxx_[0][bind - bym][m] - PC[1] * xxx_[0][bind - bym][m + 1];
+                            yyy_[0][bind][m] = PB[1] * yyy_[0][bind - bym][m] - PC[1] * yyy_[0][bind - bym][m + 1] +
+                                               3 * yy_[0][bind - bym][m + 1];
+                            zzz_[0][bind][m] = PB[1] * zzz_[0][bind - bym][m] - PC[1] * zzz_[0][bind - bym][m + 1];
+                            xxy_[0][bind][m] = PB[1] * xxy_[0][bind - bym][m] - PC[1] * xxy_[0][bind - bym][m + 1] +
+                                               1 * xx_[0][bind - bym][m + 1];
+                            xxz_[0][bind][m] = PB[1] * xxz_[0][bind - bym][m] - PC[1] * xxz_[0][bind - bym][m + 1];
+                            xyy_[0][bind][m] = PB[1] * xyy_[0][bind - bym][m] - PC[1] * xyy_[0][bind - bym][m + 1] +
+                                               2 * xy_[0][bind - bym][m + 1];
+                            yyz_[0][bind][m] = PB[1] * yyz_[0][bind - bym][m] - PC[1] * yyz_[0][bind - bym][m + 1] +
+                                               2 * yz_[0][bind - bym][m + 1];
+                            xzz_[0][bind][m] = PB[1] * xzz_[0][bind - bym][m] - PC[1] * xzz_[0][bind - bym][m + 1];
+                            yzz_[0][bind][m] = PB[1] * yzz_[0][bind - bym][m] - PC[1] * yzz_[0][bind - bym][m + 1] +
+                                               1 * zz_[0][bind - bym][m + 1];
+                            xyz_[0][bind][m] = PB[1] * xyz_[0][bind - bym][m] - PC[1] * xyz_[0][bind - bym][m + 1] +
+                                               1 * xz_[0][bind - bym][m + 1];
+                        }
 
                     if (by > 1) {
                         for (m = 0; m <= mmax - b; ++m) {
@@ -1576,28 +1580,29 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                 yz_[0][bind][m] +=
                                     ooz * (by - 1) * (yz_[0][bind - 2 * bym][m] - yz_[0][bind - 2 * bym][m + 1]);
                             }
-                        // for (m = 0; m <= mmax - b - 3; m++) {
-                        //     xxx_[0][bind][m] +=
-                        //         ooz * (by - 1) * (xxx_[0][bind - 2 * bym][m] - xxx_[0][bind - 2 * bym][m + 1]);
-                        //     yyy_[0][bind][m] +=
-                        //         ooz * (by - 1) * (yyy_[0][bind - 2 * bym][m] - yyy_[0][bind - 2 * bym][m + 1]);
-                        //     zzz_[0][bind][m] +=
-                        //         ooz * (by - 1) * (zzz_[0][bind - 2 * bym][m] - zzz_[0][bind - 2 * bym][m + 1]);
-                        //     xxy_[0][bind][m] +=
-                        //         ooz * (by - 1) * (xxy_[0][bind - 2 * bym][m] - xxy_[0][bind - 2 * bym][m + 1]);
-                        //     xxz_[0][bind][m] +=
-                        //         ooz * (by - 1) * (xxz_[0][bind - 2 * bym][m] - xxz_[0][bind - 2 * bym][m + 1]);
-                        //     xyy_[0][bind][m] +=
-                        //         ooz * (by - 1) * (xyy_[0][bind - 2 * bym][m] - xyy_[0][bind - 2 * bym][m + 1]);
-                        //     yyz_[0][bind][m] +=
-                        //         ooz * (by - 1) * (yyz_[0][bind - 2 * bym][m] - yyz_[0][bind - 2 * bym][m + 1]);
-                        //     xzz_[0][bind][m] +=
-                        //         ooz * (by - 1) * (xzz_[0][bind - 2 * bym][m] - xzz_[0][bind - 2 * bym][m + 1]);
-                        //     yzz_[0][bind][m] +=
-                        //         ooz * (by - 1) * (yzz_[0][bind - 2 * bym][m] - yzz_[0][bind - 2 * bym][m + 1]);
-                        //     xyz_[0][bind][m] +=
-                        //         ooz * (by - 1) * (xyz_[0][bind - 2 * bym][m] - xyz_[0][bind - 2 * bym][m + 1]);
-                        // }
+                        if (do_octupole)
+                            for (m = 0; m <= mmax - b - 3; m++) {
+                                xxx_[0][bind][m] +=
+                                    ooz * (by - 1) * (xxx_[0][bind - 2 * bym][m] - xxx_[0][bind - 2 * bym][m + 1]);
+                                yyy_[0][bind][m] +=
+                                    ooz * (by - 1) * (yyy_[0][bind - 2 * bym][m] - yyy_[0][bind - 2 * bym][m + 1]);
+                                zzz_[0][bind][m] +=
+                                    ooz * (by - 1) * (zzz_[0][bind - 2 * bym][m] - zzz_[0][bind - 2 * bym][m + 1]);
+                                xxy_[0][bind][m] +=
+                                    ooz * (by - 1) * (xxy_[0][bind - 2 * bym][m] - xxy_[0][bind - 2 * bym][m + 1]);
+                                xxz_[0][bind][m] +=
+                                    ooz * (by - 1) * (xxz_[0][bind - 2 * bym][m] - xxz_[0][bind - 2 * bym][m + 1]);
+                                xyy_[0][bind][m] +=
+                                    ooz * (by - 1) * (xyy_[0][bind - 2 * bym][m] - xyy_[0][bind - 2 * bym][m + 1]);
+                                yyz_[0][bind][m] +=
+                                    ooz * (by - 1) * (yyz_[0][bind - 2 * bym][m] - yyz_[0][bind - 2 * bym][m + 1]);
+                                xzz_[0][bind][m] +=
+                                    ooz * (by - 1) * (xzz_[0][bind - 2 * bym][m] - xzz_[0][bind - 2 * bym][m + 1]);
+                                yzz_[0][bind][m] +=
+                                    ooz * (by - 1) * (yzz_[0][bind - 2 * bym][m] - yzz_[0][bind - 2 * bym][m + 1]);
+                                xyz_[0][bind][m] +=
+                                    ooz * (by - 1) * (xyz_[0][bind - 2 * bym][m] - xyz_[0][bind - 2 * bym][m + 1]);
+                            }
                     }
                 } else if (bx > 0) {
                     for (m = 0; m <= mmax - b; ++m) {
@@ -1622,24 +1627,25 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                               z_[0][bind - bxm][m + 1];
                             yz_[0][bind][m] = PB[0] * yz_[0][bind - bxm][m] - PC[0] * yz_[0][bind - bxm][m + 1];
                         }
-                    // for (m = 0; m <= mmax - b - 3; ++m) {
-                    //     xxx_[0][bind][m] = PB[0] * xxx_[0][bind - bxm][m] - PC[0] * xxx_[0][bind - bxm][m + 1] +
-                    //                        3 * xx_[0][bind - bxm][m + 1];
-                    //     yyy_[0][bind][m] = PB[0] * yyy_[0][bind - bxm][m] - PC[0] * yyy_[0][bind - bxm][m + 1];
-                    //     zzz_[0][bind][m] = PB[0] * zzz_[0][bind - bxm][m] - PC[0] * zzz_[0][bind - bxm][m + 1];
-                    //     xxy_[0][bind][m] = PB[0] * xxy_[0][bind - bxm][m] - PC[0] * xxy_[0][bind - bxm][m + 1] +
-                    //                        2 * xy_[0][bind - bxm][m + 1];
-                    //     xxz_[0][bind][m] = PB[0] * xxz_[0][bind - bxm][m] - PC[0] * xxz_[0][bind - bxm][m + 1] +
-                    //                        2 * xz_[0][bind - bxm][m + 1];
-                    //     xyy_[0][bind][m] = PB[0] * xyy_[0][bind - bxm][m] - PC[0] * xyy_[0][bind - bxm][m + 1] +
-                    //                        1 * yy_[0][bind - bxm][m + 1];
-                    //     yyz_[0][bind][m] = PB[0] * yyz_[0][bind - bxm][m] - PC[0] * yyz_[0][bind - bxm][m + 1];
-                    //     xzz_[0][bind][m] = PB[0] * xzz_[0][bind - bxm][m] - PC[0] * xzz_[0][bind - bxm][m + 1] +
-                    //                        1 * zz_[0][bind - bxm][m + 1];
-                    //     yzz_[0][bind][m] = PB[0] * yzz_[0][bind - bxm][m] - PC[0] * yzz_[0][bind - bxm][m + 1];
-                    //     xyz_[0][bind][m] = PB[0] * xyz_[0][bind - bxm][m] - PC[0] * xyz_[0][bind - bxm][m + 1] +
-                    //                        1 * yz_[0][bind - bxm][m + 1];
-                    // }
+                    if (do_octupole)
+                        for (m = 0; m <= mmax - b - 3; ++m) {
+                            xxx_[0][bind][m] = PB[0] * xxx_[0][bind - bxm][m] - PC[0] * xxx_[0][bind - bxm][m + 1] +
+                                               3 * xx_[0][bind - bxm][m + 1];
+                            yyy_[0][bind][m] = PB[0] * yyy_[0][bind - bxm][m] - PC[0] * yyy_[0][bind - bxm][m + 1];
+                            zzz_[0][bind][m] = PB[0] * zzz_[0][bind - bxm][m] - PC[0] * zzz_[0][bind - bxm][m + 1];
+                            xxy_[0][bind][m] = PB[0] * xxy_[0][bind - bxm][m] - PC[0] * xxy_[0][bind - bxm][m + 1] +
+                                               2 * xy_[0][bind - bxm][m + 1];
+                            xxz_[0][bind][m] = PB[0] * xxz_[0][bind - bxm][m] - PC[0] * xxz_[0][bind - bxm][m + 1] +
+                                               2 * xz_[0][bind - bxm][m + 1];
+                            xyy_[0][bind][m] = PB[0] * xyy_[0][bind - bxm][m] - PC[0] * xyy_[0][bind - bxm][m + 1] +
+                                               1 * yy_[0][bind - bxm][m + 1];
+                            yyz_[0][bind][m] = PB[0] * yyz_[0][bind - bxm][m] - PC[0] * yyz_[0][bind - bxm][m + 1];
+                            xzz_[0][bind][m] = PB[0] * xzz_[0][bind - bxm][m] - PC[0] * xzz_[0][bind - bxm][m + 1] +
+                                               1 * zz_[0][bind - bxm][m + 1];
+                            yzz_[0][bind][m] = PB[0] * yzz_[0][bind - bxm][m] - PC[0] * yzz_[0][bind - bxm][m + 1];
+                            xyz_[0][bind][m] = PB[0] * xyz_[0][bind - bxm][m] - PC[0] * xyz_[0][bind - bxm][m + 1] +
+                                               1 * yz_[0][bind - bxm][m + 1];
+                        }
 
                     if (bx > 1) {
                         for (m = 0; m <= mmax - b; ++m) {
@@ -1670,28 +1676,29 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                 yz_[0][bind][m] +=
                                     ooz * (bx - 1) * (yz_[0][bind - 2 * bxm][m] - yz_[0][bind - 2 * bxm][m + 1]);
                             }
-                        // for (m = 0; m <= mmax - b - 3; m++) {
-                        //     xxx_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (xxx_[0][bind - 2 * bxm][m] - xxx_[0][bind - 2 * bxm][m + 1]);
-                        //     yyy_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (yyy_[0][bind - 2 * bxm][m] - yyy_[0][bind - 2 * bxm][m + 1]);
-                        //     zzz_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (zzz_[0][bind - 2 * bxm][m] - zzz_[0][bind - 2 * bxm][m + 1]);
-                        //     xxy_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (xxy_[0][bind - 2 * bxm][m] - xxy_[0][bind - 2 * bxm][m + 1]);
-                        //     xxz_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (xxz_[0][bind - 2 * bxm][m] - xxz_[0][bind - 2 * bxm][m + 1]);
-                        //     xyy_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (xyy_[0][bind - 2 * bxm][m] - xyy_[0][bind - 2 * bxm][m + 1]);
-                        //     yyz_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (yyz_[0][bind - 2 * bxm][m] - yyz_[0][bind - 2 * bxm][m + 1]);
-                        //     xzz_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (xzz_[0][bind - 2 * bxm][m] - xzz_[0][bind - 2 * bxm][m + 1]);
-                        //     yzz_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (yzz_[0][bind - 2 * bxm][m] - yzz_[0][bind - 2 * bxm][m + 1]);
-                        //     xyz_[0][bind][m] +=
-                        //         ooz * (bx - 1) * (xyz_[0][bind - 2 * bxm][m] - xyz_[0][bind - 2 * bxm][m + 1]);
-                        // }
+                        if (do_octupole)
+                            for (m = 0; m <= mmax - b - 3; m++) {
+                                xxx_[0][bind][m] +=
+                                    ooz * (bx - 1) * (xxx_[0][bind - 2 * bxm][m] - xxx_[0][bind - 2 * bxm][m + 1]);
+                                yyy_[0][bind][m] +=
+                                    ooz * (bx - 1) * (yyy_[0][bind - 2 * bxm][m] - yyy_[0][bind - 2 * bxm][m + 1]);
+                                zzz_[0][bind][m] +=
+                                    ooz * (bx - 1) * (zzz_[0][bind - 2 * bxm][m] - zzz_[0][bind - 2 * bxm][m + 1]);
+                                xxy_[0][bind][m] +=
+                                    ooz * (bx - 1) * (xxy_[0][bind - 2 * bxm][m] - xxy_[0][bind - 2 * bxm][m + 1]);
+                                xxz_[0][bind][m] +=
+                                    ooz * (bx - 1) * (xxz_[0][bind - 2 * bxm][m] - xxz_[0][bind - 2 * bxm][m + 1]);
+                                xyy_[0][bind][m] +=
+                                    ooz * (bx - 1) * (xyy_[0][bind - 2 * bxm][m] - xyy_[0][bind - 2 * bxm][m + 1]);
+                                yyz_[0][bind][m] +=
+                                    ooz * (bx - 1) * (yyz_[0][bind - 2 * bxm][m] - yyz_[0][bind - 2 * bxm][m + 1]);
+                                xzz_[0][bind][m] +=
+                                    ooz * (bx - 1) * (xzz_[0][bind - 2 * bxm][m] - xzz_[0][bind - 2 * bxm][m + 1]);
+                                yzz_[0][bind][m] +=
+                                    ooz * (bx - 1) * (yzz_[0][bind - 2 * bxm][m] - yzz_[0][bind - 2 * bxm][m + 1]);
+                                xyz_[0][bind][m] +=
+                                    ooz * (bx - 1) * (xyz_[0][bind - 2 * bxm][m] - xyz_[0][bind - 2 * bxm][m + 1]);
+                            }
                     }
                 }
             }
@@ -1747,34 +1754,35 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                              PC[2] * yz_[aind - azm][bind][m + 1] +
                                                              y_[aind - azm][bind][m + 1];
                                     }
-                                // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                //     xxx_[aind][bind][m] =
-                                //         PA[2] * xxx_[aind - azm][bind][m] - PC[2] * xxx_[aind - azm][bind][m + 1];
-                                //     yyy_[aind][bind][m] =
-                                //         PA[2] * yyy_[aind - azm][bind][m] - PC[2] * yyy_[aind - azm][bind][m + 1];
-                                //     zzz_[aind][bind][m] = PA[2] * zzz_[aind - azm][bind][m] -
-                                //                           PC[2] * zzz_[aind - azm][bind][m + 1] +
-                                //                           3 * zz_[aind - azm][bind][m + 1];
-                                //     xxy_[aind][bind][m] =
-                                //         PA[2] * xxy_[aind - azm][bind][m] - PC[2] * xxy_[aind - azm][bind][m + 1];
-                                //     xxz_[aind][bind][m] = PA[2] * xxz_[aind - azm][bind][m] -
-                                //                           PC[2] * xxz_[aind - azm][bind][m + 1] +
-                                //                           1 * xx_[aind - azm][bind][m + 1];
-                                //     xyy_[aind][bind][m] =
-                                //         PA[2] * xyy_[aind - azm][bind][m] - PC[2] * xyy_[aind - azm][bind][m + 1];
-                                //     yyz_[aind][bind][m] = PA[2] * yyz_[aind - azm][bind][m] -
-                                //                           PC[2] * yyz_[aind - azm][bind][m + 1] +
-                                //                           1 * yy_[aind - azm][bind][m + 1];
-                                //     xzz_[aind][bind][m] = PA[2] * xzz_[aind - azm][bind][m] -
-                                //                           PC[2] * xzz_[aind - azm][bind][m + 1] +
-                                //                           2 * xz_[aind - azm][bind][m + 1];
-                                //     yzz_[aind][bind][m] = PA[2] * yzz_[aind - azm][bind][m] -
-                                //                           PC[2] * yzz_[aind - azm][bind][m + 1] +
-                                //                           2 * yz_[aind - azm][bind][m + 1];
-                                //     xyz_[aind][bind][m] = PA[2] * xyz_[aind - azm][bind][m] -
-                                //                           PC[2] * xyz_[aind - azm][bind][m + 1] +
-                                //                           1 * xy_[aind - azm][bind][m + 1];
-                                // }
+                                if (do_octupole)
+                                    for (m = 0; m <= mmax - a - b - 3; m++) {
+                                        xxx_[aind][bind][m] =
+                                            PA[2] * xxx_[aind - azm][bind][m] - PC[2] * xxx_[aind - azm][bind][m + 1];
+                                        yyy_[aind][bind][m] =
+                                            PA[2] * yyy_[aind - azm][bind][m] - PC[2] * yyy_[aind - azm][bind][m + 1];
+                                        zzz_[aind][bind][m] = PA[2] * zzz_[aind - azm][bind][m] -
+                                                              PC[2] * zzz_[aind - azm][bind][m + 1] +
+                                                              3 * zz_[aind - azm][bind][m + 1];
+                                        xxy_[aind][bind][m] =
+                                            PA[2] * xxy_[aind - azm][bind][m] - PC[2] * xxy_[aind - azm][bind][m + 1];
+                                        xxz_[aind][bind][m] = PA[2] * xxz_[aind - azm][bind][m] -
+                                                              PC[2] * xxz_[aind - azm][bind][m + 1] +
+                                                              1 * xx_[aind - azm][bind][m + 1];
+                                        xyy_[aind][bind][m] =
+                                            PA[2] * xyy_[aind - azm][bind][m] - PC[2] * xyy_[aind - azm][bind][m + 1];
+                                        yyz_[aind][bind][m] = PA[2] * yyz_[aind - azm][bind][m] -
+                                                              PC[2] * yyz_[aind - azm][bind][m + 1] +
+                                                              1 * yy_[aind - azm][bind][m + 1];
+                                        xzz_[aind][bind][m] = PA[2] * xzz_[aind - azm][bind][m] -
+                                                              PC[2] * xzz_[aind - azm][bind][m + 1] +
+                                                              2 * xz_[aind - azm][bind][m + 1];
+                                        yzz_[aind][bind][m] = PA[2] * yzz_[aind - azm][bind][m] -
+                                                              PC[2] * yzz_[aind - azm][bind][m + 1] +
+                                                              2 * yz_[aind - azm][bind][m + 1];
+                                        xyz_[aind][bind][m] = PA[2] * xyz_[aind - azm][bind][m] -
+                                                              PC[2] * xyz_[aind - azm][bind][m + 1] +
+                                                              1 * xy_[aind - azm][bind][m + 1];
+                                    }
 
                                 if (az > 1) {
                                     for (m = 0; m <= mmax - a - b; m++) {
@@ -1815,38 +1823,39 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                 ooz * (az - 1) *
                                                 (yz_[aind - 2 * azm][bind][m] - yz_[aind - 2 * azm][bind][m + 1]);
                                         }
-                                    // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                    //     xxx_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (xxx_[aind - 2 * azm][bind][m] - xxx_[aind - 2 * azm][bind][m + 1]);
-                                    //     yyy_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (yyy_[aind - 2 * azm][bind][m] - yyy_[aind - 2 * azm][bind][m + 1]);
-                                    //     zzz_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (zzz_[aind - 2 * azm][bind][m] - zzz_[aind - 2 * azm][bind][m + 1]);
-                                    //     xxy_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (xxy_[aind - 2 * azm][bind][m] - xxy_[aind - 2 * azm][bind][m + 1]);
-                                    //     xxz_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (xxz_[aind - 2 * azm][bind][m] - xxz_[aind - 2 * azm][bind][m + 1]);
-                                    //     xyy_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (xyy_[aind - 2 * azm][bind][m] - xyy_[aind - 2 * azm][bind][m + 1]);
-                                    //     yyz_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (yyz_[aind - 2 * azm][bind][m] - yyz_[aind - 2 * azm][bind][m + 1]);
-                                    //     xzz_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (xzz_[aind - 2 * azm][bind][m] - xzz_[aind - 2 * azm][bind][m + 1]);
-                                    //     yzz_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (yzz_[aind - 2 * azm][bind][m] - yzz_[aind - 2 * azm][bind][m + 1]);
-                                    //     xyz_[aind][bind][m] +=
-                                    //         ooz * (az - 1) *
-                                    //         (xyz_[aind - 2 * azm][bind][m] - xyz_[aind - 2 * azm][bind][m + 1]);
-                                    // }
+                                    if (do_octupole)
+                                        for (m = 0; m <= mmax - a - b - 3; m++) {
+                                            xxx_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (xxx_[aind - 2 * azm][bind][m] - xxx_[aind - 2 * azm][bind][m + 1]);
+                                            yyy_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (yyy_[aind - 2 * azm][bind][m] - yyy_[aind - 2 * azm][bind][m + 1]);
+                                            zzz_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (zzz_[aind - 2 * azm][bind][m] - zzz_[aind - 2 * azm][bind][m + 1]);
+                                            xxy_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (xxy_[aind - 2 * azm][bind][m] - xxy_[aind - 2 * azm][bind][m + 1]);
+                                            xxz_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (xxz_[aind - 2 * azm][bind][m] - xxz_[aind - 2 * azm][bind][m + 1]);
+                                            xyy_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (xyy_[aind - 2 * azm][bind][m] - xyy_[aind - 2 * azm][bind][m + 1]);
+                                            yyz_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (yyz_[aind - 2 * azm][bind][m] - yyz_[aind - 2 * azm][bind][m + 1]);
+                                            xzz_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (xzz_[aind - 2 * azm][bind][m] - xzz_[aind - 2 * azm][bind][m + 1]);
+                                            yzz_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (yzz_[aind - 2 * azm][bind][m] - yzz_[aind - 2 * azm][bind][m + 1]);
+                                            xyz_[aind][bind][m] +=
+                                                ooz * (az - 1) *
+                                                (xyz_[aind - 2 * azm][bind][m] - xyz_[aind - 2 * azm][bind][m + 1]);
+                                        }
                                 }
                                 if (bz > 0) {
                                     for (m = 0; m <= mmax - a - b; m++) {
@@ -1887,38 +1896,39 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                 ooz * bz *
                                                 (yz_[aind - azm][bind - bzm][m] - yz_[aind - azm][bind - bzm][m + 1]);
                                         }
-                                    // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                    //     xxx_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (xxx_[aind - azm][bind - bzm][m] - xxx_[aind - azm][bind - bzm][m + 1]);
-                                    //     yyy_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (yyy_[aind - azm][bind - bzm][m] - yyy_[aind - azm][bind - bzm][m + 1]);
-                                    //     zzz_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (zzz_[aind - azm][bind - bzm][m] - zzz_[aind - azm][bind - bzm][m + 1]);
-                                    //     xxy_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (xxy_[aind - azm][bind - bzm][m] - xxy_[aind - azm][bind - bzm][m + 1]);
-                                    //     xxz_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (xxz_[aind - azm][bind - bzm][m] - xxz_[aind - azm][bind - bzm][m + 1]);
-                                    //     xyy_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (xyy_[aind - azm][bind - bzm][m] - xyy_[aind - azm][bind - bzm][m + 1]);
-                                    //     yyz_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (yyz_[aind - azm][bind - bzm][m] - yyz_[aind - azm][bind - bzm][m + 1]);
-                                    //     xzz_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (xzz_[aind - azm][bind - bzm][m] - xzz_[aind - azm][bind - bzm][m + 1]);
-                                    //     yzz_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (yzz_[aind - azm][bind - bzm][m] - yzz_[aind - azm][bind - bzm][m + 1]);
-                                    //     xyz_[aind][bind][m] +=
-                                    //         ooz * bz *
-                                    //         (xyz_[aind - azm][bind - bzm][m] - xyz_[aind - azm][bind - bzm][m + 1]);
-                                    // }
+                                    if (do_octupole)
+                                        for (m = 0; m <= mmax - a - b - 3; m++) {
+                                            xxx_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (xxx_[aind - azm][bind - bzm][m] - xxx_[aind - azm][bind - bzm][m + 1]);
+                                            yyy_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (yyy_[aind - azm][bind - bzm][m] - yyy_[aind - azm][bind - bzm][m + 1]);
+                                            zzz_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (zzz_[aind - azm][bind - bzm][m] - zzz_[aind - azm][bind - bzm][m + 1]);
+                                            xxy_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (xxy_[aind - azm][bind - bzm][m] - xxy_[aind - azm][bind - bzm][m + 1]);
+                                            xxz_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (xxz_[aind - azm][bind - bzm][m] - xxz_[aind - azm][bind - bzm][m + 1]);
+                                            xyy_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (xyy_[aind - azm][bind - bzm][m] - xyy_[aind - azm][bind - bzm][m + 1]);
+                                            yyz_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (yyz_[aind - azm][bind - bzm][m] - yyz_[aind - azm][bind - bzm][m + 1]);
+                                            xzz_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (xzz_[aind - azm][bind - bzm][m] - xzz_[aind - azm][bind - bzm][m + 1]);
+                                            yzz_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (yzz_[aind - azm][bind - bzm][m] - yzz_[aind - azm][bind - bzm][m + 1]);
+                                            xyz_[aind][bind][m] +=
+                                                ooz * bz *
+                                                (xyz_[aind - azm][bind - bzm][m] - xyz_[aind - azm][bind - bzm][m + 1]);
+                                        }
                                 }
                             } else if (ay > 0) {
                                 for (m = 0; m <= mmax - a - b; m++) {
@@ -1953,34 +1963,35 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                              PC[1] * yz_[aind - aym][bind][m + 1] +
                                                              z_[aind - aym][bind][m + 1];
                                     }
-                                // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                //     xxx_[aind][bind][m] =
-                                //         PA[1] * xxx_[aind - aym][bind][m] - PC[1] * xxx_[aind - aym][bind][m + 1];
-                                //     yyy_[aind][bind][m] = PA[1] * yyy_[aind - aym][bind][m] -
-                                //                           PC[1] * yyy_[aind - aym][bind][m + 1] +
-                                //                           3 * yy_[aind - aym][bind][m + 1];
-                                //     zzz_[aind][bind][m] =
-                                //         PA[1] * zzz_[aind - aym][bind][m] - PC[1] * zzz_[aind - aym][bind][m + 1];
-                                //     xxy_[aind][bind][m] = PA[1] * xxy_[aind - aym][bind][m] -
-                                //                           PC[1] * xxy_[aind - aym][bind][m + 1] +
-                                //                           1 * xx_[aind - aym][bind][m + 1];
-                                //     xxz_[aind][bind][m] =
-                                //         PA[1] * xxz_[aind - aym][bind][m] - PC[1] * xxz_[aind - aym][bind][m + 1];
-                                //     xyy_[aind][bind][m] = PA[1] * xyy_[aind - aym][bind][m] -
-                                //                           PC[1] * xyy_[aind - aym][bind][m + 1] +
-                                //                           2 * xy_[aind - aym][bind][m + 1];
-                                //     yyz_[aind][bind][m] = PA[1] * yyz_[aind - aym][bind][m] -
-                                //                           PC[1] * yyz_[aind - aym][bind][m + 1] +
-                                //                           2 * yz_[aind - aym][bind][m + 1];
-                                //     xzz_[aind][bind][m] =
-                                //         PA[1] * xzz_[aind - aym][bind][m] - PC[1] * xzz_[aind - aym][bind][m + 1];
-                                //     yzz_[aind][bind][m] = PA[1] * yzz_[aind - aym][bind][m] -
-                                //                           PC[1] * yzz_[aind - aym][bind][m + 1] +
-                                //                           1 * zz_[aind - aym][bind][m + 1];
-                                //     xyz_[aind][bind][m] = PA[1] * xyz_[aind - aym][bind][m] -
-                                //                           PC[1] * xyz_[aind - aym][bind][m + 1] +
-                                //                           1 * xz_[aind - aym][bind][m + 1];
-                                // }
+                                if (do_octupole)
+                                    for (m = 0; m <= mmax - a - b - 3; m++) {
+                                        xxx_[aind][bind][m] =
+                                            PA[1] * xxx_[aind - aym][bind][m] - PC[1] * xxx_[aind - aym][bind][m + 1];
+                                        yyy_[aind][bind][m] = PA[1] * yyy_[aind - aym][bind][m] -
+                                                              PC[1] * yyy_[aind - aym][bind][m + 1] +
+                                                              3 * yy_[aind - aym][bind][m + 1];
+                                        zzz_[aind][bind][m] =
+                                            PA[1] * zzz_[aind - aym][bind][m] - PC[1] * zzz_[aind - aym][bind][m + 1];
+                                        xxy_[aind][bind][m] = PA[1] * xxy_[aind - aym][bind][m] -
+                                                              PC[1] * xxy_[aind - aym][bind][m + 1] +
+                                                              1 * xx_[aind - aym][bind][m + 1];
+                                        xxz_[aind][bind][m] =
+                                            PA[1] * xxz_[aind - aym][bind][m] - PC[1] * xxz_[aind - aym][bind][m + 1];
+                                        xyy_[aind][bind][m] = PA[1] * xyy_[aind - aym][bind][m] -
+                                                              PC[1] * xyy_[aind - aym][bind][m + 1] +
+                                                              2 * xy_[aind - aym][bind][m + 1];
+                                        yyz_[aind][bind][m] = PA[1] * yyz_[aind - aym][bind][m] -
+                                                              PC[1] * yyz_[aind - aym][bind][m + 1] +
+                                                              2 * yz_[aind - aym][bind][m + 1];
+                                        xzz_[aind][bind][m] =
+                                            PA[1] * xzz_[aind - aym][bind][m] - PC[1] * xzz_[aind - aym][bind][m + 1];
+                                        yzz_[aind][bind][m] = PA[1] * yzz_[aind - aym][bind][m] -
+                                                              PC[1] * yzz_[aind - aym][bind][m + 1] +
+                                                              1 * zz_[aind - aym][bind][m + 1];
+                                        xyz_[aind][bind][m] = PA[1] * xyz_[aind - aym][bind][m] -
+                                                              PC[1] * xyz_[aind - aym][bind][m + 1] +
+                                                              1 * xz_[aind - aym][bind][m + 1];
+                                    }
                                 if (ay > 1) {
                                     for (m = 0; m <= mmax - a - b; m++) {
                                         q_[aind][bind][m] +=
@@ -2020,38 +2031,39 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                 ooz * (ay - 1) *
                                                 (yz_[aind - 2 * aym][bind][m] - yz_[aind - 2 * aym][bind][m + 1]);
                                         }
-                                    // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                    //     xxx_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (xxx_[aind - 2 * aym][bind][m] - xxx_[aind - 2 * aym][bind][m + 1]);
-                                    //     yyy_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (yyy_[aind - 2 * aym][bind][m] - yyy_[aind - 2 * aym][bind][m + 1]);
-                                    //     zzz_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (zzz_[aind - 2 * aym][bind][m] - zzz_[aind - 2 * aym][bind][m + 1]);
-                                    //     xxy_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (xxy_[aind - 2 * aym][bind][m] - xxy_[aind - 2 * aym][bind][m + 1]);
-                                    //     xxz_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (xxz_[aind - 2 * aym][bind][m] - xxz_[aind - 2 * aym][bind][m + 1]);
-                                    //     xyy_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (xyy_[aind - 2 * aym][bind][m] - xyy_[aind - 2 * aym][bind][m + 1]);
-                                    //     yyz_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (yyz_[aind - 2 * aym][bind][m] - yyz_[aind - 2 * aym][bind][m + 1]);
-                                    //     xzz_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (xzz_[aind - 2 * aym][bind][m] - xzz_[aind - 2 * aym][bind][m + 1]);
-                                    //     yzz_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (yzz_[aind - 2 * aym][bind][m] - yzz_[aind - 2 * aym][bind][m + 1]);
-                                    //     xyz_[aind][bind][m] +=
-                                    //         ooz * (ay - 1) *
-                                    //         (xyz_[aind - 2 * aym][bind][m] - xyz_[aind - 2 * aym][bind][m + 1]);
-                                    // }
+                                    if (do_octupole)
+                                        for (m = 0; m <= mmax - a - b - 3; m++) {
+                                            xxx_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (xxx_[aind - 2 * aym][bind][m] - xxx_[aind - 2 * aym][bind][m + 1]);
+                                            yyy_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (yyy_[aind - 2 * aym][bind][m] - yyy_[aind - 2 * aym][bind][m + 1]);
+                                            zzz_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (zzz_[aind - 2 * aym][bind][m] - zzz_[aind - 2 * aym][bind][m + 1]);
+                                            xxy_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (xxy_[aind - 2 * aym][bind][m] - xxy_[aind - 2 * aym][bind][m + 1]);
+                                            xxz_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (xxz_[aind - 2 * aym][bind][m] - xxz_[aind - 2 * aym][bind][m + 1]);
+                                            xyy_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (xyy_[aind - 2 * aym][bind][m] - xyy_[aind - 2 * aym][bind][m + 1]);
+                                            yyz_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (yyz_[aind - 2 * aym][bind][m] - yyz_[aind - 2 * aym][bind][m + 1]);
+                                            xzz_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (xzz_[aind - 2 * aym][bind][m] - xzz_[aind - 2 * aym][bind][m + 1]);
+                                            yzz_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (yzz_[aind - 2 * aym][bind][m] - yzz_[aind - 2 * aym][bind][m + 1]);
+                                            xyz_[aind][bind][m] +=
+                                                ooz * (ay - 1) *
+                                                (xyz_[aind - 2 * aym][bind][m] - xyz_[aind - 2 * aym][bind][m + 1]);
+                                        }
                                 }
                                 if (by > 0) {
                                     for (m = 0; m <= mmax - a - b; m++) {
@@ -2092,38 +2104,39 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                 ooz * by *
                                                 (yz_[aind - aym][bind - bym][m] - yz_[aind - aym][bind - bym][m + 1]);
                                         }
-                                    // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                    //     xxx_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (xxx_[aind - aym][bind - bym][m] - xxx_[aind - aym][bind - bym][m + 1]);
-                                    //     yyy_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (yyy_[aind - aym][bind - bym][m] - yyy_[aind - aym][bind - bym][m + 1]);
-                                    //     zzz_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (zzz_[aind - aym][bind - bym][m] - zzz_[aind - aym][bind - bym][m + 1]);
-                                    //     xxy_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (xxy_[aind - aym][bind - bym][m] - xxy_[aind - aym][bind - bym][m + 1]);
-                                    //     xxz_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (xxz_[aind - aym][bind - bym][m] - xxz_[aind - aym][bind - bym][m + 1]);
-                                    //     xyy_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (xyy_[aind - aym][bind - bym][m] - xyy_[aind - aym][bind - bym][m + 1]);
-                                    //     yyz_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (yyz_[aind - aym][bind - bym][m] - yyz_[aind - aym][bind - bym][m + 1]);
-                                    //     xzz_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (xzz_[aind - aym][bind - bym][m] - xzz_[aind - aym][bind - bym][m + 1]);
-                                    //     yzz_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (yzz_[aind - aym][bind - bym][m] - yzz_[aind - aym][bind - bym][m + 1]);
-                                    //     xyz_[aind][bind][m] +=
-                                    //         ooz * by *
-                                    //         (xyz_[aind - aym][bind - bym][m] - xyz_[aind - aym][bind - bym][m + 1]);
-                                    // }
+                                    if (do_octupole)
+                                        for (m = 0; m <= mmax - a - b - 3; m++) {
+                                            xxx_[aind][bind][m] +=
+                                                ooz * by *
+                                                (xxx_[aind - aym][bind - bym][m] - xxx_[aind - aym][bind - bym][m + 1]);
+                                            yyy_[aind][bind][m] +=
+                                                ooz * by *
+                                                (yyy_[aind - aym][bind - bym][m] - yyy_[aind - aym][bind - bym][m + 1]);
+                                            zzz_[aind][bind][m] +=
+                                                ooz * by *
+                                                (zzz_[aind - aym][bind - bym][m] - zzz_[aind - aym][bind - bym][m + 1]);
+                                            xxy_[aind][bind][m] +=
+                                                ooz * by *
+                                                (xxy_[aind - aym][bind - bym][m] - xxy_[aind - aym][bind - bym][m + 1]);
+                                            xxz_[aind][bind][m] +=
+                                                ooz * by *
+                                                (xxz_[aind - aym][bind - bym][m] - xxz_[aind - aym][bind - bym][m + 1]);
+                                            xyy_[aind][bind][m] +=
+                                                ooz * by *
+                                                (xyy_[aind - aym][bind - bym][m] - xyy_[aind - aym][bind - bym][m + 1]);
+                                            yyz_[aind][bind][m] +=
+                                                ooz * by *
+                                                (yyz_[aind - aym][bind - bym][m] - yyz_[aind - aym][bind - bym][m + 1]);
+                                            xzz_[aind][bind][m] +=
+                                                ooz * by *
+                                                (xzz_[aind - aym][bind - bym][m] - xzz_[aind - aym][bind - bym][m + 1]);
+                                            yzz_[aind][bind][m] +=
+                                                ooz * by *
+                                                (yzz_[aind - aym][bind - bym][m] - yzz_[aind - aym][bind - bym][m + 1]);
+                                            xyz_[aind][bind][m] +=
+                                                ooz * by *
+                                                (xyz_[aind - aym][bind - bym][m] - xyz_[aind - aym][bind - bym][m + 1]);
+                                        }
                                 }
                             } else if (ax > 0) {
                                 for (m = 0; m <= mmax - a - b; m++) {
@@ -2158,34 +2171,35 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                         yz_[aind][bind][m] =
                                             PA[0] * yz_[aind - axm][bind][m] - PC[0] * yz_[aind - axm][bind][m + 1];
                                     }
-                                // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                //     xxx_[aind][bind][m] = PA[0] * xxx_[aind - axm][bind][m] -
-                                //                           PC[0] * xxx_[aind - axm][bind][m + 1] +
-                                //                           3 * xx_[aind - axm][bind][m + 1];
-                                //     yyy_[aind][bind][m] =
-                                //         PA[0] * yyy_[aind - axm][bind][m] - PC[0] * yyy_[aind - axm][bind][m + 1];
-                                //     zzz_[aind][bind][m] =
-                                //         PA[0] * zzz_[aind - axm][bind][m] - PC[0] * zzz_[aind - axm][bind][m + 1];
-                                //     xxy_[aind][bind][m] = PA[0] * xxy_[aind - axm][bind][m] -
-                                //                           PC[0] * xxy_[aind - axm][bind][m + 1] +
-                                //                           2 * xy_[aind - axm][bind][m + 1];
-                                //     xxz_[aind][bind][m] = PA[0] * xxz_[aind - axm][bind][m] -
-                                //                           PC[0] * xxz_[aind - axm][bind][m + 1] +
-                                //                           2 * xz_[aind - axm][bind][m + 1];
-                                //     xyy_[aind][bind][m] = PA[0] * xyy_[aind - axm][bind][m] -
-                                //                           PC[0] * xyy_[aind - axm][bind][m + 1] +
-                                //                           1 * yy_[aind - axm][bind][m + 1];
-                                //     yyz_[aind][bind][m] =
-                                //         PA[0] * yyz_[aind - axm][bind][m] - PC[0] * yyz_[aind - axm][bind][m + 1];
-                                //     xzz_[aind][bind][m] = PA[0] * xzz_[aind - axm][bind][m] -
-                                //                           PC[0] * xzz_[aind - axm][bind][m + 1] +
-                                //                           1 * zz_[aind - axm][bind][m + 1];
-                                //     yzz_[aind][bind][m] =
-                                //         PA[0] * yzz_[aind - axm][bind][m] - PC[0] * yzz_[aind - axm][bind][m + 1];
-                                //     xyz_[aind][bind][m] = PA[0] * xyz_[aind - axm][bind][m] -
-                                //                           PC[0] * xyz_[aind - axm][bind][m + 1] +
-                                //                           1 * yz_[aind - axm][bind][m + 1];
-                                // }
+                                if (do_octupole)
+                                    for (m = 0; m <= mmax - a - b - 3; m++) {
+                                        xxx_[aind][bind][m] = PA[0] * xxx_[aind - axm][bind][m] -
+                                                              PC[0] * xxx_[aind - axm][bind][m + 1] +
+                                                              3 * xx_[aind - axm][bind][m + 1];
+                                        yyy_[aind][bind][m] =
+                                            PA[0] * yyy_[aind - axm][bind][m] - PC[0] * yyy_[aind - axm][bind][m + 1];
+                                        zzz_[aind][bind][m] =
+                                            PA[0] * zzz_[aind - axm][bind][m] - PC[0] * zzz_[aind - axm][bind][m + 1];
+                                        xxy_[aind][bind][m] = PA[0] * xxy_[aind - axm][bind][m] -
+                                                              PC[0] * xxy_[aind - axm][bind][m + 1] +
+                                                              2 * xy_[aind - axm][bind][m + 1];
+                                        xxz_[aind][bind][m] = PA[0] * xxz_[aind - axm][bind][m] -
+                                                              PC[0] * xxz_[aind - axm][bind][m + 1] +
+                                                              2 * xz_[aind - axm][bind][m + 1];
+                                        xyy_[aind][bind][m] = PA[0] * xyy_[aind - axm][bind][m] -
+                                                              PC[0] * xyy_[aind - axm][bind][m + 1] +
+                                                              1 * yy_[aind - axm][bind][m + 1];
+                                        yyz_[aind][bind][m] =
+                                            PA[0] * yyz_[aind - axm][bind][m] - PC[0] * yyz_[aind - axm][bind][m + 1];
+                                        xzz_[aind][bind][m] = PA[0] * xzz_[aind - axm][bind][m] -
+                                                              PC[0] * xzz_[aind - axm][bind][m + 1] +
+                                                              1 * zz_[aind - axm][bind][m + 1];
+                                        yzz_[aind][bind][m] =
+                                            PA[0] * yzz_[aind - axm][bind][m] - PC[0] * yzz_[aind - axm][bind][m + 1];
+                                        xyz_[aind][bind][m] = PA[0] * xyz_[aind - axm][bind][m] -
+                                                              PC[0] * xyz_[aind - axm][bind][m + 1] +
+                                                              1 * yz_[aind - axm][bind][m + 1];
+                                    }
 
                                 if (ax > 1) {
                                     for (m = 0; m <= mmax - a - b; m++) {
@@ -2226,38 +2240,39 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                 ooz * (ax - 1) *
                                                 (yz_[aind - 2 * axm][bind][m] - yz_[aind - 2 * axm][bind][m + 1]);
                                         }
-                                    // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                    //     xxx_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (xxx_[aind - 2 * axm][bind][m] - xxx_[aind - 2 * axm][bind][m + 1]);
-                                    //     yyy_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (yyy_[aind - 2 * axm][bind][m] - yyy_[aind - 2 * axm][bind][m + 1]);
-                                    //     zzz_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (zzz_[aind - 2 * axm][bind][m] - zzz_[aind - 2 * axm][bind][m + 1]);
-                                    //     xxy_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (xxy_[aind - 2 * axm][bind][m] - xxy_[aind - 2 * axm][bind][m + 1]);
-                                    //     xxz_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (xxz_[aind - 2 * axm][bind][m] - xxz_[aind - 2 * axm][bind][m + 1]);
-                                    //     xyy_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (xyy_[aind - 2 * axm][bind][m] - xyy_[aind - 2 * axm][bind][m + 1]);
-                                    //     yyz_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (yyz_[aind - 2 * axm][bind][m] - yyz_[aind - 2 * axm][bind][m + 1]);
-                                    //     xzz_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (xzz_[aind - 2 * axm][bind][m] - xzz_[aind - 2 * axm][bind][m + 1]);
-                                    //     yzz_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (yzz_[aind - 2 * axm][bind][m] - yzz_[aind - 2 * axm][bind][m + 1]);
-                                    //     xyz_[aind][bind][m] +=
-                                    //         ooz * (ax - 1) *
-                                    //         (xyz_[aind - 2 * axm][bind][m] - xyz_[aind - 2 * axm][bind][m + 1]);
-                                    // }
+                                    if (do_octupole)
+                                        for (m = 0; m <= mmax - a - b - 3; m++) {
+                                            xxx_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (xxx_[aind - 2 * axm][bind][m] - xxx_[aind - 2 * axm][bind][m + 1]);
+                                            yyy_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (yyy_[aind - 2 * axm][bind][m] - yyy_[aind - 2 * axm][bind][m + 1]);
+                                            zzz_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (zzz_[aind - 2 * axm][bind][m] - zzz_[aind - 2 * axm][bind][m + 1]);
+                                            xxy_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (xxy_[aind - 2 * axm][bind][m] - xxy_[aind - 2 * axm][bind][m + 1]);
+                                            xxz_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (xxz_[aind - 2 * axm][bind][m] - xxz_[aind - 2 * axm][bind][m + 1]);
+                                            xyy_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (xyy_[aind - 2 * axm][bind][m] - xyy_[aind - 2 * axm][bind][m + 1]);
+                                            yyz_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (yyz_[aind - 2 * axm][bind][m] - yyz_[aind - 2 * axm][bind][m + 1]);
+                                            xzz_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (xzz_[aind - 2 * axm][bind][m] - xzz_[aind - 2 * axm][bind][m + 1]);
+                                            yzz_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (yzz_[aind - 2 * axm][bind][m] - yzz_[aind - 2 * axm][bind][m + 1]);
+                                            xyz_[aind][bind][m] +=
+                                                ooz * (ax - 1) *
+                                                (xyz_[aind - 2 * axm][bind][m] - xyz_[aind - 2 * axm][bind][m + 1]);
+                                        }
                                 }
                                 if (bx > 0) {
                                     for (m = 0; m <= mmax - a - b; m++) {
@@ -2298,38 +2313,39 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
                                                 ooz * bx *
                                                 (yz_[aind - axm][bind - bxm][m] - yz_[aind - axm][bind - bxm][m + 1]);
                                         }
-                                    // for (m = 0; m <= mmax - a - b - 3; m++) {
-                                    //     xxx_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (xxx_[aind - axm][bind - bxm][m] - xxx_[aind - axm][bind - bxm][m + 1]);
-                                    //     yyy_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (yyy_[aind - axm][bind - bxm][m] - yyy_[aind - axm][bind - bxm][m + 1]);
-                                    //     zzz_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (zzz_[aind - axm][bind - bxm][m] - zzz_[aind - axm][bind - bxm][m + 1]);
-                                    //     xxy_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (xxy_[aind - axm][bind - bxm][m] - xxy_[aind - axm][bind - bxm][m + 1]);
-                                    //     xxz_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (xxz_[aind - axm][bind - bxm][m] - xxz_[aind - axm][bind - bxm][m + 1]);
-                                    //     xyy_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (xyy_[aind - axm][bind - bxm][m] - xyy_[aind - axm][bind - bxm][m + 1]);
-                                    //     yyz_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (yyz_[aind - axm][bind - bxm][m] - yyz_[aind - axm][bind - bxm][m + 1]);
-                                    //     xzz_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (xzz_[aind - axm][bind - bxm][m] - xzz_[aind - axm][bind - bxm][m + 1]);
-                                    //     yzz_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (yzz_[aind - axm][bind - bxm][m] - yzz_[aind - axm][bind - bxm][m + 1]);
-                                    //     xyz_[aind][bind][m] +=
-                                    //         ooz * bx *
-                                    //         (xyz_[aind - axm][bind - bxm][m] - xyz_[aind - axm][bind - bxm][m + 1]);
-                                    // }
+                                    if (do_octupole)
+                                        for (m = 0; m <= mmax - a - b - 3; m++) {
+                                            xxx_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (xxx_[aind - axm][bind - bxm][m] - xxx_[aind - axm][bind - bxm][m + 1]);
+                                            yyy_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (yyy_[aind - axm][bind - bxm][m] - yyy_[aind - axm][bind - bxm][m + 1]);
+                                            zzz_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (zzz_[aind - axm][bind - bxm][m] - zzz_[aind - axm][bind - bxm][m + 1]);
+                                            xxy_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (xxy_[aind - axm][bind - bxm][m] - xxy_[aind - axm][bind - bxm][m + 1]);
+                                            xxz_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (xxz_[aind - axm][bind - bxm][m] - xxz_[aind - axm][bind - bxm][m + 1]);
+                                            xyy_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (xyy_[aind - axm][bind - bxm][m] - xyy_[aind - axm][bind - bxm][m + 1]);
+                                            yyz_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (yyz_[aind - axm][bind - bxm][m] - yyz_[aind - axm][bind - bxm][m + 1]);
+                                            xzz_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (xzz_[aind - axm][bind - bxm][m] - xzz_[aind - axm][bind - bxm][m + 1]);
+                                            yzz_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (yzz_[aind - axm][bind - bxm][m] - yzz_[aind - axm][bind - bxm][m + 1]);
+                                            xyz_[aind][bind][m] +=
+                                                ooz * bx *
+                                                (xyz_[aind - axm][bind - bxm][m] - xyz_[aind - axm][bind - bxm][m + 1]);
+                                        }
                                 }
                             }
                         }

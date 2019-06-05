@@ -1502,6 +1502,7 @@ std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<
     std::vector<SharedMatrix> mult;
     bool do_dipole = (max_k >= 1);
     bool do_quadrupole = (max_k >= 2);
+    bool do_octupole = (max_k >= 3);
     mult.push_back(std::make_shared<Matrix>("AO Charge Potential 0", basisset_->nbf(), basisset_->nbf()));
     if (do_dipole) {
         mult.push_back(std::make_shared<Matrix>("AO Dipole Potential X", basisset_->nbf(), basisset_->nbf()));
@@ -1510,11 +1511,23 @@ std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<
     }
     if (do_quadrupole) {
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XX", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YY", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential ZZ", basisset_->nbf(), basisset_->nbf()));
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XY", basisset_->nbf(), basisset_->nbf()));
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YY", basisset_->nbf(), basisset_->nbf()));
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential ZZ", basisset_->nbf(), basisset_->nbf()));
+    }
+    if (do_octupole) {
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XXX", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XXY", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XXZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XYY", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XYZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XZZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential YYY", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential YYZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential YZZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential ZZZ", basisset_->nbf(), basisset_->nbf()));
     }
 
     std::shared_ptr<OneBodyAOInt> ints(integral_->ao_multipole_potential(max_k, deriv));

@@ -30,8 +30,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
 ;
 using namespace psi;
 
@@ -50,7 +48,9 @@ int number_of_chunks(int max_k) {
 MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform> &spherical_transforms,
                                              std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int max_k,
                                              int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), mvi_recur_(bs1->max_am(), bs2->max_am(), max_k), max_k_(max_k) {
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),
+      mvi_recur_(bs1->max_am(), bs2->max_am(), max_k),
+      max_k_(max_k) {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
@@ -60,8 +60,8 @@ MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform> &sp
     if (nderiv > 0)
         throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with deriv > 0", __FILE__, __LINE__);
 
-    if (max_k > 2) {
-        throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with max_k > 2", __FILE__, __LINE__);
+    if (max_k > 3) {
+        throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with max_k > 3", __FILE__, __LINE__);
     }
 
     int nchunks = number_of_chunks(max_k_);
@@ -101,10 +101,12 @@ void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const Gaussian
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, number_of_chunks(max_k_) * size * sizeof(double));
+    size_t n_elements = static_cast<size_t>(number_of_chunks(max_k_) * size);
+    memset(buffer_, 0, n_elements * sizeof(double));
 
     bool have_dipole = have_moment(1, max_k_);
     bool have_quadrupole = have_moment(2, max_k_);
+    bool have_octupole = have_moment(3, max_k_);
 
     // Charge
     double ***q = mvi_recur_.q();
@@ -121,16 +123,16 @@ void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const Gaussian
     double ***yz = mvi_recur_.yz();
 
     // Octupole
-    // double ***xxx = mvi_recur_.xxx();
-    // double ***yyy = mvi_recur_.yyy();
-    // double ***zzz = mvi_recur_.zzz();
-    // double ***xxy = mvi_recur_.xxy();
-    // double ***xxz = mvi_recur_.xxz();
-    // double ***xyy = mvi_recur_.xyy();
-    // double ***yyz = mvi_recur_.yyz();
-    // double ***xzz = mvi_recur_.xzz();
-    // double ***yzz = mvi_recur_.yzz();
-    // double ***xyz = mvi_recur_.xyz();
+    double ***xxx = mvi_recur_.xxx();
+    double ***yyy = mvi_recur_.yyy();
+    double ***zzz = mvi_recur_.zzz();
+    double ***xxy = mvi_recur_.xxy();
+    double ***xxz = mvi_recur_.xxz();
+    double ***xyy = mvi_recur_.xyy();
+    double ***yyz = mvi_recur_.yyz();
+    double ***xzz = mvi_recur_.xzz();
+    double ***yzz = mvi_recur_.yzz();
+    double ***xyz = mvi_recur_.xyz();
 
     double Cx = origin_[0];
     double Cy = origin_[1];
@@ -194,23 +196,24 @@ void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const Gaussian
                             }
                             if (have_quadrupole) {
                                 buffer_[ao12 + 4 * size] += xx[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 5 * size] += yy[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 6 * size] += zz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 7 * size] += xy[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 8 * size] += xz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 9 * size] += yz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 5 * size] += xy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 6 * size] += xz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 7 * size] += yy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 8 * size] += yz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 9 * size] += zz[iind][jind][0] * over_pf;
                             }
-                            // buffer_[ao12 + 10 * size] += xxx[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 11 * size] += yyy[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 12 * size] += zzz[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 13 * size] += xxy[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 14 * size] += xxz[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 15 * size] += xyy[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 16 * size] += yyz[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 17 * size] += xzz[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 18 * size] += yzz[iind][jind][0] * over_pf;
-                            // buffer_[ao12 + 19 * size] += xyz[iind][jind][0] * over_pf;
-
+                            if (have_octupole) {
+                                buffer_[ao12 + 10 * size] += xxx[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 11 * size] += xxy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 12 * size] += xxz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 13 * size] += xyy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 14 * size] += xyz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 15 * size] += xzz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 16 * size] += yyy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 17 * size] += yyz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 18 * size] += yzz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 19 * size] += zzz[iind][jind][0] * over_pf;
+                            }
                             ao12++;
                         }
                     }

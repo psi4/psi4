@@ -346,6 +346,7 @@ class ObaraSaikaTwoCenterMultipolePotentialRecursion {
     int size_;
     bool do_dipole = false;
     bool do_quadrupole = false;
+    bool do_octupole = false;
 
     double ***q_;
     double ***x_;
@@ -357,16 +358,16 @@ class ObaraSaikaTwoCenterMultipolePotentialRecursion {
     double ***yy_;
     double ***yz_;
     double ***zz_;
-    // double ***xxx_;
-    // double ***xxy_;
-    // double ***xxz_;
-    // double ***xyy_;
-    // double ***xyz_;
-    // double ***xzz_;
-    // double ***yyy_;
-    // double ***yyz_;
-    // double ***yzz_;
-    // double ***zzz_;
+    double ***xxx_;
+    double ***xxy_;
+    double ***xxz_;
+    double ***xyy_;
+    double ***xyz_;
+    double ***xzz_;
+    double ***yyy_;
+    double ***yyz_;
+    double ***yzz_;
+    double ***zzz_;
 
     // Forms Fm(U) from A20 (OS 1986)
     void calculate_f(double *F, int n, double t);
@@ -394,16 +395,16 @@ class ObaraSaikaTwoCenterMultipolePotentialRecursion {
     double ***xy() const { return xy_; }
     double ***xz() const { return xz_; }
     double ***yz() const { return yz_; }
-    // double ***xxx() const { return xxx_; }
-    // double ***yyy() const { return yyy_; }
-    // double ***zzz() const { return zzz_; }
-    // double ***xxy() const { return xxy_; }
-    // double ***xxz() const { return xxz_; }
-    // double ***xyy() const { return xyy_; }
-    // double ***yyz() const { return yyz_; }
-    // double ***xzz() const { return xzz_; }
-    // double ***yzz() const { return yzz_; }
-    // double ***xyz() const { return xyz_; }
+    double ***xxx() const { return xxx_; }
+    double ***yyy() const { return yyy_; }
+    double ***zzz() const { return zzz_; }
+    double ***xxy() const { return xxy_; }
+    double ***xxz() const { return xxz_; }
+    double ***xyy() const { return xyy_; }
+    double ***yyz() const { return yyz_; }
+    double ***xzz() const { return xzz_; }
+    double ***yzz() const { return yzz_; }
+    double ***xyz() const { return xyz_; }
 
     /// Computes the potential integral 3D matrix using the data provided.
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);

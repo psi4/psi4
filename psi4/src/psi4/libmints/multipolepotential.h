@@ -51,6 +51,7 @@ class SphericalTransform;
  *  where the numerator comes from permutational symmetry, and the denominator arises from
  *  the coefficients of the power series expansion of the Coulomb operator.
 
+ TODO: this order will be changed to alphabetical ordering
  *  Matrix # | Multipole Type | Scale Factor
  *  -----------------------------------------
  *           | // Charge      |
