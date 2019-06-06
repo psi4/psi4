@@ -147,10 +147,11 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
         XSW_A = core.triplet(X_A, metric_inv, W_A, False, False, False)
 
         amplitude_inv = metric.clone()
-        amplitude_inv.axpy(-1.0, XSW_A)
+        amplitude_inv.axpy(1.0, XSW_A)
         nremoved = 0
         amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        X_A_coupled.axpy(1.0, core.triplet(XSW_A, amplitude, X_A, False, False, False))
+        amplitude.transpose_this()
+        X_A_coupled.axpy(-1.0, core.triplet(XSW_A, amplitude, X_A, False, False, False))
         del XSW_A, amplitude
 
         X_B = fdds_obj.form_unc_amplitude("B", omega)
@@ -161,9 +162,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
         XSW_B = core.triplet(X_B, metric_inv, W_B, False, False, False)
 
         amplitude_inv = metric.clone()
-        amplitude_inv.axpy(-1.0, XSW_B)
+        amplitude_inv.axpy(1.0, XSW_B)
         amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        X_B_coupled.axpy(1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))
+        amplitude.transpose_this()
+        X_B_coupled.axpy(-1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))
         del XSW_B, amplitude
 
         # Make sure the results are symmetrized

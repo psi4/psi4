@@ -97,8 +97,8 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
 
     # K_O J/K
     C_O_A = core.triplet(
-        cache["D_B"], cache["S"], cache["Cocc_A"], False, False, False)
-    jk.C_left_add(C_O_A)
+        cache["D_B"], cache["S"], cache["Cocc_A"], False, False, False) 
+    jk.C_left_add(C_O_A) 
     jk.C_right_add(cache["Cocc_A"])
 
     jk.compute()
@@ -292,28 +292,28 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
 
     # Exch-Ind Potential A
     EX_A = K_B.clone()
-    EX_A.scale(-1.0)
-    EX_A.axpy(-2.0, core.Matrix.chain_dot(S, D_B, J_A))
-    EX_A.axpy(1.0, K_O)
+    EX_A.scale(-1.0) 
     EX_A.axpy(-2.0, J_O)
-
-    EX_A.axpy(1.0, core.Matrix.chain_dot(S, D_B, K_A))
-    EX_A.axpy(-2.0, core.Matrix.chain_dot(J_B, D_B, S))
-    EX_A.axpy(1.0, core.Matrix.chain_dot(K_B, D_B, S))
-
-    EX_A.axpy(2.0, core.Matrix.chain_dot(S, D_B, J_A, D_B, S))
-    EX_A.axpy(2.0, core.Matrix.chain_dot(J_B, D_A, S, D_B, S))
-    EX_A.axpy(-1.0, core.Matrix.chain_dot(K_O, D_B, S))
+    EX_A.axpy(1.0, K_O)
     EX_A.axpy(2.0, J_P_B)
 
+    EX_A.axpy(-1.0, core.Matrix.chain_dot(S, D_B, V_A))
+    EX_A.axpy(-2.0, core.Matrix.chain_dot(S, D_B, J_A))
+    EX_A.axpy(1.0, core.Matrix.chain_dot(S, D_B, K_A))
+    EX_A.axpy(1.0, core.Matrix.chain_dot(S, D_B, S, D_A, V_B))
     EX_A.axpy(2.0, core.Matrix.chain_dot(S, D_B, S, D_A, J_B))
+    EX_A.axpy(1.0, core.Matrix.chain_dot(S, D_B, V_A, D_B, S))
+    EX_A.axpy(2.0, core.Matrix.chain_dot(S, D_B, J_A, D_B, S))
     EX_A.axpy(-1.0, core.Matrix.chain_dot(S, D_B,
                                           K_O, trans=[False, False, True]))
-    EX_A.axpy(-1.0, core.Matrix.chain_dot(S, D_B, V_A))
+
     EX_A.axpy(-1.0, core.Matrix.chain_dot(V_B, D_B, S))
-    EX_A.axpy(1.0, core.Matrix.chain_dot(S, D_B, V_A, D_B, S))
+    EX_A.axpy(-2.0, core.Matrix.chain_dot(J_B, D_B, S))
+    EX_A.axpy(1.0, core.Matrix.chain_dot(K_B, D_B, S))
     EX_A.axpy(1.0, core.Matrix.chain_dot(V_B, D_A, S, D_B, S))
-    EX_A.axpy(1.0, core.Matrix.chain_dot(S, D_B, S, D_A, V_B))
+    EX_A.axpy(2.0, core.Matrix.chain_dot(J_B, D_A, S, D_B, S))
+    EX_A.axpy(-1.0, core.Matrix.chain_dot(K_O, D_B, S))
+
 
     EX_A = core.Matrix.chain_dot(
         cache["Cocc_A"], EX_A, cache["Cvir_A"], trans=[True, False, False])
@@ -321,27 +321,26 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     # Exch-Ind Potential B
     EX_B = K_A.clone()
     EX_B.scale(-1.0)
-    EX_B.axpy(-2.0, core.Matrix.chain_dot(S, D_A, J_B))
-    EX_B.axpy(1.0, K_O.transpose())
     EX_B.axpy(-2.0, J_O)
-
+    EX_B.axpy(1.0, K_O.transpose())
+    EX_B.axpy(2.0, J_P_A)
+    
+    EX_B.axpy(-1.0, core.Matrix.chain_dot(S, D_A, V_B))
+    EX_B.axpy(-2.0, core.Matrix.chain_dot(S, D_A, J_B))
     EX_B.axpy(1.0, core.Matrix.chain_dot(S, D_A, K_B))
+    EX_B.axpy(1.0, core.Matrix.chain_dot(S, D_A, S, D_B, V_A))
+    EX_B.axpy(2.0, core.Matrix.chain_dot(S, D_A, S, D_B, J_A))
+    EX_B.axpy(1.0, core.Matrix.chain_dot(S, D_A, V_B, D_A, S))
+    EX_B.axpy(2.0, core.Matrix.chain_dot(S, D_A, J_B, D_A, S))
+    EX_B.axpy(-1.0, core.Matrix.chain_dot(S, D_A, K_O))
+
+    EX_B.axpy(-1.0, core.Matrix.chain_dot(V_A, D_A, S))
     EX_B.axpy(-2.0, core.Matrix.chain_dot(J_A, D_A, S))
     EX_B.axpy(1.0, core.Matrix.chain_dot(K_A, D_A, S))
-
-    EX_B.axpy(2.0, core.Matrix.chain_dot(S, D_A, J_B, D_A, S))
+    EX_B.axpy(1.0, core.Matrix.chain_dot(V_A, D_B, S, D_A, S))
     EX_B.axpy(2.0, core.Matrix.chain_dot(J_A, D_B, S, D_A, S))
     EX_B.axpy(-1.0, core.Matrix.chain_dot(K_O,
                                           D_A, S, trans=[True, False, False]))
-    EX_B.axpy(2.0, J_P_A)
-
-    EX_B.axpy(2.0, core.Matrix.chain_dot(S, D_A, S, D_B, J_A))
-    EX_B.axpy(-1.0, core.Matrix.chain_dot(S, D_A, K_O))
-    EX_B.axpy(-1.0, core.Matrix.chain_dot(S, D_A, V_B))
-    EX_B.axpy(-1.0, core.Matrix.chain_dot(V_A, D_A, S))
-    EX_B.axpy(1.0, core.Matrix.chain_dot(S, D_A, V_B, D_A, S))
-    EX_B.axpy(1.0, core.Matrix.chain_dot(V_A, D_B, S, D_A, S))
-    EX_B.axpy(1.0, core.Matrix.chain_dot(S, D_A, S, D_B, V_A))
 
     EX_B = core.Matrix.chain_dot(
         cache["Cocc_B"], EX_B, cache["Cvir_B"], trans=[True, False, False])

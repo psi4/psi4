@@ -321,7 +321,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     """
 
     # Handle the input options
-    core.timer_on("SAPT(DFT):SAPT(DFT):JK")
+    core.timer_on("SAPT(DFT):SAPT(DFT):Build JK")
     if print_header:
         sapt_dft_header()
 
@@ -355,7 +355,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
     # Build SAPT cache
     cache = sapt_jk_terms.build_sapt_jk_cache(wfn_A, wfn_B, sapt_jk, True)
-    core.timer_off("SAPT(DFT):SAPT(DFT):JK")
+    core.timer_off("SAPT(DFT):SAPT(DFT):Build JK")
 
     # Electrostatics
     core.timer_on("SAPT(DFT):SAPT(DFT):elst")
