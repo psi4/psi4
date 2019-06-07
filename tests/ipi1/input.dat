@@ -32,9 +32,9 @@ frc = np.array([[-0.08704801, -0.1067644 ,  0.11170374],
                 [ 0.06488302,  0.07396785, -0.07954503]])
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
-compare_values(refscf,   get_variable("SCF total energy"),        5, "SCF energy")               #TEST
-compare_values(refccsd,  get_variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
-compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")             #TEST
+compare_values(refscf,   scalar_variable("SCF total energy"),        5, "SCF energy")               #TEST
+compare_values(refccsd,  scalar_variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
+compare_values(reftotal, scalar_variable("Current energy"),          7, "Total energy")             #TEST
 compare_values(reftotal, b.pot,                                   7, "Total energy (Broker)")    #TEST
 compare_arrays(frc,      b.frc,                                   4, "Total force (Broker)")     #TEST
 

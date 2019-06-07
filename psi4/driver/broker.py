@@ -99,7 +99,7 @@ class Broker(Client):
 
         self.calculate_gradient(self.options["LOT"])
 
-        self.pot = psi4.core.get_variable('CURRENT ENERGY')
+        self.pot = psi4.core.scalar_variable('CURRENT ENERGY')
         self.frc = -np.array(self.grd)
 
         return self.frc, np.float64(self.pot)
