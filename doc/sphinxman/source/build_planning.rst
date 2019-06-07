@@ -224,7 +224,7 @@ Additionally, there are runtime-only dependencies:
 
 * NumPy http://www.numpy.org/
 
-* networkx https://github.com/networkx/networkx (transitive dependency of QCElemental)
+* networkx https://github.com/networkx/networkx (transitive dependency of QCElemental; optional for QCElemental but required for |PSIfour|)
 
 * pint https://pint.readthedocs.io/en/latest/ (transitive dependency of QCElemental)
 
