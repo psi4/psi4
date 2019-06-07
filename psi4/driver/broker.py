@@ -62,6 +62,9 @@ class IPIBroker(Client):
         if molecule is None:
             molecule = psi4.core.get_active_molecule()
         self.initial_molecule = molecule
+        names = [self.initial_molecule.symbol(i) for i in range(self.initial_molecule.natom())]
+        psi4.core.print_out("Initial atoms %s\n" % names)
+        self.atoms_list = names
 
         psi4.core.print_out("PSI4 options:\n")
         for item, value in self.options.items():
@@ -72,11 +75,24 @@ class IPIBroker(Client):
 
         self.timing = {}
 
-    def calculate_force(self, pos):
+        atoms = np.array(self.initial_molecule.geometry())
+        psi4.core.print_out("Initial atoms %s\n" % atoms)
+        psi4.core.print_out("Force:\n")
+        frc, pot = self.calculate_force(atoms)
+        psi4.core.print_out("%s %f"%(str(frc), pot))
+        psi4.core.print_out("\n")
+
+    def calculate_force(self, pos=None):
         """Fetch force, energy of PSI.
+
+        Arguments:
+        - pos: positions of the atoms. If None, the positions of the current active
+          molecule is used.
         """
-        if len(pos.shape) == 1:
-            pos = pos.reshape((-1, 3))
+        if pos is None:
+            molecule = psi4.core.get_active_molecule()
+            pos = np.array(molecule.geometry())
+
         self.frc, self.pot = self.callback(pos)
         return self.frc, self.pot
 
@@ -124,40 +140,19 @@ def ipi_broker(molecule=None, serverdata=False, options=None):
     """ Run IPIBroker to connect to i-pi
 
     Arguments:
-        dryrun: Calculate forces with read in positions and the mirror image only.
+        molecule: Initial molecule
+        serverdata: Configuration where to connect to ipi
+        options: LOT, multiplicity and charge
     """
     b = IPIBroker(molecule=molecule, serverdata=serverdata, options=options)
-
-    atoms = np.array(b.initial_molecule.geometry())
-    names = [b.initial_molecule.symbol(i) for i in range(len(atoms))]
-
-    psi4.core.print_out("Initial atoms %s\n" % names)
-    b.atoms_list = names
 
     try:
         if b.serverdata:
             b.run()
         else:
-            psi4.core.print_out("ATOMS %s\n" % atoms)
-            if len(atoms.shape) == 1:
-                ratio = len(atoms)/3
-                atoms = atoms.reshape((ratio, 3))
-                psi4.core.print_out("Calculating force for %s\n" % atoms)
-            psi4.core.print_out("FORCE:\n")
-            frc, pot = b.calculate_force(atoms)
-            psi4.core.print_out("%s %f"%(str(frc), pot))
-            psi4.core.print_out("\n")
-
-            atoms *= -1.0
-            frc2, pot2 = b.calculate_force(atoms)
-            psi4.core.print_out("FORCE MIRROR:\n")
-            psi4.core.print_out("%s %f"%(str(frc2), pot2))
-            psi4.core.print_out("\n")
-            assert_equal(pot, pot2)
-            assert_equal(frc, -1.0*frc2)
+            return b
 
     except KeyboardInterrupt:
         psi4.core.print_out("Killing IPIBroker\n")
         b.__del__()
         sys.exit(1)
-    return b

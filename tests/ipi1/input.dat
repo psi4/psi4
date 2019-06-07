@@ -27,9 +27,9 @@ refscf   = -74.9417588868628  #TEST
 refccsd  = -0.04895074370294  #TEST
 reftotal = -74.9907096305658  #TEST
 
-frc = np.array([[-0.08704801, -0.1067644 ,  0.11170374],
-                [ 0.02216499,  0.03279655, -0.03215871],
-                [ 0.06488302,  0.07396785, -0.07954503]])
+frc = np.array([[ 0.08704801,  0.1067644 , -0.11170374],
+                [-0.02216499, -0.03279655,  0.03215871],
+                [-0.06488302, -0.07396785,  0.07954503]])
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
 compare_values(refscf,   scalar_variable("SCF total energy"),        5, "SCF energy")               #TEST
@@ -37,4 +37,22 @@ compare_values(refccsd,  scalar_variable("CCSD correlation energy"), 4, "CCSD co
 compare_values(reftotal, scalar_variable("Current energy"),          7, "Total energy")             #TEST
 compare_values(reftotal, b.pot,                                   7, "Total energy (Broker)")    #TEST
 compare_arrays(frc,      b.frc,                                   4, "Total force (Broker)")     #TEST
+
+molecule h2o_mirror {
+  O  1.216   0.015   0.261
+  H  1.946  -0.681   0.378
+  H  1.332   0.754  -0.283
+  units angstrom
+  no_reorient
+  no_com
+}
+
+b.calculate_force()
+
+compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   scalar_variable("SCF total energy"),        5, "SCF energy")               #TEST
+compare_values(refccsd,  scalar_variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
+compare_values(reftotal, scalar_variable("Current energy"),          7, "Total energy")             #TEST
+compare_values(reftotal, b.pot,                                   7, "Total energy (Broker)")    #TEST
+compare_arrays(frc,     -b.frc,                                   4, "Total force (Broker)")     #TEST
 
