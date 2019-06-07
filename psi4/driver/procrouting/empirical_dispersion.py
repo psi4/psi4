@@ -84,7 +84,7 @@ class EmpiricalDispersion(object):
         as legit, non-custom, and of equal validity to
         `qcengine.programs.dftd3.dashparam.dashcoeff` itself for purposes of
         validating `fctldash`.
-    engine : {'libdisp', 'dftd3', 'nl'}
+    engine : {'libdisp', 'dftd3', 'nl', 'mp2d'}
         Compute engine for dispersion. One of Psi4's internal libdisp
         library, Grimme's DFTD3 executable, or nl.
     disp : psi4.core.Dispersion
@@ -186,23 +186,23 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine in ['dftd3', 'mp2d']:
-            resinp = {
-                'schema_name': 'qcschema_input',
-                'schema_version': 1,
-                'molecule': molecule.to_schema(dtype=2),
-                'driver': 'energy',
-                'model': {
-                    'method': self.fctldash,
-                    'basis': '(auto)',
-                },
-                'keywords': {
-                    'level_hint': self.dashlevel,
-                    'params_tweaks': self.dashparams,
-                    'dashcoeff_supplement': self.dashcoeff_supplement,
-                    'verbose': 1,
-                },
-            }
-            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
+            resi = ResultInput(
+                **{
+                    'driver': 'energy',
+                    'model': {
+                        'method': self.fctldash,
+                        'basis': '(auto)',
+                    },
+                    'keywords': {
+                        'level_hint': self.dashlevel,
+                        'params_tweaks': self.dashparams,
+                        'dashcoeff_supplement': self.dashcoeff_supplement,
+                        'verbose': 1,
+                    },
+                    'molecule': molecule.to_schema(dtype=2),
+                    'provenance': p4util.provenance_stamp(__name__),
+                })
+            jobrec = qcng.compute(resi, self.engine, raise_error=True)
             jobrec = jobrec.dict()
 
             dashd_part = float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
@@ -238,23 +238,23 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine in ['dftd3', 'mp2d']:
-            resinp = {
-                'schema_name': 'qcschema_input',
-                'schema_version': 1,
-                'molecule': molecule.to_schema(dtype=2),
-                'driver': 'gradient',
-                'model': {
-                    'method': self.fctldash,
-                    'basis': '(auto)',
-                },
-                'keywords': {
-                    'level_hint': self.dashlevel,
-                    'params_tweaks': self.dashparams,
-                    'dashcoeff_supplement': self.dashcoeff_supplement,
-                    'verbose': 1,
-                },
-            }
-            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
+            resi = ResultInput(
+                **{
+                    'driver': 'gradient',
+                    'model': {
+                        'method': self.fctldash,
+                        'basis': '(auto)',
+                    },
+                    'keywords': {
+                        'level_hint': self.dashlevel,
+                        'params_tweaks': self.dashparams,
+                        'dashcoeff_supplement': self.dashcoeff_supplement,
+                        'verbose': 1,
+                    },
+                    'molecule': molecule.to_schema(dtype=2),
+                    'provenance': p4util.provenance_stamp(__name__),
+                })
+            jobrec = qcng.compute(resi, self.engine, raise_error=True)
             jobrec = jobrec.dict()
 
             dashd_part = core.Matrix.from_array(np.array(jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))

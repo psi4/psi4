@@ -19,8 +19,9 @@ ref = {
         'NUCLEAR REPULSION ENERGY': 0.587974678522222,
         'MP2-D DISPERSION CORRECTION ENERGY': -0.00053454696076,
         'MP2-D DISPERSION CORRECTION GRADIENT': np.array([
-             0.000, 0.000,  0.001513831369,
-             0.000, 0.000, -0.001513831369]).reshape((-1, 3)),
+             0.000, 0.000,  0.00264290716623,
+             0.000, 0.000, -0.00264290716623]).reshape((-1, 3)),
+             # original MP2D had bad gradients: 0.001513831369
     },
     'cc-pVDZ': {
         'HF TOTAL ENERGY': -1.11639202566179,
@@ -47,7 +48,9 @@ for bas in ['cc-pVDZ', 'cc-pVTZ']:
     pytest.param({'driver': 'energy', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2 energy'),
     pytest.param({'driver': 'energy', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d energy', marks=using_mp2d),
     pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2 gradient'),
-#    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d gradient' marks=using_mp2d),  # not working even in findif
+    pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'dertype': 0, 'options': {}}, id='mp2 gradient findif'),
+    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d gradient', marks=using_mp2d),
+    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'dertype': 0, 'options': {}}, id='mp2d gradient findif', marks=using_mp2d),
 #    ('mp2mp2'),
 #    ('mp2-dmp2'),
 ])
@@ -71,11 +74,14 @@ def test_dft_mp2(inp):
         'basis': basisset,
     })
     psi4.set_options(inp['options'])
+    kwargs = {'return_wfn': True}
+    if inp.get('dertype') is not None:
+        kwargs.update({'dertype': inp['dertype']})
 
     if inp['driver'] == 'energy':
-        ene, wfn = psi4.energy(inp['name'], return_wfn=True)
+        ene, wfn = psi4.energy(inp['name'], **kwargs)
     elif inp['driver'] == 'gradient':
-        grad, wfn = psi4.gradient(inp['name'], return_wfn=True) #, dertype=0)
+        grad, wfn = psi4.gradient(inp['name'], **kwargs)
         ene = wfn.energy()  # simplifies testing logic
 
     #for pv, pvv in psi4.core.variables().items():
@@ -119,7 +125,8 @@ def test_dft_mp2(inp):
     if inp['driver'] == 'gradient':
         for retrn in [grad,
                       wfn.gradient()]:
-            assert compare_arrays(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), 10, basisset + " tot grad")
+            atol = 1.e-8 if 'dertype' in inp else 1.e-10
+            assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=atol)
 
 #    assert 0
 
