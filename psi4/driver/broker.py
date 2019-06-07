@@ -115,7 +115,7 @@ class Broker(Client):
         self.timing[LOT] = self.timing.get(LOT, []) + [time_needed]
 
 
-def ipi_broker(serverdata=False, options=None):
+def ipi_broker(molecule=None, serverdata=False, options=None):
     """ Run Broker to connect to i-pi
 
     Arguments:
@@ -123,9 +123,11 @@ def ipi_broker(serverdata=False, options=None):
     """
     b = Broker(serverdata=serverdata, options=options)
 
-    mol = psi4.core.get_active_molecule()
-    atoms = np.array(mol.geometry())
-    names = [mol.symbol(i) for i in range(len(atoms))]
+    if molecule is None:
+        molecule = psi4.core.get_active_molecule()
+
+    atoms = np.array(molecule.geometry())
+    names = [molecule.symbol(i) for i in range(len(atoms))]
 
     psi4.core.print_out("Initial atoms %s\n" % names)
     b.atoms_list = names
