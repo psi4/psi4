@@ -42,21 +42,26 @@ except ImportError:
     class Client(): pass
 
 
-class Broker(Client):
-    def __init__(self, options, genbas=None, serverdata=False):
+class IPIBroker(Client):
+    def __init__(self, options, genbas=None, serverdata=False,
+                 molecule=None):
         self.serverdata = serverdata
         if not ipi_available:
             psi4.core.print_out("i-pi is not available for import: ")
             psi4.core.print_out("The broker infrastructure will not be available!\n")
-            super(Broker, self).__init__()
+            super(IPIBroker, self).__init__()
         elif serverdata:
             mode, address, port = serverdata.split(":")
             mode = string.lower(mode)
-            super(Broker, self).__init__(address=address, port=port,
+            super(IPIBroker, self).__init__(address=address, port=port,
                                       mode=mode)
         else:
-            super(Broker, self).__init__(_socket=False)
+            super(IPIBroker, self).__init__(_socket=False)
         self.options = options
+
+        if molecule is None:
+            molecule = psi4.core.get_active_molecule()
+        self.initial_molecule = molecule
 
         psi4.core.print_out("PSI4 options:\n")
         for item, value in self.options.items():
@@ -116,18 +121,15 @@ class Broker(Client):
 
 
 def ipi_broker(molecule=None, serverdata=False, options=None):
-    """ Run Broker to connect to i-pi
+    """ Run IPIBroker to connect to i-pi
 
     Arguments:
         dryrun: Calculate forces with read in positions and the mirror image only.
     """
-    b = Broker(serverdata=serverdata, options=options)
+    b = IPIBroker(molecule=molecule, serverdata=serverdata, options=options)
 
-    if molecule is None:
-        molecule = psi4.core.get_active_molecule()
-
-    atoms = np.array(molecule.geometry())
-    names = [molecule.symbol(i) for i in range(len(atoms))]
+    atoms = np.array(b.initial_molecule.geometry())
+    names = [b.initial_molecule.symbol(i) for i in range(len(atoms))]
 
     psi4.core.print_out("Initial atoms %s\n" % names)
     b.atoms_list = names
@@ -155,7 +157,7 @@ def ipi_broker(molecule=None, serverdata=False, options=None):
             assert_equal(frc, -1.0*frc2)
 
     except KeyboardInterrupt:
-        psi4.core.print_out("Killing Broker\n")
+        psi4.core.print_out("Killing IPIBroker\n")
         b.__del__()
         sys.exit(1)
     return b
