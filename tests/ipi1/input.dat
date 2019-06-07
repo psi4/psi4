@@ -19,8 +19,8 @@ options = {
     "multiplicity"          :   1,
 }
 
-#broker(serverdata="inet:localhost:21340", options=options)
-b = broker(serverdata=False, options=options)
+#ipi_broker(serverdata="inet:localhost:21340", options=options)
+b = ipi_broker(serverdata=False, options=options)
 
 refnuc   =   9.05843673637    #TEST
 refscf   = -74.9417588868628  #TEST
