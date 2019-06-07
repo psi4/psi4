@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
-
 import string
 import sys
 import time
@@ -48,8 +46,8 @@ class Broker(Client):
     def __init__(self, options, genbas=None, serverdata=False):
         self.serverdata = serverdata
         if not ipi_available:
-            print("i-pi is not available for import:",
-                  "The broker infrastructure will not be available!")
+            psi4.core.print_out("i-pi is not available for import:",
+                  "The broker infrastructure will not be available!\n")
             super(Broker, self).__init__()
         elif serverdata:
             mode, address, port = serverdata.split(":")
@@ -60,9 +58,9 @@ class Broker(Client):
             super(Broker, self).__init__(_socket=False)
         self.options = options
 
-        print("PSI4 options:")
+        psi4.core.print_out("PSI4 options:\n")
         for item, value in self.options.items():
-            print(item, value)
+            psi4.core.print_out(item, value)
             if item not in ["LOT", "multiplicity", "charge"]:
                 psi4.core.set_global_option(item, value)
         psi4.core.IO.set_default_namespace("xwrapper")
@@ -129,31 +127,33 @@ def broker(serverdata=False, options=None):
     atoms = np.array(mol.geometry())
     names = [mol.symbol(i) for i in range(len(atoms))]
 
-    print("Initial atoms", names)
+    psi4.core.print_out("Initial atoms %s\n" % names)
     b.atoms_list = names
 
     try:
         if b.serverdata:
             b.run()
         else:
-            print("ATOMS", atoms)
+            psi4.core.print_out("ATOMS %s\n" % atoms)
             if len(atoms.shape) == 1:
                 ratio = len(atoms)/3
                 atoms = atoms.reshape((ratio, 3))
-                print("Calculating force for", atoms)
-            print("FORCE:")
+                psi4.core.print_out("Calculating force for %s\n" % atoms)
+            psi4.core.print_out("FORCE:\n")
             frc, pot = b.calculate_force(atoms)
-            print(frc, pot)
+            psi4.core.print_out(frc, pot)
+            psi4.core.print_out("\n")
 
             atoms *= -1.0
             frc2, pot2 = b.calculate_force(atoms)
-            print("FORCE MIRROR:")
-            print(frc2, pot2)
+            psi4.core.print_out("FORCE MIRROR:\n")
+            psi4.core.print_out(frc2, pot2)
+            psi4.core.print_out("\n")
             assert_equal(pot, pot2)
             assert_equal(frc, -1.0*frc2)
 
     except KeyboardInterrupt:
-        print("Killing Broker")
+        psi4.core.print_out("Killing Broker\n")
         b.__del__()
         sys.exit(1)
     return b
