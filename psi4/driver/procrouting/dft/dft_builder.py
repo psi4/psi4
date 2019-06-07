@@ -84,6 +84,7 @@ import copy
 import collections
 
 import qcengine as qcng
+from qcengine.programs.empirical_dispersion_resources import dashcoeff
 
 from . import libxc_functionals
 from . import lda_functionals
@@ -110,7 +111,7 @@ def get_functional_aliases(functional_dict):
     return aliases
 
 
-_dispersion_aliases = qcng.programs.dftd3.get_dispersion_aliases()
+_dispersion_aliases = qcng.programs.empirical_dispersion_resources.get_dispersion_aliases()
 
 functionals = {}
 dashcoeff_supplement = collections.defaultdict(lambda: collections.defaultdict(dict))
@@ -137,7 +138,7 @@ for functional_name in dict_functionals:
                         functionals[alias] = dict_functionals[functional_name]
         continue
 
-    # else loop through dispersion types in dashparams (also considering aliases)
+    # else loop through dispersion types in empirical_dispersion_resources.dashcoeff (also considering aliases)
     #   and build dispersion corrected version (applies also for aliases)
     for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
         # first check whether there is a pre-defined dispersion corrected functional
@@ -150,11 +151,11 @@ for functional_name in dict_functionals:
                     functionals[alias] = dict_functionals[formal]
         # if not, build it from dashparam logic if possible
         else:
-            for dispersion_functional in qcng.programs.dftd3.dashcoeff[resolved_dispersion_level]['definitions']:
+            for dispersion_functional in dashcoeff[resolved_dispersion_level]['definitions']:
                 if dispersion_functional.lower() in functional_aliases:
                     func = copy.deepcopy(dict_functionals[functional_name])
                     func["name"] += "-" + resolved_dispersion_level
-                    func["dispersion"] = copy.deepcopy(qcng.programs.dftd3.dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
+                    func["dispersion"] = copy.deepcopy(dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
                     func["dispersion"]["type"] = resolved_dispersion_level
 
                     # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
@@ -230,7 +231,7 @@ def check_consistency(func_dictionary):
         if "type" not in disp or disp["type"] not in _dispersion_aliases:
             raise ValidationError("SCF: Dispersion type ({}) should be among ({})".format(disp['type'], _dispersion_aliases.keys()))
     # 3c) check dispersion params complete
-        allowed_params = sorted(qcng.programs.dftd3.dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
+        allowed_params = sorted(dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
         if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
             raise ValidationError("SCF: Dispersion params ({}) must include all ({})".format(list(disp['params'].keys()), allowed_params))
     # 3d) check formatting for dispersion citation
