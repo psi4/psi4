@@ -78,7 +78,7 @@ dict = {
 }
 """
 from psi4 import core
-from psi4.driver.p4util.exceptions import *
+from psi4.driver.p4util.exceptions import ValidationError
 
 import copy
 import collections

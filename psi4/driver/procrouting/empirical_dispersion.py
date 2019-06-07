@@ -29,6 +29,7 @@
 import collections
 
 import numpy as np
+from qcelemental.models import ResultInput
 import qcengine as qcng
 
 from psi4 import core
@@ -203,12 +204,10 @@ class EmpiricalDispersion(object):
                     'provenance': p4util.provenance_stamp(__name__),
                 })
             jobrec = qcng.compute(resi, self.engine, raise_error=True)
-            jobrec = jobrec.dict()
 
-            dashd_part = float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
-            for k, qca in jobrec['extras']['qcvars'].items():
-                if not isinstance(qca, (list, np.ndarray)):
-                    core.set_variable(k, qca)
+            dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
+            for k, qca in jobrec.extras['qcvars'].items():
+                core.set_variable(k, p4util.plump_qcvar(qca, k))
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
@@ -255,12 +254,10 @@ class EmpiricalDispersion(object):
                     'provenance': p4util.provenance_stamp(__name__),
                 })
             jobrec = qcng.compute(resi, self.engine, raise_error=True)
-            jobrec = jobrec.dict()
 
-            dashd_part = core.Matrix.from_array(np.array(jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
-            for k, qca in jobrec['extras']['qcvars'].items():
-                if not isinstance(qca, (list, np.ndarray)):
-                    core.set_variable(k, qca)
+            dashd_part = core.Matrix.from_array(np.array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
+            for k, qca in jobrec.extras['qcvars'].items():
+                core.set_variable(k, p4util.plump_qcvar(qca, k))
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)

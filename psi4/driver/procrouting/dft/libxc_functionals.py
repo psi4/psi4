@@ -29,8 +29,6 @@
 List of XC functionals
 """
 
-import copy
-
 funcs = []
 
 # yapf: disable

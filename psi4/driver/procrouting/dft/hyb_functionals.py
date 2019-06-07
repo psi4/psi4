@@ -29,8 +29,6 @@
 List of hybrid functionals
 """
 
-import copy
-
 funcs = []
 
 funcs.append({
