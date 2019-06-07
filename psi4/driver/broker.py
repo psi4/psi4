@@ -39,7 +39,7 @@ try:
 except ImportError:
     ipi_available = False
     # Define Client to enable testing of the Broker in the unittests
-    class Client(object): pass
+    class Client(): pass
 
 
 class Broker(Client):
