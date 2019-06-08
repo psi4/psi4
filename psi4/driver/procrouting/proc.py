@@ -2303,6 +2303,27 @@ def run_dfmp2_gradient(name, **kwargs):
     return dfmp2_wfn
 
 
+def run_dfmp2d_gradient(name, **kwargs):
+    """Encode MP2-D method."""
+
+    dfmp2_wfn = run_dfmp2_gradient('mp2', **kwargs)
+
+    _, _disp_functor = build_disp_functor('MP2D', restricted=True)
+    disp_grad = _disp_functor.compute_gradient(dfmp2_wfn.molecule(), dfmp2_wfn)
+    dfmp2_wfn.gradient().add(disp_grad)
+
+    dfmp2_wfn.set_variable('MP2D CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY') + dfmp2_wfn.variable('DISPERSION CORRECTION ENERGY'))
+    dfmp2_wfn.set_variable('MP2D TOTAL ENERGY', dfmp2_wfn.variable('MP2D CORRELATION ENERGY') + dfmp2_wfn.variable('HF TOTAL ENERGY'))
+    dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('MP2D TOTAL ENERGY'))
+    dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('MP2D CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in dfmp2_wfn.variables().items():
+        core.set_variable(k, v)
+
+    return dfmp2_wfn
+
+
 def run_ccenergy(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a CCSD, CC2, and CC3 calculation.

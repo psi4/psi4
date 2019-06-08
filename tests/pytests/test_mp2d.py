@@ -8,8 +8,6 @@ from qcengine.testing import using_mp2d
 
 pytestmark = [pytest.mark.quick]
 
-#! Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets.
-#! Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 
 # This will remove the 32 file in each iteration of the for loop 
 #psi4_io.set_specific_retention(32,False)
@@ -99,24 +97,27 @@ def test_dft_mp2(inp):
                       'CURRENT ENERGY']:
             assert compare_values(ref[basisset][inp['pv'] + ' TOTAL ENERGY'], obj.variable(qcvar), 10, basisset + " " + qcvar)
 
+        ## apparently not widespread
+        #if inp['driver'] == 'gradient':
+        #    for qcvar in [inp['pv'] + ' TOTAL GRADIENT',
+        #                  'CURRENT GRADIENT']:
+        #        assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], obj.variable(qcvar), 10, basisset + " " + qcvar)
+
         for qcvar in ['HF TOTAL ENERGY', 
                       'SCF TOTAL ENERGY', 
                       'SCF ITERATION ENERGY', 
                       'CURRENT REFERENCE ENERGY']:
             assert compare_values(ref[basisset]['HF TOTAL ENERGY'], obj.variable(qcvar), 10, basisset + " " + qcvar)
 
-        for qcvar in ['DISPERSION CORRECTION ENERGY']: #, 
-                      #'MP2D DISPERSION CORRECTION ENERGY']:
-            if inp['pv'] == 'MP2D':
+        if inp['pv'] == 'MP2D':
+            for qcvar in ['DISPERSION CORRECTION ENERGY',
+                          'MP2D DISPERSION CORRECTION ENERGY']:
                 assert compare_values(ref['nobas']['MP2-D DISPERSION CORRECTION ENERGY'], obj.variable(qcvar), 10, basisset + " " + qcvar)
 
-        if inp['pv'] == 'MP2D':
-            assert compare_values(ref['nobas']['MP2-D DISPERSION CORRECTION ENERGY'], obj.variable('DISPERSION CORRECTION ENERGY'), 10, basisset + " disp ene")
-            if inp['driver'] == 'gradient':
-                #print(ref['nobas']['MP2-D DISPERSION CORRECTION GRADIENT'].shape)
-                #print(np.asarray(obj.variable('DISPERSION CORRECTION GRADIENT')).shape)
-                assert compare_arrays(ref['nobas']['MP2-D DISPERSION CORRECTION GRADIENT'], np.asarray(obj.variable('DISPERSION CORRECTION GRADIENT')), 10, basisset + " disp grad")
-                pass
+            if inp['driver'] == 'gradient' and 'dertype' not in inp:
+                for qcvar in ['DISPERSION CORRECTION GRADIENT',
+                              'MP2D DISPERSION CORRECTION GRADIENT']:
+                    assert compare_arrays(ref['nobas']['MP2-D DISPERSION CORRECTION GRADIENT'], np.asarray(obj.variable(qcvar)), 10, basisset + " disp grad")
 
     for retrn in [ene,
                   wfn.energy()]:
@@ -128,7 +129,27 @@ def test_dft_mp2(inp):
             atol = 1.e-8 if 'dertype' in inp else 1.e-10
             assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=atol)
 
-#    assert 0
 
 #TABLE 14259 -1.155358302362078 0.7013114524160179
 
+
+def test_mp2d_opt():
+
+    h2 = psi4.geometry("""
+        0 1
+        H
+        H 1 R
+        units bohr
+        R = 1.7007535129120455
+        """)
+
+    psi4.set_options({
+        'scf_type': 'df',
+        'd_convergence': 12,
+        'e_convergence': 12,
+        'g_convergence': 'gau_verytight',
+    })
+
+    ene, wfn = psi4.optimize('mp2d/cc-pvdz', return_wfn=True, molecule=h2)
+
+    assert compare_values(1.4259, h2.R, 'h2 bond length', atol=1.e-3)
