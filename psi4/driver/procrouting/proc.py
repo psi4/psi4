@@ -987,19 +987,52 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
-    """Builds the correct (R/U/RO/CU HF/KS) wavefunction from the
-    provided information, sets relevant auxiliary basis sets on it,
-    and prepares any empirical dispersion.
+def build_disp_functor(name, restricted, **kwargs):
 
-    """
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
     else:
         modified_disp_params = None
 
     # Figure out functional
-    superfunc, disp_type = dft.build_superfunctional(name, (reference in ["RKS", "RHF"]))
+    superfunc, disp_type = dft.build_superfunctional(name, restricted)
+
+    if disp_type:
+        if isinstance(name, dict):
+            # user dft_functional={} spec - type for lookup, dict val for param defs,
+            #   name & citation discarded so only param matches to existing defs will print labels
+            _disp_functor = empirical_dispersion.EmpiricalDispersion(
+                name_hint='',
+                level_hint=disp_type["type"],
+                param_tweaks=disp_type["params"],
+                engine=kwargs.get('engine', None))
+        else:
+            # dft/*functionals.py spec - name & type for lookup, option val for param tweaks
+            _disp_functor = empirical_dispersion.EmpiricalDispersion(
+                name_hint=superfunc.name(),
+                level_hint=disp_type["type"],
+                param_tweaks=modified_disp_params,
+                engine=kwargs.get('engine', None))
+
+        # [Aug 2018] there once was a breed of `disp_type` that quacked
+        #   like a list rather than the more common dict handled above. if
+        #   ever again sighted, make an issue so this code can accommodate.
+
+        _disp_functor.print_out()
+        return superfunc, _disp_functor
+
+    else:
+        return superfunc, None
+
+
+def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
+    """Builds the correct (R/U/RO/CU HF/KS) wavefunction from the
+    provided information, sets relevant auxiliary basis sets on it,
+    and prepares any empirical dispersion.
+
+    """
+    # Figure out functional and dispersion
+    superfunc, _disp_functor = build_disp_functor(name, restricted=(reference in ["RKS", "RHF"]), **kwargs)
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
@@ -1014,30 +1047,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     else:
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
-    if disp_type:
-        if isinstance(name, dict):
-            # user dft_functional={} spec - type for lookup, dict val for param defs,
-            #   name & citation discarded so only param matches to existing defs will print labels
-            wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
-                name_hint='',
-                level_hint=disp_type["type"],
-                param_tweaks=disp_type["params"],
-                engine=kwargs.get('engine', None))
-        else:
-            # dft/*functionals.py spec - name & type for lookup, option val for param tweaks
-            wfn._disp_functor = empirical_dispersion.EmpiricalDispersion(
-                name_hint=superfunc.name(),
-                level_hint=disp_type["type"],
-                param_tweaks=modified_disp_params,
-                engine=kwargs.get('engine', None))
-
-        # [Aug 2018] there once was a breed of `disp_type` that quacked
-        #   like a list rather than the more common dict handled above. if
-        #   ever again sighted, make an issue so this code can accommodate.
-
-        wfn._disp_functor.print_out()
-        if disp_type["type"] == 'nl':
-            del wfn._disp_functor
+    if _disp_functor and _disp_functor.engine != 'nl':
+        wfn._disp_functor = _disp_functor
 
     # Set the DF basis sets
     if (("DF" in core.get_global_option("SCF_TYPE")) or
@@ -1350,7 +1361,7 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # Compute dftd3
     if hasattr(scf_wfn, "_disp_functor"):
-        disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
+        disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule(), scf_wfn)
         scf_wfn.set_variable("-D Energy", disp_energy)
 
     # PCM preparation
@@ -2145,7 +2156,7 @@ def run_scf_gradient(name, **kwargs):
         ref_wfn.semicanonicalize()
 
     if hasattr(ref_wfn, "_disp_functor"):
-        disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule())
+        disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule(), ref_wfn)
         ref_wfn.set_variable("-D Gradient", disp_grad)
 
     grad = core.scfgrad(ref_wfn)
@@ -2213,7 +2224,7 @@ def run_scf_hessian(name, **kwargs):
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
     if hasattr(ref_wfn, "_disp_functor"):
-        disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule())
+        disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule(), ref_wfn)
         ref_wfn.set_variable("-D Hessian", disp_hess)
 
     H = core.scfhess(ref_wfn)

@@ -152,7 +152,8 @@ class EmpiricalDispersion(object):
         """Format dispersion parameters of `self` for output file."""
 
         text = []
-        text.append("   => %s: Empirical Dispersion <=" % (self.fctldash.upper() if self.fctldash.upper() else 'Custom'))
+        text.append("   => {}: Empirical Dispersion <=".format(
+            (self.fctldash.upper() if self.fctldash.upper() else 'Custom')))
         text.append('')
         text.append(self.description)
         text.append(self.dashlevel_citation.rstrip())
@@ -165,13 +166,15 @@ class EmpiricalDispersion(object):
 
         core.print_out('\n'.join(text))
 
-    def compute_energy(self, molecule):
+    def compute_energy(self, molecule: 'psi4.core.Molecule', wfn: 'psi4.core.Wavefunction' = None) -> float:
         """Compute dispersion energy based on engine, dispersion level, and parameters in `self`.
 
         Parameters
         ----------
         molecule : psi4.core.Molecule
             System for which to compute empirical dispersion correction.
+        wfn :
+            Location to set QCVariables
 
         Returns
         -------
@@ -206,8 +209,10 @@ class EmpiricalDispersion(object):
             jobrec = qcng.compute(resi, self.engine, raise_error=True)
 
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
-            for k, qca in jobrec.extras['qcvars'].items():
-                core.set_variable(k, p4util.plump_qcvar(qca, k))
+            if wfn is not None:
+                for k, qca in jobrec.extras['qcvars'].items():
+                    if 'CURRENT' not in k:
+                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
@@ -222,13 +227,16 @@ class EmpiricalDispersion(object):
                 core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(self.fctldash), ene)
             return ene
 
-    def compute_gradient(self, molecule):
+    def compute_gradient(self, molecule: 'psi4.core.Molecule',
+                         wfn: 'psi4.core.Wavefunction' = None) -> 'psi4.core.Matrix':
         """Compute dispersion gradient based on engine, dispersion level, and parameters in `self`.
 
         Parameters
         ----------
         molecule : psi4.core.Molecule
             System for which to compute empirical dispersion correction.
+        wfn :
+            Location to set QCVariables
 
         Returns
         -------
@@ -255,9 +263,12 @@ class EmpiricalDispersion(object):
                 })
             jobrec = qcng.compute(resi, self.engine, raise_error=True)
 
-            dashd_part = core.Matrix.from_array(np.array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
-            for k, qca in jobrec.extras['qcvars'].items():
-                core.set_variable(k, p4util.plump_qcvar(qca, k))
+            dashd_part = core.Matrix.from_array(
+                np.array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
+            if wfn is not None:
+                for k, qca in jobrec.extras['qcvars'].items():
+                    if 'CURRENT' not in k:
+                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)
@@ -267,7 +278,8 @@ class EmpiricalDispersion(object):
         else:
             return self.disp.compute_gradient(molecule)
 
-    def compute_hessian(self, molecule):
+    def compute_hessian(self, molecule: 'psi4.core.Molecule',
+                        wfn: 'psi4.core.Wavefunction' = None) -> 'psi4.core.Matrix':
         """Compute dispersion Hessian based on engine, dispersion level, and parameters in `self`.
         Uses finite difference, as no dispersion engine has analytic second derivatives.
 
@@ -275,6 +287,8 @@ class EmpiricalDispersion(object):
         ----------
         molecule : psi4.core.Molecule
             System for which to compute empirical dispersion correction.
+        wfn :
+            Location to set QCVariables
 
         Returns
         -------
@@ -305,5 +319,7 @@ class EmpiricalDispersion(object):
             displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
         H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, -1)
+        if wfn is not None:
+            wfn.set_variable('DISPERSION CORRECTION HESSIAN', H)
         optstash.restore()
         return core.Matrix.from_array(H)
