@@ -1463,36 +1463,45 @@ std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin, int deriv) {
-    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
-    Vector3 v3origin(origin[0], origin[1], origin[2]);
-
-    std::vector<SharedMatrix> mult;
-    mult.push_back(std::make_shared<Matrix>("AO EFP Charge 0", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole X", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole Y", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Dipole Z", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole YY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole ZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Quadrupole YZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXX", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole ZZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XXZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYY", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YYZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole YZZ", basisset_->nbf(), basisset_->nbf()));
-    mult.push_back(std::make_shared<Matrix>("AO EFP Octupole XYZ", basisset_->nbf(), basisset_->nbf()));
-
-    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_efp_multipole_potential(deriv));
-    ints->set_origin(v3origin);
-    ints->compute(mult);
-
-    return mult;
+    std::vector<SharedMatrix> ret = ao_multipole_potential(origin, 3, deriv);
+    // EFP expects the following order of Cartesian components
+    //       | // Charge
+    //  0    |      0
+    //       | // Dipole
+    //  1    |      X
+    //  2    |      Y
+    //  3    |      Z
+    //       | // Quadrupole
+    //  4    |      XX
+    //  5    |      YY
+    //  6    |      ZZ
+    //  7    |      XY
+    //  8    |      XZ
+    //  9    |      YZ
+    //       | // Octupole
+    // 10    |      XXX
+    // 11    |      YYY
+    // 12    |      ZZZ
+    // 13    |      XXY
+    // 14    |      XXZ
+    // 15    |      XYY
+    // 16    |      YYZ
+    // 17    |      XZZ
+    // 18    |      YZZ
+    // 19    |      XYZ
+    // Using this mapping, one can convert alphabetical ordering
+    // to EFP ordering of the components
+    std::vector<int> map_components{
+        0,                                      // charge
+        1,  2,  3,                              // dipole
+        4,  7,  9,  5,  6,  8,                  // quadrupole
+        10, 16, 19, 11, 12, 13, 17, 15, 18, 14  // octupole
+    };
+    std::vector<SharedMatrix> ret_reordered;
+    for (size_t i = 0; i < 20; ++i) {
+        ret_reordered.push_back(std::move(ret[map_components[i]]));
+    }
+    return ret_reordered;
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int max_k, int deriv) {

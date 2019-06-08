@@ -103,15 +103,6 @@ def modify_Fock_permanent(mol, mints, verbose=1):
         1/15, 1/15, 1/15, 3/15, 3/15, 3/15, 3/15, 3/15, 3/15, 6/15])
     #   XXX   YYY   ZZZ   XXY   XXZ   XYY   YYZ   XZZ   YZZ   XYZ
 
-    # the integrals come in alphabetical ordering, this mapping
-    # gives us back the libefp ordering
-    mapping = [
-        0,  # charge
-        1, 2, 3,  # dipole
-        4, 7, 9, 5, 6, 8,  # quadrupole
-        10, 16, 19, 11, 12, 13, 17, 15, 18, 14  # octupole
-    ]
-
     # EFP permanent moment contribution to the Fock Matrix
     nbf = mints.basisset().nbf()
     V2 = np.zeros((nbf, nbf))
@@ -123,9 +114,9 @@ def modify_Fock_permanent(mol, mints, verbose=1):
         origin = xyz_mp[imp]
 
         # get EFP multipole integrals from Psi4
-        p4_efp_ints = mints.ao_multipole_potential(origin=origin, max_k=3)
+        p4_efp_ints = mints.ao_efp_multipole_potential(origin=origin)
         for pole in range(20):
-            efp_ints[pole] = np.asarray(p4_efp_ints[mapping[pole]])
+            efp_ints[pole] = np.asarray(p4_efp_ints[pole])
 
         # add frag atom Z into multipole charge (when pos'n of atom matches mp)
         for ifr in range(nfr):
