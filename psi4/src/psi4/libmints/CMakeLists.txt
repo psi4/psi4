@@ -5,7 +5,7 @@ list(APPEND sources
   orbitalspace.cc
   osrecur.cc
   maketab.cc
-  efpmultipolepotential.cc
+  multipolepotential.cc
   rel_potential.cc
   oeprop.cc
   writer.cc
