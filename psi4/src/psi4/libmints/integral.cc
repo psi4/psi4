@@ -31,7 +31,6 @@
 #include "psi4/libmints/rel_potential.h"
 #include "psi4/libmints/electricfield.h"
 #include "psi4/libmints/tracelessquadrupole.h"
-#include "psi4/libmints/efpmultipolepotential.h"
 #include "psi4/libmints/multipolepotential.h"
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/multipoles.h"
@@ -182,17 +181,13 @@ OneBodyAOInt* IntegralFactory::ao_multipoles(int order) {
     return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order);
 }
 
-OneBodyAOInt* IntegralFactory::ao_efp_multipole_potential(int order) {
-    return new EFPMultipolePotentialInt(spherical_transforms_, bs1_, bs2_, order);
-}
-
-OneBodySOInt* IntegralFactory::so_efp_multipole_potential(int order) {
-    std::shared_ptr<OneBodyAOInt> ao_int(ao_efp_multipole_potential(order));
-    return new OneBodySOInt(ao_int, this);
-}
-
 OneBodyAOInt* IntegralFactory::ao_multipole_potential(int max_k, int order) {
     return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, max_k, order);
+}
+
+OneBodySOInt* IntegralFactory::so_multipole_potential(int max_k, int order) {
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_multipole_potential(order));
+    return new OneBodySOInt(ao_int, this);
 }
 
 OneBodySOInt* IntegralFactory::so_multipoles(int order) {
@@ -221,7 +216,8 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
 #ifdef USING_erd
     if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
-    if (deriv > 0 && integral_package != "LIBINT") outfile->Printf("ERI derivative integrals only available using Libint");
+    if (deriv > 0 && integral_package != "LIBINT")
+        outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT" || integral_package == "ERD")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
@@ -236,7 +232,8 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs) {
 #ifdef USING_erd
     if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
-    if (deriv > 0 && integral_package != "LIBINT") outfile->Printf("ERI derivative integrals only available using Libint");
+    if (deriv > 0 && integral_package != "LIBINT")
+        outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT" || integral_package == "ERD")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
