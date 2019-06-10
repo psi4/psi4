@@ -259,7 +259,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
     # SCF iterations!
     SCFE_old = 0.0
-    SCFE = 0.0
     Dnorm = 0.0
     while True:
         self.iteration_ += 1
@@ -479,7 +478,7 @@ def scf_finalize_energy(self):
         # We need the integral file, make sure it is written and
         # compute it if needed
         if core.get_option('SCF', 'REFERENCE') != "UHF":
-            psio = core.IO.shared_object()
+            #psio = core.IO.shared_object()
             #psio.open(constants.PSIF_SO_TEI, 1)  # PSIO_OPEN_OLD
             #try:
             #    psio.tocscan(constants.PSIF_SO_TEI, "IWL Buffers")
@@ -878,7 +877,6 @@ def field_fn(xyz):
 
     # Cartesian basis one-electron EFP perturbation
     nbf = mints_psi4_yo.basisset().nbf()
-    field_ints = np.zeros((3, nbf, nbf))
 
     # Electric field at points
     field = np.zeros((npt, 3))
@@ -890,8 +888,8 @@ def field_fn(xyz):
         field[ipt] = [
             np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[0])),  # Ex
             np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[1])),  # Ey
-            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[2]))
-        ]  # Ez
+            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[2]))   # Ez
+        ]
 
     field = np.reshape(field, 3 * npt)
 
