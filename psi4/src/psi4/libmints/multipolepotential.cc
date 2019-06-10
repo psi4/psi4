@@ -46,13 +46,20 @@ int number_of_chunks(int max_k) {
 }  // namespace
 
 MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform> &spherical_transforms,
-                                             std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int max_k)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, 0), mvi_recur_(bs1->max_am(), bs2->max_am(), max_k), max_k_(max_k) {
+                                             std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int max_k,
+                                             int deriv)
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, deriv),
+      mvi_recur_(bs1->max_am(), bs2->max_am(), max_k),
+      max_k_(max_k) {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
+
+    if (deriv > 3) {
+        throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with deriv > 0", __FILE__, __LINE__);
+    }
 
     if (max_k > 3) {
         throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with max_k > 3", __FILE__, __LINE__);

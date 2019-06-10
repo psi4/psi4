@@ -62,7 +62,7 @@ class MultipolePotentialInt : public OneBodyAOInt {
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     MultipolePotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                          int max_k = 0);
+                          int max_k = 0, int deriv = 0);
     //! Virtual destructor
     ~MultipolePotentialInt() override;
 };
