@@ -1251,48 +1251,60 @@ ObaraSaikaTwoCenterMultipolePotentialRecursion::ObaraSaikaTwoCenterMultipolePote
     size_ += 1;
     size_ = (size_ - 1) * size_ * (size_ + 1) + 1;
     q_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    x_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    y_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    z_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xx_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
-    yy_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
-    zz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
-    xy_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
-    xz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
-    yz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
-    xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    if (do_dipole) {
+        x_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+        y_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+        z_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+    }
+    if (do_quadrupole) {
+        xx_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+        yy_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+        zz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+        xy_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+        xz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+        yz_ = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    }
+    if (do_octupole) {
+        xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+        xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    }
 }
 
 ObaraSaikaTwoCenterMultipolePotentialRecursion::~ObaraSaikaTwoCenterMultipolePotentialRecursion() {
     free_box(q_, size_, size_);
-    free_box(x_, size_, size_);
-    free_box(y_, size_, size_);
-    free_box(z_, size_, size_);
-    free_box(xx_, size_, size_);
-    free_box(yy_, size_, size_);
-    free_box(zz_, size_, size_);
-    free_box(xy_, size_, size_);
-    free_box(xz_, size_, size_);
-    free_box(yz_, size_, size_);
-    free_box(xxx_, size_, size_);
-    free_box(yyy_, size_, size_);
-    free_box(zzz_, size_, size_);
-    free_box(xxy_, size_, size_);
-    free_box(xxz_, size_, size_);
-    free_box(xyy_, size_, size_);
-    free_box(yyz_, size_, size_);
-    free_box(xzz_, size_, size_);
-    free_box(yzz_, size_, size_);
-    free_box(xyz_, size_, size_);
+    if (do_dipole) {
+        free_box(x_, size_, size_);
+        free_box(y_, size_, size_);
+        free_box(z_, size_, size_);
+    }
+    if (do_quadrupole) {
+        free_box(xx_, size_, size_);
+        free_box(yy_, size_, size_);
+        free_box(zz_, size_, size_);
+        free_box(xy_, size_, size_);
+        free_box(xz_, size_, size_);
+        free_box(yz_, size_, size_);
+    }
+    if (do_octupole) {
+        free_box(xxx_, size_, size_);
+        free_box(yyy_, size_, size_);
+        free_box(zzz_, size_, size_);
+        free_box(xxy_, size_, size_);
+        free_box(xxz_, size_, size_);
+        free_box(xyy_, size_, size_);
+        free_box(yyz_, size_, size_);
+        free_box(xzz_, size_, size_);
+        free_box(yzz_, size_, size_);
+        free_box(xyz_, size_, size_);
+    }
 }
 
 #define EPS 1.0e-17
@@ -1365,13 +1377,14 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
     for (m = 0; m <= mmax; ++m) {
         q_[0][0][m] = tmp * F[m];
     }
-    if (do_dipole)
+    if (do_dipole) {
         for (m = 0; m <= mmax - 1; ++m) {
             x_[0][0][m] = 2.0 * zeta * PC[0] * q_[0][0][m + 1];
             y_[0][0][m] = 2.0 * zeta * PC[1] * q_[0][0][m + 1];
             z_[0][0][m] = 2.0 * zeta * PC[2] * q_[0][0][m + 1];
         }
-    if (do_quadrupole)
+    }
+    if (do_quadrupole) {
         for (m = 0; m <= mmax - 2; ++m) {
             xx_[0][0][m] = 4.0 * zeta * zeta * PC[0] * PC[0] * q_[0][0][m + 2] - 2.0 * zeta * q_[0][0][m + 1];
             yy_[0][0][m] = 4.0 * zeta * zeta * PC[1] * PC[1] * q_[0][0][m + 2] - 2.0 * zeta * q_[0][0][m + 1];
@@ -1380,26 +1393,29 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
             xz_[0][0][m] = 4.0 * zeta * zeta * PC[0] * PC[2] * q_[0][0][m + 2];
             yz_[0][0][m] = 4.0 * zeta * zeta * PC[1] * PC[2] * q_[0][0][m + 2];
         }
-    for (m = 0; m <= mmax - 3; ++m) {
-        xxx_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[0] * q_[0][0][m + 3] -
-                        12.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
-        yyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[1] * q_[0][0][m + 3] -
-                        12.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
-        zzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[2] * PC[2] * PC[2] * q_[0][0][m + 3] -
-                        12.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
-        xxy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[1] * q_[0][0][m + 3] -
-                        4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
-        xxz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[2] * q_[0][0][m + 3] -
-                        4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
-        xyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[1] * q_[0][0][m + 3] -
-                        4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
-        yyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[2] * q_[0][0][m + 3] -
-                        4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
-        xzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[2] * PC[2] * q_[0][0][m + 3] -
-                        4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
-        yzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[2] * PC[2] * q_[0][0][m + 3] -
-                        4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
-        xyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[2] * q_[0][0][m + 3];
+    }
+    if (do_octupole) {
+        for (m = 0; m <= mmax - 3; ++m) {
+            xxx_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[0] * q_[0][0][m + 3] -
+                            12.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
+            yyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[1] * q_[0][0][m + 3] -
+                            12.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
+            zzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[2] * PC[2] * PC[2] * q_[0][0][m + 3] -
+                            12.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
+            xxy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[1] * q_[0][0][m + 3] -
+                            4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
+            xxz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[0] * PC[2] * q_[0][0][m + 3] -
+                            4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
+            xyy_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[1] * q_[0][0][m + 3] -
+                            4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
+            yyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[1] * PC[2] * q_[0][0][m + 3] -
+                            4.0 * zeta * zeta * PC[2] * q_[0][0][m + 2];
+            xzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[2] * PC[2] * q_[0][0][m + 3] -
+                            4.0 * zeta * zeta * PC[0] * q_[0][0][m + 2];
+            yzz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[1] * PC[2] * PC[2] * q_[0][0][m + 3] -
+                            4.0 * zeta * zeta * PC[1] * q_[0][0][m + 2];
+            xyz_[0][0][m] = 8.0 * zeta * zeta * zeta * PC[0] * PC[1] * PC[2] * q_[0][0][m + 3];
+        }
     }
 
     // Perform recursion in b with a=0
