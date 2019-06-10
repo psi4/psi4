@@ -1462,8 +1462,8 @@ std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
     return quadrupole;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin, int deriv) {
-    std::vector<SharedMatrix> ret = ao_multipole_potential(origin, 3, deriv);
+std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin) {
+    std::vector<SharedMatrix> ret = ao_multipole_potential(origin, 3);
     // EFP expects the following order of Cartesian components
     //       | // Charge
     //  0    |      0
@@ -1504,7 +1504,7 @@ std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vec
     return ret_reordered;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int max_k, int deriv) {
+std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int max_k) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
     Vector3 v3origin(origin[0], origin[1], origin[2]);
 
@@ -1539,7 +1539,7 @@ std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<
         mult.push_back(std::make_shared<Matrix>("AO Octupole Potential ZZZ", basisset_->nbf(), basisset_->nbf()));
     }
 
-    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_multipole_potential(max_k, deriv));
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_multipole_potential(max_k));
     ints->set_origin(v3origin);
     ints->compute(mult);
 

@@ -42,32 +42,12 @@ class SphericalTransform;
 /*! \ingroup MINTS
  *  \class MultipolePotentialInt
  *  \brief Computes multipole potential integrals, needed for EFP/PE calculations.
- *  Currently computes potential integrals up to quadrupoles.
+ *  Currently computes potential integrals up to order max_k,
+ *  where the maximum is max_k = 3 (octupoles)
  *
  *  Use an IntegralFactory to create this object.
  *  The compute method takes a vector of SharedMatrix objects, which will be populated
- *  in the following order, which matches the order expected by libEFP. The scale factors
- *  are the prefactors that should be included in any contractions involving these integrals
- *  where the numerator comes from permutational symmetry, and the denominator arises from
- *  the coefficients of the power series expansion of the Coulomb operator.
-
- TODO: this order will be changed to alphabetical ordering
- *  Matrix # | Multipole Type | Scale Factor
- *  -----------------------------------------
- *           | // Charge      |
- *      0    |      0         |    1
- *           | // Dipole      |
- *      1    |      X         |    1
- *      2    |      Y         |    1
- *      3    |      Z         |    1
- *           | // Quadrupole  |
- *      4    |      XX        |    1/3
- *      5    |      YY        |    1/3
- *      6    |      ZZ        |    1/3
- *      7    |      XY        |    2/3
- *      8    |      XZ        |    2/3
- *      9    |      YZ        |    2/3
- *
+ *  in alphabetical order of Cartesian components.
  */
 class MultipolePotentialInt : public OneBodyAOInt {
     // OS Recursion for this type of potential integral
@@ -82,7 +62,7 @@ class MultipolePotentialInt : public OneBodyAOInt {
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     MultipolePotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                          int max_k = 0, int deriv = 0);
+                          int max_k = 0);
     //! Virtual destructor
     ~MultipolePotentialInt() override;
 };
