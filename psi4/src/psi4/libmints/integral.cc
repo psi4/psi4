@@ -181,13 +181,13 @@ OneBodyAOInt* IntegralFactory::ao_multipoles(int order) {
     return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order);
 }
 
+OneBodyAOInt* IntegralFactory::ao_multipole_potential(int max_k, int deriv) {
+    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, max_k, deriv);
+}
+
 OneBodySOInt* IntegralFactory::so_multipoles(int order) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order));
     return new OneBodySOInt(ao_int, this);
-}
-
-OneBodyAOInt* IntegralFactory::ao_multipole_potential(int max_k, int deriv) {
-    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, max_k, deriv);
 }
 
 OneBodyAOInt* IntegralFactory::ao_traceless_quadrupole() {

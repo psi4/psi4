@@ -296,17 +296,6 @@ class ObaraSaikaTwoCenterMultipolePotentialRecursion {
     double ***yyz_;
     double ***yzz_;
     double ***zzz_;
-    // double ***xxx_;
-    // double ***xxy_;
-    // double ***xxz_;
-    // double ***xyy_;
-    // double ***xyz_;
-    // double ***xzz_;
-    // double ***yyy_;
-    // double ***yyz_;
-    // double ***yzz_;
-    // double ***zzz_;
->>>>>>> started with mints code to compute potential integrals up to desired order
 
     // Forms Fm(U) from A20 (OS 1986)
     void calculate_f(double *F, int n, double t);

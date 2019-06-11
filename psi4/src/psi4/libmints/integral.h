@@ -465,9 +465,6 @@ class PSI_API IntegralFactory {
     /// Returns a OneBodyInt that computes the multipole potential integrals for PE and EFP
     virtual OneBodyAOInt* ao_multipole_potential(int max_k = 0, int deriv = 0);
 
-    /// Returns a OneBodyInt that computes the multipole potential integrals for PE
-    virtual OneBodyAOInt* ao_multipole_potential(int max_k = 0, int deriv = 0);
-
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt* electric_field(int deriv = 0);
 

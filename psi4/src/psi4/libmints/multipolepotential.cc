@@ -30,6 +30,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 
+;
 using namespace psi;
 
 #define have_moment(k, max_k) (k <= max_k);
