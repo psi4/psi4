@@ -290,7 +290,7 @@ void MOLECULE::irc_step()
       double *v_m = lowest_evector(H_m, Nintco);
       v = init_array(Nintco);
 
-      // Transform the gradient to internals
+      // Transform the displacement to pivot point to internals
       for(int i=0; i<Nintco; i++)
           v[i] = array_dot(rootG_inv[i], v_m, Nintco);
 
