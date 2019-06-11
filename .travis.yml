@@ -71,6 +71,7 @@ install:
       qcengine
       pybind11
       -c conda-forge
+  - conda remove qcengine --force
   - conda list
 
 before_script:
