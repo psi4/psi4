@@ -81,11 +81,8 @@ class IPIBroker(Client):
         atoms = np.array(self.initial_molecule.geometry())
         psi4.core.print_out("Initial atoms %s\n" % atoms)
         psi4.core.print_out("Force:\n")
-        frc, pot = self.calculate_force(atoms)
-        psi4.core.print_out("%s %f"%(str(frc), pot))
-        psi4.core.print_out("\n")
 
-    def calculate_force(self, pos=None):
+    def calculate_force(self, pos=None, **kwargs):
         """Fetch force, energy of PSI.
 
         Arguments:
@@ -96,10 +93,10 @@ class IPIBroker(Client):
             molecule = psi4.core.get_active_molecule()
             pos = np.array(molecule.geometry())
 
-        self.frc, self.pot = self.callback(pos)
+        self.frc, self.pot = self.callback(pos, **kwargs)
         return self.frc, self.pot
 
-    def callback(self, pos):
+    def callback(self, pos, **kwargs):
         """Initialize psi with new positions and calculate force.
 
         Arguments:
@@ -108,20 +105,20 @@ class IPIBroker(Client):
 
         self.initial_molecule.set_geometry(psi4.core.Matrix.from_array(pos))
 
-        self.calculate_gradient(self.options["LOT"])
+        self.calculate_gradient(self.options["LOT"], **kwargs)
 
         self.pot = psi4.core.scalar_variable('CURRENT ENERGY')
         self.frc = -np.array(self.grd)
 
         return self.frc, np.float64(self.pot)
 
-    def calculate_gradient(self, LOT, bypass_scf=False):
+    def calculate_gradient(self, LOT, bypass_scf=False, **kwargs):
         """Calculate the gradient with @LOT.
 
         When bypass_scf=True a hf energy calculation has been done before.
         """
         start = time.time()
-        self.grd = psi4.gradient(LOT, bypass_scf=bypass_scf)
+        self.grd = psi4.gradient(LOT, bypass_scf=bypass_scf, **kwargs)
         time_needed = time.time() - start
         self.timing[LOT] = self.timing.get(LOT, []) + [time_needed]
 

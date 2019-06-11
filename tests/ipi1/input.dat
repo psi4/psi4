@@ -31,6 +31,8 @@ frc = np.array([[ 0.08704801,  0.1067644 , -0.11170374],
                 [-0.02216499, -0.03279655,  0.03215871],
                 [-0.06488302, -0.07396785,  0.07954503]])
 
+b.calculate_force()
+
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
 compare_values(refscf,   scalar_variable("SCF total energy"),        5, "SCF energy")               #TEST
 compare_values(refccsd,  scalar_variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
