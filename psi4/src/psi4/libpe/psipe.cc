@@ -42,6 +42,8 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <cppe/core/math.hh>
+
 #include "psipe.h"
 
 // TODO: implement output stream option in CPPE for printing
@@ -59,15 +61,15 @@ libcppe::Molecule make_molecule(std::shared_ptr<Molecule> molecule) {
 }
 
 namespace {
-std::vector<double> mult_coeffs = {
-    1.0,                       // q
-    1.0, 1.0, 1.0,             // mu
-    0.5, 0.5, 0.5, 1., 1., 1.  // theta
-};
-
-std::vector<int> from_alphabetical_to_psi4 = {
-    0, 1, 2, 3, 4, 7, 9, 5, 6, 8  // 0, 3, 5, 1, 2, 4
-};
+std::vector<double> mult_coeffs_k(int max_k = 0) {
+    std::vector<double> mult_coeffs;
+    for (int k = 0; k <= max_k; ++k) {
+        auto prefs = libcppe::prefactors(k);
+        mult_coeffs.insert(std::end(mult_coeffs), std::begin(prefs), std::end(prefs));
+    }
+    return mult_coeffs;
+}
+std::vector<double> mult_coeffs = mult_coeffs_k(2);
 
 int have_moment(int k, int max_k) { return k <= max_k; }
 }  // unnamed namespace
@@ -163,23 +165,22 @@ SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 sit
     }
     if (have_moment(2, order)) {
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XX", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YY", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential ZZ", basisset_->nbf(), basisset_->nbf()));
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XY", basisset_->nbf(), basisset_->nbf()));
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YY", basisset_->nbf(), basisset_->nbf()));
         mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YZ", basisset_->nbf(), basisset_->nbf()));
+        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential ZZ", basisset_->nbf(), basisset_->nbf()));
     }
     multipole_integrals->set_origin(site);
     multipole_integrals->compute(mult);
 
     auto res = std::make_shared<Matrix>("result", basisset_->nbf(), basisset_->nbf());
     for (int l = 0; l < total_components; ++l) {
-        mult[l]->scale(-1.0 * mult_coeffs[l] * moments[from_alphabetical_to_psi4[l]]);
+        mult[l]->scale(mult_coeffs[l] * moments[l]);
         res->add(mult[l]);
     }
-
     return res;
-}  // namespace pol_embed
+}
 
 SharedMatrix PeIntegralHelper::compute_field_integrals(Vector3 site, Eigen::VectorXd moment) {
     std::vector<SharedMatrix> fields;
