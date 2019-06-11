@@ -62,6 +62,9 @@ class IPIBroker(Client):
         if molecule is None:
             molecule = psi4.core.get_active_molecule()
         self.initial_molecule = molecule
+        assert self.initial_molecule.orientation_fixed() == True, "Orientation must be fixed!"
+        assert self.initial_molecule.point_group().symbol() == "c1", "Symmetry must be 'c1'!"
+
         names = [self.initial_molecule.symbol(i) for i in range(self.initial_molecule.natom())]
         psi4.core.print_out("Initial atoms %s\n" % names)
         self.atoms_list = names
@@ -86,7 +89,7 @@ class IPIBroker(Client):
         """Fetch force, energy of PSI.
 
         Arguments:
-        - pos: positions of the atoms. If None, the positions of the current active
+        - pos: positions of the atoms as array. If None, the positions of the current active
           molecule is used.
         """
         if pos is None:
@@ -96,27 +99,14 @@ class IPIBroker(Client):
         self.frc, self.pot = self.callback(pos)
         return self.frc, self.pot
 
-    def get_molecule(self, pos):
-        ret = "\n".join(
-                    ["%s %f %f %f" % (self.atoms_list[i],
-                                        pos[i, 0], pos[i, 1],
-                                        pos[i, 2])
-                                        for i in range(len(pos))] +
-                   ["units bohr",
-                    "no_reorient",
-                    #"no_com",
-                    "symmetry c1",
-                    "%d %d" % (self.options["charge"],
-                                 self.options["multiplicity"]),
-                    ])
-        return ret
-
     def callback(self, pos):
         """Initialize psi with new positions and calculate force.
+
+        Arguments:
+        - pos: positions of the atoms as array.
         """
 
-        mol = self.get_molecule(pos)
-        psi4.geometry(mol, "xwrapper")
+        self.initial_molecule.set_geometry(psi4.core.Matrix.from_array(pos))
 
         self.calculate_gradient(self.options["LOT"])
 
