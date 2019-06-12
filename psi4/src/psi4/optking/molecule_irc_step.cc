@@ -283,12 +283,16 @@ void MOLECULE::irc_step()
   //Pivot Point and Initial Working Geometry:
   //step along along normalized, mass-weighted v
   if(at_FS) {
-    // If starting from TS, follow lowest-eigenvalued eigenvector.
+    // If starting from TS, follow lowest-eigenvalued eigenvector of mass-weighted Hessian.
     // Otherwise, follow the gradient (negative of the force vector).
     double *v;
     if (at_TS) {
-      //v = lowest_evector(H_m, Nintco);
-      v = lowest_evector(H, Nintco);
+      double *v_m = lowest_evector(H_m, Nintco);
+      v = init_array(Nintco);
+
+      // Transform the displacement to pivot point to internals
+      for(int i=0; i<Nintco; i++)
+          v[i] = array_dot(rootG_inv[i], v_m, Nintco);
 
       if(Opt_params.IRC_direction == OPT_PARAMS::FORWARD)
         oprintf_out( "  Stepping in forward direction from TS.\n");
