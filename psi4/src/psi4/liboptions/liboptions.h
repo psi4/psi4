@@ -81,7 +81,7 @@ class DataType {
     void changed();
     void dechanged();
 
-    void to_upper(std::string& str);
+    void to_upper(std::string& str) const;
 
     virtual void add_choices(std::string str);
     virtual std::string type() const;
@@ -99,7 +99,7 @@ class DataType {
     virtual void add(std::string, double);
     virtual void add(std::string, std::string, std::string);
 
-    virtual bool exists(std::string);
+    virtual bool exists(std::string) const;
 
     virtual std::string to_string() const;
     virtual int to_integer() const;
@@ -248,6 +248,7 @@ class PSI_API Data {
     Data();
     Data(DataType* t);
     Data(const Data& copy);
+    Data& operator=(const Data& copy);
 
     std::string to_string() const;
     int to_integer() const;
@@ -339,7 +340,7 @@ class MapType : public DataType {
     void add(std::string key, double d) override;
     void add(std::string key, std::string s, std::string c = "") override;
 
-    bool exists(std::string key) override;
+    bool exists(std::string key) const override;
 
     Data& operator[](std::string s) override;
     bool is_array() const override;
@@ -376,7 +377,7 @@ class PSI_API Options {
     void set_current_module(const std::string s);
     std::string get_current_module() const { return current_module_; }
 
-    void to_upper(std::string& str);
+    void to_upper(std::string& str) const;
 
     void validate_options();
 
@@ -419,35 +420,35 @@ class PSI_API Options {
 
     void clear();
 
-    bool exists_in_active(std::string key);
+    bool exists_in_active(std::string key) const;
 
-    bool exists_in_global(std::string key);
-    bool exists(std::string key);
+    bool exists_in_global(std::string key) const;
+    bool exists(std::string key) const;
 
     Data& get(std::string key);
 
     Data& get(std::map<std::string, Data>& m, std::string& key);
+    Data get(const std::map<std::string, Data>& m, std::string& key) const;
 
     Data& get_global(std::string key);
 
     Data& get_local(std::string& key);
 
     Data& use(std::string& key);
+    Data use(std::string& key) const;
 
     Data& use_local(std::string& key);
 
-    bool get_bool(std::string key);
-    int get_int(std::string key);
-    double get_double(std::string key);
-    std::string get_str(std::string key);
-    int* get_int_array(std::string key);
-    void fill_int_array(std::string key, int* empty_array);
-    std::vector<int> get_int_vector(std::string key);
-    double* get_double_array(std::string key);
-
-    std::vector<double> get_double_vector(std::string key);
-
-    const char* get_cstr(std::string key);
+    bool get_bool(std::string key) const;
+    int get_int(std::string key) const;
+    double get_double(std::string key) const;
+    std::string get_str(std::string key) const;
+    int* get_int_array(std::string key) const;
+    void fill_int_array(std::string key, int* empty_array) const;
+    std::vector<int> get_int_vector(std::string key) const;
+    double* get_double_array(std::string key) const;
+    std::vector<double> get_double_vector(std::string key) const;
+    const char* get_cstr(std::string key) const;
 
     Data& operator[](std::string key);
 

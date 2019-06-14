@@ -199,8 +199,8 @@ void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, 
         W2[Gab] = global_dpd_->dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
 
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            memset(W[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
-            if (disc) memset(V[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            memset(W[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
+            if (disc) memset(V[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 
@@ -442,7 +442,7 @@ void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3; /* changed */
         if (F->params->coltot[Gab] && virtpi[Gc]) {
-            memset(W2[Gab][0], 0, F->params->coltot[Gab] * virtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * F->params->coltot[Gab] * virtpi[Gc]);
         }
     }
 

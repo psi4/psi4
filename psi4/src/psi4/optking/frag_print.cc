@@ -169,7 +169,7 @@ void FRAG::print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset) con
   for (std::size_t i=0; i<coords.simples.size(); ++i)
     coords.simples.at(i)->print_intco_dat(psi_fp,qc_fp,atom_offset);
   for (std::size_t cc=0; cc<coords.index.size(); ++cc) {
-    oprintf(psi_fp, qc_fp, "C %6d\n", coords.index[cc].size());
+    oprintf(psi_fp, qc_fp, "C %6zu\n", coords.index[cc].size());
     for (std::size_t s=0; s<coords.index[cc].size(); ++s)
       oprintf(psi_fp, qc_fp, "  %6d%12.6f\n", coords.index[cc].at(s)+1, coords.coeff[cc].at(s));
   }

@@ -68,6 +68,7 @@
 #include "psi4/libmints/quadrupole.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
+#include "psi4/libmints/sieve.h"
 
 #include <string>
 
@@ -373,7 +374,6 @@ void export_mints(py::module& m) {
         .def("set_block", &Vector::set_block, "Set a vector block", "slice"_a, "block"_a)
         .def("array_interface",
              [](Vector& v) {
-
                  // Build a list of NumPy views, used for the .np and .nph accessors.Vy
                  py::list ret;
 
@@ -597,7 +597,6 @@ void export_mints(py::module& m) {
              "i"_a, "j"_a, "theta"_a)
         .def("array_interface",
              [](Matrix& m) {
-
                  // Build a list of NumPy views, used for the .np and .nph accessors.Vy
                  py::list ret;
 
@@ -984,6 +983,8 @@ void export_mints(py::module& m) {
         .def("so_angular_momentum", &MintsHelper::so_angular_momentum, "Vector SO angular momentum integrals")
         .def("ao_efp_multipole_potential", &MintsHelper::ao_efp_multipole_potential,
              "Vector AO EFP multipole integrals", "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
+        .def("ao_multipole_potential", &MintsHelper::ao_multipole_potential, "Vector AO multipole potential integrals",
+             "origin"_a = std::vector<double>{0, 0, 0}, "max_k"_a = 0, "deriv"_a = 0)
         .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
              "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
 
@@ -1543,4 +1544,8 @@ void export_mints(py::module& m) {
              "Returns the number of irreps in the low order group that an irrep \
              from the high order group can be reduced to.")
         .def("group", &CorrelationTable::gamma, "Returns the higher order point group");
+
+    py::class_<ERISieve, std::shared_ptr<ERISieve>>(m, "ERISieve", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, double, bool>())
+        .def("shell_significant", &ERISieve::shell_significant);
 }

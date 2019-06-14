@@ -68,6 +68,18 @@ using namespace psi;
 
 namespace psi {
 namespace scf {
+// Parse options: either use DF or exact integrals.
+static bool SAD_use_fitting(const Options& opt) {
+    std::string jk_type(opt.get_str("SAD_SCF_TYPE"));
+    if ((jk_type == "DIRECT") || (jk_type == "PK") || (jk_type == "OUT_OF_CORE") || (jk_type == "CD") ||
+        (jk_type == "GTFOCK")) {
+        return false;
+    }
+    if ((jk_type == "DF") || (jk_type == "MEM_DF") || (jk_type == "DISK_DF")) {
+        return true;
+    }
+    throw PSIEXCEPTION("SAD_SCF_TYPE " + opt.get_str("SAD_SCF_TYPE") + " not implemented.\n");
+}
 
 SADGuess::SADGuess(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases,
                    Options& options)
@@ -314,7 +326,7 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
         atomic_Chu[uniA] = std::make_shared<Matrix>("Atomic Huckel C", nbf, nhu);
         atomic_Ehu[uniA] = std::make_shared<Vector>("Atomic Huckel E", nhu);
 
-        if (options_.get_str("SAD_SCF_TYPE") == "DF") {
+        if (SAD_use_fitting(options_)) {
             get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], occ_a, occ_b, atomic_D[uniA],
                                    atomic_Chu[uniA], atomic_Ehu[uniA]);
         } else {
@@ -505,21 +517,17 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<JK> jk;
 
     // Need a very special auxiliary basis here
-    if (options_.get_str("SAD_SCF_TYPE") == "DF") {
+    if (SAD_use_fitting(options_)) {
         MemDFJK* dfjk = new MemDFJK(bas, fit);
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         dfjk->dfh()->set_print_lvl(0);
         jk = std::unique_ptr<JK>(dfjk);
-    } else if (options_.get_str("SAD_SCF_TYPE") == "DIRECT") {
+    } else {
         DirectJK* directjk(new DirectJK(bas));
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             directjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         jk = std::unique_ptr<JK>(directjk);
-    } else {
-        std::stringstream msg;
-        msg << "SAD: JK type of " << options_.get_str("SAD_SCF_TYPE") << " not understood.\n";
-        throw PSIEXCEPTION(msg.str());
     }
 
     jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
@@ -750,7 +758,7 @@ void HF::compute_SAD_guess() {
     }
 
     auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, options_);
-    if (options_.get_str("SAD_SCF_TYPE") == "DF") {
+    if (SAD_use_fitting(options_)) {
         if (sad_fitting_basissets_.empty()) {
             throw PSIEXCEPTION("  SCF guess was set to SAD with DiskDFJK, but sad_fitting_basissets_ was empty!\n\n");
         }
@@ -800,7 +808,7 @@ void HF::compute_huckel_guess() {
     }
 
     auto guess = std::make_shared<SADGuess>(basisset_, sad_basissets_, options_);
-    if (options_.get_str("SAD_SCF_TYPE") == "DF") {
+    if (SAD_use_fitting(options_)) {
         if (sad_fitting_basissets_.empty()) {
             throw PSIEXCEPTION("  SCF guess was set to SAD with DiskDFJK, but sad_fitting_basissets_ was empty!\n\n");
         }

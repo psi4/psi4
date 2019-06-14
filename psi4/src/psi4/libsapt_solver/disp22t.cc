@@ -256,12 +256,12 @@ void SAPT2p::natural_orbitalify_ccd() {
 }
 
 double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel, const char *RRlabel, int BBfile,
-                        const char *BSlabel, int ampfile, const char *tlabel, int foccA, int noccA, int nvirA,
-                        int foccB, int noccB, int nvirB, double *evalsA, double *evalsB) {
+                        const char *BSlabel, int ampfile, const char *tlabel, size_t foccA, size_t noccA, size_t nvirA,
+                        size_t foccB, size_t noccB, size_t nvirB, double *evalsA, double *evalsB) {
     double energy = 0.0;
 
-    int aoccA = noccA - foccA;
-    int aoccB = noccB - foccB;
+    size_t aoccA = noccA - foccA;
+    size_t aoccB = noccB - foccB;
 
     double **wARAR = block_matrix(aoccA * nvirA, aoccA * nvirA);
 
@@ -286,7 +286,7 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel, co
     std::time_t start = std::time(nullptr);
     std::time_t stop;
 
-    for (int b = 0, bs = 0; b < aoccB; b++) {
+    for (size_t b = 0, bs = 0; b < aoccB; b++) {
         for (int s = 0; s < nvirB; s++, bs++) {
             psio_address next_DF_BS = psio_get_address(
                 PSIO_ZERO, sizeof(double) * (b + foccB) * nvirB * (ndf_ + 3) + sizeof(double) * s * (ndf_ + 3));
@@ -333,7 +333,7 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel, co
         }
         stop = std::time(nullptr);
         if (print_) {
-            outfile->Printf("    (i = %3d of %3d) %10ld seconds\n", b + 1, aoccB, stop - start);
+            outfile->Printf("    (i = %3zu of %3zu) %10ld seconds\n", b + 1, aoccB, stop - start);
         }
     }
 
@@ -354,8 +354,8 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel, co
 
 double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char *AR_label, const char *RR_label,
                            int BBnum, const char *BS_label, int ampnum, const char *tarar, const char *tbsar,
-                           double *evalsA, double *evalsB, int noccA, int nvirA, int foccA, int noccB, int nvirB,
-                           int foccB) {
+                           double *evalsA, double *evalsB, size_t noccA, size_t nvirA, size_t foccA, size_t noccB, size_t nvirB,
+                           size_t foccB) {
     double energy = 0.0;
 
     noccA -= foccA;
@@ -418,7 +418,7 @@ double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char
     std::time_t start = std::time(nullptr);
     std::time_t stop;
 
-    for (int b = 0, bs = 0; b < noccB; b++) {
+    for (size_t b = 0, bs = 0; b < noccB; b++) {
         for (int s = 0; s < nvirB; s++, bs++) {
             psio_address next_DF_BS =
                 psio_get_address(PSIO_ZERO, ((foccB + b) * nvirB + s) * (ndf_ + 3) * (size_t)sizeof(double));
@@ -475,7 +475,7 @@ double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char
             }
         }
         stop = std::time(nullptr);
-        outfile->Printf("    (i = %3d of %3d) %10ld seconds\n", b + 1, noccB, stop - start);
+        outfile->Printf("    (i = %3zu of %3zu) %10ld seconds\n", b + 1, noccB, stop - start);
     }
 
     free(B_p_bs);

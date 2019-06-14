@@ -57,27 +57,27 @@ class SAPT2p3 : public SAPT2p {
     double e_sapt2p3_ccd_;
 
     void Y3(int, const char *, const char *, const char *, int, const char *, const char *, const char *, const char *,
-            const char *, const char *, int, int, int, double *, int, const char *);
-    void Y3_1(double **, int, const char *, const char *, int, const char *, int, int, int);
-    void Y3_2(double **, int, const char *, const char *, int, const char *, int, int, int);
-    void Y3_3(double **, int, const char *, const char *, const char *, int, const char *, int, int, int);
-    void Y3_4(double **, int, const char *, const char *, const char *, int, const char *, int, int, int);
+            const char *, const char *, size_t, size_t, size_t, double *, size_t, const char *);
+    void Y3_1(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    void Y3_2(double **, int, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    void Y3_3(double **, int, const char *, const char *, const char *, int, const char *, size_t, size_t, size_t);
+    void Y3_4(double **, int, const char *, const char *, const char *, int, const char *, size_t, size_t, size_t);
 
-    double elst130(double **, double **, double **, int, const char *, const char *, const char *, int, int, int);
+    double elst130(double **, double **, double **, int, const char *, const char *, const char *, size_t, size_t, size_t);
 
-    void ind30_amps(int, const char *, int, const char *, double **, double **, double **, double **, int, int,
-                    double *, int, int, double *, int, const char *);
+    void ind30_amps(int, const char *, int, const char *, double **, double **, double **, double **, size_t, size_t,
+                    double *, size_t, size_t, double *, size_t, const char *);
 
     void inddisp30_amps();
-    void inddisp30_ov(int, const char *, const char *, int, const char *, int, int, int, double *, int, const char *);
+    void inddisp30_ov(int, const char *, const char *, int, const char *, size_t, size_t, size_t, double *, size_t, const char *);
     void inddisp30_ovov();
 
-    double disp30_1(int, const char *, int, const char *, int, const char *, int, int, int, int, int, int);
-    double disp30_2(int, const char *, int, const char *, const char *, int, const char *, const char *, int, int, int,
-                    int, int, int);
+    double disp30_1(int, const char *, int, const char *, int, const char *, size_t, size_t, size_t, size_t, size_t, size_t);
+    double disp30_2(int, const char *, int, const char *, const char *, int, const char *, const char *, size_t, size_t, size_t,
+                    size_t, size_t, size_t);
 
-    void disp30_amps(int, const char *, int, const char *, const char *, int, const char *, const char *, int, int, int,
-                     double *, int, int, int, double *, int, const char *);
+    void disp30_amps(int, const char *, int, const char *, const char *, int, const char *, const char *, size_t, size_t, size_t,
+                     double *, size_t, size_t, size_t, double *, size_t, const char *);
 
     double exch_ind30_1(double **, double **);
     double exch_ind30_2(double **);
@@ -91,7 +91,7 @@ class SAPT2p3 : public SAPT2p {
     double exch_disp30_22();
 
     double ind30r_1(double **, double **, double **, double **, int, const char *, const char *, const char *, int,
-                    const char *, int, int, int, int);
+                    const char *, size_t, size_t, size_t, size_t);
 
    public:
     SAPT2p3(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,

@@ -40,7 +40,7 @@
 namespace psi {
 namespace cclambda {
 
-void overlap_LAMPS(struct L_Params L_params) {
+void overlap_LAMPS(const struct L_Params& L_params) {
     int h, nirreps, L_irr;
     int row, col;
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
@@ -48,14 +48,13 @@ void overlap_LAMPS(struct L_Params L_params) {
     dpdbuf4 T2, L2;
     double value = 1.0;
     double ST1A, ST1B, ST2AA, ST2BB, ST2AB, ST12AA, ST12BB, ST12AB;
-    char *L1A_lbl, *L1B_lbl, *L2AA_lbl, *L2BB_lbl, *L2AB_lbl, *L2RHF_lbl;
     char lbl[32];
-    L1A_lbl = L_params.L1A_lbl;
-    L1B_lbl = L_params.L1B_lbl;
-    L2AA_lbl = L_params.L2AA_lbl;
-    L2BB_lbl = L_params.L2BB_lbl;
-    L2AB_lbl = L_params.L2AB_lbl;
-    L2RHF_lbl = L_params.L2RHF_lbl;
+    const char *L1A_lbl = L_params.L1A_lbl;
+    const char *L1B_lbl = L_params.L1B_lbl;
+    const char *L2AA_lbl = L_params.L2AA_lbl;
+    const char *L2BB_lbl = L_params.L2BB_lbl;
+    const char *L2AB_lbl = L_params.L2AB_lbl;
+    const char *L2RHF_lbl = L_params.L2RHF_lbl;
     nirreps = moinfo.nirreps;
     L_irr = L_params.irrep;
 

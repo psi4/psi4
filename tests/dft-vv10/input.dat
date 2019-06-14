@@ -1,10 +1,11 @@
 #! He Dimer VV10 functional test.
 #! notes: DFT_VV10_B/C overwrites the NL_.. tuple
-#
+#! updated 'bench' reference values for new BraggSlater radii.
 
-bench = {"DFT VV10 ENERGY": 0.0187968521080026, # TEST
-         "DFT XC ENERGY":  -2.1610005616974943, # TEST
-         "CURRENT ENERGY": -5.8199580945288449} # TEST
+bench = {"DFT VV10 ENERGY": 0.01879662804, # TEST
+         "DFT XC ENERGY":  -2.16100113313, # TEST
+         "CURRENT ENERGY": -5.8199583320852053} # TEST
+#
 
 # references (from psi4)
 Enl_blypnl_b50_c01=0.0246749861696854

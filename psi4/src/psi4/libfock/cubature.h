@@ -115,11 +115,14 @@ class MolecularGrid {
         double bs_radius_alpha;
         double pruning_alpha;
         short radscheme;  // Effectively an enumeration
-        short prunescheme;
+        short prunefunction;
         short nucscheme;
         short namedGrid;  // -1 = None, 0 = SG-0, 1 = SG-1
         int nradpts;
         int nangpts;
+        double weights_cutoff;
+        std::string prunescheme;
+        std::string prunetype;
     };
 
    protected:
@@ -230,9 +233,9 @@ class RadialGrid {
     // ==> Standard Radial Grids <== //
 
     /// Build the Becke 1988 radial grid
-    static std::shared_ptr<RadialGrid> build_becke(int npoints, double alpha);
+    static std::shared_ptr<RadialGrid> build_becke(int npoints, double alpha, int Z);
     /// Build the Treutler-Ahlrichs 1995 radial grid (scale power = 0.6)
-    static std::shared_ptr<RadialGrid> build_treutler(int npoints, double alpha);
+    static std::shared_ptr<RadialGrid> build_treutler(int npoints, double alpha, int Z);
     // TODO: Add more grids
 
     /// Protected constructor
@@ -245,10 +248,10 @@ class RadialGrid {
     virtual ~RadialGrid();
 
     /// Master build routine
-    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double alpha);
+    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double alpha, int Z);
     /// Hack build routine (TODO: Remove ASAP)
     static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double* r, double* wr,
-                                             double alpha);
+                                             double alpha, int Z);
 
     // ==> Accessors <== //
 

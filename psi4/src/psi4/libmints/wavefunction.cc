@@ -1310,6 +1310,8 @@ void Wavefunction::set_frequencies(std::shared_ptr<Vector> freqs) { frequencies_
 
 void Wavefunction::save() const {}
 
+std::shared_ptr<ExternalPotential> Wavefunction::external_pot() const { return external_pot_; }
+
 std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
     std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
 

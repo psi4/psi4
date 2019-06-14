@@ -63,8 +63,8 @@ int DPD::file4_mat_irrep_wrt_block(dpdfile4 *File, int irrep, int start_pq, int 
             dpd_error("dpd_file4_mat_irrep_rd_block", "outfile");
         }
         for (; start_pq > seek_block; start_pq -= seek_block)
-            irrep_ptr = psio_get_address(irrep_ptr, seek_block * coltot * sizeof(double));
-        irrep_ptr = psio_get_address(irrep_ptr, start_pq * coltot * sizeof(double));
+            irrep_ptr = psio_get_address(irrep_ptr, sizeof(double) * seek_block * coltot);
+        irrep_ptr = psio_get_address(irrep_ptr, sizeof(double) * start_pq * coltot);
     }
 
     if (rowtot && coltot)

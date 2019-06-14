@@ -190,22 +190,22 @@ void SAPT2::print_header() {
     outfile->Printf("  --------------------------\n");
     if (nsoA_ != nso_ || nsoB_ != nso_) {
         outfile->Printf("    NSO        = %9d\n", nso_);
-        outfile->Printf("    NSO A      = %9d\n", nsoA_);
-        outfile->Printf("    NSO B      = %9d\n", nsoB_);
+        outfile->Printf("    NSO A      = %9zu\n", nsoA_);
+        outfile->Printf("    NSO B      = %9zu\n", nsoB_);
         outfile->Printf("    NMO        = %9d\n", nmo_);
-        outfile->Printf("    NMO A      = %9d\n", nmoA_);
-        outfile->Printf("    NMO B      = %9d\n", nmoB_);
+        outfile->Printf("    NMO A      = %9zu\n", nmoA_);
+        outfile->Printf("    NMO B      = %9zu\n", nmoB_);
     } else {
         outfile->Printf("    NSO        = %9d\n", nso_);
         outfile->Printf("    NMO        = %9d\n", nmo_);
     }
-    outfile->Printf("    NRI        = %9d\n", ndf_);
-    outfile->Printf("    NOCC A     = %9d\n", noccA_);
-    outfile->Printf("    NOCC B     = %9d\n", noccB_);
-    outfile->Printf("    FOCC A     = %9d\n", foccA_);
-    outfile->Printf("    FOCC B     = %9d\n", foccB_);
-    outfile->Printf("    NVIR A     = %9d\n", nvirA_);
-    outfile->Printf("    NVIR B     = %9d\n", nvirB_);
+    outfile->Printf("    NRI        = %9zu\n", ndf_);
+    outfile->Printf("    NOCC A     = %9zu\n", noccA_);
+    outfile->Printf("    NOCC B     = %9zu\n", noccB_);
+    outfile->Printf("    FOCC A     = %9zu\n", foccA_);
+    outfile->Printf("    FOCC B     = %9zu\n", foccB_);
+    outfile->Printf("    NVIR A     = %9zu\n", nvirA_);
+    outfile->Printf("    NVIR B     = %9zu\n", nvirB_);
     outfile->Printf("\n");
 
     auto mem = (long int)memory_;
@@ -906,7 +906,7 @@ void SAPT2::w_integrals() {
     free_block(B_p_SS);
 }
 
-void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, double *evals, int foccA, int noccA, int nvirA,
+void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, double *evals, int foccA, int noccA, size_t nvirA,
                                const char monomer) {
     double **P = block_matrix(nvirA, nvirA);
 
@@ -929,7 +929,7 @@ void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, double *evals, 
     }
 
     if (print_) {
-        outfile->Printf("    Monomer %c: %d virtual orbitals dropped\n", monomer, nvirA - num_no_vir);
+        outfile->Printf("    Monomer %c: %zu virtual orbitals dropped\n", monomer, nvirA - num_no_vir);
     }
 
     double **Fock_MO = block_matrix(nvirA, nvirA);

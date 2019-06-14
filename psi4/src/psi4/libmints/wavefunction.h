@@ -660,6 +660,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Save the wavefunction to checkpoint
     virtual void save() const;
 
+    // Get the external potential
+    std::shared_ptr<ExternalPotential> external_pot() const;
+
     // Set the external potential
     void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
 

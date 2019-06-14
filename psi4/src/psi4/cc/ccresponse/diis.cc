@@ -134,7 +134,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
         global_dpd_->buf4_close(&T2a);
         global_dpd_->buf4_close(&T2b);
 
-        start = psio_get_address(PSIO_ZERO, diis_cycle * vector_length * sizeof(double));
+        start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
         sprintf(lbl, "DIIS %s Error Vectors", pert);
         psio_write(PSIF_CC_DIIS_ERR, lbl, (char *)error[0], vector_length * sizeof(double), start, &end);
 
@@ -162,7 +162,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
         }
         global_dpd_->buf4_close(&T2a);
 
-        start = psio_get_address(PSIO_ZERO, diis_cycle * vector_length * sizeof(double));
+        start = psio_get_address(PSIO_ZERO, sizeof(double) * diis_cycle * vector_length);
         sprintf(lbl, "DIIS %s Amplitude Vectors", pert);
         psio_write(PSIF_CC_DIIS_AMP, lbl, (char *)error[0], vector_length * sizeof(double), start, &end);
 
@@ -180,7 +180,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
         vector = global_dpd_->dpd_block_matrix(2, vector_length);
         B = block_matrix(nvector + 1, nvector + 1);
         for (p = 0; p < nvector; p++) {
-            start = psio_get_address(PSIO_ZERO, p * vector_length * sizeof(double));
+            start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
             sprintf(lbl, "DIIS %s Error Vectors", pert);
             psio_read(PSIF_CC_DIIS_ERR, lbl, (char *)vector[0], vector_length * sizeof(double), start, &end);
@@ -191,7 +191,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
             B[p][p] = product;
 
             for (q = 0; q < p; q++) {
-                start = psio_get_address(PSIO_ZERO, q * vector_length * sizeof(double));
+                start = psio_get_address(PSIO_ZERO, sizeof(double) * q * vector_length);
 
                 sprintf(lbl, "DIIS %s Error Vectors", pert);
                 psio_read(PSIF_CC_DIIS_ERR, lbl, (char *)vector[1], vector_length * sizeof(double), start, &end);
@@ -236,7 +236,7 @@ void diis(int iter, const char *pert, int irrep, double omega) {
         vector = global_dpd_->dpd_block_matrix(1, vector_length);
         for (p = 0; p < vector_length; p++) error[0][p] = 0.0;
         for (p = 0; p < nvector; p++) {
-            start = psio_get_address(PSIO_ZERO, p * vector_length * sizeof(double));
+            start = psio_get_address(PSIO_ZERO, sizeof(double) * p * vector_length);
 
             sprintf(lbl, "DIIS %s Amplitude Vectors", pert);
             psio_read(PSIF_CC_DIIS_AMP, lbl, (char *)vector[0], vector_length * sizeof(double), start, &end);

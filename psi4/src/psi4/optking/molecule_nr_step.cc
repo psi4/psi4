@@ -81,7 +81,7 @@ void MOLECULE::nr_step() {
   // Zero steps for frozen fragment
   for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      oprintf_out("\tZero'ing out displacements for frozen fragment %zu\n", f+1);
       for (int i=0; i<fragments[f]->Ncoord(); ++i)
         dq[ g_coord_offset(f) + i ] = 0.0;
     }
@@ -111,7 +111,7 @@ void MOLECULE::nr_step() {
   // do displacements for each fragment separately
   for (std::size_t f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("\tDisplacements for frozen fragment %zu skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
@@ -120,7 +120,7 @@ void MOLECULE::nr_step() {
   // do displacements for interfragment coordinates
   for (std::size_t I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("\tDisplacements for frozen interfragment %zu skipped.\n", I+1);
       continue;
     }
     interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),

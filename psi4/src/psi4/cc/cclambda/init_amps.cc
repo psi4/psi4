@@ -41,7 +41,7 @@
 namespace psi {
 namespace cclambda {
 
-void CCLambdaWavefunction::init_amps(struct L_Params L_params) {
+void CCLambdaWavefunction::init_amps(const struct L_Params& L_params) {
     double norm;
     dpdfile2 T1, R1, LIA, Lia, dIA, dia, XIA, Xia;
     dpdbuf4 T2, R2, LIJAB, Lijab, LIjAb, dIJAB, dijab, dIjAb, XIJAB, Xijab, XIjAb;

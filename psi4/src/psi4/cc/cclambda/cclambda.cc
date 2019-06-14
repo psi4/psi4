@@ -59,30 +59,30 @@
 namespace psi {
 namespace cclambda {
 
-double pseudoenergy(struct L_Params L_params);
+double pseudoenergy(const struct L_Params& L_params);
 void G_build(int L_irr);
-void L1_build(struct L_Params L_params);
-void L2_build(struct L_Params L_params);
+void L1_build(const struct L_Params& L_params);
+void L2_build(const struct L_Params& L_params);
 void sort_amps(int L_irr);
 void Lsave(int L_irr);
-void Lnorm(struct L_Params L_params);
+void Lnorm(const struct L_Params& L_params);
 void Lmag();
 void overlap(int L_irr);
-void overlap_LAMPS(struct L_Params L_params);
-void Lsave_index(struct L_Params L_params);
-void Lamp_write(struct L_Params L_params);
+void overlap_LAMPS(const struct L_Params& L_params);
+void Lsave_index(const struct L_Params& L_params);
+void Lamp_write(const struct L_Params& L_params);
 void check_ortho(struct L_Params *pL_params);
 void projections(struct L_Params *pL_params);
 void L_zero(int irrep);
 void c_clean(dpdfile2 *LIA, dpdfile2 *Lia, dpdbuf4 *LIJAB, dpdbuf4 *Lijab, dpdbuf4 *LIjAb);
-void L_clean(struct L_Params pL_params);
-void zeta_norm(struct L_Params pL_params);
+void L_clean(const struct L_Params& pL_params);
+void zeta_norm(const struct L_Params& pL_params);
 void spinad_amps();
 void hbar_extra();
 void ortho_Rs(struct L_Params *pL_params, int current_L);
 
-void cc2_L1_build(struct L_Params L_params);
-void cc2_L2_build(struct L_Params L_params);
+void cc2_L1_build(const struct L_Params& L_params);
+void cc2_L2_build(const struct L_Params& L_params);
 void cc2_Gai_build(int L_irr);
 void cc2_hbar_extra();
 
@@ -382,17 +382,16 @@ void CCLambdaWavefunction::exit_io() {
 }
 
 /* put copies of L for excited states in LAMPS with irrep and index label */
-void Lsave_index(struct L_Params L_params) {
+void Lsave_index(const struct L_Params& L_params) {
     int L_irr;
     dpdfile2 L1;
     dpdbuf4 L2, LIjAb, LIjbA;
-    char *L1A_lbl, *L1B_lbl, *L2AA_lbl, *L2BB_lbl, *L2AB_lbl, *L2RHF_lbl, lbl[32];
-    L1A_lbl = L_params.L1A_lbl;
-    L1B_lbl = L_params.L1B_lbl;
-    L2AA_lbl = L_params.L2AA_lbl;
-    L2BB_lbl = L_params.L2BB_lbl;
-    L2AB_lbl = L_params.L2AB_lbl;
-    L2RHF_lbl = L_params.L2RHF_lbl;
+    const char *L1A_lbl = L_params.L1A_lbl;
+    const char *L1B_lbl = L_params.L1B_lbl;
+    const char *L2AA_lbl = L_params.L2AA_lbl;
+    const char *L2BB_lbl = L_params.L2BB_lbl;
+    const char *L2AB_lbl = L_params.L2AB_lbl;
+    const char *L2RHF_lbl = L_params.L2RHF_lbl;
     L_irr = L_params.irrep;
 
     if (params.ref == 0 || params.ref == 1) { /** ROHF **/
@@ -497,7 +496,7 @@ void L_zero(int L_irr) {
 }
 
 /* Cleaning out L vectors for open-shell cases  */
-void L_clean(struct L_Params L_params) {
+void L_clean(const struct L_Params& L_params) {
     int L_irr, i;
     dpdfile2 LIA, Lia;
     dpdbuf4 LIJAB, Lijab, LIjAb;
@@ -520,7 +519,7 @@ void L_clean(struct L_Params L_params) {
     global_dpd_->buf4_close(&LIjAb);
 }
 
-void zeta_norm(struct L_Params L_params) {
+void zeta_norm(const struct L_Params& L_params) {
     int Z_irr, i;
     dpdfile2 ZIA, Zia;
     dpdbuf4 ZIJAB, Zijab, ZIjAb;

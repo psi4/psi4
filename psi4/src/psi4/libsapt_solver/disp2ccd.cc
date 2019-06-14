@@ -203,9 +203,9 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
                         const char *GBSBS, const char *XARAR, const char *YARAR, const char *XAA, const char *XRR,
                         const char *XBSBS, const char *YBSBS, const char *XBB, const char *XSS, int AAfile,
                         const char *ARints, int BBfile, const char *BSints, double *evalsA_, double *evalsB_,
-                        int noccA_, int virA, int foccA_, int noccB_, int virB, int foccB_) {
-    int occA = noccA_ - foccA_;
-    int occB = noccB_ - foccB_;
+                        size_t noccA_, size_t virA, size_t foccA_, size_t noccB_, size_t virB, size_t foccB_) {
+    size_t occA = noccA_ - foccA_;
+    size_t occB = noccB_ - foccB_;
 
     double **B_p_AR = get_DF_ints_nongimp(AAfile, ARints, foccA_, noccA_, 0, virA);
     double **B_p_BS = get_DF_ints_nongimp(BBfile, BSints, foccB_, noccB_, 0, virB);
@@ -357,8 +357,8 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
     free_block(xSS);
 }
 
-double SAPT2p::r_ccd_energy(const char *TARBS, const char *ARBS, int occA, int virA,  //!
-                            int occB, int virB) {
+double SAPT2p::r_ccd_energy(const char *TARBS, const char *ARBS, size_t occA, size_t virA,  //!
+                            size_t occB, size_t virB) {
     double **vARBS = block_matrix(occA * virA, occB * virB);  //!
     double **tARBS = block_matrix(occA * virA, occB * virB);  //!
 
@@ -425,9 +425,9 @@ double SAPT2p::r_ccd_iterate(const char *TARBS, const char *TARBSerr, const char
 double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const char *CA_RBS,  //!
                                 const char *GARRA, const char *GBSSB, const char *XARAR, const char *XAA,
                                 const char *XRR, const char *XBSBS, const char *XBB, const char *XSS, double *evalsA_,
-                                double *evalsB_, int noccA_, int virA, int foccA_, int noccB_, int virB, int foccB_) {
-    int occA = noccA_ - foccA_;
-    int occB = noccB_ - foccB_;
+                                double *evalsB_, size_t noccA_, size_t virA, size_t foccA_, size_t noccB_, size_t virB, size_t foccB_) {
+    size_t occA = noccA_ - foccA_;
+    size_t occB = noccB_ - foccB_;
 
     double **t2ARBS = block_matrix(occA * virA, occB * virB);  //!
 
@@ -538,10 +538,10 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
 }
 
 void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR, const char *ThetaARAR,  //!
-                        const char *TARBS, const char *GBSBS, const char *ARBS, double *evalsA_, int noccA_, int virA,
-                        int foccA_, int noccB_, int virB, int foccB_) {
-    int occA = noccA_ - foccA_;
-    int occB = noccB_ - foccB_;
+                        const char *TARBS, const char *GBSBS, const char *ARBS, double *evalsA_, size_t noccA_, size_t virA,
+                        size_t foccA_, size_t noccB_, size_t virB, size_t foccB_) {
+    size_t occA = noccA_ - foccA_;
+    size_t occB = noccB_ - foccB_;
 
     double **sARAR = block_matrix(occA * virA, occA * virA);  //!
     double **tARBS = block_matrix(occA * virA, occB * virB);  //!
@@ -705,8 +705,8 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
                                 const char *TARAR, const char *GARAR, const char *GARRA, const char *AAAA,
                                 const char *ARAR, const char *AARR, const char *RRRRp, const char *RRRRm,
                                 const char *XARAR, const char *YARAR, const char *XAA, const char *XRR, double *evalsA_,
-                                int noccA_, int virA, int foccA_, std::shared_ptr<Matrix> mo2no) {
-    int occA = noccA_ - foccA_;
+                                size_t noccA_, size_t virA, size_t foccA_, std::shared_ptr<Matrix> mo2no) {
+    size_t occA = noccA_ - foccA_;
 
     double **s2ARAR = block_matrix(occA * virA, occA * virA);  //!
 
@@ -1058,10 +1058,10 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
 
 void SAPT2p::disp_s_prep(const char *TAR, const char *TpAR, const char *ThetaARAR,  //!
                          const char *TARBS, int AAfile, const char *AAints, const char *ARints, const char *RRints,
-                         int BBfile, const char *BSints, double *evalsA_, int noccA_, int virA, int foccA_, int noccB_,
-                         int virB, int foccB_) {
-    int occA = noccA_ - foccA_;
-    int occB = noccB_ - foccB_;
+                         int BBfile, const char *BSints, double *evalsA_, size_t noccA_, size_t virA, size_t foccA_, size_t noccB_,
+                         size_t virB, size_t foccB_) {
+    size_t occA = noccA_ - foccA_;
+    size_t occB = noccB_ - foccB_;
 
     double **thARAR = block_matrix(occA * virA, occA * virA);  //!
     double **B_p_AR = get_DF_ints_nongimp(AAfile, ARints, foccA_, noccA_, 0, virA);
@@ -1126,7 +1126,7 @@ void SAPT2p::vvvv_prep(const char *RRRRp, const char *RRRRm,  //!
     std::shared_ptr<Matrix> B2;
     std::shared_ptr<Matrix> B3;
     double **B_p_RR2;
-    int virA2;
+    size_t virA2;
     if (mo2no) {
         virA2 = mo2no->colspi()[0];
         B3 = std::make_shared<Matrix>("B3", virA2 * virA, ndf);
@@ -1192,7 +1192,7 @@ void SAPT2p::vvvv_prep(const char *RRRRp, const char *RRRRm,  //!
     timer_off("v^4 Prep           ");
 }
 double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRRm,  //!
-                          int occA, int virA, std::shared_ptr<Matrix> mo2no) {
+                          size_t occA, size_t virA, std::shared_ptr<Matrix> mo2no) {
     timer_on("v^4 Term           ");
 
     double **tARAR;
@@ -1220,9 +1220,9 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
                           occA * virA * occA * virA * (size_t)sizeof(double));
     }
 
-    int occtri = occA * (occA + 1) / 2;
-    int virtri = virA2 * (virA2 + 1) / 2;
-    int svirtri = virA2 * (virA2 - 1) / 2;
+    size_t occtri = occA * (occA + 1) / 2;
+    size_t virtri = virA2 * (virA2 + 1) / 2;
+    size_t svirtri = virA2 * (virA2 - 1) / 2;
 
     double **tpAARR = block_matrix(occtri, virtri);
     double **tmAARR = block_matrix(occtri, svirtri);
@@ -1254,8 +1254,8 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
 
     free_block(tARAR);
 
-    int blocksize;
-    int loopsize;
+    size_t blocksize;
+    size_t loopsize;
 
     if (virA2 % 2 == 0) {
         blocksize = virA2 + 1;
@@ -1359,8 +1359,8 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
     }
 
     for (int a1 = 0; a1 < occA; a1++) {
-        int a1a1 = a1 * occA + a1;
-        int b1b1 = INDEX(a1, a1);
+        size_t a1a1 = a1 * occA + a1;
+        size_t b1b1 = INDEX(a1, a1); // lgtm [cpp/comparison-of-identical-expressions]
         for (int r3 = 0; r3 < virA2; r3++) {
             for (int r4 = 0; r4 < r3; r4++) {
                 int r3r4 = r3 * virA2 + r4;
@@ -1397,9 +1397,9 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
 
 void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARAR, const char *GARRA,  //!
                       const char *AAAA, const char *ARAR, const char *AARR, const char *RRRRp, const char *RRRRm,
-                      int DFfile, const char *AAints, const char *ARints, const char *RRints, double *evals, int noccA,
-                      int virA, int foccA, std::shared_ptr<Matrix> mo2no, const char *T2ARAR) {
-    int occA = noccA - foccA;
+                      int DFfile, const char *AAints, const char *ARints, const char *RRints, double *evals, size_t noccA,
+                      size_t virA, size_t foccA, std::shared_ptr<Matrix> mo2no, const char *T2ARAR) {
+    size_t occA = noccA - foccA;
 
     double **vAAAA = block_matrix(occA * occA, occA * occA);
     double **B_p_AA = get_DF_ints_nongimp(DFfile, AAints, foccA, noccA, foccA, noccA);
@@ -1679,7 +1679,7 @@ void SAPT2p::ccd_iterate(const char *TARAR, const char *TARARerr, const char *Th
     outfile->Printf("\n");
 }
 
-double SAPT2p::ccd_energy(const char *TARAR, const char *GARAR, int occA, int virA)  //!
+double SAPT2p::ccd_energy(const char *TARAR, const char *GARAR, size_t occA, size_t virA)  //!
 {
     double **gARAR = block_matrix(occA * virA, occA * virA);  //!
     double **tARAR = block_matrix(occA * virA, occA * virA);  //!
@@ -1697,9 +1697,9 @@ double SAPT2p::ccd_energy(const char *TARAR, const char *GARAR, int occA, int vi
 
 double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const char *ThetaARAR,  //!
                               const char *GARAR, const char *GARRA, const char *AAAA, const char *ARAR,
-                              const char *AARR, const char *RRRRp, const char *RRRRm, double *evals, int noccA,
-                              int virA, int foccA, std::shared_ptr<Matrix> mo2no) {
-    int occA = noccA - foccA;
+                              const char *AARR, const char *RRRRp, const char *RRRRm, double *evals, size_t noccA,
+                              size_t virA, size_t foccA, std::shared_ptr<Matrix> mo2no) {
+    size_t occA = noccA - foccA;
 
     double **t2ARAR = block_matrix(occA * virA, occA * virA);  //!
 

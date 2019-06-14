@@ -25,6 +25,8 @@
  *
  * @END LICENSE
  */
+#ifndef CCLAMBDA_LOCAL_H
+#define CCLAMBDA_LOCAL_H
 
 /*! \file
     \ingroup CCLAMBDA
@@ -62,3 +64,5 @@ struct Local {
 
 }  // namespace cclambda
 }  // namespace psi
+
+#endif

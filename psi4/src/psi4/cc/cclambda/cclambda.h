@@ -50,13 +50,13 @@ class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction {
    private:
     void init();
     void init_io();
-    void init_amps(struct L_Params);
+    void init_amps(const struct L_Params&);
     int **cacheprep_uhf(int level, int *cachefiles);
     int **cacheprep_rhf(int level, int *cachefiles);
     void cachedone_rhf(int **cachelist);
     void cachedone_uhf(int **cachelist);
     void cleanup();
-    void denom(struct L_Params);
+    void denom(const struct L_Params&);
     void get_params(psi::Options &);
     void local_init();
     void local_done();
@@ -70,8 +70,8 @@ class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction {
     void status(const char *, std::string);
     void update();
 
-    void cc2_L2_build(struct L_Params);
-    void L2_build(struct L_Params);
+    void cc2_L2_build(const struct L_Params&);
+    void L2_build(const struct L_Params&);
 };
 
 }  // namespace cclambda

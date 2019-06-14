@@ -50,9 +50,9 @@ namespace psi {
 namespace detci {
 
 // #define STANDALONE
-#ifdef STANDALONE
-#include <iostream>
-#endif
+//#ifdef STANDALONE
+//#include <iostream>
+//#endif
 
 Odometer::Odometer() {
     length = 0;
@@ -242,26 +242,26 @@ unsigned Odometer::boundscheck() {
     return (1);
 }
 
-#ifdef STANDALONE
-int main() {
-    Odometer od;
-    int maxvals[] = {7, 6, 5};
-    int minvals[] = {3, 2, 1};
-
-    od.size(3);
-    od.print();
-    // od.set_min(minvals) ;
-    od.set_min_lex(1);
-    od.reset();
-    // od.set_max(maxvals) ;
-    od.set_max_lex(7);
-    while (!od.at_max()) {
-        od.print();
-        od.increment_lex();
-    }
-    od.print();
-    return 0;
-}
-#endif
+//#ifdef STANDALONE
+//int main() {
+//    Odometer od;
+//    int maxvals[] = {7, 6, 5};
+//    int minvals[] = {3, 2, 1};
+//
+//    od.size(3);
+//    od.print();
+//    // od.set_min(minvals) ;
+//    od.set_min_lex(1);
+//    od.reset();
+//    // od.set_max(maxvals) ;
+//    od.set_max_lex(7);
+//    while (!od.at_max()) {
+//        od.print();
+//        od.increment_lex();
+//    }
+//    od.print();
+//    return 0;
+//}
+//#endif
 }
 }  // namespace psi

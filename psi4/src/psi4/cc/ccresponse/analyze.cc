@@ -49,46 +49,43 @@ double **Build_R();
 double **Build_U();
 
 void analyze(const char *pert, int irrep, double omega) {
-    int nirreps, h, i, j, a, b, ij, ab, u, v;
-    int position, num_div, tot1, tot2, nvir, nso, nocc;
-    double width, max, min, value, value2;
-    double *amp_array;
-    double **tmp, **T2trans, **T1trans;
     FILE *efile;
-    dpdbuf4 I, T2, D;
+    dpdbuf4 T2;
     dpdfile2 T1;
     char lbl[32];
 
-    nirreps = moinfo.nirreps;
-    num_div = 500;
-    max = 9;
-    min = 0;
-    width = (max - min) / (num_div);
+    int num_div = 500;
+    double **T2trans, **T1trans;
+    double max = 9;
+    double min = 0;
+    double width = (max - min) / (num_div);
 
     sprintf(lbl, "X_%s_%5.3f", pert, omega);
     auto mode = std::ostream::app;
     auto printer = std::make_shared<PsiOutStream>(lbl, mode);
     // ffile(&efile, lbl, 1);
-    amp_array = init_array(num_div);
+    double *amp_array = init_array(num_div);
 
-    nvir = moinfo.virtpi[0];
-    nocc = moinfo.occpi[0];
-    nso = moinfo.nso;
+    size_t nvir = static_cast<size_t>(moinfo.virtpi[0]);
+    size_t nocc = static_cast<size_t>(moinfo.occpi[0]);
+    size_t nso = static_cast<size_t>(moinfo.nso);
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&T2, PSIF_CC_LR, 0, 0, 5, 0, 5, 0, lbl);
     global_dpd_->buf4_mat_irrep_init(&T2, 0);
     global_dpd_->buf4_mat_irrep_rd(&T2, 0);
     T2trans = block_matrix(nocc * nocc, nso * nso);
-    tmp = block_matrix(nvir, nso);
-    tot1 = 0;
-    tot2 = 0;
-    for (ij = 0; ij < T2.params->rowtot[0]; ij++) {
+    double **tmp = block_matrix(nvir, nso);
+    int tot1 = 0;
+    int tot2 = 0;
+
+    double value;
+    for (size_t ij = 0; ij < T2.params->rowtot[0]; ij++) {
         C_DGEMM('n', 't', nvir, nso, nvir, 1.0, &(T2.matrix[0][ij][0]), nvir, &(moinfo.C[0][0][0]), nvir, 0.0,
                 &(tmp[0][0]), nso);
         C_DGEMM('n', 'n', nso, nso, nvir, 1.0, &(moinfo.C[0][0][0]), nvir, tmp[0], nso, 0.0, T2trans[ij], nso);
 
-        for (ab = 0; ab < nso * nso; ab++) {
+        for (size_t ab = 0; ab < nso * nso; ab++) {
             value = std::fabs(std::log10(std::fabs(T2trans[ij][ab])));
             tot2++;
             if ((value >= max) && (value <= (max + width))) {
@@ -98,7 +95,7 @@ void analyze(const char *pert, int irrep, double omega) {
                 amp_array[0]++;
                 tot1++;
             } else if ((value < max) && (value > min)) {
-                position = (int)floor((value - min) / width);
+                int position = static_cast<int>(floor((value - min) / width));
                 amp_array[position]++;
                 tot1++;
             }
@@ -109,8 +106,8 @@ void analyze(const char *pert, int irrep, double omega) {
     free_block(tmp);
     free_block(T2trans);
 
-    value2 = 0;
-    for (i = num_div - 1; i >= 0; i--) {
+    double value2 = 0;
+    for (int i = num_div - 1; i >= 0; i--) {
         value = amp_array[i] / tot1;
         value2 += value;
         printer->Printf("%10.5lf %lf\n", -((i)*width) - min, value);
@@ -144,8 +141,8 @@ void analyze(const char *pert, int irrep, double omega) {
     */
 
     tot1 = tot2 = 0;
-    for (i = 0; i < nocc; i++) {
-        for (a = 0; a < nso; a++) {
+    for (size_t i = 0; i < nocc; i++) {
+        for (size_t a = 0; a < nso; a++) {
             /*      value = std::fabs(log10(std::fabs(T1trans[i][a]))); */
             value = std::log10(std::fabs(T1.matrix[0][i][a]));
             tot2++;
@@ -156,7 +153,7 @@ void analyze(const char *pert, int irrep, double omega) {
                 amp_array[0]++;
                 tot1++;
             } else if ((value < max) && (value > min)) {
-                position = (int)floor((value - min) / width);
+                int position = static_cast<int>(floor((value - min) / width));
                 amp_array[position]++;
                 tot1++;
             }
@@ -168,7 +165,7 @@ void analyze(const char *pert, int irrep, double omega) {
     global_dpd_->file2_close(&T1);
 
     value2 = 0;
-    for (i = num_div - 1; i >= 0; i--) {
+    for (int i = num_div - 1; i >= 0; i--) {
         value = amp_array[i] / tot1;
         value2 += value;
         printer->Printf("%10.5lf %lf\n", ((i)*width) - min, value);

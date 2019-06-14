@@ -63,7 +63,7 @@ void amp_write_L1(dpdfile2 *L1, int length, const char *label, std::string out);
 void amp_write_L2(dpdbuf4 *L2, int length, const char *label, std::string out);
 
 /* print largest elements in CC_LAMBDA */
-void Lamp_write(struct L_Params L_params) {
+void Lamp_write(const struct L_Params& L_params) {
     dpdfile2 L1;
     dpdbuf4 L2;
     int L_irr;

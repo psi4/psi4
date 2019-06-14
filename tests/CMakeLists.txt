@@ -57,7 +57,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
                   dft-freq dft-freq-analytic dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
                   dft1-alt dft2 dft3 dft-omega docs-bases docs-dft extern1 extern2
-                  fsapt1 fsapt2 fsapt-terms fsapt-allterms isapt1 isapt2
+                  fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2
                   fci-coverage
                   fcidump
@@ -86,7 +86,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1 pywrap-db2
                   pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o
-                  rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
+                  rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
                   sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
                   scf-guess-read2 scf-bs scf1 scf-occ
@@ -97,7 +97,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
-                  basis-ecp
+                  basis-ecp dft-pruning
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")

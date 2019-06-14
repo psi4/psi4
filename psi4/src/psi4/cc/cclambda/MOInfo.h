@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCLAMBDA_MOINFO_H
+#define CCLAMBDA_MOINFO_H
+
 /*! \file
     \ingroup CCLAMBDA
     \brief Enter brief description of file here
@@ -85,3 +88,5 @@ struct MOInfo {
 
 }  // namespace cclambda
 }  // namespace psi
+
+#endif

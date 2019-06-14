@@ -85,7 +85,7 @@ int DPD::file2_init(dpdfile2 *File, int filenum, int irrep, int pnum, int qnum, 
     for (i = 1; i < File->params->nirreps; i++)
         File->lfiles[i] =
             psio_get_address(File->lfiles[i - 1],
-                             (File->params->rowtot[i - 1] * File->params->coltot[(i - 1) ^ irrep] * sizeof(double)));
+                             (static_cast<size_t>(File->params->rowtot[i - 1]) * File->params->coltot[(i - 1) ^ irrep] * sizeof(double)));
 
     /* Force all two-index files into cache */
     /*  dpd_file2_cache_add(File); */

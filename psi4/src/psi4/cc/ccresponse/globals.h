@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#ifndef CCRESPONSE_GLOBALS_H
+#define CCRESPONSE_GLOBALS_H
+
 /*! \file
     \ingroup ccresponse
     \brief Enter brief description of file here
@@ -52,3 +55,5 @@ EXTERN struct Local local;
 #define MIN0(a, b) (((a) < (b)) ? (a) : (b))
 }
 }  // namespace psi
+
+#endif

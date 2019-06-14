@@ -965,7 +965,7 @@ void SAPT2::ind20r() {
 }
 
 void SAPT2::cphf_solver(double **tAR, double **wBAR, double *evals, int intfile, const char *AAints, const char *ARints,
-                        const char *RRints, int nocc, int nvir) {
+                        const char *RRints, size_t nocc, size_t nvir) {
     double **B_p_AR = block_matrix(nocc * nvir, ndf_ + 3);
 
     psio_->read_entry(intfile, ARints, (char *)&(B_p_AR[0][0]), sizeof(double) * nocc * nvir * (ndf_ + 3));

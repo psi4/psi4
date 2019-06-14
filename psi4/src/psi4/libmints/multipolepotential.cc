@@ -26,35 +26,53 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/efpmultipolepotential.h"
+#include "psi4/libmints/multipolepotential.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
-
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 ;
 using namespace psi;
 
-EFPMultipolePotentialInt::EFPMultipolePotentialInt(std::vector<SphericalTransform> &spherical_transforms,
-                                                   std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                                                   int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), mvi_recur_(bs1->max_am(), bs2->max_am()) {
+#define have_moment(k, max_k) (k <= max_k);
+
+namespace {
+int number_of_chunks(int max_k) {
+    int nc = 0;
+    for (size_t i = 0; i <= max_k; i++) {
+        nc += (i + 1) * (i + 2) / 2;
+    }
+    return nc;
+}
+}  // namespace
+
+MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform> &spherical_transforms,
+                                             std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int max_k,
+                                             int deriv)
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, deriv),
+      mvi_recur_(bs1->max_am(), bs2->max_am(), max_k),
+      max_k_(max_k) {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
-    if (nderiv == 0) {
-        buffer_ = new double[20 * maxnao1 * maxnao2];
-        set_chunks(20);
-    } else
+    if (deriv > 3) {
         throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with deriv > 0", __FILE__, __LINE__);
+    }
+
+    if (max_k > 3) {
+        throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with max_k > 3", __FILE__, __LINE__);
+    }
+
+    int nchunks = number_of_chunks(max_k_);
+    buffer_ = new double[nchunks * maxnao1 * maxnao2];
+    set_chunks(nchunks);
 }
 
-EFPMultipolePotentialInt::~EFPMultipolePotentialInt() { delete[] buffer_; }
+MultipolePotentialInt::~MultipolePotentialInt() { delete[] buffer_; }
 
-void EFPMultipolePotentialInt::compute_pair(const GaussianShell &s1, const GaussianShell &s2) {
+void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const GaussianShell &s2) {
     int ao12;
     int am1 = s1.am();
     int am2 = s2.am();
@@ -84,18 +102,28 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell &s1, const Gauss
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 20 * size * sizeof(double));
+    size_t n_elements = static_cast<size_t>(number_of_chunks(max_k_) * size);
+    memset(buffer_, 0, n_elements * sizeof(double));
 
+    bool have_dipole = have_moment(1, max_k_);
+    bool have_quadrupole = have_moment(2, max_k_);
+    bool have_octupole = have_moment(3, max_k_);
+
+    // Charge
     double ***q = mvi_recur_.q();
+    // Dipole
     double ***x = mvi_recur_.x();
     double ***y = mvi_recur_.y();
     double ***z = mvi_recur_.z();
+    // Quadrupole
     double ***xx = mvi_recur_.xx();
     double ***yy = mvi_recur_.yy();
     double ***zz = mvi_recur_.zz();
     double ***xy = mvi_recur_.xy();
     double ***xz = mvi_recur_.xz();
     double ***yz = mvi_recur_.yz();
+
+    // Octupole
     double ***xxx = mvi_recur_.xxx();
     double ***yyy = mvi_recur_.yyy();
     double ***zzz = mvi_recur_.zzz();
@@ -162,26 +190,31 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell &s1, const Gauss
                             int jind = l2 * jxm + m2 * jym + n2 * jzm;
 
                             buffer_[ao12 + 0 * size] += q[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 1 * size] += x[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 2 * size] += y[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 3 * size] += z[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 4 * size] += xx[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 5 * size] += yy[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 6 * size] += zz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 7 * size] += xy[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 8 * size] += xz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 9 * size] += yz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 10 * size] += xxx[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 11 * size] += yyy[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 12 * size] += zzz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 13 * size] += xxy[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 14 * size] += xxz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 15 * size] += xyy[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 16 * size] += yyz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 17 * size] += xzz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 18 * size] += yzz[iind][jind][0] * over_pf;
-                            buffer_[ao12 + 19 * size] += xyz[iind][jind][0] * over_pf;
-
+                            if (have_dipole) {
+                                buffer_[ao12 + 1 * size] += x[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 2 * size] += y[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 3 * size] += z[iind][jind][0] * over_pf;
+                            }
+                            if (have_quadrupole) {
+                                buffer_[ao12 + 4 * size] += xx[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 5 * size] += xy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 6 * size] += xz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 7 * size] += yy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 8 * size] += yz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 9 * size] += zz[iind][jind][0] * over_pf;
+                            }
+                            if (have_octupole) {
+                                buffer_[ao12 + 10 * size] += xxx[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 11 * size] += xxy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 12 * size] += xxz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 13 * size] += xyy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 14 * size] += xyz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 15 * size] += xzz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 16 * size] += yyy[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 17 * size] += yyz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 18 * size] += yzz[iind][jind][0] * over_pf;
+                                buffer_[ao12 + 19 * size] += zzz[iind][jind][0] * over_pf;
+                            }
                             ao12++;
                         }
                     }

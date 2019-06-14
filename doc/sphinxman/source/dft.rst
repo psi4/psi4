@@ -46,6 +46,12 @@ Both density functional theory and Hartree--Fock theory are controlled
 through the SCF module, and the :ref:`SCF Introduction <sec:scfintro>`
 section is also relevant here.
 
+.. note:: Starting version 1.4 (tag v1.4a1 in the development repository), |PSIfour| uses an updated and extended (to 104 elements) set
+          of Bragg-Slater radii. This leads to minimal deviations in absolute energies (1E-06 au) and
+          relative energies (below 0.002 kcal/mol for S22), depending also on the applied grid, compared
+          to older versions. We advise not to mix absolute energies absolute energies from before and after this change for the
+          calculation of relative energies.
+
 .. note:: After May 2017 (anytime after the v1.1 release), |PSIfour|
    switched from hand- (+Matlab) coded functionals to Libxc. Thus
    many DFT results will be slightly different. Functionals more than
@@ -446,8 +452,7 @@ Grid Selection
 ~~~~~~~~~~~~~~
 
 |PSIfour| uses the standard Lebedev-Laikov spherical quadratures in concert with a
-number of radial quadratures and atomic partitioning schemes. Pruned grids are
-not yet available, but we have plans.
+number of radial quadratures and atomic partitioning schemes. 
 The default grid in |PSIfour| is a Lebedev-Treutler (75,302) grid with a Treutler
 partition of the atomic weights.
 
@@ -531,16 +536,27 @@ octohedral, and icosohedral systems are not complete, so there may be some
 ambiguity in the grid orientation for these systems.
 
 Radial grid types are controlled by the |scf__dft_radial_scheme| option, which
-at the moment may be either TREUTLER or BECKE, while the number of radial points
-are controlled by the |scf__dft_radial_points| option, which is any positive
+at the moment may be either ``TREUTLER`` or ``BECKE``, while the number of radial
+points are controlled by the |scf__dft_radial_points| option, which is any positive
 integer (typically 50-100). The radial grids are "centered" on the Bragg-Slater
 radius of each atom, as described in Becke's 1988 paper. If inaccurate
 integration is suspected in systems with anions or very diffuse basis functions,
-the |scf__dft_bs_radius_alpha| option may be increased from 1.0 to a larger value to
-force the radial grid to span a larger extent in space.
+the |scf__dft_bs_radius_alpha| option may be increased from 1.0 to a larger value to force the radial grid to span a larger extent in space.
 
 The atomic weighting scheme is controlled by the |scf__dft_nuclear_scheme|
-option, which may be one of TREUTLER, BECKE, or NAIVE.
+option, which may be one of ``TREUTLER``, ``BECKE``, ``STRATMANN``, ``NAIVE``,
+or ``SBECKE``. The last is a smoother variant of the BECKE scheme recently introduced 
+by Laqua [Laqua:2018:204111]_ that should behave better for weak interactions.
+
+Pruning of the quadrature grid is controlled by the |scf__dft_pruning_scheme|
+option. The options ``ROBUST`` and ``TREUTLER`` divide the grid into spherical regions
+based on the Bragg-Slater radius of each atom and apply different orders to them.
+The ``ROBUST`` scheme is a less aggressive variant of the ``TREUTLER`` approach and
+suitable for benchmark-level quality (MAD < 0.002 kcal/mol for the S22 with PBE/aug-cc-pVTZ
+for pruned versus unpruned grid). Our implementation of the ``TREUTLER`` scheme shows an 
+error of 0.02 kcal/mol for the same benchmark. Both also reduce the grid order by 1 for H 
+and He atoms and avoid any pruning of heavy atoms (Z >= 36) Other schemes mentioned in 
+the keyword documentation (e.g. P_SLATER) are experimental and should be considered expert-only.
 
 Once the molecular quadrature grid is built, the points are partitioned into
 blocks of points which are spatially close to each other. We use an octree
@@ -573,6 +589,7 @@ An example of a fully specified grid is as follows::
     dft_radial_scheme treutler   # Rarely needed
     dft_nuclear_scheme treutler  # Rarely needed
     dft_basis_tolerance 1.0E-11  # Can speed things up, but benchmark the error
+    dft_pruning_scheme robust    # generally safe and will speed things up
     }
 
     energy('b3lyp')

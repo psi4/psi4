@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 1.4a1.dev189 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {HEAD} d6ce54b dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -12,35 +12,42 @@
     H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
     P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
     (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:41PM
+    Psi4 started on: Tuesday, 21 May 2019 10:32AM
 
-    Process ID:  21766
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 22465
+    Host:       hokru
+    PSIDATADIR: /usr/qc/psi4fork.bin/share/psi4
     Memory:     500.0 MiB
-    Threads:    1
+    Threads:    2
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! dipole moment for HF and B3LYP in presence of perturbation
+#! updated B3LYP values due to new BraggSlater radii
 
 ref_energies = { 'HF'    : [-76.0203919443, -76.0223213132,  # TEST
                             -76.0194350648, -76.0232937811], # TEST
-                 'B3LYP' : [-76.4174428941, -76.4192585316,  # TEST
-                            -76.4165433643, -76.4201746101]  # TEST
+                 'B3LYP' : [-76.4174428297, -76.4192584670,  # TEST
+                            -76.4165432999, -76.4201745455]  # TEST
                }
 # Reference values, in atomic units, for finite difference formulas
 ref_3pt = { 'HF'    : 0.9646844572, # TEST
-            'B3LYP' : 0.9078187054  # TEST
+            'B3LYP' : 0.9078186547  # TEST
           }
 ref_5pt = { 'HF'    : 0.9646862512, # TEST
-            'B3LYP' : 0.9078211247  # TEST
+            'B3LYP' : 0.9078210740  # TEST
           }
 
 molecule h2o {
@@ -99,30 +106,31 @@ for m in ['HF', 'B3LYP']:
     set perturb_h false
     e, wfn = energy(m, return_wfn=True)
     oeprop(wfn, 'MULTIPOLES(1)')
-    analytic = get_variable('SCF DIPOLE Z')
+    analytic = variable('SCF DIPOLE Z')
 
     compare_values(ref_3pt[m], dm_z_3point, 8, 'Z dipole moment, using 3-point stencil %s' % m) # TEST
     compare_values(ref_5pt[m], dm_z_5point, 8, 'Z dipole moment, using 5-point stencil %s' % m) # TEST
     compare_values(ref_5pt[m]*psi_dipmom_au2debye, analytic, 5, 'Z dipole moment, analytic result %s' % m) # TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:10 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:43 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -134,15 +142,15 @@ for m in ['HF', 'B3LYP']:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.180306406957651
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.180306443034327
 
   Charge       = 0
   Multiplicity = 1
@@ -173,21 +181,19 @@ for m in ['HF', 'B3LYP']:
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -203,27 +209,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -234,9 +239,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by 0.001000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by 0.001000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -246,22 +251,25 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -270,31 +278,23 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RHF iter   0:   -76.00722104006203   -7.60072e+01   8.85275e-02 
-   PCM polarization energy = -0.01574233362252
-   @RHF iter   1:   -75.98676455630724    2.04565e-02   1.39443e-02 
-   PCM polarization energy = -0.01072052023248
-   @RHF iter   2:   -76.01335743506699   -2.65929e-02   6.78241e-03 DIIS
-   PCM polarization energy = -0.01186602041937
-   @RHF iter   3:   -76.01958893279215   -6.23150e-03   1.43913e-03 DIIS
-   PCM polarization energy = -0.01180903744429
-   @RHF iter   4:   -76.02029992835870   -7.10996e-04   3.97520e-04 DIIS
-   PCM polarization energy = -0.01183093784988
-   @RHF iter   5:   -76.02038695108449   -8.70227e-05   9.19001e-05 DIIS
-   PCM polarization energy = -0.01184413045128
-   @RHF iter   6:   -76.02039187563720   -4.92455e-06   1.17836e-05 DIIS
-   PCM polarization energy = -0.01184609508175
-   @RHF iter   7:   -76.02039194090645   -6.52692e-08   2.51795e-06 DIIS
-   PCM polarization energy = -0.01184656150664
-   @RHF iter   8:   -76.02039194424613   -3.33968e-09   3.71558e-07 DIIS
-   PCM polarization energy = -0.01184652295669
-   @RHF iter   9:   -76.02039194430901   -6.28830e-11   6.63406e-08 DIIS
+   @RHF iter SAD:   -75.52126240092775   -7.55213e+01   0.00000e+00 
+   @RHF iter   1:   -75.95801405002535   -4.36752e-01   2.05310e-02 DIIS
+   @RHF iter   2:   -76.00392070702095   -4.59067e-02   1.16963e-02 DIIS
+   @RHF iter   3:   -76.02009867766674   -1.61780e-02   1.00959e-03 DIIS
+   @RHF iter   4:   -76.02037910501754   -2.80427e-04   2.00901e-04 DIIS
+   @RHF iter   5:   -76.02039109341777   -1.19884e-05   4.32799e-05 DIIS
+   @RHF iter   6:   -76.02039192209428   -8.28677e-07   6.94646e-06 DIIS
+   @RHF iter   7:   -76.02039194406628   -2.19720e-08   9.21363e-07 DIIS
+   @RHF iter   8:   -76.02039194443573   -3.69454e-10   2.16158e-07 DIIS
+   @RHF iter   9:   -76.02039194445892   -2.31921e-11   2.41393e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -305,75 +305,72 @@ Permittivity = 78.39
 
        6A      0.226616     7A      0.321575     8A      1.027268  
        9A      1.119151    10A      1.158774    11A      1.162570  
-      12A      1.378462    13A      1.431552    14A      2.016697  
-      15A      2.025454    16A      2.060704    17A      2.618280  
+      12A      1.378462    13A      1.431553    14A      2.016697  
+      15A      2.025453    16A      2.060704    17A      2.618280  
       18A      2.941862    19A      3.966554  
 
     Final Occupation by Irrep:
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RHF Final Energy:   -76.02039194430901 with 0.000000 0.000000 0.001000 perturbation
+  @RHF Final Energy:   -76.02039194445892
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1803064069576514
-    One-Electron Energy =                -123.0883395490688201
-    Two-Electron Energy =                  37.8994877207588488
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0118465229566942
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0203919443090115
+    Nuclear Repulsion Energy =              9.1803064430343273
+    One-Electron Energy =                -123.0883402287624335
+    Two-Electron Energy =                  37.8994883278115680
+    PCM Polarization Energy =              -0.0118464865423749
+    Total Energy =                        -76.0203919444589218
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:    -0.0000      Y:    -0.0000      Z:     0.0004
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:    -0.0000      Y:    -0.0000      Z:     0.9595     Total:     0.9595
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:    -0.0000      Y:    -0.0000      Z:     2.4388     Total:     2.4388
 
 
-*** tstop() called on psinet at Mon May 15 15:41:12 2017
+*** tstop() called on hokru at Tue May 21 10:32:44 2019
 Module time:
-	user time   =       1.08 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.43 seconds =       0.02 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.08 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.43 seconds =       0.02 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:12 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:44 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -385,15 +382,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.178388170106436
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.178388206190991
 
   Charge       = 0
   Multiplicity = 1
@@ -424,21 +421,19 @@ Total time:
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -454,27 +449,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -485,9 +479,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by -0.001000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by -0.001000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -497,22 +491,25 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -521,31 +518,23 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RHF iter   0:   -76.00722104006203   -7.60072e+01   8.85399e-02 
-   PCM polarization energy = -0.01596081294680
-   @RHF iter   1:   -75.98855580304196    1.86652e-02   1.39951e-02 
-   PCM polarization energy = -0.01091955782271
-   @RHF iter   2:   -76.01525611729645   -2.67003e-02   6.80766e-03 DIIS
-   PCM polarization energy = -0.01207619719915
-   @RHF iter   3:   -76.02152469587749   -6.26858e-03   1.43655e-03 DIIS
-   PCM polarization energy = -0.01202474229613
-   @RHF iter   4:   -76.02223055902270   -7.05863e-04   3.95716e-04 DIIS
-   PCM polarization energy = -0.01204785281115
-   @RHF iter   5:   -76.02231642631597   -8.58673e-05   9.11647e-05 DIIS
-   PCM polarization energy = -0.01206100709798
-   @RHF iter   6:   -76.02232124658154   -4.82027e-06   1.16344e-05 DIIS
-   PCM polarization energy = -0.01206286227178
-   @RHF iter   7:   -76.02232130992688   -6.33453e-08   2.48242e-06 DIIS
-   PCM polarization energy = -0.01206329736601
-   @RHF iter   8:   -76.02232131316288   -3.23600e-09   3.66776e-07 DIIS
-   PCM polarization energy = -0.01206325923289
-   @RHF iter   9:   -76.02232131322369   -6.08082e-11   6.39829e-08 DIIS
+   @RHF iter SAD:   -75.52126240092764   -7.55213e+01   0.00000e+00 
+   @RHF iter   1:   -75.95983288998325   -4.38570e-01   2.05679e-02 DIIS
+   @RHF iter   2:   -76.00582393499138   -4.59910e-02   1.17066e-02 DIIS
+   @RHF iter   3:   -76.02203228124783   -1.62083e-02   1.00619e-03 DIIS
+   @RHF iter   4:   -76.02230888529668   -2.76604e-04   1.98589e-04 DIIS
+   @RHF iter   5:   -76.02232050006901   -1.16148e-05   4.24800e-05 DIIS
+   @RHF iter   6:   -76.02232129201532   -7.91946e-07   6.82463e-06 DIIS
+   @RHF iter   7:   -76.02232131301658   -2.10013e-08   8.80904e-07 DIIS
+   @RHF iter   8:   -76.02232131334773   -3.31156e-10   2.06661e-07 DIIS
+   @RHF iter   9:   -76.02232131336893   -2.12026e-11   2.38596e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -564,67 +553,64 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RHF Final Energy:   -76.02232131322369 with 0.000000 0.000000 -0.001000 perturbation
+  @RHF Final Energy:   -76.02232131336893
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1783881701064356
-    One-Electron Energy =                -123.0935083523768583
-    Two-Electron Energy =                  37.9048621282796319
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0120632592328935
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0223213132236850
+    Nuclear Repulsion Energy =              9.1783882061909914
+    One-Electron Energy =                -123.0935090468324944
+    Two-Electron Energy =                  37.9048627517716241
+    PCM Polarization Energy =              -0.0120632244990636
+    Total Energy =                        -76.0223213133689342
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.0108
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.0108
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.9699     Total:     0.9699
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.9699     Total:     0.9699
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.4652     Total:     2.4652
+  Dipole Moment: [D]
+     X:     0.0000      Y:    -0.0000      Z:     2.4652     Total:     2.4652
 
 
-*** tstop() called on psinet at Mon May 15 15:41:13 2017
+*** tstop() called on hokru at Tue May 21 10:32:44 2019
 Module time:
-	user time   =       0.96 seconds =       0.02 minutes
+	user time   =       1.55 seconds =       0.03 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.06 seconds =       0.03 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       3.00 seconds =       0.05 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:13 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:44 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -636,15 +622,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.181265525383258
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.181265561455994
 
   Charge       = 0
   Multiplicity = 1
@@ -675,21 +661,19 @@ Total time:
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -705,27 +689,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -736,9 +719,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by 0.002000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by 0.002000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -748,22 +731,25 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -772,31 +758,23 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RHF iter   0:   -76.00722104006201   -7.60072e+01   8.85214e-02 
-   PCM polarization energy = -0.01563335320758
-   @RHF iter   1:   -75.98587675955278    2.13443e-02   1.39188e-02 
-   PCM polarization energy = -0.01062151898959
-   @RHF iter   2:   -76.01241594030770   -2.65392e-02   6.76970e-03 DIIS
-   PCM polarization energy = -0.01176139895062
-   @RHF iter   3:   -76.01862882135823   -6.21288e-03   1.44043e-03 DIIS
-   PCM polarization energy = -0.01170166971971
-   @RHF iter   4:   -76.01934240907183   -7.13588e-04   3.98428e-04 DIIS
-   PCM polarization energy = -0.01172296785851
-   @RHF iter   5:   -76.01943001725917   -8.76082e-05   9.22716e-05 DIIS
-   PCM polarization energy = -0.01173617920651
-   @RHF iter   6:   -76.01943499504519   -4.97779e-06   1.18600e-05 DIIS
-   PCM polarization energy = -0.01173819891999
-   @RHF iter   7:   -76.01943506131217   -6.62670e-08   2.53606e-06 DIIS
-   PCM polarization energy = -0.01173868108638
-   @RHF iter   8:   -76.01943506470559   -3.39342e-09   3.74030e-07 DIIS
-   PCM polarization energy = -0.01173864229950
-   @RHF iter   9:   -76.01943506476941   -6.38209e-11   6.75666e-08 DIIS
+   @RHF iter SAD:   -75.52126240092761   -7.55213e+01   0.00000e+00 
+   @RHF iter   1:   -75.95711206752797   -4.35850e-01   2.05125e-02 DIIS
+   @RHF iter   2:   -76.00297682925941   -4.58648e-02   1.16912e-02 DIIS
+   @RHF iter   3:   -76.01913962004190   -1.61628e-02   1.01133e-03 DIIS
+   @RHF iter   4:   -76.01942201295842   -2.82393e-04   2.02079e-04 DIIS
+   @RHF iter   5:   -76.01943419431637   -1.21814e-05   4.36863e-05 DIIS
+   @RHF iter   6:   -76.01943504202376   -8.47707e-07   7.00947e-06 DIIS
+   @RHF iter   7:   -76.01943506450718   -2.24834e-08   9.42289e-07 DIIS
+   @RHF iter   8:   -76.01943506489714   -3.89960e-10   2.20866e-07 DIIS
+   @RHF iter   9:   -76.01943506492135   -2.42153e-11   2.42874e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -815,67 +793,64 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RHF Final Energy:   -76.01943506476941 with 0.000000 0.000000 0.002000 perturbation
+  @RHF Final Energy:   -76.01943506492135
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1812655253832585
-    One-Electron Energy =                -123.0857338051245478
-    Two-Electron Energy =                  37.8967718572713892
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0117386422995037
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194350647694108
+    Nuclear Repulsion Energy =              9.1812655614559944
+    One-Electron Energy =                -123.0857344775005373
+    Two-Electron Energy =                  37.8967724561660262
+    PCM Polarization Energy =              -0.0117386050428284
+    Total Energy =                        -76.0194350649213533
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.0048
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:    -0.0048
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.9543     Total:     0.9543
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.9543     Total:     0.9543
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.4255     Total:     2.4255
+  Dipole Moment: [D]
+     X:     0.0000      Y:    -0.0000      Z:     2.4255     Total:     2.4255
 
 
-*** tstop() called on psinet at Mon May 15 15:41:14 2017
+*** tstop() called on hokru at Tue May 21 10:32:45 2019
 Module time:
-	user time   =       1.03 seconds =       0.02 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       1.54 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.11 seconds =       0.05 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       4.55 seconds =       0.08 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:14 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:45 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -887,15 +862,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.177429051680827
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.177429087769324
 
   Charge       = 0
   Multiplicity = 1
@@ -926,21 +901,19 @@ Total time:
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -956,27 +929,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -987,9 +959,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by -0.002000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by -0.002000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -999,22 +971,25 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1023,31 +998,23 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RHF iter   0:   -76.00722104006203   -7.60072e+01   8.85463e-02 
-   PCM polarization energy = -0.01607031064552
-   @RHF iter   1:   -75.98945923364199    1.77618e-02   1.40204e-02 
-   PCM polarization energy = -0.01101959144864
-   @RHF iter   2:   -76.01621328382458   -2.67541e-02   6.82020e-03 DIIS
-   PCM polarization energy = -0.01218174996458
-   @RHF iter   3:   -76.02250032623758   -6.28704e-03   1.43528e-03 DIIS
-   PCM polarization energy = -0.01213307665853
-   @RHF iter   4:   -76.02320364899714   -7.03323e-04   3.94821e-04 DIIS
-   PCM polarization energy = -0.01215679503029
-   @RHF iter   5:   -76.02328894621887   -8.52972e-05   9.08008e-05 DIIS
-   PCM polarization energy = -0.01216992980564
-   @RHF iter   6:   -76.02329371540699   -4.76919e-06   1.15616e-05 DIIS
-   PCM polarization energy = -0.01217173061629
-   @RHF iter   7:   -76.02329377782489   -6.24179e-08   2.46498e-06 DIIS
-   PCM polarization energy = -0.01217215012719
-   @RHF iter   8:   -76.02329378101058   -3.18569e-09   3.64459e-07 DIIS
-   PCM polarization energy = -0.01217211217430
-   @RHF iter   9:   -76.02329378107048   -5.98988e-11   6.28497e-08 DIIS
+   @RHF iter SAD:   -75.52126240092767   -7.55213e+01   0.00000e+00 
+   @RHF iter   1:   -75.96074973140369   -4.39487e-01   2.05862e-02 DIIS
+   @RHF iter   2:   -76.00678326605093   -4.60335e-02   1.17117e-02 DIIS
+   @RHF iter   3:   -76.02300680674556   -1.62235e-02   1.00453e-03 DIIS
+   @RHF iter   4:   -76.02328155215993   -2.74745e-04   1.97455e-04 DIIS
+   @RHF iter   5:   -76.02329298611191   -1.14340e-05   4.20864e-05 DIIS
+   @RHF iter   6:   -76.02329376033946   -7.74228e-07   6.76573e-06 DIIS
+   @RHF iter   7:   -76.02329378087992   -2.05405e-08   8.61380e-07 DIIS
+   @RHF iter   8:   -76.02329378119330   -3.13378e-10   2.01879e-07 DIIS
+   @RHF iter   9:   -76.02329378121351   -2.02078e-11   2.37273e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -1057,87 +1024,84 @@ Permittivity = 78.39
     Virtual:                                                              
 
        6A      0.230433     7A      0.325358     8A      1.027688  
-       9A      1.118064    10A      1.159090    11A      1.164067  
+       9A      1.118064    10A      1.159089    11A      1.164067  
       12A      1.379006    13A      1.434061    14A      2.016657  
-      15A      2.025622    16A      2.060819    17A      2.618938  
+      15A      2.025621    16A      2.060819    17A      2.618938  
       18A      2.942202    19A      3.966977  
 
     Final Occupation by Irrep:
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RHF Final Energy:   -76.02329378107048 with 0.000000 0.000000 -0.002000 perturbation
+  @RHF Final Energy:   -76.02329378121351
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1774290516808268
-    One-Electron Energy =                -123.0960716218634445
-    Two-Electron Energy =                  37.9075209012864249
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0121721121743010
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0232937810704783
+    Nuclear Repulsion Energy =              9.1774290877693243
+    One-Electron Energy =                -123.0960723237908780
+    Two-Electron Energy =                  37.9075215330861823
+    PCM Polarization Energy =              -0.0121720782781402
+    Total Energy =                        -76.0232937812135106
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.0159
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.0159
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.9751     Total:     0.9751
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.9751     Total:     0.9751
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.4783     Total:     2.4783
+  Dipole Moment: [D]
+     X:    -0.0000      Y:     0.0000      Z:     2.4783     Total:     2.4783
 
 
-*** tstop() called on psinet at Mon May 15 15:41:15 2017
+*** tstop() called on hokru at Tue May 21 10:32:46 2019
 Module time:
-	user time   =       0.96 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.55 seconds =       0.03 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.09 seconds =       0.07 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
-Perturbation strength =  0.0010, HF computed energy =   -76.0203919443
-	Energy for displacement 0.........................................PASSED
-Perturbation strength = -0.0010, HF computed energy =   -76.0223213132
-	Energy for displacement 1.........................................PASSED
-Perturbation strength =  0.0020, HF computed energy =   -76.0194350648
-	Energy for displacement 2.........................................PASSED
-Perturbation strength = -0.0020, HF computed energy =   -76.0232937811
-	Energy for displacement 3.........................................PASSED
+	user time   =       6.11 seconds =       0.10 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Perturbation strength =  0.0010, HF computed energy =   -76.0203919445
+    Energy for displacement 0.........................................PASSED
+Perturbation strength = -0.0010, HF computed energy =   -76.0223213134
+    Energy for displacement 1.........................................PASSED
+Perturbation strength =  0.0020, HF computed energy =   -76.0194350649
+    Energy for displacement 2.........................................PASSED
+Perturbation strength = -0.0020, HF computed energy =   -76.0232937812
+    Energy for displacement 3.........................................PASSED
 Total dipoles
-HF 3-point stencil: mu(z) = 0.9646844573 ea0, 2.4519830826 Debye
-HF 5-point stencil: mu(z) = 0.9646862514 ea0, 2.4519876425 Debye
+HF 3-point stencil: mu(z) = 0.9646844550 ea0, 2.4519832907 Debye
+HF 5-point stencil: mu(z) = 0.9646862490 ea0, 2.4519878506 Debye
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:15 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:46 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1149,15 +1113,15 @@ HF 5-point stencil: mu(z) = 0.9646862514 ea0, 2.4519876425 Debye
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.179347324612660
 
   Charge       = 0
   Multiplicity = 1
@@ -1188,21 +1152,19 @@ HF 5-point stencil: mu(z) = 0.9646862514 ea0, 2.4519876425 Debye
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -1218,27 +1180,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -1260,22 +1221,25 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1284,31 +1248,23 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RHF iter   0:   -76.00722104006203   -7.60072e+01   8.85336e-02 
-   PCM polarization energy = -0.01585148707323
-   @RHF iter   1:   -75.98765757404657    1.95635e-02   1.39698e-02 
-   PCM polarization energy = -0.01081986696744
-   @RHF iter   2:   -76.01430416423531   -2.66466e-02   6.79507e-03 DIIS
-   PCM polarization energy = -0.01197095359692
-   @RHF iter   3:   -76.02055422786256   -6.25006e-03   1.43784e-03 DIIS
-   PCM polarization energy = -0.01191672876819
-   @RHF iter   4:   -76.02126264859163   -7.08421e-04   3.96616e-04 DIIS
-   PCM polarization energy = -0.01193923329685
-   @RHF iter   5:   -76.02134909103621   -8.64424e-05   9.15311e-05 DIIS
-   PCM polarization energy = -0.01195240686837
-   @RHF iter   6:   -76.02135396308610   -4.87205e-06   1.17084e-05 DIIS
-   PCM polarization energy = -0.01195431665050
-   @RHF iter   7:   -76.02135402738168   -6.42956e-08   2.50008e-06 DIIS
-   PCM polarization energy = -0.01195476738369
-   @RHF iter   8:   -76.02135403066893   -3.28725e-09   3.69141e-07 DIIS
-   PCM polarization energy = -0.01195472905161
-   @RHF iter   9:   -76.02135403073069   -6.17604e-11   6.51463e-08 DIIS
+   @RHF iter SAD:   -75.52126240092767   -7.55213e+01   0.00000e+00 
+   @RHF iter   1:   -75.95892099352852   -4.37659e-01   2.05495e-02 DIIS
+   @RHF iter   2:   -76.00486974546983   -4.59488e-02   1.17014e-02 DIIS
+   @RHF iter   3:   -76.02106290149253   -1.61932e-02   1.00787e-03 DIIS
+   @RHF iter   4:   -76.02134139937164   -2.78498e-04   1.99737e-04 DIIS
+   @RHF iter   5:   -76.02135319893543   -1.17996e-05   4.28778e-05 DIIS
+   @RHF iter   6:   -76.02135400902810   -8.10093e-07   6.88486e-06 DIIS
+   @RHF iter   7:   -76.02135403050627   -2.14782e-08   9.00900e-07 DIIS
+   @RHF iter   8:   -76.02135403085607   -3.49800e-10   2.11422e-07 DIIS
+   @RHF iter   9:   -76.02135403087833   -2.22542e-11   2.39968e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -1327,55 +1283,49 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RHF Final Energy:   -76.02135403073069
+  @RHF Final Energy:   -76.02135403087833
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.0909310296310082
-    Two-Electron Energy =                  37.9021844394198837
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0119547290516088
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0213540307306914
+    Nuclear Repulsion Energy =              9.1793473246126602
+    One-Electron Energy =                -123.0909317166801173
+    Two-Electron Energy =                  37.9021850546674415
+    PCM Polarization Energy =              -0.0119546934783128
+    Total Energy =                        -76.0213540308783280
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.0056
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.0056
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.9647     Total:     0.9647
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.9647     Total:     0.9647
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.4520     Total:     2.4520
+  Dipole Moment: [D]
+     X:     0.0000      Y:    -0.0000      Z:     2.4520     Total:     2.4520
 
 
-*** tstop() called on psinet at Mon May 15 15:41:16 2017
+*** tstop() called on hokru at Tue May 21 10:32:47 2019
 Module time:
-	user time   =       0.97 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       1.53 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       5.07 seconds =       0.08 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       7.65 seconds =       0.13 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the  density matrix
-
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+OEProp: No title given, name of density matrix used for the following properties is 'SCF density'
 
  Multipole Moments:
 
@@ -1383,33 +1333,34 @@ Properties computed using the  density matrix
      Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)
  ------------------------------------------------------------------------------------
 
- L = 1.  Multiply by 2.5417462300 to convert to Debye
- Dipole X            :         -0.0000002            0.0000000           -0.0000002
- Dipole Y            :         -0.0000001            0.0000000           -0.0000001
- Dipole Z            :          0.0055684            0.9591184            0.9646868
+ L = 1.  Multiply by 2.5417464519 to convert to Debye
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :          0.0055679            0.9591184            0.9646863
 
  --------------------------------------------------------------------------------
-	Z dipole moment, using 3-point stencil HF.........................PASSED
-	Z dipole moment, using 5-point stencil HF.........................PASSED
-	Z dipole moment, analytic result HF...............................PASSED
+    Z dipole moment, using 3-point stencil HF.........................PASSED
+    Z dipole moment, using 5-point stencil HF.........................PASSED
+    Z dipole moment, analytic result HF...............................PASSED
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:16 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:47 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1421,15 +1372,15 @@ Properties computed using the  density matrix
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.180306406957650
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.180306443034326
 
   Charge       = 0
   Multiplicity = 1
@@ -1460,68 +1411,64 @@ Properties computed using the  density matrix
 
   ==> DFT Potential <==
 
-   => B3LYP Composite Functional <= 
+   => Composite Functional: B3LYP <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
+    B3LYP Hyb-GGA Exchange-Correlation Functional
 
-    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)
 
-    Points   =           5000
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
 
-    X_LRC        =          FALSE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   2.000000E-01
-    X_Omega      =   0.000000E+00
-    C_LRC        =          FALSE
-    C_Hybrid     =          FALSE
-    C_Alpha      =   0.000000E+00
-    C_Omega      =   0.000000E+00
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
 
    => Exchange Functionals <=
 
-    0.8000    B3_X
-    0.2000      HF 
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
 
    => Correlation Functionals <=
 
-    0.1900 VWN3RPA_C
-    0.8100   LYP_C
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
 
    => Molecular Quadrature <=
 
-    Radial Scheme    =       TREUTLER
-    Pruning Scheme   =           FLAT
-    Nuclear Scheme   =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha  =              1
-    Pruning alpha    =              1
-    Radial Points    =             75
-    Spherical Points =            302
-    Total Points     =          65565
-    Total Blocks     =             67
-    Max Points       =           4953
-    Max Functions    =             19
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          67158
+    Total Blocks           =            569
+    Max Points             =            256
+    Max Functions          =             19
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -1537,27 +1484,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -1568,9 +1514,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by 0.001000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by 0.001000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -1580,22 +1526,27 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              337
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Cached 100.0% of DFT collocation blocks in 0.037 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1604,40 +1555,32 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RKS iter   0:   -76.41317707393300   -7.64132e+01   8.34694e-02 
-   PCM polarization energy = -0.01659323954688
-   @RKS iter   1:   -76.35558874696115    5.75883e-02   2.18536e-02 
-   PCM polarization energy = -0.00507357988676
-   @RKS iter   2:   -76.30498460265579    5.06041e-02   2.97441e-02 DIIS
-   PCM polarization energy = -0.01050560852460
-   @RKS iter   3:   -76.41740775105609   -1.12423e-01   4.94575e-04 DIIS
-   PCM polarization energy = -0.01060314306005
-   @RKS iter   4:   -76.41744187972057   -3.41287e-05   8.24622e-05 DIIS
-   PCM polarization energy = -0.01058738265840
-   @RKS iter   5:   -76.41744288408940   -1.00437e-06   7.29401e-06 DIIS
-   PCM polarization energy = -0.01058919308084
-   @RKS iter   6:   -76.41744289399952   -9.91012e-09   8.58606e-07 DIIS
-   PCM polarization energy = -0.01058925038524
-   @RKS iter   7:   -76.41744289413576   -1.36239e-10   2.08120e-07 DIIS
-   PCM polarization energy = -0.01058923326992
-   @RKS iter   8:   -76.41744289414277   -7.00595e-12   1.37077e-08 DIIS
+   @RKS iter SAD:   -76.11409156481574   -7.61141e+01   0.00000e+00 
+   @RKS iter   1:   -76.27950040217890   -1.65409e-01   3.26887e-02 DIIS
+   @RKS iter   2:   -76.16029272280960    1.19208e-01   4.44741e-02 DIIS
+   @RKS iter   3:   -76.41741684061171   -2.57124e-01   4.14575e-04 DIIS
+   @RKS iter   4:   -76.41744128088030   -2.44403e-05   1.08965e-04 DIIS
+   @RKS iter   5:   -76.41744279157463   -1.51069e-06   1.74415e-05 DIIS
+   @RKS iter   6:   -76.41744282965649   -3.80819e-08   4.83995e-07 DIIS
+   @RKS iter   7:   -76.41744282969283   -3.63372e-11   1.02439e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
        1A    -19.136689     2A     -1.000384     3A     -0.523940  
-       4A     -0.374968     5A     -0.297433  
+       4A     -0.374969     5A     -0.297433  
 
     Virtual:                                                              
 
        6A      0.080959     7A      0.168758     8A      0.787662  
        9A      0.860722    10A      0.881760    11A      0.887073  
-      12A      1.067854    13A      1.190333    14A      1.727228  
+      12A      1.067854    13A      1.190332    14A      1.727228  
       15A      1.736082    16A      1.773290    17A      2.291522  
       18A      2.594406    19A      3.555728  
 
@@ -1645,67 +1588,67 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RKS Final Energy:   -76.41744289414277 with 0.000000 0.000000 0.001000 perturbation
+  @RKS Final Energy:   -76.41744282969283
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1803064069576497
-    One-Electron Energy =                -123.1647021419677372
-    Two-Electron Energy =                  45.1433185705258921
-    DFT Exchange-Correlation Energy =      -7.5657764963886516
+    Nuclear Repulsion Energy =              9.1803064430343255
+    One-Electron Energy =                -123.1647007115190604
+    Two-Electron Energy =                  45.1433169378193426
+    DFT Exchange-Correlation Energy =      -7.5657762670106070
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0105892332699244
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4174428941427664
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    PCM Polarization Energy =              -0.0105892320168398
+    Total Energy =                        -76.4174428296928454
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.0568
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.0568
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.9023     Total:     0.9023
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9023     Total:     0.9023
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.2934     Total:     2.2934
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.2934     Total:     2.2934
 
 
-*** tstop() called on psinet at Mon May 15 15:41:19 2017
+*** tstop() called on hokru at Tue May 21 10:32:48 2019
 Module time:
-	user time   =       2.95 seconds =       0.05 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.05 seconds =       0.13 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =      10.12 seconds =       0.17 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:19 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:48 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1717,15 +1660,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.178388170106436
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.178388206190993
 
   Charge       = 0
   Multiplicity = 1
@@ -1756,68 +1699,64 @@ Total time:
 
   ==> DFT Potential <==
 
-   => B3LYP Composite Functional <= 
+   => Composite Functional: B3LYP <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
+    B3LYP Hyb-GGA Exchange-Correlation Functional
 
-    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)
 
-    Points   =           5000
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
 
-    X_LRC        =          FALSE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   2.000000E-01
-    X_Omega      =   0.000000E+00
-    C_LRC        =          FALSE
-    C_Hybrid     =          FALSE
-    C_Alpha      =   0.000000E+00
-    C_Omega      =   0.000000E+00
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
 
    => Exchange Functionals <=
 
-    0.8000    B3_X
-    0.2000      HF 
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
 
    => Correlation Functionals <=
 
-    0.1900 VWN3RPA_C
-    0.8100   LYP_C
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
 
    => Molecular Quadrature <=
 
-    Radial Scheme    =       TREUTLER
-    Pruning Scheme   =           FLAT
-    Nuclear Scheme   =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha  =              1
-    Pruning alpha    =              1
-    Radial Points    =             75
-    Spherical Points =            302
-    Total Points     =          65565
-    Total Blocks     =             67
-    Max Points       =           4953
-    Max Functions    =             19
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          67158
+    Total Blocks           =            569
+    Max Points             =            256
+    Max Functions          =             19
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -1833,27 +1772,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -1864,9 +1802,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by -0.001000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by -0.001000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -1876,22 +1814,27 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              337
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Cached 100.0% of DFT collocation blocks in 0.037 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -1900,29 +1843,21 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RKS iter   0:   -76.41317707393303   -7.64132e+01   8.34777e-02 
-   PCM polarization energy = -0.01684669317827
-   @RKS iter   1:   -76.35690498193495    5.62721e-02   2.19484e-02 
-   PCM polarization energy = -0.00524903153927
-   @RKS iter   2:   -76.30623280470809    5.06722e-02   2.98292e-02 DIIS
-   PCM polarization energy = -0.01071952875212
-   @RKS iter   3:   -76.41922269981094   -1.12990e-01   5.00203e-04 DIIS
-   PCM polarization energy = -0.01082029911905
-   @RKS iter   4:   -76.41925751862662   -3.48188e-05   8.24557e-05 DIIS
-   PCM polarization energy = -0.01080430352191
-   @RKS iter   5:   -76.41925852163303   -1.00301e-06   7.26613e-06 DIIS
-   PCM polarization energy = -0.01080611887595
-   @RKS iter   6:   -76.41925853141458   -9.78156e-09   8.45420e-07 DIIS
-   PCM polarization energy = -0.01080617476226
-   @RKS iter   7:   -76.41925853154653   -1.31948e-10   2.04829e-07 DIIS
-   PCM polarization energy = -0.01080615796787
-   @RKS iter   8:   -76.41925853155334   -6.80700e-12   1.33857e-08 DIIS
+   @RKS iter SAD:   -76.11409156481572   -7.61141e+01   0.00000e+00 
+   @RKS iter   1:   -76.28073105721663   -1.66639e-01   3.27675e-02 DIIS
+   @RKS iter   2:   -76.16179449381022    1.18937e-01   4.45202e-02 DIIS
+   @RKS iter   3:   -76.41923221606771   -2.57438e-01   4.17994e-04 DIIS
+   @RKS iter   4:   -76.41925690169660   -2.46856e-05   1.09536e-04 DIIS
+   @RKS iter   5:   -76.41925842915310   -1.52746e-06   1.73848e-05 DIIS
+   @RKS iter   6:   -76.41925846696695   -3.78138e-08   4.77494e-07 DIIS
+   @RKS iter   7:   -76.41925846700234   -3.53850e-11   1.02625e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -1941,67 +1876,67 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RKS Final Energy:   -76.41925853155334 with 0.000000 0.000000 -0.001000 perturbation
+  @RKS Final Energy:   -76.41925846700234
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1783881701064356
-    One-Electron Energy =                -123.1703242650261529
-    Two-Electron Energy =                  45.1495407777757833
-    DFT Exchange-Correlation Energy =      -7.5660570564415330
+    Nuclear Repulsion Energy =              9.1783882061909932
+    One-Electron Energy =                -123.1703228529974297
+    Two-Electron Energy =                  45.1495391657353267
+    DFT Exchange-Correlation Energy =      -7.5660568293068717
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0108061579678661
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4192585315533393
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    PCM Polarization Energy =              -0.0108061566243426
+    Total Energy =                        -76.4192584670023365
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:    -0.0000      Y:    -0.0000      Z:    -0.0458
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:    -0.0000      Y:    -0.0000      Z:     0.9133     Total:     0.9133
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:    -0.0000      Y:    -0.0000      Z:     2.3215     Total:     2.3215
 
 
-*** tstop() called on psinet at Mon May 15 15:41:22 2017
+*** tstop() called on hokru at Tue May 21 10:32:49 2019
 Module time:
-	user time   =       3.00 seconds =       0.05 minutes
+	user time   =       2.44 seconds =       0.04 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      11.07 seconds =       0.18 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      12.57 seconds =       0.21 minutes
+	system time =       0.34 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:22 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:49 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2013,15 +1948,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.181265525383258
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.181265561455993
 
   Charge       = 0
   Multiplicity = 1
@@ -2052,68 +1987,64 @@ Total time:
 
   ==> DFT Potential <==
 
-   => B3LYP Composite Functional <= 
+   => Composite Functional: B3LYP <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
+    B3LYP Hyb-GGA Exchange-Correlation Functional
 
-    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)
 
-    Points   =           5000
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
 
-    X_LRC        =          FALSE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   2.000000E-01
-    X_Omega      =   0.000000E+00
-    C_LRC        =          FALSE
-    C_Hybrid     =          FALSE
-    C_Alpha      =   0.000000E+00
-    C_Omega      =   0.000000E+00
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
 
    => Exchange Functionals <=
 
-    0.8000    B3_X
-    0.2000      HF 
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
 
    => Correlation Functionals <=
 
-    0.1900 VWN3RPA_C
-    0.8100   LYP_C
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
 
    => Molecular Quadrature <=
 
-    Radial Scheme    =       TREUTLER
-    Pruning Scheme   =           FLAT
-    Nuclear Scheme   =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha  =              1
-    Pruning alpha    =              1
-    Radial Points    =             75
-    Spherical Points =            302
-    Total Points     =          65565
-    Total Blocks     =             67
-    Max Points       =           4953
-    Max Functions    =             19
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          67158
+    Total Blocks           =            569
+    Max Points             =            256
+    Max Functions          =             19
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -2129,27 +2060,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -2160,9 +2090,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by 0.002000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by 0.002000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -2172,22 +2102,27 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              337
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Cached 100.0% of DFT collocation blocks in 0.037 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -2196,29 +2131,21 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RKS iter   0:   -76.41317707393300   -7.64132e+01   8.34654e-02 
-   PCM polarization energy = -0.01646681528059
-   @RKS iter   1:   -76.35494009113070    5.82370e-02   2.18058e-02 
-   PCM polarization energy = -0.00498687760034
-   @RKS iter   2:   -76.30437040516254    5.05697e-02   2.97012e-02 DIIS
-   PCM polarization energy = -0.01039913999525
-   @RKS iter   3:   -76.41650856383869   -1.12138e-01   4.91750e-04 DIIS
-   PCM polarization energy = -0.01049506383931
-   @RKS iter   4:   -76.41654234919041   -3.37854e-05   8.24643e-05 DIIS
-   PCM polarization energy = -0.01047942156810
-   @RKS iter   5:   -76.41654335420310   -1.00501e-06   7.30852e-06 DIIS
-   PCM polarization energy = -0.01048122942412
-   @RKS iter   6:   -76.41654336417918   -9.97608e-09   8.65243e-07 DIIS
-   PCM polarization energy = -0.01048128744291
-   @RKS iter   7:   -76.41654336431768   -1.38499e-10   2.09786e-07 DIIS
-   PCM polarization energy = -0.01048127016465
-   @RKS iter   8:   -76.41654336432482   -7.14806e-12   1.38727e-08 DIIS
+   @RKS iter SAD:   -76.11409156481569   -7.61141e+01   0.00000e+00 
+   @RKS iter   1:   -76.27889484867362   -1.64803e-01   3.26489e-02 DIIS
+   @RKS iter   2:   -76.15954853947271    1.19346e-01   4.44511e-02 DIIS
+   @RKS iter   3:   -76.41651743749973   -2.56969e-01   4.12884e-04 DIIS
+   @RKS iter   4:   -76.41654175953778   -2.43220e-05   1.08673e-04 DIIS
+   @RKS iter   5:   -76.41654326167254   -1.50213e-06   1.74695e-05 DIIS
+   @RKS iter   6:   -76.41654329988731   -3.82148e-08   4.87376e-07 DIIS
+   @RKS iter   7:   -76.41654329992406   -3.67493e-11   1.02350e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -2229,7 +2156,7 @@ Permittivity = 78.39
 
        6A      0.079686     7A      0.167517     8A      0.787358  
        9A      0.860922    10A      0.881676    11A      0.886652  
-      12A      1.067682    13A      1.189465    14A      1.727206  
+      12A      1.067682    13A      1.189465    14A      1.727205  
       15A      1.735993    16A      1.773222    17A      2.291266  
       18A      2.594249    19A      3.555587  
 
@@ -2237,67 +2164,67 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RKS Final Energy:   -76.41654336432482 with 0.000000 0.000000 0.002000 perturbation
+  @RKS Final Energy:   -76.41654329992406
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1812655253832585
-    One-Electron Energy =                -123.1618654573696858
-    Two-Electron Energy =                  45.1401712634999086
-    DFT Exchange-Correlation Energy =      -7.5656334256736546
+    Nuclear Repulsion Energy =              9.1812655614559926
+    One-Electron Energy =                -123.1618640173814754
+    Two-Electron Energy =                  45.1401696200881588
+    DFT Exchange-Correlation Energy =      -7.5656331951290383
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0104812701646489
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4165433643248235
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    PCM Polarization Energy =              -0.0104812689576861
+    Total Energy =                        -76.4165432999240579
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.0624
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:    -0.0624
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.8968     Total:     0.8968
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.8968     Total:     0.8968
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.2793     Total:     2.2793
+  Dipole Moment: [D]
+     X:    -0.0000      Y:     0.0000      Z:     2.2793     Total:     2.2793
 
 
-*** tstop() called on psinet at Mon May 15 15:41:25 2017
+*** tstop() called on hokru at Tue May 21 10:32:51 2019
 Module time:
-	user time   =       2.99 seconds =       0.05 minutes
+	user time   =       2.43 seconds =       0.04 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      14.07 seconds =       0.23 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =      15.01 seconds =       0.25 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:25 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:51 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2309,15 +2236,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.177429051680827
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.177429087769326
 
   Charge       = 0
   Multiplicity = 1
@@ -2348,68 +2275,64 @@ Total time:
 
   ==> DFT Potential <==
 
-   => B3LYP Composite Functional <= 
+   => Composite Functional: B3LYP <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
+    B3LYP Hyb-GGA Exchange-Correlation Functional
 
-    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)
 
-    Points   =           5000
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
 
-    X_LRC        =          FALSE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   2.000000E-01
-    X_Omega      =   0.000000E+00
-    C_LRC        =          FALSE
-    C_Hybrid     =          FALSE
-    C_Alpha      =   0.000000E+00
-    C_Omega      =   0.000000E+00
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
 
    => Exchange Functionals <=
 
-    0.8000    B3_X
-    0.2000      HF 
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
 
    => Correlation Functionals <=
 
-    0.1900 VWN3RPA_C
-    0.8100   LYP_C
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
 
    => Molecular Quadrature <=
 
-    Radial Scheme    =       TREUTLER
-    Pruning Scheme   =           FLAT
-    Nuclear Scheme   =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha  =              1
-    Pruning alpha    =              1
-    Radial Points    =             75
-    Spherical Points =            302
-    Total Points     =          65565
-    Total Blocks     =             67
-    Max Points       =           4953
-    Max Functions    =             19
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          67158
+    Total Blocks           =            569
+    Max Points             =            256
+    Max Functions          =             19
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -2425,27 +2348,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -2456,9 +2378,9 @@ Permittivity = 78.39
     Total      19      19       5       5       5       0
    -------------------------------------------------------
 
-  Perturbing V by -0.002000 mu(z).
   ==> Integral Setup <==
 
+  Perturbing V by -0.002000 mu(z).
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
@@ -2468,22 +2390,27 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              337
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Cached 100.0% of DFT collocation blocks in 0.037 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -2492,29 +2419,21 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RKS iter   0:   -76.41317707393303   -7.64132e+01   8.34820e-02 
-   PCM polarization energy = -0.01697372166269
-   @RKS iter   1:   -76.35757253193427    5.56045e-02   2.19954e-02 
-   PCM polarization energy = -0.00533776922357
-   @RKS iter   2:   -76.30686677326594    5.07058e-02   2.98714e-02 DIIS
-   PCM polarization energy = -0.01082697641549
-   @RKS iter   3:   -76.42013843230382   -1.13272e-01   5.03007e-04 DIIS
-   PCM polarization energy = -0.01092937193480
-   @RKS iter   4:   -76.42017359796792   -3.51657e-05   8.24514e-05 DIIS
-   PCM polarization energy = -0.01091325923811
-   @RKS iter   5:   -76.42017460025795   -1.00229e-06   7.25274e-06 DIIS
-   PCM polarization energy = -0.01091507696040
-   @RKS iter   6:   -76.42017460997707   -9.71912e-09   8.38874e-07 DIIS
-   PCM polarization energy = -0.01091513214333
-   @RKS iter   7:   -76.42017461010676   -1.29688e-10   2.03204e-07 DIIS
-   PCM polarization energy = -0.01091511550699
-   @RKS iter   8:   -76.42017461011362   -6.86384e-12   1.32287e-08 DIIS
+   @RKS iter SAD:   -76.11409156481569   -7.61141e+01   0.00000e+00 
+   @RKS iter   1:   -76.28135612806996   -1.67265e-01   3.28067e-02 DIIS
+   @RKS iter   2:   -76.16255210927113    1.18804e-01   4.45432e-02 DIIS
+   @RKS iter   3:   -76.42014815952540   -2.57596e-01   4.19721e-04 DIIS
+   @RKS iter   4:   -76.42017297213891   -2.48126e-05   1.09815e-04 DIIS
+   @RKS iter   5:   -76.42017450779672   -1.53566e-06   1.73561e-05 DIIS
+   @RKS iter   6:   -76.42017454547559   -3.76789e-08   4.74366e-07 DIIS
+   @RKS iter   7:   -76.42017454551063   -3.50440e-11   1.02721e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -2524,7 +2443,7 @@ Permittivity = 78.39
     Virtual:                                                              
 
        6A      0.084771     7A      0.172474     8A      0.788554  
-       9A      0.859862    10A      0.882002    11A      0.888587  
+       9A      0.859862    10A      0.882003    11A      0.888587  
       12A      1.068380    13A      1.192931    14A      1.727286  
       15A      1.736337    16A      1.773485    17A      2.292284  
       18A      2.594867    19A      3.556143  
@@ -2533,78 +2452,78 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RKS Final Energy:   -76.42017461011362 with 0.000000 0.000000 -0.002000 perturbation
+  @RKS Final Energy:   -76.42017454551063
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1774290516808268
-    One-Electron Energy =                -123.1731099956853228
-    Two-Electron Energy =                  45.1526160266311791
-    DFT Exchange-Correlation Energy =      -7.5661945772333121
+    Nuclear Repulsion Energy =              9.1774290877693261
+    One-Electron Energy =                -123.1731085925679992
+    Two-Electron Energy =                  45.1526144245863676
+    DFT Exchange-Correlation Energy =      -7.5661943511792256
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0109151155069859
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4201746101136195
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    PCM Polarization Energy =              -0.0109151141190998
+    Total Energy =                        -76.4201745455106334
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:    -0.0000      Y:    -0.0000      Z:    -0.0403
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:    -0.0000      Y:    -0.0000      Z:     0.9188     Total:     0.9188
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:    -0.0000      Y:    -0.0000      Z:     2.3354     Total:     2.3354
 
 
-*** tstop() called on psinet at Mon May 15 15:41:29 2017
+*** tstop() called on hokru at Tue May 21 10:32:52 2019
 Module time:
-	user time   =       3.00 seconds =       0.05 minutes
+	user time   =       2.43 seconds =       0.04 minutes
 	system time =       0.04 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      17.08 seconds =       0.28 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =         19 seconds =       0.32 minutes
-Perturbation strength =  0.0010, B3LYP computed energy =   -76.4174428941
-	Energy for displacement 0.........................................PASSED
-Perturbation strength = -0.0010, B3LYP computed energy =   -76.4192585316
-	Energy for displacement 1.........................................PASSED
-Perturbation strength =  0.0020, B3LYP computed energy =   -76.4165433643
-	Energy for displacement 2.........................................PASSED
-Perturbation strength = -0.0020, B3LYP computed energy =   -76.4201746101
-	Energy for displacement 3.........................................PASSED
+	user time   =      17.45 seconds =       0.29 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
+Perturbation strength =  0.0010, B3LYP computed energy =   -76.4174428297
+    Energy for displacement 0.........................................PASSED
+Perturbation strength = -0.0010, B3LYP computed energy =   -76.4192584670
+    Energy for displacement 1.........................................PASSED
+Perturbation strength =  0.0020, B3LYP computed energy =   -76.4165432999
+    Energy for displacement 2.........................................PASSED
+Perturbation strength = -0.0020, B3LYP computed energy =   -76.4201745455
+    Energy for displacement 3.........................................PASSED
 Total dipoles
-B3LYP 3-point stencil: mu(z) = 0.9078187053 ea0, 2.3074447717 Debye
-B3LYP 5-point stencil: mu(z) = 0.9078211246 ea0, 2.3074509211 Debye
+B3LYP 3-point stencil: mu(z) = 0.9078186548 ea0, 2.3074448447 Debye
+B3LYP 5-point stencil: mu(z) = 0.9078210741 ea0, 2.3074509941 Debye
 
-*** tstart() called on psinet
-*** at Mon May 15 15:41:29 2017
+*** tstart() called on hokru
+*** at Tue May 21 10:32:52 2019
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 1   entry O          line   145 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    44 file /usr/qc/psi4fork.bin/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        2 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2616,15 +2535,15 @@ B3LYP 5-point stencil: mu(z) = 0.9078211246 ea0, 2.3074509211 Debye
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064484982919    15.994914619560
-           H          0.000000000000    -0.765912483269     0.511711737260     1.007825032070
-           H          0.000000000000     0.765912483269     0.511711737260     1.007825032070
+         O            0.000000000000     0.000000000000    -0.064484982928    15.994914619570
+         H            0.000000000000    -0.765912483269     0.511711737251     1.007825032230
+         H            0.000000000000     0.765912483269     0.511711737251     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     28.36516  B =     14.25683  C =      9.48800 [cm^-1]
-  Rotational constants: A = 850366.02211  B = 427409.09891  C = 284442.98944 [MHz]
-  Nuclear repulsion =    9.179347288532043
+  Rotational constants: A = 850366.02847  B = 427409.10210  C = 284442.99156 [MHz]
+  Nuclear repulsion =    9.179347324612658
 
   Charge       = 0
   Multiplicity = 1
@@ -2655,68 +2574,64 @@ B3LYP 5-point stencil: mu(z) = 0.9078211246 ea0, 2.3074509211 Debye
 
   ==> DFT Potential <==
 
-   => B3LYP Composite Functional <= 
+   => Composite Functional: B3LYP <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
+    B3LYP Hyb-GGA Exchange-Correlation Functional
 
-    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)
 
-    Points   =           5000
-    Deriv    =              1
-    GGA      =           TRUE
-    Meta     =          FALSE
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
 
-    X_LRC        =          FALSE
-    X_Hybrid     =           TRUE
-    X_Alpha      =   2.000000E-01
-    X_Omega      =   0.000000E+00
-    C_LRC        =          FALSE
-    C_Hybrid     =          FALSE
-    C_Alpha      =   0.000000E+00
-    C_Omega      =   0.000000E+00
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
 
    => Exchange Functionals <=
 
-    0.8000    B3_X
-    0.2000      HF 
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
 
    => Correlation Functionals <=
 
-    0.1900 VWN3RPA_C
-    0.8100   LYP_C
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
 
    => Molecular Quadrature <=
 
-    Radial Scheme    =       TREUTLER
-    Pruning Scheme   =           FLAT
-    Nuclear Scheme   =       TREUTLER
+    Radial Scheme          =       TREUTLER
+    Pruning Type           =       FUNCTION
+    Pruning Scheme         =           FLAT
+    Nuclear Scheme         =       TREUTLER
 
-    BS radius alpha  =              1
-    Pruning alpha    =              1
-    Radial Points    =             75
-    Spherical Points =            302
-    Total Points     =          65565
-    Total Blocks     =             67
-    Max Points       =           4953
-    Max Functions    =             19
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          67158
+    Total Blocks           =            569
+    Max Points             =            256
+    Max Functions          =             19
 
   **PSI4:PCMSOLVER Interface Active**
 
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.1.10
-   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
-    With contributions from:
-     R. Bast            (CMake framework)
-     U. Ekstroem        (automatic differentiation library)
-     J. Juselius        (input parsing library and CMake framework)
-   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
-            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
-   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+           Git: Branch {HEAD}, Revision {fa7c826}
 
- * Git last commit hash   : 5a5f9c3
- * Git last commit date   : Mon Mar 27 11:18:34 2017 +0200
- * Git last commit author : Roberto Di Remigio
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
 
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Tuesday, 21 May 2019 10:32 AM
+-----------------------------------------------------------------------
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
@@ -2732,27 +2647,26 @@ Number of irreducible finite elements = 184
 ============ Spheres list (in Angstrom)
  Sphere   on   Radius   Alpha       X            Y            Z     
 -------- ---- -------- ------- -----------  -----------  -----------
-   1      O    1.7500   1.00     0.000000     0.000000    -0.064485  
-   2      H    1.4430   1.00     0.000000    -0.765912     0.511712  
-   3      H    1.4430   1.00     0.000000     0.765912     0.511712  
+   1      O    1.7500   1.00     0.000000     0.000000     -0.064485
+   2      H    1.4430   1.00     0.000000     -0.765912     0.511712
+   3      H    1.4430   1.00     0.000000     0.765912     0.511712
 ========== Static solver 
 Solver Type: C-PCM
 PCM matrix hermitivitized
-Correction = 0
+Correction = 0.00
 ============ Medium 
 Medium initialized from solvent built-in data.
 Solvent name:          Water
 Static  permittivity = 78.39
-Optical permittivity = 1.776
-Solvent radius =       1.385 Ang
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
 .... Inside 
 Green's function type: vacuum
 .... Outside 
 Green's function type: uniform dielectric
 Permittivity = 78.39
 
-  There are 184 tesserae, 184 of which irreducible.
-
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -2774,22 +2688,27 @@ Permittivity = 78.39
       Number of basis functions:        19
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 2
 
   Performing in-core PK
   Using 36290 doubles for integral storage.
-  We computed 1540 shell quartets total.
+  We computed 1607 shell quartets total.
   Whereas there are 1540 unique shell quartets.
+     4.35 percent of shell quartets recomputed by reordering.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              337
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.2344839529E-02.
+    OpenMP threads:              2
+
+  Cached 100.0% of DFT collocation blocks in 0.037 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 2.2344839390E-02.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -2798,39 +2717,31 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.00076902191869
-   @RKS iter   0:   -76.41317707393303   -7.64132e+01   8.34735e-02 
-   PCM polarization energy = -0.01671986566234
-   @RKS iter   1:   -76.35624371544550    5.69334e-02   2.19012e-02 
-   PCM polarization energy = -0.00516096649648
-   @RKS iter   2:   -76.30560540857995    5.06383e-02   2.97867e-02 DIIS
-   PCM polarization energy = -0.01061240545676
-   @RKS iter   3:   -76.41831246791013   -1.12707e-01   4.97393e-04 DIIS
-   PCM polarization energy = -0.01071155549817
-   @RKS iter   4:   -76.41834694106088   -3.44732e-05   8.24593e-05 DIIS
-   PCM polarization energy = -0.01069567732705
-   @RKS iter   5:   -76.41834794476070   -1.00370e-06   7.27988e-06 DIIS
-   PCM polarization energy = -0.01069749024831
-   @RKS iter   6:   -76.41834795460589   -9.84519e-09   8.51998e-07 DIIS
-   PCM polarization energy = -0.01069754684183
-   @RKS iter   7:   -76.41834795473990   -1.34008e-10   2.06468e-07 DIIS
-   PCM polarization energy = -0.01069752988779
-   @RKS iter   8:   -76.41834795474688   -6.97753e-12   1.35453e-08 DIIS
+   @RKS iter SAD:   -76.11409156481575   -7.61141e+01   0.00000e+00 
+   @RKS iter   1:   -76.28011247683574   -1.66021e-01   3.27282e-02 DIIS
+   @RKS iter   2:   -76.16104136966042    1.19071e-01   4.44971e-02 DIIS
+   @RKS iter   3:   -76.41832177163749   -2.57280e-01   4.16279e-04 DIIS
+   @RKS iter   4:   -76.41834633312759   -2.45615e-05   1.09253e-04 DIIS
+   @RKS iter   5:   -76.41834785226284   -1.51914e-06   1.74133e-05 DIIS
+   @RKS iter   6:   -76.41834789021088   -3.79480e-08   4.80702e-07 DIIS
+   @RKS iter   7:   -76.41834789024688   -3.59961e-11   1.02531e-08 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
        1A    -19.136356     2A     -0.999961     3A     -0.523541  
-       4A     -0.374968     5A     -0.297258  
+       4A     -0.374968     5A     -0.297257  
 
     Virtual:                                                              
 
        6A      0.082231     7A      0.169998     8A      0.787963  
-       9A      0.860477    10A      0.881842    11A      0.887538  
+       9A      0.860477    10A      0.881843    11A      0.887538  
       12A      1.068028    13A      1.191199    14A      1.727249  
       15A      1.736169    16A      1.773357    17A      2.291778  
       18A      2.594561    19A      3.555868  
@@ -2839,55 +2750,52 @@ Permittivity = 78.39
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RKS Final Energy:   -76.41834795474688
+  @RKS Final Energy:   -76.41834789024688
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1793472885320426
-    One-Electron Energy =                -123.1675216955935355
-    Two-Electron Energy =                  45.1464416835795532
-    DFT Exchange-Correlation Energy =      -7.5659177013771481
+    Nuclear Repulsion Energy =              9.1793473246126585
+    One-Electron Energy =                -123.1675202744592781
+    Two-Electron Energy =                  45.1464400613240215
+    DFT Exchange-Correlation Energy =      -7.5659174731350838
     Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =              -0.0106975298877895
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.4183479547468778
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    PCM Polarization Energy =              -0.0106975285891929
+    Total Energy =                        -76.4183478902468636
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9591
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.0513
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.0513
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.9078     Total:     0.9078
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9078     Total:     0.9078
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.3075     Total:     2.3075
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.3075     Total:     2.3075
 
 
-*** tstop() called on psinet at Mon May 15 15:41:32 2017
+*** tstop() called on hokru at Tue May 21 10:32:53 2019
 Module time:
-	user time   =       3.00 seconds =       0.05 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      20.10 seconds =       0.34 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =         22 seconds =       0.37 minutes
+	user time   =      19.88 seconds =       0.33 minutes
+	system time =       0.45 seconds =       0.01 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the  density matrix
-
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+OEProp: No title given, name of density matrix used for the following properties is 'SCF density'
 
  Multipole Moments:
 
@@ -2895,14 +2803,17 @@ Properties computed using the  density matrix
      Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)
  ------------------------------------------------------------------------------------
 
- L = 1.  Multiply by 2.5417462300 to convert to Debye
- Dipole X            :         -0.0000000            0.0000000           -0.0000000
- Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ L = 1.  Multiply by 2.5417464519 to convert to Debye
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
  Dipole Z            :         -0.0512973            0.9591184            0.9078211
 
  --------------------------------------------------------------------------------
-	Z dipole moment, using 3-point stencil B3LYP......................PASSED
-	Z dipole moment, using 5-point stencil B3LYP......................PASSED
-	Z dipole moment, analytic result B3LYP............................PASSED
+    Z dipole moment, using 3-point stencil B3LYP......................PASSED
+    Z dipole moment, using 5-point stencil B3LYP......................PASSED
+    Z dipole moment, analytic result B3LYP............................PASSED
+
+    Psi4 stopped on: Tuesday, 21 May 2019 10:32AM
+    Psi4 wall time for execution: 0:00:10.41
 
 *** Psi4 exiting successfully. Buy a developer a beer!

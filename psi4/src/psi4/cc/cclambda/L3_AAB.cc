@@ -198,7 +198,7 @@ void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
         Gc = Gab ^ Gijk; /* assumes totally symmetric! */
 
         if (FAA->params->coltot[Gab] && bvirtpi[Gc]) {
-            memset(W1[Gab][0], 0, FAA->params->coltot[Gab] * bvirtpi[Gc] * sizeof(double));
+            memset(W1[Gab][0], 0, sizeof(double) * FAA->params->coltot[Gab] * bvirtpi[Gc]);
         }
     }
 
@@ -365,7 +365,7 @@ void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk; /* assumes totally symmetric! */
         if (FAB->params->coltot[Gab] && avirtpi[Gc]) {
-            memset(W2[Gab][0], 0, FAB->params->coltot[Gab] * avirtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * FAB->params->coltot[Gab] * avirtpi[Gc]);
         }
     }
 
@@ -502,7 +502,7 @@ void L3_AAB(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     for (Gab = 0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk; /* assumes totally symmetric! */
         if (FBA->params->coltot[Gab] && avirtpi[Gc]) {
-            memset(W2[Gab][0], 0, FBA->params->coltot[Gab] * avirtpi[Gc] * sizeof(double));
+            memset(W2[Gab][0], 0, sizeof(double) * FBA->params->coltot[Gab] * avirtpi[Gc]);
         }
     }
 
