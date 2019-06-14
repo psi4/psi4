@@ -1444,11 +1444,15 @@ void DFJKGrad::compute_hessian()
     // => Set up hessians <= //
     int natom = primary_->molecule()->natom();
     hessians_.clear();
+    double **JHessp = nullptr;
+    double **KHessp = nullptr;
     if (do_J_) {
         hessians_["Coulomb"] = std::make_shared<Matrix>("Coulomb Hessian",3*natom,3*natom);
+        JHessp = hessians_["Coulomb"]->pointer();
     }
     if (do_K_) {
         hessians_["Exchange"] = std::make_shared<Matrix>("Exchange Hessian",3*natom,3*natom);
+        KHessp = hessians_["Exchange"]->pointer();
     }
     if (do_wK_) {
         hessians_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Hessian",3*natom,3*natom);
@@ -1462,8 +1466,6 @@ void DFJKGrad::compute_hessian()
     int nauxshell = auxiliary_->nshell();
     int nshell = primary_->nshell();
     int natoms = mol->natom();
-    double **JHessp = hessians_["Coulomb"]->pointer();
-    double **KHessp = hessians_["Exchange"]->pointer();
 
     double **Dtp = Dt_->pointer();
     double **Cap = Ca_->pointer();
@@ -1621,43 +1623,45 @@ void DFJKGrad::compute_hessian()
                 //
                 // T[p][m,j] <- (p|mn) C[n][j]
                 // dAij[x][p,i,j] <- C[m][i] T[p][m,j]
-                auto *ptr = const_cast<double*>(buffer);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+0*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Px][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+1*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Py][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+2*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Pz][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+3*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[mx][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+4*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[my][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+5*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[mz][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+6*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[nx][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+7*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[ny][(p+oP)*na*na], na);
-                C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+8*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
-                #pragma omp parallel for
-                for(int p = 0; p < nP; ++p)
-                    C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[nz][(p+oP)*na*na], na);
+                if(do_K_) {
+                    auto *ptr = const_cast<double*>(buffer);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+0*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Px][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+1*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Py][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+2*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[Pz][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+3*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[mx][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+4*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[my][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+5*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[mz][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+6*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[nx][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+7*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[ny][(p+oP)*na*na], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+8*stride, nN, Cap[oN], na, 0.0, Tp[0], na);
+#pragma omp parallel for
+                    for(int p = 0; p < nP; ++p)
+                        C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tp[0]+p*(nM*na), na, 1.0, &dAijp[nz][(p+oP)*na*na], na);
+                }
 
             }
         }
@@ -1705,13 +1709,15 @@ void DFJKGrad::compute_hessian()
             }
             // K term intermediates
             // deij[x][A,i,j] <- (A|B)^x Bij[B,i,j]
-            auto *ptr = const_cast<double*>(buffer);
-            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+0*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Px][oP*na*na], na*na);
-            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+1*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Py][oP*na*na], na*na);
-            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+2*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Pz][oP*na*na], na*na);
-            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+3*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qx][oP*na*na], na*na);
-            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+4*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qy][oP*na*na], na*na);
-            C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+5*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qz][oP*na*na], na*na);
+            if(do_K_){
+                auto *ptr = const_cast<double*>(buffer);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+0*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Px][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+1*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Py][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+2*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Pz][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+3*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qx][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+4*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qy][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+5*stride, nQ, Bijp[oQ], na*na, 1.0, &deijp[Qz][oP*na*na], na*na);
+            }
 
         }
     }
@@ -1857,115 +1863,115 @@ void DFJKGrad::compute_hessian()
                 JHessp[ny][nz] += nynz;
                 JHessp[nz][nz] += nznz;
 
-
-                // K terms
-                PxPx=0.0; PxPy=0.0; PxPz=0.0; PyPy=0.0; PyPz=0.0; PzPz=0.0;
-                mxmx=0.0; mxmy=0.0; mxmz=0.0; mymy=0.0; mymz=0.0; mzmz=0.0;
-                nxnx=0.0; nxny=0.0; nxnz=0.0; nyny=0.0; nynz=0.0; nznz=0.0;
-                Pxmx=0.0; Pxmy=0.0; Pxmz=0.0; Pymx=0.0; Pymy=0.0; Pymz=0.0; Pzmx=0.0; Pzmy=0.0; Pzmz=0.0;
-                Pxnx=0.0; Pxny=0.0; Pxnz=0.0; Pynx=0.0; Pyny=0.0; Pynz=0.0; Pznx=0.0; Pzny=0.0; Pznz=0.0;
-                mxnx=0.0; mxny=0.0; mxnz=0.0; mynx=0.0; myny=0.0; mynz=0.0; mznx=0.0; mzny=0.0; mznz=0.0;
-                delta = 0L;
-                for (int p = oP; p < oP+nP; p++) {
-                    for (int m = oM; m < oM+nM; m++) {
-                        for (int n = oN; n < oN+nN; n++) {
-                            double Cpmn = 2.0 * Bmnp[p][m*nso+n];
-                            PxPx += Cpmn * buffer[9  * stride + delta];
-                            PxPy += Cpmn * buffer[10 * stride + delta];
-                            PxPz += Cpmn * buffer[11 * stride + delta];
-                            Pxmx += Cpmn * buffer[12 * stride + delta];
-                            Pxmy += Cpmn * buffer[13 * stride + delta];
-                            Pxmz += Cpmn * buffer[14 * stride + delta];
-                            Pxnx += Cpmn * buffer[15 * stride + delta];
-                            Pxny += Cpmn * buffer[16 * stride + delta];
-                            Pxnz += Cpmn * buffer[17 * stride + delta];
-                            PyPy += Cpmn * buffer[18 * stride + delta];
-                            PyPz += Cpmn * buffer[19 * stride + delta];
-                            Pymx += Cpmn * buffer[20 * stride + delta];
-                            Pymy += Cpmn * buffer[21 * stride + delta];
-                            Pymz += Cpmn * buffer[22 * stride + delta];
-                            Pynx += Cpmn * buffer[23 * stride + delta];
-                            Pyny += Cpmn * buffer[24 * stride + delta];
-                            Pynz += Cpmn * buffer[25 * stride + delta];
-                            PzPz += Cpmn * buffer[26 * stride + delta];
-                            Pzmx += Cpmn * buffer[27 * stride + delta];
-                            Pzmy += Cpmn * buffer[28 * stride + delta];
-                            Pzmz += Cpmn * buffer[29 * stride + delta];
-                            Pznx += Cpmn * buffer[30 * stride + delta];
-                            Pzny += Cpmn * buffer[31 * stride + delta];
-                            Pznz += Cpmn * buffer[32 * stride + delta];
-                            mxmx += Cpmn * buffer[33 * stride + delta];
-                            mxmy += Cpmn * buffer[34 * stride + delta];
-                            mxmz += Cpmn * buffer[35 * stride + delta];
-                            mxnx += Cpmn * buffer[36 * stride + delta];
-                            mxny += Cpmn * buffer[37 * stride + delta];
-                            mxnz += Cpmn * buffer[38 * stride + delta];
-                            mymy += Cpmn * buffer[39 * stride + delta];
-                            mymz += Cpmn * buffer[40 * stride + delta];
-                            mynx += Cpmn * buffer[41 * stride + delta];
-                            myny += Cpmn * buffer[42 * stride + delta];
-                            mynz += Cpmn * buffer[43 * stride + delta];
-                            mzmz += Cpmn * buffer[44 * stride + delta];
-                            mznx += Cpmn * buffer[45 * stride + delta];
-                            mzny += Cpmn * buffer[46 * stride + delta];
-                            mznz += Cpmn * buffer[47 * stride + delta];
-                            nxnx += Cpmn * buffer[48 * stride + delta];
-                            nxny += Cpmn * buffer[49 * stride + delta];
-                            nxnz += Cpmn * buffer[50 * stride + delta];
-                            nyny += Cpmn * buffer[51 * stride + delta];
-                            nynz += Cpmn * buffer[52 * stride + delta];
-                            nznz += Cpmn * buffer[53 * stride + delta];
-                            ++delta;
+                if(do_K_){
+                    // K terms
+                    PxPx=0.0; PxPy=0.0; PxPz=0.0; PyPy=0.0; PyPz=0.0; PzPz=0.0;
+                    mxmx=0.0; mxmy=0.0; mxmz=0.0; mymy=0.0; mymz=0.0; mzmz=0.0;
+                    nxnx=0.0; nxny=0.0; nxnz=0.0; nyny=0.0; nynz=0.0; nznz=0.0;
+                    Pxmx=0.0; Pxmy=0.0; Pxmz=0.0; Pymx=0.0; Pymy=0.0; Pymz=0.0; Pzmx=0.0; Pzmy=0.0; Pzmz=0.0;
+                    Pxnx=0.0; Pxny=0.0; Pxnz=0.0; Pynx=0.0; Pyny=0.0; Pynz=0.0; Pznx=0.0; Pzny=0.0; Pznz=0.0;
+                    mxnx=0.0; mxny=0.0; mxnz=0.0; mynx=0.0; myny=0.0; mynz=0.0; mznx=0.0; mzny=0.0; mznz=0.0;
+                    delta = 0L;
+                    for (int p = oP; p < oP+nP; p++) {
+                        for (int m = oM; m < oM+nM; m++) {
+                            for (int n = oN; n < oN+nN; n++) {
+                                double Cpmn = 2.0 * Bmnp[p][m*nso+n];
+                                PxPx += Cpmn * buffer[9  * stride + delta];
+                                PxPy += Cpmn * buffer[10 * stride + delta];
+                                PxPz += Cpmn * buffer[11 * stride + delta];
+                                Pxmx += Cpmn * buffer[12 * stride + delta];
+                                Pxmy += Cpmn * buffer[13 * stride + delta];
+                                Pxmz += Cpmn * buffer[14 * stride + delta];
+                                Pxnx += Cpmn * buffer[15 * stride + delta];
+                                Pxny += Cpmn * buffer[16 * stride + delta];
+                                Pxnz += Cpmn * buffer[17 * stride + delta];
+                                PyPy += Cpmn * buffer[18 * stride + delta];
+                                PyPz += Cpmn * buffer[19 * stride + delta];
+                                Pymx += Cpmn * buffer[20 * stride + delta];
+                                Pymy += Cpmn * buffer[21 * stride + delta];
+                                Pymz += Cpmn * buffer[22 * stride + delta];
+                                Pynx += Cpmn * buffer[23 * stride + delta];
+                                Pyny += Cpmn * buffer[24 * stride + delta];
+                                Pynz += Cpmn * buffer[25 * stride + delta];
+                                PzPz += Cpmn * buffer[26 * stride + delta];
+                                Pzmx += Cpmn * buffer[27 * stride + delta];
+                                Pzmy += Cpmn * buffer[28 * stride + delta];
+                                Pzmz += Cpmn * buffer[29 * stride + delta];
+                                Pznx += Cpmn * buffer[30 * stride + delta];
+                                Pzny += Cpmn * buffer[31 * stride + delta];
+                                Pznz += Cpmn * buffer[32 * stride + delta];
+                                mxmx += Cpmn * buffer[33 * stride + delta];
+                                mxmy += Cpmn * buffer[34 * stride + delta];
+                                mxmz += Cpmn * buffer[35 * stride + delta];
+                                mxnx += Cpmn * buffer[36 * stride + delta];
+                                mxny += Cpmn * buffer[37 * stride + delta];
+                                mxnz += Cpmn * buffer[38 * stride + delta];
+                                mymy += Cpmn * buffer[39 * stride + delta];
+                                mymz += Cpmn * buffer[40 * stride + delta];
+                                mynx += Cpmn * buffer[41 * stride + delta];
+                                myny += Cpmn * buffer[42 * stride + delta];
+                                mynz += Cpmn * buffer[43 * stride + delta];
+                                mzmz += Cpmn * buffer[44 * stride + delta];
+                                mznx += Cpmn * buffer[45 * stride + delta];
+                                mzny += Cpmn * buffer[46 * stride + delta];
+                                mznz += Cpmn * buffer[47 * stride + delta];
+                                nxnx += Cpmn * buffer[48 * stride + delta];
+                                nxny += Cpmn * buffer[49 * stride + delta];
+                                nxnz += Cpmn * buffer[50 * stride + delta];
+                                nyny += Cpmn * buffer[51 * stride + delta];
+                                nynz += Cpmn * buffer[52 * stride + delta];
+                                nznz += Cpmn * buffer[53 * stride + delta];
+                                ++delta;
+                            }
                         }
                     }
+                    KHessp[Px][Px] += PxPx;
+                    KHessp[Px][Py] += PxPy;
+                    KHessp[Px][Pz] += PxPz;
+                    KHessp[Px][mx] += Pmscale*Pxmx;
+                    KHessp[Px][my] += Pxmy;
+                    KHessp[Px][mz] += Pxmz;
+                    KHessp[Px][nx] += Pnscale*Pxnx;
+                    KHessp[Px][ny] += Pxny;
+                    KHessp[Px][nz] += Pxnz;
+                    KHessp[Py][Py] += PyPy;
+                    KHessp[Py][Pz] += PyPz;
+                    KHessp[Py][mx] += Pymx;
+                    KHessp[Py][my] += Pmscale*Pymy;
+                    KHessp[Py][mz] += Pymz;
+                    KHessp[Py][nx] += Pynx;
+                    KHessp[Py][ny] += Pnscale*Pyny;
+                    KHessp[Py][nz] += Pynz;
+                    KHessp[Pz][Pz] += PzPz;
+                    KHessp[Pz][mx] += Pzmx;
+                    KHessp[Pz][my] += Pzmy;
+                    KHessp[Pz][mz] += Pmscale*Pzmz;
+                    KHessp[Pz][nx] += Pznx;
+                    KHessp[Pz][ny] += Pzny;
+                    KHessp[Pz][nz] += Pnscale*Pznz;
+                    KHessp[mx][mx] += mxmx;
+                    KHessp[mx][my] += mxmy;
+                    KHessp[mx][mz] += mxmz;
+                    KHessp[mx][nx] += mnscale*mxnx;
+                    KHessp[mx][ny] += mxny;
+                    KHessp[mx][nz] += mxnz;
+                    KHessp[my][my] += mymy;
+                    KHessp[my][mz] += mymz;
+                    KHessp[my][nx] += mynx;
+                    KHessp[my][ny] += mnscale*myny;
+                    KHessp[my][nz] += mynz;
+                    KHessp[mz][mz] += mzmz;
+                    KHessp[mz][nx] += mznx;
+                    KHessp[mz][ny] += mzny;
+                    KHessp[mz][nz] += mnscale*mznz;
+                    KHessp[nx][nx] += nxnx;
+                    KHessp[nx][ny] += nxny;
+                    KHessp[nx][nz] += nxnz;
+                    KHessp[ny][ny] += nyny;
+                    KHessp[ny][nz] += nynz;
+                    KHessp[nz][nz] += nznz;
                 }
-                KHessp[Px][Px] += PxPx;
-                KHessp[Px][Py] += PxPy;
-                KHessp[Px][Pz] += PxPz;
-                KHessp[Px][mx] += Pmscale*Pxmx;
-                KHessp[Px][my] += Pxmy;
-                KHessp[Px][mz] += Pxmz;
-                KHessp[Px][nx] += Pnscale*Pxnx;
-                KHessp[Px][ny] += Pxny;
-                KHessp[Px][nz] += Pxnz;
-                KHessp[Py][Py] += PyPy;
-                KHessp[Py][Pz] += PyPz;
-                KHessp[Py][mx] += Pymx;
-                KHessp[Py][my] += Pmscale*Pymy;
-                KHessp[Py][mz] += Pymz;
-                KHessp[Py][nx] += Pynx;
-                KHessp[Py][ny] += Pnscale*Pyny;
-                KHessp[Py][nz] += Pynz;
-                KHessp[Pz][Pz] += PzPz;
-                KHessp[Pz][mx] += Pzmx;
-                KHessp[Pz][my] += Pzmy;
-                KHessp[Pz][mz] += Pmscale*Pzmz;
-                KHessp[Pz][nx] += Pznx;
-                KHessp[Pz][ny] += Pzny;
-                KHessp[Pz][nz] += Pnscale*Pznz;
-                KHessp[mx][mx] += mxmx;
-                KHessp[mx][my] += mxmy;
-                KHessp[mx][mz] += mxmz;
-                KHessp[mx][nx] += mnscale*mxnx;
-                KHessp[mx][ny] += mxny;
-                KHessp[mx][nz] += mxnz;
-                KHessp[my][my] += mymy;
-                KHessp[my][mz] += mymz;
-                KHessp[my][nx] += mynx;
-                KHessp[my][ny] += mnscale*myny;
-                KHessp[my][nz] += mynz;
-                KHessp[mz][mz] += mzmz;
-                KHessp[mz][nx] += mznx;
-                KHessp[mz][ny] += mzny;
-                KHessp[mz][nz] += mnscale*mznz;
-                KHessp[nx][nx] += nxnx;
-                KHessp[nx][ny] += nxny;
-                KHessp[nx][nz] += nxnz;
-                KHessp[ny][ny] += nyny;
-                KHessp[ny][nz] += nynz;
-                KHessp[nz][nz] += nznz;
             }
-
         }
     }
 
@@ -2047,61 +2053,63 @@ void DFJKGrad::compute_hessian()
             JHessp[Qy][Qz] += QyQz;
             JHessp[Qz][Qz] += QzQz;
 
-            // K terms
-            PxPx=0.0; PxPy=0.0; PxPz=0.0; PyPy=0.0; PyPz=0.0; PzPz=0.0;
-            QxQx=0.0; QxQy=0.0; QxQz=0.0; QyQy=0.0; QyQz=0.0; QzQz=0.0;
-            PxQx=0.0; PxQy=0.0; PxQz=0.0; PyQx=0.0; PyQy=0.0; PyQz=0.0; PzQx=0.0; PzQy=0.0; PzQz=0.0;
-            delta = 0L;
-            for (int p = oP; p < oP+nP; p++) {
-                for (int q = oQ; q < oQ+nQ; q++) {
-                    double dAdB = -DPQp[p][q];
-                    PxPx += dAdB * buffer[9  * stride + delta];
-                    PxPy += dAdB * buffer[10 * stride + delta];
-                    PxPz += dAdB * buffer[11 * stride + delta];
-                    PxQx += dAdB * buffer[12 * stride + delta];
-                    PxQy += dAdB * buffer[13 * stride + delta];
-                    PxQz += dAdB * buffer[14 * stride + delta];
-                    PyPy += dAdB * buffer[18 * stride + delta];
-                    PyPz += dAdB * buffer[19 * stride + delta];
-                    PyQx += dAdB * buffer[20 * stride + delta];
-                    PyQy += dAdB * buffer[21 * stride + delta];
-                    PyQz += dAdB * buffer[22 * stride + delta];
-                    PzPz += dAdB * buffer[26 * stride + delta];
-                    PzQx += dAdB * buffer[27 * stride + delta];
-                    PzQy += dAdB * buffer[28 * stride + delta];
-                    PzQz += dAdB * buffer[29 * stride + delta];
-                    QxQx += dAdB * buffer[33 * stride + delta];
-                    QxQy += dAdB * buffer[34 * stride + delta];
-                    QxQz += dAdB * buffer[35 * stride + delta];
-                    QyQy += dAdB * buffer[39 * stride + delta];
-                    QyQz += dAdB * buffer[40 * stride + delta];
-                    QzQz += dAdB * buffer[44 * stride + delta];
-                    ++delta;
+            if(do_K_){
+                // K terms
+                PxPx=0.0; PxPy=0.0; PxPz=0.0; PyPy=0.0; PyPz=0.0; PzPz=0.0;
+                QxQx=0.0; QxQy=0.0; QxQz=0.0; QyQy=0.0; QyQz=0.0; QzQz=0.0;
+                PxQx=0.0; PxQy=0.0; PxQz=0.0; PyQx=0.0; PyQy=0.0; PyQz=0.0; PzQx=0.0; PzQy=0.0; PzQz=0.0;
+                delta = 0L;
+                for (int p = oP; p < oP+nP; p++) {
+                    for (int q = oQ; q < oQ+nQ; q++) {
+                        double dAdB = -DPQp[p][q];
+                        PxPx += dAdB * buffer[9  * stride + delta];
+                        PxPy += dAdB * buffer[10 * stride + delta];
+                        PxPz += dAdB * buffer[11 * stride + delta];
+                        PxQx += dAdB * buffer[12 * stride + delta];
+                        PxQy += dAdB * buffer[13 * stride + delta];
+                        PxQz += dAdB * buffer[14 * stride + delta];
+                        PyPy += dAdB * buffer[18 * stride + delta];
+                        PyPz += dAdB * buffer[19 * stride + delta];
+                        PyQx += dAdB * buffer[20 * stride + delta];
+                        PyQy += dAdB * buffer[21 * stride + delta];
+                        PyQz += dAdB * buffer[22 * stride + delta];
+                        PzPz += dAdB * buffer[26 * stride + delta];
+                        PzQx += dAdB * buffer[27 * stride + delta];
+                        PzQy += dAdB * buffer[28 * stride + delta];
+                        PzQz += dAdB * buffer[29 * stride + delta];
+                        QxQx += dAdB * buffer[33 * stride + delta];
+                        QxQy += dAdB * buffer[34 * stride + delta];
+                        QxQz += dAdB * buffer[35 * stride + delta];
+                        QyQy += dAdB * buffer[39 * stride + delta];
+                        QyQz += dAdB * buffer[40 * stride + delta];
+                        QzQz += dAdB * buffer[44 * stride + delta];
+                        ++delta;
+                    }
+
                 }
+                KHessp[Px][Px] += PxPx;
+                KHessp[Px][Py] += PxPy;
+                KHessp[Px][Pz] += PxPz;
+                KHessp[Px][Qx] += PQscale*PxQx;
+                KHessp[Px][Qy] += PxQy;
+                KHessp[Px][Qz] += PxQz;
+                KHessp[Py][Py] += PyPy;
+                KHessp[Py][Pz] += PyPz;
+                KHessp[Py][Qx] += PyQx;
+                KHessp[Py][Qy] += PQscale*PyQy;
+                KHessp[Py][Qz] += PyQz;
+                KHessp[Pz][Pz] += PzPz;
+                KHessp[Pz][Qx] += PzQx;
+                KHessp[Pz][Qy] += PzQy;
+                KHessp[Pz][Qz] += PQscale*PzQz;
+                KHessp[Qx][Qx] += QxQx;
+                KHessp[Qx][Qy] += QxQy;
+                KHessp[Qx][Qz] += QxQz;
+                KHessp[Qy][Qy] += QyQy;
+                KHessp[Qy][Qz] += QyQz;
+                KHessp[Qz][Qz] += QzQz;
 
             }
-            KHessp[Px][Px] += PxPx;
-            KHessp[Px][Py] += PxPy;
-            KHessp[Px][Pz] += PxPz;
-            KHessp[Px][Qx] += PQscale*PxQx;
-            KHessp[Px][Qy] += PxQy;
-            KHessp[Px][Qz] += PxQz;
-            KHessp[Py][Py] += PyPy;
-            KHessp[Py][Pz] += PyPz;
-            KHessp[Py][Qx] += PyQx;
-            KHessp[Py][Qy] += PQscale*PyQy;
-            KHessp[Py][Qz] += PyQz;
-            KHessp[Pz][Pz] += PzPz;
-            KHessp[Pz][Qx] += PzQx;
-            KHessp[Pz][Qy] += PzQy;
-            KHessp[Pz][Qz] += PQscale*PzQz;
-            KHessp[Qx][Qx] += QxQx;
-            KHessp[Qx][Qy] += QxQy;
-            KHessp[Qx][Qz] += QxQz;
-            KHessp[Qy][Qy] += QyQy;
-            KHessp[Qy][Qz] += QyQz;
-            KHessp[Qz][Qz] += QzQz;
-
         }
     }
 
@@ -2110,7 +2118,9 @@ void DFJKGrad::compute_hessian()
     for(int i = 0; i < 3*natoms; ++i){
         for(int j = 0; j < i; ++j){
             JHessp[i][j] = JHessp[j][i] = (JHessp[i][j] + JHessp[j][i]);
-            KHessp[i][j] = KHessp[j][i] = (KHessp[i][j] + KHessp[j][i]);
+            if(do_K_){
+                KHessp[i][j] = KHessp[j][i] = (KHessp[i][j] + KHessp[j][i]);
+            }
         }
     }
 
@@ -2127,12 +2137,14 @@ void DFJKGrad::compute_hessian()
             C_DGEMV('n', np, np, 1.0, PQp[0], np, dep[y], 1, 0.0, ptmp[0], 1);
             JHessp[x][y] += 2.0*C_DDOT(np, dep[x], 1, ptmp[0], 1);
 
-            // K terms
-            C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, dAijp[y], na*na, 0.0, ptmp[0], na*na);
-            KHessp[x][y] += 2.0*C_DDOT(static_cast<size_t> (np)*na*na, dAijp[x], 1, ptmp[0], 1);
-            C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, deijp[y], na*na, 0.0, ptmp[0], na*na);
-            KHessp[x][y] -= 4.0*C_DDOT(static_cast<size_t> (np)*na*na, dAijp[x], 1, ptmp[0], 1);
-            KHessp[x][y] += 2.0*C_DDOT(static_cast<size_t> (np)*na*na, deijp[x], 1, ptmp[0], 1);
+            if(do_K_){
+                // K terms
+                C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, dAijp[y], na*na, 0.0, ptmp[0], na*na);
+                KHessp[x][y] += 2.0*C_DDOT(static_cast<size_t> (np)*na*na, dAijp[x], 1, ptmp[0], 1);
+                C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, deijp[y], na*na, 0.0, ptmp[0], na*na);
+                KHessp[x][y] -= 4.0*C_DDOT(static_cast<size_t> (np)*na*na, dAijp[x], 1, ptmp[0], 1);
+                KHessp[x][y] += 2.0*C_DDOT(static_cast<size_t> (np)*na*na, deijp[x], 1, ptmp[0], 1);
+            }
         }
     }
 
@@ -2140,7 +2152,9 @@ void DFJKGrad::compute_hessian()
     for(int i = 0; i < 3*natoms; ++i){
         for(int j = 0; j < i; ++j){
             JHessp[i][j] = JHessp[j][i] = 0.5*(JHessp[i][j] + JHessp[j][i]);
-            KHessp[i][j] = KHessp[j][i] = 0.5*(KHessp[i][j] + KHessp[j][i]);
+            if(do_K_){
+                KHessp[i][j] = KHessp[j][i] = 0.5*(KHessp[i][j] + KHessp[j][i]);
+            }
         }
     }
 

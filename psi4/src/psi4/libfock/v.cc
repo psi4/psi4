@@ -50,12 +50,11 @@
 #include <numeric>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#define MASK 1e-6   // To filter out small values, increasing numerical stability
 
 namespace psi {
 
@@ -148,6 +147,9 @@ void VBase::compute_V(std::vector<SharedMatrix> ret) {
 }
 void VBase::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
     throw PSIEXCEPTION("VBase: deriv not implemented for this Vx instance.");
+}
+std::vector<SharedMatrix> VBase::compute_fock_derivatives() {
+    throw PSIEXCEPTION("VBase: compute_fock_derivatives not implemented for this Vx instance.");
 }
 void VBase::set_grac_shift(double grac_shift) {
     // Well this is a flaw in my plan
@@ -720,7 +722,9 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
     timer_on("RV: Form Fx");
 
     int natoms = primary_->molecule()->natom();
-    std::vector<SharedMatrix> ret(3*natoms);
+    std::vector<SharedMatrix> Vx(3*natoms);
+    for(int n = 0; n < 3*natoms; ++n)
+        Vx[n] = std::make_shared<Matrix>("Vx for Perturbation " + std::to_string(n), nbf_, nbf_);
     if (D_AO_.size() != 1) {
         throw PSIEXCEPTION("DFT Hessian: RKS should have only one D Matrix");
     }
@@ -747,19 +751,18 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
     // Set pointers to SCF density
     for (size_t i = 0; i < num_threads_; i++) {
         point_workers_[i]->set_pointers(D_AO_[0]);
+        point_workers_[i]->set_deriv(1);
     }
 
     // Per [R]ank quantities
-    std::vector<std::shared_ptr<Vector>> R_rho;
+    std::vector<std::shared_ptr<Vector>> R_rho_x, R_rho_y, R_rho_z;
     std::vector<SharedMatrix> R_Vx_local;
     for (size_t i = 0; i < num_threads_; i++) {
-        R_Vx_local.push_back(std::make_shared<Matrix>("Vx Temp", nbf_, nbf_));
-        R_rho.push_back(std::make_shared<Vector>("Rho Temp", max_points));
+        R_Vx_local.push_back(std::make_shared<Matrix>("Vx Temp", max_functions, max_functions));
 
         functional_workers_[i]->set_deriv(2);
         functional_workers_[i]->allocate();
     }
-
     // Output quantities
     std::vector<SharedMatrix> Vx_AO;
     for (size_t i = 0; i < 3*natoms; i++) {
@@ -777,7 +780,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
         // => Setup <= //
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
-        double** Vx_localp = R_Vx_local[rank]->pointer();
+        double **Vx_localp = R_Vx_local[rank]->pointer();
 
         // => Compute blocks <= //
         double** Tp = pworker->scratch()[0]->pointer();
@@ -786,6 +789,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
         int npoints = block->npoints();
         double* w = block->w();
         const std::vector<int>& function_map = block->functions_local_to_global();
+        double** Dp = pworker->D_scratch()[0]->pointer();
         int nlocal = function_map.size();
 
         // Compute Rho, Phi, etc
@@ -802,74 +806,148 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
         // => Grab quantities <= //
         // LDA
         double** phi = pworker->basis_value("PHI")->pointer();
+        double** phi_x = pworker->basis_value("PHI_X")->pointer();
+        double** phi_y = pworker->basis_value("PHI_Y")->pointer();
+        double** phi_z = pworker->basis_value("PHI_Z")->pointer();
         double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
-        double* rho_k = R_rho[rank]->pointer();
-        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
-
-        // Loop over perturbation tensors
-        parallel_timer_on("Derivative Properties", rank);
-        // Rho_a = D^k_xy phi_xa phi_ya
-//        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 0.0, Tp[0],
-//                max_functions);
-//        C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 1.0, Tp[0],
-//                max_functions);
-
-//        for (int P = 0; P < npoints; P++) {
-//            rho[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
-//        }
-
-        parallel_timer_off("Derivative Properties", rank);
-
-        // => LSDA contribution (symmetrized) <= //
-        parallel_timer_on("V_XCd", rank);
-        // parallel_timer_on("LSDA", rank);
+        double* v_rho_a = vals["V_RHO_A"]->pointer();
+        double* v_rho_aa = vals["V_RHO_A_RHO_A"]->pointer();
         for (int P = 0; P < npoints; P++) {
-            std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-            if (rho_a[P] < v2_rho_cutoff_) continue;
-            C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P] * rho_k[P], phi[P], 1, Tp[P], 1);
-        }
-        // parallel_timer_off("LSDA", rank);
-
-        // Put it all together
-        // parallel_timer_on("LSDA", rank);
-        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, Vx_localp[0],
-                max_functions);
-        // parallel_timer_off("LSDA", rank);
-
-        // Symmetrization (V is *always* Hermitian)
-        for (int m = 0; m < nlocal; m++) {
-            for (int n = 0; n <= m; n++) {
-                Vx_localp[m][n] = Vx_localp[n][m] = Vx_localp[m][n] + Vx_localp[n][m];
+            if (std::fabs(rho_a[P]) < v2_rho_cutoff_) {
+                v_rho_a[P] = 0.0;
+                v_rho_aa[P] = 0.0;
             }
         }
+        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
+        for(int atom = 0; atom < primary_->molecule()->natom(); ++atom){
+            // Find first and last basis functions on this atom, from the subset of bfs being handled by this block of points
+            auto first_func_iter = std::find_if(function_map.begin(), function_map.end(), [&](int i) {return primary_->function_to_center(i) == atom;});
+            if(first_func_iter == function_map.end()) continue;
+            auto last_func_riter = std::find_if(function_map.rbegin(), function_map.rend(), [&](int i) {return primary_->function_to_center(i) == atom;});
+            if(last_func_riter == function_map.rend()) continue;
+            auto last_func_iter = last_func_riter.base(); // convert to forward iterator
 
-        // => Unpacking <= //
-        int dindex = 1;
-        double** Vxp = Vx_AO[dindex]->pointer();
-        for (int ml = 0; ml < nlocal; ml++) {
-            int mg = function_map[ml];
-            for (int nl = 0; nl < ml; nl++) {
-                int ng = function_map[nl];
-#pragma omp atomic update
-                Vxp[mg][ng] += Vx_localp[ml][nl];
-#pragma omp atomic update
-                Vxp[ng][mg] += Vx_localp[ml][nl];
+            int first_func_addr = std::distance(function_map.begin(), first_func_iter);
+            int nfuncs = std::distance(first_func_iter, last_func_iter);
+
+            /*
+             * X derivatives
+             */
+            // T = ɸ D, remembering that only the bfs centered on the current atom of interest contribute to the derivative
+            C_DGEMM('N', 'N', npoints, nfuncs, nlocal, 1.0, phi[0], coll_funcs, &Dp[0][first_func_addr], max_functions, 0.0, Tp[0], max_functions);
+            for (int P = 0; P < npoints; P++) {
+                // ρ_x  = T ɸ_x^t
+                double rho_xP = C_DDOT(nfuncs, Tp[P], 1, &phi_x[P][first_func_addr], 1);
+                // Now redefine the intermediate T:
+                //
+                //       /  | ∂^2 F
+                // T <- | ɸ | ----- ρ_x
+                //       \  | ∂ ρ^2
+                std::fill(Tp[P], Tp[P] + nlocal, 0);
+                C_DAXPY(nlocal, -v_rho_aa[P] * w[P] * rho_xP, phi[P], 1, Tp[P], 1);
+                //
+                //       /    | ∂ F
+                // T <- | ɸ_x | ---
+                //       \    | ∂ ρ
+                C_DAXPY(nfuncs, -0.5 * v_rho_a[P] * w[P], &phi_x[P][first_func_addr], 1, &Tp[P][first_func_addr], 1);
             }
+            //         |  \
+            // Vx <- T | ɸ |
+            //         |  /
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tp[0], max_functions, phi[0], coll_funcs, 0.0, Vx_localp[0], max_functions);
+            // => Accumulate the result <= //
+            double **Vxp = Vx[3*atom + 0]->pointer();
+            for (int ml = 0; ml < nlocal; ml++) {
+                int mg = function_map[ml];
+                for (int nl = 0; nl < nlocal; nl++) {
+                    int ng = function_map[nl];
+                    double result = Vx_localp[ml][nl] + Vx_localp[nl][ml];
 #pragma omp atomic update
-            Vxp[mg][mg] += Vx_localp[ml][ml];
+                     Vxp[mg][ng] += result;
+#pragma omp atomic update
+                     Vxp[ng][mg] += result;
+                }
+            }
+
+            /*
+             * Y derivatives
+             */
+            // T = ɸ D, remembering that only the bfs centered on the current atom of interest contribute to the derivative
+            C_DGEMM('N', 'N', npoints, nfuncs, nlocal, 1.0, phi[0], coll_funcs, &Dp[0][first_func_addr], max_functions, 0.0, Tp[0], max_functions);
+            for (int P = 0; P < npoints; P++) {
+                // ρ_y  = T ɸ_y^t
+                double rho_yP = C_DDOT(nfuncs, Tp[P], 1, &phi_y[P][first_func_addr], 1);
+                // Now redefine the intermediate T:
+                //
+                //       /  | ∂^2 F
+                // T <- | ɸ | ----- ρ_y
+                //       \  | ∂ ρ^2
+                std::fill(Tp[P], Tp[P] + nlocal, 0);
+                C_DAXPY(nlocal, -v_rho_aa[P] * w[P] * rho_yP, phi[P], 1, Tp[P], 1);
+                //
+                //       /    | ∂ F
+                // T <- | ɸ_y | ---
+                //       \    | ∂ ρ
+                C_DAXPY(nfuncs, -0.5*v_rho_a[P] * w[P], &phi_y[P][first_func_addr], 1, &Tp[P][first_func_addr], 1);
+            }
+            //         |  \
+            // Vx <- T | ɸ |
+            //         |  /
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tp[0], max_functions, phi[0], coll_funcs, 0.0, Vx_localp[0], max_functions);
+            // => Accumulate the result <= //
+            double **Vyp = Vx[3*atom + 1]->pointer();
+            for (int ml = 0; ml < nlocal; ml++) {
+                int mg = function_map[ml];
+                for (int nl = 0; nl < nlocal; nl++) {
+                    int ng = function_map[nl];
+                    double result = Vx_localp[ml][nl] + Vx_localp[nl][ml];
+#pragma omp atomic update
+                     Vyp[mg][ng] += result;
+#pragma omp atomic update
+                     Vyp[ng][mg] += result;
+                }
+            }
+
+            /*
+             * Z derivatives
+             */
+            // T = ɸ D, remembering that only the bfs centered on the current atom of interest contribute to the derivative
+            C_DGEMM('N', 'N', npoints, nfuncs, nlocal, 1.0, phi[0], coll_funcs, &Dp[0][first_func_addr], max_functions, 0.0, Tp[0], max_functions);
+            for (int P = 0; P < npoints; P++) {
+                // ρ_z  = T ɸ_z^t
+                double rho_zP = C_DDOT(nfuncs, Tp[P], 1, &phi_z[P][first_func_addr], 1);
+                // Now redefine the intermediate T:
+                //
+                //       /  | ∂^2 F
+                // T <- | ɸ | ----- ρ_z
+                //       \  | ∂ ρ^2
+                std::fill(Tp[P], Tp[P] + nlocal, 0);
+                C_DAXPY(nlocal, -v_rho_aa[P] * w[P] * rho_zP, phi[P], 1, Tp[P], 1);
+                //
+                //       /    | ∂ F
+                // T <- | ɸ_z | ---
+                //       \    | ∂ ρ
+                C_DAXPY(nfuncs, -0.5*v_rho_a[P] * w[P], &phi_z[P][first_func_addr], 1, &Tp[P][first_func_addr], 1);
+            }
+            //         |  \
+            // Vx <- T | ɸ |
+            //         |  /
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, Tp[0], max_functions, phi[0], coll_funcs, 0.0, Vx_localp[0], max_functions);
+            // => Accumulate the result <= //
+            double **Vzp = Vx[3*atom + 2]->pointer();
+            for (int ml = 0; ml < nlocal; ml++) {
+                int mg = function_map[ml];
+                for (int nl = 0; nl < nlocal; nl++) {
+                    int ng = function_map[nl];
+                    double result = Vx_localp[ml][nl] + Vx_localp[nl][ml];
+#pragma omp atomic update
+                     Vzp[mg][ng] += result;
+#pragma omp atomic update
+                     Vzp[ng][mg] += result;
+                }
+            }
         }
-        parallel_timer_off("V_XCd", rank);
     }
-
-//     Set the result
-//    for (size_t i = 0; i < Dx.size(); i++) {
-//        if (Dx[i]->nirrep() != 1) {
-//            ret[i]->apply_symmetry(Vx_AO[i], AO2USO_);
-//        } else {
-//            ret[i]->copy(Vx_AO[i]);
-//        }
-//    }
 
     // Reset the workers
     for (size_t i = 0; i < num_threads_; i++) {
@@ -877,7 +955,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
         functional_workers_[i]->allocate();
     }
     timer_off("RV: Form Fx");
-    return ret;
+    return Vx;
 }
 
 void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
@@ -1386,14 +1464,10 @@ SharedMatrix RV::compute_hessian() {
         double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
         double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
         double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->pointer();
         double* v_rho_a = vals["V_RHO_A"]->pointer();
         double* v_rho_aa = vals["V_RHO_A_RHO_A"]->pointer();
         size_t coll_funcs = pworker->basis_value("PHI")->ncol();
-
-        for (int P = 0; P < npoints; P++) {
-            std::fill(Up[P], Up[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, 4.0 * w[P] * v_rho_aa[P], Tp[P], 1, Up[P], 1);
-        }
 
         // => LSDA Contribution <= //
 
@@ -1409,25 +1483,19 @@ SharedMatrix RV::compute_hessian() {
             std::fill(pHZZ[ml], pHZZ[ml] + nlocal, 0);
         }
 
-        // T = ɸ D
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, Tp[0],
-                max_functions);
-        // Compute rho, to filter out small values
-        for (int P = 0; P < npoints; P++) {
-            double rho = C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
-            if (std::fabs(rho) < MASK) {
-                v_rho_a[P] = 0.0;
-                v_rho_aa[P] = 0.0;
-            }
-        }
         /*
          *                        mn  ∂ F
          *  H_mn <- 2 D_ab ɸ_a ɸ_b    ---
          *                            ∂ ρ
          */
+        // T = ɸ D
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, Tp[0],
+                max_functions);
         for (int P = 0; P < npoints; P++) {
             std::fill(Up[P], Up[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], Tp[P], 1, Up[P], 1);
+            if (std::fabs(rho_a[P]) > v2_rho_cutoff_) {
+                C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], Tp[P], 1, Up[P], 1);
+            }
         }
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
@@ -1458,7 +1526,9 @@ SharedMatrix RV::compute_hessian() {
 
         for (int P = 0; P < npoints; P++) {
             std::fill(Up[P], Up[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, 8.0 * w[P] * v_rho_aa[P], Tp[P], 1, Up[P], 1);
+            if (std::fabs(rho_a[P]) > v2_rho_cutoff_) {
+                C_DAXPY(nlocal, 8.0 * w[P] * v_rho_aa[P], Tp[P], 1, Up[P], 1);
+            }
         }
         for (int P = 0; P < npoints; P++) {
             for (int ml = 0; ml < nlocal; ml++) {
@@ -1506,7 +1576,9 @@ SharedMatrix RV::compute_hessian() {
         // x derivatives
         for (int P = 0; P < npoints; P++) {
             std::fill(Up[P], Up[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], phi_x[P], 1, Up[P], 1);
+            if (std::fabs(rho_a[P]) > v2_rho_cutoff_) {
+                C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], phi_x[P], 1, Up[P], 1);
+            }
         }
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_x[0], coll_funcs, Up[0], max_functions, 0.0, pTx2[0], max_functions);
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_y[0], coll_funcs, Up[0], max_functions, 0.0, pTy2[0], max_functions);
@@ -1515,15 +1587,17 @@ SharedMatrix RV::compute_hessian() {
             for (int nl = 0; nl < nlocal; nl++) {
                 double D = Dp[ml][nl];
                 pHXX[ml][nl] += pTx2[ml][nl] * D;
-                pHXY[ml][nl] += pTy2[ml][nl] * D;
-                pHXZ[ml][nl] += pTz2[ml][nl] * D;
+                pHYX[ml][nl] += pTy2[ml][nl] * D;
+                pHZX[ml][nl] += pTz2[ml][nl] * D;
             }
         }
 
         // y derivatives
         for (int P = 0; P < npoints; P++) {
             std::fill(Up[P], Up[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], phi_y[P], 1, Up[P], 1);
+            if (std::fabs(rho_a[P]) > v2_rho_cutoff_) {
+                C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], phi_y[P], 1, Up[P], 1);
+            }
         }
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_x[0], coll_funcs, Up[0], max_functions, 0.0, pTx2[0], max_functions);
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_y[0], coll_funcs, Up[0], max_functions, 0.0, pTy2[0], max_functions);
@@ -1531,16 +1605,18 @@ SharedMatrix RV::compute_hessian() {
         for (int ml = 0; ml < nlocal; ml++) {
             for (int nl = 0; nl < nlocal; nl++) {
                 double D = Dp[ml][nl];
-                pHYX[ml][nl] += pTx2[ml][nl] * D;
+                pHXY[ml][nl] += pTx2[ml][nl] * D;
                 pHYY[ml][nl] += pTy2[ml][nl] * D;
-                pHYZ[ml][nl] += pTz2[ml][nl] * D;
+                pHZY[ml][nl] += pTz2[ml][nl] * D;
             }
         }
 
         // z derivatives
         for (int P = 0; P < npoints; P++) {
             std::fill(Up[P], Up[P] + nlocal, 0.0);
-            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], phi_z[P], 1, Up[P], 1);
+            if (std::fabs(rho_a[P]) > v2_rho_cutoff_) {
+                C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], phi_z[P], 1, Up[P], 1);
+            }
         }
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_x[0], coll_funcs, Up[0], max_functions, 0.0, pTx2[0], max_functions);
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi_y[0], coll_funcs, Up[0], max_functions, 0.0, pTy2[0], max_functions);
@@ -1548,8 +1624,8 @@ SharedMatrix RV::compute_hessian() {
         for (int ml = 0; ml < nlocal; ml++) {
             for (int nl = 0; nl < nlocal; nl++) {
                 double D = Dp[ml][nl];
-                pHZX[ml][nl] += pTx2[ml][nl] * D;
-                pHZY[ml][nl] += pTy2[ml][nl] * D;
+                pHXZ[ml][nl] += pTx2[ml][nl] * D;
+                pHYZ[ml][nl] += pTy2[ml][nl] * D;
                 pHZZ[ml][nl] += pTz2[ml][nl] * D;
             }
         }
@@ -1560,13 +1636,13 @@ SharedMatrix RV::compute_hessian() {
             for (int nl = 0; nl < nlocal; nl++) {
                 int B = primary_->function_to_center(function_map[nl]);
                 Hp[3 * A + 0][3 * B + 0] += pHXX[ml][nl];
-                Hp[3 * A + 0][3 * B + 1] += pHXY[ml][nl];
-                Hp[3 * A + 0][3 * B + 2] += pHXZ[ml][nl];
                 Hp[3 * A + 1][3 * B + 0] += pHYX[ml][nl];
-                Hp[3 * A + 1][3 * B + 1] += pHYY[ml][nl];
-                Hp[3 * A + 1][3 * B + 2] += pHYZ[ml][nl];
                 Hp[3 * A + 2][3 * B + 0] += pHZX[ml][nl];
+                Hp[3 * A + 0][3 * B + 1] += pHXY[ml][nl];
+                Hp[3 * A + 1][3 * B + 1] += pHYY[ml][nl];
                 Hp[3 * A + 2][3 * B + 1] += pHZY[ml][nl];
+                Hp[3 * A + 0][3 * B + 2] += pHXZ[ml][nl];
+                Hp[3 * A + 1][3 * B + 2] += pHYZ[ml][nl];
                 Hp[3 * A + 2][3 * B + 2] += pHZZ[ml][nl];
             }
         }
@@ -1593,7 +1669,7 @@ SharedMatrix RV::compute_hessian() {
     // RKS
     H->scale(2.0);
     H->hermitivitize();
-    H->print_out();
+//    H->print_out();
 
     return H;
 }
