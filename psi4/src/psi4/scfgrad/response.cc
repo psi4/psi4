@@ -1125,10 +1125,13 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         for (int A = 0; A < 3 * natom; A++)
             psio_->write(PSIF_HESS,"G2pi^A",(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_Gpi,&next_Gpi);
 
+        std::vector<SharedMatrix> Dx, Vx;
         for (int A = 0; A < max_A; A++) {
             // Just pass C1 quantities in; this object doesn't respect symmetry anyway
             L.push_back(Cocc);
             R.push_back(std::make_shared<Matrix>("R",nso,nocc));
+            Dx.push_back(std::make_shared<Matrix>("Dx", nso,nso));
+            Vx.push_back(std::make_shared<Matrix>("Vx", nso,nso));
         }
 
         jk->print_header();
@@ -1144,14 +1147,28 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 psio_address next_Sij= psio_get_address(PSIO_ZERO,(A + a) * (size_t) nocc * nocc * sizeof(double));
                 psio_->read(PSIF_HESS,"Sij^A",(char*)Sijp[0], static_cast<size_t> (nocc)*nocc*sizeof(double),next_Sij, &next_Sij);
                 C_DGEMM('N','N',nso,nocc,nocc,1.0,Cop[0],nocc,Sijp[0],nocc,0.0,R[a]->pointer()[0],nocc);
+                Dx[a] = linalg::doublet(L[a], R[a], false, true);
+                // Symmetrize the pseudodensity
+                Dx[a]->add(Dx[a]->transpose());
+                Dx[a]->scale(0.5);
             }
 
             jk->compute();
+            if(functional_->needs_xc()) {
+                potential_->compute_Vx(Dx, Vx);
+            }
 
             for (int a = 0; a < nA; a++) {
                 // Add the 2J contribution to G
                 C_DGEMM('N','N',nso,nocc,nso,1.0,J[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
                 C_DGEMM('T','N',nmo,nocc,nso,-2.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
+
+                if(functional_->needs_xc()) {
+                    // Symmetrize the result, just to be safe
+                    C_DGEMM('N','N',nso,nocc,nso, 0.5,Vx[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
+                    C_DGEMM('T','N',nso,nocc,nso, 0.5,Vx[a]->pointer()[0],nso,Cop[0],nocc,1.0,Tp[0],nocc);
+                    C_DGEMM('T','N',nmo,nocc,nso,-2.0,Cp[0],nmo,Tp[0],nocc,1.0,Up[0],nocc);
+                }
 
                 // Subtract the K term from G
                 if( Kscale) {
@@ -1270,8 +1287,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 for (int i = 0; i < nocc; i++) {
                     C_DCOPY(nvir,&Tp[0][i],nocc,Bp[i],1);
                 }
-                outfile->Printf("Bai\n");
-                B->print_out();
                 b_vecs.push_back(B);
             }
 
@@ -1324,7 +1339,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             psio_->read(PSIF_HESS,"Sij^A",(char*)Upqp[0], static_cast<size_t> (nocc) * nocc * sizeof(double),next_Spi,&next_Spi);
             C_DSCAL(nocc * (size_t) nocc,-0.5, Upqp[0], 1);
             psio_->read(PSIF_HESS,"Uai^A",(char*)Upqp[nocc], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Uai,&next_Uai);
-            //Upi->print_out();
             psio_->write(PSIF_HESS,"Upi^A",(char*)Upqp[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Upi,&next_Upi);
             pdip_grad[A][0] += 4*mu_x.vector_dot(Upi);
             pdip_grad[A][1] += 4*mu_y.vector_dot(Upi);
@@ -1370,6 +1384,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 psio_->read(PSIF_HESS,"Upi^A",(char*)Upip[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_Upi,&next_Upi);
                 C_DGEMM('N','N',nso,nocc,nmo,1.0,Cp[0],nmo,Upip[0],nocc,0.0,R[a]->pointer()[0],nocc);
                 Dx[a] = linalg::doublet(L[a], R[a], false, true);
+                // Symmetrize the pseudodensity
+                Dx[a]->add(Dx[a]->transpose());
+                Dx[a]->scale(0.5);
             }
 
             jk->compute();
@@ -1384,7 +1401,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     C_DGEMM('T','N',nso,nocc,nso,-Kscale,K[a]->pointer()[0],nso,Cop[0],nocc,1.0,Tp[0],nocc);
                 }
                 if(functional_->needs_xc()) {
-                    C_DGEMM('N','N',nso,nocc,nso, 4.0,Vx[a]->pointer()[0],nso,Cop[0],nocc,1.0,Tp[0],nocc);
+                    // Symmetrize the result, just to be safe
+                    C_DGEMM('N','N',nso,nocc,nso, 2.0,Vx[a]->pointer()[0],nso,Cop[0],nocc,1.0,Tp[0],nocc);
+                    C_DGEMM('T','N',nso,nocc,nso, 2.0,Vx[a]->pointer()[0],nso,Cop[0],nocc,1.0,Tp[0],nocc);
                 }
                 C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
                 psio_address next_Qpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nocc * sizeof(double));
