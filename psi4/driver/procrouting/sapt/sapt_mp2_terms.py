@@ -81,7 +81,7 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
     return core.triplet(halfp_Saux, tmp, halfp_Saux, False, False, False)
 
 
-def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3, do_print=True):
+def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points=10, leg_lambda=0.3, do_print=True):
 
     rho_thresh = core.get_option("SAPT", "SAPT_FDDS_V2_RHO_CUTOFF")
     if do_print:
@@ -98,7 +98,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
     df_vector_keys = ["eps_occ_A", "eps_vir_A", "eps_occ_B", "eps_vir_B"]
     fdds_vector_cache = {key: cache[key] for key in df_vector_keys}
 
-    fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache)
+    fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache, is_hybrid)
 
     # Aux Densities
     D = fdds_obj.project_densities([cache["D_A"], cache["D_B"]])

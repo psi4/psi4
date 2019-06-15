@@ -50,6 +50,9 @@ class FDDS_Dispersion {
     // Coulomb metric
     SharedMatrix metric_;
 
+    // Coulomb metric -0.5 power
+    SharedMatrix metric_half_inv_;
+
     // Auxiliary overlap matrix
     SharedMatrix aux_overlap_;
 
@@ -60,6 +63,9 @@ class FDDS_Dispersion {
     std::map<std::string, SharedMatrix> matrix_cache_;
     std::map<std::string, SharedVector> vector_cache_;
 
+    // Is hybrid functional? 
+    bool is_hybrid_;
+
    public:
     /**
      * Constructs the FDDS_Dispersion object.
@@ -67,24 +73,26 @@ class FDDS_Dispersion {
      * @param auxiliary The auxiliary basis
      * @param cache     A data cache containing "Cocc_A", "Cvir_A", "eps_occ_A", "eps_vir_A", "Cocc_B",
      * "Cvir_B", "eps_occ_B", "eps_vir_B" quantities
+     * @param is_hybrid Flag of hybrid functional
      */
     FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                    std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache);
+                    std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
+                    bool is_hybrid);
 
     ~FDDS_Dispersion();
 
     /**
      * Projects the densities from primary AO space to auxiliary AO space
      * @param  dens     Vector of densities to transform
-     * @return axu_dens Vector of transformed densities
+     * @return aux_dens Vector of transformed densities
      */
     std::vector<SharedMatrix> project_densities(std::vector<SharedMatrix> dens);
 
     /**
-     * Forms the uncoupled amplitude Qia,Eia,Pia->PQ
+     * Forms the uncoupled amplitude Qia,Eia,Pia->PQ and projector Qia,Pia->PQ
      * @param  monomer Monomer "A" or "B"
      * @param  omega   Time dependent value
-     * @return         "PQ" amplitude tensor
+     * @return         "PQ" amplitude 
      */
     SharedMatrix form_unc_amplitude(std::string monomer, double omega);
 
@@ -105,6 +113,15 @@ class FDDS_Dispersion {
      * @return Overlap
      */
     SharedMatrix aux_overlap() { return aux_overlap_; }
+
+    // Forming (ar|X|Q) = (ar'|a'r)(a'r'|Q)
+    void form_X(std::string monomer);
+
+    // Forming (ar|Y|Q) = (aa'|rr')(a'r'|Q)
+    void form_Y(std::string monomer);
+    
+    // Contracting metric (pq|R) = (pq|Q) (Q|R)^(-1/2)
+    void contract_metric(std::string pqQ_name, std::string pqR_name, size_t np, size_t nq);
 
 };  // End FDDS_Dispersion
 }  // namespace sapt
