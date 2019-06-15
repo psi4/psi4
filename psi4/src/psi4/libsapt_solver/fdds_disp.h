@@ -66,6 +66,9 @@ class FDDS_Dispersion {
     // Is hybrid functional? 
     bool is_hybrid_;
 
+    // QR factorization result
+    SharedMatrix R_A, R_B;
+
    public:
     /**
      * Constructs the FDDS_Dispersion object.
@@ -119,9 +122,10 @@ class FDDS_Dispersion {
 
     // Forming (ar|Y|Q) = (aa'|rr')(a'r'|Q)
     void form_Y(std::string monomer);
-    
-    // Contracting metric (pq|R) = (pq|Q) (Q|R)^(-1/2)
-    void contract_metric(std::string pqQ_name, std::string pqR_name, size_t np, size_t nq);
+
+    SharedMatrix QR(std::string monomer);
+
+    SharedMatrix get_tensor_pqQ(std::string name, std::tuple<size_t, size_t, size_t> dimensions);
 
 };  // End FDDS_Dispersion
 }  // namespace sapt
