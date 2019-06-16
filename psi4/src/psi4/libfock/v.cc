@@ -612,7 +612,7 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
     double** Vp = V_AO->pointer();
 
     // SAP potential
-    std::vector<double> sap_potential(num_threads_);
+    std::vector<std::vector<double>> sap_potential(num_threads_);
     // Nuclear coordinates
     std::vector<double> nucx, nucy, nucz, nucZ;
     nucx.resize(primary_->molecule()->natom());
@@ -680,7 +680,7 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_on("V_xc", rank);
 
         // => LSDA contribution (symmetrized) <= //
-        dft_integrators::sap_integrator(block, &sap_potential[0], pworker, V_local[rank]);
+        dft_integrators::sap_integrator(block, &sap_potential[rank][0], pworker, V_local[rank]);
 
         // => Unpacking <= //
         double** V2p = V_local[rank]->pointer();

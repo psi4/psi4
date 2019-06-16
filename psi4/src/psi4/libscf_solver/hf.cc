@@ -1132,7 +1132,7 @@ void HF::guess() {
         // SAP guess
         if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Potentials.\n\n");
 
-        VBase* builder = VBase::build_V(basisset_, functional_, options_, "SAP");
+        std::shared_ptr<psi::VBase> builder = VBase::build_V(basisset_, functional_, options_, "SAP");
         builder->initialize();
 
         // Print the KS-specific stuff
@@ -1141,11 +1141,12 @@ void HF::guess() {
         }
 
         // Build the SAP potential
-        SharedMatrix Vsap = SharedMatrix(factory_->create_matrix("Vsap"));
-        builder_->compute_V(Vsap);
+        std::vector<SharedMatrix> Vsap;
+        Vsap.push_back(SharedMatrix(factory_->create_matrix("Vsap")));
+        builder->compute_V(Vsap);
 
         Fa_->copy(T_);
-        Fa_->add(Vsap);
+        Fa_->add(Vsap[0]);
         Fb_->copy(Fa_);
         form_initial_C();
         form_D();

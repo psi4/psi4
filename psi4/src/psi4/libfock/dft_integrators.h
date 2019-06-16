@@ -84,9 +84,6 @@ inline std::vector<double> rks_quadrature_integrate(std::shared_ptr<BlockOPoints
 
 inline void sap_integrator(std::shared_ptr<BlockOPoints> block, double* sap_potential,
                            std::shared_ptr<PointFunctions> pworker, SharedMatrix V, int ansatz = -1) {
-    ansatz = (ansatz == -1 ? fworker->ansatz() : ansatz);
-    // printf("Ansatz %d\n", ansatz);
-
     // Block data
     const std::vector<int>& function_map = block->functions_local_to_global();
     int nlocal = function_map.size();

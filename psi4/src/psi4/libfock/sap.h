@@ -28,6 +28,7 @@
 */
 
 #ifndef SAP_POTENTIAL
+#define SAP_POTENTIAL
 /*
   Routines for the implementation of the superposition of atomic
   potentials guess for electronic structure calculations, see
@@ -48,3 +49,4 @@
   DOI: 10.1002/qua.25945
 */
 double sap_effective_charge(int Z, double r);
+#endif
