@@ -1248,8 +1248,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("INTS_TOLERANCE", 0.0);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
-          like SAD, as described in doi:10.1021/acs.jctc.8b01089. -*/
-        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD HUCKEL READ");
+          like SAD, as described in doi:10.1021/acs.jctc.8b01089 which also rescribes the SAP guess. -*/
+        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD SAP HUCKEL READ");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
         Notice that this procedure is defined only for calculations in C1 symmetry. -*/

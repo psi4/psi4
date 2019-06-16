@@ -30,6 +30,7 @@
 #include "cubature.h"
 #include "points.h"
 #include "dft_integrators.h"
+#include "sap.h"
 
 #include "psi4/libfunctional/LibXCfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -87,6 +88,8 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary, std::sh
             throw PSIEXCEPTION("Passed in functional was unpolarized for UV reference.");
         }
         v = std::make_shared<UV>(functional, primary, options);
+    } else if (type == "SAP") {
+        v = std::make_shared<SAP>(functional, primary, options);
     } else {
         throw PSIEXCEPTION("V: V type is not recognized");
     }
@@ -198,7 +201,7 @@ void VBase::print_header() const {
     outfile->Printf("  ==> DFT Potential <==\n\n");
     functional_->print("outfile", print_);
     grid_->print("outfile", print_);
-    if(print_ > 2)grid_->print_details("outfile", print_);
+    if (print_ > 2) grid_->print_details("outfile", print_);
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
@@ -558,6 +561,154 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
     double vv10_e = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
     timer_off("V: VV10");
     return G;
+}
+
+SAP::SAP(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
+    : VBase(functional, primary, options) {}
+SAP::~SAP() {}
+void SAP::initialize() {
+    VBase::initialize();
+    int max_points = grid_->max_points();
+    int max_functions = grid_->max_functions();
+    for (size_t i = 0; i < num_threads_; i++) {
+        // Need a points worker per thread
+        auto point_tmp = std::make_shared<RKSFunctions>(primary_, max_points, max_functions);
+        point_tmp->set_ansatz(functional_->ansatz());
+        point_tmp->set_cache_map(&cache_map_);
+        point_workers_.push_back(point_tmp);
+    }
+}
+void SAP::finalize() { VBase::finalize(); }
+void SAP::print_header() const { VBase::print_header(); }
+void SAP::compute_V(std::vector<SharedMatrix> ret) {
+    timer_on("SAP: Form V");
+
+    if ((D_AO_.size() != 1) || (ret.size() != 1)) {
+        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
+    }
+
+    // Thread info
+    int rank = 0;
+
+    // What local XC ansatz are we in?
+    int ansatz = functional_->ansatz();
+
+    // How many functions are there (for lda in Vtemp, T)
+    int max_functions = grid_->max_functions();
+    int max_points = grid_->max_points();
+
+    // Setup the pointers
+    for (size_t i = 0; i < num_threads_; i++) {
+        point_workers_[i]->set_pointers(D_AO_[0]);
+    }
+
+    // Per thread temporaries
+    std::vector<SharedMatrix> V_local;
+    for (size_t i = 0; i < num_threads_; i++) {
+        V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
+    }
+
+    auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
+    double** Vp = V_AO->pointer();
+
+    // SAP potential
+    std::vector<double> sap_potential(num_threads_);
+    // Nuclear coordinates
+    std::vector<double> nucx, nucy, nucz, nucZ;
+    nucx.resize(primary_->molecule()->natom());
+    nucy.resize(primary_->molecule()->natom());
+    nucz.resize(primary_->molecule()->natom());
+    nucZ.resize(primary_->molecule()->natom());
+    for (size_t iatom = 0; iatom < nucx.size(); iatom++) {
+        nucx[iatom] = primary_->molecule()->x(iatom);
+        nucy[iatom] = primary_->molecule()->y(iatom);
+        nucz[iatom] = primary_->molecule()->z(iatom);
+        nucZ[iatom] = primary_->molecule()->Z(iatom);
+    }
+
+// Traverse the blocks of points
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
+// Get thread info
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        // Get per-rank workers
+        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
+        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
+        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+
+        // Compute Rho, Phi, etc
+        parallel_timer_on("Properties", rank);
+        pworker->compute_points(block, false);
+        parallel_timer_off("Properties", rank);
+
+        // Compute the SAP potential
+        parallel_timer_on("Functional", rank);
+        sap_potential[rank].resize(block->npoints());
+        for (int ip = 0; ip < block->npoints(); ip++) {
+            // Coordinates of the point
+            double xi = block->x()[ip];
+            double yi = block->y()[ip];
+            double zi = block->z()[ip];
+            // and its potential
+            double V = 0.0;
+
+            // Loop over nuclei
+            for (size_t iatom = 0; iatom < nucx.size(); iatom++) {
+                // Distance to nucleus is
+                double dx = xi - nucx[iatom];
+                double dy = yi - nucy[iatom];
+                double dz = zi - nucz[iatom];
+                double r = sqrt(dx * dx + dy * dy + dz * dz);
+                // and the SAP potential at this point is
+                V -= ::sap_effective_charge(nucZ[iatom], r) / r;
+            }
+
+            // Store
+            sap_potential[rank][ip] = V;
+        }
+
+        parallel_timer_off("Functional", rank);
+
+        if (debug_ > 4) {
+            block->print("outfile", debug_);
+            pworker->print("outfile", debug_);
+        }
+
+        parallel_timer_on("V_xc", rank);
+
+        // => LSDA contribution (symmetrized) <= //
+        dft_integrators::sap_integrator(block, &sap_potential[0], pworker, V_local[rank]);
+
+        // => Unpacking <= //
+        double** V2p = V_local[rank]->pointer();
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        int nlocal = function_map.size();
+
+        for (int ml = 0; ml < nlocal; ml++) {
+            int mg = function_map[ml];
+            for (int nl = 0; nl < ml; nl++) {
+                int ng = function_map[nl];
+#pragma omp atomic update
+                Vp[mg][ng] += V2p[ml][nl];
+#pragma omp atomic update
+                Vp[ng][mg] += V2p[ml][nl];
+            }
+#pragma omp atomic update
+            Vp[mg][mg] += V2p[ml][ml];
+        }
+        parallel_timer_off("V_xc", rank);
+    }
+
+    // Set the result
+    if (AO2USO_) {
+        ret[0]->apply_symmetry(V_AO, AO2USO_);
+    } else {
+        ret[0]->copy(V_AO);
+    }
+    timer_off("SAP: Form V");
 }
 
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)

@@ -122,7 +122,7 @@ void HF::common_init() {
         // Map the symmetry of the input DOCC, to account for displacements
         auto ps = options_.get_str("PARENT_SYMMETRY");
         if (ps != "") {
-            auto old_pg = std::make_shared<PointGroup> (ps);
+            auto old_pg = std::make_shared<PointGroup>(ps);
             // This is one of a series of displacements;  check the dimension against the parent
             // point group
             size_t full_nirreps = old_pg->char_table().nirrep();
@@ -149,7 +149,7 @@ void HF::common_init() {
         // Map the symmetry of the input SOCC, to account for displacements
         auto ps = options_.get_str("PARENT_SYMMETRY");
         if (ps != "") {
-            auto old_pg = std::make_shared<PointGroup> (ps);
+            auto old_pg = std::make_shared<PointGroup>(ps);
             // This is one of a series of displacements;  check the dimension against the parent
             // point group
             size_t full_nirreps = old_pg->char_table().nirrep();
@@ -1076,7 +1076,8 @@ void HF::guess() {
         guess_E = compute_initial_E();
 
     } else if (guess_type == "HUCKEL") {
-        if (print_) outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic UHF (doi:10.1021/acs.jctc.8b01089).\n\n");
+        if (print_)
+            outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic UHF (doi:10.1021/acs.jctc.8b01089).\n\n");
 
         // Huckel guess, written by Susi Lehtola 2019-01-27.  See "An
         // assessment of initial guesses for self-consistent field
@@ -1126,6 +1127,30 @@ void HF::guess() {
         form_initial_C();
         form_D();
         guess_E = compute_initial_E();
+
+    } else if (guess_type == "SAP") {
+        // SAP guess
+        if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Potentials.\n\n");
+
+        VBase* builder = VBase::build_V(basisset_, functional_, options_, "SAP");
+        builder->initialize();
+
+        // Print the KS-specific stuff
+        if (print_) {
+            potential_->print_header();
+        }
+
+        // Build the SAP potential
+        SharedMatrix Vsap = SharedMatrix(factory_->create_matrix("Vsap"));
+        builder_->compute_V(Vsap);
+
+        Fa_->copy(T_);
+        Fa_->add(Vsap);
+        Fb_->copy(Fa_);
+        form_initial_C();
+        form_D();
+        guess_E = compute_initial_E();
+
     } else {
         throw PSIEXCEPTION("  SCF Guess: No guess was found!");
     }
