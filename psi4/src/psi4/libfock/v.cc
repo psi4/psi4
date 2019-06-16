@@ -573,7 +573,8 @@ void SAP::initialize() {
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread
         auto point_tmp = std::make_shared<RKSFunctions>(primary_, max_points, max_functions);
-        point_tmp->set_ansatz(functional_->ansatz());
+        // This is like LDA
+        point_tmp->set_ansatz(0);
         point_tmp->set_cache_map(&cache_map_);
         point_workers_.push_back(point_tmp);
     }
@@ -583,15 +584,12 @@ void SAP::print_header() const { VBase::print_header(); }
 void SAP::compute_V(std::vector<SharedMatrix> ret) {
     timer_on("SAP: Form V");
 
-    if ((D_AO_.size() != 1) || (ret.size() != 1)) {
-        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
+    if (ret.size() != 1) {
+        throw PSIEXCEPTION("SAP outputs only one V Matrix");
     }
 
     // Thread info
     int rank = 0;
-
-    // What local XC ansatz are we in?
-    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions();
