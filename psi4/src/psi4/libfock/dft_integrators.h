@@ -107,6 +107,16 @@ inline void sap_integrator(std::shared_ptr<BlockOPoints> block, const std::vecto
         C_DAXPY(nlocal, 0.5 * sap_potential[P] * w[P], phi[P], 1, Tp[P], 1);
     }
     // parallel_timer_off("LSDA Phi_tmp", rank);
+
+    // Collect V terms
+    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, V2p[0],
+            max_functions);
+
+    for (int m = 0; m < nlocal; m++) {
+        for (int n = 0; n <= m; n++) {
+            V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
+        }
+    }
 }
 
 inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<SuperFunctional> fworker,
