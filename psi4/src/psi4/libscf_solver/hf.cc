@@ -1130,14 +1130,15 @@ void HF::guess() {
 
     } else if (guess_type == "SAP") {
         // SAP guess
-        if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Potentials.\n\n");
+        if (print_)
+            outfile->Printf("  SCF Guess: Superposition of Atomic Potentials (doi:10.1021/acs.jctc.8b01089).\n\n");
 
         std::shared_ptr<psi::VBase> builder = VBase::build_V(basisset_, functional_, options_, "SAP");
         builder->initialize();
 
         // Print info on the integration grid
         if (print_) {
-          builder->print_header();
+            builder->print_header();
         }
 
         // Build the SAP potential

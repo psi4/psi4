@@ -587,7 +587,11 @@ void SAP::initialize() {
     nbf_ = AO2USO_->rowspi()[0];
 }
 void SAP::finalize() { VBase::finalize(); }
-void SAP::print_header() const { VBase::print_header(); }
+void SAP::print_header() const {
+    outfile->Printf("  ==> SAP guess <==\n\n");
+    grid_->print("outfile", print_);
+    if (print_ > 2) grid_->print_details("outfile", print_);
+}
 void SAP::compute_V(std::vector<SharedMatrix> ret) {
     timer_on("SAP: Form V");
 
