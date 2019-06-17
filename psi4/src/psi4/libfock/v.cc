@@ -578,6 +578,13 @@ void SAP::initialize() {
         point_tmp->set_cache_map(&cache_map_);
         point_workers_.push_back(point_tmp);
     }
+
+    // Initialize symmetry
+    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_, primary_, primary_, primary_));
+    auto pet = std::make_shared<PetiteList>(primary_, integral);
+    AO2USO_ = SharedMatrix(pet->aotoso());
+    USO2AO_ = AO2USO_->transpose();
+    nbf_ = AO2USO_->rowspi()[0];
 }
 void SAP::finalize() { VBase::finalize(); }
 void SAP::print_header() const { VBase::print_header(); }
