@@ -572,7 +572,7 @@ void SAP::initialize() {
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread
-        auto point_tmp = std::make_shared<RKSFunctions>(primary_, max_points, max_functions);
+        auto point_tmp = std::make_shared<SAPFunctions>(primary_, max_points, max_functions);
         // This is like LDA
         point_tmp->set_ansatz(0);
         point_tmp->set_cache_map(&cache_map_);
@@ -594,11 +594,6 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions();
     int max_points = grid_->max_points();
-
-    // Setup the pointers
-    for (size_t i = 0; i < num_threads_; i++) {
-        point_workers_[i]->set_pointers(D_AO_[0]);
-    }
 
     // Per thread temporaries
     std::vector<SharedMatrix> V_local;
@@ -678,7 +673,7 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_on("V_xc", rank);
 
         // => LSDA contribution (symmetrized) <= //
-        dft_integrators::sap_integrator(block, &sap_potential[rank][0], pworker, V_local[rank]);
+        dft_integrators::sap_integrator(block, sap_potential[rank], pworker, V_local[rank]);
 
         // => Unpacking <= //
         double** V2p = V_local[rank]->pointer();

@@ -1135,9 +1135,9 @@ void HF::guess() {
         std::shared_ptr<psi::VBase> builder = VBase::build_V(basisset_, functional_, options_, "SAP");
         builder->initialize();
 
-        // Print the KS-specific stuff
+        // Print info on the integration grid
         if (print_) {
-            potential_->print_header();
+          builder->print_header();
         }
 
         // Build the SAP potential

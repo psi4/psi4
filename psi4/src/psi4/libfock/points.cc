@@ -42,6 +42,65 @@
 
 namespace psi {
 
+SAPFunctions::SAPFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
+    : PointFunctions(primary, max_points, max_functions) {
+    current_basis_map_ = &basis_values_;
+}
+SAPFunctions::~SAPFunctions() {}
+std::vector<SharedMatrix> SAPFunctions::scratch() {
+    std::vector<SharedMatrix> vec;
+    vec.push_back(temp_);
+    return vec;
+}
+void SAPFunctions::build_temps() { temp_ = std::make_shared<Matrix>("Temp", max_points_, max_functions_); }
+void SAPFunctions::allocate() {
+    BasisFunctions::allocate();
+    point_values_.clear();
+    build_temps();
+}
+void SAPFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute) {
+    // => Build basis function values <= //
+    block_index_ = block->index();
+    if (!force_compute && cache_map_ && (cache_map_->find(block->index()) != cache_map_->end())) {
+        current_basis_map_ = &(*cache_map_)[block->index()];
+    } else {
+        current_basis_map_ = &basis_values_;
+        BasisFunctions::compute_functions(block);
+    }
+}
+void SAPFunctions::print(std::string out, int print) const {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("   => SAPFunctions <=\n\n");
+    printer->Printf("    Point Values:\n");
+    for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
+         it != point_values_.end(); it++) {
+        printer->Printf("    %s\n", (*it).first.c_str());
+        if (print > 3) {
+            (*it).second->print();
+        }
+    }
+    printer->Printf("\n\n");
+    BasisFunctions::print(out, print);
+}
+std::vector<SharedMatrix> SAPFunctions::D_scratch() {
+    throw PSIEXCEPTION("SAPFunctions::density matrices are not appropriate. Read the source.");
+}
+void SAPFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block, bool force_compute) {
+    throw PSIEXCEPTION("SAPFunctions::orbitals are not appropriate. Read the source.");
+}
+void SAPFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
+    throw PSIEXCEPTION("SAPFunctions::orbitals are not appropriate. Read the source.");
+}
+void SAPFunctions::set_Cs(SharedMatrix /*Ca_AO*/) {
+    throw PSIEXCEPTION("SAPFunctions::orbitals are not appropriate. Read the source.");
+}
+void SAPFunctions::set_pointers(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
+    throw PSIEXCEPTION("SAPFunctions::orbitals are not appropriate. Read the source.");
+}
+void SAPFunctions::set_pointers(SharedMatrix /*Ca_AO*/) {
+    throw PSIEXCEPTION("SAPFunctions::orbitals are not appropriate. Read the source.");
+}
+
 RKSFunctions::RKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : PointFunctions(primary, max_points, max_functions) {
     set_ansatz(0);
