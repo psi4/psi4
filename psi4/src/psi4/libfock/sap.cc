@@ -46,6 +46,7 @@ static double lagrange_interpolation(const double *xi, const double *yi,
   /* Result */
   double y;
   /* Loop over polynomials */
+  y = 0.0;
   for (i = 0; i < N; i++) {
     /* Evaluate the polynomial */
     li = 1.0;
