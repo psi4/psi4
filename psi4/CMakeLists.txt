@@ -226,7 +226,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/utils.py
               ../tests/pytests/test_psi4.py
               ../tests/pytests/test_addons.py
-              ../tests/pytests/test_molecule_to_string.py
+              ../tests/pytests/test_qcel_molparse_to_string.py
               ../tests/pytests/test_matrix.py
               ../tests/pytests/test_vector.py
               ../tests/pytests/test_qcvars.py
@@ -242,7 +242,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_multipole_potential.py
               ../tests/pytests/test_dertype.py
               ../tests/pytests/test_mp2.py
-              ../tests/pytests/test_qcng_dftd3.py
+              ../tests/pytests/test_qcng_dftd3_mp2d.py
               ../tests/pytests/test_mp2d.py
               ../tests/pytests/test_testing.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)

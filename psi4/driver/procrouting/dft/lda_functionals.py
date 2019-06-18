@@ -29,8 +29,6 @@
 List of LDA functionals
 """
 
-import copy
-
 funcs = []
 
 funcs.append({

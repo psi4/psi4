@@ -679,9 +679,6 @@ def gradient(name, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
 
-    if isinstance(lowername, str) and lowername.replace('-', '') == 'mp2d':
-        raise ValidationError('MP2D gradients (even findif) not available.')
-
     # no analytic derivatives for scf_type cd
     if core.get_global_option('SCF_TYPE') == 'CD':
         if (dertype == 1):

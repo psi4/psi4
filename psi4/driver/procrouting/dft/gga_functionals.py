@@ -29,8 +29,6 @@
 List of GGA functionals
 """
 
-import copy
-
 funcs = []
 
 funcs.append({
@@ -211,7 +209,7 @@ funcs.append({
     "description": '   SOGGA11 Exchange-Correlation Functional\n',
 })
 
-# dashparam.dashcoeff now defines 'b97' (<-'b97-d') as Grimme's GGA
+# empirical_dispersion_resources.dashcoeff now defines 'b97' (<-'b97-d') as Grimme's GGA
 #   functional, so one could just define
 #       funcs.append({
 #            "name": "B97",

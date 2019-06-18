@@ -34,6 +34,9 @@ import inspect
 import warnings
 import contextlib
 import collections
+from typing import List, Union
+
+import numpy as np
 
 from psi4 import core
 from psi4.metadata import __version__
@@ -513,3 +516,51 @@ def provenance_stamp(routine):
 
     """
     return {'creator': 'Psi4', 'version': __version__, 'routine': routine}
+
+
+def plump_qcvar(val: Union[float, str, List], shape_clue: str, ret='np') -> Union[float, 'np.ndarray', 'psi4.core.Matrix']:
+    """Prepare serialized QCVariable for set_variable by convert flat arrays into shaped ones and floating strings.
+
+    Parameters
+    ----------
+    val :
+        flat (?, ) list or scalar or string, probably from JSON storage.
+    shape_clue : str
+        Label that includes (case insensitive) one of the following as
+        a clue to the array's natural dimensions: 'gradient', 'hessian'
+    ret : {'np', 'psi4'}
+        Whether to return `np.ndarray` or `psi4.core.Matrix`.
+
+    Returns
+    -------
+    float or np.ndarray or psi4.core.Matrix
+        Reshaped array of type `ret` with natural dimensions of `shape_clue`.
+
+    Raises
+    ------
+    TODO
+
+    """
+    if isinstance(val, (np.ndarray, core.Matrix)):
+        raise TypeError
+    elif isinstance(val, list):
+        tgt = np.asarray(val)
+    else:
+        # presumably scalar. may be string
+        return float(val)
+    # TODO choose float vs Decimal for return if string?
+
+    if 'gradient' in shape_clue.lower():
+        reshaper = (-1, 3)
+    elif 'hessian' in shape_clue.lower():
+        ndof = int(math.sqrt(len(tgt)))
+        reshaper = (ndof, ndof)
+    else:
+        raise ValidationError(f'Uncertain how to reshape array: {shape_clue}')
+
+    if ret == 'np':
+        return tgt.reshape(reshaper)
+    elif ret == 'psi4':
+        return core.Matrix.from_array(tgt.reshape(reshaper))
+    else:
+        raise ValidationError(f'Return type not among [np, psi4]: {ret}')

@@ -29,8 +29,6 @@
 List of meta-GGA functionals
 """
 
-import copy
-
 funcs = []
 
 funcs.append({

@@ -29,6 +29,7 @@
 import collections
 
 import numpy as np
+from qcelemental.models import ResultInput
 import qcengine as qcng
 
 from psi4 import core
@@ -57,7 +58,7 @@ class EmpiricalDispersion(object):
     dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
-        `dashparam.dashcoeff`.
+        `empirical_dispersion_resources.dashcoeff`.
     dashparams : dict
         Complete (number and parameter names vary by `dashlevel`)
         set of parameter values defining the flexible parts
@@ -78,13 +79,13 @@ class EmpiricalDispersion(object):
         corresponds to a defined, named, untweaked "functional-dashlevel"
         set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
-        See description in `qcengine.programs.dftd3.dashparam.from_arrays`. Used
+        See description in `qcengine.programs.empirical_dispersion_resources.from_arrays`. Used
         here to "bless" the dispersion definitions attached to
         the procedures/dft/*_functionals-defined dictionaries
         as legit, non-custom, and of equal validity to
-        `qcengine.programs.dftd3.dashparam.dashcoeff` itself for purposes of
+        `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
         validating `fctldash`.
-    engine : {'libdisp', 'dftd3', 'nl'}
+    engine : {'libdisp', 'dftd3', 'nl', 'mp2d'}
         Compute engine for dispersion. One of Psi4's internal libdisp
         library, Grimme's DFTD3 executable, or nl.
     disp : psi4.core.Dispersion
@@ -122,7 +123,7 @@ class EmpiricalDispersion(object):
         from .dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
 
-        resolved = qcng.programs.dftd3.from_arrays(
+        resolved = qcng.programs.empirical_dispersion_resources.from_arrays(
             name_hint=name_hint,
             level_hint=level_hint,
             param_tweaks=param_tweaks,
@@ -130,9 +131,9 @@ class EmpiricalDispersion(object):
         self.fctldash = resolved['fctldash']
         self.dashlevel = resolved['dashlevel']
         self.dashparams = resolved['dashparams']
-        self.description = qcng.programs.dftd3.dashcoeff[self.dashlevel]['description']
-        self.ordered_params = qcng.programs.dftd3.dashcoeff[self.dashlevel]['default'].keys()
-        self.dashlevel_citation = qcng.programs.dftd3.dashcoeff[self.dashlevel]['citation']
+        self.description = qcng.programs.empirical_dispersion_resources.dashcoeff[self.dashlevel]['description']
+        self.ordered_params = qcng.programs.empirical_dispersion_resources.dashcoeff[self.dashlevel]['default'].keys()
+        self.dashlevel_citation = qcng.programs.empirical_dispersion_resources.dashcoeff[self.dashlevel]['citation']
         self.dashparams_citation = resolved['dashparams_citation']
 
         engine = kwargs.pop('engine', None)
@@ -151,7 +152,8 @@ class EmpiricalDispersion(object):
         """Format dispersion parameters of `self` for output file."""
 
         text = []
-        text.append("   => %s: Empirical Dispersion <=" % (self.fctldash.upper() if self.fctldash.upper() else 'Custom'))
+        text.append("   => {}: Empirical Dispersion <=".format(
+            (self.fctldash.upper() if self.fctldash.upper() else 'Custom')))
         text.append('')
         text.append(self.description)
         text.append(self.dashlevel_citation.rstrip())
@@ -164,13 +166,15 @@ class EmpiricalDispersion(object):
 
         core.print_out('\n'.join(text))
 
-    def compute_energy(self, molecule):
+    def compute_energy(self, molecule: 'psi4.core.Molecule', wfn: 'psi4.core.Wavefunction' = None) -> float:
         """Compute dispersion energy based on engine, dispersion level, and parameters in `self`.
 
         Parameters
         ----------
         molecule : psi4.core.Molecule
             System for which to compute empirical dispersion correction.
+        wfn :
+            Location to set QCVariables
 
         Returns
         -------
@@ -186,29 +190,29 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine in ['dftd3', 'mp2d']:
-            resinp = {
-                'schema_name': 'qcschema_input',
-                'schema_version': 1,
-                'molecule': molecule.to_schema(dtype=2),
-                'driver': 'energy',
-                'model': {
-                    'method': self.fctldash,
-                    'basis': '(auto)',
-                },
-                'keywords': {
-                    'level_hint': self.dashlevel,
-                    'params_tweaks': self.dashparams,
-                    'dashcoeff_supplement': self.dashcoeff_supplement,
-                    'verbose': 1,
-                },
-            }
-            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
-            jobrec = jobrec.dict()
+            resi = ResultInput(
+                **{
+                    'driver': 'energy',
+                    'model': {
+                        'method': self.fctldash,
+                        'basis': '(auto)',
+                    },
+                    'keywords': {
+                        'level_hint': self.dashlevel,
+                        'params_tweaks': self.dashparams,
+                        'dashcoeff_supplement': self.dashcoeff_supplement,
+                        'verbose': 1,
+                    },
+                    'molecule': molecule.to_schema(dtype=2),
+                    'provenance': p4util.provenance_stamp(__name__),
+                })
+            jobrec = qcng.compute(resi, self.engine, raise_error=True)
 
-            dashd_part = float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
-            for k, qca in jobrec['extras']['qcvars'].items():
-                if not isinstance(qca, (list, np.ndarray)):
-                    core.set_variable(k, qca)
+            dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
+            if wfn is not None:
+                for k, qca in jobrec.extras['qcvars'].items():
+                    if 'CURRENT' not in k:
+                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
@@ -223,13 +227,16 @@ class EmpiricalDispersion(object):
                 core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(self.fctldash), ene)
             return ene
 
-    def compute_gradient(self, molecule):
+    def compute_gradient(self, molecule: 'psi4.core.Molecule',
+                         wfn: 'psi4.core.Wavefunction' = None) -> 'psi4.core.Matrix':
         """Compute dispersion gradient based on engine, dispersion level, and parameters in `self`.
 
         Parameters
         ----------
         molecule : psi4.core.Molecule
             System for which to compute empirical dispersion correction.
+        wfn :
+            Location to set QCVariables
 
         Returns
         -------
@@ -238,29 +245,30 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine in ['dftd3', 'mp2d']:
-            resinp = {
-                'schema_name': 'qcschema_input',
-                'schema_version': 1,
-                'molecule': molecule.to_schema(dtype=2),
-                'driver': 'gradient',
-                'model': {
-                    'method': self.fctldash,
-                    'basis': '(auto)',
-                },
-                'keywords': {
-                    'level_hint': self.dashlevel,
-                    'params_tweaks': self.dashparams,
-                    'dashcoeff_supplement': self.dashcoeff_supplement,
-                    'verbose': 1,
-                },
-            }
-            jobrec = qcng.compute(resinp, self.engine, raise_error=True)
-            jobrec = jobrec.dict()
+            resi = ResultInput(
+                **{
+                    'driver': 'gradient',
+                    'model': {
+                        'method': self.fctldash,
+                        'basis': '(auto)',
+                    },
+                    'keywords': {
+                        'level_hint': self.dashlevel,
+                        'params_tweaks': self.dashparams,
+                        'dashcoeff_supplement': self.dashcoeff_supplement,
+                        'verbose': 1,
+                    },
+                    'molecule': molecule.to_schema(dtype=2),
+                    'provenance': p4util.provenance_stamp(__name__),
+                })
+            jobrec = qcng.compute(resi, self.engine, raise_error=True)
 
-            dashd_part = core.Matrix.from_array(np.array(jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
-            for k, qca in jobrec['extras']['qcvars'].items():
-                if not isinstance(qca, (list, np.ndarray)):
-                    core.set_variable(k, qca)
+            dashd_part = core.Matrix.from_array(
+                np.array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
+            if wfn is not None:
+                for k, qca in jobrec.extras['qcvars'].items():
+                    if 'CURRENT' not in k:
+                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)
@@ -270,7 +278,8 @@ class EmpiricalDispersion(object):
         else:
             return self.disp.compute_gradient(molecule)
 
-    def compute_hessian(self, molecule):
+    def compute_hessian(self, molecule: 'psi4.core.Molecule',
+                        wfn: 'psi4.core.Wavefunction' = None) -> 'psi4.core.Matrix':
         """Compute dispersion Hessian based on engine, dispersion level, and parameters in `self`.
         Uses finite difference, as no dispersion engine has analytic second derivatives.
 
@@ -278,6 +287,8 @@ class EmpiricalDispersion(object):
         ----------
         molecule : psi4.core.Molecule
             System for which to compute empirical dispersion correction.
+        wfn :
+            Location to set QCVariables
 
         Returns
         -------
@@ -308,5 +319,7 @@ class EmpiricalDispersion(object):
             displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
         H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, -1)
+        if wfn is not None:
+            wfn.set_variable('DISPERSION CORRECTION HESSIAN', H)
         optstash.restore()
         return core.Matrix.from_array(H)

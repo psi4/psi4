@@ -61,7 +61,7 @@ install:
       resp
       pylibefp
       snsmp2
-      mp2d=0.1
+      mp2d
       pytest-xdist
       -c psi4/label/dev
       # * even if name package removed later, this installs their deps

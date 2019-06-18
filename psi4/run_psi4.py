@@ -35,6 +35,7 @@ import json
 import datetime
 import argparse
 from argparse import RawTextHelpFormatter
+from pathlib import Path
 
 # yapf: disable
 parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
@@ -155,7 +156,8 @@ if args['plugin_compile']:
 
 if args['psiapi_path']:
     pyexe_dir = os.path.dirname("@PYTHON_EXECUTABLE@")
-    print("""export PATH={}:$PATH\nexport PYTHONPATH={}:$PYTHONPATH""".format(pyexe_dir, lib_dir))
+    bin_dir = Path(cmake_install_prefix) / 'bin'
+    print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     sys.exit()
 
 # Transmit any argument psidatadir through environ
