@@ -133,6 +133,7 @@ def test_dft_mp2(inp):
 #TABLE 14259 -1.155358302362078 0.7013114524160179
 
 
+@using_mp2d
 def test_mp2d_opt():
 
     h2 = psi4.geometry("""
