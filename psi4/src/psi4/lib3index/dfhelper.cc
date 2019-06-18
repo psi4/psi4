@@ -175,7 +175,7 @@ void DFHelper::initialize() {
     if (print_lvl_ > 0) {
         outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
                         (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
-        outfile->Printf("%s in-core AOs.\n\n", AO_core_ ? "Turning off" : "Using");
+        outfile->Printf("%s in-core AOs.\n\n", AO_core_ ? "Using" : "Turning off");
     }
 
     // prepare AOs for STORE method
