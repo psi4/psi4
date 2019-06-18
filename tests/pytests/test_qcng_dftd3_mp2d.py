@@ -281,7 +281,7 @@ def test_3():
     res = res.dict()
 
     #res = dftd3.run_dftd3_from_arrays(molrec=sys, name_hint='b3lyp', level_hint='d3bj')
-    assert compare('B3LYP-D3(BJ)', _compute_key(res['extras']['info']), 'key')
+    assert compare('B3LYP-D3(BJ)', _compute_key(res['extras']['local_keywords']), 'key')
 
 
 @using_dftd3
