@@ -33,7 +33,10 @@
 #include "typedefs.h"
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/vector3.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"
+
 namespace psi {
 class Molecule;
 
@@ -68,6 +71,48 @@ class ElectricFieldInt : public OneBodyAOInt {
 
     static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
     static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
+
+    template <typename ContractionFunctor>
+    void compute_with_functor(ContractionFunctor &functor, SharedMatrix coords);
+};
+
+class ContractOverDipolesFunctor {
+   protected:
+    /// Pointer to the matrix that will contribute to the 2e part of the Fock matrix
+    double **pF_;
+    /// The array of charges
+    double **dipoles_;
+
+   public:
+    ContractOverDipolesFunctor(SharedMatrix dipoles, SharedMatrix F) : pF_(F->pointer()), dipoles_(dipoles->pointer()) {
+        if (F->rowdim() != F->coldim()) throw PSIEXCEPTION("Invalid Fock matrix in ContractOverCharges");
+        if (dipoles->coldim() != 3) throw PSIEXCEPTION("Dipole matrix must have 3 columns.");
+        int nbf = F->rowdim();
+        ::memset(pF_[0], 0, nbf * nbf * sizeof(double));
+    }
+
+    void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
+        pF_[bf1][bf2] +=
+            integralx * dipoles_[center][0] + integraly * dipoles_[center][1] + integralz * dipoles_[center][2];
+    }
+};
+
+class ContractOverDensityFieldFunctor {
+   protected:
+    /// Pointer to the matrix that will contribute to the 2e part of the Fock matrix
+    double **pD_;
+    /// The array of charges
+    double *field_;
+
+   public:
+    ContractOverDensityFieldFunctor(SharedVector field, SharedMatrix D) : pD_(D->pointer()), field_(field->pointer()) {}
+    void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
+        // HELP: is this thread-safe, i.e., could multiple threads
+        // write to dipoles_ at the same time?
+        field_[3 * center] += pD_[bf1][bf2] * integralx;
+        field_[3 * center + 1] += pD_[bf1][bf2] * integraly;
+        field_[3 * center + 2] += pD_[bf1][bf2] * integralz;
+    }
 };
 
 }  // namespace psi

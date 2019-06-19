@@ -249,6 +249,10 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> ao_multipole_potential(const std::vector<double>& origin = {0., 0., 0.}, int max_k = 0, int deriv = 0);
     /// Electric Field Integrals
     std::vector<SharedMatrix> electric_field(const std::vector<double>& origin = {0., 0., 0.}, int deriv = 0);
+    /// Electric Field Operator/Induction Operator TODO: use better name
+    SharedMatrix electric_field_operator(SharedMatrix coords, SharedMatrix moment);
+    /// Electric Field Value at given sites TODO: use better name
+    SharedVector electric_field_value(SharedMatrix coords, SharedMatrix D);
     /// Vector AO Angular Momentum Integrals
     std::vector<SharedMatrix> ao_angular_momentum();
     /// Vector AO Nabla Integrals
