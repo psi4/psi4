@@ -91,7 +91,7 @@ Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
     copy_from(c.matrix_);
 }
 
-Matrix& Matrix::operator=(const Matrix& c) {
+Matrix &Matrix::operator=(const Matrix &c) {
     release();
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
@@ -427,7 +427,7 @@ void Matrix::release() {
 
 void Matrix::copy_from(double ***c) {
     for (int h = 0; h < nirrep_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h ^ symmetry_] * sizeof(double);
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
         if (size) memcpy(&(matrix_[h][0][0]), &(c[h][0][0]), size);
     }
 }
@@ -435,7 +435,7 @@ void Matrix::copy_from(double ***c) {
 // Sets all elements of matrix to val
 void Matrix::set(double val) {
     for (int h = 0; h < nirrep_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h ^ symmetry_];
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_];
 
         for (size_t i = 0; i < size; ++i) {
             matrix_[h][0][i] = val;
@@ -972,7 +972,7 @@ void Matrix::identity() {
     size_t size;
 
     for (int h = 0; h < nirrep_; ++h) {
-        size = rowspi_[h] * colspi_[h] * sizeof(double);
+        size = rowspi_[h] * (size_t)colspi_[h] * sizeof(double);
 
         if (size) {
             memset(&(matrix_[h][0][0]), 0, size);
@@ -1080,8 +1080,22 @@ void Matrix::transpose_this() {
 }
 
 void Matrix::add(const Matrix *const plus) {
+    if (nirrep_ != plus->nirrep_) {
+        std::ostringstream oss;
+        oss << "Trying to add matrices of different number of irreps: " << nirrep_ << " and " << plus->nirrep_ << "!";
+        throw PSIEXCEPTION(oss.str());
+    }
     for (int h = 0; h < nirrep_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h ^ symmetry_];
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_];
+        size_t size2 = plus->rowspi_[h] * (size_t)plus->colspi_[h ^ symmetry_];
+        if (size != size2) {
+            std::ostringstream oss;
+            oss << "Number of functions in irrep " << h << " is not the same: " << size << " and " << size2 << "!";
+            throw PSIEXCEPTION(oss.str());
+        }
+    }
+    for (int h = 0; h < nirrep_; ++h) {
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_];
         if (size) {
             C_DAXPY(size, 1.0, plus->matrix_[h][0], 1, matrix_[h][0], 1);
         }
@@ -1093,8 +1107,23 @@ void Matrix::add(const Matrix &plus) { add(&plus); }
 void Matrix::add(const SharedMatrix &plus) { add(plus.get()); }
 
 void Matrix::subtract(const Matrix *const plus) {
+    if (nirrep_ != plus->nirrep_) {
+        std::ostringstream oss;
+        oss << "Trying to substract matrices of different number of irreps: " << nirrep_ << " and " << plus->nirrep_
+            << "!";
+        throw PSIEXCEPTION(oss.str());
+    }
     for (int h = 0; h < nirrep_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h ^ symmetry_];
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_];
+        size_t size2 = plus->rowspi_[h] * (size_t)plus->colspi_[h ^ symmetry_];
+        if (size != size2) {
+            std::ostringstream oss;
+            oss << "Number of functions in irrep " << h << " is not the same: " << size << " and " << size2 << "!";
+            throw PSIEXCEPTION(oss.str());
+        }
+    }
+    for (int h = 0; h < nirrep_; ++h) {
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_];
         if (size) {
             C_DAXPY(size, -1.0, plus->matrix_[h][0], 1, matrix_[h][0], 1);
         }
@@ -1106,7 +1135,7 @@ void Matrix::subtract(const SharedMatrix &sub) { subtract(sub.get()); }
 void Matrix::apply_denominator(const Matrix *const plus) {
     double *lhs, *rhs;
     for (int h = 0; h < nirrep_; ++h) {
-        size_t size = rowspi_[h] * colspi_[h ^ symmetry_];
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_];
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
@@ -1357,7 +1386,7 @@ void Matrix::axpy(double a, SharedMatrix X) {
         throw PSIEXCEPTION("Matrix::axpy: Matrices do not have the same nirreps");
     }
     for (int h = 0; h < nirrep_; h++) {
-        size_t size = colspi_[h ^ symmetry()] * rowspi_[h];
+        size_t size = colspi_[h ^ symmetry()] * (size_t)rowspi_[h];
         if (size != (X->rowspi()[h] * X->colspi()[h ^ X->symmetry()])) {
             throw PSIEXCEPTION("Matrix::axpy: Matrices sizes do not match.");
         }
@@ -1480,7 +1509,7 @@ bool Matrix::add_and_orthogonalize_row(const SharedVector v) {
     if (v_copy.dimpi()[0] != colspi_[0])
         throw PSIEXCEPTION("Matrix::schmidt_add_and_orthogonalize: Incompatible dimensions.");
     double **mat = linalg::detail::matrix(rowspi_[0] + 1, colspi_[0]);
-    size_t n = colspi_[0] * rowspi_[0] * sizeof(double);
+    size_t n = colspi_[0] * (size_t)rowspi_[0] * sizeof(double);
     if (n) {
         ::memcpy(mat[0], matrix_[0][0], n);
         linalg::detail::free(matrix_[0]);
@@ -1616,7 +1645,7 @@ double Matrix::vector_dot(const Matrix *const rhs) {
     for (int h = 0; h < nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h ^ symmetry_];
         // Check the size of the other
-        if (size != (size_t)(rhs->rowdim(h) * rhs->coldim(h ^ symmetry_)))
+        if (size != rhs->rowdim(h) * (size_t)rhs->coldim(h ^ symmetry_))
             throw PSIEXCEPTION("Matrix::vector_dot: Dimensions do not match!\n");
 
         if (size) sum += C_DDOT(size, (&matrix_[h][0][0]), 1, &(rhs->matrix_[h][0][0]), 1);
@@ -2687,7 +2716,7 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
         }
 
         // TODO: optimize this with memcopys
-        size_t size = rowspi_[h] * colspi_[h ^ symmetry_] * sizeof(double);
+        size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
         if (size) memcpy(&(outFile->matrix[h][0][0]), &(matrix_[h][0][0]), size);
     }
 
@@ -3314,8 +3343,8 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
     return T;
 }
 
-SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA,
-                             bool transB, bool transC) {
+SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
+                     bool transC) {
     SharedMatrix T = doublet(A, B, transA, transB);
     SharedMatrix S = doublet(T, C, false, transC);
     return S;
@@ -3325,7 +3354,7 @@ namespace detail {
 /// allocate a block matrix -- analogous to libciomr's block_matrix
 double **matrix(int nrow, int ncol) {
     double **mat = (double **)malloc(sizeof(double *) * nrow);
-    const size_t size = sizeof(double) * nrow * ncol;
+    const size_t size = sizeof(double) * nrow * (size_t)ncol;
     mat[0] = (double *)malloc(size);
     ::memset((void *)mat[0], 0, size);
     for (int r = 1; r < nrow; ++r) mat[r] = mat[r - 1] + ncol;

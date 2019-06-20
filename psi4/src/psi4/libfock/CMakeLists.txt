@@ -13,6 +13,7 @@ list(APPEND sources
   hamiltonian.cc
   jk.cc
   points.cc
+  sap.cc
   solver.cc
   soscf.cc
   v.cc
