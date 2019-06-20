@@ -31,6 +31,7 @@ import os
 import numpy as np
 
 from psi4 import core
+from .. import empirical_dispersion
 
 
 def fisapt_compute_energy(self):
@@ -90,9 +91,25 @@ def fisapt_compute_energy(self):
         core.timer_on("FISAPT:FSAPT:ind")
         self.find()
         core.timer_off("FISAPT:FSAPT:ind")
-        core.timer_on("FISAPT:FSAPT:disp")
-        self.fdisp()
-        core.timer_off("FISAPT:FSAPT:disp")
+        if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+            core.timer_on("FISAPT:FSAPT:disp")
+            self.fdisp()
+            core.timer_off("FISAPT:FSAPT:disp")
+        #else:
+        #    # Build Empirical Dispersion
+        #    dashD = empirical_dispersion.EmpiricalDispersion(name_hint='SAPT0-D3M')
+        #    dashD.print_out()
+        #    # Compute -D
+        #    Edisp = dashD.compute_energy(core.get_active_molecule())
+        #    core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(dashD.fctldash), Edisp)            # Printing
+        #    text = []
+        #    text.append("   => {}: Empirical Dispersion <=".format(dashD.fctldash.upper()))
+        #    text.append(" ")
+        #    text.append(dashD.description)
+        #    text.append(dashD.dashlevel_citation.rstrip())
+        #    text.append("\n    Empirical Dispersion Energy [Eh] =     {:24.16f}\n".format(Edisp))
+        #    text.append('\n')
+        #    core.print_out('\n'.join(text))
         self.fdrop()
 
     # => Scalar-Field Analysis <=
@@ -131,7 +148,6 @@ def fisapt_fdrop(self):
     matrices["Exch_AB"].name = "Exch"
     matrices["IndAB_AB"].name = "IndAB"
     matrices["IndBA_AB"].name = "IndBA"
-    matrices["Disp_AB"].name = "Disp"
 
     _drop(vectors["ZA"], filepath)
     _drop(vectors["ZB"], filepath)
@@ -141,7 +157,10 @@ def fisapt_fdrop(self):
     _drop(matrices["Exch_AB"], filepath)
     _drop(matrices["IndAB_AB"], filepath)
     _drop(matrices["IndBA_AB"], filepath)
-    _drop(matrices["Disp_AB"], filepath)
+
+    if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+        matrices["Disp_AB"].name = "Disp"
+        _drop(matrices["Disp_AB"], filepath)
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
         ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
@@ -155,7 +174,6 @@ def fisapt_fdrop(self):
 
         matrices["sIndAB_AB"].name = "IndAB"
         matrices["sIndBA_AB"].name = "IndBA"
-        matrices["sDisp_AB"].name = "Disp"
 
         _drop(vectors["ZA"], ssapt_filepath)
         _drop(vectors["ZB"], ssapt_filepath)
@@ -165,8 +183,10 @@ def fisapt_fdrop(self):
         _drop(matrices["Exch_AB"], ssapt_filepath)
         _drop(matrices["sIndAB_AB"], ssapt_filepath)
         _drop(matrices["sIndBA_AB"], ssapt_filepath)
-        _drop(matrices["sDisp_AB"], ssapt_filepath)
 
+        if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
+            matrices["sDisp_AB"].name = "Disp"
+            _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 def fisapt_plot(self):
     """Filesystem wrapper for FISAPT::plot."""
