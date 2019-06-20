@@ -136,13 +136,16 @@ densities (SAD), discussed in
   (doi: `10.1002/jcc.20393 <http://dx.doi.org/10.1002/jcc.20393>`_).
 
 |PSIfour| also features an extended Hückel guess, which employs
-on-the-fly atomic calculations alike the SAD guess. The Hückel guess
-has been described in
+on-the-fly atomic calculations alike the SAD guess, as well as a
+superposition of atomic potentials (SAP) guess which is based on
+screening of atomic nuclei. The Hückel and SAP guesses have been
+described in
 
 * "An assessment of initial guesses for self-consistent field
   calculations. Superposition of Atomic Potentials: simple yet
-  efficient", S. Lehtola, *J. Chem. Theory Comput.* (2019)
-  (doi: `10.1021/acs.jctc.8b01089 <http://dx.doi.org/10.1021/acs.jctc.8b01089>`_).
+  efficient", S. Lehtola, *J. Chem. Theory Comput.* **15**,
+  1593 (2019) (doi: `10.1021/acs.jctc.8b01089
+  <http://dx.doi.org/10.1021/acs.jctc.8b01089>`_).
 
 
 Density Cumulant Functional Theory (DCFT)
