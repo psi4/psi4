@@ -33,6 +33,7 @@ from . import dependency_check
 from qcelemental import constants
 from psi4.driver import psifiles as psif
 
+from psi4.driver.mdi_engine import mdi_run
 from psi4.driver.molutil import *
 from psi4.driver.inputparser import process_input
 from psi4.driver.p4util.util import *
