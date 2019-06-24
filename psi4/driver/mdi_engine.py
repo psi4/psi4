@@ -26,15 +26,39 @@
 # @END LICENSE
 #
 
-from psi4 import core
+#from psi4 import core
+import psi4
 from psi4.driver import p4util
 from psi4.driver import driver
 from psi4.driver.p4util.exceptions import *
 
-#from mdi.MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
-from MDI_Library import *
+from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
+from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_Conversion_Factor
+from MDI_Library.mdi import MDI_INT, MDI_DOUBLE, MDI_CHAR
+
+class MDIEngine():
+
+    def __init__(self):
+
+        self.molecule = psi4.core.get_active_molecule()
+        self.energy = 0.0
+
+        # lattice variables
+        self.nlattice = 0 # number of lattice point charges
+        self.clattice = [] # list of lattice coordinates
+        self.lattice = [] # list of lattice charges
+        self.lattice_field = psi4.QMMM() # Psi4 chargefield
 
 
-def mdi_run():
-    psi4.core.print_out("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+
+
+def mdi():
+    """ Begin functioning as an MDI engine
+
+#    Arguments:
+#        molecule: Initial molecule
+#        serverdata: Configuration where to connect to ipi
+#        options: LOT, multiplicity and charge
+    """
+    core.print_out("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     pass
