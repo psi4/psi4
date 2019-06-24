@@ -78,9 +78,9 @@ class ElectricFieldInt : public OneBodyAOInt {
 
 class ContractOverDipolesFunctor {
    protected:
-    /// Pointer to the matrix that will contribute to the 2e part of the Fock matrix
+    /// Pointer to the resulting operator matrix
     double **pF_;
-    /// The array of charges
+    /// The array of dipoles
     double **dipoles_;
 
    public:
@@ -88,7 +88,7 @@ class ContractOverDipolesFunctor {
         if (F->rowdim() != F->coldim()) throw PSIEXCEPTION("Invalid Fock matrix in ContractOverCharges");
         if (dipoles->coldim() != 3) throw PSIEXCEPTION("Dipole matrix must have 3 columns.");
         int nbf = F->rowdim();
-        ::memset(pF_[0], 0, nbf * nbf * sizeof(double));
+        std::fill_n(pF_[0], nbf * nbf, 0.0);
     }
 
     void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
@@ -99,19 +99,20 @@ class ContractOverDipolesFunctor {
 
 class ContractOverDensityFieldFunctor {
    protected:
-    /// Pointer to the matrix that will contribute to the 2e part of the Fock matrix
+    /// The array of the density matrix
     double **pD_;
-    /// The array of charges
-    double *field_;
+    /// The array of electric fields
+    double **field_;
 
    public:
-    ContractOverDensityFieldFunctor(SharedVector field, SharedMatrix D) : pD_(D->pointer()), field_(field->pointer()) {}
+    ContractOverDensityFieldFunctor(SharedMatrix field, SharedMatrix D) : pD_(D->pointer()), field_(field->pointer()) {
+        if (D->rowdim() != D->coldim()) throw PSIEXCEPTION("Invalid density matrix in ContractOverDensityFieldFunctor");
+        if (field->coldim() != 3) throw PSIEXCEPTION("Field matrix must have 3 columns.");
+    }
     void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
-        // HELP: is this thread-safe, i.e., could multiple threads
-        // write to dipoles_ at the same time?
-        field_[3 * center] += pD_[bf1][bf2] * integralx;
-        field_[3 * center + 1] += pD_[bf1][bf2] * integraly;
-        field_[3 * center + 2] += pD_[bf1][bf2] * integralz;
+        field_[center][0] += pD_[bf1][bf2] * integralx;
+        field_[center][1] += pD_[bf1][bf2] * integraly;
+        field_[center][2] += pD_[bf1][bf2] * integralz;
     }
 };
 

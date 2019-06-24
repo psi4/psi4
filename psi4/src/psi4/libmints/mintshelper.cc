@@ -45,7 +45,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-// TODO: remove
 #include "electricfield.h"
 
 #include <cstdlib>
@@ -1564,7 +1563,7 @@ std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> 
     return field;
 }
 
-SharedMatrix MintsHelper::electric_field_operator(SharedMatrix coords, SharedMatrix moments) {
+SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix moments) {
     SharedMatrix mat = std::make_shared<Matrix>("Induction operator", basisset_->nao(), basisset_->nao());
     ContractOverDipolesFunctor dipfun(moments, mat);
     auto field_integrals_ = static_cast<ElectricFieldInt*>(integral_->electric_field());
@@ -1583,7 +1582,7 @@ SharedMatrix MintsHelper::electric_field_operator(SharedMatrix coords, SharedMat
     return mat;
 }
 
-SharedVector MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix D) {
+SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix D) {
     auto field_integrals_ = static_cast<ElectricFieldInt*>(integral_->electric_field());
     PetiteList petite(basisset_, integral_, true);
     auto my_aotoso_ = petite.aotoso();
@@ -1596,7 +1595,7 @@ SharedVector MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix
         D_carts = D;
     }
 
-    SharedVector efields = std::make_shared<Vector>("efields", 3*coords->nrow());
+    SharedMatrix efields = std::make_shared<Matrix>("efields", coords->nrow(), 3);
     auto fieldfun = ContractOverDensityFieldFunctor(efields, D_carts);
     field_integrals_->compute_with_functor(fieldfun, coords);
 

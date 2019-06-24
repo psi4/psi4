@@ -265,7 +265,7 @@ void ElectricFieldInt::compute_with_functor(ContractionFunctor& functor, SharedM
             int nsites = coords->rowspi()[0];
 
             for (int site = 0; site < nsites; ++site) {
-                memset(buffer_, 0, 3 * size * sizeof(double));
+                std::fill_n(buffer_, 3 * size, 0.0);
                 double PC[3];
                 double C[3];
                 C[0] = xyz[site][0];
