@@ -47,16 +47,12 @@ def generate_result(A, B, transA, transB):
     C_blocks = []
     if transA:
         C_rowdim = A.colspi
-        link_dim_A = A.rowspi
     else:
         C_rowdim = A.rowspi
-        link_dim_A = A.colspi
     if transB:
         C_coldim = B.rowspi
-        link_dim_B = B.colspi
     else:
         C_coldim = B.colspi
-        link_dim_B = B.rowspi
 
     def rowsym(G, h):
         "rowsym of block h for matrix that transforms as G"
@@ -110,9 +106,6 @@ def generate_result(A, B, transA, transB):
         else:
             op_B_blk = B_blk
         # we can make sure the shapes match up
-        op_A_r, op_A_c = op_A_blk.shape
-        op_B_r, op_B_c = op_B_blk.shape
-        C_blk_r, C_blk_c = C_shapes[C_blk_idx]
         C_blocks.append(np.dot(op_A_blk, op_B_blk))
 
     return C_blocks
