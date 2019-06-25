@@ -72,11 +72,19 @@ class ElectricFieldInt : public OneBodyAOInt {
     static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
     static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
 
+    /** Compute field integrals at coords with a functor to obtain
+    a) the expectation value of the electric field at all coords (ContractOverDensityFieldFunctor)
+    b) the induction operator matrix by contraction with dipoles (ContractOverDipolesFunctor)
+    */
     template <typename ContractionFunctor>
     void compute_with_functor(ContractionFunctor &functor, SharedMatrix coords);
 };
 
 class ContractOverDipolesFunctor {
+    /**
+    Contracts the electric field integrals with a matrix of dipoles,
+    result is added to the matrix F
+    */
    protected:
     /// Pointer to the resulting operator matrix
     double **pF_;
@@ -87,8 +95,6 @@ class ContractOverDipolesFunctor {
     ContractOverDipolesFunctor(SharedMatrix dipoles, SharedMatrix F) : pF_(F->pointer()), dipoles_(dipoles->pointer()) {
         if (F->rowdim() != F->coldim()) throw PSIEXCEPTION("Invalid Fock matrix in ContractOverCharges");
         if (dipoles->coldim() != 3) throw PSIEXCEPTION("Dipole matrix must have 3 columns.");
-        int nbf = F->rowdim();
-        std::fill_n(pF_[0], nbf * nbf, 0.0);
     }
 
     void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
@@ -98,6 +104,10 @@ class ContractOverDipolesFunctor {
 };
 
 class ContractOverDensityFieldFunctor {
+    /**
+    Contracts the electric field integrals with a density matrix D
+    and writes the result (expectation value) to field
+    */
    protected:
     /// The array of the density matrix
     double **pD_;
@@ -108,6 +118,7 @@ class ContractOverDensityFieldFunctor {
     ContractOverDensityFieldFunctor(SharedMatrix field, SharedMatrix D) : pD_(D->pointer()), field_(field->pointer()) {
         if (D->rowdim() != D->coldim()) throw PSIEXCEPTION("Invalid density matrix in ContractOverDensityFieldFunctor");
         if (field->coldim() != 3) throw PSIEXCEPTION("Field matrix must have 3 columns.");
+        field->zero();
     }
     void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
         field_[center][0] += pD_[bf1][bf2] * integralx;
