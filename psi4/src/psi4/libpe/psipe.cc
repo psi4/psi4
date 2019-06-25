@@ -46,8 +46,6 @@
 
 #include "psipe.h"
 
-// TODO: implement output stream option in CPPE for printing
-
 namespace psi {
 
 libcppe::Molecule make_molecule(std::shared_ptr<Molecule> molecule) {
@@ -72,10 +70,12 @@ std::vector<double> mult_coeffs_k(int max_k = 0) {
 std::vector<double> mult_coeffs = mult_coeffs_k(2);
 
 int have_moment(int k, int max_k) { return k <= max_k; }
+
+const std::function<void(std::string)> psi4_print = [](std::string output) { outfile->Printf("%s\n", output.c_str()); };
 }  // unnamed namespace
 
 PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset)
-    : cppe_state_(libcppe::CppeState(options, make_molecule(basisset->molecule()), *(outfile->stream()))),
+    : cppe_state_(libcppe::CppeState(options, make_molecule(basisset->molecule()))),
       int_helper_(PeIntegralHelper(basisset)) {
     potentials_ = cppe_state_.get_potentials();
     cppe_state_.calculate_static_energies_and_fields();
@@ -97,7 +97,7 @@ PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset)
 }
 
 std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMatrix& Dm, CalcType type) {
-    cppe_state_.get_energies().set("Electrostatic/Electronic", Dm->vector_dot(V_es_));
+    cppe_state_.m_pe_energy["Electrostatic"]["Electronic"] = Dm->vector_dot(V_es_);
 
     size_t n_sitecoords = 3 * cppe_state_.get_polarizable_site_number();
 
@@ -134,12 +134,13 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
     }
 
     double energy_result =
-        (type == PeState::CalcType::total ? cppe_state_.get_energies().get_total_energy()
-                                          : cppe_state_.get_energies().get("Polarization/Electronic"));
+        (type == PeState::CalcType::total ? cppe_state_.get_total_energy_for_category("Electronic") +
+                                                cppe_state_.get_total_energy_for_category("Polarization")
+                                          : cppe_state_.m_pe_energy["Polarization"]["Electronic"]);
     return std::pair<double, SharedMatrix>(energy_result, V_ind);
 }
 
-void PeState::print_energy_summary() { cppe_state_.print_summary(); }
+void PeState::print_energy_summary() { psi4_print(cppe_state_.get_energy_summary_string()); }
 
 SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 site, int order,
                                                                      std::vector<double>& moments) {
@@ -182,7 +183,51 @@ SharedMatrix PeIntegralHelper::compute_multipole_potential_integrals(Vector3 sit
     return res;
 }
 
-SharedMatrix PeIntegralHelper::compute_field_integrals(Vector3 site, Eigen::VectorXd moment) {
+
+SharedMatrix PeIntegralHelper::compute_field_integrals(SharedMatrix coords, SharedMatrix moments) {
+    auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
+    auto field_integrals_ = static_cast<ElectricFieldInt*>(integrals->electric_field());
+
+    SharedMatrix mat = std::make_shared<Matrix>("Induction operator", basisset_->nao(), basisset_->nao());
+    ContractOverDipolesFunctor dipfun(moments, mat);
+    field_integrals_->compute_with_functor(dipfun, coords);
+    mat->scale(-1.0);
+
+    PetiteList petite(basisset_, integrals, true);
+    auto my_aotoso_ = petite.aotoso();
+
+    SharedMatrix pure_mat;
+    if (basisset_->has_puream()) {
+        pure_mat = std::make_shared<Matrix>("Induction operator pure", basisset_->nbf(), basisset_->nbf());
+        pure_mat->transform(mat, my_aotoso_);
+        mat = pure_mat;
+    }
+    return mat;
+}
+
+SharedVector PeIntegralHelper::compute_field(SharedMatrix coords, SharedMatrix D) {
+    auto integrals = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
+    auto field_integrals_ = static_cast<ElectricFieldInt*>(integrals->electric_field());
+    PetiteList petite(basisset_, integrals, true);
+    auto my_aotoso_ = petite.aotoso();
+
+    SharedMatrix D_carts;
+    if (basisset_->has_puream()) {
+        D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
+        D_carts->back_transform(D, my_aotoso_);
+    } else {
+        D_carts = D;
+    }
+
+    SharedVector efields = std::make_shared<Vector>("efields", 3 * coords->nrow());
+    auto fieldfun = ContractOverDensityFieldFunctor(efields, D_carts);
+    field_integrals_->compute_with_functor(fieldfun, coords);
+    efields->print_out();
+
+    return efields;
+}
+
+SharedMatrix PeIntegralHelper::compute_field_integrals_old(Vector3 site, Eigen::VectorXd moment) {
     std::vector<SharedMatrix> fields;
     fields.push_back(std::make_shared<Matrix>("AO Field X", basisset_->nbf(), basisset_->nbf()));
     fields.push_back(std::make_shared<Matrix>("AO Field Y", basisset_->nbf(), basisset_->nbf()));

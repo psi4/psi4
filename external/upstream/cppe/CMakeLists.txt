@@ -1,5 +1,5 @@
 if(${ENABLE_cppe})
-    find_package(cppe 0.0.0 CONFIG QUIET)
+    find_package(cppe 0.0.6 CONFIG QUIET)
 
     if(${cppe_FOUND})
         get_property(_loc TARGET cppe::cppe PROPERTY LOCATION)
@@ -26,11 +26,11 @@ if(${ENABLE_cppe})
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}
-                       -DENABLE_PYTHON_INTERFACE=OFF
+                       -DENABLE_PYTHON_INTERFACE=ON
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
-                       -DINSTALL_DEVEL_HEADERS=ON
+                       -DINSTALL_DEVEL_HEADERS=ON # TODO: switch off once only python interface is used
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=CXX)
