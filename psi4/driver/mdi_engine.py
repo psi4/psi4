@@ -25,8 +25,10 @@
 #
 # @END LICENSE
 #
+"""Support for using Psi4 as an MDI engine.
+For details regarding MDI, see https://molssi.github.io/MDI_Library/html/index.html.
 
-#from psi4 import core
+"""
 import psi4
 from psi4.driver import p4util
 from psi4.driver import driver
@@ -45,6 +47,11 @@ except ImportError:
 class MDIEngine():
 
     def __init__(self, scf_method):
+        """ Initialize an MDIEngine object for communication with MDI
+
+        Arguments:
+           scf_method: Method used when calculating energies or gradients
+        """
 
         # Method used when the SCF command is received
         self.scf_method = scf_method
@@ -70,8 +77,15 @@ class MDIEngine():
         # Accept a communicator to the driver code
         self.comm = MDI_Accept_Communicator()
 
+        # Ensure that the molecule is using c1 symmetry
+        self.molecule.reset_point_group('c1')
+        self.molecule.fix_orientation(True)
+        self.molecule.fix_com(True)
+        self.molecule.update_geometry()
 
     def length_conversion(self):
+        """ Obtain the conversion factor between the geometry specification units and bohr
+        """
         unit_name = self.molecule.units()
         unit_conv = 1.0
         if unit_name == "Angstrom":
@@ -85,12 +99,16 @@ class MDIEngine():
 
     # respond to <NATOMS command
     def send_natoms(self):
+        """ Send the number of atoms through MDI
+        """
         natom = self.molecule.natom()
         MDI_Send(natom, 1, MDI_INT, self.comm)
         print("Natoms: " + str(natom))
 
     # respond to <COORDS command
     def send_coords(self):
+        """ Send the nuclear coordinates through MDI
+        """
         natom = self.molecule.natom()
         coords = [ self.molecule.xyz(iatom)[icoord] for iatom in range(natom) for icoord in range(3) ]
         MDI_Send(coords, 3*natom, MDI_DOUBLE, self.comm)
@@ -98,6 +116,8 @@ class MDIEngine():
 
     # respond to <CHARGES command
     def send_charges(self):
+        """ Send the nuclear charges through MDI
+        """
         natom = self.molecule.natom()
         charges = [ self.molecule.charge(iatom) for iatom in range(natom) ]
         MDI_Send(charges, natom, MDI_DOUBLE, self.comm)
@@ -105,6 +125,8 @@ class MDIEngine():
 
     # respond to <MASSES command
     def send_masses(self):
+        """ Send the nuclear masses through MDI
+        """
         natom = self.molecule.natom()
         masses = [ self.molecule.mass(iatom) for iatom in range(natom) ]
         MDI_Send(masses, natom, MDI_DOUBLE, self.comm)
@@ -112,6 +134,8 @@ class MDIEngine():
 
     # respond to <ELEMENTS command
     def send_elements(self):
+        """ Send the atomic number of each nucleus through MDI
+        """
         natom = self.molecule.natom()
         elements = [ self.molecule.true_atomic_number(iatom) for iatom in range(natom) ]
         MDI_Send(elements, natom, MDI_INT, self.comm)
@@ -119,11 +143,15 @@ class MDIEngine():
 
     # respond to <ENERGY command
     def send_energy(self):
+        """ Send the total energy through MDI
+        """
         MDI_Send(self.energy, 1, MDI_DOUBLE, self.comm)
         print("Energy: " + str(self.energy))
 
     # respond to <FORCES command
     def send_forces(self):
+        """ Send the nuclear forces through MDI
+        """
         natom = self.molecule.natom()
         force_matrix = psi4.driver.gradient(self.scf_method)
         unit_conv = 1.0
@@ -133,6 +161,8 @@ class MDIEngine():
 
     # respond to >CHARGES command
     def recv_charges(self):
+        """ Receive a set of nuclear charges through MDI and assign them to the atoms in the current molecule
+        """
         natom = self.molecule.natom()
         charges = MDI_Recv(natom, MDI_DOUBLE, self.comm)
         for iatom in range(natom):
@@ -140,6 +170,8 @@ class MDIEngine():
 
     # respond to >COORDS command
     def recv_coords(self):
+        """ Receive a set of nuclear coordinates through MDI and assign them to the atoms in the current molecule
+        """
         natom = self.molecule.natom()
         coords = MDI_Recv(3*natom, MDI_DOUBLE, self.comm)
         matrix = psi4.core.Matrix(natom, 3)
@@ -151,6 +183,8 @@ class MDIEngine():
 
     # respond to the >MASSES command
     def recv_masses(self):
+        """ Receive a set of nuclear masses through MDI and assign them to the atoms in the current molecule
+        """
         natom = self.molecule.natom()
         masses = MDI_Recv(natom, MDI_DOUBLE, self.comm)
 
@@ -166,6 +200,8 @@ class MDIEngine():
 
     # set a lattice of point charges
     def set_lattice_field(self):
+        """ Set a field of lattice point charges using information received through MDI
+        """
         self.lattice_field = psi4.QMMM()
         for ilat in range(self.nlattice):
             latx = self.clattice[3*ilat+0]
@@ -176,6 +212,8 @@ class MDIEngine():
 
     # respond to >NLATTICE command
     def recv_nlattice(self):
+        """ Receive the number of lattice point charges through MDI
+        """
         self.nlattice = MDI_Recv(1, MDI_INT, self.comm)
         self.clattice = [ 0.0 for ilat in range(3*self.nlattice) ]
         self.lattice = [ 0.0 for ilat in range(self.nlattice) ]
@@ -183,30 +221,38 @@ class MDIEngine():
 
     # respond to >CLATTICE command
     def recv_clattice(self):
+        """ Receive the coordinates of a set of lattice point charges through MDI
+        """
         self.clattice = MDI_Recv(3*self.nlattice, MDI_DOUBLE, self.comm)
         set_lattice_field(self.molecule)
 
     # respond to >LATTICE command
     def recv_lattice(self):
+        """ Receive the charges of a set of lattice point charges through MDI
+        """
         self.lattice = MDI_Recv(self.nlattice, MDI_DOUBLE, self.comm)
         set_lattice_field(self.molecule)
 
     # respond to SCF command
     def run_scf(self):
+        """ Run an energy calculation
+        """
         self.energy = psi4.energy(self.scf_method)
 
     # enter server mode, listening for commands from the driver
     def listen_for_commands(self):
+        """ Receive commands through MDI and respond to them as defined by the MDI Standard
+        """
 
         while True:
-            print("--- FIRST COMMAND")
             if self.world_rank == 0:
                 command = MDI_Recv_Command(self.comm)
             else:
                 command = None
             if use_mpi4py:
                 command = mpi_world.bcast(command, root=0)
-            print("   COMMAND: " + str(command))
+            if self.world_rank == 0:
+                core.print_out('\nMDI command received: ' + str(command) + ' \n')
 
             # respond to commands
             if command == "<NATOMS":
@@ -244,6 +290,11 @@ class MDIEngine():
 
 
 def mdi_init(mdi_arguments):
+    """ Initialize the MDI Library
+
+    Arguments:
+        mdi_arguments: MDI configuration options
+    """
     mpi_world = None
     if use_mpi4py:
         mpi_world = MPI.COMM_WORLD
@@ -252,14 +303,8 @@ def mdi_init(mdi_arguments):
 def mdi(scf_method):
     """ Begin functioning as an MDI engine
 
-#    Arguments:
-#        molecule: Initial molecule
-#        serverdata: Configuration where to connect to ipi
-#        options: LOT, multiplicity and charge
+    Arguments:
+        scf_method: Method used when calculating energies or gradients
     """
-    core.print_out("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-
     engine = MDIEngine(scf_method)
     engine.listen_for_commands()
-
-    pass
