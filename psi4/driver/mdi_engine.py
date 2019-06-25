@@ -44,10 +44,7 @@ except ImportError:
 
 class MDIEngine():
 
-    def __init__(self, mdi_arguments, scf_method):
-
-        # Argument to the -mdi command line option
-        self.mdi_arguments = mdi_arguments
+    def __init__(self, scf_method):
 
         # Method used when the SCF command is received
         self.scf_method = scf_method
@@ -65,13 +62,10 @@ class MDIEngine():
         self.mpi_world = None
         self.world_rank = 0
 
-        # initialize MDI
-        if use_mpi4py:
-            mpi_world = MPI.COMM_WORLD
-        MDI_Init(self.mdi_arguments,self.mpi_world)
+        # Get correct intra-code MPI communicator
         if use_mpi4py:
             self.mpi_world = MDI_Get_Intra_Code_MPI_Comm()
-            self.world_rank = mpi_world.Get_rank()
+            self.world_rank = self.mpi_world.Get_rank()
 
         # Accept a communicator to the driver code
         self.comm = MDI_Accept_Communicator()
@@ -249,6 +243,11 @@ class MDIEngine():
 
 
 
+def mdi_init(mdi_arguments):
+    mpi_world = None
+    if use_mpi4py:
+        mpi_world = MPI.COMM_WORLD
+    MDI_Init(mdi_arguments, mpi_world)
 
 def mdi(scf_method):
     """ Begin functioning as an MDI engine
@@ -260,8 +259,7 @@ def mdi(scf_method):
     """
     core.print_out("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
-    mdi_arguments = "-role ENGINE -name QM -method TCP -port 8021 -hostname localhost"
-    engine = MDIEngine(mdi_arguments, scf_method)
+    engine = MDIEngine(scf_method)
     engine.listen_for_commands()
 
     pass
