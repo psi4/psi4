@@ -14,7 +14,7 @@ target_sources(core
   PRIVATE
     export_benchmarks.cc
     export_blas_lapack.cc
-    export_cppe.cc
+    # export_cppe.cc
     export_cubeprop.cc
     export_diis.cc
     export_fock.cc

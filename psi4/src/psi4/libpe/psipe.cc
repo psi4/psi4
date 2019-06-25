@@ -75,7 +75,7 @@ const std::function<void(std::string)> psi4_print = [](std::string output) { out
 }  // unnamed namespace
 
 PeState::PeState(libcppe::PeOptions options, std::shared_ptr<BasisSet> basisset)
-    : cppe_state_(libcppe::CppeState(options, make_molecule(basisset->molecule()))),
+    : cppe_state_(libcppe::CppeState(options, make_molecule(basisset->molecule()), psi4_print)),
       int_helper_(PeIntegralHelper(basisset)) {
     potentials_ = cppe_state_.get_potentials();
     cppe_state_.calculate_static_energies_and_fields();
@@ -134,8 +134,7 @@ std::pair<double, SharedMatrix> PeState::compute_pe_contribution(const SharedMat
     }
 
     double energy_result =
-        (type == PeState::CalcType::total ? cppe_state_.get_total_energy_for_category("Electronic") +
-                                                cppe_state_.get_total_energy_for_category("Polarization")
+        (type == PeState::CalcType::total ? cppe_state_.get_total_energy()
                                           : cppe_state_.m_pe_energy["Polarization"]["Electronic"]);
     return std::pair<double, SharedMatrix>(energy_result, V_ind);
 }
@@ -222,7 +221,6 @@ SharedVector PeIntegralHelper::compute_field(SharedMatrix coords, SharedMatrix D
     SharedVector efields = std::make_shared<Vector>("efields", 3 * coords->nrow());
     auto fieldfun = ContractOverDensityFieldFunctor(efields, D_carts);
     field_integrals_->compute_with_functor(fieldfun, coords);
-    efields->print_out();
 
     return efields;
 }

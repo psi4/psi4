@@ -144,7 +144,7 @@ else()
 endif ()
 
 if(${ENABLE_cppe})
-    find_package(cppe 0.0.6 CONFIG REQUIRED)
+    find_package(cppe 0.0.7 CONFIG REQUIRED)
     get_property(_loc TARGET cppe::cppe PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using cppe${ColourReset}: ${_loc} (version ${cppe_VERSION})")

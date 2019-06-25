@@ -52,12 +52,11 @@ void export_cppe(py::module& m) {
                                                                                    "Options for PE library");
     pe_options.def(py::init<>())
         .def_readwrite("potfile", &libcppe::PeOptions::potfile)
-        .def_readwrite("print_level", &libcppe::PeOptions::print_level)
         .def_readwrite("iso_pol", &libcppe::PeOptions::iso_pol)
 
         .def_readwrite("induced_thresh", &libcppe::PeOptions::induced_thresh)
         .def_readwrite("do_diis", &libcppe::PeOptions::do_diis)
-        .def_readwrite("diis_maxiter", &libcppe::PeOptions::diis_maxiter)
+        .def_readwrite("maxiter", &libcppe::PeOptions::maxiter)
 
         .def_readwrite("pe_border", &libcppe::PeOptions::pe_border)
         .def_readwrite("border_options", &libcppe::PeOptions::border_options);

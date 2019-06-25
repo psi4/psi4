@@ -1,5 +1,5 @@
 if(${ENABLE_cppe})
-    find_package(cppe 0.0.6 CONFIG QUIET)
+    find_package(cppe 0.0.7 CONFIG QUIET)
 
     if(${cppe_FOUND})
         get_property(_loc TARGET cppe::cppe PROPERTY LOCATION)

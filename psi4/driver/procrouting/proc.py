@@ -54,6 +54,15 @@ from . import dft
 from . import mcscf
 from . import response
 
+_have_cppe = False
+
+try:
+    from .solvent.pol_embed import CppeInterface
+    import cppe
+    _have_cppe = True
+except ImportError:
+    pass
+
 
 # ATTN NEW ADDITIONS!
 # consult http://psicode.org/psi4manual/master/proc_py.html
@@ -1377,21 +1386,22 @@ def scf_helper(name, post_scf=True, **kwargs):
     
     # PE preparation
     if core.get_option('SCF', 'PE'):
+        if not _have_cppe:
+            raise ValidationError("Could not find cppe module.")
         if core.get_option('SCF', 'PCM'):
             raise ValidationError("""Error: 3-layer QM/MM/PCM not implemented.\n""")
         potfile_name = core.get_local_option('PE', 'POTFILE')
-        pol_embed_options = core.PeOptions()
+        pol_embed_options = cppe.PeOptions()
         pol_embed_options.potfile = potfile_name
-        pol_embed_options.print_level = core.get_option('SCF', "PRINT")
         pol_embed_options.induced_thresh = core.get_local_option('PE', 'CONVERGENCE_INDUCED')
         pol_embed_options.iso_pol = core.get_local_option('PE', 'ISOTROPIC_POL')
         
         pol_embed_options.do_diis = core.get_local_option('PE', 'DIIS')
-        pol_embed_options.diis_maxiter = core.get_local_option('PE', 'MAXITER')
+        pol_embed_options.maxiter = core.get_local_option('PE', 'MAXITER')
         pol_embed_options.pe_border = core.get_local_option('PE', 'BORDER')
         
         if pol_embed_options.pe_border:
-            pol_embed_border_options = core.PeBorderOptions()
+            pol_embed_border_options = cppe.PeBorderOptions()
             pe_btype = core.get_local_option('PE', 'BORDER_TYPE').upper()
             if pe_btype == "REMOVE":
                 pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.rem
@@ -1408,8 +1418,12 @@ def scf_helper(name, post_scf=True, **kwargs):
         
         core.print_out(""" Using potential file {} for Polarizable Embedding
                        calculation.\n""".format(potfile_name))
-        scf_wfn.set_PeState(core.PE(pol_embed_options,
-                                    scf_wfn.basisset()))
+        # scf_wfn.set_PeState(core.PE(pol_embed_options,
+        #                             scf_wfn.basisset()))
+        scf_wfn.pe_state = CppeInterface(
+            molecule=scf_molecule, options=pol_embed_options,
+            basisset=scf_wfn.basisset()
+        )
         core.print_out("""  PE does not make use of molecular symmetry: """
                        """further calculations in C1 point group.\n""")
         use_c1 = True
