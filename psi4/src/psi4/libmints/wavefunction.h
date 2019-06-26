@@ -74,7 +74,6 @@ class MatrixFactory;
 class Options;
 class SOBasisSet;
 class PCM;
-class PeState;
 class PSIO;
 class OrbitalSpace;
 class ExternalPotential;
@@ -249,10 +248,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     // Polarizable continuum model
     bool PCM_enabled_;
     std::shared_ptr<PCM> PCM_;
-
-    // Polarizable embedding model
-    bool PE_enabled_;
-    std::shared_ptr<PeState> PeState_;
 
    private:
     // Wavefunction() {}
@@ -714,11 +709,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::shared_ptr<PCM> get_PCM() const;
     bool PCM_enabled() const { return PCM_enabled_; }
 
-    // Set PeState object
-    void set_PeState(const std::shared_ptr<PeState>& pe);
-    // Get PeState object
-    std::shared_ptr<PeState> get_PeState() const;
-    bool PE_enabled() const { return PE_enabled_; }
 };
 
 }  // namespace psi

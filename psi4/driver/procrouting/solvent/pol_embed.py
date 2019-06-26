@@ -48,42 +48,58 @@ class CppeInterface:
         self.options = options
         self.basisset = basisset
         self.mints = core.MintsHelper(self.basisset)
+
+        def callback(output):
+            print(output)
         self.cppe_state = cppe.CppeState(
             self.options, psi4mol_to_cppemol(self.molecule)
         )
+        self.cppe_state.calculate_static_energies_and_fields()
         # obtain coordinates of polarizable sites
-        self.polarizable_coords = np.array([
-            site.position for site in self.cppe_state.get_potentials()
-            if site.is_polarizable
-        ])
+        self._enable_induction = False
+        if self.cppe_state.get_polarizable_site_number():
+            self._enable_induction = True
+            coords = np.array([
+                site.position for site in self.cppe_state.get_potentials()
+                if site.is_polarizable
+            ])
+            self.polarizable_coords = core.Matrix.from_array(coords)
         self.V_es = None
 
     def get_pe_contribution(self, density_matrix, elec_only=False):
         # build electrostatics operator
         if self.V_es is None and not elec_only:
             self.build_electrostatics_operator()
-        e_electrostatic = np.sum(density_matrix * self.V_es)
+        e_electrostatic = np.sum(density_matrix.np * self.V_es)
         self.cppe_state.energies["Electrostatic"]["Electronic"] = e_electrostatic
 
-        # obtain expectation values of elec. field at polarizable sites
-        # elec_fields = integral_library.electric_field_value(
-        #     self.polarizable_coords, density_matrix
-        # )
-        # solve induced moments
-        # self.cppe_state.update_induced_moments(elec_fields)
-        # induced_moments = self.cppe_state.induced_moments
+        n_bas = self.basisset.nbf()
+        V_pe = np.zeros((n_bas, n_bas))
+        if self._enable_induction:
+            # obtain expectation values of elec. field at polarizable sites
+            elec_fields = self.mints.electric_field_value(
+                self.polarizable_coords, density_matrix
+            ).np
+            # solve induced moments
+            self.cppe_state.update_induced_moments(
+                elec_fields.flatten(), elec_only
+            )
+            induced_moments = np.array(
+                self.cppe_state.get_induced_moments()
+            ).reshape(self.polarizable_coords.shape)
 
-        # build induction operator
-        # V_ind = np.zeros_like(self.V_es)
-        # for coord, ind_mom in zip(self.polarizable_coords, induced_moments):
-        #     field_int = integral_library.electric_field_integral(site=coord)
-        #     V_ind += -1.0 * sum(ind_mom[i] * field_int[i] for i in range(3))
-        E_pe = self.cppe_state.total_energy
-        V_pe = self.V_es # + V_ind
+            # build induction operator
+            V_ind = self.mints.induction_operator(
+                self.polarizable_coords,
+                core.Matrix.from_array(induced_moments)
+            ).np
+            V_pe += V_ind
         # only take electronic contributions into account
-        # if elec_only:
-        #     V_pe = V_ind
-        #     E_pe = self.cppe_state.energies["Polarization"]["Electronic"]
+        if elec_only:
+            E_pe = self.cppe_state.energies["Polarization"]["Electronic"]
+        else:
+            V_pe += self.V_es
+            E_pe = self.cppe_state.total_energy
         return E_pe, core.Matrix.from_array(V_pe)
 
     def build_electrostatics_operator(self):

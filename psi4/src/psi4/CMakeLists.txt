@@ -12,7 +12,6 @@ foreach(dir_name
   libmints
   libmoinfo
   liboptions
-  libpe
   libplugin
   libpsi4util
   libpsio

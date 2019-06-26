@@ -1418,8 +1418,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         
         core.print_out(""" Using potential file {} for Polarizable Embedding
                        calculation.\n""".format(potfile_name))
-        # scf_wfn.set_PeState(core.PE(pol_embed_options,
-        #                             scf_wfn.basisset()))
         scf_wfn.pe_state = CppeInterface(
             molecule=scf_molecule, options=pol_embed_options,
             basisset=scf_wfn.basisset()

@@ -298,14 +298,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.push_back_external_potential(Vpcm)
         self.set_variable("PCM POLARIZATION ENERGY", upcm)
         self.set_energies("PCM Polarization", upcm)
-        
+
         upe = 0.0
         if core.get_option('SCF', 'PE'):
             Dt = self.Da().clone()
             Dt.add(self.Db())
-            # upe, Vpe = self.get_PeState().compute_pe_contribution(Dt, calc_type)
             upe, Vpe = self.pe_state.get_pe_contribution(
-                Dt.np, elec_only=False
+                Dt, elec_only=False
             )
             SCFE += upe
             self.push_back_external_potential(Vpe)
@@ -604,7 +603,7 @@ def scf_finalize_energy(self):
         Dt.add(self.Db())
         # _, Vpe = self.get_PeState().compute_pe_contribution(Dt, calc_type)
         _, Vpe = self.pe_state.get_pe_contribution(
-            Dt.np, elec_only=False
+            Dt, elec_only=False
         )
         self.push_back_external_potential(Vpe)
 
