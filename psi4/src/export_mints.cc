@@ -987,6 +987,11 @@ void export_mints(py::module& m) {
              "origin"_a = std::vector<double>{0, 0, 0}, "max_k"_a = 0, "deriv"_a = 0)
         .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
              "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
+        .def("induction_operator", &MintsHelper::induction_operator,
+             "Induction operator, formed by contracting electric field integrals with dipole moments at given "
+             "coordinates (needed for EFP and PE)")
+        .def("electric_field_value", &MintsHelper::electric_field_value,
+             "Electric field expectation value at given sites")
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)

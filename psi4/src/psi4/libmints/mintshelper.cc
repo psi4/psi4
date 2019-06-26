@@ -45,6 +45,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
+#include "electricfield.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -1561,6 +1562,46 @@ std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> 
 
     return field;
 }
+
+SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix moments) {
+    SharedMatrix mat = std::make_shared<Matrix>("Induction operator", basisset_->nao(), basisset_->nao());
+    ContractOverDipolesFunctor dipfun(moments, mat);
+    auto field_integrals_ = static_cast<ElectricFieldInt*>(integral_->electric_field());
+    field_integrals_->compute_with_functor(dipfun, coords);
+    mat->scale(-1.0);
+
+    PetiteList petite(basisset_, integral_, true);
+    auto my_aotoso_ = petite.aotoso();
+
+    SharedMatrix pure_mat;
+    if (basisset_->has_puream()) {
+        pure_mat = std::make_shared<Matrix>("Induction operator pure", basisset_->nbf(), basisset_->nbf());
+        pure_mat->transform(mat, my_aotoso_);
+        mat = pure_mat;
+    }
+    return mat;
+}
+
+SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix D) {
+    auto field_integrals_ = static_cast<ElectricFieldInt*>(integral_->electric_field());
+    PetiteList petite(basisset_, integral_, true);
+    auto my_aotoso_ = petite.aotoso();
+
+    SharedMatrix D_carts;
+    if (basisset_->has_puream()) {
+        D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
+        D_carts->back_transform(D, my_aotoso_);
+    } else {
+        D_carts = D;
+    }
+
+    SharedMatrix efields = std::make_shared<Matrix>("efields", coords->nrow(), 3);
+    auto fieldfun = ContractOverDensityFieldFunctor(efields, D_carts);
+    field_integrals_->compute_with_functor(fieldfun, coords);
+
+    return efields;
+}
+
 
 std::vector<SharedMatrix> MintsHelper::ao_nabla() {
     // Create a vector of matrices with the proper symmetry

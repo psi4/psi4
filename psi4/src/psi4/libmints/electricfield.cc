@@ -214,6 +214,138 @@ void ElectricFieldInt::compute_pair(const GaussianShell& s1, const GaussianShell
     }
 }
 
+template <typename ContractionFunctor>
+void ElectricFieldInt::compute_with_functor(ContractionFunctor& functor, SharedMatrix coords) {
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+    int bf1_offset = 0;
+    for (int i = 0; i < ns1; ++i) {
+        const GaussianShell& s1 = bs1_->shell(i);
+        int ni = s1.ncartesian();
+        int bf2_offset = 0;
+        for (int j = 0; j < ns2; ++j) {
+            const GaussianShell& s2 = bs2_->shell(j);
+            int nj = s2.ncartesian();
+            int ao12;
+            int am1 = s1.am();
+            int am2 = s2.am();
+            int nprim1 = s1.nprimitive();
+            int nprim2 = s2.nprimitive();
+            double A[3], B[3];
+            A[0] = s1.center()[0];
+            A[1] = s1.center()[1];
+            A[2] = s1.center()[2];
+            B[0] = s2.center()[0];
+            B[1] = s2.center()[1];
+            B[2] = s2.center()[2];
+
+            int izm = 1;
+            int iym = am1 + 1;
+            int ixm = iym * iym;
+            int jzm = 1;
+            int jym = am2 + 1;
+            int jxm = jym * jym;
+
+            // Not sure if these are needed.
+            int size = INT_NCART(am1) * INT_NCART(am2);
+            int ydisp = size;
+            int zdisp = ydisp + size;
+
+            // compute intermediates
+            double AB2 = 0.0;
+            AB2 += (A[0] - B[0]) * (A[0] - B[0]);
+            AB2 += (A[1] - B[1]) * (A[1] - B[1]);
+            AB2 += (A[2] - B[2]) * (A[2] - B[2]);
+
+            double*** ex = efield_recur_.x();
+            double*** ey = efield_recur_.y();
+            double*** ez = efield_recur_.z();
+
+            double** xyz = coords->pointer();
+            int nsites = coords->rowspi()[0];
+
+            for (int site = 0; site < nsites; ++site) {
+                std::fill_n(buffer_, 3 * size, 0.0);
+                double PC[3];
+                double C[3];
+                C[0] = xyz[site][0];
+                C[1] = xyz[site][1];
+                C[2] = xyz[site][2];
+
+                for (int p1 = 0; p1 < nprim1; ++p1) {
+                    double a1 = s1.exp(p1);
+                    double c1 = s1.coef(p1);
+                    for (int p2 = 0; p2 < nprim2; ++p2) {
+                        double a2 = s2.exp(p2);
+                        double c2 = s2.coef(p2);
+                        double gamma = a1 + a2;
+                        double oog = 1.0 / gamma;
+
+                        double PA[3], PB[3];
+                        double P[3];
+
+                        P[0] = (a1 * A[0] + a2 * B[0]) * oog;
+                        P[1] = (a1 * A[1] + a2 * B[1]) * oog;
+                        P[2] = (a1 * A[2] + a2 * B[2]) * oog;
+                        PA[0] = P[0] - A[0];
+                        PA[1] = P[1] - A[1];
+                        PA[2] = P[2] - A[2];
+                        PB[0] = P[0] - B[0];
+                        PB[1] = P[1] - B[1];
+                        PB[2] = P[2] - B[2];
+
+                        double over_pf = exp(-a1 * a2 * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * c1 * c2;
+
+                        PC[0] = P[0] - C[0];
+                        PC[1] = P[1] - C[1];
+                        PC[2] = P[2] - C[2];
+
+                        // Get recursive
+                        efield_recur_.compute(PA, PB, PC, gamma, am1, am2);
+                        // Gather contributions.
+                        ao12 = 0;
+                        int ao1 = 0;
+                        for (int ii = 0; ii <= am1; ++ii) {
+                            int l1 = am1 - ii;
+                            for (int jj = 0; jj <= ii; ++jj) {
+                                int m1 = ii - jj;
+                                int n1 = jj;
+
+                                int ao2 = 0;
+                                for (int kk = 0; kk <= am2; ++kk) {
+                                    int l2 = am2 - kk;
+                                    for (int ll = 0; ll <= kk; ++ll) {
+                                        int m2 = kk - ll;
+                                        int n2 = ll;
+
+                                        // Compute location in the recursion
+                                        int iind = l1 * ixm + m1 * iym + n1 * izm;
+                                        int jind = l2 * jxm + m2 * jym + n2 * jzm;
+
+                                        buffer_[ao12] += ex[iind][jind][0] * over_pf;
+                                        buffer_[ao12 + ydisp] += ey[iind][jind][0] * over_pf;
+                                        buffer_[ao12 + zdisp] += ez[iind][jind][0] * over_pf;
+                                        functor(ao1 + bf1_offset, ao2 + bf2_offset, site, ex[iind][jind][0] * over_pf,
+                                                ey[iind][jind][0] * over_pf, ez[iind][jind][0] * over_pf);
+                                        ao2++;
+                                        ao12++;
+                                    }
+                                }
+                                ao1++;
+                            }
+                        }
+                    }  // loop over primitives of shell 2
+                }      // loop over primitives of shell 1
+            }          // loop over points
+            bf2_offset += nj;
+        }  // loop over shell 2
+        bf1_offset += ni;
+    }  // loop over shell 1
+}
+
+template void ElectricFieldInt::compute_with_functor(ContractOverDipolesFunctor&, SharedMatrix);
+template void ElectricFieldInt::compute_with_functor(ContractOverDensityFieldFunctor&, SharedMatrix);
+
 void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& /*s1*/, const GaussianShell& /*s2*/) {
     throw NOT_IMPLEMENTED_EXCEPTION();
     // NOT IMPLEMENTED!!!!!!

@@ -33,7 +33,10 @@
 #include "typedefs.h"
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/vector3.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"
+
 namespace psi {
 class Molecule;
 
@@ -68,6 +71,59 @@ class ElectricFieldInt : public OneBodyAOInt {
 
     static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
     static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
+
+    /** Compute field integrals at coords with a functor to obtain
+    a) the expectation value of the electric field at all coords (ContractOverDensityFieldFunctor)
+    b) the induction operator matrix by contraction with dipoles (ContractOverDipolesFunctor)
+    */
+    template <typename ContractionFunctor>
+    void compute_with_functor(ContractionFunctor &functor, SharedMatrix coords);
+};
+
+class ContractOverDipolesFunctor {
+    /**
+    Contracts the electric field integrals with a matrix of dipoles,
+    result is added to the matrix F
+    */
+   protected:
+    /// Pointer to the resulting operator matrix
+    double **pF_;
+    /// The array of dipoles
+    double **dipoles_;
+
+   public:
+    ContractOverDipolesFunctor(SharedMatrix dipoles, SharedMatrix F) : pF_(F->pointer()), dipoles_(dipoles->pointer()) {
+        if (F->rowdim() != F->coldim()) throw PSIEXCEPTION("Invalid Fock matrix in ContractOverCharges");
+        if (dipoles->coldim() != 3) throw PSIEXCEPTION("Dipole matrix must have 3 columns.");
+    }
+
+    void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
+        pF_[bf1][bf2] +=
+            integralx * dipoles_[center][0] + integraly * dipoles_[center][1] + integralz * dipoles_[center][2];
+    }
+};
+
+class ContractOverDensityFieldFunctor {
+    /**
+    Contracts the electric field integrals with a density matrix D
+    and writes the result (expectation value) to field
+    */
+   protected:
+    /// The array of the density matrix
+    double **pD_;
+    /// The array of electric fields
+    double **field_;
+
+   public:
+    ContractOverDensityFieldFunctor(SharedMatrix field, SharedMatrix D) : pD_(D->pointer()), field_(field->pointer()) {
+        if (D->rowdim() != D->coldim()) throw PSIEXCEPTION("Invalid density matrix in ContractOverDensityFieldFunctor");
+        if (field->coldim() != 3) throw PSIEXCEPTION("Field matrix must have 3 columns.");
+    }
+    void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
+        field_[center][0] += pD_[bf1][bf2] * integralx;
+        field_[center][1] += pD_[bf1][bf2] * integraly;
+        field_[center][2] += pD_[bf1][bf2] * integralz;
+    }
 };
 
 }  // namespace psi
