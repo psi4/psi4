@@ -118,7 +118,6 @@ class ContractOverDensityFieldFunctor {
     ContractOverDensityFieldFunctor(SharedMatrix field, SharedMatrix D) : pD_(D->pointer()), field_(field->pointer()) {
         if (D->rowdim() != D->coldim()) throw PSIEXCEPTION("Invalid density matrix in ContractOverDensityFieldFunctor");
         if (field->coldim() != 3) throw PSIEXCEPTION("Field matrix must have 3 columns.");
-        field->zero();
     }
     void operator()(int bf1, int bf2, int center, double integralx, double integraly, double integralz) {
         field_[center][0] += pD_[bf1][bf2] * integralx;
