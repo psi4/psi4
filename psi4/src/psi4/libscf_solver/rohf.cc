@@ -584,11 +584,11 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret) {
         // right_ov -= Fb_oi x_iv
         C_DGEMM('N', 'N', occpi[h], virpi[h], doccpi_[h], -0.5, Fbp[0], nmopi_[h], xp[0], virpi[h], 1.0, rightp[0],
                 virpi[h]);
-        if(soccpi_[h]){
+        if (soccpi_[h]) {
             // Socc terms
             // left_av += 0.5 * x_oa.T Fb_ov
-            C_DGEMM('T', 'N', soccpi_[h], virpi[h], occpi[h], 0.5, xp[0], virpi[h], (Fbp[0] + doccpi_[h]), nmopi_[h], 1.0,
-                    leftp[doccpi_[h]], virpi[h]);
+            C_DGEMM('T', 'N', soccpi_[h], virpi[h], occpi[h], 0.5, xp[0], virpi[h], (Fbp[0] + doccpi_[h]), nmopi_[h],
+                    1.0, leftp[doccpi_[h]], virpi[h]);
 
             // right_oa += 0.5 * Fb_op x_ap.T
             C_DGEMM('N', 'T', occpi[h], soccpi_[h], pvir[h], 0.5, (Fbp[0] + occpi[h]), nmopi_[h],
@@ -1334,12 +1334,17 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     return hf_wfn;
 }
 
-void ROHF::compute_SAD_guess() {
+void ROHF::compute_SAD_guess(bool natorb) {
     // Form the SAD guess
-    HF::compute_SAD_guess();
-    // Form the total density matrix that's used in energy evaluation
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
+    HF::compute_SAD_guess(natorb);
+    if (natorb) {
+        // Need to build Ct
+        Ct_ = linalg::triplet(X_, S_, Ca_);
+    } else {
+        // Form the total density matrix that's used in energy evaluation
+        Dt_->copy(Da_);
+        Dt_->add(Db_);
+    }
 }
 }  // namespace scf
 }  // namespace psi

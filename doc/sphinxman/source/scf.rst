@@ -443,6 +443,11 @@ SAD [:term:`Default <GUESS (SCF)>`]
     performed. If orbitals are needed (*e.g.*, in density fitting), a partial
     Cholesky factorization of the density matrices is used. Often extremely
     accurate, particularly for closed-shell systems.
+SADNO
+    Natural orbitals from Superposition of Atomic Densities. Similar
+    to the above, but it forms natural orbitals from the SAD density
+    matrix to get proper orbitals which are used to start the
+    calculation, see doi:10.1021/acs.jctc.8b01089.
 GWH
     A generalized Wolfsberg-Helmholtz modification of the core
     Hamiltonian matrix. May be useful in open-shell systems, but is

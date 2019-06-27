@@ -752,7 +752,7 @@ SharedMatrix SADGuess::huckel_guess() {
 
     return huckel;
 }
-void HF::compute_SAD_guess() {
+void HF::compute_SAD_guess(bool natorb) {
     if (sad_basissets_.empty()) {
         throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
     }
@@ -767,40 +767,73 @@ void HF::compute_SAD_guess() {
 
     guess->compute_guess();
 
-    SharedMatrix Ca_sad = guess->Ca();
-    SharedMatrix Cb_sad = guess->Cb();
-    Da_->copy(guess->Da());
-    Db_->copy(guess->Db());
-    Dimension sad_dim(Da_->nirrep(), "SAD Dimensions");
+    if (natorb) {
+        // SAD natural orbitals (doi:10.1021/acs.jctc.8b01089)
 
-    for (int h = 0; h < Da_->nirrep(); h++) {
-        int nso = Ca_sad->rowspi()[h];
-        int nmo = Ca_sad->colspi()[h];
-        if (nmo > X_->colspi()[h]) nmo = X_->colspi()[h];
+        // Number of basis functions
+        auto nbf(basisset_->nbf());
+        // Grab the density matrix
+        auto Dhelp = std::make_shared<Matrix>("Helper density matrix", AO2SO_->colspi(), AO2SO_->colspi());
+        Dhelp->copy(guess->Da());
+        // Take its negative so that most strongly occupied orbitals come first
+        Dhelp->scale(-1.0);
 
-        sad_dim[h] = nmo;
-
-        if (!nso || !nmo) continue;
-
-        double** Cap = Ca_->pointer(h);
-        double** Cbp = Cb_->pointer(h);
-        double** Ca2p = Ca_sad->pointer(h);
-        double** Cb2p = Cb_sad->pointer(h);
-
-        for (int i = 0; i < nso; i++) {
-            ::memcpy((void*)Cap[i], (void*)Ca2p[i], nmo * sizeof(double));
-            ::memcpy((void*)Cbp[i], (void*)Cb2p[i], nmo * sizeof(double));
+        // Transfrom to an orthonormal basis
+        Dhelp->transform(S_);
+        Dhelp->transform(X_);
+        if (debug_) {
+            outfile->Printf("SAD Density Matrix (orthonormal basis):\n");
+            Dhelp->print();
         }
+
+        // Diagonalize the SAD density and form the natural orbitals
+        auto Cno_temp_ = SharedMatrix(factory_->create_matrix("SAD NO temp"));
+        Dhelp->diagonalize(Cno_temp_, epsilon_a_);
+        if (debug_) {
+            outfile->Printf("SAD Natural Orbital Occupations:\n");
+            epsilon_a_->print();
+        }
+        Ca_->gemm(false, false, 1.0, X_, Cno_temp_, 0.0);
+
+        // Same orbitals for beta
+        Cb_->copy(Ca_);
+        epsilon_b_->copy(*epsilon_a_);
+
+    } else {
+        SharedMatrix Ca_sad = guess->Ca();
+        SharedMatrix Cb_sad = guess->Cb();
+        Da_->copy(guess->Da());
+        Db_->copy(guess->Db());
+        Dimension sad_dim(Da_->nirrep(), "SAD Dimensions");
+
+        for (int h = 0; h < Da_->nirrep(); h++) {
+            int nso = Ca_sad->rowspi()[h];
+            int nmo = Ca_sad->colspi()[h];
+            if (nmo > X_->colspi()[h]) nmo = X_->colspi()[h];
+
+            sad_dim[h] = nmo;
+
+            if (!nso || !nmo) continue;
+
+            double** Cap = Ca_->pointer(h);
+            double** Cbp = Cb_->pointer(h);
+            double** Ca2p = Ca_sad->pointer(h);
+            double** Cb2p = Cb_sad->pointer(h);
+
+            for (int i = 0; i < nso; i++) {
+                ::memcpy((void*)Cap[i], (void*)Ca2p[i], nmo * sizeof(double));
+                ::memcpy((void*)Cbp[i], (void*)Cb2p[i], nmo * sizeof(double));
+            }
+        }
+
+        nalphapi_ = sad_dim;
+        nbetapi_ = sad_dim;
+        nalpha_ = sad_dim.sum();
+        nbeta_ = sad_dim.sum();
+        doccpi_ = sad_dim;
+        soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
+        energies_["Total Energy"] = 0.0;  // This is the -1th iteration
     }
-
-    nalphapi_ = sad_dim;
-    nbetapi_ = sad_dim;
-    nalpha_ = sad_dim.sum();
-    nbeta_ = sad_dim.sum();
-    doccpi_ = sad_dim;
-    soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
-
-    energies_["Total Energy"] = 0.0;  // This is the -1th iteration
 }
 void HF::compute_huckel_guess() {
     if (sad_basissets_.empty()) {

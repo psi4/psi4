@@ -204,7 +204,7 @@ class HF : public Wavefunction {
     int multiplicity_;
 
     /// SAD Guess and propagation
-    virtual void compute_SAD_guess();
+    virtual void compute_SAD_guess(bool natorb);
     /// Huckel guess
     virtual void compute_huckel_guess();
 

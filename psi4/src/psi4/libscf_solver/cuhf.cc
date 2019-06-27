@@ -424,12 +424,14 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     return hf_wfn;
 }
 
-void CUHF::compute_SAD_guess() {
+void CUHF::compute_SAD_guess(bool natorb) {
     // Form the SAD guess
-    HF::compute_SAD_guess();
-    // Form the total density used in energy evaluation
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
+    HF::compute_SAD_guess(natorb);
+    if (!natorb) {
+        // Form the total density used in energy evaluation
+        Dt_->copy(Da_);
+        Dt_->add(Db_);
+    }
 }
 }  // namespace scf
 }  // namespace psi

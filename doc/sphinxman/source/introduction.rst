@@ -135,11 +135,11 @@ densities (SAD), discussed in
   and M. F. Guest, *J. Comput. Chem.* **27**, 926 (2006).
   (doi: `10.1002/jcc.20393 <http://dx.doi.org/10.1002/jcc.20393>`_).
 
-|PSIfour| also features an extended Hückel guess, which employs
-on-the-fly atomic calculations alike the SAD guess, as well as a
-superposition of atomic potentials (SAP) guess which is based on
-screening of atomic nuclei. The Hückel and SAP guesses have been
-described in
+|PSIfour| also features a SAD natural orbital guess, an extended
+Hückel guess that employs on-the-fly atomic calculations alike the SAD
+guess, as well as a superposition of atomic potentials (SAP) guess
+that is based on screening of atomic nuclei. The SAD natural orbitals,
+Hückel and SAP guesses have been described in
 
 * "An assessment of initial guesses for self-consistent field
   calculations. Superposition of Atomic Potentials: simple yet
