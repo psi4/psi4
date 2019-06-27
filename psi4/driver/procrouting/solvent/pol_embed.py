@@ -50,9 +50,10 @@ class CppeInterface:
         self.mints = core.MintsHelper(self.basisset)
 
         def callback(output):
-            print(output)
+            core.print_out("{}\n".format(output))
+
         self.cppe_state = cppe.CppeState(
-            self.options, psi4mol_to_cppemol(self.molecule)
+            self.options, psi4mol_to_cppemol(self.molecule), callback
         )
         self.cppe_state.calculate_static_energies_and_fields()
         # obtain coordinates of polarizable sites
@@ -60,7 +61,7 @@ class CppeInterface:
         if self.cppe_state.get_polarizable_site_number():
             self._enable_induction = True
             coords = np.array([
-                site.position for site in self.cppe_state.get_potentials()
+                site.position for site in self.cppe_state.potentials
                 if site.is_polarizable
             ])
             self.polarizable_coords = core.Matrix.from_array(coords)
@@ -70,8 +71,6 @@ class CppeInterface:
         # build electrostatics operator
         if self.V_es is None and not elec_only:
             self.build_electrostatics_operator()
-        e_electrostatic = np.sum(density_matrix.np * self.V_es)
-        self.cppe_state.energies["Electrostatic"]["Electronic"] = e_electrostatic
 
         n_bas = self.basisset.nbf()
         V_pe = np.zeros((n_bas, n_bas))
@@ -98,6 +97,8 @@ class CppeInterface:
         if elec_only:
             E_pe = self.cppe_state.energies["Polarization"]["Electronic"]
         else:
+            e_el = np.sum(density_matrix.np * self.V_es)
+            self.cppe_state.energies["Electrostatic"]["Electronic"] = e_el
             V_pe += self.V_es
             E_pe = self.cppe_state.total_energy
         return E_pe, core.Matrix.from_array(V_pe)
@@ -105,7 +106,7 @@ class CppeInterface:
     def build_electrostatics_operator(self):
         n_bas = self.basisset.nbf()
         self.V_es = np.zeros((n_bas, n_bas))
-        for site in self.cppe_state.get_potentials():
+        for site in self.cppe_state.potentials:
             prefactors = []
             for multipole in site.multipoles:
                 prefactors.extend(

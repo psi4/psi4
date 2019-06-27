@@ -708,7 +708,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Get PCM object
     std::shared_ptr<PCM> get_PCM() const;
     bool PCM_enabled() const { return PCM_enabled_; }
-
 };
 
 }  // namespace psi

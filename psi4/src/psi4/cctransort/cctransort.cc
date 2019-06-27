@@ -129,12 +129,10 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
 #endif
 
     double epe = 0.0;
-#ifdef USING_cppe
     if (options.get_bool("PE")) {
         epe = ref->reference_wavefunction() ? ref->reference_wavefunction()->scalar_variable("PE ENERGY")
                                             : ref->scalar_variable("PE ENERGY");
     }
-#endif
 
     Dimension nmopi = ref->nmopi();
     Dimension nsopi = ref->nsopi();

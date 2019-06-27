@@ -72,10 +72,6 @@
 #include "psi4/libpsipcm/psipcm.h"
 #endif
 
-#ifdef USING_cppe
-#include "psi4/libpe/psipe.h"
-#endif
-
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;

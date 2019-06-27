@@ -601,7 +601,6 @@ def scf_finalize_energy(self):
     if core.get_option('SCF', 'PE'):
         Dt = self.Da().clone()
         Dt.add(self.Db())
-        # _, Vpe = self.get_PeState().compute_pe_contribution(Dt, calc_type)
         _, Vpe = self.pe_state.get_pe_contribution(
             Dt, elec_only=False
         )
@@ -669,7 +668,6 @@ def scf_print_energies(self):
     core.print_out("    Total Energy =                    {:24.16f}\n".format(total_energy))
     
     if core.get_option('SCF', 'PE'):
-        # self.get_PeState().print_energy_summary()
         core.print_out(self.pe_state.cppe_state.summary_string)
 
     self.set_variable('NUCLEAR REPULSION ENERGY', enuc)

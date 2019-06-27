@@ -2460,7 +2460,7 @@ def run_ccenergy(name, **kwargs):
 
     ccwfn = core.ccenergy(ref_wfn)
     if core.get_global_option('PE'):
-        ccwfn.set_PeState(ref_wfn.get_PeState())
+        ccwfn.pe_state = ref_wfn.pe_state
 
     if name == 'ccsd(at)':
         core.cchbar(ref_wfn)

@@ -34,5 +34,5 @@ _have_pe = False
 try:
     from . import pol_embed
     _have_pe = True
-except:
+except ImportError:
     pass

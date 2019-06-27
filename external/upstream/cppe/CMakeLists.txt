@@ -30,7 +30,7 @@ if(${ENABLE_cppe})
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
-                       -DINSTALL_DEVEL_HEADERS=ON # TODO: switch off once only python interface is used
+                       -DINSTALL_DEVEL_HEADERS=OFF
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=CXX)
