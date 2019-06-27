@@ -53,15 +53,7 @@ from . import empirical_dispersion
 from . import dft
 from . import mcscf
 from . import response
-
-_have_cppe = False
-
-try:
-    from .solvent.pol_embed import CppeInterface
-    import cppe
-    _have_cppe = True
-except ImportError:
-    pass
+from . import solvent
 
 
 # ATTN NEW ADDITIONS!
@@ -1386,8 +1378,10 @@ def scf_helper(name, post_scf=True, **kwargs):
     
     # PE preparation
     if core.get_option('SCF', 'PE'):
-        if not _have_cppe:
+        if not solvent._have_pe:
             raise ValidationError("Could not find cppe module.")
+        import cppe
+        from .solvent.pol_embed import CppeInterface
         if core.get_option('SCF', 'PCM'):
             raise ValidationError("""Error: 3-layer QM/MM/PCM not implemented.\n""")
         potfile_name = core.get_local_option('PE', 'POTFILE')
