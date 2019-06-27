@@ -1,5 +1,5 @@
 if(${ENABLE_cppe})
-    find_package(cppe 0.0.7 CONFIG QUIET)
+    find_package(cppe 0.0.8 CONFIG QUIET)
 
     if(${cppe_FOUND})
         get_property(_loc TARGET cppe::cppe PROPERTY LOCATION)
@@ -13,8 +13,9 @@ if(${ENABLE_cppe})
         include(ExternalProject)
         message(STATUS "Suitable cppe could not be located, ${Magenta}Building cppe${ColourReset} instead.")
         ExternalProject_Add(cppe_external
-            GIT_REPOSITORY https://github.com/maxscheurer/cppe
-            GIT_TAG master
+            # GIT_REPOSITORY https://github.com/maxscheurer/cppe
+            # GIT_TAG master
+            URL https://github.com/maxscheurer/cppe/archive/v0.0.8.tar.gz
             # UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
