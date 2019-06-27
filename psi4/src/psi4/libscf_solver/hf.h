@@ -87,9 +87,6 @@ class HF : public Wavefunction {
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
 
-    ///
-    bool ref_C_;
-
     /// Current Iteration
     int iteration_;
 

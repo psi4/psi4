@@ -87,7 +87,6 @@ HF::~HF() {}
 
 void HF::common_init() {
     attempt_number_ = 1;
-    ref_C_ = false;
     reset_occ_ = false;
     sad_ = false;
 
@@ -978,7 +977,6 @@ void HF::guess() {
 
     // What does the user want?
     // Options will be:
-    // ref_C_-C matrices were detected in the incoming wavefunction
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Densities
