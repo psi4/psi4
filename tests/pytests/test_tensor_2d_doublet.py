@@ -1,5 +1,5 @@
 """
-Tests for doublets using the Matrix_D class.
+Tests for doublets using the matrix class based on xtensor.
 """
 
 import itertools
@@ -7,27 +7,21 @@ import itertools
 import numpy as np
 import pytest
 
-from psi4.core import Dimension, Matrix_CD, Matrix_D, Operation, doublet
+from psi4.core import Dimension
+from psi4.linalg import Matrix_, Operation, doublet
 
 from .utils import compare_arrays
 
 pytestmark = pytest.mark.quick
 
 
-def build_random_mat(rdim, cdim, symmetry=0, dtype="double"):
-    if dtype == "cdouble":
-        m = Matrix_CD('test', rdim, cdim, symmetry)
-        for h in range(m.nirrep):
-            block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
-            re = np.random.randn(*block_shape)
-            im = np.random.randn(*block_shape)
-            m[h][:, :] = re + im * 1j
-    else:
-        m = Matrix_D('test', rdim, cdim, symmetry)
-        for h in range(m.nirrep):
-            block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
-            m[h][:, :] = np.random.randn(*block_shape)
-
+def build_random_mat(rdim, cdim, symmetry=0, dtype=np.float):
+    m = Matrix_(label='test', rowspi=rdim, colspi=cdim, symmetry=symmetry, dtype=dtype)
+    for h in range(m.nirrep):
+        block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
+        m[h][:, :] = np.random.randn(*block_shape)
+        if dtype == np.complex128:
+            m[h][:, :] += np.random.randn(*block_shape) *1j
     return m
 
 
@@ -120,11 +114,8 @@ def generate_result(A, B, opA, opB):
 naming = {Operation.none: "  ", Operation.transpose: "^T", Operation.transpose_conj: "^H"}
 
 
-def name_doublet_test(ni, Ga, Gb, opA, opB, sq_or_rec, dtype="double"):
-    if dtype == "cdouble":
-        dtype = "complex double"
-
-    return f"  N(G): {ni} || G(A): {Ga} || G(B): {Gb} || doublet(A{naming[opA]} x B{naming[opB]}) || {sq_or_rec.upper()} || {dtype.upper()}"
+def name_doublet_test(ni, Ga, Gb, opA, opB, sq_or_rec, dtype=np.float):
+    return f"  N(G): {ni} || G(A): {Ga} || G(B): {Gb} || doublet(A{naming[opA]} x B{naming[opB]}) || {sq_or_rec.upper()} || {np.dtype(dtype).name}"
 
 
 dim_choices1 = [2, 3, 4, 5, 6, 7, 8, 9]
@@ -141,8 +132,8 @@ for group_size in [1, 2, 4, 8]:
     # Prune doublet_args to remove occurrences of Operation.transpose_conj with dtype double
     for aargs, bargs, opA, opB, dtype in itertools.product(
             a11_set, b11_set, [Operation.transpose_conj, Operation.transpose, Operation.none],
-        [Operation.transpose_conj, Operation.transpose, Operation.none], ["double", "cdouble"]):
-        if (opA == Operation.transpose_conj or opB == Operation.transpose_conj) and (dtype == "double"):
+        [Operation.transpose_conj, Operation.transpose, Operation.none], [np.float, np.complex128]):
+        if (opA == Operation.transpose_conj or opB == Operation.transpose_conj) and (dtype == np.float):
             continue
         adl, adr, Ga = aargs
         bdl, bdr, Gb = bargs
@@ -152,14 +143,14 @@ for group_size in [1, 2, 4, 8]:
     b21_set = [(d2, d1, H) for H in range(group_size)]
 
     for aargs, bargs, op, dtype in itertools.product(a12_set, b21_set, [Operation.none, Operation.transpose],
-                                                     ["double", "cdouble"]):
-        if (op == Operation.transpose_conj) and (dtype == "double"):
+                                                     [np.float, np.complex128]):
+        if (op == Operation.transpose_conj) and (dtype == np.float):
             continue
         doublet_args.append((group_size, *aargs, *bargs, op, op, 'rectangular', dtype))
 
     for aargs, bargs, opA, dtype in itertools.product(a12_set, b12_set, [Operation.none, Operation.transpose],
-                                                      ["double", "cdouble"]):
-        if (opA == Operation.transpose_conj) and (dtype == "double"):
+                                                      [np.float, np.complex128]):
+        if (opA == Operation.transpose_conj) and (dtype == np.float):
             continue
         # TODO if opA is Operation.none how do I decide whether I want Operation.transpose or Operation.transpose_conj?
         opB = Operation.none if (opA == Operation.transpose
@@ -175,7 +166,7 @@ for group_size in [1, 2, 4, 8]:
 def test_doublets(adl, adr, Ga, bdl, bdr, Gb, opA, opB, dtype):
     A = build_random_mat(adl, adr, Ga, dtype)
     B = build_random_mat(bdl, bdr, Gb, dtype)
-    if dtype == "cdouble":
+    if dtype == np.complex128:
         res = doublet(A, B, opA, opB)
     else:
         # Use the function accepting two bools as last arguments (for coverage)

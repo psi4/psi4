@@ -29,7 +29,8 @@
 
 import numpy as np
 
-from ..core.linalg import Vector_F, Vector_D, Vector_CD, Matrix_F, Matrix_D, Matrix_CD, Tensor3_F, Tensor3_D, Tensor3_CD
+from ..core.linalg import (Matrix_CD, Matrix_D, Matrix_F, Tensor3_CD,
+                           Tensor3_D, Tensor3_F, Vector_CD, Vector_D, Vector_F)
 
 
 class ObjectFactory:
@@ -41,7 +42,7 @@ class ObjectFactory:
         self._name = name
         self._builders = builders
 
-    def __call__(self, dtype, **kwargs):
+    def __call__(self, *, dtype=np.float, **kwargs):
         builder = self._builders.get(np.dtype(dtype))
         if not builder:
             raise ValueError(f"{self._name} of type {dtype} has no builder registered")

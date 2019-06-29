@@ -28,8 +28,6 @@
 
 #include "dimension.h"
 
-#include <algorithm>
-#include <numeric>
 #include <string>
 
 #include "psi4/psi4-dec.h"
@@ -37,43 +35,40 @@
 #include "psi4/libpsi4util/exception.h"
 
 namespace psi {
+Dimension::Dimension(Dimension::value_type n, const std::string& name) : name_(name), blocks_(n, 0) {}
 
-Dimension::Dimension() : name_("(empty)") {}
+Dimension::Dimension(const storage& v) : blocks_(v) {}
 
-Dimension::Dimension(int n, const std::string& name) : name_(name), blocks_(n, 0) {}
+Dimension::Dimension(const Dimension& other) : name_(other.name_), blocks_(other.blocks_) {}
 
-Dimension::Dimension(const std::vector<int>& v) : blocks_(v) {}
-
-void Dimension::init(int n, const std::string& name) {
+void Dimension::init(Dimension::value_type n, const std::string& name) {
     name_ = name;
     blocks_.assign(n, 0);
 }
 
-int Dimension::sum() const { return std::accumulate(blocks_.begin(), blocks_.end(), 0); }
-
-int Dimension::max() const { return *(std::max_element(blocks_.begin(), blocks_.end())); }
-
-void Dimension::zero() { std::fill(blocks_.begin(), blocks_.end(), 0); }
-
-void Dimension::fill(int v) { std::fill(blocks_.begin(), blocks_.end(), v); }
-
 void Dimension::print() const {
     outfile->Printf("  %s (n = %d): ", name_.c_str(), n());
-    for (int ni : blocks_) {
+    for (auto ni : blocks_) {
         outfile->Printf("%d  ", ni);
     }
     outfile->Printf("\n");
 }
 
-Dimension& Dimension::operator=(const int* other) {
-    for (int i = 0, maxi = n(); i < maxi; ++i) blocks_[i] = other[i];
+Dimension& Dimension::operator=(const Dimension& other) {
+    name_ = other.name_;
+    blocks_ = other.blocks_;
+    return *this;
+}
+
+Dimension& Dimension::operator=(const Dimension::value_type* other) {
+    for (size_t i = 0, maxi = n(); i < maxi; ++i) blocks_[i] = other[i];
 
     return *this;
 }
 
 Dimension& Dimension::operator+=(const Dimension& b) {
     if (n() == b.n()) {
-        for (int i = 0, maxi = n(); i < maxi; ++i) blocks_[i] += b.blocks_[i];
+        for (auto i = 0; i < n(); ++i) blocks_[i] += b.blocks_[i];
     } else {
         std::string msg = "Dimension operator+=: adding operators of different size (" + std::to_string(n()) + " and " +
                           std::to_string(b.n()) + ")";
@@ -85,7 +80,7 @@ Dimension& Dimension::operator+=(const Dimension& b) {
 
 Dimension& Dimension::operator-=(const Dimension& b) {
     if (n() == b.n()) {
-        for (int i = 0, maxi = n(); i < maxi; ++i) blocks_[i] -= b.blocks_[i];
+        for (auto i = 0; i < n(); ++i) blocks_[i] -= b.blocks_[i];
     } else {
         std::string msg = "Dimension operator-=: subtracting operators of different size (" + std::to_string(n()) +
                           " and " + std::to_string(b.n()) + ")";
@@ -102,7 +97,7 @@ PSI_API bool operator!=(const Dimension& a, const Dimension& b) { return !operat
 PSI_API Dimension operator+(const Dimension& a, const Dimension& b) {
     Dimension result = a;
     if (a.n() == b.n()) {
-        for (int i = 0, maxi = a.n(); i < maxi; ++i) result[i] += b[i];
+        for (auto i = 0; i < a.n(); ++i) result[i] += b[i];
     } else {
         std::string msg = "Dimension operator+: adding operators of different size (" + std::to_string(a.n()) +
                           " and " + std::to_string(b.n()) + ")";
@@ -115,7 +110,7 @@ PSI_API Dimension operator+(const Dimension& a, const Dimension& b) {
 PSI_API Dimension operator-(const Dimension& a, const Dimension& b) {
     Dimension result = a;
     if (a.n() == b.n()) {
-        for (int i = 0, maxi = a.n(); i < maxi; ++i) result[i] -= b[i];
+        for (auto i = 0; i < a.n(); ++i) result[i] -= b[i];
     } else {
         std::string msg = "Dimension operator-: subtracting operators of different size (" + std::to_string(a.n()) +
                           " and " + std::to_string(b.n()) + ")";
@@ -147,7 +142,7 @@ bool Slice::validate_slice() {
     }
 
     // Check that begin[h] >= 0 and end[h] >= begin[h]
-    for (int h = 0, max_h = begin_.n(); h < max_h; h++) {
+    for (auto h = 0; h < begin_.n(); h++) {
         if (begin_[h] < 0) {
             valid = false;
             msg = "Invalid Slice: element " + std::to_string(h) + " of begin Dimension object is less than zero (" +

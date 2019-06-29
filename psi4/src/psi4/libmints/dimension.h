@@ -29,8 +29,9 @@
 #ifndef _psi_src_lib_libmints_dimension_h_
 #define _psi_src_lib_libmints_dimension_h_
 
+#include <algorithm>
+#include <numeric>
 #include <string>
-#include <cstdio>
 #include <vector>
 
 #include "psi4/pragma.h"
@@ -38,26 +39,30 @@
 namespace psi {
 
 class PSI_API Dimension {
-   private:
-    std::string name_;
-    std::vector<int> blocks_;
-
    public:
-    Dimension();
-    Dimension(int n, const std::string& name = "");
-    Dimension(const std::vector<int>& other);
+    using value_type = int;
+    using storage = std::vector<value_type>;
+
+    Dimension() {}
+    Dimension(const Dimension& other);
+    Dimension(value_type n, const std::string& name = "");
+    Dimension(const storage& other);
+    ~Dimension() {}
+
+    /// Assignment operator
+    Dimension& operator=(const Dimension& other);
 
     /// Assignment operator, this one can be very dangerous
-    Dimension& operator=(const int* other);
+    Dimension& operator=(const value_type* other);
 
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);
 
     /// Re-initializes the object
-    void init(int n, const std::string& name = "");
+    void init(value_type n, const std::string& name = "");
 
     /// Return the rank
-    int n() const { return static_cast<int>(blocks_.size()); }
+    size_t n() const { return blocks_.size(); }
 
     /// Return the name of the dimension
     const std::string& name() const { return name_; }
@@ -66,9 +71,9 @@ class PSI_API Dimension {
     void set_name(const std::string& name) { name_ = name; }
 
     /// Blocks access
-    int& operator[](int i) { return blocks_[i]; }
-    const int& operator[](int i) const { return blocks_[i]; }
-    const std::vector<int>& blocks() const { return blocks_; }
+    value_type& operator[](size_t i) { return blocks_[i]; }
+    const value_type& operator[](size_t i) const { return blocks_[i]; }
+    const storage& blocks() const { return blocks_; }
 
     /// Casting operator to int*
     operator int*() { return blocks_.data(); }
@@ -76,25 +81,29 @@ class PSI_API Dimension {
     operator const int*() const { return blocks_.data(); }
 
     /// Return the sum of constituent dimensions
-    int sum() const;
-    int max() const;
+    value_type sum() const { return std::accumulate(blocks_.begin(), blocks_.end(), 0); }
+    value_type max() const { return *(std::max_element(blocks_.begin(), blocks_.end())); }
 
     /// Zero all the elements
-    void zero();
+    void zero() { std::fill(blocks_.begin(), blocks_.end(), 0); }
 
     /// Fill all elements in blocks_ with given value
-    void fill(int v);
+    void fill(value_type v) { std::fill(blocks_.begin(), blocks_.end(), v); }
 
     void print() const;
 
     // Only used for python
-    const int& get(int i) const { return blocks_[i]; }
-    void set(int i, int val) { blocks_[i] = val; }
+    const value_type& get(size_t i) const { return blocks_[i]; }
+    void set(size_t i, value_type val) { blocks_[i] = val; }
 
     PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
     PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);
     PSI_API friend Dimension operator+(const Dimension& a, const Dimension& b);
     PSI_API friend Dimension operator-(const Dimension& a, const Dimension& b);
+
+   private:
+    std::string name_{"(empty)"};
+    storage blocks_;
 };
 
 /*! \ingroup MINTS
