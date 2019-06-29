@@ -31,142 +31,210 @@
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 
-#include <functional>
+#include <complex>
 #include <string>
-#include <vector>
 
 #define FORCE_IMPORT_ARRAY              // numpy C api loading
 #include "xtensor-python/pytensor.hpp"  // Numpy bindings
 
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/linalg.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libpsi4util/exception.h"
 
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+// NOTE py::overload_cast is _broken_ on Intel < 19. However, using
+// static_cast here would result in overly verbose binding declarations.
+
 namespace {
-struct Rank1Decorator final {
-    template <typename PyClass>
-    void operator()(py::module& /* mod */, PyClass& cls, const std::string& /* name */) const {
-        cls.def(py::init<const std::string&, const Dimension&>(), "Labeled, blocked vector", "label"_a, "dimpi"_a);
-        cls.def(py::init<const std::string&, int>(), "Labeled, 1-irrep vector", "label"_a, "dim"_a);
-        cls.def(py::init<const Dimension&>(), "Unlabeled, blocked vector", "dimpi"_a);
-        cls.def(py::init<int>(), "Unlabeled, 1-irrep vector", "dim"_a);
-        cls.def_property_readonly("dimpi", [](const typename PyClass::type& obj) { return obj.dimpi(); },
-                                  py::return_value_policy::copy, "Return the Dimension object");
+template <typename T, size_t Rank>
+struct Decorator final {
+    using Class = Tensor<T, Rank>;
+    using PyClass = py::class_<Class, std::shared_ptr<Class>>;
+
+    static void decorate(py::module&, PyClass&) {}
+};
+
+template <typename T>
+struct Decorator<T, 1> final {
+    using Class = Tensor<T, 1>;
+    using PyClass = py::class_<Class, std::shared_ptr<Class>>;
+
+    static void decorate(py::module& mod, PyClass& cls) {
+        cls.def(py::init<const std::string&, const Dimension&, T>(), "Labeled, blocked vector", "label"_a, "dimpi"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<const std::string&, int, T>(), "Labeled, 1-irrep vector", "label"_a, "dim"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<const Dimension&, T>(), "Unlabeled, blocked vector", "dimpi"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<int, T>(), "Unlabeled, 1-irrep vector", "dim"_a, "fill_value"_a = static_cast<T>(0));
+        cls.def_property_readonly("dimpi", [](const Class& obj) { return obj.dimpi(); }, py::return_value_policy::copy,
+                                  "Return the Dimension object");
     }
 };
 
-struct Rank2Decorator final {
-    template <typename PyClass>
-    void operator()(py::module& mod, PyClass& cls, const std::string& /* name */) const {
-        cls.def(py::init<const std::string&, const Dimension&, const Dimension&, unsigned int>(),
-                "Labeled, blocked, symmetry-assigned matrix", "label"_a, "rowspi"_a, "colspi"_a, "symmetry"_a);
-        cls.def(py::init<const std::string&, const Dimension&, const Dimension&>(), "Labeled, blocked matrix",
-                "label"_a, "rowspi"_a, "colspi"_a);
-        cls.def(py::init<const std::string&, int, int>(), "Labeled, 1-irrep matrix", "label"_a, "rows"_a, "cols"_a);
-        cls.def(py::init<const Dimension&, const Dimension&, unsigned int>(),
-                "Unlabeled, blocked, symmetry-assigned matrix", "rowspi"_a, "colspi"_a, "symmetry"_a);
-        cls.def(py::init<const Dimension&, const Dimension&>(), "Unlabeled, blocked matrix", "rowspi"_a, "colspi"_a);
-        cls.def(py::init<int, int>(), "Unlabeled, 1-irrep matrix", "rows"_a, "cols"_a);
-        cls.def_property_readonly("rowspi", [](const typename PyClass::type& obj) { return obj.rowspi(); },
+template <typename T>
+struct Decorator<T, 2> final {
+    using Class = Tensor<T, 2>;
+    using PyClass = py::class_<Class, std::shared_ptr<Class>>;
+
+    static void decorate(py::module& mod, PyClass& cls) {
+        cls.def(py::init<const std::string&, const Dimension&, const Dimension&, unsigned int, T>(),
+                "Labeled, blocked, symmetry-assigned matrix", "label"_a, "rowspi"_a, "colspi"_a, "symmetry"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<const std::string&, const Dimension&, const Dimension&, T>(), "Labeled, blocked matrix",
+                "label"_a, "rowspi"_a, "colspi"_a, "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<const std::string&, int, int, T>(), "Labeled, 1-irrep matrix", "label"_a, "rows"_a, "cols"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<const Dimension&, const Dimension&, unsigned int, T>(),
+                "Unlabeled, blocked, symmetry-assigned matrix", "rowspi"_a, "colspi"_a, "symmetry"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<const Dimension&, const Dimension&, T>(), "Unlabeled, blocked matrix", "rowspi"_a, "colspi"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def(py::init<int, int, T>(), "Unlabeled, 1-irrep matrix", "rows"_a, "cols"_a,
+                "fill_value"_a = static_cast<T>(0));
+        cls.def_property_readonly("rowspi", [](const Class& obj) { return obj.rowspi(); },
                                   py::return_value_policy::copy, "Returns the rows per irrep array");
-        cls.def("rows", [](const typename PyClass::type& obj, size_t h) { return obj.rows(h); },
+        cls.def("rows", [](const Class& obj, size_t h) { return obj.rows(h); },
                 "Returns the number of rows in given irrep", "h"_a = 0);
-        cls.def_property_readonly("colspi", [](const typename PyClass::type& obj) { return obj.colspi(); },
+        cls.def_property_readonly("colspi", [](const Class& obj) { return obj.colspi(); },
                                   py::return_value_policy::copy, "Returns the columns per irrep array");
-        cls.def("cols", [](const typename PyClass::type& obj, size_t h) { return obj.cols(h); },
+        cls.def("cols", [](const Class& obj, size_t h) { return obj.cols(h); },
                 "Returns the number of columns in given irrep", "h"_a = 0);
 
         // Bind free functions to module
-        declareRank2FreeFunctions<typename PyClass::type::value_type>(mod);
+        declareRank2FreeFunctions(mod);
+        declareRank2FreeFunctions(mod);
     }
 
-    template <typename T>
-    void declareRank2FreeFunctions(py::module& mod) const {
-        mod.def("doublet", &doublet<T>,
+    static void declareRank2FreeFunctions(py::module& mod) {
+        // Type-homogeneous doublet-s
+        mod.def(
+            "doublet",
+            py::overload_cast<const SharedTensor<T, 2>&, const SharedTensor<T, 2>&, Operation, Operation>(&doublet<T>),
+            "Returns the multiplication of two matrices A and B, with options to transpose/transpose-conjugate "
+            "each beforehand",
+            "A"_a, "B"_a, "opA"_a = Operation::None, "opB"_a = Operation::None,
+            py::return_value_policy::reference_internal);
+        mod.def("doublet",
+                py::overload_cast<const SharedTensor<T, 2>&, const SharedTensor<T, 2>&, bool, bool>(&doublet<T>),
                 "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
-                "B"_a, "transA"_a = false, "transB"_a = false);
-    }
-};
-
-struct RankNDecorator final {
-    template <typename PyClass>
-    void operator()(py::module& /* mod */, PyClass& cls, const std::string& name) const {
-        static constexpr size_t Rank = PyClass::type::rank;
-
-        cls.def(py::init<const std::string&, size_t, const std::array<Dimension, Rank>&, unsigned int>(),
-                ("Labeled, blocked, symmetry-assigned " + name).c_str(), "label"_a, "blocks"_a, "axes_dimpi"_a,
-                "symmetry"_a);
-        cls.def(py::init<const std::string&, const std::array<Dimension, Rank>&>(),
-                ("Labeled, 1-irrep " + name).c_str(), "label"_a, "axes_dimpi"_a);
-        cls.def(py::init<size_t, const std::array<Dimension, Rank>&, unsigned int>(),
-                ("Unlabeled, blocked, symmetry-assigned " + name).c_str(), "blocks"_a, "axes_dimpi"_a, "symmetry"_a);
-        cls.def(py::init<size_t, const std::array<Dimension, Rank>&>(), ("Unlabeled, blocked " + name).c_str(),
-                "blocks"_a, "axes_dimpi"_a);
-        cls.def(py::init<const std::array<Dimension, Rank>&>(), ("Unlabeled, 1-irrep " + name).c_str(), "axes_dimpi"_a);
+                "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
+        // Type-inhomogeneous doublet-s
+        // T * double
+        mod.def("doublet",
+                py::overload_cast<const SharedTensor<T, 2>&, const SharedTensor<double, 2>&, Operation, Operation>(
+                    &doublet<T, double>),
+                "Returns the multiplication of two matrices A and B, with options to transpose/transpose-conjugate "
+                "each beforehand",
+                "A"_a, "B"_a, "opA"_a = Operation::None, "opB"_a = Operation::None,
+                py::return_value_policy::reference_internal);
+        mod.def("doublet",
+                py::overload_cast<const SharedTensor<T, 2>&, const SharedTensor<double, 2>&, bool, bool>(
+                    &doublet<T, double>),
+                "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
+                "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
+        // double * T
+        mod.def("doublet",
+                py::overload_cast<const SharedTensor<double, 2>&, const SharedTensor<T, 2>&, Operation, Operation>(
+                    &doublet<double, T>),
+                "Returns the multiplication of two matrices A and B, with options to transpose/transpose-conjugate "
+                "each beforehand",
+                "A"_a, "B"_a, "opA"_a = Operation::None, "opB"_a = Operation::None,
+                py::return_value_policy::reference_internal);
+        mod.def("doublet",
+                py::overload_cast<const SharedTensor<double, 2>&, const SharedTensor<T, 2>&, bool, bool>(
+                    &doublet<double, T>),
+                "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
+                "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
     }
 };
 
 template <typename T, size_t Rank>
-struct DeclareTensor final {
+void bind_tensor(py::module& mod) {
     using Class = Tensor<T, Rank>;
     using PyClass = py::class_<Class, std::shared_ptr<Class>>;
-    using SpecialBinder = std::function<void(py::module&, PyClass&, const std::string&)>;
 
-    static void bind_tensor(py::module& mod, const SpecialBinder& decorate) {
-        std::string name = Class::pyClassName();
+    std::string name = Class::pyClassName();
 
-        PyClass cls(mod, name.c_str());
+    PyClass cls(mod, name.c_str());
 
-        cls.def_property_readonly("dim", &Class::dim, "Total number of elements");
-        cls.def_property_readonly("nirrep", &Class::nirrep, "Number of irreps");
-        cls.def_property("label", &Class::label, &Class::set_label, ("The label of the " + name).c_str());
-        cls.def("axes_dimpi", &Class::axes_dimpi, "Returns the Dimension object for given axis", "axis"_a);
-        cls.def_property_readonly("shapes", [](const Class& obj) { return obj.shapes(); },
-                                  py ::return_value_policy::copy, "Shapes of blocks");
-        cls.def_property("symmetry", &Class::symmetry, &Class::set_symmetry, ("The symmetry of " + name).c_str());
+    // CTORs shared by all ranks
+    cls.def(py::init<const std::string&, size_t, const std::array<Dimension, Rank>&, unsigned int, T>(),
+            ("Labeled, blocked, symmetry-assigned " + name).c_str(), "label"_a, "nirrep"_a, "axes_dimpi"_a,
+            "symmetry"_a, "fill_value"_a = static_cast<T>(0));
+    cls.def(py::init<const std::string&, const std::array<Dimension, Rank>&, T>(), ("Labeled, 1-irrep " + name).c_str(),
+            "label"_a, "axes_dimpi"_a, "fill_value"_a = static_cast<T>(0));
+    cls.def(py::init<size_t, const std::array<Dimension, Rank>&, unsigned int, T>(),
+            ("Unlabeled, blocked, symmetry-assigned " + name).c_str(), "nirrep"_a, "axes_dimpi"_a, "symmetry"_a,
+            "fill_value"_a = static_cast<T>(0));
+    cls.def(py::init<size_t, const std::array<Dimension, Rank>&, T>(), ("Unlabeled, blocked " + name).c_str(),
+            "nirrep"_a, "axes_dimpi"_a, "fill_value"_a = static_cast<T>(0));
+    cls.def(py::init<const std::array<Dimension, Rank>&, T>(), ("Unlabeled, 1-irrep " + name).c_str(), "axes_dimpi"_a,
+            "fill_value"_a = static_cast<T>(0));
 
-        cls.def("__repr__", &Class::repr);
-        cls.def("__str__", &Class::str);
-        cls.def("__format__", &Class::format, "extra"_a = "");
-#if defined(PYBIND11_OVERLOAD_CAST)
-        cls.def("__getitem__", py::overload_cast<size_t>(&Class::operator[]), "Return block at given irrep", "h"_a,
-#else
-        cls.def("__getitem__", static_cast<xt::xtensor<T, Rank>& (Class::*)(size_t)>(&Class::operator[]),
-                "Return block at given irrep", "h"_a,
-#endif
-                py::is_operator(), py::return_value_policy::reference_internal);
-        cls.def("__setitem__",
-                [](Class& obj, size_t h, const xt::pytensor<T, Rank>& block) {
-                    if (h >= obj.nirrep()) throw py::index_error();
-                    obj.set_block(h, block);
-                },
-                "h"_a, "block"_a, "Set block at given irrep", py::is_operator());
+    // Member functions shared by all ranks
+    cls.def_property_readonly("dim", &Class::dim, "Total number of elements");
+    cls.def_property_readonly("nirrep", &Class::nirrep, "Number of irreps");
+    cls.def_property("label", &Class::label, &Class::set_label, ("The label of the " + name).c_str());
+    cls.def("axes_dimpi", py::overload_cast<>(&Class::axes_dimpi, py::const_), "Returns Dimension objects for all axes",
+            py::return_value_policy::copy);
+    cls.def("axes_dimpi", py::overload_cast<size_t>(&Class::axes_dimpi, py::const_),
+            "Returns the Dimension object for given axis", "axis"_a);
+    cls.def_property_readonly("shapes", [](const Class& obj) { return obj.shapes(); }, py ::return_value_policy::copy,
+                              "Shapes of blocks");
+    cls.def_property("symmetry", &Class::symmetry, &Class::set_symmetry, ("The symmetry of " + name).c_str());
+    cls.def("__repr__", &Class::repr);
+    cls.def("__str__", &Class::str);
+    cls.def("__format__", &Class::format, "extra"_a = "");
+    cls.def("__getitem__", py::overload_cast<size_t>(&Class::operator[]), "Return block at given irrep", "h"_a,
+            py::is_operator(), py::return_value_policy::reference_internal);
+    cls.def("__setitem__",
+            [](Class& obj, size_t h, const xt::pytensor<T, Rank>& block) {
+                if (h >= obj.nirrep()) throw py::index_error();
+                obj.set_block(h, block);
+            },
+            "h"_a, "block"_a, "Set block at given irrep", py::is_operator());
 
-        // Rank-dependent bindings, e.g. CTORs
-        decorate(mod, cls, name);
-    }
-};
+    // Free functions shared by all ranks
+    mod.def("full_like", &full_like<T, Rank>,
+            "Returns a tensor with all blocks filled with given value of same shape and value type as input", "mold"_a,
+            "fill_value"_a);
+    mod.def("zeros_like", &zeros_like<T, Rank>,
+            "Return a tensor with all blocks filled with 0 of same shape and value type as input", "mold"_a);
+    mod.def("ones_like", &ones_like<T, Rank>,
+            "Return a tensor with all blocks filled with 1 of same shape and value type as input", "mold"_a);
+
+    // Rank-dependent bindings, e.g. CTORs, member and free functions
+    Decorator<T, Rank>::decorate(mod, cls);
+}
 }  // namespace
 
 void export_linalg(py::module& mod) {
     xt::import_numpy();
 
+    py::module sub_mod = mod.def_submodule("linalg");
+
+    py::enum_<Operation>(sub_mod, "Operation")
+        .value("none", Operation::None)
+        .value("transpose", Operation::Transpose)
+        .value("transpose_conj", Operation::TransposeConj);
+
     // Rank-1 tensor, aka blocked vector
-    auto decorate_v = Rank1Decorator();
-    DeclareTensor<float, 1>::bind_tensor(mod, decorate_v);
-    DeclareTensor<double, 1>::bind_tensor(mod, decorate_v);
+    bind_tensor<float, 1>(sub_mod);
+    bind_tensor<double, 1>(sub_mod);
+    bind_tensor<std::complex<double>, 1>(sub_mod);
 
     // Rank-2 tensor, aka blocked matrix
-    auto decorate_m = Rank2Decorator();
-    DeclareTensor<float, 2>::bind_tensor(mod, decorate_m);
-    DeclareTensor<double, 2>::bind_tensor(mod, decorate_m);
+    bind_tensor<float, 2>(sub_mod);
+    bind_tensor<double, 2>(sub_mod);
+    bind_tensor<std::complex<double>, 2>(sub_mod);
 
     // Rank-3 tensor
-    auto decorate_rankn = RankNDecorator();
-    DeclareTensor<float, 3>::bind_tensor(mod, decorate_rankn);
-    DeclareTensor<double, 3>::bind_tensor(mod, decorate_rankn);
+    bind_tensor<float, 3>(sub_mod);
+    bind_tensor<double, 3>(sub_mod);
+    bind_tensor<std::complex<double>, 3>(sub_mod);
 }

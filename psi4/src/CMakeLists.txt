@@ -2,6 +2,12 @@
 ### >> This allow to propagate dependencies upwards sanely
 pybind11_add_module(core SHARED NO_EXTRAS core.cc)
 
+# See here: https://github.com/pybind/pybind11/issues/1649
+target_compile_definitions(core
+  PRIVATE
+    $<$<CXX_COMPILER_ID:Intel>:PYBIND11_CPP14>
+  )
+
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
 

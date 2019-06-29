@@ -7,21 +7,31 @@ import itertools
 import numpy as np
 import pytest
 
-from psi4.core import Dimension, Matrix_D, doublet
+from psi4.core import Dimension, Matrix_CD, Matrix_D, Operation, doublet
+
 from .utils import compare_arrays
 
 pytestmark = pytest.mark.quick
 
 
-def build_random_mat(rdim, cdim, symmetry=0):
-    m = Matrix_D('test', rdim, cdim, symmetry)
-    for h in range(m.nirrep):
-        block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
-        m[h][:, :] = np.random.randn(*block_shape)
+def build_random_mat(rdim, cdim, symmetry=0, dtype="double"):
+    if dtype == "cdouble":
+        m = Matrix_CD('test', rdim, cdim, symmetry)
+        for h in range(m.nirrep):
+            block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
+            re = np.random.randn(*block_shape)
+            im = np.random.randn(*block_shape)
+            m[h][:, :] = re + im * 1j
+    else:
+        m = Matrix_D('test', rdim, cdim, symmetry)
+        for h in range(m.nirrep):
+            block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
+            m[h][:, :] = np.random.randn(*block_shape)
+
     return m
 
 
-def generate_result(A, B, transA, transB):
+def generate_result(A, B, opA, opB):
     """Generate the result of a doublet operation
 
     This function computes op(A) x op(B) by:
@@ -37,7 +47,8 @@ def generate_result(A, B, transA, transB):
             3. C[i_c] = op(A[i_a]) x op(B[i_b])
 
     I chose to work out how to do it both ways so that this test is a bit
-    stronger than just saying see I translated the function into python and both give the same result.
+    stronger than just saying see I translated the function into python and
+    both give the same result.
     """
     GA = A.symmetry
     GB = B.symmetry
@@ -45,14 +56,10 @@ def generate_result(A, B, transA, transB):
     C_shapes = []
     players = []
     C_blocks = []
-    if transA:
-        C_rowdim = A.colspi
-    else:
-        C_rowdim = A.rowspi
-    if transB:
-        C_coldim = B.rowspi
-    else:
-        C_coldim = B.colspi
+    transA = (opA == Operation.transpose or opA == Operation.transpose_conj)
+    C_rowdim = A.colspi if transA else A.rowspi
+    transB = (opB == Operation.transpose or opB == Operation.transpose_conj)
+    C_coldim = B.rowspi if transB else B.colspi
 
     def rowsym(G, h):
         "rowsym of block h for matrix that transforms as G"
@@ -61,6 +68,10 @@ def generate_result(A, B, transA, transB):
     def colsym(G, h):
         "colsym of block h for a matrix that transforms as G"
         return G ^ h
+
+    def do_op(blk, op):
+        op_blk = blk.T if (op == Operation.transpose or op == Operation.transpose_conj) else blk
+        return (np.conjugate(op_blk) if op == Operation.transpose_conj else op_blk)
 
     for C_blk_idx in range(A.nirrep):
         C_shapes.append((C_rowdim[rowsym(GC, C_blk_idx)], C_coldim[colsym(GC, C_blk_idx)]))
@@ -97,32 +108,23 @@ def generate_result(A, B, transA, transB):
         # to compute C[C_blk_idx] we take:
         # op(A[A_blk_idx]) x op(B[B_blk_idx])
         A_blk, B_blk = players[C_blk_idx]
-        if transA:
-            op_A_blk = A_blk.T
-        else:
-            op_A_blk = A_blk
-        if transB:
-            op_B_blk = B_blk.T
-        else:
-            op_B_blk = B_blk
+        op_A_blk = do_op(A_blk, opA)
+        op_B_blk = do_op(B_blk, opB)
+
         # we can make sure the shapes match up
         C_blocks.append(np.dot(op_A_blk, op_B_blk))
 
     return C_blocks
 
 
-def name_doublet_test(ni, Ga, Gb, at, bt, sq_or_rec):
-    gsz = ni
-    if at:
-        a_name = "A^T"
-    else:
-        a_name = "A  "
-    if bt:
-        b_name = "B^T"
-    else:
-        b_name = "B  "
-    return "  N(G){} || G(A): {} || G(B): {} || doublet({} x {}) || {}".format(gsz, Ga, Gb, a_name, b_name,
-                                                                               sq_or_rec.upper())
+naming = {Operation.none: "  ", Operation.transpose: "^T", Operation.transpose_conj: "^H"}
+
+
+def name_doublet_test(ni, Ga, Gb, opA, opB, sq_or_rec, dtype="double"):
+    if dtype == "cdouble":
+        dtype = "complex double"
+
+    return f"  N(G): {ni} || G(A): {Ga} || G(B): {Gb} || doublet(A{naming[opA]} x B{naming[opB]}) || {sq_or_rec.upper()} || {dtype.upper()}"
 
 
 dim_choices1 = [2, 3, 4, 5, 6, 7, 8, 9]
@@ -136,33 +138,51 @@ for group_size in [1, 2, 4, 8]:
     a11_set = [(d1, d1, H) for H in range(group_size)]
     b11_set = [(d1, d1, H) for H in range(group_size)]
 
-    for aargs, bargs, at, bt in itertools.product(a11_set, b11_set, [True, False], [True, False]):
+    # Prune doublet_args to remove occurrences of Operation.transpose_conj with dtype double
+    for aargs, bargs, opA, opB, dtype in itertools.product(
+            a11_set, b11_set, [Operation.transpose_conj, Operation.transpose, Operation.none],
+        [Operation.transpose_conj, Operation.transpose, Operation.none], ["double", "cdouble"]):
+        if (opA == Operation.transpose_conj or opB == Operation.transpose_conj) and (dtype == "double"):
+            continue
         adl, adr, Ga = aargs
         bdl, bdr, Gb = bargs
-        doublet_args.append((group_size, adl, adr, Ga, bdl, bdr, Gb, at, bt, 'square'))
+        doublet_args.append((group_size, adl, adr, Ga, bdl, bdr, Gb, opA, opB, 'square', dtype))
     a12_set = [(d1, d2, H) for H in range(group_size)]
     b12_set = [(d1, d2, H) for H in range(group_size)]
     b21_set = [(d2, d1, H) for H in range(group_size)]
 
-    for aargs, bargs, t in itertools.product(a12_set, b21_set, [False, True]):
-        doublet_args.append((group_size, *aargs, *bargs, t, t, 'rectangular'))
+    for aargs, bargs, op, dtype in itertools.product(a12_set, b21_set, [Operation.none, Operation.transpose],
+                                                     ["double", "cdouble"]):
+        if (op == Operation.transpose_conj) and (dtype == "double"):
+            continue
+        doublet_args.append((group_size, *aargs, *bargs, op, op, 'rectangular', dtype))
 
-    for aargs, bargs, at in itertools.product(a12_set, b12_set, [False, True]):
-        bt = not at
-        doublet_args.append((group_size, *aargs, *bargs, at, bt, 'rectangular'))
+    for aargs, bargs, opA, dtype in itertools.product(a12_set, b12_set, [Operation.none, Operation.transpose],
+                                                      ["double", "cdouble"]):
+        if (opA == Operation.transpose_conj) and (dtype == "double"):
+            continue
+        # TODO if opA is Operation.none how do I decide whether I want Operation.transpose or Operation.transpose_conj?
+        opB = Operation.none if (opA == Operation.transpose
+                                 or opA == Operation.transpose_conj) else Operation.transpose
+        doublet_args.append((group_size, *aargs, *bargs, opA, opB, 'rectangular', dtype))
 
 
 # If I try to prebuild the mats I run out of memory very fast, so I build the params, and create the mat w/in the test
-@pytest.mark.parametrize("adl,adr,Ga,bdl,bdr,Gb,at,bt", [
-    pytest.param(adl, adr, Ga, bdl, bdr, Gb, at, bt, id=name_doublet_test(ni, Ga, Gb, at, bt, sqrec))
-    for ni, adl, adr, Ga, bdl, bdr, Gb, at, bt, sqrec in doublet_args
+@pytest.mark.parametrize("adl,adr,Ga,bdl,bdr,Gb,opA,opB,dtype", [
+    pytest.param(adl, adr, Ga, bdl, bdr, Gb, opA, opB, dtype, id=name_doublet_test(ni, Ga, Gb, opA, opB, sqrec, dtype))
+    for ni, adl, adr, Ga, bdl, bdr, Gb, opA, opB, sqrec, dtype in doublet_args
 ])
-def test_doublets(adl, adr, Ga, bdl, bdr, Gb, at, bt):
-    A = build_random_mat(adl, adr, Ga)
-    B = build_random_mat(bdl, bdr, Gb)
-    res = doublet(A, B, at, bt)
-    expected = generate_result(A, B, at, bt)
-    assert res.symmetry == A.symmetry ^ B.symmetry, "Symm mismatch {} x {} != {}".format(
-        A.symmetry, B.symmetry, res.symmetry)
+def test_doublets(adl, adr, Ga, bdl, bdr, Gb, opA, opB, dtype):
+    A = build_random_mat(adl, adr, Ga, dtype)
+    B = build_random_mat(bdl, bdr, Gb, dtype)
+    if dtype == "cdouble":
+        res = doublet(A, B, opA, opB)
+    else:
+        # Use the function accepting two bools as last arguments (for coverage)
+        transA = (opA == Operation.transpose or opA == Operation.transpose_conj)
+        transB = (opB == Operation.transpose or opB == Operation.transpose_conj)
+        res = doublet(A, B, transA, transB)
+    expected = generate_result(A, B, opA, opB)
+    assert res.symmetry == A.symmetry ^ B.symmetry, f"Symm mismatch {A.symmetry} x {B.symmetry} != {res.symmetry}"
     for blk_idx in range(res.nirrep):
-        assert compare_arrays(expected[blk_idx], res[blk_idx], 8, "Block[{}]".format(blk_idx))
+        assert compare_arrays(expected[blk_idx], res[blk_idx], 8, f"Block[{blk_idx}]")
