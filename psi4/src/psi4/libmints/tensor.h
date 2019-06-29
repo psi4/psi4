@@ -30,6 +30,7 @@
 
 #include <array>
 #include <complex>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -259,11 +260,11 @@ class Tensor {
     /*! Labeled, 1-irrep, rank-1 CTOR
      *  \param[in] label
      *  \param[in] dim
-     * FIXME int vs. size_t in this CTOR
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(const std::string& label, int dim, T fill_value = static_cast<T>(0))
-        : Tensor(label, 1, std::array<Dimension, Rank>{Dimension(std::vector<int>{dim})}, 0, fill_value) {}
+        : Tensor(label, 1, std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{dim})}, 0,
+                 fill_value) {}
     /*! Unlabeled, blocked, rank-1 CTOR
      *  \param[in] dimpi
      */
@@ -272,11 +273,11 @@ class Tensor {
         : Tensor("", dimpi.n(), std::array<Dimension, Rank>{dimpi}, 0, fill_value) {}
     /*! Unlabeled, 1-irrep, rank-1 CTOR
      *  \param[in] dim
-     * FIXME int vs. size_t in this CTOR
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(int dim, T fill_value = static_cast<T>(0))
-        : Tensor("", 1, std::array<Dimension, Rank>{Dimension(std::vector<int>{dim})}, 0, fill_value) {}
+        : Tensor("", 1, std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{dim})}, 0,
+                 fill_value) {}
     /*! @}*/
 
     /*! @{ Rank-2 CTORs */
@@ -303,13 +304,13 @@ class Tensor {
      *  \param[in] label
      *  \param[in] rows
      *  \param[in] cols
-     * FIXME int vs. size_t in this CTOR
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const std::string& label, int rows, int cols, T fill_value = static_cast<T>(0))
         : Tensor(label, 1,
-                 std::array<Dimension, Rank>{Dimension(std::vector<int>{rows}), Dimension(std::vector<int>{cols})}, 0,
-                 fill_value) {}
+                 std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{rows}),
+                                             Dimension(std::vector<Dimension::value_type>{cols})},
+                 0, fill_value) {}
     /*! Unlabeled, blocked, symmetry-assigned rank-2 CTOR
      *  \param[in] rowspi
      *  \param[in] colspi
@@ -329,13 +330,13 @@ class Tensor {
     /*! Unlabeled 1-irrep rank-2 CTOR
      *  \param[in] rows
      *  \param[in] cols
-     * FIXME int vs. size_t in this CTOR
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(int rows, int cols, T fill_value = static_cast<T>(0))
         : Tensor("", 1,
-                 std::array<Dimension, Rank>{Dimension(std::vector<int>{rows}), Dimension(std::vector<int>{cols})}, 0,
-                 fill_value) {}
+                 std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{rows}),
+                                             Dimension(std::vector<Dimension::value_type>{cols})},
+                 0, fill_value) {}
     /*! @}*/
 
     /*! Return dimension of tensor */
