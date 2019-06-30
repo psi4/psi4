@@ -175,13 +175,18 @@ class Tensor {
    public:
     /*! Access rank of Tensor as Tensor<T, Rank>::rank */
     static constexpr size_t rank = Rank;
+
     /*! Access arithmetic type of Tensor as Tensor<T, Rank>::value_type */
     using value_type = T;
+
     using Shape = std::array<size_t, Rank>;
+    using Store = std::vector<Storage<T, Rank>>;
+
     /*! C++ string representation of type */
     static std::string cxxClassName() {
         return detail::class_name<Rank>() + "<" + detail::Type2String<T>::full() + ">";
     }
+
     /*! Python string representation of type */
     static std::string pyClassName() { return detail::class_name<Rank>() + "_" + detail::Type2String<T>::suffix(); }
 
@@ -339,6 +344,30 @@ class Tensor {
                  0, fill_value) {}
     /*! @}*/
 
+    /*! @{ Iterators */
+    using iterator = typename Store::iterator;
+    using const_iterator = typename Store::const_iterator;
+
+    iterator begin() noexcept { return store_.begin(); }
+    const_iterator begin() const noexcept { return store_.begin(); }
+    const_iterator cbegin() const noexcept { return store_.cbegin(); }
+
+    iterator end() noexcept { return store_.end(); }
+    const_iterator end() const noexcept { return store_.end(); }
+    const_iterator cend() const noexcept { return store_.cend(); }
+
+    using reverse_iterator = typename Store::reverse_iterator;
+    using const_reverse_iterator = typename Store::const_reverse_iterator;
+
+    reverse_iterator rbegin() noexcept { return store_.rbegin(); }
+    const_reverse_iterator rbegin() const noexcept { return store_.rbegin(); }
+    const_reverse_iterator crbegin() const noexcept { return store_.crbegin(); }
+
+    reverse_iterator rend() noexcept { return store_.rend(); }
+    const_reverse_iterator rend() const noexcept { return store_.rend(); }
+    const_reverse_iterator crend() const noexcept { return store_.crend(); }
+    /*! @}*/
+
     /*! Return dimension of tensor */
     size_t dim() const noexcept {
         return std::accumulate(std::begin(store_), std::end(store_), 0,
@@ -452,7 +481,7 @@ class Tensor {
     std::string label_;
     std::array<Dimension, Rank> axes_dimpi_{};
     std::vector<Shape> shapes_{};
-    std::vector<Storage<T, Rank>> store_{};
+    Store store_{};
 };
 
 template <typename T, size_t Rank>

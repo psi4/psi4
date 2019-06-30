@@ -47,7 +47,7 @@ void Dimension::init(Dimension::value_type n, const std::string& name) {
 }
 
 void Dimension::print() const {
-    outfile->Printf("  %s (n = %d): ", name_.c_str(), n());
+    outfile->Printf("  %s (n = %zu): ", name_.c_str(), n());
     for (auto ni : blocks_) {
         outfile->Printf("%d  ", ni);
     }
