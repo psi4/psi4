@@ -73,26 +73,26 @@ constexpr bool is_2arity_mixable_v = is_2arity_mixable<T, U>::value;
  *  \param[in] mold input tensor
  *  \param[in] fill_value the value in all blocks
  */
-template <typename T, size_t Rank>
-SharedTensor<T, Rank> full_like(const SharedTensor<T, Rank>& mold, T fill_value) {
-    return std::make_shared<Tensor<T, Rank>>(mold->label(), mold->nirrep(), mold->axes_dimpi(), mold->symmetry(),
-                                             static_cast<T>(fill_value));
+template <typename T, size_t Rank, typename U = T>
+SharedTensor<U, Rank> full_like(const SharedTensor<T, Rank>& mold, U fill_value) noexcept {
+    return std::make_shared<Tensor<U, Rank>>(mold->label(), mold->nirrep(), mold->axes_dimpi(), mold->symmetry(),
+                                             static_cast<U>(fill_value));
 }
 
 /*! Return a tensor with all blocks filled with 0 of same shape and value type as input
  *  \param[in] mold input tensor
  */
-template <typename T, size_t Rank>
-SharedTensor<T, Rank> zeros_like(const SharedTensor<T, Rank>& mold) {
-    return full_like(mold, static_cast<T>(0));
+template <typename T, size_t Rank, typename U = T>
+SharedTensor<U, Rank> zeros_like(const SharedTensor<T, Rank>& mold) noexcept {
+    return full_like(mold, static_cast<U>(0));
 }
 
 /*! Return a tensor with all blocks filled with 1 of same shape and value type as input
  *  \param[in] mold input tensor
  */
-template <typename T, size_t Rank>
-SharedTensor<T, Rank> ones_like(const SharedTensor<T, Rank>& mold) {
-    return full_like(mold, static_cast<T>(1));
+template <typename T, size_t Rank, typename U = T>
+SharedTensor<U, Rank> ones_like(const SharedTensor<T, Rank>& mold) noexcept {
+    return full_like(mold, static_cast<U>(1));
 }
 
 /*! Symmetry-blocking aware GEneralized Matrix Multiplication (GEMM)
@@ -201,5 +201,29 @@ SharedTensor<V, 2> doublet(const SharedTensor<T, 2>& A, const SharedTensor<U, 2>
     Operation opB = transB ? Operation::Transpose : Operation::None;
 
     return doublet(A, B, opA, opB);
+}
+
+template <typename T, size_t Rank, typename U = typename detail::is_complex<T>::real_type>
+SharedTensor<U, Rank> real(const SharedTensor<T, Rank>& in) noexcept {
+    auto out = zeros_like<T, Rank, U>(in);
+    std::transform(in->cbegin(), in->cend(), out->begin(),
+                   [](const Storage<T, Rank>& blk) -> Storage<U, Rank> { return xt::real(blk); });
+    return out;
+}
+
+template <typename T, size_t Rank, typename U = typename detail::is_complex<T>::real_type>
+SharedTensor<U, Rank> imag(const SharedTensor<T, Rank>& in) noexcept {
+    auto out = zeros_like<T, Rank, U>(in);
+    std::transform(in->cbegin(), in->cend(), out->begin(),
+                   [](const Storage<T, Rank>& blk) -> Storage<U, Rank> { return xt::imag(blk); });
+    return out;
+}
+
+template <typename T, size_t Rank>
+SharedTensor<T, Rank> conj(const SharedTensor<T, Rank>& in) noexcept {
+    auto out = zeros_like(in);
+    std::transform(in->cbegin(), in->cend(), out->begin(),
+                   [](const Storage<T, Rank>& blk) -> Storage<T, Rank> { return xt::conj(blk); });
+    return out;
 }
 }  // namespace psi

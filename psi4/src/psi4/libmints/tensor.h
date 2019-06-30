@@ -54,10 +54,14 @@ inline auto full(S shape, T fill_value) noexcept {
 namespace psi {
 namespace detail {
 template <typename T>
-struct is_complex : std::false_type {};
+struct is_complex : std::false_type {
+    using real_type = T;
+};
 
 template <typename T>
-struct is_complex<std::complex<T>> : std::true_type {};
+struct is_complex<std::complex<T>> : std::true_type {
+    using real_type = T;
+};
 
 // NOTE for posterity this can be declared inline in C++17
 template <typename T>

@@ -207,6 +207,9 @@ void bind_tensor(py::module& mod) {
             "Return a tensor with all blocks filled with 0 of same shape and value type as input", "mold"_a);
     mod.def("ones_like", &ones_like<T, Rank>,
             "Return a tensor with all blocks filled with 1 of same shape and value type as input", "mold"_a);
+    mod.def("real", &real<T, Rank>, "Return real part of tensor", "in"_a);
+    mod.def("imag", &imag<T, Rank>, "Return imaginary part of tensor. For real tensors, returns zeros.", "in"_a);
+    mod.def("conj", &conj<T, Rank>, "Return complex conjugate of tensor", "in"_a);
 
     // Rank-dependent bindings, e.g. CTORs, member and free functions
     Decorator<T, Rank>::decorate(mod, cls);

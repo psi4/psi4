@@ -32,7 +32,17 @@ from .factory import Vector_, Matrix_, Tensor_  # isort:skip
 
 # NOTE this is rather awkward, but I haven't found any other way to get the
 # help for all the stuff defined in core.linalg otherwise...
+# yapf: disable
 __all__ = [
-    "Vector_", "Vector_F", "Vector_D", "Vector_CD", "Matrix_", "Matrix_F", "Matrix_D", "Matrix_CD", "Tensor_",
-    "Tensor3_F", "Tensor3_D", "Tensor3_CD", "doublet", "zeros_like", "ones_like", "full_like"
+      "Vector_" , "Vector_F", "Vector_D", "Vector_CD"
+    , "Matrix_", "Matrix_F", "Matrix_D", "Matrix_CD"
+    , "Tensor_", "Tensor3_F", "Tensor3_D", "Tensor3_CD"
+    , "doublet"
+    , "zeros_like"
+    , "ones_like"
+    , "full_like"
+    , "real"
+    , "imag"
+    , "conj"
 ]
+# yapf: enable
