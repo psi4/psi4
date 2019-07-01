@@ -167,13 +167,6 @@ std::string print_shape(const std::array<size_t, Rank>& shape) {
 }
 }  // namespace detail
 
-/*! Basic linear algebra storage object
- * \tparam T the underlying numerical type
- * \tparam Rank rank of the object, i.e. 1 for a vector, 2 for a matrix, etc.
- */
-template <typename T, size_t Rank>
-using Storage = xt::xtensor<T, Rank>;
-
 template <typename T, size_t Rank>
 class Tensor {
    public:
@@ -183,8 +176,13 @@ class Tensor {
     /*! Access arithmetic type of Tensor as Tensor<T, Rank>::value_type */
     using value_type = T;
 
-    using Shape = std::array<size_t, Rank>;
-    using Store = std::vector<Storage<T, Rank>>;
+    using shape_type = std::array<size_t, Rank>;
+    /*! Basic linear algebra storage object for a block
+     * \tparam T the underlying numerical type
+     * \tparam Rank rank of the object, i.e. 1 for a vector, 2 for a matrix, etc.
+     */
+    using block_type = xt::xtensor<T, Rank>;
+    using store_type = std::vector<block_type>;
 
     /*! C++ string representation of type */
     static std::string cxxClassName() {
@@ -349,8 +347,8 @@ class Tensor {
     /*! @}*/
 
     /*! @{ Iterators */
-    using iterator = typename Store::iterator;
-    using const_iterator = typename Store::const_iterator;
+    using iterator = typename store_type::iterator;
+    using const_iterator = typename store_type::const_iterator;
 
     iterator begin() noexcept { return store_.begin(); }
     const_iterator begin() const noexcept { return store_.begin(); }
@@ -360,8 +358,8 @@ class Tensor {
     const_iterator end() const noexcept { return store_.end(); }
     const_iterator cend() const noexcept { return store_.cend(); }
 
-    using reverse_iterator = typename Store::reverse_iterator;
-    using const_reverse_iterator = typename Store::const_reverse_iterator;
+    using reverse_iterator = typename store_type::reverse_iterator;
+    using const_reverse_iterator = typename store_type::const_reverse_iterator;
 
     reverse_iterator rbegin() noexcept { return store_.rbegin(); }
     const_reverse_iterator rbegin() const noexcept { return store_.rbegin(); }
@@ -382,23 +380,23 @@ class Tensor {
     size_t nirrep() const noexcept { return store_.size(); }
 
     /*! Return shapes of blocks */
-    const std::vector<Shape>& shapes() const noexcept { return shapes_; }
+    const std::vector<shape_type>& shapes() const noexcept { return shapes_; }
 
     /*! Return block at given irrep
      *  \param[in] h
      */
-    const Storage<T, Rank>& block(size_t h = 0) const { return store_[h]; }
+    const block_type& block(size_t h = 0) const { return store_[h]; }
     /*! Return block at given irrep
      *  \param[in] h
      */
-    Storage<T, Rank>& block(size_t h = 0) { return store_[h]; }
-    Storage<T, Rank> operator[](size_t h) const { return store_[h]; }
+    block_type& block(size_t h = 0) { return store_[h]; }
+    block_type operator[](size_t h) const { return store_[h]; }
     /*! Set block at given irrep
      *  \param[in] h
      *  \param[in] block
      */
-    void set_block(size_t h, const Storage<T, Rank>& block) { store_[h] = block; }
-    Storage<T, Rank>& operator[](size_t h) { return store_[h]; }
+    void set_block(size_t h, const block_type& block) { store_[h] = block; }
+    block_type& operator[](size_t h) { return store_[h]; }
 
     std::string label() const noexcept { return label_; }
     void set_label(const std::string& label) noexcept { label_ = label; }
@@ -484,8 +482,8 @@ class Tensor {
     unsigned int symmetry_{0};
     std::string label_;
     std::array<Dimension, Rank> axes_dimpi_{};
-    std::vector<Shape> shapes_{};
-    Store store_{};
+    std::vector<shape_type> shapes_{};
+    store_type store_{};
 };
 
 template <typename T, size_t Rank>

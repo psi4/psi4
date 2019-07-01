@@ -29,6 +29,7 @@
 #pragma once
 
 #include <complex>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -207,7 +208,8 @@ template <typename T, size_t Rank, typename U = typename detail::is_complex<T>::
 SharedTensor<U, Rank> real(const SharedTensor<T, Rank>& in) noexcept {
     auto out = zeros_like<T, Rank, U>(in);
     std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const Storage<T, Rank>& blk) -> Storage<U, Rank> { return xt::real(blk); });
+                   [](const typename Tensor<T, Rank>::block_type& blk) ->
+                   typename Tensor<U, Rank>::block_type { return xt::real(blk); });
     return out;
 }
 
@@ -215,7 +217,8 @@ template <typename T, size_t Rank, typename U = typename detail::is_complex<T>::
 SharedTensor<U, Rank> imag(const SharedTensor<T, Rank>& in) noexcept {
     auto out = zeros_like<T, Rank, U>(in);
     std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const Storage<T, Rank>& blk) -> Storage<U, Rank> { return xt::imag(blk); });
+                   [](const typename Tensor<T, Rank>::block_type& blk) ->
+                   typename Tensor<U, Rank>::block_type { return xt::imag(blk); });
     return out;
 }
 
@@ -223,7 +226,79 @@ template <typename T, size_t Rank>
 SharedTensor<T, Rank> conj(const SharedTensor<T, Rank>& in) noexcept {
     auto out = zeros_like(in);
     std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const Storage<T, Rank>& blk) -> Storage<T, Rank> { return xt::conj(blk); });
+                   [](const typename Tensor<T, Rank>::block_type& blk) ->
+                   typename Tensor<T, Rank>::block_type { return xt::conj(blk); });
     return out;
 }
+
+/*! @{ Matrix eigenvalues */
+template <typename T>
+using Eigvals = Tensor<T, 1>;
+
+template <typename T>
+using Eigvecs = Tensor<T, 2>;
+
+template <typename T>
+using Result = std::tuple<typename Eigvals<T>::block_type, typename Eigvecs<T>::block_type>;
+
+template <typename T>
+using EigenResult = std::tuple<SharedTensor<T, 1>, SharedTensor<T, 2>>;
+
+template <typename T, typename U = std::complex<typename detail::is_complex<T>::real_type>>
+auto eig(const SharedTensor<T, 2>& in) -> EigenResult<U> {
+    auto tmp = std::vector<Result<U>>(in->nirrep());
+
+    std::transform(in->cbegin(), in->cend(), tmp.begin(),
+                   [](const typename Tensor<T, 2>::block_type& blk) -> Result<U> { return xt::linalg::eig(blk); });
+
+    auto eigvals = std::make_shared<Eigvals<U>>("Eigenvalues of" + in->label(), in->rowspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvals->begin(),
+                   [](const Result<U>& res) -> typename Eigvals<U>::block_type { return std::get<0>(res); });
+
+    auto eigvecs = std::make_shared<Eigvecs<U>>("Eigenvectors of" + in->label(), in->rowspi(), in->colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvecs->begin(),
+                   [](const Result<U>& res) -> typename Eigvecs<U>::block_type { return std::get<1>(res); });
+
+    return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
+}
+
+template <typename T, typename U = std::complex<typename detail::is_complex<T>::real_type>>
+auto eigvals(const SharedTensor<T, 2>& in) -> std::shared_ptr<Eigvals<U>> {
+    auto eigvals = std::make_shared<Eigvals<U>>("Eigenvalues of" + in->label(), in->rowspi());
+    std::transform(in->cbegin(), in->cend(), eigvals->begin(),
+                   [](const typename Tensor<T, 2>::block_type& blk) ->
+                   typename Eigvals<U>::block_type { return xt::linalg::eigvals(blk); });
+    return eigvals;
+}
+
+template <typename T>
+auto eigh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> EigenResult<T> {
+    auto tmp = std::vector<Result<T>>(in->nirrep());
+
+    std::transform(
+        in->cbegin(), in->cend(), tmp.begin(),
+        [UPLO](const typename Tensor<T, 2>::block_type& blk) -> Result<T> { return xt::linalg::eigh(blk, UPLO); });
+
+    auto eigvals = std::make_shared<Eigvals<T>>("Eigenvalues of" + in->label(), in->rowspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvals->begin(),
+                   [](const Result<T>& res) -> typename Eigvals<T>::block_type { return std::get<0>(res); });
+
+    auto eigvecs = std::make_shared<Eigvecs<T>>("Eigenvectors of" + in->label(), in->rowspi(), in->colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvecs->begin(),
+                   [](const Result<T>& res) -> typename Eigvecs<T>::block_type { return std::get<1>(res); });
+
+    return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
+}
+
+template <typename T>
+auto eigvalsh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> std::shared_ptr<Eigvals<T>> {
+    auto eigvals = std::make_shared<Eigvals<T>>("Eigenvalues of" + in->label(), in->rowspi());
+    std::transform(
+        in->cbegin(), in->cend(),
+        eigvals->begin(), [UPLO](const typename Tensor<T, 2>::block_type& blk) -> typename Eigvals<T>::block_type {
+            return xt::linalg::eigvalsh(blk, UPLO);
+        });
+    return eigvals;
+}
+/*! @}*/
 }  // namespace psi

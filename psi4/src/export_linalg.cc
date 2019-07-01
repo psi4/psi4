@@ -107,7 +107,6 @@ struct Decorator<T, 2> final {
 
         // Bind free functions to module
         declareRank2FreeFunctions(mod);
-        declareRank2FreeFunctions(mod);
     }
 
     static void declareRank2FreeFunctions(py::module& mod) {
@@ -124,7 +123,7 @@ struct Decorator<T, 2> final {
                 "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
                 "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
         // Type-inhomogeneous doublet-s
-        // T * double
+        // T x double
         mod.def("doublet",
                 py::overload_cast<const SharedTensor<T, 2>&, const SharedTensor<double, 2>&, Operation, Operation>(
                     &doublet<T, double>),
@@ -137,7 +136,7 @@ struct Decorator<T, 2> final {
                     &doublet<T, double>),
                 "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
                 "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
-        // double * T
+        // double x T
         mod.def("doublet",
                 py::overload_cast<const SharedTensor<double, 2>&, const SharedTensor<T, 2>&, Operation, Operation>(
                     &doublet<double, T>),
@@ -150,6 +149,15 @@ struct Decorator<T, 2> final {
                     &doublet<double, T>),
                 "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
                 "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
+        // Matrix eigenvalues
+        mod.def("eig", &eig<T>, "Compute the eigenvalues and right eigenvectors of a square matrix.", "in"_a);
+        mod.def("eigvals", &eigvals<T>, "Compute the eigenvalues of a general matrix.", "in"_a);
+        mod.def("eigh", &eigh<T>,
+                "Compute eigenvalues and eigenvectors of a complex Hermitian (conjugate symmetric) or a real "
+                "symmetric matrix.",
+                "in"_a, "UPLO"_a = 'L');
+        mod.def("eigvalsh", &eigvalsh<T>, "Compute the eigenvalues of a complex Hermitian or real symmetric matrix.",
+                "in"_a, "UPLO"_a = 'L');
     }
 };
 
@@ -225,6 +233,12 @@ void export_linalg(py::module& mod) {
         .value("none", Operation::None)
         .value("transpose", Operation::Transpose)
         .value("transpose_conj", Operation::TransposeConj);
+
+    py::enum_<xt::linalg::qrmode>(sub_mod, "QRMode")
+        .value("reduced", xt::linalg::qrmode::reduced)
+        .value("complete", xt::linalg::qrmode::complete)
+        .value("r", xt::linalg::qrmode::r)
+        .value("raw", xt::linalg::qrmode::raw);
 
     // Rank-1 tensor, aka blocked vector
     bind_tensor<float, 1>(sub_mod);
