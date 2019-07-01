@@ -149,15 +149,18 @@ struct Decorator<T, 2> final {
                     &doublet<double, T>),
                 "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
                 "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
+        // Decompositions
+        mod.def("cholesky", &cholesky<T>, "Compute the Cholesky decomposition of A", "A"_a);
+        mod.def("qr", &qr<T>, "Compute the QR decomposition of A", "A"_a, "mode"_a = xt::linalg::qrmode::reduced);
         // Matrix eigenvalues
-        mod.def("eig", &eig<T>, "Compute the eigenvalues and right eigenvectors of a square matrix.", "in"_a);
-        mod.def("eigvals", &eigvals<T>, "Compute the eigenvalues of a general matrix.", "in"_a);
+        mod.def("eig", &eig<T>, "Compute the eigenvalues and right eigenvectors of a square matrix.", "A"_a);
+        mod.def("eigvals", &eigvals<T>, "Compute the eigenvalues of a general matrix.", "A"_a);
         mod.def("eigh", &eigh<T>,
                 "Compute eigenvalues and eigenvectors of a complex Hermitian (conjugate symmetric) or a real "
                 "symmetric matrix.",
-                "in"_a, "UPLO"_a = 'L');
+                "A"_a, "UPLO"_a = 'L');
         mod.def("eigvalsh", &eigvalsh<T>, "Compute the eigenvalues of a complex Hermitian or real symmetric matrix.",
-                "in"_a, "UPLO"_a = 'L');
+                "A"_a, "UPLO"_a = 'L');
     }
 };
 
