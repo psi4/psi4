@@ -1375,50 +1375,22 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("""  PCM does not make use of molecular symmetry: """
                        """further calculations in C1 point group.\n""")
         use_c1 = True
-    
+
     # PE preparation
     if core.get_option('SCF', 'PE'):
         if not solvent._have_pe:
             raise ValidationError("Could not find cppe module.")
-        import cppe
-        from .solvent.pol_embed import CppeInterface
-        if core.get_option('SCF', 'PCM'):
-            raise ValidationError("""Error: 3-layer QM/MM/PCM not implemented.\n""")
-        potfile_name = core.get_local_option('PE', 'POTFILE')
-        pol_embed_options = cppe.PeOptions()
-        pol_embed_options.potfile = potfile_name
-        pol_embed_options.induced_thresh = core.get_local_option('PE', 'INDUCED_CONVERGENCE')
-        pol_embed_options.iso_pol = core.get_local_option('PE', 'ISOTROPIC_POL')
-        
-        pol_embed_options.do_diis = core.get_local_option('PE', 'DIIS')
-        pol_embed_options.maxiter = core.get_local_option('PE', 'MAXITER')
-        pol_embed_options.pe_border = core.get_local_option('PE', 'BORDER')
-        
-        if pol_embed_options.pe_border:
-            pol_embed_border_options = cppe.PeBorderOptions()
-            pe_btype = core.get_local_option('PE', 'BORDER_TYPE').upper()
-            if pe_btype == "REMOVE":
-                pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.rem
-            elif pe_btype == "REDIST":
-                pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.redist
-            pol_embed_border_options.rmin = core.get_local_option('PE', 'BORDER_RMIN')
-            if core.get_local_option('PE', 'BORDER_RMIN_UNIT').upper() == "AA":
-                pol_embed_border_options.rmin *= 1.0 / constants.bohr2angstroms
-            pol_embed_border_options.redist_order = core.get_local_option('PE', 'BORDER_REDIST_ORDER')
-            pol_embed_border_options.nredist = core.get_local_option('PE', 'BORDER_N_REDIST')
-            pol_embed_border_options.redist_pol = core.get_local_option('PE', 'BORDER_REDIST_POL')
-            
-            pol_embed_options.border_options = pol_embed_border_options
-        
+        use_c1 = True
+        core.print_out("""  PE does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+        # PE needs information about molecule and basis set
+        pol_embed_options = solvent.pol_embed.get_pe_options()
         core.print_out(""" Using potential file {} for Polarizable Embedding
-                       calculation.\n""".format(potfile_name))
-        scf_wfn.pe_state = CppeInterface(
+                       calculation.\n""".format(pol_embed_options.potfile))
+        scf_wfn.pe_state = solvent.pol_embed.CppeInterface(
             molecule=scf_molecule, options=pol_embed_options,
             basisset=scf_wfn.basisset()
         )
-        core.print_out("""  PE does not make use of molecular symmetry: """
-                       """further calculations in C1 point group.\n""")
-        use_c1 = True
 
     e_scf = scf_wfn.compute_energy()
     for obj in [core, scf_wfn]:
