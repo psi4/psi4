@@ -186,9 +186,9 @@ ExternalProject_Add(psi4-core
            hdf5_external
            ambit_external
            chemps2_external
+           cppe_external
            dkh_external
            libefp_external
-           cppe_external
            erd_external
            gau2grid_external
            gdma_external
