@@ -45,6 +45,7 @@ platform capabilities, *etc*.
    numpy
    cfour
    chemps2
+   cppe
    dftd3
    dkh
    libefp
