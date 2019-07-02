@@ -136,7 +136,7 @@ densities (SAD), discussed in
   (doi: `10.1002/jcc.20393 <http://dx.doi.org/10.1002/jcc.20393>`_).
 
 |PSIfour| also features a SAD natural orbital guess, an extended
-Hückel guess that employs on-the-fly atomic calculations alike the SAD
+H\ |u_dots|\ ckel guess that employs on-the-fly atomic calculations alike the SAD
 guess, as well as a superposition of atomic potentials (SAP) guess
 that is based on screening of atomic nuclei. The SAD natural orbitals,
 Hückel and SAP guesses have been described in
