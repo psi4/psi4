@@ -215,7 +215,7 @@ void ElectricFieldInt::compute_pair(const GaussianShell& s1, const GaussianShell
 }
 
 template <typename ContractionFunctor>
-void ElectricFieldInt::compute_with_functor(ContractionFunctor& functor, SharedMatrix coords) {
+void ElectricFieldInt::compute_with_functor(ContractionFunctor functor, SharedMatrix coords) {
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
     int bf1_offset = 0;
@@ -343,8 +343,8 @@ void ElectricFieldInt::compute_with_functor(ContractionFunctor& functor, SharedM
     }  // loop over shell 1
 }
 
-template void ElectricFieldInt::compute_with_functor(ContractOverDipolesFunctor&, SharedMatrix);
-template void ElectricFieldInt::compute_with_functor(ContractOverDensityFieldFunctor&, SharedMatrix);
+template void ElectricFieldInt::compute_with_functor(ContractOverDipolesFunctor, SharedMatrix);
+template void ElectricFieldInt::compute_with_functor(ContractOverDensityFieldFunctor, SharedMatrix);
 
 void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& /*s1*/, const GaussianShell& /*s2*/) {
     throw NOT_IMPLEMENTED_EXCEPTION();

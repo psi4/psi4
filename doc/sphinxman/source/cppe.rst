@@ -56,6 +56,9 @@ The CPPE library requires no additional licence, downloads, or
 configuration. The library allows for calculations in solution with the
 polarizable embedding model (PE), an explicit, fragment-based solvent model [Olsen:2010:3721]_.
 
+For a general tutorial on how to prepare/perform PE calculations, read the
+`tutorial review <https://onlinelibrary.wiley.com/doi/full/10.1002/qua.25717>`_.
+
 Installation
 ~~~~~~~~~~~~
 
@@ -72,8 +75,8 @@ Installation
   already been installed (instructions at :ref:`sec:quickconda`),
   CPPE can be obtained through ``conda install cppe -c psi4``.
   Then enable it as a feature with :makevar:`ENABLE_cppe`,
-  hint its location with :makevar:`CMAKE_PREFIX_PATH`,
-  and rebuild |PSIfour| to detect PCMSolver and activate dependent code.
+  hint its location with :makevar:`cppe_DIR`,
+  and rebuild |PSIfour| to detect CPPE and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use
   cppe from conda without thinking, consult :ref:`sec:condapsi4dev`.
@@ -97,12 +100,8 @@ Installation
 Using the polarizable embedding model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The inclusion of a PCM description of the solvent into your calculation
+The inclusion of a PE description of the solvent into your calculation
 is achieved by setting |globals__pe| ``true`` in your input file.
-|Psifour| understands the additional option |globals__pcm_scf_type| with possible values ``total``
-(the default) or ``separate``.
-The latter forces the separate handling of nuclear and electronic electrostatic potentials and
-polarization charges. It is mainly useful for debugging.
 
 .. note:: At present, PE can only be used for energy calculations with SCF
           wavefunctions and CC wavefunctions in the PTE approximation [Cammi:2009:164104]_.
@@ -119,55 +118,65 @@ polarization charges. It is mainly useful for debugging.
 .. that is slightly different from that of |Psifour| and is fully documented
 .. `here <http://pcmsolver.readthedocs.io/en/latest/users/input.html>`_
 
-.. A typical input for a Hartree--Fock calculation with PCM would look like the following: ::
-.. 
-..     molecule NH3 {
-..     symmetry c1
-..     N     -0.0000000001    -0.1040380466      0.0000000000
-..     H     -0.9015844116     0.4818470201     -1.5615900098
-..     H     -0.9015844116     0.4818470201      1.5615900098
-..     H      1.8031688251     0.4818470204      0.0000000000
-..     units bohr
-..     no_reorient
-..     no_com
-..     }
-.. 
-..     set {
-..       basis STO-3G
-..       scf_type pk
-..       pcm true
-..       pcm_scf_type total
-..     }
-.. 
-..     pcm = {
-..        Units = Angstrom
-..        Medium {
-..        SolverType = IEFPCM
-..        Solvent = Water
-..        }
-.. 
-..        Cavity {
-..        RadiiSet = UFF
-..        Type = GePol
-..        Scaling = False
-..        Area = 0.3
-..        Mode = Implicit
-..        }
-..     }
+A typical input for a Hartree--Fock calculation with PE would look like the following: ::
 
-.. More examples can be found in the directories with PCM tests
-.. :srcsample:`pcmsolver/ccsd-pte`,
-.. :srcsample:`pcmsolver/scf`,
-.. :srcsample:`pcmsolver/opt-fd`,
-.. :srcsample:`pcmsolver/dft`, and
-.. :srcsample:`pcmsolver/dipole`.
+    molecule pna {
+        C          8.64800        1.07500       -1.71100
+        C          9.48200        0.43000       -0.80800
+        C          9.39600        0.75000        0.53800
+        C          8.48200        1.71200        0.99500
+        C          7.65300        2.34500        0.05500
+        C          7.73200        2.03100       -1.29200
+        H         10.18300       -0.30900       -1.16400
+        H         10.04400        0.25200        1.24700
+        H          6.94200        3.08900        0.38900
+        H          7.09700        2.51500       -2.01800
+        N          8.40100        2.02500        2.32500
+        N          8.73400        0.74100       -3.12900
+        O          7.98000        1.33100       -3.90100
+        O          9.55600       -0.11000       -3.46600
+        H          7.74900        2.71100        2.65200
+        H          8.99100        1.57500        2.99500
+        symmetry c1
+        no_reorient
+        no_com
+    }
+
+    set {
+     basis sto-3g
+     pe true
+     e_convergence 10
+     d_convergence 10
+     scf_type pk
+    }
+
+    set pe {
+     potfile pna_6w.pot
+    }
+
+    scf_energy, wfn = energy('scf', return_wfn=True)
+
+
+The corresponding potential file `pna_6w.pot` can be downloaded
+`here <https://raw.githubusercontent.com/maxscheurer/cppe/master/tests/potfiles/pna_6w.pot>`_.
 
 Keywords for CPPE
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: autodir_options_c/globals__pcm.rst
-.. include:: autodir_options_c/globals__pcm_scf_type.rst
-.. include:: autodir_options_c/globals__pcm_cc_type.rst
+.. include:: autodir_options_c/globals__pe.rst
+.. include:: autodir_options_c/pe__potfile.rst
+.. include:: autodir_options_c/pe__isotropic_pol.rst
+.. include:: autodir_options_c/pe__convergence_induced.rst
+.. include:: autodir_options_c/pe__diis.rst
+.. include:: autodir_options_c/pe__maxiter.rst
+.. include:: autodir_options_c/pe__border.rst
+.. include:: autodir_options_c/pe__border_type.rst
+.. include:: autodir_options_c/pe__border_n_redist.rst
+.. include:: autodir_options_c/pe__border_redist_order.rst
+.. include:: autodir_options_c/pe__border_rmin.rst
+.. include:: autodir_options_c/pe__border_rmin_unit.rst
+.. include:: autodir_options_c/pe__border_redist_pol.rst
+
 
 .. _`cmake:cppe`:
 
@@ -179,17 +188,14 @@ How to configure CPPE for building Psi4
 * Role |w---w| In |PSIfour|, CPPE is a library that provides additional
   quantum chemical capabilities (explicit solvation modeling).
 
-* Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) PCMSolver
+* Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) CPPE
 
 * Upstream Dependencies |w---w| CPPE
 
 **CMake Variables**
 
-* :makevar:`ENABLE_cppe` |w---w| CMake variable toggling whether Psi4 builds with PCMSolver
-* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For PCMSolver, set to an installation directory containing ``include/PCMSolver/pcmsolver.h``
-* :makevar:`cppe_DIR` |w---w| CMake variable to specify where pre-built PCMSolver can be found. Set to installation directory containing ``share/cmake/PCMSolver/PCMSolverConfig.cmake``
-.. * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_PCMSolver` |w---w| CMake variable to force internal build of PCMSolver instead of detecting pre-built
-.. * :makevar:`CMAKE_INSIST_FIND_PACKAGE_PCMSolver` |w---w| CMake variable to force detecting pre-built PCMSolver and not falling back on internal build
+* :makevar:`ENABLE_cppe` |w---w| CMake variable toggling whether Psi4 builds with CPPE
+* :makevar:`cppe_DIR` |w---w| CMake variable to specify where pre-built CPPE can be found. Set to installation directory containing ``share/cmake/cppe/cppeConfig.cmake``
 
 **Examples**
 
