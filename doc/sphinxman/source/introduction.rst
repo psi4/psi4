@@ -139,7 +139,7 @@ densities (SAD), discussed in
 H\ |u_dots|\ ckel guess that employs on-the-fly atomic calculations alike the SAD
 guess, as well as a superposition of atomic potentials (SAP) guess
 that is based on screening of atomic nuclei. The SAD natural orbitals,
-Hückel and SAP guesses have been described in
+H\ |u_dots|\ ckel and SAP guesses have been described in
 
 * "An assessment of initial guesses for self-consistent field
   calculations. Superposition of Atomic Potentials: simple yet
