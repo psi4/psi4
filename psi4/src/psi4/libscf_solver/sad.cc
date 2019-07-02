@@ -820,8 +820,8 @@ void HF::compute_SAD_guess(bool natorb) {
             double** Ca2p = Ca_sad->pointer(h);
             double** Cb2p = Cb_sad->pointer(h);
             for (int i = 0; i < nso; i++) {
-                C_DCOPY(nmo, Cap[i], 1, Ca2p[i], 1);
-                C_DCOPY(nmo, Cbp[i], 1, Cb2p[i], 1);
+                C_DCOPY(nmo, Ca2p[i], 1, Cap[i], 1);
+                C_DCOPY(nmo, Cb2p[i], 1, Cbp[i], 1);
             }
         }
 
