@@ -87,7 +87,6 @@ HF::~HF() {}
 
 void HF::common_init() {
     attempt_number_ = 1;
-    ref_C_ = false;
     reset_occ_ = false;
     sad_ = false;
 
@@ -715,9 +714,9 @@ void HF::form_Shalf() {
         }
     }
     if (print_) outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n", min_S);
+
     // Create a vector matrix from the converted eigenvalues
     eigtemp2->set_diagonal(eigval);
-
     eigtemp->gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     X_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 
@@ -978,7 +977,6 @@ void HF::guess() {
 
     // What does the user want?
     // Options will be:
-    // ref_C_-C matrices were detected in the incoming wavefunction
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Densities
@@ -1065,7 +1063,7 @@ void HF::guess() {
         // 926 (2006).
 
         // Build non-idempotent, spin-restricted SAD density matrix
-        compute_SAD_guess();
+        compute_SAD_guess(false);
 
         // This is a guess iteration: orbital occupations must be
         // reset in SCF.
@@ -1073,6 +1071,24 @@ void HF::guess() {
         // SAD doesn't yield orbitals so also the SCF logic is
         // slightly different for the first iteration.
         sad_ = true;
+        guess_E = compute_initial_E();
+
+    } else if (guess_type == "SADNO") {
+        if (print_)
+            outfile->Printf(
+                "  SCF Guess: Superposition of Atomic Densities' Natural Orbitals via on-the-fly atomic UHF "
+                "(doi:10.1021/acs.jctc.8b01089).\n\n");
+
+        // Like the above, but builds natural orbitals from the SAD
+        // density matrix.
+
+        // Build non-idempotent, spin-restricted SAD density matrix
+        compute_SAD_guess(true);
+        // Find occupations
+        find_occupation();
+
+        // Now we have orbitals and occupations, build a density matrix
+        form_D();
         guess_E = compute_initial_E();
 
     } else if (guess_type == "HUCKEL") {
