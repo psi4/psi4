@@ -135,4 +135,4 @@ def test_negotiate_excessive_error(inp):
     with pytest.raises(psi4.ValidationError) as e:
         negotiate_derivative_type(proc=mock_proc, return_strategy=True, *inp)
 
-    assert 'excessive for target calculation' in str(e)
+    assert 'excessive for target calculation' in str(e.value)

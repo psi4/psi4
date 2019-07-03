@@ -94,11 +94,11 @@ def test_set_variable_overwrite(mode, pe_wfn_qcvars):
     # not fine to shadow keys with both types
     with pytest.raises(psi4.ValidationError) as err:
         obj.set_variable('vAr D', mat)
-    assert 'already a scalar variable' in str(err)
+    assert 'already a scalar variable' in str(err.value)
 
     with pytest.raises(psi4.ValidationError) as err:
         obj.set_variable('matvAr D', val)
-    assert 'already an array variable' in str(err)
+    assert 'already an array variable' in str(err.value)
 
 
 @pytest.mark.parametrize("mode", [

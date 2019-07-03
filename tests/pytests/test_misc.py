@@ -19,7 +19,7 @@ def hide_test_xtpl_fn_fn_error():
     with pytest.raises(psi4.UpgradeHelper) as e:
         psi4.energy('cbs', scf_basis='cc-pvdz', scf_scheme=psi4.driver_cbs.xtpl_highest_1)
 
-    assert 'Replace extrapolation function with function name' in str(e)
+    assert 'Replace extrapolation function with function name' in str(e.value)
 
 
 def hide_test_xtpl_cbs_fn_error():
@@ -29,7 +29,7 @@ def hide_test_xtpl_cbs_fn_error():
         psi4.energy(psi4.cbs, scf_basis='cc-pvdz')
         #psi4.energy(psi4.driver.driver_cbs.complete_basis_set, scf_basis='cc-pvdz')
 
-    assert 'Replace cbs or complete_basis_set function with cbs string' in str(e)
+    assert 'Replace cbs or complete_basis_set function with cbs string' in str(e.value)
 
 
 @pytest.mark.parametrize("inp,out", [
@@ -52,7 +52,7 @@ def test_parse_cotton_irreps_error(inp):
     with pytest.raises(psi4.ValidationError) as e:
         psi4.driver.driver_util.parse_cotton_irreps(*inp)
 
-    assert 'not valid for point group' in str(e)
+    assert 'not valid for point group' in str(e.value)
 
 
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>

@@ -252,7 +252,7 @@ def test_dftd3__from_arrays__supplement():
     assert compare_recursive(ans, res, atol=1.e-4)
     with pytest.raises(qcng.exceptions.InputError) as e:
         empirical_dispersion_resources.from_arrays(name_hint=res['fctldash'], level_hint=res['dashlevel'], param_tweaks=res['dashparams'])
-    assert "Can't guess -D correction level" in str(e)
+    assert "Can't guess -D correction level" in str(e.value)
     res = empirical_dispersion_resources.from_arrays(
         name_hint=res['fctldash'],
         level_hint=res['dashlevel'],
