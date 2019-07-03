@@ -420,24 +420,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
         }
     }
-#if 0
-    ACS
-    if (functional) {
-        hessians_["Coulomb"] = jk_hessians["Coulomb"];
-        if (functional->is_x_hybrid()) {
-            hessians_["Exchange"] = jk_hessians["Exchange"];
-            hessians_["Exchange"]->scale(-functional->x_alpha());
-        }
-        if (functional->is_x_lrc()) {
-            hessians_["Exchange,LR"] = jk_hessians["Exchange,LR"];
-            hessians_["Exchange,LR"]->scale(-functional->x_beta());
-        }
-    } else {
-        hessians_["Coulomb"] = jk_hessians["Coulomb"];
-        hessians_["Exchange"] = jk_hessians["Exchange"];
-        hessians_["Exchange"]->scale(-1.0);
-    }
-#endif
+
     // => Jpi/Kpi <= //
     {
         // Figure out DFT functional info

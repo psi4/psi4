@@ -1631,7 +1631,7 @@ SharedMatrix RV::compute_hessian() {
             }
         }
 
-        // Accumulate contributions to the full Hessian
+        // Accumulate contributions to the full Hessian: N.B. these terms are not symmetric!
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
             for (int nl = 0; nl < nlocal; nl++) {
