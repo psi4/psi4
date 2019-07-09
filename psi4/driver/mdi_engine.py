@@ -250,7 +250,7 @@ class MDIEngine():
             else:
                 command = None
             if use_mpi4py:
-                command = mpi_world.bcast(command, root=0)
+                command = self.mpi_world.bcast(command, root=0)
             if self.world_rank == 0:
                 core.print_out('\nMDI command received: ' + str(command) + ' \n')
 
