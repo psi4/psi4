@@ -31,6 +31,7 @@ SuperFunctionals
 """
 import re
 import os
+import sys
 
 from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
@@ -64,6 +65,7 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
     # Check for supplied dict_func functionals
     elif isinstance(name, dict):
         sup = dft_builder.build_superfunctional_from_dictionary(name, npoints, deriv, restricted)
+
     # Check for pre-defined dict-based functionals
     elif name.lower() in dft_builder.functionals:
         sup = dft_builder.build_superfunctional_from_dictionary(dft_builder.functionals[name.lower()],
@@ -121,6 +123,15 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
         if (abs(sup[0].vv10_c() - 0.0) <= 1e-8):
             core.print_out("SCF: VV10_C not specified. Using default (C=0.0093)!")
             sup[0].set_vv10_c(0.0093)
+
+    if core.has_option_changed("SCF", "DFT_XDM_A1") and core.has_option_changed("SCF", "DFT_XDM_A2") and core.has_option_changed("SCF", "DFT_XDM_VOL"):
+        a1 = core.get_option("SCF", "DFT_XDM_A1")
+        a2 = core.get_option("SCF", "DFT_XDM_A2")
+        vol = core.get_option("SCF", "DFT_XDM_VOL")
+        sup[0].set_xdm_a1(a1)
+        sup[0].set_xdm_a2(a2)
+        sup[0].set_xdm_vol(vol)
+        sup[0].set_do_xdm(True)
 
     if (core.has_option_changed("SCF", "NL_DISPERSION_PARAMETERS") and core.has_option_changed("SCF", "DFT_VV10_B")):
         raise ValidationError("SCF: Decide between NL_DISPERSION_PARAMETERS and DFT_VV10_B !!")
