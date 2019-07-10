@@ -81,6 +81,7 @@ class MDIEngine():
         self.molecule.reset_point_group('c1')
         self.molecule.fix_orientation(True)
         self.molecule.fix_com(True)
+        self.molecule.reinterpret_coordentry(False)
         self.molecule.update_geometry()
 
     def length_conversion(self):
