@@ -647,7 +647,7 @@ def scf_print_energies(self):
         core.print_out("    Empirical Dispersion Energy =     {:24.16f}\n".format(ed))
         core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
         if self.functional().needs_xdm():
-            core.print_out("    XDM Dispersion Energy =            {:24.16f}\n".format(exdm))
+            core.print_out("    XDM Dispersion Energy =           {:24.16f}\n".format(exdm))
     if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
     if hasattr(self.molecule(), 'EFP'):
