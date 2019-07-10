@@ -94,6 +94,12 @@ class SuperFunctional {
     double vv10_c_;
     double vv10_beta_;
 
+    // => XDM parameters <= //
+    bool needs_xdm_;
+    double xdm_a1_;
+    double xdm_a2_;
+    std::string xdm_vol_;
+
     // => Functional values and partials <= //
     bool libxc_xc_func_;
     int max_points_;
@@ -101,6 +107,7 @@ class SuperFunctional {
     std::map<std::string, SharedVector> values_;
     std::map<std::string, SharedVector> ac_values_;
     std::map<std::string, SharedVector> vv_values_;
+    std::map<std::string, SharedVector> xdm_values_;
 
     // Set up a null Superfunctional
     void common_init();
@@ -169,6 +176,7 @@ class SuperFunctional {
 
     void set_lock(bool locked) { locked_ = locked; }
     void set_do_vv10(bool do_vv10) { needs_vv10_ = do_vv10; }
+    void set_do_xdm(bool do_xdm) { needs_xdm_ = do_xdm; }
     void set_name(const std::string& name) { name_ = name; }
     void set_description(const std::string& description) { description_ = description; }
     void set_citation(const std::string& citation) { citation_ = citation; }
@@ -185,6 +193,9 @@ class SuperFunctional {
     void set_c_os_alpha(double alpha);
     void set_vv10_b(double b);
     void set_vv10_c(double c);
+    void set_xdm_a1(double a1);
+    void set_xdm_a2(double a2);
+    void set_xdm_vol(const std::string& vol);
     void set_grac_shift(double grac_shift);
     void set_grac_alpha(double grac_alpha);
     void set_grac_beta(double grac_beta);
@@ -208,12 +219,16 @@ class SuperFunctional {
     double c_os_alpha() const { return c_os_alpha_; }
     double vv10_b() const { return vv10_b_; }
     double vv10_c() const { return vv10_c_; }
+    double xdm_a1() const { return xdm_a1_; }
+    double xdm_a2() const { return xdm_a2_; }
+    std::string xdm_vol() const { return xdm_vol_; }
     double grac_shift() const { return grac_shift_; }
     double grac_alpha() const { return grac_alpha_; }
     double grac_beta() const { return grac_beta_; }
 
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
     bool needs_vv10() const { return needs_vv10_; };
+    bool needs_xdm() const { return needs_xdm_; };
     bool needs_grac() const { return needs_grac_; };
     bool PSI_API is_unpolarized() const;
     bool PSI_API is_meta() const;
