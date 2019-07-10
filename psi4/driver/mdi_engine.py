@@ -103,7 +103,11 @@ class MDIEngine():
                           ( "SCF", self.run_scf ), 
                           ( "<DIMENSIONS", self.send_dimensions ), 
                           ( "<NCOMMANDS", self.send_ncommands ), 
-                          ( "<COMMANDS", self.send_commands ),
+                          ( "<COMMANDS", self.send_commands ), 
+                          ( "<TOTCHARGE", self.send_total_charge ), 
+                          ( ">TOTCHARGE", self.recv_total_charge ), 
+                          ( "<ELEC_MULT", self.send_multiplicity ), 
+                          ( ">ELEC_MULT", self.recv_multiplicity ), 
                           ( "EXIT", self.exit ) ]
 
     def length_conversion(self):
@@ -286,6 +290,34 @@ class MDIEngine():
 
         print("COMMANDS: " + str(len(command_string)) + " " + str(command_string))
         MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
+
+    # respond to the <TOTCHARGE command
+    def send_total_charge(self):
+        """ Send the total system charge through MDI
+        """
+        charge = self.molecule.molecular_charge()
+        MDI_Send(charge, 1, MDI_DOUBLE, self.comm)
+
+    # respond to the >TOTCHARGE command
+    def recv_total_charge(self):
+        """ Receive the total system charge through MDI
+        """
+        charge = MDI_Recv(1, MDI_DOUBLE, self.comm)
+        self.molecule.set_molecular_charge( int(round(charge)) )
+
+    # respond to the <ELEC_MULT command
+    def send_multiplicity(self):
+        """ Send the electronic multiplicity through MDI
+        """
+        multiplicity = self.molecule.multiplicity()
+        MDI_Send(multiplicity, 1, MDI_INT, self.comm)
+
+    # respond to the >ELEC_MULT command
+    def recv_multiplicity(self):
+        """ Receive the electronic multiplicity through MDI
+        """
+        multiplicity = MDI_Recv(1, MDI_INT, self.comm)
+        self.molecule.set_multiplicity( multiplicity )
 
     # respond to the EXIT command
     def exit(self):
