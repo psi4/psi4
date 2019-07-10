@@ -63,6 +63,12 @@ class LibXCFunctional : public Functional {
     double vv10_b_;
     double vv10_c_;
 
+    // Needs xdm
+    bool needs_xdm_;
+    double xdm_a1_;
+    double xdm_a2_;
+    std::string xdm_vol_;
+
     // User defined tweakers
     std::vector<double> user_tweakers_;
 
@@ -90,6 +96,10 @@ class LibXCFunctional : public Functional {
     double needs_vv10() { return needs_vv10_; }
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
+    double needs_xdm() { return needs_xdm_; }
+    double xdm_a1() { return xdm_a1_; }
+    double xdm_a2() { return xdm_a2_; }
+    std::string xdm_vol() { return xdm_vol_; }
 };
 }
 

@@ -68,6 +68,9 @@ SCFDeriv::SCFDeriv(SharedWavefunction ref_wfn, Options& options) :
     if (ref_wfn->has_array_variable("-D Gradient")) {
         gradients_["-D Gradient"] = ref_wfn->array_variable("-D Gradient");
     }
+    if (ref_wfn->has_array_variable("XDM Gradient")) {
+        gradients_["XDM Gradient"] = ref_wfn->array_variable("XDM Gradient");
+    }
     if (ref_wfn->has_array_variable("-D Hessian")) {
         hessians_["-D Hessian"] = ref_wfn->array_variable("-D Hessian");
     }
@@ -116,6 +119,7 @@ SharedMatrix SCFDeriv::compute_gradient()
     gradient_terms.push_back("Exchange,LR");
     gradient_terms.push_back("XC");
     gradient_terms.push_back("-D Gradient");
+    gradient_terms.push_back("XDM Gradient");
     gradient_terms.push_back("Total");
 
     // => Densities <= //

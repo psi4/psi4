@@ -135,6 +135,7 @@ _addons_ = {
     "cfour": psi4_which("xcfour", return_bool=True),
     "mrcc": psi4_which("dmrcc", return_bool=True),
     "gcp": psi4_which("gcp", return_bool=True),
+    "postg": psi4_which("postg", return_bool=True),
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
     "forte": which_import("forte", return_bool=True),

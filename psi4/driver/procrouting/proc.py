@@ -43,13 +43,14 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver import psifiles as psif
-from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, ValidationError
+from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, ValidationError, XDMError
 #from psi4.driver.molutil import *
 # never import driver, wrappers, or aliases into this file
 
 from .roa import run_roa
 from . import proc_util
 from . import empirical_dispersion
+from . import xdm_dispersion
 from . import dft
 from . import mcscf
 from . import response
@@ -997,7 +998,7 @@ def build_disp_functor(name, restricted, **kwargs):
     # Figure out functional
     superfunc, disp_type = dft.build_superfunctional(name, restricted)
 
-    if disp_type:
+    if disp_type and (disp_type['type'] != 'xdm'):
         if isinstance(name, dict):
             # user dft_functional={} spec - type for lookup, dict val for param defs,
             #   name & citation discarded so only param matches to existing defs will print labels
@@ -1024,7 +1025,6 @@ def build_disp_functor(name, restricted, **kwargs):
     else:
         return superfunc, None
 
-
 def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     """Builds the correct (R/U/RO/CU HF/KS) wavefunction from the
     provided information, sets relevant auxiliary basis sets on it,
@@ -1049,6 +1049,9 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
     if _disp_functor and _disp_functor.engine != 'nl':
         wfn._disp_functor = _disp_functor
+
+    if superfunc.needs_xdm():
+        wfn.xdm = xdm_dispersion.XDMDispersion(superfunc.xdm_a1(),superfunc.xdm_a2(),superfunc.xdm_vol())
 
     # Set the DF basis sets
     if (("DF" in core.get_global_option("SCF_TYPE")) or
@@ -2158,6 +2161,12 @@ def run_scf_gradient(name, **kwargs):
     if hasattr(ref_wfn, "_disp_functor"):
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule(), ref_wfn)
         ref_wfn.set_variable("-D Gradient", disp_grad)
+
+    if ref_wfn.functional().needs_xdm():
+        if not ref_wfn.xdm.isrun:
+            raise XDMError("XDM gradients not available but they should be")
+        xdm_grad = core.Matrix.from_array(ref_wfn.xdm.grad,"XDM Gradient")
+        ref_wfn.set_variable("XDM Gradient", xdm_grad)
 
     grad = core.scfgrad(ref_wfn)
 
