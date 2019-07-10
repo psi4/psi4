@@ -36,7 +36,7 @@ from psi4.driver.p4util.exceptions import *
 
 from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
 from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_Conversion_Factor
-from MDI_Library.mdi import MDI_INT, MDI_DOUBLE, MDI_CHAR
+from MDI_Library.mdi import MDI_INT, MDI_DOUBLE, MDI_CHAR, MDI_COMMAND_LENGTH
 
 try:
     from mpi4py import MPI
@@ -59,7 +59,7 @@ class MDIEngine():
         self.molecule = psi4.core.get_active_molecule()
         self.energy = 0.0
 
-        # lattice variables
+        # Variables used when MDI sets a lattice of point charges
         self.nlattice = 0 # number of lattice point charges
         self.clattice = [] # list of lattice coordinates
         self.lattice = [] # list of lattice charges
@@ -83,6 +83,28 @@ class MDIEngine():
         self.molecule.fix_com(True)
         self.molecule.reinterpret_coordentry(False)
         self.molecule.update_geometry()
+
+        # List of all supported MDI commands
+        self.commands = [ "<NATOMS", 
+                     "<COORDS", 
+                     "<CHARGES", 
+                     "<ELEMENTS", 
+                     "<MASSES", 
+                     "<ENERGY", 
+                     "<FORCES", 
+                     ">COORDS", 
+                     ">NLATTICE", 
+                     ">CLATTICE", 
+                     ">LATTICE", 
+                     ">MASSES", 
+                     "SCF", 
+                     "<DIMENSIONS", 
+                     "<NCOMMANDS", 
+                     "<COMMANDS", 
+                     ">TOTCHARGE", 
+                     ">ELEC_MULT", 
+                     "EXIT" ]
+        self.test_func = self.send_natoms
 
     def length_conversion(self):
         """ Obtain the conversion factor between the geometry specification units and bohr
@@ -240,6 +262,31 @@ class MDIEngine():
         """
         self.energy = psi4.energy(self.scf_method)
 
+    # respond to the <DIMENSIONS command
+    def send_dimensions(self):
+        """ Send the dimensionality of the system through MDI
+        """
+        MDI_Send( [1, 1, 1], 3, MDI_INT, self.comm )
+
+    # respond to <NCOMMANDS command
+    def send_ncommands(self):
+        """ Send the number of supported MDI commands through MDI
+        """
+        MDI_Send(len(self.commands), 1, MDI_INT, self.comm)
+
+    # respond to the <COMMANDS command
+    def send_commands(self):
+        """ Send the supported MDI commands through MDI
+        """
+        command_string = ""
+        for command in self.commands:
+            command_string += command
+            for i in range(len(command), MDI_COMMAND_LENGTH):
+                command_string += " "
+
+        print("COMMANDS: " + str(len(command_string)) + " " + str(command_string))
+        MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
+
     # enter server mode, listening for commands from the driver
     def listen_for_commands(self):
         """ Receive commands through MDI and respond to them as defined by the MDI Standard
@@ -282,6 +329,12 @@ class MDIEngine():
                 self.recv_masses()
             elif command == "SCF":
                 self.run_scf()
+            elif command == "<DIMENSIONS":
+                self.send_dimensions()
+            elif command == "<NCOMMANDS":
+                self.send_ncommands()
+            elif command == "<COMMANDS":
+                self.send_commands()
             elif command == "EXIT":
                 break
             else:
