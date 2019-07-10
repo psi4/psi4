@@ -84,27 +84,27 @@ class MDIEngine():
         self.molecule.reinterpret_coordentry(False)
         self.molecule.update_geometry()
 
+        # Flag to stop listening for MDI commands
+        self.stop_listening = False
+
         # List of all supported MDI commands
-        self.commands = [ "<NATOMS", 
-                     "<COORDS", 
-                     "<CHARGES", 
-                     "<ELEMENTS", 
-                     "<MASSES", 
-                     "<ENERGY", 
-                     "<FORCES", 
-                     ">COORDS", 
-                     ">NLATTICE", 
-                     ">CLATTICE", 
-                     ">LATTICE", 
-                     ">MASSES", 
-                     "SCF", 
-                     "<DIMENSIONS", 
-                     "<NCOMMANDS", 
-                     "<COMMANDS", 
-                     ">TOTCHARGE", 
-                     ">ELEC_MULT", 
-                     "EXIT" ]
-        self.test_func = self.send_natoms
+        self.commands = [ ( "<NATOMS", self.send_natoms ), 
+                          ( "<COORDS", self.send_coords ), 
+                          ( "<CHARGES", self.send_charges ), 
+                          ( "<ELEMENTS", self.send_elements ), 
+                          ( "<MASSES", self.send_masses ), 
+                          ( "<ENERGY", self.send_energy ), 
+                          ( "<FORCES", self.send_forces ), 
+                          ( ">COORDS", self.recv_coords ), 
+                          ( ">NLATTICE", self.recv_nlattice ), 
+                          ( ">CLATTICE", self.recv_clattice ), 
+                          ( ">LATTICE", self.recv_lattice ), 
+                          ( ">MASSES", self.recv_masses ), 
+                          ( "SCF", self.run_scf ), 
+                          ( "<DIMENSIONS", self.send_dimensions ), 
+                          ( "<NCOMMANDS", self.send_ncommands ), 
+                          ( "<COMMANDS", self.send_commands ),
+                          ( "EXIT", self.exit ) ]
 
     def length_conversion(self):
         """ Obtain the conversion factor between the geometry specification units and bohr
@@ -280,19 +280,25 @@ class MDIEngine():
         """
         command_string = ""
         for command in self.commands:
-            command_string += command
-            for i in range(len(command), MDI_COMMAND_LENGTH):
+            command_string += command[0]
+            for i in range(len(command[0]), MDI_COMMAND_LENGTH):
                 command_string += " "
 
         print("COMMANDS: " + str(len(command_string)) + " " + str(command_string))
         MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
+
+    # respond to the EXIT command
+    def exit(self):
+        """ Stop listening for MDI commands
+        """
+        self.stop_listening = True
 
     # enter server mode, listening for commands from the driver
     def listen_for_commands(self):
         """ Receive commands through MDI and respond to them as defined by the MDI Standard
         """
 
-        while True:
+        while not self.stop_listening:
             if self.world_rank == 0:
                 command = MDI_Recv_Command(self.comm)
             else:
@@ -302,42 +308,14 @@ class MDIEngine():
             if self.world_rank == 0:
                 core.print_out('\nMDI command received: ' + str(command) + ' \n')
 
-            # respond to commands
-            if command == "<NATOMS":
-                self.send_natoms()
-            elif command == "<COORDS":
-                self.send_coords()
-            elif command == "<CHARGES":
-                self.send_charges()
-            elif command == "<ELEMENTS":
-                self.send_elements()
-            elif command == "<MASSES":
-                self.send_masses()
-            elif command == "<ENERGY":
-                self.send_energy()
-            elif command == "<FORCES":
-                self.send_forces()
-            elif command == ">COORDS":
-                self.recv_coords()
-            elif command == ">NLATTICE":
-                self.recv_nlattice()
-            elif command == ">CLATTICE":
-                self.recv_clattice()
-            elif command == ">LATTICE":
-                self.recv_lattice()
-            elif command == ">MASSES":
-                self.recv_masses()
-            elif command == "SCF":
-                self.run_scf()
-            elif command == "<DIMENSIONS":
-                self.send_dimensions()
-            elif command == "<NCOMMANDS":
-                self.send_ncommands()
-            elif command == "<COMMANDS":
-                self.send_commands()
-            elif command == "EXIT":
-                break
-            else:
+            # search for this command in self.commands
+            found_command = False
+            for supported_command in self.commands:
+                if not found_command and command == supported_command[0]:
+                    # run the function corresponding to this command
+                    supported_command[1]()
+                    found_command = True
+            if not found_command:
                 raise Exception('Unrecognized command: ' + str(command))
 
 
