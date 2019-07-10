@@ -43,7 +43,7 @@ class XDMDispersion(object):
 
     """
 
-    def __init__(self, a1=-1.0, a2=0.0, vol=""):
+    def __init__(self, a1=-101.0, a2=-101.0, vol=""):
         self.isrun = False
         self.a1 = a1
         self.a2 = a2
@@ -60,7 +60,7 @@ class XDMDispersion(object):
         # Validate arguments
         if wfn is None:
             raise ValidationError("Call to run_postg without a wavefunction.")
-        if (a1 < 0 or len(vol) == 0):
+        if (a1 < 0 or a2 < -100 or len(vol) == 0):
             raise ValidationError("""Call to run_postg with incorrect parameters a1 = %.4f, a2 = %.4f, vol = %s.""" % (a1,a2,vol))
 
         # check that the volume token is either one of the postg tokens or a float

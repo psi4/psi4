@@ -72,8 +72,8 @@ void SuperFunctional::common_init() {
     vv10_beta_ = 0.0;
 
     needs_xdm_ = false;
-    xdm_a1_ = -1.0;
-    xdm_a2_ = 0.0;
+    xdm_a1_ = -101.0;
+    xdm_a2_ = -101.0;
     xdm_vol_ = "";
 
     libxc_xc_func_ = false;
