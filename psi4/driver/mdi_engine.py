@@ -131,7 +131,6 @@ class MDIEngine():
         """
         natom = self.molecule.natom()
         MDI_Send(natom, 1, MDI_INT, self.comm)
-        print("Natoms: " + str(natom))
         return natom
 
     # respond to <COORDS command
@@ -141,7 +140,6 @@ class MDIEngine():
         natom = self.molecule.natom()
         coords = [ self.molecule.xyz(iatom)[icoord] for iatom in range(natom) for icoord in range(3) ]
         MDI_Send(coords, 3*natom, MDI_DOUBLE, self.comm)
-        print("Coords: " + str(coords))
         return coords
 
     # respond to <CHARGES command
@@ -151,7 +149,6 @@ class MDIEngine():
         natom = self.molecule.natom()
         charges = [ self.molecule.charge(iatom) for iatom in range(natom) ]
         MDI_Send(charges, natom, MDI_DOUBLE, self.comm)
-        print("Charges: " + str(charges))
         return charges
 
     # respond to <MASSES command
@@ -161,7 +158,6 @@ class MDIEngine():
         natom = self.molecule.natom()
         masses = [ self.molecule.mass(iatom) for iatom in range(natom) ]
         MDI_Send(masses, natom, MDI_DOUBLE, self.comm)
-        print("Masses: " + str(masses))
         return masses
 
     # respond to <ELEMENTS command
@@ -171,7 +167,6 @@ class MDIEngine():
         natom = self.molecule.natom()
         elements = [ self.molecule.true_atomic_number(iatom) for iatom in range(natom) ]
         MDI_Send(elements, natom, MDI_INT, self.comm)
-        print("Elements: " + str(elements))
         return elements
 
     # respond to <ENERGY command
@@ -179,7 +174,6 @@ class MDIEngine():
         """ Send the total energy through MDI
         """
         MDI_Send(self.energy, 1, MDI_DOUBLE, self.comm)
-        print("Energy: " + str(self.energy))
         return self.energy
 
     # respond to <FORCES command
@@ -191,7 +185,6 @@ class MDIEngine():
         unit_conv = 1.0
         forces = [ force_matrix.get(iatom,icoord)*unit_conv for iatom in range(natom) for icoord in range(3) ]
         MDI_Send(forces, 3*natom, MDI_DOUBLE, self.comm)
-        print("Forces: " + str(forces))
         return forces
 
     # respond to >CHARGES command
@@ -330,7 +323,6 @@ class MDIEngine():
             for i in range(len(command), MDI_COMMAND_LENGTH):
                 command_string += " "
 
-        print("COMMANDS: " + str(len(command_string)) + " " + str(command_string))
         MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
         return command_string
 
