@@ -241,10 +241,11 @@ class MDIEngine():
         """ Set a field of lattice point charges using information received through MDI
         """
         self.lattice_field = psi4.QMMM()
+        unit_conv = self.length_conversion()
         for ilat in range(self.nlattice):
-            latx = self.clattice[3*ilat+0]
-            laty = self.clattice[3*ilat+1]
-            latz = self.clattice[3*ilat+2]
+            latx = self.clattice[3*ilat+0] * unit_conv
+            laty = self.clattice[3*ilat+1] * unit_conv
+            latz = self.clattice[3*ilat+2] * unit_conv
             self.lattice_field.extern.addCharge(self.lattice[ilat], latx, laty, latz)
         psi4.core.set_global_option_python('EXTERN', self.lattice_field.extern)
 

@@ -15,6 +15,7 @@ def test_mdi_water():
     psi4.set_options({
             'reference': 'uhf',
             'scf_type': 'direct',
+            'e_convergence': 1e-12,
     })
 
     scf_method = "scf/cc-pVDZ"
@@ -108,7 +109,6 @@ def test_mdi_water():
 
     # Test the >NLATTICE, >CLATTICE, and >LATTICE commands
     nlattice = 2
-    expected = [0.1, 0.0, -0.12947688966627896, 0.0, -1.4341867446308548, 1.027446098871551, 0.0, 1.4941867446308548, 1.027446098871551]
     clattice = [ -3.0, 1.0, 0.0, 4.0, 3.0, 0.0 ]
     lattice = [ -1.0, -0.5 ]
     engine.recv_nlattice(nlattice)
@@ -118,12 +118,12 @@ def test_mdi_water():
     # Test the final energy
     engine.run_scf()
     energy = engine.send_energy()
-    expected = -75.849720155
+    expected = -76.032853528
     assert compare_values( expected, energy, atol=1.e-7 )
     forces = engine.send_forces()
-    expected = [0.0035613224585257022, -0.016598297018046902, -0.017280423215642285, 
-                0.007362641893430897, 0.006549235194699597, 0.004369283420143519, 
-                0.010069470231969673, -0.0001476166993489153, 0.01776306875176103]
+    expected = [0.032658205591954814, -0.027256446310611037, -0.02211229050834887, 
+                0.01582812526594022, -0.009687716838968852, 0.011685251062047874, 
+                0.02635302048909935, 0.00831403427972563, 0.033873999955958245]
     assert compare_values( expected, forces, atol=1.e-7 )
 
     # Test the EXIT command
