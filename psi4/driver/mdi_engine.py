@@ -197,6 +197,9 @@ class MDIEngine():
     # respond to >CHARGES command
     def recv_charges(self, charges = None):
         """ Receive a set of nuclear charges through MDI and assign them to the atoms in the current molecule
+
+        Arguments:
+            charges: New nuclear charges. If None, receive through MDI.
         """
         natom = self.molecule.natom()
         if charges is None:
@@ -207,6 +210,9 @@ class MDIEngine():
     # respond to >COORDS command
     def recv_coords(self, coords = None):
         """ Receive a set of nuclear coordinates through MDI and assign them to the atoms in the current molecule
+
+        Arguments:
+            coords: New nuclear coordinates. If None, receive through MDI.
         """
         natom = self.molecule.natom()
         if coords is None:
@@ -221,6 +227,9 @@ class MDIEngine():
     # respond to the >MASSES command
     def recv_masses(self, masses = None):
         """ Receive a set of nuclear masses through MDI and assign them to the atoms in the current molecule
+
+        Arguments:
+            masses: New nuclear masses. If None, receive through MDI.
         """
         natom = self.molecule.natom()
         if masses is None:
@@ -252,6 +261,9 @@ class MDIEngine():
     # respond to >NLATTICE command
     def recv_nlattice(self, nlattice = None):
         """ Receive the number of lattice point charges through MDI
+
+        Arguments:
+            nlattice: New number of point charges. If None, receive through MDI.
         """
         if nlattice is None:
             self.nlattice = MDI_Recv(1, MDI_INT, self.comm)
@@ -264,6 +276,9 @@ class MDIEngine():
     # respond to >CLATTICE command
     def recv_clattice(self, clattice = None):
         """ Receive the coordinates of a set of lattice point charges through MDI
+
+        Arguments:
+            clattice: New coordinates of the lattice of point charges. If None, receive through MDI.
         """
         if clattice is None:
             self.clattice = MDI_Recv(3*self.nlattice, MDI_DOUBLE, self.comm)
@@ -274,6 +289,9 @@ class MDIEngine():
     # respond to >LATTICE command
     def recv_lattice(self, lattice = None):
         """ Receive the charges of a set of lattice point charges through MDI
+
+        Arguments:
+            lattice: New charges of the lattice of point charges. If None, receive through MDI.
         """
         if lattice is None:
             self.lattice = MDI_Recv(self.nlattice, MDI_DOUBLE, self.comm)
@@ -327,6 +345,9 @@ class MDIEngine():
     # respond to the >TOTCHARGE command
     def recv_total_charge(self, charge = None):
         """ Receive the total system charge through MDI
+
+        Arguments:
+            charge: New charge of the system. If None, receive through MDI.
         """
         if charge is None:
             charge = MDI_Recv(1, MDI_DOUBLE, self.comm)
@@ -343,6 +364,9 @@ class MDIEngine():
     # respond to the >ELEC_MULT command
     def recv_multiplicity(self, multiplicity = None):
         """ Receive the electronic multiplicity through MDI
+
+        Arguments:
+            multiplicity: New multiplicity of the system. If None, receive through MDI.
         """
         if multiplicity is None:
             multiplicity = MDI_Recv(1, MDI_INT, self.comm)
