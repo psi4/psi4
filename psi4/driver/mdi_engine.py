@@ -88,27 +88,28 @@ class MDIEngine():
         self.stop_listening = False
 
         # List of all supported MDI commands
-        self.commands = [ ( "<NATOMS", self.send_natoms ), 
-                          ( "<COORDS", self.send_coords ), 
-                          ( "<CHARGES", self.send_charges ), 
-                          ( "<ELEMENTS", self.send_elements ), 
-                          ( "<MASSES", self.send_masses ), 
-                          ( "<ENERGY", self.send_energy ), 
-                          ( "<FORCES", self.send_forces ), 
-                          ( ">COORDS", self.recv_coords ), 
-                          ( ">NLATTICE", self.recv_nlattice ), 
-                          ( ">CLATTICE", self.recv_clattice ), 
-                          ( ">LATTICE", self.recv_lattice ), 
-                          ( ">MASSES", self.recv_masses ), 
-                          ( "SCF", self.run_scf ), 
-                          ( "<DIMENSIONS", self.send_dimensions ), 
-                          ( "<NCOMMANDS", self.send_ncommands ), 
-                          ( "<COMMANDS", self.send_commands ), 
-                          ( "<TOTCHARGE", self.send_total_charge ), 
-                          ( ">TOTCHARGE", self.recv_total_charge ), 
-                          ( "<ELEC_MULT", self.send_multiplicity ), 
-                          ( ">ELEC_MULT", self.recv_multiplicity ), 
-                          ( "EXIT", self.exit ) ]
+        self.commands = { }
+        self.commands["<NATOMS"] = self.send_natoms
+        self.commands["<COORDS"] = self.send_coords
+        self.commands["<CHARGES"] = self.send_charges
+        self.commands["<ELEMENTS"] = self.send_elements
+        self.commands["<MASSES"] = self.send_masses
+        self.commands["<ENERGY"] = self.send_energy
+        self.commands["<FORCES"] = self.send_forces
+        self.commands[">COORDS"] = self.recv_coords
+        self.commands[">NLATTICE"] = self.recv_nlattice
+        self.commands[">CLATTICE"] = self.recv_clattice
+        self.commands[">LATTICE"] = self.recv_lattice
+        self.commands[">MASSES"] = self.recv_masses
+        self.commands["SCF"] = self.run_scf
+        self.commands["<DIMENSIONS"] = self.send_dimensions
+        self.commands["<NCOMMANDS"] = self.send_ncommands
+        self.commands["<COMMANDS"] = self.send_commands
+        self.commands["<TOTCHARGE"] = self.send_total_charge
+        self.commands[">TOTCHARGE"] = self.recv_total_charge
+        self.commands["<ELEC_MULT"] = self.send_multiplicity
+        self.commands[">ELEC_MULT"] = self.recv_multiplicity
+        self.commands["EXIT"] = self.exit
 
     def length_conversion(self):
         """ Obtain the conversion factor between the geometry specification units and bohr
@@ -306,8 +307,8 @@ class MDIEngine():
         """
         command_string = ""
         for command in self.commands:
-            command_string += command[0]
-            for i in range(len(command[0]), MDI_COMMAND_LENGTH):
+            command_string += command
+            for i in range(len(command), MDI_COMMAND_LENGTH):
                 command_string += " "
 
         print("COMMANDS: " + str(len(command_string)) + " " + str(command_string))
@@ -370,9 +371,9 @@ class MDIEngine():
             # search for this command in self.commands
             found_command = False
             for supported_command in self.commands:
-                if not found_command and command == supported_command[0]:
+                if not found_command and command == supported_command:
                     # run the function corresponding to this command
-                    supported_command[1]()
+                    self.commands[supported_command]()
                     found_command = True
             if not found_command:
                 raise Exception('Unrecognized command: ' + str(command))
