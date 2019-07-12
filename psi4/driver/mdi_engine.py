@@ -44,9 +44,9 @@ try:
 except ImportError:
     use_mpi4py = False
 
-class MDIEngine():
 
-    def __init__(self, scf_method, molecule = None):
+class MDIEngine():
+    def __init__(self, scf_method, molecule=None):
         """ Initialize an MDIEngine object for communication with MDI
 
         Arguments:
@@ -66,10 +66,10 @@ class MDIEngine():
         self.energy = 0.0
 
         # Variables used when MDI sets a lattice of point charges
-        self.nlattice = 0 # number of lattice point charges
-        self.clattice = [] # list of lattice coordinates
-        self.lattice = [] # list of lattice charges
-        self.lattice_field = psi4.QMMM() # Psi4 chargefield
+        self.nlattice = 0  # number of lattice point charges
+        self.clattice = []  # list of lattice coordinates
+        self.lattice = []  # list of lattice charges
+        self.lattice_field = psi4.QMMM()  # Psi4 chargefield
 
         # MPI variables
         self.mpi_world = None
@@ -95,26 +95,26 @@ class MDIEngine():
 
         # Dictionary of all supported MDI commands
         self.commands = {
-            "<NATOMS": self.send_natoms, 
-            "<COORDS": self.send_coords, 
-            "<CHARGES": self.send_charges, 
-            "<ELEMENTS": self.send_elements, 
-            "<MASSES": self.send_masses, 
-            "<ENERGY": self.send_energy, 
-            "<FORCES": self.send_forces, 
-            ">COORDS": self.recv_coords, 
-            ">NLATTICE": self.recv_nlattice, 
-            ">CLATTICE": self.recv_clattice, 
-            ">LATTICE": self.recv_lattice, 
-            ">MASSES": self.recv_masses, 
-            "SCF": self.run_scf, 
-            "<DIMENSIONS": self.send_dimensions, 
-            "<NCOMMANDS": self.send_ncommands, 
-            "<COMMANDS": self.send_commands, 
-            "<TOTCHARGE": self.send_total_charge, 
-            ">TOTCHARGE": self.recv_total_charge, 
-            "<ELEC_MULT": self.send_multiplicity, 
-            ">ELEC_MULT": self.recv_multiplicity, 
+            "<NATOMS": self.send_natoms,
+            "<COORDS": self.send_coords,
+            "<CHARGES": self.send_charges,
+            "<ELEMENTS": self.send_elements,
+            "<MASSES": self.send_masses,
+            "<ENERGY": self.send_energy,
+            "<FORCES": self.send_forces,
+            ">COORDS": self.recv_coords,
+            ">NLATTICE": self.recv_nlattice,
+            ">CLATTICE": self.recv_clattice,
+            ">LATTICE": self.recv_lattice,
+            ">MASSES": self.recv_masses,
+            "SCF": self.run_scf,
+            "<DIMENSIONS": self.send_dimensions,
+            "<NCOMMANDS": self.send_ncommands,
+            "<COMMANDS": self.send_commands,
+            "<TOTCHARGE": self.send_total_charge,
+            ">TOTCHARGE": self.recv_total_charge,
+            "<ELEC_MULT": self.send_multiplicity,
+            ">ELEC_MULT": self.recv_multiplicity,
             "EXIT": self.exit
         }
 
@@ -123,7 +123,7 @@ class MDIEngine():
         """
         unit_name = self.molecule.units()
         if unit_name == "Angstrom":
-            unit_conv = MDI_Conversion_Factor("bohr","angstrom")
+            unit_conv = MDI_Conversion_Factor("bohr", "angstrom")
         elif unit_name == "Bohr":
             unit_conv = 1.0
         else:
@@ -152,7 +152,7 @@ class MDIEngine():
         """ Send the nuclear charges through MDI
         """
         natom = self.molecule.natom()
-        charges = [ self.molecule.charge(iatom) for iatom in range(natom) ]
+        charges = [self.molecule.charge(iatom) for iatom in range(natom)]
         MDI_Send(charges, natom, MDI_DOUBLE, self.comm)
         return charges
 
@@ -161,7 +161,7 @@ class MDIEngine():
         """ Send the nuclear masses through MDI
         """
         natom = self.molecule.natom()
-        masses = [ self.molecule.mass(iatom) for iatom in range(natom) ]
+        masses = [self.molecule.mass(iatom) for iatom in range(natom)]
         MDI_Send(masses, natom, MDI_DOUBLE, self.comm)
         return masses
 
@@ -170,7 +170,7 @@ class MDIEngine():
         """ Send the atomic number of each nucleus through MDI
         """
         natom = self.molecule.natom()
-        elements = [ self.molecule.true_atomic_number(iatom) for iatom in range(natom) ]
+        elements = [self.molecule.true_atomic_number(iatom) for iatom in range(natom)]
         MDI_Send(elements, natom, MDI_INT, self.comm)
         return elements
 
@@ -191,7 +191,7 @@ class MDIEngine():
         return forces
 
     # respond to >CHARGES command
-    def recv_charges(self, charges = None):
+    def recv_charges(self, charges=None):
         """ Receive a set of nuclear charges through MDI and assign them to the atoms in the current molecule
 
         Arguments:
@@ -204,7 +204,7 @@ class MDIEngine():
             self.molecule.set_nuclear_charge(iatom, charges[iatom])
 
     # respond to >COORDS command
-    def recv_coords(self, coords = None):
+    def recv_coords(self, coords=None):
         """ Receive a set of nuclear coordinates through MDI and assign them to the atoms in the current molecule
 
         Arguments:
@@ -212,12 +212,12 @@ class MDIEngine():
         """
         natom = self.molecule.natom()
         if coords is None:
-            coords = MDI_Recv(3*natom, MDI_DOUBLE, self.comm)
+            coords = MDI_Recv(3 * natom, MDI_DOUBLE, self.comm)
         matrix = psi4.core.Matrix.from_array(np.array(coords).reshape(-1, 3))
         self.molecule.set_geometry(matrix)
 
     # respond to the >MASSES command
-    def recv_masses(self, masses = None):
+    def recv_masses(self, masses=None):
         """ Receive a set of nuclear masses through MDI and assign them to the atoms in the current molecule
 
         Arguments:
@@ -244,14 +244,14 @@ class MDIEngine():
         self.lattice_field = psi4.QMMM()
         unit_conv = self.length_conversion()
         for ilat in range(self.nlattice):
-            latx = self.clattice[3*ilat+0] * unit_conv
-            laty = self.clattice[3*ilat+1] * unit_conv
-            latz = self.clattice[3*ilat+2] * unit_conv
+            latx = self.clattice[3 * ilat + 0] * unit_conv
+            laty = self.clattice[3 * ilat + 1] * unit_conv
+            latz = self.clattice[3 * ilat + 2] * unit_conv
             self.lattice_field.extern.addCharge(self.lattice[ilat], latx, laty, latz)
         psi4.core.set_global_option_python('EXTERN', self.lattice_field.extern)
 
     # respond to >NLATTICE command
-    def recv_nlattice(self, nlattice = None):
+    def recv_nlattice(self, nlattice=None):
         """ Receive the number of lattice point charges through MDI
 
         Arguments:
@@ -261,25 +261,25 @@ class MDIEngine():
             self.nlattice = MDI_Recv(1, MDI_INT, self.comm)
         else:
             self.nlattice = nlattice
-        self.clattice = [ 0.0 for ilat in range(3*self.nlattice) ]
-        self.lattice = [ 0.0 for ilat in range(self.nlattice) ]
+        self.clattice = [0.0 for ilat in range(3 * self.nlattice)]
+        self.lattice = [0.0 for ilat in range(self.nlattice)]
         self.set_lattice_field()
 
     # respond to >CLATTICE command
-    def recv_clattice(self, clattice = None):
+    def recv_clattice(self, clattice=None):
         """ Receive the coordinates of a set of lattice point charges through MDI
 
         Arguments:
             clattice: New coordinates of the lattice of point charges. If None, receive through MDI.
         """
         if clattice is None:
-            self.clattice = MDI_Recv(3*self.nlattice, MDI_DOUBLE, self.comm)
+            self.clattice = MDI_Recv(3 * self.nlattice, MDI_DOUBLE, self.comm)
         else:
             self.clattice = clattice
         self.set_lattice_field()
 
     # respond to >LATTICE command
-    def recv_lattice(self, lattice = None):
+    def recv_lattice(self, lattice=None):
         """ Receive the charges of a set of lattice point charges through MDI
 
         Arguments:
@@ -302,7 +302,7 @@ class MDIEngine():
         """ Send the dimensionality of the system through MDI
         """
         dimensions = [1, 1, 1]
-        MDI_Send( dimensions, 3, MDI_INT, self.comm )
+        MDI_Send(dimensions, 3, MDI_INT, self.comm)
         return dimensions
 
     # respond to <NCOMMANDS command
@@ -334,7 +334,7 @@ class MDIEngine():
         return charge
 
     # respond to the >TOTCHARGE command
-    def recv_total_charge(self, charge = None):
+    def recv_total_charge(self, charge=None):
         """ Receive the total system charge through MDI
 
         Arguments:
@@ -342,7 +342,7 @@ class MDIEngine():
         """
         if charge is None:
             charge = MDI_Recv(1, MDI_DOUBLE, self.comm)
-        self.molecule.set_molecular_charge( int(round(charge)) )
+        self.molecule.set_molecular_charge(int(round(charge)))
 
     # respond to the <ELEC_MULT command
     def send_multiplicity(self):
@@ -353,7 +353,7 @@ class MDIEngine():
         return multiplicity
 
     # respond to the >ELEC_MULT command
-    def recv_multiplicity(self, multiplicity = None):
+    def recv_multiplicity(self, multiplicity=None):
         """ Receive the electronic multiplicity through MDI
 
         Arguments:
@@ -361,7 +361,7 @@ class MDIEngine():
         """
         if multiplicity is None:
             multiplicity = MDI_Recv(1, MDI_INT, self.comm)
-        self.molecule.set_multiplicity( multiplicity )
+        self.molecule.set_multiplicity(multiplicity)
 
     # respond to the EXIT command
     def exit(self):
@@ -395,8 +395,6 @@ class MDIEngine():
                 raise Exception('Unrecognized command: ' + str(command))
 
 
-
-
 def mdi_init(mdi_arguments):
     """ Initialize the MDI Library
 
@@ -407,6 +405,7 @@ def mdi_init(mdi_arguments):
     if use_mpi4py:
         mpi_world = MPI.COMM_WORLD
     MDI_Init(mdi_arguments, mpi_world)
+
 
 def mdi(scf_method):
     """ Begin functioning as an MDI engine

@@ -3,6 +3,7 @@ from qcelemental.testing import compare, compare_recursive, compare_values, tnm
 
 import psi4
 
+
 def test_mdi_water():
 
     psi4.geometry("""
@@ -13,9 +14,9 @@ def test_mdi_water():
     """)
 
     psi4.set_options({
-            'reference': 'uhf',
-            'scf_type': 'direct',
-            'e_convergence': 1e-12,
+        'reference': 'uhf',
+        'scf_type': 'direct',
+        'e_convergence': 1e-12,
     })
 
     scf_method = "scf/cc-pVDZ"
@@ -29,29 +30,35 @@ def test_mdi_water():
 
     # Test the <COORDS command
     coords = engine.send_coords()
-    expected = [0.0, 0.0, -0.12947688966627896, 0.0, -1.4941867446308548, 1.027446098871551, 0.0, 1.4941867446308548, 1.027446098871551]
-    assert compare_values( expected, coords, atol=1.e-7 )
+    expected = [
+        0.0, 0.0, -0.12947688966627896, 0.0, -1.4941867446308548, 1.027446098871551, 0.0, 1.4941867446308548,
+        1.027446098871551
+    ]
+    assert compare_values(expected, coords, atol=1.e-7)
 
     # Test the >COORDS command
-    expected = [0.1, 0.0, -0.12947688966627896, 0.0, -1.4341867446308548, 1.027446098871551, 0.0, 1.4941867446308548, 1.027446098871551]
+    expected = [
+        0.1, 0.0, -0.12947688966627896, 0.0, -1.4341867446308548, 1.027446098871551, 0.0, 1.4941867446308548,
+        1.027446098871551
+    ]
     engine.recv_coords(expected)
     coords = engine.send_coords()
-    assert compare_values( expected, coords, atol=1.e-7 )
+    assert compare_values(expected, coords, atol=1.e-7)
 
     # Test the <CHARGES command
     charges = engine.send_charges()
     expected = [8.0, 1.0, 1.0]
-    assert compare_values( expected, charges, atol=1.e-7 )
+    assert compare_values(expected, charges, atol=1.e-7)
 
     # Test the <ELEMENTS command
     elements = engine.send_elements()
     expected = [8.0, 1.0, 1.0]
-    assert compare_values( expected, elements, atol=1.e-7 )
+    assert compare_values(expected, elements, atol=1.e-7)
 
     # Test the <MASSES command
     masses = engine.send_masses()
     expected = [15.99491461957, 1.00782503223, 1.00782503223]
-    assert compare_values( expected, masses, atol=1.e-7 )
+    assert compare_values(expected, masses, atol=1.e-7)
 
     # Test the SCF command
     engine.run_scf()
@@ -59,25 +66,26 @@ def test_mdi_water():
     # Test the <ENERGY command
     energy = engine.send_energy()
     expected = -76.02320201768676
-    assert compare_values( expected, energy, atol=1.e-7 )
+    assert compare_values(expected, energy, atol=1.e-7)
 
     # Test the <FORCES command
     forces = engine.send_forces()
-    expected = [0.004473733542292732, -0.01775852359379196, -0.051757651796320636, 
-                -0.0016762687719661835, -0.024093270269019917, 0.019393138772564877, 
-                -0.0027974647702799747, 0.04185179386282589, 0.03236451302360538]
-    assert compare_values( expected, forces, atol=1.e-7 )
+    expected = [
+        0.004473733542292732, -0.01775852359379196, -0.051757651796320636, -0.0016762687719661835,
+        -0.024093270269019917, 0.019393138772564877, -0.0027974647702799747, 0.04185179386282589, 0.03236451302360538
+    ]
+    assert compare_values(expected, forces, atol=1.e-7)
 
     # Test the >MASSES command
     expected = [15.99491461957, 3.0, 2.0]
     engine.recv_masses(expected)
     masses = engine.send_masses()
-    assert compare_values( expected, masses, atol=1.e-7 )
+    assert compare_values(expected, masses, atol=1.e-7)
 
     # Test the <DIMENSIONS command
     expected = [1, 1, 1]
     dimensions = engine.send_dimensions()
-    assert compare_values( expected, dimensions, atol=1.e-7 )
+    assert compare_values(expected, dimensions, atol=1.e-7)
 
     # Test the <NCOMMANDS command
     ncommands = engine.send_ncommands()
@@ -88,29 +96,29 @@ def test_mdi_water():
     # Test the <TOTCHARGE command
     totcharge = engine.send_total_charge()
     expected = 0.0
-    assert compare_values( expected, totcharge, atol=1.e-7 )
+    assert compare_values(expected, totcharge, atol=1.e-7)
 
     # Test the >TOTCHARGE command
     expected = 1.0
     engine.recv_total_charge(expected)
     totcharge = engine.send_total_charge()
-    assert compare_values( expected, totcharge, atol=1.e-7 )
+    assert compare_values(expected, totcharge, atol=1.e-7)
 
     # Test the <ELEC_MULT command
     multiplicity = engine.send_multiplicity()
     expected = 1
-    assert compare_values( expected, multiplicity, atol=1.e-7 )
+    assert compare_values(expected, multiplicity, atol=1.e-7)
 
     # Test the >ELEC_MULT command
     expected = 2
     engine.recv_multiplicity(expected)
     multiplicity = engine.send_multiplicity()
-    assert compare_values( expected, multiplicity, atol=1.e-7 )
+    assert compare_values(expected, multiplicity, atol=1.e-7)
 
     # Test the >NLATTICE, >CLATTICE, and >LATTICE commands
     nlattice = 2
-    clattice = [ -3.0, 1.0, 0.0, 4.0, 3.0, 0.0 ]
-    lattice = [ -1.0, -0.5 ]
+    clattice = [-3.0, 1.0, 0.0, 4.0, 3.0, 0.0]
+    lattice = [-1.0, -0.5]
     engine.recv_nlattice(nlattice)
     engine.recv_clattice(clattice)
     engine.recv_lattice(lattice)
@@ -119,12 +127,13 @@ def test_mdi_water():
     engine.run_scf()
     energy = engine.send_energy()
     expected = -76.032853528
-    assert compare_values( expected, energy, atol=1.e-7 )
+    assert compare_values(expected, energy, atol=1.e-7)
     forces = engine.send_forces()
-    expected = [0.032658205591954814, -0.027256446310611037, -0.02211229050834887, 
-                0.01582812526594022, -0.009687716838968852, 0.011685251062047874, 
-                0.02635302048909935, 0.00831403427972563, 0.033873999955958245]
-    assert compare_values( expected, forces, atol=1.e-7 )
+    expected = [
+        0.032658205591954814, -0.027256446310611037, -0.02211229050834887, 0.01582812526594022, -0.009687716838968852,
+        0.011685251062047874, 0.02635302048909935, 0.00831403427972563, 0.033873999955958245
+    ]
+    assert compare_values(expected, forces, atol=1.e-7)
 
     # Test the EXIT command
     engine.exit()
