@@ -131,7 +131,7 @@ class MDIEngine():
 
         return unit_conv
 
-    # respond to <NATOMS command
+    # Respond to the <NATOMS command
     def send_natoms(self):
         """ Send the number of atoms through MDI
         """
@@ -139,7 +139,7 @@ class MDIEngine():
         MDI_Send(natom, 1, MDI_INT, self.comm)
         return natom
 
-    # respond to <COORDS command
+    # Respond to the <COORDS command
     def send_coords(self):
         """ Send the nuclear coordinates through MDI
         """
@@ -147,7 +147,7 @@ class MDIEngine():
         MDI_Send(coords, len(coords), MDI_DOUBLE_NUMPY, self.comm)
         return coords
 
-    # respond to <CHARGES command
+    # Respond to the <CHARGES command
     def send_charges(self):
         """ Send the nuclear charges through MDI
         """
@@ -156,7 +156,7 @@ class MDIEngine():
         MDI_Send(charges, natom, MDI_DOUBLE, self.comm)
         return charges
 
-    # respond to <MASSES command
+    # Respond to the <MASSES command
     def send_masses(self):
         """ Send the nuclear masses through MDI
         """
@@ -165,7 +165,7 @@ class MDIEngine():
         MDI_Send(masses, natom, MDI_DOUBLE, self.comm)
         return masses
 
-    # respond to <ELEMENTS command
+    # Respond to the <ELEMENTS command
     def send_elements(self):
         """ Send the atomic number of each nucleus through MDI
         """
@@ -174,14 +174,14 @@ class MDIEngine():
         MDI_Send(elements, natom, MDI_INT, self.comm)
         return elements
 
-    # respond to <ENERGY command
+    # Respond to the <ENERGY command
     def send_energy(self):
         """ Send the total energy through MDI
         """
         MDI_Send(self.energy, 1, MDI_DOUBLE, self.comm)
         return self.energy
 
-    # respond to <FORCES command
+    # Respond to the <FORCES command
     def send_forces(self):
         """ Send the nuclear forces through MDI
         """
@@ -190,7 +190,7 @@ class MDIEngine():
         MDI_Send(forces, len(forces), MDI_DOUBLE_NUMPY, self.comm)
         return forces
 
-    # respond to >CHARGES command
+    # Respond to the >CHARGES command
     def recv_charges(self, charges=None):
         """ Receive a set of nuclear charges through MDI and assign them to the atoms in the current molecule
 
@@ -203,7 +203,7 @@ class MDIEngine():
         for iatom in range(natom):
             self.molecule.set_nuclear_charge(iatom, charges[iatom])
 
-    # respond to >COORDS command
+    # Respond to the >COORDS command
     def recv_coords(self, coords=None):
         """ Receive a set of nuclear coordinates through MDI and assign them to the atoms in the current molecule
 
@@ -216,7 +216,7 @@ class MDIEngine():
         matrix = psi4.core.Matrix.from_array(np.array(coords).reshape(-1, 3))
         self.molecule.set_geometry(matrix)
 
-    # respond to the >MASSES command
+    # Respond to the >MASSES command
     def recv_masses(self, masses=None):
         """ Receive a set of nuclear masses through MDI and assign them to the atoms in the current molecule
 
@@ -227,7 +227,7 @@ class MDIEngine():
         if masses is None:
             masses = MDI_Recv(natom, MDI_DOUBLE, self.comm)
 
-        # assign the mass of all atoms, taking care to avoid ghost atoms
+        # Assign the mass of all atoms, taking care to avoid ghost atoms
         jatom = 0
         for iatom in range(natom):
             while self.molecule.fcharge(jatom) == 0.0 and jatom < self.molecule.nallatom():
@@ -237,7 +237,7 @@ class MDIEngine():
             self.molecule.set_mass(iatom, masses[jatom])
             jatom = jatom + 1
 
-    # set a lattice of point charges
+    # Set a lattice of point charges
     def set_lattice_field(self):
         """ Set a field of lattice point charges using information received through MDI
         """
@@ -250,7 +250,7 @@ class MDIEngine():
             self.lattice_field.extern.addCharge(self.lattice[ilat], latx, laty, latz)
         psi4.core.set_global_option_python('EXTERN', self.lattice_field.extern)
 
-    # respond to >NLATTICE command
+    # Respond to the >NLATTICE command
     def recv_nlattice(self, nlattice=None):
         """ Receive the number of lattice point charges through MDI
 
@@ -265,7 +265,7 @@ class MDIEngine():
         self.lattice = [0.0 for ilat in range(self.nlattice)]
         self.set_lattice_field()
 
-    # respond to >CLATTICE command
+    # Respond to the >CLATTICE command
     def recv_clattice(self, clattice=None):
         """ Receive the coordinates of a set of lattice point charges through MDI
 
@@ -278,7 +278,7 @@ class MDIEngine():
             self.clattice = clattice
         self.set_lattice_field()
 
-    # respond to >LATTICE command
+    # Respond to the >LATTICE command
     def recv_lattice(self, lattice=None):
         """ Receive the charges of a set of lattice point charges through MDI
 
@@ -291,13 +291,13 @@ class MDIEngine():
             self.lattice = lattice
         self.set_lattice_field()
 
-    # respond to SCF command
+    # Respond to the SCF command
     def run_scf(self):
         """ Run an energy calculation
         """
         self.energy = psi4.energy(self.scf_method, molecule=self.molecule)
 
-    # respond to the <DIMENSIONS command
+    # Respond to the <DIMENSIONS command
     def send_dimensions(self):
         """ Send the dimensionality of the system through MDI
         """
@@ -305,14 +305,14 @@ class MDIEngine():
         MDI_Send(dimensions, 3, MDI_INT, self.comm)
         return dimensions
 
-    # respond to <NCOMMANDS command
+    # Respond to the <NCOMMANDS command
     def send_ncommands(self):
         """ Send the number of supported MDI commands through MDI
         """
         MDI_Send(len(self.commands), 1, MDI_INT, self.comm)
         return len(self.commands)
 
-    # respond to the <COMMANDS command
+    # Respond to the <COMMANDS command
     def send_commands(self):
         """ Send the supported MDI commands through MDI
         """
@@ -325,7 +325,7 @@ class MDIEngine():
         MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
         return command_string
 
-    # respond to the <TOTCHARGE command
+    # Respond to the <TOTCHARGE command
     def send_total_charge(self):
         """ Send the total system charge through MDI
         """
@@ -333,7 +333,7 @@ class MDIEngine():
         MDI_Send(charge, 1, MDI_DOUBLE, self.comm)
         return charge
 
-    # respond to the >TOTCHARGE command
+    # Respond to the >TOTCHARGE command
     def recv_total_charge(self, charge=None):
         """ Receive the total system charge through MDI
 
@@ -344,7 +344,7 @@ class MDIEngine():
             charge = MDI_Recv(1, MDI_DOUBLE, self.comm)
         self.molecule.set_molecular_charge(int(round(charge)))
 
-    # respond to the <ELEC_MULT command
+    # Respond to the <ELEC_MULT command
     def send_multiplicity(self):
         """ Send the electronic multiplicity through MDI
         """
@@ -352,7 +352,7 @@ class MDIEngine():
         MDI_Send(multiplicity, 1, MDI_INT, self.comm)
         return multiplicity
 
-    # respond to the >ELEC_MULT command
+    # Respond to the >ELEC_MULT command
     def recv_multiplicity(self, multiplicity=None):
         """ Receive the electronic multiplicity through MDI
 
@@ -363,13 +363,13 @@ class MDIEngine():
             multiplicity = MDI_Recv(1, MDI_INT, self.comm)
         self.molecule.set_multiplicity(multiplicity)
 
-    # respond to the EXIT command
+    # Respond to the EXIT command
     def exit(self):
         """ Stop listening for MDI commands
         """
         self.stop_listening = True
 
-    # enter server mode, listening for commands from the driver
+    # Enter server mode, listening for commands from the driver
     def listen_for_commands(self):
         """ Receive commands through MDI and respond to them as defined by the MDI Standard
         """
@@ -384,11 +384,11 @@ class MDIEngine():
             if self.world_rank == 0:
                 psi4.core.print_out('\nMDI command received: ' + str(command) + ' \n')
 
-            # search for this command in self.commands
+            # Search for this command in self.commands
             found_command = False
             for supported_command in self.commands:
                 if not found_command and command == supported_command:
-                    # run the function corresponding to this command
+                    # Run the function corresponding to this command
                     self.commands[supported_command]()
                     found_command = True
             if not found_command:
