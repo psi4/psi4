@@ -30,9 +30,6 @@ For details regarding MDI, see https://molssi.github.io/MDI_Library/html/index.h
 
 """
 import psi4
-from psi4.driver import p4util
-from psi4.driver import driver
-from psi4.driver.p4util.exceptions import *
 
 from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
 from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_Conversion_Factor
@@ -115,7 +112,6 @@ class MDIEngine():
         """ Obtain the conversion factor between the geometry specification units and bohr
         """
         unit_name = self.molecule.units()
-        unit_conv = 1.0
         if unit_name == "Angstrom":
             unit_conv = MDI_Conversion_Factor("bohr","angstrom")
         elif unit_name == "Bohr":
@@ -383,7 +379,7 @@ class MDIEngine():
             if use_mpi4py:
                 command = self.mpi_world.bcast(command, root=0)
             if self.world_rank == 0:
-                core.print_out('\nMDI command received: ' + str(command) + ' \n')
+                psi4.core.print_out('\nMDI command received: ' + str(command) + ' \n')
 
             # search for this command in self.commands
             found_command = False
