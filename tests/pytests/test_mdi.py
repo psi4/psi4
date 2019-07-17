@@ -58,7 +58,7 @@ def test_mdi_water():
     # Test the <MASSES command
     masses = engine.send_masses()
     expected = [15.99491461957, 1.00782503223, 1.00782503223]
-    assert compare_values(expected, masses, atol=1.e-7)
+    assert compare_values(expected, masses, atol=1.e-6)
 
     # Test the SCF command
     engine.run_scf()
@@ -66,7 +66,7 @@ def test_mdi_water():
     # Test the <ENERGY command
     energy = engine.send_energy()
     expected = -76.02320201768676
-    assert compare_values(expected, energy, atol=1.e-7)
+    assert compare_values(expected, energy, atol=1.e-6)
 
     # Test the <FORCES command
     forces = engine.send_forces()
@@ -74,7 +74,7 @@ def test_mdi_water():
         0.004473733542292732, -0.01775852359379196, -0.051757651796320636, -0.0016762687719661835,
         -0.024093270269019917, 0.019393138772564877, -0.0027974647702799747, 0.04185179386282589, 0.03236451302360538
     ]
-    assert compare_values(expected, forces, atol=1.e-7)
+    assert compare_values(expected, forces, atol=1.e-6)
 
     # Test the >MASSES command
     expected = [15.99491461957, 3.0, 2.0]
@@ -127,13 +127,13 @@ def test_mdi_water():
     engine.run_scf()
     energy = engine.send_energy()
     expected = -76.032853528
-    assert compare_values(expected, energy, atol=1.e-7)
+    assert compare_values(expected, energy, atol=1.e-6)
     forces = engine.send_forces()
     expected = [
         0.032658205591954814, -0.027256446310611037, -0.02211229050834887, 0.01582812526594022, -0.009687716838968852,
         0.011685251062047874, 0.02635302048909935, 0.00831403427972563, 0.033873999955958245
     ]
-    assert compare_values(expected, forces, atol=1.e-7)
+    assert compare_values(expected, forces, atol=1.e-6)
 
     # Test the EXIT command
     engine.exit()
