@@ -122,9 +122,17 @@ class SingleResult(BaseTask):
 
             r = client.add_compute("psi4", self.method, self.basis, self.driver, keyword_id, [mol])
             self.result_id = r.ids[0]
-
+            # NOTE: The following will re-run errored jobs by default
             if self.result_id in r.existing:
-                print("Job already completed {}".format(self.result_id))
+                ret = client.query_tasks(base_result=self.result_id)
+                if ret:
+                    if ret[0].status == "ERROR":
+                        upd = client.modify_tasks("restart",base_result=self.result_id)
+                        print("Resubmitting Errored Job {}".format(self.result_id))
+                    elif ret.status == "COMPLETE":
+                        print("Job already completed {}".format(self.result_id))
+                else:
+                    print("Job already completed {}".format(self.result_id))
             else:
                 print("Submitting Single Result {}".format(self.result_id))
 
@@ -151,8 +159,8 @@ class SingleResult(BaseTask):
         self.result = self.result.dict()
         # ... END
 
-        pp.pprint(self.result)
-        print('... JSON returns >>>')
+        #pp.pprint(self.result)
+        #print('... JSON returns >>>')
         self.computed = True
 
         # core.set_output_file(gof, True)
