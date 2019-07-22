@@ -134,6 +134,7 @@ class PSI_API VBase {
     /// Throws by default
     virtual void compute_V(std::vector<SharedMatrix> ret);
     virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
+    virtual std::vector<SharedMatrix> compute_fock_derivatives();
     virtual SharedMatrix compute_gradient();
     virtual SharedMatrix compute_hessian();
 
@@ -171,6 +172,7 @@ class RV : public VBase {
 
     void compute_V(std::vector<SharedMatrix> ret) override;
     void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
+    std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_gradient() override;
     SharedMatrix compute_hessian() override;
 

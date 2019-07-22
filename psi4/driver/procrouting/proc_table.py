@@ -219,7 +219,7 @@ for key in functionals:
         procedures['gradient'][key] = proc.run_scf_gradient
 
     # Hessians
-    if not ssuper.needs_xc():
+    if not ssuper.is_gga(): # N.B. this eliminates both GGA and m-GGA, as the latter contains GGA terms
         procedures['hessian'][key] = proc.run_scf_hessian
 
 # Integrate CFOUR with driver routines

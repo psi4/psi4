@@ -320,7 +320,6 @@ SharedMatrix SCFDeriv::compute_hessian()
     hessian_terms.push_back("XC");
     hessian_terms.push_back("-D Hessian");
     hessian_terms.push_back("Response");
-    hessian_terms.push_back("Total");
 
     // => Densities <= //
     SharedMatrix Da;
@@ -354,16 +353,14 @@ SharedMatrix SCFDeriv::compute_hessian()
     }
 
     // => Potential/Functional <= //
-    std::shared_ptr<SuperFunctional> functional;
     std::shared_ptr<VBase> potential;
 
     if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("Missing XC derivatives for Hessians");
-        // if (options_.get_str("REFERENCE") == "RKS") {
-        //     potential_->set_D({Da_});
-        // } else {
-        //     potential_->set_D({Da_, Db_});
-        // }
+        if (options_.get_str("REFERENCE") == "RKS") {
+            potential_->set_D({Da_});
+        } else {
+            potential_->set_D({Da_, Db_});
+        }
     }
 
     // => Sizings <= //
@@ -376,7 +373,13 @@ SharedMatrix SCFDeriv::compute_hessian()
     hessians_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
     hessians_["Nuclear"]->set_name("Nuclear Hessian");
 
-    auto Zxyz = std::make_shared<Matrix>("Zxyz", 1, 4);
+    // => XC Hessian <= //
+    timer_on("Hess: XC");
+    if (functional_->needs_xc()) {
+        potential_->print_header();
+        hessians_["XC"] = potential_->compute_hessian();
+    }
+    timer_off("Hess: XC");
 
     // => Potential Hessian <= //
     timer_on("Hess: V");
@@ -991,16 +994,16 @@ SharedMatrix SCFDeriv::compute_hessian()
     jk->set_Da(Da);
     jk->set_Db(Db);
     jk->set_Dt(Dt);
-    if (functional) {
+    if (functional_) {
         jk->set_do_J(true);
-        if (functional->is_x_hybrid()) {
+        if (functional_->is_x_hybrid()) {
             jk->set_do_K(true);
         } else {
             jk->set_do_K(false);
         }
-        if (functional->is_x_lrc()) {
+        if (functional_->is_x_lrc()) {
             jk->set_do_wK(true);
-            jk->set_omega(functional->x_omega());
+            jk->set_omega(functional_->x_omega());
         } else {
             jk->set_do_wK(false);
         }
@@ -1014,15 +1017,15 @@ SharedMatrix SCFDeriv::compute_hessian()
     jk->compute_hessian();
 
     std::map<std::string, SharedMatrix>& jk_hessians = jk->hessians();
-    if (functional) {
+    if (functional_) {
         hessians_["Coulomb"] = jk_hessians["Coulomb"];
-        if (functional->is_x_hybrid()) {
+        if (functional_->is_x_hybrid()) {
             hessians_["Exchange"] = jk_hessians["Exchange"];
-            hessians_["Exchange"]->scale(-functional->x_alpha());
+            hessians_["Exchange"]->scale(-functional_->x_alpha());
         }
-        if (functional->is_x_lrc()) {
+        if (functional_->is_x_lrc()) {
             hessians_["Exchange,LR"] = jk_hessians["Exchange,LR"];
-            hessians_["Exchange,LR"]->scale(-functional->x_beta());
+            hessians_["Exchange,LR"]->scale(-functional_->x_beta());
         }
     } else {
         hessians_["Coulomb"] = jk_hessians["Coulomb"];
@@ -1031,17 +1034,8 @@ SharedMatrix SCFDeriv::compute_hessian()
     }
     timer_off("Hess: JK");
 
-    // => XC Hessian <= //
-    timer_on("Hess: XC");
-    if (functional) {
-        potential->print_header();
-        throw PSIEXCEPTION("KS Hessians not implemented");
-        //hessians_["XC"] = potential->compute_hessian();
-    }
-    timer_off("Hess: XC");
-
     // => Response Terms (Brace Yourself) <= //
-    if (options_.get_str("REFERENCE") == "RHF") {
+    if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
         hessians_["Response"] = hessian_response();
     } else {
         throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
@@ -1050,7 +1044,6 @@ SharedMatrix SCFDeriv::compute_hessian()
     // => Total Hessian <= //
     SharedMatrix total = SharedMatrix(hessians_["Nuclear"]->clone());
     total->zero();
-
     for (int i = 0; i < hessian_terms.size(); i++) {
         if (hessians_.count(hessian_terms[i])) {
             total->add(hessians_[hessian_terms[i]]);
@@ -1065,12 +1058,12 @@ SharedMatrix SCFDeriv::compute_hessian()
     if (print_ > 1) {
         for (int i = 0; i < hessian_terms.size(); i++) {
             if (hessians_.count(hessian_terms[i])) {
-                printf("%s\n", hessian_terms[i].c_str());
+                outfile->Printf("%s\n", hessian_terms[i].c_str());
                 hessians_[hessian_terms[i]]->print();
             }
         }
     }
-    // hessians_["Total"]->print();
+    hessians_["Total"]->print();
 
     return hessians_["Total"];
 }
