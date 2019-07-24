@@ -152,6 +152,8 @@ struct Decorator<T, 2> final {
         // Decompositions
         mod.def("cholesky", &cholesky<T>, "Compute the Cholesky decomposition of A", "A"_a);
         mod.def("qr", &qr<T>, "Compute the QR decomposition of A", "A"_a, "mode"_a = xt::linalg::qrmode::reduced);
+        mod.def("svd", &svd<T>, "Compute the singular value decomposition of A", "A"_a, "full_matrices"_a = true,
+                "compute_uv"_a = true);
         // Matrix eigenvalues
         mod.def("eig", &eig<T>, "Compute the eigenvalues and right eigenvectors of a square matrix.", "A"_a);
         mod.def("eigvals", &eigvals<T>, "Compute the eigenvalues of a general matrix.", "A"_a);

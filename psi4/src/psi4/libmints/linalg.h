@@ -261,6 +261,39 @@ auto qr(const SharedTensor<T, 2>& in, xt::linalg::qrmode mode = xt::linalg::qrmo
 
     return std::make_tuple(Q, R);
 }
+
+template <typename T>
+using SVDResult = std::tuple<SharedTensor<T, 2>, SharedTensor<T, 1>, SharedTensor<T, 2>>;
+
+template <typename T>
+auto svd(const SharedTensor<T, 2>& in, bool full_matrices = true, bool compute_uv = true) -> SVDResult<T> {
+    using Block = typename Tensor<T, 2>::block_type;
+    using SVDs = std::tuple<Block, typename Tensor<T, 1>::block_type, Block>;
+    auto tmp = std::vector<SVDs>(in->nirrep());
+
+    std::transform(in->cbegin(), in->cend(), tmp.begin(), [full_matrices, compute_uv](const Block& blk) -> SVDs {
+        return xt::linalg::svd(blk, full_matrices, compute_uv);
+    });
+
+    auto Kspi = Dimension(in->nirrep());
+    for (auto h = 0; h < in->nirrep(); ++h) {
+        Kspi[h] = std::min(in->rowspi()[h], in->colspi()[h]);
+    }
+
+    auto U =
+        std::make_shared<Tensor<T, 2>>("U matrix of" + in->label(), in->rowspi(), full_matrices ? in->rowspi() : Kspi);
+    std::transform(tmp.cbegin(), tmp.cend(), U->begin(), [](const SVDs& res) -> Block { return std::get<0>(res); });
+
+    auto S = std::make_shared<Tensor<T, 1>>("S matrix of" + in->label(), Kspi);
+    std::transform(tmp.cbegin(), tmp.cend(), S->begin(),
+                   [](const SVDs& res) -> typename Tensor<T, 1>::block_type { return std::get<1>(res); });
+
+    auto Vh = std::make_shared<Tensor<T, 2>>("V^H matrix of" + in->label(), full_matrices ? in->colspi() : Kspi,
+                                             in->colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), Vh->begin(), [](const SVDs& res) -> Block { return std::get<2>(res); });
+
+    return std::make_tuple(U, S, Vh);
+}
 /*! @}*/
 
 /*! @{ Matrix eigenvalues */
