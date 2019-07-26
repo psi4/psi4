@@ -15,9 +15,9 @@ else()
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
-        URL http://www.tddft.org/programs/octopus/down.php?file=libxc/4.3.4/libxc-4.3.4.tar.gz
-        #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
-        #GIT_TAG master
+        #URL http://www.tddft.org/programs/octopus/down.php?file=libxc/4.3.4/libxc-4.3.4.tar.gz
+        GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
+        GIT_TAG 4.3.4
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
