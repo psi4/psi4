@@ -71,6 +71,7 @@ class Gaussian94BasisSetParser(object):
         if os.stat(filename).st_size == 0:
             raise ValidationError("""BasisSetParser::parse: given filename '%s' is blank.""" % (filename))
         contents = infile.readlines()
+        infile.close()
 
         lines = []
         for text in contents:
