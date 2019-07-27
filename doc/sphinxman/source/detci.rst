@@ -76,10 +76,12 @@ but it typically provides significantly more accurate results.
 
 The CI code in |PSIfour| is described in detail in 
 [Sherrill:1999:CI]_.  For the reasons stated above, the CI code in
-|PSIfour| is not optimized for CISD computations.  Instead, emphasis
-has been placed on developing a very efficient program to handle more
-general CI wavefunctions which may be helpful in more challenging cases
-such as highly strained molecules or bond breaking reactions.  The CI
+|PSIfour| is not optimized for CISD computations, and it uses data structures
+that are particularly inefficient for CISD and may result in the program
+running out of memory and crashing for CISD except on very small molecules.
+Instead, DETCI was designed to be efficient
+in handling more highly correlated CI wavefunctions that can be helpful in more 
+challenging cases such as highly strained molecules or bond breaking reactions.  The CI
 code is based on the fast, determinant-based string formalism
 of Handy [Handy:1980]_.  It can solve for restricted active space
 configuration interaction (RAS CI) wavefunctions as described by Olsen,
