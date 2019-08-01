@@ -258,6 +258,7 @@ std::pair<double, SharedMatrix> PCM::compute_PCM_terms(const SharedMatrix &D, Ca
         case CalcType::EleOnly:
             upcm = compute_E_electronic(MEP_e);
             pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "EleASC");
+            break;
         default:
             throw PSIEXCEPTION("Unknown PCM calculation type.");
     }
