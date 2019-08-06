@@ -64,13 +64,14 @@ class Gaussian94BasisSetParser(object):
         basis_separator = re.compile(r'^\s*\[\s*(.*?)\s*\]\s*$')
 
         # Loads an entire file.
-        if os.stat(filename).st_size == 0:
-            raise ValidationError("""BasisSetParser::parse: given filename '%s' is blank.""" % (filename))
         try:
-            with open(filename, 'r') as infile:
-                contents = infile.readlines()
+            infile = open(filename, 'r')
         except IOError:
             raise BasisSetFileNotFound("""BasisSetParser::parse: Unable to open basis set file: %s""" % (filename))
+        if os.stat(filename).st_size == 0:
+            raise ValidationError("""BasisSetParser::parse: given filename '%s' is blank.""" % (filename))
+        contents = infile.readlines()
+        infile.close()
 
         lines = []
         for text in contents:
