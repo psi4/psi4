@@ -149,7 +149,7 @@ def bars(data, title='', saveas=None, relpath=False, graphicsformat=['pdf'], vie
         xval += 0.20
 
     # save and show
-    pltuid = title + '_' + hashlib.sha1(title + repr([bar['mc'] for bar in data if bar is not None])).hexdigest()
+    pltuid = title + '_' + hashlib.sha1((title + repr([bar['mc'] for bar in data if bar is not None])).encode()).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='bar_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
@@ -351,7 +351,7 @@ def valerr(data, color=None, title='', xtitle='', view=True,
     ax2.set_ylim([emin - ebuf, emax + ebuf])
 
     # save and show
-    pltuid = title + '_' + hashlib.sha1(title).hexdigest()
+    pltuid = title + '_' + hashlib.sha1(title.encode()).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='valerr_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
@@ -391,7 +391,7 @@ def disthist(data, title='', xtitle='', xmin=None, xmax=None,
     nx = int(round((xmax - xmin) / dx)) + 1
     pdfx = []
     pdfy = []
-    for i in xrange(nx):
+    for i in range(nx):
         ix = xmin + i * dx
         pdfx.append(ix)
         pdfy.append(gaussianpdf(me, pow(stde, 2), ix))
@@ -410,7 +410,7 @@ def disthist(data, title='', xtitle='', xmin=None, xmax=None,
     plt.title(title)
 
     # save and show
-    pltuid = title + '_' + hashlib.sha1(title + str(me) + str(stde) + str(xmin) + str(xmax)).hexdigest()
+    pltuid = title + '_' + hashlib.sha1((title + str(me) + str(stde) + str(xmin) + str(xmax)).encode()).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='disthist_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
@@ -591,11 +591,12 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
         ax.plot(thread, posnT, color=clr, linewidth=0.5, solid_capstyle='round', alpha=0.3)
 
         # converting into screen coordinates for image map
-        npxvals = [np.nan if val is None else val for val in xvals]
-        xyscreen = ax.transData.transform(zip(npxvals, positions))
-        xscreen, yscreen = zip(*xyscreen)
-        posnM.extend(zip([rxn['db']] * Nweft, [rxn['sys']] * Nweft,
-            npxvals, [rxn['show']] * Nweft, xscreen, yscreen))
+        # block not working for py3 or up-to-date mpl. better ways for html image map nowadays
+        #npxvals = [np.nan if val is None else val for val in xvals]
+        #xyscreen = ax.transData.transform(zip(npxvals, positions))
+        #xscreen, yscreen = zip(*xyscreen)
+        #posnM.extend(zip([rxn['db']] * Nweft, [rxn['sys']] * Nweft,
+        #    npxvals, [rxn['show']] * Nweft, xscreen, yscreen))
 
         # labeling
         if not(mousetext or mouselink or mouseimag):
@@ -622,7 +623,7 @@ def threads(data, labels, color=None, title='', xlimit=4.0, mae=None, mape=None,
         plt.axvline(0, color='#cccc00')
 
     # save and show
-    pltuid = title + '_' + ('lbld' if labeled else 'bare') + '_' + hashlib.sha1(title + repr(labels) + repr(xlimit)).hexdigest()
+    pltuid = title + '_' + ('lbld' if labeled else 'bare') + '_' + hashlib.sha1((title + repr(labels) + repr(xlimit)).encode()).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='thread_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
@@ -778,7 +779,7 @@ def ternary(sapt, title='', labeled=True, view=True,
     ax.spines['left'].set_visible(False)
 
     # save and show
-    pltuid = title + '_' + ('lbld' if labeled else 'bare') + '_' + hashlib.sha1(title + repr(sapt)).hexdigest()
+    pltuid = title + '_' + ('lbld' if labeled else 'bare') + '_' + hashlib.sha1((title + repr(sapt)).encode()).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='tern_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
@@ -966,7 +967,7 @@ def iowa(mcdat, mclbl, title='', xtitle='', xlimit=2.0, view=True,
     axt.set_zorder(100)
 
     # save and show
-    pltuid = title + '_' + hashlib.sha1(title + str(xlimit)).hexdigest()
+    pltuid = title + '_' + hashlib.sha1((title + str(xlimit)).encode()).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='iowa_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
@@ -1015,7 +1016,7 @@ def liliowa(mcdat, title='', xlimit=2.0, view=True,
     heatmap = axt.pcolor(cb, vmin=-xlimit, vmax=xlimit, cmap=plt.cm.PRGn)
 
     # save and show
-    pltuid = title + '_' + hashlib.sha1(title + str(xlimit)).hexdigest()
+    pltuid = title + '_' + hashlib.sha1((title + str(xlimit)).encode()).hexdigest()
     pltfile = expand_saveas(saveas, pltuid, def_prefix='liliowa_', relpath=relpath)
     files_saved = {}
     for ext in graphicsformat:
