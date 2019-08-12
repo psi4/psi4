@@ -121,17 +121,12 @@ def task_planner(driver, method, molecule, **kwargs):
             levels = {plan.max_nbody: method}
         
         # Organize nbody calculations into levels
-        # len(nbody_list) = number of levels
         nbody_list = []
         prev_body = 0
         for n,l in levels.items():
             level = []
             if n == 'supersystem':
-         #       level.append(plan.max_frag)
-        #        for n in range(1,plan.max_frag+1):
                 level.append(n)
-        #        n = plan.max_frag 
-        #        plan.max_nbody = n
             elif n != (prev_body+1):
                 for m in range(prev_body+1, n+1):
                     level.append(m)

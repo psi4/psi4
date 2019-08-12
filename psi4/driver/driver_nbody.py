@@ -441,6 +441,7 @@ def assemble_nbody_components(metadata, component_results):
     cp_compute_list = compute_dict['cp']
     cp_ptype_compute_list = {x: set() for x in nbody_range} 
     nocp_compute_list = compute_dict['nocp']
+    nocp_ptype_compute_list = {x: set() for x in nbody_range} 
     vmfc_compute_list = compute_dict['vmfc_compute']
     vmfc_level_list = compute_dict['vmfc_levels']
 
@@ -492,7 +493,8 @@ def assemble_nbody_components(metadata, component_results):
     nbody_dict = {}
 
     add_cp_mon = False
-    add_dict = set()
+    cp_add_dict = set()
+    nocp_add_dict = set()
 
     # build the special list for cp gradients/hessians
     if metadata['driver'] != 'energy':
@@ -500,6 +502,8 @@ def assemble_nbody_components(metadata, component_results):
             for v in cp_compute_list[n]:
                 if len(v[1]) != 1:  
                     cp_ptype_compute_list[len(v[0])].add(v)
+            for w in nocp_compute_list[n]:
+                nocp_ptype_compute_list[len(w[0])].add(w)
 
     cp_mon_in_mon_basis = 0.0
     for n in nbody_range:
@@ -519,16 +523,16 @@ def assemble_nbody_components(metadata, component_results):
         
         if 'cp' in metadata['bsse_type']:
             for v in cp_compute_list[n]:
-                if v not in add_dict:
+                if v not in cp_add_dict:
                     energy = component_results['energies'][str(level)+"_"+str(v)]
                     cp_energy_by_level[len(v[0])] += energy
-                    add_dict.add(v)
+                    cp_add_dict.add(v)
         if 'nocp' in metadata['bsse_type']:
             for v in nocp_compute_list[n]:
-                if v not in add_dict:
+                if v not in nocp_add_dict:
                     energy = component_results['energies'][str(level)+"_"+str(v)]
                     nocp_energy_by_level[len(v[0])] += energy
-                    add_dict.add(v)
+                    nocp_add_dict.add(v)
             
         # Special vmfc case
         if n > 1:
@@ -541,7 +545,7 @@ def assemble_nbody_components(metadata, component_results):
         if metadata['driver'] != 'energy':
             _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], cp_ptype_compute_list[n],
                                     fragment_slice_dict, fragment_size_dict, cp_ptype_by_level[n], level=level)
-            _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], nocp_compute_list[n],
+            _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], nocp_ptype_compute_list[n],
                                     fragment_slice_dict, fragment_size_dict, nocp_ptype_by_level[n], level=level)
             _sum_cluster_ptype_data(
                 metadata['driver'],
