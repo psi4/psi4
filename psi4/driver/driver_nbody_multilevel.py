@@ -50,49 +50,64 @@ def prepare_results(self, client=None):
     if ptype == 'hessian':
         hessian_result = np.zeros((natoms * 3, natoms * 3))
 
-    levels = {int(i.split('_')[0]) for i in self.task_list if 'supersystem' not in i}
+    #levels = {int(i.split('_')[0]) for i in self.task_list if 'supersystem' not in i}
+    sup_level = 0
+    levels = []
+    for n,i in enumerate(self.nbody_list):
+        if 'supersystem' not in i:
+            levels.append(int(n+1))
+        else:
+            sup_level = n+1
 
-    for n in sorted(levels)[::-1]:
-        energy_bsse_dict = {b: 0 for b in self.bsse_type}
-        self.max_nbody = n
-        results = {k: v for k, v in self.task_list.items() if k.startswith(str(n))}
+    nbody_list = self.nbody_list
+    quiet=True
+
+    for l in sorted(levels)[::-1]:
+        self.quiet = quiet
+        self.max_nbody = nbody_list[l-1][-1]
+        results = {k: v for k, v in self.task_list.items() if k.startswith(str(l))}
         results = self.prepare_results(results=results, client=client)
-        
+        for n in nbody_list[l-1][::-1]:
+            energy_bsse_dict = {b: 0 for b in self.bsse_type}
 
-        for m in range(n - 1, n + 1):
-            if m == 0: continue
-            # Subtract the (n-1)-body contribution from the n-body contribution to get the n-body effect
-            sign = (-1)**(1 - m // n)
+            for m in range(n - 1, n + 1):
+                if m == 0: continue
+                # Subtract the (n-1)-body contribution from the n-body contribution to get the n-body effect
+                sign = (-1)**(1 - m // n)
+                for b in self.bsse_type:
+                    energy_bsse_dict[b] += sign * results['%s_energy_body_dict' %b.lower()]['%i%s' %(m, b.lower())]
+
+                if ptype == 'hessian':
+                    hessian_result += sign * results['ptype_body_dict'][m]
+                    gradient_result += sign * results['gradient_body_dict'][m]
+                    if n == 1:
+                        hessian1 = results['ptype_body_dict'][n]
+                        gradient1 = results['gradient_body_dict'][n]
+
+                elif ptype == 'gradient':
+                    gradient_result += sign * results['ptype_body_dict'][m]
+                    # Keep 1-body contribution to compute interaction data
+                    if n == 1:
+                        gradient1 = results['ptype_body_dict'][n]
+
+            energy_result += energy_bsse_dict[self.bsse_type[0]]
             for b in self.bsse_type:
-                energy_bsse_dict[b] += sign * results['%s_energy_body_dict' %b.lower()]['%i%s' %(m, b.lower())]
-
-            if ptype == 'hessian':
-                hessian_result += sign * results['ptype_body_dict'][m]
-                gradient_result += sign * results['gradient_body_dict'][m]
-                if n == 1:
-                    hessian1 = results['ptype_body_dict'][n]
-                    gradient1 = results['gradient_body_dict'][n]
-
-            elif ptype == 'gradient':
-                gradient_result += sign * results['ptype_body_dict'][m]
-                # Keep 1-body contribution to compute interaction data
-                if n == 1:
-                    gradient1 = results['ptype_body_dict'][n]
-
-        energy_result += energy_bsse_dict[self.bsse_type[0]]
-        for b in self.bsse_type:
-            energy_body_contribution[b][n] = energy_bsse_dict[b]
+                energy_body_contribution[b][n] = energy_bsse_dict[b]
 
     if supersystem:
         # Super system recovers higher order effects at a lower level
         supersystem_result = supersystem.pop('supersystem_' + str(self.max_frag)).get_results(client=client)
         self.max_nbody = max(levels)
-        components = self.prepare_results(results=supersystem, client=client)
+
+        self.nbody_list.append(levels)
+
+        component_result = {k: v for k, v in self.task_list.items() if k.startswith(str(sup_level))}
+        components = self.prepare_results(results=component_result, client=client)
 
         energy_result += supersystem_result['properties']['return_energy'] - components['energy_body_dict'][self.max_nbody]
         for b in self.bsse_type:
             energy_body_contribution[b][self.molecule.nfragments()] = (supersystem_result['properties']['return_energy'] -
-                                                                       components['energy_body_dict'][self.max_nbody])
+            components['energy_body_dict'][self.max_nbody])
 
         if ptype == 'hessian':
             gradient_result += supersystem_result['extras']['qcvars']['CURRENT GRADIENT'] - components['gradient_body_dict'][self.max_nbody]
@@ -105,7 +120,7 @@ def prepare_results(self, client=None):
     for b in self.bsse_type:
         for n in energy_body_contribution[b]:
             energy_body_dict[b][n] = sum(
-                [energy_body_contribution[b][i] for i in range(1, n + 1) if i in energy_body_contribution[b]])
+                    [energy_body_contribution[b][i] for i in range(1, n + 1) if i in energy_body_contribution[b]])
 
     is_embedded = self.embedding_charges
     for b in self.bsse_type:

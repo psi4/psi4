@@ -129,7 +129,7 @@ class SingleResult(BaseTask):
                     if ret[0].status == "ERROR":
                         upd = client.modify_tasks("restart",base_result=self.result_id)
                         print("Resubmitting Errored Job {}".format(self.result_id))
-                    elif ret.status == "COMPLETE":
+                    elif ret[0].status == "COMPLETE":
                         print("Job already completed {}".format(self.result_id))
                 else:
                     print("Job already completed {}".format(self.result_id))
@@ -175,7 +175,6 @@ class SingleResult(BaseTask):
             if len(result) == 0:
                 return self.result
 
-            print(result[0])
             self.result = result[0].json_dict()
             return self.result
 

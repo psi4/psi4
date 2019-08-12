@@ -119,18 +119,44 @@ def task_planner(driver, method, molecule, **kwargs):
         levels = kwargs.pop('levels', None)
         if levels is None:
             levels = {plan.max_nbody: method}
-        plan.max_nbody = max([i for i in levels if isinstance(i, int)])
+        
+        # Organize nbody calculations into levels
+        # len(nbody_list) = number of levels
+        nbody_list = []
+        prev_body = 0
+        for n,l in levels.items():
+            level = []
+            if n == 'supersystem':
+         #       level.append(plan.max_frag)
+        #        for n in range(1,plan.max_frag+1):
+                level.append(n)
+        #        n = plan.max_frag 
+        #        plan.max_nbody = n
+            elif n != (prev_body+1):
+                for m in range(prev_body+1, n+1):
+                    level.append(m)
+            else:
+                level.append(n)
+            nbody_list.append(level)
+            prev_body += 1
 
-        for n, level in levels.items():
+        plan.max_nbody = max([i for i in levels if isinstance(i, int)])
+        plan.nbody_list = nbody_list
+
+        for nlevel, [n, level] in enumerate(levels.items()):
             method, basis, cbsmeta = _expand_cbs_methods(level, basis, driver, cbsmeta=cbsmeta, **kwargs)
             packet.update({'method': method, 'basis': basis})
 
+      #      if n == 'supersytem':
+      #          nlevel = plan.max_nbody
+
+            # Tell the task bulider which level to add a task list for
             if method == "cbs":
                 print('PLANNING NBody(CBS)', 'n=', n, 'keywords=', keywords)
-                plan.build_tasks(CBSComputer, **packet, **cbsmeta, max_nbody=n)
+                plan.build_tasks(CBSComputer, **packet, **cbsmeta, nlevel=nlevel, level=n)
             else:
                 print('PLANNING NBody()', 'n=', n, 'keywords=', keywords)
-                plan.build_tasks(SingleResult, **packet, max_nbody=n)
+                plan.build_tasks(SingleResult, **packet, nlevel=nlevel, level=n)
 
         return plan
 
