@@ -36,7 +36,7 @@ from psi4.driver.p4util.exceptions import ValidationError
 
 def get_pe_options():
     if core.get_option('SCF', 'PCM'):
-        raise ValidationError("""Error: 3-layer QM/MM/PCM not implemented.\n""")
+        raise ValidationError("""Error: 3-layer QM/PE/PCM not implemented.\n""")
     potfile_name = core.get_local_option('PE', 'POTFILE')
     pol_embed_options = cppe.PeOptions()
     pol_embed_options.potfile = potfile_name
@@ -85,18 +85,13 @@ class CppeInterface:
         def callback(output):
             core.print_out("{}\n".format(output))
 
-        self.cppe_state = cppe.CppeState(
-            self.options, psi4mol_to_cppemol(self.molecule), callback
-        )
+        self.cppe_state = cppe.CppeState(self.options, psi4mol_to_cppemol(self.molecule), callback)
         self.cppe_state.calculate_static_energies_and_fields()
         # obtain coordinates of polarizable sites
         self._enable_induction = False
         if self.cppe_state.get_polarizable_site_number():
             self._enable_induction = True
-            coords = np.array([
-                site.position for site in self.cppe_state.potentials
-                if site.is_polarizable
-            ])
+            coords = np.array([site.position for site in self.cppe_state.potentials if site.is_polarizable])
             self.polarizable_coords = core.Matrix.from_array(coords)
         self.V_es = None
 
@@ -109,22 +104,13 @@ class CppeInterface:
         V_pe = np.zeros((n_bas, n_bas))
         if self._enable_induction:
             # obtain expectation values of elec. field at polarizable sites
-            elec_fields = self.mints.electric_field_value(
-                self.polarizable_coords, density_matrix
-            ).np
+            elec_fields = self.mints.electric_field_value(self.polarizable_coords, density_matrix).np
             # solve induced moments
-            self.cppe_state.update_induced_moments(
-                elec_fields.flatten(), elec_only
-            )
-            induced_moments = np.array(
-                self.cppe_state.get_induced_moments()
-            ).reshape(self.polarizable_coords.shape)
+            self.cppe_state.update_induced_moments(elec_fields.flatten(), elec_only)
+            induced_moments = np.array(self.cppe_state.get_induced_moments()).reshape(self.polarizable_coords.shape)
 
             # build induction operator
-            V_ind = self.mints.induction_operator(
-                self.polarizable_coords,
-                core.Matrix.from_array(induced_moments)
-            ).np
+            V_ind = self.mints.induction_operator(self.polarizable_coords, core.Matrix.from_array(induced_moments)).np
             V_pe += V_ind
         # only take electronic contributions into account
         if elec_only:
@@ -142,12 +128,6 @@ class CppeInterface:
         for site in self.cppe_state.potentials:
             prefactors = []
             for multipole in site.multipoles:
-                prefactors.extend(
-                    cppe.prefactors(multipole.k) * multipole.values
-                )
-            integrals = self.mints.ao_multipole_potential(
-                site.position, max_k=multipole.k
-            )
-            self.V_es += sum(
-                pref * intv.np for pref, intv in zip(prefactors, integrals)
-            )
+                prefactors.extend(cppe.prefactors(multipole.k) * multipole.values)
+            integrals = self.mints.ao_multipole_potential(site.position, max_k=multipole.k)
+            self.V_es += sum(pref * intv.np for pref, intv in zip(prefactors, integrals))
