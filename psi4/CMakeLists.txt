@@ -57,7 +57,7 @@ if(MSVC)
 else()
   set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 endif()
-find_package(pybind11 2.2.4 CONFIG REQUIRED)
+find_package(pybind11 2.3.0 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
 message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
