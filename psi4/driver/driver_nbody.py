@@ -106,7 +106,6 @@ def _sum_cluster_ptype_data(ptype,
         for fragn, basisn in compute_list:
             key = str(level) + "_" + str((fragn, basisn))
             start = 0
-            #grad = np.asarray(ptype_dict[(fragn, basisn)])
             grad = np.asarray(ptype_dict[key])
 
             if vmfc:
@@ -304,11 +303,6 @@ def build_nbody_compute_list(bsse_type_list, nbody, max_frag):
     vmfc_compute_list = {x: set() for x in nbody}
     vmfc_level_list = {x: set() for x in nbody}  # Need to sum something slightly different
 
-    #nocp_compute_list = {x: set() for x in nbody_range}
-    #vmfc_compute_list = {x: set() for x in nbody_range}
-    ##vmfc_level_list = {x: set() for x in nbody_range}  # Need to sum something slightly different
-    #vmfc_level_list = {x: set() for x in nbody_levels}  # Need to sum something slightly different
-
     # Verify proper passing of bsse_type_list
     bsse_type_remainder = set(bsse_type_list) - {'cp', 'nocp', 'vmfc'}
     if bsse_type_remainder:
@@ -319,14 +313,6 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
     if 'cp' in bsse_type_list:
         # Everything is in full n-mer basis
         basis_tuple = tuple(fragment_range)
-
-        #for nb in nbody:
-        #    for x in itertools.combinations(fragment_range, nb):
-        #        cp_compute_list[nb].add((x, basis_tuple))
-
-        #    if nb == 1 :
-        #        for x in fragment_range:
-        #            cp_compute_list[1].add(((x, ), (x, )))
 
         for nb in nbody:
             if nb == 1:
@@ -341,7 +327,6 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
 
     if 'nocp' in bsse_type_list or metadata['return_total_data']:
         # Everything in monomer basis
-        #for nb in range(1,nbody[-1]+1):
         for nb in nbody:
             for sublevel in range(1, nb+1):
                 for x in itertools.combinations(fragment_range, sublevel):
@@ -349,7 +334,6 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
 
     if 'vmfc' in bsse_type_list:
         # Like a CP for all combinations of pairs or greater
-        #nbody = max_nbody
         for nb in nbody:
             for cp_combos in itertools.combinations(fragment_range, nb):
                 basis_tuple = tuple(cp_combos)
@@ -371,7 +355,6 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         'cp': cp_compute_list,
         'nocp': nocp_compute_list,
         'vmfc_compute': vmfc_compute_list,
-        # will probably need
         'vmfc_levels': vmfc_level_list
     }
     return compute_dict
@@ -454,7 +437,6 @@ def assemble_nbody_components(metadata, component_results):
             # range for supersystem sub-components
             nbody_range = metadata['nbody_list'][level]
 
-    #nbody_range = range(1, metadata['max_nbody'] + 1)
     compute_dict = build_nbody_compute_list(metadata['bsse_type'], nbody_range, metadata['max_frag'])
     cp_compute_list = compute_dict['cp']
     cp_ptype_compute_list = {x: set() for x in nbody_range} 
@@ -477,8 +459,6 @@ def assemble_nbody_components(metadata, component_results):
     molecule_total_atoms = sum(fragment_size_dict.values())
 
     # Final dictionaries
-    #cp_energy_by_level = {n: 0.0 for n in nbody_range}
-    #nocp_energy_by_level = {n: 0.0 for n in nbody_range}
     cp_energy_by_level = {n: 0.0 for n in range(1,nbody_range[-1]+1)}
     nocp_energy_by_level = {n: 0.0 for n in range(1, nbody_range[-1]+1)}
 
@@ -550,9 +530,6 @@ def assemble_nbody_components(metadata, component_results):
                     nocp_energy_by_level[len(v[0])] += energy
                     add_dict.add(v)
             
-        #cp_energy_by_level[n]   = sum(component_results['energies'][str(level)+"_"+str(v)] for v in cp_compute_list[n])
-        #nocp_energy_by_level[n] = sum(component_results['energies'][str(level)+"_"+str(v)] for v in nocp_compute_list[n])
-
         # Special vmfc case
         if n > 1:
             vmfc_energy_body_dict[n] = vmfc_energy_body_dict[n - 1]
@@ -576,10 +553,6 @@ def assemble_nbody_components(metadata, component_results):
                 vmfc=True,
                 n=n,
                 level=level)
-        # Add extracted monomers back.
-        #if add_cp_mon:
-        #    for i, j in enumerate(cp_monomers_in_monomer_basis):
-        #        cp_compute_list[1].add(j)
 
     if metadata['driver'] != 'energy':
         # Extract ptype data for monomers in monomer basis for CP total data
@@ -635,7 +608,6 @@ def assemble_nbody_components(metadata, component_results):
 
     # Compute nocp energy and ptype
     if 'nocp' in metadata['bsse_type']:
-        #for n in nbody_range:
         for n in range(1,nbody_range[-1]+1):
             if n == metadata['max_frag']:
                 nocp_energy_body_dict[n] = nocp_energy_by_level[n]
@@ -817,9 +789,6 @@ class NBodyComputer(BaseTask):
         # Get the n-body orders for this level
         nbody_list = self.nbody_list
         nbody = nbody_list[nbody_level] 
-
-        # Get the list of nbody computations for this level
-        #compute_dict = build_nbody_compute_list(self.bsse_type, nbody, self.max_frag)
         
         # Add supersystem computation if requested
         if level == 'supersystem':
@@ -878,13 +847,11 @@ class NBodyComputer(BaseTask):
 
     def prepare_results(self, results={}, client=None):
 
-
         nlevels = len({i.split('_')[0] for i in self.task_list})
         if nlevels > 1 and not results:
             return driver_nbody_multilevel.prepare_results(self, client)
 
         metadata = self.dict().copy()
-        #results_list = {literal_eval(k.split('_')[1]): v.get_results(client=client) for k, v in (results.items() or self.task_list.items())}
         results_list = {k: v.get_results(client=client) for k, v in (results.items() or self.task_list.items())}
         energies = {k: v['properties']["return_energy"] for k, v in results_list.items()}
 

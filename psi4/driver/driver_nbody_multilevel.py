@@ -50,7 +50,7 @@ def prepare_results(self, client=None):
     if ptype == 'hessian':
         hessian_result = np.zeros((natoms * 3, natoms * 3))
 
-    #levels = {int(i.split('_')[0]) for i in self.task_list if 'supersystem' not in i}
+    # Get numerical label for supersystem tasks
     sup_level = 0
     levels = []
     for n,i in enumerate(self.nbody_list):
@@ -99,8 +99,8 @@ def prepare_results(self, client=None):
         supersystem_result = supersystem.pop('supersystem_' + str(self.max_frag)).get_results(client=client)
         self.max_nbody = max(levels)
 
+        # Compute components at supersytem level of theory
         self.nbody_list.append(levels)
-
         component_result = {k: v for k, v in self.task_list.items() if k.startswith(str(sup_level))}
         components = self.prepare_results(results=component_result, client=client)
 
