@@ -65,6 +65,7 @@ my %ExeFolder = (
    "simint/"    => "simint",
    "gpu_dfcc/"  => "gpu_dfcc",
    "gcp/"       => "gcp",
+   "postg/"     => "postg",
    "cookbook/"  => "cookbook",
    "json/"      => "json",
    "psi4numpy/" => "psi4numpy",
@@ -96,6 +97,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^simint$/;
     next if $File =~ /^gpu_dfcc$/;
     next if $File =~ /^gcp$/;
+    next if $File =~ /^postg$/;
     next if $File =~ /^cookbook$/;
     next if $File =~ /^python$/;
     next if $File =~ /^json$/;

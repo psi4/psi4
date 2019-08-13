@@ -52,6 +52,7 @@ Sample inputs accessible through :ref:`interfaced executables
    autodoc_testsuite_libefp
    autodoc_testsuite_erd
    autodoc_testsuite_gcp
+   autodoc_testsuite_postg
    autodoc_testsuite_gdma
    autodoc_testsuite_gpu_dfcc
    autodoc_testsuite_json

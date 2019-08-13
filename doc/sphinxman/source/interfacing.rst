@@ -52,6 +52,7 @@ platform capabilities, *etc*.
    fchk
    gau2grid
    gcp
+   postg
    gdma
    libint
    molden

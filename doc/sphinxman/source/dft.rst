@@ -695,6 +695,8 @@ Dispersion Corrections
 
 :ref:`DFT-NL dispersion corrections are discussed here. <sec:dftnl>`
 
+:ref:`XDM dispersion correction is discussed here. <sec:postg>`
+
 Recommendations
 ~~~~~~~~~~~~~~~
 

@@ -430,3 +430,11 @@ Bibliography
 .. [Laqua:2018:204111]
    H. Laque, J. Kussmann and C. Ochsenfeld
    *J. Chem. Phys.* **149**, 204111 (2018) 
+
+.. [Becke:2007:154108]
+   A. D. Becke and E. R. Johnson
+   *J. Chem. Phys.* **127**, 154108 (2007)
+
+.. [OterodelaRoza:2013:054103]
+   A. Otero-de-la Roza and E. R. Johnson
+   *J. Chem. Phys.* **138**, 054103 (2013)

@@ -55,7 +55,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     cfour_table_grad.rst libefp.rst conda.rst pcmsolver.rst thermo.rst
     chemps2.rst fisapt.rst plugin_v2rdm_casscf.rst psi4api.rst
     manage_addon.rst numpy.rst build_planning.rst build_faq.rst
-    build_obtaining.rst libint.rst erd.rst simint.rst gcp.rst
+    build_obtaining.rst libint.rst erd.rst simint.rst gcp.rst postg.rst
     index_tutorials.rst prog_faq.rst manage_index.rst manage_git.rst
     prog_style_c.rst prog_blas.rst add_tests.rst plugin_snsmp2.rst dftnl.rst
     libxc.rst gau2grid.rst prog_conduct.rst prog_intro.rst prog_newcode.rst
