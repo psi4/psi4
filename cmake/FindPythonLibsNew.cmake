@@ -1,5 +1,5 @@
 # - Find python libraries
-# This module finds the libraries corresponding to the Python interpeter
+# This module finds the libraries corresponding to the Python interpreter
 # FindPythonInterp provides.
 # This code sets the following variables:
 #
@@ -50,7 +50,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-if(PYTHONLIBS_FOUND)
+# Checking for the extension makes sure that `LibsNew` was found and not just `Libs`.
+if(PYTHONLIBS_FOUND AND PYTHON_MODULE_EXTENSION)
     return()
 endif()
 
@@ -63,6 +64,7 @@ endif()
 
 if(NOT PYTHONINTERP_FOUND)
     set(PYTHONLIBS_FOUND FALSE)
+    set(PythonLibsNew_FOUND FALSE)
     return()
 endif()
 
@@ -95,12 +97,18 @@ if(NOT _PYTHON_SUCCESS MATCHES 0)
             "Python config failure:\n${_PYTHON_ERROR_VALUE}")
     endif()
     set(PYTHONLIBS_FOUND FALSE)
+    set(PythonLibsNew_FOUND FALSE)
     return()
 endif()
 
 # Convert the process output into a list
+if(WIN32)
+    string(REGEX REPLACE "\\\\" "/" _PYTHON_VALUES ${_PYTHON_VALUES})
+endif()
+message("_PY_VAL PREE ${_PYTHON_VALUES}")
 string(REGEX REPLACE ";" "\\\\;" _PYTHON_VALUES ${_PYTHON_VALUES})
 string(REGEX REPLACE "\n" ";" _PYTHON_VALUES ${_PYTHON_VALUES})
+message("_PY_VAL POST ${_PYTHON_VALUES}")
 list(GET _PYTHON_VALUES 0 _PYTHON_VERSION_LIST)
 list(GET _PYTHON_VALUES 1 PYTHON_PREFIX)
 list(GET _PYTHON_VALUES 2 PYTHON_INCLUDE_DIR)
@@ -123,6 +131,7 @@ if(CMAKE_SIZEOF_VOID_P AND (NOT "${PYTHON_SIZEOF_VOID_P}" STREQUAL "${CMAKE_SIZE
             "chosen compiler is  ${_CMAKE_BITS}-bit")
     endif()
     set(PYTHONLIBS_FOUND FALSE)
+    set(PythonLibsNew_FOUND FALSE)
     return()
 endif()
 
@@ -192,3 +201,4 @@ find_package_message(PYTHON
     "${PYTHON_EXECUTABLE}${PYTHON_VERSION}")
 
 set(PYTHONLIBS_FOUND TRUE)
+set(PythonLibsNew_FOUND TRUE)
