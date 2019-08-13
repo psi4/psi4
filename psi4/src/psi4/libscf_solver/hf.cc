@@ -705,10 +705,18 @@ void HF::form_Shalf() {
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     const Dimension& dimpi = eigval->dimpi();
-    double min_S = std::fabs(eigval->get(0, 0));
+    // Cannot assume that (0,0) is a valid reference
+    bool min_S_initialized = false;
+    double min_S;
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < dimpi[h]; ++i) {
-            if (min_S > eigval->get(h, i)) min_S = eigval->get(h, i);
+            if (!min_S_initialized) {
+                min_S = eigval->get(h, i);
+                min_S_initialized = true;
+            }
+            if (min_S > eigval->get(h, i)) {
+                min_S = eigval->get(h, i);
+            }
             double scale = 1.0 / std::sqrt(eigval->get(h, i));
             eigval->set(h, i, scale);
         }
