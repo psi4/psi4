@@ -1,5 +1,4 @@
-#! B86bPBE-XDM/aug-cc-pVTZ gradient of acetylene dimer. This test checks that
-#! the XDM energy gradients are calculated correctly.
+#! BLYP-XDM/6-31+G* calculation of water dimer, using manual XDM input.
 
 refE = -152.8215407482807962; #TEST
 Exdm = -0.0035171147737490; #TEST

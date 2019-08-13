@@ -1,6 +1,4 @@
-#! B86bPBE-XDM/aug-cc-pVTZ energy of water dimer. This is a basic test for the implementation
-#! of XDM in psi4. psi4 calls the postg program under the hood, which should be available
-#! prior to running this test.
+#! B86bPBE-XDM/aug-cc-pVDZ single-point energy calculation of neon dimer.
 
 refE = -257.7953455231099724; #TEST
 Exdm = -0.0001656660513483; #TEST
