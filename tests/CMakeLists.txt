@@ -204,6 +204,18 @@ if(gCP_EXECUTABLE)
     message(STATUS "Adding test cases: Psi4 + gCP")
 endif()
 
+# <<<  postg  >>>
+
+find_program(postg_EXECUTABLE
+             NAMES postg
+             DOC "Path to postg executable (for XDM dispersion)")
+
+if(postg_EXECUTABLE)
+    add_subdirectory(postg)
+    message(STATUS "${Cyan}Found postg${ColourReset}: ${postg_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + postg")
+endif()
+
 # <<<  GDMA  >>>
 
 if(ENABLE_gdma)

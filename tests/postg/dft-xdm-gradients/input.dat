@@ -1,0 +1,35 @@
+#! B86bPBE-XDM/aug-cc-pVTZ gradient of acetylene dimer. This test checks that
+#! the XDM energy gradients are calculated correctly.
+
+refG = psi4.Matrix.from_list([                        #TEST
+ [ 8.41360993e-03,  8.61968776e-03, -3.94430453e-31], #TEST
+ [-8.34624913e-03, -8.65300463e-03,  0.00000000e+00], #TEST
+ [ 4.37918404e-03,  4.74402468e-03,  0.00000000e+00], #TEST
+ [-4.35096121e-03, -4.78770571e-03, -3.69778549e-32], #TEST
+ [-8.41360993e-03, -8.61968776e-03, -7.88860905e-31], #TEST
+ [ 8.34624913e-03,  8.65300463e-03,  0.00000000e+00], #TEST
+ [-4.37918404e-03, -4.74402468e-03, -4.93038066e-32], #TEST
+ [ 4.35096121e-03,  4.78770571e-03,  0.00000000e+00]  #TEST
+           ])                                         #TEST
+
+molecule c2h2dimer {
+  units angstrom
+  C -0.412546  1.678175 -0.000000
+  C  0.412546  2.561627 -0.000000
+  H -1.132026  0.890809 -0.000000
+  H  1.134651  3.345770 -0.000000
+  C  0.412546 -1.678175 -0.000000
+  C -0.412546 -2.561627 -0.000000
+  H  1.132026 -0.890809 -0.000000
+  H -1.134651 -3.345770 -0.000000
+}
+
+set {
+ basis 6-31+G*
+ scf_type df
+ e_convergence 10
+}
+
+G = gradient('b86bpbe-xdm')
+
+compare_matrices(refG,G,5,"Energy gradient") #TEST
