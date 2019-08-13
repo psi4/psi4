@@ -39,8 +39,7 @@ from psi4 import extras
 from psi4.driver.p4util.exceptions import *
 
 class XDMDispersion(object):
-    """Class for tXDM dispersion calculations
-
+    """Class for XDM dispersion calculations.
     """
 
     def __init__(self, a1=-101.0, a2=-101.0, vol=""):
