@@ -185,8 +185,17 @@ void HF::common_init() {
             alphacount += nalphapi_[h];
             betacount += nbetapi_[h];
         }
-        if (alphacount != nalpha_ || betacount != nbeta_) {
-            throw PSIEXCEPTION("DOCC and SOCC must specify the occupation of all electrons or none.");
+        if (alphacount != nalpha_) {
+            std::ostringstream oss;
+            oss << "Got " << alphacount << " alpha electrons, expected " << nalpha_ << ".\n";
+            oss << "DOCC and SOCC must specify the occupation of all electrons or none.";
+            throw PSIEXCEPTION(oss.str());
+        }
+        if (betacount != nbeta_) {
+            std::ostringstream oss;
+            oss << "Got " << betacount << " beta electrons, expected " << nbeta_ << ".\n";
+            oss << "DOCC and SOCC must specify the occupation of all electrons or none.";
+            throw PSIEXCEPTION(oss.str());
         }
     }
 
