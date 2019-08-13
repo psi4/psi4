@@ -1,4 +1,4 @@
-#! B86bPBE-XDM/aug-cc-pVTZ gradient calculation in acetylene dimer.
+#! B86bPBE-XDM/6-31+G* gradient calculation in acetylene dimer.
 
 refG = psi4.Matrix.from_list([                        #TEST
  [ 8.41360993e-03,  8.61968776e-03, -3.94430453e-31], #TEST
