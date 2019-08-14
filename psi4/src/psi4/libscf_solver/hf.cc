@@ -722,8 +722,7 @@ void HF::form_Shalf() {
             if (!min_S_initialized) {
                 min_S = eigval->get(h, i);
                 min_S_initialized = true;
-            }
-            if (min_S > eigval->get(h, i)) {
+            } else if (min_S > eigval->get(h, i)) {
                 min_S = eigval->get(h, i);
             }
             double scale = 1.0 / std::sqrt(eigval->get(h, i));
