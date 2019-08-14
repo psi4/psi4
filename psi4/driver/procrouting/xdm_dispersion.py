@@ -26,17 +26,15 @@
 # @END LICENSE
 #
 
-import re
 import os
 import shutil
 import uuid
 import subprocess
 import numpy as np
-import sys
 
 from psi4 import core
 from psi4 import extras
-from psi4.driver.p4util.exceptions import *
+from psi4.driver.p4util.exceptions import XDMError, ValidationError
 
 class XDMDispersion(object):
     """Class for XDM dispersion calculations.
