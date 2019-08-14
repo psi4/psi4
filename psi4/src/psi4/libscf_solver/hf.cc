@@ -185,8 +185,17 @@ void HF::common_init() {
             alphacount += nalphapi_[h];
             betacount += nbetapi_[h];
         }
-        if (alphacount != nalpha_ || betacount != nbeta_) {
-            throw PSIEXCEPTION("DOCC and SOCC must specify the occupation of all electrons or none.");
+        if (alphacount != nalpha_) {
+            std::ostringstream oss;
+            oss << "Got " << alphacount << " alpha electrons, expected " << nalpha_ << ".\n";
+            oss << "DOCC and SOCC must specify the occupation of all electrons or none.";
+            throw PSIEXCEPTION(oss.str());
+        }
+        if (betacount != nbeta_) {
+            std::ostringstream oss;
+            oss << "Got " << betacount << " beta electrons, expected " << nbeta_ << ".\n";
+            oss << "DOCC and SOCC must specify the occupation of all electrons or none.";
+            throw PSIEXCEPTION(oss.str());
         }
     }
 
@@ -705,10 +714,17 @@ void HF::form_Shalf() {
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     const Dimension& dimpi = eigval->dimpi();
-    double min_S = std::fabs(eigval->get(0, 0));
+    // Cannot assume that (0,0) is a valid reference
+    bool min_S_initialized = false;
+    double min_S;
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < dimpi[h]; ++i) {
-            if (min_S > eigval->get(h, i)) min_S = eigval->get(h, i);
+            if (!min_S_initialized) {
+                min_S = eigval->get(h, i);
+                min_S_initialized = true;
+            } else if (min_S > eigval->get(h, i)) {
+                min_S = eigval->get(h, i);
+            }
             double scale = 1.0 / std::sqrt(eigval->get(h, i));
             eigval->set(h, i, scale);
         }
