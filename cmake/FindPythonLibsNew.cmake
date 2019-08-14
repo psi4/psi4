@@ -1,5 +1,5 @@
 # - Find python libraries
-# This module finds the libraries corresponding to the Python interpeter
+# This module finds the libraries corresponding to the Python interpreter
 # FindPythonInterp provides.
 # This code sets the following variables:
 #
@@ -50,7 +50,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-if(PYTHONLIBS_FOUND)
+# Checking for the extension makes sure that `LibsNew` was found and not just `Libs`.
+if(PYTHONLIBS_FOUND AND PYTHON_MODULE_EXTENSION)
     return()
 endif()
 
@@ -63,6 +64,7 @@ endif()
 
 if(NOT PYTHONINTERP_FOUND)
     set(PYTHONLIBS_FOUND FALSE)
+    set(PythonLibsNew_FOUND FALSE)
     return()
 endif()
 
@@ -78,7 +80,7 @@ print('.'.join(str(v) for v in sys.version_info));
 print(sys.prefix);
 print(s.get_python_inc(plat_specific=True));
 print(s.get_python_lib(plat_specific=True));
-print(s.get_config_var('SO'));
+print(s.get_config_var('EXT_SUFFIX'));
 print(hasattr(sys, 'gettotalrefcount')+0);
 print(struct.calcsize('@P'));
 print(s.get_config_var('LDVERSION') or s.get_config_var('VERSION'));
@@ -95,10 +97,14 @@ if(NOT _PYTHON_SUCCESS MATCHES 0)
             "Python config failure:\n${_PYTHON_ERROR_VALUE}")
     endif()
     set(PYTHONLIBS_FOUND FALSE)
+    set(PythonLibsNew_FOUND FALSE)
     return()
 endif()
 
 # Convert the process output into a list
+if(WIN32)
+    string(REGEX REPLACE "\\\\" "/" _PYTHON_VALUES ${_PYTHON_VALUES})
+endif()
 string(REGEX REPLACE ";" "\\\\;" _PYTHON_VALUES ${_PYTHON_VALUES})
 string(REGEX REPLACE "\n" ";" _PYTHON_VALUES ${_PYTHON_VALUES})
 list(GET _PYTHON_VALUES 0 _PYTHON_VERSION_LIST)
@@ -123,6 +129,7 @@ if(CMAKE_SIZEOF_VOID_P AND (NOT "${PYTHON_SIZEOF_VOID_P}" STREQUAL "${CMAKE_SIZE
             "chosen compiler is  ${_CMAKE_BITS}-bit")
     endif()
     set(PYTHONLIBS_FOUND FALSE)
+    set(PythonLibsNew_FOUND FALSE)
     return()
 endif()
 
@@ -192,3 +199,4 @@ find_package_message(PYTHON
     "${PYTHON_EXECUTABLE}${PYTHON_VERSION}")
 
 set(PYTHONLIBS_FOUND TRUE)
+set(PythonLibsNew_FOUND TRUE)
