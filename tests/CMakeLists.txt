@@ -97,7 +97,11 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
-                  basis-ecp dft-pruning
+                  basis-ecp dft-pruning weird-basis-01 weird-basis-02
+                  weird-basis-03 weird-basis-04 weird-basis-05
+                  weird-basis-06 weird-basis-07 weird-basis-08
+                  weird-basis-09 weird-basis-10 weird-basis-11
+                  weird-basis-12
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")

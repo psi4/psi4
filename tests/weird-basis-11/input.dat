@@ -1,0 +1,29 @@
+molecule {
+1 1
+He
+H 1 1.0
+}
+
+set reference rhf
+set guess core
+set scf_type pk
+set df_scf_guess false
+
+basis {
+assign test
+
+[test]
+spherical
+****
+H 0
+D 1 1.0
+ 1.0 1.0
+****
+He 0
+D 1 1.0
+ 1.0 1.0
+****
+}
+energy('scf')
+refE = 3.45306620376334
+compare_values(refE, variable("SCF TOTAL ENERGY"), 6, "HeH+ energy, D basis")
