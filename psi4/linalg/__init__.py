@@ -27,8 +27,9 @@
 #
 """Linear algebra utilities"""
 
-from ..core.linalg import *  # isort:skip
-from .factory import Vector_, Matrix_, Tensor_  # isort:skip
+from ..core.linalg import *
+from .factory import Matrix_, Tensor_, Vector_
+from .utils import make_random_tensor_2d
 
 # NOTE this is rather awkward, but I haven't found any other way to get the
 # help for all the stuff defined in core.linalg otherwise...
@@ -44,5 +45,8 @@ __all__ = [
     , "real"
     , "imag"
     , "conj"
+    , "cholesky"
+    , "eig"
+    , "make_random_tensor_2d"
 ]
 # yapf: enable

@@ -8,21 +8,11 @@ import numpy as np
 import pytest
 
 from psi4.core import Dimension
-from psi4.linalg import Matrix_, Operation, doublet
+from psi4.linalg import Matrix_, Operation, doublet, make_random_tensor_2d
 
 from .utils import compare_arrays
 
 pytestmark = pytest.mark.quick
-
-
-def build_random_mat(rdim, cdim, symmetry=0, dtype=np.float):
-    m = Matrix_(label='test', rowspi=rdim, colspi=cdim, symmetry=symmetry, dtype=dtype)
-    for h in range(m.nirrep):
-        block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
-        m[h][:, :] = np.random.randn(*block_shape)
-        if dtype == np.complex128:
-            m[h][:, :] += np.random.randn(*block_shape) *1j
-    return m
 
 
 def generate_result(A, B, opA, opB):
@@ -114,14 +104,13 @@ def generate_result(A, B, opA, opB):
 naming = {Operation.none: "  ", Operation.transpose: "^T", Operation.transpose_conj: "^H"}
 
 
-def name_doublet_test(ni, Ga, Gb, opA, opB, sq_or_rec, dtype=np.float):
+def name_doublet_test(ni, Ga, Gb, opA, opB, sq_or_rec, dtype):
     return f"  N(G): {ni} || G(A): {Ga} || G(B): {Gb} || doublet(A{naming[opA]} x B{naming[opB]}) || {sq_or_rec.upper()} || {np.dtype(dtype).name}"
 
 
 dim_choices1 = [2, 3, 4, 5, 6, 7, 8, 9]
 dim_choices2 = [x + 1 for x in dim_choices1]
 doublet_args = []
-group_size = 4
 for group_size in [1, 2, 4, 8]:
     d1 = Dimension([dim_choices1[x] for x in range(group_size)])
     d2 = Dimension([dim_choices2[x] for x in range(group_size)])
@@ -164,8 +153,8 @@ for group_size in [1, 2, 4, 8]:
     for ni, adl, adr, Ga, bdl, bdr, Gb, opA, opB, sqrec, dtype in doublet_args
 ])
 def test_doublets(adl, adr, Ga, bdl, bdr, Gb, opA, opB, dtype):
-    A = build_random_mat(adl, adr, Ga, dtype)
-    B = build_random_mat(bdl, bdr, Gb, dtype)
+    A = make_random_tensor_2d(adl, adr, Ga, dtype)
+    B = make_random_tensor_2d(bdl, bdr, Gb, dtype)
     if dtype == np.complex128:
         res = doublet(A, B, opA, opB)
     else:
@@ -176,4 +165,4 @@ def test_doublets(adl, adr, Ga, bdl, bdr, Gb, opA, opB, dtype):
     expected = generate_result(A, B, opA, opB)
     assert res.symmetry == A.symmetry ^ B.symmetry, f"Symm mismatch {A.symmetry} x {B.symmetry} != {res.symmetry}"
     for blk_idx in range(res.nirrep):
-        assert compare_arrays(expected[blk_idx], res[blk_idx], 8, f"Block[{blk_idx}]")
+        assert compare_arrays(expected[blk_idx], res[blk_idx], 10, f"Block[{blk_idx}]")
