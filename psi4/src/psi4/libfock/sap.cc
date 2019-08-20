@@ -34,8 +34,10 @@
 #define SAP_NELEM 119
 /* Radial points in the table */
 #define SAP_NRAD 751
-/* Use 7th order interpolation */
-#define LIP_ORDER 7
+
+/* Use linear interpolation since points are closely spaced and higher
+order schemes may result in instabilities */
+#define LIP_ORDER 2
 
 static double lagrange_interpolation(const double *xi, const double *yi,
                                      double x, size_t N) {
