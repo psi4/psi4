@@ -10,7 +10,7 @@ import pytest
 from psi4.core import Dimension
 from psi4.linalg import Matrix_, Operation, doublet, make_random_tensor_2d
 
-from .utils import compare_arrays
+from .utils import compare_values
 
 pytestmark = pytest.mark.quick
 
@@ -110,6 +110,8 @@ def name_doublet_test(ni, Ga, Gb, opA, opB, sq_or_rec, dtype):
 
 dim_choices1 = [2, 3, 4, 5, 6, 7, 8, 9]
 dim_choices2 = [x + 1 for x in dim_choices1]
+operations = [Operation.transpose_conj, Operation.transpose, Operation.none]
+dtypes = [np.float32, np.float64, np.complex128]  # TODO Add np.complex64
 doublet_args = []
 for group_size in [1, 2, 4, 8]:
     d1 = Dimension([dim_choices1[x] for x in range(group_size)])
@@ -119,10 +121,9 @@ for group_size in [1, 2, 4, 8]:
     b11_set = [(d1, d1, H) for H in range(group_size)]
 
     # Prune doublet_args to remove occurrences of Operation.transpose_conj with dtype double
-    for aargs, bargs, opA, opB, dtype in itertools.product(
-            a11_set, b11_set, [Operation.transpose_conj, Operation.transpose, Operation.none],
-        [Operation.transpose_conj, Operation.transpose, Operation.none], [np.float, np.complex128]):
-        if (opA == Operation.transpose_conj or opB == Operation.transpose_conj) and (dtype == np.float):
+    for aargs, bargs, opA, opB, dtype in itertools.product(a11_set, b11_set, operations, operations, dtypes):
+        if (opA == Operation.transpose_conj or opB == Operation.transpose_conj) and (dtype == np.float32
+                                                                                     or dtype == np.float64):
             continue
         adl, adr, Ga = aargs
         bdl, bdr, Gb = bargs
@@ -131,15 +132,13 @@ for group_size in [1, 2, 4, 8]:
     b12_set = [(d1, d2, H) for H in range(group_size)]
     b21_set = [(d2, d1, H) for H in range(group_size)]
 
-    for aargs, bargs, op, dtype in itertools.product(a12_set, b21_set, [Operation.none, Operation.transpose],
-                                                     [np.float, np.complex128]):
-        if (op == Operation.transpose_conj) and (dtype == np.float):
+    for aargs, bargs, op, dtype in itertools.product(a12_set, b21_set, operations, dtypes):
+        if (op == Operation.transpose_conj) and (dtype == np.float32 or dtype == np.float64):
             continue
         doublet_args.append((group_size, *aargs, *bargs, op, op, 'rectangular', dtype))
 
-    for aargs, bargs, opA, dtype in itertools.product(a12_set, b12_set, [Operation.none, Operation.transpose],
-                                                      [np.float, np.complex128]):
-        if (opA == Operation.transpose_conj) and (dtype == np.float):
+    for aargs, bargs, opA, dtype in itertools.product(a12_set, b12_set, operations, dtypes):
+        if (op == Operation.transpose_conj) and (dtype == np.float32 or dtype == np.float64):
             continue
         # TODO if opA is Operation.none how do I decide whether I want Operation.transpose or Operation.transpose_conj?
         opB = Operation.none if (opA == Operation.transpose
@@ -155,14 +154,23 @@ for group_size in [1, 2, 4, 8]:
 def test_doublets(adl, adr, Ga, bdl, bdr, Gb, opA, opB, dtype):
     A = make_random_tensor_2d(adl, adr, Ga, dtype)
     B = make_random_tensor_2d(bdl, bdr, Gb, dtype)
-    if dtype == np.complex128:
+
+    if dtype == np.complex64 or dtype == np.complex128:
         res = doublet(A, B, opA, opB)
     else:
         # Use the function accepting two bools as last arguments (for coverage)
         transA = (opA == Operation.transpose or opA == Operation.transpose_conj)
         transB = (opB == Operation.transpose or opB == Operation.transpose_conj)
         res = doublet(A, B, transA, transB)
+
     expected = generate_result(A, B, opA, opB)
+
     assert res.symmetry == A.symmetry ^ B.symmetry, f"Symm mismatch {A.symmetry} x {B.symmetry} != {res.symmetry}"
+
+    if dtype == np.float32 or dtype == np.complex64:
+        atol = 1.e-5
+    else:
+        atol = 1.e-10
+
     for blk_idx in range(res.nirrep):
-        assert compare_arrays(expected[blk_idx], res[blk_idx], 10, f"Block[{blk_idx}]")
+        assert compare_values(expected[blk_idx], res[blk_idx], f"Block[{blk_idx}]", atol=atol)

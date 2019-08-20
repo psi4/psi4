@@ -208,9 +208,12 @@ void bind_tensor(py::module& mod) {
     cls.def("__setitem__",
             [](Class& obj, size_t h, const xt::pytensor<T, Rank>& block) {
                 if (h >= obj.nirrep()) throw py::index_error();
-                obj.set_block(h, block);
+                obj[h] = block;
             },
             "h"_a, "block"_a, "Set block at given irrep", py::is_operator());
+    cls.def("__len__", &Class::nirrep);
+    cls.def("__iter__", [](const Class& obj) { return py::make_iterator(obj.begin(), obj.end()); },
+            py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
 
     // Free functions shared by all ranks
     mod.def("full_like", &full_like<T, Rank>,
@@ -248,15 +251,21 @@ void export_linalg(py::module& mod) {
     // Rank-1 tensor, aka blocked vector
     bind_tensor<float, 1>(sub_mod);
     bind_tensor<double, 1>(sub_mod);
+    // TODO
+    // bind_tensor<std::complex<float>, 1>(sub_mod);
     bind_tensor<std::complex<double>, 1>(sub_mod);
 
     // Rank-2 tensor, aka blocked matrix
     bind_tensor<float, 2>(sub_mod);
     bind_tensor<double, 2>(sub_mod);
+    // TODO
+    // bind_tensor<std::complex<float>, 2>(sub_mod);
     bind_tensor<std::complex<double>, 2>(sub_mod);
 
     // Rank-3 tensor
     bind_tensor<float, 3>(sub_mod);
     bind_tensor<double, 3>(sub_mod);
+    // TODO
+    // bind_tensor<std::complex<float>, 3>(sub_mod);
     bind_tensor<std::complex<double>, 3>(sub_mod);
 }

@@ -52,7 +52,7 @@ def make_random_tensor_2d(rdim, cdim, symmetry=0, dtype=np.float, builder="rando
 
     for h in range(m.nirrep):
         block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
-        m[h][:, :] = _make_block[builder](block_shape, dtype=dtype)
+        m[h] = _make_block[builder](block_shape, dtype=dtype)
     return m
 
 
