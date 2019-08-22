@@ -28,7 +28,8 @@ else()
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
                    -Dlanguage=Python
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+                         -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                         -DTargetOpenMP_FIND_COMPONENTS:STRING=C;CXX)
 
     set(mdi_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/mdi CACHE PATH "path to internally built mdiConfig.cmake" FORCE)
 endif()

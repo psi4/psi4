@@ -77,6 +77,9 @@ class MDIEngine():
         self.mpi_world = None
         self.world_rank = 0
 
+        # Flag for if a lattice of point charges has been set
+        self.set_lattice = False
+
         # Get correct intra-code MPI communicator
         if use_mpi4py:
             self.mpi_world = MDI_Get_Intra_Code_MPI_Comm()
@@ -262,6 +265,7 @@ class MDIEngine():
             latz = self.clattice[3 * ilat + 2] * unit_conv
             self.lattice_field.extern.addCharge(self.lattice[ilat], latx, laty, latz)
         psi4.core.set_global_option_python('EXTERN', self.lattice_field.extern)
+        self.set_lattice = True
 
     # Respond to the >NLATTICE command
     def recv_nlattice(self, nlattice=None):
@@ -381,6 +385,11 @@ class MDIEngine():
         """ Stop listening for MDI commands
         """
         self.stop_listening = True
+
+        # If a lattice of point charges was set, unset it now
+        if self.set_lattice:
+            psi4.core.set_global_option_python('EXTERN', None)
+            
 
     # Enter server mode, listening for commands from the driver
     def listen_for_commands(self):
