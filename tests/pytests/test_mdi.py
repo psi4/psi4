@@ -3,6 +3,7 @@ from qcelemental.testing import compare, compare_recursive, compare_values, tnm
 
 import psi4
 
+pytestmark = [pytest.mark.quick, pytest.mark.mdi]
 
 def test_mdi_water():
 
@@ -126,12 +127,12 @@ def test_mdi_water():
     # Test the final energy
     engine.run_scf()
     energy = engine.send_energy()
-    expected = -76.032853528
+    expected = -76.03284774075954
     assert compare_values(expected, energy, atol=1.e-6)
     forces = engine.send_forces()
     expected = [
-        0.032658205591954814, -0.027256446310611037, -0.02211229050834887, 0.01582812526594022, -0.009687716838968852,
-        0.011685251062047874, 0.02635302048909935, 0.00831403427972563, 0.033873999955958245
+        0.032656171616, -0.027255620629, -0.02211206073, 0.015827924001, -0.009687198705,
+        0.011685024025, 0.026352703866, 0.008313469614, 0.033873286169,
     ]
     assert compare_values(expected, forces, atol=1.e-6)
 

@@ -32,6 +32,7 @@ For details regarding MDI, see https://molssi.github.io/MDI_Library/html/index.h
 import psi4
 
 import numpy as np
+import qcelemental as qcel
 
 from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
 from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_Conversion_Factor
@@ -58,9 +59,10 @@ class MDIEngine():
 
         # Molecule all MDI operations are performed on
         if molecule is None:
-            self.molecule = psi4.core.get_active_molecule()
+            self.molecule = (psi4.core.get_active_molecule()).clone()
         else:
-            self.molecule = molecule
+            self.molecule = molecule.clone()
+        psi4.core.set_active_molecule(self.molecule)
 
         # Most recent SCF energy
         self.energy = 0.0
@@ -123,7 +125,7 @@ class MDIEngine():
         """
         unit_name = self.molecule.units()
         if unit_name == "Angstrom":
-            unit_conv = MDI_Conversion_Factor("bohr", "angstrom")
+            unit_conv = qcel.constants.bohr2angstroms
         elif unit_name == "Bohr":
             unit_conv = 1.0
         else:
@@ -161,8 +163,9 @@ class MDIEngine():
         """ Send the nuclear masses through MDI
         """
         natom = self.molecule.natom()
-        masses = [self.molecule.mass(iatom) for iatom in range(natom)]
-        MDI_Send(masses, natom, MDI_DOUBLE, self.comm)
+        molecule_dict = self.molecule.to_dict()
+        masses = molecule_dict['mass']
+        MDI_Send(masses, natom, MDI_DOUBLE_NUMPY, self.comm)
         return masses
 
     # Respond to the <ELEMENTS command
@@ -178,6 +181,7 @@ class MDIEngine():
     def send_energy(self):
         """ Send the total energy through MDI
         """
+        self.run_scf()
         MDI_Send(self.energy, 1, MDI_DOUBLE, self.comm)
         return self.energy
 
@@ -185,7 +189,7 @@ class MDIEngine():
     def send_forces(self):
         """ Send the nuclear forces through MDI
         """
-        force_matrix = psi4.driver.gradient(self.scf_method)
+        force_matrix = psi4.driver.gradient(self.scf_method, molecule=self.molecule)
         forces = force_matrix.np.ravel()
         MDI_Send(forces, len(forces), MDI_DOUBLE_NUMPY, self.comm)
         return forces
@@ -200,8 +204,17 @@ class MDIEngine():
         natom = self.molecule.natom()
         if charges is None:
             charges = MDI_Recv(natom, MDI_DOUBLE, self.comm)
+
+        # Assign the charge of all atoms, taking care to avoid ghost atoms
+        jatom = 0
         for iatom in range(natom):
-            self.molecule.set_nuclear_charge(iatom, charges[iatom])
+            while self.molecule.fZ(jatom) == 0 and jatom < self.molecule.nallatom():
+                jatom = jatom + 1
+                if jatom >= self.molecule.nallatom():
+                    raise Exception('Unexpected number of ghost atoms when receiving masses')
+            self.molecule.set_nuclear_charge(iatom, charges[jatom])
+            jatom = jatom + 1
+
 
     # Respond to the >COORDS command
     def recv_coords(self, coords=None):
@@ -230,10 +243,10 @@ class MDIEngine():
         # Assign the mass of all atoms, taking care to avoid ghost atoms
         jatom = 0
         for iatom in range(natom):
-            while self.molecule.fcharge(jatom) == 0.0 and jatom < self.molecule.nallatom():
+            while self.molecule.fZ(jatom) == 0 and jatom < self.molecule.nallatom():
                 jatom = jatom + 1
                 if jatom >= self.molecule.nallatom():
-                    raise Exception('Unexpected number of ghost atoms when receiving masses: ')
+                    raise Exception('Unexpected number of ghost atoms when receiving masses')
             self.molecule.set_mass(iatom, masses[jatom])
             jatom = jatom + 1
 

@@ -10,13 +10,13 @@ foreach(dir
   gau2grid
   gdma
   libint
+  mdi
   pcmsolver
   pylibefp
   qcelemental
   qcengine
   simint
   libxc
-  mdi
   )
   add_subdirectory(${dir})
 endforeach()
