@@ -84,6 +84,10 @@ class MDIEngine():
             self.mpi_world = MDI_Get_Intra_Code_MPI_Comm()
             self.world_rank = self.mpi_world.Get_rank()
 
+            # Psi4 does not currently support multiple MPI ranks
+            if self.mpi_world.Get_size() != 1:
+                MPI.COMM_WORLD.Abort()
+
         # Accept a communicator to the driver code
         self.comm = MDI_Accept_Communicator()
 
