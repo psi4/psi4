@@ -35,9 +35,8 @@ import numpy as np
 import qcelemental as qcel
 
 from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
-from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_Conversion_Factor
+from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_DOUBLE_NUMPY
 from MDI_Library.mdi import MDI_INT, MDI_DOUBLE, MDI_CHAR, MDI_COMMAND_LENGTH
-from MDI_Library.mdi import MDI_DOUBLE_NUMPY
 
 try:
     from mpi4py import MPI
