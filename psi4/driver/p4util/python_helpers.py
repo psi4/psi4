@@ -300,7 +300,7 @@ def _core_wavefunction_to_file(wfn, filename=None):
 
     if filename is not None:
         if not filename.endswith('.npy'): filename += '.npy'
-        np.save(filename, wfn_data)
+        np.save(filename, wfn_data, allow_pickle=True)
 
     return wfn_data
 
