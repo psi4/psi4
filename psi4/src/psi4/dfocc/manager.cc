@@ -2619,6 +2619,7 @@ void DFOCC::omp2_5_manager() {
 
     Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
     Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
+    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
     Emp3L = Emp3;
     EcorrL = Emp3L - Escf;
     Emp3L_old = Emp3;
@@ -2924,6 +2925,7 @@ void DFOCC::mp2_5_manager() {
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
     Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
     Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
+    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
     Emp3L = Emp3;
 
     /* updates the wavefunction for checkpointing */
