@@ -128,6 +128,8 @@ class MDIEngine():
 
     def length_conversion(self):
         """ Obtain the conversion factor between the geometry specification units and bohr
+
+        :returns: *unit_conv* Conversion factor between the geometry specification units and bohr
         """
         unit_name = self.molecule.units()
         if unit_name == "Angstrom":
@@ -158,6 +160,8 @@ class MDIEngine():
     # Respond to the <CHARGES command
     def send_charges(self):
         """ Send the nuclear charges through MDI
+
+        :returns: *charges* Atomic charges
         """
         natom = self.molecule.natom()
         charges = [self.molecule.charge(iatom) for iatom in range(natom)]
@@ -167,6 +171,8 @@ class MDIEngine():
     # Respond to the <MASSES command
     def send_masses(self):
         """ Send the nuclear masses through MDI
+
+        :returns: *masses* Atomic masses
         """
         natom = self.molecule.natom()
         molecule_dict = self.molecule.to_dict()
@@ -177,6 +183,8 @@ class MDIEngine():
     # Respond to the <ELEMENTS command
     def send_elements(self):
         """ Send the atomic number of each nucleus through MDI
+
+        :returns: *elements* Element of each atom
         """
         natom = self.molecule.natom()
         elements = [self.molecule.true_atomic_number(iatom) for iatom in range(natom)]
@@ -186,6 +194,8 @@ class MDIEngine():
     # Respond to the <ENERGY command
     def send_energy(self):
         """ Send the total energy through MDI
+
+        :returns: *energy* Energy of the system
         """
         self.run_scf()
         MDI_Send(self.energy, 1, MDI_DOUBLE, self.comm)
@@ -194,6 +204,8 @@ class MDIEngine():
     # Respond to the <FORCES command
     def send_forces(self):
         """ Send the nuclear forces through MDI
+
+        :returns: *forces* Atomic forces
         """
         force_matrix = psi4.driver.gradient(self.scf_method, molecule=self.molecule)
         forces = force_matrix.np.ravel()
@@ -320,6 +332,8 @@ class MDIEngine():
     # Respond to the <DIMENSIONS command
     def send_dimensions(self):
         """ Send the dimensionality of the system through MDI
+
+        :returns: *dimensions* Dimensionality of the system
         """
         dimensions = [1, 1, 1]
         MDI_Send(dimensions, 3, MDI_INT, self.comm)
@@ -328,13 +342,18 @@ class MDIEngine():
     # Respond to the <NCOMMANDS command
     def send_ncommands(self):
         """ Send the number of supported MDI commands through MDI
+
+        :returns: *ncommands* Number of supported commands
         """
-        MDI_Send(len(self.commands), 1, MDI_INT, self.comm)
-        return len(self.commands)
+        ncommands = len(self.commands)
+        MDI_Send(ncommands, 1, MDI_INT, self.comm)
+        return ncommands
 
     # Respond to the <COMMANDS command
     def send_commands(self):
         """ Send the supported MDI commands through MDI
+
+        :returns: *command_string* String containing the name of each supported command
         """
         command_string = ""
         for command in self.commands:
@@ -348,6 +367,8 @@ class MDIEngine():
     # Respond to the <TOTCHARGE command
     def send_total_charge(self):
         """ Send the total system charge through MDI
+
+        :returns: *charge* Total charge of the system
         """
         charge = self.molecule.molecular_charge()
         MDI_Send(charge, 1, MDI_DOUBLE, self.comm)
@@ -367,6 +388,8 @@ class MDIEngine():
     # Respond to the <ELEC_MULT command
     def send_multiplicity(self):
         """ Send the electronic multiplicity through MDI
+
+        :returns: *multiplicity* Multiplicity of the system
         """
         multiplicity = self.molecule.multiplicity()
         MDI_Send(multiplicity, 1, MDI_INT, self.comm)
