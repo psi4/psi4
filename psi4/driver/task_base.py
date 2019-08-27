@@ -175,7 +175,7 @@ class SingleResult(BaseTask):
             if len(result) == 0:
                 return self.result
 
-            self.result = result[0].json_dict()
+            self.result = result[0].dict(encoding='json')
             return self.result
 
     def get_json_results(self):
