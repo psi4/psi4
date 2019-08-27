@@ -70,6 +70,21 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+// TODO: guard all BrianQC code with #ifdef
+
+#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_module.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+
+BrianCookie brianCookie = 0;
+
+void checkBrian() {
+    brianBool err = brianAPIGetError(&brianCookie);
+    if (err) {
+        throw PSIEXCEPTION("BrianQC error detected");
+    }
+}
+
 // Python helper wrappers
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
@@ -984,6 +999,20 @@ bool psi4_python_module_initialize() {
     static char* argv = (char*)"";
     for_rtl_init_(&argc, &argv);
 #endif
+    
+    const char* brianEnableEnv = getenv("BRIANQC_ENABLE");
+    if (brianEnableEnv) {
+        outfile->Printf("BRIANQC_ENABLE environment variable found, checking value\n");
+        bool brianEnable = (bool)atoi(brianEnableEnv);
+        if (brianEnable) {
+            outfile->Printf("BRIANQC_ENABLE is true, attempting to initialize BrianQC\n");
+            brianInt brianAPIVersionOfHost = BRIAN_API_VERSION;
+            brianInt hostID = BRIAN_HOST_PSI4;
+            brianCookie = brianAPIInit(&brianAPIVersionOfHost, &hostID);
+            checkBrian();
+            outfile->Printf("BrianQC initialization successful\n");
+        }
+    }
 
     initialized = true;
 
@@ -991,6 +1020,11 @@ bool psi4_python_module_initialize() {
 }
 
 void psi4_python_module_finalize() {
+    if (brianCookie != 0) {
+        outfile->Printf("Releasing the BrianQC module\n");
+        brianAPIRelease(&brianCookie);
+    }
+    
 #ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
 #endif

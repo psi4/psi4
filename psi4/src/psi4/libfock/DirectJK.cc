@@ -54,9 +54,18 @@
 #include "psi4/libpsi4util/process.h"
 #endif
 
+#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_common.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_scf.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_cphf.h>
+extern void checkBrian();
+extern BrianCookie brianCookie;
+
 using namespace psi;
 
 namespace psi {
+
 DirectJK::DirectJK(std::shared_ptr<BasisSet> primary) : JK(primary) { common_init(); }
 DirectJK::~DirectJK() {}
 void DirectJK::common_init() {
@@ -81,7 +90,14 @@ void DirectJK::print_header() const {
         outfile->Printf("    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
-void DirectJK::preiterations() { sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_); }
+void DirectJK::preiterations() {
+    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_);
+    
+    if (brianCookie != 0) {
+        brianCOMSetPrecisionThresholds(&brianCookie, &cutoff_);
+        checkBrian();
+    }
+}
 void DirectJK::compute_JK() {
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
 
@@ -131,6 +147,80 @@ void DirectJK::compute_JK() {
 void DirectJK::postiterations() { sieve_.reset(); }
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
                         std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K) {
+    
+    if (brianCookie != 0) {
+        brianBool computeCoulomb = do_J_ ? BRIAN_TRUE : BRIAN_FALSE;
+        brianBool computeExchange = do_K_ ? BRIAN_TRUE : BRIAN_FALSE;
+        
+        // TODO: need a more reliable way to determine if this is a CPHF or a regular Fock build
+        if (lr_symmetric_) {
+            brianSCFBuildFockRepulsion(&brianCookie,
+                &computeCoulomb,
+                &computeExchange,
+                D[0]->get_pointer(0),
+                (D.size() > 1 ? D[1]->get_pointer(0) : nullptr),
+                J[0]->get_pointer(0),
+                K[0]->get_pointer(0),
+                (D.size() > 1 ? K[1]->get_pointer(0) : nullptr)
+            );
+            checkBrian();
+            
+            // BrianQC only computes the total (alpha + beta) Coulomb matrix
+            J[0]->scale(0.5);
+            for (size_t ind = 1; ind < J.size(); ind++) {
+                J[ind]->copy(J[0].get());
+            }
+        }
+        else {
+            brianInt segmentSize = D.size();
+            brianInt fineSize = D[0]->rowdim(0);
+            
+            // TODO: use memcopies, this is inefficient
+            std::vector<double> pseudoDensityBuffer(segmentSize * fineSize * fineSize);
+            for (unsigned int segmentIndex = 0; segmentIndex < D.size(); segmentIndex++) {
+                for (unsigned int i = 0; i < fineSize; i++) {
+                    for (unsigned int j = 0; j < fineSize; j++) {
+                        pseudoDensityBuffer[segmentIndex * fineSize * fineSize + i * fineSize + j] = 0.5 * (D[segmentIndex]->get(0, i, j) + D[segmentIndex]->get(0, j, i));
+                    }
+                }
+            }
+            
+            // TODO: loop over sub-segments if bigger than segment size, or at least assert if bigger            
+            std::vector<double> pseudoCoulombBuffer(segmentSize * fineSize * fineSize);
+            std::vector<double> pseudoExchangeBuffer(segmentSize * fineSize * fineSize);
+            brianCPHFBuildRepulsion(&brianCookie,
+                &computeCoulomb,
+                &computeExchange,
+                &segmentSize,
+                pseudoDensityBuffer.data(),
+                nullptr,
+                pseudoCoulombBuffer.data(),
+                pseudoExchangeBuffer.data(),
+                nullptr
+            );
+            checkBrian();
+            
+            // TODO: use memcopies
+            for (unsigned int segmentIndex = 0; segmentIndex < D.size(); segmentIndex++) {
+                for (unsigned int i = 0; i < fineSize; i++) {
+                    for (unsigned int j = 0; j < fineSize; j++) {
+                        J[segmentIndex]->set(0, i, j, 0.5 * pseudoCoulombBuffer[segmentIndex * fineSize * fineSize + i * fineSize + j]);
+                        K[segmentIndex]->set(0, i, j, pseudoExchangeBuffer[segmentIndex * fineSize * fineSize + i * fineSize + j]);
+                    }
+                }
+            }
+        }
+        
+//         for (size_t ind = 0; ind < J.size(); ind++) {
+//             outfile->Printf("J[%d] brian:\n", ind);
+//             J[ind]->print();
+//             outfile->Printf("K[%d] brian:\n", ind);
+//             K[ind]->print();
+//         }
+        
+        return;
+    }
+    
     // => Zeroing <= //
 
     for (size_t ind = 0; ind < J.size(); ind++) {
@@ -596,6 +686,13 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
+    
+//     for (size_t ind = 0; ind < J.size(); ind++) {
+//         outfile->Printf("J[%d] psi:\n", ind);
+//         J[ind]->print();
+//         outfile->Printf("K[%d] psi:\n", ind);
+//         K[ind]->print();
+//     }
 }
 
 #if 0

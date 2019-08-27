@@ -47,6 +47,13 @@
 #include "psi4/libpsi4util/process.h"
 #endif
 
+#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_common.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_geom_opt.h>
+extern void checkBrian();
+extern BrianCookie brianCookie;
+
 using namespace psi;
 
 namespace psi {
@@ -2378,6 +2385,42 @@ void DirectJKGrad::compute_gradient()
 }
 std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
 {
+    if (brianCookie != 0) {
+        brianBool computeCoulomb = BRIAN_TRUE;
+        brianBool computeExchange = BRIAN_TRUE;
+        
+        // TODO: need a more reliable way to know what BrianQC has been set to
+        bool unrestrictedFlag = (Da_->get_pointer() != Db_->get_pointer());
+        
+        std::shared_ptr<Matrix> Jgrad = std::make_shared<Matrix>("JGrad", primary_->molecule()->natom(), 3);
+        std::shared_ptr<Matrix> Kgrada = std::make_shared<Matrix>("KGrad", primary_->molecule()->natom(), 3);
+        std::shared_ptr<Matrix> Kgradb = std::make_shared<Matrix>("KGrad", primary_->molecule()->natom(), 3);
+        
+        brianOPTBuildGradientRepulsionDeriv(&brianCookie,
+            &computeCoulomb,
+            &computeExchange,
+            Da_->get_pointer(0),
+            (unrestrictedFlag ? Db_->get_pointer(0) : nullptr),
+            Jgrad->get_pointer(0),
+            Kgrada->get_pointer(0),
+            (unrestrictedFlag ? Kgradb->get_pointer(0) : nullptr)
+        );
+        
+        if (unrestrictedFlag) {
+            Kgrada->add(Kgradb);
+            Kgrada->scale(-1.0);
+        }
+        else {
+            Kgrada->scale(-2.0);
+        }
+        
+        std::map<std::string, std::shared_ptr<Matrix>> val;
+        val["J"] = Jgrad;
+        val["K"] = Kgrada;
+        
+        return val;
+    }
+    
     int nthreads = ints.size();
 
     int natom = primary_->molecule()->natom();
