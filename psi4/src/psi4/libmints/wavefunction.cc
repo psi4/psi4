@@ -62,11 +62,8 @@
 #include <tuple>
 
 #include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_module.h>
 #include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_types.h>
 #include </home/dzsi/dev/quantum/src/brian_module/api/brian_common.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_scf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
 

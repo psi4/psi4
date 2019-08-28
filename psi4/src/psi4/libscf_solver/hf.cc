@@ -77,6 +77,12 @@
 
 #include "psi4/psi4-dec.h"
 
+#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_scf.h>
+extern void checkBrian();
+extern BrianCookie brianCookie;
+
 namespace psi {
 namespace scf {
 
@@ -1213,6 +1219,23 @@ std::shared_ptr<Vector> HF::occupation_b() const {
 }
 
 void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm) {
+    if (brianCookie != 0) {
+        brianInt basisRank = X_->coldim(0);
+        
+        std::vector<double> buffer(X_->rowdim(0) * X_->coldim(0));
+        brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), X_->get_pointer(0), buffer.data(), epsm->pointer(0));
+        checkBrian();
+        
+        // TODO: use memcopy
+        for (int i = 0; i < Cm->rowdim(0); i++) {
+            for (int j = 0; j < Cm->coldim(0); j++) {
+                Cm->set(0, i, j, buffer[j * Cm->coldim(0) + i]);
+            }
+        }
+        
+        return;
+    }
+    
     // Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
     diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
