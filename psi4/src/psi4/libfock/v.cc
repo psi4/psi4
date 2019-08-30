@@ -57,6 +57,13 @@
 #include <omp.h>
 #endif
 
+#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_common.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_scf.h>
+extern void checkBrian();
+extern BrianCookie brianCookie;
+
 namespace psi {
 
 VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
@@ -141,6 +148,88 @@ void VBase::initialize() {
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a functional worker per thread
         functional_workers_.push_back(functional_->build_worker());
+    }
+    
+    if (brianCookie != 0)
+    {
+        static const std::map<std::string, brianInt> functionalIDMap = {
+            {"XC_LDA_X", BRIAN_FUNCTIONAL_LDA_SLATER_X},
+            {"XC_LDA_C_VWN_RPA", BRIAN_FUNCTIONAL_LDA_VWNRPA_C},
+            {"XC_LDA_C_PW", BRIAN_FUNCTIONAL_LDA_PW_C},
+            {"XC_LDA_C_PW_MOD", BRIAN_FUNCTIONAL_LDA_PW_MOD_C},
+            {"XC_GGA_X_B88", BRIAN_FUNCTIONAL_GGA_B88_X},
+            {"XC_GGA_C_LYP", BRIAN_FUNCTIONAL_GGA_LYP_C},
+            {"XC_GGA_X_PBE", BRIAN_FUNCTIONAL_GGA_PBE_X},
+            {"XC_GGA_C_PBE", BRIAN_FUNCTIONAL_GGA_PBE_C},
+            {"XC_HYB_GGA_XC_B3LYP", BRIAN_FUNCTIONAL_HGGA_B3LYP_XC},
+            {"XC_MGGA_C_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_C},
+            {"XC_MGGA_X_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_X},
+        };
+        
+        std::vector<brianInt> functionalIDs;
+        std::vector<double> functionalWeights;
+        for (std::shared_ptr<Functional> functionalComponent: functional_->x_functionals()) {
+            outfile->Printf("functional id: %s\n", functionalComponent->name().c_str());
+            if (functionalIDMap.count(functionalComponent->name()) == 0) {
+                throw PSIEXCEPTION("This DFT functional cannot be handled by BrianQC");
+            }
+            functionalIDs.push_back(functionalIDMap.at(functionalComponent->name()));
+            functionalWeights.push_back(functionalComponent->alpha());
+        }
+        for (std::shared_ptr<Functional> functionalComponent: functional_->c_functionals()) {
+            outfile->Printf("functional id: %s\n", functionalComponent->name().c_str());
+            if (functionalIDMap.count(functionalComponent->name()) == 0) {
+                throw PSIEXCEPTION("This DFT functional cannot be handled by BrianQC");
+            }
+            functionalIDs.push_back(functionalIDMap.at(functionalComponent->name()));
+            functionalWeights.push_back(functionalComponent->alpha());
+        }
+        
+        static const std::map<std::string, brianInt> functionalParameterIDMap = {
+            // TODO currently, Brian doesn't handle any functional parameters
+        };
+        
+        std::map<brianInt, double> functionalParameterMap;
+        for (std::shared_ptr<Functional> functionalComponent: functional_->x_functionals()) {
+            for (const std::pair<std::string, double>& parameter: functionalComponent->parameters()) {
+                if (functionalParameterIDMap.count(parameter.first) == 0) {
+                    throw PSIEXCEPTION("This DFT functional parameter cannot be handled by BrianQC");
+                }
+                
+                brianInt functionalParameterID = functionalParameterIDMap.at(parameter.first);
+                
+                if (functionalParameterMap.count(functionalParameterID)) {
+                    if (functionalParameterMap.at(functionalParameterID) != parameter.second) {
+                        throw PSIEXCEPTION("BrianQC cannot handle different values of the same parameter for different DFT functional components");
+                    }
+                }
+                else {
+                    functionalParameterMap.insert({functionalParameterID, parameter.second});
+                }
+            }
+        }
+        
+        std::vector<brianInt> functionalParameterIDs;
+        std::vector<double> functionalParameterValues;
+        for (const std::pair<brianInt, double>& parameter: functionalParameterMap) {
+            functionalParameterIDs.push_back(parameter.first);
+            functionalParameterValues.push_back(parameter.second);
+        }
+        
+        brianInt functionalCount = functionalIDs.size();
+        brianInt functionalParameterCount = functionalParameterIDs.size();
+        brianCOMSetDFTFunctional(&brianCookie,
+            &functionalCount,
+            functionalIDs.data(),
+            functionalWeights.data(),
+            &functionalParameterCount,
+            functionalParameterIDs.data(),
+            functionalParameterValues.data()
+        );
+        checkBrian();
+        
+        brianCOMInitDFT(&brianCookie);
+        checkBrian();
     }
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
@@ -738,9 +827,34 @@ void RV::finalize() { VBase::finalize(); }
 void RV::print_header() const { VBase::print_header(); }
 void RV::compute_V(std::vector<SharedMatrix> ret) {
     timer_on("RV: Form V");
-
+    
     if ((D_AO_.size() != 1) || (ret.size() != 1)) {
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
+    }
+    
+    if (brianCookie != 0) {
+        double DFTEnergy;
+        brianSCFBuildFockDFT(&brianCookie,
+            D_AO_[0]->get_pointer(0),
+            nullptr,
+            ret[0]->get_pointer(0),
+            nullptr,
+            &DFTEnergy
+        );
+        checkBrian();
+        
+        quad_values_["VV10"] = 0.0; // TODO: can we compute the VV10 term?
+        quad_values_["FUNCTIONAL"] = DFTEnergy;
+        quad_values_["RHO_A"] = 0.0;
+        quad_values_["RHO_AX"] = 0.0;
+        quad_values_["RHO_AY"] = 0.0;
+        quad_values_["RHO_AZ"] = 0.0;
+        quad_values_["RHO_B"] = 0.0;
+        quad_values_["RHO_BX"] = 0.0;
+        quad_values_["RHO_BY"] = 0.0;
+        quad_values_["RHO_BZ"] = 0.0;
+        
+        return;
     }
 
     // Thread info
@@ -1851,6 +1965,31 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     timer_on("UV: Form V");
     if ((D_AO_.size() != 2) || (ret.size() != 2)) {
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
+    }
+    
+    if (brianCookie != 0) {
+        double DFTEnergy;
+        brianSCFBuildFockDFT(&brianCookie,
+            D_AO_[0]->get_pointer(0),
+            D_AO_[1]->get_pointer(0),
+            ret[0]->get_pointer(0),
+            ret[1]->get_pointer(0),
+            &DFTEnergy
+        );
+        checkBrian();
+        
+        quad_values_["VV10"] = 0.0; // TODO: can we compute the VV10 term?
+        quad_values_["FUNCTIONAL"] = DFTEnergy;
+        quad_values_["RHO_A"] = 0.0;
+        quad_values_["RHO_AX"] = 0.0;
+        quad_values_["RHO_AY"] = 0.0;
+        quad_values_["RHO_AZ"] = 0.0;
+        quad_values_["RHO_B"] = 0.0;
+        quad_values_["RHO_BX"] = 0.0;
+        quad_values_["RHO_BY"] = 0.0;
+        quad_values_["RHO_BZ"] = 0.0;
+        
+        return;
     }
 
     if (functional_->needs_grac()) {
