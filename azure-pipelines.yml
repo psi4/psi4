@@ -133,7 +133,7 @@ jobs:
 
       - script: |
           where.exe python*
-          displayName: "Find python3"
+        displayName: "Find python3"
 
       # Install LLVM
       # Note: LLVM distributed by conda is too old
