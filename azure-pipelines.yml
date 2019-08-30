@@ -131,6 +131,10 @@ jobs:
           conda list
         displayName: "Install conda packages"
 
+      - script: |
+          where.exe python*
+          displayName: "Find python3"
+
       # Install LLVM
       # Note: LLVM distributed by conda is too old
       - script: |
