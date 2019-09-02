@@ -234,6 +234,21 @@ SharedTensor<T, Rank> conj(const SharedTensor<T, Rank>& in) noexcept {
 /*! @{ Decompositions */
 template <typename T>
 SharedTensor<T, 2> cholesky(const SharedTensor<T, 2>& in) {
+    if (in->symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+    auto out = zeros_like(in);
+    std::transform(in->cbegin(), in->cend(), out->begin(),
+                   [](const typename Tensor<T, 2>::block_type& blk) ->
+                   typename Tensor<T, 2>::block_type { return xt::linalg::cholesky(blk); });
+    return out;
+}
+
+template <typename T>
+SharedTensor<T, 2> partial_cholesky(const SharedTensor<T, 2>& in) {
+    if (in->symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
     auto out = zeros_like(in);
     std::transform(in->cbegin(), in->cend(), out->begin(),
                    [](const typename Tensor<T, 2>::block_type& blk) ->

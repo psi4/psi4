@@ -251,21 +251,15 @@ void export_linalg(py::module& mod) {
     // Rank-1 tensor, aka blocked vector
     bind_tensor<float, 1>(sub_mod);
     bind_tensor<double, 1>(sub_mod);
-    // TODO
-    // bind_tensor<std::complex<float>, 1>(sub_mod);
     bind_tensor<std::complex<double>, 1>(sub_mod);
 
     // Rank-2 tensor, aka blocked matrix
     bind_tensor<float, 2>(sub_mod);
     bind_tensor<double, 2>(sub_mod);
-    // TODO
-    // bind_tensor<std::complex<float>, 2>(sub_mod);
     bind_tensor<std::complex<double>, 2>(sub_mod);
 
     // Rank-3 tensor
     bind_tensor<float, 3>(sub_mod);
     bind_tensor<double, 3>(sub_mod);
-    // TODO
-    // bind_tensor<std::complex<float>, 3>(sub_mod);
     bind_tensor<std::complex<double>, 3>(sub_mod);
 }
