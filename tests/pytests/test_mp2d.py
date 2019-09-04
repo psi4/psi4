@@ -126,7 +126,7 @@ def test_dft_mp2(inp):
     if inp['driver'] == 'gradient':
         for retrn in [grad,
                       wfn.gradient()]:
-            atol = 1.e-8 if 'dertype' in inp else 1.e-10
+            atol = 2.e-8 if 'dertype' in inp else 1.e-10
             assert compare_values(ref[basisset][inp['pv'] + ' TOTAL GRADIENT'], np.asarray(retrn), basisset + " tot grad", atol=atol)
 
 
