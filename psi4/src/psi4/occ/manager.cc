@@ -1314,6 +1314,7 @@ void OCCWave::omp2_5_manager() {
     outfile->Printf("\n");
 
     Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
+    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
 
     omp3_response_pdms();
     gfock();
@@ -1532,6 +1533,7 @@ void OCCWave::mp2_5_manager() {
 
     Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
     Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
+    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
     Process::environment.globals["CURRENT ENERGY"] = Emp3L;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
