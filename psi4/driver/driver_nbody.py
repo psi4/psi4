@@ -235,6 +235,8 @@ def nbody_gufunc(func, method_string, **kwargs):
             raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
 
     metadata['max_nbody'] = kwargs.get('max_nbody', -1)
+    if metadata['molecule'].nfragments() == 1:
+        raise ValidationError("N-Body requires active molecule to have more than 1 fragment.")
     metadata['max_frag'] = metadata['molecule'].nfragments()
     if metadata['max_nbody'] == -1:
         metadata['max_nbody'] = metadata['molecule'].nfragments()
