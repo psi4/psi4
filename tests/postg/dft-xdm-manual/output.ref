@@ -1,0 +1,334 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4a2.dev73 
+
+                         Git: Rev {xdmfinal} 50fc7c2 
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 13 August 2019 09:14PM
+
+    Process ID: 818
+    Host:       xenon
+    PSIDATADIR: /home/alberto/src/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! B86bPBE-XDM/aug-cc-pVTZ gradient of acetylene dimer. This test checks that
+#! the XDM energy gradients are calculated correctly.
+
+refE = -152.8215407482807962; #TEST
+Exdm = -0.0035171147737490; #TEST
+
+molecule c2h2dimer {
+  units angstrom
+  O -1.551007 -0.114520 0.000000
+  H -1.934259 0.762503 0.000000
+  H -0.599677 0.040712 0.000000
+  O 1.350625 0.111469 0.000000
+  H 1.680398 -0.373741 -0.758561
+  H 1.680398 -0.373741 0.758561
+}
+
+set {
+ basis 6-31+G*
+ scf_type df
+ e_convergence 10
+}
+
+set dft_xdm_a1 0.7647
+set dft_xdm_a2 0.8457
+set dft_xdm_vol blyp
+
+E = energy("blyp")
+
+compare_values(Exdm, variable("dispersion correction energy"), 9, "XDM energy") #TEST
+compare_values(refE, E, 9, "Reference energy") #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on xenon
+*** at Tue Aug 13 21:14:15 2019
+
+   => Loading Basis Set <=
+
+    Name: 6-31+G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4     entry O          line   157 file /home/alberto/src/psi4/share/psi4/basis/6-31pgs.gbs 
+    atoms 2-3, 5-6 entry H          line    46 file /home/alberto/src/psi4/share/psi4/basis/6-31pgs.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O           -1.485163346101    -0.114724564047     0.000000000000    15.994914619570
+         H           -1.868415346101     0.762298435953     0.000000000000     1.007825032230
+         H           -0.533833346101     0.040507435953     0.000000000000     1.007825032230
+         O            1.416468653899     0.111264435953     0.000000000000    15.994914619570
+         H            1.746241653899    -0.373945564047    -0.758561000000     1.007825032230
+         H            1.746241653899    -0.373945564047     0.758561000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      7.15151  B =      0.21457  C =      0.21447 [cm^-1]
+  Rotational constants: A = 214396.91837  B =   6432.69061  C =   6429.61818 [MHz]
+  Nuclear repulsion =   36.662847996863405
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 20
+  Nalpha       = 10
+  Nbeta        = 10
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31+G*
+    Blend: 6-31+G*
+    Number of shells: 24
+    Number of basis function: 46
+    Number of Cartesian functions: 46
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: BLYP <= 
+
+    BLYP GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000     XC_GGA_X_B88
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_LYP
+
+   => XDM Dispersion Correction Parameters <=
+
+    XDM a1              = 0.7647
+    XDM a2 (ang)        = 0.8457
+    XDM volume token    = BLYP
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =         132172
+    Total Blocks           =           1042
+    Max Points             =            256
+    Max Functions          =             45
+    Weights Tolerance      =       1.00E-15
+
+   => Loading Basis Set <=
+
+    Name: (6-31+G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 4     entry O          line   310 file /home/alberto/src/psi4/share/psi4/basis/heavy-aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line   116 file /home/alberto/src/psi4/share/psi4/basis/heavy-aug-cc-pvdz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        34      34       0       0       0       0
+     A"        12      12       0       0       0       0
+   -------------------------------------------------------
+    Total      46      46      10      10      10       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.006 GiB; user supplied 0.214 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                    No
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               219
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.2836
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31+G* AUX)
+    Blend: HEAVY-AUG-CC-PVDZ-JKFIT
+    Number of shells: 92
+    Number of basis function: 302
+    Number of Cartesian functions: 302
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+  Cached 100.0% of DFT collocation blocks in 0.152 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 9.4939784905E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter SAD:  -152.31420247776538   -1.52314e+02   0.00000e+00 
+   @DF-RKS iter   1:  -152.40430245573131   -9.01000e-02   2.92839e-02 DIIS
+   @DF-RKS iter   2:  -150.56137220148742    1.84293e+00   6.29760e-02 DIIS
+   @DF-RKS iter   3:  -152.81240340939030   -2.25103e+00   2.90456e-03 DIIS
+   @DF-RKS iter   4:  -152.81462638937717   -2.22298e-03   2.67715e-03 DIIS
+   @DF-RKS iter   5:  -152.81797092414851   -3.34453e-03   3.11991e-04 DIIS
+   @DF-RKS iter   6:  -152.81802193571281   -5.10116e-05   5.54043e-05 DIIS
+   @DF-RKS iter   7:  -152.81802360978588   -1.67407e-06   6.69493e-06 DIIS
+   @DF-RKS iter   8:  -152.81802363272760   -2.29417e-08   1.24826e-06 DIIS
+   @DF-RKS iter   9:  -152.81802363348510   -7.57495e-10   2.06973e-07 DIIS
+   @DF-RKS iter  10:  -152.81802363350704   -2.19416e-11   3.20628e-08 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -18.845574     2Ap   -18.785191     3Ap    -0.959855  
+       4Ap    -0.901087     1App   -0.513198     5Ap    -0.459820  
+       6Ap    -0.370571     7Ap    -0.311471     8Ap    -0.286584  
+       2App   -0.233598  
+
+    Virtual:                                                              
+
+       9Ap    -0.017485    10Ap     0.044600     3App    0.075149  
+      11Ap     0.111559    12Ap     0.136492     4App    0.142617  
+      13Ap     0.163305    14Ap     0.188101     5App    0.195921  
+      15Ap     0.233044    16Ap     0.255038    17Ap     0.302781  
+       6App    0.878002    18Ap     0.939073    19Ap     0.986634  
+       7App    1.029279    20Ap     1.030409    21Ap     1.063121  
+      22Ap     1.081252     8App    1.084187    23Ap     1.113142  
+      24Ap     1.127619    25Ap     1.273950    26Ap     1.415572  
+      27Ap     1.617645     9App    1.630220    28Ap     1.680221  
+      10App    1.690195    11App    1.725167    29Ap     1.814545  
+      30Ap     2.184861    31Ap     2.317998    12App    2.552276  
+      32Ap     2.615710    33Ap     3.650133    34Ap     3.791381  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     8,    2 ]
+
+  @DF-RKS Final Energy:  -152.82154074828080
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             36.6628479968634053
+    One-Electron Energy =                -282.2734867687677252
+    Two-Electron Energy =                 111.3810676674334559
+    DFT Exchange-Correlation Energy =     -18.5884525290361822
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    XDM Dispersion Energy =                -0.0035171147737490
+    Total Energy =                       -152.8215407482807962
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     1.0217      Y:     0.0515      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0853      Y:     0.0080      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     1.1070      Y:     0.0594      Z:     0.0000     Total:     1.1086
+
+  Dipole Moment: [D]
+     X:     2.8137      Y:     0.1510      Z:     0.0000     Total:     2.8178
+
+
+*** tstop() called on xenon at Tue Aug 13 21:14:17 2019
+Module time:
+	user time   =       1.90 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       1.90 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+    XDM energy........................................................PASSED
+    Reference energy..................................................PASSED
+
+    Psi4 stopped on: Tuesday, 13 August 2019 09:14PM
+    Psi4 wall time for execution: 0:00:02.42
+
+*** Psi4 exiting successfully. Buy a developer a beer!

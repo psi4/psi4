@@ -297,6 +297,8 @@ Additionally, there are runtime-loaded capabilities:
 
 * gcp |w---w| :ref:`[what is this?] <sec:gcp>`
 
+* postg |w---w| :ref:`[what is this?] <sec:postg>`
+
 * mrcc |w---w| :ref:`[what is this?] <sec:mrcc>`
 
 * v2rdm_casscf |w---w| :ref:`[what is this?] <sec:v2rdm_casscf>`

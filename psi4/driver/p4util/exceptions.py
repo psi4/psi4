@@ -188,6 +188,14 @@ class Dftd3Error(PsiException):
         PsiException.__init__(self, msg)
         self.message = '\nDftd3Error: %s\n\n' % msg
 
+class XDMError(PsiException):
+    """Error related to the XDM dispersion energy correction
+    """
+
+    def __init__(self, msg):
+        PsiException.__init__(self, msg)
+        self.message = '\XDM: %s\n\n' % msg
+
 
 class PastureRequiredError(PsiException):
     """Error called when the specified value of *option* requires some

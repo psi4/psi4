@@ -1,0 +1,21 @@
+#! B86bPBE-XDM/aug-cc-pVDZ single-point energy calculation of neon dimer.
+
+refE = -257.7953455231099724; #TEST
+Exdm = -0.0001656660513483; #TEST
+
+molecule nedimer {
+  units angstrom
+  Ne 0.000000 0.000000 0.0000000
+  Ne 0.000000 0.000000 3.0904112
+}
+
+set {
+ basis aug-cc-pvdz
+ scf_type df
+ e_convergence 10
+}
+
+E = energy('b86bpbe-xdm')
+
+compare_values(Exdm, variable("dispersion correction energy"), 9, "XDM energy") #TEST
+compare_values(refE, E, 9, "Reference energy") #TEST

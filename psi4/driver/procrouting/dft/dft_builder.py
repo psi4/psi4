@@ -92,6 +92,7 @@ from . import gga_functionals
 from . import mgga_functionals
 from . import hyb_functionals
 from . import dh_functionals
+from . import xdm_functionals
 
 dict_functionals = {}
 dict_functionals.update(libxc_functionals.functional_list)
@@ -100,7 +101,7 @@ dict_functionals.update(gga_functionals.functional_list)
 dict_functionals.update(mgga_functionals.functional_list)
 dict_functionals.update(hyb_functionals.functional_list)
 dict_functionals.update(dh_functionals.functional_list)
-
+dict_functionals.update(xdm_functionals.functional_list)
 
 def get_functional_aliases(functional_dict):
     if "alias" in functional_dict:
@@ -110,8 +111,8 @@ def get_functional_aliases(functional_dict):
         aliases = [functional_dict["name"].lower()]
     return aliases
 
-
 _dispersion_aliases = qcng.programs.empirical_dispersion_resources.get_dispersion_aliases()
+_dispersion_aliases.update({'xdm':'xdm'}) ## hack ##
 
 functionals = {}
 dashcoeff_supplement = collections.defaultdict(lambda: collections.defaultdict(dict))
@@ -151,19 +152,21 @@ for functional_name in dict_functionals:
                     functionals[alias] = dict_functionals[formal]
         # if not, build it from dashparam logic if possible
         else:
-            for dispersion_functional in dashcoeff[resolved_dispersion_level]['definitions']:
-                if dispersion_functional.lower() in functional_aliases:
-                    func = copy.deepcopy(dict_functionals[functional_name])
-                    func["name"] += "-" + resolved_dispersion_level
-                    func["dispersion"] = copy.deepcopy(dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
-                    func["dispersion"]["type"] = resolved_dispersion_level
+            if resolved_dispersion_level in dashcoeff: ## hack ##
+                for dispersion_functional in dashcoeff[resolved_dispersion_level]['definitions']:
+                    if dispersion_functional.lower() in functional_aliases:
+                        func = copy.deepcopy(dict_functionals[functional_name])
+                        func["name"] += "-" + resolved_dispersion_level
+                        func["dispersion"] = copy.deepcopy(dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
+                        func["dispersion"]["type"] = resolved_dispersion_level
 
-                    # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
-                    #   all point to the same method (M06-2X-D3ZERO)
-                    for alias in functional_aliases:
-                        alias += "-" + nominal_dispersion_level.lower()
-                        functionals[alias] = func
+                        # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
+                        #   all point to the same method (M06-2X-D3ZERO)
+                        for alias in functional_aliases:
+                            alias += "-" + nominal_dispersion_level.lower()
+                            functionals[alias] = func
 
+dashcoeff_supplement.pop('xdm',None) ## hack ##
 
 def check_consistency(func_dictionary):
     """
@@ -231,9 +234,10 @@ def check_consistency(func_dictionary):
         if "type" not in disp or disp["type"] not in _dispersion_aliases:
             raise ValidationError("SCF: Dispersion type ({}) should be among ({})".format(disp['type'], _dispersion_aliases.keys()))
     # 3c) check dispersion params complete
-        allowed_params = sorted(dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
-        if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
-            raise ValidationError("SCF: Dispersion params ({}) must include all ({})".format(list(disp['params'].keys()), allowed_params))
+        if _dispersion_aliases[disp["type"]] in dashcoeff: ## hack ##
+            allowed_params = sorted(dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
+            if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
+                raise ValidationError("SCF: Dispersion params ({}) must include all ({})".format(list(disp['params'].keys()), allowed_params))
     # 3d) check formatting for dispersion citation
         if "citation" in disp:
             cit = disp["citation"]
@@ -391,6 +395,10 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
         if d_params["type"] == 'nl':
             sup.set_vv10_b(d_params["params"]["b"])
             sup.set_vv10_c(d_params["params"]["c"])
+        if d_params["type"] == 'xdm':
+            sup.set_xdm_a1(d_params["params"]["a1"])
+            sup.set_xdm_a2(d_params["params"]["a2"])
+            sup.set_xdm_vol(d_params["params"]["vol"])
         dispersion = d_params
 
     sup.set_max_points(npoints)

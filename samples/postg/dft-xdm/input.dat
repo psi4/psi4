@@ -1,0 +1,16 @@
+#! B86bPBE-XDM/aug-cc-pVDZ single-point energy calculation of neon dimer.
+
+molecule nedimer {
+  units angstrom
+  Ne 0.000000 0.000000 0.0000000
+  Ne 0.000000 0.000000 3.0904112
+}
+
+set {
+ basis aug-cc-pvdz
+ scf_type df
+ e_convergence 10
+}
+
+E = energy('b86bpbe-xdm')
+

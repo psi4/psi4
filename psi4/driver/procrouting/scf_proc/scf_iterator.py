@@ -544,6 +544,13 @@ def scf_finalize_energy(self):
         self.set_variable('EFP TOTAL ENERGY', efpene['total'])
         self.set_variable('CURRENT ENERGY', efpene['total'])
 
+    if self.functional().needs_xdm():
+        exdm = self.xdm.run_postg(self)
+        self.set_energies("EXDM", exdm)
+        SCFE = self.get_energies("Total Energy")
+        SCFE += exdm
+        self.set_energies("Total Energy", SCFE)
+
     core.print_out("\n  ==> Post-Iterations <==\n\n")
 
     self.check_phases()
@@ -623,11 +630,12 @@ def scf_print_energies(self):
     ed = self.get_energies('-D')
     self.del_variable('-D Energy')
     evv10 = self.get_energies('VV10')
+    exdm = self.get_energies('EXDM')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
 
     hf_energy = enuc + e1 + e2
-    dft_energy = hf_energy + exc + ed + evv10
+    dft_energy = hf_energy + exc + ed + evv10 + exdm
     total_energy = dft_energy + eefp + epcm
 
     core.print_out("   => Energetics <=\n\n")
@@ -638,6 +646,8 @@ def scf_print_energies(self):
         core.print_out("    DFT Exchange-Correlation Energy = {:24.16f}\n".format(exc))
         core.print_out("    Empirical Dispersion Energy =     {:24.16f}\n".format(ed))
         core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
+        if self.functional().needs_xdm():
+            core.print_out("    XDM Dispersion Energy =           {:24.16f}\n".format(exdm))
     if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
     if hasattr(self.molecule(), 'EFP'):

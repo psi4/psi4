@@ -1,0 +1,22 @@
+#! B86bPBE-XDM/6-31+g* geometry optimization in acetylene dimer.
+
+molecule c2h2dimer {
+  units angstrom
+  C -0.412546  1.678175 -0.000000
+  C  0.412546  2.561627 -0.000000
+  H -1.132026  0.890809 -0.000000
+  H  1.134651  3.345770 -0.000000
+  C  0.412546 -1.678175 -0.000000
+  C -0.412546 -2.561627 -0.000000
+  H  1.132026 -0.890809 -0.000000
+  H -1.134651 -3.345770 -0.000000
+}
+
+set {
+ basis 6-31+G*
+ scf_type df
+ e_convergence 10
+}
+
+optimize("b86bpbe-xdm")
+

@@ -1,0 +1,29 @@
+#! BLYP-XDM/6-31+G* calculation of water dimer, using manual XDM input.
+
+refE = -152.8215407482807962; #TEST
+Exdm = -0.0035171147737490; #TEST
+
+molecule c2h2dimer {
+  units angstrom
+  O -1.551007 -0.114520 0.000000
+  H -1.934259 0.762503 0.000000
+  H -0.599677 0.040712 0.000000
+  O 1.350625 0.111469 0.000000
+  H 1.680398 -0.373741 -0.758561
+  H 1.680398 -0.373741 0.758561
+}
+
+set {
+ basis 6-31+G*
+ scf_type df
+ e_convergence 10
+}
+
+set dft_xdm_a1 0.7647
+set dft_xdm_a2 0.8457
+set dft_xdm_vol blyp
+
+E = energy("blyp")
+
+compare_values(Exdm, variable("dispersion correction energy"), 9, "XDM energy") #TEST
+compare_values(refE, E, 9, "Reference energy") #TEST
