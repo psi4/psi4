@@ -795,11 +795,11 @@ class BasisSet(object):
                     raise BasisSetNotDefined("""BasisSet::construct: No basis set specified for %s and %s.""" %
                         (symbol, key))
                 else:
-                    # No auxiliary basis set for atom, so try darnedest to find one.
+                    # No auxiliary / decon basis set for atom, so try darnedest to find one.
                     #   This involves querying the BasisFamily for default and
                     #   default-default and finally the universal default (defined
                     #   in this function). Since user hasn't indicated any specifics,
-                    #   look only in Psi4's library and for symbol only, not label.
+                    #   look for symbol only, not label.
                     tmp = []
                     tmp.append(corresponding_basis(basdict['BASIS'], deffit))
                     #NYI#tmp.append(corresponding_basis(basdict['BASIS'], deffit + '-DEFAULT'))
@@ -808,7 +808,7 @@ class BasisSet(object):
                         tmp.append(univdef[deffit])
                     seek['basis'] = [item for item in tmp if item != (None, None, None)]
                     seek['entry'] = [symbol]
-                    seek['path'] = libraryPath
+                    seek['path'] = basisPath
                     seek['strings'] = ''
             else:
                 # User (I hope ... dratted has_changed) has set basis for atom,
