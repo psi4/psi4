@@ -37,29 +37,29 @@ from psi4.driver.p4util.exceptions import ValidationError
 def get_pe_options():
     if core.get_option('SCF', 'PCM'):
         raise ValidationError("""Error: 3-layer QM/PE/PCM not implemented.\n""")
-    potfile_name = core.get_local_option('PE', 'POTFILE')
+    potfile_name = core.get_option('PE', 'POTFILE')
     pol_embed_options = cppe.PeOptions()
     pol_embed_options.potfile = potfile_name
-    pol_embed_options.induced_thresh = core.get_local_option('PE', 'INDUCED_CONVERGENCE')
-    pol_embed_options.iso_pol = core.get_local_option('PE', 'ISOTROPIC_POL')
+    pol_embed_options.induced_thresh = core.get_option('PE', 'INDUCED_CONVERGENCE')
+    pol_embed_options.iso_pol = core.get_option('PE', 'ISOTROPIC_POL')
 
-    pol_embed_options.do_diis = core.get_local_option('PE', 'DIIS')
-    pol_embed_options.maxiter = core.get_local_option('PE', 'MAXITER')
-    pol_embed_options.pe_border = core.get_local_option('PE', 'BORDER')
+    pol_embed_options.do_diis = core.get_option('PE', 'DIIS')
+    pol_embed_options.maxiter = core.get_option('PE', 'MAXITER')
+    pol_embed_options.pe_border = core.get_option('PE', 'BORDER')
 
     if pol_embed_options.pe_border:
         pol_embed_border_options = cppe.PeBorderOptions()
-        pe_btype = core.get_local_option('PE', 'BORDER_TYPE').upper()
+        pe_btype = core.get_option('PE', 'BORDER_TYPE').upper()
         if pe_btype == "REMOVE":
             pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.rem
         elif pe_btype == "REDIST":
             pol_embed_border_options.border_type = core.PeBorderOptions.BorderType.redist
-        pol_embed_border_options.rmin = core.get_local_option('PE', 'BORDER_RMIN')
-        if core.get_local_option('PE', 'BORDER_RMIN_UNIT').upper() == "AA":
+        pol_embed_border_options.rmin = core.get_option('PE', 'BORDER_RMIN')
+        if core.get_option('PE', 'BORDER_RMIN_UNIT').upper() == "AA":
             pol_embed_border_options.rmin *= 1.0 / constants.bohr2angstroms
-        pol_embed_border_options.redist_order = core.get_local_option('PE', 'BORDER_REDIST_ORDER')
-        pol_embed_border_options.nredist = core.get_local_option('PE', 'BORDER_N_REDIST')
-        pol_embed_border_options.redist_pol = core.get_local_option('PE', 'BORDER_REDIST_POL')
+        pol_embed_border_options.redist_order = core.get_option('PE', 'BORDER_REDIST_ORDER')
+        pol_embed_border_options.nredist = core.get_option('PE', 'BORDER_N_REDIST')
+        pol_embed_border_options.redist_pol = core.get_option('PE', 'BORDER_REDIST_POL')
 
         pol_embed_options.border_options = pol_embed_border_options
     return pol_embed_options

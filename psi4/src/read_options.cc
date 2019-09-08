@@ -270,7 +270,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Use DIIS acceleration to obtain induced moments -*/
         options.add_bool("DIIS", true);
         /*- Threshold for induced moments convergence -*/
-        options.add_int("INDUCED_CONVERGENCE", 8);
+        options.add_double("INDUCED_CONVERGENCE", 1e-8);
         /*- Maximum number of iterations for induced moments -*/
         options.add_int("MAXITER", 50);
         /*- Make polarizabilities isotropic -*/
