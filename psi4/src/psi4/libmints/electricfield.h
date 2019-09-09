@@ -77,7 +77,7 @@ class ElectricFieldInt : public OneBodyAOInt {
     b) the induction operator matrix by contraction with dipoles (ContractOverDipolesFunctor)
     */
     template <typename ContractionFunctor>
-    void compute_with_functor(ContractionFunctor &functor, SharedMatrix coords);
+    void compute_with_functor(ContractionFunctor functor, SharedMatrix coords);
 };
 
 class ContractOverDipolesFunctor {

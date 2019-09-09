@@ -53,6 +53,7 @@ from . import empirical_dispersion
 from . import dft
 from . import mcscf
 from . import response
+from . import solvent
 
 
 # ATTN NEW ADDITIONS!
@@ -1366,12 +1367,30 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # PCM preparation
     if core.get_option('SCF', 'PCM'):
+        if core.get_option('SCF', 'PE'):
+            raise ValidationError("""Error: 3-layer QM/MM/PCM not implemented.\n""")
         pcmsolver_parsed_fname = core.get_local_option('PCM', 'PCMSOLVER_PARSED_FNAME')
         pcm_print_level = core.get_option('SCF', "PRINT")
         scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
         core.print_out("""  PCM does not make use of molecular symmetry: """
                        """further calculations in C1 point group.\n""")
         use_c1 = True
+
+    # PE preparation
+    if core.get_option('SCF', 'PE'):
+        if not solvent._have_pe:
+            raise ValidationError("Could not find cppe module.")
+        use_c1 = True
+        core.print_out("""  PE does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+        # PE needs information about molecule and basis set
+        pol_embed_options = solvent.pol_embed.get_pe_options()
+        core.print_out(""" Using potential file {} for Polarizable Embedding
+                       calculation.\n""".format(pol_embed_options.potfile))
+        scf_wfn.pe_state = solvent.pol_embed.CppeInterface(
+            molecule=scf_molecule, options=pol_embed_options,
+            basisset=scf_wfn.basisset()
+        )
 
     e_scf = scf_wfn.compute_energy()
     for obj in [core, scf_wfn]:
@@ -2406,6 +2425,8 @@ def run_ccenergy(name, **kwargs):
 
 
     ccwfn = core.ccenergy(ref_wfn)
+    if core.get_global_option('PE'):
+        ccwfn.pe_state = ref_wfn.pe_state
 
     if name == 'ccsd(at)':
         core.cchbar(ref_wfn)

@@ -1,4 +1,4 @@
-find_package(pybind11 2.2.3 CONFIG QUIET)
+find_package(pybind11 2.3.0 CONFIG QUIET)
 
 if(${pybind11_FOUND})
     message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")

@@ -299,6 +299,18 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.set_variable("PCM POLARIZATION ENERGY", upcm)
         self.set_energies("PCM Polarization", upcm)
 
+        upe = 0.0
+        if core.get_option('SCF', 'PE'):
+            Dt = self.Da().clone()
+            Dt.add(self.Db())
+            upe, Vpe = self.pe_state.get_pe_contribution(
+                Dt, elec_only=False
+            )
+            SCFE += upe
+            self.push_back_external_potential(Vpe)
+        self.set_variable("PE ENERGY", upe)
+        self.set_energies("PE Energy", upe)
+
         core.timer_on("HF: Form F")
         # SAD: since we don't have orbitals yet, we might not be able
         # to form the real Fock matrix. Instead, build an initial one
@@ -586,6 +598,14 @@ def scf_finalize_energy(self):
         _, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
         self.push_back_external_potential(Vpcm)
 
+    if core.get_option('SCF', 'PE'):
+        Dt = self.Da().clone()
+        Dt.add(self.Db())
+        _, Vpe = self.pe_state.get_pe_contribution(
+            Dt, elec_only=False
+        )
+        self.push_back_external_potential(Vpe)
+
     # Properties
     #  Comments so that autodoc utility will find these PSI variables
     #  Process::environment.globals["SCF DIPOLE X"] =
@@ -625,10 +645,11 @@ def scf_print_energies(self):
     evv10 = self.get_energies('VV10')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
+    epe = self.get_energies('PE Energy')
 
     hf_energy = enuc + e1 + e2
     dft_energy = hf_energy + exc + ed + evv10
-    total_energy = dft_energy + eefp + epcm
+    total_energy = dft_energy + eefp + epcm + epe
 
     core.print_out("   => Energetics <=\n\n")
     core.print_out("    Nuclear Repulsion Energy =        {:24.16f}\n".format(enuc))
@@ -640,9 +661,14 @@ def scf_print_energies(self):
         core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
     if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
+    if core.get_option('SCF', 'PE'):
+        core.print_out("    PE Energy =                       {:24.16f}\n".format(epe))
     if hasattr(self.molecule(), 'EFP'):
         core.print_out("    EFP Energy =                      {:24.16f}\n".format(eefp))
     core.print_out("    Total Energy =                    {:24.16f}\n".format(total_energy))
+    
+    if core.get_option('SCF', 'PE'):
+        core.print_out(self.pe_state.cppe_state.summary_string)
 
     self.set_variable('NUCLEAR REPULSION ENERGY', enuc)
     self.set_variable('ONE-ELECTRON ENERGY', e1)

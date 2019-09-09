@@ -430,3 +430,7 @@ Bibliography
 .. [Laqua:2018:204111]
    H. Laque, J. Kussmann and C. Ochsenfeld
    *J. Chem. Phys.* **149**, 204111 (2018) 
+
+.. [Olsen:2010:3721]
+   J. M. Olsen, K. Aidas, and J. Kongsted.
+   *J. Chem. Theory Comput.* **6**, 3721–3734 (2010).

@@ -87,6 +87,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ############################  Options: Build What?  ############################
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
+option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
@@ -185,6 +186,7 @@ ExternalProject_Add(psi4-core
            hdf5_external
            ambit_external
            chemps2_external
+           cppe_external
            dkh_external
            libefp_external
            erd_external
@@ -225,6 +227,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_libefp=${ENABLE_libefp}
+              -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_erd=${ENABLE_erd}
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
@@ -236,6 +239,7 @@ ExternalProject_Add(psi4-core
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
               -Dlibefp_DIR=${libefp_DIR}
+              -Dcppe_DIR=${cppe_DIR}
               -Derd_DIR=${erd_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}

@@ -128,6 +128,12 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     }
 #endif
 
+    double epe = 0.0;
+    if (options.get_bool("PE")) {
+        epe = ref->reference_wavefunction() ? ref->reference_wavefunction()->scalar_variable("PE ENERGY")
+                                            : ref->scalar_variable("PE ENERGY");
+    }
+
     Dimension nmopi = ref->nmopi();
     Dimension nsopi = ref->nsopi();
     Dimension frzcpi = ref->frzcpi();
@@ -706,7 +712,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
 
     outfile->Printf("\tNuclear Rep. energy          =  %20.14f\n", enuc);
     outfile->Printf("\tSCF energy                   =  %20.14f\n", escf);
-    double eref = scf_check(reference, openpi) + enuc + efzc + epcm;
+    double eref = scf_check(reference, openpi) + enuc + efzc + epcm + epe;
     outfile->Printf("\tReference energy             =  %20.14f\n", eref);
     psio->write_entry(PSIF_CC_INFO, "Reference Energy", (char *)&(eref), sizeof(double));
 
