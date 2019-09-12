@@ -1091,8 +1091,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- IBO Centers for Pi Degeneracy -*/
         options.add("LOCAL_IBO_STARS", new ArrayType());
     }
-    if (name == "DCFT" || options.read_globals()) {
-        /*-MODULEDESCRIPTION Performs density cumulant functional theory
+    if (name == "DCT" || options.read_globals()) {
+        /*-MODULEDESCRIPTION Performs density cumulant (functional) theory
         computations -*/
 
         /*- Reference wavefunction type -*/
@@ -1161,8 +1161,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. !expert -*/
         options.add_double("INTS_TOLERANCE", 1e-14);
         /*- Whether to read the orbitals from a previous computation, or to compute
-            an MP2 guess !expert -*/
-        options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2 DCFT");
+            an MP2 guess. DCFT option is deprecated; use DCT. !expert -*/
+        options.add_str("DCT_GUESS", "MP2", "CC BCC MP2 DCFT DCT");
         /*- Whether to perform a guess DC-06 or DC-12 computation for ODC-06 or ODC-12 methods, respectively.
             Currently only available for ALGORITHM = SIMULTANEOUS. -*/
         options.add_bool("ODC_GUESS", false);
@@ -1192,7 +1192,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
         options.add_bool("RELAX_TAU", true);
         /*- Chooses appropriate DCFT method -*/
-        options.add_str("DCFT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
+        options.add_str("DCT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
         /*- Whether to compute three-particle energy correction or not -*/
         options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
         /*- Do write a MOLDEN output file?  If so, the filename will end in
@@ -1204,10 +1204,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
            convergence, it does change the DCFT energy. !expert-*/
         options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
         /*- What algorithm to use for the DCFT computation -*/
-        options.add_str("DCFT_TYPE", "CONV", "CONV DF");
+        options.add_str("DCT_TYPE", "CONV", "CONV DF");
         /*- Auxiliary basis set for DCFT density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
-        options.add_str("DF_BASIS_DCFT", "");
+        options.add_str("DF_BASIS_DCT", "");
     }
     if (name == "GDMA" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs distributed multipole analysis (DMA), using

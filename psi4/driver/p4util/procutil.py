@@ -324,7 +324,7 @@ _modules = [
     "CCTRANSORT",
     "CCTRIPLES",
     "CPHF",
-    "DCFT",
+    "DCT",
     "DETCI",
     "DFEP2",
     "DFMP2",

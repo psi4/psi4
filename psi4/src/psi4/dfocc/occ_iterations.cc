@@ -354,7 +354,7 @@ void DFOCC::save_mo_to_wfn() {
             std::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
             std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
-            // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
+            // For now use zeros instead of energies, and NO occupation numbers as occupation numbers
             SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
             for (int i = 0; i < naoccA; ++i) eps_orbA->set(i + nfrzc, eigooA->get(i));
             for (int a = 0; a < navirA; ++a) eps_orbA->set(a + noccA, eigvvA->get(a));
@@ -405,7 +405,7 @@ void DFOCC::save_mo_to_wfn() {
             std::shared_ptr<MoldenWriter> molden(new MoldenWriter(shared_from_this()));
             std::string filename = get_writer_file_prefix(molecule_->name()) + "_dfocc.molden";
 
-            // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
+            // For now use zeros instead of energies, and NO occupation numbers as occupation numbers
             SharedVector dummy_a(new Vector("Dummy Vector Alpha", nmo_));
             SharedVector dummy_b(new Vector("Dummy Vector Beta", nmo_));
             for (int i = 0; i < naoccA; ++i) eps_orbA->set(i + nfrzc, eigooA->get(i));

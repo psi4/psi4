@@ -1473,45 +1473,45 @@ def scf_helper(name, post_scf=True, **kwargs):
         return tmp
 
 
-def run_dcft(name, **kwargs):
+def run_dct(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a density cumulant functional theory calculation.
+    a density cumulant theory calculation.
 
     """
 
     if (core.get_global_option('FREEZE_CORE') == 'TRUE'):
-        raise ValidationError('Frozen core is not available for DCFT.')
+        raise ValidationError('Frozen core is not available for DCT.')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    if (core.get_global_option("DCFT_TYPE") == "DF"):
-        core.print_out("  Constructing Basis Sets for DCFT...\n\n")
-        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCFT",
-                                        core.get_global_option("DF_BASIS_DCFT"),
+    if (core.get_global_option("DCT_TYPE") == "DF"):
+        core.print_out("  Constructing Basis Sets for DCT...\n\n")
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_DCT",
+                                        core.get_global_option("DF_BASIS_DCT"),
                                         "RIFIT", core.get_global_option("BASIS"))
-        ref_wfn.set_basisset("DF_BASIS_DCFT", aux_basis)
+        ref_wfn.set_basisset("DF_BASIS_DCT", aux_basis)
 
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
                                             "JKFIT", core.get_global_option('BASIS'),
                                             puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
-        dcft_wfn = core.dcft(ref_wfn)
+        dct_wfn = core.dct(ref_wfn)
 
     else:
-        # Ensure IWL files have been written for non DF-DCFT
+        # Ensure IWL files have been written for non DF-DCT
         proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
-        dcft_wfn = core.dcft(ref_wfn)
+        dct_wfn = core.dct(ref_wfn)
 
-    return dcft_wfn
+    return dct_wfn
 
 
-def run_dcft_gradient(name, **kwargs):
+def run_dct_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    DCFT gradient calculation.
+    DCT gradient calculation.
 
     """
     optstash = p4util.OptionsState(
@@ -1519,16 +1519,16 @@ def run_dcft_gradient(name, **kwargs):
 
 
     core.set_global_option('DERTYPE', 'FIRST')
-    dcft_wfn = run_dcft(name, **kwargs)
+    dct_wfn = run_dct(name, **kwargs)
 
-    derivobj = core.Deriv(dcft_wfn)
+    derivobj = core.Deriv(dct_wfn)
     derivobj.set_tpdm_presorted(True)
     grad = derivobj.compute()
 
-    dcft_wfn.set_gradient(grad)
+    dct_wfn.set_gradient(grad)
 
     optstash.restore()
-    return dcft_wfn
+    return dct_wfn
 
 
 def run_dfocc(name, **kwargs):
