@@ -1097,7 +1097,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF", "UHF RHF ROHF");
-        /*- Algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
+        /*- Algorithm to use for the density cumulant and orbital updates in the DCT energy computation.
         Two-step algorithm is usually more efficient for small
         systems, but for large systems simultaneous algorithm (default) is recommended.
         If convergence problems are encountered (especially
@@ -1120,7 +1120,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         different calculation types. -*/
         options.add_double("E_CONVERGENCE", 1e-10);
         /*- Convergence criterion for the density cumulant and orbital guess for the
-        variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
+        variationally orbital-optimized DFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
         options.add_double("GUESS_R_CONVERGENCE", 1e-3);
         /*- Maximum number of macro- or micro-iterations for both energy and response equations -*/
         options.add_int("MAXITER", 40);
@@ -1150,29 +1150,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("TIKHONOW_OMEGA", 0.0);
         /*- The shift applied to the denominator in the orbital update iterations !expert-*/
         options.add_double("ORBITAL_LEVEL_SHIFT", 0.0);
-        /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
-        For practical applications only the default must be used !expert-*/
-        options.add_bool("MO_RELAX", true);
-        /*- Controls whether to ignore terms containing non-idempotent contribution to OPDM or not (for debug puproses
-        only). For practical applications only the default must be used !expert-*/
-        options.add_bool("IGNORE_TAU", false);
         /*- Controls how to cache quantities within the DPD library !expert-*/
         options.add_int("CACHELEVEL", 2);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. !expert -*/
         options.add_double("INTS_TOLERANCE", 1e-14);
         /*- Whether to read the orbitals from a previous computation, or to compute
-            an MP2 guess. DCFT option is deprecated; use DCT. !expert -*/
-        options.add_str("DCT_GUESS", "MP2", "CC BCC MP2 DCFT DCT");
+            an MP2 guess. !expert -*/
+        options.add_str("DCT_GUESS", "MP2", "CC BCC MP2 DCT");
         /*- Whether to perform a guess DC-06 or DC-12 computation for ODC-06 or ODC-12 methods, respectively.
             Currently only available for ALGORITHM = SIMULTANEOUS. -*/
         options.add_bool("ODC_GUESS", false);
         /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
         and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
         options.add_bool("RELAX_GUESS_ORBITALS", false);
-        /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC
+        /*- Controls whether to include the coupling terms in the DCT electronic Hessian (for ALOGRITHM = QC
         with QC_TYPE = SIMULTANEOUS only) -*/
         options.add_bool("QC_COUPLING", false);
-        /*- Performs stability analysis of the DCFT energy !expert-*/
+        /*- Performs stability analysis of the DCT energy !expert-*/
         options.add_bool("STABILITY_CHECK", false);
         /*- The value of the rms of the residual in Schmidt orthogonalization which is used as a threshold
             for augmenting the vector subspace in stability check !expert-*/
@@ -1191,7 +1185,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
         /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
         options.add_bool("RELAX_TAU", true);
-        /*- Chooses appropriate DCFT method -*/
+        /*- Chooses appropriate DCT method -*/
         options.add_str("DCT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
         /*- Whether to compute three-particle energy correction or not -*/
         options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
@@ -1201,11 +1195,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         the current molecule. -*/
         options.add_bool("MOLDEN_WRITE", false);
         /*- Level shift applied to the diagonal of the density-weighted Fock operator. While this shift can improve
-           convergence, it does change the DCFT energy. !expert-*/
+           convergence, it does change the DCT energy. !expert-*/
         options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
-        /*- What algorithm to use for the DCFT computation -*/
+        /*- What algorithm to use for the DCT computation -*/
         options.add_str("DCT_TYPE", "CONV", "CONV DF");
-        /*- Auxiliary basis set for DCFT density fitting computations.
+        /*- Auxiliary basis set for DCT density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_DCT", "");
     }

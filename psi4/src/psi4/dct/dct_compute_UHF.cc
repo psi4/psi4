@@ -154,10 +154,6 @@ double DCTSolver::compute_energy_UHF() {
         Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
     }
 
-    if (!options_.get_bool("MO_RELAX")) {
-        outfile->Printf("Warning!  The orbitals were not relaxed\n");
-    }
-
     // Print natural occupations
     print_opdm();
 

@@ -130,10 +130,6 @@ double DCTSolver::compute_energy_RHF() {
     Process::environment.globals["DCT SCF ENERGY"] = scf_energy_;
     Process::environment.globals["DCT LAMBDA ENERGY"] = lambda_energy_;
 
-    if (!options_.get_bool("MO_RELAX")) {
-        outfile->Printf("Warning!  The orbitals were not relaxed\n");
-    }
-
     print_opdm_RHF();
 
     return new_total_energy_;
