@@ -293,8 +293,8 @@ void DCFTSolver::print_orbital_energies() {
 }
 
 /**
- * Computes the initial Hartree-Fock orbitals by either reading them from the
- * checkpoint file or computing a core Hamiltonian guess.
+ * Reads the orbitals and related quantities from the reference wavefunction
+ * and reads the one-electron integrals from PSIO.
  */
 void DCFTSolver::scf_guess() {
     dcft_timer_on("DCFTSolver::scf_guess");
@@ -311,7 +311,6 @@ void DCFTSolver::scf_guess() {
     so_h_->add(T);
     so_h_->add(V);
 
-    std::string guess = options_.get_str("DCFT_GUESS");
     epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
     epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
     Ca_->copy(reference_wavefunction_->Ca());
