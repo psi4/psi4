@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(dcft1 "psi;dcft")
+add_regression_test(dcft10 "psi;dcft")

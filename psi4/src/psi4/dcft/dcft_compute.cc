@@ -49,17 +49,16 @@ double DCFTSolver::compute_energy() {
     double total_energy = 0.0;
 
     if (options_.get_str("DCFT_GUESS") == "DCFT") {
-		// We're reusing DCFT files from a previous computation. Let's check that one exists.
-		if (!((same_a_b_orbs_ == true && psio_tocentry_exists(PSIF_DCFT_DPD, "Lambda SF <OO|VV>")) ||
-			(same_a_b_orbs_ == false && psio_tocentry_exists(PSIF_DCFT_DPD, "Lambda <Oo|Vv>")))) {
-			throw PSIEXCEPTION("Could not find a previous DCFT computation as the DCFT_GUESS=DCFT guess.");
-		}
-	}
-	else {
-		// Obliviate all old DCFT files.
-		psio_->close(PSIF_DCFT_DPD, 0);
-		psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
-	}
+        // We're reusing DCFT files from a previous computation. Let's check that one exists.
+        if (!((same_a_b_orbs_ == true && psio_tocentry_exists(PSIF_DCFT_DPD, "Lambda SF <OO|VV>")) ||
+              (same_a_b_orbs_ == false && psio_tocentry_exists(PSIF_DCFT_DPD, "Lambda <Oo|Vv>")))) {
+            throw PSIEXCEPTION("Could not find a previous DCFT computation as the DCFT_GUESS=DCFT guess.");
+        }
+    } else {
+        // Obliviate all old DCFT files.
+        psio_->close(PSIF_DCFT_DPD, 0);
+        psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
+    }
 
     if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || options_.get_str("SCF_TYPE") == "CD" ||
         options_.get_str("SCF_TYPE") == "DIRECT") {
