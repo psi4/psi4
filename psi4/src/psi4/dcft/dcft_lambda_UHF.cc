@@ -202,14 +202,12 @@ void DCFTSolver::update_cumulant_jacobi() {
 
     dpdbuf4 L, D, R;
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
     /*
      * Lambda_ijab += R_ijab / D_ijab
      */
 
     // L_IJAB += R_IJAB / D_IJAB
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                            "D <OO|VV>");
     global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &R);
@@ -221,7 +219,7 @@ void DCFTSolver::update_cumulant_jacobi() {
     global_dpd_->buf4_close(&L);
 
     // L_IjAb += R_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "D <Oo|Vv>");
     global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &R);
@@ -233,7 +231,7 @@ void DCFTSolver::update_cumulant_jacobi() {
     global_dpd_->buf4_close(&L);
 
     // L_IJAB += R_ijab / D_ijab
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
                            "D <oo|vv>");
     global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &R);
@@ -243,8 +241,6 @@ void DCFTSolver::update_cumulant_jacobi() {
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&L);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
     dcft_timer_off("DCFTSolver::update_lambda_from_residual()");
 }

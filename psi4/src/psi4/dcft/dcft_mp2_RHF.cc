@@ -85,7 +85,7 @@ void DCFTSolver::mp2_guess_RHF() {
         global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
         global_dpd_->buf4_close(&I);
 
-        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+        global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                                "D <OO|VV>");  // D <Oo|Vv>
         global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>

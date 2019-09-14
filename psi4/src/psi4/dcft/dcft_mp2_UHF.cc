@@ -83,7 +83,7 @@ void DCFTSolver::mp2_guess() {
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                                "Lambda <OO|VV>");
-        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+        global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                                "D <OO|VV>");
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
@@ -96,7 +96,7 @@ void DCFTSolver::mp2_guess() {
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Lambda <Oo|Vv>");
-        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+        global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "D <Oo|Vv>");
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
@@ -109,7 +109,7 @@ void DCFTSolver::mp2_guess() {
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                "Lambda <oo|vv>");
-        global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
+        global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
                                "D <oo|vv>");
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);

@@ -1018,8 +1018,6 @@ void DCFTSolver::update_fock() {
 
     // Copy MO basis GTau to the memory
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
     // Alpha occupied
     global_dpd_->file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
     global_dpd_->file2_mat_init(&Gtau);
@@ -1082,8 +1080,6 @@ void DCFTSolver::update_fock() {
 
     // Write the MO basis Fock operator to the DPD file and update the denominators
     build_denominators();
-
-    psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     dcft_timer_off("DCFTSolver::update_fock");
 }

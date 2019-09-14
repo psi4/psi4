@@ -217,8 +217,6 @@ void DCFTSolver::compute_F_intermediate_RHF() {
     dpdfile2 F_OO, F_oo, F_VV, F_vv;
     dpdbuf4 F, Lab;
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
     /*
      * F_ijab += P(ab) F_ca lambda_ijcb - P(ij) F_ki lambda_jkab
      */
@@ -228,30 +226,26 @@ void DCFTSolver::compute_F_intermediate_RHF() {
                            "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
 
     // F_IjAb += lambda_IjCb F_AC
-    global_dpd_->file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+    global_dpd_->file2_init(&F_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     global_dpd_->contract244(&F_VV, &Lab, &F, 1, 2, 1, 1.0, 0.0);
     global_dpd_->file2_close(&F_VV);
     // F_IjAb += lambda_IjAc F_bc
-    global_dpd_->file2_init(&F_vv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");  // F <v|v>
+    global_dpd_->file2_init(&F_vv, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");  // F <v|v>
     global_dpd_->contract424(&Lab, &F_vv, &F, 3, 1, 0, 1.0, 1.0);
     global_dpd_->file2_close(&F_vv);
     // F_IjAb -= lambda_KjAb F_IK
-    global_dpd_->file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    global_dpd_->file2_init(&F_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     global_dpd_->contract244(&F_OO, &Lab, &F, 1, 0, 0, -1.0, 1.0);
     global_dpd_->file2_close(&F_OO);
     // F_IjAb -= lambda_IkAb F_jk
-    global_dpd_->file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");  // F <o|o>
+    global_dpd_->file2_init(&F_oo, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");  // F <o|o>
     global_dpd_->contract424(&Lab, &F_oo, &F, 1, 1, 1, -1.0, 1.0);
     global_dpd_->file2_close(&F_oo);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&F);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 void DCFTSolver::form_density_weighted_fock_RHF() {
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
     dpdfile2 T_OO, T_VV, F_OO, F_VV;
 
     global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
@@ -333,8 +327,8 @@ void DCFTSolver::form_density_weighted_fock_RHF() {
     // Alpha spin
     nso_Fa->back_transform(a_evecs);
 
-    global_dpd_->file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
-    global_dpd_->file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+    global_dpd_->file2_init(&F_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    global_dpd_->file2_init(&F_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
 
     global_dpd_->file2_mat_init(&F_OO);
     global_dpd_->file2_mat_init(&F_VV);
@@ -362,8 +356,6 @@ void DCFTSolver::form_density_weighted_fock_RHF() {
     global_dpd_->file2_mat_wrt(&F_VV);
     global_dpd_->file2_close(&F_OO);
     global_dpd_->file2_close(&F_VV);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 }  // namespace dcft
 }  // namespace psi

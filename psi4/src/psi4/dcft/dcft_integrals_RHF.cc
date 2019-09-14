@@ -334,7 +334,7 @@ void DCFTSolver::build_denominators_RHF() {
     // Elements of the Fock matrix
     if (!exact_tau_) {
         // Alpha occupied
-        global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+        global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
         global_dpd_->file2_mat_init(&F);
         int offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
@@ -350,7 +350,7 @@ void DCFTSolver::build_denominators_RHF() {
         global_dpd_->file2_close(&F);
 
         // Alpha Virtual
-        global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+        global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
         global_dpd_->file2_mat_init(&F);
         offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
@@ -366,7 +366,7 @@ void DCFTSolver::build_denominators_RHF() {
         global_dpd_->file2_close(&F);
     }
 
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                            "D <OO|VV>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
