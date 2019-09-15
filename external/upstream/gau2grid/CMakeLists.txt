@@ -1,4 +1,4 @@
-find_package(gau2grid 1.2 CONFIG QUIET COMPONENTS gaussian)
+find_package(gau2grid 1.3.1 CONFIG QUIET)
 
 if(${gau2grid_FOUND})
     get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
