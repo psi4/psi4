@@ -702,6 +702,10 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     double* x = block->x();
     double* y = block->y();
     double* z = block->z();
+    double* xyz = new double[npoints * 3];
+    memcpy(xyz, x, npoints);
+    memcpy(xyz + npoints, y, npoints);
+    memcpy(xyz + 2 * npoints, z, npoints);
 
     const std::vector<int>& shells = block->shells_local_to_global();
 
@@ -763,12 +767,12 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
 
         // Copmute collocation
         if (deriv_ == 0) {
-            gg_collocation(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start);
+            gg_collocation(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), GG_SPHERICAL_GAUSSIAN, phi_start);
         } else if (deriv_ == 1) {
             double* phi_x_start = tmp_xp + row_shift;
             double* phi_y_start = tmp_yp + row_shift;
             double* phi_z_start = tmp_zp + row_shift;
-            gg_collocation_deriv1(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start,
+            gg_collocation_deriv1(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), GG_SPHERICAL_GAUSSIAN, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start);
 
         } else if (deriv_ == 2) {
@@ -781,7 +785,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
             double* phi_yy_start = tmp_yyp + row_shift;
             double* phi_yz_start = tmp_yzp + row_shift;
             double* phi_zz_start = tmp_zzp + row_shift;
-            gg_collocation_deriv2(L, npoints, x, y, z, nprim, norm, alpha, center.data(), (int)puream_, phi_start,
+            gg_collocation_deriv2(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), GG_SPHERICAL_GAUSSIAN, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
                                   phi_yy_start, phi_yz_start, phi_zz_start);
         }

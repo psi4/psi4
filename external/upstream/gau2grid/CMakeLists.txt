@@ -26,8 +26,8 @@ else()
                    -DENABLE_XHOST=${ENABLE_XHOST}
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DMAX_AM=${MAX_AM_ERI}
-                   -DCARTESIAN_ORDER=row
-                   -DSPHERICAL_ORDER=gaussian
+#                   -DCARTESIAN_ORDER=row
+#                   -DSPHERICAL_ORDER=gaussian
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
