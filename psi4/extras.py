@@ -130,7 +130,7 @@ _addons_ = {
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
-    "cppe": _CMake_to_Py_boolean("@ENABLE_cppe@"),
+    "cppe": which_import("cppe", return_bool=True),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
     "dftd3": psi4_which("dftd3", return_bool=True),
     "cfour": psi4_which("xcfour", return_bool=True),
