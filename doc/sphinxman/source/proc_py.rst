@@ -157,7 +157,7 @@ to ``CONV``. In :source:`share/python/driver.py`, a managed method calls a
         'energy': {
             'scf'           : run_scf,
             'mp3'           : select_mp3,
-            'dcft'          : run_dcft,
+            'dct'           : run_dct,
 
 Then in :source:`share/python/proc.py`, the select function runs through
 reference (always outer loop) and type (inner loop) to specify the proc
