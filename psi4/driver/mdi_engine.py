@@ -355,11 +355,7 @@ class MDIEngine():
 
         :returns: *command_string* String containing the name of each supported command
         """
-        command_string = ""
-        for command in self.commands:
-            command_string += command
-            for i in range(len(command), MDI_COMMAND_LENGTH):
-                command_string += " "
+        command_string = "".join([f"{c:{MDI_COMMAND_LENGTH}}" for c in self.commands.keys()])
 
         MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
         return command_string
