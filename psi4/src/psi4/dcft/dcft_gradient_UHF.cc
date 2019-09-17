@@ -109,11 +109,11 @@ void DCFTSolver::compute_gradient_dc() {
         // Set up DIIS extrapolation
         dpdbuf4 Zaa, Zab, Zbb, Raa, Rab, Rbb;
         dpdfile2 zaa, zbb, raa, rbb;
-        global_dpd_->buf4_init(&Zaa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+        global_dpd_->buf4_init(&Zaa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                                "Z <OO|VV>");
-        global_dpd_->buf4_init(&Zab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+        global_dpd_->buf4_init(&Zab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Z <Oo|Vv>");
-        global_dpd_->buf4_init(&Zbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+        global_dpd_->buf4_init(&Zbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                "Z <oo|vv>");
         global_dpd_->file2_init(&zaa, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
         global_dpd_->file2_init(&zbb, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
@@ -1893,11 +1893,11 @@ void DCFTSolver::iterate_cumulant_response() {
 
     // Set up DIIS extrapolation
     dpdbuf4 Zaa, Zab, Zbb, Raa, Rab, Rbb;
-    global_dpd_->buf4_init(&Zaa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+    global_dpd_->buf4_init(&Zaa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Z <OO|VV>");
-    global_dpd_->buf4_init(&Zab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+    global_dpd_->buf4_init(&Zab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Z <Oo|Vv>");
-    global_dpd_->buf4_init(&Zbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+    global_dpd_->buf4_init(&Zbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Z <oo|vv>");
     DIISManager ZDiisManager(maxdiis_, "DCFT DIIS Z", DIISManager::LargestError, DIISManager::InCore);
     ZDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Zaa, DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
@@ -1976,14 +1976,12 @@ void DCFTSolver::iterate_cumulant_response() {
 void DCFTSolver::cumulant_response_guess() {
     dpdbuf4 Z, D, dC;
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
     /*
      * Z_ijab += dC_ijab / D_ijab
      */
 
     // Z_IJAB += dC_IJAB / D_IJAB
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                            "D <OO|VV>");
     global_dpd_->buf4_init(&dC, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "C <OO|VV> new - old");
@@ -1995,7 +1993,7 @@ void DCFTSolver::cumulant_response_guess() {
     global_dpd_->buf4_close(&Z);
 
     // Z_IjAb += dC_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "D <Oo|Vv>");
     global_dpd_->buf4_init(&dC, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "C <Oo|Vv> new - old");
@@ -2007,7 +2005,7 @@ void DCFTSolver::cumulant_response_guess() {
     global_dpd_->buf4_close(&Z);
 
     // Z_ijab += dC_ijab / D_ijab
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
                            "D <oo|vv>");
     global_dpd_->buf4_init(&dC, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "C <oo|vv> new - old");
@@ -2017,8 +2015,6 @@ void DCFTSolver::cumulant_response_guess() {
     dpd_buf4_add(&Z, &dC, 1.0);
     global_dpd_->buf4_close(&dC);
     global_dpd_->buf4_close(&Z);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 void DCFTSolver::build_perturbed_tau() {
@@ -2558,7 +2554,7 @@ void DCFTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_init(&Zaa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Z <OO|VV>");
     // Temp_IJAB = Z_IJCB F_AC
-    global_dpd_->file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+    global_dpd_->file2_init(&F_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     global_dpd_->contract244(&F_VV, &Zaa, &T, 1, 2, 1, 1.0, 0.0);
     global_dpd_->file2_close(&F_VV);
     global_dpd_->buf4_close(&Zaa);
@@ -2581,7 +2577,7 @@ void DCFTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_init(&Zaa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Z <OO|VV>");
     // Temp_IJAB = -Z_KJAB F_IK
-    global_dpd_->file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    global_dpd_->file2_init(&F_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     global_dpd_->contract244(&F_OO, &Zaa, &T, 1, 0, 0, -1.0, 0.0);
 
     global_dpd_->file2_close(&F_OO);
@@ -2600,19 +2596,19 @@ void DCFTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "F <Oo|Vv>");
     global_dpd_->buf4_init(&Zab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
     // F_IjAb += Z_IjCb F_AC
-    global_dpd_->file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+    global_dpd_->file2_init(&F_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     global_dpd_->contract244(&F_VV, &Zab, &F, 1, 2, 1, 1.0, 0.0);
     global_dpd_->file2_close(&F_VV);
     // F_IjAb += Z_IjAc F_bc
-    global_dpd_->file2_init(&F_vv, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+    global_dpd_->file2_init(&F_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "F <v|v>");
     global_dpd_->contract424(&Zab, &F_vv, &F, 3, 1, 0, 1.0, 1.0);
     global_dpd_->file2_close(&F_vv);
     // F_IjAb -= Z_KjAb F_IK
-    global_dpd_->file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    global_dpd_->file2_init(&F_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     global_dpd_->contract244(&F_OO, &Zab, &F, 1, 0, 0, -1.0, 1.0);
     global_dpd_->file2_close(&F_OO);
     // F_IjAb -= Z_IkAb F_jk
-    global_dpd_->file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+    global_dpd_->file2_init(&F_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     global_dpd_->contract424(&Zab, &F_oo, &F, 1, 1, 1, -1.0, 1.0);
     global_dpd_->file2_close(&F_oo);
     global_dpd_->buf4_close(&Zab);
@@ -2622,7 +2618,7 @@ void DCFTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_init(&Zbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Z <oo|vv>");
     // Temp_ijab = Z_ijcb F_ac
-    global_dpd_->file2_init(&F_vv, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+    global_dpd_->file2_init(&F_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "F <v|v>");
     global_dpd_->contract244(&F_vv, &Zbb, &T, 1, 2, 1, 1.0, 0.0);
     global_dpd_->file2_close(&F_vv);
     global_dpd_->buf4_close(&Zbb);
@@ -2645,7 +2641,7 @@ void DCFTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_init(&Zbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Z <oo|vv>");
     // Temp_ijab = -Z_kjab X_ik
-    global_dpd_->file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+    global_dpd_->file2_init(&F_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     global_dpd_->contract244(&F_oo, &Zbb, &T, 1, 0, 0, -1.0, 0.0);
     global_dpd_->file2_close(&F_oo);
     global_dpd_->buf4_close(&Zbb);
@@ -3039,14 +3035,12 @@ double DCFTSolver::compute_cumulant_response_residual() {
 void DCFTSolver::update_cumulant_response() {
     dpdbuf4 Z, D, R;
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
     /*
      * Z_ijab += R_ijab / D_ijab
      */
 
     // Z_IJAB += R_IJAB / D_IJAB
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                            "D <OO|VV>");
     global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &R);
@@ -3057,7 +3051,7 @@ void DCFTSolver::update_cumulant_response() {
     global_dpd_->buf4_close(&Z);
 
     // Z_IjAb += R_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "D <Oo|Vv>");
     global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &R);
@@ -3068,7 +3062,7 @@ void DCFTSolver::update_cumulant_response() {
     global_dpd_->buf4_close(&Z);
 
     // Z_ijab += R_ijab / D_ijab
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
                            "D <oo|vv>");
     global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &R);
@@ -3077,8 +3071,6 @@ void DCFTSolver::update_cumulant_response() {
     dpd_buf4_add(&Z, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&Z);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 void DCFTSolver::compute_lagrangian_OO() {

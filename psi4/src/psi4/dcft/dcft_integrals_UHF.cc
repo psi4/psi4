@@ -634,7 +634,7 @@ void DCFTSolver::build_denominators() {
     // Alpha occupied
 
     if (!exact_tau_) {
-        global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+        global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
         global_dpd_->file2_mat_init(&F);
         int offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
@@ -650,7 +650,7 @@ void DCFTSolver::build_denominators() {
         global_dpd_->file2_close(&F);
 
         // Alpha Virtual
-        global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+        global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
         global_dpd_->file2_mat_init(&F);
         offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
@@ -692,7 +692,7 @@ void DCFTSolver::build_denominators() {
     // Beta Occupied
 
     if (!exact_tau_) {
-        global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+        global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "F <o|o>");
         global_dpd_->file2_mat_init(&F);
         int offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
@@ -708,7 +708,7 @@ void DCFTSolver::build_denominators() {
         global_dpd_->file2_close(&F);
 
         // Beta Virtual
-        global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+        global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "F <v|v>");
         global_dpd_->file2_mat_init(&F);
         offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
@@ -732,7 +732,7 @@ void DCFTSolver::build_denominators() {
     ///////////////////////////////
     // The alpha-alpha spin case //
     ///////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                            "D <OO|VV>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
@@ -754,7 +754,7 @@ void DCFTSolver::build_denominators() {
     //////////////////////////////
     // The alpha-beta spin case //
     //////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "D <Oo|Vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
@@ -776,7 +776,7 @@ void DCFTSolver::build_denominators() {
     /////////////////////////////
     // The beta-beta spin case //
     /////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
                            "D <oo|vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);

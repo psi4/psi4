@@ -76,11 +76,11 @@ void DCFTSolver::run_qc_dcft() {
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
-    global_dpd_->buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
+    global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Lambda <OO|VV>");
-    global_dpd_->buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+    global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Lambda <Oo|Vv>");
-    global_dpd_->buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
+    global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Lambda <oo|vv>");
     diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(), DIISEntry::Matrix,
                                       orbital_gradient_b_.get(), DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
@@ -230,10 +230,9 @@ void DCFTSolver::compute_orbital_gradient() {
     moFb_->transform(Cb_);
     // Update the Fock matrix DPD file2
     dpdfile2 F;
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // Alpha Occupied
-    global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     global_dpd_->file2_mat_init(&F);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
@@ -246,7 +245,7 @@ void DCFTSolver::compute_orbital_gradient() {
     global_dpd_->file2_close(&F);
 
     // Alpha Virtual
-    global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+    global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     global_dpd_->file2_mat_init(&F);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < navirpi_[h]; ++i) {
@@ -259,7 +258,7 @@ void DCFTSolver::compute_orbital_gradient() {
     global_dpd_->file2_close(&F);
 
     // Beta Occupied
-    global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+    global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     global_dpd_->file2_mat_init(&F);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
@@ -272,7 +271,7 @@ void DCFTSolver::compute_orbital_gradient() {
     global_dpd_->file2_close(&F);
 
     // Beta Virtual
-    global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+    global_dpd_->file2_init(&F, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "F <v|v>");
     global_dpd_->file2_mat_init(&F);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nbvirpi_[h]; ++i) {
@@ -283,8 +282,6 @@ void DCFTSolver::compute_orbital_gradient() {
     }
     global_dpd_->file2_mat_wrt(&F);
     global_dpd_->file2_close(&F);
-
-    psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // Initialize the idempotent contribution to the OPDM (Kappa)
     if (!orbital_optimized_) {

@@ -88,14 +88,12 @@ void DCFTSolver::update_cumulant_jacobi_RHF() {
 
     dpdbuf4 L, D, R;
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
     /*
      * Lambda_ijab += R_ijab / D_ijab
      */
 
     // L_IjAb += R_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
+    global_dpd_->buf4_init(&D, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                            "D <OO|VV>");  // D <Oo|Vv>
     global_dpd_->buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "R SF <OO|VV>");  // R <Oo|Vv>
@@ -115,8 +113,6 @@ void DCFTSolver::update_cumulant_jacobi_RHF() {
     global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "Lambda <OO|VV>");
     global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "Lambda <oo|vv>");
     global_dpd_->buf4_close(&L);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
     dcft_timer_off("DCFTSolver::update_lambda_from_residual()");
 }
