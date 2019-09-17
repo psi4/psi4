@@ -1,0 +1,29 @@
+#! The multiple guesses for DCT amplitudes for ODC-12.
+
+
+molecule he2 {
+    He
+    He 1 3.2
+}
+
+set {
+    r_convergence 12
+    ao_basis    none
+    algorithm   simultaneous
+    basis       6-31G**
+    df_scf_guess false
+    reference   uhf
+}
+
+set dct_functional odc-12
+energy('dct')
+
+set dct_guess cc
+energy('dct')
+
+set dct_guess bcc
+wfn = energy('dct', return_wfn=True)[1]
+
+set dct_guess dct
+set dct maxiter 3 
+energy('dct', ref_wfn = wfn)
