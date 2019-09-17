@@ -46,7 +46,7 @@ SharedWavefunction dct(SharedWavefunction ref_wfn, Options& options) {
     tstart();
 
     outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf("\t*                        Density Cumulant Functional Theory                       *\n");
+    outfile->Printf("\t*                             Density Cumulant Theory                             *\n");
     outfile->Printf("\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf("\t***********************************************************************************\n");
 

@@ -263,7 +263,7 @@ class DCTSolver : public Wavefunction {
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates
     bool orbitalsDone_;
-    /// Controls convergence of the decnsity cumulant updates
+    /// Controls convergence of the density cumulant updates
     bool cumulantDone_;
     /// Controls convergence of the idempotent one-particle density
     bool densityConverged_;

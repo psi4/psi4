@@ -1228,7 +1228,7 @@ def hessian(name, **kwargs):
     else:
         lowername = name.lower()
 
-    _filter_renamed_methods("hessian", lowername)
+    _filter_renamed_methods("frequency", lowername)
     
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
@@ -1474,8 +1474,6 @@ def frequency(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
     
-    _filter_renamed_methods("frequency", lowername)
-
     return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one
