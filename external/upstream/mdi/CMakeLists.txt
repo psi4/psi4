@@ -1,4 +1,4 @@
-find_package(mdi CONFIG QUIET)
+find_package(mdi 0.6.5 CONFIG QUIET)
 
 if(${mdi_FOUND})
     get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
@@ -12,7 +12,7 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable mdi could not be located, ${Magenta}Building mdi${ColourReset} instead.")
     ExternalProject_Add(mdi_external
-        URL https://github.com/MolSSI/MDI_Library/archive/v0.6.4.tar.gz
+        URL https://github.com/MolSSI/MDI_Library/archive/v0.6.5.tar.gz
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

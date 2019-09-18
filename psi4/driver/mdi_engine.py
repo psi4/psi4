@@ -357,6 +357,10 @@ class MDIEngine():
         """
         command_string = "".join([f"{c:{MDI_COMMAND_LENGTH}}" for c in self.commands.keys()])
 
+        # confirm that command_string is the correct length
+        if len(command_string) != len(self.commands) * MDI_COMMAND_LENGTH:
+            raise Exception('Programming error: MDI command_string is incorrect length')
+
         MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
         return command_string
 
