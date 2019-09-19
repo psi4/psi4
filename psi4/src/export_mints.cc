@@ -76,6 +76,45 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+std::pair<std::vector<double>, std::shared_ptr<BasisSet>> multipole_basisset_from_pydict(const std::shared_ptr<Molecule>& mol, py::dict& pybs) {
+
+    int am = pybs["angular_momentum"].cast<int>();
+    py::list exponents = pybs["exponents"].cast<py::list>();
+    py::list coefficients = pybs["coefficients"].cast<py::list>();
+    std::vector<double> coefficients_list;
+
+    mol->set_basis_all_atoms("MP","BASIS");
+
+    // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
+    typedef std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> map_ssv;
+    map_ssv basis_atom_shell;
+    map_ssv ecp;
+
+    for (int atom = 0; atom < py::len(exponents); ++atom) {
+        double exp = exponents[atom].cast<double>();
+
+        py::list local_coeff = coefficients[atom].cast<py::list>();
+        for (int icef = 0; icef < py::len(local_coeff); ++icef) {
+            coefficients_list.push_back(local_coeff[icef].cast<double>());
+        }
+        std::vector<ShellInfo> vec_shellinfo;
+        vec_shellinfo.push_back(ShellInfo(am, {1.0}, {exp}, GaussianType::Cartesian, Normalized));
+
+        std::string atomlabel = "HE" + std::to_string(atom);
+        std::string baslabel = "MP" + std::to_string(atom);
+
+        mol->set_shell_by_label(atomlabel, baslabel, "BASIS");  // middle is hash
+        basis_atom_shell["MP"][atomlabel] = vec_shellinfo;
+    }
+    auto basisset = std::make_shared<BasisSet>("BASIS", mol, basis_atom_shell, ecp);
+
+    basisset->set_name("MP");
+    basisset->set_key("BASIS");
+    basisset->set_target("MP");
+
+    return {coefficients_list, basisset};
+}
+
 /** Returns a new basis set object
  * Constructs a basis set from the parsed information
  *
@@ -1465,6 +1504,7 @@ void export_mints(py::module& m) {
         .def("max_function_per_shell", &BasisSet::max_function_per_shell,
              "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
+        .def_static("multipole_from_pydict", &multipole_basisset_from_pydict, "docstring")
         .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(

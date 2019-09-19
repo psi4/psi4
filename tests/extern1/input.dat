@@ -30,6 +30,7 @@ set {
     scf_type df
     d_convergence 12
     basis 6-31G*
+    print 4
 }
 
 fd_grad = gradient('scf', molecule=water, dertype=0)
@@ -40,3 +41,24 @@ an_ener = psi4.variable('CURRENT ENERGY')
 compare_matrices(an_grad, fd_grad, 5, "Finite difference (3-pt.) vs. analytic gradient to 10^-5") #TEST
 compare_values(-76.0194112285529968, fd_ener, 6, 'Finite difference energy')  #TEST
 compare_values(-76.0194112285529968, an_ener, 6, 'Analytic energy')  #TEST
+
+import pprint
+from qcelemental.models import Singlepole, Multipoles
+
+asdf = Singlepole(angular_momentum=1, geometry=[0.0, 0.0, 0.0, 1.0, 0.0, 0.0], coefficients=[[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]], exponents=[1.0, 2.0])
+pprint.pprint(asdf.dict())
+dasdf = asdf.dict()
+symbols = ['He' + str(iat) for iat in range(len(dasdf['exponents']))]
+print(symbols)
+
+mol = psi4.core.Molecule.from_arrays(geom=dasdf['geometry'], elbl=symbols, fix_symmetry='c1')
+print(mol)
+
+coeff, bs = core.BasisSet.multipole_from_pydict(mol, asdf.dict())
+
+print(coeff)
+print(bs)
+
+bs.print_out()
+bs.print_detail_out()
+mol.print_out()

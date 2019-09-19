@@ -72,6 +72,8 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<dou
     if (pt == Unnormalized) {
         normalize_shell();
         erd_normalize_shell();
+    } else {
+        erd_coef_ = std::vector<double>(coef_);
     }
 }
 
