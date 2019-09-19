@@ -134,6 +134,12 @@ get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 
+# bad caps
+find_package(libint2 2.6 CONFIG REQUIRED) # COMPONENTS ${MAX_AM_ERI})
+get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using Libint2${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
+
 if(${ENABLE_mdi})
     find_package(mdi 1.1.6 CONFIG REQUIRED)
     get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)

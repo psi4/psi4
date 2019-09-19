@@ -10,7 +10,7 @@ foreach(dir
   gau2grid
   gdma
   libint
-  mdi
+  libint2
   pcmsolver
   pylibefp
   qcelemental

@@ -199,6 +199,7 @@ ExternalProject_Add(psi4-core
            gau2grid_external
            gdma_external
            libint_external
+           libint2_external
            pcmsolver_external
            pybind11_external
            pylibefp_external
@@ -254,6 +255,7 @@ ExternalProject_Add(psi4-core
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
               -DLibint_DIR=${Libint_DIR}
+              -DLibint2_DIR=${Libint2_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
