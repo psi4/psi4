@@ -35,6 +35,8 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/psi4-dec.h"
 
+#include <libint2.hpp>
+
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -75,6 +77,8 @@ class PSI_API BasisSet {
     GaussianShell *shells_;
     //! Array of ECP shells
     GaussianShell *ecp_shells_;
+    //! Array of Libint2 shells
+    std::vector<libint2::Shell> l2_shells_;
 
     //! vector of shells numbers sorted in ascending AM order.
     std::vector<int> sorted_ao_shell_list_;
@@ -272,6 +276,12 @@ class PSI_API BasisSet {
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
     const GaussianShell &ecp_shell(int si) const;
+
+    /** Return the si'th Gaussian shell
+     *  @param si Shell number
+     *  @return A shared pointer to the libint2::Shell object for the i'th shell.
+     */
+    const libint2::Shell &l2_shell(int si) const;
 
     /** Return the i'th Gaussian shell on center
      *  @param center atomic center

@@ -149,8 +149,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("DIE_IF_NOT_CONVERGED", true);
     /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used
        otherwise. -*/
-    options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT SIMINT");
-    
+    options.add_str("INTEGRAL_PACKAGE", "LIBINT1", "ERD LIBINT1 SIMINT LIBINT2");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);

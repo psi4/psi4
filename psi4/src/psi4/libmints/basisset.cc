@@ -643,6 +643,16 @@ const GaussianShell &BasisSet::ecp_shell(int si) const {
     return ecp_shells_[si];
 }
 
+const libint2::Shell &BasisSet::l2_shell(int si) const {
+    if (si < 0 || si > nshell()) {
+        outfile->Printf("Libint2 BasisSet::shell(si = %d), requested a shell out-of-bound.\n", si);
+        outfile->Printf("     Max shell size: %d\n", nshell());
+        outfile->Printf("     Name: %s\n", name().c_str());
+        throw PSIEXCEPTION("BasisSet::shell: requested shell is out-of-bounds.");
+    }
+    return l2_shells_[si];
+}
+
 const GaussianShell &BasisSet::shell(int center, int si) const { return shell(center_to_shell_[center] + si); }
 
 std::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set() {
@@ -788,6 +798,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     shell_first_basis_function_ = new int[n_shells_];
     shells_ = new GaussianShell[n_shells_];
     ecp_shells_ = new GaussianShell[n_ecp_shells_];
+    l2_shells_.resize(n_shells_);
     ao_to_shell_ = new int[nao_];
     function_to_shell_ = new int[nbf_];
     function_center_ = new int[nbf_];
@@ -838,6 +849,10 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
                                   &uexponents_[ustart + atom_nprim], puream, n, xyz_ptr, bf_count);
+                auto c = std::vector<double>(&ucoefficients_[ustart + atom_nprim], &ucoefficients_[ustart + atom_nprim + shell_nprim]);
+                auto e = std::vector<double>(&uexponents_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim + shell_nprim]);
+                l2_shells_[shell_count] =
+                    libint2::Shell({e, {{am, puream, c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}});
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }

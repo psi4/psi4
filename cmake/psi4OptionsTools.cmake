@@ -61,6 +61,7 @@ macro(psi4_add_module binlib libname sources)
   target_link_libraries(${libname}
     PRIVATE
       tgt::lapack
+      Libint2::cxx
     )
 
   # library modules get their headers installed

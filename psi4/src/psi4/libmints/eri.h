@@ -29,6 +29,7 @@
 #ifndef _psi_src_lib_libmints_eri_h
 #define _psi_src_lib_libmints_eri_h
 
+#include <libint2.hpp>
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
 #include "psi4/libmints/twobody.h"
@@ -83,7 +84,7 @@ struct ShellPair {
 class TwoElectronInt : public TwoBodyAOInt {
    protected:
     //! Libint object.
-    Libint_t libint_;
+    Libint1_t libint_;
     //! Libderiv object
     Libderiv_t libderiv_;
 
@@ -126,6 +127,56 @@ class TwoElectronInt : public TwoBodyAOInt {
     TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
 
     ~TwoElectronInt() override;
+
+    /// Compute ERIs between 4 shells. Result is stored in buffer.
+    size_t compute_shell(const AOShellCombinationsIterator&) override;
+
+    /// Compute ERIs between 4 shells. Result is stored in buffer.
+    size_t compute_shell(int, int, int, int) override;
+
+    /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
+    size_t compute_shell_deriv1(int, int, int, int) override;
+
+    /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
+    size_t compute_shell_deriv2(int, int, int, int) override;
+};
+
+/*! \ingroup MINTS
+ *  \class Libint2TwoElectronInt
+ *  \brief Capable of computing two-electron repulsion integrals.
+ */
+class Libint2TwoElectronInt : public TwoBodyAOInt {
+   protected:
+
+    //! Libint2 engine
+    libint2::Engine libint2_;
+    std::vector<double> results_;
+
+    //! Maximum cartesian class size.
+    int max_cart_;
+
+    //! Form shell pair information. Must be smart enough to handle arbitrary basis sets
+    void init_shell_pairs12();
+    void init_shell_pairs34();
+
+    //! Free shell pair information
+    void free_shell_pairs12();
+    void free_shell_pairs34();
+
+    //! Should we use shell pair information?
+    bool use_shell_pairs_;
+
+    //! Shell pair information
+    std::shared_ptr<std::vector<std::vector<ShellPair>>> pairs12_, pairs34_;
+
+    //! Evaluates how much memory (in doubles) is needed to store shell pair data
+    //size_t memory_to_store_shell_pairs(const std::shared_ptr<BasisSet>&, const std::shared_ptr<BasisSet>&);
+
+   public:
+    //! Constructor. Use an IntegralFactory to create this object.
+    Libint2TwoElectronInt(libint2::Operator op, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+
+    ~Libint2TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     size_t compute_shell(const AOShellCombinationsIterator&) override;

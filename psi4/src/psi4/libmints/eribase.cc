@@ -37,6 +37,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 
@@ -3062,4 +3063,303 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
 
     // Results are in source_
     return size;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Libint2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Libint2TwoElectronInt::Libint2TwoElectronInt(libint2::Operator op, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
+    // Initialize libint static data
+    libint2::initialize();
+
+    // Figure out some information to initialize libint/libderiv with
+    // 1. Maximum angular momentum
+    int max_am = MAX(MAX(basis1()->max_am(), basis2()->max_am()), MAX(basis3()->max_am(), basis4()->max_am()));
+    // 2. Maximum number of primitive combinations
+    int max_nprim = basis1()->max_nprimitive() * basis2()->max_nprimitive() * basis3()->max_nprimitive() *
+                    basis4()->max_nprimitive();
+    // 3. Maximum Cartesian class size
+    max_cart_ = ioff[basis1()->max_am() + 1] * ioff[basis2()->max_am() + 1] * ioff[basis3()->max_am() + 1] *
+                ioff[basis4()->max_am() + 1];
+
+    libint2_ = libint2::Engine(op, max_nprim, max_am, deriv);
+    results_.resize(basis1()->max_function_per_shell() *
+                    basis2()->max_function_per_shell() *
+                    basis3()->max_function_per_shell() *
+                    basis4()->max_function_per_shell());
+    target_ = results_.data();
+
+    // Make sure libint is compiled to handle our max AM
+    if (max_am >= LIBINT_MAX_AM) {
+        outfile->Printf(
+            "ERROR: ERI - Libint cannot handle angular momentum this high (%d).\n"
+            "       Rebuild Libint with MAX_AM_ERI at least %d.\n",
+            max_am, max_am);
+        throw LimitExceeded<int>(
+            "ERI - Libint cannot handle angular momentum this high.\n"
+            "Rebuild Libint with MAX_AM_ERI at least (actual).\n",
+            LIBINT_MAX_AM - 1, max_am, __FILE__, __LINE__);
+    } else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
+        outfile->Printf(
+            "ERROR: ERI - Libint cannot handle angular momentum this high (%d) for first derivatives.\n"
+            "     Rebuild Libint with MAX_AM_ERI at least %d.\n",
+            max_am, max_am + 1);
+        throw LimitExceeded<int>(
+            "ERI - Libint cannot handle angular momentum this high.\n"
+            "Rebuild Libint with MAX_AM_ERI at least (actual + 1).\n",
+            LIBDERIV_MAX_AM1 - 1, max_am, __FILE__, __LINE__);
+    } else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
+        outfile->Printf(
+            "ERROR: ERI - Libint cannot handle angular momentum this high (%d) for second derivatives.\n"
+            "       Reconfigure Libint with MAX_AM_ERI at least %d\n",
+            max_am, max_am + 2);
+        throw LimitExceeded<int>(
+            "ERI - Libint cannot handle angular momentum this high.\n"
+            "Rebuild Libint with MAX_AM_ERI at least (actual + 2).\n",
+            LIBDERIV_MAX_AM12 - 1, max_am, __FILE__, __LINE__);
+    } else if (deriv_ > 2) {
+        outfile->Printf("ERROR: ERI - Cannot compute higher than second derivatives.");
+        throw PSIEXCEPTION("ERI - Cannot compute higher than second derivatives.");
+    }
+
+    //try {
+    //    // Initialize libint
+    //    init_libint(&libint_, max_am, max_nprim);
+    //    // and libderiv, if needed
+    //    if (deriv_ == 1)
+    //        init_libderiv1(&libderiv_, max_am, max_nprim, max_cart_);
+    //    else if (deriv_ == 2)
+    //        init_libderiv12(&libderiv_, max_am, max_nprim, max_cart_);
+    //} catch (std::bad_alloc &e) {
+    //    outfile->Printf("Error allocating memory for libint/libderiv.\n");
+    //    exit(EXIT_FAILURE);
+    //}
+    size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) * INT_NCART(basis3()->max_am()) *
+                  INT_NCART(basis4()->max_am());
+
+    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4()) {
+        use_shell_pairs_ = false;
+    }
+
+    if (use_shell_pairs_) {
+        // Precompute a bunch of information
+        init_shell_pairs12();
+        // If basis3 and basis4 equals basis1 and basis2, then the following function will do nothing,
+        // except assign pairs34_ to pairs12_
+        init_shell_pairs34();
+    }
+
+    // form the blocking. We use the default
+    TwoBodyAOInt::create_blocks();
+}
+
+Libint2TwoElectronInt::~Libint2TwoElectronInt() {
+    libint2::finalize();
+}
+
+void Libint2TwoElectronInt::init_shell_pairs12() {
+    Vector3 P, PA, PB, AB, A, B;
+    int i, j, si, sj, np_i, np_j, np_sig;
+    double a1, a2, ab2, gam, c1, c2, overlap;
+
+    // Make a shared pointer to a vector of vectors of ShellPair
+    pairs12_ = std::make_shared<std::vector<std::vector<ShellPair>>>(
+        std::vector<std::vector<ShellPair>>(basis2()->nshell(), std::vector<ShellPair>(basis2()->nshell())));
+
+    // Counts of primitive pairs (over all shell pairs) [FOR PRINING]
+    int prim_pairs_total = 0;
+    int prim_pairs_keep = 0;
+
+    // Criteria for determining if the overlap between primitives is negligible
+    // #TODO make this a user defined parameter
+    double overlap_cutoff = 1.0e-16;
+
+    // Loop over all shell pairs (si, sj) and create primitive pairs pairs
+    for (si = 0; si < basis1()->nshell(); ++si) {
+        A = basis1()->shell(si).center();
+
+        for (sj = 0; sj < basis2()->nshell(); ++sj) {
+            B = basis2()->shell(sj).center();
+
+            AB = A - B;
+            ab2 = AB.dot(AB);
+
+            // Make and populate fields of screened shell pair
+            ShellPair sp;
+            sp.i = si;
+            sp.j = sj;
+            sp.AB[0] = AB[0];
+            sp.AB[1] = AB[1];
+            sp.AB[2] = AB[2];
+
+            np_i = basis1()->shell(si).nprimitive();
+            np_j = basis2()->shell(sj).nprimitive();
+
+            // Reserve some memory for the primitives pairs of this shell pair
+            sp.nonzeroPrimPairs.resize(np_i * np_j);
+
+            // the number of significant primitive pairs just in this shell pair (not screened)
+            np_sig = 0;
+
+            // Pre-compute all data that we can:
+            for (i = 0; i < np_i; ++i) {
+                a1 = basis1()->shell(si).exp(i);
+                c1 = basis1()->shell(si).coef(i);
+
+                for (j = 0; j < np_j; ++j) {
+                    a2 = basis2()->shell(sj).exp(j);
+                    c2 = basis2()->shell(sj).coef(j);
+                    gam = a1 + a2;
+                    overlap = pow(M_PI / gam, 3.0 / 2.0) * exp(-a1 * a2 * ab2 / gam) * c1 * c2;
+
+                    // Check overlap for screening condition
+                    if (fabs(overlap) >= overlap_cutoff) {
+                        // Compute Gaussian product and component distances
+                        P = (A * a1 + B * a2) / gam;
+                        PA = P - A;
+                        PB = P - B;
+
+                        // Make and populate fields of screened primitive pair
+                        PrimPair pp;
+
+                        // Copy data into pairs array
+                        pp.P[0] = P[0];
+                        pp.P[1] = P[1];
+                        pp.P[2] = P[2];
+                        pp.PA[0] = PA[0];
+                        pp.PA[1] = PA[1];
+                        pp.PA[2] = PA[2];
+                        pp.PB[0] = PB[0];
+                        pp.PB[1] = PB[1];
+                        pp.PB[2] = PB[2];
+
+                        // Save some information
+                        pp.ai = a1;
+                        pp.aj = a2;
+                        pp.gamma = gam;
+                        pp.ci = c1;
+                        pp.cj = c2;
+                        pp.overlap = overlap;
+
+                        // Store this primitive pair in the shell pair
+                        sp.nonzeroPrimPairs[np_sig] = pp;
+                        ++np_sig;
+                    } else {
+                        // do nothing
+                    }
+                }
+            }
+
+            // Update total counts
+            prim_pairs_total += np_i * np_j;
+            prim_pairs_keep += np_sig;
+
+            sp.nonzeroPrimPairs.resize(np_sig);
+            sp.nonzeroPrimPairs.shrink_to_fit();
+
+            (*pairs12_)[si][sj] = sp;
+        }
+    }
+
+    double percent_keep = prim_pairs_keep * 100.0 / prim_pairs_total;
+    outfile->Printf("\n  ShellPair Screening for Disk ERIs: Overlap Cutoff of %.12f \n", overlap_cutoff);
+    outfile->Printf("  Using %d of %d gaussian primitive products (%.2f%%)\n\n", prim_pairs_keep, prim_pairs_total,
+                    percent_keep);
+}
+
+void Libint2TwoElectronInt::init_shell_pairs34() {
+    // If basis1 == basis3 && basis2 == basis4, then we don't need to do anything except use the pointer
+    // of pairs12_.
+    if (use_shell_pairs_ == true) {
+        // This assumes init_shell_pairs12 was called and precomputed the values.
+        pairs34_ = pairs12_;
+        return;
+    }
+}
+
+//size_t Libint2TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSet> &bs1,
+//                                                   const std::shared_ptr<BasisSet> &bs2) {
+//    int i, j, np_i, np_j;
+//    size_t mem = 0;
+//
+//    for (i = 0; i < bs1->nshell(); ++i) {
+//        np_i = bs1->shell(i).nprimitive();
+//        for (j = 0; j < bs2->nshell(); ++j) {
+//            np_j = bs2->shell(j).nprimitive();
+//            mem += (2 * (np_i + np_j) + 11 * np_i * np_j);
+//        }
+//    }
+//    return mem;
+//}
+
+size_t Libint2TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
+    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+}
+
+size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
+#ifdef MINTS_TIMER
+    timer_on("Libint2ERI::compute_shell");
+#endif
+
+    if (force_cartesian_) {
+        throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
+    }
+    int n1 = bs1_->shell(s1).nfunction();
+    int n2 = bs2_->shell(s2).nfunction();
+    int n3 = bs3_->shell(s3).nfunction();
+    int n4 = bs4_->shell(s4).nfunction();
+    size_t ntot = n1 * n2 * n3 * n4;
+
+    auto sj1 = bs1_->l2_shell(s1);
+    auto sj2 = bs2_->l2_shell(s2);
+    auto sj3 = bs3_->l2_shell(s3);
+    auto sj4 = bs4_->l2_shell(s4);
+    libint2_.compute(sj1, sj2, sj3, sj4);
+
+    auto res = libint2_.results();
+    const double * r = res[0];
+    if (res[0] == nullptr) return 0;
+    //results_.resize(ntot);
+    std::copy_n(r, ntot, results_.data());
+
+#ifdef MINTS_TIMER
+    timer_off("Libint2ERI::compute_shell");
+#endif
+    return ntot;
+}
+
+size_t Libint2TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4) {
+    return 1;
+}
+
+size_t Libint2TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4) {
+    return 1;
 }
