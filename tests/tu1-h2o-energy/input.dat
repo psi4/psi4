@@ -12,6 +12,8 @@ molecule h2o {
 set basis cc-pVDZ
 set scf_type pk
 set df_scf_guess false
+set guess core
+
 e = energy('scf')
 
 print('l1', e)
