@@ -100,6 +100,7 @@ BasisSet::BasisSet() {
     shell_first_ao_ = new int[1];
     shell_first_basis_function_ = new int[1];
     shells_ = new GaussianShell[1];
+    l2_shells_.push_back({{0.0}, {{0, false, {1.0}}}, {{0.0, 0.0, 0.0}}});
     ao_to_shell_ = new int[1];
     function_to_shell_ = new int[1];
     function_center_ = new int[1];
@@ -849,7 +850,8 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
                                   &uexponents_[ustart + atom_nprim], puream, n, xyz_ptr, bf_count);
-                auto l2c = std::vector<double>(&ucoefficients_[ustart + atom_nprim], &ucoefficients_[ustart + atom_nprim + shell_nprim]);
+                auto l2c = std::vector<double>(&uoriginal_coefficients_[ustart + atom_nprim],
+                                               &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
                 auto l2e = std::vector<double>(&uexponents_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim + shell_nprim]);
                 l2_shells_[shell_count] =
                     libint2::Shell({l2e, {{am, puream, l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}});

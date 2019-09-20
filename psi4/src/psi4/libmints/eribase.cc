@@ -3344,11 +3344,16 @@ size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
     auto sj2 = bs2_->l2_shell(s2);
     auto sj3 = bs3_->l2_shell(s3);
     auto sj4 = bs4_->l2_shell(s4);
+    printf("SJ %d %d %d %d  %d %d %d %d\n", s1, s2, s3, s4, bs1_->shell(s1).am(), bs2_->shell(s2).am(), bs3_->shell(s3).am(), bs4_->shell(s4).am());
     libint2_.compute(sj1, sj2, sj3, sj4);
 
     auto res = libint2_.results();
     const double * r = res[0];
-    if (res[0] == nullptr) return 0;
+    if (res[0] == nullptr) {
+        std::fill_n(results_.data(), ntot, 0.0);
+        return 0;
+    }
+//    printf("RES2= %12.6f\n", res[0][0]);
     //results_.resize(ntot);
     std::copy_n(r, ntot, results_.data());
 

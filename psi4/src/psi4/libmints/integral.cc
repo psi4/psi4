@@ -209,6 +209,8 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
 #ifdef USING_simint
     if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs);
 #endif
+    printf("INT FACT ERI %d %d %s\n", deriv, use_shell_pairs, integral_package.c_str());
+    if (integral_package == "LIBINT2") return new Libint2TwoElectronInt(libint2::Operator::coulomb, this, deriv, use_shell_pairs);
 #ifdef USING_erd
     if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif

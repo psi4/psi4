@@ -193,7 +193,7 @@ void SOBasisSet::init() {
         }
     }
 
-    bool include_pure_transform = true;
+    bool include_pure_transform = false;
 
     petite_ = std::make_shared<PetiteList>(basis_, integral_, include_pure_transform);
 

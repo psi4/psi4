@@ -22,6 +22,7 @@ else()
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DMAX_AM_ERI=${MAX_AM_ERI}
+                   -DLIBINT2_SHGAUSS_ORDERING=gaussian
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    # OpenMP irrelevant
                    -DENABLE_XHOST=${ENABLE_XHOST}
