@@ -10,6 +10,18 @@ molecule h2o {
 }
 
 set basis cc-pVDZ
-energy('scf')
+set scf_type pk
+set df_scf_guess false
+e = energy('scf')
 
-compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+print('l1', e)
+#compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+
+#set INTEGRAL_PACKAGE libint2
+set integral_package LIBINT2
+#set integral_package ERD
+e = energy('scf')
+
+#compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+print('l2', e)
+

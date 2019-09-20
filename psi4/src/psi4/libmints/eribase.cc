@@ -3106,6 +3106,7 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(libint2::Operator op, const Integra
     // 2. Maximum number of primitive combinations
     int max_nprim = basis1()->max_nprimitive() * basis2()->max_nprimitive() * basis3()->max_nprimitive() *
                     basis4()->max_nprimitive();
+    max_nprim = basis1()->max_nprimitive();
     // 3. Maximum Cartesian class size
     max_cart_ = ioff[basis1()->max_am() + 1] * ioff[basis2()->max_am() + 1] * ioff[basis3()->max_am() + 1] *
                 ioff[basis4()->max_am() + 1];
@@ -3116,6 +3117,7 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(libint2::Operator op, const Integra
                     basis3()->max_function_per_shell() *
                     basis4()->max_function_per_shell());
     target_ = results_.data();
+    target_full_ = results_.data();
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {

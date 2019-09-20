@@ -849,10 +849,10 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
                                   &uexponents_[ustart + atom_nprim], puream, n, xyz_ptr, bf_count);
-                auto c = std::vector<double>(&ucoefficients_[ustart + atom_nprim], &ucoefficients_[ustart + atom_nprim + shell_nprim]);
-                auto e = std::vector<double>(&uexponents_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim + shell_nprim]);
+                auto l2c = std::vector<double>(&ucoefficients_[ustart + atom_nprim], &ucoefficients_[ustart + atom_nprim + shell_nprim]);
+                auto l2e = std::vector<double>(&uexponents_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim + shell_nprim]);
                 l2_shells_[shell_count] =
-                    libint2::Shell({e, {{am, puream, c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}});
+                    libint2::Shell({l2e, {{am, puream, l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}});
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }
