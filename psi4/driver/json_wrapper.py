@@ -103,7 +103,25 @@ _qcschema_translation = {
         "mp2_doubles_energy": {"variables": "MP2 CORRELATION ENERGY"},
         "mp2_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
         "mp2_total_energy": {"variables": "MP2 TOTAL ENERGY"},
+        "mp2_dipole_moment": {"variables": "NYI"}
     },
+
+    "ccsd": {
+        "ccsd_same_spin_correlation_energy": {"variables": "CCSD SAME-SPIN CORRELATION ENERGY"},
+        "ccsd_opposite_spin_correlation_energy": {"variables": "CCSD OPPOSITE-SPIN CORRELATION ENERGY"},
+        "ccsd_singles_energy": {"variables": "NYI", "default": 0.0},
+        "ccsd_doubles_energy": {"variables": "CCSD CORRELATION ENERGY"},
+        "ccsd_correlation_energy": {"variables": "CCSD CORRELATION ENERGY"},
+        "ccsd_total_energy": {"variables": "CCSD TOTAL ENERGY"},
+        "ccsd_dipole_moment": {"variables": "NYI"},
+        "ccsd_iterations": {"variables": "CCSD ITERATIONS", "cast": int},
+    },
+
+    "ccsd(t)": {
+        "ccsd_prt_pr_correlation_energy": {"variables": "CCSD(T) CORRELATION ENERGY"},
+        "ccsd_prt_pr_total_energy": {"variables": "CCSD(T) TOTAL ENERGY"},
+        "ccsd_prt_pr_dipole_moment": {"variables": "NYI"},
+    }
 
 #    "": {"variables": },
 
@@ -360,9 +378,15 @@ def run_json_qcschema(json_data, clean):
     if not list(set(['CBS NUMBER', 'NBODY NUMBER', 'FINDIF NUMBER']) & set(json_data["extras"]["qcvars"].keys())):
         props.update(_convert_variables(psi_props, context="scf"))
 
-    # Write out MP2 keywords
+    # Write out post-SCF keywords
     if "MP2 CORRELATION ENERGY" in psi_props:
         props.update(_convert_variables(psi_props, context="mp2"))
+
+    if "CCSD CORRELATION ENERGY" in psi_props:
+        props.update(_convert_variables(psi_props, context="ccsd"))
+
+    if "CCSD(T) CORRELATION ENERGY" in psi_props:
+        props.update(_convert_variables(psi_props, context="ccsd(t)"))
 
     json_data["properties"] = props
     json_data["success"] = True

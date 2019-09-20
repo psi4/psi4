@@ -417,6 +417,7 @@ double CCEnergyWavefunction::compute_energy() {
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo_.ecc_ss;
         Process::environment.globals["CCSD CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CCSD TOTAL ENERGY"] = moinfo_.ecc + moinfo_.eref;
+        Process::environment.globals["CCSD ITERATIONS"] = moinfo_.iter;
         set_scalar_variable("CCSD OPPOSITE-SPIN CORRELATION ENERGY", moinfo_.ecc_os);
         set_scalar_variable("CCSD SAME-SPIN CORRELATION ENERGY", moinfo_.ecc_ss);
         set_scalar_variable("CCSD CORRELATION ENERGY", moinfo_.ecc);
