@@ -2160,6 +2160,13 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
 #endif
         }
     }
+    printf("SJ %d %d %d %d  %d %d %d %d\n", s1, s2, s3, s4, bs1_->shell(s1).am(), bs2_->shell(s2).am(), bs3_->shell(s3).am(), bs4_->shell(s4).am());
+    printf("\nRES1= ");
+    for (int itgl=0;itgl<ncomputed;itgl++){
+        printf("%12.6f\n", target_[itgl]);
+    }
+    printf("\n");
+
 
 #ifdef MINTS_TIMER
     timer_off("ERI::compute_shell");
@@ -3111,6 +3118,14 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(libint2::Operator op, const Integra
     max_cart_ = ioff[basis1()->max_am() + 1] * ioff[basis2()->max_am() + 1] * ioff[basis3()->max_am() + 1] *
                 ioff[basis4()->max_am() + 1];
 
+    size_t tmpv2 = basis1()->max_function_per_shell() *
+                    basis2()->max_function_per_shell() *
+                    basis3()->max_function_per_shell() *
+                    basis4()->max_function_per_shell();
+
+//    printf("INIT %d %d %zu %d\n", max_am, max_nprim, tmpv2, deriv);
+//    libint2::Engine foo = libint2::Engine(libint2::Operator::coulomb, s1()->max_nprimitive(), 2, 0);
+//    libint2::Engine foo = libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, deriv);
     libint2_ = libint2::Engine(op, max_nprim, max_am, deriv);
     results_.resize(basis1()->max_function_per_shell() *
                     basis2()->max_function_per_shell() *
@@ -3353,6 +3368,12 @@ size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
         std::fill_n(results_.data(), ntot, 0.0);
         return 0;
     }
+        
+    printf("\nRES2= ");
+    for (int itgl=0;itgl<ntot;itgl++){
+        printf("%12.6f\n", res[0][itgl]);
+    }
+    printf("\n");
 //    printf("RES2= %12.6f\n", res[0][0]);
     //results_.resize(ntot);
     std::copy_n(r, ntot, results_.data());
