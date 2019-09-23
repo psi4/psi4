@@ -29,7 +29,6 @@ else()
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
-                   -DMERGE_LIBDERIV_INCLUDEDIR=OFF
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
