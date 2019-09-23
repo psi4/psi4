@@ -243,7 +243,7 @@ if args["json"]:
 
     psi4.extras._success_flag_ = True
     psi4.extras.exit_printing(start_time)
-    json_data = psi4.json_wrapper.run_json(json_data)
+    json_data = psi4.schema_wrapper.run_json(json_data)
 
     with open(args["input"], 'w') as f:
         json.dump(json_data, f)

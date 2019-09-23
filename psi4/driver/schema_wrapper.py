@@ -29,21 +29,21 @@
 Runs a JSON input psi file.
 """
 
+import atexit
+import copy
 import os
 import sys
-import copy
-import json
-import uuid
-import atexit
 import traceback
+import uuid
+import warnings
 
 import numpy as np
+import qcelemental as qcel
+import qcengine as qcng
 
 import psi4
-from psi4.driver import molutil
-from psi4.driver import p4util
 from psi4 import core
-from psi4.driver import driver
+from psi4.driver import driver, molutil, p4util
 
 ## Methods and properties blocks
 
@@ -127,21 +127,26 @@ _qcschema_translation = {
 
 } # yapf: disable
 
-def _json_translation(value):
+def _serial_translation(value, json=False):
     """
     Translates from Psi4 to JSON data types
     """
+    if isinstance(value, (psi4.core.Dimension)):
+        return value.to_tuple()
 
-    if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
-        value = value.np.ravel().tolist()
-    elif isinstance(value, (psi4.core.Dimension)):
-        value = value.to_tuple()
-    elif isinstance(value, np.ndarray):
-        value = value.ravel().tolist()
+    if json:
+        if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
+            return value.np.ravel().tolist()
+        elif isinstance(value, np.ndarray):
+            return value.ravel().tolist()
+    else:
+        if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
+            return value.np
 
     return value
 
-def _convert_variables(data, context=None):
+
+def _convert_variables(data, context=None, json=False):
     """
     Converts dictionaries of variables based on translation metadata
     """
@@ -182,7 +187,7 @@ def _convert_variables(data, context=None):
         if "cast" in var:
             value = var["cast"](value)
 
-        ret[key] = _json_translation(value)
+        ret[key] = _serial_translation(value, json=json)
 
     return ret
 
@@ -196,6 +201,7 @@ def _clean_psi_environ(do_clean):
         psi4.core.clean_options()
         psi4.core.clean()
 
+
 def _read_output(outfile):
     try:
         with open(outfile, 'r') as f:
@@ -203,9 +209,54 @@ def _read_output(outfile):
 
         return output
     except OSError:
-        return "Could not read output file"
+        return "Could not read output file."
+
+
+def _quiet_remove(filename):
+    """
+    Destroy the created at file at exit, pass if error.
+    """
+    try:
+        os.unlink(filename)
+    except OSError:
+        pass
+
+
+def run_qcschema(input_data, clean=True):
+
+    outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
+    core.set_output_file(outfile, False)
+
+    try:
+        input_model = qcng.util.model_wrapper(input_data, qcel.models.ResultInput)
+
+        # qcschema should be copied
+        ret_data = run_json_qcschema(input_model.dict(encoding="json"), clean, False)
+        stdout = _read_output(outfile)
+        ret = qcel.models.Result(**ret_data, stdout=stdout)
+
+    except Exception as exc:
+
+        input_data = input_data.copy()
+        input_data["stdout"] = _read_output(outfile)
+        ret = qcel.models.FailedOperation(input_data=input_data,
+                                          success=False,
+                                          error={
+                                              'error_type': type(exc).__name__,
+                                              'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
+                                          })
+
+    atexit.register(_quiet_remove, outfile)
+
+    return ret
+
 
 def run_json(json_data, clean=True):
+
+    warnings.warn(
+        "Using `psi4.schema_wrapper.run_qcschema` instead of `psi4.json_warpper.run_json` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
 
     # Set scratch
     if "scratch_location" in json_data:
@@ -232,7 +283,7 @@ def run_json(json_data, clean=True):
     # Attempt to run the computer
     try:
         # qcschema should be copied
-        json_data = run_json_qcschema(copy.deepcopy(json_data), clean)
+        json_data = run_json_qcschema(copy.deepcopy(json_data), clean, True)
 
     except Exception as exc:
         json_data["error"] = {
@@ -243,23 +294,15 @@ def run_json(json_data, clean=True):
 
         json_data["raw_output"] = _read_output(outfile)
 
-
     if return_output:
         json_data["raw_output"] = _read_output(outfile)
-
-    # Destroy the created file at exit
-    def _quiet_remove(filename):
-        try:
-            os.unlink(filename)
-        except OSError:
-            pass
 
     atexit.register(_quiet_remove, outfile)
 
     return json_data
 
 
-def run_json_qcschema(json_data, clean):
+def run_json_qcschema(json_data, clean, json_serialization):
     """
     An implementation of the QC JSON Schema (molssi-qc-schema.readthedocs.io/en/latest/index.html#) implementation in Psi4.
 
@@ -340,18 +383,18 @@ def run_json_qcschema(json_data, clean):
         psi_props = psi4.core.variables()
         for k, v in psi_props.items():
             if k not in json_data["extras"]["qcvars"]:
-                json_data["extras"]["qcvars"][k] = _json_translation(v)
+                json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
     # Still a bit of a mess at the moment add in local vars as well.
     for k, v in wfn.variables().items():
         if k not in json_data["extras"]["qcvars"]:
-            json_data["extras"]["qcvars"][k] = _json_translation(v)
+            json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
     # Handle the return result
     if json_data["driver"] == "energy":
         json_data["return_result"] = val
     elif json_data["driver"] in ["gradient", "hessian"]:
-        json_data["return_result"] = val.np.ravel().tolist()
+        json_data["return_result"] = _serial_translation(val, json=json_serialization)
     elif json_data["driver"] == "properties":
         ret = {}
         mtd = json_data["model"]["method"].upper()
@@ -361,7 +404,7 @@ def run_json_qcschema(json_data, clean):
             ret["dipole"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
         if "quadrupole" in kwargs["properties"]:
             ret["quadrupole"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
-        ret.update(_convert_variables(wfn.variables(), context="properties"))
+        ret.update(_convert_variables(wfn.variables(), context="properties", json=json_serialization))
 
         json_data["return_result"] = ret
     else:
@@ -374,19 +417,19 @@ def run_json_qcschema(json_data, clean):
         "calcinfo_nbeta": wfn.nbeta(),
         "calcinfo_natom": mol.geometry().shape[0],
     }
-    props.update(_convert_variables(psi_props, context="generics"))
+    props.update(_convert_variables(psi_props, context="generics", json=json_serialization))
     if not list(set(['CBS NUMBER', 'NBODY NUMBER', 'FINDIF NUMBER']) & set(json_data["extras"]["qcvars"].keys())):
-        props.update(_convert_variables(psi_props, context="scf"))
+        props.update(_convert_variables(psi_props, context="scf", json=json_serialization))
 
     # Write out post-SCF keywords
     if "MP2 CORRELATION ENERGY" in psi_props:
-        props.update(_convert_variables(psi_props, context="mp2"))
+        props.update(_convert_variables(psi_props, context="mp2", json=json_serialization))
 
     if "CCSD CORRELATION ENERGY" in psi_props:
-        props.update(_convert_variables(psi_props, context="ccsd"))
+        props.update(_convert_variables(psi_props, context="ccsd", json=json_serialization))
 
     if "CCSD(T) CORRELATION ENERGY" in psi_props:
-        props.update(_convert_variables(psi_props, context="ccsd(t)"))
+        props.update(_convert_variables(psi_props, context="ccsd(t)", json=json_serialization))
 
     json_data["properties"] = props
     json_data["success"] = True
