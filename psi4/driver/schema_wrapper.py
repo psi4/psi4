@@ -232,8 +232,8 @@ def run_qcschema(input_data, clean=True):
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(encoding="json"), clean, False)
-        stdout = _read_output(outfile)
-        ret = qcel.models.Result(**ret_data, stdout=stdout)
+        ret_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.schema_runner.run_qcschema"}
+        ret = qcel.models.Result(**ret_data, stdout=_read_output(outfile))
 
     except Exception as exc:
 
@@ -279,6 +279,7 @@ def run_json(json_data, clean=True):
     # Set a few flags
     json_data["raw_output"] = None
     json_data["success"] = False
+    json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json_wrapper.run_json"}
 
     # Attempt to run the computer
     try:
@@ -337,7 +338,6 @@ def run_json_qcschema(json_data, clean, json_serialization):
     if json_data.get("nthreads", False) is not False:
         psi4.set_num_threads(json_data["nthreads"], quiet=True)
 
-    json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json.run_json"}
 
     # Build molecule
     if "schema_name" in json_data["molecule"]:
