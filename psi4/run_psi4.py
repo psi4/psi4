@@ -52,6 +52,8 @@ parser.add_argument("-V", "--version", action='store_true',
                     help="Prints version information.")
 parser.add_argument("-n", "--nthread", default=1,
                     help="Number of threads to use. Psi4 disregards OMP_NUM_THREADS/MKL_NUM_THREADS.")
+parser.add_argument("--memory", default=524288000,
+                    help="The amount of memory to use. Can be specified with units (e.g., '10MB') otherwise bytes is assumed.")
 parser.add_argument("-s", "--scratch",
                     help="Scratch directory to use. Overrides PSI_SCRATCH.")
 parser.add_argument("-m", "--messy", action='store_true',
@@ -224,7 +226,7 @@ if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
 
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
-psi4.core.set_memory_bytes(524288000, True)
+psi4.set_memory(args["memory"], quiet=True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
 start_time = datetime.datetime.now()
