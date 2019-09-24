@@ -114,10 +114,6 @@ class PSI_API IWLWriter {
         plabel_[current_label_position++] = k;
         plabel_[current_label_position] = l;
 
-        if (i<3 && j<3 && k<3 && k<4) {
-            printf("IJKL %d %d %d %d %f\n", i, j, k, l, value);
-        }
-
         // Save the value
         pvalue_[current_buffer_count_++] = value;
 

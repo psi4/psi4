@@ -32,6 +32,7 @@ set {
     algorithm   simultaneous
     basis       cc-pvdz
     reference rhf
+    integral_package libint1
 }
 
 set dct_functional odc-12

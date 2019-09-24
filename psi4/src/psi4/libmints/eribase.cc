@@ -2160,13 +2160,6 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
 #endif
         }
     }
-    printf("SJ %d %d %d %d  %d %d %d %d\n", s1, s2, s3, s4, bs1_->shell(s1).am(), bs2_->shell(s2).am(), bs3_->shell(s3).am(), bs4_->shell(s4).am());
-    printf("\nRES1= ");
-    for (int itgl=0;itgl<ncomputed;itgl++){
-        printf("%12.6f\n", target_[itgl]);
-    }
-    printf("\n");
-
 
 #ifdef MINTS_TIMER
     timer_off("ERI::compute_shell");
@@ -3111,28 +3104,20 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(libint2::Operator op, const Integra
     // 1. Maximum angular momentum
     int max_am = MAX(MAX(basis1()->max_am(), basis2()->max_am()), MAX(basis3()->max_am(), basis4()->max_am()));
     // 2. Maximum number of primitive combinations
-    int max_nprim = basis1()->max_nprimitive() * basis2()->max_nprimitive() * basis3()->max_nprimitive() *
-                    basis4()->max_nprimitive();
-    max_nprim = basis1()->max_nprimitive();
+    int max_nprim = MAX(MAX(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
+                        MAX(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
     // 3. Maximum Cartesian class size
     max_cart_ = ioff[basis1()->max_am() + 1] * ioff[basis2()->max_am() + 1] * ioff[basis3()->max_am() + 1] *
                 ioff[basis4()->max_am() + 1];
 
-    size_t tmpv2 = basis1()->max_function_per_shell() *
-                    basis2()->max_function_per_shell() *
-                    basis3()->max_function_per_shell() *
-                    basis4()->max_function_per_shell();
-
-//    printf("INIT %d %d %zu %d\n", max_am, max_nprim, tmpv2, deriv);
-//    libint2::Engine foo = libint2::Engine(libint2::Operator::coulomb, s1()->max_nprimitive(), 2, 0);
-//    libint2::Engine foo = libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, deriv);
     libint2_ = libint2::Engine(op, max_nprim, max_am, deriv);
+
     results_.resize(basis1()->max_function_per_shell() *
                     basis2()->max_function_per_shell() *
                     basis3()->max_function_per_shell() *
                     basis4()->max_function_per_shell());
-    target_ = results_.data();
     target_full_ = results_.data();
+    target_ = target_full_;
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
@@ -3167,18 +3152,6 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(libint2::Operator op, const Integra
         throw PSIEXCEPTION("ERI - Cannot compute higher than second derivatives.");
     }
 
-    //try {
-    //    // Initialize libint
-    //    init_libint(&libint_, max_am, max_nprim);
-    //    // and libderiv, if needed
-    //    if (deriv_ == 1)
-    //        init_libderiv1(&libderiv_, max_am, max_nprim, max_cart_);
-    //    else if (deriv_ == 2)
-    //        init_libderiv12(&libderiv_, max_am, max_nprim, max_cart_);
-    //} catch (std::bad_alloc &e) {
-    //    outfile->Printf("Error allocating memory for libint/libderiv.\n");
-    //    exit(EXIT_FAILURE);
-    //}
     size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) * INT_NCART(basis3()->max_am()) *
                   INT_NCART(basis4()->max_am());
 
@@ -3359,24 +3332,16 @@ size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
     auto sj2 = bs2_->l2_shell(s2);
     auto sj3 = bs3_->l2_shell(s3);
     auto sj4 = bs4_->l2_shell(s4);
-    printf("SJ %d %d %d %d  %d %d %d %d\n", s1, s2, s3, s4, bs1_->shell(s1).am(), bs2_->shell(s2).am(), bs3_->shell(s3).am(), bs4_->shell(s4).am());
+
     libint2_.compute(sj1, sj2, sj3, sj4);
 
-    auto res = libint2_.results();
-    const double * r = res[0];
-    if (res[0] == nullptr) {
-        std::fill_n(results_.data(), ntot, 0.0);
+    const auto res = libint2_.results()[0];
+    if (res == nullptr) {
+        std::fill_n(target_, ntot, 0.0);
         return 0;
     }
-        
-    printf("\nRES2= ");
-    for (int itgl=0;itgl<ntot;itgl++){
-        printf("%12.6f\n", res[0][itgl]);
-    }
-    printf("\n");
-//    printf("RES2= %12.6f\n", res[0][0]);
-    //results_.resize(ntot);
-    std::copy_n(r, ntot, results_.data());
+
+    std::copy_n(res, ntot, target_);
 
 #ifdef MINTS_TIMER
     timer_off("Libint2ERI::compute_shell");
@@ -3385,9 +3350,11 @@ size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
 }
 
 size_t Libint2TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4) {
+    throw PSIEXCEPTION("Libint2 deriv1 NYI");
     return 1;
 }
 
 size_t Libint2TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4) {
+    throw PSIEXCEPTION("Libint2 deriv2 NYI");
     return 1;
 }

@@ -159,7 +159,7 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int np
             // this will put the results in target_
             auto ret = compute_shell(sh12.first, sh12.second, sh34.first, sh34.second);
 
-            // advance the target pointer
+            //// advance the target pointer
             target_ += n1234;
 
             // Since we are only doing one at a time we don't need to

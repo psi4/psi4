@@ -4,59 +4,12 @@
 memory 600 mb
 
 molecule h2o {
-#  O 
-#  H 1 0.96
-#  H 1 0.96 2 104.5
-    #H 1.0 0.0 0.0
-    #O 0.0 0.0 0.0
-    #H 0.0 1.1 0.0
-He 0.0 0.0 0.0
-Be 1.0 0.0 0.0
-#Be 0.0 0.0 0.0
-#Be 1.0 0.0 0.0
-#no_com
-#no_reorient
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
 }
 
-#set puream true #false
-set puream false
-#set basis sto-3g #cc-pVtZ
-set basis cc-pVtZ
-set scf_type pk
-set mp2_type conv
-set df_scf_guess false
-set guess core
-set qc_module fnocc
+set basis cc-pVDZ
+energy('scf')
 
-do_l1 = True
-#do_l2 = False
-
-#do_l1 = False
-do_l2 = True
-
-#mtd = 'scf'
-mtd = 'mp2'
-
-if do_l1:
-    print('\n <<< L1 >>>\n')
-    set integral_package LIBINT1
-    l1 = energy(mtd)
-
-    print('l1', l1)
-
-if do_l2:
-    print('\n <<< L2 >>>\n')
-    set integral_package LIBINT2
-    l2 = energy(mtd)
-
-    print('l2', l2)
-
-if do_l1 and do_l2:
-    compare_values(l1, l2, 6, "asdf")
-
-
-#sto-eg
-#He 0
-#D   1   1.00
-#      1.2750000              1.0000000
-
+compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST

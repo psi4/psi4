@@ -100,7 +100,7 @@ BasisSet::BasisSet() {
     shell_first_ao_ = new int[1];
     shell_first_basis_function_ = new int[1];
     shells_ = new GaussianShell[1];
-    l2_shells_.push_back({{0.0}, {{0, false, {1.0}}}, {{0.0, 0.0, 0.0}}});
+    l2_shells_.push_back(libint2::Shell::unit());
     ao_to_shell_ = new int[1];
     function_to_shell_ = new int[1];
     function_center_ = new int[1];
@@ -831,6 +831,10 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         int nshells = shells.size();
         center_to_nshell_[n] = nshells;
         center_to_shell_[n] = shell_count;
+        Vector3 xyz = molecule_->xyz(n);
+        xyz_ptr[0] = xyz[0];
+        xyz_ptr[1] = xyz[1];
+        xyz_ptr[2] = xyz[2];
         int atom_nprim = 0;
         for (int i = 0; i < nshells; ++i) {
             const ShellInfo &thisshell = shells[i];
@@ -868,10 +872,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             atom_nprim += shell_nprim;
             shell_count++;
         }
-        Vector3 xyz = molecule_->xyz(n);
-        xyz_ptr[0] = xyz[0];
-        xyz_ptr[1] = xyz[1];
-        xyz_ptr[2] = xyz[2];
         xyz_ptr += 3;
         if (atom_nprim != uend - ustart) {
             throw PSIEXCEPTION("Problem with nprimitive in basis set construction!");
