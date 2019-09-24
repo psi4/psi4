@@ -1,8 +1,10 @@
-import pytest
+import json
 
 import numpy as np
+import pytest
+import qcelemental as qcel
+
 import psi4
-import json
 
 from .utils import *
 
@@ -68,3 +70,35 @@ def test_qcschema_keyword_error():
 
     assert compare_integers(False, ret.success, "Computation Status")
     assert compare_integers(True, "unicorn" in ret.error.error_message, "Error Message")
+
+
+@pytest.mark.parametrize("encoding", ["json", "msgpack"])
+def test_qcschema_cli(encoding):
+
+    data = qcel.models.ResultInput(**data_blob)
+
+    if encoding == "msgpack":
+        encoding = "msgpack-ext"
+        ending = "msgpack"
+    else:
+        ending = encoding
+
+    filename = "input." + ending
+    inputs = {filename: data.serialize(encoding)}
+
+    as_binary = None
+    if ending == "msgpack":
+        as_binary = [filename]
+
+
+    success, ret = run_psi4_cli(inputs, [filename], ["--qcschema"], as_binary=as_binary)
+    assert compare_integers(True, success, "Computation Status")
+    try:
+        parsed = True
+        ret = qcel.models.Result.parse_raw(ret["outfiles"][filename], encoding=encoding)
+    except Exception as e:
+        parsed = False
+        print(str(e))
+
+    assert compare_integers(True, parsed, "Result Model Parsed")
+    assert compare_integers(-76.22831410207938, ret.return_result, "Return")

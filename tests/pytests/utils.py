@@ -1,8 +1,13 @@
-import sys
+import os
 import pprint
-pp = pprint.PrettyPrinter(width=120)
+import sys
+
+import qcengine as qcng
 
 import psi4
+
+pp = pprint.PrettyPrinter(width=120)
+
 
 __all__ = [
     'a2a',
@@ -18,6 +23,7 @@ __all__ = [
     'compare_matrices',
     'compare_wavefunctions',
     'compare_fcidumps',
+    'run_psi4_cli',
     'tnm',
 ]
 
@@ -62,3 +68,17 @@ def tnm():
     """Returns the name of the calling function, usually name of test case."""
 
     return sys._getframe().f_back.f_code.co_name
+
+
+def run_psi4_cli(inputs, outputs, extra_commands=None, as_binary=None):
+    """
+    Runs Psi4 from the CLI in a subprocess.
+    """
+
+    if extra_commands is None:
+        extra_commands = []
+    psi_runner = os.path.join(os.path.dirname(os.path.abspath(psi4.__file__)), "run_psi4.py")
+    cmds = [sys.executable, psi_runner, "--inplace"] + extra_commands + list(inputs.keys())
+
+    success, ret = qcng.util.execute(cmds, inputs, outputs, as_binary=as_binary)
+    return (success, ret)
