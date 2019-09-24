@@ -31,6 +31,7 @@ Runs a JSON input psi file.
 
 import atexit
 import copy
+import datetime
 import os
 import sys
 import traceback
@@ -42,7 +43,7 @@ import qcelemental as qcel
 import qcengine as qcng
 
 import psi4
-from psi4 import core
+from psi4 import core, header
 from psi4.driver import driver, molutil, p4util
 
 ## Methods and properties blocks
@@ -226,6 +227,8 @@ def run_qcschema(input_data, clean=True):
 
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
+    header.print_header()
+    start_time = datetime.datetime.now()
 
     try:
         input_model = qcng.util.model_wrapper(input_data, qcel.models.ResultInput)
@@ -233,6 +236,9 @@ def run_qcschema(input_data, clean=True):
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(encoding="json"), clean, False)
         ret_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.schema_runner.run_qcschema"}
+
+        psi4.extras.exit_printing(start_time=start_time, success=True)
+
         ret = qcel.models.Result(**ret_data, stdout=_read_output(outfile))
 
     except Exception as exc:

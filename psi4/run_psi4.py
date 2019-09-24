@@ -259,7 +259,6 @@ if args["qcschema"]:
         raise Exception("qcschema files must either end in '.json' or '.msgpack'.")
 
     psi4.extras._success_flag_ = True
-    psi4.extras.exit_printing(start_time)
     ret = psi4.schema_wrapper.run_qcschema(data)
 
     if args["output"] is not None:
@@ -269,8 +268,6 @@ if args["qcschema"]:
         elif filename.endswith("msgpack"):
             encoding = "msgpack-ext"
         # Else write with whatever encoding came in
-    print("Output", args["output"])
-    print("I am EHRE!")
 
     if encoding == "json":
         with open(filename, 'w') as handle:
@@ -327,7 +324,7 @@ if args["messy"]:
                     atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
-atexit.register(psi4.extras.exit_printing, start_time)
+atexit.register(psi4.extras.exit_printing, start_time=start_time)
 
 # Run the program!
 try:

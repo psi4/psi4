@@ -42,6 +42,10 @@ def test_qcschema_energy():
     assert compare_values(expected_return_result, ret.properties.return_energy, 5, "Properties Return Energy")
     assert compare_values(-122.44529682915068, ret.properties.scf_one_electron_energy, 5, "SCF One-Electron Energy")
 
+    # Check stdout
+    assert compare_integers(True, 'Psi4: An Open' in ret.stdout, "Stdout Header")
+    assert compare_integers(True, 'beer' in ret.stdout, "Stdout Beer")
+
     # Check Array data
     assert compare_integers(True, isinstance(ret.extras["qcvars"]["MAYER_INDICES"], np.ndarray),
                             "Extras: Mayer Indices is Array")
@@ -109,6 +113,7 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn):
 
     success, ret = run_psi4_cli(inputs, outfiles, cmds, as_binary=as_binary)
     assert compare_integers(True, success, "Computation Status")
+    assert compare_integers(True, ret['stdout'] == '', "Empty stdout")
 
     try:
         parsed = True
