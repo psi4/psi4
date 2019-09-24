@@ -1,1 +1,1 @@
-add_subdirectory(pe-scf-hf)
+add_subdirectory(scf-hf)

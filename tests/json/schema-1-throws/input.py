@@ -39,7 +39,7 @@ json_data["molecule"]["symbols"] = ["O", "H"]
 json_ret = psi4.json_wrapper.run_json(json_data)
 
 psi4.compare_integers(False, json_data["success"], "JSON Failure")                           #TEST
-psi4.compare_integers("atoms" in json_data["error"]['error_message'], True, "Symbol Error")  #TEST
+psi4.compare_integers("dropped atoms!" in json_data["error"]['error_message'], True, "Symbol Error")  #TEST
 
 # Check keyword errors
 json_data["molecule"]["symbols"] = ["O", "H", "H"]

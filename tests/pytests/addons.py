@@ -78,6 +78,10 @@ using_mp2d = pytest.mark.skipif(
     which('mp2d', return_bool=True) is False,
     reason='Not detecting executable mp2d. Install package if necessary and add to envvar PATH')
 
+using_cppe = pytest.mark.skipif(
+    which_import('cppe', return_bool=True) is False,
+    reason="Not detecting module cppe. Rebuild with -DENABLE_cppe")
+
 #using_psi4_libxc = pytest.mark.skipif(is_psi4_new_enough("1.2a1.dev100") is False,
 #                                reason="Psi4 does not include DFT rewrite to use Libxc. Update to development head")
 
