@@ -24,21 +24,21 @@ ref_3 = 0.012274501504180080                                                    
 
 set freeze_core 0
 E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_0, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core 0  ") #TEST
+compare_values(ref_0, E, 7, "Kr--Kr nocp MP2 interaction energy, freeze_core 0  ") #TEST
 
 set freeze_core 1
 E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_1, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core 1  ") #TEST
+compare_values(ref_1, E, 7, "Kr--Kr nocp MP2 interaction energy, freeze_core 1  ") #TEST
 
 set freeze_core -1
 E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_1, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core -1 ") #TEST
+compare_values(ref_1, E, 7, "Kr--Kr nocp MP2 interaction energy, freeze_core -1 ") #TEST
 
 set freeze_core -2
 E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_2, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core -2 ") #TEST
+compare_values(ref_2, E, 7, "Kr--Kr nocp MP2 interaction energy, freeze_core -2 ") #TEST
 
 set freeze_core -3
 E, wfn = energy('mp2/def2-svp', bsse_type="nocp", return_wfn="True")
-compare_values(ref_3, E, 8, "Kr--Kr nocp MP2 interaction energy, freeze_core -3 ") #TEST
+compare_values(ref_3, E, 7, "Kr--Kr nocp MP2 interaction energy, freeze_core -3 ") #TEST
 
