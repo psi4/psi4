@@ -36,6 +36,7 @@ import datetime
 import argparse
 from argparse import RawTextHelpFormatter
 from pathlib import Path
+import qcelemental as qcel
 
 # yapf: disable
 parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
@@ -72,8 +73,10 @@ parser.add_argument("-l", "--psidatadir",
                     help="Specifies where to look for the Psi4 data directory. Overrides PSIDATADIR. !Warning! expert option.")
 parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
+parser.add_argument("--qcschema", action='store_true',
+                    help="Runs a QCSchema input file. Can either be JSON or Msgpack input.")
 parser.add_argument("--json", action='store_true',
-                    help="Runs a JSON input file. !Warning! experimental option.")
+                    help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
                     help="Runs pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
 
@@ -237,7 +240,38 @@ if args["scratch"] is not None:
         raise Exception("Passed in scratch is not a directory (%s)." % args["scratch"])
     psi4.core.IOManager.shared_object().set_default_path(os.path.abspath(os.path.expanduser(args["scratch"])))
 
-# If this is a json call, compute and stop
+# If this is a json or qcschema call, compute and stop
+if args["qcschema"]:
+
+    # Handle the reading and deserialization manually
+    filename = args["input"]
+    if filename.endswith("json"):
+        encoding = "json"
+        with open(filename, 'r') as handle:
+            data = qcel.util.deserialize(handle.read(), "json-ext")
+    elif filename.endswith("msgpack"):
+        encoding = "msgpack-ext"
+        with open(filename, 'rb') as handle:
+            data = qcel.util.deserialize(handle.read(), "msgpack-ext")
+    else:
+        raise Exception("qcschema files must either end in '.json' or '.msgpack'.")
+
+    psi4.extras._success_flag_ = True
+    psi4.extras.exit_printing(start_time)
+    ret = psi4.schema_wrapper.run_qcschema(data)
+
+    if encoding == "json":
+        with open(filename, 'w') as handle:
+            handle.write(ret.serialize(encoding))
+    elif encoding == "msgpack-ext":
+        with open(filename, 'wb') as handle:
+            handle.write(ret.serialize(encoding))
+
+    if args["output"] != "stdout":
+        os.unlink(args["output"])
+
+    sys.exit()
+
 if args["json"]:
 
     with open(args["input"], 'r') as f:
