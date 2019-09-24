@@ -72,36 +72,50 @@ def test_qcschema_keyword_error():
     assert compare_integers(True, "unicorn" in ret.error.error_message, "Error Message")
 
 
-@pytest.mark.parametrize("encoding", ["json", "msgpack"])
-def test_qcschema_cli(encoding):
+@pytest.mark.parametrize("input_enc, input_fn, output_enc, output_fn, ", [
+  ("json", "input.json", "json", None),
+  ("msgpack-ext", "input.msgpack", "msgpack-ext", None),
+  ("json", "input.json", "msgpack-ext", "output.msgpack"),
+  ("msgpack-ext", "input.msgpack", "json", "output.json"),
+  ("msgpack-ext", "input.msgpack", "msgpack-ext", "output.something"),
+])
+def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn):
 
     data = qcel.models.ResultInput(**data_blob)
 
-    if encoding == "msgpack":
+    if (input_enc == "msgpack-ext") or (output_enc == "msgpack-ext"):
         try:
             import msgpack
         except:
             pytest.skip("Msgpack could not be found, skipping.")
-        encoding = "msgpack-ext"
-        ending = "msgpack"
+
+    inputs = {input_fn: data.serialize(input_enc)}
+
+
+    cmds = ["--qcschema"]
+    if output_fn:
+        outfiles = [output_fn]
+        cmds.extend(["-o", output_fn])
     else:
-        ending = encoding
+        outfiles = [input_fn]
+        output_fn = input_fn
 
-    filename = "input." + ending
-    inputs = {filename: data.serialize(encoding)}
+    as_binary = []
+    if input_enc == "msgpack-ext":
+        as_binary.append(input_fn)
+    if output_enc == "msgpack-ext":
+        as_binary.append(output_fn)
 
-    as_binary = None
-    if ending == "msgpack":
-        as_binary = [filename]
 
-    success, ret = run_psi4_cli(inputs, [filename], ["--qcschema"], as_binary=as_binary)
+    success, ret = run_psi4_cli(inputs, outfiles, cmds, as_binary=as_binary)
     assert compare_integers(True, success, "Computation Status")
+
     try:
         parsed = True
-        ret = qcel.models.Result.parse_raw(ret["outfiles"][filename], encoding=encoding)
+        ret = qcel.models.Result.parse_raw(ret["outfiles"][output_fn], encoding=output_enc)
     except Exception as e:
         parsed = False
-        print(str(e))
+        print(e)
 
     assert compare_integers(True, parsed, "Result Model Parsed")
     assert compare_integers(-76.22831410207938, ret.return_result, "Return")

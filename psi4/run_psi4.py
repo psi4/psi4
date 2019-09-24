@@ -137,7 +137,7 @@ if len(unknown) > 2:
     raise KeyError("Too many unknown arguments: %s" % str(unknown))
 
 # Figure out output arg
-if args["output"] is None:
+if (args["output"] is None) and (args["qcschema"] is False):
     if args["input"] == "input.dat":
         args["output"] = "output.dat"
     elif args["input"].endswith(".in"):
@@ -221,7 +221,7 @@ args["input"] = os.path.normpath(args["input"])
 # Setup outfile
 if args["append"] is None:
     args["append"] = False
-if args["output"] != "stdout":
+if (args["output"] != "stdout") and (args["qcschema"] is False):
     psi4.core.set_output_file(args["output"], args["append"])
 
 # Set a few options
@@ -231,7 +231,8 @@ if args["prefix"] is not None:
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
 psi4.set_memory(args["memory"], quiet=True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
-psi4.print_header()
+if args["qcschema"] is False:
+    psi4.print_header()
 start_time = datetime.datetime.now()
 
 # Prepare scratch for inputparser
@@ -248,6 +249,7 @@ if args["qcschema"]:
     if filename.endswith("json"):
         encoding = "json"
         with open(filename, 'r') as handle:
+            # No harm in attempting to read json-ext over json
             data = qcel.util.deserialize(handle.read(), "json-ext")
     elif filename.endswith("msgpack"):
         encoding = "msgpack-ext"
@@ -260,15 +262,22 @@ if args["qcschema"]:
     psi4.extras.exit_printing(start_time)
     ret = psi4.schema_wrapper.run_qcschema(data)
 
+    if args["output"] is not None:
+        filename = args["output"]
+        if filename.endswith("json"):
+            encoding = "json"
+        elif filename.endswith("msgpack"):
+            encoding = "msgpack-ext"
+        # Else write with whatever encoding came in
+    print("Output", args["output"])
+    print("I am EHRE!")
+
     if encoding == "json":
         with open(filename, 'w') as handle:
             handle.write(ret.serialize(encoding))
     elif encoding == "msgpack-ext":
         with open(filename, 'wb') as handle:
             handle.write(ret.serialize(encoding))
-
-    if args["output"] != "stdout":
-        os.unlink(args["output"])
 
     sys.exit()
 
