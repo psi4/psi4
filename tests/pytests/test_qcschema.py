@@ -78,6 +78,10 @@ def test_qcschema_cli(encoding):
     data = qcel.models.ResultInput(**data_blob)
 
     if encoding == "msgpack":
+        try:
+            import msgpack
+        except:
+            pytest.skip("Msgpack could not be found, skipping.")
         encoding = "msgpack-ext"
         ending = "msgpack"
     else:
@@ -89,7 +93,6 @@ def test_qcschema_cli(encoding):
     as_binary = None
     if ending == "msgpack":
         as_binary = [filename]
-
 
     success, ret = run_psi4_cli(inputs, [filename], ["--qcschema"], as_binary=as_binary)
     assert compare_integers(True, success, "Computation Status")
