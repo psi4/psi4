@@ -447,15 +447,15 @@ SADNO
     Natural orbitals from Superposition of Atomic Densities. Similar
     to the above, but it forms natural orbitals from the SAD density
     matrix to get proper orbitals which are used to start the
-    calculation, see doi:10.1021/acs.jctc.8b01089.
+    calculation, see [Lehtola:2019:1593].
 GWH
     A generalized Wolfsberg-Helmholtz modification of the core
     Hamiltonian matrix. May be useful in open-shell systems, but is
     often less accurate than the core guess (see
-    doi:10.1021/acs.jctc.8b01089).
+    [Lehtola:2019:1593]).
 HUCKEL
     An extended Hückel guess based on on-the-fly atomic UHF
-    calculations alike SAD, see doi:10.1021/acs.jctc.8b01089.
+    calculations alike SAD, see [Lehtola:2019:1593].
 READ
     Read the previous orbitals from a checkpoint file, casting from
     one basis to another if needed. Useful for starting anion
@@ -468,10 +468,13 @@ SAP
     modification of the core Hamiltonian, which includes screening
     effects by using a radially screened effective atomic charge. The
     screening effects have been calculated at the complete basis set
-    limit with finite-element calculations. See
-    doi:10.1021/acs.jctc.8b01089 for a description of the guess and
-    its implementation. The guess is evaluated on a DFT quadrature
-    grid, so the guess energy depends slightly on the used DFT quadrature.
+    limit with finite-element calculations, see [Lehtola:2019:25945]
+    and [Lehtola:2019:02528]. The guess and its implementation have
+    been described in [Lehtola:2019:1593]. The guess is evaluated on a
+    DFT quadrature grid, so the guess energy depends slightly on the
+    used DFT quadrature. The current implementation is based on
+    exchange-only local density calculations that are but nanohartree
+    away from the complete basis set limit [Lehtola:2019:02528].
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then

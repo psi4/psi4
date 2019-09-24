@@ -431,6 +431,19 @@ Bibliography
    H. Laque, J. Kussmann and C. Ochsenfeld
    *J. Chem. Phys.* **149**, 204111 (2018) 
 
+.. [Lehtola:2019:1593]
+   S. Lehtola
+   *J. Chem. Theory Comput.* **15**, 1593 (2019)
+
+.. [Lehtola:2019:25945]
+   S. Lehtola
+   *Int. J. Quantum Chem.* e25945 (2019)
+
+.. [Lehtola:2019:02528]
+   S. Lehtola
+   *arXiv* preprint 1908.02528 (2019)
+
 .. [Olsen:2010:3721]
    J. M. Olsen, K. Aidas, and J. Kongsted.
    *J. Chem. Theory Comput.* **6**, 3721–3734 (2010).
+
