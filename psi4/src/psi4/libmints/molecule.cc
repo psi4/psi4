@@ -2221,7 +2221,7 @@ std::vector<std::string> Molecule::irrep_labels() {
     return irreplabel;
 }
 
-void Molecule::check_atom_(int atom, bool full) const  {
+void Molecule::check_atom_(int atom, bool full) const {
     if (full && atom >= full_atoms_.size()) {
         throw std::runtime_error("Requested atom doesn't exist in full atoms list.");
     }
