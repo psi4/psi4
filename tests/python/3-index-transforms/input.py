@@ -128,11 +128,11 @@ for method in methods:
                     # am i right?
                     for i in range(ntransforms):
                         if(form == 'pqQ'):    
-                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pqQ[i], 9, test_string)
+                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pqQ[i], 8, test_string)
                         elif(form == 'pQq'):
-                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pQq[i], 9, test_string)
+                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo_pQq[i], 8, test_string)
                         else:
-                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, test_string)
+                            psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 8, test_string)
 
                     del dfh
 
