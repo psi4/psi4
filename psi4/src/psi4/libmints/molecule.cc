@@ -2221,100 +2221,109 @@ std::vector<std::string> Molecule::irrep_labels() {
     return irreplabel;
 }
 
-Vector3 Molecule::xyz(int atom) const { 
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
-    return input_units_to_au_ * atoms_[atom]->compute(); 
+void Molecule::check_atom_(int atom, bool full) const  {
+    if (full && atom >= full_atoms_.size()) {
+        throw std::runtime_error("Requested atom doesn't exist in full atoms list.");
+    }
+    if (not full && atom >= atoms_.size()) {
+        throw std::runtime_error("Requested atom doesn't exist in atoms list.");
+    }
+}
+
+Vector3 Molecule::xyz(int atom) const {
+    check_atom_(atom, false);
+    return input_units_to_au_ * atoms_[atom]->compute();
 }
 
 Vector3 Molecule::fxyz(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return input_units_to_au_ * full_atoms_[atom]->compute();
 }
 
 double Molecule::xyz(int atom, int _xyz) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return input_units_to_au_ * atoms_[atom]->compute()[_xyz];
 }
 
 const double &Molecule::Z(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
-    return atoms_[atom]->Z(); 
+    check_atom_(atom, false);
+    return atoms_[atom]->Z();
 }
 
 double Molecule::fZ(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return full_atoms_[atom]->Z();
 }
 
 double Molecule::x(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return input_units_to_au_ * atoms_[atom]->compute()[0];
 }
 
 double Molecule::y(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return input_units_to_au_ * atoms_[atom]->compute()[1];
 }
 
 double Molecule::z(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return input_units_to_au_ * atoms_[atom]->compute()[2];
 }
 
 double Molecule::fx(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return input_units_to_au_ * full_atoms_[atom]->compute()[0];
 }
 
 double Molecule::fy(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
-    return input_units_to_au_ * full_atoms_[atom]->compute()[1]; 
+    check_atom_(atom, true);
+    return input_units_to_au_ * full_atoms_[atom]->compute()[1];
 }
 
 double Molecule::fz(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return input_units_to_au_ * full_atoms_[atom]->compute()[2];
 }
 
 double Molecule::charge(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return atoms_[atom]->charge();
 }
 
 double Molecule::fcharge(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return full_atoms_[atom]->charge();
 }
 
 int Molecule::mass_number(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return atoms_[atom]->A();
 }
 
 int Molecule::fmass_number(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return full_atoms_[atom]->A();
 }
 
 void Molecule::set_nuclear_charge(int atom, double newZ) {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     atoms_[atom]->set_nuclear_charge(newZ);
 }
 
 const std::string &Molecule::basis_on_atom(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return atoms_[atom]->basisset();
 }
 
 int Molecule::true_atomic_number(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     Element_to_Z Z;
     Z.load_values();
     return (int)Z[atoms_[atom]->symbol()];
 }
 
 int Molecule::ftrue_atomic_number(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     Element_to_Z Z;
     Z.load_values();
     return (int)Z[full_atoms_[atom]->symbol()];
@@ -2355,17 +2364,17 @@ void Molecule::set_shell_by_label(const std::string &label, const std::string &n
 }
 
 const std::shared_ptr<CoordEntry> &Molecule::atom_entry(int atom) const {
-    if (atom >= atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, false);
     return atoms_[atom];
 }
 
 double Molecule::fmass(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return full_atoms_[atom]->mass();
 }
 
 std::string Molecule::flabel(int atom) const {
-    if (atom >= full_atoms_.size()) throw std::runtime_error("Requested atom doesn't exist.");
+    check_atom_(atom, true);
     return full_atoms_[atom]->label();
 }
 
