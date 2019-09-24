@@ -234,7 +234,7 @@ def run_qcschema(input_data, clean=True):
         input_model = qcng.util.model_wrapper(input_data, qcel.models.ResultInput)
 
         # qcschema should be copied
-        ret_data = run_json_qcschema(input_model.dict(encoding="json"), clean, False)
+        ret_data = run_json_qcschema(input_model.dict(), clean, False)
         ret_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.schema_runner.run_qcschema"}
 
         psi4.extras.exit_printing(start_time=start_time, success=True)
