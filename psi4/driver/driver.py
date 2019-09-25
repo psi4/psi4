@@ -657,6 +657,8 @@ def gradient(name, **kwargs):
 
     elif gradient_type == 'cbs_gufunc':
         cbs_methods = driver_cbs._parse_cbs_gufunc_string(name.lower())[0]
+        for method in cbs_methods:
+            _filter_renamed_methods("gradient", method)
         dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         lowername = name.lower()
         if dertype == 1:
@@ -669,6 +671,7 @@ def gradient(name, **kwargs):
     else:
         # Allow specification of methods to arbitrary order
         lowername = name.lower()
+        _filter_renamed_methods("gradient", lowername)
         lowername, level = driver_util.parse_arbitrary_order(lowername)
         if level:
             kwargs['level'] = level
@@ -681,8 +684,7 @@ def gradient(name, **kwargs):
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
-   
-    _filter_renamed_methods("gradient", lowername)
+
 
     # Commit to procedures[] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)

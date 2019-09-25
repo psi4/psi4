@@ -504,10 +504,10 @@ bool specifies_convergence(std::string const& key) {
 // DCFT deprecation errors first added in 1.4. Feel free to retire after "enough" time. 
 void throw_deprecation_errors(std::string const& key, std::string const& module = "") {
     if (module == "DCFT") {
-		throw PsiException("Rename local options block. All instances of `dcft` should be replaced with `dct`.", __FILE__, __LINE__);
+		throw PsiException("Rename local options block. All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.", __FILE__, __LINE__);
 	}
 	if (key.find("DCFT") != std::string::npos) {
-		throw PsiException("Rename keyword " + key + ". All instances of `dcft` should be replaced with `dct`.", __FILE__, __LINE__);
+		throw PsiException("Rename keyword " + key + ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.", __FILE__, __LINE__);
 	}
 }
 
