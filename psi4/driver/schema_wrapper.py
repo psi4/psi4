@@ -42,9 +42,13 @@ import numpy as np
 import qcelemental as qcel
 import qcengine as qcng
 
-import psi4
-from psi4 import core, header
-from psi4.driver import driver, molutil, p4util
+from psi4 import core
+from psi4.extras import exit_printing
+from psi4.header import print_header
+from psi4.metadata import __version__
+from psi4.driver import driver, p4util
+
+__all__ = ["run_qcschema", "run_json"]
 
 ## Methods and properties blocks
 
@@ -132,16 +136,16 @@ def _serial_translation(value, json=False):
     """
     Translates from Psi4 to JSON data types
     """
-    if isinstance(value, (psi4.core.Dimension)):
+    if isinstance(value, (core.Dimension)):
         return value.to_tuple()
 
     if json:
-        if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
+        if isinstance(value, (core.Matrix, core.Vector)):
             return value.np.ravel().tolist()
         elif isinstance(value, np.ndarray):
             return value.ravel().tolist()
     else:
-        if isinstance(value, (psi4.core.Matrix, psi4.core.Vector)):
+        if isinstance(value, (core.Matrix, core.Vector)):
             return value.np
 
     return value
@@ -198,9 +202,9 @@ def _convert_variables(data, context=None, json=False):
 
 def _clean_psi_environ(do_clean):
     if do_clean:
-        psi4.core.clean_variables()
-        psi4.core.clean_options()
-        psi4.core.clean()
+        core.clean_variables()
+        core.clean_options()
+        core.clean()
 
 
 def _read_output(outfile):
@@ -227,7 +231,7 @@ def run_qcschema(input_data, clean=True):
 
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
-    header.print_header()
+    print_header()
     start_time = datetime.datetime.now()
 
     try:
@@ -235,9 +239,9 @@ def run_qcschema(input_data, clean=True):
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(), clean, False)
-        ret_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.schema_runner.run_qcschema"}
+        ret_data["provenance"] = {"creator": "Psi4", "version": __version__, "routine": "psi4.schema_runner.run_qcschema"}
 
-        psi4.extras.exit_printing(start_time=start_time, success=True)
+        exit_printing(start_time=start_time, success=True)
 
         ret = qcel.models.Result(**ret_data, stdout=_read_output(outfile))
 
@@ -260,7 +264,7 @@ def run_qcschema(input_data, clean=True):
 def run_json(json_data, clean=True):
 
     warnings.warn(
-        "Using `psi4.schema_wrapper.run_qcschema` instead of `psi4.json_warpper.run_json` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.schema_wrapper.run_qcschema` instead of `psi4.json_wrapper.run_json` is deprecated, and in 1.5 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -275,7 +279,7 @@ def run_json(json_data, clean=True):
 
     # Set memory
     if "memory" in json_data:
-        psi4.set_memory(json_data["memory"])
+        set_memory(json_data["memory"])
 
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
@@ -285,7 +289,7 @@ def run_json(json_data, clean=True):
     # Set a few flags
     json_data["raw_output"] = None
     json_data["success"] = False
-    json_data["provenance"] = {"creator": "Psi4", "version": psi4.__version__, "routine": "psi4.json_wrapper.run_json"}
+    json_data["provenance"] = {"creator": "Psi4", "version": __version__, "routine": "psi4.json_wrapper.run_json"}
 
     # Attempt to run the computer
     try:
@@ -342,7 +346,7 @@ def run_json_qcschema(json_data, clean, json_serialization):
         raise KeyError("Schema version of '{}' not understood".format(json_data["schema_version"]))
 
     if json_data.get("nthreads", False) is not False:
-        psi4.set_num_threads(json_data["nthreads"], quiet=True)
+        core.set_num_threads(json_data["nthreads"], quiet=True)
 
 
     # Build molecule
@@ -357,7 +361,7 @@ def run_json_qcschema(json_data, clean, json_serialization):
 
     # Set options
     kwargs = json_data["keywords"].pop("function_kwargs", {})
-    psi4.set_options(json_data["keywords"])
+    p4util.set_options(json_data["keywords"])
 
     # Setup the computation
     method = json_data["model"]["method"]
@@ -386,7 +390,7 @@ def run_json_qcschema(json_data, clean, json_serialization):
     if json_data["extras"].get("wfn_qcvars_only", False):
         psi_props = wfn.variables()
     else:
-        psi_props = psi4.core.variables()
+        psi_props = core.variables()
         for k, v in psi_props.items():
             if k not in json_data["extras"]["qcvars"]:
                 json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
