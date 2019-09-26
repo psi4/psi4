@@ -100,7 +100,7 @@ def cubeprop(wfn, **kwargs):
     cp.compute_properties()
 
 
-def set_memory(inputval, execute=True):
+def set_memory(inputval, execute=True, quiet=False):
     """Function to reset the total memory allocation. Takes memory value
     *inputval* as type int, float, or str; int and float are taken literally
     as bytes to be set, string taken as a unit-containing value (e.g., 30 mb)
@@ -184,7 +184,7 @@ def set_memory(inputval, execute=True):
             .format(memory_amount / 1024**2, memory_amount / 1000**2))
 
     if execute:
-        core.set_memory_bytes(memory_amount)
+        core.set_memory_bytes(memory_amount, quiet)
     return memory_amount
 
 

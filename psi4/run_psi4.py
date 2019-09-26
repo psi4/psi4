@@ -36,6 +36,7 @@ import datetime
 import argparse
 from argparse import RawTextHelpFormatter
 from pathlib import Path
+import qcelemental as qcel
 
 # yapf: disable
 parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
@@ -52,6 +53,8 @@ parser.add_argument("-V", "--version", action='store_true',
                     help="Prints version information.")
 parser.add_argument("-n", "--nthread", default=1,
                     help="Number of threads to use. Psi4 disregards OMP_NUM_THREADS/MKL_NUM_THREADS.")
+parser.add_argument("--memory", default=524288000,
+                    help="The amount of memory to use. Can be specified with units (e.g., '10MB') otherwise bytes is assumed.")
 parser.add_argument("-s", "--scratch",
                     help="Scratch directory to use. Overrides PSI_SCRATCH.")
 parser.add_argument("-m", "--messy", action='store_true',
@@ -70,8 +73,10 @@ parser.add_argument("-l", "--psidatadir",
                     help="Specifies where to look for the Psi4 data directory. Overrides PSIDATADIR. !Warning! expert option.")
 parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
+parser.add_argument("--qcschema", action='store_true',
+                    help="Runs a QCSchema input file. Can either be JSON or Msgpack input.")
 parser.add_argument("--json", action='store_true',
-                    help="Runs a JSON input file. !Warning! experimental option.")
+                    help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
                     help="Runs pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
 
@@ -132,7 +137,7 @@ if len(unknown) > 2:
     raise KeyError("Too many unknown arguments: %s" % str(unknown))
 
 # Figure out output arg
-if args["output"] is None:
+if (args["output"] is None) and (args["qcschema"] is False):
     if args["input"] == "input.dat":
         args["output"] = "output.dat"
     elif args["input"].endswith(".in"):
@@ -216,7 +221,7 @@ args["input"] = os.path.normpath(args["input"])
 # Setup outfile
 if args["append"] is None:
     args["append"] = False
-if args["output"] != "stdout":
+if (args["output"] != "stdout") and (args["qcschema"] is False):
     psi4.core.set_output_file(args["output"], args["append"])
 
 # Set a few options
@@ -224,9 +229,10 @@ if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
 
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
-psi4.core.set_memory_bytes(524288000, True)
+psi4.set_memory(args["memory"], quiet=True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
-psi4.print_header()
+if args["qcschema"] is False:
+    psi4.print_header()
 start_time = datetime.datetime.now()
 
 # Prepare scratch for inputparser
@@ -235,7 +241,43 @@ if args["scratch"] is not None:
         raise Exception("Passed in scratch is not a directory (%s)." % args["scratch"])
     psi4.core.IOManager.shared_object().set_default_path(os.path.abspath(os.path.expanduser(args["scratch"])))
 
-# If this is a json call, compute and stop
+# If this is a json or qcschema call, compute and stop
+if args["qcschema"]:
+
+    # Handle the reading and deserialization manually
+    filename = args["input"]
+    if filename.endswith("json"):
+        encoding = "json"
+        with open(filename, 'r') as handle:
+            # No harm in attempting to read json-ext over json
+            data = qcel.util.deserialize(handle.read(), "json-ext")
+    elif filename.endswith("msgpack"):
+        encoding = "msgpack-ext"
+        with open(filename, 'rb') as handle:
+            data = qcel.util.deserialize(handle.read(), "msgpack-ext")
+    else:
+        raise Exception("qcschema files must either end in '.json' or '.msgpack'.")
+
+    psi4.extras._success_flag_ = True
+    ret = psi4.schema_wrapper.run_qcschema(data)
+
+    if args["output"] is not None:
+        filename = args["output"]
+        if filename.endswith("json"):
+            encoding = "json"
+        elif filename.endswith("msgpack"):
+            encoding = "msgpack-ext"
+        # Else write with whatever encoding came in
+
+    if encoding == "json":
+        with open(filename, 'w') as handle:
+            handle.write(ret.serialize(encoding))
+    elif encoding == "msgpack-ext":
+        with open(filename, 'wb') as handle:
+            handle.write(ret.serialize(encoding))
+
+    sys.exit()
+
 if args["json"]:
 
     with open(args["input"], 'r') as f:
@@ -243,7 +285,7 @@ if args["json"]:
 
     psi4.extras._success_flag_ = True
     psi4.extras.exit_printing(start_time)
-    json_data = psi4.json_wrapper.run_json(json_data)
+    json_data = psi4.schema_wrapper.run_json(json_data)
 
     with open(args["input"], 'w') as f:
         json.dump(json_data, f)
@@ -282,7 +324,7 @@ if args["messy"]:
                     atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
-atexit.register(psi4.extras.exit_printing, start_time)
+atexit.register(psi4.extras.exit_printing, start_time=start_time)
 
 # Run the program!
 try:

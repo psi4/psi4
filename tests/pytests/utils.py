@@ -1,8 +1,15 @@
-import sys
+import os
 import pprint
-pp = pprint.PrettyPrinter(width=120)
+import sys
+import shutil
+
+import qcengine as qcng
 
 import psi4
+import pytest
+
+pp = pprint.PrettyPrinter(width=120)
+
 
 __all__ = [
     'a2a',
@@ -18,6 +25,7 @@ __all__ = [
     'compare_matrices',
     'compare_wavefunctions',
     'compare_fcidumps',
+    'run_psi4_cli',
     'tnm',
 ]
 
@@ -62,3 +70,36 @@ def tnm():
     """Returns the name of the calling function, usually name of test case."""
 
     return sys._getframe().f_back.f_code.co_name
+
+
+def run_psi4_cli(inputs, outputs, extra_commands=None, as_binary=None):
+    """
+    Runs Psi4 from the CLI in a subprocess.
+    """
+
+    if extra_commands is None:
+        extra_commands = []
+
+    cmds = None
+    psidir = os.path.dirname(os.path.abspath(psi4.__file__))
+
+    # Check inplace
+    psi_runner = os.path.join(psidir, "run_psi4.py")
+    if os.path.isfile(psi_runner):
+        cmds = [sys.executable, psi_runner, "--inplace"]
+
+    # Check test install
+    if cmds is None:
+        binpath = os.path.join(os.path.dirname(os.path.dirname(psidir)), "bin")
+        psi_bin = shutil.which('psi4', path=binpath)
+        if psi_bin:
+            cmds = [psi_bin]
+
+    # Check if Psi4 in path
+    if cmds is None:
+        pytest.skip("Could not find Psi4 executable.")
+
+    cmds = cmds + extra_commands + list(inputs.keys())
+
+    success, ret = qcng.util.execute(cmds, inputs, outputs, as_binary=as_binary)
+    return (success, ret)
