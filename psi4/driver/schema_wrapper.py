@@ -239,7 +239,11 @@ def run_qcschema(input_data, clean=True):
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(), clean, False)
-        ret_data["provenance"] = {"creator": "Psi4", "version": __version__, "routine": "psi4.schema_runner.run_qcschema"}
+        ret_data["provenance"] = {
+            "creator": "Psi4",
+            "version": __version__,
+            "routine": "psi4.schema_runner.run_qcschema"
+        }
 
         exit_printing(start_time=start_time, success=True)
 
@@ -264,9 +268,8 @@ def run_qcschema(input_data, clean=True):
 def run_json(json_data, clean=True):
 
     warnings.warn(
-        "Using `psi4.schema_wrapper.run_qcschema` instead of `psi4.json_wrapper.run_json` is deprecated, and in 1.5 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
+        "Using `psi4.schema_wrapper.run_schema` instead of `psi4.json_wrapper.run_qcschema` is deprecated, and in 1.5 it will stop working\n",
+        category=FutureWarning)
 
     # Set scratch
     if "scratch_location" in json_data:
@@ -347,7 +350,6 @@ def run_json_qcschema(json_data, clean, json_serialization):
 
     if json_data.get("nthreads", False) is not False:
         core.set_num_threads(json_data["nthreads"], quiet=True)
-
 
     # Build molecule
     if "schema_name" in json_data["molecule"]:
