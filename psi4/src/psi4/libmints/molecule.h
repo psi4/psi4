@@ -188,6 +188,8 @@ class PSI_API Molecule {
     bool zmat_;
     /// Whether this molecule has at least one cartesian entry
     bool cart_;
+    /// Checks whether atom is within bounds of atom_ or full_atom_
+    void check_atom_(int atom, bool full) const;
 
    public:
     Molecule();
