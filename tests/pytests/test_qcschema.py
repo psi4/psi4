@@ -122,5 +122,13 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
     assert compare_integers(True, parsed, "Result Model Parsed")
     assert compare_integers(-76.22831410207938, ret.return_result, "Return")
 
-def test_qcschema_wavefunction():
-    pass
+def test_qcschema_wavefunction_basis(result_data_fixture):
+    result_data_fixture["protocols"] = {"wavefunction": "orbitals_and_eigenvalues"}
+    ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
+    wfn = ret.wavefunction
+
+    assert len(wfn.basis.center_data) == 2
+    assert len(wfn.basis.atom_map) == 3
+    assert wfn.basis.atom_map[1] == wfn.basis.atom_map[2]
+    assert wfn.basis.nbf == 24
+    assert wfn.restricted

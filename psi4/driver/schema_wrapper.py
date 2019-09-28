@@ -32,6 +32,7 @@ Runs a JSON input psi file.
 import atexit
 import copy
 import datetime
+import json
 import os
 import sys
 import traceback
@@ -131,6 +132,12 @@ _qcschema_translation = {
 #    "": {"variables": },
 
 } # yapf: disable
+
+_qcschema_wavefunction_translation = {
+    "scf": {},
+    "mp2": {},
+
+}
 
 def _serial_translation(value, json=False):
     """
@@ -258,12 +265,12 @@ def _convert_wavefunction(wfn, context=None):
     # Build the correct translation units
     if context is None:
         needed_vars = {}
-        for v in _qcschema_translation.values():
+        for v in _qcschema_wavefunction_translation.values():
             needed_vars.update(v)
     else:
-        needed_vars = _qcschema_translation[context]
+        needed_vars = _qcschema_wavefunction_translation[context]
 
-    ret = {"basis": _conver_basis(wfn.basis()), "restricted": (wfn.same_a_b_orbs() and wfn.same_a_b_dens())}
+    ret = {"basis": _convert_basis(wfn.basisset()), "restricted": (wfn.same_a_b_orbs() and wfn.same_a_b_dens())}
 
     for key, var in needed_vars.items():
 
@@ -312,9 +319,7 @@ def run_qcschema(input_data, clean=True):
     try:
         input_model = qcng.util.model_wrapper(input_data, qcel.models.ResultInput)
 
-        keep_wfn = False
-        if hasattr(input_model, 'protocols'):
-            keep_wfn = input_models.protocols.wavefunction != 'none'
+        keep_wfn = input_model.protocols.wavefunction != 'none'
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
@@ -329,6 +334,7 @@ def run_qcschema(input_data, clean=True):
         ret = qcel.models.Result(**ret_data, stdout=_read_output(outfile))
 
     except Exception as exc:
+        raise
 
         input_data = input_data.copy()
         input_data["stdout"] = _read_output(outfile)
