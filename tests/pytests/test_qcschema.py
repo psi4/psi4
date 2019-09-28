@@ -132,3 +132,11 @@ def test_qcschema_wavefunction_basis(result_data_fixture):
     assert wfn.basis.atom_map[1] == wfn.basis.atom_map[2]
     assert wfn.basis.nbf == 24
     assert wfn.restricted
+
+def test_qcschema_wavefunction_scf_orbitals(result_data_fixture):
+    result_data_fixture["protocols"] = {"wavefunction": "orbitals_and_eigenvalues"}
+    ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
+    wfn = ret.wavefunction
+
+    expected_keys = {'basis', 'restricted', 'scf_orbitals_a', 'scf_eigenvalues_a', 'orbitals_a', 'eigenvalues_a'}
+    assert wfn.dict().keys() == expected_keys

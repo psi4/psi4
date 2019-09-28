@@ -133,11 +133,6 @@ _qcschema_translation = {
 
 } # yapf: disable
 
-_qcschema_wavefunction_translation = {
-    "scf": {},
-    "mp2": {},
-
-}
 
 def _serial_translation(value, json=False):
     """
@@ -262,19 +257,83 @@ def _convert_basis(basis):
 
 def _convert_wavefunction(wfn, context=None):
 
-    # Build the correct translation units
-    if context is None:
-        needed_vars = {}
-        for v in _qcschema_wavefunction_translation.values():
-            needed_vars.update(v)
-    else:
-        needed_vars = _qcschema_wavefunction_translation[context]
+    basis = _convert_basis(wfn.basisset())
+    # We expect CCA ordering.
+    # Psi4 Cartesian is CCA (nothing to do)
+    # Psi4 Spherical is in "Gaussian" reorder
+    # Spherical Map: 0 -1 +1, ... -> -1, ..., 0, ..., +1
 
-    ret = {"basis": _convert_basis(wfn.basisset()), "restricted": (wfn.same_a_b_orbs() and wfn.same_a_b_dens())}
+    spherical_maps = {}
+    for L in range(wfn.basisset().max_am() + 1):
+        mapper = list(range(L * 2 - 1, 0, -2)) + [0] + list(range(2, L * 2 + 1, 2))
+        spherical_maps[L] = np.array(mapper)
 
-    for key, var in needed_vars.items():
+    # Build a flat index that we can transform the AO quantities
+    reorder = True
+    ao_map = []
+    cnt = 0
+    for atom in basis.atom_map:
+        center = basis.center_data[atom]
+        for shell in center.electron_shells:
+            if shell.harmonic_type == "cartesian":
+                ao_map.append(np.arange(cnt, cnt + shell.nfunctions()))
+            else:
+                smap = spherical_maps[shell.angular_momentum[0]]
+                ao_map.append(smap + cnt)
+                reorder = True
 
-        ret[key] = _serial_translation(value)
+            cnt += shell.nfunctions()
+
+    ao_map = np.hstack(ao_map)
+
+    # Build remap functions
+    def re2d(mat, both=True):
+        arr = np.array(mat)
+        if reorder:
+            if both:
+                arr = arr[ao_map[:, None], ao_map]
+            else:
+                arr = arr[ao_map[:, None]]
+        return arr
+
+    def re1d(mat):
+        arr = np.array(mat)
+        if reorder:
+            arr = arr[ao_map]
+
+        return arr
+
+    # Map back out what we can
+    ret = {
+        "basis": basis,
+        "restricted": (wfn.same_a_b_orbs() and wfn.same_a_b_dens()),
+
+        # Return results
+        "orbitals_a": "scf_orbitals_a",
+        "orbitals_b": "scf_orbitals_b",
+        "density_a": "scf_density_ba",
+        "density_b": "scf_density_b",
+        "fock_a": "scf_fock_a",
+        "fock_b": "scf_fock_b",
+        "eigenvalues_a": "scf_eigenvalues_a",
+        "eigenvalues_b": "scf_eigenvalues_b",
+        "occupations_a": "scf_occupations_a",
+        "occupations_b": "scf_occupations_b",
+        # "h_effective_a": re2d(wfn.H()),
+        # "h_effective_b": re2d(wfn.H()),
+
+        # SCF quantities
+        "scf_orbitals_a": re2d(wfn.Ca_subset("AO", "ALL"), both=False),
+        "scf_orbitals_b": re2d(wfn.Cb_subset("AO", "ALL"), both=False),
+        "scf_density_a": re2d(wfn.Da_subset("AO")),
+        "scf_density_b": re2d(wfn.Db_subset("AO")),
+        "scf_fock_a": re2d(wfn.Fa_subset("AO")),
+        "scf_fock_b": re2d(wfn.Fa_subset("AO")),
+        "scf_eigenvalues_a": re1d(wfn.epsilon_a_subset("AO", "ALL")),
+        "scf_eigenvalues_b": re1d(wfn.epsilon_b_subset("AO", "ALL")),
+        # "scf_occupations_a": np.hstack(wfn.occupation_a().nph),
+        # "scf_occupations_b": np.hstack(wfn.occupation_b().nph),
+    }
 
     return ret
 
