@@ -197,6 +197,81 @@ def _convert_variables(data, context=None, json=False):
     return ret
 
 
+def _convert_basis(basis):
+    """Converts a Psi4 basis object to a QCElemental basis.
+    """
+    centers = []
+    symbols = []
+
+    # Loop over centers
+    for c in range(basis.molecule().natom()):
+        center_shells = []
+        symbols.append(basis.molecule().symbol(c).title())
+
+        # Loop over shells *on* a center
+        for s in range(basis.nshell_on_center(c)):
+            shell = basis.shell(basis.shell_on_center(c, s))
+            if shell.is_pure():
+                dtype = "spherical"
+            else:
+                dtype = "cartesian"
+
+            # Build the shell
+            coefs = [[shell.coef(x) for x in range(shell.nprimitive)]]
+            exps = [shell.exp(x) for x in range(shell.nprimitive)]
+            qshell = qcel.models.basis.ElectronShell(angular_momentum=[shell.am],
+                                                     harmonic_type=dtype,
+                                                     exponents=exps,
+                                                     coefficients=coefs)
+            center_shells.append(qshell)
+
+        centers.append(qcel.models.basis.BasisCenter(electron_shells=center_shells))
+
+    # Take unique to prevent duplicate data, doesn't matter too much
+    hashes = [hash(json.dumps(centers[x].dict(), sort_keys=True)) for x in range(len(centers))]
+
+    uniques = {k: v for k, v in zip(hashes, centers)}
+    name_map = {}
+    counter = {}
+
+    # Generate reasonable names
+    for symbol, h in zip(symbols, hashes):
+        if h in name_map:
+            continue
+
+        if symbol in counter:
+            counter[symbol] += 1
+        else:
+            counter[symbol] = 1
+
+        name_map[h] = f"{basis.name()}_{symbol}{counter[symbol]}"
+
+    center_data = {name_map[k]: v for k, v in uniques.items()}
+    atom_map = [name_map[x] for x in hashes]
+
+    ret = qcel.models.BasisSet(name=basis.name(), center_data=center_data, atom_map=atom_map)
+    return ret
+
+
+def _convert_wavefunction(wfn, context=None):
+
+    # Build the correct translation units
+    if context is None:
+        needed_vars = {}
+        for v in _qcschema_translation.values():
+            needed_vars.update(v)
+    else:
+        needed_vars = _qcschema_translation[context]
+
+    ret = {"basis": _conver_basis(wfn.basis()), "restricted": (wfn.same_a_b_orbs() and wfn.same_a_b_dens())}
+
+    for key, var in needed_vars.items():
+
+        ret[key] = _serial_translation(value)
+
+    return ret
+
+
 ## Execution functions
 
 
@@ -237,8 +312,12 @@ def run_qcschema(input_data, clean=True):
     try:
         input_model = qcng.util.model_wrapper(input_data, qcel.models.ResultInput)
 
+        keep_wfn = False
+        if hasattr(input_model, 'protocols'):
+            keep_wfn = input_models.protocols.wavefunction != 'none'
+
         # qcschema should be copied
-        ret_data = run_json_qcschema(input_model.dict(), clean, False)
+        ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
         ret_data["provenance"] = {
             "creator": "Psi4",
             "version": __version__,
@@ -316,7 +395,7 @@ def run_json(json_data, clean=True):
     return json_data
 
 
-def run_json_qcschema(json_data, clean, json_serialization):
+def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     """
     An implementation of the QC JSON Schema (molssi-qc-schema.readthedocs.io/en/latest/index.html#) implementation in Psi4.
 
@@ -445,6 +524,9 @@ def run_json_qcschema(json_data, clean, json_serialization):
 
     json_data["properties"] = props
     json_data["success"] = True
+
+    if keep_wfn:
+        json_data["wavefunction"] = _convert_wavefunction(wfn)
 
     # Reset state
     _clean_psi_environ(clean)
