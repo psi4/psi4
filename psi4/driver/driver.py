@@ -198,6 +198,11 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     return wfn
 
 
+def _filter_renamed_methods(compute, method):
+    r"""Raises UpgradeHelper when a method has been renamed."""
+    if method == "dcft":
+        raise UpgradeHelper(compute + "('dcft')", compute + "('dct')", 1.4, " All instances of 'dcft' should be replaced with 'dct'.")
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -251,7 +256,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | pbeh3c                  | PBEh with dispersion, BSSE, and basis set corrections :ref:`[manual] <sec:gcp>`                               |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                                                 |
+    | dct                     | density cumulant (functional) theory :ref:`[manual] <sec:dct>`                                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order |MollerPlesset| perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`      |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -512,6 +517,8 @@ def energy(name, **kwargs):
     if "/" in lowername:
         return driver_cbs._cbs_gufunc(energy, name, ptype='energy', **kwargs)
 
+    _filter_renamed_methods("energy", lowername)
+
     # Commit to procedures['energy'] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
@@ -650,6 +657,8 @@ def gradient(name, **kwargs):
 
     elif gradient_type == 'cbs_gufunc':
         cbs_methods = driver_cbs._parse_cbs_gufunc_string(name.lower())[0]
+        for method in cbs_methods:
+            _filter_renamed_methods("gradient", method)
         dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         lowername = name.lower()
         if dertype == 1:
@@ -662,6 +671,7 @@ def gradient(name, **kwargs):
     else:
         # Allow specification of methods to arbitrary order
         lowername = name.lower()
+        _filter_renamed_methods("gradient", lowername)
         lowername, level = driver_util.parse_arbitrary_order(lowername)
         if level:
             kwargs['level'] = level
@@ -674,6 +684,7 @@ def gradient(name, **kwargs):
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+
 
     # Commit to procedures[] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
@@ -920,7 +931,7 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | hf                      | HF self consistent field (SCF) :ref:`[manual] <sec:scf>`                                                      |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                                                 |
+    | dct                     | density cumulant (functional) theory :ref:`[manual] <sec:dct>`                                                 |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order |MollerPlesset| perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`      |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1012,6 +1023,8 @@ def optimize(name, **kwargs):
         raise ValidationError("Optimize: Does not support custom Hessian's yet.")
     else:
         hessian_with_method = kwargs.get('hessian_with', lowername)
+
+    _filter_renamed_methods("optimize", lowername)
 
     optstash = p4util.OptionsState(
         ['OPTKING', 'INTRAFRAG_STEP_LIMIT'],
@@ -1217,6 +1230,8 @@ def hessian(name, **kwargs):
     else:
         lowername = name.lower()
 
+    _filter_renamed_methods("frequency", lowername)
+    
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
     dertype = 2
@@ -1460,7 +1475,7 @@ def frequency(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-
+    
     return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one

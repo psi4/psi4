@@ -1,4 +1,4 @@
-#! cc-pvdz H2O Test coupled-pair LCCD against DCFT CEPA0
+#! cc-pvdz H2O Test coupled-pair LCCD against DCT CEPA0
 molecule h2o {
 0 1
 O
@@ -23,11 +23,11 @@ clean()
 
 set reference       uhf
 set ao_basis        none
-set dcft_functional cepa0
+set dct_functional cepa0
 set algorithm       twostep
-energy('dcft')
+energy('dct')
 
-corr2 = variable("DCFT LAMBDA ENERGY")
+corr2 = variable("DCT LAMBDA ENERGY")
 
 
 clean()

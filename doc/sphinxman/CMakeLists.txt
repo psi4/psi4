@@ -50,7 +50,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst
     psimrcc.rst cc.rst dft.rst fnocc.rst optionshandling.rst
     basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst
-    molden.rst cubeprop.rst dcft.rst relativistic.rst dkh.rst proc_py.rst
+    molden.rst cubeprop.rst dct.rst relativistic.rst dkh.rst proc_py.rst
     psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst
     cfour_table_grad.rst libefp.rst cppe.rst conda.rst pcmsolver.rst thermo.rst
     chemps2.rst fisapt.rst plugin_v2rdm_casscf.rst psi4api.rst

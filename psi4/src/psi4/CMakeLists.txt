@@ -29,7 +29,7 @@ foreach(dir_name
   ambit_interface
   cc
   cctransort
-  dcft
+  dct
   detci
   dfep2
   dfmp2

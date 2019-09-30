@@ -1,0 +1,215 @@
+#! DCT calculation for the HF+ using DC-06 functional. This performs both
+#! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
+#! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
+#! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
+#! four-virtual case is avoided. 
+#! The computation is then repeated using the DC-12 functional with the same algorithms.
+
+refscf      = -98.19083407904691   #TEST
+refmp2      = -98.20270550851      #TEST
+refdctscf  = -98.164839047679820  #TEST
+refdct     = -98.207819239792457  #TEST
+
+# DC-12                               #TEST
+refdctscfexact = -98.165972603361965 #TEST
+refdctexact = -98.207614955568658    #TEST
+
+# ODC-06                              #TEST
+refodc06scf = -98.161561565771748     #TEST
+refodc06    = -98.208615166162005     #TEST
+
+# ODC-12                              #TEST
+refodc12scf = -98.163060134490195     #TEST
+refodc12    = -98.208364070486851     #TEST
+
+# ODC-13
+refodc13scf = -98.162361155505053     #TEST
+refodc13    = -98.208451617301733     #TEST
+
+molecule HF {
+1 2
+H
+F 1 R
+
+R = 1.000
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   twostep
+    basis       sto-3g
+    qc_coupling true
+    reference   uhf
+}
+
+#DC-06
+set dct_functional dc-06
+energy('dct')
+
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (two-step, ao_basis=none)");                #TEST
+
+set ao_basis none
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (simultaneous, ao_basis=none)"); #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (simultaneous, ao_basis=none)");            #TEST
+
+set ao_basis disk
+set algorithm twostep
+energy('dct')
+
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (two-step, ao_basis=disk)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (two-step, ao_basis=disk)");                #TEST
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (simultaneous, ao_basis=disk)"); #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (simultaneous, ao_basis=disk)");            #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dct')
+
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type twostep
+energy('dct')
+
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=twostep, ao_basis=none)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=twostep, ao_basis=none)");                #TEST
+
+set ao_basis disk
+set algorithm qc
+set qc_type twostep
+energy('dct')
+
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=twostep, ao_basis=disk)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=twostep, ao_basis=disk)");                #TEST
+
+#DC-12
+set dct_functional dc-12
+set ao_basis none
+set algorithm twostep
+energy('dct')
+
+compare_values(refdctscfexact, variable("DCT SCF ENERGY"), 10, "DC-12 SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdctexact, variable("DCT TOTAL ENERGY"), 10, "DC-12 Energy (two-step, ao_basis=none)");                #TEST
+
+set ao_basis disk
+set algorithm twostep
+energy('dct')
+
+compare_values(refdctscfexact, variable("DCT SCF ENERGY"), 10, "DC-12 SCF Energy (two-step, ao_basis=disk)");     #TEST
+compare_values(refdctexact, variable("DCT TOTAL ENERGY"), 10, "DC-12 Energy (two-step, ao_basis=disk)");                #TEST
+
+set ao_basis none
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refdctscfexact, variable("DCT SCF ENERGY"), 10, "DC-12 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refdctexact, variable("DCT TOTAL ENERGY"), 10, "DC-12 Energy (simultaneous, ao_basis=none)");                #TEST
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refdctscfexact, variable("DCT SCF ENERGY"), 10, "DC-12 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refdctexact, variable("DCT TOTAL ENERGY"), 10, "DC-12 Energy (simultaneous, ao_basis=disk)");                #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dct')
+
+compare_values(refdctscfexact, variable("DCT SCF ENERGY"), 10, "DC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refdctexact, variable("DCT TOTAL ENERGY"), 10, "DC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+
+#ODC-06
+set dct_functional odc-06
+set ao_basis none
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refodc06scf, variable("DCT SCF ENERGY"), 10, "ODC-06 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc06, variable("DCT TOTAL ENERGY"), 10, "ODC-06 Energy (simultaneous, ao_basis=none)");                #TEST
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refodc06scf, variable("DCT SCF ENERGY"), 10, "ODC-06 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc06, variable("DCT TOTAL ENERGY"), 10, "ODC-06 Energy (simultaneous, ao_basis=disk)");                #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dct')
+
+compare_values(refodc06scf, variable("DCT SCF ENERGY"), 10, "ODC-06 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc06, variable("DCT TOTAL ENERGY"), 10, "ODC-06 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type twostep
+energy('dct')
+
+compare_values(refodc06scf, variable("DCT SCF ENERGY"), 10, "ODC-06 SCF Energy (qc, qc_type=twostep, ao_basis=none)");     #TEST
+compare_values(refodc06, variable("DCT TOTAL ENERGY"), 10, "ODC-06 Energy (qc, qc_type=twostep, ao_basis=none)");                #TEST
+
+#ODC-12
+set dct_functional odc-12
+set ao_basis none
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refodc12scf, variable("DCT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc12, variable("DCT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=none)");                #TEST
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dct')
+compare_values(refodc12scf, variable("DCT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc12, variable("DCT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=disk)");                #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dct')
+
+compare_values(refodc12scf, variable("DCT SCF ENERGY"), 10, "ODC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc12, variable("DCT TOTAL ENERGY"), 10, "ODC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+
+#ODC-13
+set dct_functional odc-13
+set ao_basis none
+set algorithm simultaneous
+energy('dct')
+
+compare_values(refodc13scf, variable("DCT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc13, variable("DCT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=none)");                #TEST
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dct')
+compare_values(refodc13scf, variable("DCT SCF ENERGY"), 10, "ODC-13 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refodc13, variable("DCT TOTAL ENERGY"), 10, "ODC-13 Energy (simultaneous, ao_basis=disk)");                #TEST
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dct')
+
+compare_values(refodc13scf, variable("DCT SCF ENERGY"), 10, "ODC-13 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc13, variable("DCT TOTAL ENERGY"), 10, "ODC-13 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST

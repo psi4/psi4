@@ -109,8 +109,8 @@ std::shared_ptr<PsiOutStream> outfile;
 namespace adc {
 SharedWavefunction adc(SharedWavefunction, Options&);
 }
-namespace dcft {
-SharedWavefunction dcft(SharedWavefunction, Options&);
+namespace dct {
+SharedWavefunction dct(SharedWavefunction, Options&);
 }
 namespace detci {
 SharedWavefunction detci(SharedWavefunction, Options&);
@@ -294,9 +294,9 @@ PsiReturnType py_psi_mrcc_load_densities(SharedWavefunction ref_wfn, const py::d
     return mrcc::mrcc_load_ccdensities(ref_wfn, Process::environment.options, level);
 }
 
-SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn) {
-    py_psi_prepare_options_for_module("DCFT");
-    return dcft::dcft(ref_wfn, Process::environment.options);
+SharedWavefunction py_psi_dct(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("DCT");
+    return dct::dct(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn) {
@@ -501,10 +501,22 @@ bool specifies_convergence(std::string const& key) {
     return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
+// DCFT deprecation errors first added in 1.4. Feel free to retire after "enough" time. 
+void throw_deprecation_errors(std::string const& key, std::string const& module = "") {
+    if (module == "DCFT") {
+		throw PsiException("Rename local options block. All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.", __FILE__, __LINE__);
+	}
+	if (key.find("DCFT") != std::string::npos) {
+		throw PsiException("Rename keyword " + key + ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.", __FILE__, __LINE__);
+	}
+}
+
 Options& py_psi_get_options() { return Process::environment.options; }
 
 bool py_psi_set_local_option_string(std::string const& module, std::string const& key, std::string const& value) {
     std::string nonconst_key = to_upper(key);
+
+    throw_deprecation_errors(key, module);
 
     std::string module_temp = Process::environment.options.get_current_module();
     Process::environment.options.set_current_module(module);
@@ -528,6 +540,8 @@ bool py_psi_set_local_option_string(std::string const& module, std::string const
 
 bool py_psi_set_local_option_int(std::string const& module, std::string const& key, int value) {
     std::string nonconst_key = to_upper(key);
+    
+	throw_deprecation_errors(key, module);
 
     std::string module_temp = Process::environment.options.get_current_module();
     Process::environment.options.set_current_module(module);
@@ -550,13 +564,18 @@ bool py_psi_set_local_option_int(std::string const& module, std::string const& k
 bool py_psi_set_local_option_double(std::string const& module, std::string const& key, double value) {
     std::string nonconst_key = to_upper(key);
 
+	throw_deprecation_errors(key, module);
+
     Process::environment.options.set_double(module, nonconst_key, value);
     return true;
 }
 
 bool py_psi_set_global_option_string(std::string const& key, std::string const& value) {
     std::string nonconst_key = to_upper(key);
-    Data& data = Process::environment.options[nonconst_key];
+    
+	throw_deprecation_errors(key);
+
+	Data& data = Process::environment.options[nonconst_key];
 
     if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, value);
@@ -573,6 +592,9 @@ bool py_psi_set_global_option_string(std::string const& key, std::string const& 
 
 bool py_psi_set_global_option_int(std::string const& key, int value) {
     std::string nonconst_key = to_upper(key);
+	
+	throw_deprecation_errors(key);
+
     Data& data = Process::environment.options[nonconst_key];
 
     if (data.type() == "double") {
@@ -590,6 +612,8 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
 
 bool py_psi_set_global_option_double(std::string const& key, double value) {
     std::string nonconst_key = to_upper(key);
+	
+	throw_deprecation_errors(key);
 
     Process::environment.options.set_global_double(nonconst_key, value);
     return true;
@@ -598,6 +622,8 @@ bool py_psi_set_global_option_double(std::string const& key, double value) {
 bool py_psi_set_local_option_array(std::string const& module, std::string const& key, const py::list& values,
                                    DataType* entry = nullptr) {
     std::string nonconst_key = to_upper(key);
+
+    throw_deprecation_errors(key, module);
 
     // Assign a new head entry on the first time around only
     if (entry == nullptr) {
@@ -645,6 +671,9 @@ bool py_psi_set_local_option_array_wrapper(std::string const& module, std::strin
 
 bool py_psi_set_global_option_array(std::string const& key, py::list values, DataType* entry = nullptr) {
     std::string nonconst_key = to_upper(key);
+
+    throw_deprecation_errors(key);
+
     // Assign a new head entry on the first time around only
     if (entry == nullptr) {
         // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
@@ -1173,7 +1202,7 @@ PYBIND11_MODULE(core, core) {
     core.def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
     // core.def("scf", py_psi_scf, "Runs the SCF code.");
-    core.def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
+    core.def("dct", py_psi_dct, "Runs the density cumulant (functional) theory code.");
     core.def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
     core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");

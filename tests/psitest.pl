@@ -66,7 +66,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 # definitions that default tester knows about
 # should match lib/python/driver.py
 @PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "property");
-@PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2", "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "cc2", "ccsd", "ccsd(t)", "detci", "eom_ccsd", "eom-ccsd", "eom_cc2", "eom-cc2", "eom_cc3", "eom-cc3", "bccd", "bccd_t");
+@PSITEST_WFNS = ("scf", "mcscf", "dct", "dfmp2", "dfcc", "mp2", "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "cc2", "ccsd", "ccsd(t)", "detci", "eom_ccsd", "eom-ccsd", "eom_cc2", "eom-cc2", "eom_cc3", "eom-cc3", "bccd", "bccd_t");
 @PSITEST_GRADIENTS = ("scf", "ccsd", "ccsd(t)", "mp2", "eom_ccsd", "eom-ccsd");
 @PSITEST_RESPONSE = ("ccsd", "cc2");
 
@@ -159,7 +159,7 @@ sub do_tests
           if ($wfn eq "EOM-CCSD" || $wfn eq "eom-ccsd") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CC3" || $wfn eq "eom_cc3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
           if ($wfn eq "EOM-CC3" || $wfn eq "eom-cc3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
-          if ($wfn eq "DCFT")     { $fail |= compare_dcft_energy(); last SWITCH2; }
+          if ($wfn eq "DCT")      { $fail |= compare_dct_energy(); last SWITCH2; }
           if ($wfn eq "BCCD")     { $fail |= compare_bccd_energy(); last SWITCH2; }
           if ($wfn eq "BCCD_T")   { $fail |= compare_bccd_t_energy(); last SWITCH2; }
           if ($wfn eq "CASSCF")   { $fail |= compare_casscf_energy(); last SWITCH2; }
@@ -439,17 +439,17 @@ sub compare_eomcc3_energy
   return $fail;
 }         
 
-sub compare_dcft_energy
+sub compare_dct_energy
 {
   my $fail = 0;
   my $REF_FILE = "$SRC_PATH/output.ref";
   my $TEST_FILE = "output.dat";
 
-  if(abs(seek_dcft($REF_FILE) - seek_dcft($TEST_FILE)) > $PSITEST_ETOL) {
-    fail_test("DCFT energy"); $fail = 1;
+  if(abs(seek_dct($REF_FILE) - seek_dct($TEST_FILE)) > $PSITEST_ETOL) {
+    fail_test("DCT energy"); $fail = 1;
   }
   else {
-    pass_test("DCFT energy");
+    pass_test("DCT energy");
   }
   
   return $fail;
@@ -1555,7 +1555,7 @@ sub seek_scf
     elsif (/\* SCF total energy\s+=\s+(-\d+\.\d+)/) {
       return $1;
     }elsif(/Total Hartree-Fock energy\s+=\s+(-\d+\.\d+)/) {
-      # This is how the DCFT code reports it
+      # This is how the DCT code reports it
       return $1;
     }
   }
@@ -1757,13 +1757,13 @@ sub seek_bccd
   exit 1;
 }
 
-sub seek_dcft
+sub seek_dct
 {
   open(OUT, "$_[0]") || die "cannot open $_[0] $!";
   @datafile = <OUT>;
   close(OUT);
 
-  $match = "DCFT Total Energy";
+  $match = "DCT Total Energy";
   $linenum = 0;
   $lastiter = 0;
 
@@ -1774,13 +1774,13 @@ sub seek_dcft
     $linenum++;
   }
 
-  ($junk, $dcft) = split (/=\s+/, $datafile[$lastiter]);
+  ($junk, $dct) = split (/=\s+/, $datafile[$lastiter]);
 
-  if($dcft != 0.0) {
-    return $dcft;
+  if($dct != 0.0) {
+    return $dct;
   }
 
-  printf "Error: Could not find DCFT energy in $_[0].\n";
+  printf "Error: Could not find DCT energy in $_[0].\n";
   exit 1;
 }
 
