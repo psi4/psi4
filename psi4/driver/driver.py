@@ -499,6 +499,8 @@ def energy(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
+    core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
+
     # Bounce to CP if bsse kwarg
     if kwargs.get('bsse_type', None) is not None:
         return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
@@ -605,6 +607,8 @@ def gradient(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    
+    core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
     # Figure out what kind of gradient this is
     if hasattr(name, '__call__'):
