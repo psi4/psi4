@@ -282,7 +282,7 @@ def run_json(json_data, clean=True):
 
     # Set memory
     if "memory" in json_data:
-        set_memory(json_data["memory"])
+        p4util.set_memory(json_data["memory"])
 
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
