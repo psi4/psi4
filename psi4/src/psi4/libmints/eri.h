@@ -36,11 +36,12 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libmints/twobody.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
 #include "psi4/psi4-dec.h"
 
 namespace psi {
 
-class BasisSet;
 class TwoBodyAOInt;
 class IntegralFactory;
 class Fjt;
@@ -330,7 +331,7 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
             std::tie(blocks12_, pairs12_) = build_shell_pair_list(basis1(), basis2());
             if (basis1() == basis3() && basis2() == basis4()) {
                 pairs34_ = pairs12_;
-                blocks34_ = blocks34_;
+                blocks34_ = blocks12_;
             } else {
                 std::tie(blocks34_, pairs34_) = build_shell_pair_list(basis3(), basis4());
             }
