@@ -265,8 +265,9 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         }
         // If we are about to end up with no valence electrons,
         // unfreeze electrons from the largest shell in the molecule
-        if (mol_valence <= 0) num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
-        return num_frozen_el/2;
+        if (mol_valence <= 0)
+            num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
+        return num_frozen_el / 2;
     } else {
         // Options are filtered in read_options.cc; allowed strings are:
         // TRUE, FALSE, -1, -2, -3
@@ -293,7 +294,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // If we are about to end up with no valence electrons,
         // throw an exception.
         if (mol_valence <= 0) throw PSIEXCEPTION("Cannot freeze the requested previous shell: valence <= 0.");
-        return num_frozen_el/2;
+        return num_frozen_el / 2;
     }
 }
 
@@ -854,11 +855,12 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
                                   &uexponents_[ustart + atom_nprim], puream, n, xyz_ptr, bf_count);
-                auto l2c = std::vector<double>(&uoriginal_coefficients_[ustart + atom_nprim],
-                                               &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
-                auto l2e = std::vector<double>(&uexponents_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim + shell_nprim]);
+                auto l2c = libint2::svector<double>(&uoriginal_coefficients_[ustart + atom_nprim],
+                                                    &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
+                auto l2e = libint2::svector<double>(&uexponents_[ustart + atom_nprim],
+                                                    &uexponents_[ustart + atom_nprim + shell_nprim]);
                 l2_shells_[shell_count] =
-                    libint2::Shell{l2e, {{am, puream, l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}};
+                    libint2::Shell{l2e, {{am, static_cast<bool>(puream), l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}};
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }
