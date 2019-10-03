@@ -2318,6 +2318,10 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
         Kgrad.push_back(std::make_shared<Matrix>("KGrad",natom,3));
     }
 
+    // TODO: this should be deleted when libint1 is removed
+    Options& options = Process::environment.options;
+    bool useTranslationalInvariance = options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+
     const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
     size_t npairs = shell_pairs.size();
     size_t npairs2 = npairs * npairs;
@@ -2397,30 +2401,67 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
         Cx = 0.0; Cy = 0.0; Cz = 0.0;
         Dx = 0.0; Dy = 0.0; Dz = 0.0;
         delta = 0L;
-        for (int p = 0; p < Psize; p++) {
-            for (int q = 0; q < Qsize; q++) {
-                for (int r = 0; r < Rsize; r++) {
-                    for (int s = 0; s < Ssize; s++) {
-                        Dpq = Dtp[p + Poff][q + Qoff];
-                        Drs = Dtp[r + Roff][s + Soff];
-                        val = prefactor * Dpq * Drs;
-                        Ax += val * buffer[0 * stride + delta];
-                        Ay += val * buffer[1 * stride + delta];
-                        Az += val * buffer[2 * stride + delta];
-                        Cx += val * buffer[3 * stride + delta];
-                        Cy += val * buffer[4 * stride + delta];
-                        Cz += val * buffer[5 * stride + delta];
-                        Dx += val * buffer[6 * stride + delta];
-                        Dy += val * buffer[7 * stride + delta];
-                        Dz += val * buffer[8 * stride + delta];
-                        delta++;
+        if(useTranslationalInvariance) {
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    for (int r = 0; r < Rsize; r++) {
+                        for (int s = 0; s < Ssize; s++) {
+                            Dpq = Dtp[p + Poff][q + Qoff];
+                            Drs = Dtp[r + Roff][s + Soff];
+                            val = prefactor * Dpq * Drs;
+                            Ax += val * buffer[0 * stride + delta];
+                            Ay += val * buffer[1 * stride + delta];
+                            Az += val * buffer[2 * stride + delta];
+                            Cx += val * buffer[3 * stride + delta];
+                            Cy += val * buffer[4 * stride + delta];
+                            Cz += val * buffer[5 * stride + delta];
+                            Dx += val * buffer[6 * stride + delta];
+                            Dy += val * buffer[7 * stride + delta];
+                            Dz += val * buffer[8 * stride + delta];
+                            delta++;
+                        }
                     }
                 }
             }
+            Bx = -(Ax + Cx + Dx);
+            By = -(Ay + Cy + Dy);
+            Bz = -(Az + Cz + Dz);
+            printf("A %10.6f %10.6f %10.6f\n", Ax, Ay, Az);
+            printf("B %10.6f %10.6f %10.6f\n", Bx, By, Bz);
+            printf("C %10.6f %10.6f %10.6f\n", Cx, Cy, Cz);
+            printf("D %10.6f %10.6f %10.6f\n", Dx, Dy, Dz);
+            printf("\n");
+        } else {
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    for (int r = 0; r < Rsize; r++) {
+                        for (int s = 0; s < Ssize; s++) {
+                            Dpq = Dtp[p + Poff][q + Qoff];
+                            Drs = Dtp[r + Roff][s + Soff];
+                            val = prefactor * Dpq * Drs;
+                            Ax += val * buffer[0 * stride + delta];
+                            Ay += val * buffer[1 * stride + delta];
+                            Az += val * buffer[2 * stride + delta];
+                            Bx += val * buffer[3 * stride + delta];
+                            By += val * buffer[4 * stride + delta];
+                            Bz += val * buffer[5 * stride + delta];
+                            Dx += val * buffer[6 * stride + delta];
+                            Dy += val * buffer[7 * stride + delta];
+                            Dz += val * buffer[8 * stride + delta];
+                            Cx += val * buffer[9 * stride + delta];
+                            Cy += val * buffer[10 * stride + delta];
+                            Cz += val * buffer[11 * stride + delta];
+                            delta++;
+                        }
+                    }
+                }
+            }
+            printf("A %10.6f %10.6f %10.6f\n", Ax, Ay, Az);
+            printf("B %10.6f %10.6f %10.6f\n", Bx, By, Bz);
+            printf("C %10.6f %10.6f %10.6f\n", Cx, Cy, Cz);
+            printf("D %10.6f %10.6f %10.6f\n", Dx, Dy, Dz);
+            printf("\n");
         }
-        Bx = -(Ax + Cx + Dx);
-        By = -(Ay + Cy + Dy);
-        Bz = -(Az + Cz + Dz);
 
         Jp[Pcenter][0] += Ax;
         Jp[Pcenter][1] += Ay;
@@ -2442,41 +2483,79 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
         Cx = 0.0; Cy = 0.0; Cz = 0.0;
         Dx = 0.0; Dy = 0.0; Dz = 0.0;
         delta = 0L;
-        for (int p = 0; p < Psize; p++) {
-            for (int q = 0; q < Qsize; q++) {
-                for (int r = 0; r < Rsize; r++) {
-                    for (int s = 0; s < Ssize; s++) {
-                        val = 0.0;
-                        Dpq = Dap[p + Poff][r + Roff];
-                        Drs = Dap[q + Qoff][s + Soff];
-                        val += prefactor * Dpq * Drs;
-                        Dpq = Dap[p + Poff][s + Soff];
-                        Drs = Dap[q + Qoff][r + Roff];
-                        val += prefactor * Dpq * Drs;
-                        Dpq = Dbp[p + Poff][r + Roff];
-                        Drs = Dbp[q + Qoff][s + Soff];
-                        val += prefactor * Dpq * Drs;
-                        Dpq = Dbp[p + Poff][s + Soff];
-                        Drs = Dbp[q + Qoff][r + Roff];
-                        val += prefactor * Dpq * Drs;
-                        val *= 0.5;
-                        Ax += val * buffer[0 * stride + delta];
-                        Ay += val * buffer[1 * stride + delta];
-                        Az += val * buffer[2 * stride + delta];
-                        Cx += val * buffer[3 * stride + delta];
-                        Cy += val * buffer[4 * stride + delta];
-                        Cz += val * buffer[5 * stride + delta];
-                        Dx += val * buffer[6 * stride + delta];
-                        Dy += val * buffer[7 * stride + delta];
-                        Dz += val * buffer[8 * stride + delta];
-                        delta++;
+        if(useTranslationalInvariance){
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    for (int r = 0; r < Rsize; r++) {
+                        for (int s = 0; s < Ssize; s++) {
+                            val = 0.0;
+                            Dpq = Dap[p + Poff][r + Roff];
+                            Drs = Dap[q + Qoff][s + Soff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dap[p + Poff][s + Soff];
+                            Drs = Dap[q + Qoff][r + Roff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dbp[p + Poff][r + Roff];
+                            Drs = Dbp[q + Qoff][s + Soff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dbp[p + Poff][s + Soff];
+                            Drs = Dbp[q + Qoff][r + Roff];
+                            val += prefactor * Dpq * Drs;
+                            val *= 0.5;
+                            Ax += val * buffer[0 * stride + delta];
+                            Ay += val * buffer[1 * stride + delta];
+                            Az += val * buffer[2 * stride + delta];
+                            Cx += val * buffer[3 * stride + delta];
+                            Cy += val * buffer[4 * stride + delta];
+                            Cz += val * buffer[5 * stride + delta];
+                            Dx += val * buffer[6 * stride + delta];
+                            Dy += val * buffer[7 * stride + delta];
+                            Dz += val * buffer[8 * stride + delta];
+                            delta++;
+                        }
+                    }
+                }
+            }
+            Bx = -(Ax + Cx + Dx);
+            By = -(Ay + Cy + Dy);
+            Bz = -(Az + Cz + Dz);
+        } else {
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    for (int r = 0; r < Rsize; r++) {
+                        for (int s = 0; s < Ssize; s++) {
+                            val = 0.0;
+                            Dpq = Dap[p + Poff][r + Roff];
+                            Drs = Dap[q + Qoff][s + Soff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dap[p + Poff][s + Soff];
+                            Drs = Dap[q + Qoff][r + Roff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dbp[p + Poff][r + Roff];
+                            Drs = Dbp[q + Qoff][s + Soff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dbp[p + Poff][s + Soff];
+                            Drs = Dbp[q + Qoff][r + Roff];
+                            val += prefactor * Dpq * Drs;
+                            val *= 0.5;
+                            Ax += val * buffer[0 * stride + delta];
+                            Ay += val * buffer[1 * stride + delta];
+                            Az += val * buffer[2 * stride + delta];
+                            Bx += val * buffer[3 * stride + delta];
+                            By += val * buffer[4 * stride + delta];
+                            Bz += val * buffer[5 * stride + delta];
+                            Dx += val * buffer[6 * stride + delta];
+                            Dy += val * buffer[7 * stride + delta];
+                            Dz += val * buffer[8 * stride + delta];
+                            Cx += val * buffer[9 * stride + delta];
+                            Cy += val * buffer[10 * stride + delta];
+                            Cz += val * buffer[11 * stride + delta];
+                            delta++;
+                        }
                     }
                 }
             }
         }
-        Bx = -(Ax + Cx + Dx);
-        By = -(Ay + Cy + Dy);
-        Bz = -(Az + Cz + Dz);
 
         Kp[Pcenter][0] += Ax;
         Kp[Pcenter][1] += Ay;

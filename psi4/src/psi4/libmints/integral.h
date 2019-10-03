@@ -36,6 +36,8 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include <vector>
 
+#include <libint2/engine.h>
+
 #include "onebody.h"
 #include "twobody.h"
 
@@ -393,6 +395,9 @@ class PSI_API IntegralFactory {
     std::shared_ptr<BasisSet> bs3_;
     /// Center 4 basis set
     std::shared_ptr<BasisSet> bs4_;
+
+    /// An enum describing whether each of the four basis sets are dummies
+    libint2::BraKet braket_;
 
     /// Provides ability to transform to sphericals (d=0, f=1, g=2)
     std::vector<SphericalTransform> spherical_transforms_;

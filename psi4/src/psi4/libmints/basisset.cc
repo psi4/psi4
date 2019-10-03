@@ -858,7 +858,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                                                &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
                 auto l2e = std::vector<double>(&uexponents_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim + shell_nprim]);
                 l2_shells_[shell_count] =
-                    libint2::Shell({l2e, {{am, puream, l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}});
+                    libint2::Shell{l2e, {{am, puream, l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}};
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }

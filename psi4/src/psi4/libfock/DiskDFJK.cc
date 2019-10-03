@@ -588,7 +588,6 @@ void DiskDFJK::initialize_JK_core() {
             }
         }
     }
-
     timer_off("JK: (A|mn)");
 
     delete[] buffer;
