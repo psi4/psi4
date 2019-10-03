@@ -134,9 +134,14 @@ get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 
-# bad caps
+# CHOOSE! this one for `make export` libint2 library (bad caps)
 find_package(libint2 2.6 CONFIG REQUIRED) # COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
+
+# CHOOSE! this one for pure cmake libint2 library
+find_package(Libint2 CONFIG REQUIRED) # 2.6 COMPONENTS ${MAX_AM_ERI})
+get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
+
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 
