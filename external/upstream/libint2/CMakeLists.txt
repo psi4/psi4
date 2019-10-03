@@ -39,8 +39,8 @@ else()
                    #-DONEBODY_MAX_AM=4  # don't mess with this one, causes errors
                    -DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
                    -DMULTIPOLE_MAX_ORDER=4
-                   -DENABLE_ERI=1
-                   -DENABLE_ERI3=1
+                   -DENABLE_ERI=2
+                   -DENABLE_ERI3=2
                    -DENABLE_ERI2=2
                    -DMPFR_ROOT=${MPFR_ROOT}
                    -DBOOST_ROOT=${BOOST_ROOT}
@@ -51,9 +51,9 @@ else()
                    -DBUILD_SHARED=${_so_only}
                    -DBUILD_STATIC=${_a_only}
         CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                         -DERI_MAX_AM:STRING=4;3
-                         -DERI3_MAX_AM:STRING=3
-                         -DERI2_MAX_AM:STRING=3
+                         -DERI_MAX_AM:STRING=5;5;5
+                         -DERI3_MAX_AM:STRING=6
+                         -DERI2_MAX_AM:STRING=6
     )
 
     # CHOOSE! `make export`
