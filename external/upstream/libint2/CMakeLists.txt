@@ -35,17 +35,13 @@ else()
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                   #-DMAX_AM_ERI=${MAX_AM_ERI}
                    -DENABLE_ONEBODY=1
-                   -DONEBODY_MAX_AM=4
+                   #-DONEBODY_MAX_AM=4  # don't mess with this one, causes errors
                    -DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
                    -DMULTIPOLE_MAX_ORDER=4
-                   -DENABLE_ERI=2
-                   -DERI_MAX_AM="4;3;3"
-                   -DENABLE_ERI3=2
-                   -DERI3_MAX_AM=3
+                   -DENABLE_ERI=1
+                   -DENABLE_ERI3=1
                    -DENABLE_ERI2=2
-                   -DERI2_MAX_AM=3
                    -DMPFR_ROOT=${MPFR_ROOT}
                    -DBOOST_ROOT=${BOOST_ROOT}
                    -DEigen3_DIR=${Eigen3_DIR}
@@ -54,9 +50,11 @@ else()
                    -DLIBINT2_SHGAUSS_ORDERING=gaussian
                    -DBUILD_SHARED=${_so_only}
                    -DBUILD_STATIC=${_a_only}
-                   ## OpenMP irrelevant
-                   #-DENABLE_XHOST=${ENABLE_XHOST}
-        CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+        CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                         -DERI_MAX_AM:STRING=4;3
+                         -DERI3_MAX_AM:STRING=3
+                         -DERI2_MAX_AM:STRING=3
+    )
 
     # CHOOSE! `make export`
     set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
