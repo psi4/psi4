@@ -51,9 +51,9 @@ else()
                    -DBUILD_SHARED=${_so_only}
                    -DBUILD_STATIC=${_a_only}
         CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                         -DERI_MAX_AM:STRING=5;5;5
-                         -DERI3_MAX_AM:STRING=6
-                         -DERI2_MAX_AM:STRING=6
+                         -DWITH_ERI_MAX_AM:STRING=4;4;4
+                         -DWITH_ERI3_MAX_AM:STRING=5
+                         -DWITH_ERI2_MAX_AM:STRING=5
     )
 
     # CHOOSE! `make export`
