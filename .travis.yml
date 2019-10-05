@@ -59,6 +59,7 @@ install:
       dftd3
       gcp
       resp
+      pycppe
       pylibefp
       snsmp2
       mp2d
@@ -71,7 +72,6 @@ install:
       qcengine
       pybind11
       -c conda-forge
-  - conda remove gau2grid --force
   - conda list
 
 before_script:
