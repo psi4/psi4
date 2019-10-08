@@ -32,6 +32,10 @@ import numpy as np
 from .factory import Matrix_
 
 
+def name_unary_test(ni, func, dtype):
+    return f"  N(G): {ni} || G(A): 0 || {func}(A) || {np.dtype(dtype).name}"
+
+
 def make_random_tensor_2d(rdim, cdim, symmetry=0, dtype=np.float, builder="random"):
     """Generate a blocked matrix with random entries.
 
@@ -53,6 +57,28 @@ def make_random_tensor_2d(rdim, cdim, symmetry=0, dtype=np.float, builder="rando
     for h in range(m.nirrep):
         block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
         m[h] = _make_block[builder](block_shape, dtype=dtype)
+    return m
+
+
+def make_tensor_2d_from_block(rdim, cdim, block, symmetry=0):
+    """Generate a blocked matrix with blocks as specified.
+
+    Parameters
+    ----------
+    rdim : Dimension
+        Row dimensions
+    cdim : Dimension
+        Column dimensions
+    block :
+        The block to use
+    symmetry: int
+        Overall tensor symmetry
+    """
+    m = Matrix_(label='test', rowspi=rdim, colspi=cdim, symmetry=symmetry, dtype=block.dtype)
+
+    for h in range(m.nirrep):
+        block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
+        m[h] = block
     return m
 
 

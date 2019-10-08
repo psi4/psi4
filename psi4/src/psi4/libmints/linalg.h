@@ -328,6 +328,10 @@ using EigenResult = std::tuple<SharedTensor<T, 1>, SharedTensor<T, 2>>;
 
 template <typename T, typename U = std::complex<typename detail::is_complex<T>::real_type>>
 auto eig(const SharedTensor<T, 2>& in) -> EigenResult<U> {
+    if (in->symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
     auto tmp = std::vector<eig_detail::Result<U>>(in->nirrep());
 
     std::transform(in->cbegin(), in->cend(), tmp.begin(),
@@ -349,6 +353,10 @@ auto eig(const SharedTensor<T, 2>& in) -> EigenResult<U> {
 
 template <typename T, typename U = std::complex<typename detail::is_complex<T>::real_type>>
 auto eigvals(const SharedTensor<T, 2>& in) -> std::shared_ptr<eig_detail::Eigvals<U>> {
+    if (in->symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
     auto eigvals = std::make_shared<eig_detail::Eigvals<U>>("Eigenvalues of" + in->label(), in->rowspi());
     std::transform(in->cbegin(), in->cend(), eigvals->begin(),
                    [](const typename Tensor<T, 2>::block_type& blk) ->
@@ -358,6 +366,10 @@ auto eigvals(const SharedTensor<T, 2>& in) -> std::shared_ptr<eig_detail::Eigval
 
 template <typename T>
 auto eigh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> EigenResult<T> {
+    if (in->symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
     auto tmp = std::vector<eig_detail::Result<T>>(in->nirrep());
 
     std::transform(in->cbegin(), in->cend(), tmp.begin(),
@@ -379,6 +391,10 @@ auto eigh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> EigenResult<T> {
 
 template <typename T>
 auto eigvalsh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> std::shared_ptr<eig_detail::Eigvals<T>> {
+    if (in->symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
     auto eigvals = std::make_shared<eig_detail::Eigvals<T>>("Eigenvalues of" + in->label(), in->rowspi());
     std::transform(in->cbegin(), in->cend(), eigvals->begin(),
                    [UPLO](const typename eig_detail::Eigvecs<T>::block_type& blk) ->

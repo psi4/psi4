@@ -49,6 +49,11 @@ using namespace pybind11::literals;
 // NOTE py::overload_cast is _broken_ on Intel < 19. However, using
 // static_cast here would result in overly verbose binding declarations.
 
+// NOTE Using complex, single-precision data will lead to errors as the bindings
+// for std::complex<float> are not in place. Indeed, the C++ standard does not
+// allow mixing float and std::complex<double> so I don't know if this can even
+// be "programmed around".
+
 namespace {
 template <typename T, size_t Rank>
 struct Decorator final {
