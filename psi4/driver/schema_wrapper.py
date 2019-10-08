@@ -86,7 +86,7 @@ _qcschema_translation = {
     "scf": {
         "scf_one_electron_energy": {"variables": "ONE-ELECTRON ENERGY"},
         "scf_two_electron_energy": {"variables": "TWO-ELECTRON ENERGY"},
-        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]},
+        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"], "conversion_factor": (1 / 1 / qcel.constants.dipmom_au2debye)},
         "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
         "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
@@ -169,13 +169,22 @@ def _convert_variables(data, context=None, json=False):
     ret = {}
     for key, var in needed_vars.items():
 
+        conversion_factor = var.get("conversion_factor", 1.0)
+
         # Get the actual variables
         if isinstance(var["variables"], str):
             value = data.get(var["variables"], None)
+            if value:
+                if isinstance(value, (int, float)):
+                    value *= conversion_factor
+                elif isinstance(value, (core.Matrix, core.Vector)):
+                    value.scale(conversion_factor)
         elif isinstance(var["variables"], (list, tuple)):
             value = [data.get(x, None) for x in var["variables"]]
             if not any(value):
                 value = None
+            else:
+                value = [x * conversion_factor for x in value]
         else:
             raise TypeError("variables type not understood.")
 
