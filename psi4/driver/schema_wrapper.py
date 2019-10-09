@@ -42,6 +42,7 @@ import warnings
 import numpy as np
 import qcelemental as qcel
 import qcengine as qcng
+from collections import defaultdict
 
 from psi4 import core
 from psi4.extras import exit_printing
@@ -86,7 +87,7 @@ _qcschema_translation = {
     "scf": {
         "scf_one_electron_energy": {"variables": "ONE-ELECTRON ENERGY"},
         "scf_two_electron_energy": {"variables": "TWO-ELECTRON ENERGY"},
-        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"], "conversion_factor": (1 / 1 / qcel.constants.dipmom_au2debye)},
+        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"], "conversion_factor": (1 / qcel.constants.dipmom_au2debye)},
         "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
         "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
@@ -169,12 +170,12 @@ def _convert_variables(data, context=None, json=False):
     ret = {}
     for key, var in needed_vars.items():
 
-        conversion_factor = var.get("conversion_factor", 1.0)
+        conversion_factor = var.get("conversion_factor", None)
 
         # Get the actual variables
         if isinstance(var["variables"], str):
             value = data.get(var["variables"], None)
-            if value:
+            if value and conversion_factor:
                 if isinstance(value, (int, float)):
                     value *= conversion_factor
                 elif isinstance(value, (core.Matrix, core.Vector)):
@@ -183,7 +184,7 @@ def _convert_variables(data, context=None, json=False):
             value = [data.get(x, None) for x in var["variables"]]
             if not any(value):
                 value = None
-            else:
+            elif conversion_factor:
                 value = [x * conversion_factor for x in value]
         else:
             raise TypeError("variables type not understood.")
@@ -223,15 +224,15 @@ def _convert_basis(basis):
         for s in range(basis.nshell_on_center(c)):
             shell = basis.shell(basis.shell_on_center(c, s))
             if shell.is_pure():
-                dtype = "spherical"
+                htype = "spherical"
             else:
-                dtype = "cartesian"
+                htype = "cartesian"
 
             # Build the shell
             coefs = [[shell.coef(x) for x in range(shell.nprimitive)]]
             exps = [shell.exp(x) for x in range(shell.nprimitive)]
             qshell = qcel.models.basis.ElectronShell(angular_momentum=[shell.am],
-                                                     harmonic_type=dtype,
+                                                     harmonic_type=htype,
                                                      exponents=exps,
                                                      coefficients=coefs)
             center_shells.append(qshell)
@@ -243,17 +244,14 @@ def _convert_basis(basis):
 
     uniques = {k: v for k, v in zip(hashes, centers)}
     name_map = {}
-    counter = {}
+    counter = defaultdict(int)
 
     # Generate reasonable names
     for symbol, h in zip(symbols, hashes):
         if h in name_map:
             continue
 
-        if symbol in counter:
-            counter[symbol] += 1
-        else:
-            counter[symbol] = 1
+        counter[symbol] += 1
 
         name_map[h] = f"{basis.name()}_{symbol}{counter[symbol]}"
 
