@@ -84,6 +84,7 @@ endif()
 target_include_directories(core
   INTERFACE
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
   )
 
 install(TARGETS core
