@@ -162,7 +162,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     # print progress to file and screen
     core.print_out('\n')
     p4util.banner('Loading displacement %d of %d' % (n, ndisp))
-    print(""" %d""" % (n), end=('\n' if (n == ndisp) else ''))
+    print(""" %d""" % (n), end=('\n' if (n == ndisp) else '')) 
     sys.stdout.flush()
 
     parent_group = molecule.point_group()
@@ -187,6 +187,11 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     # Perform the derivative calculation
     derivative, wfn = derivfunc(method, return_wfn=True, molecule=clone, **kwargs)
     displacement["energy"] = core.variable('CURRENT ENERGY')
+
+    # Getting the dipole moment and saving it an numpy array
+    displacement["dipole"] = np.array([core.variable('CURRENT DIPOLE X'),
+                                      core.variable('CURRENT DIPOLE Y'),
+                                      core.variable('CURRENT DIPOLE Z')]) # IN DEBEY!
 
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
@@ -1334,6 +1339,11 @@ def hessian(name, **kwargs):
         H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
+
+        # Assemble dipder from dipoles
+        DDer = driver_findif.assemble_dipder_from_dipole(findif_meta_dict, irrep)
+        core.set_variable('CURRENT DIPOLE DERIVATIVE', DDer)
+        wfn.set_variable('CURRENT DIPOLE DERIVATIVE', DDer)
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
