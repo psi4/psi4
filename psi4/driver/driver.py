@@ -1343,8 +1343,13 @@ def hessian(name, **kwargs):
 
         # Assemble dipder from dipoles
         DDer = driver_findif.assemble_dipder_from_dipole(findif_meta_dict, irrep)
+<<<<<<< HEAD
         core.set_variable('CURRENT DIPOLE GRADIENT', DDer)
         wfn.set_variable('CURRENT DIPOLE GRADIENT', DDer)
+=======
+        core.set_variable('CURRENT DIPOLE DERIVATIVE', DDer)
+        wfn.set_variable('CURRENT DIPOLE DERIVATIVE', DDer)
+>>>>>>> b6e31a792... added dipder modifications in hessian to driver.py
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
