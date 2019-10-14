@@ -30,6 +30,8 @@ import time
 
 import numpy as np
 
+from scipy import linalg 
+
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import p4util
@@ -38,7 +40,7 @@ from psi4.driver import psifiles as psif
 from .sapt_util import print_sapt_var
 
 
-def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
+def _compute_fxc(PQrho, half_Saux, halfp_Saux, x_alpha, rho_thresh=1.e-8):
     """
     Computes the gridless (P|fxc|Q) ALDA tensor.
     """
@@ -66,6 +68,7 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
 
     func_x = core.LibXCFunctional('XC_LDA_X', True)
     func_x.compute_functional(inp, out, dft_size, 2)
+    out["V_RHO_A_RHO_A"].scale(1.0 - x_alpha)
 
     func_c = core.LibXCFunctional('XC_LDA_C_VWN', True)
     func_c.compute_functional(inp, out, dft_size, 2)
@@ -112,16 +115,22 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     # Builds potentials
     W_A = fdds_obj.metric().clone()
-    W_A.axpy(1.0, _compute_fxc(D[0], half_Saux, halfp_Saux, rho_thresh=rho_thresh))
+    W_A.axpy(1.0, _compute_fxc(D[0], half_Saux, halfp_Saux, x_alpha, rho_thresh=rho_thresh))
 
     W_B = fdds_obj.metric().clone()
-    W_B.axpy(1.0, _compute_fxc(D[1], half_Saux, halfp_Saux, rho_thresh=rho_thresh))
+    W_B.axpy(1.0, _compute_fxc(D[1], half_Saux, halfp_Saux, x_alpha, rho_thresh=rho_thresh))
 
     # Nuke the densities
     del D
 
     metric = fdds_obj.metric()
     metric_inv = fdds_obj.metric_inv()
+
+    # Debug
+    # matdir = '/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/'
+    # np.savetxt(matdir + 'W.dat', W_A.to_array().flatten())        
+    # np.savetxt(matdir + 'S.dat', metric.to_array().flatten())        
+    # np.savetxt(matdir + 'Sinv.dat', metric_inv.to_array().flatten())        
 
     # Integrate
     core.print_out("\n   => Time Integration <= \n\n")
@@ -133,6 +142,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     total_uc = 0
     total_c = 0
+    nremoved = 0
+
+    # Debug
+    omega_count = 0
 
     for point, weight in zip(*np.polynomial.legendre.leggauss(leg_points)):
 
@@ -140,42 +153,85 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         lambda_scale = ((2.0 * leg_lambda) / (point + 1.0)**2)
 
         # Monomer A
-        X_A = fdds_obj.form_unc_amplitude("A", omega)
+        if is_hybrid:
+            [X_A, K1LD, K2LD, K2L, K21L] = fdds_obj.form_aux_matrices("A", omega)
+            X_A_uc = X_A.clone()
+            X_A.axpy(-1.0 * x_alpha, K2L)
+
+            # K matrices
+            K_A = K1LD.clone()
+            K_A.scale(-1.0 * x_alpha)
+            K_A.axpy(-1.0 * x_alpha, K2LD)
+            K_A.axpy(x_alpha * x_alpha, K21L)
+        else:
+            X_A = fdds_obj.form_unc_amplitude("A", omega)
+            X_A.scale(-1.0)
+            X_A_uc = X_A.clone()
 
         # Coupled A
         X_A_coupled = X_A.clone()
         XSW_A = core.triplet(X_A, metric_inv, W_A, False, False, False)
+        if is_hybrid:
+            XSW_A.axpy(1.0, K_A)
 
         amplitude_inv = metric.clone()
-        amplitude_inv.axpy(1.0, XSW_A)
-        nremoved = 0
+        amplitude_inv.axpy(-1.0, XSW_A)
         amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        amplitude.transpose_this()
-        X_A_coupled.axpy(-1.0, core.triplet(XSW_A, amplitude, X_A, False, False, False))
-        del XSW_A, amplitude
+        # amplitude.transpose_this()
+        X_A_coupled.axpy(1.0, core.triplet(XSW_A, amplitude, X_A, False, False, False))
 
-        X_B = fdds_obj.form_unc_amplitude("B", omega)
-        # print(np.linalg.norm(X_B))
+        # Debug
+        # matdir = '/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/' + str(omega_count) + '/'
+        # np.savetxt(matdir + 'Xcoup.dat', X_A_coupled.to_array().flatten())        
+        # np.savetxt(matdir + 'XSW.dat', XSW_A.to_array().flatten())        
+        # np.savetxt(matdir + 'amp.dat', amplitude.to_array().flatten())        
+        # np.savetxt(matdir + 'Pinv.dat', P_A_inv.to_array().flatten())        
+        # omega_count += 1
+
+        del XSW_A, amplitude
+        if is_hybrid:
+            del K_A
+
+        # Monomer B
+        if is_hybrid:
+            [X_B, K1LD, K2LD, K2L, K21L] = fdds_obj.form_aux_matrices("B", omega)
+            X_B_uc = X_B.clone()
+            X_B.axpy(-1.0 * x_alpha, K2L)
+            
+            # K matrices
+            K_B = K1LD.clone()
+            K_B.scale(-1.0 * x_alpha)
+            K_B.axpy(-1.0 * x_alpha, K2LD)
+            K_B.axpy(x_alpha * x_alpha, K21L)
+        else:
+            X_B = fdds_obj.form_unc_amplitude("B", omega)
+            X_B.scale(-1.0)
+            X_B_uc = X_B.clone()
 
         # Coupled B
         X_B_coupled = X_B.clone()
         XSW_B = core.triplet(X_B, metric_inv, W_B, False, False, False)
+        if is_hybrid:
+            XSW_B.axpy(1.0, K_B)
 
         amplitude_inv = metric.clone()
         amplitude_inv.axpy(-1.0, XSW_B)
         amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        amplitude.transpose_this()
-        X_B_coupled.axpy(-1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))
+        # amplitude.transpose_this()
+        X_B_coupled.axpy(1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))
+
         del XSW_B, amplitude
+        if is_hybrid:
+            del K_B
 
         # Make sure the results are symmetrized
-        for tensor in [X_A, X_B, X_A_coupled, X_B_coupled]:
+        for tensor in [X_A_uc, X_B_uc, X_A_coupled, X_B_coupled]:
             tensor.add(tensor.transpose())
             tensor.scale(0.5)
 
         # Combine
-        tmp_uc = core.triplet(metric_inv, X_A, metric_inv, False, False, False)
-        value_uc = tmp_uc.vector_dot(X_B)
+        tmp_uc = core.triplet(metric_inv, X_A_uc, metric_inv, False, False, False)
+        value_uc = tmp_uc.vector_dot(X_B_uc)
         del tmp_uc
 
         tmp_c = core.triplet(metric_inv, X_A_coupled, metric_inv, False, False, False)

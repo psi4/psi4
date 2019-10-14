@@ -100,6 +100,20 @@ class FDDS_Dispersion {
     SharedMatrix form_unc_amplitude(std::string monomer, double omega);
 
     /**
+     * Forms the uncoupled amplitude and other PQ matrices in hybrid FDDS dispersion
+     * @param  monomer Monomer "A" or "B"
+     * @param  omega   Time dependent value
+     * @return         Vector of PQ matrics (P|ar) LDar (ar|Q)
+     * @return ret[0]  PQ projector (P|ar) (ar|Q)
+     * @return ret[1]  PQ uncoupled amplitude
+     * @return ret[2]  K1(lambda * d) = (P|ar) LDar (ar|X+Y|Q)
+     * @return ret[3]  K2(lambda * d) = (P|ar) LDar (ar|X-Y|Q)
+     * @return ret[4]  K2(lambda) = (P|ar) Lar (ar|X-Y|Q)
+     * @return ret[5]  K21(lambda) = (P|X-Y|ar) Lar (ar|X+Y|Q)
+     */
+    std::vector<SharedMatrix> form_aux_matrices(std::string monomer, double omega);
+
+    /**
      * Returns the metric matrix
      * @return Metric
      */
@@ -126,7 +140,7 @@ class FDDS_Dispersion {
     SharedMatrix QR(std::string monomer);
 
     SharedMatrix get_tensor_pqQ(std::string name, std::tuple<size_t, size_t, size_t> dimensions);
-
+    
 };  // End FDDS_Dispersion
 }  // namespace sapt
 }  // namespace psi

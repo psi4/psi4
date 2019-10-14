@@ -209,6 +209,7 @@ int C_DGEQLF(int m, int n, double* a, int lda, double* tau, double* work, int lw
 int C_DGEQP3(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work, int lwork);
 PSI_DEPRECATED("DGEQPF will soon be removed from LAPACK. Please use DGEQPF3")
 int C_DGEQPF(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work);
+PSI_API 
 int C_DGEQRF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
 int C_DGERFS(char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr, double* work, int* iwork);
@@ -220,6 +221,7 @@ int C_DGESV(int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb);
 int C_DGESVX(char fact, char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, char equed,
              double* r, double* c, double* b, int ldb, double* x, int ldx, double* rcond, double* ferr, double* berr,
              double* work, int* iwork);
+PSI_API
 int C_DGETRF(int m, int n, double* a, int lda, int* ipiv);
 int C_DGETRI(int n, double* a, int lda, int* ipiv, double* work, int lwork);
 int C_DGETRS(char trans, int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb);
@@ -291,6 +293,7 @@ int C_DORGBR(char vect, int m, int n, int k, double* a, int lda, double* tau, do
 int C_DORGHR(int n, int ilo, int ihi, double* a, int lda, double* tau, double* work, int lwork);
 int C_DORGLQ(int m, int n, int k, double* a, int lda, double* tau, double* work, int lwork);
 int C_DORGQL(int m, int n, int k, double* a, int lda, double* tau, double* work, int lwork);
+PSI_API
 int C_DORGQR(int m, int n, int k, double* a, int lda, double* tau, double* work, int lwork);
 int C_DORGRQ(int m, int n, int k, double* a, int lda, double* tau, double* work, int lwork);
 int C_DORGTR(char uplo, int n, double* a, int lda, double* tau, double* work, int lwork);
@@ -302,6 +305,7 @@ int C_DORMLQ(char side, char trans, int m, int n, int k, double* a, int lda, dou
              double* work, int lwork);
 int C_DORMQL(char side, char trans, int m, int n, int k, double* a, int lda, double* tau, double* c, int ldc,
              double* work, int lwork);
+PSI_API
 int C_DORMQR(char side, char trans, int m, int n, int k, double* a, int lda, double* tau, double* c, int ldc,
              double* work, int lwork);
 int C_DORMR3(char side, char trans, int m, int n, int k, int l, double* a, int lda, double* tau, double* c, int ldc,
@@ -478,6 +482,7 @@ int C_DTRSNA(char job, char howmny, int n, double* t, int ldt, double* vl, int l
 int C_DTRSYL(char trana, char tranb, int isgn, int m, int n, double* a, int lda, double* b, int ldb, double* c, int ldc,
              double* scale);
 int C_DTRTRI(char uplo, char diag, int n, double* a, int lda);
+PSI_API
 int C_DTRTRS(char uplo, char trans, char diag, int n, int nrhs, double* a, int lda, double* b, int ldb);
 PSI_DEPRECATED("DTZRQF will soon be removed from LAPACK. Please use DTZRZF")
 int C_DTZRQF(int m, int n, double* a, int lda, double* tau);

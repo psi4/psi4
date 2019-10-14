@@ -309,5 +309,9 @@ void export_functional(py::module &m) {
         .def("project_densities", &sapt::FDDS_Dispersion::project_densities,
              "Projects a density from the primary AO to auxiliary AO space.")
         .def("form_unc_amplitude", &sapt::FDDS_Dispersion::form_unc_amplitude,
-             "Forms the uncoupled amplitudes for either monomer.");
+             "Forms the uncoupled amplitudes for either monomer.")
+        .def("get_tensor_pqQ", &sapt::FDDS_Dispersion::get_tensor_pqQ,
+             "Debug feature")
+        .def("form_aux_matrices", &sapt::FDDS_Dispersion::form_aux_matrices,
+             "Forms the uncoupled amplitudes and other matrices for either monomer.");
 }
