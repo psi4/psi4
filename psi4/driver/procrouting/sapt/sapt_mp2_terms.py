@@ -162,7 +162,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         XSW_B = core.triplet(X_B, metric_inv, W_B, False, False, False)
 
         amplitude_inv = metric.clone()
-        amplitude_inv.axpy(1.0, XSW_B)
+        amplitude_inv.axpy(-1.0, XSW_B)
         amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
         amplitude.transpose_this()
         X_B_coupled.axpy(-1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))

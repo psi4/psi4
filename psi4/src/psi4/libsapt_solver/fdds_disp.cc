@@ -503,7 +503,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
 
     // Check on memory real quick
     size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    size_t mem_size = 2 * naux * nvir + 2 * naux * naux + nvir * nocc;
+    size_t mem_size = 2 * naux * nvir + naux * naux + nvir * nocc;
     if (mem_size > doubles) {
         std::stringstream message;
         double mem_gb = ((double)(mem_size) / 0.8 * sizeof(double));
@@ -537,7 +537,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
 
     // ==> Contract <==
 
-    size_t dmem = doubles - 2 * naux * naux - nvir * nocc;
+    size_t dmem = doubles - naux * naux - nvir * nocc;
     size_t bsize = dmem / (naux * nvir);
     if (bsize > nocc) {
         bsize = nocc;
