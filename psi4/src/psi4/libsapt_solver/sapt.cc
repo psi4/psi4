@@ -27,10 +27,11 @@
  */
 
 #include "sapt.h"
+
 #include "psi4/lib3index/3index.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
@@ -291,10 +292,10 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 }
 
 void SAPT::get_denom() {
-    auto evals_aoccA = std::make_shared<Vector>(aoccA_);
-    auto evals_virA = std::make_shared<Vector>(nvirA_);
-    auto evals_aoccB = std::make_shared<Vector>(aoccB_);
-    auto evals_virB = std::make_shared<Vector>(nvirB_);
+    auto evals_aoccA = std::make_shared<Vector_<double>>(aoccA_);
+    auto evals_virA = std::make_shared<Vector_<double>>(nvirA_);
+    auto evals_aoccB = std::make_shared<Vector_<double>>(aoccB_);
+    auto evals_virB = std::make_shared<Vector_<double>>(nvirB_);
 
     for (int a = 0; a < aoccA_; a++) evals_aoccA->set(0, a, evalsA_[a + foccA_]);
     for (int r = 0; r < nvirA_; r++) evals_virA->set(0, r, evalsA_[r + noccA_]);

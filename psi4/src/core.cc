@@ -39,10 +39,9 @@
 #include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/cc/ccwave.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/vector.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/writer_file_prefix.h"
 #include "psi4/liboptions/liboptions.h"
@@ -886,8 +885,8 @@ void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
-std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
-    auto empty = std::make_shared<psi::Vector>();
+SharedVector_<double> py_psi_get_atomic_point_charges() {
+    auto empty = std::make_shared<psi::Vector_<double>>();
     return empty;  // charges not added to process.h for environment - yet(?)
 }
 

@@ -109,19 +109,19 @@ template <size_t Rank>
 constexpr bool is_rankn_v = is_rankn<Rank>::value;
 
 template <size_t Rank>
-std::string class_name() {
-    return "Tensor" + std::to_string(Rank);
-}
+struct ClassName final {
+    static std::string name() { return "Tensor" + std::to_string(Rank); }
+};
 
 template <>
-std::string class_name<1>() {
-    return "Vector";
-}
+struct ClassName<1> final {
+    static std::string name() { return "Vector"; }
+};
 
 template <>
-std::string class_name<2>() {
-    return "Matrix";
-}
+struct ClassName<2> final {
+    static std::string name() { return "Matrix"; }
+};
 
 template <typename T>
 struct Type2String final {
@@ -186,11 +186,13 @@ class Tensor {
 
     /*! C++ string representation of type */
     static std::string cxxClassName() {
-        return detail::class_name<Rank>() + "<" + detail::Type2String<T>::full() + ">";
+        return detail::ClassName<Rank>::name() + "<" + detail::Type2String<T>::full() + ">";
     }
 
     /*! Python string representation of type */
-    static std::string pyClassName() { return detail::class_name<Rank>() + "_" + detail::Type2String<T>::suffix(); }
+    static std::string pyClassName() {
+        return detail::ClassName<Rank>::name() + "_" + detail::Type2String<T>::suffix();
+    }
 
     /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
      *  \param[in] label name of the tensor
@@ -220,6 +222,11 @@ class Tensor {
             store_[h] = xt::full<T>(shapes_[h], fill_value);
         }
     }
+
+    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
+    explicit Tensor()
+        : Tensor("empty", 1, std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{0})}, 0,
+                 static_cast<T>(0)) {}
 
     /*! @{ Rank-n CTORs */
     /*! Labeled, 1-irrep, rank-n CTOR
@@ -444,11 +451,44 @@ class Tensor {
         return axes_dimpi_[1][h];
     }
 
+    /// Returns a single element value
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
+    T get(int m) const {
+        return store_[0][m];
+    }
+
+    /// Sets a single element value
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
+    void set(int m, T val) {
+        store_[0][m] = val;
+    }
+
+    /// Returns a single element value
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
+    T get(int h, int m) const {
+        return store_[h][m];
+    }
+
+    /// Sets a single element value
+    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
+    void set(int h, int m, T val) {
+        store_[h][m] = val;
+    }
+
     /*! Returns pointer to given irrep
      *  \param[in] h
      */
     T* data(size_t h = 0) { return store_.at(h).data(); }
     const T* data(size_t h = 0) const { return store_.at(h).data(); }
+
+    PSI_DEPRECATED(
+        "Using `Tensor::pointer` instead of `Tensor::data` is deprecated, and in 1.4 it will "
+        "stop working")
+    T* pointer(size_t h = 0) { return store_.at(h).data(); }
+    PSI_DEPRECATED(
+        "Using `Tensor::pointer` instead of `Tensor::data` is deprecated, and in 1.4 it will "
+        "stop working")
+    const T* pointer(size_t h = 0) const { return store_.at(h).data(); }
 
     std::string repr() const noexcept { return cxxClassName(); }
 
@@ -488,4 +528,16 @@ class Tensor {
 
 template <typename T, size_t Rank>
 using SharedTensor = std::shared_ptr<Tensor<T, Rank>>;
+
+template <typename T>
+using Vector_ = Tensor<T, 1>;
+
+template <typename T>
+using SharedVector_ = SharedTensor<T, 1>;
+
+template <typename T>
+using Matrix_ = Tensor<T, 2>;
+
+template <typename T>
+using SharedMatrix_ = SharedTensor<T, 2>;
 }  // namespace psi

@@ -44,8 +44,8 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
@@ -70,14 +70,13 @@ bool from_string(T &t, const std::string &s, std::ios_base &(*f)(std::ios_base &
     return !(iss >> f >> t).fail();
 }
 
-Denominator::Denominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta)
+Denominator::Denominator(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir, double delta)
     : eps_occ_(eps_occ), eps_vir_(eps_vir), delta_(delta) {}
 
 Denominator::~Denominator() {}
 
-std::shared_ptr<Denominator> Denominator::buildDenominator(const std::string &algorithm,
-                                                           std::shared_ptr<Vector> eps_occ,
-                                                           std::shared_ptr<Vector> eps_vir, double delta) {
+std::shared_ptr<Denominator> Denominator::buildDenominator(const std::string &algorithm, SharedVector_<double> eps_occ,
+                                                           SharedVector_<double> eps_vir, double delta) {
     Denominator *d;
     if (algorithm == "LAPLACE") {
         d = new LaplaceDenominator(eps_occ, eps_vir, delta);
@@ -90,7 +89,7 @@ std::shared_ptr<Denominator> Denominator::buildDenominator(const std::string &al
     return std::shared_ptr<Denominator>(d);
 }
 
-LaplaceDenominator::LaplaceDenominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta)
+LaplaceDenominator::LaplaceDenominator(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir, double delta)
     : Denominator(eps_occ, eps_vir, delta) {
     decompose();
 }
@@ -123,8 +122,8 @@ void Denominator::debug() {
                     for (int b = 0; b < nvir; b++)
                         ap[i * nvir + a][j * nvir + b] += denp[alpha][i * nvir + a] * denp[alpha][j * nvir + b];
 
-    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
@@ -172,7 +171,7 @@ void LaplaceDenominator::decompose() {
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
-    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long> (nR) * nk * sizeof(double));
+    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long>(nR) * nk * sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();
@@ -347,15 +346,15 @@ void LaplaceDenominator::debug() {
                         ap[i * nvir + a][j * nvir + b] +=
                             denop[alpha][i] * denop[alpha][j] * denvp[alpha][a] * denvp[alpha][b];
 
-    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
     err_denom->print();
 }
 
-CholeskyDenominator::CholeskyDenominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta)
+CholeskyDenominator::CholeskyDenominator(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir, double delta)
     : Denominator(eps_occ, eps_vir, delta) {
     decompose();
 }
@@ -462,8 +461,8 @@ void CholeskyDenominator::debug() {
     Denominator::debug();
 }
 
-SAPTDenominator::SAPTDenominator(std::shared_ptr<Vector> eps_occA, std::shared_ptr<Vector> eps_virA,
-                                 std::shared_ptr<Vector> eps_occB, std::shared_ptr<Vector> eps_virB, double delta,
+SAPTDenominator::SAPTDenominator(SharedVector_<double> eps_occA, SharedVector_<double> eps_virA,
+                                 SharedVector_<double> eps_occB, SharedVector_<double> eps_virB, double delta,
                                  bool debug)
     : eps_occA_(eps_occA),
       eps_virA_(eps_virA),
@@ -475,8 +474,8 @@ SAPTDenominator::SAPTDenominator(std::shared_ptr<Vector> eps_occA, std::shared_p
 SAPTDenominator::~SAPTDenominator() {}
 
 std::shared_ptr<SAPTDenominator> SAPTDenominator::buildDenominator(
-    const std::string &algorithm, std::shared_ptr<Vector> eps_occA, std::shared_ptr<Vector> eps_virA,
-    std::shared_ptr<Vector> eps_occB, std::shared_ptr<Vector> eps_virB, double delta, bool debug) {
+    const std::string &algorithm, SharedVector_<double> eps_occA, SharedVector_<double> eps_virA,
+    SharedVector_<double> eps_occB, SharedVector_<double> eps_virB, double delta, bool debug) {
     SAPTDenominator *d;
     if (algorithm == "LAPLACE") {
         d = new SAPTLaplaceDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug);
@@ -496,7 +495,7 @@ void SAPTDenominator::debug() {
     check_denom(eps_occB_, eps_virB_, denominatorB_);
 }
 
-void SAPTDenominator::check_denom(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir,
+void SAPTDenominator::check_denom(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir,
                                   SharedMatrix denominator) {
     int nocc = eps_occ->dimpi()[0];
     int nvir = eps_vir->dimpi()[0];
@@ -526,16 +525,16 @@ void SAPTDenominator::check_denom(std::shared_ptr<Vector> eps_occ, std::shared_p
                     for (int b = 0; b < nvir; b++)
                         ap[i * nvir + a][j * nvir + b] += denp[alpha][i * nvir + a] * denp[alpha][j * nvir + b];
 
-    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
     err_denom->print();
 }
 
-SAPTLaplaceDenominator::SAPTLaplaceDenominator(std::shared_ptr<Vector> eps_occA, std::shared_ptr<Vector> eps_virA,
-                                               std::shared_ptr<Vector> eps_occB, std::shared_ptr<Vector> eps_virB,
+SAPTLaplaceDenominator::SAPTLaplaceDenominator(SharedVector_<double> eps_occA, SharedVector_<double> eps_virA,
+                                               SharedVector_<double> eps_occB, SharedVector_<double> eps_virB,
                                                double delta, bool debug)
     : SAPTDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug) {
     decompose();
@@ -588,7 +587,7 @@ void SAPTLaplaceDenominator::decompose() {
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
-    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long> (nR) * nk * sizeof(double));
+    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long>(nR) * nk * sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();
@@ -758,7 +757,7 @@ void SAPTLaplaceDenominator::debug() {
     check_split(eps_occB_, eps_virB_, denominator_occB_, denominator_virB_);
 }
 
-void SAPTLaplaceDenominator::check_split(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir,
+void SAPTLaplaceDenominator::check_split(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir,
                                          SharedMatrix denominator_occ, SharedMatrix denominator_vir) {
     int nocc = eps_occ->dimpi()[0];
     int nvir = eps_vir->dimpi()[0];
@@ -791,16 +790,16 @@ void SAPTLaplaceDenominator::check_split(std::shared_ptr<Vector> eps_occ, std::s
                         ap[i * nvir + a][j * nvir + b] +=
                             denop[alpha][i] * denop[alpha][j] * denvp[alpha][a] * denvp[alpha][b];
 
-    C_DCOPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
-    C_DAXPY(static_cast<size_t> (nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
+    C_DCOPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, ap[0], 1, ep[0], 1);
+    C_DAXPY(static_cast<size_t>(nocc) * nvir * nocc * nvir, -1.0, tp[0], 1, ep[0], 1);
 
     true_denom->print();
     app_denom->print();
     err_denom->print();
 }
 
-SAPTCholeskyDenominator::SAPTCholeskyDenominator(std::shared_ptr<Vector> eps_occA, std::shared_ptr<Vector> eps_virA,
-                                                 std::shared_ptr<Vector> eps_occB, std::shared_ptr<Vector> eps_virB,
+SAPTCholeskyDenominator::SAPTCholeskyDenominator(SharedVector_<double> eps_occA, SharedVector_<double> eps_virA,
+                                                 SharedVector_<double> eps_occB, SharedVector_<double> eps_virB,
                                                  double delta, bool debug)
     : SAPTDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug) {
     decompose();
@@ -929,12 +928,12 @@ void SAPTCholeskyDenominator::decompose() {
         }
 
         for (int P = 0; P < Q; P++) {
-            C_DAXPY(static_cast<size_t> (noccA) * nvirA, -L_PQ[P], denA[P], 1, denA[Q], 1);
-            C_DAXPY(static_cast<size_t> (noccB) * nvirB, -L_PQ[P], denB[P], 1, denB[Q], 1);
+            C_DAXPY(static_cast<size_t>(noccA) * nvirA, -L_PQ[P], denA[P], 1, denA[Q], 1);
+            C_DAXPY(static_cast<size_t>(noccB) * nvirB, -L_PQ[P], denB[P], 1, denB[Q], 1);
         }
 
-        C_DSCAL(static_cast<size_t> (noccA) * nvirA, 1.0 / L_QQ, denA[Q], 1);
-        C_DSCAL(static_cast<size_t> (noccB) * nvirB, 1.0 / L_QQ, denB[Q], 1);
+        C_DSCAL(static_cast<size_t>(noccA) * nvirA, 1.0 / L_QQ, denA[Q], 1);
+        C_DSCAL(static_cast<size_t>(noccB) * nvirB, 1.0 / L_QQ, denB[Q], 1);
 
         for (int P = 0; P < Q; P++) {
             bool PonB = w_order[P].first;
@@ -995,8 +994,10 @@ void SAPTCholeskyDenominator::decompose() {
     double **denBp = denominatorB_->pointer();
 
     for (int P = 0; P < nvector_; P++) {
-        ::memcpy(static_cast<void *>(denAp[P]), static_cast<void *>(denA[P]), static_cast<unsigned long> (noccA) * nvirA * sizeof(double));
-        ::memcpy(static_cast<void *>(denBp[P]), static_cast<void *>(denB[P]), static_cast<unsigned long> (noccB) * nvirB * sizeof(double));
+        ::memcpy(static_cast<void *>(denAp[P]), static_cast<void *>(denA[P]),
+                 static_cast<unsigned long>(noccA) * nvirA * sizeof(double));
+        ::memcpy(static_cast<void *>(denBp[P]), static_cast<void *>(denB[P]),
+                 static_cast<unsigned long>(noccB) * nvirB * sizeof(double));
 
         delete[] denA[P];
         delete[] denB[P];
@@ -1009,7 +1010,7 @@ void SAPTCholeskyDenominator::decompose() {
     }
 }
 
-TLaplaceDenominator::TLaplaceDenominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta)
+TLaplaceDenominator::TLaplaceDenominator(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir, double delta)
     : eps_occ_(eps_occ), eps_vir_(eps_vir), delta_(delta) {
     decompose();
 }
@@ -1055,7 +1056,7 @@ void TLaplaceDenominator::decompose() {
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
     double **err_tablep = err_table->pointer();
-    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long> (nR) * nk * sizeof(double));
+    err_table_file.read((char *)err_tablep[0], static_cast<unsigned long>(nR) * nk * sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();
