@@ -45,12 +45,12 @@ enum class Operation { None, Transpose, TransposeConj };
 
 namespace detail {
 /*! Whether the operation involves a transposition */
-bool do_transpose(Operation op) {
+inline bool do_transpose(Operation op) {
     return ((op == Operation::Transpose || op == Operation::TransposeConj) ? true : false);
 }
 
 /*! Whether the operation involves a conjugation */
-bool do_conjugate(Operation op) { return ((op == Operation::TransposeConj) ? true : false); }
+inline bool do_conjugate(Operation op) { return ((op == Operation::TransposeConj) ? true : false); }
 
 /*! Type trait for mixable types
  *
@@ -94,6 +94,72 @@ SharedTensor<U, Rank> zeros_like(const SharedTensor<T, Rank>& mold) noexcept {
 template <typename T, size_t Rank, typename U = T>
 SharedTensor<U, Rank> ones_like(const SharedTensor<T, Rank>& mold) noexcept {
     return full_like(mold, static_cast<U>(1));
+}
+
+/*! Symmetry-blocking aware GEneralized Matrix Vector multiplication (GEMV)
+ *  \param[in] opA preliminary operation on A (None, Transpose, TransposeConj)
+ *  \param[in] alpha scaling of A*v
+ *  \param[in] A matrix
+ *  \param[in] x vector
+ *  \param[in] beta scaling of result
+ *  \param[in] y result vector, that is y := alpha * op(A) * x + beta * y
+ */
+template <typename T, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+SharedTensor<V, 1> gemv(Operation opA, double alpha, const SharedTensor<T, 2>& A, const SharedTensor<U, 1>& x,
+                        double beta, SharedTensor<V, 1>& y) {
+    std::string label = "GEMV: ";
+
+    std::vector<size_t> ax_A;
+    bool transA = detail::do_transpose(opA);
+    bool conjA = detail::do_conjugate(opA);
+    switch (opA) {
+        case Operation::None:
+            ax_A.push_back(1);
+            label += A->label();
+            break;
+        case Operation::Transpose:
+            ax_A.push_back(0);
+            label += A->label() + "T x ";
+            break;
+        case Operation::TransposeConj:
+            ax_A.push_back(0);
+            label += A->label() + "H x ";
+            break;
+    }
+
+    for (size_t hA = 0; hA < A->nirrep(); ++hA) {
+        size_t hx = hA ^ (transA ? 0 : A->symmetry());
+        size_t hy = hA ^ (transA ? A->symmetry() : 0);
+
+        if (!conjA) {  // No conjugation
+            y->block(hy) = xt::linalg::tensordot(alpha * A->block(hA), x->block(hx), ax_A, {0});
+        } else {  // Conjugate A
+            y->block(hy) = xt::linalg::tensordot(alpha * xt::conj(A->block(hA)), x->block(hx), ax_A, {0});
+        }
+        y->block(hy) += beta * y->block(hy);
+    }
+    // More descriptive label
+    y->set_label(label);
+
+    return y;
+}
+
+/*! Symmetry-blocking aware GEneralized Matrix Vector multiplication (GEMV), with internal allocation
+ *  \param[in] opA preliminary operation on A (None, Transpose, TransposeConj)
+ *  \param[in] alpha scaling of A*v
+ *  \param[in] A matrix
+ *  \param[in] x vector
+ *  \param[in] beta scaling of result
+ *  \param[in] y result vector, that is y := alpha * op(A) * x + beta * y
+ */
+template <typename T, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+SharedTensor<V, 1> gemv(Operation opA, double alpha, const SharedTensor<T, 2>& A, const SharedTensor<U, 1>& x,
+                        double beta) {
+    auto y = zeros_like<U, 1, V>(x);
+    gemv(opA, alpha, A, x, beta, y);
+    return y;
 }
 
 /*! Symmetry-blocking aware GEneralized Matrix Multiplication (GEMM)
@@ -152,21 +218,37 @@ SharedTensor<V, 2> gemm(Operation opA, Operation opB, double alpha, const Shared
         size_t hC = hA ^ (transA ? A->symmetry() : 0);
 
         if (!conjA && !conjB) {  // No conjugation
-            C->block(hC) = xt::linalg::tensordot(alpha * A->block(hA), B->block(hB), ax_A, ax_B) + beta * C->block(hC);
+            C->block(hC) = xt::linalg::tensordot(alpha * A->block(hA), B->block(hB), ax_A, ax_B);
         } else if (!conjA && conjB) {  // Conjugate B
-            C->block(hC) =
-                xt::linalg::tensordot(alpha * A->block(hA), xt::conj(B->block(hB)), ax_A, ax_B) + beta * C->block(hC);
+            C->block(hC) = xt::linalg::tensordot(alpha * A->block(hA), xt::conj(B->block(hB)), ax_A, ax_B);
         } else if (conjA && !conjB) {  // Conjugate A
-            C->block(hC) =
-                xt::linalg::tensordot(alpha * xt::conj(A->block(hA)), B->block(hB), ax_A, ax_B) + beta * C->block(hC);
+            C->block(hC) = xt::linalg::tensordot(alpha * xt::conj(A->block(hA)), B->block(hB), ax_A, ax_B);
         } else {  // Conjugate A and B
-            C->block(hC) = xt::linalg::tensordot(alpha * xt::conj(A->block(hA)), xt::conj(B->block(hB)), ax_A, ax_B) +
-                           beta * C->block(hC);
+            C->block(hC) = xt::linalg::tensordot(alpha * xt::conj(A->block(hA)), xt::conj(B->block(hB)), ax_A, ax_B);
         }
+        C->block(hC) += beta * C->block(hC);
     }
     // More descriptive label
     C->set_label(label);
 
+    return C;
+}
+
+/*! Symmetry-blocking aware GEneralized Matrix Multiplication (GEMM), with internal allocation
+ *  \param[in] opA preliminary operation on A (None, Transpose, TransposeConj)
+ *  \param[in] opB preliminary operation on B (None, Transpose, TransposeConj)
+ *  \param[in] alpha scaling of A*B
+ *  \param[in] A first matrix
+ *  \param[in] B second matrix
+ *  \param[in] beta scaling of result
+ *  \param[in] C result matrix, that is C := alpha * op(A) * op(B) + beta * C
+ */
+template <typename T, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+SharedTensor<V, 2> gemm(Operation opA, Operation opB, double alpha, const SharedTensor<T, 2>& A,
+                        const SharedTensor<U, 2>& B, double beta) {
+    auto C = zeros_like<T, 2, V>(A);
+    gemm(opA, opB, alpha, A, B, beta, C);
     return C;
 }
 
@@ -268,10 +350,10 @@ auto qr(const SharedTensor<T, 2>& in, xt::linalg::qrmode mode = xt::linalg::qrmo
     std::transform(in->cbegin(), in->cend(), tmp.begin(),
                    [mode](const Block& blk) -> QRs { return xt::linalg::qr(blk, mode); });
 
-    auto Q = std::make_shared<Tensor<T, 2>>("Q matrix of" + in->label(), in->rowspi(), in->colspi());
+    auto Q = std::make_shared<Tensor<T, 2>>("Q matrix of " + in->label(), in->rowspi(), in->colspi());
     std::transform(tmp.cbegin(), tmp.cend(), Q->begin(), [](const QRs& res) -> Block { return std::get<0>(res); });
 
-    auto R = std::make_shared<Tensor<T, 2>>("R matrix of" + in->label(), in->rowspi(), in->colspi());
+    auto R = std::make_shared<Tensor<T, 2>>("R matrix of " + in->label(), in->rowspi(), in->colspi());
     std::transform(tmp.cbegin(), tmp.cend(), R->begin(), [](const QRs& res) -> Block { return std::get<1>(res); });
 
     return std::make_tuple(Q, R);
@@ -296,14 +378,14 @@ auto svd(const SharedTensor<T, 2>& in, bool full_matrices = true, bool compute_u
     }
 
     auto U =
-        std::make_shared<Tensor<T, 2>>("U matrix of" + in->label(), in->rowspi(), full_matrices ? in->rowspi() : Kspi);
+        std::make_shared<Tensor<T, 2>>("U matrix of " + in->label(), in->rowspi(), full_matrices ? in->rowspi() : Kspi);
     std::transform(tmp.cbegin(), tmp.cend(), U->begin(), [](const SVDs& res) -> Block { return std::get<0>(res); });
 
-    auto S = std::make_shared<Tensor<T, 1>>("S matrix of" + in->label(), Kspi);
+    auto S = std::make_shared<Tensor<T, 1>>("S matrix of " + in->label(), Kspi);
     std::transform(tmp.cbegin(), tmp.cend(), S->begin(),
                    [](const SVDs& res) -> typename Tensor<T, 1>::block_type { return std::get<1>(res); });
 
-    auto Vh = std::make_shared<Tensor<T, 2>>("V^H matrix of" + in->label(), full_matrices ? in->colspi() : Kspi,
+    auto Vh = std::make_shared<Tensor<T, 2>>("V^H matrix of " + in->label(), full_matrices ? in->colspi() : Kspi,
                                              in->colspi());
     std::transform(tmp.cbegin(), tmp.cend(), Vh->begin(), [](const SVDs& res) -> Block { return std::get<2>(res); });
 
@@ -339,12 +421,12 @@ auto eig(const SharedTensor<T, 2>& in) -> EigenResult<U> {
                        return xt::linalg::eig(blk);
                    });
 
-    auto eigvals = std::make_shared<eig_detail::Eigvals<U>>("Eigenvalues of" + in->label(), in->rowspi());
+    auto eigvals = std::make_shared<eig_detail::Eigvals<U>>("Eigenvalues of " + in->label(), in->rowspi());
     std::transform(tmp.cbegin(), tmp.cend(), eigvals->begin(), [
     ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvals<U>::block_type { return std::get<0>(res); });
 
     auto eigvecs =
-        std::make_shared<eig_detail::Eigvecs<U>>("Eigenvectors of" + in->label(), in->rowspi(), in->colspi());
+        std::make_shared<eig_detail::Eigvecs<U>>("Eigenvectors of " + in->label(), in->rowspi(), in->colspi());
     std::transform(tmp.cbegin(), tmp.cend(), eigvecs->begin(), [
     ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvecs<U>::block_type { return std::get<1>(res); });
 
@@ -357,11 +439,35 @@ auto eigvals(const SharedTensor<T, 2>& in) -> std::shared_ptr<eig_detail::Eigval
         throw PSIEXCEPTION("Matrix is non-totally symmetric.");
     }
 
-    auto eigvals = std::make_shared<eig_detail::Eigvals<U>>("Eigenvalues of" + in->label(), in->rowspi());
+    auto eigvals = std::make_shared<eig_detail::Eigvals<U>>("Eigenvalues of " + in->label(), in->rowspi());
     std::transform(in->cbegin(), in->cend(), eigvals->begin(),
                    [](const typename Tensor<T, 2>::block_type& blk) ->
                    typename eig_detail::Eigvals<U>::block_type { return xt::linalg::eigvals(blk); });
     return eigvals;
+}
+
+template <typename T>
+auto eigh(const Tensor<T, 2>& in, char UPLO = 'L') -> std::tuple<Tensor<T, 1>, Tensor<T, 2>> {
+    if (in.symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
+    auto tmp = std::vector<eig_detail::Result<T>>(in.nirrep());
+
+    std::transform(in.cbegin(), in.cend(), tmp.begin(),
+                   [UPLO](const typename eig_detail::Eigvecs<T>::block_type& blk) -> eig_detail::Result<T> {
+                       return xt::linalg::eigh(blk, UPLO);
+                   });
+
+    auto eigvals = eig_detail::Eigvals<T>("Eigenvalues of " + in.label(), in.rowspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvals.begin(), [
+    ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvals<T>::block_type { return std::get<0>(res); });
+
+    auto eigvecs = eig_detail::Eigvecs<T>("Eigenvectors of " + in.label(), in.rowspi(), in.colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvecs.begin(), [
+    ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvecs<T>::block_type { return std::get<1>(res); });
+
+    return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
 }
 
 template <typename T>
@@ -377,12 +483,12 @@ auto eigh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> EigenResult<T> {
                        return xt::linalg::eigh(blk, UPLO);
                    });
 
-    auto eigvals = std::make_shared<eig_detail::Eigvals<T>>("Eigenvalues of" + in->label(), in->rowspi());
+    auto eigvals = std::make_shared<eig_detail::Eigvals<T>>("Eigenvalues of " + in->label(), in->rowspi());
     std::transform(tmp.cbegin(), tmp.cend(), eigvals->begin(), [
     ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvals<T>::block_type { return std::get<0>(res); });
 
     auto eigvecs =
-        std::make_shared<eig_detail::Eigvecs<T>>("Eigenvectors of" + in->label(), in->rowspi(), in->colspi());
+        std::make_shared<eig_detail::Eigvecs<T>>("Eigenvectors of " + in->label(), in->rowspi(), in->colspi());
     std::transform(tmp.cbegin(), tmp.cend(), eigvecs->begin(), [
     ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvecs<T>::block_type { return std::get<1>(res); });
 
@@ -395,7 +501,7 @@ auto eigvalsh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> std::shared_ptr<
         throw PSIEXCEPTION("Matrix is non-totally symmetric.");
     }
 
-    auto eigvals = std::make_shared<eig_detail::Eigvals<T>>("Eigenvalues of" + in->label(), in->rowspi());
+    auto eigvals = std::make_shared<eig_detail::Eigvals<T>>("Eigenvalues of " + in->label(), in->rowspi());
     std::transform(in->cbegin(), in->cend(), eigvals->begin(),
                    [UPLO](const typename eig_detail::Eigvecs<T>::block_type& blk) ->
                    typename eig_detail::Eigvals<T>::block_type { return xt::linalg::eigvalsh(blk, UPLO); });

@@ -813,16 +813,16 @@ void SAPTCholeskyDenominator::decompose() {
     int noccB = eps_occB_->dimpi()[0];
     int nvirB = eps_virB_->dimpi()[0];
 
-    double *eps_occAp = eps_occA_->pointer();
-    double *eps_occBp = eps_occB_->pointer();
-    double *eps_virAp = eps_virA_->pointer();
-    double *eps_virBp = eps_virB_->pointer();
+    double *eps_occAp = eps_occA_->data();
+    double *eps_occBp = eps_occB_->data();
+    double *eps_virAp = eps_virA_->data();
+    double *eps_virBp = eps_virB_->data();
 
     // Build the schur complement
-    auto schurA = std::make_shared<Vector>("Diagonal Complement A", noccA * nvirA);
-    auto schurB = std::make_shared<Vector>("Diagonal Complement B", noccB * nvirB);
-    double *schurAp = schurA->pointer();
-    double *schurBp = schurB->pointer();
+    auto schurA = std::make_shared<Vector_<double>>("Diagonal Complement A", noccA * nvirA);
+    auto schurB = std::make_shared<Vector_<double>>("Diagonal Complement B", noccB * nvirB);
+    auto schurAp = schurA->data();
+    auto schurBp = schurB->data();
 
     for (int i = 0; i < noccA; i++) {
         for (int a = 0; a < nvirA; a++) {

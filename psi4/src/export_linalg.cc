@@ -115,6 +115,22 @@ struct Decorator<T, 2> final {
     }
 
     static void declareRank2FreeFunctions(py::module& mod) {
+        // Type-homogeneous GEMM-s
+        mod.def("gemm",
+                [](const SharedTensor<T, 2>& A, const SharedTensor<T, 2>& B, Operation opA, Operation opB, double alpha,
+                   double beta) { return gemm(opA, opB, alpha, A, B, beta); },
+                "A"_a, "B"_a, "opA"_a = Operation::None, "opB"_a = Operation::None, "alpha"_a = 1.0, "beta"_a = 0.0);
+        // Type-inhomogeneous GEMM-s
+        // T x double
+        mod.def("gemm",
+                [](const SharedTensor<T, 2>& A, const SharedTensor<double, 2>& B, Operation opA, Operation opB,
+                   double alpha, double beta) { return gemm(opA, opB, alpha, A, B, beta); },
+                "A"_a, "B"_a, "opA"_a = Operation::None, "opB"_a = Operation::None, "alpha"_a = 1.0, "beta"_a = 0.0);
+        // double x T
+        mod.def("gemm",
+                [](const SharedTensor<double, 2>& A, const SharedTensor<T, 2>& B, Operation opA, Operation opB,
+                   double alpha, double beta) { return gemm(opA, opB, alpha, A, B, beta); },
+                "A"_a, "B"_a, "opA"_a = Operation::None, "opB"_a = Operation::None, "alpha"_a = 1.0, "beta"_a = 0.0);
         // Type-homogeneous doublet-s
         mod.def(
             "doublet",
@@ -154,6 +170,23 @@ struct Decorator<T, 2> final {
                     &doublet<double, T>),
                 "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a,
                 "B"_a, "transA"_a = false, "transB"_a = false, py::return_value_policy::reference_internal);
+        // Type-homogeneous GEMV-s
+        mod.def("gemv",
+                [](const SharedTensor<T, 2>& A, const SharedTensor<T, 1>& x, Operation opA, double alpha, double beta) {
+                    return gemv(opA, alpha, A, x, beta);
+                },
+                "A"_a, "x"_a, "opA"_a = Operation::None, "alpha"_a = 1.0, "beta"_a = 0.0);
+        // Type-inhomogeneous GEMV-s
+        // T x double
+        mod.def("gemv",
+                [](const SharedTensor<T, 2>& A, const SharedTensor<double, 1>& x, Operation opA, double alpha,
+                   double beta) { return gemv(opA, alpha, A, x, beta); },
+                "A"_a, "x"_a, "opA"_a = Operation::None, "alpha"_a = 1.0, "beta"_a = 0.0);
+        // double x T
+        mod.def("gemv",
+                [](const SharedTensor<double, 2>& A, const SharedTensor<T, 1>& x, Operation opA, double alpha,
+                   double beta) { return gemv(opA, alpha, A, x, beta); },
+                "A"_a, "x"_a, "opA"_a = Operation::None, "alpha"_a = 1.0, "beta"_a = 0.0);
         // Decompositions
         mod.def("cholesky", &cholesky<T>, "Compute the Cholesky decomposition of A", "A"_a);
         mod.def("qr", &qr<T>, "Compute the QR decomposition of A", "A"_a, "mode"_a = xt::linalg::qrmode::reduced);
@@ -162,7 +195,7 @@ struct Decorator<T, 2> final {
         // Matrix eigenvalues
         mod.def("eig", &eig<T>, "Compute the eigenvalues and right eigenvectors of a square matrix.", "A"_a);
         mod.def("eigvals", &eigvals<T>, "Compute the eigenvalues of a general matrix.", "A"_a);
-        mod.def("eigh", &eigh<T>,
+        mod.def("eigh", py::overload_cast<const SharedTensor<T, 2>&, char>(&eigh<T>),
                 "Compute eigenvalues and eigenvectors of a complex Hermitian (conjugate symmetric) or a real "
                 "symmetric matrix.",
                 "A"_a, "UPLO"_a = 'L');
@@ -195,7 +228,7 @@ void bind_tensor(py::module& mod) {
             "fill_value"_a = static_cast<T>(0));
 
     // Member functions shared by all ranks
-    cls.def_property_readonly("dim", &Class::dim, "Total number of elements");
+    cls.def_property_readonly("dim", [](const Class& obj) { return obj.dim(); }, "Total number of elements");
     cls.def_property_readonly("nirrep", &Class::nirrep, "Number of irreps");
     cls.def_property("label", &Class::label, &Class::set_label, ("The label of the " + name).c_str());
     cls.def("axes_dimpi", py::overload_cast<>(&Class::axes_dimpi, py::const_), "Returns Dimension objects for all axes",

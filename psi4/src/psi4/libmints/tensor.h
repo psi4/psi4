@@ -40,7 +40,9 @@
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xio.hpp>
 
+#include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "dimension.h"
 
@@ -109,19 +111,19 @@ template <size_t Rank>
 constexpr bool is_rankn_v = is_rankn<Rank>::value;
 
 template <size_t Rank>
-struct ClassName final {
-    static std::string name() { return "Tensor" + std::to_string(Rank); }
-};
+std::string class_name() {
+    return "Tensor" + std::to_string(Rank);
+}
 
 template <>
-struct ClassName<1> final {
-    static std::string name() { return "Vector"; }
-};
+inline std::string class_name<1>() {
+    return "Vector";
+}
 
 template <>
-struct ClassName<2> final {
-    static std::string name() { return "Matrix"; }
-};
+inline std::string class_name<2>() {
+    return "Matrix";
+}
 
 template <typename T>
 struct Type2String final {
@@ -186,13 +188,11 @@ class Tensor {
 
     /*! C++ string representation of type */
     static std::string cxxClassName() {
-        return detail::ClassName<Rank>::name() + "<" + detail::Type2String<T>::full() + ">";
+        return detail::class_name<Rank>() + "<" + detail::Type2String<T>::full() + ">";
     }
 
     /*! Python string representation of type */
-    static std::string pyClassName() {
-        return detail::ClassName<Rank>::name() + "_" + detail::Type2String<T>::suffix();
-    }
+    static std::string pyClassName() { return detail::class_name<Rank>() + "_" + detail::Type2String<T>::suffix(); }
 
     /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
      *  \param[in] label name of the tensor
@@ -382,6 +382,10 @@ class Tensor {
         return std::accumulate(std::begin(store_), std::end(store_), 0,
                                [](size_t s, auto& b) { return (s + b.size()); });
     }
+    /*! Return dimension of given irrep of tensor
+     *  \param[in] h
+     */
+    size_t dim(size_t h) const noexcept { return store_[h].size(); }
 
     /*! Return number of irreducible representations */
     size_t nirrep() const noexcept { return store_.size(); }
@@ -403,6 +407,10 @@ class Tensor {
      *  \param[in] block
      */
     void set_block(size_t h, const block_type& block) { store_[h] = block; }
+    /*! Set block at totally symmetric irreep
+     *  \param[in] block
+     */
+    void set_block(const block_type& block) { this->set_block(0, block); }
     block_type& operator[](size_t h) { return store_[h]; }
 
     std::string label() const noexcept { return label_; }
@@ -518,6 +526,20 @@ class Tensor {
         return retval.str();
     }
 
+    PSI_DEPRECATED(
+        "Using `Tensor::print` instead of `print` is deprecated, and in 1.4 it will "
+        "stop working")
+    void print(std::string out = "outfile", const std::string extra = "") const noexcept {
+        std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+        printer->Printf(format(extra));
+        printer->Printf("\n");
+    }
+
+    void zero() noexcept {
+        std::for_each(store_.begin(), store_.end(),
+                      [](const block_type& blk) -> block_type { return xt::zeros<T>(blk.shape()); });
+    }
+
    protected:
     unsigned int symmetry_{0};
     std::string label_;
@@ -540,4 +562,18 @@ using Matrix_ = Tensor<T, 2>;
 
 template <typename T>
 using SharedMatrix_ = SharedTensor<T, 2>;
+
+template <typename T, size_t Rank>
+void print(const Tensor<T, Rank>& t, std::string out = "outfile", const std::string extra = "") noexcept {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf(t.format(extra));
+    printer->Printf("\n");
+}
+
+template <typename T, size_t Rank>
+void print(const SharedTensor<T, Rank>& t, std::string out = "outfile", const std::string extra = "") noexcept {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf(t->format(extra));
+    printer->Printf("\n");
+}
 }  // namespace psi
