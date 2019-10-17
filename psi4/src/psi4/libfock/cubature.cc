@@ -3655,6 +3655,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     
     std::vector<std::vector<double>> atomRotations(molecule_->natom());
     std::vector<std::vector<brianBlock>> atomBlocks(molecule_->natom());
+    
+    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
 
 // Iterate over atoms
 #pragma omp parallel for schedule(static)
@@ -3662,7 +3665,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         int Z = molecule_->true_atomic_number(A);
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
         
-        if (brianCookie != 0) {
+        if (brianCookie != 0 and brianPsi4DFT) {
             std::shared_ptr<Matrix> rotationMatrix = orientation_->transpose();
             atomRotations[A] = std::vector<double>(rotationMatrix->get_pointer(0), rotationMatrix->get_pointer(0) + 9);
         }
@@ -3693,7 +3696,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 assert(numAngPts > 0);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
                 
-                if (brianCookie != 0) {
+                if (brianCookie != 0 and brianPsi4DFT) {
                     if (currentBlockIndex == -1 or atomBlocks[A][currentBlockIndex].angularPoints.size() != numAngPts) {
                         atomBlocks[A].push_back(brianBlock());
                         currentBlockIndex++;
@@ -3737,7 +3740,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     }
     
     // TODO: do the same for the other version of buildGridFromOptions below
-    if (brianCookie != 0) {
+    if (brianCookie != 0 and brianPsi4DFT) {
         brianInt atomBlockOffset = 0;
         std::vector<brianInt> atomBlockCounts;
         std::vector<brianInt> atomBlockOffsets;
