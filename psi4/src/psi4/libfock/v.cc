@@ -150,7 +150,9 @@ void VBase::initialize() {
         functional_workers_.push_back(functional_->build_worker());
     }
     
-    if (brianCookie != 0)
+    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    if (brianCookie != 0 and brianPsi4DFT)
     {
         static const std::map<std::string, brianInt> functionalIDMap = {
             {"XC_LDA_X", BRIAN_FUNCTIONAL_LDA_SLATER_X},
@@ -1968,7 +1970,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
     }
     
-    if (brianCookie != 0) {
+    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    if (brianCookie != 0 and brianPsi4DFT) {
         double DFTEnergy;
         brianSCFBuildFockDFT(&brianCookie,
             D_AO_[0]->get_pointer(0),
