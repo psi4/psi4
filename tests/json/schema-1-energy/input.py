@@ -58,7 +58,7 @@ expected_properties = {
   "scf_dipole_moment": [
     0.0,
     0.0,
-    2.644362282061301
+    1.040372174058
   ],
   "scf_iterations": 10,
   "scf_total_energy": -75.98014187232745,

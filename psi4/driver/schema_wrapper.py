@@ -32,6 +32,7 @@ Runs a JSON input psi file.
 import atexit
 import copy
 import datetime
+import json
 import os
 import sys
 import traceback
@@ -41,6 +42,7 @@ import warnings
 import numpy as np
 import qcelemental as qcel
 import qcengine as qcng
+from collections import defaultdict
 
 from psi4 import core
 from psi4.extras import exit_printing
@@ -85,7 +87,7 @@ _qcschema_translation = {
     "scf": {
         "scf_one_electron_energy": {"variables": "ONE-ELECTRON ENERGY"},
         "scf_two_electron_energy": {"variables": "TWO-ELECTRON ENERGY"},
-        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"]},
+        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"], "conversion_factor": (1 / qcel.constants.dipmom_au2debye)},
         "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
         "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
@@ -132,6 +134,7 @@ _qcschema_translation = {
 
 } # yapf: disable
 
+
 def _serial_translation(value, json=False):
     """
     Translates from Psi4 to JSON data types
@@ -167,13 +170,22 @@ def _convert_variables(data, context=None, json=False):
     ret = {}
     for key, var in needed_vars.items():
 
+        conversion_factor = var.get("conversion_factor", None)
+
         # Get the actual variables
         if isinstance(var["variables"], str):
             value = data.get(var["variables"], None)
+            if value and conversion_factor:
+                if isinstance(value, (int, float)):
+                    value *= conversion_factor
+                elif isinstance(value, (core.Matrix, core.Vector)):
+                    value.scale(conversion_factor)
         elif isinstance(var["variables"], (list, tuple)):
             value = [data.get(x, None) for x in var["variables"]]
             if not any(value):
                 value = None
+            elif conversion_factor:
+                value = [x * conversion_factor for x in value]
         else:
             raise TypeError("variables type not understood.")
 
@@ -193,6 +205,142 @@ def _convert_variables(data, context=None, json=False):
             value = var["cast"](value)
 
         ret[key] = _serial_translation(value, json=json)
+
+    return ret
+
+
+def _convert_basis(basis):
+    """Converts a Psi4 basis object to a QCElemental basis.
+    """
+    centers = []
+    symbols = []
+
+    # Loop over centers
+    for c in range(basis.molecule().natom()):
+        center_shells = []
+        symbols.append(basis.molecule().symbol(c).title())
+
+        # Loop over shells *on* a center
+        for s in range(basis.nshell_on_center(c)):
+            shell = basis.shell(basis.shell_on_center(c, s))
+            if shell.is_pure():
+                htype = "spherical"
+            else:
+                htype = "cartesian"
+
+            # Build the shell
+            coefs = [[shell.coef(x) for x in range(shell.nprimitive)]]
+            exps = [shell.exp(x) for x in range(shell.nprimitive)]
+            qshell = qcel.models.basis.ElectronShell(angular_momentum=[shell.am],
+                                                     harmonic_type=htype,
+                                                     exponents=exps,
+                                                     coefficients=coefs)
+            center_shells.append(qshell)
+
+        centers.append(qcel.models.basis.BasisCenter(electron_shells=center_shells))
+
+    # Take unique to prevent duplicate data, doesn't matter too much
+    hashes = [hash(json.dumps(centers[x].dict(), sort_keys=True)) for x in range(len(centers))]
+
+    uniques = {k: v for k, v in zip(hashes, centers)}
+    name_map = {}
+    counter = defaultdict(int)
+
+    # Generate reasonable names
+    for symbol, h in zip(symbols, hashes):
+        if h in name_map:
+            continue
+
+        counter[symbol] += 1
+
+        name_map[h] = f"{basis.name()}_{symbol}{counter[symbol]}"
+
+    center_data = {name_map[k]: v for k, v in uniques.items()}
+    atom_map = [name_map[x] for x in hashes]
+
+    ret = qcel.models.BasisSet(name=basis.name(), center_data=center_data, atom_map=atom_map)
+    return ret
+
+
+def _convert_wavefunction(wfn, context=None):
+
+    basis = _convert_basis(wfn.basisset())
+    # We expect CCA ordering.
+    # Psi4 Cartesian is CCA (nothing to do)
+    # Psi4 Spherical is in "Gaussian" reorder
+    # Spherical Map: 0 -1 +1, ... -> -1, ..., 0, ..., +1
+
+    spherical_maps = {}
+    for L in range(wfn.basisset().max_am() + 1):
+        mapper = list(range(L * 2 - 1, 0, -2)) + [0] + list(range(2, L * 2 + 1, 2))
+        spherical_maps[L] = np.array(mapper)
+
+    # Build a flat index that we can transform the AO quantities
+    reorder = True
+    ao_map = []
+    cnt = 0
+    for atom in basis.atom_map:
+        center = basis.center_data[atom]
+        for shell in center.electron_shells:
+            if shell.harmonic_type == "cartesian":
+                ao_map.append(np.arange(cnt, cnt + shell.nfunctions()))
+            else:
+                smap = spherical_maps[shell.angular_momentum[0]]
+                ao_map.append(smap + cnt)
+                reorder = True
+
+            cnt += shell.nfunctions()
+
+    ao_map = np.hstack(ao_map)
+
+    # Build remap functions
+    def re2d(mat, both=True):
+        arr = np.array(mat)
+        if reorder:
+            if both:
+                arr = arr[ao_map[:, None], ao_map]
+            else:
+                arr = arr[ao_map[:, None]]
+        return arr
+
+    def re1d(mat):
+        arr = np.array(mat)
+        if reorder:
+            arr = arr[ao_map]
+
+        return arr
+
+    # Map back out what we can
+    ret = {
+        "basis": basis,
+        "restricted": (wfn.same_a_b_orbs() and wfn.same_a_b_dens()),
+
+        # Return results
+        "orbitals_a": "scf_orbitals_a",
+        "orbitals_b": "scf_orbitals_b",
+        "density_a": "scf_density_ba",
+        "density_b": "scf_density_b",
+        "fock_a": "scf_fock_a",
+        "fock_b": "scf_fock_b",
+        "eigenvalues_a": "scf_eigenvalues_a",
+        "eigenvalues_b": "scf_eigenvalues_b",
+        "occupations_a": "scf_occupations_a",
+        "occupations_b": "scf_occupations_b",
+        # "h_effective_a": re2d(wfn.H()),
+        # "h_effective_b": re2d(wfn.H()),
+
+        # SCF quantities
+        "scf_orbitals_a": re2d(wfn.Ca_subset("AO", "ALL"), both=False),
+        "scf_orbitals_b": re2d(wfn.Cb_subset("AO", "ALL"), both=False),
+        "scf_density_a": re2d(wfn.Da_subset("AO")),
+        "scf_density_b": re2d(wfn.Db_subset("AO")),
+        "scf_fock_a": re2d(wfn.Fa_subset("AO")),
+        "scf_fock_b": re2d(wfn.Fa_subset("AO")),
+        "scf_eigenvalues_a": re1d(wfn.epsilon_a_subset("AO", "ALL")),
+        "scf_eigenvalues_b": re1d(wfn.epsilon_b_subset("AO", "ALL")),
+        # "scf_occupations_a": np.hstack(wfn.occupation_a().nph),
+        # "scf_occupations_b": np.hstack(wfn.occupation_b().nph),
+    }
 
     return ret
 
@@ -237,8 +385,10 @@ def run_qcschema(input_data, clean=True):
     try:
         input_model = qcng.util.model_wrapper(input_data, qcel.models.ResultInput)
 
+        keep_wfn = input_model.protocols.wavefunction != 'none'
+
         # qcschema should be copied
-        ret_data = run_json_qcschema(input_model.dict(), clean, False)
+        ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
         ret_data["provenance"] = {
             "creator": "Psi4",
             "version": __version__,
@@ -250,6 +400,9 @@ def run_qcschema(input_data, clean=True):
         ret = qcel.models.Result(**ret_data, stdout=_read_output(outfile))
 
     except Exception as exc:
+
+        if not isinstance(input_data, dict):
+            input_data = input_data.dict()
 
         input_data = input_data.copy()
         input_data["stdout"] = _read_output(outfile)
@@ -316,7 +469,7 @@ def run_json(json_data, clean=True):
     return json_data
 
 
-def run_json_qcschema(json_data, clean, json_serialization):
+def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     """
     An implementation of the QC JSON Schema (molssi-qc-schema.readthedocs.io/en/latest/index.html#) implementation in Psi4.
 
@@ -445,6 +598,9 @@ def run_json_qcschema(json_data, clean, json_serialization):
 
     json_data["properties"] = props
     json_data["success"] = True
+
+    if keep_wfn:
+        json_data["wavefunction"] = _convert_wavefunction(wfn)
 
     # Reset state
     _clean_psi_environ(clean)
