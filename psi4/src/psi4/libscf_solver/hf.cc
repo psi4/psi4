@@ -1222,16 +1222,16 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
     if (brianCookie != 0) {
         brianInt basisRank = X_->coldim(0);
         
-        std::vector<double> buffer(X_->rowdim(0) * X_->coldim(0));
-        brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), X_->get_pointer(0), buffer.data(), epsm->pointer(0));
-        checkBrian();
+        // BrianQC needs the matrices in a column-major memory layout,
+        // so we construct a temporary transposed version of the X matrix,
+        // and transpose the shape of C, so that we can transpose back after BrianQC filled it
+        std::shared_ptr<Matrix> orthonormalizationMatrix = X_->transpose();
+        Cm->transpose_this();
         
-        // TODO: use memcopy
-        for (int i = 0; i < Cm->rowdim(0); i++) {
-            for (int j = 0; j < Cm->coldim(0); j++) {
-                Cm->set(0, i, j, buffer[j * Cm->coldim(0) + i]);
-            }
-        }
+        std::vector<double> buffer(X_->rowdim(0) * X_->coldim(0));
+        brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), orthonormalizationMatrix->get_pointer(0), Cm->get_pointer(0), epsm->pointer(0));
+        
+        Cm->transpose_this();
         
         return;
     }
