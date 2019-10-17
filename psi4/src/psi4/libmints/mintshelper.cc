@@ -71,6 +71,13 @@ void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_orde
 }
 #endif
 
+#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_common.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_scf.h>
+extern void checkBrian();
+extern BrianCookie brianCookie;
+
 namespace psi {
 
 /**
@@ -579,6 +586,14 @@ SharedMatrix MintsHelper::ao_overlap() {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
     }
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
+    
+    if (brianCookie != 0) {
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
+        brianSCFBuild1e(&brianCookie, &integralType, overlap_mat->get_pointer(0));
+        
+        return overlap_mat;
+    }
+    
     one_body_ao_computer(ints_vec, overlap_mat, true);
 
     return overlap_mat;
@@ -603,6 +618,14 @@ SharedMatrix MintsHelper::ao_kinetic() {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
     }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
+    
+    if (brianCookie != 0) {
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
+        brianSCFBuild1e(&brianCookie, &integralType, kinetic_mat->get_pointer(0));
+        
+        return kinetic_mat;
+    }
+    
     one_body_ao_computer(ints_vec, kinetic_mat, true);
     return kinetic_mat;
 }
@@ -625,6 +648,14 @@ SharedMatrix MintsHelper::ao_potential() {
     }
     SharedMatrix potential_mat =
         std::make_shared<Matrix>("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf());
+    
+    if (brianCookie != 0) {
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+        brianSCFBuild1e(&brianCookie, &integralType, potential_mat->get_pointer(0));
+        
+        return potential_mat;
+    }
+    
     one_body_ao_computer(ints_vec, potential_mat, true);
     return potential_mat;
 }
