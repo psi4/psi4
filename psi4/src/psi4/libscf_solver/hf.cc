@@ -1230,6 +1230,7 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
         
         std::vector<double> buffer(X_->rowdim(0) * X_->coldim(0));
         brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), orthonormalizationMatrix->get_pointer(0), Cm->get_pointer(0), epsm->pointer(0));
+        checkBrian();
         
         Cm->transpose_this();
         

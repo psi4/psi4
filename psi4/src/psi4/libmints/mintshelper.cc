@@ -590,6 +590,7 @@ SharedMatrix MintsHelper::ao_overlap() {
     if (brianCookie != 0) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
         brianSCFBuild1e(&brianCookie, &integralType, overlap_mat->get_pointer(0));
+        checkBrian();
         
         return overlap_mat;
     }
@@ -622,6 +623,7 @@ SharedMatrix MintsHelper::ao_kinetic() {
     if (brianCookie != 0) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
         brianSCFBuild1e(&brianCookie, &integralType, kinetic_mat->get_pointer(0));
+        checkBrian();
         
         return kinetic_mat;
     }
@@ -652,6 +654,7 @@ SharedMatrix MintsHelper::ao_potential() {
     if (brianCookie != 0) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
         brianSCFBuild1e(&brianCookie, &integralType, potential_mat->get_pointer(0));
+        checkBrian();
         
         return potential_mat;
     }
