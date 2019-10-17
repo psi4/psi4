@@ -45,132 +45,15 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "dimension.h"
-
-namespace xt {
-template <class T, class S>
-inline auto full(S shape, T fill_value) noexcept {
-    return broadcast(static_cast<T>(fill_value), std::forward<S>(shape));
-}
-}  // namespace xt
+#include "tensor_impl.h"
+#include "tensor_impl_vector.h"
+#include "tensor_impl_matrix.h"
 
 namespace psi {
-namespace detail {
-template <typename T>
-struct is_complex : std::false_type {
-    using real_type = T;
-};
-
-template <typename T>
-struct is_complex<std::complex<T>> : std::true_type {
-    using real_type = T;
-};
-
-// NOTE for posterity this can be declared inline in C++17
-template <typename T>
-constexpr bool is_complex_v = is_complex<T>::value;
-
-/*! Type trait for tensorisable types
- *
- * These are used for SFINAE in the Tensor class.
- * Tensorisable types are:
- *   - int
- *   - float
- *   - double
- *   - complex of any of the above
- */
-template <typename T>
-struct is_tensorisable : std::integral_constant<bool, std::is_arithmetic<T>::value || is_complex_v<T>> {};
-
-// NOTE for posterity this can be declared inline in C++17
-template <typename T>
-constexpr bool is_tensorisable_v = is_tensorisable<T>::value;
-
-using rank1 = std::integral_constant<size_t, 1>;
-
-template <size_t Rank>
-struct is_rank1 : std::integral_constant<bool, std::is_same<std::integral_constant<size_t, Rank>, rank1>::value> {};
-
-// NOTE for posterity this can be declared inline in C++17
-template <size_t Rank>
-constexpr bool is_rank1_v = is_rank1<Rank>::value;
-
-using rank2 = std::integral_constant<size_t, 2>;
-
-template <size_t Rank>
-struct is_rank2 : std::integral_constant<bool, std::is_same<std::integral_constant<size_t, Rank>, rank2>::value> {};
-
-// NOTE for posterity this can be declared inline in C++17
-template <size_t Rank>
-constexpr bool is_rank2_v = is_rank2<Rank>::value;
-
-template <size_t Rank>
-struct is_rankn : std::integral_constant<bool, !is_rank1_v<Rank> || !is_rank2_v<Rank>> {};
-
-// NOTE for posterity this can be declared inline in C++17
-template <size_t Rank>
-constexpr bool is_rankn_v = is_rankn<Rank>::value;
-
-template <size_t Rank>
-std::string class_name() {
-    return "Tensor" + std::to_string(Rank);
-}
-
-template <>
-inline std::string class_name<1>() {
-    return "Vector";
-}
-
-template <>
-inline std::string class_name<2>() {
-    return "Matrix";
-}
-
-template <typename T>
-struct Type2String final {
-    static std::string full() {}
-    static std::string suffix() {}
-};
-
-template <>
-struct Type2String<int> final {
-    static std::string full() { return "int"; }
-    static std::string suffix() { return "I"; }
-};
-
-template <>
-struct Type2String<float> final {
-    static std::string full() { return "float"; }
-    static std::string suffix() { return "F"; }
-};
-
-template <>
-struct Type2String<double> final {
-    static std::string full() { return "double"; }
-    static std::string suffix() { return "D"; }
-};
-
-template <>
-struct Type2String<std::complex<double>> final {
-    static std::string full() { return "complex<double>"; }
-    static std::string suffix() { return "CD"; }
-};
-
-template <size_t Rank>
-std::string print_shape(const std::array<size_t, Rank>& shape) {
-    std::ostringstream retval;
-    retval << "{";
-    std::string sep;
-    for (const auto& s : shape) {
-        retval << sep << s;
-        sep = ", ";
-    }
-    retval << "}";
-    return retval.str();
-}
-}  // namespace detail
-
 template <typename T, size_t Rank>
-class Tensor {
+class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
+    friend class detail::RankDependentImpl<Tensor<T, Rank>>;
+
    public:
     /*! Access rank of Tensor as Tensor<T, Rank>::rank */
     static constexpr size_t rank = Rank;
@@ -186,13 +69,7 @@ class Tensor {
     using block_type = xt::xtensor<T, Rank>;
     using store_type = std::vector<block_type>;
 
-    /*! C++ string representation of type */
-    static std::string cxxClassName() {
-        return detail::class_name<Rank>() + "<" + detail::Type2String<T>::full() + ">";
-    }
-
-    /*! Python string representation of type */
-    static std::string pyClassName() { return detail::class_name<Rank>() + "_" + detail::Type2String<T>::suffix(); }
+    using crtp_base = detail::RankDependentImpl<Tensor<T, Rank>>;
 
     /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
      *  \param[in] label name of the tensor
@@ -407,11 +284,19 @@ class Tensor {
      *  \param[in] block
      */
     void set_block(size_t h, const block_type& block) { store_[h] = block; }
-    /*! Set block at totally symmetric irreep
+    /*! Set block at totally symmetric irrep
      *  \param[in] block
      */
     void set_block(const block_type& block) { this->set_block(0, block); }
     block_type& operator[](size_t h) { return store_[h]; }
+
+    using crtp_base::get;  // NOTE This is to make the rank-dependent get-s are accessible
+    T get(size_t h, std::array<size_t, Rank> idxs) const { return store_[h][idxs]; }
+    T get(std::array<size_t, Rank> idxs) const { return store_[0][idxs]; }
+
+    using crtp_base::set;  // NOTE This is to make the rank-dependent get-s are accessible
+    void set(size_t h, std::array<size_t, Rank> idxs, T val) { store_[h][idxs] = val; }
+    void set(std::array<size_t, Rank> idxs, T val) { store_[0][idxs] = val; }
 
     std::string label() const noexcept { return label_; }
     void set_label(const std::string& label) noexcept { label_ = label; }
@@ -426,62 +311,6 @@ class Tensor {
      * \param[in] ax
      */
     const Dimension& axes_dimpi(size_t ax) const noexcept { return axes_dimpi_.at(ax); }
-
-    /// Returns the dimension array for a rank-1 tensor aka a vector
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    const Dimension& dimpi() const {
-        return axes_dimpi_[0];
-    }
-
-    /// Returns the dimension array for the rows of a rank-2 tensor aka a matrix
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
-    const Dimension& rowspi() const {
-        return axes_dimpi_[0];
-    }
-    /*! Returns the number of rows in given irrep
-     *  \param[in] h
-     */
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
-    size_t rows(size_t h = 0) const {
-        return axes_dimpi_[0][h];
-    }
-
-    /// Returns the dimension array for the rows of a rank-2 tensor aka a matrix
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
-    const Dimension& colspi() const {
-        return axes_dimpi_[1];
-    }
-    /*! Returns the number of columns in given irrep
-     *  \param[in] h
-     */
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
-    size_t cols(size_t h = 0) const {
-        return axes_dimpi_[1][h];
-    }
-
-    /// Returns a single element value
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    T get(int m) const {
-        return store_[0][m];
-    }
-
-    /// Sets a single element value
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    void set(int m, T val) {
-        store_[0][m] = val;
-    }
-
-    /// Returns a single element value
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    T get(int h, int m) const {
-        return store_[h][m];
-    }
-
-    /// Sets a single element value
-    template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    void set(int h, int m, T val) {
-        store_[h][m] = val;
-    }
 
     /*! Returns pointer to given irrep
      *  \param[in] h
@@ -498,9 +327,9 @@ class Tensor {
         "stop working")
     const T* pointer(size_t h = 0) const { return store_.at(h).data(); }
 
-    std::string repr() const noexcept { return cxxClassName(); }
+    std::string repr() const noexcept { return crtp_base::cxxClassName(); }
 
-    std::string str() const noexcept { return format(cxxClassName()); }
+    std::string str() const noexcept { return format(crtp_base::cxxClassName()); }
 
     /*! Tensor formatter
      *  \param[in] extra
@@ -550,18 +379,6 @@ class Tensor {
 
 template <typename T, size_t Rank>
 using SharedTensor = std::shared_ptr<Tensor<T, Rank>>;
-
-template <typename T>
-using Vector_ = Tensor<T, 1>;
-
-template <typename T>
-using SharedVector_ = SharedTensor<T, 1>;
-
-template <typename T>
-using Matrix_ = Tensor<T, 2>;
-
-template <typename T>
-using SharedMatrix_ = SharedTensor<T, 2>;
 
 template <typename T, size_t Rank>
 void print(const Tensor<T, Rank>& t, std::string out = "outfile", const std::string extra = "") noexcept {

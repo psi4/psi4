@@ -39,6 +39,7 @@
 
 #include "dimension.h"
 #include "tensor.h"
+#include "tensor_impl.h"
 
 namespace psi {
 enum class Operation { None, Transpose, TransposeConj };
@@ -51,23 +52,6 @@ inline bool do_transpose(Operation op) {
 
 /*! Whether the operation involves a conjugation */
 inline bool do_conjugate(Operation op) { return ((op == Operation::TransposeConj) ? true : false); }
-
-/*! Type trait for mixable types
- *
- * These are used for SFINAE in 2-arity functions.
- * Mixable types are:
- *   - T = U (obviously)
- *   - T = float and U = double
- *   - T = double and  U = complex<double>
- * and permutations thereof.
- */
-template <typename T, typename U>
-struct is_2arity_mixable
-    : std::integral_constant<bool, !(std::is_same<T, float>::value && std::is_same<U, std::complex<double>>::value)> {};
-
-// NOTE for posterity this can be declared inline in C++17
-template <typename T, typename U>
-constexpr bool is_2arity_mixable_v = is_2arity_mixable<T, U>::value;
 }  // namespace detail
 
 /*! Return a tensor with all blocks filled with given value of same shape and value type as input

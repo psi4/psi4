@@ -209,7 +209,7 @@ void bind_tensor(py::module& mod) {
     using Class = Tensor<T, Rank>;
     using PyClass = py::class_<Class, std::shared_ptr<Class>>;
 
-    std::string name = Class::pyClassName();
+    std::string name = Class::crtp_base::pyClassName();
 
     PyClass cls(mod, name.c_str());
 
