@@ -58,6 +58,22 @@
 extern void checkBrian();
 extern BrianCookie brianCookie;
 
+// auxiliary structures passing the grid to BrianQC
+struct brianRadialPoint {
+    double r;
+    double w;
+};
+
+struct brianAngularPoint {
+    double x, y, z;
+    double w;
+};
+
+struct brianBlock {
+    std::vector<brianRadialPoint> radialPoints;
+    std::vector<brianAngularPoint> angularPoints;
+};
+
 using namespace psi;
 
 namespace {
@@ -3637,23 +3653,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         spherical_grids_.resize(molecule_->natom());
     }
     
-    brianInt atomBlockOffset = 0;
-    std::vector<brianInt> atomBlockCounts(molecule_->natom());
-    std::vector<brianInt> atomBlockOffsets(molecule_->natom());
-    
-    brianInt radialOffset = 0;
-    std::vector<brianInt> blockRadialCounts;
-    std::vector<brianInt> blockRadialOffsets;
-    std::vector<double> radialCoordinates;
-    std::vector<double> radialWeights;
-    
-    brianInt angularOffset = 0;
-    std::vector<brianInt> blockAngularCounts;
-    std::vector<brianInt> blockAngularOffsets;
-    std::vector<double> angularCoordinates;
-    std::vector<double> angularWeights;
-    
-    std::vector<double> atomRotationMatrices;
+    std::vector<std::vector<double>> atomRotations(molecule_->natom());
+    std::vector<std::vector<brianBlock>> atomBlocks(molecule_->natom());
 
 // Iterate over atoms
 #pragma omp parallel for schedule(static)
@@ -3662,12 +3663,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
         
         if (brianCookie != 0) {
-            atomBlockCounts[A] = 0;
-            atomBlockOffsets[A] = atomBlockOffset;
-            
-            // TODO: this might be incorrect, check row/column major compatibility
-            const double* rotationMatrix = std_orientation.orientation()->get_pointer(0);
-            atomRotationMatrices.insert(atomRotationMatrices.end(), rotationMatrix, rotationMatrix + 9);
+            std::shared_ptr<Matrix> rotationMatrix = orientation_->transpose();
+            atomRotations[A] = std::vector<double>(rotationMatrix->get_pointer(0), rotationMatrix->get_pointer(0) + 9);
         }
 
         if (opt.namedGrid == -1) {  // Not using a named grid
@@ -3681,7 +3678,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             std::vector<std::shared_ptr<SphericalGrid>> spheres;
             spherical_grids_[A] = spheres;
             
-            int numAngPtsPrev = -1;
+            int currentBlockIndex = -1;
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = 0;
                 if (opt.prunetype == "REGION") {
@@ -3697,31 +3694,17 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
                 
                 if (brianCookie != 0) {
-                    if (numAngPts != numAngPtsPrev) {
-                        blockRadialCounts.push_back(0);
-                        blockRadialOffsets.push_back(radialOffset);
+                    if (currentBlockIndex == -1 or atomBlocks[A][currentBlockIndex].angularPoints.size() != numAngPts) {
+                        atomBlocks[A].push_back(brianBlock());
+                        currentBlockIndex++;
                         
                         for (int j = 0; j < numAngPts; j++) {
-                            angularCoordinates.push_back(anggrid[j].x);
-                            angularCoordinates.push_back(anggrid[j].y);
-                            angularCoordinates.push_back(anggrid[j].z);
-                            angularWeights.push_back(anggrid[j].w / (4.0 * M_PI)); // FIXME: we are missing a multiplier of 1/(4*pi) somewhere. for the time being i've put it here
+                            // FIXME: we are missing a multiplier of 1/(4*pi) somewhere. for the time being i've put it here
+                            atomBlocks[A][currentBlockIndex].angularPoints.push_back({anggrid[j].x, anggrid[j].y, anggrid[j].z, anggrid[j].w / (4.0 * M_PI)});
                         }
-                        
-                        blockAngularCounts.push_back(numAngPts);
-                        blockAngularOffsets.push_back(angularOffset);
-                        angularOffset += numAngPts;
-                        
-                        atomBlockCounts[A]++;
-                        atomBlockOffset++;
-                        
-                        numAngPtsPrev = numAngPts;
                     }
                     
-                    blockRadialCounts[atomBlockOffset - 1]++;
-                    radialCoordinates.push_back(r[i]);
-                    radialWeights.push_back(wr[i]);
-                    radialOffset++;
+                    atomBlocks[A][currentBlockIndex].radialPoints.push_back({r[i], wr[i]});
                 }
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
@@ -3753,22 +3736,57 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         }
     }
     
-//     for (int A = 0; A < molecule_->natom(); A++) {
-//         outfile->Printf("atom %d offset: %d, count: %d\n", A, int(atomBlockOffsets[A]), int(atomBlockCounts[A]));
-//         outfile->Printf("rotation:\n%lf %lf %lf\n%lf %lf %lf\n%lf %lf %lf\n", atomRotationMatrices[9 * A + 0], atomRotationMatrices[9 * A + 1], atomRotationMatrices[9 * A + 2], atomRotationMatrices[9 * A + 3], atomRotationMatrices[9 * A + 4], atomRotationMatrices[9 * A + 5], atomRotationMatrices[9 * A + 6], atomRotationMatrices[9 * A + 7], atomRotationMatrices[9 * A + 8]);
-//         for (int block = 0; block < atomBlockCounts[A]; block++) {
-//             outfile->Printf("\tblock %d radial offset: %d, radial count: %d, angular offset: %d, angular count: %d\n", block, (int)blockRadialOffsets[atomBlockOffsets[A] + block], (int)blockRadialCounts[atomBlockOffsets[A] + block], (int)blockAngularOffsets[atomBlockOffsets[A] + block], (int)blockAngularCounts[atomBlockOffsets[A] + block]);
-//             for (int radial = 0; radial < blockRadialCounts[atomBlockOffsets[A] + block]; radial++) {
-//                 outfile->Printf("\t\tradial %d r: %lf, w: %lf\n", radial, radialCoordinates[blockRadialOffsets[atomBlockOffsets[A] + block] + radial], radialWeights[blockRadialOffsets[atomBlockOffsets[A] + block] + radial]);
-//             }
-//             for (int angular = 0; angular < blockAngularCounts[atomBlockOffsets[A] + block]; angular++) {
-//                 outfile->Printf("\t\tangular %d x: %lf, y: %lf, z: %lf, w: %lf\n", angular, angularCoordinates[3 * (blockAngularOffsets[atomBlockOffsets[A] + block] + angular) + 0], angularCoordinates[3 * (blockAngularOffsets[atomBlockOffsets[A] + block] + angular) + 1], angularCoordinates[3 * (blockAngularOffsets[atomBlockOffsets[A] + block] + angular) + 2], angularWeights[blockAngularOffsets[atomBlockOffsets[A] + block] + angular]);
-//             }
-//         }
-//     }
-    
     // TODO: do the same for the other version of buildGridFromOptions below
     if (brianCookie != 0) {
+        brianInt atomBlockOffset = 0;
+        std::vector<brianInt> atomBlockCounts;
+        std::vector<brianInt> atomBlockOffsets;
+        
+        brianInt radialOffset = 0;
+        std::vector<brianInt> blockRadialCounts;
+        std::vector<brianInt> blockRadialOffsets;
+        std::vector<double> radialCoordinates;
+        std::vector<double> radialWeights;
+        
+        brianInt angularOffset = 0;
+        std::vector<brianInt> blockAngularCounts;
+        std::vector<brianInt> blockAngularOffsets;
+        std::vector<double> angularCoordinates;
+        std::vector<double> angularWeights;
+        
+        std::vector<double> atomRotationMatrices;
+        
+        for (int A = 0; A < molecule_->natom(); A++) {
+            atomRotationMatrices.insert(atomRotationMatrices.end(), atomRotations[A].begin(), atomRotations[A].end());
+            
+            atomBlockCounts.push_back(atomBlocks[A].size());
+            atomBlockOffsets.push_back(atomBlockOffset);
+            for (int blockIndex = 0; blockIndex < atomBlocks[A].size(); blockIndex++) {
+                
+                blockRadialCounts.push_back(atomBlocks[A][blockIndex].radialPoints.size());
+                blockRadialOffsets.push_back(radialOffset);
+                for (int radialIndex = 0; radialIndex < atomBlocks[A][blockIndex].radialPoints.size(); radialIndex++)
+                {
+                    radialCoordinates.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].r);
+                    radialWeights.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].w);
+                }
+                radialOffset += atomBlocks[A][blockIndex].radialPoints.size();
+                
+                blockAngularCounts.push_back(atomBlocks[A][blockIndex].angularPoints.size());
+                blockAngularOffsets.push_back(angularOffset);
+                for (int angularIndex = 0; angularIndex < atomBlocks[A][blockIndex].angularPoints.size(); angularIndex++)
+                {
+                    angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].x);
+                    angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].y);
+                    angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].z);
+                    angularWeights.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].w);
+                }
+                angularOffset += atomBlocks[A][blockIndex].angularPoints.size();
+            }
+            
+            atomBlockOffset += atomBlocks[A].size();
+        }
+        
         brianCOMSetDFTGrid(&brianCookie,
             atomBlockCounts.data(),
             atomBlockOffsets.data(),

@@ -169,7 +169,6 @@ void VBase::initialize() {
         std::vector<brianInt> functionalIDs;
         std::vector<double> functionalWeights;
         for (std::shared_ptr<Functional> functionalComponent: functional_->x_functionals()) {
-            outfile->Printf("functional id: %s\n", functionalComponent->name().c_str());
             if (functionalIDMap.count(functionalComponent->name()) == 0) {
                 throw PSIEXCEPTION("This DFT functional cannot be handled by BrianQC");
             }
@@ -177,7 +176,6 @@ void VBase::initialize() {
             functionalWeights.push_back(functionalComponent->alpha());
         }
         for (std::shared_ptr<Functional> functionalComponent: functional_->c_functionals()) {
-            outfile->Printf("functional id: %s\n", functionalComponent->name().c_str());
             if (functionalIDMap.count(functionalComponent->name()) == 0) {
                 throw PSIEXCEPTION("This DFT functional cannot be handled by BrianQC");
             }
@@ -832,8 +830,11 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
     }
     
-    if (brianCookie != 0) {
+    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    if (brianCookie != 0 and brianPsi4DFT) {
         double DFTEnergy;
+        
         brianSCFBuildFockDFT(&brianCookie,
             D_AO_[0]->get_pointer(0),
             nullptr,
@@ -843,7 +844,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         );
         checkBrian();
         
-        quad_values_["VV10"] = 0.0; // TODO: can we compute the VV10 term?
+        quad_values_["VV10"] = 0.0; // TODO: we cannot compute the VV10 term, must assert that the functional doesn't need it (functional_->needs_vv10())
         quad_values_["FUNCTIONAL"] = DFTEnergy;
         quad_values_["RHO_A"] = 0.0;
         quad_values_["RHO_AX"] = 0.0;
