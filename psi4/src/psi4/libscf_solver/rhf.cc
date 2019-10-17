@@ -59,6 +59,12 @@
 
 #include "rhf.h"
 
+#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+#include </home/dzsi/dev/quantum/src/brian_module/api/brian_types.h>
+extern void checkBrian();
+extern BrianCookie brianCookie;
+
 namespace psi {
 namespace scf {
 
@@ -196,11 +202,16 @@ void RHF::form_G() {
     }
 
     G_->axpy(2.0, J_);
-
+    
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-
-    if (alpha != 0.0 && !(functional_->is_x_lrc() && jk_->get_wcombine()) ) {
+    if (brianCookie != 0) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+    
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine()) ) {
         G_->axpy(-alpha, K_);
     } else {
         K_->zero();
@@ -316,9 +327,15 @@ double RHF::compute_E() {
     }
 
     double exchange_E = 0.0;
+    
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-
+    if (brianCookie != 0) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+    
     if (functional_->is_x_hybrid()) {
         exchange_E -= alpha * Da_->vector_dot(K_);
     }
@@ -489,10 +506,16 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 
     Cl.clear();
     Cr.clear();
-
+    
     // Build return vector, ohyea thats fun
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+    if (brianCookie != 0) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+    
     std::vector<SharedMatrix> ret;
     if (combine) {
         // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
