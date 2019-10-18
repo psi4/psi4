@@ -211,12 +211,13 @@ struct Decorator<T, 2> final {
 
 template <typename T, typename U>
 void declareRankN_builders(py::module& mod) {
-    mod.def("full_like", py::overload_cast<const T&, U>(&full_like<T, U>),
+    mod.def("full_like",
+            py::overload_cast<const std::shared_ptr<T>&, U>(&full_like<typename T::value_type, T::rank, U>),
             "Returns a tensor with all blocks filled with given value of same shape and value type as input", "mold"_a,
             "fill_value"_a);
-    mod.def("zeros_like", py::overload_cast<const T&>(&zeros_like<T, U>),
+    mod.def("zeros_like", py::overload_cast<const std::shared_ptr<T>&>(&zeros_like<typename T::value_type, T::rank, U>),
             "Return a tensor with all blocks filled with 0 of same shape and value type as input", "mold"_a);
-    mod.def("ones_like", py::overload_cast<const T&>(&ones_like<T, U>),
+    mod.def("ones_like", py::overload_cast<const std::shared_ptr<T>&>(&ones_like<typename T::value_type, T::rank, U>),
             "Return a tensor with all blocks filled with 1 of same shape and value type as input", "mold"_a);
 }
 
@@ -272,10 +273,10 @@ void bind_tensor(py::module& mod) {
 
     // Free functions shared by all ranks
     // Builders
-    declareRankN_builders<SharedClass, int>(mod);
-    declareRankN_builders<SharedClass, float>(mod);
-    declareRankN_builders<SharedClass, double>(mod);
-    declareRankN_builders<SharedClass, std::complex<double>>(mod);
+    declareRankN_builders<Class, int>(mod);
+    declareRankN_builders<Class, float>(mod);
+    declareRankN_builders<Class, double>(mod);
+    declareRankN_builders<Class, std::complex<double>>(mod);
     mod.def("real", &real<T, Rank>, "Return real part of tensor", "in"_a);
     mod.def("imag", &imag<T, Rank>, "Return imaginary part of tensor. For real tensors, returns zeros.", "in"_a);
     mod.def("conj", &conj<T, Rank>, "Return complex conjugate of tensor", "in"_a);
