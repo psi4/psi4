@@ -29,6 +29,7 @@
 import numpy as np
 from psi4 import core
 from psi4.driver import p4util
+from psi4.driver import constants
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver import qcdb
 
@@ -438,7 +439,6 @@ def assemble_gradient_from_energies(findifrec):
             E[i, max_disp - j] = findifrec["displacements"][f"{salc_index}: {-j}"]["energy"]
             E[i, max_disp + j - 1] = findifrec["displacements"][f"{salc_index}: {j}"]["energy"]
 
-    print(np.asarray(data["salc_list"].matrix()))
     # Perform the finite difference.
     if findifrec["stencil_size"] == 3:
         g_q = (E[:, 1] - E[:, 0]) / (2.0 * findifrec["step"]["size"])
@@ -750,7 +750,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
 
 
 
-def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
+def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
@@ -760,8 +760,6 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
-    dertype : int
-        The derivative level
 
     Returns
     -------
@@ -779,11 +777,9 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
     displacements = findifrec["displacements"]
 
     def init_string(data):
-        return ("  Computing dipole-derivative from dipoles using projected, \n"
-                "  symmetry-adapted, cartesian coordinates.\n\n"
-                "  {:d} dipoles passed in, including the reference geometry.\n".format(len(displacements) + 1))
+        return ("")
 
-    data = _initialize_findif(mol, freq_irrep_only, f"2_{dertype}", init_string)
+    data = _initialize_findif(mol, freq_irrep_only, "2_1", init_string)
     salc_indices = data["salc_indices_pi"][0]
     max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
     d_per_salc = 2 * max_disp
@@ -804,9 +800,6 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
                 break
         else:
             raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
-        if data["print_lvl"]:
-            core.print_out("    Operation {} takes plus displacements of irrep {} to minus ones.\n".format(
-                group_op + 1, gamma.symbol()))
 
         sym_op = np.array(ct.symm_operation(group_op).matrix())
         salc_indices = data["salc_indices_pi"][h]
@@ -817,7 +810,6 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
                 pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
                 dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
                 dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
-                #displacements[f"{salc_index}: {j}"] = {"dipole" : new_dipole}
 
     # Computing the dipole derivative by finite differnce
     if findifrec["stencil_size"] == 3:
@@ -825,7 +817,7 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
     elif findifrec["stencil_size"] == 5:
         dipder_q = (dipole[:, 0] - 8.0 * dipole[:, 1] + 8.0 * dipole[:, 2] - dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
 
-    # Transform dipole derivatives from SALCs to mass-weighted Cartesians
+    # Transform the dipole derivates from mass-weighted SALCs to non-mass-weighted Cartesians
     B = np.asarray(data["salc_list"].matrix())
     dipder_cart = np.dot(dipder_q.T, B)
     dipder_cart = dipder_cart.T.reshape(data["n_atom"], 9)
@@ -834,7 +826,6 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
     dipder_cart = (dipder_cart.T*massweighter).T
 
     dipder_cart = dipder_cart.ravel().reshape(3*data["n_atom"],3)
-    #print(np.around(dipder_cart, decimals=4))
     return dipder_cart
 
 
