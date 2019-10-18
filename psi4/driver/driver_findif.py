@@ -438,6 +438,7 @@ def assemble_gradient_from_energies(findifrec):
             E[i, max_disp - j] = findifrec["displacements"][f"{salc_index}: {-j}"]["energy"]
             E[i, max_disp + j - 1] = findifrec["displacements"][f"{salc_index}: {j}"]["energy"]
 
+    print(np.asarray(data["salc_list"].matrix()))
     # Perform the finite difference.
     if findifrec["stencil_size"] == 3:
         g_q = (E[:, 1] - E[:, 0]) / (2.0 * findifrec["step"]["size"])
@@ -747,7 +748,9 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
     # All blocks of the Hessian are now constructed!
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
-def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
+
+
+def assemble_dipder_from_dipole(findifrec, freq_irrep_only, dertype):
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
@@ -757,6 +760,8 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
+    dertype : int
+        The derivative level
 
     Returns
     -------
@@ -767,170 +772,70 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
     mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
 
+    pg = mol.point_group()
+    ct = pg.char_table()
+    order = pg.order()
+
     displacements = findifrec["displacements"]
-    print(displacements.keys())
 
-    #data = _initialize_findif(mol, freq_irrep_only, "2_1", init_string)
+    def init_string(data):
+        return ("  Computing dipole-derivative from dipoles using projected, \n"
+                "  symmetry-adapted, cartesian coordinates.\n\n"
+                "  {:d} dipoles passed in, including the reference geometry.\n".format(len(displacements) + 1))
 
-    # For non-totally symmetric CdSALCs, a symmetry operation can convert + and - displacements.
-    # Good News: By taking advantage of that, we (potentially) ran less computations.
-    # Bad News: We need to find the - displacements from the + computations now.
-    # The next ~80 lines of code are dedicated to that task.
-    #if data["print_lvl"]:
-    #    core.print_out("  Generating complete list of displacements from unique ones.\n\n")
+    data = _initialize_findif(mol, freq_irrep_only, f"2_{dertype}", init_string)
+    salc_indices = data["salc_indices_pi"][0]
+    max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
+    d_per_salc = 2 * max_disp
 
-    #pg = mol.point_group()
-    #ct = pg.char_table()
-    #order = pg.order()
-
-    # Determine what atoms map to what other atoms under the point group operations.
-    # The py-side compute_atom_map will work whether mol is a Py-side or C-side object.
-    #atom_map = qcdb.compute_atom_map(mol)
-    #if data["print_lvl"] >= 3:
-    #    core.print_out("    The atom map:\n")
-    #    for atom, sym_image_list in enumerate(atom_map):
-    #        core.print_out(f"     {atom + 1:d} : ")
-    #        for image_atom in sym_image_list:
-    #            core.print_out(f"{image_atom + 1:4d}")
-    #        core.print_out("\n")
-    #    core.print_out("\n")
-
-    # A list of lists of gradients, per irrep
-    #gradients_pi = [[]]
-    # Extract and print the symmetric gradients. These need no additional processing.
-    #max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
-    #for i in data["salc_indices_pi"][0]:
-    #    for n in range(-max_disp, 0):
-    #        grad_raw = displacements[f"{i}: {n}"]["gradient"]
-    #        gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
-    #    for n in range(1, max_disp + 1):
-    #        grad_raw = displacements[f"{i}: {n}"]["gradient"]
-    #        gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
-
-    #if data["print_lvl"] >= 3:
-    #    core.print_out("    Symmetric gradients\n")
-    #    for gradient in gradients_pi[0]:
-    #        core.print_out("\n{}\n".format(np.array_str(gradient, **array_format)))
-   
-   #dipoles = []
-   #for n in range(-max_disp, 0):
-   #    dipole = displacements[f"{i}: {n}"]["dipole"]
-   #    gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
-   #for n in range(1, max_disp + 1):
-   #    grad_raw = displacements[f"{i}: {n}"]["gradient"]
-   #    gradients_pi[0].append(np.reshape(grad_raw, (-1, 3)))
+    # Populating with positive and negative displacements for the identity point group
+    dipole = np.zeros(shape=(data['n_salc'], d_per_salc, 3))
+    for salc_index in salc_indices:
+        for j in range(1, max_disp + 1):
+            dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+            dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
 
 
-    # Asymmetric gradient. There's always SOME operation that transforms a positive
-    # into a negative displacement.By doing extra things here, we can find the
-    # gradients at the positive displacements.
-    #for h in range(1, data["n_irrep"]):
+    for h in range(1, data["n_irrep"]):
+        # Find the group operation that converts + to - displacements.
+        gamma = ct.gamma(h)
+        for group_op in range(order):
+            if gamma.character(group_op) == -1:
+                break
+        else:
+            raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
+        if data["print_lvl"]:
+            core.print_out("    Operation {} takes plus displacements of irrep {} to minus ones.\n".format(
+                group_op + 1, gamma.symbol()))
 
-    #    # If there are no CdSALCs in this irrep, let's skip it.
-    #    if not data["n_disp_pi"][h]:
-    #        gradients_pi.append([])
-    #        continue
+        sym_op = np.array(ct.symm_operation(group_op).matrix())
+        salc_indices = data["salc_indices_pi"][h]
 
-    #    gamma = ct.gamma(h)
-    #    if data["print_lvl"] >= 3:
-    #        core.print_out(f"Characters for irrep {h}\n")
-    #        for group_op in range(order):
-    #            core.print_out(" {:5.1f}".format(gamma.character(group_op)))
-    #        core.print_out("\n")
+        # Creating positive displacements and populating for the other point groups
+        for salc_index in salc_indices:
+            for j in range(1, max_disp + 1):
+                pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
+                dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+                dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
+                #displacements[f"{salc_index}: {j}"] = {"dipole" : new_dipole}
 
-    #    # Find the group operation that converts + to - displacements.
-    #    for group_op in range(order):
-    #        if gamma.character(group_op) == -1:
-    #            break
-    #    else:
-    #        raise ValidationError("A symmetric gradient passed for a non-symmetric one.")
-    #    if data["print_lvl"]:
-    #        core.print_out("    Operation {} takes plus displacements of irrep {} to minus ones.\n".format(
-    #            group_op + 1, gamma.symbol()))
+    # Computing the dipole derivative by finite differnce
+    if findifrec["stencil_size"] == 3:
+        dipder_q = (dipole[:, 1] - dipole[:, 0]) / (2.0 * findifrec["step"]["size"])
+    elif findifrec["stencil_size"] == 5:
+        dipder_q = (dipole[:, 0] - 8.0 * dipole[:, 1] + 8.0 * dipole[:, 2] - dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
 
-    #    sym_op = np.array(ct.symm_operation(group_op).matrix())
-    #    gradients = []
+    # Transform dipole derivatives from SALCs to mass-weighted Cartesians
+    B = np.asarray(data["salc_list"].matrix())
+    dipder_cart = np.dot(dipder_q.T, B)
+    dipder_cart = dipder_cart.T.reshape(data["n_atom"], 9)
 
-    #    def recursive_gradients(i, n):
-    #        """Populate gradients, with step -n, -n+1, ... -1, 1, ... n. Positive displacements are computed."""
+    massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
+    dipder_cart = (dipder_cart.T*massweighter).T
 
-    #        grad_raw = displacements[f"{i}: {-n}"]["gradient"]
-    #        gradients.append(np.reshape(grad_raw, (-1, 3)))
-    #        new_grad = np.zeros((data["n_atom"], 3))
-    #        for atom, image in enumerate(atom_map):
-    #            atom2 = image[group_op]
-    #            new_grad[atom2] = np.einsum("xy,y->x", sym_op, gradients[-1][atom])
-    #        if n > 1:
-    #            recursive_gradients(i, n - 1)
-    #        gradients.append(new_grad)
-
-    #    for i in data["salc_indices_pi"][h]:
-    #        recursive_gradients(i, max_disp)
-    #    gradients_pi.append(gradients)
-
-    # Massweight all gradients.
-    # Remember, the atom currently corresponds to our 0 axis, hence these transpose tricks.
-    '''
-    massweighter = np.asarray([mol.mass(a) for a in range(data["n_atom"])])**(-0.5)
-    gradients_pi = [[(grad.T * massweighter).T for grad in gradients] for gradients in gradients_pi]
-
-    if data["print_lvl"] >= 3:
-        core.print_out("    All mass-weighted gradients\n")
-        for gradients in gradients_pi:
-            for grad in gradients:
-                core.print_out("\n{}\n".format(np.array_str(grad, **array_format)))
-    '''
-    # Por ahora sin massweight
-
-    # We have all our gradients generated now!
-    # Next, time to get our Hessian.
-
-    #H_pi = []
-    #B_pi = []
-    #irrep_lbls = mol.irrep_labels()
-    #massweighter = np.repeat(massweighter, 3)
-
-    #for h in range(data["n_irrep"]):
-    #    n_disp = data["n_disp_pi"][h]
-    #    Nindices = len(data["salc_indices_pi"][h])
-    #    gradients = gradients_pi[h]
-
-    #    if not Nindices:
-    #        continue
-
-    #    # Flatten each gradient, and turn it into a COLUMN of the matrix.
-    #    gradient_matrix = np.array([grad.flatten() for grad in gradients]).T
-    #    # Transform disps from Cartesian to CdSalc coordinates.
-    #    # For future convenience, we transpose.
-    #    # Rows are gradients and columns are coordinates with respect to a particular CdSALC.
-    #    B_pi.append(data["salc_list"].matrix_irrep(h))
-    #    grads_adapted = np.dot(B_pi[-1], gradient_matrix).T
-
-    #    if data["print_lvl"] >= 3:
-    #        core.print_out("Gradients in B-matrix coordinates\n")
-    #        for disp in range(n_disp):
-    #            core.print_out(f" disp {disp}: ")
-    #            for salc in grads_adapted[disp]:
-    #                core.print_out(f"{salc:15.10f}")
-    #            core.print_out("\n")
-
-    #    H_pi.append(np.empty([Nindices, Nindices]))
-
-    dipder_list = []
-    for i in range(int(list(displacements.keys())[-1][0])):
-        if findifrec["stencil_size"] == 3:
-            dipder = (displacements[f"{i}: {-1}"]["dipole"] - displacements[f"{i}: {1}"]["dipole"]) / (2.0 * findifrec["step"]["size"])
-            dipder_list.append(dipder)
-            print(dipder)
-    #    elif findifrec["stencil_size"] == 5:
-    #        H_pi[-1] = (grads_adapted[::4] - 8 * grads_adapted[1::4] + 8 * grads_adapted[2::4] -
-    #                    grads_adapted[3::4]) / (12.0 * findifrec["step"]["size"])
-
-    #    H_pi[-1] = _process_hessian_symmetry_block(H_pi[-1], B_pi[-1], massweighter, irrep_lbls[h], data["print_lvl"])
-
-    # All blocks of the Hessian are now constructed!
-    print("Exiting...")
-    return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
+    dipder_cart = dipder_cart.ravel().reshape(3*data["n_atom"],3)
+    #print(np.around(dipder_cart, decimals=4))
+    return dipder_cart
 
 
 def assemble_hessian_from_energies(findifrec, freq_irrep_only):

@@ -189,9 +189,9 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     displacement["energy"] = core.variable('CURRENT ENERGY')
 
     # Getting the dipole moment and saving it an numpy array
-    displacement["dipole"] = np.array([core.variable('CURRENT DIPOLE X'),
-                                      core.variable('CURRENT DIPOLE Y'),
-                                      core.variable('CURRENT DIPOLE Z')]) # IN DEBEY!
+    displacement["dipole"] = np.array([core.variable('CURRENT DIPOLE X')*(0.393456),
+                                      core.variable('CURRENT DIPOLE Y')*(0.393456),
+                                      core.variable('CURRENT DIPOLE Z')*(0.393456)]) # IN DEBEY!
 
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
@@ -1341,9 +1341,9 @@ def hessian(name, **kwargs):
         wfn.set_gradient(G0)
 
         # Assemble dipder from dipoles
-        DDer = driver_findif.assemble_dipder_from_dipole(findif_meta_dict, irrep)
-        core.set_variable('CURRENT DIPOLE DERIVATIVE', DDer)
-        wfn.set_variable('CURRENT DIPOLE DERIVATIVE', DDer)
+        DDer = driver_findif.assemble_dipder_from_dipole(findif_meta_dict, irrep, dertype)
+        core.set_variable('CURRENT DIPOLE GRADIENT', DDer)
+        wfn.set_variable('CURRENT DIPOLE GRADIENT', DDer)
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
@@ -1552,6 +1552,7 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
         nmwhess = hess
 
     dipder = wfn.variables().get("CURRENT DIPOLE GRADIENT", None)
+    #print(np.asarray(dipder)) #revertir
     if dipder is not None:
         dipder = np.asarray(dipder).T
 
