@@ -46,6 +46,7 @@ from psi4.driver import driver_nbody
 from psi4.driver import driver_findif
 from psi4.driver import p4util
 from psi4.driver import qcdb
+from psi4.driver import constants
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 
@@ -189,9 +190,9 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     displacement["energy"] = core.variable('CURRENT ENERGY')
 
     # Getting the dipole moment and saving it an numpy array
-    displacement["dipole"] = np.array([core.variable('CURRENT DIPOLE X')*(0.393456),
-                                      core.variable('CURRENT DIPOLE Y')*(0.393456),
-                                      core.variable('CURRENT DIPOLE Z')*(0.393456)]) # IN DEBEY!
+    displacement["dipole"] = np.array([core.variable('CURRENT DIPOLE X'),
+                                      core.variable('CURRENT DIPOLE Y'),
+                                      core.variable('CURRENT DIPOLE Z')])/constants.dipmom_au2debye
 
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
@@ -1341,7 +1342,7 @@ def hessian(name, **kwargs):
         wfn.set_gradient(G0)
 
         # Assemble dipder from dipoles
-        DDer = driver_findif.assemble_dipder_from_dipole(findif_meta_dict, irrep, dertype)
+        DDer = driver_findif.assemble_dipder_from_dipole(findif_meta_dict, irrep)
         core.set_variable('CURRENT DIPOLE GRADIENT', DDer)
         wfn.set_variable('CURRENT DIPOLE GRADIENT', DDer)
 
@@ -1552,7 +1553,6 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
         nmwhess = hess
 
     dipder = wfn.variables().get("CURRENT DIPOLE GRADIENT", None)
-    #print(np.asarray(dipder)) #revertir
     if dipder is not None:
         dipder = np.asarray(dipder).T
 
