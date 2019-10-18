@@ -188,26 +188,43 @@ struct Decorator<T, 2> final {
                    double beta) { return gemv(opA, alpha, A, x, beta); },
                 "A"_a, "x"_a, "opA"_a = Operation::None, "alpha"_a = 1.0, "beta"_a = 0.0);
         // Decompositions
-        mod.def("cholesky", &cholesky<T>, "Compute the Cholesky decomposition of A", "A"_a);
-        mod.def("qr", &qr<T>, "Compute the QR decomposition of A", "A"_a, "mode"_a = xt::linalg::qrmode::reduced);
-        mod.def("svd", &svd<T>, "Compute the singular value decomposition of A", "A"_a, "full_matrices"_a = true,
+        mod.def("cholesky", py::overload_cast<const SharedTensor<T, 2>&>(&cholesky<T>),
+                "Compute the Cholesky decomposition of A", "A"_a);
+        mod.def("qr", py::overload_cast<const SharedTensor<T, 2>&, xt::linalg::qrmode>(&qr<T>),
+                "Compute the QR decomposition of A", "A"_a, "mode"_a = xt::linalg::qrmode::reduced);
+        mod.def("svd", py::overload_cast<const SharedTensor<T, 2>&, bool, bool>(&svd<T>),
+                "Compute the singular value decomposition of A", "A"_a, "full_matrices"_a = true,
                 "compute_uv"_a = true);
         // Matrix eigenvalues
-        mod.def("eig", &eig<T>, "Compute the eigenvalues and right eigenvectors of a square matrix.", "A"_a);
-        mod.def("eigvals", &eigvals<T>, "Compute the eigenvalues of a general matrix.", "A"_a);
+        mod.def("eig", py::overload_cast<const SharedTensor<T, 2>&>(&eig<T>),
+                "Compute the eigenvalues and right eigenvectors of a square matrix.", "A"_a);
+        mod.def("eigvals", py::overload_cast<const SharedTensor<T, 2>&>(&eigvals<T>),
+                "Compute the eigenvalues of a general matrix.", "A"_a);
         mod.def("eigh", py::overload_cast<const SharedTensor<T, 2>&, char>(&eigh<T>),
                 "Compute eigenvalues and eigenvectors of a complex Hermitian (conjugate symmetric) or a real "
                 "symmetric matrix.",
                 "A"_a, "UPLO"_a = 'L');
-        mod.def("eigvalsh", &eigvalsh<T>, "Compute the eigenvalues of a complex Hermitian or real symmetric matrix.",
-                "A"_a, "UPLO"_a = 'L');
+        mod.def("eigvalsh", py::overload_cast<const SharedTensor<T, 2>&, char>(&eigvalsh<T>),
+                "Compute the eigenvalues of a complex Hermitian or real symmetric matrix.", "A"_a, "UPLO"_a = 'L');
     }
 };
+
+template <typename T, typename U>
+void declareRankN_builders(py::module& mod) {
+    mod.def("full_like", py::overload_cast<const T&, U>(&full_like<T, U>),
+            "Returns a tensor with all blocks filled with given value of same shape and value type as input", "mold"_a,
+            "fill_value"_a);
+    mod.def("zeros_like", py::overload_cast<const T&>(&zeros_like<T, U>),
+            "Return a tensor with all blocks filled with 0 of same shape and value type as input", "mold"_a);
+    mod.def("ones_like", py::overload_cast<const T&>(&ones_like<T, U>),
+            "Return a tensor with all blocks filled with 1 of same shape and value type as input", "mold"_a);
+}
 
 template <typename T, size_t Rank>
 void bind_tensor(py::module& mod) {
     using Class = Tensor<T, Rank>;
-    using PyClass = py::class_<Class, std::shared_ptr<Class>>;
+    using SharedClass = SharedTensor<T, Rank>;
+    using PyClass = py::class_<Class, SharedClass>;
 
     std::string name = Class::crtp_base::pyClassName();
 
@@ -254,13 +271,11 @@ void bind_tensor(py::module& mod) {
             py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
 
     // Free functions shared by all ranks
-    mod.def("full_like", &full_like<T, Rank>,
-            "Returns a tensor with all blocks filled with given value of same shape and value type as input", "mold"_a,
-            "fill_value"_a);
-    mod.def("zeros_like", &zeros_like<T, Rank>,
-            "Return a tensor with all blocks filled with 0 of same shape and value type as input", "mold"_a);
-    mod.def("ones_like", &ones_like<T, Rank>,
-            "Return a tensor with all blocks filled with 1 of same shape and value type as input", "mold"_a);
+    // Builders
+    declareRankN_builders<SharedClass, int>(mod);
+    declareRankN_builders<SharedClass, float>(mod);
+    declareRankN_builders<SharedClass, double>(mod);
+    declareRankN_builders<SharedClass, std::complex<double>>(mod);
     mod.def("real", &real<T, Rank>, "Return real part of tensor", "in"_a);
     mod.def("imag", &imag<T, Rank>, "Return imaginary part of tensor. For real tensors, returns zeros.", "in"_a);
     mod.def("conj", &conj<T, Rank>, "Return complex conjugate of tensor", "in"_a);

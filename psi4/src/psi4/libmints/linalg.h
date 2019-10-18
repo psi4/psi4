@@ -64,6 +64,15 @@ SharedTensor<U, Rank> full_like(const SharedTensor<T, Rank>& mold, U fill_value)
                                              static_cast<U>(fill_value));
 }
 
+/*! Return a tensor with all blocks filled with given value of same shape and value type as input
+ *  \param[in] mold input tensor
+ *  \param[in] fill_value the value in all blocks
+ */
+template <typename T, size_t Rank, typename U = T>
+Tensor<U, Rank> full_like(const Tensor<T, Rank>& mold, U fill_value) noexcept {
+    return Tensor<U, Rank>(mold.label(), mold.nirrep(), mold.axes_dimpi(), mold.symmetry(), static_cast<U>(fill_value));
+}
+
 /*! Return a tensor with all blocks filled with 0 of same shape and value type as input
  *  \param[in] mold input tensor
  */
@@ -72,11 +81,27 @@ SharedTensor<U, Rank> zeros_like(const SharedTensor<T, Rank>& mold) noexcept {
     return full_like(mold, static_cast<U>(0));
 }
 
+/*! Return a tensor with all blocks filled with 0 of same shape and value type as input
+ *  \param[in] mold input tensor
+ */
+template <typename T, size_t Rank, typename U = T>
+Tensor<U, Rank> zeros_like(const Tensor<T, Rank>& mold) noexcept {
+    return full_like(mold, static_cast<U>(0));
+}
+
 /*! Return a tensor with all blocks filled with 1 of same shape and value type as input
  *  \param[in] mold input tensor
  */
 template <typename T, size_t Rank, typename U = T>
 SharedTensor<U, Rank> ones_like(const SharedTensor<T, Rank>& mold) noexcept {
+    return full_like(mold, static_cast<U>(1));
+}
+
+/*! Return a tensor with all blocks filled with 1 of same shape and value type as input
+ *  \param[in] mold input tensor
+ */
+template <typename T, size_t Rank, typename U = T>
+Tensor<U, Rank> ones_like(const Tensor<T, Rank>& mold) noexcept {
     return full_like(mold, static_cast<U>(1));
 }
 
@@ -299,6 +324,18 @@ SharedTensor<T, Rank> conj(const SharedTensor<T, Rank>& in) noexcept {
 
 /*! @{ Decompositions */
 template <typename T>
+Tensor<T, 2> cholesky(const Tensor<T, 2>& in) {
+    if (in.symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+    auto out = zeros_like(in);
+    std::transform(in.cbegin(), in.cend(), out.begin(),
+                   [](const typename Tensor<T, 2>::block_type& blk) ->
+                   typename Tensor<T, 2>::block_type { return xt::linalg::cholesky(blk); });
+    return out;
+}
+
+template <typename T>
 SharedTensor<T, 2> cholesky(const SharedTensor<T, 2>& in) {
     if (in->symmetry()) {
         throw PSIEXCEPTION("Matrix is non-totally symmetric.");
@@ -323,6 +360,25 @@ SharedTensor<T, 2> partial_cholesky(const SharedTensor<T, 2>& in) {
 }
 
 template <typename T>
+auto qr(const Tensor<T, 2>& in, xt::linalg::qrmode mode = xt::linalg::qrmode::reduced)
+    -> std::tuple<Tensor<T, 2>, Tensor<T, 2>> {
+    using Block = typename Tensor<T, 2>::block_type;
+    using QRs = std::tuple<Block, Block>;
+    auto tmp = std::vector<QRs>(in.nirrep());
+
+    std::transform(in.cbegin(), in.cend(), tmp.begin(),
+                   [mode](const Block& blk) -> QRs { return xt::linalg::qr(blk, mode); });
+
+    auto Q = Tensor<T, 2>("Q matrix of " + in.label(), in.rowspi(), in.colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), Q.begin(), [](const QRs& res) -> Block { return std::get<0>(res); });
+
+    auto R = Tensor<T, 2>("R matrix of " + in.label(), in.rowspi(), in.colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), R.begin(), [](const QRs& res) -> Block { return std::get<1>(res); });
+
+    return std::make_tuple(Q, R);
+}
+
+template <typename T>
 using QRResult = std::tuple<SharedTensor<T, 2>, SharedTensor<T, 2>>;
 
 template <typename T>
@@ -341,6 +397,35 @@ auto qr(const SharedTensor<T, 2>& in, xt::linalg::qrmode mode = xt::linalg::qrmo
     std::transform(tmp.cbegin(), tmp.cend(), R->begin(), [](const QRs& res) -> Block { return std::get<1>(res); });
 
     return std::make_tuple(Q, R);
+}
+
+template <typename T>
+auto svd(const Tensor<T, 2>& in, bool full_matrices = true, bool compute_uv = true)
+    -> std::tuple<Tensor<T, 2>, Tensor<T, 1>, Tensor<T, 2>> {
+    using Block = typename Tensor<T, 2>::block_type;
+    using SVDs = std::tuple<Block, typename Tensor<T, 1>::block_type, Block>;
+    auto tmp = std::vector<SVDs>(in.nirrep());
+
+    std::transform(in.cbegin(), in.end(), tmp.begin(), [full_matrices, compute_uv](const Block& blk) -> SVDs {
+        return xt::linalg::svd(blk, full_matrices, compute_uv);
+    });
+
+    auto Kspi = Dimension(in.nirrep());
+    for (auto h = 0; h < in.nirrep(); ++h) {
+        Kspi[h] = std::min(in.rowspi()[h], in.colspi()[h]);
+    }
+
+    auto U = Tensor<T, 2>("U matrix of " + in.label(), in.rowspi(), full_matrices ? in.rowspi() : Kspi);
+    std::transform(tmp.cbegin(), tmp.cend(), U.begin(), [](const SVDs& res) -> Block { return std::get<0>(res); });
+
+    auto S = Tensor<T, 1>("S matrix of " + in.label(), Kspi);
+    std::transform(tmp.cbegin(), tmp.cend(), S.begin(),
+                   [](const SVDs& res) -> typename Tensor<T, 1>::block_type { return std::get<1>(res); });
+
+    auto Vh = Tensor<T, 2>("V^H matrix of " + in.label(), full_matrices ? in.colspi() : Kspi, in.colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), Vh.begin(), [](const SVDs& res) -> Block { return std::get<2>(res); });
+
+    return std::make_tuple(U, S, Vh);
 }
 
 template <typename T>
@@ -389,6 +474,30 @@ template <typename T>
 using Result = std::tuple<typename Eigvals<T>::block_type, typename Eigvecs<T>::block_type>;
 }  // namespace eig_detail
 
+template <typename T, typename U = std::complex<typename detail::is_complex<T>::real_type>>
+auto eig(const Tensor<T, 2>& in) -> std::tuple<Tensor<T, 1>, Tensor<T, 2>> {
+    if (in.symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
+    auto tmp = std::vector<eig_detail::Result<U>>(in.nirrep());
+
+    std::transform(in.cbegin(), in.cend(), tmp.begin(),
+                   [](const typename eig_detail::Eigvecs<T>::block_type& blk) -> eig_detail::Result<U> {
+                       return xt::linalg::eig(blk);
+                   });
+
+    auto eigvals = eig_detail::Eigvals<U>("Eigenvalues of " + in.label(), in.rowspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvals.begin(), [
+    ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvals<U>::block_type { return std::get<0>(res); });
+
+    auto eigvecs = eig_detail::Eigvecs<U>("Eigenvectors of " + in.label(), in.rowspi(), in.colspi());
+    std::transform(tmp.cbegin(), tmp.cend(), eigvecs.begin(), [
+    ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvecs<U>::block_type { return std::get<1>(res); });
+
+    return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
+}
+
 template <typename T>
 using EigenResult = std::tuple<SharedTensor<T, 1>, SharedTensor<T, 2>>;
 
@@ -415,6 +524,19 @@ auto eig(const SharedTensor<T, 2>& in) -> EigenResult<U> {
     ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvecs<U>::block_type { return std::get<1>(res); });
 
     return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
+}
+
+template <typename T, typename U = std::complex<typename detail::is_complex<T>::real_type>>
+auto eigvals(const Tensor<T, 2>& in) -> eig_detail::Eigvals<U> {
+    if (in.symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
+    auto eigvals = eig_detail::Eigvals<U>("Eigenvalues of " + in.label(), in.rowspi());
+    std::transform(in.cbegin(), in.cend(), eigvals.begin(),
+                   [](const typename Tensor<T, 2>::block_type& blk) ->
+                   typename eig_detail::Eigvals<U>::block_type { return xt::linalg::eigvals(blk); });
+    return eigvals;
 }
 
 template <typename T, typename U = std::complex<typename detail::is_complex<T>::real_type>>
@@ -477,6 +599,19 @@ auto eigh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> EigenResult<T> {
     ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvecs<T>::block_type { return std::get<1>(res); });
 
     return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
+}
+
+template <typename T>
+auto eigvalsh(const Tensor<T, 2>& in, char UPLO = 'L') -> eig_detail::Eigvals<T> {
+    if (in.symmetry()) {
+        throw PSIEXCEPTION("Matrix is non-totally symmetric.");
+    }
+
+    auto eigvals = eig_detail::Eigvals<T>("Eigenvalues of " + in.label(), in.rowspi());
+    std::transform(in.cbegin(), in.cend(), eigvals.begin(),
+                   [UPLO](const typename eig_detail::Eigvecs<T>::block_type& blk) ->
+                   typename eig_detail::Eigvals<T>::block_type { return xt::linalg::eigvalsh(blk, UPLO); });
+    return eigvals;
 }
 
 template <typename T>
