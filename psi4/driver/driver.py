@@ -163,7 +163,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     # print progress to file and screen
     core.print_out('\n')
     p4util.banner('Loading displacement %d of %d' % (n, ndisp))
-    print(""" %d""" % (n), end=('\n' if (n == ndisp) else '')) 
+    print(""" %d""" % (n), end=('\n' if (n == ndisp) else ''))
     sys.stdout.flush()
 
     parent_group = molecule.point_group()
