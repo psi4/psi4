@@ -187,10 +187,6 @@ SimintTwoElectronInt::SimintTwoElectronInt(const IntegralFactory *integral, int 
     else
         shells4_ = create_shell_vec_(*original_bs4_);
 
-    bra_same_ = (original_bs1_ == original_bs2_);
-    ket_same_ = (original_bs3_ == original_bs4_);
-    braket_same_ = (original_bs1_ == original_bs3_ && original_bs2_ == original_bs4_);
-
     single_spairs_bra_ = create_shell_pair_(*shells1_, *shells2_);
 
     if (braket_same_)
@@ -206,9 +202,6 @@ SimintTwoElectronInt::SimintTwoElectronInt(const SimintTwoElectronInt &rhs)
       maxam_(rhs.maxam_),
       batchsize_(rhs.batchsize_),
       allwork_size_(rhs.allwork_size_),
-      bra_same_(rhs.bra_same_),
-      ket_same_(rhs.ket_same_),
-      braket_same_(rhs.braket_same_),
       shells1_(rhs.shells1_),
       shells2_(rhs.shells2_),
       shells3_(rhs.shells3_),
@@ -281,7 +274,6 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
 
     curr_buff_size_ = n1 * n2 * n3 * n4;
 
-    // get the precomputed simint_multi_shellpair
     const simint_multi_shellpair *P = &(*single_spairs_bra_)[sh1 * nsh2 + sh2];
     const simint_multi_shellpair *Q = &(*single_spairs_ket_)[sh3 * nsh4 + sh4];
 
@@ -378,12 +370,21 @@ void SimintTwoElectronInt::compute_shell_blocks(int shellpair1, int shellpair2, 
     }
 }
 
+void SimintTwoElectronInt::compute_shell_blocks_deriv1(int shellpair1, int shellpair2, int npair1, int npair2) {
+    throw PSIEXCEPTION("Simint gradients are not implemented yet!");
+}
+
+
 void SimintTwoElectronInt::create_blocks(void) {
     blocks12_.clear();
     blocks34_.clear();
 
-    // make the significant shell pairs
-    // (form blocks of MU,NU)
+    /*
+     * Simint doesn't care about the ordering of angular momentum, but we'll stick with the
+     * ordering such that the angular momentum satisfies P>=Q, R>=S, PQ>=RS to be consistent
+     * with other engines and to be able to easily identify permutationally unique quartets.
+     */
+
     const auto am1 = basis1()->max_am();
     const auto am2 = basis2()->max_am();
     const auto am3 = basis3()->max_am();
@@ -413,26 +414,28 @@ void SimintTwoElectronInt::create_blocks(void) {
         sorted_shells4[am].push_back(ishell);
     }
 
-    // form pairs for the bra
-    // these aren't batched
-
-    for (int iam = 0; iam <= am1; iam++)
+    // form pairs for the bra; these aren't batched
+    for (int iam = 0; iam <= am1; iam++) {
         for (int jam = 0; jam <= am2; jam++) {
-            for (int ishell : sorted_shells1[iam])
+            for (int ishell : sorted_shells1[iam]) {
                 for (int jshell : sorted_shells2[jam]) {
-                    if (!bra_same_ || (bra_same_ && jshell <= ishell)) blocks12_.push_back({{ishell, jshell}});
+                    if (!bra_same_ || (bra_same_ && ishell >= jshell)) {
+                         blocks12_.push_back({{ishell, jshell}});
+                    }
                 }
+            }
         }
+    }
 
-    // form pairs for the ket
-    for (int iam = 0; iam <= am3; iam++)
-        for (int jam = 0; jam <= am4; jam++) {
+    // form pairs for the ket these are batched and should be chosen permutationally unique
+    for (int kam = 0; kam <= am3; kam++) {
+        for (int lam = 0; lam <= am4; lam++) {
             ShellPairBlock curblock;
 
-            for (int ishell : sorted_shells3[iam])
-                for (int jshell : sorted_shells4[jam]) {
-                    if (!ket_same_ || (ket_same_ && jshell <= ishell)) {
-                        curblock.push_back({ishell, jshell});
+            for (int kshell : sorted_shells3[kam])
+                for (int lshell : sorted_shells4[lam]) {
+                    if (!ket_same_ || (ket_same_ && kshell >= lshell) ) {
+                        curblock.push_back({kshell, lshell});
                         if (curblock.size() == batchsize_) {
                             blocks34_.push_back(curblock);
                             curblock.clear();
@@ -442,7 +445,7 @@ void SimintTwoElectronInt::create_blocks(void) {
 
             if (curblock.size()) blocks34_.push_back(std::move(curblock));
         }
-
+    }
     multi_spairs_bra_ = create_shared_multi_shellpair_(blocks12_, *shells1_, *shells2_);
     multi_spairs_ket_ = create_shared_multi_shellpair_(blocks34_, *shells3_, *shells4_);
 }

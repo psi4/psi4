@@ -29,8 +29,13 @@
 #ifndef _psi_src_lib_libmints_eri_h
 #define _psi_src_lib_libmints_eri_h
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include <unordered_map>
-#include <libint2.hpp>
+#include <numeric>
+#include <libint2/engine.h>
+#include <libint2/shell.h>
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -99,6 +104,9 @@ class TwoElectronInt : public TwoBodyAOInt {
     //! Computes the fundamental
     Fjt* fjt_;
 
+    //! The number of integrals in the current shell quartet
+    int batchsize_;
+
     //! Computes the ERIs between four shells.
     size_t compute_quartet(int, int, int, int);
 
@@ -114,6 +122,7 @@ class TwoElectronInt : public TwoBodyAOInt {
 
     //! Should we use shell pair information?
     bool use_shell_pairs_;
+
 
     //! Shell pair information
     std::shared_ptr<std::vector<std::vector<ShellPair>>> pairs12_, pairs34_;
@@ -137,13 +146,13 @@ class TwoElectronInt : public TwoBodyAOInt {
     size_t compute_shell(const AOShellCombinationsIterator&) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(int, int, int, int) override;
+    size_t compute_shell(int s1, int s2, int s3, int s4) override;
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
-    size_t compute_shell_deriv1(int, int, int, int) override;
+    size_t compute_shell_deriv1(int s1 , int s2, int s3, int s4) override;
 
     /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
-    size_t compute_shell_deriv2(int, int, int, int) override;
+    size_t compute_shell_deriv2(int s1, int s2, int s3, int s4) override;
 };
 
 /*! \ingroup MINTS
@@ -156,7 +165,7 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
 
    protected:
     //! Libint2 engine
-    libint2::Engine libint2_;
+    std::vector<libint2::Engine> engines_;
     std::vector<double> results_;
 
     //! Form shell pair information
@@ -208,8 +217,10 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
                     }
 
                     if (significant) {
+                        auto block = bs1_equiv_bs2 && bs2->shell(s2).am() > bs1->shell(s1).am()
+                                         ? ShellPairBlock{{s2, s1}}
+                                         : ShellPairBlock{{s1, s2}};
                         mx.lock();
-                        ShellPairBlock block{{s1, s2}};
                         blocks.push_back(block);
                         mx.unlock();
                     }
@@ -217,15 +228,21 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
             }
         }  // end of compute
 
-        // resort shell list in increasing order
-        std::sort(blocks.begin(), blocks.end(), [](auto& l, auto& r) {
-            return l[0].first == r[0].first ? l[0].second < r[0].second : l[0].first < r[0].first;
+        // resort shell list in increasing order of angular momentum
+        std::sort(blocks.begin(), blocks.end(), [&](auto& l, auto& r) { 
+            const auto& lsh1 = bs1->shell(l[0].first);
+            const auto& lsh2 = bs2->shell(l[0].second);
+            const auto& rsh1 = bs1->shell(r[0].first);
+            const auto& rsh2 = bs2->shell(r[0].second);
+            const auto lam = lsh1.am() + lsh2.am();
+            const auto ram = rsh1.am() + rsh2.am();
+            return lam < ram;
         });
 
         // compute shellpair data assuming that we are computing to default_epsilon
         // N.B. only parallelized over 1 shell index
         size_t npairs = blocks.size();
-        ShellPairData spdata(blocks.size());
+        ShellPairData spdata(npairs);
 #pragma omp parallel
         {
             int thread_id = 0;
@@ -241,13 +258,15 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
                 }
             }
         }
-
         return std::make_tuple(blocks, spdata);
     }
 
     //! Shell pair information
     ShellPairData pairs12_, pairs34_;
 
+    /// A vector of zeros that we can point to if libint2 gives us back a nullptr
+    std::vector<double> zero_vec_;
+    bool use_shell_pairs_;
     //! The threshold below which shell pairs are neglected on the basis of their overlap
     double screening_threshold_;
 
@@ -255,7 +274,7 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
     //! Constructor. Use an IntegralFactory to create this object.
     Libint2TwoElectronInt(const IntegralFactory* integral, int deriv = 0, double screening_threshold = 0,
                           bool use_shell_pairs = false)
-        : TwoBodyAOInt(integral, deriv), screening_threshold_(screening_threshold) {
+        : TwoBodyAOInt(integral, deriv), screening_threshold_(screening_threshold), use_shell_pairs_(use_shell_pairs) {
         // Initialize libint static data
         libint2::initialize();
 
@@ -268,9 +287,13 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
                                  std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
         // TODO figure out how this threshold should be set, depending on the coefficients.  There are some examples in
         // Ed's tests
-        libint2_ = libint2::Engine(op, max_nprim, max_am, deriv);
-        libint2_.set(bk);
+        for( int der = 0; der <= deriv; ++der) {
+            engines_.emplace_back(op, max_nprim, max_am, der);
+            engines_[der].set(bk);
+        }
 
+        zero_vec_ = std::vector<double>(basis1()->max_function_per_shell() * basis2()->max_function_per_shell() 
+                                      * basis3()->max_function_per_shell() * basis4()->max_function_per_shell(), 0.0);
         int num_chunks;
         switch (deriv) {
             case 0:
@@ -285,45 +308,10 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
             default:
                 throw PSIEXCEPTION("Libint2 engine only supports up to second derivatives currently.");
         }
+        buffers_.resize(num_chunks);
 
-        results_.resize(num_chunks * basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
-                        basis3()->max_function_per_shell() * basis4()->max_function_per_shell());
-        target_full_ = results_.data();
+        target_full_ = const_cast<double *>(engines_[0].results()[0]);
         target_ = target_full_;
-
-        // These kinds of checks should be implemented when we figure out how to query the libint2 API
-        // Make sure libint is compiled to handle our max AM
-        // if (max_am >= LIBINT_MAX_AM) {
-        //    outfile->Printf(
-        //        "ERROR: ERI - Libint cannot handle angular momentum this high (%d).\n"
-        //        "       Rebuild Libint with MAX_AM_ERI at least %d.\n",
-        //        max_am, max_am);
-        //    throw LimitExceeded<int>(
-        //        "ERI - Libint cannot handle angular momentum this high.\n"
-        //        "Rebuild Libint with MAX_AM_ERI at least (actual).\n",
-        //        LIBINT_MAX_AM - 1, max_am, __FILE__, __LINE__);
-        //} else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
-        //    outfile->Printf(
-        //        "ERROR: ERI - Libint cannot handle angular momentum this high (%d) for first derivatives.\n"
-        //        "     Rebuild Libint with MAX_AM_ERI at least %d.\n",
-        //        max_am, max_am + 1);
-        //    throw LimitExceeded<int>(
-        //        "ERI - Libint cannot handle angular momentum this high.\n"
-        //        "Rebuild Libint with MAX_AM_ERI at least (actual + 1).\n",
-        //        LIBDERIV_MAX_AM1 - 1, max_am, __FILE__, __LINE__);
-        //} else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
-        //    outfile->Printf(
-        //        "ERROR: ERI - Libint cannot handle angular momentum this high (%d) for second derivatives.\n"
-        //        "       Reconfigure Libint with MAX_AM_ERI at least %d\n",
-        //        max_am, max_am + 2);
-        //    throw LimitExceeded<int>(
-        //        "ERI - Libint cannot handle angular momentum this high.\n"
-        //        "Rebuild Libint with MAX_AM_ERI at least (actual + 2).\n",
-        //        LIBDERIV_MAX_AM12 - 1, max_am, __FILE__, __LINE__);
-        //} else if (deriv_ > 2) {
-        //    outfile->Printf("ERROR: ERI - Cannot compute higher than second derivatives.");
-        //    throw PSIEXCEPTION("ERI - Cannot compute higher than second derivatives.");
-        //}
 
         // We want to allow shell pair usage, even if not all basis sets are the same.  For example
         // the (mn|P) integrals in density fitting should still use the shell pairs in the bra.
@@ -350,30 +338,28 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
 #ifdef MINTS_TIMER
         timer_on("Libint2ERI::compute_shell");
 #endif
-
         if (force_cartesian_) {
             throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
         }
-        int n1 = bs1_->shell(s1).nfunction();
-        int n2 = bs2_->shell(s2).nfunction();
-        int n3 = bs3_->shell(s3).nfunction();
-        int n4 = bs4_->shell(s4).nfunction();
-        size_t ntot = n1 * n2 * n3 * n4;
 
-        auto sh1 = bs1_->l2_shell(s1);
-        auto sh2 = bs2_->l2_shell(s2);
-        auto sh3 = bs3_->l2_shell(s3);
-        auto sh4 = bs4_->l2_shell(s4);
 
-        libint2_.compute2<op, bk, 0l>(sh1, sh2, sh3, sh4);
+        auto sh1 = original_bs1_->l2_shell(s1);
+        auto sh2 = original_bs2_->l2_shell(s2);
+        auto sh3 = original_bs3_->l2_shell(s3);
+        auto sh4 = original_bs4_->l2_shell(s4);
 
-        const auto res = libint2_.results()[0];
-        if (res == nullptr) {
-            std::fill_n(target_, ntot, 0.0);
-            return 0;
+        engines_[0].compute2<op, bk, 0l>(sh1, sh2, sh3, sh4);
+
+        size_t ntot = sh1.size() * sh2.size() * sh3.size() * sh4.size();
+
+        buffers_[0] = target_full_ = const_cast<double*>(engines_[0].results()[0]);
+        if (target_full_ == nullptr) {
+            // The caller will try to read the buffer if there isn't a check on the number of ints computed
+            // so we point to a valid array of zeros here to prevent memory bugs in the calling routine.
+            buffers_[0] = target_full_ = zero_vec_.data();
+            ntot = 0;
         }
 
-        std::copy_n(res, ntot, target_);
 
 #ifdef MINTS_TIMER
         timer_off("Libint2ERI::compute_shell");
@@ -386,33 +372,28 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
 #ifdef MINTS_TIMER
         timer_on("Libint2ERI::compute_shell_deriv1");
 #endif
-
         if (force_cartesian_) {
             throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
         }
-        int n1 = bs1_->shell(s1).nfunction();
-        int n2 = bs2_->shell(s2).nfunction();
-        int n3 = bs3_->shell(s3).nfunction();
-        int n4 = bs4_->shell(s4).nfunction();
-        size_t ntot = 12 * n1 * n2 * n3 * n4;
-        printf("Ntot is %d    %d %d %d %d\n", ntot, n1, n2, n3, n4);
 
         auto sh1 = bs1_->l2_shell(s1);
         auto sh2 = bs2_->l2_shell(s2);
         auto sh3 = bs3_->l2_shell(s3);
         auto sh4 = bs4_->l2_shell(s4);
 
-        libint2_.compute2<op, bk, 1l>(sh1, sh2, sh3, sh4);
+        engines_[1].compute2<op, bk, 1l>(sh1, sh2, sh3, sh4);
 
-        const auto res = libint2_.results()[0];
-        if (res == nullptr) {
-            std::fill_n(target_, ntot, 0.0);
-            return 0;
+        size_t shell_size = sh1.size() * sh2.size() * sh3.size() * sh4.size();
+        size_t ntot = 0;
+
+        for(int i = 0; i < 12; ++i) {
+            if (engines_[1].results()[i]) {
+                buffers_[i] = engines_[1].results()[i];
+                ntot += shell_size;
+            } else {
+                buffers_[i] = zero_vec_.data();
+            }
         }
-
-        for (int i = 0; i < ntot; ++i) printf("%10.6f ", res[i]);
-        printf("\n");
-        std::copy_n(res, ntot, target_);
 
 #ifdef MINTS_TIMER
         timer_off("Libint2ERI::compute_shell_deriv1");
@@ -420,10 +401,38 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
         return ntot;
     }
 
-    /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
-    size_t compute_shell_deriv2(int, int, int, int) override {
-        throw PSIEXCEPTION("Libint2 deriv2 NYI");
-        return 1;
+    /// Compute ERI second derivatives between 4 shells. Result is stored in buffer.
+    size_t compute_shell_deriv2(int s1, int s2, int s3, int s4) override {
+#ifdef MINTS_TIMER
+        timer_on("Libint2ERI::compute_shell_deriv2");
+#endif
+        if (force_cartesian_) {
+            throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
+        }
+
+        auto sh1 = bs1_->l2_shell(s1);
+        auto sh2 = bs2_->l2_shell(s2);
+        auto sh3 = bs3_->l2_shell(s3);
+        auto sh4 = bs4_->l2_shell(s4);
+
+        engines_[2].compute2<op, bk, 2l>(sh1, sh2, sh3, sh4);
+
+        size_t shell_size = sh1.size() * sh2.size() * sh3.size() * sh4.size();
+        size_t ntot = 0;
+
+        for(int i = 0; i < 78; ++i) {
+            if (engines_[2].results()[i]) {
+                buffers_[i] = engines_[2].results()[i];
+                ntot += shell_size;
+            } else {
+                buffers_[i] = zero_vec_.data();
+            }
+        }
+
+#ifdef MINTS_TIMER
+        timer_off("Libint2ERI::compute_shell_deriv2");
+#endif
+        return ntot;
     }
 
     void compute_shell_blocks(int shellpair12, int shellpair34, int npair12 = -1, int npair34 = -1) override {
@@ -441,25 +450,21 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
         const auto* sp12 = pairs12_[shellpair12].get();
         const auto* sp34 = pairs34_[shellpair34].get();
 
-        int n1 = bs1_->shell(s1).nfunction();
-        int n2 = bs2_->shell(s2).nfunction();
-        int n3 = bs3_->shell(s3).nfunction();
-        int n4 = bs4_->shell(s4).nfunction();
+        auto sh1 = original_bs1_->l2_shell(s1);
+        auto sh2 = original_bs2_->l2_shell(s2);
+        auto sh3 = original_bs3_->l2_shell(s3);
+        auto sh4 = original_bs4_->l2_shell(s4);
 
-        size_t ntot = n1 * n2 * n3 * n4;
+        size_t ntot = sh1.size() * sh2.size() * sh3.size() * sh4.size();
 
-        auto sh1 = bs1_->l2_shell(s1);
-        auto sh2 = bs2_->l2_shell(s2);
-        auto sh3 = bs3_->l2_shell(s3);
-        auto sh4 = bs4_->l2_shell(s4);
+        engines_[0].compute2<op, bk, 0L>(sh1, sh2, sh3, sh4, sp12, sp34);
 
-        libint2_.compute2<op, bk, 0L>(sh1, sh2, sh3, sh4, sp12, sp34);
-
-        const auto res = libint2_.results()[0];
-        if (res == nullptr) {
-            std::fill_n(target_, ntot, 0.0);
+        target_full_ = const_cast<double*>(engines_[0].results()[0]);
+        if (target_full_) {
+            buffers_[0] = engines_[0].results()[0];
         } else {
-            std::copy_n(res, ntot, target_);
+            target_full_ = zero_vec_.data();
+            ntot = 0;
         }
 
 #ifdef MINTS_TIMER

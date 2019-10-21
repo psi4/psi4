@@ -65,6 +65,11 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     force_cartesian_ = false;
     tformbuf_ = nullptr;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+
+    // Figure out how equivalent 
+    bra_same_ = (original_bs1_ == original_bs2_);
+    ket_same_ = (original_bs3_ == original_bs4_);
+    braket_same_ = (original_bs1_ == original_bs3_ && original_bs2_ == original_bs4_);
 }
 
 TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
@@ -109,11 +114,15 @@ void TwoBodyAOInt::create_blocks() {
     blocks12_.reserve(nshell1 * nshell2);
     blocks34_.reserve(nshell3 * nshell4);
 
-    for (int ishell = 0; ishell < basis1()->nshell(); ishell++)
-        for (int jshell = 0; jshell < basis2()->nshell(); jshell++) blocks12_.push_back({{ishell, jshell}});
+    for (int ishell = 0; ishell < basis1()->nshell(); ishell++) {
+        int j_end = basis1() == basis2() ? ishell + 1 : basis2()->nshell();
+        for (int jshell = 0; jshell < j_end; jshell++) blocks12_.push_back({{ishell, jshell}});
+    }
 
-    for (int kshell = 0; kshell < basis3()->nshell(); kshell++)
-        for (int lshell = 0; lshell < basis4()->nshell(); lshell++) blocks34_.push_back({{kshell, lshell}});
+    for (int kshell = 0; kshell < basis3()->nshell(); kshell++) {
+        int l_end = basis3() == basis4() ? kshell + 1 : basis4()->nshell();
+        for (int lshell = 0; lshell < l_end; lshell++) blocks34_.push_back({{kshell, lshell}});
+    }
 }
 
 void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
@@ -158,6 +167,111 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int np
             // actually compute the eri
             // this will put the results in target_
             auto ret = compute_shell(sh12.first, sh12.second, sh34.first, sh34.second);
+
+            //// advance the target pointer
+            target_ += n1234;
+
+            // Since we are only doing one at a time we don't need to
+            // move the source_ pointer
+        }
+    }
+}
+
+void TwoBodyAOInt::compute_shell_blocks_deriv1(int shellpair12, int shellpair34, int npair12, int npair34) {
+    // Default implementation - go through the blocks and do each quartet
+    // one at a time
+
+    // reset the target & source pointers
+    target_ = target_full_;
+    source_ = source_full_;
+
+    auto vsh12 = blocks12_[shellpair12];
+    auto vsh34 = blocks34_[shellpair34];
+
+    for (const auto sh12 : vsh12) {
+        const auto &shell1 = original_bs1_->shell(sh12.first);
+        const auto &shell2 = original_bs2_->shell(sh12.second);
+
+        int n1, n2;
+        if (force_cartesian_) {
+            n1 = shell1.ncartesian();
+            n2 = shell2.ncartesian();
+        } else {
+            n1 = shell1.nfunction();
+            n2 = shell2.nfunction();
+        }
+
+        for (const auto sh34 : vsh34) {
+            const auto &shell3 = original_bs3_->shell(sh34.first);
+            const auto &shell4 = original_bs4_->shell(sh34.second);
+
+            int n3, n4;
+            if (force_cartesian_) {
+                n3 = shell3.ncartesian();
+                n4 = shell4.ncartesian();
+            } else {
+                n3 = shell3.nfunction();
+                n4 = shell4.nfunction();
+            }
+
+            const int n1234 = 12 * n1 * n2 * n3 * n4;
+
+            // actually compute the eri
+            // this will put the results in target_
+            compute_shell_deriv1(sh12.first, sh12.second, sh34.first, sh34.second);
+
+            //// advance the target pointer
+            target_ += n1234;
+
+            // Since we are only doing one at a time we don't need to
+            // move the source_ pointer
+        }
+    }
+}
+
+void TwoBodyAOInt::compute_shell_blocks_deriv2(int shellpair12, int shellpair34, int npair12, int npair34) {
+    // Default implementation - go through the blocks and do each quartet
+    // one at a time
+
+    // reset the target & source pointers
+    target_ = target_full_;
+    source_ = source_full_;
+
+    auto vsh12 = blocks12_[shellpair12];
+    auto vsh34 = blocks34_[shellpair34];
+
+    for (const auto sh12 : vsh12) {
+        const auto &shell1 = original_bs1_->shell(sh12.first);
+        const auto &shell2 = original_bs2_->shell(sh12.second);
+
+        int n1, n2;
+        if (force_cartesian_) {
+            n1 = shell1.ncartesian();
+            n2 = shell2.ncartesian();
+        } else {
+            n1 = shell1.nfunction();
+            n2 = shell2.nfunction();
+        }
+
+        for (const auto sh34 : vsh34) {
+            const auto &shell3 = original_bs3_->shell(sh34.first);
+            const auto &shell4 = original_bs4_->shell(sh34.second);
+
+            int n3, n4;
+            if (force_cartesian_) {
+                n3 = shell3.ncartesian();
+                n4 = shell4.ncartesian();
+            } else {
+                n3 = shell3.nfunction();
+                n4 = shell4.nfunction();
+            }
+
+            // TODO: figure out if tranlational invariance relations are applied automagically
+            const int n1234 = 78 * n1 * n2 * n3 * n4;
+
+            // actually compute the eri
+            // this will put the results in target_
+            compute_shell_deriv2(sh12.first, sh12.second, sh34.first, sh34.second);
 
             //// advance the target pointer
             target_ += n1234;
@@ -445,12 +559,13 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
     for (int ichunk = 0; ichunk < nchunk; ++ichunk) {
         // Compute the offset in source_, and target
         size_t sourcechunkoffset = ichunk * (nao1 * nao2 * nao3 * nao4);
+        size_t targetchunkoffset = ichunk * (nbf1 * nbf2 * nbf3 * nbf4);
         double *source1, *target1;
         double *source2, *target2;
         double *source3, *target3;
         double *source4, *target4;
         double *source = source_ + sourcechunkoffset;
-        double *target = target_ + sourcechunkoffset;
+        double *target = target_ + targetchunkoffset;
         double *tmpbuf = tformbuf_;
 
         int transform_index = 8 * is_pure1 + 4 * is_pure2 + 2 * is_pure3 + is_pure4;
@@ -585,7 +700,6 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
             transform2e_1(am1, trans1, source1, target1, nbf2 * nbf3 * nbf4);
             //            size *= nbf1;
         }
-
         // The permute indices routines depend on the integrals being in source_
         if (copy_to_source && (is_pure1 || is_pure2 || is_pure3 || is_pure4))
             memcpy(source, target, size * sizeof(double));

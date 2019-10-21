@@ -45,9 +45,10 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
 
     size_t compute_shell(const AOShellCombinationsIterator&) override;
 
-    size_t compute_shell(int, int, int, int) override;
+    size_t compute_shell(int s1, int s2, int s3, int s4) override;
 
     void compute_shell_blocks(int shellpair1, int shellpair2, int npair1 = -1, int npair2 = -1) override;
+    void compute_shell_blocks_deriv1(int shellpair1, int shellpair2, int npair1 = -1, int npair2 = -1) override;
 
     size_t compute_shell_deriv1(int, int, int, int) override;
 
@@ -62,7 +63,6 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
     int maxam_;
     size_t batchsize_;
     size_t allwork_size_;
-    bool bra_same_, ket_same_, braket_same_;
 
     double* allwork_;
     double* sharedwork_;

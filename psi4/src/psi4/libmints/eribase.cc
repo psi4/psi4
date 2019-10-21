@@ -2407,6 +2407,7 @@ size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4) 
     // Need to ensure the ordering asked by the user is valid for libint
     // compute_quartet does NOT check this. SEGFAULTS should occur if order
     // is not guaranteed.
+
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
     std::shared_ptr<BasisSet> bs_temp;
@@ -2531,9 +2532,6 @@ size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4) 
         // copy the integrals to the target_, 3n of them
         memcpy(target_, source_, ERI_1DER_NTYPE * size * sizeof(double));
     }
-    printf("ntot is %d    %d %d %d %d\n", 12*size, n1, n2, n3, n4);
-    for(int i = 0; i < ERI_1DER_NTYPE * size; ++i) printf("%10.6f ", target_[i]);
-    printf("\n");
     return size;
 }
 
@@ -2757,6 +2755,7 @@ size_t TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4) 
     // compute_quartet_deriv2 does NOT check this. SEGFAULTS will likely occur
     // if order is not guarantee.
     int s1, s2, s3, s4;
+
     int am1, am2, am3, am4, temp;
     std::shared_ptr<BasisSet> bs_temp;
     bool p13p24 = false, p12 = false, p34 = false;

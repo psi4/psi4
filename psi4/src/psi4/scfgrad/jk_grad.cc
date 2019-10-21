@@ -33,6 +33,9 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
@@ -80,6 +83,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
+        DFJKGrad* jk = new DFJKGrad(deriv, primary, auxiliary);
 
         DFJKGrad* jk = new DFJKGrad(deriv, mints);
 
@@ -118,8 +122,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
         throw PSIEXCEPTION("JKGrad::build_JKGrad: Unknown SCF Type");
     }
 }
-void JKGrad::common_init()
-{
+void JKGrad::common_init() {
     print_ = 1;
     debug_ = 0;
     bench_ = 0;
@@ -142,11 +145,8 @@ DFJKGrad::DFJKGrad(int deriv, std::shared_ptr<MintsHelper> mints) :
 {
     common_init();
 }
-DFJKGrad::~DFJKGrad()
-{
-}
-void DFJKGrad::common_init()
-{
+DFJKGrad::~DFJKGrad() {}
+void DFJKGrad::common_init() {
     df_ints_num_threads_ = 1;
 #ifdef _OPENMP
     df_ints_num_threads_ = Process::environment.get_n_threads();
@@ -157,47 +157,42 @@ void DFJKGrad::common_init()
     unit_c_ = 107;
     psio_ = PSIO::shared_object();
 }
-void DFJKGrad::print_header() const
-{
+void DFJKGrad::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> DFJKGrad: Density-Fitted SCF Gradients <==\n\n");
+        outfile->Printf("  ==> DFJKGrad: Density-Fitted SCF Gradients <==\n\n");
 
-        outfile->Printf( "    Gradient:          %11d\n", deriv_);
-        outfile->Printf( "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        outfile->Printf( "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        outfile->Printf( "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_)
-            outfile->Printf( "    Omega:             %11.3E\n", omega_);
-        outfile->Printf( "    OpenMP threads:    %11d\n", omp_num_threads_);
-        outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
-        outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        outfile->Printf( "    Fitting Condition: %11.0E\n\n", condition_);
+        outfile->Printf("    Gradient:          %11d\n", deriv_);
+        outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
+        outfile->Printf("    OpenMP threads:    %11d\n", omp_num_threads_);
+        outfile->Printf("    Integrals threads: %11d\n", df_ints_num_threads_);
+        outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ * 8L) / (1024L * 1024L));
+        outfile->Printf("    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        outfile->Printf("    Fitting Condition: %11.0E\n\n", condition_);
 
-        outfile->Printf( "   => Auxiliary Basis Set <=\n\n");
+        outfile->Printf("   => Auxiliary Basis Set <=\n\n");
         auxiliary_->print_by_level("outfile", print_);
     }
 }
-void DFJKGrad::compute_gradient()
-{
-    if (!do_J_ && !do_K_ && !do_wK_)
-        return;
+void DFJKGrad::compute_gradient() {
+    if (!do_J_ && !do_K_ && !do_wK_) return;
 
-    if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_))
-        throw PSIEXCEPTION("Occupation/Density not set");
+    if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_)) throw PSIEXCEPTION("Occupation/Density not set");
 
     // => Set up gradients <= //
     int natom = primary_->molecule()->natom();
     gradients_.clear();
     if (do_J_) {
-        gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient",natom,3);
+        gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient", natom, 3);
     }
     if (do_K_) {
-        gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient",natom,3);
+        gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
     }
     if (do_wK_) {
         // throw PSIEXCEPTION("Exchange,LR gradients are not currently available with DF.");
-        gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient",natom,3);
+        gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient", natom, 3);
     }
 
     // => Build ERI Sieve <= //
@@ -217,7 +212,6 @@ void DFJKGrad::compute_gradient()
     psio_->open(unit_c_, PSIO_OPEN_NEW);
 
     // => Gradient Construction: Get in there and kill 'em all! <= //
-
 
     // Using
 
@@ -290,7 +284,6 @@ void DFJKGrad::compute_gradient()
     // wK^x += 0.5 * (A|pq)^x (A|w|pq)
     // wK^x += 0.5 * (A|w|pq)^x (A|pq)
 
-
     // Printing
     // gradients_["Coulomb"]->print();
     // if (do_K_) {
@@ -305,8 +298,7 @@ void DFJKGrad::compute_gradient()
     psio_->close(unit_b_, 0);
     psio_->close(unit_c_, 0);
 }
-void DFJKGrad::build_Amn_terms()
-{
+void DFJKGrad::build_Amn_terms() {
     // => Sizing <= //
 
     int nso = primary_->nbf();
@@ -316,7 +308,7 @@ void DFJKGrad::build_Amn_terms()
 
     bool restricted = (Ca_ == Cb_);
 
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
+    const std::vector<std::pair<int, int>>& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -324,15 +316,15 @@ void DFJKGrad::build_Amn_terms()
     int max_rows;
     int maxP = auxiliary_->max_function_per_shell();
     size_t row_cost = 0L;
-    row_cost += nso * (size_t) nso;
+    row_cost += nso * (size_t)nso;
     if (do_K_ || do_wK_) {
-        row_cost += nso * (size_t) na;
-        row_cost += na * (size_t) na;
+        row_cost += nso * (size_t)na;
+        row_cost += na * (size_t)na;
     }
     size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < maxP ? maxP : rows);
-    max_rows = (int) rows;
+    max_rows = (int)rows;
 
     // => Block Sizing <= //
 
@@ -368,12 +360,12 @@ void DFJKGrad::build_Amn_terms()
     double** Aijp;
 
     if (true) {
-        Amn = std::make_shared<Matrix>("Amn", max_rows, nso * (size_t) nso);
+        Amn = std::make_shared<Matrix>("Amn", max_rows, nso * (size_t)nso);
         Amnp = Amn->pointer();
     }
     if (do_K_ || do_wK_) {
-        Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
-        Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
+        Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t)na);
+        Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t)na);
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
@@ -388,7 +380,7 @@ void DFJKGrad::build_Amn_terms()
     // => Integrals <= //
 
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
     }
@@ -396,36 +388,34 @@ void DFJKGrad::build_Amn_terms()
     // => Master Loop <= //
 
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-
         // > Sizing < //
 
         int Pstart = Pstarts[block];
-        int Pstop  = Pstarts[block+1];
+        int Pstop = Pstarts[block + 1];
         int NP = Pstop - Pstart;
 
         int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
+        int pstop = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop).function_index());
         int np = pstop - pstart;
 
         // > Clear Integrals Register < //
-        ::memset((void*) Amnp[0], '\0', sizeof(double) * np * nso * nso);
+        ::memset((void*)Amnp[0], '\0', sizeof(double) * np * nso * nso);
 
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
-
+        for (long int PMN = 0L; PMN < static_cast<long>(NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
 
-            int P =  PMN / npairs + Pstart;
+            int P = PMN / npairs + Pstart;
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
 
-            eri[thread]->compute_shell(P,0,M,N);
+            eri[thread]->compute_shell(P, 0, M, N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -441,57 +431,53 @@ void DFJKGrad::build_Amn_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        Amnp[p + oP][(m + oM) * nso + (n + oN)] =
-                                Amnp[p + oP][(n + oN) * nso + (m + oM)] =
-                                *buffer++;
+                        Amnp[p + oP][(m + oM) * nso + (n + oN)] = Amnp[p + oP][(n + oN) * nso + (m + oM)] = *buffer++;
                     }
                 }
             }
-
         }
 
         // > (A|mn) D_mn -> c_A < //
         if (do_J_) {
-            C_DGEMV('N',np,nso*(size_t)nso,1.0,Amnp[0],nso*(size_t)nso,Dtp[0],1,0.0,&cp[pstart],1);
+            C_DGEMV('N', np, nso * (size_t)nso, 1.0, Amnp[0], nso * (size_t)nso, Dtp[0], 1, 0.0, &cp[pstart], 1);
         }
 
         // > Alpha < //
         if (do_K_ || do_wK_) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
+            C_DGEMM('N', 'N', np * (size_t)nso, na, nso, 1.0, Amnp[0], nso, Cap[0], na, 0.0, Amip[0], na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (size_t) na * na],na);
+                C_DGEMM('T', 'N', na, na, nso, 1.0, Amip[p], na, Cap[0], na, 0.0, &Aijp[0][p * (size_t)na * na], na);
             }
 
             // > Stripe < //
-            psio_->write(unit_a_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
+            psio_->write(unit_a_, "(A|ij)", (char*)Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
         }
 
         // > Beta < //
         if (!restricted && (do_K_ || do_wK_)) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Amip[0],na);
+            C_DGEMM('N', 'N', np * (size_t)nso, nb, nso, 1.0, Amnp[0], nso, Cbp[0], nb, 0.0, Amip[0], na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',nb,nb,nso,1.0,Amip[p],na,Cbp[0],nb,0.0,&Aijp[0][p * (size_t) nb * nb],nb);
+                C_DGEMM('T', 'N', nb, nb, nso, 1.0, Amip[p], na, Cbp[0], nb, 0.0, &Aijp[0][p * (size_t)nb * nb], nb);
             }
 
             // > Stripe < //
-            psio_->write(unit_b_, "(A|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
+            psio_->write(unit_b_, "(A|ij)", (char*)Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
         }
     }
 
     if (do_J_) {
-        psio_->write_entry(unit_c_, "c", (char*) cp, sizeof(double) * naux);
+        psio_->write_entry(unit_c_, "c", (char*)cp, sizeof(double) * naux);
     }
 }
-void DFJKGrad::build_Amn_lr_terms()
-{
+void DFJKGrad::build_Amn_lr_terms() {
     if (!do_wK_) return;
 
     // => Sizing <= //
@@ -503,7 +489,7 @@ void DFJKGrad::build_Amn_lr_terms()
 
     bool restricted = (Ca_ == Cb_);
 
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
+    const std::vector<std::pair<int, int>>& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -511,13 +497,13 @@ void DFJKGrad::build_Amn_lr_terms()
     int max_rows;
     int maxP = auxiliary_->max_function_per_shell();
     size_t row_cost = 0L;
-    row_cost += nso * (size_t) nso;
-    row_cost += nso * (size_t) na;
-    row_cost += na * (size_t) na;
+    row_cost += nso * (size_t)nso;
+    row_cost += nso * (size_t)na;
+    row_cost += na * (size_t)na;
     size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < maxP ? maxP : rows);
-    max_rows = (int) rows;
+    max_rows = (int)rows;
 
     // => Block Sizing <= //
 
@@ -544,9 +530,9 @@ void DFJKGrad::build_Amn_lr_terms()
     double** Amip;
     double** Aijp;
 
-    Amn = std::make_shared<Matrix>("Amn", max_rows, nso * (size_t) nso);
-    Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
-    Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
+    Amn = std::make_shared<Matrix>("Amn", max_rows, nso * (size_t)nso);
+    Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t)na);
+    Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t)na);
 
     Amnp = Amn->pointer();
     Amip = Ami->pointer();
@@ -561,7 +547,7 @@ void DFJKGrad::build_Amn_lr_terms()
     // => Integrals <= //
 
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_)));
     }
@@ -569,36 +555,34 @@ void DFJKGrad::build_Amn_lr_terms()
     // => Master Loop <= //
 
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-
         // > Sizing < //
 
         int Pstart = Pstarts[block];
-        int Pstop  = Pstarts[block+1];
+        int Pstop = Pstarts[block + 1];
         int NP = Pstop - Pstart;
 
         int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
+        int pstop = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop).function_index());
         int np = pstop - pstart;
 
         // > Clear Integrals Register < //
-        ::memset((void*) Amnp[0], '\0', sizeof(double) * np * nso * nso);
+        ::memset((void*)Amnp[0], '\0', sizeof(double) * np * nso * nso);
 
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
-
+        for (long int PMN = 0L; PMN < static_cast<long>(NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
 
-            int P =  PMN / npairs + Pstart;
+            int P = PMN / npairs + Pstart;
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
 
-            eri[thread]->compute_shell(P,0,M,N);
+            eri[thread]->compute_shell(P, 0, M, N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -614,49 +598,44 @@ void DFJKGrad::build_Amn_lr_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        Amnp[p + oP][(m + oM) * nso + (n + oN)] =
-                                Amnp[p + oP][(n + oN) * nso + (m + oM)] =
-                                *buffer++;
+                        Amnp[p + oP][(m + oM) * nso + (n + oN)] = Amnp[p + oP][(n + oN) * nso + (m + oM)] = *buffer++;
                     }
                 }
             }
-
         }
 
         // > Alpha < //
         if (true) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
+            C_DGEMM('N', 'N', np * (size_t)nso, na, nso, 1.0, Amnp[0], nso, Cap[0], na, 0.0, Amip[0], na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (size_t) na * na],na);
+                C_DGEMM('T', 'N', na, na, nso, 1.0, Amip[p], na, Cap[0], na, 0.0, &Aijp[0][p * (size_t)na * na], na);
             }
 
             // > Stripe < //
-            psio_->write(unit_a_, "(A|w|ij)", (char*) Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
+            psio_->write(unit_a_, "(A|w|ij)", (char*)Aijp[0], sizeof(double) * np * na * na, next_Aija, &next_Aija);
         }
 
         // > Beta < //
         if (!restricted) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Amip[0],na);
+            C_DGEMM('N', 'N', np * (size_t)nso, nb, nso, 1.0, Amnp[0], nso, Cbp[0], nb, 0.0, Amip[0], na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',nb,nb,nso,1.0,Amip[p],na,Cbp[0],nb,0.0,&Aijp[0][p * (size_t) nb * nb],nb);
+                C_DGEMM('T', 'N', nb, nb, nso, 1.0, Amip[p], na, Cbp[0], nb, 0.0, &Aijp[0][p * (size_t)nb * nb], nb);
             }
 
             // > Stripe < //
-            psio_->write(unit_b_, "(A|w|ij)", (char*) Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
+            psio_->write(unit_b_, "(A|w|ij)", (char*)Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
         }
     }
 }
-void DFJKGrad::build_AB_inv_terms()
-{
-
+void DFJKGrad::build_AB_inv_terms() {
     // => Sizing <= //
 
     int naux = auxiliary_->nbf();
@@ -679,23 +658,22 @@ void DFJKGrad::build_AB_inv_terms()
         double* cp = c->pointer();
         double* dp = d->pointer();
 
-        psio_->read_entry(unit_c_, "c", (char*) cp, sizeof(double) * naux);
+        psio_->read_entry(unit_c_, "c", (char*)cp, sizeof(double) * naux);
 
-        C_DGEMV('N',naux,naux,1.0,Jp[0],naux,cp,1,0.0,dp,1);
+        C_DGEMV('N', naux, naux, 1.0, Jp[0], naux, cp, 1, 0.0, dp, 1);
 
-        psio_->write_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
+        psio_->write_entry(unit_c_, "c", (char*)dp, sizeof(double) * naux);
     }
 
-    if (!(do_K_ || do_wK_))
-        return;
+    if (!(do_K_ || do_wK_)) return;
 
     int max_cols;
     size_t effective_memory = memory_ - 1L * naux * naux;
     size_t col_cost = 2L * naux;
     size_t cols = effective_memory / col_cost;
-    cols = (cols > na * (size_t) na ? na * (size_t) na : cols);
+    cols = (cols > na * (size_t)na ? na * (size_t)na : cols);
     cols = (cols < na ? na : cols);
-    max_cols = (int) cols;
+    max_cols = (int)cols;
 
     auto Aij = std::make_shared<Matrix>("Aij", naux, max_cols);
     auto Bij = std::make_shared<Matrix>("Bij", naux, max_cols);
@@ -744,12 +722,9 @@ void DFJKGrad::build_AB_inv_terms()
             }
         }
     }
-
 }
-void DFJKGrad::build_UV_terms()
-{
-    if (!(do_K_ || do_wK_))
-        return;
+void DFJKGrad::build_UV_terms() {
+    if (!(do_K_ || do_wK_)) return;
 
     // => Sizing <= //
 
@@ -766,16 +741,16 @@ void DFJKGrad::build_UV_terms()
 
     int max_rows;
     size_t effective_memory = memory_ - 1L * naux * naux;
-    size_t row_cost = 2L * na * (size_t) na;
+    size_t row_cost = 2L * na * (size_t)na;
     size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < 1L ? 1L : rows);
-    max_rows = (int) rows;
+    max_rows = (int)rows;
 
     // => Temporary Buffers <= //
 
-    auto Aij = std::make_shared<Matrix>("Aij", max_rows, na*(size_t)na);
-    auto Bij = std::make_shared<Matrix>("Bij", max_rows, na*(size_t)na);
+    auto Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t)na);
+    auto Bij = std::make_shared<Matrix>("Bij", max_rows, na * (size_t)na);
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
 
@@ -787,12 +762,13 @@ void DFJKGrad::build_UV_terms()
         for (int P = 0; P < naux; P += max_rows) {
             psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
-            psio_->read(unit_a_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*na*na, next_Aij, &next_Aij);
+            psio_->read(unit_a_, "(A|ij)", (char*)Aijp[0], sizeof(double) * nP * na * na, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
-                psio_->read(unit_a_,"(A|ij)",(char*) Bijp[0], sizeof(double)*nQ*na*na, next_Bij, &next_Bij);
+                psio_->read(unit_a_, "(A|ij)", (char*)Bijp[0], sizeof(double) * nQ * na * na, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,na*(size_t)na,1.0,Aijp[0],na*(size_t)na,Bijp[0],na*(size_t)na,0.0,&Vp[P][Q],naux);
+                C_DGEMM('N', 'T', nP, nQ, na * (size_t)na, 1.0, Aijp[0], na * (size_t)na, Bijp[0], na * (size_t)na, 0.0,
+                        &Vp[P][Q], naux);
             }
         }
     }
@@ -802,21 +778,21 @@ void DFJKGrad::build_UV_terms()
         for (int P = 0; P < naux; P += max_rows) {
             psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
-            psio_->read(unit_b_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*nb*nb, next_Aij, &next_Aij);
+            psio_->read(unit_b_, "(A|ij)", (char*)Aijp[0], sizeof(double) * nP * nb * nb, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
-                psio_->read(unit_b_,"(A|ij)",(char*) Bijp[0], sizeof(double)*nQ*nb*nb, next_Bij, &next_Bij);
+                psio_->read(unit_b_, "(A|ij)", (char*)Bijp[0], sizeof(double) * nQ * nb * nb, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,nb*(size_t)nb,1.0,Aijp[0],nb*(size_t)nb,Bijp[0],nb*(size_t)nb,1.0,&Vp[P][Q],naux);
+                C_DGEMM('N', 'T', nP, nQ, nb * (size_t)nb, 1.0, Aijp[0], nb * (size_t)nb, Bijp[0], nb * (size_t)nb, 1.0,
+                        &Vp[P][Q], naux);
             }
         }
     } else {
         V->scale(2.0);
     }
-    psio_->write_entry(unit_c_,"V",(char*) Vp[0], sizeof(double) * naux * naux);
+    psio_->write_entry(unit_c_, "V", (char*)Vp[0], sizeof(double) * naux * naux);
 
-    if (!do_wK_)
-        return;
+    if (!do_wK_) return;
 
     // => W < = //
     V->zero();
@@ -827,12 +803,13 @@ void DFJKGrad::build_UV_terms()
         for (int P = 0; P < naux; P += max_rows) {
             psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
-            psio_->read(unit_a_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*na*na, next_Aij, &next_Aij);
+            psio_->read(unit_a_, "(A|ij)", (char*)Aijp[0], sizeof(double) * nP * na * na, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
-                psio_->read(unit_a_,"(A|w|ij)",(char*) Bijp[0], sizeof(double)*nQ*na*na, next_Bij, &next_Bij);
+                psio_->read(unit_a_, "(A|w|ij)", (char*)Bijp[0], sizeof(double) * nQ * na * na, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,na*(size_t)na,1.0,Aijp[0],na*(size_t)na,Bijp[0],na*(size_t)na,0.0,&Vp[P][Q],naux);
+                C_DGEMM('N', 'T', nP, nQ, na * (size_t)na, 1.0, Aijp[0], na * (size_t)na, Bijp[0], na * (size_t)na, 0.0,
+                        &Vp[P][Q], naux);
             }
         }
     }
@@ -842,19 +819,20 @@ void DFJKGrad::build_UV_terms()
         for (int P = 0; P < naux; P += max_rows) {
             psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
-            psio_->read(unit_b_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*nb*nb, next_Aij, &next_Aij);
+            psio_->read(unit_b_, "(A|ij)", (char*)Aijp[0], sizeof(double) * nP * nb * nb, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
-                psio_->read(unit_b_,"(A|w|ij)",(char*) Bijp[0], sizeof(double)*nQ*nb*nb, next_Bij, &next_Bij);
+                psio_->read(unit_b_, "(A|w|ij)", (char*)Bijp[0], sizeof(double) * nQ * nb * nb, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,nb*(size_t)nb,1.0,Aijp[0],nb*(size_t)nb,Bijp[0],nb*(size_t)nb,1.0,&Vp[P][Q],naux);
+                C_DGEMM('N', 'T', nP, nQ, nb * (size_t)nb, 1.0, Aijp[0], nb * (size_t)nb, Bijp[0], nb * (size_t)nb, 1.0,
+                        &Vp[P][Q], naux);
             }
         }
     } else {
         V->scale(2.0);
     }
     V->hermitivitize();
-    psio_->write_entry(unit_c_,"W",(char*) Vp[0], sizeof(double) * naux * naux);
+    psio_->write_entry(unit_c_, "W", (char*)Vp[0], sizeof(double) * naux * naux);
 }
 
 void DFJKGrad::build_AB_x_terms()
@@ -891,9 +869,7 @@ void DFJKGrad::build_AB_x_terms()
         gradients_[kv.first] = kv.second;
     }
 }
-void DFJKGrad::build_Amn_x_terms()
-{
-
+void DFJKGrad::build_Amn_x_terms() {
     // => Sizing <= //
 
     int natom = primary_->molecule()->natom();
@@ -904,7 +880,7 @@ void DFJKGrad::build_Amn_x_terms()
 
     bool restricted = (Ca_ == Cb_);
 
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
+    const std::vector<std::pair<int, int>>& shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -913,16 +889,16 @@ void DFJKGrad::build_Amn_x_terms()
     if (do_K_ || do_wK_) {
         int maxP = auxiliary_->max_function_per_shell();
         size_t row_cost = 0L;
-        row_cost += nso * (size_t) nso;
+        row_cost += nso * (size_t)nso;
         if (do_wK_) {
-            row_cost += nso * (size_t) nso;
+            row_cost += nso * (size_t)nso;
         }
-        row_cost += nso * (size_t) na;
-        row_cost += na * (size_t) na;
+        row_cost += nso * (size_t)na;
+        row_cost += na * (size_t)na;
         size_t rows = memory_ / row_cost;
         rows = (rows > naux ? naux : rows);
         rows = (rows < maxP ? maxP : rows);
-        max_rows = (int) rows;
+        max_rows = (int)rows;
     } else {
         max_rows = auxiliary_->nshell();
     }
@@ -950,7 +926,7 @@ void DFJKGrad::build_Amn_x_terms()
     if (do_J_) {
         d = std::make_shared<Vector>("d", naux);
         dp = d->pointer();
-        psio_->read_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
+        psio_->read_entry(unit_c_, "c", (char*)dp, sizeof(double) * naux);
     }
 
     SharedMatrix Kmn;
@@ -964,15 +940,15 @@ void DFJKGrad::build_Amn_x_terms()
     double** Aijp;
 
     if (do_K_ || do_wK_) {
-        Kmn = std::make_shared<Matrix>("Kmn", max_rows, nso * (size_t) nso);
-        Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t) na);
-        Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t) na);
+        Kmn = std::make_shared<Matrix>("Kmn", max_rows, nso * (size_t)nso);
+        Ami = std::make_shared<Matrix>("Ami", max_rows, nso * (size_t)na);
+        Aij = std::make_shared<Matrix>("Aij", max_rows, na * (size_t)na);
         Kmnp = Kmn->pointer();
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
     if (do_wK_) {
-        wKmn = std::make_shared<Matrix>("wKmn", max_rows, nso * (size_t) nso);
+        wKmn = std::make_shared<Matrix>("wKmn", max_rows, nso * (size_t)nso);
         wKmnp = wKmn->pointer();
     }
 
@@ -992,7 +968,7 @@ void DFJKGrad::build_Amn_x_terms()
     std::vector<std::shared_ptr<TwoBodyAOInt>> omega_eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
-        if (do_wK_){
+        if (do_wK_) {
             omega_eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_, 1)));
         }
     }
@@ -1018,7 +994,6 @@ void DFJKGrad::build_Amn_x_terms()
 
     double factor = (restricted ? 2.0 : 1.0);
 
-
     // => Figure out required transforms <= //
 
     // unit, disk buffer name, nmo_size, psio_address, output_buffer
@@ -1039,15 +1014,14 @@ void DFJKGrad::build_Amn_x_terms()
     // => Master Loop <= //
 
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-
         // > Sizing < //
 
         int Pstart = Pstarts[block];
-        int Pstop  = Pstarts[block+1];
+        int Pstop = Pstarts[block + 1];
         int NP = Pstop - Pstart;
 
         int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
+        int pstop = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop).function_index());
         int np = pstop - pstart;
 
         // => J_mn^A <= //
@@ -1055,7 +1029,6 @@ void DFJKGrad::build_Amn_x_terms()
         if (do_K_ || do_wK_) Kmn->zero();
         if (do_wK_) wKmn->zero();
         for (const auto& trans : transforms) {
-
             // > Unpack transform < //
             size_t unit = std::get<0>(trans);
             std::string buffer = std::get<1>(trans);
@@ -1063,14 +1036,15 @@ void DFJKGrad::build_Amn_x_terms()
             size_t nmo = std::get<3>(trans);
             psio_address* address = std::get<4>(trans);
             double** retp = std::get<5>(trans);
-            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page, address->offset);
+            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page,
+            // address->offset);
 
             size_t nmo2 = nmo * nmo;
 
             // > Stripe < //
             psio_->read(unit, buffer.c_str(), (char*)Aijp[0], sizeof(double) * np * nmo2, *address, address);
-            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page, address->offset);
-            // printf("\n");
+            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page,
+            // address->offset); printf("\n");
 
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
@@ -1082,24 +1056,21 @@ void DFJKGrad::build_Amn_x_terms()
             C_DGEMM('N', 'T', np * (size_t)nso, nso, nmo, factor, Amip[0], na, Cp[0], nmo, 1.0, retp[0], nso);
         }
 
-
-
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < static_cast<long> (NP) * npairs; PMN++) {
-
+        for (long int PMN = 0L; PMN < static_cast<long>(NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
 
-            int P =  PMN / npairs + Pstart;
+            int P = PMN / npairs + Pstart;
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
 
-            eri[thread]->compute_shell_deriv1(P,0,M,N);
+            eri[thread]->compute_shell_deriv1(P, 0, M, N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -1119,15 +1090,17 @@ void DFJKGrad::build_Amn_x_terms()
             int oN = primary_->shell(N).function_index();
 
             int ncart = cP * cM * cN;
-            const double *Px = buffer + 0*ncart;
-            const double *Py = buffer + 1*ncart;
-            const double *Pz = buffer + 2*ncart;
-            const double *Mx = buffer + 3*ncart;
-            const double *My = buffer + 4*ncart;
-            const double *Mz = buffer + 5*ncart;
-            const double *Nx = buffer + 6*ncart;
-            const double *Ny = buffer + 7*ncart;
-            const double *Nz = buffer + 8*ncart;
+            auto buffers = eri[thread]->buffers();
+            bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+            const double* Px = libint1 ? buffer + 0 * ncart : buffers[0];
+            const double* Py = libint1 ? buffer + 1 * ncart : buffers[1];
+            const double* Pz = libint1 ? buffer + 2 * ncart : buffers[2];
+            const double* Mx = libint1 ? buffer + 3 * ncart : buffers[3];
+            const double* My = libint1 ? buffer + 4 * ncart : buffers[4];
+            const double* Mz = libint1 ? buffer + 5 * ncart : buffers[5];
+            const double* Nx = libint1 ? buffer + 6 * ncart : buffers[6];
+            const double* Ny = libint1 ? buffer + 7 * ncart : buffers[7];
+            const double* Nz = libint1 ? buffer + 8 * ncart : buffers[8];
 
             double perm = (M == N ? 1.0 : 2.0);
 
@@ -1148,7 +1121,6 @@ void DFJKGrad::build_Amn_x_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-
                         //  J^x = (A|pq)^x d_A Dt_pq
                         if (do_J_) {
                             double Ival = 1.0 * perm * dp[p + oP + pstart] * Dtp[m + oM][n + oN];
@@ -1163,7 +1135,6 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_Jp[aN][2] += Ival * (*Nz);
                         }
 
-
                         //  K^x = (A|pq)^x (A|pq)
                         if (do_K_) {
                             double Kval = 1.0 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
@@ -1177,7 +1148,6 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_Kp[aN][1] += Kval * (*Ny);
                             grad_Kp[aN][2] += Kval * (*Nz);
                         }
-
 
                         // wK^x = 0.5 * (A|pq)^x (A|w|pq)
                         if (do_wK_) {
@@ -1207,20 +1177,21 @@ void DFJKGrad::build_Amn_x_terms()
             }
 
             //  wK^x = 0.5 * (A|w|pq)^x (A|pq)
-            if (do_wK_){
-
-                omega_eri[thread]->compute_shell_deriv1(P,0,M,N);
+            if (do_wK_) {
+                omega_eri[thread]->compute_shell_deriv1(P, 0, M, N);
                 const double* buffer = omega_eri[thread]->buffer();
 
-                const double *Px = buffer + 0*ncart;
-                const double *Py = buffer + 1*ncart;
-                const double *Pz = buffer + 2*ncart;
-                const double *Mx = buffer + 3*ncart;
-                const double *My = buffer + 4*ncart;
-                const double *Mz = buffer + 5*ncart;
-                const double *Nx = buffer + 6*ncart;
-                const double *Ny = buffer + 7*ncart;
-                const double *Nz = buffer + 8*ncart;
+                auto buffers = omega_eri[thread]->buffers();
+                bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+                const double* Px = libint1 ? buffer + 0 * ncart : buffers[0];
+                const double* Py = libint1 ? buffer + 1 * ncart : buffers[1];
+                const double* Pz = libint1 ? buffer + 2 * ncart : buffers[2];
+                const double* Mx = libint1 ? buffer + 3 * ncart : buffers[3];
+                const double* My = libint1 ? buffer + 4 * ncart : buffers[4];
+                const double* Mz = libint1 ? buffer + 5 * ncart : buffers[5];
+                const double* Nx = libint1 ? buffer + 6 * ncart : buffers[6];
+                const double* Ny = libint1 ? buffer + 7 * ncart : buffers[7];
+                const double* Nz = libint1 ? buffer + 8 * ncart : buffers[8];
 
                 for (int p = 0; p < nP; p++) {
                     for (int m = 0; m < nM; m++) {
@@ -1245,10 +1216,8 @@ void DFJKGrad::build_Amn_x_terms()
                             Ny++;
                             Nz++;
                         }
-
                     }
                 }
-
             }
         }
     }
@@ -1280,10 +1249,9 @@ void DFJKGrad::build_Amn_x_terms()
     // gradients_["Exchange,LR"]->print();
 }
 
-void DFJKGrad::compute_hessian()
-{
-
+void DFJKGrad::compute_hessian() {
     /*
+     * clang-format off
      * If we define Minv as the inverse metric matrix, and use the identity
      *
      *    d Minv          d M
@@ -1297,39 +1265,43 @@ void DFJKGrad::compute_hessian()
      *                dx
      *
      * whose 2 terms we call term1 and term2, respectively.  Indices {m,n,r,s} refer to AOs,
-     * while {A,B,C,D...} are aux basis indices.  The superscripts are just a shorthand for derivatives.  Expanding to get second derivatives, we have
+     * while {A,B,C,D...} are aux basis indices.  The superscripts are just a shorthand for derivatives.  Expanding to
+     * get second derivatives, we have
      *
-     *    d term1           xy                               x             y                                    x                 y
-     *    ------- = 2 (mn|A)   Minv[A][B] (B|rs)  -  2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] (B|rs)
-     *       dy
+     *    d term1           xy                               x             y                                    x y
+     *    ------- = 2 (mn|A)   Minv[A][B] (B|rs)  -  2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) *
+     * Minv[A][B] (B|rs) dy
      *
-     *    d term2            y             x                                                 y                  x                                                 xy
-     *    ------- = -2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] M[D][E] Minv[E][F] (F|rs)  -  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
-     *       dy
+     *    d term2            y             x                                                 y                  x
+     *    ------- = -2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] M[D][E] *
+     * Minv[E][F] (F|rs) dy x                       y
+     *              -  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
      *
-     * Note that the second term from term1 and the first from term2 are the same, leaving us with 5 terms to implement.  The code below is a first attempt at
-     * this, and uses intermediates that were the first thing that came to mind.  The code needs to be adapted to run out of core (c.f. DFJKGrad::build_gradient())
-     * and should call routines like build_Amn_terms() to generate intermediates, rather than re-coding that stuff here.  We also need to add UHF capabilities.
+     * Note that the second term from term1 and the first from term2 are the same, leaving us with 5 terms to implement.
+     * The code below is a first attempt at this, and uses intermediates that were the first thing that came to mind.
+     * The code needs to be adapted to run out of core (c.f. DFJKGrad::build_gradient()) and should call routines like
+     * build_Amn_terms() to generate intermediates, rather than re-coding that stuff here.  We also need to add UHF
+     * capabilities.
      *
      * Andy Simmonett (07/16)
-     *
+     * clang-format on
      */
 
     // => Set up hessians <= //
     int natom = primary_->molecule()->natom();
     hessians_.clear();
-    double **JHessp = nullptr;
-    double **KHessp = nullptr;
+    double** JHessp = nullptr;
+    double** KHessp = nullptr;
     if (do_J_) {
-        hessians_["Coulomb"] = std::make_shared<Matrix>("Coulomb Hessian",3*natom,3*natom);
+        hessians_["Coulomb"] = std::make_shared<Matrix>("Coulomb Hessian", 3 * natom, 3 * natom);
         JHessp = hessians_["Coulomb"]->pointer();
     }
     if (do_K_) {
-        hessians_["Exchange"] = std::make_shared<Matrix>("Exchange Hessian",3*natom,3*natom);
+        hessians_["Exchange"] = std::make_shared<Matrix>("Exchange Hessian", 3 * natom, 3 * natom);
         KHessp = hessians_["Exchange"]->pointer();
     }
     if (do_wK_) {
-        hessians_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Hessian",3*natom,3*natom);
+        hessians_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Hessian", 3 * natom, 3 * natom);
     }
 
     bool same_ab = (Ca_ == Cb_) ? true : false;
@@ -1342,9 +1314,9 @@ void DFJKGrad::compute_hessian()
     int nshell = primary_->nshell();
     int natoms = mol->natom();
 
-    double **Dtp = Dt_->pointer();
-    double **Cap = Ca_->pointer();
-    double **Cbp = Cb_->pointer();
+    double** Dtp = Dt_->pointer();
+    double** Cap = Ca_->pointer();
+    double** Cbp = Cb_->pointer();
 
     int na = Ca_->colspi()[0];
     int nb = Cb_->colspi()[0];
@@ -1376,7 +1348,8 @@ void DFJKGrad::compute_hessian()
 
     // Build some integral factories
     auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
+    auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_,
+                                                       BasisSet::zero_ao_basis_set());
     std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
     std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
     auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
@@ -1407,17 +1380,17 @@ void DFJKGrad::compute_hessian()
     double **Bb_mnp = Bb_mn->pointer();
     double **Db_PQp = Db_PQ->pointer();
 
-    for (int P = 0; P < nauxshell; ++P){
+    for (int P = 0; P < nauxshell; ++P) {
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
-        for(int M = 0; M < nshell; ++M){
+        for (int M = 0; M < nshell; ++M) {
             int nM = primary_->shell(M).nfunction();
             int oM = primary_->shell(M).function_index();
-            for(int N = 0; N < nshell; ++N){
+            for (int N = 0; N < nshell; ++N) {
                 int nN = primary_->shell(N).nfunction();
                 int oN = primary_->shell(N).function_index();
 
-                Pmnint->compute_shell(P,0,M,N);
+                Pmnint->compute_shell(P, 0, M, N);
                 const double* buffer = Pmnint->buffer();
 
                 for (int p = oP; p < oP+nP; p++) {
@@ -1427,8 +1400,6 @@ void DFJKGrad::compute_hessian()
                         }
                     }
                 }
-                // c[A] = (A|mn) D[m][n]
-                C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dtp[0], 1, 0.0, cp, 1);
             }
         }
 
@@ -1499,7 +1470,7 @@ void DFJKGrad::compute_hessian()
     auto Tb = std::make_shared<Matrix>("Tb", maxp, maxm*nb);
     double **Tbp = Tb->pointer();
 
-    for (int P = 0; P < nauxshell; ++P){
+    for (int P = 0; P < nauxshell; ++P) {
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1507,7 +1478,7 @@ void DFJKGrad::compute_hessian()
         int Px = 3 * Pcenter + 0;
         int Py = 3 * Pcenter + 1;
         int Pz = 3 * Pcenter + 2;
-        for(int M = 0; M < nshell; ++M){
+        for (int M = 0; M < nshell; ++M) {
             int nM = primary_->shell(M).nfunction();
             int oM = primary_->shell(M).function_index();
             int Mcenter = primary_->shell(M).ncenter();
@@ -1515,7 +1486,7 @@ void DFJKGrad::compute_hessian()
             int mx = 3 * Mcenter + 0;
             int my = 3 * Mcenter + 1;
             int mz = 3 * Mcenter + 2;
-            for(int N = 0; N < nshell; ++N){
+            for (int N = 0; N < nshell; ++N) {
                 int nN = primary_->shell(N).nfunction();
                 int oN = primary_->shell(N).function_index();
                 int Ncenter = primary_->shell(N).ncenter();
@@ -1524,27 +1495,38 @@ void DFJKGrad::compute_hessian()
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
 
-                size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
+                size_t stride = static_cast<size_t>(Pncart) * Mncart * Nncart;
 
-                Pmnint->compute_shell_deriv1(P,0,M,N);
+                Pmnint->compute_shell_deriv1(P, 0, M, N);
                 const double* buffer = Pmnint->buffer();
+                auto buffers = Pmnint->buffers();
+                bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+                const double* PxBuf = libint1 ? buffer + 0 * stride : buffers[0];
+                const double* PyBuf = libint1 ? buffer + 1 * stride : buffers[1];
+                const double* PzBuf = libint1 ? buffer + 2 * stride : buffers[2];
+                const double* mxBuf = libint1 ? buffer + 3 * stride : buffers[3];
+                const double* myBuf = libint1 ? buffer + 4 * stride : buffers[4];
+                const double* mzBuf = libint1 ? buffer + 5 * stride : buffers[5];
+                const double* nxBuf = libint1 ? buffer + 6 * stride : buffers[6];
+                const double* nyBuf = libint1 ? buffer + 7 * stride : buffers[7];
+                const double* nzBuf = libint1 ? buffer + 8 * stride : buffers[8];
 
                 size_t delta = 0L;
                 // Terms for J intermediates
                 // dc[x][A] = D[m][n] (A|mn)^x
-                for (int p = oP; p < oP+nP; p++) {
-                    for (int m = oM; m < oM+nM; m++) {
-                        for (int n = oN; n < oN+nN; n++) {
+                for (int p = oP; p < oP + nP; p++) {
+                    for (int m = oM; m < oM + nM; m++) {
+                        for (int n = oN; n < oN + nN; n++) {
                             double Cpmn = Dtp[m][n];
-                            dcp[Px][p] += Cpmn * buffer[0 * stride + delta];
-                            dcp[Py][p] += Cpmn * buffer[1 * stride + delta];
-                            dcp[Pz][p] += Cpmn * buffer[2 * stride + delta];
-                            dcp[mx][p] += Cpmn * buffer[3 * stride + delta];
-                            dcp[my][p] += Cpmn * buffer[4 * stride + delta];
-                            dcp[mz][p] += Cpmn * buffer[5 * stride + delta];
-                            dcp[nx][p] += Cpmn * buffer[6 * stride + delta];
-                            dcp[ny][p] += Cpmn * buffer[7 * stride + delta];
-                            dcp[nz][p] += Cpmn * buffer[8 * stride + delta];
+                            dcp[Px][p] += Cpmn * PxBuf[delta];
+                            dcp[Py][p] += Cpmn * PyBuf[delta];
+                            dcp[Pz][p] += Cpmn * PzBuf[delta];
+                            dcp[mx][p] += Cpmn * mxBuf[delta];
+                            dcp[my][p] += Cpmn * myBuf[delta];
+                            dcp[mz][p] += Cpmn * mzBuf[delta];
+                            dcp[nx][p] += Cpmn * nxBuf[delta];
+                            dcp[ny][p] += Cpmn * nyBuf[delta];
+                            dcp[nz][p] += Cpmn * nzBuf[delta];
                             ++delta;
                         }
                     }
@@ -1641,9 +1623,9 @@ void DFJKGrad::compute_hessian()
     }
 
     // dd[x][A] = dc[x][B] Minv[B][A]
-    C_DGEMM('N', 'N', 3*natoms, np, np, 1.0, dcp[0], np, PQp[0], np, 0.0, ddp[0], np);
+    C_DGEMM('N', 'N', 3 * natoms, np, np, 1.0, dcp[0], np, PQp[0], np, 0.0, ddp[0], np);
 
-    for (int P = 0; P < nauxshell; ++P){
+    for (int P = 0; P < nauxshell; ++P) {
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1651,7 +1633,7 @@ void DFJKGrad::compute_hessian()
         int Px = 3 * Pcenter + 0;
         int Py = 3 * Pcenter + 1;
         int Pz = 3 * Pcenter + 2;
-        for(int Q = 0; Q < nauxshell; ++Q){
+        for (int Q = 0; Q < nauxshell; ++Q) {
             int nQ = auxiliary_->shell(Q).nfunction();
             int oQ = auxiliary_->shell(Q).function_index();
             int Qcenter = auxiliary_->shell(Q).ncenter();
@@ -1660,23 +1642,31 @@ void DFJKGrad::compute_hessian()
             int Qy = 3 * Qcenter + 1;
             int Qz = 3 * Qcenter + 2;
 
-            size_t stride = static_cast<size_t> (Pncart) * Qncart;
+            size_t stride = static_cast<size_t>(Pncart) * Qncart;
 
-            PQint->compute_shell_deriv1(P,0,Q,0);
+            PQint->compute_shell_deriv1(P, 0, Q, 0);
             const double* buffer = PQint->buffer();
+            auto buffers = PQint->buffers();
+            bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+            const double* Pxbuf = libint1 ? buffer + 0 * stride : buffers[0];
+            const double* Pybuf = libint1 ? buffer + 1 * stride : buffers[1];
+            const double* Pzbuf = libint1 ? buffer + 2 * stride : buffers[2];
+            const double* Qxbuf = libint1 ? buffer + 3 * stride : buffers[3];
+            const double* Qybuf = libint1 ? buffer + 4 * stride : buffers[4];
+            const double* Qzbuf = libint1 ? buffer + 5 * stride : buffers[5];
 
             size_t delta = 0L;
             // J term intermediates
             // de[x][A] = (A|B)^x d[B]
-            for (int p = oP; p < oP+nP; p++) {
-                for (int q = oQ; q < oQ+nQ; q++) {
+            for (int p = oP; p < oP + nP; p++) {
+                for (int q = oQ; q < oQ + nQ; q++) {
                     double dq = dp[q];
-                    dep[Px][p] += dq * buffer[0 * stride + delta];
-                    dep[Py][p] += dq * buffer[1 * stride + delta];
-                    dep[Pz][p] += dq * buffer[2 * stride + delta];
-                    dep[Qx][p] += dq * buffer[3 * stride + delta];
-                    dep[Qy][p] += dq * buffer[4 * stride + delta];
-                    dep[Qz][p] += dq * buffer[5 * stride + delta];
+                    dep[Px][p] += dq * Pxbuf[delta];
+                    dep[Py][p] += dq * Pybuf[delta];
+                    dep[Pz][p] += dq * Pzbuf[delta];
+                    dep[Qx][p] += dq * Qxbuf[delta];
+                    dep[Qy][p] += dq * Qybuf[delta];
+                    dep[Qz][p] += dq * Qzbuf[delta];
                     ++delta;
                 }
             }
@@ -1703,8 +1693,7 @@ void DFJKGrad::compute_hessian()
         }
     }
 
-
-    for (int P = 0; P < nauxshell; ++P){
+    for (int P = 0; P < nauxshell; ++P) {
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1712,7 +1701,7 @@ void DFJKGrad::compute_hessian()
         int Px = 3 * Pcenter + 0;
         int Py = 3 * Pcenter + 1;
         int Pz = 3 * Pcenter + 2;
-        for(int M = 0; M < nshell; ++M){
+        for (int M = 0; M < nshell; ++M) {
             int nM = primary_->shell(M).nfunction();
             int oM = primary_->shell(M).function_index();
             int Mcenter = primary_->shell(M).ncenter();
@@ -1720,7 +1709,7 @@ void DFJKGrad::compute_hessian()
             int mx = 3 * Mcenter + 0;
             int my = 3 * Mcenter + 1;
             int mz = 3 * Mcenter + 2;
-            for(int N = 0; N < nshell; ++N){
+            for (int N = 0; N < nshell; ++N) {
                 int nN = primary_->shell(N).nfunction();
                 int oN = primary_->shell(N).function_index();
                 int Ncenter = primary_->shell(N).ncenter();
@@ -1729,71 +1718,121 @@ void DFJKGrad::compute_hessian()
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
 
-                size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
+                size_t stride = static_cast<size_t>(Pncart) * Mncart * Nncart;
 
-                Pmnint->compute_shell_deriv2(P,0,M,N);
+                Pmnint->compute_shell_deriv2(P, 0, M, N);
+                auto buffers = Pmnint->buffers();
+                bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
                 const double* buffer = Pmnint->buffer();
+                const double* PxPxBuf = libint1 ? buffer + 9 * stride : buffers[0];
+                const double* PxPyBuf = libint1 ? buffer + 10 * stride : buffers[1];
+                const double* PxPzBuf = libint1 ? buffer + 11 * stride : buffers[2];
+                const double* PxmxBuf = libint1 ? buffer + 12 * stride : buffers[3];
+                const double* PxmyBuf = libint1 ? buffer + 13 * stride : buffers[4];
+                const double* PxmzBuf = libint1 ? buffer + 14 * stride : buffers[5];
+                const double* PxnxBuf = libint1 ? buffer + 15 * stride : buffers[6];
+                const double* PxnyBuf = libint1 ? buffer + 16 * stride : buffers[7];
+                const double* PxnzBuf = libint1 ? buffer + 17 * stride : buffers[8];
+                const double* PyPyBuf = libint1 ? buffer + 18 * stride : buffers[9];
+                const double* PyPzBuf = libint1 ? buffer + 19 * stride : buffers[10];
+                const double* PymxBuf = libint1 ? buffer + 20 * stride : buffers[11];
+                const double* PymyBuf = libint1 ? buffer + 21 * stride : buffers[12];
+                const double* PymzBuf = libint1 ? buffer + 22 * stride : buffers[13];
+                const double* PynxBuf = libint1 ? buffer + 23 * stride : buffers[14];
+                const double* PynyBuf = libint1 ? buffer + 24 * stride : buffers[15];
+                const double* PynzBuf = libint1 ? buffer + 25 * stride : buffers[16];
+                const double* PzPzBuf = libint1 ? buffer + 26 * stride : buffers[17];
+                const double* PzmxBuf = libint1 ? buffer + 27 * stride : buffers[18];
+                const double* PzmyBuf = libint1 ? buffer + 28 * stride : buffers[19];
+                const double* PzmzBuf = libint1 ? buffer + 29 * stride : buffers[20];
+                const double* PznxBuf = libint1 ? buffer + 30 * stride : buffers[21];
+                const double* PznyBuf = libint1 ? buffer + 31 * stride : buffers[22];
+                const double* PznzBuf = libint1 ? buffer + 32 * stride : buffers[23];
+                const double* mxmxBuf = libint1 ? buffer + 33 * stride : buffers[24];
+                const double* mxmyBuf = libint1 ? buffer + 34 * stride : buffers[25];
+                const double* mxmzBuf = libint1 ? buffer + 35 * stride : buffers[26];
+                const double* mxnxBuf = libint1 ? buffer + 36 * stride : buffers[27];
+                const double* mxnyBuf = libint1 ? buffer + 37 * stride : buffers[28];
+                const double* mxnzBuf = libint1 ? buffer + 38 * stride : buffers[29];
+                const double* mymyBuf = libint1 ? buffer + 39 * stride : buffers[30];
+                const double* mymzBuf = libint1 ? buffer + 40 * stride : buffers[31];
+                const double* mynxBuf = libint1 ? buffer + 41 * stride : buffers[32];
+                const double* mynyBuf = libint1 ? buffer + 42 * stride : buffers[33];
+                const double* mynzBuf = libint1 ? buffer + 43 * stride : buffers[34];
+                const double* mzmzBuf = libint1 ? buffer + 44 * stride : buffers[35];
+                const double* mznxBuf = libint1 ? buffer + 45 * stride : buffers[36];
+                const double* mznyBuf = libint1 ? buffer + 46 * stride : buffers[37];
+                const double* mznzBuf = libint1 ? buffer + 47 * stride : buffers[38];
+                const double* nxnxBuf = libint1 ? buffer + 48 * stride : buffers[39];
+                const double* nxnyBuf = libint1 ? buffer + 49 * stride : buffers[40];
+                const double* nxnzBuf = libint1 ? buffer + 50 * stride : buffers[41];
+                const double* nynyBuf = libint1 ? buffer + 51 * stride : buffers[42];
+                const double* nynzBuf = libint1 ? buffer + 52 * stride : buffers[43];
+                const double* nznzBuf = libint1 ? buffer + 53 * stride : buffers[44];
 
                 double Pmscale = Pcenter == Mcenter ? 2.0 : 1.0;
                 double Pnscale = Pcenter == Ncenter ? 2.0 : 1.0;
                 double mnscale = Mcenter == Ncenter ? 2.0 : 1.0;
 
-                double PxPx=0.0, PxPy=0.0, PxPz=0.0, PyPy=0.0, PyPz=0.0, PzPz=0.0;
-                double mxmx=0.0, mxmy=0.0, mxmz=0.0, mymy=0.0, mymz=0.0, mzmz=0.0;
-                double nxnx=0.0, nxny=0.0, nxnz=0.0, nyny=0.0, nynz=0.0, nznz=0.0;
-                double Pxmx=0.0, Pxmy=0.0, Pxmz=0.0, Pymx=0.0, Pymy=0.0, Pymz=0.0, Pzmx=0.0, Pzmy=0.0, Pzmz=0.0;
-                double Pxnx=0.0, Pxny=0.0, Pxnz=0.0, Pynx=0.0, Pyny=0.0, Pynz=0.0, Pznx=0.0, Pzny=0.0, Pznz=0.0;
-                double mxnx=0.0, mxny=0.0, mxnz=0.0, mynx=0.0, myny=0.0, mynz=0.0, mznx=0.0, mzny=0.0, mznz=0.0;
+                double PxPx = 0.0, PxPy = 0.0, PxPz = 0.0, PyPy = 0.0, PyPz = 0.0, PzPz = 0.0;
+                double mxmx = 0.0, mxmy = 0.0, mxmz = 0.0, mymy = 0.0, mymz = 0.0, mzmz = 0.0;
+                double nxnx = 0.0, nxny = 0.0, nxnz = 0.0, nyny = 0.0, nynz = 0.0, nznz = 0.0;
+                double Pxmx = 0.0, Pxmy = 0.0, Pxmz = 0.0, Pymx = 0.0, Pymy = 0.0, Pymz = 0.0, Pzmx = 0.0, Pzmy = 0.0,
+                       Pzmz = 0.0;
+                double Pxnx = 0.0, Pxny = 0.0, Pxnz = 0.0, Pynx = 0.0, Pyny = 0.0, Pynz = 0.0, Pznx = 0.0, Pzny = 0.0,
+                       Pznz = 0.0;
+                double mxnx = 0.0, mxny = 0.0, mxnz = 0.0, mynx = 0.0, myny = 0.0, mynz = 0.0, mznx = 0.0, mzny = 0.0,
+                       mznz = 0.0;
                 size_t delta = 0L;
-                for (int p = oP; p < oP+nP; p++) {
-                    for (int m = oM; m < oM+nM; m++) {
-                        for (int n = oN; n < oN+nN; n++) {
+                for (int p = oP; p < oP + nP; p++) {
+                    for (int m = oM; m < oM + nM; m++) {
+                        for (int n = oN; n < oN + nN; n++) {
                             double Cpmn = 2.0 * dp[p] * Dtp[m][n];
-                            PxPx += Cpmn * buffer[9  * stride + delta];
-                            PxPy += Cpmn * buffer[10 * stride + delta];
-                            PxPz += Cpmn * buffer[11 * stride + delta];
-                            Pxmx += Cpmn * buffer[12 * stride + delta];
-                            Pxmy += Cpmn * buffer[13 * stride + delta];
-                            Pxmz += Cpmn * buffer[14 * stride + delta];
-                            Pxnx += Cpmn * buffer[15 * stride + delta];
-                            Pxny += Cpmn * buffer[16 * stride + delta];
-                            Pxnz += Cpmn * buffer[17 * stride + delta];
-                            PyPy += Cpmn * buffer[18 * stride + delta];
-                            PyPz += Cpmn * buffer[19 * stride + delta];
-                            Pymx += Cpmn * buffer[20 * stride + delta];
-                            Pymy += Cpmn * buffer[21 * stride + delta];
-                            Pymz += Cpmn * buffer[22 * stride + delta];
-                            Pynx += Cpmn * buffer[23 * stride + delta];
-                            Pyny += Cpmn * buffer[24 * stride + delta];
-                            Pynz += Cpmn * buffer[25 * stride + delta];
-                            PzPz += Cpmn * buffer[26 * stride + delta];
-                            Pzmx += Cpmn * buffer[27 * stride + delta];
-                            Pzmy += Cpmn * buffer[28 * stride + delta];
-                            Pzmz += Cpmn * buffer[29 * stride + delta];
-                            Pznx += Cpmn * buffer[30 * stride + delta];
-                            Pzny += Cpmn * buffer[31 * stride + delta];
-                            Pznz += Cpmn * buffer[32 * stride + delta];
-                            mxmx += Cpmn * buffer[33 * stride + delta];
-                            mxmy += Cpmn * buffer[34 * stride + delta];
-                            mxmz += Cpmn * buffer[35 * stride + delta];
-                            mxnx += Cpmn * buffer[36 * stride + delta];
-                            mxny += Cpmn * buffer[37 * stride + delta];
-                            mxnz += Cpmn * buffer[38 * stride + delta];
-                            mymy += Cpmn * buffer[39 * stride + delta];
-                            mymz += Cpmn * buffer[40 * stride + delta];
-                            mynx += Cpmn * buffer[41 * stride + delta];
-                            myny += Cpmn * buffer[42 * stride + delta];
-                            mynz += Cpmn * buffer[43 * stride + delta];
-                            mzmz += Cpmn * buffer[44 * stride + delta];
-                            mznx += Cpmn * buffer[45 * stride + delta];
-                            mzny += Cpmn * buffer[46 * stride + delta];
-                            mznz += Cpmn * buffer[47 * stride + delta];
-                            nxnx += Cpmn * buffer[48 * stride + delta];
-                            nxny += Cpmn * buffer[49 * stride + delta];
-                            nxnz += Cpmn * buffer[50 * stride + delta];
-                            nyny += Cpmn * buffer[51 * stride + delta];
-                            nynz += Cpmn * buffer[52 * stride + delta];
-                            nznz += Cpmn * buffer[53 * stride + delta];
+                            PxPx += Cpmn * PxPxBuf[delta];
+                            PxPy += Cpmn * PxPyBuf[delta];
+                            PxPz += Cpmn * PxPzBuf[delta];
+                            Pxmx += Cpmn * PxmxBuf[delta];
+                            Pxmy += Cpmn * PxmyBuf[delta];
+                            Pxmz += Cpmn * PxmzBuf[delta];
+                            Pxnx += Cpmn * PxnxBuf[delta];
+                            Pxny += Cpmn * PxnyBuf[delta];
+                            Pxnz += Cpmn * PxnzBuf[delta];
+                            PyPy += Cpmn * PyPyBuf[delta];
+                            PyPz += Cpmn * PyPzBuf[delta];
+                            Pymx += Cpmn * PymxBuf[delta];
+                            Pymy += Cpmn * PymyBuf[delta];
+                            Pymz += Cpmn * PymzBuf[delta];
+                            Pynx += Cpmn * PynxBuf[delta];
+                            Pyny += Cpmn * PynyBuf[delta];
+                            Pynz += Cpmn * PynzBuf[delta];
+                            PzPz += Cpmn * PzPzBuf[delta];
+                            Pzmx += Cpmn * PzmxBuf[delta];
+                            Pzmy += Cpmn * PzmyBuf[delta];
+                            Pzmz += Cpmn * PzmzBuf[delta];
+                            Pznx += Cpmn * PznxBuf[delta];
+                            Pzny += Cpmn * PznyBuf[delta];
+                            Pznz += Cpmn * PznzBuf[delta];
+                            mxmx += Cpmn * mxmxBuf[delta];
+                            mxmy += Cpmn * mxmyBuf[delta];
+                            mxmz += Cpmn * mxmzBuf[delta];
+                            mxnx += Cpmn * mxnxBuf[delta];
+                            mxny += Cpmn * mxnyBuf[delta];
+                            mxnz += Cpmn * mxnzBuf[delta];
+                            mymy += Cpmn * mymyBuf[delta];
+                            mymz += Cpmn * mymzBuf[delta];
+                            mynx += Cpmn * mynxBuf[delta];
+                            myny += Cpmn * mynyBuf[delta];
+                            mynz += Cpmn * mynzBuf[delta];
+                            mzmz += Cpmn * mzmzBuf[delta];
+                            mznx += Cpmn * mznxBuf[delta];
+                            mzny += Cpmn * mznyBuf[delta];
+                            mznz += Cpmn * mznzBuf[delta];
+                            nxnx += Cpmn * nxnxBuf[delta];
+                            nxny += Cpmn * nxnyBuf[delta];
+                            nxnz += Cpmn * nxnzBuf[delta];
+                            nyny += Cpmn * nynyBuf[delta];
+                            nynz += Cpmn * nynzBuf[delta];
+                            nznz += Cpmn * nznzBuf[delta];
                             ++delta;
                         }
                     }
@@ -1801,42 +1840,42 @@ void DFJKGrad::compute_hessian()
                 JHessp[Px][Px] += PxPx;
                 JHessp[Px][Py] += PxPy;
                 JHessp[Px][Pz] += PxPz;
-                JHessp[Px][mx] += Pmscale*Pxmx;
+                JHessp[Px][mx] += Pmscale * Pxmx;
                 JHessp[Px][my] += Pxmy;
                 JHessp[Px][mz] += Pxmz;
-                JHessp[Px][nx] += Pnscale*Pxnx;
+                JHessp[Px][nx] += Pnscale * Pxnx;
                 JHessp[Px][ny] += Pxny;
                 JHessp[Px][nz] += Pxnz;
                 JHessp[Py][Py] += PyPy;
                 JHessp[Py][Pz] += PyPz;
                 JHessp[Py][mx] += Pymx;
-                JHessp[Py][my] += Pmscale*Pymy;
+                JHessp[Py][my] += Pmscale * Pymy;
                 JHessp[Py][mz] += Pymz;
                 JHessp[Py][nx] += Pynx;
-                JHessp[Py][ny] += Pnscale*Pyny;
+                JHessp[Py][ny] += Pnscale * Pyny;
                 JHessp[Py][nz] += Pynz;
                 JHessp[Pz][Pz] += PzPz;
                 JHessp[Pz][mx] += Pzmx;
                 JHessp[Pz][my] += Pzmy;
-                JHessp[Pz][mz] += Pmscale*Pzmz;
+                JHessp[Pz][mz] += Pmscale * Pzmz;
                 JHessp[Pz][nx] += Pznx;
                 JHessp[Pz][ny] += Pzny;
-                JHessp[Pz][nz] += Pnscale*Pznz;
+                JHessp[Pz][nz] += Pnscale * Pznz;
                 JHessp[mx][mx] += mxmx;
                 JHessp[mx][my] += mxmy;
                 JHessp[mx][mz] += mxmz;
-                JHessp[mx][nx] += mnscale*mxnx;
+                JHessp[mx][nx] += mnscale * mxnx;
                 JHessp[mx][ny] += mxny;
                 JHessp[mx][nz] += mxnz;
                 JHessp[my][my] += mymy;
                 JHessp[my][mz] += mymz;
                 JHessp[my][nx] += mynx;
-                JHessp[my][ny] += mnscale*myny;
+                JHessp[my][ny] += mnscale * myny;
                 JHessp[my][nz] += mynz;
                 JHessp[mz][mz] += mzmz;
                 JHessp[mz][nx] += mznx;
                 JHessp[mz][ny] += mzny;
-                JHessp[mz][nz] += mnscale*mznz;
+                JHessp[mz][nz] += mnscale * mznz;
                 JHessp[nx][nx] += nxnx;
                 JHessp[nx][ny] += nxny;
                 JHessp[nx][nz] += nxnz;
@@ -1844,9 +1883,8 @@ void DFJKGrad::compute_hessian()
                 JHessp[ny][nz] += nynz;
                 JHessp[nz][nz] += nznz;
 
-                if(do_K_){
+                if (do_K_) {
                     // K terms
-                
                     // Loop through alpha/beta terms
                     std::vector<double**> Blist = {Ba_mnp};
                     if (!same_ab) Blist.push_back(Bb_mnp);
@@ -1862,51 +1900,51 @@ void DFJKGrad::compute_hessian()
                             for (int m = oM; m < oM+nM; m++) {
                                 for (int n = oN; n < oN+nN; n++) {
                                     double Cpmn = 2.0 * B[p][m*nso+n];
-                                    PxPx += Cpmn * buffer[9  * stride + delta];
-                                    PxPy += Cpmn * buffer[10 * stride + delta];
-                                    PxPz += Cpmn * buffer[11 * stride + delta];
-                                    Pxmx += Cpmn * buffer[12 * stride + delta];
-                                    Pxmy += Cpmn * buffer[13 * stride + delta];
-                                    Pxmz += Cpmn * buffer[14 * stride + delta];
-                                    Pxnx += Cpmn * buffer[15 * stride + delta];
-                                    Pxny += Cpmn * buffer[16 * stride + delta];
-                                    Pxnz += Cpmn * buffer[17 * stride + delta];
-                                    PyPy += Cpmn * buffer[18 * stride + delta];
-                                    PyPz += Cpmn * buffer[19 * stride + delta];
-                                    Pymx += Cpmn * buffer[20 * stride + delta];
-                                    Pymy += Cpmn * buffer[21 * stride + delta];
-                                    Pymz += Cpmn * buffer[22 * stride + delta];
-                                    Pynx += Cpmn * buffer[23 * stride + delta];
-                                    Pyny += Cpmn * buffer[24 * stride + delta];
-                                    Pynz += Cpmn * buffer[25 * stride + delta];
-                                    PzPz += Cpmn * buffer[26 * stride + delta];
-                                    Pzmx += Cpmn * buffer[27 * stride + delta];
-                                    Pzmy += Cpmn * buffer[28 * stride + delta];
-                                    Pzmz += Cpmn * buffer[29 * stride + delta];
-                                    Pznx += Cpmn * buffer[30 * stride + delta];
-                                    Pzny += Cpmn * buffer[31 * stride + delta];
-                                    Pznz += Cpmn * buffer[32 * stride + delta];
-                                    mxmx += Cpmn * buffer[33 * stride + delta];
-                                    mxmy += Cpmn * buffer[34 * stride + delta];
-                                    mxmz += Cpmn * buffer[35 * stride + delta];
-                                    mxnx += Cpmn * buffer[36 * stride + delta];
-                                    mxny += Cpmn * buffer[37 * stride + delta];
-                                    mxnz += Cpmn * buffer[38 * stride + delta];
-                                    mymy += Cpmn * buffer[39 * stride + delta];
-                                    mymz += Cpmn * buffer[40 * stride + delta];
-                                    mynx += Cpmn * buffer[41 * stride + delta];
-                                    myny += Cpmn * buffer[42 * stride + delta];
-                                    mynz += Cpmn * buffer[43 * stride + delta];
-                                    mzmz += Cpmn * buffer[44 * stride + delta];
-                                    mznx += Cpmn * buffer[45 * stride + delta];
-                                    mzny += Cpmn * buffer[46 * stride + delta];
-                                    mznz += Cpmn * buffer[47 * stride + delta];
-                                    nxnx += Cpmn * buffer[48 * stride + delta];
-                                    nxny += Cpmn * buffer[49 * stride + delta];
-                                    nxnz += Cpmn * buffer[50 * stride + delta];
-                                    nyny += Cpmn * buffer[51 * stride + delta];
-                                    nynz += Cpmn * buffer[52 * stride + delta];
-                                    nznz += Cpmn * buffer[53 * stride + delta];
+                                    PxPx += Cpmn * PxPxBuf[delta];
+                                    PxPy += Cpmn * PxPyBuf[delta];
+                                    PxPz += Cpmn * PxPzBuf[delta];
+                                    Pxmx += Cpmn * PxmxBuf[delta];
+                                    Pxmy += Cpmn * PxmyBuf[delta];
+                                    Pxmz += Cpmn * PxmzBuf[delta];
+                                    Pxnx += Cpmn * PxnxBuf[delta];
+                                    Pxny += Cpmn * PxnyBuf[delta];
+                                    Pxnz += Cpmn * PxnzBuf[delta];
+                                    PyPy += Cpmn * PyPyBuf[delta];
+                                    PyPz += Cpmn * PyPzBuf[delta];
+                                    Pymx += Cpmn * PymxBuf[delta];
+                                    Pymy += Cpmn * PymyBuf[delta];
+                                    Pymz += Cpmn * PymzBuf[delta];
+                                    Pynx += Cpmn * PynxBuf[delta];
+                                    Pyny += Cpmn * PynyBuf[delta];
+                                    Pynz += Cpmn * PynzBuf[delta];
+                                    PzPz += Cpmn * PzPzBuf[delta];
+                                    Pzmx += Cpmn * PzmxBuf[delta];
+                                    Pzmy += Cpmn * PzmyBuf[delta];
+                                    Pzmz += Cpmn * PzmzBuf[delta];
+                                    Pznx += Cpmn * PznxBuf[delta];
+                                    Pzny += Cpmn * PznyBuf[delta];
+                                    Pznz += Cpmn * PznzBuf[delta];
+                                    mxmx += Cpmn * mxmxBuf[delta];
+                                    mxmy += Cpmn * mxmyBuf[delta];
+                                    mxmz += Cpmn * mxmzBuf[delta];
+                                    mxnx += Cpmn * mxnxBuf[delta];
+                                    mxny += Cpmn * mxnyBuf[delta];
+                                    mxnz += Cpmn * mxnzBuf[delta];
+                                    mymy += Cpmn * mymyBuf[delta];
+                                    mymz += Cpmn * mymzBuf[delta];
+                                    mynx += Cpmn * mynxBuf[delta];
+                                    myny += Cpmn * mynyBuf[delta];
+                                    mynz += Cpmn * mynzBuf[delta];
+                                    mzmz += Cpmn * mzmzBuf[delta];
+                                    mznx += Cpmn * mznxBuf[delta];
+                                    mzny += Cpmn * mznyBuf[delta];
+                                    mznz += Cpmn * mznzBuf[delta];
+                                    nxnx += Cpmn * nxnxBuf[delta];
+                                    nxny += Cpmn * nxnyBuf[delta];
+                                    nxnz += Cpmn * nxnzBuf[delta];
+                                    nyny += Cpmn * nynyBuf[delta];
+                                    nynz += Cpmn * nynzBuf[delta];
+                                    nznz += Cpmn * nznzBuf[delta];
                                     ++delta;
                                 }
                             }
@@ -1962,7 +2000,7 @@ void DFJKGrad::compute_hessian()
         }
     }
 
-    for (int P = 0; P < nauxshell; ++P){
+    for (int P = 0; P < nauxshell; ++P) {
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
         int Pcenter = auxiliary_->shell(P).ncenter();
@@ -1970,7 +2008,7 @@ void DFJKGrad::compute_hessian()
         int Px = 3 * Pcenter + 0;
         int Py = 3 * Pcenter + 1;
         int Pz = 3 * Pcenter + 2;
-        for(int Q = 0; Q < nauxshell; ++Q){
+        for (int Q = 0; Q < nauxshell; ++Q) {
             int nQ = auxiliary_->shell(Q).nfunction();
             int oQ = auxiliary_->shell(Q).function_index();
             int Qcenter = auxiliary_->shell(Q).ncenter();
@@ -1979,60 +2017,83 @@ void DFJKGrad::compute_hessian()
             int Qy = 3 * Qcenter + 1;
             int Qz = 3 * Qcenter + 2;
 
-            size_t stride = static_cast<size_t> (Pncart) * Qncart;
+            size_t stride = static_cast<size_t>(Pncart) * Qncart;
 
-            PQint->compute_shell_deriv2(P,0,Q,0);
+            PQint->compute_shell_deriv2(P, 0, Q, 0);
+            auto buffers = PQint->buffers();
+            bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
             const double* buffer = PQint->buffer();
+            const double* PxPxBuf = libint1 ? buffer + 9 * stride : buffers[0];
+            const double* PxPyBuf = libint1 ? buffer + 10 * stride : buffers[1];
+            const double* PxPzBuf = libint1 ? buffer + 11 * stride : buffers[2];
+            const double* PxQxBuf = libint1 ? buffer + 12 * stride : buffers[3];
+            const double* PxQyBuf = libint1 ? buffer + 13 * stride : buffers[4];
+            const double* PxQzBuf = libint1 ? buffer + 14 * stride : buffers[5];
+            const double* PyPyBuf = libint1 ? buffer + 18 * stride : buffers[6];
+            const double* PyPzBuf = libint1 ? buffer + 19 * stride : buffers[7];
+            const double* PyQxBuf = libint1 ? buffer + 20 * stride : buffers[8];
+            const double* PyQyBuf = libint1 ? buffer + 21 * stride : buffers[9];
+            const double* PyQzBuf = libint1 ? buffer + 22 * stride : buffers[10];
+            const double* PzPzBuf = libint1 ? buffer + 26 * stride : buffers[11];
+            const double* PzQxBuf = libint1 ? buffer + 27 * stride : buffers[12];
+            const double* PzQyBuf = libint1 ? buffer + 28 * stride : buffers[13];
+            const double* PzQzBuf = libint1 ? buffer + 29 * stride : buffers[14];
+            const double* QxQxBuf = libint1 ? buffer + 33 * stride : buffers[15];
+            const double* QxQyBuf = libint1 ? buffer + 34 * stride : buffers[16];
+            const double* QxQzBuf = libint1 ? buffer + 35 * stride : buffers[17];
+            const double* QyQyBuf = libint1 ? buffer + 39 * stride : buffers[18];
+            const double* QyQzBuf = libint1 ? buffer + 40 * stride : buffers[19];
+            const double* QzQzBuf = libint1 ? buffer + 44 * stride : buffers[20];
 
             double PQscale = Pcenter == Qcenter ? 2.0 : 1.0;
 
-            double PxPx=0.0, PxPy=0.0, PxPz=0.0, PyPy=0.0, PyPz=0.0, PzPz=0.0;
-            double QxQx=0.0, QxQy=0.0, QxQz=0.0, QyQy=0.0, QyQz=0.0, QzQz=0.0;
-            double PxQx=0.0, PxQy=0.0, PxQz=0.0, PyQx=0.0, PyQy=0.0, PyQz=0.0, PzQx=0.0, PzQy=0.0, PzQz=0.0;
+            double PxPx = 0.0, PxPy = 0.0, PxPz = 0.0, PyPy = 0.0, PyPz = 0.0, PzPz = 0.0;
+            double QxQx = 0.0, QxQy = 0.0, QxQz = 0.0, QyQy = 0.0, QyQz = 0.0, QzQz = 0.0;
+            double PxQx = 0.0, PxQy = 0.0, PxQz = 0.0, PyQx = 0.0, PyQy = 0.0, PyQz = 0.0, PzQx = 0.0, PzQy = 0.0,
+                   PzQz = 0.0;
             size_t delta = 0L;
-            for (int p = oP; p < oP+nP; p++) {
-                for (int q = oQ; q < oQ+nQ; q++) {
-                    double dAdB = -dp[p]*dp[q];
-                    PxPx += dAdB * buffer[9  * stride + delta];
-                    PxPy += dAdB * buffer[10 * stride + delta];
-                    PxPz += dAdB * buffer[11 * stride + delta];
-                    PxQx += dAdB * buffer[12 * stride + delta];
-                    PxQy += dAdB * buffer[13 * stride + delta];
-                    PxQz += dAdB * buffer[14 * stride + delta];
-                    PyPy += dAdB * buffer[18 * stride + delta];
-                    PyPz += dAdB * buffer[19 * stride + delta];
-                    PyQx += dAdB * buffer[20 * stride + delta];
-                    PyQy += dAdB * buffer[21 * stride + delta];
-                    PyQz += dAdB * buffer[22 * stride + delta];
-                    PzPz += dAdB * buffer[26 * stride + delta];
-                    PzQx += dAdB * buffer[27 * stride + delta];
-                    PzQy += dAdB * buffer[28 * stride + delta];
-                    PzQz += dAdB * buffer[29 * stride + delta];
-                    QxQx += dAdB * buffer[33 * stride + delta];
-                    QxQy += dAdB * buffer[34 * stride + delta];
-                    QxQz += dAdB * buffer[35 * stride + delta];
-                    QyQy += dAdB * buffer[39 * stride + delta];
-                    QyQz += dAdB * buffer[40 * stride + delta];
-                    QzQz += dAdB * buffer[44 * stride + delta];
+            for (int p = oP; p < oP + nP; p++) {
+                for (int q = oQ; q < oQ + nQ; q++) {
+                    double dAdB = -dp[p] * dp[q];
+                    PxPx += dAdB * PxPxBuf[delta];
+                    PxPy += dAdB * PxPyBuf[delta];
+                    PxPz += dAdB * PxPzBuf[delta];
+                    PxQx += dAdB * PxQxBuf[delta];
+                    PxQy += dAdB * PxQyBuf[delta];
+                    PxQz += dAdB * PxQzBuf[delta];
+                    PyPy += dAdB * PyPyBuf[delta];
+                    PyPz += dAdB * PyPzBuf[delta];
+                    PyQx += dAdB * PyQxBuf[delta];
+                    PyQy += dAdB * PyQyBuf[delta];
+                    PyQz += dAdB * PyQzBuf[delta];
+                    PzPz += dAdB * PzPzBuf[delta];
+                    PzQx += dAdB * PzQxBuf[delta];
+                    PzQy += dAdB * PzQyBuf[delta];
+                    PzQz += dAdB * PzQzBuf[delta];
+                    QxQx += dAdB * QxQxBuf[delta];
+                    QxQy += dAdB * QxQyBuf[delta];
+                    QxQz += dAdB * QxQzBuf[delta];
+                    QyQy += dAdB * QyQyBuf[delta];
+                    QyQz += dAdB * QyQzBuf[delta];
+                    QzQz += dAdB * QzQzBuf[delta];
                     ++delta;
                 }
-
             }
             JHessp[Px][Px] += PxPx;
             JHessp[Px][Py] += PxPy;
             JHessp[Px][Pz] += PxPz;
-            JHessp[Px][Qx] += PQscale*PxQx;
+            JHessp[Px][Qx] += PQscale * PxQx;
             JHessp[Px][Qy] += PxQy;
             JHessp[Px][Qz] += PxQz;
             JHessp[Py][Py] += PyPy;
             JHessp[Py][Pz] += PyPz;
             JHessp[Py][Qx] += PyQx;
-            JHessp[Py][Qy] += PQscale*PyQy;
+            JHessp[Py][Qy] += PQscale * PyQy;
             JHessp[Py][Qz] += PyQz;
             JHessp[Pz][Pz] += PzPz;
             JHessp[Pz][Qx] += PzQx;
             JHessp[Pz][Qy] += PzQy;
-            JHessp[Pz][Qz] += PQscale*PzQz;
+            JHessp[Pz][Qz] += PQscale * PzQz;
             JHessp[Qx][Qx] += QxQx;
             JHessp[Qx][Qy] += QxQy;
             JHessp[Qx][Qz] += QxQz;
@@ -2040,7 +2101,7 @@ void DFJKGrad::compute_hessian()
             JHessp[Qy][Qz] += QyQz;
             JHessp[Qz][Qz] += QzQz;
 
-            if(do_K_){
+            if (do_K_) {
                 // K terms
                 std::vector<double**> Dlist = {Da_PQp};
                 if (!same_ab) Dlist.push_back(Db_PQp);
@@ -2103,20 +2164,17 @@ void DFJKGrad::compute_hessian()
         }
     }
 
-
     // Add permutational symmetry components missing from the above
-    for(int i = 0; i < 3*natoms; ++i){
-        for(int j = 0; j < i; ++j){
+    for (int i = 0; i < 3 * natoms; ++i) {
+        for (int j = 0; j < i; ++j) {
             JHessp[i][j] = JHessp[j][i] = (JHessp[i][j] + JHessp[j][i]);
-            if(do_K_){
+            if (do_K_) {
                 KHessp[i][j] = KHessp[j][i] = (KHessp[i][j] + KHessp[j][i]);
             }
         }
     }
 
-
     // Stitch all the intermediates together to form the actual Hessian contributions
-
 
     auto tmp1 = std::make_shared<Matrix>("Tmp1", np, np*np);
     double **ptmp1 = tmp1->pointer();
@@ -2126,15 +2184,15 @@ void DFJKGrad::compute_hessian()
     auto tmp_b = std::make_shared<Matrix>("Tmp [P][i,j]", np, nb*nb);
     double **ptmp_b = tmp_b->pointer();
 
-    for(int x = 0; x < 3*natoms; ++x){
-        for(int y = 0; y < 3*natoms; ++y){
+    for (int x = 0; x < 3 * natoms; ++x) {
+        for (int y = 0; y < 3 * natoms; ++y) {
             // J terms
             JHessp[x][y] += 2.0*C_DDOT(np, ddp[x], 1, dcp[y], 1);
             JHessp[x][y] -= 4.0*C_DDOT(np, ddp[x], 1, dep[y], 1);
             C_DGEMV('n', np, np, 1.0, PQp[0], np, dep[y], 1, 0.0, ptmp1[0], 1);
             JHessp[x][y] += 2.0*C_DDOT(np, dep[x], 1, ptmp1[0], 1);
 
-            if(do_K_){
+            if (do_K_) {
                 // K terms
                 C_DGEMM('n', 'n', np, na*na, np,  1.0, PQp[0], np, dAa_ijp[y], na*na, 0.0, ptmp_a[0], na*na);
                 KHessp[x][y] += 2.0*C_DDOT(static_cast<size_t> (np)*na*na, dAa_ijp[x], 1, ptmp_a[0], 1);
@@ -2153,11 +2211,11 @@ void DFJKGrad::compute_hessian()
     }
 
     // Make sure the newly added components are symmetric
-    for(int i = 0; i < 3*natoms; ++i){
-        for(int j = 0; j < i; ++j){
-            JHessp[i][j] = JHessp[j][i] = 0.5*(JHessp[i][j] + JHessp[j][i]);
-            if(do_K_){
-                KHessp[i][j] = KHessp[j][i] = 0.5*(KHessp[i][j] + KHessp[j][i]);
+    for (int i = 0; i < 3 * natoms; ++i) {
+        for (int j = 0; j < i; ++j) {
+            JHessp[i][j] = JHessp[j][i] = 0.5 * (JHessp[i][j] + JHessp[j][i]);
+            if (do_K_) {
+                KHessp[i][j] = KHessp[j][i] = 0.5 * (KHessp[i][j] + KHessp[j][i]);
             }
         }
     }
@@ -2168,41 +2226,30 @@ void DFJKGrad::compute_hessian()
     }
 }
 
-DirectJKGrad::DirectJKGrad(int deriv, std::shared_ptr<BasisSet> primary) :
-    JKGrad(deriv,primary)
-{
-    common_init();
-}
-DirectJKGrad::~DirectJKGrad()
-{
-}
-void DirectJKGrad::common_init()
-{
+DirectJKGrad::DirectJKGrad(int deriv, std::shared_ptr<BasisSet> primary) : JKGrad(deriv, primary) { common_init(); }
+DirectJKGrad::~DirectJKGrad() {}
+void DirectJKGrad::common_init() {
     ints_num_threads_ = 1;
 #ifdef _OPENMP
     ints_num_threads_ = Process::environment.get_n_threads();
 #endif
 }
-void DirectJKGrad::print_header() const
-{
+void DirectJKGrad::print_header() const {
     if (print_) {
-        outfile->Printf( "  ==> DirectJKGrad: Integral-Direct SCF Gradients <==\n\n");
+        outfile->Printf("  ==> DirectJKGrad: Integral-Direct SCF Gradients <==\n\n");
 
-        outfile->Printf( "    Gradient:          %11d\n", deriv_);
-        outfile->Printf( "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        outfile->Printf( "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        outfile->Printf( "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_)
-            outfile->Printf( "    Omega:             %11.3E\n", omega_);
-        outfile->Printf( "    Integrals threads: %11d\n", ints_num_threads_);
-        outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        outfile->Printf( "\n");
+        outfile->Printf("    Gradient:          %11d\n", deriv_);
+        outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
+        outfile->Printf("    Integrals threads: %11d\n", ints_num_threads_);
+        outfile->Printf("    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        outfile->Printf("\n");
     }
 }
-void DirectJKGrad::compute_gradient()
-{
-    if (!do_J_ && !do_K_ && !do_wK_)
-        return;
+void DirectJKGrad::compute_gradient() {
+    if (!do_J_ && !do_K_ && !do_wK_) return;
 
     if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_))
         throw PSIEXCEPTION("Occupation/Density not set");
@@ -2266,26 +2313,26 @@ void DirectJKGrad::compute_gradient()
     int natom = primary_->molecule()->natom();
     gradients_.clear();
     if (do_J_) {
-        gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient",natom,3);
+        gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient", natom, 3);
     }
     if (do_K_) {
-        gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient",natom,3);
+        gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
     }
     if (do_wK_) {
-        gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient",natom,3);
+        gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient", natom, 3);
     }
 
     // => Build ERI Sieve <= //
     sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 
-    auto factory = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
+    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
 
     if (do_J_ || do_K_) {
-        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri(1)));
         }
-        std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
+        std::map<std::string, std::shared_ptr<Matrix>> vals = compute1(ints);
         if (do_J_) {
             gradients_["Coulomb"]->copy(vals["J"]);
             // gradients_["Coulomb"]->print();
@@ -2296,112 +2343,117 @@ void DirectJKGrad::compute_gradient()
         }
     }
     if (do_wK_) {
-        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
-            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_,1)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_, 1)));
         }
-        std::map<std::string, std::shared_ptr<Matrix> > vals = compute1(ints);
+        std::map<std::string, std::shared_ptr<Matrix>> vals = compute1(ints);
         gradients_["Exchange,LR"]->copy(vals["K"]);
         // gradients_["Exchange,LR"]->print();
     }
 }
-std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
-{
+std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
+    std::vector<std::shared_ptr<TwoBodyAOInt>>& ints) {
     int nthreads = ints.size();
 
     int natom = primary_->molecule()->natom();
 
-    std::vector<std::shared_ptr<Matrix> > Jgrad;
-    std::vector<std::shared_ptr<Matrix> > Kgrad;
+    std::vector<std::shared_ptr<Matrix>> Jgrad;
+    std::vector<std::shared_ptr<Matrix>> Kgrad;
     for (int thread = 0; thread < nthreads; thread++) {
-        Jgrad.push_back(std::make_shared<Matrix>("JGrad",natom,3));
-        Kgrad.push_back(std::make_shared<Matrix>("KGrad",natom,3));
+        Jgrad.push_back(std::make_shared<Matrix>("JGrad", natom, 3));
+        Kgrad.push_back(std::make_shared<Matrix>("KGrad", natom, 3));
     }
 
     // TODO: this should be deleted when libint1 is removed
     Options& options = Process::environment.options;
-    bool useTranslationalInvariance = options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
-
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
-    size_t npairs = shell_pairs.size();
-    size_t npairs2 = npairs * npairs;
+    bool oldcode = options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
 
     double** Dtp = Dt_->pointer();
     double** Dap = Da_->pointer();
     double** Dbp = Db_->pointer();
 
+    if (oldcode) {
+        const std::vector<std::pair<int, int>>& shell_pairs = sieve_->shell_pairs();
+        size_t npairs = shell_pairs.size();
+        size_t npairs2 = npairs * npairs;
+
 #pragma omp parallel for num_threads(nthreads) schedule(dynamic)
-    for (size_t index = 0L; index < npairs2; index++) {
+        for (size_t index = 0L; index < npairs2; index++) {
+            size_t PQ = index / npairs;
+            size_t RS = index % npairs;
 
-        size_t PQ = index / npairs;
-        size_t RS = index % npairs;
+            if (RS > PQ) continue;
 
-        if (RS > PQ) continue;
+            int P = shell_pairs[PQ].first;
+            int Q = shell_pairs[PQ].second;
+            int R = shell_pairs[RS].first;
+            int S = shell_pairs[RS].second;
 
-        int P = shell_pairs[PQ].first;
-        int Q = shell_pairs[PQ].second;
-        int R = shell_pairs[RS].first;
-        int S = shell_pairs[RS].second;
+            if (!sieve_->shell_significant(P, Q, R, S)) continue;
 
-        if (!sieve_->shell_significant(P,Q,R,S)) continue;
-
-        //outfile->Printf("(%d,%d,%d,%d)\n", P,Q,R,S);
-
-        int thread = 0;
+            int thread = 0;
 #ifdef _OPENMP
-        thread = omp_get_thread_num();
+            thread = omp_get_thread_num();
 #endif
 
-        ints[thread]->compute_shell_deriv1(P,Q,R,S);
+            ints[thread]->compute_shell_deriv1(P, Q, R, S);
 
-        const double* buffer = ints[thread]->buffer();
+            const double* buffer = ints[thread]->buffer();
 
-        double** Jp = Jgrad[thread]->pointer();
-        double** Kp = Kgrad[thread]->pointer();
+            double** Jp = Jgrad[thread]->pointer();
+            double** Kp = Kgrad[thread]->pointer();
 
-        int Psize = primary_->shell(P).nfunction();
-        int Qsize = primary_->shell(Q).nfunction();
-        int Rsize = primary_->shell(R).nfunction();
-        int Ssize = primary_->shell(S).nfunction();
+            int Psize = primary_->shell(P).nfunction();
+            int Qsize = primary_->shell(Q).nfunction();
+            int Rsize = primary_->shell(R).nfunction();
+            int Ssize = primary_->shell(S).nfunction();
 
-        int Pncart = primary_->shell(P).ncartesian();
-        int Qncart = primary_->shell(Q).ncartesian();
-        int Rncart = primary_->shell(R).ncartesian();
-        int Sncart = primary_->shell(S).ncartesian();
+            int Pncart = primary_->shell(P).ncartesian();
+            int Qncart = primary_->shell(Q).ncartesian();
+            int Rncart = primary_->shell(R).ncartesian();
+            int Sncart = primary_->shell(S).ncartesian();
 
-        int Poff = primary_->shell(P).function_index();
-        int Qoff = primary_->shell(Q).function_index();
-        int Roff = primary_->shell(R).function_index();
-        int Soff = primary_->shell(S).function_index();
+            int Poff = primary_->shell(P).function_index();
+            int Qoff = primary_->shell(Q).function_index();
+            int Roff = primary_->shell(R).function_index();
+            int Soff = primary_->shell(S).function_index();
 
-        int Pcenter = primary_->shell(P).ncenter();
-        int Qcenter = primary_->shell(Q).ncenter();
-        int Rcenter = primary_->shell(R).ncenter();
-        int Scenter = primary_->shell(S).ncenter();
+            int Pcenter = primary_->shell(P).ncenter();
+            int Qcenter = primary_->shell(Q).ncenter();
+            int Rcenter = primary_->shell(R).ncenter();
+            int Scenter = primary_->shell(S).ncenter();
 
-        double prefactor = 1.0;
-        if (P != Q)   prefactor *= 2.0;
-        if (R != S)   prefactor *= 2.0;
-        if (PQ != RS) prefactor *= 2.0;
+            double prefactor = 1.0;
+            if (P != Q) prefactor *= 2.0;
+            if (R != S) prefactor *= 2.0;
+            if (PQ != RS) prefactor *= 2.0;
 
-        size_t stride = static_cast<size_t> (Pncart) * Qncart * Rncart * Sncart;
+            size_t stride = static_cast<size_t>(Pncart) * Qncart * Rncart * Sncart;
 
-        double val;
-        double Dpq, Drs;
-        size_t delta;
-        double Ax, Ay, Az;
-        double Bx, By, Bz;
-        double Cx, Cy, Cz;
-        double Dx, Dy, Dz;
+            double val;
+            double Dpq, Drs;
+            size_t delta;
+            double Ax, Ay, Az;
+            double Bx, By, Bz;
+            double Cx, Cy, Cz;
+            double Dx, Dy, Dz;
 
-        // => Coulomb Term <= //
+            // => Coulomb Term <= //
 
-        Ax = 0.0; Ay = 0.0; Az = 0.0;
-        Bx = 0.0; By = 0.0; Bz = 0.0;
-        Cx = 0.0; Cy = 0.0; Cz = 0.0;
-        Dx = 0.0; Dy = 0.0; Dz = 0.0;
-        delta = 0L;
-        if(useTranslationalInvariance) {
+            Ax = 0.0;
+            Ay = 0.0;
+            Az = 0.0;
+            Bx = 0.0;
+            By = 0.0;
+            Bz = 0.0;
+            Cx = 0.0;
+            Cy = 0.0;
+            Cz = 0.0;
+            Dx = 0.0;
+            Dy = 0.0;
+            Dz = 0.0;
+            delta = 0L;
             for (int p = 0; p < Psize; p++) {
                 for (int q = 0; q < Qsize; q++) {
                     for (int r = 0; r < Rsize; r++) {
@@ -2426,64 +2478,39 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
             Bx = -(Ax + Cx + Dx);
             By = -(Ay + Cy + Dy);
             Bz = -(Az + Cz + Dz);
-            printf("A %10.6f %10.6f %10.6f\n", Ax, Ay, Az);
-            printf("B %10.6f %10.6f %10.6f\n", Bx, By, Bz);
-            printf("C %10.6f %10.6f %10.6f\n", Cx, Cy, Cz);
-            printf("D %10.6f %10.6f %10.6f\n", Dx, Dy, Dz);
-            printf("\n");
-        } else {
-            for (int p = 0; p < Psize; p++) {
-                for (int q = 0; q < Qsize; q++) {
-                    for (int r = 0; r < Rsize; r++) {
-                        for (int s = 0; s < Ssize; s++) {
-                            Dpq = Dtp[p + Poff][q + Qoff];
-                            Drs = Dtp[r + Roff][s + Soff];
-                            val = prefactor * Dpq * Drs;
-                            Ax += val * buffer[0 * stride + delta];
-                            Ay += val * buffer[1 * stride + delta];
-                            Az += val * buffer[2 * stride + delta];
-                            Bx += val * buffer[3 * stride + delta];
-                            By += val * buffer[4 * stride + delta];
-                            Bz += val * buffer[5 * stride + delta];
-                            Dx += val * buffer[6 * stride + delta];
-                            Dy += val * buffer[7 * stride + delta];
-                            Dz += val * buffer[8 * stride + delta];
-                            Cx += val * buffer[9 * stride + delta];
-                            Cy += val * buffer[10 * stride + delta];
-                            Cz += val * buffer[11 * stride + delta];
-                            delta++;
-                        }
-                    }
-                }
-            }
-            printf("A %10.6f %10.6f %10.6f\n", Ax, Ay, Az);
-            printf("B %10.6f %10.6f %10.6f\n", Bx, By, Bz);
-            printf("C %10.6f %10.6f %10.6f\n", Cx, Cy, Cz);
-            printf("D %10.6f %10.6f %10.6f\n", Dx, Dy, Dz);
-            printf("\n");
-        }
+            int Pam = primary_->shell(P).am();
+            int Qam = primary_->shell(Q).am();
+            int Ram = primary_->shell(R).am();
+            int Sam = primary_->shell(S).am();
 
-        Jp[Pcenter][0] += Ax;
-        Jp[Pcenter][1] += Ay;
-        Jp[Pcenter][2] += Az;
-        Jp[Qcenter][0] += Bx;
-        Jp[Qcenter][1] += By;
-        Jp[Qcenter][2] += Bz;
-        Jp[Rcenter][0] += Cx;
-        Jp[Rcenter][1] += Cy;
-        Jp[Rcenter][2] += Cz;
-        Jp[Scenter][0] += Dx;
-        Jp[Scenter][1] += Dy;
-        Jp[Scenter][2] += Dz;
+            Jp[Pcenter][0] += Ax;
+            Jp[Pcenter][1] += Ay;
+            Jp[Pcenter][2] += Az;
+            Jp[Qcenter][0] += Bx;
+            Jp[Qcenter][1] += By;
+            Jp[Qcenter][2] += Bz;
+            Jp[Rcenter][0] += Cx;
+            Jp[Rcenter][1] += Cy;
+            Jp[Rcenter][2] += Cz;
+            Jp[Scenter][0] += Dx;
+            Jp[Scenter][1] += Dy;
+            Jp[Scenter][2] += Dz;
 
-        // => Exchange Term <= //
+            // => Exchange Term <= //
 
-        Ax = 0.0; Ay = 0.0; Az = 0.0;
-        Bx = 0.0; By = 0.0; Bz = 0.0;
-        Cx = 0.0; Cy = 0.0; Cz = 0.0;
-        Dx = 0.0; Dy = 0.0; Dz = 0.0;
-        delta = 0L;
-        if(useTranslationalInvariance){
+            Ax = 0.0;
+            Ay = 0.0;
+            Az = 0.0;
+            Bx = 0.0;
+            By = 0.0;
+            Bz = 0.0;
+            Cx = 0.0;
+            Cy = 0.0;
+            Cz = 0.0;
+            Dx = 0.0;
+            Dy = 0.0;
+            Dz = 0.0;
+            delta = 0L;
             for (int p = 0; p < Psize; p++) {
                 for (int q = 0; q < Qsize; q++) {
                     for (int r = 0; r < Rsize; r++) {
@@ -2519,57 +2546,254 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
             Bx = -(Ax + Cx + Dx);
             By = -(Ay + Cy + Dy);
             Bz = -(Az + Cz + Dz);
-        } else {
-            for (int p = 0; p < Psize; p++) {
-                for (int q = 0; q < Qsize; q++) {
-                    for (int r = 0; r < Rsize; r++) {
-                        for (int s = 0; s < Ssize; s++) {
-                            val = 0.0;
-                            Dpq = Dap[p + Poff][r + Roff];
-                            Drs = Dap[q + Qoff][s + Soff];
-                            val += prefactor * Dpq * Drs;
-                            Dpq = Dap[p + Poff][s + Soff];
-                            Drs = Dap[q + Qoff][r + Roff];
-                            val += prefactor * Dpq * Drs;
-                            Dpq = Dbp[p + Poff][r + Roff];
-                            Drs = Dbp[q + Qoff][s + Soff];
-                            val += prefactor * Dpq * Drs;
-                            Dpq = Dbp[p + Poff][s + Soff];
-                            Drs = Dbp[q + Qoff][r + Roff];
-                            val += prefactor * Dpq * Drs;
-                            val *= 0.5;
-                            Ax += val * buffer[0 * stride + delta];
-                            Ay += val * buffer[1 * stride + delta];
-                            Az += val * buffer[2 * stride + delta];
-                            Bx += val * buffer[3 * stride + delta];
-                            By += val * buffer[4 * stride + delta];
-                            Bz += val * buffer[5 * stride + delta];
-                            Dx += val * buffer[6 * stride + delta];
-                            Dy += val * buffer[7 * stride + delta];
-                            Dz += val * buffer[8 * stride + delta];
-                            Cx += val * buffer[9 * stride + delta];
-                            Cy += val * buffer[10 * stride + delta];
-                            Cz += val * buffer[11 * stride + delta];
-                            delta++;
-                        }
-                    }
-                }
-            }
+
+            Kp[Pcenter][0] += Ax;
+            Kp[Pcenter][1] += Ay;
+            Kp[Pcenter][2] += Az;
+            Kp[Qcenter][0] += Bx;
+            Kp[Qcenter][1] += By;
+            Kp[Qcenter][2] += Bz;
+            Kp[Rcenter][0] += Cx;
+            Kp[Rcenter][1] += Cy;
+            Kp[Rcenter][2] += Cz;
+            Kp[Scenter][0] += Dx;
+            Kp[Scenter][1] += Dy;
+            Kp[Scenter][2] += Dz;
         }
+    } else {
+        // newcode
+        size_t computed_shells = 0L;
+        // shell pair blocks
+        auto blocksPQ = ints[0]->get_blocks12();
+        auto blocksRS = ints[0]->get_blocks34();
+        bool use_batching = blocksPQ != blocksRS;
 
-        Kp[Pcenter][0] += Ax;
-        Kp[Pcenter][1] += Ay;
-        Kp[Pcenter][2] += Az;
-        Kp[Qcenter][0] += Bx;
-        Kp[Qcenter][1] += By;
-        Kp[Qcenter][2] += Bz;
-        Kp[Rcenter][0] += Cx;
-        Kp[Rcenter][1] += Cy;
-        Kp[Rcenter][2] += Cz;
-        Kp[Scenter][0] += Dx;
-        Kp[Scenter][1] += Dy;
-        Kp[Scenter][2] += Dz;
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        // loop over all the blocks of (P>=Q|
+        for (size_t blockPQ_idx = 0; blockPQ_idx < blocksPQ.size(); blockPQ_idx++) {
+            const auto& blockPQ = blocksPQ[blockPQ_idx];
+#ifdef _OPENMP
+            const int rank = omp_get_thread_num();
+#else
+            const int rank = 0;
+#endif
+            double** Jp = Jgrad[rank]->pointer();
+            double** Kp = Kgrad[rank]->pointer();
+            auto& buffers = ints[rank]->buffers();
+            // loop over all the blocks of |R>=S)
+            int loop_start = use_batching ? 0 : blockPQ_idx;
+            for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
+                const auto& blockRS = blocksRS[blockRS_idx];
 
+                // This is where we want to screen with density and schwarz-like screening
+
+                // compute the integrals and continue if none were computed
+                ints[rank]->compute_shell_blocks_deriv1(blockPQ_idx, blockRS_idx);
+
+                const double* pAx = buffers[0];
+                const double* pAy = buffers[1];
+                const double* pAz = buffers[2];
+                const double* pBx = buffers[3];
+                const double* pBy = buffers[4];
+                const double* pBz = buffers[5];
+                const double* pCx = buffers[6];
+                const double* pCy = buffers[7];
+                const double* pCz = buffers[8];
+                const double* pDx = buffers[9];
+                const double* pDy = buffers[10];
+                const double* pDz = buffers[11];
+
+                // Loop over all of the P,Q,R,S shells within the blocks.  We have P>=Q, R>=S and PQ<=RS.
+                for (const auto& pairPQ : blockPQ) {
+                    const auto& P = pairPQ.first;
+                    const auto& Q = pairPQ.second;
+                    const auto& Pshell = primary_->shell(P);
+                    const auto& Qshell = primary_->shell(Q);
+                    const auto& Psize = Pshell.nfunction();
+                    const auto& Qsize = Qshell.nfunction();
+                    const auto& Poff = Pshell.function_index();
+                    const auto& Qoff = Qshell.function_index();
+                    const auto& Pcenter = Pshell.ncenter();
+                    const auto& Qcenter = Qshell.ncenter();
+
+                    for (const auto& pairRS : blockRS) {
+                        const auto& R = pairRS.first;
+                        const auto& S = pairRS.second;
+                        const auto& Rshell = primary_->shell(R);
+                        const auto& Sshell = primary_->shell(S);
+                        const auto& Rsize = Rshell.nfunction();
+                        const auto& Ssize = Sshell.nfunction();
+                        const auto& Roff = Rshell.function_index();
+                        const auto& Soff = Sshell.function_index();
+                        const auto& Rcenter = Rshell.ncenter();
+                        const auto& Scenter = Sshell.ncenter();
+
+                        double prefactor = 1.0;
+                        if (P != Q) prefactor *= 2.0;
+                        if (R != S) prefactor *= 2.0;
+                        if (P != R || Q != S) prefactor *= 2.0;
+
+                        size_t block_size = (size_t)Psize * Qsize * Rsize * Ssize;
+
+                        // When there are chunks of shellpairs in RS, we need to make sure
+                        // we filter out redundant combinations.  This should probably be done
+                        // by having a block of RS generated for each PQ at list build time.
+                        if (use_batching && ((P > R) || (P == R && Q > S))) {
+                            pAx += block_size;
+                            pAy += block_size;
+                            pAz += block_size;
+                            pBx += block_size;
+                            pBy += block_size;
+                            pBz += block_size;
+                            pCx += block_size;
+                            pCy += block_size;
+                            pCz += block_size;
+                            pDx += block_size;
+                            pDy += block_size;
+                            pDz += block_size;
+                            continue;
+                        }
+                        double val;
+                        double Dpq, Drs;
+                        size_t delta;
+                        double Ax, Ay, Az;
+                        double Bx, By, Bz;
+                        double Cx, Cy, Cz;
+                        double Dx, Dy, Dz;
+
+                        // => Coulomb Term <= //
+
+                        Ax = 0.0;
+                        Ay = 0.0;
+                        Az = 0.0;
+                        Bx = 0.0;
+                        By = 0.0;
+                        Bz = 0.0;
+                        Cx = 0.0;
+                        Cy = 0.0;
+                        Cz = 0.0;
+                        Dx = 0.0;
+                        Dy = 0.0;
+                        Dz = 0.0;
+                        delta = 0L;
+                        for (int p = 0; p < Psize; p++) {
+                            for (int q = 0; q < Qsize; q++) {
+                                for (int r = 0; r < Rsize; r++) {
+                                    for (int s = 0; s < Ssize; s++) {
+                                        Dpq = Dtp[p + Poff][q + Qoff];
+                                        Drs = Dtp[r + Roff][s + Soff];
+                                        val = prefactor * Dpq * Drs;
+                                        Ax += val * pAx[delta];
+                                        Ay += val * pAy[delta];
+                                        Az += val * pAz[delta];
+                                        Bx += val * pBx[delta];
+                                        By += val * pBy[delta];
+                                        Bz += val * pBz[delta];
+                                        Cx += val * pCx[delta];
+                                        Cy += val * pCy[delta];
+                                        Cz += val * pCz[delta];
+                                        Dx += val * pDx[delta];
+                                        Dy += val * pDy[delta];
+                                        Dz += val * pDz[delta];
+                                        delta++;
+                                    }
+                                }
+                            }
+                        }
+
+                        Jp[Pcenter][0] += Ax;
+                        Jp[Pcenter][1] += Ay;
+                        Jp[Pcenter][2] += Az;
+                        Jp[Qcenter][0] += Bx;
+                        Jp[Qcenter][1] += By;
+                        Jp[Qcenter][2] += Bz;
+                        Jp[Rcenter][0] += Cx;
+                        Jp[Rcenter][1] += Cy;
+                        Jp[Rcenter][2] += Cz;
+                        Jp[Scenter][0] += Dx;
+                        Jp[Scenter][1] += Dy;
+                        Jp[Scenter][2] += Dz;
+
+                        // => Exchange Term <= //
+
+                        Ax = 0.0;
+                        Ay = 0.0;
+                        Az = 0.0;
+                        Bx = 0.0;
+                        By = 0.0;
+                        Bz = 0.0;
+                        Cx = 0.0;
+                        Cy = 0.0;
+                        Cz = 0.0;
+                        Dx = 0.0;
+                        Dy = 0.0;
+                        Dz = 0.0;
+                        delta = 0L;
+                        for (int p = 0; p < Psize; p++) {
+                            for (int q = 0; q < Qsize; q++) {
+                                for (int r = 0; r < Rsize; r++) {
+                                    for (int s = 0; s < Ssize; s++) {
+                                        val = 0.0;
+                                        Dpq = Dap[p + Poff][r + Roff];
+                                        Drs = Dap[q + Qoff][s + Soff];
+                                        val += prefactor * Dpq * Drs;
+                                        Dpq = Dap[p + Poff][s + Soff];
+                                        Drs = Dap[q + Qoff][r + Roff];
+                                        val += prefactor * Dpq * Drs;
+                                        Dpq = Dbp[p + Poff][r + Roff];
+                                        Drs = Dbp[q + Qoff][s + Soff];
+                                        val += prefactor * Dpq * Drs;
+                                        Dpq = Dbp[p + Poff][s + Soff];
+                                        Drs = Dbp[q + Qoff][r + Roff];
+                                        val += prefactor * Dpq * Drs;
+                                        val *= 0.5;
+                                        Ax += val * pAx[delta];
+                                        Ay += val * pAy[delta];
+                                        Az += val * pAz[delta];
+                                        Bx += val * pBx[delta];
+                                        By += val * pBy[delta];
+                                        Bz += val * pBz[delta];
+                                        Cx += val * pCx[delta];
+                                        Cy += val * pCy[delta];
+                                        Cz += val * pCz[delta];
+                                        Dx += val * pDx[delta];
+                                        Dy += val * pDy[delta];
+                                        Dz += val * pDz[delta];
+                                        delta++;
+                                    }
+                                }
+                            }
+                        }
+
+                        Kp[Pcenter][0] += Ax;
+                        Kp[Pcenter][1] += Ay;
+                        Kp[Pcenter][2] += Az;
+                        Kp[Qcenter][0] += Bx;
+                        Kp[Qcenter][1] += By;
+                        Kp[Qcenter][2] += Bz;
+                        Kp[Rcenter][0] += Cx;
+                        Kp[Rcenter][1] += Cy;
+                        Kp[Rcenter][2] += Cz;
+                        Kp[Scenter][0] += Dx;
+                        Kp[Scenter][1] += Dy;
+                        Kp[Scenter][2] += Dz;
+
+                        pAx += block_size;
+                        pAy += block_size;
+                        pAz += block_size;
+                        pBx += block_size;
+                        pBy += block_size;
+                        pBz += block_size;
+                        pCx += block_size;
+                        pCy += block_size;
+                        pCz += block_size;
+                        pDx += block_size;
+                        pDy += block_size;
+                        pDz += block_size;
+                    }  // pairRS
+                }      // pairPQ
+            }          // blockRS
+        }              // blockPQ
     }
 
     for (int thread = 1; thread < nthreads; thread++) {
@@ -2580,43 +2804,40 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
     Jgrad[0]->scale(0.5);
     Kgrad[0]->scale(0.5);
 
-    std::map<std::string, std::shared_ptr<Matrix> > val;
+    std::map<std::string, std::shared_ptr<Matrix>> val;
     val["J"] = Jgrad[0];
     val["K"] = Kgrad[0];
     return val;
 }
-void DirectJKGrad::compute_hessian()
-{
-    if (!do_J_ && !do_K_ && !do_wK_)
-        return;
+void DirectJKGrad::compute_hessian() {
+    if (!do_J_ && !do_K_ && !do_wK_) return;
 
-    if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_))
-        throw PSIEXCEPTION("Occupation/Density not set");
+    if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_)) throw PSIEXCEPTION("Occupation/Density not set");
 
     // => Set up hessians <= //
     int natom = primary_->molecule()->natom();
     hessians_.clear();
     if (do_J_) {
-        hessians_["Coulomb"] = std::make_shared<Matrix>("Coulomb Hessian",3*natom,3*natom);
+        hessians_["Coulomb"] = std::make_shared<Matrix>("Coulomb Hessian", 3 * natom, 3 * natom);
     }
     if (do_K_) {
-        hessians_["Exchange"] = std::make_shared<Matrix>("Exchange Hessian",3*natom,3*natom);
+        hessians_["Exchange"] = std::make_shared<Matrix>("Exchange Hessian", 3 * natom, 3 * natom);
     }
     if (do_wK_) {
-        hessians_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Hessian",3*natom,3*natom);
+        hessians_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Hessian", 3 * natom, 3 * natom);
     }
 
     // => Build ERI Sieve <= //
     sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 
-    auto factory = std::make_shared<IntegralFactory>(primary_,primary_,primary_,primary_);
+    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
 
     if (do_J_ || do_K_) {
-        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri(2)));
         }
-        std::map<std::string, std::shared_ptr<Matrix> > vals = compute2(ints);
+        std::map<std::string, std::shared_ptr<Matrix>> vals = compute2(ints);
         if (do_J_) {
             hessians_["Coulomb"]->copy(vals["J"]);
         }
@@ -2625,525 +2846,889 @@ void DirectJKGrad::compute_hessian()
         }
     }
     if (do_wK_) {
-        std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
+        std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < ints_num_threads_; thread++) {
-            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_,2)));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_, 2)));
         }
-        std::map<std::string, std::shared_ptr<Matrix> > vals = compute2(ints);
+        std::map<std::string, std::shared_ptr<Matrix>> vals = compute2(ints);
         hessians_["Exchange,LR"]->copy(vals["K"]);
     }
 }
-std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
-{
+std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute2(
+    std::vector<std::shared_ptr<TwoBodyAOInt>>& ints) {
     int nthreads = ints.size();
 
     int natom = primary_->molecule()->natom();
 
-    std::vector<std::shared_ptr<Matrix> > Jhess;
-    std::vector<std::shared_ptr<Matrix> > Khess;
+    std::vector<std::shared_ptr<Matrix>> Jhess;
+    std::vector<std::shared_ptr<Matrix>> Khess;
     for (int thread = 0; thread < nthreads; thread++) {
-        Jhess.push_back(std::make_shared<Matrix>("JHess",3*natom,3*natom));
-        Khess.push_back(std::make_shared<Matrix>("KHess",3*natom,3*natom));
+        Jhess.push_back(std::make_shared<Matrix>("JHess", 3 * natom, 3 * natom));
+        Khess.push_back(std::make_shared<Matrix>("KHess", 3 * natom, 3 * natom));
     }
-
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
-    size_t npairs = shell_pairs.size();
-    size_t npairs2 = npairs * npairs;
 
     double** Dtp = Dt_->pointer();
     double** Dap = Da_->pointer();
     double** Dbp = Db_->pointer();
 
+    // TODO: this should be deleted when libint1 is removed
+    Options& options = Process::environment.options;
+    bool oldcode = options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+    if (oldcode) {
+        const std::vector<std::pair<int, int>>& shell_pairs = sieve_->shell_pairs();
+        size_t npairs = shell_pairs.size();
+        size_t npairs2 = npairs * npairs;
+
 #pragma omp parallel for num_threads(nthreads) schedule(dynamic)
-    for (size_t index = 0L; index < npairs2; index++) {
+        for (size_t index = 0L; index < npairs2; index++) {
+            size_t PQ = index / npairs;
+            size_t RS = index % npairs;
 
-        size_t PQ = index / npairs;
-        size_t RS = index % npairs;
+            if (RS > PQ) continue;
 
-        if (RS > PQ) continue;
+            int P = shell_pairs[PQ].first;
+            int Q = shell_pairs[PQ].second;
+            int R = shell_pairs[RS].first;
+            int S = shell_pairs[RS].second;
 
-        int P = shell_pairs[PQ].first;
-        int Q = shell_pairs[PQ].second;
-        int R = shell_pairs[RS].first;
-        int S = shell_pairs[RS].second;
+            if (!sieve_->shell_significant(P, Q, R, S)) continue;
 
-        if (!sieve_->shell_significant(P,Q,R,S)) continue;
-
-        int thread = 0;
+            int thread = 0;
 #ifdef _OPENMP
-        thread = omp_get_thread_num();
+            thread = omp_get_thread_num();
 #endif
 
-        ints[thread]->compute_shell_deriv2(P,Q,R,S);
+            ints[thread]->compute_shell_deriv2(P, Q, R, S);
 
-        const double* buffer = ints[thread]->buffer();
-        double** Jp = Jhess[thread]->pointer();
-        double** Kp = Khess[thread]->pointer();
+            const double* buffer = ints[thread]->buffer();
+            double** Jp = Jhess[thread]->pointer();
+            double** Kp = Khess[thread]->pointer();
 
+            int Psize = primary_->shell(P).nfunction();
+            int Qsize = primary_->shell(Q).nfunction();
+            int Rsize = primary_->shell(R).nfunction();
+            int Ssize = primary_->shell(S).nfunction();
 
-        int Psize = primary_->shell(P).nfunction();
-        int Qsize = primary_->shell(Q).nfunction();
-        int Rsize = primary_->shell(R).nfunction();
-        int Ssize = primary_->shell(S).nfunction();
+            int Pncart = primary_->shell(P).ncartesian();
+            int Qncart = primary_->shell(Q).ncartesian();
+            int Rncart = primary_->shell(R).ncartesian();
+            int Sncart = primary_->shell(S).ncartesian();
 
-        int Pncart = primary_->shell(P).ncartesian();
-        int Qncart = primary_->shell(Q).ncartesian();
-        int Rncart = primary_->shell(R).ncartesian();
-        int Sncart = primary_->shell(S).ncartesian();
+            int Poff = primary_->shell(P).function_index();
+            int Qoff = primary_->shell(Q).function_index();
+            int Roff = primary_->shell(R).function_index();
+            int Soff = primary_->shell(S).function_index();
 
-        int Poff = primary_->shell(P).function_index();
-        int Qoff = primary_->shell(Q).function_index();
-        int Roff = primary_->shell(R).function_index();
-        int Soff = primary_->shell(S).function_index();
+            int Pcenter = primary_->shell(P).ncenter();
+            int Qcenter = primary_->shell(Q).ncenter();
+            int Rcenter = primary_->shell(R).ncenter();
+            int Scenter = primary_->shell(S).ncenter();
 
-        int Pcenter = primary_->shell(P).ncenter();
-        int Qcenter = primary_->shell(Q).ncenter();
-        int Rcenter = primary_->shell(R).ncenter();
-        int Scenter = primary_->shell(S).ncenter();
+            double PQscale = Pcenter == Qcenter ? 2.0 : 1.0;
+            double PRscale = Pcenter == Rcenter ? 2.0 : 1.0;
+            double PSscale = Pcenter == Scenter ? 2.0 : 1.0;
+            double QRscale = Qcenter == Rcenter ? 2.0 : 1.0;
+            double QSscale = Qcenter == Scenter ? 2.0 : 1.0;
+            double RSscale = Rcenter == Scenter ? 2.0 : 1.0;
 
-        double PQscale = Pcenter == Qcenter ? 2.0 : 1.0;
-        double PRscale = Pcenter == Rcenter ? 2.0 : 1.0;
-        double PSscale = Pcenter == Scenter ? 2.0 : 1.0;
-        double QRscale = Qcenter == Rcenter ? 2.0 : 1.0;
-        double QSscale = Qcenter == Scenter ? 2.0 : 1.0;
-        double RSscale = Rcenter == Scenter ? 2.0 : 1.0;
+            int Px = 3 * Pcenter + 0;
+            int Py = 3 * Pcenter + 1;
+            int Pz = 3 * Pcenter + 2;
 
-        int Px = 3 * Pcenter + 0;
-        int Py = 3 * Pcenter + 1;
-        int Pz = 3 * Pcenter + 2;
+            int Qx = 3 * Qcenter + 0;
+            int Qy = 3 * Qcenter + 1;
+            int Qz = 3 * Qcenter + 2;
 
-        int Qx = 3 * Qcenter + 0;
-        int Qy = 3 * Qcenter + 1;
-        int Qz = 3 * Qcenter + 2;
+            int Rx = 3 * Rcenter + 0;
+            int Ry = 3 * Rcenter + 1;
+            int Rz = 3 * Rcenter + 2;
 
-        int Rx = 3 * Rcenter + 0;
-        int Ry = 3 * Rcenter + 1;
-        int Rz = 3 * Rcenter + 2;
+            int Sx = 3 * Scenter + 0;
+            int Sy = 3 * Scenter + 1;
+            int Sz = 3 * Scenter + 2;
 
-        int Sx = 3 * Scenter + 0;
-        int Sy = 3 * Scenter + 1;
-        int Sz = 3 * Scenter + 2;
+            double prefactor = 4.0;
+            if (P == Q) prefactor *= 0.5;
+            if (R == S) prefactor *= 0.5;
+            if (PQ == RS) prefactor *= 0.5;
 
-        double prefactor = 4.0;
-        if (P == Q)   prefactor *= 0.5;
-        if (R == S)   prefactor *= 0.5;
-        if (PQ == RS) prefactor *= 0.5;
+            size_t stride = static_cast<size_t>(Pncart) * Qncart * Rncart * Sncart;
 
-        size_t stride = static_cast<size_t> (Pncart) * Qncart * Rncart * Sncart;
+            double val;
+            double Dpq, Drs;
+            size_t delta;
 
-        double val;
-        double Dpq, Drs;
-        size_t delta;
+            // => Coulomb Term <= //
 
-        // => Coulomb Term <= //
+            double AxAx = 0.0, AxAy = 0.0, AxAz = 0.0, AyAy = 0.0, AyAz = 0.0, AzAz = 0.0;
+            double BxBx = 0.0, BxBy = 0.0, BxBz = 0.0, ByBy = 0.0, ByBz = 0.0, BzBz = 0.0;
+            double CxCx = 0.0, CxCy = 0.0, CxCz = 0.0, CyCy = 0.0, CyCz = 0.0, CzCz = 0.0;
+            double DxDx = 0.0, DxDy = 0.0, DxDz = 0.0, DyDy = 0.0, DyDz = 0.0, DzDz = 0.0;
+            double AxBx = 0.0, AxBy = 0.0, AxBz = 0.0, AyBx = 0.0, AyBy = 0.0, AyBz = 0.0, AzBx = 0.0, AzBy = 0.0,
+                   AzBz = 0.0;
+            double AxCx = 0.0, AxCy = 0.0, AxCz = 0.0, AyCx = 0.0, AyCy = 0.0, AyCz = 0.0, AzCx = 0.0, AzCy = 0.0,
+                   AzCz = 0.0;
+            double AxDx = 0.0, AxDy = 0.0, AxDz = 0.0, AyDx = 0.0, AyDy = 0.0, AyDz = 0.0, AzDx = 0.0, AzDy = 0.0,
+                   AzDz = 0.0;
+            double BxCx = 0.0, BxCy = 0.0, BxCz = 0.0, ByCx = 0.0, ByCy = 0.0, ByCz = 0.0, BzCx = 0.0, BzCy = 0.0,
+                   BzCz = 0.0;
+            double BxDx = 0.0, BxDy = 0.0, BxDz = 0.0, ByDx = 0.0, ByDy = 0.0, ByDz = 0.0, BzDx = 0.0, BzDy = 0.0,
+                   BzDz = 0.0;
+            double CxDx = 0.0, CxDy = 0.0, CxDz = 0.0, CyDx = 0.0, CyDy = 0.0, CyDz = 0.0, CzDx = 0.0, CzDy = 0.0,
+                   CzDz = 0.0;
 
-        double AxAx=0.0, AxAy=0.0, AxAz=0.0, AyAy=0.0, AyAz=0.0, AzAz=0.0;
-        double BxBx=0.0, BxBy=0.0, BxBz=0.0, ByBy=0.0, ByBz=0.0, BzBz=0.0;
-        double CxCx=0.0, CxCy=0.0, CxCz=0.0, CyCy=0.0, CyCz=0.0, CzCz=0.0;
-        double DxDx=0.0, DxDy=0.0, DxDz=0.0, DyDy=0.0, DyDz=0.0, DzDz=0.0;
-        double AxBx=0.0, AxBy=0.0, AxBz=0.0, AyBx=0.0, AyBy=0.0, AyBz=0.0, AzBx=0.0, AzBy=0.0, AzBz=0.0;
-        double AxCx=0.0, AxCy=0.0, AxCz=0.0, AyCx=0.0, AyCy=0.0, AyCz=0.0, AzCx=0.0, AzCy=0.0, AzCz=0.0;
-        double AxDx=0.0, AxDy=0.0, AxDz=0.0, AyDx=0.0, AyDy=0.0, AyDz=0.0, AzDx=0.0, AzDy=0.0, AzDz=0.0;
-        double BxCx=0.0, BxCy=0.0, BxCz=0.0, ByCx=0.0, ByCy=0.0, ByCz=0.0, BzCx=0.0, BzCy=0.0, BzCz=0.0;
-        double BxDx=0.0, BxDy=0.0, BxDz=0.0, ByDx=0.0, ByDy=0.0, ByDz=0.0, BzDx=0.0, BzDy=0.0, BzDz=0.0;
-        double CxDx=0.0, CxDy=0.0, CxDz=0.0, CyDx=0.0, CyDy=0.0, CyDz=0.0, CzDx=0.0, CzDy=0.0, CzDz=0.0;
-
-        delta = 0L;
-        for (int p = 0; p < Psize; p++) {
-            for (int q = 0; q < Qsize; q++) {
-                for (int r = 0; r < Rsize; r++) {
-                    for (int s = 0; s < Ssize; s++) {
-                        Dpq = Dtp[p + Poff][q + Qoff];
-                        Drs = Dtp[r + Roff][s + Soff];
-                        val = prefactor * Dpq * Drs;
-                        AxAx += val * buffer[9  * stride + delta];
-                        AxAy += val * buffer[10 * stride + delta];
-                        AxAz += val * buffer[11 * stride + delta];
-                        AxCx += val * buffer[12 * stride + delta];
-                        AxCy += val * buffer[13 * stride + delta];
-                        AxCz += val * buffer[14 * stride + delta];
-                        AxDx += val * buffer[15 * stride + delta];
-                        AxDy += val * buffer[16 * stride + delta];
-                        AxDz += val * buffer[17 * stride + delta];
-                        AyAy += val * buffer[18 * stride + delta];
-                        AyAz += val * buffer[19 * stride + delta];
-                        AyCx += val * buffer[20 * stride + delta];
-                        AyCy += val * buffer[21 * stride + delta];
-                        AyCz += val * buffer[22 * stride + delta];
-                        AyDx += val * buffer[23 * stride + delta];
-                        AyDy += val * buffer[24 * stride + delta];
-                        AyDz += val * buffer[25 * stride + delta];
-                        AzAz += val * buffer[26 * stride + delta];
-                        AzCx += val * buffer[27 * stride + delta];
-                        AzCy += val * buffer[28 * stride + delta];
-                        AzCz += val * buffer[29 * stride + delta];
-                        AzDx += val * buffer[30 * stride + delta];
-                        AzDy += val * buffer[31 * stride + delta];
-                        AzDz += val * buffer[32 * stride + delta];
-                        CxCx += val * buffer[33 * stride + delta];
-                        CxCy += val * buffer[34 * stride + delta];
-                        CxCz += val * buffer[35 * stride + delta];
-                        CxDx += val * buffer[36 * stride + delta];
-                        CxDy += val * buffer[37 * stride + delta];
-                        CxDz += val * buffer[38 * stride + delta];
-                        CyCy += val * buffer[39 * stride + delta];
-                        CyCz += val * buffer[40 * stride + delta];
-                        CyDx += val * buffer[41 * stride + delta];
-                        CyDy += val * buffer[42 * stride + delta];
-                        CyDz += val * buffer[43 * stride + delta];
-                        CzCz += val * buffer[44 * stride + delta];
-                        CzDx += val * buffer[45 * stride + delta];
-                        CzDy += val * buffer[46 * stride + delta];
-                        CzDz += val * buffer[47 * stride + delta];
-                        DxDx += val * buffer[48 * stride + delta];
-                        DxDy += val * buffer[49 * stride + delta];
-                        DxDz += val * buffer[50 * stride + delta];
-                        DyDy += val * buffer[51 * stride + delta];
-                        DyDz += val * buffer[52 * stride + delta];
-                        DzDz += val * buffer[53 * stride + delta];
-                        delta++;
+            delta = 0L;
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    for (int r = 0; r < Rsize; r++) {
+                        for (int s = 0; s < Ssize; s++) {
+                            Dpq = Dtp[p + Poff][q + Qoff];
+                            Drs = Dtp[r + Roff][s + Soff];
+                            val = prefactor * Dpq * Drs;
+                            AxAx += val * buffer[9 * stride + delta];
+                            AxAy += val * buffer[10 * stride + delta];
+                            AxAz += val * buffer[11 * stride + delta];
+                            AxCx += val * buffer[12 * stride + delta];
+                            AxCy += val * buffer[13 * stride + delta];
+                            AxCz += val * buffer[14 * stride + delta];
+                            AxDx += val * buffer[15 * stride + delta];
+                            AxDy += val * buffer[16 * stride + delta];
+                            AxDz += val * buffer[17 * stride + delta];
+                            AyAy += val * buffer[18 * stride + delta];
+                            AyAz += val * buffer[19 * stride + delta];
+                            AyCx += val * buffer[20 * stride + delta];
+                            AyCy += val * buffer[21 * stride + delta];
+                            AyCz += val * buffer[22 * stride + delta];
+                            AyDx += val * buffer[23 * stride + delta];
+                            AyDy += val * buffer[24 * stride + delta];
+                            AyDz += val * buffer[25 * stride + delta];
+                            AzAz += val * buffer[26 * stride + delta];
+                            AzCx += val * buffer[27 * stride + delta];
+                            AzCy += val * buffer[28 * stride + delta];
+                            AzCz += val * buffer[29 * stride + delta];
+                            AzDx += val * buffer[30 * stride + delta];
+                            AzDy += val * buffer[31 * stride + delta];
+                            AzDz += val * buffer[32 * stride + delta];
+                            CxCx += val * buffer[33 * stride + delta];
+                            CxCy += val * buffer[34 * stride + delta];
+                            CxCz += val * buffer[35 * stride + delta];
+                            CxDx += val * buffer[36 * stride + delta];
+                            CxDy += val * buffer[37 * stride + delta];
+                            CxDz += val * buffer[38 * stride + delta];
+                            CyCy += val * buffer[39 * stride + delta];
+                            CyCz += val * buffer[40 * stride + delta];
+                            CyDx += val * buffer[41 * stride + delta];
+                            CyDy += val * buffer[42 * stride + delta];
+                            CyDz += val * buffer[43 * stride + delta];
+                            CzCz += val * buffer[44 * stride + delta];
+                            CzDx += val * buffer[45 * stride + delta];
+                            CzDy += val * buffer[46 * stride + delta];
+                            CzDz += val * buffer[47 * stride + delta];
+                            DxDx += val * buffer[48 * stride + delta];
+                            DxDy += val * buffer[49 * stride + delta];
+                            DxDz += val * buffer[50 * stride + delta];
+                            DyDy += val * buffer[51 * stride + delta];
+                            DyDz += val * buffer[52 * stride + delta];
+                            DzDz += val * buffer[53 * stride + delta];
+                            delta++;
+                        }
                     }
                 }
             }
-        }
 
-        // Translational invariance relationships
-        AxBx = -(AxAx + AxCx + AxDx);
-        AxBy = -(AxAy + AxCy + AxDy);
-        AxBz = -(AxAz + AxCz + AxDz);
-        AyBx = -(AxAy + AyCx + AyDx);
-        AyBy = -(AyAy + AyCy + AyDy);
-        AyBz = -(AyAz + AyCz + AyDz);
-        AzBx = -(AxAz + AzCx + AzDx);
-        AzBy = -(AyAz + AzCy + AzDy);
-        AzBz = -(AzAz + AzCz + AzDz);
-        BxCx = -(AxCx + CxCx + CxDx);
-        BxCy = -(AxCy + CxCy + CyDx);
-        BxCz = -(AxCz + CxCz + CzDx);
-        ByCx = -(AyCx + CxCy + CxDy);
-        ByCy = -(AyCy + CyCy + CyDy);
-        ByCz = -(AyCz + CyCz + CzDy);
-        BzCx = -(AzCx + CxCz + CxDz);
-        BzCy = -(AzCy + CyCz + CyDz);
-        BzCz = -(AzCz + CzCz + CzDz);
-        BxDx = -(AxDx + CxDx + DxDx);
-        BxDy = -(AxDy + CxDy + DxDy);
-        BxDz = -(AxDz + CxDz + DxDz);
-        ByDx = -(AyDx + CyDx + DxDy);
-        ByDy = -(AyDy + CyDy + DyDy);
-        ByDz = -(AyDz + CyDz + DyDz);
-        BzDx = -(AzDx + CzDx + DxDz);
-        BzDy = -(AzDy + CzDy + DyDz);
-        BzDz = -(AzDz + CzDz + DzDz);
+            // Translational invariance relationships
+            AxBx = -(AxAx + AxCx + AxDx);
+            AxBy = -(AxAy + AxCy + AxDy);
+            AxBz = -(AxAz + AxCz + AxDz);
+            AyBx = -(AxAy + AyCx + AyDx);
+            AyBy = -(AyAy + AyCy + AyDy);
+            AyBz = -(AyAz + AyCz + AyDz);
+            AzBx = -(AxAz + AzCx + AzDx);
+            AzBy = -(AyAz + AzCy + AzDy);
+            AzBz = -(AzAz + AzCz + AzDz);
+            BxCx = -(AxCx + CxCx + CxDx);
+            BxCy = -(AxCy + CxCy + CyDx);
+            BxCz = -(AxCz + CxCz + CzDx);
+            ByCx = -(AyCx + CxCy + CxDy);
+            ByCy = -(AyCy + CyCy + CyDy);
+            ByCz = -(AyCz + CyCz + CzDy);
+            BzCx = -(AzCx + CxCz + CxDz);
+            BzCy = -(AzCy + CyCz + CyDz);
+            BzCz = -(AzCz + CzCz + CzDz);
+            BxDx = -(AxDx + CxDx + DxDx);
+            BxDy = -(AxDy + CxDy + DxDy);
+            BxDz = -(AxDz + CxDz + DxDz);
+            ByDx = -(AyDx + CyDx + DxDy);
+            ByDy = -(AyDy + CyDy + DyDy);
+            ByDz = -(AyDz + CyDz + DyDz);
+            BzDx = -(AzDx + CzDx + DxDz);
+            BzDy = -(AzDy + CzDy + DyDz);
+            BzDz = -(AzDz + CzDz + DzDz);
 
-        BxBx = AxAx + AxCx + AxDx
-                + AxCx + CxCx + CxDx
-                + AxDx + CxDx + DxDx;
-        ByBy = AyAy + AyCy + AyDy
-                + AyCy + CyCy + CyDy
-                + AyDy + CyDy + DyDy;
-        BzBz = AzAz + AzCz + AzDz
-                + AzCz + CzCz + CzDz
-                + AzDz + CzDz + DzDz;
-        BxBy = AxAy + AxCy + AxDy
-                + AyCx + CxCy + CxDy
-                + AyDx + CyDx + DxDy;
-        BxBz = AxAz + AxCz + AxDz
-                + AzCx + CxCz + CxDz
-                + AzDx + CzDx + DxDz;
-        ByBz = AyAz + AyCz + AyDz
-                + AzCy + CyCz + CyDz
-                + AzDy + CzDy + DyDz;
+            BxBx = AxAx + AxCx + AxDx + AxCx + CxCx + CxDx + AxDx + CxDx + DxDx;
+            ByBy = AyAy + AyCy + AyDy + AyCy + CyCy + CyDy + AyDy + CyDy + DyDy;
+            BzBz = AzAz + AzCz + AzDz + AzCz + CzCz + CzDz + AzDz + CzDz + DzDz;
+            BxBy = AxAy + AxCy + AxDy + AyCx + CxCy + CxDy + AyDx + CyDx + DxDy;
+            BxBz = AxAz + AxCz + AxDz + AzCx + CxCz + CxDz + AzDx + CzDx + DxDz;
+            ByBz = AyAz + AyCz + AyDz + AzCy + CyCz + CyDz + AzDy + CzDy + DyDz;
 
-        Jp[Px][Px] += AxAx;
-        Jp[Px][Py] += AxAy;
-        Jp[Px][Pz] += AxAz;
-        Jp[Px][Qx] += PQscale*AxBx;
-        Jp[Px][Qy] += AxBy;
-        Jp[Px][Qz] += AxBz;
-        Jp[Px][Rx] += PRscale*AxCx;
-        Jp[Px][Ry] += AxCy;
-        Jp[Px][Rz] += AxCz;
-        Jp[Px][Sx] += PSscale*AxDx;
-        Jp[Px][Sy] += AxDy;
-        Jp[Px][Sz] += AxDz;
-        Jp[Py][Py] += AyAy;
-        Jp[Py][Pz] += AyAz;
-        Jp[Py][Qx] += AyBx;
-        Jp[Py][Qy] += PQscale*AyBy;
-        Jp[Py][Qz] += AyBz;
-        Jp[Py][Rx] += AyCx;
-        Jp[Py][Ry] += PRscale*AyCy;
-        Jp[Py][Rz] += AyCz;
-        Jp[Py][Sx] += AyDx;
-        Jp[Py][Sy] += PSscale*AyDy;
-        Jp[Py][Sz] += AyDz;
-        Jp[Pz][Pz] += AzAz;
-        Jp[Pz][Qx] += AzBx;
-        Jp[Pz][Qy] += AzBy;
-        Jp[Pz][Qz] += PQscale*AzBz;
-        Jp[Pz][Rx] += AzCx;
-        Jp[Pz][Ry] += AzCy;
-        Jp[Pz][Rz] += PRscale*AzCz;
-        Jp[Pz][Sx] += AzDx;
-        Jp[Pz][Sy] += AzDy;
-        Jp[Pz][Sz] += PSscale*AzDz;
-        Jp[Qx][Qx] += BxBx;
-        Jp[Qx][Qy] += BxBy;
-        Jp[Qx][Qz] += BxBz;
-        Jp[Qx][Rx] += QRscale*BxCx;
-        Jp[Qx][Ry] += BxCy;
-        Jp[Qx][Rz] += BxCz;
-        Jp[Qx][Sx] += QSscale*BxDx;
-        Jp[Qx][Sy] += BxDy;
-        Jp[Qx][Sz] += BxDz;
-        Jp[Qy][Qy] += ByBy;
-        Jp[Qy][Qz] += ByBz;
-        Jp[Qy][Rx] += ByCx;
-        Jp[Qy][Ry] += QRscale*ByCy;
-        Jp[Qy][Rz] += ByCz;
-        Jp[Qy][Sx] += ByDx;
-        Jp[Qy][Sy] += QSscale*ByDy;
-        Jp[Qy][Sz] += ByDz;
-        Jp[Qz][Qz] += BzBz;
-        Jp[Qz][Rx] += BzCx;
-        Jp[Qz][Ry] += BzCy;
-        Jp[Qz][Rz] += QRscale*BzCz;
-        Jp[Qz][Sx] += BzDx;
-        Jp[Qz][Sy] += BzDy;
-        Jp[Qz][Sz] += QSscale*BzDz;
-        Jp[Rx][Rx] += CxCx;
-        Jp[Rx][Ry] += CxCy;
-        Jp[Rx][Rz] += CxCz;
-        Jp[Rx][Sx] += RSscale*CxDx;
-        Jp[Rx][Sy] += CxDy;
-        Jp[Rx][Sz] += CxDz;
-        Jp[Ry][Ry] += CyCy;
-        Jp[Ry][Rz] += CyCz;
-        Jp[Ry][Sx] += CyDx;
-        Jp[Ry][Sy] += RSscale*CyDy;
-        Jp[Ry][Sz] += CyDz;
-        Jp[Rz][Rz] += CzCz;
-        Jp[Rz][Sx] += CzDx;
-        Jp[Rz][Sy] += CzDy;
-        Jp[Rz][Sz] += RSscale*CzDz;
-        Jp[Sx][Sx] += DxDx;
-        Jp[Sx][Sy] += DxDy;
-        Jp[Sx][Sz] += DxDz;
-        Jp[Sy][Sy] += DyDy;
-        Jp[Sy][Sz] += DyDz;
-        Jp[Sz][Sz] += DzDz;
+            Jp[Px][Px] += AxAx;
+            Jp[Px][Py] += AxAy;
+            Jp[Px][Pz] += AxAz;
+            Jp[Px][Qx] += PQscale * AxBx;
+            Jp[Px][Qy] += AxBy;
+            Jp[Px][Qz] += AxBz;
+            Jp[Px][Rx] += PRscale * AxCx;
+            Jp[Px][Ry] += AxCy;
+            Jp[Px][Rz] += AxCz;
+            Jp[Px][Sx] += PSscale * AxDx;
+            Jp[Px][Sy] += AxDy;
+            Jp[Px][Sz] += AxDz;
+            Jp[Py][Py] += AyAy;
+            Jp[Py][Pz] += AyAz;
+            Jp[Py][Qx] += AyBx;
+            Jp[Py][Qy] += PQscale * AyBy;
+            Jp[Py][Qz] += AyBz;
+            Jp[Py][Rx] += AyCx;
+            Jp[Py][Ry] += PRscale * AyCy;
+            Jp[Py][Rz] += AyCz;
+            Jp[Py][Sx] += AyDx;
+            Jp[Py][Sy] += PSscale * AyDy;
+            Jp[Py][Sz] += AyDz;
+            Jp[Pz][Pz] += AzAz;
+            Jp[Pz][Qx] += AzBx;
+            Jp[Pz][Qy] += AzBy;
+            Jp[Pz][Qz] += PQscale * AzBz;
+            Jp[Pz][Rx] += AzCx;
+            Jp[Pz][Ry] += AzCy;
+            Jp[Pz][Rz] += PRscale * AzCz;
+            Jp[Pz][Sx] += AzDx;
+            Jp[Pz][Sy] += AzDy;
+            Jp[Pz][Sz] += PSscale * AzDz;
+            Jp[Qx][Qx] += BxBx;
+            Jp[Qx][Qy] += BxBy;
+            Jp[Qx][Qz] += BxBz;
+            Jp[Qx][Rx] += QRscale * BxCx;
+            Jp[Qx][Ry] += BxCy;
+            Jp[Qx][Rz] += BxCz;
+            Jp[Qx][Sx] += QSscale * BxDx;
+            Jp[Qx][Sy] += BxDy;
+            Jp[Qx][Sz] += BxDz;
+            Jp[Qy][Qy] += ByBy;
+            Jp[Qy][Qz] += ByBz;
+            Jp[Qy][Rx] += ByCx;
+            Jp[Qy][Ry] += QRscale * ByCy;
+            Jp[Qy][Rz] += ByCz;
+            Jp[Qy][Sx] += ByDx;
+            Jp[Qy][Sy] += QSscale * ByDy;
+            Jp[Qy][Sz] += ByDz;
+            Jp[Qz][Qz] += BzBz;
+            Jp[Qz][Rx] += BzCx;
+            Jp[Qz][Ry] += BzCy;
+            Jp[Qz][Rz] += QRscale * BzCz;
+            Jp[Qz][Sx] += BzDx;
+            Jp[Qz][Sy] += BzDy;
+            Jp[Qz][Sz] += QSscale * BzDz;
+            Jp[Rx][Rx] += CxCx;
+            Jp[Rx][Ry] += CxCy;
+            Jp[Rx][Rz] += CxCz;
+            Jp[Rx][Sx] += RSscale * CxDx;
+            Jp[Rx][Sy] += CxDy;
+            Jp[Rx][Sz] += CxDz;
+            Jp[Ry][Ry] += CyCy;
+            Jp[Ry][Rz] += CyCz;
+            Jp[Ry][Sx] += CyDx;
+            Jp[Ry][Sy] += RSscale * CyDy;
+            Jp[Ry][Sz] += CyDz;
+            Jp[Rz][Rz] += CzCz;
+            Jp[Rz][Sx] += CzDx;
+            Jp[Rz][Sy] += CzDy;
+            Jp[Rz][Sz] += RSscale * CzDz;
+            Jp[Sx][Sx] += DxDx;
+            Jp[Sx][Sy] += DxDy;
+            Jp[Sx][Sz] += DxDz;
+            Jp[Sy][Sy] += DyDy;
+            Jp[Sy][Sz] += DyDz;
+            Jp[Sz][Sz] += DzDz;
 
-        // => Exchange Term <= //
+            // => Exchange Term <= //
 
-        AxAx=0.0; AxAy=0.0; AxAz=0.0; AyAy=0.0; AyAz=0.0; AzAz=0.0;
-        BxBx=0.0; BxBy=0.0; BxBz=0.0; ByBy=0.0; ByBz=0.0; BzBz=0.0;
-        CxCx=0.0; CxCy=0.0; CxCz=0.0; CyCy=0.0; CyCz=0.0; CzCz=0.0;
-        DxDx=0.0; DxDy=0.0; DxDz=0.0; DyDy=0.0; DyDz=0.0; DzDz=0.0;
-        AxBx=0.0; AxBy=0.0; AxBz=0.0; AyBx=0.0; AyBy=0.0; AyBz=0.0; AzBx=0.0; AzBy=0.0; AzBz=0.0;
-        AxCx=0.0; AxCy=0.0; AxCz=0.0; AyCx=0.0; AyCy=0.0; AyCz=0.0; AzCx=0.0; AzCy=0.0; AzCz=0.0;
-        AxDx=0.0; AxDy=0.0; AxDz=0.0; AyDx=0.0; AyDy=0.0; AyDz=0.0; AzDx=0.0; AzDy=0.0; AzDz=0.0;
-        BxCx=0.0; BxCy=0.0; BxCz=0.0; ByCx=0.0; ByCy=0.0; ByCz=0.0; BzCx=0.0; BzCy=0.0; BzCz=0.0;
-        BxDx=0.0; BxDy=0.0; BxDz=0.0; ByDx=0.0; ByDy=0.0; ByDz=0.0; BzDx=0.0; BzDy=0.0; BzDz=0.0;
-        CxDx=0.0; CxDy=0.0; CxDz=0.0; CyDx=0.0; CyDy=0.0; CyDz=0.0; CzDx=0.0; CzDy=0.0; CzDz=0.0;
+            AxAx = 0.0;
+            AxAy = 0.0;
+            AxAz = 0.0;
+            AyAy = 0.0;
+            AyAz = 0.0;
+            AzAz = 0.0;
+            BxBx = 0.0;
+            BxBy = 0.0;
+            BxBz = 0.0;
+            ByBy = 0.0;
+            ByBz = 0.0;
+            BzBz = 0.0;
+            CxCx = 0.0;
+            CxCy = 0.0;
+            CxCz = 0.0;
+            CyCy = 0.0;
+            CyCz = 0.0;
+            CzCz = 0.0;
+            DxDx = 0.0;
+            DxDy = 0.0;
+            DxDz = 0.0;
+            DyDy = 0.0;
+            DyDz = 0.0;
+            DzDz = 0.0;
+            AxBx = 0.0;
+            AxBy = 0.0;
+            AxBz = 0.0;
+            AyBx = 0.0;
+            AyBy = 0.0;
+            AyBz = 0.0;
+            AzBx = 0.0;
+            AzBy = 0.0;
+            AzBz = 0.0;
+            AxCx = 0.0;
+            AxCy = 0.0;
+            AxCz = 0.0;
+            AyCx = 0.0;
+            AyCy = 0.0;
+            AyCz = 0.0;
+            AzCx = 0.0;
+            AzCy = 0.0;
+            AzCz = 0.0;
+            AxDx = 0.0;
+            AxDy = 0.0;
+            AxDz = 0.0;
+            AyDx = 0.0;
+            AyDy = 0.0;
+            AyDz = 0.0;
+            AzDx = 0.0;
+            AzDy = 0.0;
+            AzDz = 0.0;
+            BxCx = 0.0;
+            BxCy = 0.0;
+            BxCz = 0.0;
+            ByCx = 0.0;
+            ByCy = 0.0;
+            ByCz = 0.0;
+            BzCx = 0.0;
+            BzCy = 0.0;
+            BzCz = 0.0;
+            BxDx = 0.0;
+            BxDy = 0.0;
+            BxDz = 0.0;
+            ByDx = 0.0;
+            ByDy = 0.0;
+            ByDz = 0.0;
+            BzDx = 0.0;
+            BzDy = 0.0;
+            BzDz = 0.0;
+            CxDx = 0.0;
+            CxDy = 0.0;
+            CxDz = 0.0;
+            CyDx = 0.0;
+            CyDy = 0.0;
+            CyDz = 0.0;
+            CzDx = 0.0;
+            CzDy = 0.0;
+            CzDz = 0.0;
 
-
-        delta = 0L;
-        for (int p = 0; p < Psize; p++) {
-            for (int q = 0; q < Qsize; q++) {
-                for (int r = 0; r < Rsize; r++) {
-                    for (int s = 0; s < Ssize; s++) {
-                        val = 0.0;
-                        Dpq = Dap[p + Poff][r + Roff];
-                        Drs = Dap[q + Qoff][s + Soff];
-                        val += prefactor * Dpq * Drs;
-                        Dpq = Dap[p + Poff][s + Soff];
-                        Drs = Dap[q + Qoff][r + Roff];
-                        val += prefactor * Dpq * Drs;
-                        Dpq = Dbp[p + Poff][r + Roff];
-                        Drs = Dbp[q + Qoff][s + Soff];
-                        val += prefactor * Dpq * Drs;
-                        Dpq = Dbp[p + Poff][s + Soff];
-                        Drs = Dbp[q + Qoff][r + Roff];
-                        val += prefactor * Dpq * Drs;
-                        val *= 0.5;
-                        AxAx += val * buffer[9 * stride + delta];
-                        AxAy += val * buffer[10 * stride + delta];
-                        AxAz += val * buffer[11 * stride + delta];
-                        AxCx += val * buffer[12 * stride + delta];
-                        AxCy += val * buffer[13 * stride + delta];
-                        AxCz += val * buffer[14 * stride + delta];
-                        AxDx += val * buffer[15 * stride + delta];
-                        AxDy += val * buffer[16 * stride + delta];
-                        AxDz += val * buffer[17 * stride + delta];
-                        AyAy += val * buffer[18 * stride + delta];
-                        AyAz += val * buffer[19 * stride + delta];
-                        AyCx += val * buffer[20 * stride + delta];
-                        AyCy += val * buffer[21 * stride + delta];
-                        AyCz += val * buffer[22 * stride + delta];
-                        AyDx += val * buffer[23 * stride + delta];
-                        AyDy += val * buffer[24 * stride + delta];
-                        AyDz += val * buffer[25 * stride + delta];
-                        AzAz += val * buffer[26 * stride + delta];
-                        AzCx += val * buffer[27 * stride + delta];
-                        AzCy += val * buffer[28 * stride + delta];
-                        AzCz += val * buffer[29 * stride + delta];
-                        AzDx += val * buffer[30 * stride + delta];
-                        AzDy += val * buffer[31 * stride + delta];
-                        AzDz += val * buffer[32 * stride + delta];
-                        CxCx += val * buffer[33 * stride + delta];
-                        CxCy += val * buffer[34 * stride + delta];
-                        CxCz += val * buffer[35 * stride + delta];
-                        CxDx += val * buffer[36 * stride + delta];
-                        CxDy += val * buffer[37 * stride + delta];
-                        CxDz += val * buffer[38 * stride + delta];
-                        CyCy += val * buffer[39 * stride + delta];
-                        CyCz += val * buffer[40 * stride + delta];
-                        CyDx += val * buffer[41 * stride + delta];
-                        CyDy += val * buffer[42 * stride + delta];
-                        CyDz += val * buffer[43 * stride + delta];
-                        CzCz += val * buffer[44 * stride + delta];
-                        CzDx += val * buffer[45 * stride + delta];
-                        CzDy += val * buffer[46 * stride + delta];
-                        CzDz += val * buffer[47 * stride + delta];
-                        DxDx += val * buffer[48 * stride + delta];
-                        DxDy += val * buffer[49 * stride + delta];
-                        DxDz += val * buffer[50 * stride + delta];
-                        DyDy += val * buffer[51 * stride + delta];
-                        DyDz += val * buffer[52 * stride + delta];
-                        DzDz += val * buffer[53 * stride + delta];
-                        delta++;
+            delta = 0L;
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    for (int r = 0; r < Rsize; r++) {
+                        for (int s = 0; s < Ssize; s++) {
+                            val = 0.0;
+                            Dpq = Dap[p + Poff][r + Roff];
+                            Drs = Dap[q + Qoff][s + Soff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dap[p + Poff][s + Soff];
+                            Drs = Dap[q + Qoff][r + Roff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dbp[p + Poff][r + Roff];
+                            Drs = Dbp[q + Qoff][s + Soff];
+                            val += prefactor * Dpq * Drs;
+                            Dpq = Dbp[p + Poff][s + Soff];
+                            Drs = Dbp[q + Qoff][r + Roff];
+                            val += prefactor * Dpq * Drs;
+                            val *= 0.5;
+                            AxAx += val * buffer[9 * stride + delta];
+                            AxAy += val * buffer[10 * stride + delta];
+                            AxAz += val * buffer[11 * stride + delta];
+                            AxCx += val * buffer[12 * stride + delta];
+                            AxCy += val * buffer[13 * stride + delta];
+                            AxCz += val * buffer[14 * stride + delta];
+                            AxDx += val * buffer[15 * stride + delta];
+                            AxDy += val * buffer[16 * stride + delta];
+                            AxDz += val * buffer[17 * stride + delta];
+                            AyAy += val * buffer[18 * stride + delta];
+                            AyAz += val * buffer[19 * stride + delta];
+                            AyCx += val * buffer[20 * stride + delta];
+                            AyCy += val * buffer[21 * stride + delta];
+                            AyCz += val * buffer[22 * stride + delta];
+                            AyDx += val * buffer[23 * stride + delta];
+                            AyDy += val * buffer[24 * stride + delta];
+                            AyDz += val * buffer[25 * stride + delta];
+                            AzAz += val * buffer[26 * stride + delta];
+                            AzCx += val * buffer[27 * stride + delta];
+                            AzCy += val * buffer[28 * stride + delta];
+                            AzCz += val * buffer[29 * stride + delta];
+                            AzDx += val * buffer[30 * stride + delta];
+                            AzDy += val * buffer[31 * stride + delta];
+                            AzDz += val * buffer[32 * stride + delta];
+                            CxCx += val * buffer[33 * stride + delta];
+                            CxCy += val * buffer[34 * stride + delta];
+                            CxCz += val * buffer[35 * stride + delta];
+                            CxDx += val * buffer[36 * stride + delta];
+                            CxDy += val * buffer[37 * stride + delta];
+                            CxDz += val * buffer[38 * stride + delta];
+                            CyCy += val * buffer[39 * stride + delta];
+                            CyCz += val * buffer[40 * stride + delta];
+                            CyDx += val * buffer[41 * stride + delta];
+                            CyDy += val * buffer[42 * stride + delta];
+                            CyDz += val * buffer[43 * stride + delta];
+                            CzCz += val * buffer[44 * stride + delta];
+                            CzDx += val * buffer[45 * stride + delta];
+                            CzDy += val * buffer[46 * stride + delta];
+                            CzDz += val * buffer[47 * stride + delta];
+                            DxDx += val * buffer[48 * stride + delta];
+                            DxDy += val * buffer[49 * stride + delta];
+                            DxDz += val * buffer[50 * stride + delta];
+                            DyDy += val * buffer[51 * stride + delta];
+                            DyDz += val * buffer[52 * stride + delta];
+                            DzDz += val * buffer[53 * stride + delta];
+                            delta++;
+                        }
                     }
                 }
             }
+
+            // Translational invariance relationships
+            AxBx = -(AxAx + AxCx + AxDx);
+            AxBy = -(AxAy + AxCy + AxDy);
+            AxBz = -(AxAz + AxCz + AxDz);
+            AyBx = -(AxAy + AyCx + AyDx);
+            AyBy = -(AyAy + AyCy + AyDy);
+            AyBz = -(AyAz + AyCz + AyDz);
+            AzBx = -(AxAz + AzCx + AzDx);
+            AzBy = -(AyAz + AzCy + AzDy);
+            AzBz = -(AzAz + AzCz + AzDz);
+            BxCx = -(AxCx + CxCx + CxDx);
+            BxCy = -(AxCy + CxCy + CyDx);
+            BxCz = -(AxCz + CxCz + CzDx);
+            ByCx = -(AyCx + CxCy + CxDy);
+            ByCy = -(AyCy + CyCy + CyDy);
+            ByCz = -(AyCz + CyCz + CzDy);
+            BzCx = -(AzCx + CxCz + CxDz);
+            BzCy = -(AzCy + CyCz + CyDz);
+            BzCz = -(AzCz + CzCz + CzDz);
+            BxDx = -(AxDx + CxDx + DxDx);
+            BxDy = -(AxDy + CxDy + DxDy);
+            BxDz = -(AxDz + CxDz + DxDz);
+            ByDx = -(AyDx + CyDx + DxDy);
+            ByDy = -(AyDy + CyDy + DyDy);
+            ByDz = -(AyDz + CyDz + DyDz);
+            BzDx = -(AzDx + CzDx + DxDz);
+            BzDy = -(AzDy + CzDy + DyDz);
+            BzDz = -(AzDz + CzDz + DzDz);
+
+            BxBx = AxAx + AxCx + AxDx + AxCx + CxCx + CxDx + AxDx + CxDx + DxDx;
+            ByBy = AyAy + AyCy + AyDy + AyCy + CyCy + CyDy + AyDy + CyDy + DyDy;
+            BzBz = AzAz + AzCz + AzDz + AzCz + CzCz + CzDz + AzDz + CzDz + DzDz;
+            BxBy = AxAy + AxCy + AxDy + AyCx + CxCy + CxDy + AyDx + CyDx + DxDy;
+            BxBz = AxAz + AxCz + AxDz + AzCx + CxCz + CxDz + AzDx + CzDx + DxDz;
+            ByBz = AyAz + AyCz + AyDz + AzCy + CyCz + CyDz + AzDy + CzDy + DyDz;
+
+            Kp[Px][Px] += AxAx;
+            Kp[Px][Py] += AxAy;
+            Kp[Px][Pz] += AxAz;
+            Kp[Px][Qx] += PQscale * AxBx;
+            Kp[Px][Qy] += AxBy;
+            Kp[Px][Qz] += AxBz;
+            Kp[Px][Rx] += PRscale * AxCx;
+            Kp[Px][Ry] += AxCy;
+            Kp[Px][Rz] += AxCz;
+            Kp[Px][Sx] += PSscale * AxDx;
+            Kp[Px][Sy] += AxDy;
+            Kp[Px][Sz] += AxDz;
+            Kp[Py][Py] += AyAy;
+            Kp[Py][Pz] += AyAz;
+            Kp[Py][Qx] += AyBx;
+            Kp[Py][Qy] += PQscale * AyBy;
+            Kp[Py][Qz] += AyBz;
+            Kp[Py][Rx] += AyCx;
+            Kp[Py][Ry] += PRscale * AyCy;
+            Kp[Py][Rz] += AyCz;
+            Kp[Py][Sx] += AyDx;
+            Kp[Py][Sy] += PSscale * AyDy;
+            Kp[Py][Sz] += AyDz;
+            Kp[Pz][Pz] += AzAz;
+            Kp[Pz][Qx] += AzBx;
+            Kp[Pz][Qy] += AzBy;
+            Kp[Pz][Qz] += PQscale * AzBz;
+            Kp[Pz][Rx] += AzCx;
+            Kp[Pz][Ry] += AzCy;
+            Kp[Pz][Rz] += PRscale * AzCz;
+            Kp[Pz][Sx] += AzDx;
+            Kp[Pz][Sy] += AzDy;
+            Kp[Pz][Sz] += PSscale * AzDz;
+            Kp[Qx][Qx] += BxBx;
+            Kp[Qx][Qy] += BxBy;
+            Kp[Qx][Qz] += BxBz;
+            Kp[Qx][Rx] += QRscale * BxCx;
+            Kp[Qx][Ry] += BxCy;
+            Kp[Qx][Rz] += BxCz;
+            Kp[Qx][Sx] += QSscale * BxDx;
+            Kp[Qx][Sy] += BxDy;
+            Kp[Qx][Sz] += BxDz;
+            Kp[Qy][Qy] += ByBy;
+            Kp[Qy][Qz] += ByBz;
+            Kp[Qy][Rx] += ByCx;
+            Kp[Qy][Ry] += QRscale * ByCy;
+            Kp[Qy][Rz] += ByCz;
+            Kp[Qy][Sx] += ByDx;
+            Kp[Qy][Sy] += QSscale * ByDy;
+            Kp[Qy][Sz] += ByDz;
+            Kp[Qz][Qz] += BzBz;
+            Kp[Qz][Rx] += BzCx;
+            Kp[Qz][Ry] += BzCy;
+            Kp[Qz][Rz] += QRscale * BzCz;
+            Kp[Qz][Sx] += BzDx;
+            Kp[Qz][Sy] += BzDy;
+            Kp[Qz][Sz] += QSscale * BzDz;
+            Kp[Rx][Rx] += CxCx;
+            Kp[Rx][Ry] += CxCy;
+            Kp[Rx][Rz] += CxCz;
+            Kp[Rx][Sx] += RSscale * CxDx;
+            Kp[Rx][Sy] += CxDy;
+            Kp[Rx][Sz] += CxDz;
+            Kp[Ry][Ry] += CyCy;
+            Kp[Ry][Rz] += CyCz;
+            Kp[Ry][Sx] += CyDx;
+            Kp[Ry][Sy] += RSscale * CyDy;
+            Kp[Ry][Sz] += CyDz;
+            Kp[Rz][Rz] += CzCz;
+            Kp[Rz][Sx] += CzDx;
+            Kp[Rz][Sy] += CzDy;
+            Kp[Rz][Sz] += RSscale * CzDz;
+            Kp[Sx][Sx] += DxDx;
+            Kp[Sx][Sy] += DxDy;
+            Kp[Sx][Sz] += DxDz;
+            Kp[Sy][Sy] += DyDy;
+            Kp[Sy][Sz] += DyDz;
+            Kp[Sz][Sz] += DzDz;
         }
+    } else {
+        // newcode
+        size_t computed_shells = 0L;
+        // shell pair blocks
+        auto blocksPQ = ints[0]->get_blocks12();
+        auto blocksRS = ints[0]->get_blocks34();
+        bool use_batching = blocksPQ != blocksRS;
 
-        // Translational invariance relationships
-        AxBx = -(AxAx + AxCx + AxDx);
-        AxBy = -(AxAy + AxCy + AxDy);
-        AxBz = -(AxAz + AxCz + AxDz);
-        AyBx = -(AxAy + AyCx + AyDx);
-        AyBy = -(AyAy + AyCy + AyDy);
-        AyBz = -(AyAz + AyCz + AyDz);
-        AzBx = -(AxAz + AzCx + AzDx);
-        AzBy = -(AyAz + AzCy + AzDy);
-        AzBz = -(AzAz + AzCz + AzDz);
-        BxCx = -(AxCx + CxCx + CxDx);
-        BxCy = -(AxCy + CxCy + CyDx);
-        BxCz = -(AxCz + CxCz + CzDx);
-        ByCx = -(AyCx + CxCy + CxDy);
-        ByCy = -(AyCy + CyCy + CyDy);
-        ByCz = -(AyCz + CyCz + CzDy);
-        BzCx = -(AzCx + CxCz + CxDz);
-        BzCy = -(AzCy + CyCz + CyDz);
-        BzCz = -(AzCz + CzCz + CzDz);
-        BxDx = -(AxDx + CxDx + DxDx);
-        BxDy = -(AxDy + CxDy + DxDy);
-        BxDz = -(AxDz + CxDz + DxDz);
-        ByDx = -(AyDx + CyDx + DxDy);
-        ByDy = -(AyDy + CyDy + DyDy);
-        ByDz = -(AyDz + CyDz + DyDz);
-        BzDx = -(AzDx + CzDx + DxDz);
-        BzDy = -(AzDy + CzDy + DyDz);
-        BzDz = -(AzDz + CzDz + DzDz);
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+        // loop over all the blocks of (P>=Q|
+        for (size_t blockPQ_idx = 0; blockPQ_idx < blocksPQ.size(); blockPQ_idx++) {
+            const auto& blockPQ = blocksPQ[blockPQ_idx];
+#ifdef _OPENMP
+            const int rank = omp_get_thread_num();
+#else
+            const int rank = 0;
+#endif
+            double** Jp = Jhess[rank]->pointer();
+            double** Kp = Khess[rank]->pointer();
+            auto& buffers = ints[rank]->buffers();
+            // loop over all the blocks of |R>=S)
+            int loop_start = use_batching ? 0 : blockPQ_idx;
+            for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
+                const auto& blockRS = blocksRS[blockRS_idx];
 
-        BxBx = AxAx + AxCx + AxDx
-                + AxCx + CxCx + CxDx
-                + AxDx + CxDx + DxDx;
-        ByBy = AyAy + AyCy + AyDy
-                + AyCy + CyCy + CyDy
-                + AyDy + CyDy + DyDy;
-        BzBz = AzAz + AzCz + AzDz
-                + AzCz + CzCz + CzDz
-                + AzDz + CzDz + DzDz;
-        BxBy = AxAy + AxCy + AxDy
-                + AyCx + CxCy + CxDy
-                + AyDx + CyDx + DxDy;
-        BxBz = AxAz + AxCz + AxDz
-                + AzCx + CxCz + CxDz
-                + AzDx + CzDx + DxDz;
-        ByBz = AyAz + AyCz + AyDz
-                + AzCy + CyCz + CyDz
-                + AzDy + CzDy + DyDz;
+                // This is where we want to screen with density and schwarz-like screening
 
-        Kp[Px][Px] += AxAx;
-        Kp[Px][Py] += AxAy;
-        Kp[Px][Pz] += AxAz;
-        Kp[Px][Qx] += PQscale*AxBx;
-        Kp[Px][Qy] += AxBy;
-        Kp[Px][Qz] += AxBz;
-        Kp[Px][Rx] += PRscale*AxCx;
-        Kp[Px][Ry] += AxCy;
-        Kp[Px][Rz] += AxCz;
-        Kp[Px][Sx] += PSscale*AxDx;
-        Kp[Px][Sy] += AxDy;
-        Kp[Px][Sz] += AxDz;
-        Kp[Py][Py] += AyAy;
-        Kp[Py][Pz] += AyAz;
-        Kp[Py][Qx] += AyBx;
-        Kp[Py][Qy] += PQscale*AyBy;
-        Kp[Py][Qz] += AyBz;
-        Kp[Py][Rx] += AyCx;
-        Kp[Py][Ry] += PRscale*AyCy;
-        Kp[Py][Rz] += AyCz;
-        Kp[Py][Sx] += AyDx;
-        Kp[Py][Sy] += PSscale*AyDy;
-        Kp[Py][Sz] += AyDz;
-        Kp[Pz][Pz] += AzAz;
-        Kp[Pz][Qx] += AzBx;
-        Kp[Pz][Qy] += AzBy;
-        Kp[Pz][Qz] += PQscale*AzBz;
-        Kp[Pz][Rx] += AzCx;
-        Kp[Pz][Ry] += AzCy;
-        Kp[Pz][Rz] += PRscale*AzCz;
-        Kp[Pz][Sx] += AzDx;
-        Kp[Pz][Sy] += AzDy;
-        Kp[Pz][Sz] += PSscale*AzDz;
-        Kp[Qx][Qx] += BxBx;
-        Kp[Qx][Qy] += BxBy;
-        Kp[Qx][Qz] += BxBz;
-        Kp[Qx][Rx] += QRscale*BxCx;
-        Kp[Qx][Ry] += BxCy;
-        Kp[Qx][Rz] += BxCz;
-        Kp[Qx][Sx] += QSscale*BxDx;
-        Kp[Qx][Sy] += BxDy;
-        Kp[Qx][Sz] += BxDz;
-        Kp[Qy][Qy] += ByBy;
-        Kp[Qy][Qz] += ByBz;
-        Kp[Qy][Rx] += ByCx;
-        Kp[Qy][Ry] += QRscale*ByCy;
-        Kp[Qy][Rz] += ByCz;
-        Kp[Qy][Sx] += ByDx;
-        Kp[Qy][Sy] += QSscale*ByDy;
-        Kp[Qy][Sz] += ByDz;
-        Kp[Qz][Qz] += BzBz;
-        Kp[Qz][Rx] += BzCx;
-        Kp[Qz][Ry] += BzCy;
-        Kp[Qz][Rz] += QRscale*BzCz;
-        Kp[Qz][Sx] += BzDx;
-        Kp[Qz][Sy] += BzDy;
-        Kp[Qz][Sz] += QSscale*BzDz;
-        Kp[Rx][Rx] += CxCx;
-        Kp[Rx][Ry] += CxCy;
-        Kp[Rx][Rz] += CxCz;
-        Kp[Rx][Sx] += RSscale*CxDx;
-        Kp[Rx][Sy] += CxDy;
-        Kp[Rx][Sz] += CxDz;
-        Kp[Ry][Ry] += CyCy;
-        Kp[Ry][Rz] += CyCz;
-        Kp[Ry][Sx] += CyDx;
-        Kp[Ry][Sy] += RSscale*CyDy;
-        Kp[Ry][Sz] += CyDz;
-        Kp[Rz][Rz] += CzCz;
-        Kp[Rz][Sx] += CzDx;
-        Kp[Rz][Sy] += CzDy;
-        Kp[Rz][Sz] += RSscale*CzDz;
-        Kp[Sx][Sx] += DxDx;
-        Kp[Sx][Sy] += DxDy;
-        Kp[Sx][Sz] += DxDz;
-        Kp[Sy][Sy] += DyDy;
-        Kp[Sy][Sz] += DyDz;
-        Kp[Sz][Sz] += DzDz;
+                // compute the integrals and continue if none were computed
+                ints[rank]->compute_shell_blocks_deriv2(blockPQ_idx, blockRS_idx);
+
+                std::array<const double*, 78> bufptrs;
+                for (int buf = 0; buf < 78; ++buf) bufptrs[buf] = buffers[buf];
+
+                // Loop over all of the P,Q,R,S shells within the blocks.  We have P>=Q, R>=S and PQ<=RS.
+                for (const auto& pairPQ : blockPQ) {
+                    const auto& P = pairPQ.first;
+                    const auto& Q = pairPQ.second;
+                    const auto& Pshell = primary_->shell(P);
+                    const auto& Qshell = primary_->shell(Q);
+                    const auto& Psize = Pshell.nfunction();
+                    const auto& Qsize = Qshell.nfunction();
+                    const auto& Poff = Pshell.function_index();
+                    const auto& Qoff = Qshell.function_index();
+                    const auto& Pcenter = Pshell.ncenter();
+                    const auto& Qcenter = Qshell.ncenter();
+
+                    for (const auto& pairRS : blockRS) {
+                        const auto& R = pairRS.first;
+                        const auto& S = pairRS.second;
+                        const auto& Rshell = primary_->shell(R);
+                        const auto& Sshell = primary_->shell(S);
+                        const auto& Rsize = Rshell.nfunction();
+                        const auto& Ssize = Sshell.nfunction();
+                        const auto& Roff = Rshell.function_index();
+                        const auto& Soff = Sshell.function_index();
+                        const auto& Rcenter = Rshell.ncenter();
+                        const auto& Scenter = Sshell.ncenter();
+
+                        size_t block_size = (size_t)Psize * Qsize * Rsize * Ssize;
+
+                        // When there are chunks of shellpairs in RS, we need to make sure
+                        // we filter out redundant combinations.  This should probably be done
+                        // by having a block of RS generated for each PQ at list build time.
+                        if (use_batching && ((P > R) || (P == R && Q > S))) {
+                            for (int buf = 0; buf < 78; ++buf) bufptrs[buf] += block_size;
+                            continue;
+                        }
+                        double PQscale = Pcenter == Qcenter ? 2.0 : 1.0;
+                        double PRscale = Pcenter == Rcenter ? 2.0 : 1.0;
+                        double PSscale = Pcenter == Scenter ? 2.0 : 1.0;
+                        double QRscale = Qcenter == Rcenter ? 2.0 : 1.0;
+                        double QSscale = Qcenter == Scenter ? 2.0 : 1.0;
+                        double RSscale = Rcenter == Scenter ? 2.0 : 1.0;
+
+                        int Px = 3 * Pcenter + 0;
+                        int Py = 3 * Pcenter + 1;
+                        int Pz = 3 * Pcenter + 2;
+
+                        int Qx = 3 * Qcenter + 0;
+                        int Qy = 3 * Qcenter + 1;
+                        int Qz = 3 * Qcenter + 2;
+
+                        int Rx = 3 * Rcenter + 0;
+                        int Ry = 3 * Rcenter + 1;
+                        int Rz = 3 * Rcenter + 2;
+
+                        int Sx = 3 * Scenter + 0;
+                        int Sy = 3 * Scenter + 1;
+                        int Sz = 3 * Scenter + 2;
+
+                        double prefactor = 0.5;
+                        if (P != Q) prefactor *= 2.0;
+                        if (R != S) prefactor *= 2.0;
+                        if (P != R || Q != S) prefactor *= 2.0;
+
+                        double val;
+                        std::array<double, 78> contributions;
+                        double Dpq, Drs;
+                        size_t delta;
+
+                        // => Coulomb Term <= //
+                        delta = 0L;
+                        contributions.fill(0.0);
+                        for (int p = 0; p < Psize; p++) {
+                            for (int q = 0; q < Qsize; q++) {
+                                for (int r = 0; r < Rsize; r++) {
+                                    for (int s = 0; s < Ssize; s++) {
+                                        Dpq = Dtp[p + Poff][q + Qoff];
+                                        Drs = Dtp[r + Roff][s + Soff];
+                                        val = prefactor * Dpq * Drs;
+                                        for (int buf = 0; buf < 78; ++buf) {
+                                            contributions[buf] += val * bufptrs[buf][delta];
+                                        }
+                                        delta++;
+                                    }
+                                }
+                            }
+                        }
+
+                        Jp[Px][Px] += contributions[0];
+                        Jp[Px][Py] += contributions[1];
+                        Jp[Px][Pz] += contributions[2];
+                        Jp[Px][Qx] += contributions[3] * PQscale;
+                        Jp[Px][Qy] += contributions[4];
+                        Jp[Px][Qz] += contributions[5];
+                        Jp[Px][Rx] += contributions[6] * PRscale;
+                        Jp[Px][Ry] += contributions[7];
+                        Jp[Px][Rz] += contributions[8];
+                        Jp[Px][Sx] += contributions[9] * PSscale;
+                        Jp[Px][Sy] += contributions[10];
+                        Jp[Px][Sz] += contributions[11];
+                        Jp[Py][Py] += contributions[12];
+                        Jp[Py][Pz] += contributions[13];
+                        Jp[Py][Qx] += contributions[14];
+                        Jp[Py][Qy] += contributions[15] * PQscale;
+                        Jp[Py][Qz] += contributions[16];
+                        Jp[Py][Rx] += contributions[17];
+                        Jp[Py][Ry] += contributions[18] * PRscale;
+                        Jp[Py][Rz] += contributions[19];
+                        Jp[Py][Sx] += contributions[20];
+                        Jp[Py][Sy] += contributions[21] * PSscale;
+                        Jp[Py][Sz] += contributions[22];
+                        Jp[Pz][Pz] += contributions[23];
+                        Jp[Pz][Qx] += contributions[24];
+                        Jp[Pz][Qy] += contributions[25];
+                        Jp[Pz][Qz] += contributions[26] * PQscale;
+                        Jp[Pz][Rx] += contributions[27];
+                        Jp[Pz][Ry] += contributions[28];
+                        Jp[Pz][Rz] += contributions[29] * PRscale;
+                        Jp[Pz][Sx] += contributions[30];
+                        Jp[Pz][Sy] += contributions[31];
+                        Jp[Pz][Sz] += contributions[32] * PSscale;
+                        Jp[Qx][Qx] += contributions[33];
+                        Jp[Qx][Qy] += contributions[34];
+                        Jp[Qx][Qz] += contributions[35];
+                        Jp[Qx][Rx] += contributions[36] * QRscale;
+                        Jp[Qx][Ry] += contributions[37];
+                        Jp[Qx][Rz] += contributions[38];
+                        Jp[Qx][Sx] += contributions[39] * QSscale;
+                        Jp[Qx][Sy] += contributions[40];
+                        Jp[Qx][Sz] += contributions[41];
+                        Jp[Qy][Qy] += contributions[42];
+                        Jp[Qy][Qz] += contributions[43];
+                        Jp[Qy][Rx] += contributions[44];
+                        Jp[Qy][Ry] += contributions[45] * QRscale;
+                        Jp[Qy][Rz] += contributions[46];
+                        Jp[Qy][Sx] += contributions[47];
+                        Jp[Qy][Sy] += contributions[48] * QSscale;
+                        Jp[Qy][Sz] += contributions[49];
+                        Jp[Qz][Qz] += contributions[50];
+                        Jp[Qz][Rx] += contributions[51];
+                        Jp[Qz][Ry] += contributions[52];
+                        Jp[Qz][Rz] += contributions[53] * QRscale;
+                        Jp[Qz][Sx] += contributions[54];
+                        Jp[Qz][Sy] += contributions[55];
+                        Jp[Qz][Sz] += contributions[56] * QSscale;
+                        Jp[Rx][Rx] += contributions[57];
+                        Jp[Rx][Ry] += contributions[58];
+                        Jp[Rx][Rz] += contributions[59];
+                        Jp[Rx][Sx] += contributions[60] * RSscale;
+                        Jp[Rx][Sy] += contributions[61];
+                        Jp[Rx][Sz] += contributions[62];
+                        Jp[Ry][Ry] += contributions[63];
+                        Jp[Ry][Rz] += contributions[64];
+                        Jp[Ry][Sx] += contributions[65];
+                        Jp[Ry][Sy] += contributions[66] * RSscale;
+                        Jp[Ry][Sz] += contributions[67];
+                        Jp[Rz][Rz] += contributions[68];
+                        Jp[Rz][Sx] += contributions[69];
+                        Jp[Rz][Sy] += contributions[70];
+                        Jp[Rz][Sz] += contributions[71] * RSscale;
+                        Jp[Sx][Sx] += contributions[72];
+                        Jp[Sx][Sy] += contributions[73];
+                        Jp[Sx][Sz] += contributions[74];
+                        Jp[Sy][Sy] += contributions[75];
+                        Jp[Sy][Sz] += contributions[76];
+                        Jp[Sz][Sz] += contributions[77];
+
+                        // => Exchange Term <= //
+                        delta = 0L;
+                        contributions.fill(0);
+                        for (int p = 0; p < Psize; p++) {
+                            for (int q = 0; q < Qsize; q++) {
+                                for (int r = 0; r < Rsize; r++) {
+                                    for (int s = 0; s < Ssize; s++) {
+                                        val = 0.0;
+                                        Dpq = Dap[p + Poff][r + Roff];
+                                        Drs = Dap[q + Qoff][s + Soff];
+                                        val += prefactor * Dpq * Drs;
+                                        Dpq = Dap[p + Poff][s + Soff];
+                                        Drs = Dap[q + Qoff][r + Roff];
+                                        val += prefactor * Dpq * Drs;
+                                        Dpq = Dbp[p + Poff][r + Roff];
+                                        Drs = Dbp[q + Qoff][s + Soff];
+                                        val += prefactor * Dpq * Drs;
+                                        Dpq = Dbp[p + Poff][s + Soff];
+                                        Drs = Dbp[q + Qoff][r + Roff];
+                                        val += prefactor * Dpq * Drs;
+                                        val *= 0.5;
+                                        for (int buf = 0; buf < 78; ++buf) {
+                                            contributions[buf] += val * bufptrs[buf][delta];
+                                        }
+                                        delta++;
+                                    }
+                                }
+                            }
+                        }
+
+                        Kp[Px][Px] += contributions[0];
+                        Kp[Px][Py] += contributions[1];
+                        Kp[Px][Pz] += contributions[2];
+                        Kp[Px][Qx] += contributions[3] * PQscale;
+                        Kp[Px][Qy] += contributions[4];
+                        Kp[Px][Qz] += contributions[5];
+                        Kp[Px][Rx] += contributions[6] * PRscale;
+                        Kp[Px][Ry] += contributions[7];
+                        Kp[Px][Rz] += contributions[8];
+                        Kp[Px][Sx] += contributions[9] * PSscale;
+                        Kp[Px][Sy] += contributions[10];
+                        Kp[Px][Sz] += contributions[11];
+                        Kp[Py][Py] += contributions[12];
+                        Kp[Py][Pz] += contributions[13];
+                        Kp[Py][Qx] += contributions[14];
+                        Kp[Py][Qy] += contributions[15] * PQscale;
+                        Kp[Py][Qz] += contributions[16];
+                        Kp[Py][Rx] += contributions[17];
+                        Kp[Py][Ry] += contributions[18] * PRscale;
+                        Kp[Py][Rz] += contributions[19];
+                        Kp[Py][Sx] += contributions[20];
+                        Kp[Py][Sy] += contributions[21] * PSscale;
+                        Kp[Py][Sz] += contributions[22];
+                        Kp[Pz][Pz] += contributions[23];
+                        Kp[Pz][Qx] += contributions[24];
+                        Kp[Pz][Qy] += contributions[25];
+                        Kp[Pz][Qz] += contributions[26] * PQscale;
+                        Kp[Pz][Rx] += contributions[27];
+                        Kp[Pz][Ry] += contributions[28];
+                        Kp[Pz][Rz] += contributions[29] * PRscale;
+                        Kp[Pz][Sx] += contributions[30];
+                        Kp[Pz][Sy] += contributions[31];
+                        Kp[Pz][Sz] += contributions[32] * PSscale;
+                        Kp[Qx][Qx] += contributions[33];
+                        Kp[Qx][Qy] += contributions[34];
+                        Kp[Qx][Qz] += contributions[35];
+                        Kp[Qx][Rx] += contributions[36] * QRscale;
+                        Kp[Qx][Ry] += contributions[37];
+                        Kp[Qx][Rz] += contributions[38];
+                        Kp[Qx][Sx] += contributions[39] * QSscale;
+                        Kp[Qx][Sy] += contributions[40];
+                        Kp[Qx][Sz] += contributions[41];
+                        Kp[Qy][Qy] += contributions[42];
+                        Kp[Qy][Qz] += contributions[43];
+                        Kp[Qy][Rx] += contributions[44];
+                        Kp[Qy][Ry] += contributions[45] * QRscale;
+                        Kp[Qy][Rz] += contributions[46];
+                        Kp[Qy][Sx] += contributions[47];
+                        Kp[Qy][Sy] += contributions[48] * QSscale;
+                        Kp[Qy][Sz] += contributions[49];
+                        Kp[Qz][Qz] += contributions[50];
+                        Kp[Qz][Rx] += contributions[51];
+                        Kp[Qz][Ry] += contributions[52];
+                        Kp[Qz][Rz] += contributions[53] * QRscale;
+                        Kp[Qz][Sx] += contributions[54];
+                        Kp[Qz][Sy] += contributions[55];
+                        Kp[Qz][Sz] += contributions[56] * QSscale;
+                        Kp[Rx][Rx] += contributions[57];
+                        Kp[Rx][Ry] += contributions[58];
+                        Kp[Rx][Rz] += contributions[59];
+                        Kp[Rx][Sx] += contributions[60] * RSscale;
+                        Kp[Rx][Sy] += contributions[61];
+                        Kp[Rx][Sz] += contributions[62];
+                        Kp[Ry][Ry] += contributions[63];
+                        Kp[Ry][Rz] += contributions[64];
+                        Kp[Ry][Sx] += contributions[65];
+                        Kp[Ry][Sy] += contributions[66] * RSscale;
+                        Kp[Ry][Sz] += contributions[67];
+                        Kp[Rz][Rz] += contributions[68];
+                        Kp[Rz][Sx] += contributions[69];
+                        Kp[Rz][Sy] += contributions[70];
+                        Kp[Rz][Sz] += contributions[71] * RSscale;
+                        Kp[Sx][Sx] += contributions[72];
+                        Kp[Sx][Sy] += contributions[73];
+                        Kp[Sx][Sz] += contributions[74];
+                        Kp[Sy][Sy] += contributions[75];
+                        Kp[Sy][Sz] += contributions[76];
+                        Kp[Sz][Sz] += contributions[77];
+
+                        for (auto& buf : bufptrs) buf += block_size;
+                    }  // pairRS
+                }      // pairPQ
+            }          // blockRS
+        }              // blockPQ
     }
 
     for (int thread = 1; thread < nthreads; thread++) {
@@ -3151,19 +3736,22 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vect
         Khess[0]->add(Khess[thread]);
     }
     int dim = Jhess[0]->rowdim();
-    double **Jp = Jhess[0]->pointer();
-    double **Kp = Khess[0]->pointer();
-    for (int row = 0; row < dim; ++row){
-        for (int col = 0; col < row; ++col){
+    double** Jp = Jhess[0]->pointer();
+    double** Kp = Khess[0]->pointer();
+    for (int row = 0; row < dim; ++row) {
+        for (int col = 0; col < row; ++col) {
             Jp[row][col] = Jp[col][row] = (Jp[row][col] + Jp[col][row]);
             Kp[row][col] = Kp[col][row] = (Kp[row][col] + Kp[col][row]);
         }
     }
+    Jhess[0]->print();
+    Khess[0]->print();
 
-    std::map<std::string, std::shared_ptr<Matrix> > val;
+    std::map<std::string, std::shared_ptr<Matrix>> val;
     val["J"] = Jhess[0];
     val["K"] = Khess[0];
     return val;
 }
 
-}} // Namespaces
+}  // namespace scfgrad
+}  // namespace psi

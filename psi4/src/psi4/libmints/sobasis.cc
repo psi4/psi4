@@ -196,7 +196,7 @@ void SOBasisSet::init() {
     }
 
     Options& options = Process::environment.options;
-    bool include_pure_transform = options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+    bool include_pure_transform = options.get_str("INTEGRAL_PACKAGE") == "LIBINT1";
 
     petite_ = std::make_shared<PetiteList>(basis_, integral_, include_pure_transform);
 

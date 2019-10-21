@@ -80,9 +80,6 @@ class PSI_API BasisSet {
     //! Array of Libint2 shells
     std::vector<libint2::Shell> l2_shells_;
 
-    //! vector of shells numbers sorted in ascending AM order.
-    std::vector<int> sorted_ao_shell_list_;
-
     //! The number of core electrons for each atom type
     std::map<std::string, int> ncore_;
 
@@ -393,11 +390,6 @@ class PSI_API BasisSet {
 
     /// Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
-
-    //! Returns the value of the sorted shell list.
-    int get_ao_sorted_shell(const int &i) { return sorted_ao_shell_list_[i]; }
-    //! Returns the vector of sorted shell list.
-    std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
 
     // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the
     // underlying molecule object.

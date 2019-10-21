@@ -284,7 +284,6 @@ void DFHelper::prepare_sparsity() {
         rank = omp_get_thread_num();
 #endif
         eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[rank] = eri[rank]->buffer();
     }
 
     double max_val = 0.0;
@@ -298,6 +297,7 @@ void DFHelper::prepare_sparsity() {
         for (size_t NU = 0; NU <= MU; ++NU) {
             size_t numnu = primary_->shell(NU).nfunction();
             eri[rank]->compute_shell(MU, NU, MU, NU);
+            buffer[rank] = eri[rank]->buffer();
 
             // Loop over basis functions inside shell pair
             for (size_t mu = 0; mu < nummu; ++mu) {
@@ -1253,7 +1253,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        buffer[rank] = eri[rank]->buffer();
     }
 
 // Block over p in pQq 3-index integrals
@@ -1275,6 +1274,7 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
 
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;

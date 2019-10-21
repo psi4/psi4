@@ -73,6 +73,10 @@ class PSI_API TwoBodyAOInt {
 
     /// Buffer to hold the final integrals.
     double *target_full_;
+
+    /// Pointers to each chunk of derivative integrals
+    std::vector<const double *> buffers_;
+
     /// Where to put the next integrals (should be part of target_full_)
     double *target_;
 
@@ -94,6 +98,12 @@ class PSI_API TwoBodyAOInt {
     bool force_cartesian_;
     /// How the shells were reordered for libint
     PermutedOrder permuted_order_;
+    /// Are the basis sets in the bra the same?
+    bool bra_same_;
+    /// Are the basis sets in the ket the same?
+    bool ket_same_;
+    /// Are the basis sets in the bra and the ket all the same?
+    bool braket_same_;
 
     /// The blocking scheme used for the integrals
     std::vector<ShellPairBlock> blocks12_, blocks34_;
@@ -146,20 +156,21 @@ class PSI_API TwoBodyAOInt {
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_full_; }
 
+    /// Buffer where each chunk of integrals is placed
+    const std::vector<const double *> & buffers() const { return buffers_; }
+
     /// Returns the integral factory used to create this object
     const IntegralFactory *integral() const { return integral_; }
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     virtual size_t compute_shell(const AOShellCombinationsIterator &) = 0;
 
-    /// Compute the integrals
-    virtual size_t compute_shell(int, int, int, int) = 0;
-
     //! Get optimal blocks of shell pairs for centers 1 & 2
     std::vector<ShellPairBlock> get_blocks12() const;
 
     //! Get optimal blocks of shell pairs for centers 3 & 4
     std::vector<ShellPairBlock> get_blocks34() const;
+
 
     /*! Compute integrals for two blocks
      *
@@ -174,15 +185,21 @@ class PSI_API TwoBodyAOInt {
      * all that are part of the shell pair batch.
      */
     virtual void compute_shell_blocks(int shellpair12, int shellpair34, int npair12 = -1, int npair34 = -1);
+    /*! Compute derivative integrals for two blocks */
+    virtual void compute_shell_blocks_deriv1(int shellpair12, int shellpair34, int npair12 = -1, int npair34 = -1);
+    /*! Compute derivative integrals for two blocks */
+    virtual void compute_shell_blocks_deriv2(int shellpair12, int shellpair34, int npair12 = -1, int npair34 = -1);
 
     /// Is the shell zero?
     virtual int shell_is_zero(int, int, int, int) { return 0; }
 
+    virtual size_t compute_shell(int s1, int s2, int s3, int s4) = 0;
+
     /// Compute the first derivatives
-    virtual size_t compute_shell_deriv1(int, int, int, int) = 0;
+    virtual size_t compute_shell_deriv1(int s1, int s2, int s3, int s4) = 0;
 
     /// Compute the second derivatives
-    virtual size_t compute_shell_deriv2(int, int, int, int) = 0;
+    virtual size_t compute_shell_deriv2(int s1, int s2, int s3, int s4) = 0;
 
     /// Normalize Cartesian functions based on angular momentum
     void normalize_am(std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>,
