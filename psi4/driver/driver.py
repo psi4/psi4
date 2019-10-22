@@ -46,6 +46,7 @@ from psi4.driver import driver_nbody
 from psi4.driver import driver_findif
 from psi4.driver import p4util
 from psi4.driver import qcdb
+from psi4.driver import constants
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 
@@ -187,6 +188,11 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     # Perform the derivative calculation
     derivative, wfn = derivfunc(method, return_wfn=True, molecule=clone, **kwargs)
     displacement["energy"] = core.variable('CURRENT ENERGY')
+
+    # Getting the dipole moment and saving it a numpy array.
+    displacement["dipole"] = np.array([core.variable('CURRENT DIPOLE X'),
+                                      core.variable('CURRENT DIPOLE Y'),
+                                      core.variable('CURRENT DIPOLE Z')])/constants.dipmom_au2debye
 
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
@@ -1334,6 +1340,11 @@ def hessian(name, **kwargs):
         H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, irrep)
         wfn.set_hessian(core.Matrix.from_array(H))
         wfn.set_gradient(G0)
+
+        # Assemble dipder from dipoles
+        DDer = driver_findif.assemble_dipder_from_dipole(findif_meta_dict, irrep)
+        core.set_variable('CURRENT DIPOLE GRADIENT', DDer)
+        wfn.set_variable('CURRENT DIPOLE GRADIENT', DDer)
 
         # Explicitly set the current energy..
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])

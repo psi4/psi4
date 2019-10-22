@@ -746,6 +746,85 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
+def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
+    """Compute the Hessian by finite difference of gradients.
+
+    Parameters
+    ----------
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
+    freq_irrep_only : int
+        The Cotton ordered irrep to get frequencies for. Choose -1 for all
+        irreps.
+
+    Returns
+    -------
+    dipder : ndarray
+        (3 *atm, 3) Cartesian Dipole Derivatives [Eh/a0^2]
+    """
+
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+
+    pg = mol.point_group()
+    ct = pg.char_table()
+    order = pg.order()
+
+    displacements = findifrec["displacements"]
+
+    def init_string(data):
+        return ("")
+
+    data = _initialize_findif(mol, freq_irrep_only, "2_1", init_string)
+    salc_indices = data["salc_indices_pi"][0]
+    max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
+    d_per_salc = 2 * max_disp
+
+    # Populating with positive and negative displacements for the identity point group
+    dipole = np.zeros(shape=(data['n_salc'], d_per_salc, 3))
+    for salc_index in salc_indices:
+        for j in range(1, max_disp + 1):
+            dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+            dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
+
+
+    for h in range(1, data["n_irrep"]):
+        # Find the group operation that converts + to - displacements.
+        gamma = ct.gamma(h)
+        for group_op in range(order):
+            if gamma.character(group_op) == -1:
+                break
+        else:
+            raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
+
+        sym_op = np.array(ct.symm_operation(group_op).matrix())
+        salc_indices = data["salc_indices_pi"][h]
+
+        # Creating positive displacements and populating for the other point groups
+        for salc_index in salc_indices:
+            for j in range(1, max_disp + 1):
+                pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
+                dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+                dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
+
+    # Computing the dipole derivative by finite differnce
+    if findifrec["stencil_size"] == 3:
+        dipder_q = (dipole[:, 1] - dipole[:, 0]) / (2.0 * findifrec["step"]["size"])
+    elif findifrec["stencil_size"] == 5:
+        dipder_q = (dipole[:, 0] - 8.0 * dipole[:, 1] + 8.0 * dipole[:, 2] - dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
+
+    # Transform the dipole derivates from mass-weighted SALCs to non-mass-weighted Cartesians
+    B = np.asarray(data["salc_list"].matrix())
+    dipder_cart = np.dot(dipder_q.T, B)
+    dipder_cart = dipder_cart.T.reshape(data["n_atom"], 9)
+
+    massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
+    dipder_cart = (dipder_cart.T*massweighter).T
+
+    dipder_cart = dipder_cart.ravel().reshape(3*data["n_atom"],3)
+    return dipder_cart
+
+
 def assemble_hessian_from_energies(findifrec, freq_irrep_only):
     """Compute the Hessian by finite difference of energies.
 
