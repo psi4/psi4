@@ -107,8 +107,9 @@ def _find_derivative_type(ptype, method_name, user_dertype):
         if len(alt_method_name) > 0:
             alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
 
-        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-                              % (method_name, str(dertype), alternatives))
+        raise ValidationError(
+            """Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s""" %
+            (method_name, str(dertype), alternatives))
 
     dertype = min(dertype, derivatives[ptype])
 
@@ -190,9 +191,10 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     displacement["energy"] = core.variable('CURRENT ENERGY')
 
     # Getting the dipole moment and saving it a numpy array.
-    displacement["dipole"] = np.array([core.variable('CURRENT DIPOLE X'),
-                                      core.variable('CURRENT DIPOLE Y'),
-                                      core.variable('CURRENT DIPOLE Z')])/constants.dipmom_au2debye
+    displacement["dipole"] = np.array(
+        [core.variable('CURRENT DIPOLE X'),
+         core.variable('CURRENT DIPOLE Y'),
+         core.variable('CURRENT DIPOLE Z')]) / constants.dipmom_au2debye
 
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
@@ -207,7 +209,9 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
 def _filter_renamed_methods(compute, method):
     r"""Raises UpgradeHelper when a method has been renamed."""
     if method == "dcft":
-        raise UpgradeHelper(compute + "('dcft')", compute + "('dct')", 1.4, " All instances of 'dcft' should be replaced with 'dct'.")
+        raise UpgradeHelper(compute + "('dcft')", compute + "('dct')", 1.4,
+                            " All instances of 'dcft' should be replaced with 'dct'.")
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -613,7 +617,7 @@ def gradient(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-    
+
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
     # Figure out what kind of gradient this is
@@ -695,7 +699,6 @@ def gradient(name, **kwargs):
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
 
-
     # Commit to procedures[] call hereafter
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
@@ -732,13 +735,11 @@ def gradient(name, **kwargs):
 
         print(""" %d displacements needed ...""" % (ndisp), end='')
 
-        wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
-                                    **kwargs)
+        wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp, **kwargs)
         var_dict = core.variables()
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
-            _process_displacement(
-                energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+            _process_displacement(energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         # Reset variables
         for key, val in var_dict.items():
@@ -1105,7 +1106,7 @@ def optimize(name, **kwargs):
             G = core.get_legacy_gradient()  # TODO
             core.IOManager.shared_object().set_specific_retention(1, True)
             core.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(hessian_with_method, molecule=moleculeclone, ref_gradient = G, **kwargs)
+            frequencies(hessian_with_method, molecule=moleculeclone, ref_gradient=G, **kwargs)
             steps_since_last_hessian = 0
             core.set_legacy_gradient(G)
             core.set_global_option('CART_HESS_READ', True)
@@ -1241,7 +1242,7 @@ def hessian(name, **kwargs):
         lowername = name.lower()
 
     _filter_renamed_methods("frequency", lowername)
-    
+
     return_wfn = kwargs.pop('return_wfn', False)
     core.clean_variables()
     dertype = 2
@@ -1323,13 +1324,18 @@ def hessian(name, **kwargs):
 
         print(""" %d displacements needed.""" % ndisp)
 
-        wfn = _process_displacement(gradient, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
-                                    **kwargs)
+        wfn = _process_displacement(gradient, lowername, molecule, findif_meta_dict["reference"], 1, ndisp, **kwargs)
         var_dict = core.variables()
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
-            _process_displacement(
-                gradient, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+            _process_displacement(gradient,
+                                  lowername,
+                                  molecule,
+                                  displacement,
+                                  n,
+                                  ndisp,
+                                  write_orbitals=False,
+                                  **kwargs)
 
         # Reset variables
         for key, val in var_dict.items():
@@ -1372,13 +1378,11 @@ def hessian(name, **kwargs):
 
         print(' %d displacements needed.' % ndisp)
 
-        wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
-                                    **kwargs)
+        wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp, **kwargs)
         var_dict = core.variables()
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
-            _process_displacement(
-                energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+            _process_displacement(energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
         # Reset variables
         for key, val in var_dict.items():
@@ -1490,7 +1494,7 @@ def frequency(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-    
+
     return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one
@@ -1581,8 +1585,14 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
     m = np.asarray([mol.mass(at) for at in range(mol.natom())])
     irrep_labels = mol.irrep_labels()
 
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(
-        nmwhess, geom, m, wfn.basisset(), irrep_labels, dipder=dipder, project_trans=project_trans, project_rot=project_rot)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess,
+                                                  geom,
+                                                  m,
+                                                  wfn.basisset(),
+                                                  irrep_labels,
+                                                  dipder=dipder,
+                                                  project_trans=project_trans,
+                                                  project_rot=project_rot)
     vibrec.update({k: qca.json() for k, qca in vibinfo.items()})
 
     core.print_out(vibtext)

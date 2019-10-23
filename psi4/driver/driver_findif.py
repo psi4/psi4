@@ -69,8 +69,8 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
     # an arbitrary number of SALCs.
     for salc_index, disp_steps in i_m:
         for component in salc_list[salc_index]:
-            geom[component.atom, component.xyz] += (
-                disp_steps * step_size * component.coef / np.sqrt(mol.mass(component.atom)))
+            geom[component.atom, component.xyz] += (disp_steps * step_size * component.coef /
+                                                    np.sqrt(mol.mass(component.atom)))
         # salc_index is in descending order. We want the label in ascending order, so...
         # ...add the new label part from the left of the string, not the right.
         label = "{:d}: {:d}".format(salc_index, disp_steps) + (", " if label else "") + label
@@ -787,7 +787,6 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
             dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
             dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
 
-
     for h in range(1, data["n_irrep"]):
         # Find the group operation that converts + to - displacements.
         gamma = ct.gamma(h)
@@ -811,7 +810,8 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
     if findifrec["stencil_size"] == 3:
         dipder_q = (dipole[:, 1] - dipole[:, 0]) / (2.0 * findifrec["step"]["size"])
     elif findifrec["stencil_size"] == 5:
-        dipder_q = (dipole[:, 0] - 8.0 * dipole[:, 1] + 8.0 * dipole[:, 2] - dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
+        dipder_q = (dipole[:, 0] - 8.0 * dipole[:, 1] + 8.0 * dipole[:, 2] -
+                    dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
 
     # Transform the dipole derivates from mass-weighted SALCs to non-mass-weighted Cartesians
     B = np.asarray(data["salc_list"].matrix())
@@ -819,9 +819,9 @@ def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
     dipder_cart = dipder_cart.T.reshape(data["n_atom"], 9)
 
     massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
-    dipder_cart = (dipder_cart.T*massweighter).T
+    dipder_cart = (dipder_cart.T * massweighter).T
 
-    dipder_cart = dipder_cart.ravel().reshape(3*data["n_atom"],3)
+    dipder_cart = dipder_cart.ravel().reshape(3 * data["n_atom"], 3)
     return dipder_cart
 
 
@@ -907,15 +907,16 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
         # ...define offdiag_en to do that for us.
         for i, salc in enumerate(salc_indices):
             for j, salc2 in enumerate(salc_indices[:i]):
-                offdiag_en = lambda index: displacements["{l}: {}, {k}: {}".format(k=salc, l=salc2, *data["disps"]["off"][index])]["energy"]
+                offdiag_en = lambda index: displacements["{l}: {}, {k}: {}".format(
+                    k=salc, l=salc2, *data["disps"]["off"][index])]["energy"]
                 if findifrec["stencil_size"] == 3:
-                    fc = (+offdiag_en(0) + offdiag_en(1) + 2 * ref_energy - E[i][0] - E[i][1] - E[j][0] - E[j][1]) / (
-                        2 * findifrec["step"]["size"]**2)
+                    fc = (+offdiag_en(0) + offdiag_en(1) + 2 * ref_energy - E[i][0] - E[i][1] - E[j][0] -
+                          E[j][1]) / (2 * findifrec["step"]["size"]**2)
                 elif findifrec["stencil_size"] == 5:
                     fc = (-offdiag_en(0) - offdiag_en(1) + 9 * offdiag_en(2) - offdiag_en(3) - offdiag_en(4) +
                           9 * offdiag_en(5) - offdiag_en(6) - offdiag_en(7) + E[i][0] - 7 * E[i][1] - 7 * E[i][2] +
-                          E[i][3] + E[j][0] - 7 * E[j][1] - 7 * E[j][2] + E[j][3] + 12 * ref_energy) / (
-                              12 * findifrec["step"]["size"]**2)
+                          E[i][3] + E[j][0] - 7 * E[j][1] - 7 * E[j][2] + E[j][3] +
+                          12 * ref_energy) / (12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
 
