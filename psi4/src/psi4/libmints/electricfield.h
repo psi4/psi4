@@ -30,12 +30,13 @@
 #define _psi_src_lib_libmints_electricfield_h_
 
 #include <vector>
+
+#include "integral.h"
+#include "matrix.h"
+#include "osrecur.h"
 #include "typedefs.h"
-#include "psi4/libmints/osrecur.h"
-#include "psi4/libmints/vector3.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/integral.h"
+#include "vector.h"
+#include "vector3.h"
 
 namespace psi {
 class Molecule;

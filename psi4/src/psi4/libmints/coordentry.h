@@ -29,15 +29,12 @@
 #ifndef COORDENTRY_H
 #define COORDENTRY_H
 
-#include <map>
-#include <string>
 #include <cmath>
-#include "vector3.h"
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <map>
 #include <memory>
-PRAGMA_WARNING_POP
+#include <string>
+
+#include "vector3.h"
 
 #define CLEANUP_THRESH 1.0E-14
 

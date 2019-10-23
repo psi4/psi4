@@ -36,9 +36,9 @@
 #ifdef _XOPEN_SOURCE
 #undef _XOPEN_SOURCE
 #endif
-#include "psi4/libpsi4util/exception.h"
+
 #include "typedefs.h"
-#include "psi4/libmints/vector3.h"
+#include "vector3.h"
 
 #include "psi4/libpsi4util/exception.h"
 

@@ -29,20 +29,17 @@
 #ifndef _psi_src_lib_libmints_basisset_h_
 #define _psi_src_lib_libmints_basisset_h_
 
-#include "gshell.h"
-
-#include "psi4/pragma.h"
-#include "psi4/libmints/typedefs.h"
-#include "psi4/psi4-dec.h"
-
 #include <cstdio>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <map>
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <memory>
-PRAGMA_WARNING_POP
+
+#include "psi4/pragma.h"
+#include "psi4/psi4-dec.h"
+
+#include "gshell.h"
+#include "typedefs.h"
 
 namespace psi {
 
@@ -165,8 +162,8 @@ class PSI_API BasisSet {
     BasisSet();
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
-             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
-             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &ecp_shell_map);
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &shell_map,
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &ecp_shell_map);
 
     ~BasisSet();
 
@@ -373,7 +370,7 @@ class PSI_API BasisSet {
      * test basis for use in benchmarking
      * See libmints/benchmark.cc for details
      */
-    static std::pair<std::vector<std::string>, std::shared_ptr<BasisSet> > test_basis_set(int max_am);
+    static std::pair<std::vector<std::string>, std::shared_ptr<BasisSet>> test_basis_set(int max_am);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

@@ -26,45 +26,49 @@
  * @END LICENSE
  */
 
-#include "psi4/psifiles.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/onebody.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/quadrupole.h"
-#include "psi4/libmints/multipolesymmetry.h"
-#include "psi4/libmints/shellrotation.h"
-#include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/electricfield.h"
-#include "psi4/libmints/electrostatic.h"
-#include "psi4/libmints/petitelist.h"
-#include "psi4/libmints/multipoles.h"
-#include "psi4/libmints/dipole.h"
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
+#include "oeprop.h"
 
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
 #include <cmath>
-#include <sstream>
-#include <utility>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
-#include <regex>
-#include <tuple>
 #include <functional>
+#include <iostream>
+#include <regex>
+#include <sstream>
+#include <tuple>
+#include <utility>
+
+#include "psi4/physconst.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libiwl/iwl.hpp"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "basisset.h"
+#include "dipole.h"
+#include "electricfield.h"
+#include "electrostatic.h"
+#include "integral.h"
+#include "matrix.h"
+#include "molecule.h"
+#include "multipoles.h"
+#include "multipolesymmetry.h"
+#include "onebody.h"
+#include "petitelist.h"
+#include "pointgrp.h"
+#include "quadrupole.h"
+#include "shellrotation.h"
+#include "sointegral_onebody.h"
+#include "vector.h"
+#include "vector3.h"
+#include "wavefunction.h"
 
 namespace psi {
 

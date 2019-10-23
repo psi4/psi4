@@ -29,13 +29,13 @@
 #ifndef _psi_src_lib_oeprop_h
 #define _psi_src_lib_oeprop_h
 
-#include <set>
-#include <vector>
 #include <map>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "typedefs.h"
-#include "psi4/libmints/vector3.h"
+#include "vector3.h"
 
 namespace psi {
 

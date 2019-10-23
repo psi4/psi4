@@ -34,24 +34,7 @@
  *
  */
 
-#include "psi4/libpsi4util/exception.h"
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libqt/qt.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libdpd/dpd.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-
-#include "factory.h"
-#include "wavefunction.h"
-#include "dimension.h"
-#include "molecule.h"
-#include "pointgrp.h"
-#include "petitelist.h"
+#include "matrix.h"
 
 #include <cmath>
 #include <cstdio>
@@ -63,6 +46,25 @@
 #include <regex>
 #include <tuple>
 #include <memory>
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libiwl/iwl.hpp"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "dimension.h"
+#include "factory.h"
+#include "integral.h"
+#include "molecule.h"
+#include "petitelist.h"
+#include "pointgrp.h"
+#include "vector3.h"
+#include "wavefunction.h"
 
 // In molecule.cc
 namespace psi {

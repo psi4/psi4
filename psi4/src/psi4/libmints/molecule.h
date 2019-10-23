@@ -29,11 +29,11 @@
 #ifndef _psi_src_lib_libmints_molecule_h_
 #define _psi_src_lib_libmints_molecule_h_
 
-#include <vector>
-#include <string>
 #include <cstdio>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #define LINEAR_A_TOL 1.0E-2  // When sin(a) is below this, we consider the angle to be linear
 #define DEFAULT_SYM_TOL 1.0E-8

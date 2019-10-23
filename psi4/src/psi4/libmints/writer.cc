@@ -25,22 +25,26 @@
  *
  * @END LICENSE
  */
+#include "writer.h"
+
+#include <algorithm>
 #include <cstdio>
 #include <utility>
-#include <algorithm>
 #include <vector>
-#include "psi4/libmints/writer.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 #include "psi4/masses.h"
+
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/petitelist.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/mintshelper.h"
+
+#include "basisset.h"
+#include "matrix.h"
+#include "mintshelper.h"
+#include "molecule.h"
+#include "petitelist.h"
+#include "pointgrp.h"
+#include "wavefunction.h"
 
 using namespace psi;
 ;

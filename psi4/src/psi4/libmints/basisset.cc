@@ -25,28 +25,7 @@
  *
  * @END LICENSE
  */
-// Need libint for maximum angular momentum
-#include <libint/libint.h>
-/*!
-    \defgroup MINTS libmints: Integral library
-    \ingroup MINTS
-*/
-
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/psifiles.h"
-
-#include "vector3.h"
-#include "molecule.h"
 #include "basisset.h"
-#include "dimension.h"
-#include "sobasis.h"
-#include "integral.h"
-#include "gshell.h"
-#include "factory.h"
-#include "pointgrp.h"
-#include "wavefunction.h"
-#include "coordentry.h"
-#include "psi4/libpsi4util/process.h"
 
 #include <memory>
 #include <regex>
@@ -56,6 +35,29 @@
 #include <cmath>
 #include <map>
 #include <list>
+
+// Need libint for maximum angular momentum
+#include <libint/libint.h>
+/*!
+    \defgroup MINTS libmints: Integral library
+    \ingroup MINTS
+*/
+
+#include "psi4/psifiles.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/process.h"
+
+#include "coordentry.h"
+#include "dimension.h"
+#include "factory.h"
+#include "gshell.h"
+#include "integral.h"
+#include "molecule.h"
+#include "pointgrp.h"
+#include "sobasis.h"
+#include "vector3.h"
+#include "wavefunction.h"
 
 using namespace psi;
 

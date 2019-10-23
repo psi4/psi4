@@ -29,18 +29,13 @@
 #ifndef _psi_src_lib_libmints_petitelist_h_
 #define _psi_src_lib_libmints_petitelist_h_
 
-#include "typedefs.h"
-#include "pointgrp.h"
-
-#include <map>
-#include <cstdio>
 #include <cstdint>
-
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <cstdio>
+#include <map>
 #include <memory>
-PRAGMA_WARNING_POP
+
+#include "pointgrp.h"
+#include "typedefs.h"
 
 namespace psi {
 

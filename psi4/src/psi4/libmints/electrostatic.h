@@ -29,8 +29,10 @@
 #ifndef _psi_src_lib_libmints_electrostatic_h_
 #define _psi_src_lib_libmints_electrostatic_h_
 
-#include "psi4/libmints/potential.h"
 #include "psi4/pragma.h"
+
+#include "potential.h"
+#include "vector3.h"
 
 namespace psi {
 
@@ -38,7 +40,6 @@ class BasisSet;
 class Molecule;
 class GaussianShell;
 class SphericalTransform;
-class Vector3;
 
 /*! \ingroup MINTS
  *  \class PotentialInt

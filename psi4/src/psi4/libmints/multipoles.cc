@@ -26,10 +26,11 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/multipoles.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/vector.h"
+#include "multipoles.h"
+
+#include "basisset.h"
+#include "molecule.h"
+#include "vector.h"
 
 using namespace psi;
 

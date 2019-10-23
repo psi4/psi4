@@ -30,10 +30,11 @@
 #define _psi_src_lib_libmints_multipoles_h_
 
 #include <vector>
+
+#include "integral.h"
+#include "onebody.h"
+#include "osrecur.h"
 #include "typedefs.h"
-#include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
-#include "psi4/libmints/integral.h"
 
 namespace psi {
 class Molecule;

@@ -26,40 +26,40 @@
  * @END LICENSE
  */
 
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/pointgrp.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libmints/vector3.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/coordentry.h"
-#include "psi4/libmints/corrtab.h"
-#include "psi4/libmints/petitelist.h"
-#include "psi4/masses.h"
-#include "psi4/physconst.h"
-#include "psi4/libmints/element_to_Z.h"
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
+#include "molecule.h"
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <fstream>
-#include <locale>
 #include <iostream>
-#include <algorithm>
-#include <vector>
-#include <string>
 #include <limits>
-#include <string>
-#include <sstream>
+#include <locale>
 #include <regex>
-#include <array>
+#include <sstream>
+#include <string>
+#include <string>
+#include <vector>
 
+#include "psi4/masses.h"
+#include "psi4/physconst.h"
+#include "psi4/psi4-dec.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/coordentry.h"
+#include "psi4/libmints/corrtab.h"
+#include "psi4/libmints/element_to_Z.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/petitelist.h"
+#include "psi4/libmints/pointgrp.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/vector3.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
 
 namespace {
 // the third parameter of from_string() should be

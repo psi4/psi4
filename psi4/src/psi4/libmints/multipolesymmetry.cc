@@ -25,16 +25,17 @@
  *
  * @END LICENSE
  */
+#include "multipolesymmetry.h"
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libmints/multipolesymmetry.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/factory.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/shellrotation.h"
+
+#include "basisset.h"
+#include "factory.h"
+#include "integral.h"
+#include "matrix.h"
+#include "molecule.h"
+#include "pointgrp.h"
+#include "shellrotation.h"
 
 ;
 

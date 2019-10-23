@@ -25,15 +25,20 @@
  *
  * @END LICENSE
  */
-#include "psi4/libmints/dipole.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
+#include "dipole.h"
+
 #include <stdexcept>
-#include "psi4/libciomr/libciomr.h"
+
 #include "psi4/physconst.h"
+
+#include "psi4/libciomr/libciomr.h"
+
+#include "basisset.h"
+#include "integral.h"
+#include "matrix.h"
+#include "molecule.h"
+#include "vector.h"
+#include "vector3.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
