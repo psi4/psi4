@@ -1202,7 +1202,7 @@ void export_mints(py::module& m) {
                                                     "multiplicity, etc. of a molecule.")
         .def("set_geometry", [](Molecule& obj, const Matrix& m) { obj.set_geometry(m); },
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates [a0] (excluding dummies)")
-        .def("nuclear_dipole", [](const Molecule& obj, const Vector3_<double>& v) { return obj.nuclear_dipole(v); },
+        .def("nuclear_dipole", [](const Molecule& obj, const Vector3& v) { return obj.nuclear_dipole(v); },
              "Gets the nuclear contribution to the dipole, with respect to a specified origin atg0")
         .def("nuclear_dipole", [](const Molecule& obj) { return obj.nuclear_dipole(); },
              "Gets the nuclear contribution to the dipole, with respect to the origin")
