@@ -32,9 +32,126 @@
 #include <cmath>
 #include <sstream>
 
+#include <xtensor/xfixed.hpp>
+#include <xtensor-blas/xlinalg.hpp>
+
 #include "psi4/pragma.h"
 
 namespace psi {
+template <typename T>
+using Vector3_ = xt::xtensor_fixed<T, xt::xshape<3, 1>>;
+
+template <typename T>
+T dot(const Vector3_<T>& u, const Vector3_<T>& v) noexcept {
+    return xt::linalg::vdot(u, v);
+}
+
+template <typename T>
+double norm(const Vector3_<T>& u) noexcept {
+    return xt::linalg::norm(u);
+}
+
+template <typename T>
+Vector3_<T> cross(const Vector3_<T>& u, const Vector3_<T>& v) noexcept {
+    return xt::linalg::cross(u, v);
+}
+
+template <class T>
+Vector3_<T> normalize(const Vector3_<T>& u) noexcept {
+    return (u / xt::linalg::norm(u));
+}
+
+template <typename T>
+double distance(const Vector3_<T>& u, const Vector3_<T>& v) noexcept {
+    return xt::linalg::norm(u - v);
+}
+
+template <typename T>
+double angle(const Vector3_<T>& u, const Vector3_<T>& v) noexcept {
+    Vector3_<T> _u = normalize(u);
+    Vector3_<T> _v = normalize(v);
+    return std::acos(psi::dot(_u, _v));
+}
+
+template <typename T>
+Vector3_<T> perp_unit(const Vector3_<T>& u, const Vector3_<T>& v) noexcept {
+    // try cross product
+    auto result = cross(u, v);
+    auto resultdotresult = dot(result, result);
+
+    if (resultdotresult < 1.e-16) {
+        // cross product is too small to normalize
+        // find the largest of this and v
+        double dotprodu = dot(u, u);
+        double dotprodv = dot(v, v);
+        auto d = Vector3_<T>({{0.0, 0.0, 0.0}});
+        double dotprodd;
+        if (dotprodu < dotprodv) {
+            d = v;
+            dotprodd = dotprodv;
+        } else {
+            d = u;
+            dotprodd = dotprodu;
+        }
+
+        // see if d is big enough
+        if (dotprodd < 1.e-16) {
+            // choose an arbitrary vector, since the biggest vector is small
+            return Vector3_<T>({{1.0, 0.0, 0.0}});
+        } else {
+            // choose a vector prependicular to d
+            // choose it in one of the planes xy, xz, yz
+            // choose the plane to be that which contains the two largest
+            // components of d
+            double absd[3];
+            absd[0] = std::abs(d[0]);
+            absd[1] = std::abs(d[1]);
+            absd[2] = std::abs(d[2]);
+            int axis0, axis1;
+            if ((absd[1] - absd[0]) > 1.0e-12) {
+                axis0 = 1;
+                if ((absd[2] - absd[0]) > 1.0e-12) {
+                    axis1 = 2;
+                } else {
+                    axis1 = 0;
+                }
+            } else {
+                axis0 = 0;
+                if ((absd[2] - absd[1]) > 1.0e-12) {
+                    axis1 = 2;
+                } else {
+                    axis1 = 1;
+                }
+            }
+
+            result[0] = 0.0;
+            result[1] = 0.0;
+            result[2] = 0.0;
+            // do the pi/2 rotation in the plane
+            result[axis0] = d[axis1];
+            result[axis1] = -d[axis0];
+        }
+        return normalize(result);
+    } else {
+        // normalize the cross product and return the result
+        return normalize(result);
+    }
+}
+
+template <typename T>
+Vector3_<T> rotate(const Vector3_<T>& in, double theta, const Vector3_<T>& axis) noexcept {
+    Vector3_<T> unitaxis = normalize(axis);
+
+    // split into parallel and perpendicular components along axis
+    Vector3_<T> parallel = unitaxis * (dot(in, unitaxis) / dot(unitaxis, unitaxis));
+    Vector3_<T> perpendicular = in - parallel;
+
+    // form unit vector perpendicular to parallel and perpendicular
+    Vector3_<T> third_axis = perp_unit(axis, perpendicular) * xt::linalg::norm(perpendicular);
+
+    return parallel + cos(theta) * perpendicular + sin(theta) * third_axis;
+}
+
 class Vector3;
 inline Vector3 operator*(double, const Vector3&);
 
