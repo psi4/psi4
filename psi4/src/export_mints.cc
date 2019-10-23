@@ -1194,20 +1194,17 @@ void export_mints(py::module& m) {
              "Return the character of the i'th symmetry operation for the irrep. 0-indexed.")
         .def("symbol", &IrreducibleRepresentation::symbol, "Return the symbol for the irrep");
 
-    typedef void (Molecule::*matrix_set_geometry)(const Matrix&);
-    typedef Vector3 (Molecule::*nuclear_dipole1)(const Vector3&) const;
-    typedef Vector3 (Molecule::*nuclear_dipole2)() const;
     typedef Vector3 (Molecule::*vector_by_index)(int) const;
 
     py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule", py::dynamic_attr(),
                                                     "Class to store the elements, coordinates, "
                                                     "fragmentation pattern, basis sets, charge, "
                                                     "multiplicity, etc. of a molecule.")
-        .def("set_geometry", matrix_set_geometry(&Molecule::set_geometry),
+        .def("set_geometry", [](Molecule& obj, const Matrix& m) { obj.set_geometry(m); },
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates [a0] (excluding dummies)")
-        .def("nuclear_dipole", nuclear_dipole1(&Molecule::nuclear_dipole),
+        .def("nuclear_dipole", [](const Molecule& obj, const Vector3_<double>& v) { return obj.nuclear_dipole(v); },
              "Gets the nuclear contribution to the dipole, with respect to a specified origin atg0")
-        .def("nuclear_dipole", nuclear_dipole2(&Molecule::nuclear_dipole),
+        .def("nuclear_dipole", [](const Molecule& obj) { return obj.nuclear_dipole(); },
              "Gets the nuclear contribution to the dipole, with respect to the origin")
         .def("set_name", &Molecule::set_name, "Sets molecule name")
         .def("name", &Molecule::name, "Gets molecule name")
@@ -1253,7 +1250,8 @@ void export_mints(py::module& m) {
         .def("x", &Molecule::x, "x position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("y", &Molecule::y, "y position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("z", &Molecule::z, "z position [Bohr] of atom arg0 (0-indexed without dummies)")
-        .def("xyz", vector_by_index(&Molecule::xyz), "Return the Vector3 for atom i (0-indexed without dummies)", "i"_a)
+        .def("xyz", [](const Molecule& obj, int i) { return obj.xyz(i); },
+             "Return the Vector3 for atom i (0-indexed without dummies)", "i"_a)
         .def("fZ", &Molecule::fZ, py::return_value_policy::copy,
              "Nuclear charge of atom arg1 (0-indexed including dummies)")
         .def("fx", &Molecule::fx, "x position of atom arg0 (0-indexed including dummies in Bohr)")
@@ -1426,7 +1424,7 @@ void export_mints(py::module& m) {
              "Gets the geometry [Bohr] as a (Natom X 3) matrix of coordinates (excluding dummies)")
         .def("full_geometry", &Molecule::full_geometry,
              "Gets the geometry [Bohr] as a (Natom X 3) matrix of coordinates (including dummies)")
-        .def("set_full_geometry", matrix_set_geometry(&Molecule::set_full_geometry),
+        .def("set_full_geometry", [](Molecule& obj, const Matrix& m) { obj.set_full_geometry(m); },
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates (in Bohr) (including dummies");
 
     py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")

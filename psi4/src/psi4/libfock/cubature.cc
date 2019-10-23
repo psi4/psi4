@@ -27,26 +27,27 @@
  */
 
 #include "cubature.h"
+
+#include <cassert>
+#include <cctype>
+#include <cstdio>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "gridblocker.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/linalg.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/tensor.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/matrix.h"
-
-#include <vector>
-#include <string>
-#include <sstream>
-#include <cstdio>
-#include <limits>
-#include <cctype>
-#include <cassert>
+#include "psi4/libqt/qt.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -2722,8 +2723,7 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     } else if (scheme == BECKE || scheme == TREUTLER || scheme == SBECKE) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
-                double rad_ratio =
-                    GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
+                double rad_ratio = GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
                 double chi = (scheme == BECKE || scheme == SBECKE) ? rad_ratio : sqrt(rad_ratio);
                 double a = getAfromChi(chi);
                 amatrix_[i][j] = a;
@@ -3088,42 +3088,37 @@ OrientationMgr::LMatrix OrientationMgr::RotMatrixFromOneAxis(LVector axis3) {
     return Q;
 }
 
-#define EPSILON 1e-14
 // I hate to write wrapper functions, but it's easier this way...
 void OrientationMgr::diagonalize(LMatrix const &M, LMatrix *Q_out, LVector *D_out) {
+    constexpr auto EPSILON = 1e-14;
     // This is the easiest way to get the eigensystem right now.
     // The eigenvalues are returned in ascending order.
-    Matrix I("Matrix to be diagonalized", 3, 3);
-    double **Ip = I.pointer();
-    // Clean matrix by setting tiny values arising from numerical errors to zero
-    // to prevent generation of weird eigenvectors
-    Ip[0][0] = (std::fabs(M.xx) < EPSILON ? 0.0 : M.xx);
-    Ip[1][1] = (std::fabs(M.yy) < EPSILON ? 0.0 : M.yy);
-    Ip[2][2] = (std::fabs(M.zz) < EPSILON ? 0.0 : M.zz);
-    Ip[1][0] = Ip[0][1] = (std::fabs(M.xy) < EPSILON ? 0.0 : M.xy);
-    Ip[2][0] = Ip[0][2] = (std::fabs(M.xz) < EPSILON ? 0.0 : M.xz);
-    Ip[2][1] = Ip[1][2] = (std::fabs(M.yz) < EPSILON ? 0.0 : M.yz);
-    Matrix VV("Eigenvectors", 3, 3);
-    Vector DD("Eigenvalues", 3);
-    I.diagonalize(&VV, &DD);  // Note: This line ONLY works for symmetric matrices!
-    double *evals = DD.pointer();
-    D_out->x = evals[0];
-    D_out->y = evals[1];
-    D_out->z = evals[2];
-    double **evects = VV.pointer();
+    Matrix_<double> I("Matrix to be diagonalized", 3, 3);
+    I.set_block({{(std::abs(M.xx) < EPSILON ? 0.0 : M.xx), (std::abs(M.xy) < EPSILON ? 0.0 : M.xy),
+                  (std::abs(M.xz) < EPSILON ? 0.0 : M.xz)},
+                 {(std::abs(M.xy) < EPSILON ? 0.0 : M.xy), (std::abs(M.yy) < EPSILON ? 0.0 : M.yy),
+                  (std::abs(M.yz) < EPSILON ? 0.0 : M.yz)},
+                 {(std::abs(M.xz) < EPSILON ? 0.0 : M.xz), (std::abs(M.yz) < EPSILON ? 0.0 : M.yz),
+                  (std::abs(M.zz) < EPSILON ? 0.0 : M.zz)}});
+
+    Matrix_<double> VV("Eigenvectors", 3, 3);
+    Vector_<double> DD("Eigenvalues", 3);
+    std::tie(DD, VV) = eigh(I);  // Note: This line ONLY works for symmetric matrices!
+    D_out->x = DD.get(0);
+    D_out->y = DD.get(1);
+    D_out->z = DD.get(2);
     // Strictly speaking, diagonalization gives us M = VDV^{-1}.
     // But the rotation matrix we want is V^{-1} = V^T since it's orthogonal.
-    Q_out->xx = evects[0][0];
-    Q_out->xy = evects[0][1];
-    Q_out->xz = evects[0][2];
-    Q_out->yx = evects[1][0];
-    Q_out->yy = evects[1][1];
-    Q_out->yz = evects[1][2];
-    Q_out->zx = evects[2][0];
-    Q_out->zy = evects[2][1];
-    Q_out->zz = evects[2][2];
+    Q_out->xx = VV.get(0, 0);
+    Q_out->xy = VV.get(0, 1);
+    Q_out->xz = VV.get(0, 2);
+    Q_out->yx = VV.get(1, 0);
+    Q_out->yy = VV.get(1, 1);
+    Q_out->yz = VV.get(1, 2);
+    Q_out->zx = VV.get(2, 0);
+    Q_out->zy = VV.get(2, 1);
+    Q_out->zz = VV.get(2, 2);
 }
-#undef EPSILON
 
 OrientationMgr::LMatrix OrientationMgr::buildRotationMatrix(LVector const &axis, double angle) {
     // See http://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
@@ -3558,7 +3553,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // H, He always 1 smaller
     if (Z <= 2) {
         pruned_order = nominal_order_ - 1;
-    }; 
+    };
 
     int region1 = 7;  // 5, as in the paper, is too small. 7 appears to favored also by other programs.
     int region2 = 11;
@@ -3589,7 +3584,7 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // H, He always reduced by 1
     if (Z <= 2) {
         pruned_order = nominal_order_ - 1;
-    };  
+    };
 
     // dvide BS shell into 4 equal regions
     double nr = (double)radial_pts / 4.0;
@@ -3670,7 +3665,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                     mp = std_orientation.MoveIntoPosition(mp, A);
                     mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);  // This ain't gonna fly. Must abate this
                                                                                // mickey mouse a most rikky tikki tavi.
-                    if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
+                    if (std::abs(mp.w) > weightcut) {
+                        grid[A].push_back(mp);
+                    }
                     assert(!std::isnan(mp.w));
                 }
             }
@@ -3685,7 +3682,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 mp.w *= nuc.computeNuclearWeight(
                     mp, A,
                     stratmannCutoff);  // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
+                if (std::abs(mp.w) > weightcut) {
+                    grid[A].push_back(mp);
+                }
                 assert(!std::isnan(mp.w));
             }
         }
@@ -3725,7 +3724,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
     OrientationMgr std_orientation(molecule_);
     RadialPruneMgr prune(opt);
     NuclearWeightMgr nuc(molecule_, opt.nucscheme);
-    double weightcut=opt.weights_cutoff;
+    double weightcut = opt.weights_cutoff;
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
@@ -3768,7 +3767,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
                 mp.w *= nuc.computeNuclearWeight(
                     mp, A,
                     stratmannCutoff);  // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
+                if (std::abs(mp.w) > weightcut) {
+                    grid[A].push_back(mp);
+                }
                 assert(!std::isnan(mp.w));
             }
         }
@@ -3806,7 +3807,7 @@ bool from_string(T &t, const std::string &s, std::ios_base &(*f)(std::ios_base &
 }
 
 BasisExtents::BasisExtents(std::shared_ptr<BasisSet> primary, double delta) : primary_(primary), delta_(delta) {
-    shell_extents_ = std::make_shared<Vector>("Shell Extents", primary_->nshell());
+    shell_extents_ = std::make_shared<Vector_<double>>("Shell Extents", primary_->nshell());
     computeExtents();
 }
 BasisExtents::~BasisExtents() {}
@@ -3820,7 +3821,7 @@ void BasisExtents::computeExtents() {
     // Bisection is used to avoid accidentally finding the
     // nuclear cusp for p and higher functions
 
-    double *Rp = shell_extents_->pointer();
+    auto Rp = shell_extents_->pointer();
     maxR_ = 0.0;
 
     // Compute each shell in turn
@@ -3927,7 +3928,7 @@ void BasisExtents::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
 
-    double *Rp = shell_extents_->pointer();
+    auto Rp = shell_extents_->pointer();
     printer->Printf("   Shell Extents:\n");
     printer->Printf("   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
     for (int Q = 0; Q < primary_->nshell(); Q++) {
@@ -3988,7 +3989,7 @@ void BlockOPoints::populate() {
     functions_local_to_global_.clear();
 
     std::shared_ptr<BasisSet> primary = extents_->basis();
-    double *Rp = extents_->shell_extents()->pointer();
+    auto Rp = extents_->shell_extents()->pointer();
 
     // Determine significant shell/functions
     for (int P = 0; P < primary->nshell(); P++) {
@@ -4118,7 +4119,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
             opt.prunefunction = RadialPruneMgr::WhichPruneFunction(opt.prunescheme.c_str());
         }
     }
-    //note: NONE is just FLAT in hiding but meant to make it clear to the user that
+    // note: NONE is just FLAT in hiding but meant to make it clear to the user that
     // no pruning is done
     if (opt.prunescheme == "NONE") {
         opt.prunetype = "FUNCTION";
@@ -4587,8 +4588,8 @@ void OctreeGridBlocker::block() {
         printer = std::make_shared<PsiOutStream>("extents.dat", mode);
         // FILE* fh_extents = fopen("extents.dat","w");
         // outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
-        std::shared_ptr<BasisSet> basis = extents_->basis();
-        std::shared_ptr<Vector> Rc = extents_->shell_extents();
+        auto basis = extents_->basis();
+        auto Rc = extents_->shell_extents();
         for (int Q = 0; Q < basis->nshell(); Q++) {
             Vector3 v = basis->shell(Q).center();
             printer->Printf("    %4d %15.6E %15.6E %15.6E %15.6E\n", Q, v[0], v[1], v[2], Rc->get(0, Q));
@@ -4606,8 +4607,8 @@ void OctreeGridBlocker::block() {
             // FILE* fh_extents = fopen(ss.str().c_str(),"w");
             // outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
             extents_->set_delta(pow(10.0, -i));
-            std::shared_ptr<BasisSet> basis = extents_->basis();
-            std::shared_ptr<Vector> Rc = extents_->shell_extents();
+            auto basis = extents_->basis();
+            auto Rc = extents_->shell_extents();
             for (int Q = 0; Q < basis->nshell(); Q++) {
                 Vector3 v = basis->shell(Q).center();
                 printer->Printf("    %4d %15.6E %15.6E %15.6E %15.6E\n", Q, v[0], v[1], v[2], Rc->get(0, Q));
@@ -4691,15 +4692,15 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     // // Treutler/Ahlrichs 1995 mapping parameters
     // clang-format off
     static const std::vector<double> TreutlerEta =  { 1.0,
-      0.800, 0.900,                                                                
-      1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900, 
-      1.400, 1.300,                      1.300, 1.200, 1.100, 1.000, 1.000, 1.000, 
-      1.500, 1.400,1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100,1.100, 1.000, 0.900, 0.900, 0.900, 0.900,     
-      2.000, 1.700,1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,     
-      2.500, 2.200,                                                                
-             2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,                                                                             
-      1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 
-      2.500, 2.100,                                                                
+      0.800, 0.900,
+      1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900,
+      1.400, 1.300,                      1.300, 1.200, 1.100, 1.000, 1.000, 1.000,
+      1.500, 1.400,1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100,1.100, 1.000, 0.900, 0.900, 0.900, 0.900,
+      2.000, 1.700,1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,
+      2.500, 2.200,
+             2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
+      1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500,
+      2.500, 2.100,
              3.685,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
     };
 

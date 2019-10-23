@@ -49,11 +49,6 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
-// MKL Header
-#ifdef USING_LAPACK_MKL
-#include <mkl.h>
-#endif
-
 // OpenMP Header
 //_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP

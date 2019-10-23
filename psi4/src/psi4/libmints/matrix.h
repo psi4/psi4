@@ -35,6 +35,7 @@
 #include "psi4/libpsi4util/exception.h"
 
 #include "dimension.h"
+#include "vector3.h"
 
 namespace psi {
 

@@ -8,6 +8,10 @@ else()
     message(FATAL_ERROR "Suitable xtensor could not be externally located as user insists")
   endif()
 
+  if(TARGET OpenMP::OpenMP)
+    set(XTENSOR_USE_OPENMP ON)
+  endif()
+
   include(ExternalProject)
   message(STATUS "Suitable xtensor could not be located, ${Magenta}Building xtensor${ColourReset} instead.")
   ExternalProject_Add(xtensor_external
@@ -26,6 +30,7 @@ else()
       -Dxtl_DIR=${xtl_DIR}
       -Dxsimd_DIR=${xsimd_DIR}
       -DXTENSOR_USE_XSIMD=ON
+      -DXTENSOR_USE_OPENMP=${XTENSOR_USE_OPENMP}
       -DDOWNLOAD_GBENCHMARK=OFF
       -DXTENSOR_CMAKECONFIG_INSTALL_DIR=share/cmake/xtensor # Wrong in upstream CMakeLists.txt
     )

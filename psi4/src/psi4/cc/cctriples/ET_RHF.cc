@@ -47,7 +47,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 // MKL Header
 #ifdef USING_LAPACK_MKL
-#include <mkl.h>
+#include <mkl_service.h>
 #endif
 
 namespace psi {

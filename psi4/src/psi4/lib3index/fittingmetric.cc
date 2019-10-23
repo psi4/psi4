@@ -46,11 +46,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 
-// MKL Header
-#ifdef USING_LAPACK_MKL
-#include <mkl.h>
-#endif
-
 // OpenMP Header
 //_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP

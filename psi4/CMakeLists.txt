@@ -192,6 +192,18 @@ get_property(_loc TARGET xtensor PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor${ColourReset}: ${_loc} (version ${xtensor_VERSION})")
 
+# Compile definitions not exported by xtensor proper
+target_compile_definitions(xtensor
+  INTERFACE
+    XTENSOR_USE_XSIMD  # Use xsimd
+  )
+if(TARGET OpenMP::OpenMP)
+  target_compile_definitions(xtensor
+    INTERFACE
+      XTENSOR_USE_OPENMP  # Use OpenMP in assignment loop>
+    )
+endif()
+
 find_package(xtensor-blas 0.16.1 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using xtensor-blas${ColourReset}: ${_loc} (version ${xtensor-blas_VERSION})")
 

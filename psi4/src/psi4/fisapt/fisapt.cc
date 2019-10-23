@@ -613,7 +613,8 @@ void FISAPT::nuclear() {
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
-            std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+            std::shared_ptr<Matrix> V_extern_sym =
+                reference_->matrix_factory()->create_shared_matrix("External Potential");
             V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
             V_extern = V_extern_sym;
         }
@@ -631,7 +632,7 @@ void FISAPT::nuclear() {
         std::vector<int> none;
         std::vector<int> frag_list(1);
         double Enuc_extern;
-        char frag = '@'; // Next characters are 'A', 'B', 'C'
+        char frag = '@';  // Next characters are 'A', 'B', 'C'
         for (int A = 0; A < mol->nfragments(); A++) {
             frag++;
             frag_list[0] = A;
@@ -2337,8 +2338,8 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 }
 
 // Compute total dispersion energy and S-infinity version of total exchange-dispersion
-void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
-                        bool do_print) {
+void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache,
+                       std::map<std::string, SharedVector> vector_cache, bool do_print) {
     if (do_print) {
         outfile->Printf("  ==> Dispersion <==\n\n");
     }

@@ -28,20 +28,24 @@
 
 #include "sapt.h"
 
+#include <cstring>
+
+#ifdef USING_LAPACK_MKL
+#include <mkl_service.h>
+#endif
+
 #include "psi4/lib3index/3index.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/tensor.h"
-#include "psi4/libmints/factory.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/potential.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libpsi4util/process.h"
+#include "psi4/libmints/factory.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/potential.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libqt/qt.h"
-
-#include <cstring>
 
 namespace psi {
 namespace sapt {

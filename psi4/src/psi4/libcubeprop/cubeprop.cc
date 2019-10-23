@@ -26,22 +26,22 @@
  * @END LICENSE
  */
 
-#include "psi4/psi4-dec.h"
-
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/process.h"
-
 #include "cubeprop.h"
-#include "csg.h"
 
 #include <tuple>
+
+#include "csg.h"
+#include "psi4/psi4-dec.h"
+
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/pointgrp.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -165,9 +165,9 @@ void CubeProperties::raw_compute_properties() {
             std::vector<std::string> labelsb;
             CharacterTable ct = basisset_->molecule()->point_group()->char_table();
             if (nalpha_ == nbeta_) {
-                indsa0.push_back(nalpha_-1);
-                labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_-1]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[nalpha_-1])).symbol() + "_HOMO");
+                indsa0.push_back(nalpha_ - 1);
+                labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_ - 1]) + 1) + "-" +
+                                  ct.gamma(std::get<2>(info_a_[nalpha_ - 1])).symbol() + "_HOMO");
                 indsa0.push_back(nalpha_);
                 labelsa.push_back(std::to_string(std::get<1>(info_a_[nalpha_]) + 1) + "-" +
                                   ct.gamma(std::get<2>(info_a_[nalpha_])).symbol() + "_LUMO");
@@ -183,7 +183,7 @@ void CubeProperties::raw_compute_properties() {
                     orb_index = nalpha_ - i;
                     indsa0.push_back(orb_index);
                     labelsa.push_back(std::to_string(std::get<1>(info_a_[orb_index]) + 1) + "-" +
-                                  ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_SOMO");
+                                      ct.gamma(std::get<2>(info_a_[orb_index])).symbol() + "_SOMO");
                 }
                 orb_index = nbeta_ - 1;
                 indsa0.push_back(orb_index);
@@ -206,9 +206,9 @@ void CubeProperties::raw_compute_properties() {
                 throw PSIEXCEPTION(task + "is not implemented for open-shell systems");
             } else {
                 indsa0.push_back(nalpha_);
-                indsa0.push_back(nalpha_-1);
+                indsa0.push_back(nalpha_ - 1);
                 std::stringstream ss;
-                ss << "DUAL_" << (nalpha_+1) << "_LUMO-" << nalpha_ << "_HOMO";
+                ss << "DUAL_" << (nalpha_ + 1) << "_LUMO-" << nalpha_ << "_HOMO";
                 compute_difference(Ca_, indsa0, ss.str(), true);
             }
         } else if (task == "BASIS_FUNCTIONS") {
@@ -246,7 +246,7 @@ void CubeProperties::compute_orbitals(std::shared_ptr<Matrix> C, const std::vect
     grid_->compute_orbitals(C, indices, labels, key);
 }
 void CubeProperties::compute_difference(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
-                                      const std::string& label, bool square) {
+                                        const std::string& label, bool square) {
     grid_->compute_difference(C, indices, label, square);
 }
 void CubeProperties::compute_basis_functions(const std::vector<int>& indices, const std::string& key) {
