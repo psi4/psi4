@@ -3821,7 +3821,7 @@ void BasisExtents::computeExtents() {
     // Bisection is used to avoid accidentally finding the
     // nuclear cusp for p and higher functions
 
-    auto Rp = shell_extents_->pointer();
+    auto Rp = shell_extents_->data();
     maxR_ = 0.0;
 
     // Compute each shell in turn
@@ -3928,7 +3928,7 @@ void BasisExtents::print(std::string out) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
 
-    auto Rp = shell_extents_->pointer();
+    auto Rp = shell_extents_->data();
     printer->Printf("   Shell Extents:\n");
     printer->Printf("   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
     for (int Q = 0; Q < primary_->nshell(); Q++) {
@@ -3989,7 +3989,7 @@ void BlockOPoints::populate() {
     functions_local_to_global_.clear();
 
     std::shared_ptr<BasisSet> primary = extents_->basis();
-    auto Rp = extents_->shell_extents()->pointer();
+    auto Rp = extents_->shell_extents()->data();
 
     // Determine significant shell/functions
     for (int P = 0; P < primary->nshell(); P++) {

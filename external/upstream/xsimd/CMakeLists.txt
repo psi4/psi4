@@ -11,6 +11,8 @@ else()
   include(ExternalProject)
   message(STATUS "Suitable xsimd could not be located, ${Magenta}Building xsimd${ColourReset} instead.")
   ExternalProject_Add(xsimd_external
+    DEPENDS
+      xtl_external
     URL
       https://github.com/QuantStack/xsimd/archive/7.2.3.zip
     CMAKE_ARGS
@@ -20,6 +22,8 @@ else()
       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
       -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
+      -DENABLE_XTL_COMPLEX=ON
+      -Dxtl_DIR=${xtl_DIR}
       -DXSIMD_CMAKECONFIG_INSTALL_DIR=share/cmake/xsimd # Wrong in upstream CMakeLists.txt
     )
 
