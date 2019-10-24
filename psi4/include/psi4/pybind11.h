@@ -41,6 +41,9 @@
 #include <pybind11/operators.h>
 #include <pybind11/eval.h>
 
+// Python defines this for windows, and it's not needed in C++
+#undef copysign
+
 namespace py = pybind11;
 
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
