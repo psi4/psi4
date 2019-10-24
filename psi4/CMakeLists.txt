@@ -187,6 +187,10 @@ if(USE_XSIMD)
   get_property(_loc TARGET xsimd PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   list(APPEND _addons ${_loc})
   message(STATUS "${Cyan}Using xsimd${ColourReset}: ${_loc} (version ${xsimd_VERSION})")
+  target_compile_definitions(xsimd
+    INTERFACE
+      XSIMD_ENABLE_XTL_COMPLEX  # Use xcomplex from xtl
+  )
 endif()
 
 find_package(xtensor 0.20.8 CONFIG REQUIRED)

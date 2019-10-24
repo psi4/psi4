@@ -55,10 +55,12 @@ target_link_libraries(core
     ${psi4_libmodules}
     ${POST_LIBRARY_OPTION}
     ${LIBC_INTERJECT}
-    xtensor
+    $<$<BOOL:${USE_XSIMD}>:xsimd>
     xtensor-python
     NumPy
     tgt::lapack # OpenMP flags to core.cc
+  PUBLIC
+    xtensor
   )
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
