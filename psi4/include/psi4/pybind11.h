@@ -41,8 +41,11 @@
 #include <pybind11/operators.h>
 #include <pybind11/eval.h>
 
-// Python defines this for windows, and it's not needed in C++
+// Python defines these for windows, and it's not needed in C++
+// In header pyconfig.h
 #undef copysign
+// In header pyerrors.h
+#undef snprintf
 
 namespace py = pybind11;
 

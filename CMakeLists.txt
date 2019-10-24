@@ -157,6 +157,7 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
+option_with_default(USE_XSIMD "Enable use of xsimd for vectorization of xtensor expressions" ON)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
@@ -265,7 +266,8 @@ ExternalProject_Add(psi4-core
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
               -Dxtl_DIR=${xtl_DIR}
-              -Dxsimd_DIR=${xsimd_DIR}
+              -DUSE_XSIMD=${USE_XSIMD}
+              -Dxsimd_DIR=$<$<BOOL:${USE_XSIMD}>:${xsimd_DIR}>
               -Dxtensor_DIR=${xtensor_DIR}
               -Dxtensor-blas_DIR=${xtensor-blas_DIR}
               -Dxtensor-python_DIR=${xtensor-python_DIR}

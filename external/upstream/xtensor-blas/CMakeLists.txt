@@ -18,13 +18,13 @@ else()
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-      -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} # Unused, but probed by xtensor-blas's CMakeLists.txt
+      -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}  # Unused, but probed by xtensor-blas's CMakeLists.txt
       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
       -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
       -Dxtensor_DIR=${xtensor_DIR}
-      -DXTENSOR_USE_FLENS_BLAS=OFF # Turn ON if no suitable BLAS/LAPACK found?
-      -DXTENSOR_BLAS_CMAKECONFIG_INSTALL_DIR=share/cmake/xtensor-blas # Wrong in upstream CMakeLists.txt
+      -DXTENSOR_USE_FLENS_BLAS=OFF  # TODO Turn ON if no suitable BLAS/LAPACK found?
+      -DXTENSOR_BLAS_CMAKECONFIG_INSTALL_DIR=share/cmake/xtensor-blas  # Wrong in upstream CMakeLists.txt
     )
 
   set(xtensor-blas_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/xtensor-blas CACHE PATH "path to internally built xtensor-blasConfig.cmake" FORCE)

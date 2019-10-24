@@ -28,9 +28,9 @@ else()
       -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
       -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
       -Dxtl_DIR=${xtl_DIR}
-      -Dxsimd_DIR=${xsimd_DIR}
-      -DXTENSOR_USE_XSIMD=ON
       -DXTENSOR_USE_OPENMP=${XTENSOR_USE_OPENMP}
+      -DXTENSOR_USE_XSIMD=${USE_XSIMD}
+      -Dxsimd_DIR=$<$<BOOL:${USE_XSIMD}>:${xsimd_DIR}>
       -DDOWNLOAD_GBENCHMARK=OFF
       -DXTENSOR_CMAKECONFIG_INSTALL_DIR=share/cmake/xtensor # Wrong in upstream CMakeLists.txt
     )

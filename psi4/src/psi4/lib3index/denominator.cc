@@ -165,7 +165,7 @@ void LaplaceDenominator::decompose() {
     R_avail_file.read((char *)R_availp, nR * sizeof(double));
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
-    double **err_tablep = err_table->pointer();
+    auto err_tablep = err_table->pointer();
     err_table_file.read((char *)err_tablep[0], static_cast<unsigned long>(nR) * nk * sizeof(double));
 
     R_avail_file.close();
@@ -277,12 +277,12 @@ void LaplaceDenominator::decompose() {
     denominator_vir_ = std::make_shared<Matrix>("Virtual Laplace Delta Tensor", nvector_, nvir);
     denominator_ = std::make_shared<Matrix>("OV Laplace Delta Tensor", nvector_, nocc * nvir);
 
-    double **dop = denominator_occ_->pointer();
-    double **dvp = denominator_vir_->pointer();
-    double **dovp = denominator_->pointer();
+    auto dop = denominator_occ_->pointer();
+    auto dvp = denominator_vir_->pointer();
+    auto dovp = denominator_->pointer();
 
-    double *e_o = eps_occ_->pointer();
-    double *e_v = eps_vir_->pointer();
+    auto e_o = eps_occ_->data();
+    auto e_v = eps_vir_->data();
 
     for (int k = 0; k < nvector_; k++) {
         for (int i = 0; i < nocc; i++) {
@@ -313,19 +313,19 @@ void LaplaceDenominator::debug() {
     int nocc = eps_occ_->dimpi()[0];
     int nvir = eps_vir_->dimpi()[0];
 
-    double *e_o = eps_occ_->pointer();
-    double *e_v = eps_vir_->pointer();
-    double **denop = denominator_occ_->pointer();
-    double **denvp = denominator_vir_->pointer();
+    auto e_o = eps_occ_->data();
+    auto e_v = eps_vir_->data();
+    auto denop = denominator_occ_->pointer();
+    auto denvp = denominator_vir_->pointer();
 
     auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
     SharedMatrix app_denom =
         std::make_shared<Matrix>("Approximate Delta Tensor (Fully Separated)", nocc * nvir, nocc * nvir);
     auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
-    double **tp = true_denom->pointer();
-    double **ap = app_denom->pointer();
-    double **ep = err_denom->pointer();
+    auto tp = true_denom->pointer();
+    auto ap = app_denom->pointer();
+    auto ep = err_denom->pointer();
 
     for (int i = 0; i < nocc; i++)
         for (int a = 0; a < nvir; a++)
@@ -357,8 +357,8 @@ CholeskyDenominator::CholeskyDenominator(SharedVector_<double> eps_occ, SharedVe
 CholeskyDenominator::~CholeskyDenominator() {}
 
 void CholeskyDenominator::decompose() {
-    double *eps_occp = eps_occ_->pointer();
-    double *eps_virp = eps_vir_->pointer();
+    auto eps_occp = eps_occ_->data();
+    auto eps_virp = eps_vir_->data();
 
     int nocc = eps_occ_->dimpi()[0];
     int nvir = eps_vir_->dimpi()[0];
@@ -440,7 +440,7 @@ void CholeskyDenominator::decompose() {
     outfile->Printf("  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n\n", max_err);
 
     denominator_ = std::make_shared<Matrix>("Cholesky Delta Tensor", nvector_, nspan);
-    double **Lar = denominator_->pointer();
+    auto Lar = denominator_->pointer();
 
     for (int d = 0; d < nvector_; d++) {
         C_DCOPY(nspan, L[d], 1, Lar[d], 1);
@@ -495,17 +495,17 @@ void SAPTDenominator::check_denom(SharedVector_<double> eps_occ, SharedVector_<d
     int nocc = eps_occ->dimpi()[0];
     int nvir = eps_vir->dimpi()[0];
 
-    double *e_o = eps_occ->pointer();
-    double *e_v = eps_vir->pointer();
-    double **denp = denominator->pointer();
+    auto e_o = eps_occ->data();
+    auto e_v = eps_vir->data();
+    auto denp = denominator->pointer();
 
     auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
     auto app_denom = std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nvir, nocc * nvir);
     auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
-    double **tp = true_denom->pointer();
-    double **ap = app_denom->pointer();
-    double **ep = err_denom->pointer();
+    auto tp = true_denom->pointer();
+    auto ap = app_denom->pointer();
+    auto ep = err_denom->pointer();
 
     for (int i = 0; i < nocc; i++)
         for (int a = 0; a < nvir; a++)
@@ -577,11 +577,11 @@ void SAPTLaplaceDenominator::decompose() {
     int nR = 99;
 
     // Read in the R available
-    double *R_availp = new double[nR];
+    auto R_availp = new double[nR];
     R_avail_file.read((char *)R_availp, nR * sizeof(double));
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
-    double **err_tablep = err_table->pointer();
+    auto err_tablep = err_table->pointer();
     err_table_file.read((char *)err_tablep[0], static_cast<unsigned long>(nR) * nk * sizeof(double));
 
     R_avail_file.close();
@@ -649,8 +649,8 @@ void SAPTLaplaceDenominator::decompose() {
     }
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
-    double *alpha = new double[nvector_];
-    double *omega = new double[nvector_];
+    auto alpha = new double[nvector_];
+    auto omega = new double[nvector_];
 
     std::vector<std::string> lines;
     std::string text;
@@ -699,19 +699,19 @@ void SAPTLaplaceDenominator::decompose() {
     denominator_virB_ = std::make_shared<Matrix>("Virtual Laplace Delta Tensor (B)", nvector_, nvirB);
     denominatorB_ = std::make_shared<Matrix>("OV Laplace Delta Tensor (B)", nvector_, noccB * nvirB);
 
-    double **doA = denominator_occA_->pointer();
-    double **dvA = denominator_virA_->pointer();
-    double **dovA = denominatorA_->pointer();
+    auto doA = denominator_occA_->pointer();
+    auto dvA = denominator_virA_->pointer();
+    auto dovA = denominatorA_->pointer();
 
-    double **doB = denominator_occB_->pointer();
-    double **dvB = denominator_virB_->pointer();
-    double **dovB = denominatorB_->pointer();
+    auto doB = denominator_occB_->pointer();
+    auto dvB = denominator_virB_->pointer();
+    auto dovB = denominatorB_->pointer();
 
-    double *e_oA = eps_occA_->pointer();
-    double *e_vA = eps_virA_->pointer();
+    auto e_oA = eps_occA_->data();
+    auto e_vA = eps_virA_->data();
 
-    double *e_oB = eps_occB_->pointer();
-    double *e_vB = eps_virB_->pointer();
+    auto e_oB = eps_occB_->data();
+    auto e_vB = eps_virB_->data();
 
     for (int k = 0; k < nvector_; k++) {
         for (int i = 0; i < noccA; i++) {
@@ -757,19 +757,19 @@ void SAPTLaplaceDenominator::check_split(SharedVector_<double> eps_occ, SharedVe
     int nocc = eps_occ->dimpi()[0];
     int nvir = eps_vir->dimpi()[0];
 
-    double *e_o = eps_occ->pointer();
-    double *e_v = eps_vir->pointer();
-    double **denop = denominator_occ->pointer();
-    double **denvp = denominator_vir->pointer();
+    auto e_o = eps_occ->data();
+    auto e_v = eps_vir->data();
+    auto denop = denominator_occ->pointer();
+    auto denvp = denominator_vir->pointer();
 
     auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nvir, nocc * nvir);
     SharedMatrix app_denom =
         std::make_shared<Matrix>("Approximate Delta Tensor (Fully Separated)", nocc * nvir, nocc * nvir);
     auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nvir, nocc * nvir);
 
-    double **tp = true_denom->pointer();
-    double **ap = app_denom->pointer();
-    double **ep = err_denom->pointer();
+    auto tp = true_denom->pointer();
+    auto ap = app_denom->pointer();
+    auto ep = err_denom->pointer();
 
     for (int i = 0; i < nocc; i++)
         for (int a = 0; a < nvir; a++)
@@ -808,10 +808,10 @@ void SAPTCholeskyDenominator::decompose() {
     int noccB = eps_occB_->dimpi()[0];
     int nvirB = eps_virB_->dimpi()[0];
 
-    double *eps_occAp = eps_occA_->data();
-    double *eps_occBp = eps_occB_->data();
-    double *eps_virAp = eps_virA_->data();
-    double *eps_virBp = eps_virB_->data();
+    auto eps_occAp = eps_occA_->data();
+    auto eps_occBp = eps_occB_->data();
+    auto eps_virAp = eps_virA_->data();
+    auto eps_virBp = eps_virB_->data();
 
     // Build the schur complement
     auto schurA = std::make_shared<Vector_<double>>("Diagonal Complement A", noccA * nvirA);
@@ -985,8 +985,8 @@ void SAPTCholeskyDenominator::decompose() {
     // Copy Cholesky vectors into permanent matrices
     denominatorA_ = std::make_shared<Matrix>("Denominator A", nvector_, noccA * nvirA);
     denominatorB_ = std::make_shared<Matrix>("Denominator B", nvector_, noccB * nvirB);
-    double **denAp = denominatorA_->pointer();
-    double **denBp = denominatorB_->pointer();
+    auto denAp = denominatorA_->pointer();
+    auto denBp = denominatorB_->pointer();
 
     for (int P = 0; P < nvector_; P++) {
         ::memcpy(static_cast<void *>(denAp[P]), static_cast<void *>(denA[P]),
@@ -1046,11 +1046,11 @@ void TLaplaceDenominator::decompose() {
     int nR = 99;
 
     // Read in the R available
-    double *R_availp = new double[nR];
+    auto R_availp = new double[nR];
     R_avail_file.read((char *)R_availp, nR * sizeof(double));
 
     auto err_table = std::make_shared<Matrix>("Error Table (nR x nk)", nR, nk);
-    double **err_tablep = err_table->pointer();
+    auto err_tablep = err_table->pointer();
     err_table_file.read((char *)err_tablep[0], static_cast<unsigned long>(nR) * nk * sizeof(double));
 
     R_avail_file.close();
@@ -1116,8 +1116,8 @@ void TLaplaceDenominator::decompose() {
     outfile->Printf("  Quadrature rule read from file %s.\n\n", quadfile.c_str());
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
-    double *alpha = new double[nvector_];
-    double *omega = new double[nvector_];
+    auto alpha = new double[nvector_];
+    auto omega = new double[nvector_];
 
     std::vector<std::string> lines;
     std::string text;
@@ -1161,11 +1161,11 @@ void TLaplaceDenominator::decompose() {
     denominator_occ_ = std::make_shared<Matrix>("Occupied Laplace Delta Tensor", nvector_, nocc);
     denominator_vir_ = std::make_shared<Matrix>("Virtual Laplace Delta Tensor", nvector_, nvir);
 
-    double **dop = denominator_occ_->pointer();
-    double **dvp = denominator_vir_->pointer();
+    auto dop = denominator_occ_->pointer();
+    auto dvp = denominator_vir_->pointer();
 
-    double *e_o = eps_occ_->pointer();
-    double *e_v = eps_vir_->pointer();
+    auto e_o = eps_occ_->data();
+    auto e_v = eps_vir_->data();
 
     for (int k = 0; k < nvector_; k++) {
         for (int i = 0; i < nocc; i++) {
@@ -1185,20 +1185,20 @@ void TLaplaceDenominator::debug() {
     int nocc = eps_occ_->dimpi()[0];
     int nvir = eps_vir_->dimpi()[0];
 
-    double *e_o = eps_occ_->pointer();
-    double *e_v = eps_vir_->pointer();
+    auto e_o = eps_occ_->data();
+    auto e_v = eps_vir_->data();
 
-    double **d_o = denominator_occ_->pointer();
-    double **d_v = denominator_vir_->pointer();
+    auto d_o = denominator_occ_->pointer();
+    auto d_v = denominator_vir_->pointer();
 
     auto true_denom = std::make_shared<Matrix>("Exact Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
     SharedMatrix app_denom =
         std::make_shared<Matrix>("Approximate Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
     auto err_denom = std::make_shared<Matrix>("Error in Delta Tensor", nocc * nocc * nocc, nvir * nvir * nvir);
 
-    double **tp = true_denom->pointer();
-    double **ap = app_denom->pointer();
-    double **ep = err_denom->pointer();
+    auto tp = true_denom->pointer();
+    auto ap = app_denom->pointer();
+    auto ep = err_denom->pointer();
 
     for (int i = 0; i < nocc; i++)
         for (int j = 0; j < nocc; j++)

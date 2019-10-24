@@ -182,10 +182,12 @@ get_property(_loc TARGET xtl PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtl${ColourReset}: ${_loc} (version ${xtl_VERSION})")
 
-find_package(xsimd 7.2.3 CONFIG REQUIRED)
-get_property(_loc TARGET xsimd PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-list(APPEND _addons ${_loc})
-message(STATUS "${Cyan}Using xsimd${ColourReset}: ${_loc} (version ${xsimd_VERSION})")
+if(USE_XSIMD)
+  find_package(xsimd 7.2.3 CONFIG REQUIRED)
+  get_property(_loc TARGET xsimd PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  list(APPEND _addons ${_loc})
+  message(STATUS "${Cyan}Using xsimd${ColourReset}: ${_loc} (version ${xsimd_VERSION})")
+endif()
 
 find_package(xtensor 0.20.8 CONFIG REQUIRED)
 get_property(_loc TARGET xtensor PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
@@ -195,7 +197,7 @@ message(STATUS "${Cyan}Using xtensor${ColourReset}: ${_loc} (version ${xtensor_V
 # Compile definitions not exported by xtensor proper
 target_compile_definitions(xtensor
   INTERFACE
-    XTENSOR_USE_XSIMD  # Use xsimd
+    $<$<BOOL:${USE_XSIMD}>:XTENSOR_USE_XSIMD>  # Use xsimd
   )
 if(TARGET OpenMP::OpenMP)
   target_compile_definitions(xtensor
