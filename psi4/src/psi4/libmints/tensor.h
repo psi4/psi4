@@ -52,7 +52,7 @@
 namespace psi {
 template <typename T, size_t Rank>
 class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
-    friend class detail::RankDependentImpl<Tensor<T, Rank>>;
+    friend struct detail::RankDependentImpl<Tensor<T, Rank>>;
 
    public:
     /*! Access rank of Tensor as Tensor<T, Rank>::rank */

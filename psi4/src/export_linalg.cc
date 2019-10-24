@@ -68,7 +68,7 @@ struct Decorator<T, 1> final {
     using Class = Tensor<T, 1>;
     using PyClass = py::class_<Class, std::shared_ptr<Class>>;
 
-    static void decorate(py::module& mod, PyClass& cls) {
+    static void decorate(py::module& /* mod */, PyClass& cls) {
         cls.def(py::init<const std::string&, const Dimension&, T>(), "Labeled, blocked vector", "label"_a, "dimpi"_a,
                 "fill_value"_a = static_cast<T>(0));
         cls.def(py::init<const std::string&, int, T>(), "Labeled, 1-irrep vector", "label"_a, "dim"_a,

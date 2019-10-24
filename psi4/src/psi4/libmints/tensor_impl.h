@@ -103,8 +103,8 @@ constexpr bool is_rankn_v = is_rankn<Rank>::value;
 
 template <typename T>
 struct Type2String final {
-    static std::string full() {}
-    static std::string suffix() {}
+    static std::string full() { return ""; }
+    static std::string suffix() { return ""; }
 };
 
 template <>

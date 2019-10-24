@@ -238,8 +238,8 @@ void FittingMetric::form_fitting_metric() {
         metric_->set_name("SO Basis Fitting Metric");
         pivots_ = std::make_shared<Vector_<int>>(naux);
         rev_pivots_ = std::make_shared<Vector_<int>>(naux);
-        int* piv = pivots_->pointer();
-        int* rpiv = pivots_->pointer();
+        auto piv = pivots_->data();
+        auto rpiv = pivots_->data();
         for (int Q = 0; Q < naux; Q++) {
             piv[Q] = Q;
             rpiv[Q] = Q;
@@ -311,8 +311,8 @@ void FittingMetric::form_fitting_metric() {
     pivots_ = std::make_shared<Vector_<int>>(nauxpi);
     rev_pivots_ = std::make_shared<Vector_<int>>(nauxpi);
     for (int h = 0; h < auxpet->nirrep(); h++) {
-        int* piv = pivots_->pointer(h);
-        int* rpiv = pivots_->pointer(h);
+        auto piv = pivots_->data(h);
+        auto rpiv = pivots_->data(h);
         for (int Q = 0; Q < nauxpi[h]; Q++) {
             piv[Q] = Q;
             rpiv[Q] = Q;
@@ -480,7 +480,7 @@ void FittingMetric::pivot() {
         if (metric_->colspi()[h] == 0) continue;
 
         double** J = metric_->pointer(h);
-        int* P = pivots_->pointer(h);
+        auto P = pivots_->data(h);
         int norbs = metric_->colspi()[h];
         double* Temp = new double[norbs];
 
@@ -513,7 +513,7 @@ void FittingMetric::pivot() {
         }
         delete[] Temp;
 
-        int* R = rev_pivots_->pointer(h);
+        auto R = rev_pivots_->data(h);
         for (int i = 0; i < norbs; i++) R[P[i]] = i;
     }
 }
