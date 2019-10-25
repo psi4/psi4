@@ -114,7 +114,6 @@ jobs:
           conda install cmake ^
                         conda-build ^
                         conda-verify ^
-                        deepdiff ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^

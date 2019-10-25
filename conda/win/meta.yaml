@@ -9,7 +9,6 @@ source:
 
 requirements:
   run:
-    - deepdiff
     - intel-openmp={{ MKL_VERSION }}
     - mkl={{ MKL_VERSION }}
     - networkx

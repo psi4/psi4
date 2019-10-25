@@ -1294,8 +1294,6 @@ class Molecule(LibmintsMolecule):
             derint, derdriver = parse_dertype(dertype, max_derivative=1)
 
         resinp = {
-            'schema_name': 'qcschema_input',
-            'schema_version': 1,
             'molecule': self.to_schema(dtype=2),
             'driver': derdriver,
             'model': {
@@ -1303,11 +1301,13 @@ class Molecule(LibmintsMolecule):
                 'basis': '(auto)',
             },
             'keywords': {
-                'level_hint': dashlvl,
-                'params_tweaks': dashparam,
                 'verbose': verbose,
             },
         }
+        if dashlvl:
+            resinp['keywords']['level_hint'] = dashlvl
+        if dashparam:
+            resinp['keywords']['params_tweaks'] = dashparam
         jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
         jobrec = jobrec.dict()
 
