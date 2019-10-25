@@ -32,10 +32,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
-#    - deepdiff (runtime only; e.g., `conda install deepdiff -c conda-forge`)
-#    - networkx (runtime only; e.g., `conda install networkx`)
+#    - networkx >=2.4 (runtime only; e.g., `conda install networkx`)
 #    - pint (runtime only; e.g., `conda install pint -c conda-forge`)
-#    - pydantic (runtime only; e.g., `conda install pydantic -c conda-forge`)
+#    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
