@@ -55,7 +55,6 @@ target_link_libraries(core
     ${psi4_libmodules}
     ${POST_LIBRARY_OPTION}
     ${LIBC_INTERJECT}
-    $<$<BOOL:${USE_XSIMD}>:xsimd>
     xtensor-python
     NumPy
     tgt::lapack # OpenMP flags to core.cc

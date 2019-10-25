@@ -187,28 +187,12 @@ if(USE_XSIMD)
   get_property(_loc TARGET xsimd PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   list(APPEND _addons ${_loc})
   message(STATUS "${Cyan}Using xsimd${ColourReset}: ${_loc} (version ${xsimd_VERSION})")
-  target_compile_definitions(xsimd
-    INTERFACE
-      XSIMD_ENABLE_XTL_COMPLEX  # Use xcomplex from xtl
-  )
 endif()
 
 find_package(xtensor 0.20.8 CONFIG REQUIRED)
 get_property(_loc TARGET xtensor PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor${ColourReset}: ${_loc} (version ${xtensor_VERSION})")
-
-# Compile definitions not exported by xtensor proper
-target_compile_definitions(xtensor
-  INTERFACE
-    $<$<BOOL:${USE_XSIMD}>:XTENSOR_USE_XSIMD>  # Use xsimd
-  )
-if(TARGET OpenMP::OpenMP)
-  target_compile_definitions(xtensor
-    INTERFACE
-      XTENSOR_USE_OPENMP  # Use OpenMP in assignment loop>
-    )
-endif()
 
 find_package(xtensor-blas 0.16.1 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using xtensor-blas${ColourReset}: ${_loc} (version ${xtensor-blas_VERSION})")
@@ -218,6 +202,22 @@ get_property(_loc TARGET xtensor-python PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor-python${ColourReset}: ${_loc} (version ${xtensor-python_VERSION})")
 find_package(NumPy REQUIRED)
+
+# Compile definitions not exported by xtensor proper
+if(USE_XSIMD)
+  target_compile_definitions(xtensor
+    INTERFACE
+      XTENSOR_USE_XSIMD  # Use xsimd
+      XSIMD_ENABLE_XTL_COMPLEX  # Use xcomplex from xtl
+    )
+endif()
+if(TARGET OpenMP::OpenMP)
+  target_compile_definitions(xtensor
+    INTERFACE
+      XTENSOR_USE_OPENMP  # Use OpenMP in assignment loop>
+    )
+endif()
+
 
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
