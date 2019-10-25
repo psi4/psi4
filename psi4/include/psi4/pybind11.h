@@ -35,12 +35,6 @@
 
 #include <memory>
 
-// Python defines these for windows, and it's not needed in C++
-// In header pyconfig.h
-#undef copysign
-// In header pyerrors.h
-#undef snprintf
-
 #include <pybind11/pybind11.h>
 #include <pybind11/eval.h>
 #include <pybind11/numpy.h>
@@ -53,5 +47,11 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
+
+// Python defines these for windows, and it's not needed in C++
+// In header pyconfig.h
+#undef copysign
+// In header pyerrors.h
+#undef snprintf
 
 #endif  // PSI4_CORE_PYBIND11_H_H
