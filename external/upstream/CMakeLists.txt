@@ -22,6 +22,7 @@ foreach(dir
 endforeach()
 
 # Do the xtensor stack separately
+# Order is important here too!
 add_subdirectory(xtl)
 if(USE_XSIMD)
   add_subdirectory(xsimd)

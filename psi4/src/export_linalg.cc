@@ -26,10 +26,7 @@
  * @END LICENSE
  */
 
-#include <pybind11/pybind11.h>
-#include <pybind11/pytypes.h>
-#include <pybind11/stl.h>
-#include <pybind11/operators.h>
+#include "psi4/pybind11.h"
 
 #include <complex>
 #include <string>
