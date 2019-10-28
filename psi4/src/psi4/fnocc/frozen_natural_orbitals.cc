@@ -27,33 +27,36 @@
  */
 
 /**
-  * Frozen natural orbitals
-  * Eugene DePrince
-  * April 2013
-  *
-  */
+ * Frozen natural orbitals
+ * Eugene DePrince
+ * April 2013
+ *
+ */
+
+#include "frozen_natural_orbitals.h"
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/libmints/mintshelper.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libtrans/mospace.h"
-#include "psi4/libtrans/integraltransform.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libiwl/iwl.hpp"
-#include "ccsd.h"
-#include "blas.h"
-#include "frozen_natural_orbitals.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/lib3index/dftensor.h"
+
 #include "psi4/lib3index/cholesky.h"
-#include "psi4/libmints/sieve.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/basisset.h"
+#include "psi4/lib3index/dftensor.h"
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libiwl/iwl.hpp"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/sieve.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libtrans/integraltransform.h"
+#include "psi4/libtrans/mospace.h"
 #define ID(x) ints->DPD_ID(x)
+
+#include "blas.h"
+#include "ccsd.h"
 
 namespace psi {
 namespace fnocc {
@@ -1089,5 +1092,5 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
     free(temp2);
     free(temp3);
 }
-}
-}  // end of namespaces
+}  // namespace fnocc
+}  // namespace psi

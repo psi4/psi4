@@ -47,14 +47,14 @@ long int Position(long int i, long int j) {
  */
 void PSI_API F_DGEMV(char trans, integer m, integer n, doublereal alpha, doublereal* A, integer lda, doublereal* X,
                      integer incx, doublereal beta, doublereal* Y, integer incy) {
-    DGEMV(trans, m, n, alpha, A, lda, X, incx, beta, Y, incy);
+    dgemv(trans, m, n, alpha, A, lda, X, incx, beta, Y, incy);
 }
 /**
  * fortran-ordered dgemm
  */
 void PSI_API F_DGEMM(char transa, char transb, integer m, integer n, integer k, doublereal alpha, doublereal* A,
                      integer lda, doublereal* B, integer ldb, doublereal beta, doublereal* C, integer ldc) {
-    DGEMM(transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+    dgemm(transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 }
 
 /**
@@ -99,5 +99,5 @@ void SVD(integer M, integer N, doublereal* A, doublereal* U, doublereal* VT, dou
     DGESVD(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, INFO);
     free(WORK);
 }
-}
-}
+}  // namespace fnocc
+}  // namespace psi
