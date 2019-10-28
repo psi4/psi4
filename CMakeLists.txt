@@ -157,7 +157,7 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
-option_with_default(USE_XSIMD "Enable use of xsimd for vectorization of xtensor expressions" ON)
+option_with_default(USE_XSIMD "Enable use of xsimd for vectorization of xtensor expressions" OFF)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
