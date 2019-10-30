@@ -705,8 +705,8 @@ void IntegralTransform::process_eigenvectors() {
 
         if (transformationType_ == TransformationType::Restricted) Cb = Ca;
 
-        aMOCoefficients_[moSpace->label()] = Ca;
-        bMOCoefficients_[moSpace->label()] = Cb;
+        MOCoefficients_[toupper(moSpace->label())] = Ca;
+        MOCoefficients_[tolower(moSpace->label())] = Cb;
 
         if (print_ > 5) {
             outfile->Printf("Orbitals for space %c:-\n", moSpace->label());

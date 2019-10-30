@@ -51,7 +51,7 @@ void IntegralTransform::backtransform_tpdm_restricted() {
     presort_mo_tpdm_restricted();
 
     // Grab the transformation coefficients
-    SharedMatrix c = aMOCoefficients_[MOSPACE_ALL];
+    SharedMatrix c = aMOCoefficients(MOSPACE_ALL);
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;

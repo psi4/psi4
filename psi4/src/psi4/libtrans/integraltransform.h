@@ -161,6 +161,8 @@ class PSI_API IntegralTransform {
     void backtransform_density();
     void backtransform_tpdm_restricted();
     void backtransform_tpdm_unrestricted();
+    SharedMatrix backtransform_two_index(const std::map<std::array<char, 2>, SharedMatrix> opdm_blocks,
+                                         const std::string name);
     void print_dpd_lookup();
     std::vector<SharedMatrix> compute_fock_like_matrices(SharedMatrix Hcore, std::vector<SharedMatrix> Cmats);
 
@@ -247,6 +249,11 @@ class PSI_API IntegralTransform {
 
     void reset_so_int() { alreadyPresorted_ = false; }
 
+    // Get the MO coefficients for the alpha space corresponding to the given label
+    SharedMatrix aMOCoefficients(const char label) { return MOCoefficients_[toupper(label)]; }
+    // Get the MO coefficients for the beta space corresponding to the given label
+    SharedMatrix bMOCoefficients(const char label) { return MOCoefficients_[tolower(label)]; }
+
    protected:
     void check_initialized();
     void common_initialize();
@@ -296,10 +303,12 @@ class PSI_API IntegralTransform {
     std::map<char, int *> aOrbsPI_;
     // The beta orbitals per irrep for each space
     std::map<char, int *> bOrbsPI_;
-    // The alpha MO coefficients for all unique spaces needed
+    // The alpha MO coefficients for all unique spaces needed, using the original label
     std::map<char, SharedMatrix> aMOCoefficients_;
-    // The beta MO coefficients for all unique spaces needed
+    // The beta MO coefficients for all unique spaces needed, using the original label
     std::map<char, SharedMatrix> bMOCoefficients_;
+    // The alpha and beta MO coefficients for all unique spaces needed, case sensitive
+    std::map<char, SharedMatrix> MOCoefficients_;
     // The alpha orbital indexing arrays
     std::map<char, int *> aIndices_;
     // The beta orbital indexing arrays

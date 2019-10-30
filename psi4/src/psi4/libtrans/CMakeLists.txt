@@ -4,6 +4,7 @@ list(APPEND sources
   integraltransform_dpd_id.cc
   integraltransform_moinfo.cc
   integraltransform_oei.cc
+  integraltransform_opdm_lagrangian.cc
   integraltransform_sort_mo_tpdm.cc
   integraltransform_sort_so_tei.cc
   integraltransform_sort_so_tpdm.cc

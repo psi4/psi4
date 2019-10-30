@@ -50,8 +50,8 @@ void IntegralTransform::backtransform_tpdm_unrestricted() {
     // This can be safely called - it returns immediately if the MO TPDM is already sorted
     presort_mo_tpdm_unrestricted();
     // Grab the transformation coefficients
-    SharedMatrix ca = aMOCoefficients_[MOSPACE_ALL];
-    SharedMatrix cb = bMOCoefficients_[MOSPACE_ALL];
+    SharedMatrix ca = aMOCoefficients(MOSPACE_ALL);
+    SharedMatrix cb = bMOCoefficients(MOSPACE_ALL);
 
     dpdbuf4 J1, J2, K;
 

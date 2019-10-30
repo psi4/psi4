@@ -56,10 +56,10 @@ void IntegralTransform::transform_tei_second_half(const std::shared_ptr<MOSpace>
     auto *label = new char[100];
 
     // Grab the transformation coefficients
-    SharedMatrix c3a = aMOCoefficients_[s3->label()];
-    SharedMatrix c3b = bMOCoefficients_[s3->label()];
-    SharedMatrix c4a = aMOCoefficients_[s4->label()];
-    SharedMatrix c4b = bMOCoefficients_[s4->label()];
+    SharedMatrix c3a = aMOCoefficients(s3->label());
+    SharedMatrix c3b = bMOCoefficients(s3->label());
+    SharedMatrix c4a = aMOCoefficients(s4->label());
+    SharedMatrix c4b = bMOCoefficients(s4->label());
     // And the number of orbitals per irrep
     int *aOrbsPI3 = aOrbsPI_[s3->label()];
     int *bOrbsPI3 = bOrbsPI_[s3->label()];

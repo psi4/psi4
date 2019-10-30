@@ -4803,6 +4803,37 @@ void DCTSolver::compute_ewdm_odc() {
         offset += nmopi_[h];
     }
 
+    // Here be example code of the new interface.
+    // auto a_opdm_oo = std::make_shared<Matrix>("MO-basis Alpha OPDM <O|O>", nirrep_, naoccpi_, naoccpi_);
+    // a_opdm_oo->identity();  // The kappa term
+    // a_opdm_oo->add(aocc_tau_);
+    // auto a_opdm_vv = avir_tau_->clone();
+    // a_opdm_vv->set_name("MO-basis Alpha OPDM <V|V>");
+    // std::map<std::array<char, 2>, SharedMatrix> alpha_density = {{{'O', 'O'}, a_opdm_oo}, {{'V', 'V'}, a_opdm_vv}};
+    // Da_ = _ints->backtransform_two_index(alpha_density, "SO-basis Alpha OPDM");
+
+    // auto b_opdm_oo = std::make_shared<Matrix>("MO-basis Beta OPDM <O|O>", nirrep_, nboccpi_, nboccpi_);
+    // b_opdm_oo->identity();  // The kappa term
+    // b_opdm_oo->add(bocc_tau_);
+    // auto b_opdm_vv = bvir_tau_->clone();
+    // b_opdm_vv->set_name("MO-basis Beta OPDM <V|V>");
+    // std::map<std::array<char, 2>, SharedMatrix> beta_density = {{{'o', 'o'}, b_opdm_oo}, {{'v', 'v'}, b_opdm_vv}};
+    // Db_ = _ints->backtransform_two_index(beta_density, "SO-basis Beta OPDM");
+
+    //// Rather than send over the Lagrangian, 0.5(X_pq+X_qp), let's send X_pq and leave the symmetrizing to libtrans.
+    // const std::vector<std::array<char, 2>> lagrangian_labels = {{'O', 'O'}, {'O', 'V'}, {'V', 'O'}, {'V', 'V'},
+    //                                                            {'o', 'o'}, {'o', 'v'}, {'v', 'o'}, {'v', 'v'}};
+    // auto *label = new char[10];
+    // std::map<std::array<char, 2>, SharedMatrix> lagrangian_terms;
+    // for (const auto k : lagrangian_labels) {
+    //    sprintf(label, "X <%c|%c>", k[0], k[1]);
+    //    global_dpd_->file2_init(&X_OV, PSIF_DCT_DPD, 0, ID(k[0]), ID(k[1]), label);
+    //    lagrangian_terms[k] = std::make_shared<Matrix>(&X_OV);
+    //    global_dpd_->file2_close(&X_OV);
+    //}
+
+    // Lagrangian_ = _ints->backtransform_two_index(lagrangian_terms, "SO-basis Lagrangian");
+
     dpdbuf4 G;
 
     struct iwlbuf AA, AB, BB;
