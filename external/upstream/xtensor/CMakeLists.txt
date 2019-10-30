@@ -1,5 +1,4 @@
-find_package(xtensor 0.20.8 CONFIG QUIET)
-
+find_package(xtensor ${xtensor_pinned} CONFIG QUIET)
 if(${xtensor_FOUND})
   message(STATUS "${Cyan}Found xtensor${ColourReset}: ${xtensor_INCLUDE_DIR} (found version ${xtensor_VERSION})")
   add_library(xtensor_external INTERFACE)  # dummy
@@ -19,7 +18,7 @@ else()
       xtl_external
       xsimd_external
     URL
-      https://github.com/QuantStack/xtensor/archive/0.20.8.zip
+      https://github.com/QuantStack/xtensor/archive/${xtensor_pinned}.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

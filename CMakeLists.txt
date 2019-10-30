@@ -181,6 +181,12 @@ message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MIN
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 add_subdirectory(external/common)
+# Pin versions of the xtensor stack
+set(xtl_pinned 0.6.7)
+set(xsimd_pinned 7.4.1)
+set(xtensor_pinned 0.20.10)
+set(xtensor-blas_pinned 0.16.1)
+set(xtensor-python_pinned 0.23.1)
 add_subdirectory(external/upstream)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core

@@ -1,4 +1,4 @@
-find_package(xsimd 7.2.3 CONFIG QUIET)
+find_package(xsimd ${xsimd_pinned} CONFIG QUIET)
 
 if(${xsimd_FOUND})
   message(STATUS "${Cyan}Found xsimd${ColourReset}: ${xsimd_INCLUDE_DIR} (found version ${xsimd_VERSION})")
@@ -14,7 +14,7 @@ else()
     DEPENDS
       xtl_external
     URL
-      https://github.com/QuantStack/xsimd/archive/7.2.3.zip
+      https://github.com/QuantStack/xsimd/archive/${xsimd_pinned}.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -1,5 +1,4 @@
-find_package(xtl 0.6.5 CONFIG QUIET)
-
+find_package(xtl ${xtl_pinned} CONFIG QUIET)
 if(${xtl_FOUND})
   message(STATUS "${Cyan}Found xtl${ColourReset}: ${xtl_INCLUDE_DIR} (found version ${xtl_VERSION})")
   add_library(xtl_external INTERFACE)  # dummy
@@ -12,7 +11,7 @@ else()
   message(STATUS "Suitable xtl could not be located, ${Magenta}Building xtl${ColourReset} instead.")
   ExternalProject_Add(xtl_external
     URL
-      https://github.com/QuantStack/xtl/archive/0.6.5.zip
+      https://github.com/QuantStack/xtl/archive/${xtl_pinned}.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

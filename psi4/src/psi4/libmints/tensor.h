@@ -102,7 +102,7 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
 
     template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor()
-        : Tensor("empty", 1, std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{0})}, 0,
+        : Tensor("empty", 1, std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{0})}}, 0,
                  static_cast<T>(0)) {}
 
     /*! @{ Rank-n CTORs */
@@ -147,27 +147,27 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(const std::string& label, const Dimension& dimpi, T fill_value = static_cast<T>(0))
-        : Tensor(label, dimpi.n(), std::array<Dimension, Rank>{dimpi}, 0, fill_value) {}
+        : Tensor(label, dimpi.n(), std::array<Dimension, Rank>{{dimpi}}, 0, fill_value) {}
     /*! Labeled, 1-irrep, rank-1 CTOR
      *  \param[in] label
      *  \param[in] dim
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(const std::string& label, int dim, T fill_value = static_cast<T>(0))
-        : Tensor(label, 1, std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{dim})}, 0,
+        : Tensor(label, 1, std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{dim})}}, 0,
                  fill_value) {}
     /*! Unlabeled, blocked, rank-1 CTOR
      *  \param[in] dimpi
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(const Dimension& dimpi, T fill_value = static_cast<T>(0))
-        : Tensor("", dimpi.n(), std::array<Dimension, Rank>{dimpi}, 0, fill_value) {}
+        : Tensor("", dimpi.n(), std::array<Dimension, Rank>{{dimpi}}, 0, fill_value) {}
     /*! Unlabeled, 1-irrep, rank-1 CTOR
      *  \param[in] dim
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
     explicit Tensor(int dim, T fill_value = static_cast<T>(0))
-        : Tensor("", 1, std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{dim})}, 0,
+        : Tensor("", 1, std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{dim})}}, 0,
                  fill_value) {}
     /*! @}*/
 
@@ -181,7 +181,7 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const std::string& label, const Dimension& rowspi, const Dimension& colspi, unsigned int symmetry,
                     T fill_value = static_cast<T>(0))
-        : Tensor(label, rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, symmetry, fill_value) {}
+        : Tensor(label, rowspi.n(), std::array<Dimension, Rank>{{rowspi, colspi}}, symmetry, fill_value) {}
     /*! Labeled, blocked, rank-2 CTOR
      *  \param[in] label
      *  \param[in] rowspi
@@ -190,7 +190,7 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const std::string& label, const Dimension& rowspi, const Dimension& colspi,
                     T fill_value = static_cast<T>(0))
-        : Tensor(label, rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, 0, fill_value) {}
+        : Tensor(label, rowspi.n(), std::array<Dimension, Rank>{{rowspi, colspi}}, 0, fill_value) {}
     /*! Labeled 1-irrep rank-2 CTOR
      *  \param[in] label
      *  \param[in] rows
@@ -199,8 +199,8 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const std::string& label, int rows, int cols, T fill_value = static_cast<T>(0))
         : Tensor(label, 1,
-                 std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{rows}),
-                                             Dimension(std::vector<Dimension::value_type>{cols})},
+                 std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{rows}),
+                                              Dimension(std::vector<Dimension::value_type>{cols})}},
                  0, fill_value) {}
     /*! Unlabeled, blocked, symmetry-assigned rank-2 CTOR
      *  \param[in] rowspi
@@ -210,14 +210,14 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const Dimension& rowspi, const Dimension& colspi, unsigned int symmetry,
                     T fill_value = static_cast<T>(0))
-        : Tensor("", rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, symmetry, fill_value) {}
+        : Tensor("", rowspi.n(), std::array<Dimension, Rank>{{rowspi, colspi}}, symmetry, fill_value) {}
     /*! Unlabeled blocked rank-2 CTOR
      *  \param[in] rowspi
      *  \param[in] colspi
      */
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(const Dimension& rowspi, const Dimension& colspi, T fill_value = static_cast<T>(0))
-        : Tensor("", rowspi.n(), std::array<Dimension, Rank>{rowspi, colspi}, 0, fill_value) {}
+        : Tensor("", rowspi.n(), std::array<Dimension, Rank>{{rowspi, colspi}}, 0, fill_value) {}
     /*! Unlabeled 1-irrep rank-2 CTOR
      *  \param[in] rows
      *  \param[in] cols
@@ -225,8 +225,8 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
     template <size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_rank2_v<Rank_>>>
     explicit Tensor(int rows, int cols, T fill_value = static_cast<T>(0))
         : Tensor("", 1,
-                 std::array<Dimension, Rank>{Dimension(std::vector<Dimension::value_type>{rows}),
-                                             Dimension(std::vector<Dimension::value_type>{cols})},
+                 std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{rows}),
+                                              Dimension(std::vector<Dimension::value_type>{cols})}},
                  0, fill_value) {}
     /*! @}*/
 
