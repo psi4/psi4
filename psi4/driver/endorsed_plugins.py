@@ -56,3 +56,8 @@ try:
     import resp
 except ImportError:
     pass
+
+try:
+    import adcc
+except ImportError:
+    pass
