@@ -1558,20 +1558,20 @@ class CBSComputer(BaseTask):
         # load results_list numbers into compute_list (task_list is SingleResult-s)
         for itask, mc in enumerate(self.compute_list):
             task = results_list[itask]
-            response = task['return_result']
+            response = task.return_result
 
             if self.metameta['ptype'] == 'energy':
                 mc['f_energy'] = response
 
             elif self.metameta['ptype'] == 'gradient':
                 mc['f_gradient'] = np.array(response).reshape((-1, 3))
-                mc['f_energy'] = task['extras']['qcvars']['CURRENT ENERGY']
+                mc['f_energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
             elif self.metameta['ptype'] == 'hessian':
-                mc['f_hessian'] = plump_qcvar(response, 'hessian')
-                mc['f_energy'] = task['extras']['qcvars']['CURRENT ENERGY']
-                if 'CURRENT GRADIENT' in task['extras']['qcvars']:
-                    mc['f_gradient'] = plump_qcvar(task['extras']['qcvars']['CURRENT GRADIENT'], 'gradient')
+                mc['f_hessian'] = response
+                mc['f_energy'] = task.extras['qcvars']['CURRENT ENERGY']
+                if 'CURRENT GRADIENT' in task.extras['qcvars']:
+                    mc['f_gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
@@ -1579,7 +1579,7 @@ class CBSComputer(BaseTask):
                     for job in self.trove:
                         if ((wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis'])
                                 and (mc['f_options'] == job['f_options'])):
-                            job['f_energy'] = task['extras']['qcvars'][VARH[wfn][wfn]]
+                            job['f_energy'] = task.extras['qcvars'][VARH[wfn][wfn]]
 
             # Copy data from 'run' to 'obtained' table
             for mce in self.trove:

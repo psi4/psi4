@@ -29,10 +29,11 @@
 import copy
 import pprint
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
-from typing import Dict, List, Any
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pydantic
+import qcelemental as qcel
 
 from psi4 import core
 from psi4.driver import p4util
@@ -968,6 +969,9 @@ class FinDifComputer(BaseTask):
         return mol
 
     def __init__(self, **data):
+        findif_stencil_size = data.pop('findif_stencil_size')
+        findif_step_size = data.pop('findif_step_size')
+
         BaseTask.__init__(self, **data)
 
         print('FINDIFREC CLASS INIT DATA')
@@ -1078,38 +1082,39 @@ class FinDifComputer(BaseTask):
         # load SingleResult results into findifrec[reference]
         reference = self.findifrec["reference"]
         task = results_list["reference"]
-        response = task['return_result']
+        response = task.return_result
 
-        if task['driver'] == 'energy':
+        if task.driver == 'energy':
             reference['energy'] = response
 
-        elif task['driver'] == 'gradient':
-            reference['gradient'] = plump_qcvar(response, 'gradient')
-            reference['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
+        elif task.driver == 'gradient':
+            print('RESPONSE', type(response), response)
+            reference['gradient'] = response #plump_qcvar(response, 'gradient')
+            reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
-        elif task['driver'] == 'hessian':
+        elif task.driver == 'hessian':
             reference['hessian'] = plump_qcvar(response, 'hessian')
-            reference['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
-            if 'CURRENT GRADIENT' in task['extras']['qcvars']:
-                reference['gradient'] = plump_qcvar(task['extras']['qcvars']['CURRENT GRADIENT'], 'gradient')
+            reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+            if 'CURRENT GRADIENT' in task.extras['qcvars']:
+                reference['gradient'] = plump_qcvar(task.extras['qcvars']['CURRENT GRADIENT'], 'gradient')
 
         # load SingleResult results into findifrec[displacements]
         for label, displacement in self.findifrec["displacements"].items():
             task = results_list[label]
-            response = task['return_result']
+            response = task.return_result
 
-            if task['driver'] == 'energy':
+            if task.driver == 'energy':
                 displacement['energy'] = response
 
-            elif task['driver'] == 'gradient':
-                displacement['gradient'] = plump_qcvar(response, 'gradient')
-                displacement['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
+            elif task.driver == 'gradient':
+                displacement['gradient'] = response
+                displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
-            elif task['driver'] == 'hessian':
-                displacement['hessian'] = plump_qcvar(response, 'hessian')
-                displacement['energy'] = task['extras']['qcvars']['CURRENT ENERGY']
-                if 'CURRENT GRADIENT' in task['extras']['qcvars']:
-                    displacement['gradient'] = plump_qcvar(task['extras']['qcvars']['CURRENT GRADIENT'], 'gradient')
+            elif task.driver == 'hessian':
+                displacement['hessian'] = response
+                displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+                if 'CURRENT GRADIENT' in task.extras['qcvars']:
+                    displacement['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
         # apply finite difference formulas and load derivatives into findifrec[reference]
         if self.metameta['mode'] == '1_0':
@@ -1153,7 +1158,7 @@ class FinDifComputer(BaseTask):
         assembled_results = self._prepare_results()
 
         # load QCVariables
-        qcvars = self.task_list['reference'].get_results()['extras']['qcvars']
+        qcvars = self.task_list['reference'].get_results().extras['qcvars']
 
         #qcvars['CURRENT REFERENCE ENERGY'] = self.grand_need[0]['d_energy']
         #qcvars['CURRENT CORRELATION ENERGY'] = assembled_results['energy'] - self.grand_need[0]['d_energy']
