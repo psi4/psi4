@@ -113,7 +113,7 @@ procedures = {
         'fci'           : proc.run_detci,
         'casscf'        : proc.run_detcas,
         'rasscf'        : proc.run_detcas,
-        'adc'           : proc.run_adc,
+        'adc(2)'        : proc.select_adc2,
         'psimrcc'       : proc.run_psimrcc,
         'psimrcc_scf'   : proc.run_psimrcc_scf,
         'qcisd'         : proc.run_fnocc,

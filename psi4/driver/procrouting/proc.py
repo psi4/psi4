@@ -1063,6 +1063,37 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
+def select_adc2(name, **kwargs):
+    """Function selecting the algorithm for ADC(2) excited state energy
+    call and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')  # TODO or ADC_TYPE or CC_TYPE or ...
+    module = core.get_global_option('QC_MODULE')
+    # Considering only adcc/adc
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'ADCC' and extras.addons("adcc"):
+                func = run_adcc
+            elif module in ['', 'BUILTIN']:
+                func = run_adc
+        # TODO Does the builtin support any other MP type?
+
+    # Note: UHF and ROHF are theoretically available in adcc, but are not fully
+    #       implemented inside the adcc psi4 backend ... so will be added later.
+
+    if func is None:
+        raise ManagedMethodError(['select_adc', name, 'MP_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
 def build_disp_functor(name, restricted, **kwargs):
 
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
