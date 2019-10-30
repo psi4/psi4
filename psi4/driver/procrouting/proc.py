@@ -32,6 +32,7 @@ response(), and frequency() function. *name* can be assumed lowercase by here.
 
 """
 import os
+import sys
 import shutil
 import subprocess
 
@@ -1082,11 +1083,16 @@ def select_adc2(name, **kwargs):
                 func = run_adc
         # TODO Does the builtin support any other MP type?
 
-    # Note: UHF and ROHF are theoretically available in adcc, but are not fully
-    #       implemented inside the adcc psi4 backend ... so will be added later.
+    if reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module == 'ADCC' and extras.addons("adcc"):
+                func = run_adcc
+
+    # Note: ROHF is theoretically available in adcc, but are not fully tested
+    #       ... so will be added later.
 
     if func is None:
-        raise ManagedMethodError(['select_adc', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_adc2', name, 'MP_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -3174,6 +3180,245 @@ def run_adc(name, **kwargs):
     return core.adc(ref_wfn)
 
 
+def run_adcc(name, **kwargs):
+    """Prepare and run an ADC calculation in adcc, interpret the result and return
+    as a wavefunction.
+
+    """
+    # TODO Maybe it would improve readability if this function was spilt
+    #      up and the whole thing went to a separate file (like for sapt,
+    #      interface_cfour.py, ...
+
+    if not extras.addons("adcc"):
+        # TODO or PsiImportError ???
+        raise ValidationError("adcc extras module not available")
+
+    import adcc
+
+    from adcc.backends import InvalidReference
+
+    if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
+        raise ValidationError('ADC requires reference RHF or UHF')
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.pop('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+
+    # Start timer
+    do_timer = kwargs.pop("do_timer", True)
+    if do_timer:
+        core.tstart()
+
+    #
+    # Build kwargs for adcc
+    #
+    kwargs.pop("molecule", None)
+
+    if ref_wfn.frzcpi()[0] > 0:
+        kwargs["frozen_core"] = ref_wfn.frzcpi()[0]
+    if ref_wfn.frzvpi()[0] > 0:
+        kwargs["frozen_virtual"] = ref_wfn.frzvpi()[0]
+    if core.get_option("ADC", "NUM_CORE_ORBITALS"):
+        kwargs["core_orbitals"] = core.get_option("ADC", "NUM_CORE_ORBITALS")
+
+    scf_accuracy = max(core.get_option("SCF", "E_CONVERGENCE"),
+                       core.get_option("SCF", "D_CONVERGENCE"))
+    if core.get_option("ADC", "R_CONVERGENCE") < 0:
+        kwargs["conv_tol"] = max(100 * scf_accuracy, 1e-6)
+    else:
+        kwargs["conv_tol"] = core.get_option("ADC", "R_CONVERGENCE")
+
+    n_roots = core.get_option('ADC', 'ROOTS_PER_IRREP')
+    if len(n_roots) > 1:
+        raise ValidationError("adcc can only deal with a single irrep.")
+    kwargs["n_states"] = n_roots[0]
+
+    if core.get_option("ADC", "NUM_GUESSES") > 0:
+        kwargs["n_guesses"] = core.get_option("ADC", "NUM_GUESSES")
+    if core.get_option("ADC", "MAX_NUM_VECS") > 0:
+        kwargs["max_subspace"] = core.get_option("ADC", "MAX_NUM_VECS")
+
+    kwargs["kind"] = core.get_option("ADC", "KIND").lower()
+    kwargs["max_iter"] = core.get_option("ADC", "MAXITER")
+
+    #
+    # Determine ADC function method from adcc to run ADC
+    #
+    adcrunner = {
+        "cvs-adc(1)": adcc.cvs_adc1, "cvs-adc(2)": adcc.cvs_adc2,
+        "cvs-adc(2)-x": adcc.cvs_adc2x, "cvs-adc(3)": adcc.cvs_adc3,
+        "adc(1)": adcc.adc1, "adc(2)": adcc.adc2,
+        "adc(2)-x": adcc.adc2x, "adc(3)": adcc.adc3,
+    }
+    if name not in adcrunner:
+        raise ValidationError(f"Unsupported ADC method: {name}")
+    if "cvs" in name and "core_orbitals" not in kwargs:
+        raise ValidationError("If a CVS-ADC variant is requested, the NUM_CORE_ORBITALS option"
+                              "needs to be set.")
+    if "cvs" in name and kwargs["kind"] in ["spin_flip"]:
+        raise ValidationError("Spin-flip for CVS-ADC variants is not available.")
+
+    #
+    # Check for unsupported options
+    #
+    for option in ["PR", "NORM_TOLERANCE", "POLE_MAXITER", "SEM_MAXITER",
+                   "NEWTON_CONVERGENCE", "MEMORY", "CACHELEVEL", "NUM_AMPS_PRINT"]:
+        if core.has_option_changed("ADC", option):
+            raise ValidationError(f"ADC backend adcc does not support option '{option}'")
+
+    #
+    # Launch the rocket
+    #
+    # Copy thread setup from psi4
+    n_threads = core.get_num_threads()
+    adcc.thread_pool.reinit(n_threads, n_threads)
+
+    # Hack to direct the stream-like interface adcc expects to the string interface of Psi4 core
+    class CoreStream:
+        def write(self, text):
+            core.print_out(text)
+
+    core.print_out("\n" + adcc.banner(colour=False) + "\n")
+    try:
+        state = adcrunner[name](ref_wfn, **kwargs, output=CoreStream())
+    except InvalidReference as e:
+        raise ValidationError("Cannot run ADC because of in unsupported Psi4 "
+                              "SCF reference") from e
+    core.print_out("\n")
+
+    # TODO Should a non-converged calculation throw?
+
+    #
+    # Interpret results
+    #
+    # Note: This wavefunction is not consistent ... the density
+    # is e.g. not the proper one (i.e. not the MP(n) one)
+    adc_wfn = core.Wavefunction(ref_wfn.molecule(), ref_wfn.basisset())
+    adc_wfn.shallow_copy(ref_wfn)
+    adc_wfn.set_reference_wavefunction(ref_wfn)
+    adc_wfn.set_name(name)
+
+    # Ground-state energies
+    mp = state.ground_state
+    mp_energy = mp.energy(state.method.level)
+    mp_corr = 0.0
+    if state.method.level > 1:
+        core.print_out("Ground state energy breakdown:\n")
+        core.print_out("    Energy             SCF   {0:15.8g} Ha\n".format(ref_wfn.energy()))
+        for level in range(2, state.method.level + 1):
+            energy = mp.energy_correction(level)
+            mp_corr += energy
+            adc_wfn.set_variable(f"MP{level} correlation energy", energy)
+            adc_wfn.set_variable(f"MP{level} total energy", mp.energy(level))
+            core.print_out(f"    Energy correlation MP{level}   {energy:15.8g} Ha\n")
+            core.print_out("    Energy             total {0:15.8g} Ha\n".format(mp_energy))
+    adc_wfn.set_variable("current correlation energy", mp_corr)
+    adc_wfn.set_variable("current energy", mp_energy)
+
+    # Set results of excited-states computation
+    # TODO Does not work: Can't use strings
+    # adc_wfn.set_variable("excitation kind", state.kind)
+    adc_wfn.set_variable("number of iterations", state.n_iter)
+    adc_wfn.set_variable("excitation energies",
+                         core.Matrix.from_array(state.excitation_energies.reshape(-1, 1)))
+    adc_wfn.set_variable("number of excited states", len(state.excitation_energies))
+
+    # Print results of excited-states computation
+    core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")
+
+    # TODO Setting the excitation amplitude elements inside the wavefunction is a little
+    #      challenging, since for each excitation vector one needs to extract the elements
+    #      and map the indices from the adcc to the Psi4 convention. For this reason it
+    #      is not yet done.
+
+    tol_ampl = core.get_option("ADC", "CUTOFF_AMPS_PRINT")
+    core.print_out(state.describe_amplitudes(tolerance=tol_ampl) + "\n\n")
+
+    if do_timer:
+        core.tstop()
+    adc_wfn.adcc_state = state
+    return adc_wfn
+
+
+def run_adcc_property(name, **kwargs):
+    """Run a ADC excited-states property calculation in adcc
+    and return the resulting properties.
+
+    """
+    # TODO Things available in ADCC, but not yet implemented here:
+    #      Export of difference and transition density matrices for all states
+
+    properties = [prop.upper() for prop in kwargs.pop('properties')]
+    valid_properties = ['DIPOLE', 'OSCILLATOR_STRENGTH', 'TRANSITION_DIPOLE']
+    unknown_properties = [prop for prop in properties if prop not in valid_properties]
+
+    if unknown_properties:
+        alternatives = ""
+        alt_method_name = p4util.text.find_approximate_string_matches(unknown_properties[0],
+                                                                      valid_properties, 2)
+        if alt_method_name:
+            alternatives = " Did you mean? " + " ".join(alt_method_name)
+
+        raise ValidationError("ADC property: Feature '{}' is not recognized. {}"
+                              "".format(unknown_properties[0], alternatives))
+
+    # Start timer
+    do_timer = kwargs.pop("do_timer", True)
+    if do_timer:
+        core.tstart()
+    adc_wfn = run_adcc(name, do_timer=False, **kwargs)
+    state = adc_wfn.adcc_state
+    hf = state.reference_state
+    mp = state.ground_state
+
+    # Formats and indention
+    ind = "    "
+    def format_vector(label, data):
+        assert data.ndim == 1
+        return f"{label:<40s} " + " ".join(f"{d:12.6g}" for d in data)
+
+    if "DIPOLE" in properties:
+        lines = ["\nGround state properties"]
+        lines += [ind + "Hartree-Fock (HF)"]
+        lines += [ind + ind + format_vector("Dipole moment (in a.u.)", hf.dipole_moment)]
+
+        if level > 2:
+            lines += [ind + "Møller Plesset 2nd order (MP2)"]
+            lines += [ind + ind + format_vector("Dipole moment (in a.u.)", *mp.dipole_moment(2))]
+            for i, cart in enumerate(["X", "Y", "Z"]):
+                adc_wfn.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
+        lines += [""]
+        core.print_out("\n".join(lines) + "\n")
+
+    computed = {}
+    if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
+        data = state.transition_dipole_moments
+        computed["Transition dipole moment (in a.u.)"] = data
+        adc_wfn.set_variable("transition dipoles", core.Matrix.from_array(data))
+        pass
+
+    if "OSCILLATOR_STRENGTH" in properties:
+        data = state.oscillator_strengths.reshape(-1, 1)
+        computed["Oscillator strength (length gauge)"] = data
+        adc_wfn.set_variable("oscillator strengths", core.Matrix.from_array(data))
+
+    if "DIPOLE" in properties:
+        data = state.state_dipole_moments
+        computed["State dipole moment (in a.u.)"] = data
+        adc_wfn.set_variable("dipoles", core.Matrix.from_array(data))
+
+    core.print_out("\nExcited state properties:\n")
+    n_states = adc_wfn.variable("number of excited states")
+    for i in range(int(n_states)):
+        lines = [ind + f"Excited state  {i}"]
+        for prop, data in sorted(computed.items()):
+            lines += [ind + ind + format_vector(prop, data[i])]
+        core.print_out("\n".join(lines) + "\n")
+
+    if do_timer:
+        core.tstop()
+    return adc_wfn
 
 
 def run_detci(name, **kwargs):

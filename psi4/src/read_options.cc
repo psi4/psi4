@@ -170,7 +170,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC ADCC");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
@@ -1795,7 +1795,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited
            states. -*/
         /*- Reference wavefunction type -*/
-        options.add_str("REFERENCE", "RHF", "RHF");
+        options.add_str("REFERENCE", "RHF", "RHF UHF");
         /*- How to cache quantities within the DPD library -*/
         options.add_int("CACHELEVEL", 2);
         /*- The amount of memory available (in Mb) -*/
@@ -1814,6 +1814,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("PR", false);
         /*- Number of components of transition amplitudes printed -*/
         options.add_int("NUM_AMPS_PRINT", 5);
+        /*- Tolerance for extracted or printed amplitudes -*/
+        options.add_double("CUTOFF_AMPS_PRINT", 1e-3);
+        /*- Convergence threshold for ADC matrix diagonalisation. Negative values keep the
+         *   adcc default (1e-6) -*/
+        options.add_double("R_CONVERGENCE", -1);
+        /*- Number of guess vectors to generate and use. Negative values keep
+         *  the adcc default (currently 2 * ROOTS_PER_IRREP) -*/
+        options.add_int("NUM_GUESSES", -1);
+        /*- Number of orbitals to place in the core -*/
+        options.add_int("NUM_CORE_ORBITALS", 0);
+        /*- The kind of states to compute. -*/
+        options.add_str("KIND", "SINGLET", "SINGLET TRIPLET SPIN_FLIP");
+        /*- Maximum number of iterations -*/
+        options.add_int("MAXITER", 50);
+        /*- Maximum number of subspace vectors. A negative value uses 
+         *  the adcc default (roughly between 20 and 5 * N_GUESSES) -*/
+        options.add_int("MAX_NUM_VECS", -1);
     }
     if (name == "CCHBAR" || options.read_globals()) {
         /*- MODULEDESCRIPTION Assembles the coupled cluster effective Hamiltonian. Called whenever CC
