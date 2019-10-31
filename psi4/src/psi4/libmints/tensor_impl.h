@@ -47,6 +47,13 @@ inline auto full(S shape, T fill_value) noexcept {
 namespace psi {
 namespace detail {
 template <typename T>
+struct is_double : std::integral_constant<bool, std::is_same<double, typename std::remove_cv<T>::type>::value> {};
+
+// NOTE for posterity this can be declared inline in C++17
+template <typename T>
+constexpr bool is_double_v = is_double<T>::value;
+
+template <typename T>
 struct is_complex : std::false_type {
     using real_type = T;
 };

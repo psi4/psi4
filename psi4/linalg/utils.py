@@ -77,7 +77,6 @@ def make_tensor_2d_from_block(rdim, cdim, block, symmetry=0):
     m = Matrix_(label='test', rowspi=rdim, colspi=cdim, symmetry=symmetry, dtype=block.dtype)
 
     for h in range(m.nirrep):
-        block_shape = (m.rows(h), m.cols(h ^ m.symmetry))
         m[h] = block
     return m
 

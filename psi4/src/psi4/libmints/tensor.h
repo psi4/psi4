@@ -46,12 +46,13 @@
 
 #include "dimension.h"
 #include "tensor_impl.h"
-#include "tensor_impl_vector.h"
 #include "tensor_impl_matrix.h"
+#include "tensor_impl_vector.h"
+#include "vector.h"
 
 namespace psi {
 template <typename T, size_t Rank>
-class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
+class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::enable_shared_from_this<Tensor<T, Rank>> {
     friend struct detail::RankDependentImpl<Tensor<T, Rank>>;
 
    public:
@@ -97,6 +98,30 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
             shapes_[h][0] = axes_dimpi[0][h];
             for (int ax = 1; ax < Rank; ++ax) shapes_[h][ax] = axes_dimpi[ax][h ^ symmetry];
             store_[h] = xt::full<T>(shapes_[h], fill_value);
+        }
+    }
+
+    /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
+     *  \param[in] label name of the tensor
+     *  \param[in] nirrep number of irreps (a.k.a. blocks) in the tensor
+     *  \param[in] axes_dimpi dimension of each axis
+     *  \param[in] symmetry overall symmetry of the tensor
+     */
+    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
+    explicit Tensor(const std::string& label, size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi,
+                    unsigned int symmetry)
+        : symmetry_(symmetry), label_(label), axes_dimpi_(axes_dimpi), shapes_(nirrep), store_(nirrep) {
+        if (Rank > 1) {
+            auto ax0_n = axes_dimpi[0].n();
+            auto all_axes_have_same_size = std::all_of(std::begin(axes_dimpi), std::end(axes_dimpi),
+                                                       [ax0_n](const Dimension& dimpi) { return dimpi.n() == ax0_n; });
+            if (!all_axes_have_same_size) {
+                throw PSIEXCEPTION("In Tensor CTOR axes_dimpi do NOT have same size");
+            }
+        }
+        for (int h = 0; h < store_.size(); ++h) {
+            shapes_[h][0] = axes_dimpi[0][h];
+            for (int ax = 1; ax < Rank; ++ax) shapes_[h][ax] = axes_dimpi[ax][h ^ symmetry];
         }
     }
 
@@ -169,6 +194,23 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
     explicit Tensor(int dim, T fill_value = static_cast<T>(0))
         : Tensor("", 1, std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{dim})}}, 0,
                  fill_value) {}
+    /*! Conversion from Vector
+     *  \param[in] v
+     */
+    template <typename T_ = T, size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_double_v<T_>>,
+              typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
+    PSI_DEPRECATED(
+        "Using the `Vector` to `Tensor` converting constructor instead of `Tensor` directly is deprecated, and in 1.4 "
+        "it will stop working")
+    Tensor(const Vector& v)
+        : Tensor(v.name(), v.dimpi().n(), v.dimpi(), 0) {
+        // Element-by-element copy
+        for (int h = 0; h < store_.size(); ++h) {
+            for (auto i = 0; i < v.dim(h); ++i) {
+                store_[h][i] = v.get(h, i);
+            }
+        }
+    }
     /*! @}*/
 
     /*! @{ Rank-2 CTORs */
@@ -294,7 +336,7 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>> {
     T get(size_t h, std::array<size_t, Rank> idxs) const { return store_[h][idxs]; }
     T get(std::array<size_t, Rank> idxs) const { return store_[0][idxs]; }
 
-    using crtp_base::set;  // NOTE This is to make the rank-dependent get-s are accessible
+    using crtp_base::set;  // NOTE This is to make the rank-dependent set-s are accessible
     void set(size_t h, std::array<size_t, Rank> idxs, T val) { store_[h][idxs] = val; }
     void set(std::array<size_t, Rank> idxs, T val) { store_[0][idxs] = val; }
 

@@ -45,7 +45,7 @@ class Array1d;
 }
 
 /*! \ingroup MINTS */
-class PSI_API Vector final {
+class PSI_API Vector final : public std::enable_shared_from_this<Vector> {
    protected:
     /// Actual data, of size dimpi_.sum()
     std::vector<double> v_;
