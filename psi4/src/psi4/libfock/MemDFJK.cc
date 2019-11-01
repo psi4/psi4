@@ -101,15 +101,6 @@ void MemDFJK::compute_JK() {
     // K_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joeK.txt", false, false, true);
     // wK_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joewK.txt", false, false, true);
 }
-void set_do_wK(bool do_wK) {
-    if (do_wK) {
-        std::stringstream message;
-        message << "MemDFJK cannot compute wK integrals. Please use DiskDFJK." << std::endl;
-        message << "  If you are not a developer or using Psi4NumPy please report this issue at github.com/psi4/psi4."
-                << std::endl;
-        throw PSIEXCEPTION(message.str());
-    }
-}
 void MemDFJK::postiterations() {}
 void MemDFJK::print_header() const {
     // dfh_->print_header();
