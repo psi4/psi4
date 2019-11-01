@@ -46,7 +46,7 @@ class Matrix;
 class Dimension;
 
 using ShellMapType = std::vector<std::array<int, 8>>;
-static const std::array<int, 8> pgZeros{0, 0, 0, 0, 0, 0, 0, 0};
+static const std::array<int, 8> pgZeros{{0, 0, 0, 0, 0, 0, 0, 0}};
 
 inline int64_t ij_offset64(int64_t i, int64_t j) {
     return (i > j) ? (((i * (i + 1)) >> 1) + j) : (((j * (j + 1)) >> 1) + i);
