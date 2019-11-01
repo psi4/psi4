@@ -118,6 +118,10 @@ class PSI_API DFHelper {
     void set_metric_pow(double pow) { mpower_ = pow; }
     double get_metric_pow() { return mpower_; }
 
+    /// fitting metric power for w integrals (defaults to -1.0)
+    void set_wmetric_pow(double pow) { wmpower_ = pow; }
+    double get_wmetric_pow() { return wmpower_; }
+
     ///
     /// Sets the fitting metric to be held in core (defaults to FALSE)
     /// @param hold TRUE if metrics are to be held in core.
@@ -274,8 +278,8 @@ class PSI_API DFHelper {
 
     /// builds J/K
     void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> D,
-                  std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, size_t max_nocc, bool do_J, bool do_K,
-                  bool do_wK, bool lr_symmetric);
+                  std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, std::vector<SharedMatrix> wK,
+                  size_t max_nocc, bool do_J, bool do_K, bool do_wK, bool lr_symmetric);
 
    protected:
     // => basis sets <=
@@ -299,6 +303,7 @@ class PSI_API DFHelper {
     double cutoff_ = 1e-12;
     double condition_ = 1e-12;
     double mpower_ = -0.5;
+    double wmpower_ = -1.0;
     bool hold_met_ = false;
     bool built_ = false;
     bool transformed_ = false;
@@ -312,8 +317,12 @@ class PSI_API DFHelper {
 
     // => in-core machinery <=
     void AO_core();
-    std::unique_ptr<double[]> Ppq_;
+    std::unique_ptr<double[]> Ppq_;  //
     std::map<double, SharedMatrix> metrics_;
+
+    // => in-core wK machinery <=
+    std::unique_ptr<double[]> wPpq_;  // if do_wK_ holds (A|w|mn)
+    std::unique_ptr<double[]> m1Ppq_;
 
     // => AO building machinery <=
     void prepare_AO();
@@ -326,8 +335,14 @@ class PSI_API DFHelper {
                                        std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
                                             std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
+    void contract_metric_AO_core_symm(double* Qpq, double* Ppq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
+
+    // => wK AO building machinery <=
+    void prepare_AO_wK_core();
+    void prepare_AO_wK();
+
+    void copy_upper_lower_wAO_core_symm(double* Qpq, double* Ppq, size_t begin, size_t end);
 
     // first integral transforms
     void first_transform_pQq(size_t bsize, size_t bcount, size_t block_size, double* Mp, double* Tp, double* Bp,
@@ -343,6 +358,7 @@ class PSI_API DFHelper {
     // => shell info and blocking <=
     size_t pshells_;
     size_t Qshells_;
+    // greatest number of functions in an aux_ shell
     double Qshell_max_;
     std::vector<size_t> pshell_aggs_;
     std::vector<size_t> Qshell_aggs_;
@@ -368,6 +384,8 @@ class PSI_API DFHelper {
     double* metric_prep_core(double pow);
     std::string return_metfile(double pow);
     std::string compute_metric(double pow);
+
+    double* metric_inverse_prep_core();
 
     // => metric operations <=
     void contract_metric_Qpq(std::string file, double* metp, double* Mp, double* Fp, const size_t tots);
@@ -459,6 +477,8 @@ class PSI_API DFHelper {
                    std::vector<std::vector<double>>& C_buffers, bool lr_symmetric);
     std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc,
                                                           bool lr_symmetric);
+    void compute_wK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> wK,
+                    size_t max_nocc, bool do_J, bool do_K, bool do_wK);
 
     // => misc <=
     void fill(double* b, size_t count, double value);

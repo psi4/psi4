@@ -106,8 +106,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         _set_dfjk_options<MemDFJK>(jk, options);
 
         return std::shared_ptr<JK>(jk);
-
-    } else if (jk_type == "PK") {
+	} else if (jk_type == "PK") {
         PKJK* jk = new PKJK(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -155,15 +154,9 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, bool do_wK, size_t doubles) {
     std::string jk_type = options.get_str("SCF_TYPE");
-    if (do_wK && jk_type == "MEM_DF") {  // throw instead of auto fallback?
-        std::stringstream error;
-        error << "Cannot do SCF_TYPE == 'MEM_DF' and do_wK (yet), please set SCF_TYPE = 'DISK_DF' ";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
-
     if (jk_type == "DF") {
         // logic for MemDFJK vs DiskDFJK
-        if (do_wK || options["DF_INTS_IO"].has_changed()) {
+        if (options["DF_INTS_IO"].has_changed()) {
             return build_JK(primary, auxiliary, options, "DISK_DF");
 
         } else {
@@ -216,7 +209,6 @@ void JK::common_init() {
 }
 size_t JK::memory_overhead() const {
     size_t mem = 0L;
-
     int JKwKD_factor = 1;
     if (do_J_) JKwKD_factor++;
     if (do_K_) JKwKD_factor++;

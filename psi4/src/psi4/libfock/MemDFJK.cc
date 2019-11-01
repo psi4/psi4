@@ -84,17 +84,22 @@ void MemDFJK::preiterations() {
     // we need to prepare the AOs here, and that's it.
     // DFHelper takes care of all the housekeeping
 
-    if (do_wK_) {
-        // TODO add wK integrals.
-        // DFHelper class will throw
-        // initialize_wK()
-        throw PSIEXCEPTION("MemDFJK does not yet support wK builds.");
-    } else {
-        dfh_->initialize();
-    }
+    dfh_->initialize();
 }
 void MemDFJK::compute_JK() {
-    dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, max_nocc(), do_J_, do_K_, do_wK_, lr_symmetric_);
+    dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, wK_ao_, max_nocc(), do_J_, do_K_, do_wK_,
+                   lr_symmetric_);
+    if (lr_symmetric_) {
+        if (do_wK_) {
+            for (size_t N = 0; N < wK_ao_.size(); N++) {
+                wK_ao_[N]->hermitivitize();
+            }
+        }
+    }
+
+    // J_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joeJ.txt", false, false, true);
+    // K_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joeK.txt", false, false, true);
+    // wK_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joewK.txt", false, false, true);
 }
 void set_do_wK(bool do_wK) {
     if (do_wK) {
@@ -133,4 +138,5 @@ int MemDFJK::max_nocc() const {
     }
     return max_nocc;
 }
+void MemDFJK::set_do_wK(bool do_wK) { do_wK_ = do_wK; dfh_->set_do_wK(do_wK); }
 }
