@@ -43,7 +43,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/petitelist.h"
-#include "psi4/libmints/vector.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
@@ -288,7 +288,7 @@ void VBase::build_collocation_cache(size_t memory) {
     }
 }
 void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
-                               std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+                               std::vector<std::map<std::string, SharedVector_<double>>>& vv10_cache,
                                std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers, int ansatz) {
     // Densities should be set by the calling functional
     int rank = 0;
@@ -306,7 +306,7 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
     }
 
     // => Make the return and "interior" cache <=
-    std::vector<std::map<std::string, SharedVector>> vv10_tmp_cache;
+    std::vector<std::map<std::string, SharedVector_<double>>> vv10_tmp_cache;
     vv10_tmp_cache.resize(nlgrid.blocks().size());
 
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
@@ -337,21 +337,21 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
 
     // Leave this as a vector of maps in case we ever revisit the on-the fly manipulation
     vv10_cache.resize(1);
-    vv10_cache[0]["W"] = std::make_shared<Vector>("W Grid points", total_size);
-    vv10_cache[0]["X"] = std::make_shared<Vector>("X Grid points", total_size);
-    vv10_cache[0]["Y"] = std::make_shared<Vector>("Y Grid points", total_size);
-    vv10_cache[0]["Z"] = std::make_shared<Vector>("Z Grid points", total_size);
-    vv10_cache[0]["RHO"] = std::make_shared<Vector>("RHO Grid points", total_size);
-    vv10_cache[0]["W0"] = std::make_shared<Vector>("W0 Grid points", total_size);
-    vv10_cache[0]["KAPPA"] = std::make_shared<Vector>("KAPPA Grid points", total_size);
+    vv10_cache[0]["W"] = std::make_shared<Vector_<double>>("W Grid points", total_size);
+    vv10_cache[0]["X"] = std::make_shared<Vector_<double>>("X Grid points", total_size);
+    vv10_cache[0]["Y"] = std::make_shared<Vector_<double>>("Y Grid points", total_size);
+    vv10_cache[0]["Z"] = std::make_shared<Vector_<double>>("Z Grid points", total_size);
+    vv10_cache[0]["RHO"] = std::make_shared<Vector_<double>>("RHO Grid points", total_size);
+    vv10_cache[0]["W0"] = std::make_shared<Vector_<double>>("W0 Grid points", total_size);
+    vv10_cache[0]["KAPPA"] = std::make_shared<Vector_<double>>("KAPPA Grid points", total_size);
 
-    double* w_vecp = vv10_cache[0]["W"]->pointer();
-    double* x_vecp = vv10_cache[0]["X"]->pointer();
-    double* y_vecp = vv10_cache[0]["Y"]->pointer();
-    double* z_vecp = vv10_cache[0]["Z"]->pointer();
-    double* rho_vecp = vv10_cache[0]["RHO"]->pointer();
-    double* w0_vecp = vv10_cache[0]["W0"]->pointer();
-    double* kappa_vecp = vv10_cache[0]["KAPPA"]->pointer();
+    auto w_vecp = vv10_cache[0]["W"]->data();
+    auto x_vecp = vv10_cache[0]["X"]->data();
+    auto y_vecp = vv10_cache[0]["Y"]->data();
+    auto z_vecp = vv10_cache[0]["Z"]->data();
+    auto rho_vecp = vv10_cache[0]["RHO"]->data();
+    auto w0_vecp = vv10_cache[0]["W0"]->data();
+    auto kappa_vecp = vv10_cache[0]["KAPPA"]->data();
 
     size_t offset = 0;
     for (auto cache : vv10_tmp_cache) {
@@ -380,7 +380,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
 
     DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
-    std::vector<std::map<std::string, SharedVector>> vv10_cache;
+    std::vector<std::map<std::string, SharedVector_<double>>> vv10_cache;
     std::vector<std::shared_ptr<PointFunctions>> nl_point_workers;
     prepare_vv10_cache(nlgrid, D, vv10_cache, nl_point_workers);
 
@@ -418,7 +418,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
         pworker->compute_points(block);
 
         // Updates the vals map and returns the energy
-        std::map<std::string, SharedVector> vals = fworker->values();
+        std::map<std::string, SharedVector_<double>> vals = fworker->values();
 
         parallel_timer_on("Kernel", rank);
         vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block);
@@ -470,7 +470,7 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
     opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
 
     DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
-    std::vector<std::map<std::string, SharedVector>> vv10_cache;
+    std::vector<std::map<std::string, SharedVector_<double>>> vv10_cache;
     std::vector<std::shared_ptr<PointFunctions>> nl_point_workers;
     prepare_vv10_cache(nlgrid, D, vv10_cache, nl_point_workers, 2);
 
@@ -513,7 +513,7 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
         pworker->compute_points(block);
 
         // Updates the vals map and returns the energy
-        std::map<std::string, SharedVector> vals = fworker->values();
+        std::map<std::string, SharedVector_<double>> vals = fworker->values();
 
         parallel_timer_on("Kernel", rank);
         vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints, true);
@@ -911,7 +911,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
     }
 
     // Per [R]ank quantities
-    std::vector<std::shared_ptr<Vector>> R_rho_x, R_rho_y, R_rho_z;
+    std::vector<SharedVector_<double>> R_rho_x, R_rho_y, R_rho_z;
     std::vector<SharedMatrix> R_Vx_local;
     for (size_t i = 0; i < num_threads_; i++) {
         R_Vx_local.push_back(std::make_shared<Matrix>("Vx Temp", max_functions, max_functions));
@@ -956,7 +956,8 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
         // Compute functional values
 
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        std::map<std::string, SharedVector_<double>>& vals =
+            fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
         // => Grab quantities <= //
@@ -1174,18 +1175,18 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
     // Per [R]ank quantities
     std::vector<SharedMatrix> R_Vx_local, R_Dx_local;
-    std::vector<std::shared_ptr<Vector>> R_rho_k, R_rho_k_x, R_rho_k_y, R_rho_k_z, R_gamma_k;
+    std::vector<SharedVector_<double>> R_rho_k, R_rho_k_x, R_rho_k_y, R_rho_k_z, R_gamma_k;
     for (size_t i = 0; i < num_threads_; i++) {
         R_Vx_local.push_back(std::make_shared<Matrix>("Vx Temp", max_functions, max_functions));
         R_Dx_local.push_back(std::make_shared<Matrix>("Dk Temp", max_functions, max_functions));
 
-        R_rho_k.push_back(std::make_shared<Vector>("Rho K Temp", max_points));
+        R_rho_k.push_back(std::make_shared<Vector_<double>>("Rho K Temp", max_points));
 
         if (ansatz >= 1) {
-            R_rho_k_x.push_back(std::make_shared<Vector>("RHO K X Temp", max_points));
-            R_rho_k_y.push_back(std::make_shared<Vector>("RHO K Y Temp", max_points));
-            R_rho_k_z.push_back(std::make_shared<Vector>("Rho K Z Temp", max_points));
-            R_gamma_k.push_back(std::make_shared<Vector>("Gamma K Temp", max_points));
+            R_rho_k_x.push_back(std::make_shared<Vector_<double>>("RHO K X Temp", max_points));
+            R_rho_k_y.push_back(std::make_shared<Vector_<double>>("RHO K Y Temp", max_points));
+            R_rho_k_z.push_back(std::make_shared<Vector_<double>>("Rho K Z Temp", max_points));
+            R_gamma_k.push_back(std::make_shared<Vector_<double>>("Gamma K Temp", max_points));
         }
 
         functional_workers_[i]->set_deriv(2);
@@ -1229,7 +1230,8 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         // Compute functional values
 
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        std::map<std::string, SharedVector_<double>>& vals =
+            fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
         // => Grab quantities <= //
@@ -1451,7 +1453,7 @@ SharedMatrix RV::compute_gradient() {
         parallel_timer_off("Properties", rank);
 
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values());
+        std::map<std::string, SharedVector_<double>>& vals = fworker->compute_functional(pworker->point_values());
         parallel_timer_off("Functional", rank);
 
         parallel_timer_on("V_xc gradient", rank);
@@ -1549,13 +1551,13 @@ SharedMatrix RV::compute_hessian() {
 
     // Per thread temporaries
     std::vector<SharedMatrix> V_local;
-    std::vector<std::shared_ptr<Vector>> Q_temp;
+    std::vector<SharedVector_<double>> Q_temp;
     for (size_t i = 0; i < num_threads_; i++) {
         V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
-        Q_temp.push_back(std::make_shared<Vector>("Quadrature Tempt", max_points));
+        Q_temp.push_back(std::make_shared<Vector_<double>>("Quadrature Tempt", max_points));
     }
 
-    auto QT = std::make_shared<Vector>("Quadrature Temp", max_points);
+    auto QT = std::make_shared<Vector_<double>>("Quadrature Temp", max_points);
     double* QTp = QT->pointer();
     const std::vector<std::shared_ptr<BlockOPoints>>& blocks = grid_->blocks();
 
@@ -1595,9 +1597,9 @@ SharedMatrix RV::compute_hessian() {
         double** Up = U_local->pointer();
 
         // ACS TODO: these need to be threaded eventually, to fit in with the new infrastructure
-        auto Tmpx = std::make_shared<Vector>("Tx", max_functions);
-        auto Tmpy = std::make_shared<Vector>("Ty", max_functions);
-        auto Tmpz = std::make_shared<Vector>("Tz", max_functions);
+        auto Tmpx = std::make_shared<Vector_<double>>("Tx", max_functions);
+        auto Tmpy = std::make_shared<Vector_<double>>("Ty", max_functions);
+        auto Tmpz = std::make_shared<Vector_<double>>("Tz", max_functions);
         double* pTx = Tmpx->pointer();
         double* pTy = Tmpy->pointer();
         double* pTz = Tmpz->pointer();
@@ -1620,7 +1622,8 @@ SharedMatrix RV::compute_hessian() {
         int nlocal = function_map.size();
 
         pworker->compute_points(block);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        std::map<std::string, SharedVector_<double>>& vals =
+            fworker->compute_functional(pworker->point_values(), npoints);
 
         double** phi = pworker->basis_value("PHI")->pointer();
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
@@ -1902,12 +1905,12 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
 
     // Per thread temporaries
     std::vector<SharedMatrix> Va_local, Vb_local;
-    std::vector<std::shared_ptr<Vector>> Qa_temp, Qb_temp;
+    std::vector<SharedVector_<double>> Qa_temp, Qb_temp;
     for (size_t i = 0; i < num_threads_; i++) {
         Va_local.push_back(std::make_shared<Matrix>("Va Temp", max_functions, max_functions));
         Vb_local.push_back(std::make_shared<Matrix>("Vb Temp", max_functions, max_functions));
-        Qa_temp.push_back(std::make_shared<Vector>("Quadrature A Temp", max_points));
-        Qb_temp.push_back(std::make_shared<Vector>("Quadrature B Temp", max_points));
+        Qa_temp.push_back(std::make_shared<Vector_<double>>("Quadrature A Temp", max_points));
+        Qb_temp.push_back(std::make_shared<Vector_<double>>("Quadrature B Temp", max_points));
     }
 
     auto Va_AO = std::make_shared<Matrix>("Va Temp", nbf_, nbf_);
@@ -1936,8 +1939,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
         double** Va2p = Va_local[rank]->pointer();
         double** Vb2p = Vb_local[rank]->pointer();
-        double* QTap = Qa_temp[rank]->pointer();
-        double* QTbp = Qb_temp[rank]->pointer();
+        auto QTap = Qa_temp[rank]->pointer();
+        auto QTbp = Qb_temp[rank]->pointer();
 
         // Scratch
         double** Tap = pworker->scratch()[0]->pointer();
@@ -1957,7 +1960,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_off("Properties", rank);
 
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        std::map<std::string, SharedVector_<double>>& vals =
+            fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
         if (debug_ > 3) {
@@ -1967,11 +1971,11 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
 
         parallel_timer_on("V_xc", rank);
         double** phi = pworker->basis_value("PHI")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* rho_b = pworker->point_value("RHO_B")->pointer();
-        double* zk = vals["V"]->pointer();
-        double* v_rho_a = vals["V_RHO_A"]->pointer();
-        double* v_rho_b = vals["V_RHO_B"]->pointer();
+        auto rho_a = pworker->point_value("RHO_A")->data();
+        auto rho_b = pworker->point_value("RHO_B")->data();
+        auto zk = vals["V"]->data();
+        auto v_rho_a = vals["V_RHO_A"]->data();
+        auto v_rho_b = vals["V_RHO_B"]->data();
         size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // => Quadrature values <= //
@@ -2112,11 +2116,11 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     // Do we need VV10?
     double vv10_e = 0.0;
     if (functional_->needs_vv10()) {
-        SharedMatrix Ds = D_AO_[0]->clone();
+        auto Ds = D_AO_[0]->clone();
         Ds->axpy(1.0, D_AO_[1]);
         Ds->scale(0.5);  // Will be scaled by a factor of 2 in vv10_nlc
 
-        SharedMatrix V_vv10 = Ds->clone();
+        auto V_vv10 = Ds->clone();
         V_vv10->zero();
 
         vv10_e = vv10_nlc(Ds, V_vv10);
@@ -2208,30 +2212,30 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     // Per [R]ank quantities
     std::vector<SharedMatrix> R_Vax_local, R_Dax_local;
     std::vector<SharedMatrix> R_Vbx_local, R_Dbx_local;
-    std::vector<std::shared_ptr<Vector>> R_rho_ak, R_rho_ak_x, R_rho_ak_y, R_rho_ak_z, R_gamma_ak;
-    std::vector<std::shared_ptr<Vector>> R_rho_bk, R_rho_bk_x, R_rho_bk_y, R_rho_bk_z, R_gamma_bk;
-    std::vector<std::shared_ptr<Vector>> R_gamma_abk;
+    std::vector<SharedVector_<double>> R_rho_ak, R_rho_ak_x, R_rho_ak_y, R_rho_ak_z, R_gamma_ak;
+    std::vector<SharedVector_<double>> R_rho_bk, R_rho_bk_x, R_rho_bk_y, R_rho_bk_z, R_gamma_bk;
+    std::vector<SharedVector_<double>> R_gamma_abk;
     for (size_t i = 0; i < num_threads_; i++) {
         R_Vax_local.push_back(std::make_shared<Matrix>("Vax Temp", max_functions, max_functions));
         R_Vbx_local.push_back(std::make_shared<Matrix>("Vbx Temp", max_functions, max_functions));
         R_Dax_local.push_back(std::make_shared<Matrix>("Dak Temp", max_functions, max_functions));
         R_Dbx_local.push_back(std::make_shared<Matrix>("Dbk Temp", max_functions, max_functions));
 
-        R_rho_ak.push_back(std::make_shared<Vector>("Rho aK Temp", max_points));
-        R_rho_bk.push_back(std::make_shared<Vector>("Rho bK Temp", max_points));
+        R_rho_ak.push_back(std::make_shared<Vector_<double>>("Rho aK Temp", max_points));
+        R_rho_bk.push_back(std::make_shared<Vector_<double>>("Rho bK Temp", max_points));
 
         if (ansatz >= 1) {
-            R_rho_ak_x.push_back(std::make_shared<Vector>("RHO K X Temp", max_points));
-            R_rho_ak_y.push_back(std::make_shared<Vector>("RHO K Y Temp", max_points));
-            R_rho_ak_z.push_back(std::make_shared<Vector>("Rho K Z Temp", max_points));
-            R_gamma_ak.push_back(std::make_shared<Vector>("Gamma K Temp", max_points));
+            R_rho_ak_x.push_back(std::make_shared<Vector_<double>>("RHO K X Temp", max_points));
+            R_rho_ak_y.push_back(std::make_shared<Vector_<double>>("RHO K Y Temp", max_points));
+            R_rho_ak_z.push_back(std::make_shared<Vector_<double>>("Rho K Z Temp", max_points));
+            R_gamma_ak.push_back(std::make_shared<Vector_<double>>("Gamma K Temp", max_points));
 
-            R_rho_bk_x.push_back(std::make_shared<Vector>("RHO K X Temp", max_points));
-            R_rho_bk_y.push_back(std::make_shared<Vector>("RHO K Y Temp", max_points));
-            R_rho_bk_z.push_back(std::make_shared<Vector>("Rho K Z Temp", max_points));
-            R_gamma_bk.push_back(std::make_shared<Vector>("Gamma K Temp", max_points));
+            R_rho_bk_x.push_back(std::make_shared<Vector_<double>>("RHO K X Temp", max_points));
+            R_rho_bk_y.push_back(std::make_shared<Vector_<double>>("RHO K Y Temp", max_points));
+            R_rho_bk_z.push_back(std::make_shared<Vector_<double>>("Rho K Z Temp", max_points));
+            R_gamma_bk.push_back(std::make_shared<Vector_<double>>("Gamma K Temp", max_points));
 
-            R_gamma_abk.push_back(std::make_shared<Vector>("Gamma K Temp", max_points));
+            R_gamma_abk.push_back(std::make_shared<Vector_<double>>("Gamma K Temp", max_points));
         }
 
         functional_workers_[i]->set_deriv(2);
@@ -2279,7 +2283,8 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
         // Compute functional values
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        std::map<std::string, SharedVector_<double>>& vals =
+            fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
         // => Grab quantities <= //
@@ -2662,9 +2667,9 @@ SharedMatrix UV::compute_gradient() {
     }
 
     // Thread scratch
-    std::vector<std::shared_ptr<Vector>> Q_temp;
+    std::vector<SharedVector_<double>> Q_temp;
     for (size_t i = 0; i < num_threads_; i++) {
-        Q_temp.push_back(std::make_shared<Vector>("Quadrature Temp", max_points));
+        Q_temp.push_back(std::make_shared<Vector_<double>>("Quadrature Temp", max_points));
     }
 
     std::vector<double> functionalq(num_threads_);
@@ -2714,7 +2719,8 @@ SharedMatrix UV::compute_gradient() {
         parallel_timer_off("Properties", rank);
 
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        std::map<std::string, SharedVector_<double>>& vals =
+            fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
         // More pointers
@@ -2888,8 +2894,8 @@ SharedMatrix UV::compute_gradient() {
             double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
             double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
             double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
-            double* v_tau_a = vals["V_TAU_A"]->pointer();
-            double* v_tau_b = vals["V_TAU_B"]->pointer();
+            auto v_tau_a = vals["V_TAU_A"]->data();
+            auto v_tau_b = vals["V_TAU_B"]->data();
 
             double** phi_i[3];
             phi_i[0] = phi_x;

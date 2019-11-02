@@ -62,11 +62,11 @@ inline std::vector<double> rks_quadrature_integrate(std::shared_ptr<BlockOPoints
     double* w = block->w();
 
     // Superfunctional data
-    double* zk = fworker->value("V")->pointer();
-    double* QTp = fworker->value("Q_TMP")->pointer();
+    auto zk = fworker->value("V")->data();
+    auto QTp = fworker->value("Q_TMP")->data();
 
     // Points data
-    double* rho_a = pworker->point_value("RHO_A")->pointer();
+    auto rho_a = pworker->point_value("RHO_A")->pointer();
 
     // Build quadrature
     std::vector<double> ret(5);
@@ -135,7 +135,6 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
 
     // Points data
     double** phi = pworker->basis_value("PHI")->pointer();
-    double* rho_a = pworker->point_value("RHO_A")->pointer();
     size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
     // V2 Temporary
@@ -143,7 +142,7 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
     double** V2p = V->pointer();
 
     // => LSDA contribution (symmetrized) <= //
-    double* v_rho_a = fworker->value("V_RHO_A")->pointer();
+    auto v_rho_a = fworker->value("V_RHO_A")->data();
     for (int P = 0; P < npoints; P++) {
         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
         C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
@@ -159,7 +158,7 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
         double* rho_ax = pworker->point_value("RHO_AX")->pointer();
         double* rho_ay = pworker->point_value("RHO_AY")->pointer();
         double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-        double* v_sigma_aa = fworker->value("V_GAMMA_AA")->pointer();
+        auto v_sigma_aa = fworker->value("V_GAMMA_AA")->data();
 
         for (int P = 0; P < npoints; P++) {
             C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
@@ -185,7 +184,7 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
         double** phix = pworker->basis_value("PHI_X")->pointer();
         double** phiy = pworker->basis_value("PHI_Y")->pointer();
         double** phiz = pworker->basis_value("PHI_Z")->pointer();
-        double* v_tau_a = fworker->value("V_TAU_A")->pointer();
+        auto v_tau_a = fworker->value("V_TAU_A")->data();
 
         double** phi_w[3];
         phi_w[0] = phix;
@@ -231,11 +230,10 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
     double** phi_x = pworker->basis_value("PHI_X")->pointer();
     double** phi_y = pworker->basis_value("PHI_Y")->pointer();
     double** phi_z = pworker->basis_value("PHI_Z")->pointer();
-    double* rho_a = pworker->point_value("RHO_A")->pointer();
     size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
     // => LSDA Contribution <= //
-    double* v_rho_a = fworker->value("V_RHO_A")->pointer();
+    auto v_rho_a = fworker->value("V_RHO_A")->data();
     for (int P = 0; P < npoints; P++) {
         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
         C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tp[P], 1);
@@ -246,7 +244,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         double* rho_ax = pworker->point_value("RHO_AX")->pointer();
         double* rho_ay = pworker->point_value("RHO_AY")->pointer();
         double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-        double* v_gamma_aa = fworker->value("V_GAMMA_AA")->pointer();
+        auto v_gamma_aa = fworker->value("V_GAMMA_AA")->data();
 
         for (int P = 0; P < npoints; P++) {
             C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), phi_x[P], 1, Tp[P], 1);
@@ -277,7 +275,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         double* rho_ax = pworker->point_value("RHO_AX")->pointer();
         double* rho_ay = pworker->point_value("RHO_AY")->pointer();
         double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-        double* v_gamma_aa = fworker->value("V_GAMMA_AA")->pointer();
+        auto v_gamma_aa = fworker->value("V_GAMMA_AA")->data();
 
         C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, Up[0],
                 max_functions);
@@ -327,7 +325,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
         double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
         double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
-        double* v_tau_a = fworker->value("V_TAU_A")->pointer();
+        auto v_tau_a = fworker->value("V_TAU_A")->data();
 
         double** phi_i[3];
         phi_i[0] = phi_x;

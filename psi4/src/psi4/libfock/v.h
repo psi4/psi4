@@ -28,12 +28,14 @@
 
 #ifndef LIBFOCK_DFT_H
 #define LIBFOCK_DFT_H
-#include "psi4/libmints/typedefs.h"
-#include "psi4/pragma.h"
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <string>
+
+#include "psi4/pragma.h"
+#include "psi4/libmints/tensor.h"
+#include "psi4/libmints/typedefs.h"
 
 namespace psi {
 class BasisSet;
@@ -96,7 +98,7 @@ class PSI_API VBase {
 
     // VV10 dispersion, return vv10_nlc energy
     void prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
-                            std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+                            std::vector<std::map<std::string, SharedVector_<double>>>& vv10_cache,
                             std::vector<std::shared_ptr<PointFunctions>>& nl_point_workers, int ansatz = 1);
     double vv10_nlc(SharedMatrix D, SharedMatrix ret);
     SharedMatrix vv10_nlc_gradient(SharedMatrix D);
@@ -194,5 +196,5 @@ class UV : public VBase {
 
     void print_header() const override;
 };
-}
+}  // namespace psi
 #endif

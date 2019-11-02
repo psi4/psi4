@@ -29,10 +29,11 @@
 #ifndef LibXC_FUNCTIONAL_H
 #define LibXC_FUNCTIONAL_H
 
-#include "psi4/libfunctional/functional.h"
-#include "psi4/libmints/typedefs.h"
-
 #include <map>
+
+#include "psi4/libfunctional/functional.h"
+#include "psi4/libmints/tensor.h"
+#include "psi4/libmints/typedefs.h"
 
 struct xc_func_type;
 
@@ -72,8 +73,8 @@ class LibXCFunctional : public Functional {
     LibXCFunctional(std::string xc_name, bool unpolarized);
     ~LibXCFunctional() override;
 
-    void compute_functional(const std::map<std::string, SharedVector>& in,
-                            const std::map<std::string, SharedVector>& out, int npoints, int deriv) override;
+    void compute_functional(const std::map<std::string, SharedVector_<double>>& in,
+                            const std::map<std::string, SharedVector_<double>>& out, int npoints, int deriv) override;
 
     // Clones a *worker* for the functional. This is not a complete functional
     std::shared_ptr<Functional> build_worker() override;
@@ -96,6 +97,6 @@ class LibXCFunctional : public Functional {
     double vv10_c() { return vv10_c_; }
     double density_cutoff() { return density_cutoff_; }
 };
-}
+}  // namespace psi
 
 #endif
