@@ -50,6 +50,12 @@ macro(psi4_add_module binlib libname sources)
   endif()
 
   add_library(${libname} STATIC "${${sources}}")
+  # Always color output (even when using Ninja)
+  target_compile_options(${libname}
+    PRIVATE
+      $<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>
+      $<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>
+    )
   set_target_properties(${libname}
     PROPERTIES
       CXX_VISIBILITY_PRESET hidden
