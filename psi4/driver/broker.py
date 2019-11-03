@@ -30,7 +30,6 @@ import string
 import sys
 import time
 import numpy as np
-from numpy.testing import assert_array_almost_equal as assert_equal
 
 import psi4
 try:
