@@ -38,8 +38,10 @@ try:
     ipi_available = True
 except ImportError:
     ipi_available = False
+
     # Define Client to enable testing of the Broker in the unittests
-    class Client(): pass
+    class Client():
+        pass
 
 
 class IPIBroker(Client):
@@ -52,8 +54,7 @@ class IPIBroker(Client):
         elif serverdata:
             mode, address, port = serverdata.split(":")
             mode = string.lower(mode)
-            super(IPIBroker, self).__init__(address=address, port=port,
-                                      mode=mode)
+            super(IPIBroker, self).__init__(address=address, port=port, mode=mode)
         else:
             super(IPIBroker, self).__init__(_socket=False)
         self.options = options
