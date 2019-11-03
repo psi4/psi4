@@ -47,11 +47,12 @@ before_install:
   - free -m
   - df -h
   - ulimit -a
-  - mkdir -p $HOME/miniconda
+  - mkdir -p $HOME/miniconda $HOME/Deps
 
 install:
+  - ./.scripts/ninja.sh
   - ./.scripts/miniconda.sh
-  - export PATH="$HOME/miniconda/bin:$PATH"
+  - export PATH="$HOME/miniconda/bin:$HOME/Deps/ninja:$PATH"
   - conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
   - source activate p4env
   - >
@@ -89,7 +90,7 @@ before_script:
     #   reasons, pkgs are being compiled less statically, sad for CI.
     # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
   - >
-      cmake -Bbuild -H.
+      cmake -Bbuild -H. -GNinja
       -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
       -DCMAKE_C_COMPILER=${C_COMPILER}
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
