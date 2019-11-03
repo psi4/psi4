@@ -43,8 +43,7 @@ except ImportError:
 
 
 class IPIBroker(Client):
-    def __init__(self, options, genbas=None, serverdata=False,
-                 molecule=None):
+    def __init__(self, options, serverdata=False, molecule=None):
         self.serverdata = serverdata
         if not ipi_available:
             psi4.core.print_out("i-pi is not available for import: ")
