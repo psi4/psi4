@@ -27,6 +27,7 @@
  */
 
 #include "cubature.h"
+#include "gridblocker.h"
 
 #include <cassert>
 #include <cctype>
@@ -35,8 +36,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "gridblocker.h"
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/basisset.h"
@@ -3937,8 +3936,8 @@ void BasisExtents::print(std::string out) {
     }
     printer->Printf("\n\n");
 }
-BlockOPoints::BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
-                           std::shared_ptr<BasisExtents> extents)
+BlockOPoints::BlockOPoints(SharedVector_<double> x, SharedVector_<double> y, SharedVector_<double> z,
+                           SharedVector_<double> w, std::shared_ptr<BasisExtents> extents)
     : index_(0),
       npoints_(x->dimpi().sum()),
       xvec_(x),

@@ -29,6 +29,9 @@
 #ifndef libmints_cubature_H
 #define libmints_cubature_H
 
+#include <map>
+#include <vector>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/pragma.h"
 
@@ -36,14 +39,10 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/vector3.h"
 
-#include <map>
-#include <vector>
-
 namespace psi {
 
 class BasisSet;
 class Matrix;
-class Vector;
 class BasisExtents;
 class BlockOPoints;
 class RadialGrid;
@@ -351,10 +350,10 @@ class BlockOPoints {
     size_t local_nbf_;
 
     /// Data holders if requested
-    SharedVector xvec_;
-    SharedVector yvec_;
-    SharedVector zvec_;
-    SharedVector wvec_;
+    SharedVector_<double> xvec_;
+    SharedVector_<double> yvec_;
+    SharedVector_<double> zvec_;
+    SharedVector_<double> wvec_;
 
     /// Pointer to x (does not own)
     double* x_;
@@ -382,7 +381,8 @@ class BlockOPoints {
     void bound();
 
    public:
-    BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w, std::shared_ptr<BasisExtents> extents);
+    BlockOPoints(SharedVector_<double> x, SharedVector_<double> y, SharedVector_<double> z, SharedVector_<double> w,
+                 std::shared_ptr<BasisExtents> extents);
     BlockOPoints(size_t index, size_t npoints, double* x, double* y, double* z, double* w,
                  std::shared_ptr<BasisExtents> extents);
     virtual ~BlockOPoints();

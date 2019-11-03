@@ -26,21 +26,24 @@
  * @END LICENSE
  */
 
-#include "psi4/libqt/qt.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libpsi4util/exception.h"
-#include "psi4/libsapt_solver/fdds_disp.h"
-#include "psi4/libmints/3coverlap.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/lib3index/dfhelper.h"
+#include "fdds_disp.h"
 
 #include <iomanip>
+
+#include "psi4/psi4-dec.h"
+
+#include "psi4/lib3index/dfhelper.h"
+#include "psi4/libmints/3coverlap.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/tensor.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libqt/qt.h"
 
 // OMP
 #ifdef _OPENMP
@@ -51,9 +54,20 @@ namespace psi {
 
 namespace sapt {
 
+namespace detail {
+auto convert_vector_cache(std::map<std::string, SharedVector> vector_cache)
+    -> std::map<std::string, SharedVector_<double>> {
+    std::map<std::string, SharedVector_<double>> cache;
+    for (auto& kv : vector_cache) {
+        cache[kv.first] = transmute<double>(kv.second);
+    }
+    return cache;
+}
+}  // namespace detail
+
 FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  std::map<std::string, SharedMatrix> matrix_cache,
-                                 std::map<std::string, SharedVector> vector_cache)
+                                 std::map<std::string, SharedVector_<double>> vector_cache)
     : primary_(primary), auxiliary_(auxiliary), matrix_cache_(matrix_cache), vector_cache_(vector_cache) {
     Options& options = Process::environment.options;
 
@@ -174,6 +188,11 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     dfh_->transform();
 }
 
+FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                                 std::map<std::string, SharedMatrix> matrix_cache,
+                                 std::map<std::string, SharedVector> vector_cache)
+    : FDDS_Dispersion(primary, auxiliary, matrix_cache, detail::convert_vector_cache(vector_cache)) {}
+
 FDDS_Dispersion::~FDDS_Dispersion() {}
 
 std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedMatrix> densities) {
@@ -222,6 +241,11 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
     // Build result and temp vectors
+    // std::vector<SharedVector_<double>> aux_dens;
+    // for (size_t i = 0; i < densities.size(); i++) {
+    //    aux_dens.push_back(std::make_shared<Vector_<double>>(naux));
+    //}
+    // FIXME Remove these in favor of the above
     std::vector<SharedVector> aux_dens;
     for (size_t i = 0; i < densities.size(); i++) {
         aux_dens.push_back(std::make_shared<Vector>(naux));
@@ -284,6 +308,12 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     df_pairs.clear();
 
     // ==> Contract (R|pq) Dpq <== //
+    // std::vector<SharedVector_<double>> aux_dens_inv;
+    // for (size_t i = 0; i < densities.size(); i++) {
+    //    aux_dens_inv.push_back(std::make_shared<Vector_<double>>(naux));
+    //    aux_dens_inv[i]->gemv(false, 1.0, metric_inv_.get(), aux_dens[i].get(), 0.0);
+    //}
+    // FIXME Remove these in favor of the above
     std::vector<SharedVector> aux_dens_inv;
     for (size_t i = 0; i < densities.size(); i++) {
         aux_dens_inv.push_back(std::make_shared<Vector>(naux));
@@ -378,7 +408,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
 
 SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double omega) {
     // ==> Configuration <==
-    SharedVector eps_occ, eps_vir;
+    SharedVector_<double> eps_occ, eps_vir;
     std::string ovQ_tensor_name;
 
     if (monomer == "A") {

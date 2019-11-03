@@ -379,7 +379,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
     opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
     opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
 
-    DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+    auto nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
     std::vector<std::map<std::string, SharedVector_<double>>> vv10_cache;
     std::vector<std::shared_ptr<PointFunctions>> nl_point_workers;
     prepare_vv10_cache(nlgrid, D, vv10_cache, nl_point_workers);
@@ -418,7 +418,7 @@ double VBase::vv10_nlc(SharedMatrix D, SharedMatrix ret) {
         pworker->compute_points(block);
 
         // Updates the vals map and returns the energy
-        std::map<std::string, SharedVector_<double>> vals = fworker->values();
+        auto vals = fworker->values();
 
         parallel_timer_on("Kernel", rank);
         vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block);

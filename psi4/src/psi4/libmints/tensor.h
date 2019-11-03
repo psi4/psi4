@@ -48,7 +48,6 @@
 #include "tensor_impl.h"
 #include "tensor_impl_matrix.h"
 #include "tensor_impl_vector.h"
-#include "vector.h"
 
 namespace psi {
 template <typename T, size_t Rank>
@@ -194,23 +193,6 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
     explicit Tensor(int dim, T fill_value = static_cast<T>(0))
         : Tensor("", 1, std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{dim})}}, 0,
                  fill_value) {}
-    /*! Conversion from Vector
-     *  \param[in] v
-     */
-    template <typename T_ = T, size_t Rank_ = Rank, typename = std::enable_if_t<detail::is_double_v<T_>>,
-              typename = std::enable_if_t<detail::is_rank1_v<Rank_>>>
-    PSI_DEPRECATED(
-        "Using the `Vector` to `Tensor` converting constructor instead of `Tensor` directly is deprecated, and in 1.4 "
-        "it will stop working")
-    Tensor(const Vector& v)
-        : Tensor(v.name(), v.dimpi().n(), v.dimpi(), 0) {
-        // Element-by-element copy
-        for (int h = 0; h < store_.size(); ++h) {
-            for (auto i = 0; i < v.dim(h); ++i) {
-                store_[h][i] = v.get(h, i);
-            }
-        }
-    }
     /*! @}*/
 
     /*! @{ Rank-2 CTORs */

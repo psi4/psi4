@@ -33,6 +33,7 @@
 
 #include "dimension.h"
 #include "tensor_impl.h"
+#include "vector.h"
 
 namespace psi {
 template <typename T, size_t Rank>
@@ -65,4 +66,34 @@ struct RankDependentImpl<Vector_<T>> {
     static std::string pyClassName() noexcept { return "Vector_" + detail::Type2String<T>::suffix(); }
 };
 }  // namespace detail
+
+/*! Conversion from Vector
+ *  \param[in] v
+ */
+template <typename T>
+auto transmute(const Vector& v) -> Tensor<T, 1> {
+    auto vec = Tensor<T, 1>(v.name(), v.dimpi(), 0);
+    // Element-by-element copy
+    for (int h = 0; h < vec.nirrep(); ++h) {
+        for (auto i = 0; i < v.dim(h); ++i) {
+            vec.set(h, i, v.get(h, i));
+        }
+    }
+    return vec;
+}
+
+/*! Conversion from SharedVector
+ *  \param[in] v
+ */
+template <typename T>
+auto transmute(const std::shared_ptr<Vector>& v) -> SharedTensor<T, 1> {
+    auto vec = std::make_shared<Tensor<T, 1>>(v->name(), v->dimpi(), 0);
+    // Element-by-element copy
+    for (int h = 0; h < vec->nirrep(); ++h) {
+        for (auto i = 0; i < v->dim(h); ++i) {
+            vec->set(h, i, v->get(h, i));
+        }
+    }
+    return vec;
+}
 }  // namespace psi

@@ -29,6 +29,7 @@
 #ifndef FDDS_DISP_H
 #define FDDS_DISP_H
 
+#include "psi4/libmints/tensor.h"
 #include "psi4/libmints/typedefs.h"
 
 namespace psi {
@@ -58,7 +59,7 @@ class FDDS_Dispersion {
 
     // Cache map
     std::map<std::string, SharedMatrix> matrix_cache_;
-    std::map<std::string, SharedVector> vector_cache_;
+    std::map<std::string, SharedVector_<double>> vector_cache_;
 
    public:
     /**
@@ -68,6 +69,11 @@ class FDDS_Dispersion {
      * @param cache     A data cache containing "Cocc_A", "Cvir_A", "eps_occ_A", "eps_vir_A", "Cocc_B",
      * "Cvir_B", "eps_occ_B", "eps_vir_B" quantities
      */
+    FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                    std::map<std::string, SharedMatrix> matrix_cache,
+                    std::map<std::string, SharedVector_<double>> vector_cache);
+    PSI_DEPRECATED(
+        "Using `SharedVector` instead of `SharedVector_<double>` is deprecated, and in 1.4 it will stop working")
     FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                     std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache);
 
@@ -107,6 +113,10 @@ class FDDS_Dispersion {
     SharedMatrix aux_overlap() { return aux_overlap_; }
 
 };  // End FDDS_Dispersion
+namespace detail {
+auto convert_vector_cache(std::map<std::string, SharedVector> vector_cache)
+    -> std::map<std::string, SharedVector_<double>>;
+}  // namespace detail
 }  // namespace sapt
 }  // namespace psi
 

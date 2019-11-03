@@ -65,7 +65,7 @@ struct Decorator<T, 1> final {
     using Class = Tensor<T, 1>;
     using PyClass = py::class_<Class, std::shared_ptr<Class>>;
 
-    static void decorate(py::module& /* mod */, PyClass& cls) {
+    static void decorate(py::module& mod, PyClass& cls) {
         cls.def(py::init<const std::string&, const Dimension&, T>(), "Labeled, blocked vector", "label"_a, "dimpi"_a,
                 "fill_value"_a = static_cast<T>(0));
         cls.def(py::init<const std::string&, int, T>(), "Labeled, 1-irrep vector", "label"_a, "dim"_a,
@@ -75,6 +75,14 @@ struct Decorator<T, 1> final {
         cls.def(py::init<int, T>(), "Unlabeled, 1-irrep vector", "dim"_a, "fill_value"_a = static_cast<T>(0));
         cls.def_property_readonly("dimpi", [](const Class& obj) { return obj.dimpi(); }, py::return_value_policy::copy,
                                   "Return the Dimension object");
+
+        // Bind free functions to module
+        declareRank1FreeFunctions(mod);
+    }
+
+    static void declareRank1FreeFunctions(py::module& mod) {
+        // Conversion from SharedVector to SharedVector_<double>
+        mod.def("transmute", [](const SharedVector& v) { return transmute<double>(v); }, "v"_a);
     }
 };
 
