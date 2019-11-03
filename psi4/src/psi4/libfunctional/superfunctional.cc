@@ -739,8 +739,8 @@ std::map<std::string, SharedVector_<double>> SuperFunctional::compute_vv10_cache
 
     auto w0p = vv_values_["W0"]->data();
     auto kappap = vv_values_["KAPPA"]->data();
-    auto rhop = vals.find("RHO_A")->second->data();
-    auto gammap = vals.find("GAMMA_AA")->second->data();
+    auto rhop = vals.at("RHO_A")->data();
+    auto gammap = vals.at("GAMMA_AA")->data();
 
 // Eh, worth a shot
 #pragma omp simd
@@ -761,7 +761,7 @@ std::map<std::string, SharedVector_<double>> SuperFunctional::compute_vv10_cache
         return vv_values_;
     }
 
-    // printf("Nact/Ntot %zu / %d\n", nact, npoints);
+    // outfile->Printf("Nact/Ntot %zu / %d\n", nact, npoints);
     // Sieve the results
     auto w_vec = std::make_shared<Vector_<double>>("W Grid points", nact);
     auto x_vec = std::make_shared<Vector_<double>>("X Grid points", nact);

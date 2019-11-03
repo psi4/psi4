@@ -333,7 +333,7 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
         total_size += cache["W"]->dimpi()[0];
     }
 
-    // printf("VV10 NL Total size %zu\n", total_size);
+    // outfile->Printf("VV10 NL Total size %zu\n", total_size);
 
     // Leave this as a vector of maps in case we ever revisit the on-the fly manipulation
     vv10_cache.resize(1);
@@ -356,13 +356,13 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
     size_t offset = 0;
     for (auto cache : vv10_tmp_cache) {
         size_t csize = cache["W"]->dimpi()[0];
-        C_DCOPY(csize, cache["W"]->pointer(), 1, (w_vecp + offset), 1);
-        C_DCOPY(csize, cache["X"]->pointer(), 1, (x_vecp + offset), 1);
-        C_DCOPY(csize, cache["Y"]->pointer(), 1, (y_vecp + offset), 1);
-        C_DCOPY(csize, cache["Z"]->pointer(), 1, (z_vecp + offset), 1);
-        C_DCOPY(csize, cache["RHO"]->pointer(), 1, (rho_vecp + offset), 1);
-        C_DCOPY(csize, cache["W0"]->pointer(), 1, (w0_vecp + offset), 1);
-        C_DCOPY(csize, cache["KAPPA"]->pointer(), 1, (kappa_vecp + offset), 1);
+        C_DCOPY(csize, cache["W"]->data(), 1, (w_vecp + offset), 1);
+        C_DCOPY(csize, cache["X"]->data(), 1, (x_vecp + offset), 1);
+        C_DCOPY(csize, cache["Y"]->data(), 1, (y_vecp + offset), 1);
+        C_DCOPY(csize, cache["Z"]->data(), 1, (z_vecp + offset), 1);
+        C_DCOPY(csize, cache["RHO"]->data(), 1, (rho_vecp + offset), 1);
+        C_DCOPY(csize, cache["W0"]->data(), 1, (w0_vecp + offset), 1);
+        C_DCOPY(csize, cache["KAPPA"]->data(), 1, (kappa_vecp + offset), 1);
 
         offset += csize;
     }

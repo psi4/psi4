@@ -29,16 +29,17 @@
 #include "points.h"
 #include "cubature.h"
 
+#include <cmath>
+
+#include "gau2grid/gau2grid.h"
+
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/tensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libqt/qt.h"
-
-#include "gau2grid/gau2grid.h"
-
-#include <cmath>
 
 namespace psi {
 
@@ -186,7 +187,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 
     // => Build LSDA quantities <= //
     double** phip = basis_value("PHI")->pointer();
-    double* rhoap = point_value("RHO_A")->data();
+    auto rhoap = point_value("RHO_A")->data();
     size_t coll_funcs = basis_value("PHI")->ncol();
 
     // Rho_a = 2.0 * D_xy phi_xa phi_ya
@@ -201,10 +202,10 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* rhoaxp = point_value("RHO_AX")->data();
-        double* rhoayp = point_value("RHO_AY")->data();
-        double* rhoazp = point_value("RHO_AZ")->data();
-        double* gammaaap = point_value("GAMMA_AA")->data();
+        auto rhoaxp = point_value("RHO_AX")->data();
+        auto rhoayp = point_value("RHO_AY")->data();
+        auto rhoazp = point_value("RHO_AZ")->data();
+        auto gammaaap = point_value("GAMMA_AA")->data();
 
         for (int P = 0; P < npoints; P++) {
             // 2.0 for Px D P + P D Px
@@ -223,7 +224,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* taup = point_value("TAU_A")->data();
+        auto taup = point_value("TAU_A")->data();
 
         std::fill(taup, taup + npoints, 0.0);
 
@@ -709,38 +710,34 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     // Declare tmps
     std::vector<double> center(3, 0.0);
 
-    // Declare pointers
-    double *tmpp, *tmp_xp, *tmp_yp, *tmp_zp;
-    double *tmp_xxp, *tmp_xyp, *tmp_xzp, *tmp_yyp, *tmp_yzp, *tmp_zzp;
-    double *valuesp, *values_xp, *values_yp, *values_zp;
-    double *values_xxp, *values_xyp, *values_xzp, *values_yyp, *values_yzp, *values_zzp;
+    auto is_in_temps = [temps = this->basis_temps_](const std::string& k) -> bool { return is_key_in_map(temps, k); };
+    auto is_in_values = [values = this->basis_values_](const std::string& k) -> bool {
+        return is_key_in_map(values, k);
+    };
 
-    if (deriv_ >= 0) {
-        tmpp = basis_temps_["PHI"]->pointer()[0];
-        valuesp = basis_values_["PHI"]->pointer()[0];
-    }
-    if (deriv_ >= 1) {
-        tmp_xp = basis_temps_["PHI_X"]->pointer()[0];
-        tmp_yp = basis_temps_["PHI_Y"]->pointer()[0];
-        tmp_zp = basis_temps_["PHI_Z"]->pointer()[0];
-        values_xp = basis_values_["PHI_X"]->pointer()[0];
-        values_yp = basis_values_["PHI_Y"]->pointer()[0];
-        values_zp = basis_values_["PHI_Z"]->pointer()[0];
-    }
-    if (deriv_ >= 2) {
-        tmp_xxp = basis_temps_["PHI_XX"]->pointer()[0];
-        tmp_xyp = basis_temps_["PHI_XY"]->pointer()[0];
-        tmp_xzp = basis_temps_["PHI_XZ"]->pointer()[0];
-        tmp_yyp = basis_temps_["PHI_YY"]->pointer()[0];
-        tmp_yzp = basis_temps_["PHI_YZ"]->pointer()[0];
-        tmp_zzp = basis_temps_["PHI_ZZ"]->pointer()[0];
-        values_xxp = basis_values_["PHI_XX"]->pointer()[0];
-        values_xyp = basis_values_["PHI_XY"]->pointer()[0];
-        values_xzp = basis_values_["PHI_XZ"]->pointer()[0];
-        values_yyp = basis_values_["PHI_YY"]->pointer()[0];
-        values_yzp = basis_values_["PHI_YZ"]->pointer()[0];
-        values_zzp = basis_values_["PHI_ZZ"]->pointer()[0];
-    }
+    // Declare pointers
+    auto tmpp = is_in_temps("PHI") ? basis_temps_.at("PHI")->pointer()[0] : nullptr;
+    auto valuesp = is_in_values("PHI") ? basis_values_.at("PHI")->pointer()[0] : nullptr;
+
+    auto tmp_xp = is_in_temps("PHI_X") ? basis_temps_.at("PHI_X")->pointer()[0] : nullptr;
+    auto tmp_yp = is_in_temps("PHI_Y") ? basis_temps_.at("PHI_Y")->pointer()[0] : nullptr;
+    auto tmp_zp = is_in_temps("PHI_Z") ? basis_temps_.at("PHI_Z")->pointer()[0] : nullptr;
+    auto values_xp = is_in_values("PHI_X") ? basis_values_.at("PHI_X")->pointer()[0] : nullptr;
+    auto values_yp = is_in_values("PHI_Y") ? basis_values_.at("PHI_Y")->pointer()[0] : nullptr;
+    auto values_zp = is_in_values("PHI_Z") ? basis_values_.at("PHI_Z")->pointer()[0] : nullptr;
+
+    auto tmp_xxp = is_in_temps("PHI_XX") ? basis_temps_["PHI_XX"]->pointer()[0] : nullptr;
+    auto tmp_xyp = is_in_temps("PHI_XY") ? basis_temps_["PHI_XY"]->pointer()[0] : nullptr;
+    auto tmp_xzp = is_in_temps("PHI_XZ") ? basis_temps_["PHI_XZ"]->pointer()[0] : nullptr;
+    auto tmp_yyp = is_in_temps("PHI_YY") ? basis_temps_["PHI_YY"]->pointer()[0] : nullptr;
+    auto tmp_yzp = is_in_temps("PHI_YZ") ? basis_temps_["PHI_YZ"]->pointer()[0] : nullptr;
+    auto tmp_zzp = is_in_temps("PHI_ZZ") ? basis_temps_["PHI_ZZ"]->pointer()[0] : nullptr;
+    auto values_xxp = is_in_values("PHI_XX") ? basis_values_["PHI_XX"]->pointer()[0] : nullptr;
+    auto values_xyp = is_in_values("PHI_XY") ? basis_values_["PHI_XY"]->pointer()[0] : nullptr;
+    auto values_xzp = is_in_values("PHI_XZ") ? basis_values_["PHI_XZ"]->pointer()[0] : nullptr;
+    auto values_yyp = is_in_values("PHI_YY") ? basis_values_["PHI_YY"]->pointer()[0] : nullptr;
+    auto values_yzp = is_in_values("PHI_YZ") ? basis_values_["PHI_YZ"]->pointer()[0] : nullptr;
+    auto values_zzp = is_in_values("PHI_ZZ") ? basis_values_["PHI_ZZ"]->pointer()[0] : nullptr;
 
     int nvals = 0;
     for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {

@@ -371,8 +371,8 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
             if (store_[h].size() == 0) {
                 retval << "    (empty)" << std::endl;
             } else {
-                retval << xt::print_options::line_width(120) << xt::print_options::precision(14) << store_[h]
-                       << std::endl;
+                retval << xt::print_options::threshold(10000) << xt::print_options::line_width(120)
+                       << xt::print_options::precision(14) << store_[h] << std::endl;
             }
             retval << std::endl;
         }

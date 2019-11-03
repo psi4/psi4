@@ -31,9 +31,10 @@
 
 #include "psi4/pragma.h"
 
-#include <cctype>
 #include <algorithm>
+#include <cctype>
 #include <chrono>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -86,6 +87,11 @@ bool iequals(const Range1T &Input, const Range2T &Test) {
 
 std::vector<std::string> split(const std::string &input, const std::string &regex);
 
+template <typename T>
+inline auto is_key_in_map(const std::map<std::string, T> &m, const std::string &k) -> bool {
+    return m.find(k) != m.end();
+};
+
 /**
  * @brief Compute the Levenshtein distance between two strings
  * @param s1 string to compute against
@@ -104,6 +110,6 @@ class PSI_API Timer {
 };
 
 void generate_combinations(int n, int k, std::vector<std::vector<int>> &combinations);
-}
+}  // namespace psi
 
 #endif  // _psi_src_lib_libpsi4util_libpsi4util_h_

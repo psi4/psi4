@@ -7,6 +7,12 @@ target_compile_definitions(core
   PRIVATE
     $<$<CXX_COMPILER_ID:Intel>:PYBIND11_CPP14>
   )
+# Always color output (even when using Ninja)
+target_compile_options(core
+  PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>
+    $<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>
+  )
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)

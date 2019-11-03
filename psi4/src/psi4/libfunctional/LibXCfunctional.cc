@@ -29,18 +29,20 @@
 #include "functional.h"
 #include "LibXCfunctional.h"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
-#include <algorithm>
 
 // LibXC helper utility for setter functions, not really supposed to do this
 #include <xc.h>
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libqt/qt.h"
+
 #include "psi4/libmints/tensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -381,12 +383,6 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
     return ret;
 }
 
-namespace detail {
-auto is_key_in_map(const std::map<std::string, SharedVector_<double>>& m, const std::string& k) -> bool {
-    return m.find(k) != m.end();
-};
-}  // namespace detail
-
 void LibXCFunctional::compute_functional(const std::map<std::string, SharedVector_<double>>& in,
                                          const std::map<std::string, SharedVector_<double>>& out, int npoints,
                                          int deriv) {
@@ -405,7 +401,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
     }
 
     // => Input variables <= //
-    auto is_input_var = [&in](const std::string& k) -> bool { return detail::is_key_in_map(in, k); };
+    auto is_input_var = [&in](const std::string& k) -> bool { return is_key_in_map(in, k); };
 
     auto rho_ap = is_input_var("RHO_A") ? in.at("RHO_A")->data() : nullptr;
     auto rho_bp = is_input_var("RHO_B") ? in.at("RHO_B")->data() : nullptr;
@@ -418,7 +414,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
     // auto lapl_bp   = is_input_var("LAPL_RHO_B") ? in.at("LAPL_RHO_B")->data(): nullptr;
 
     // => Output variables <= //
-    auto is_output_var = [&out](const std::string& k) -> bool { return detail::is_key_in_map(out, k); };
+    auto is_output_var = [&out](const std::string& k) -> bool { return is_key_in_map(out, k); };
 
     auto v = (is_output_var("V") and exc_) ? out.at("V")->data() : nullptr;
 

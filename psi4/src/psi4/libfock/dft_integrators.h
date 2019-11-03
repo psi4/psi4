@@ -155,9 +155,9 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
         double** phix = pworker->basis_value("PHI_X")->pointer();
         double** phiy = pworker->basis_value("PHI_Y")->pointer();
         double** phiz = pworker->basis_value("PHI_Z")->pointer();
-        double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-        double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-        double* rho_az = pworker->point_value("RHO_AZ")->pointer();
+        auto rho_ax = pworker->point_value("RHO_AX")->data();
+        auto rho_ay = pworker->point_value("RHO_AY")->data();
+        auto rho_az = pworker->point_value("RHO_AZ")->data();
         auto v_sigma_aa = fworker->value("V_GAMMA_AA")->data();
 
         for (int P = 0; P < npoints; P++) {
