@@ -47,3 +47,53 @@ compare_values(wb97_04, E, 6, 'wB97 [omega=rev]')  #TEST
 E = energy('wb97x')
 compare_values(wb97x_03, E, 6, 'wB97x [omega=rev]')  #TEST
 
+
+set scf_type disk_df
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=default=0.4]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=default=0.3]')  #TEST
+
+set dft_omega 2.0
+
+E = energy('wb97')
+compare_values(wb97_20, E, 6, 'wB97 [omega=2.0]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_20, E, 6, 'wB97x [omega=2.0]')  #TEST
+
+revoke_global_option_changed('DFT_OMEGA')
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=rev]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=rev]')  #TEST
+
+
+set scf_type mem_df
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=default=0.4]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=default=0.3]')  #TEST
+
+set dft_omega 2.0
+
+E = energy('wb97')
+compare_values(wb97_20, E, 6, 'wB97 [omega=2.0]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_20, E, 6, 'wB97x [omega=2.0]')  #TEST
+
+revoke_global_option_changed('DFT_OMEGA')
+
+E = energy('wb97')
+compare_values(wb97_04, E, 6, 'wB97 [omega=rev]')  #TEST
+
+E = energy('wb97x')
+compare_values(wb97x_03, E, 6, 'wB97x [omega=rev]')  #TEST
+
