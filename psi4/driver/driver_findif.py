@@ -34,12 +34,13 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 import pydantic
 import qcelemental as qcel
+from qcelemental.models import DriverEnum
 
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver import qcdb
-from psi4.driver.task_base import BaseTask, SingleResult, unnp, plump_qcvar
+from psi4.driver.task_base import BaseTask, SingleResult
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -988,20 +989,19 @@ class FinDifComputer(BaseTask):
 
         if self.metameta['mode'] == '1_0':
             self.metameta['proxy_driver'] = 'energy'
-            self.findifrec = gradient_from_energies_geometries(self.molecule, data.pop('findif_stencil_size'),
-                                                               data.pop('findif_step_size'))
+            self.findifrec = gradient_from_energies_geometries(self.molecule, findif_stencil_size, findif_step_size)
 
         elif self.metameta['mode'] == '2_1':
             self.metameta['proxy_driver'] = 'gradient'
             self.findifrec = hessian_from_gradients_geometries(self.molecule, self.metameta['irrep'],
-                                                               data.pop('findif_stencil_size'),
-                                                               data.pop('findif_step_size'))
+                                                               findif_stencil_size,
+                                                               findif_step_size)
 
         elif self.metameta['mode'] == '2_0':
             self.metameta['proxy_driver'] = 'energy'
             self.findifrec = hessian_from_energies_geometries(self.molecule, self.metameta['irrep'],
-                                                              data.pop('findif_stencil_size'),
-                                                              data.pop('findif_step_size'))
+                                                              findif_stencil_size,
+                                                              findif_step_size)
 
         print('FINDIFREC CLASS META DATA')
         pp.pprint(self.metameta)
@@ -1089,14 +1089,14 @@ class FinDifComputer(BaseTask):
 
         elif task.driver == 'gradient':
             print('RESPONSE', type(response), response)
-            reference['gradient'] = response #plump_qcvar(response, 'gradient')
+            reference['gradient'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
         elif task.driver == 'hessian':
-            reference['hessian'] = plump_qcvar(response, 'hessian')
+            reference['hessian'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
             if 'CURRENT GRADIENT' in task.extras['qcvars']:
-                reference['gradient'] = plump_qcvar(task.extras['qcvars']['CURRENT GRADIENT'], 'gradient')
+                reference['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
         # load SingleResult results into findifrec[displacements]
         for label, displacement in self.findifrec["displacements"].items():
@@ -1119,11 +1119,11 @@ class FinDifComputer(BaseTask):
         # apply finite difference formulas and load derivatives into findifrec[reference]
         if self.metameta['mode'] == '1_0':
             G0 = assemble_gradient_from_energies(self.findifrec)
-            self.findifrec["reference"][self.driver] = G0
+            self.findifrec["reference"][self.driver.name] = G0
 
         elif self.metameta['mode'] == '2_1':
             H0 = assemble_hessian_from_gradients(self.findifrec, self.metameta['irrep'])
-            self.findifrec["reference"][self.driver] = H0
+            self.findifrec["reference"][self.driver.name] = H0
 
         elif self.metameta['mode'] == '2_0':
             try:
@@ -1144,7 +1144,7 @@ class FinDifComputer(BaseTask):
                 self.findifrec["reference"]["gradient"] = G0
 
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
-            self.findifrec["reference"][self.driver] = H0
+            self.findifrec["reference"][self.driver.name] = H0
 
 
 #        if core.get_option('FINDIF', 'GRADIENT_WRITE'):
@@ -1188,13 +1188,12 @@ class FinDifComputer(BaseTask):
             'extras': {
                 'qcvars': qcvars,
             },
-            'return_result': self.findifrec['reference'][self.driver],
+            'return_result': self.findifrec['reference'][self.driver.name],
             'schema_name': 'qcschema_output',
             'schema_version': 1,
             # 'success': True,
         }
 
-        findifjob = unnp(findifjob, flat=True)
         print('\nFINDIF QCSchema:')
         pp.pprint(findifjob)
         return findifjob
@@ -1203,7 +1202,7 @@ class FinDifComputer(BaseTask):
 
         findifjob = self.get_results()
 
-        ret_ptype = plump_qcvar(findifjob['return_result'], shape_clue=findifjob['driver'], ret='psi4')
+        ret_ptype = core.Matrix.from_array(findifjob['return_result'])
         wfn = _findif_schema_to_wfn(findifjob)
 
         if return_wfn:
@@ -1223,7 +1222,7 @@ def _findif_schema_to_wfn(findifjob):
 #    wfn.set_energy(findifjob['extras']['qcvars'].get('CURRENT ENERGY'))  # catches Wfn.energy_
     for qcv, val in findifjob['extras']['qcvars'].items():
         for obj in [core, wfn]:
-            obj.set_variable(qcv, plump_qcvar(val, qcv))
+            obj.set_variable(qcv, val)
 
 #    flat_grad = findifjob['extras']['qcvars'].get('CURRENT GRADIENT')
 #    if flat_grad is not None:

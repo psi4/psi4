@@ -36,6 +36,7 @@ pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 import numpy as np
 import pydantic
+from qcelemental.models import DriverEnum, Result
 
 from psi4 import core
 from psi4.driver import qcdb
@@ -46,7 +47,7 @@ from psi4.driver import psifiles as psif
 from psi4.driver.driver_cbs_helper import xtpl_procedures, register_xtpl_scheme
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import BaseTask, SingleResult, unnp, plump_qcvar
+from psi4.driver.task_base import BaseTask, SingleResult
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -963,33 +964,29 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
     return largs
 
 
-def _cbs_wrapper_methods(**kwargs):
-    """ A helper function for the driver to enumerate methods used in the
-    stages of a cbs calculation.
-
-    Parameters
-    ----------
-    kwargs : dict
-        kwargs containing cbs specification either in the ``cbs_metadata``
-        format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
-
-    Returns
-    -------
-    list
-        List containing method name for each active stage.
-    """
-
-    cbs_methods = []
-    if "cbs_metadata" in kwargs:
-        for item in kwargs["cbs_metadata"]:
-            cbs_methods.append(item.get("wfn"))
-    else:
-        cbs_method_kwargs = ['scf_wfn', 'corl_wfn', 'delta_wfn']
-        cbs_method_kwargs += [f'delta{x}_wfn' for x in range(2, 6)]
-        for method in cbs_method_kwargs:
-            if method in kwargs:
-                cbs_methods.append(kwargs[method])
-    return cbs_methods
+#def _cbs_wrapper_methods(**kwargs):
+#    """ A helper function for the driver to enumerate methods used in the
+#    stages of a cbs calculation.
+#
+#    Parameters
+#    ----------
+#    kwargs : dict
+#        kwargs containing cbs specification either in the ``cbs_metadata``
+#        format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
+#
+#    Returns
+#    -------
+#    list
+#        List containing method name for each active stage.
+#    """
+#
+#    if "cbs_metadata" in kwargs:
+#        return [stage["wfn"] for stage in kwargs["cbs_metadata"]]
+#
+#    else:
+#        cbs_method_stages = ['scf_wfn', 'corl_wfn', 'delta_wfn']
+#        cbs_method_stages += [f'delta{x}_wfn' for x in range(2, 6)]
+#        return [kwargs[mtd] for mtd in cbs_method_stages if mtd in kwargs]
 
 
 def _parse_cbs_gufunc_string(method_name):
@@ -1079,7 +1076,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
 
     # Drop out for unsupported calls
     if ptype is None:
-        raise ValidationError("A CBS call was detected, but no ptyped was passed in. Please alert a dev.")
+        raise ValidationError("A CBS call was detected, but no ptype was passed in. Please alert a dev.")
     elif ptype not in ["energy", "gradient", "hessian"]:
         raise ValidationError(f"{ptype.title()}: Cannot extrapolate or delta correct {ptype} yet.")
 
@@ -1133,63 +1130,63 @@ def _cbs_text_parser(total_method_name, **kwargs):
     return cbs_kwargs
 
 
-def cbs_gufunc(func, total_method_name, **kwargs):
-    """
-    A text based wrapper of the CBS function. Provided to handle "method/basis"
-    specification of the requested calculations. Also handles "simple" (i.e.
-    one-method and one-basis) calls.
-
-    Parameters
-    ----------
-    func : function
-        Function to be called (energy, gradient, frequency or cbs).
-    total_method_name : str
-        String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
-        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
-        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
-        and pushed through :py:func:`~psi4.cbs`.
-
-    Returns
-    -------
-    tuple or float
-        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
-
-    """
-
-    # Catch kwarg issues for all methods
-    kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    core.clean_variables()
-
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
-
-    cbs_kwargs = _cbs_text_parser(total_method_name, **kwargs)
-    cbs_kwargs['molecule'] = molecule
-    cbs_kwargs['return_wfn'] = True
-
-    if 'cbs_metadata' not in cbs_kwargs:
-        # Single call
-        method_name = cbs_kwargs['method']
-        basis = cbs_kwargs['basis']
-
-        # Save some global variables so we can reset them later
-        optstash = p4util.OptionsState(['BASIS'])
-        core.set_global_option('BASIS', basis)
-        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
-            core.clean()
-
-        optstash.restore()
-
-    else:
-        ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs)
-
-    if return_wfn:
-        return (ptype_value, wfn)
-    else:
-        return ptype_value
+#def cbs_gufunc(func, total_method_name, **kwargs):
+#    """
+#    A text based wrapper of the CBS function. Provided to handle "method/basis"
+#    specification of the requested calculations. Also handles "simple" (i.e.
+#    one-method and one-basis) calls.
+#
+#    Parameters
+#    ----------
+#    func : function
+#        Function to be called (energy, gradient, frequency or cbs).
+#    total_method_name : str
+#        String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
+#        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
+#        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
+#        and pushed through :py:func:`~psi4.cbs`.
+#
+#    Returns
+#    -------
+#    tuple or float
+#        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
+#
+#    """
+#
+#    # Catch kwarg issues for all methods
+#    kwargs = p4util.kwargs_lower(kwargs)
+#    return_wfn = kwargs.pop('return_wfn', False)
+#    core.clean_variables()
+#
+#    # Make sure the molecule the user provided is the active one
+#    molecule = kwargs.pop('molecule', core.get_active_molecule())
+#    molecule.update_geometry()
+#
+#    cbs_kwargs = _cbs_text_parser(total_method_name, **kwargs)
+#    cbs_kwargs['molecule'] = molecule
+#    cbs_kwargs['return_wfn'] = True
+#
+#    if 'cbs_metadata' not in cbs_kwargs:
+#        # Single call
+#        method_name = cbs_kwargs['method']
+#        basis = cbs_kwargs['basis']
+#
+#        # Save some global variables so we can reset them later
+#        optstash = p4util.OptionsState(['BASIS'])
+#        core.set_global_option('BASIS', basis)
+#        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
+#        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
+#           core.clean()
+#
+#        optstash.restore()
+#
+#    else:
+#        ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs)
+#
+#    if return_wfn:
+#        return (ptype_value, wfn)
+#    else:
+#        return ptype_value
 
 
 def _build_cbs_compute(metameta, metadata):
@@ -1441,7 +1438,10 @@ def _summary_table(metadata, TROVE, GRAND_NEED):
 class CBSComputer(BaseTask):
 
     molecule: Any
-    driver: str = "energy"
+    basis: str: "(auto)" #Union[str, None]
+    method: str: "(auto)"
+    driver: DriverEnum
+    keywords: Dict[str, Any] = {}
     metadata: Any
     metameta: Dict[str, Any] = {}
 
@@ -1525,7 +1525,7 @@ class CBSComputer(BaseTask):
                         "basis": job["f_basis"],
                         "keywords": keywords or {},
                     })
-                print(task)
+                print('TASK', task)
                 self.task_list.append(task)
 
     def build_tasks(self, obj, **kwargs):
@@ -1630,15 +1630,13 @@ class CBSComputer(BaseTask):
             for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
                 qcvars[qcv] = assembled_results['hessian']
 
-        cbsjob = {
-            #'cbs_jobs': copy.deepcopy(self.compute_list),
-            'cbs_record': copy.deepcopy(self.cbsrec),
+        cbsjob = Result(**{
             'driver': self.driver,
             #'keywords': self.keywords,
-            #'model': {
-            #    'method': self.method,
-            #    'basis': self.basis
-            #},
+            'model': {
+                'method': self.method,
+                'basis': self.basis,
+            },
             'molecule': self.molecule.to_schema(dtype=2),
             'properties': {
                 #'calcinfo_nalpha': wfn.nalpha(),
@@ -1650,17 +1648,15 @@ class CBSComputer(BaseTask):
             'provenance': p4util.provenance_stamp(__name__),
             'extras': {
                 'qcvars': qcvars,
+                'cbs_record': copy.deepcopy(self.cbsrec),
             },
             #'raw_output': None,
             'return_result': assembled_results['ret_ptype'],
-            'schema_name': 'qcschema_output',
-            'schema_version': 1,
             'success': True,
-        }
+        })
 
-        cbsjob = unnp(cbsjob, flat=True)
         print('\nCBS QCSchema:')
-        pp.pprint(cbsjob)
+        pp.pprint(cbsjob.dict())
         return cbsjob
 
     def get_psi_results(self, return_wfn=False):
@@ -1668,7 +1664,10 @@ class CBSComputer(BaseTask):
 
         cbsjob = self.get_results()
 
-        ret_ptype = plump_qcvar(cbsjob['return_result'], shape_clue=cbsjob['driver'], ret='psi4')
+        if cbsjob.driver == 'energy':
+            ret_ptype = cbsjob.return_result
+        else:
+            ret_ptype = core.Matrix.from_array(cbsjob.return_result)
         wfn = _cbs_schema_to_wfn(cbsjob)
 
         print('FINDIF RET', ret_ptype)
@@ -1682,14 +1681,14 @@ def _cbs_schema_to_wfn(cbsjob):
     """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(cbsjob['molecule'])
+    mol = core.Molecule.from_schema(cbsjob.molecule.dict())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
 #    wfn.set_energy(cbsjob['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
-    for qcv, val in cbsjob['extras']['qcvars'].items():
+    for qcv, val in cbsjob.extras['qcvars'].items():
         for obj in [core, wfn]:
-            obj.set_variable(qcv, plump_qcvar(val, qcv))
+            obj.set_variable(qcv, val)
 
 #    flat_grad = cbsjob['extras']['qcvars'].get('CBS TOTAL GRADIENT')
 #    if flat_grad is not None:

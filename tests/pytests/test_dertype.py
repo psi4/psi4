@@ -8,11 +8,11 @@ def ordinary():
     pass
 
 
-def select_fail(mtd, probe):
+def select_fail(mtd, **kwargs):
     raise psi4.ManagedMethodError('abcdef')
 
 
-def select_pass(mtd, probe):
+def select_pass(mtd, **kwargs):
     ordinary()
 
 

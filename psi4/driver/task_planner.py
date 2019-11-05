@@ -27,9 +27,12 @@
 #
 
 import abc
+import copy
 import math
 import itertools
 import pydantic
+import pprint
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 from typing import Dict, List, Any, Union
 
@@ -100,35 +103,40 @@ def task_planner(driver, method, molecule, **kwargs):
     keywords["function_kwargs"] = {}
 
     # Pull basis out of kwargs, override globals if user specified
-    basis = keywords.pop("BASIS", None)
+    basis = keywords.pop("BASIS", "(auto)") #None)
     basis = kwargs.pop("basis", basis)
     method = method.lower()
 
     # Expand CBS methods
     method, basis, cbsmeta = _expand_cbs_methods(method, basis, driver, **kwargs)
 
+    pertinent_findif_kwargs = ['findif_irrep', 'findif_stencil_size', 'findif_step_size', 'findif_verbose']
+    current_findif_kwargs = {kw: kwargs.pop(kw) for kw in pertinent_findif_kwargs if kw in kwargs}
+    # explicit 'findif_mode'
+
     # Build a packet
     packet = {"molecule": molecule, "driver": driver, "method": method, "basis": basis, "keywords": keywords}
 
     # First check for BSSE type
     if 'bsse_type' in kwargs:
+        levels = kwargs.pop('levels', None)
+
         plan = NBodyComputer(**packet, **kwargs)
         del packet["molecule"]
 
         # Add tasks for every nbody level requested
-        levels = kwargs.pop('levels', None)
         if levels is None:
             levels = {plan.max_nbody: method}
         
         # Organize nbody calculations into levels
         nbody_list = []
         prev_body = 0
-        for n,l in levels.items():
+        for n in levels:
             level = []
             if n == 'supersystem':
                 level.append(n)
-            elif n != (prev_body+1):
-                for m in range(prev_body+1, n+1):
+            elif n != (prev_body + 1):
+                for m in range(prev_body + 1, n + 1):
                     level.append(m)
             else:
                 level.append(n)

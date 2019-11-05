@@ -104,17 +104,17 @@ def prepare_results(self, client=None):
         component_result = {k: v for k, v in self.task_list.items() if k.startswith(str(sup_level))}
         components = self.prepare_results(results=component_result, client=client)
 
-        energy_result += supersystem_result['properties']['return_energy'] - components['energy_body_dict'][self.max_nbody]
+        energy_result += supersystem_result.properties.return_energy - components['energy_body_dict'][self.max_nbody]
         for b in self.bsse_type:
-            energy_body_contribution[b][self.molecule.nfragments()] = (supersystem_result['properties']['return_energy'] -
+            energy_body_contribution[b][self.molecule.nfragments()] = (supersystem_result.properties.return_energy -
             components['energy_body_dict'][self.max_nbody])
 
         if ptype == 'hessian':
-            gradient_result += supersystem_result['extras']['qcvars']['CURRENT GRADIENT'] - components['gradient_body_dict'][self.max_nbody]
-            hessian_result += supersystem_result['return_result'] - components['ptype_body_dict'][self.max_nbody]
+            gradient_result += supersystem_result.extras.qcvars['CURRENT GRADIENT'] - components['gradient_body_dict'][self.max_nbody]
+            hessian_result += supersystem_result.return_result - components['ptype_body_dict'][self.max_nbody]
 
         elif ptype == 'gradient':
-            gradient_result += np.array(supersystem_result['return_result']).reshape((-1, 3)) - components['ptype_body_dict'][self.max_nbody]
+            gradient_result += np.array(supersystem_result.return_result).reshape((-1, 3)) - components['ptype_body_dict'][self.max_nbody]
 
 
     for b in self.bsse_type:

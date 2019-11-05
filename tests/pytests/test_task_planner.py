@@ -89,6 +89,18 @@ def test_cbs_extrapolation_grad():
     assert plan.task_list[3].driver == "gradient"
 
 
+def test_cbs_extrapolation_grad_1_0():
+    mol = psi4.geometry("H\nH 1 2.0\nunits au")
+    plan = task_planner("gradient", "MP2/cc-pV[D,T]Z", mol, dertype=0, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223), findif_verbose=4)
+
+    assert isinstance(plan, FinDifComputer)
+    assert len(plan.task_list) == 3
+
+    for key, result in plan.task_list.items():
+        assert isinstance(result, CBSComputer)
+        assert len(result.task_list) == 2
+
+
 def test_nbody_dimer():
     mol = psi4.geometry("""
                         He 0 0 -5
@@ -119,6 +131,7 @@ def test_nbody_dimer_cbs():
 
     for key, result in plan.task_list.items():
         assert isinstance(result, CBSComputer)
+        assert len(result.task_list) == 2
 
 
 def test_cbs_extrapolation_delta():
