@@ -241,20 +241,10 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
     // Build result and temp vectors
-    // std::vector<SharedVector_<double>> aux_dens;
-    // for (size_t i = 0; i < densities.size(); i++) {
-    //    aux_dens.push_back(std::make_shared<Vector_<double>>(naux));
-    //}
-    // FIXME Remove these in favor of the above
-    std::vector<SharedVector> aux_dens;
-    for (size_t i = 0; i < densities.size(); i++) {
-        aux_dens.push_back(std::make_shared<Vector>(naux));
-    }
+    std::vector<SharedVector> aux_dens(densities.size(), std::make_shared<Vector>(naux));
 
-    std::vector<SharedMatrix> collapse_temp;
-    for (size_t i = 0; i < nthread; i++) {
-        collapse_temp.push_back(std::make_shared<Matrix>(auxiliary_->max_function_per_shell(), nbf2));
-    }
+    std::vector<SharedMatrix> collapse_temp(nthread,
+                                            std::make_shared<Matrix>(auxiliary_->max_function_per_shell(), nbf2));
 
 // Do the contraction
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
@@ -308,12 +298,6 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     df_pairs.clear();
 
     // ==> Contract (R|pq) Dpq <== //
-    // std::vector<SharedVector_<double>> aux_dens_inv;
-    // for (size_t i = 0; i < densities.size(); i++) {
-    //    aux_dens_inv.push_back(std::make_shared<Vector_<double>>(naux));
-    //    aux_dens_inv[i]->gemv(false, 1.0, metric_inv_.get(), aux_dens[i].get(), 0.0);
-    //}
-    // FIXME Remove these in favor of the above
     std::vector<SharedVector> aux_dens_inv;
     for (size_t i = 0; i < densities.size(); i++) {
         aux_dens_inv.push_back(std::make_shared<Vector>(naux));
