@@ -114,11 +114,13 @@ class PSI_API DFHelper {
     void set_schwarz_cutoff(double cutoff) { cutoff_ = cutoff; }
     double get_schwarz_cutoff() { return cutoff_; }
 
-    /// fitting metric power (defaults to -0.5)
+    /// fitting metric power (defaults to -0.5) to use in
+	/// K_{m n} = C_{l a}(m l|Q)(Q|R)^{-1/2}(R|P)^{-1/2}(P|n s)C_{s a}
     void set_metric_pow(double pow) { mpower_ = pow; }
     double get_metric_pow() { return mpower_; }
 
-    /// fitting metric power for w integrals (defaults to -1.0)
+    /// fitting metric power for w integrals (defaults to -1.0) to use in
+    /// wK_{m n} = C_{l a}(m l|Q)(Q|P)^-1(P|w|n s)C_{s a}
     void set_wmetric_pow(double pow) { wmpower_ = pow; }
     double get_wmetric_pow() { return wmpower_; }
 
