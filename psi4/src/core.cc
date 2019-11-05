@@ -213,7 +213,8 @@ void py_close_outfile() {
 
 void py_reopen_outfile() {
     if (outfile_name == "stdout") {
-        // outfile = stdout;
+        // Default constructor corresponds to stdout
+        outfile = std::make_shared<PsiOutStream>();
     } else {
         auto mode = std::ostream::app;
         outfile = std::make_shared<PsiOutStream>(outfile_name, mode);
@@ -501,14 +502,20 @@ bool specifies_convergence(std::string const& key) {
     return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
-// DCFT deprecation errors first added in 1.4. Feel free to retire after "enough" time. 
+// DCFT deprecation errors first added in 1.4. Feel free to retire after "enough" time.
 void throw_deprecation_errors(std::string const& key, std::string const& module = "") {
     if (module == "DCFT") {
-		throw PsiException("Rename local options block. All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.", __FILE__, __LINE__);
-	}
-	if (key.find("DCFT") != std::string::npos) {
-		throw PsiException("Rename keyword " + key + ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.", __FILE__, __LINE__);
-	}
+        throw PsiException(
+            "Rename local options block. All instances of 'dcft' should be replaced with 'dct'. The method was renamed "
+            "in v1.4.",
+            __FILE__, __LINE__);
+    }
+    if (key.find("DCFT") != std::string::npos) {
+        throw PsiException(
+            "Rename keyword " + key +
+                ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.",
+            __FILE__, __LINE__);
+    }
 }
 
 Options& py_psi_get_options() { return Process::environment.options; }
@@ -540,8 +547,8 @@ bool py_psi_set_local_option_string(std::string const& module, std::string const
 
 bool py_psi_set_local_option_int(std::string const& module, std::string const& key, int value) {
     std::string nonconst_key = to_upper(key);
-    
-	throw_deprecation_errors(key, module);
+
+    throw_deprecation_errors(key, module);
 
     std::string module_temp = Process::environment.options.get_current_module();
     Process::environment.options.set_current_module(module);
@@ -564,7 +571,7 @@ bool py_psi_set_local_option_int(std::string const& module, std::string const& k
 bool py_psi_set_local_option_double(std::string const& module, std::string const& key, double value) {
     std::string nonconst_key = to_upper(key);
 
-	throw_deprecation_errors(key, module);
+    throw_deprecation_errors(key, module);
 
     Process::environment.options.set_double(module, nonconst_key, value);
     return true;
@@ -572,10 +579,10 @@ bool py_psi_set_local_option_double(std::string const& module, std::string const
 
 bool py_psi_set_global_option_string(std::string const& key, std::string const& value) {
     std::string nonconst_key = to_upper(key);
-    
-	throw_deprecation_errors(key);
 
-	Data& data = Process::environment.options[nonconst_key];
+    throw_deprecation_errors(key);
+
+    Data& data = Process::environment.options[nonconst_key];
 
     if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, value);
@@ -592,8 +599,8 @@ bool py_psi_set_global_option_string(std::string const& key, std::string const& 
 
 bool py_psi_set_global_option_int(std::string const& key, int value) {
     std::string nonconst_key = to_upper(key);
-	
-	throw_deprecation_errors(key);
+
+    throw_deprecation_errors(key);
 
     Data& data = Process::environment.options[nonconst_key];
 
@@ -612,8 +619,8 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
 
 bool py_psi_set_global_option_double(std::string const& key, double value) {
     std::string nonconst_key = to_upper(key);
-	
-	throw_deprecation_errors(key);
+
+    throw_deprecation_errors(key);
 
     Process::environment.options.set_global_double(nonconst_key, value);
     return true;
