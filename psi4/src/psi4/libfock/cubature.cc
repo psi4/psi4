@@ -3939,15 +3939,15 @@ void BasisExtents::print(std::string out) {
 BlockOPoints::BlockOPoints(SharedVector_<double> x, SharedVector_<double> y, SharedVector_<double> z,
                            SharedVector_<double> w, std::shared_ptr<BasisExtents> extents)
     : index_(0),
-      npoints_(x->dimpi().sum()),
+      npoints_(x->dim()),
       xvec_(x),
       yvec_(y),
       zvec_(z),
       wvec_(w),
-      x_(xvec_->pointer()),
-      y_(yvec_->pointer()),
-      z_(zvec_->pointer()),
-      w_(wvec_->pointer()),
+      x_(xvec_->data()),
+      y_(yvec_->data()),
+      z_(zvec_->data()),
+      w_(wvec_->data()),
       extents_(extents) {
     bound();
     populate();

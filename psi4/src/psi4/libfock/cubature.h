@@ -311,7 +311,7 @@ class SphericalGrid {
     // ==> Initializers <== //
 
     /// Destructor
-    virtual ~SphericalGrid();
+    ~SphericalGrid();
 
     /// Master build routines
     static std::shared_ptr<SphericalGrid> build(const std::string& scheme, int npoints, const MassPoint* points);
@@ -445,7 +445,7 @@ class BasisExtents {
     /// The basis set this BasisExtents is built on
     std::shared_ptr<BasisSet> basis() const { return primary_; }
     /// WCS significant extent of each shell
-    auto shell_extents() const { return shell_extents_; }
+    auto shell_extents() const -> std::shared_ptr<Vector_<double>> { return shell_extents_; }
     /// Maximum spatial extent over all atoms
     double maxR() const { return maxR_; }
 };

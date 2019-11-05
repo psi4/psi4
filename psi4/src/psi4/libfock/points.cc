@@ -126,23 +126,30 @@ void RKSFunctions::allocate() {
 
     point_values_.clear();
 
+    std::vector<std::string> keys;
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = std::make_shared<Vector_<double>>("RHO_A", max_points_);
+        keys.push_back("RHO_A");
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = std::make_shared<Vector_<double>>("RHO_AX", max_points_);
-        point_values_["RHO_AY"] = std::make_shared<Vector_<double>>("RHO_AY", max_points_);
-        point_values_["RHO_AZ"] = std::make_shared<Vector_<double>>("RHO_AZ", max_points_);
-        point_values_["GAMMA_AA"] = std::make_shared<Vector_<double>>("GAMMA_AA", max_points_);
+        keys.push_back("RHO_AX");
+        keys.push_back("RHO_AY");
+        keys.push_back("RHO_AZ");
+        keys.push_back("GAMMA_AA");
     }
 
     if (ansatz_ >= 2) {
-        point_values_["RHO_XX"] = std::make_shared<Vector_<double>>("RHO_XX", max_points_);
-        point_values_["RHO_YY"] = std::make_shared<Vector_<double>>("RHO_YY", max_points_);
-        point_values_["RHO_ZZ"] = std::make_shared<Vector_<double>>("RHO_ZZ", max_points_);
-        point_values_["TAU_A"] = std::make_shared<Vector_<double>>("TAU_A", max_points_);
+        keys.push_back("RHO_XX");
+        keys.push_back("RHO_YY");
+        keys.push_back("RHO_ZZ");
+        keys.push_back("TAU_A");
     }
+
+    // Fill map
+    for (const auto& k : keys) {
+        point_values_[k] = std::make_shared<Vector_<double>>(k, max_points_);
+    }
+
     build_temps();
 }
 void RKSFunctions::set_pointers(SharedMatrix D_AO) { D_AO_ = D_AO; }
@@ -387,27 +394,34 @@ void UKSFunctions::allocate() {
 
     point_values_.clear();
 
+    std::vector<std::string> keys;
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = std::make_shared<Vector_<double>>("RHO_A", max_points_);
-        point_values_["RHO_B"] = std::make_shared<Vector_<double>>("RHO_B", max_points_);
+        keys.push_back("RHO_A");
+        keys.push_back("RHO_B");
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = std::make_shared<Vector_<double>>("RHO_AX", max_points_);
-        point_values_["RHO_AY"] = std::make_shared<Vector_<double>>("RHO_AY", max_points_);
-        point_values_["RHO_AZ"] = std::make_shared<Vector_<double>>("RHO_AZ", max_points_);
-        point_values_["RHO_BX"] = std::make_shared<Vector_<double>>("RHO_BX", max_points_);
-        point_values_["RHO_BY"] = std::make_shared<Vector_<double>>("RHO_BY", max_points_);
-        point_values_["RHO_BZ"] = std::make_shared<Vector_<double>>("RHO_BZ", max_points_);
-        point_values_["GAMMA_AA"] = std::make_shared<Vector_<double>>("GAMMA_AA", max_points_);
-        point_values_["GAMMA_AB"] = std::make_shared<Vector_<double>>("GAMMA_AB", max_points_);
-        point_values_["GAMMA_BB"] = std::make_shared<Vector_<double>>("GAMMA_BB", max_points_);
+        keys.push_back("RHO_AX");
+        keys.push_back("RHO_AY");
+        keys.push_back("RHO_AZ");
+        keys.push_back("RHO_BX");
+        keys.push_back("RHO_BY");
+        keys.push_back("RHO_BZ");
+        keys.push_back("GAMMA_AA");
+        keys.push_back("GAMMA_AB");
+        keys.push_back("GAMMA_BB");
     }
 
     if (ansatz_ >= 2) {
-        point_values_["TAU_A"] = std::make_shared<Vector_<double>>("TAU_A", max_points_);
-        point_values_["TAU_B"] = std::make_shared<Vector_<double>>("TAU_A", max_points_);
+        keys.push_back("TAU_A");
+        keys.push_back("TAU_B");
     }
+
+    // Fill map
+    for (const auto& k : keys) {
+        point_values_[k] = std::make_shared<Vector_<double>>(k, max_points_);
+    }
+
     build_temps();
 }
 void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/) {

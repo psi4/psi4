@@ -337,13 +337,10 @@ void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
 
     // Leave this as a vector of maps in case we ever revisit the on-the fly manipulation
     vv10_cache.resize(1);
-    vv10_cache[0]["W"] = std::make_shared<Vector_<double>>("W Grid points", total_size);
-    vv10_cache[0]["X"] = std::make_shared<Vector_<double>>("X Grid points", total_size);
-    vv10_cache[0]["Y"] = std::make_shared<Vector_<double>>("Y Grid points", total_size);
-    vv10_cache[0]["Z"] = std::make_shared<Vector_<double>>("Z Grid points", total_size);
-    vv10_cache[0]["RHO"] = std::make_shared<Vector_<double>>("RHO Grid points", total_size);
-    vv10_cache[0]["W0"] = std::make_shared<Vector_<double>>("W0 Grid points", total_size);
-    vv10_cache[0]["KAPPA"] = std::make_shared<Vector_<double>>("KAPPA Grid points", total_size);
+    for (auto k : {"W", "X", "Y", "Z", "RHO", "W0", "KAPPA"}) {
+        auto name = std::string(k) + " Grid points";
+        vv10_cache[0][k] = std::make_shared<Vector_<double>>(name, total_size);
+    }
 
     auto w_vecp = vv10_cache[0]["W"]->data();
     auto x_vecp = vv10_cache[0]["X"]->data();
