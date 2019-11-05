@@ -619,27 +619,6 @@ void DFHelper::prepare_AO_wK_core() {
         timer_off("DFH: wAO Copy");
     }
 
-    //    FILE * eri_ints = fopen("/theoryfs2/ds/obrien/Debug/Psi4/dfh_wk/dfheri_ints.txt", "w");
-    //    FILE * eriwints = fopen("/theoryfs2/ds/obrien/Debug/Psi4/dfh_wk/dfheriwints.txt", "w");
-    //
-    //	for (int i = 0; i < nbf_; i++) {
-    //		fprintf(eri_ints, "%d\n", i); fprintf(eriwints,"%d\n", i);
-    //		for (int j = 0; j < naux_; j++) {
-    //			for (int k = 0; k < small_skips_[i]; k++){
-    //				fprintf(eriwints," %f",  wppq[ big_skips_[i] + j * small_skips_[i] + k] );
-    //				fprintf(eri_ints," %f", m1ppq[ big_skips_[i] + j * small_skips_[i] + k] );
-    //			}
-    //			fprintf(eriwints,"\n");
-    //			fprintf(eri_ints,"\n");
-    //		}
-    //		fprintf(eri_ints, "\n"); fprintf(eriwints, "\n");
-    //		fprintf(eri_ints, "\n"); fprintf(eriwints, "\n");
-    //		fprintf(eri_ints, "\n"); fprintf(eriwints, "\n");
-    //	}
-    //
-    //    fclose(eri_ints);
-    //    fclose(eriwints);
-
     // no more need for metrics
     if (hold_met_) metrics_.clear();
 }
@@ -1314,7 +1293,6 @@ double* DFHelper::metric_prep_core(double pow) {
             break;
         }
     }
-    timer_on("DFH: metric power");
     if (!on) {
         power = pow;
         SharedMatrix J = metrics_[1.0];
@@ -1325,7 +1303,6 @@ double* DFHelper::metric_prep_core(double pow) {
         }
         metrics_[power] = J;
     }
-    timer_off("DFH: metric power");
 
     return metrics_[power]->pointer()[0];
 }
@@ -1392,7 +1369,7 @@ double* DFHelper::metric_inverse_prep_core() {
     bool on = false;
     double power;
     for (auto& kv : metrics_) {
-        if (!(std::fabs(-1.0 - kv.first) > 1e-13)) {
+        if ((std::fabs(-1.0 - kv.first) < 1e-13)) {
             on = true;
             power = kv.first;
             break;
@@ -1403,16 +1380,6 @@ double* DFHelper::metric_inverse_prep_core() {
         timer_on("DFH: metric power");
         SharedMatrix J = metrics_[1.0];
         J->invert();
-        /*		printf("ping\n");
-                        double* j = metrics_[power]->pointer()[0];
-                        printf("ping\n");
-                        std::unique_ptr<int[]> IPIV(new int[naux_]);
-                        std::unique_ptr<double[]> WORK(new double[naux_]);
-                        int * ipiv = IPIV.get();
-                        double * work = WORK.get();
-                        C_DGETRF( (int) naux_, (int) naux_, j, (int) naux_, ipiv);
-                        C_DGETRI( (int) naux_, j, (int) naux_, ipiv, work, (int) naux_); */
-        metrics_[power] = J;
         timer_off("DFH: metric power");
     }
 
