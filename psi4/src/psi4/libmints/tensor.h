@@ -389,8 +389,8 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
     }
 
     void zero() noexcept {
-        std::for_each(store_.begin(), store_.end(),
-                      [](const block_type& blk) -> block_type { return xt::zeros<T>(blk.shape()); });
+        std::transform(store_.begin(), store_.end(), store_.begin(),
+                       [](const block_type& blk) -> block_type { return xt::zeros<T>(blk.shape()); });
     }
 
    protected:
