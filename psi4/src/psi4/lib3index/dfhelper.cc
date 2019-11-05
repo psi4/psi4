@@ -188,7 +188,9 @@ void DFHelper::initialize() {
         prepare_AO_core();
         if (do_wK_) {
             prepare_AO_wK_core();
-        } else {
+        } else { // It is possible to reformulate the expression for the 
+				 //   coulomb matrix to save memory in case do_wK_ is 
+                 //   is true, but do_K_ is false. This code isn't written
             //			prepare_AO_core();
         }
     } else if (!direct_ && !direct_iaQ_) {
@@ -1283,20 +1285,20 @@ void DFHelper::prepare_metric_core() {
     metrics_[1.0] = Jinv->get_metric();
     timer_off("DFH: metric construction");
 }
-double* DFHelper::metric_prep_core(double pow) {
+double* DFHelper::metric_prep_core(double m_pow) {
     bool on = false;
     double power;
     for (auto& kv : metrics_) {
-        if (!(std::fabs(pow - kv.first) > 1e-13)) {
+        if (!(std::fabs(m_pow - kv.first) > 1e-13)) {
             on = true;
             power = kv.first;
             break;
         }
     }
     if (!on) {
-        power = pow;
+        power = m_pow;
         SharedMatrix J = metrics_[1.0];
-        if (fabs(pow + 1.0) < 1e-13) {
+        if (fabs(m_pow + 1.0) < 1e-13) {
             J->invert();
         } else {
             J->power(power, condition_);
@@ -1324,21 +1326,21 @@ void DFHelper::prepare_metric() {
     std::string putf = std::get<0>(files_[filename]);
     put_tensor(putf, Mp, 0, naux_ - 1, 0, naux_ - 1, "wb");
 }
-std::string DFHelper::return_metfile(double pow) {
+std::string DFHelper::return_metfile(double m_mpow) {
     bool on = 0;
     std::string key;
     for (size_t i = 0; i < metric_keys_.size() && !on; i++) {
         double pos = std::get<0>(metric_keys_[i]);
-        if (std::fabs(pos - pow) < 1e-12) {
+        if (std::fabs(pos - m_mpow) < 1e-12) {
             key = std::get<1>(metric_keys_[i]);
             on = 1;
         }
     }
 
-    if (!on) key = compute_metric(pow);
+    if (!on) key = compute_metric(m_mpow);
     return key;
 }
-std::string DFHelper::compute_metric(double pow) {
+std::string DFHelper::compute_metric(double m_pow) {
     // ensure J
     if (std::fabs(pow - 1.0) < 1e-13)
         prepare_metric();
@@ -1355,7 +1357,7 @@ std::string DFHelper::compute_metric(double pow) {
         // make new file
         std::string name = "metric";
         name.append(".");
-        name.append(std::to_string(pow));
+        name.append(std::to_string(m_pow));
         filename_maker(name, naux_, naux_, 1);
         metric_keys_.push_back(std::make_pair(pow, name));
 
@@ -1363,7 +1365,7 @@ std::string DFHelper::compute_metric(double pow) {
         std::string putf = std::get<0>(files_[name]);
         put_tensor(putf, metp, 0, naux_ - 1, 0, naux_ - 1, "wb");
     }
-    return return_metfile(pow);
+    return return_metfile(m_pow);
 }
 double* DFHelper::metric_inverse_prep_core() {
     bool on = false;

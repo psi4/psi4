@@ -381,9 +381,9 @@ class PSI_API DFHelper {
     std::vector<std::pair<double, std::string>> metric_keys_;
     void prepare_metric();
     void prepare_metric_core();
-    double* metric_prep_core(double pow);
-    std::string return_metfile(double pow);
-    std::string compute_metric(double pow);
+    double* metric_prep_core(double m_pow);
+    std::string return_metfile(double m_pow);
+    std::string compute_metric(double m_pow);
 
     double* metric_inverse_prep_core();
 
