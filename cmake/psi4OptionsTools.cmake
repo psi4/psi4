@@ -55,6 +55,8 @@ macro(psi4_add_module binlib libname sources)
     PRIVATE
       $<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>
       $<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>
+      $<$<CONFIG:Debug>:-O0;-g3>
+      $<$<AND:$<CXX_COMPILER_ID:Clang>,$<CONFIG:Debug>>:-glldb;-fno-limit-debug-info>
     )
   set_target_properties(${libname}
     PROPERTIES

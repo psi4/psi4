@@ -12,6 +12,8 @@ target_compile_options(core
   PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>
     $<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>
+    $<$<CONFIG:Debug>:-O0;-g3>
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<CONFIG:Debug>>:-glldb;-fno-limit-debug-info>
   )
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
