@@ -241,10 +241,15 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
     // Build result and temp vectors
-    std::vector<SharedVector> aux_dens(densities.size(), std::make_shared<Vector>(naux));
+    std::vector<SharedVector> aux_dens;
+    for (size_t i = 0; i < densities.size(); i++) {
+        aux_dens.push_back(std::make_shared<Vector>(naux));
+    }
 
-    std::vector<SharedMatrix> collapse_temp(nthread,
-                                            std::make_shared<Matrix>(auxiliary_->max_function_per_shell(), nbf2));
+    std::vector<SharedMatrix> collapse_temp;
+    for (size_t i = 0; i < nthread; i++) {
+        collapse_temp.push_back(std::make_shared<Matrix>(auxiliary_->max_function_per_shell(), nbf2));
+    }
 
 // Do the contraction
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
