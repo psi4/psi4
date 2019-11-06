@@ -190,15 +190,14 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     derivative, wfn = derivfunc(method, return_wfn=True, molecule=clone, **kwargs)
     displacement["energy"] = core.variable('CURRENT ENERGY')
 
-    # Getting the dipole moment and saving it a numpy array.
-    displacement["dipole"] = np.array(
-        [core.variable('CURRENT DIPOLE X'),
-         core.variable('CURRENT DIPOLE Y'),
-         core.variable('CURRENT DIPOLE Z')]) / constants.dipmom_au2debye
-
     # If we computed a first or higher order derivative, set it.
     if derivfunc == gradient:
         displacement["gradient"] = wfn.gradient().np.ravel().tolist()
+        # Getting the dipole moment and saving it a numpy array.
+        displacement["dipole"] = np.array(
+            [core.variable('CURRENT DIPOLE X'),
+             core.variable('CURRENT DIPOLE Y'),
+             core.variable('CURRENT DIPOLE Z')]) / constants.dipmom_au2debye
 
     # clean may be necessary when changing irreps of displacements
     core.clean()
