@@ -116,12 +116,12 @@ class PSI_API DFHelper {
 
     /// fitting metric power (defaults to -0.5) to use in
 	/// K_{m n} = C_{l a}(m l|Q)(Q|R)^{-1/2}(R|P)^{-1/2}(P|n s)C_{s a}
-    void set_metric_pow(double pow) { mpower_ = pow; }
+    void set_metric_pow(double m_pow) { mpower_ = m_pow; }
     double get_metric_pow() { return mpower_; }
 
     /// fitting metric power for w integrals (defaults to -1.0) to use in
     /// wK_{m n} = C_{l a}(m l|Q)(Q|P)^-1(P|w|n s)C_{s a}
-    void set_wmetric_pow(double pow) { wmpower_ = pow; }
+    void set_wmetric_pow(double wm_pow) { wmpower_ = wm_pow; }
     double get_wmetric_pow() { return wmpower_; }
 
     ///

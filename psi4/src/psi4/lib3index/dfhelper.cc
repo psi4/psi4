@@ -1326,23 +1326,23 @@ void DFHelper::prepare_metric() {
     std::string putf = std::get<0>(files_[filename]);
     put_tensor(putf, Mp, 0, naux_ - 1, 0, naux_ - 1, "wb");
 }
-std::string DFHelper::return_metfile(double m_mpow) {
+std::string DFHelper::return_metfile(double m_pow) {
     bool on = 0;
     std::string key;
     for (size_t i = 0; i < metric_keys_.size() && !on; i++) {
-        double pos = std::get<0>(metric_keys_[i]);
-        if (std::fabs(pos - m_mpow) < 1e-12) {
+        double power = std::get<0>(metric_keys_[i]);
+        if (std::fabs(power - m_pow) < 1e-12) {
             key = std::get<1>(metric_keys_[i]);
             on = 1;
         }
     }
 
-    if (!on) key = compute_metric(m_mpow);
+    if (!on) key = compute_metric(m_pow);
     return key;
 }
 std::string DFHelper::compute_metric(double m_pow) {
     // ensure J
-    if (std::fabs(pow - 1.0) < 1e-13)
+    if (std::fabs(m_pow - 1.0) < 1e-13)
         prepare_metric();
     else {
         // get metric
@@ -1352,14 +1352,14 @@ std::string DFHelper::compute_metric(double m_pow) {
 
         // get and compute
         get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
-        metric->power(pow, condition_);
+        metric->power(m_pow, condition_);
 
         // make new file
         std::string name = "metric";
         name.append(".");
         name.append(std::to_string(m_pow));
         filename_maker(name, naux_, naux_, 1);
-        metric_keys_.push_back(std::make_pair(pow, name));
+        metric_keys_.push_back(std::make_pair(m_pow, name));
 
         // store
         std::string putf = std::get<0>(files_[name]);
