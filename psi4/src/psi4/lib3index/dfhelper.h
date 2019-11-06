@@ -319,7 +319,7 @@ class PSI_API DFHelper {
 
     // => in-core machinery <=
     void AO_core();
-    std::unique_ptr<double[]> Ppq_;  //
+    std::unique_ptr<double[]> Ppq_;
     std::map<double, SharedMatrix> metrics_;
 
     // => in-core wK machinery <=

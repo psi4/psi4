@@ -185,13 +185,12 @@ void DFHelper::initialize() {
 
     // prepare AOs for STORE method
     if (AO_core_) {
-        prepare_AO_core();
         if (do_wK_) {
             prepare_AO_wK_core();
         } else { // It is possible to reformulate the expression for the 
 				 //   coulomb matrix to save memory in case do_wK_ is 
                  //   is true, but do_K_ is false. This code isn't written
-            //			prepare_AO_core();
+  			prepare_AO_core();
         }
     } else if (!direct_ && !direct_iaQ_) {
         prepare_AO();
@@ -572,27 +571,33 @@ void DFHelper::prepare_AO_wK_core() {
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 1, psteps);
 
     wPpq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
+    Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
     m1Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
 
     double* wppq = wPpq_.get();
+	double* ppq = Ppq_.get();
     double* m1ppq = m1Ppq_.get();
 
     std::unique_ptr<double[]> Qpq(new double[std::get<0>(plargest)]);
     double* M1p = Qpq.get();
-    std::unique_ptr<double[]> metric;
+    std::unique_ptr<double[]> metric1;
     double* met1p;
+    std::unique_ptr<double[]> metric;
+    double* metp;
+
 
     if (!hold_met_) {
-        metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
-        met1p = metric.get();
+        metric1 = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+        met1p = metric1.get();
         std::string filename = return_metfile(wmpower_);
         get_tensor_(std::get<0>(files_[filename]), met1p, 0, naux_ - 1, 0, naux_ - 1);
+        metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+        metp = metric.get();
+        filename = return_metfile(mpower_);
+        get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
     } else {
         met1p = metric_prep_core(wmpower_);
-        // met1p = metric_prep_core(1.0);
-        /*		auto Jinv = std::make_shared<FittingMetric>(aux_, true);
-                        Jinv->form_full_eig_inverse(condition_);
-                        met1p = Jinv->get_metric()->pointer()[0]; */
+		metp = metric_prep_core(mpower_);
     }
 
     for (size_t i = 0; i < psteps.size(); i++) {
@@ -606,9 +611,14 @@ void DFHelper::prepare_AO_wK_core() {
         compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
         timer_off("DFH: AO Construction");
 
-        // contract metric
+        // contract full metric inverse
         timer_on("DFH: AO-Met. Contraction");
         contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
+        timer_off("DFH: AO-Met. Contraction");
+
+		// contract half metric inverse
+        timer_on("DFH: AO-Met. Contraction");
+        contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
         timer_off("DFH: AO-Met. Contraction");
 
         // compute (A|w|mn)
