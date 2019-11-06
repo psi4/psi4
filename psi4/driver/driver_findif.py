@@ -747,7 +747,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
 
 
 def assemble_dipder_from_dipole(findifrec, freq_irrep_only):
-    """Compute the Hessian by finite difference of gradients.
+    """Compute the dipole derivatives by finite difference of dipoles.
 
     Parameters
     ----------
