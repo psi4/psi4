@@ -32,11 +32,12 @@
 #include <string>
 
 #define FORCE_IMPORT_ARRAY              // numpy C api loading
-#include "xtensor-python/pytensor.hpp"  // Numpy bindings
+#include <xtensor-python/pytensor.hpp>  // Numpy bindings
 
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/linalg.h"
 #include "psi4/libmints/tensor.h"
+#include "psi4/libmints/vector3.h"
 #include "psi4/libpsi4util/exception.h"
 
 using namespace psi;
@@ -81,8 +82,9 @@ struct Decorator<T, 1> final {
     }
 
     static void declareRank1FreeFunctions(py::module& mod) {
-        // Conversion from SharedVector to SharedVector_<double>
-        mod.def("transmute", [](const SharedVector& v) { return transmute<double>(v); }, "v"_a);
+        // Back and forth conversions between SharedVector and SharedVector_<double>
+        mod.def("transmute", py::overload_cast<const SharedVector&>(&transmute<double>), "v"_a);
+        mod.def("transmute", py::overload_cast<const SharedVector_<double>&>(&transmute<double>), "v"_a);
     }
 };
 
@@ -223,9 +225,15 @@ void declareRankN_builders(py::module& mod) {
             py::overload_cast<const std::shared_ptr<T>&, U>(&full_like<typename T::value_type, T::rank, U>),
             "Returns a tensor with all blocks filled with given value of same shape and value type as input", "mold"_a,
             "fill_value"_a);
-    mod.def("zeros_like", py::overload_cast<const std::shared_ptr<T>&>(&zeros_like<typename T::value_type, T::rank, U>),
+    // NOTE Python-side, zeros_like and ones_like can only be used to return an object with _same_ scalar type as the
+    // mold
+    mod.def("zeros_like",
+            py::overload_cast<const std::shared_ptr<T>&>(
+                &zeros_like<typename T::value_type, T::rank, typename T::value_type>),
             "Return a tensor with all blocks filled with 0 of same shape and value type as input", "mold"_a);
-    mod.def("ones_like", py::overload_cast<const std::shared_ptr<T>&>(&ones_like<typename T::value_type, T::rank, U>),
+    mod.def("ones_like",
+            py::overload_cast<const std::shared_ptr<T>&>(
+                &ones_like<typename T::value_type, T::rank, typename T::value_type>),
             "Return a tensor with all blocks filled with 1 of same shape and value type as input", "mold"_a);
 }
 

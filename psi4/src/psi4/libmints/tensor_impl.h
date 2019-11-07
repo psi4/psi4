@@ -31,9 +31,11 @@
 #include <array>
 #include <complex>
 #include <cstddef>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <vector>
 
 #include <xtensor/xtensor.hpp>
 
@@ -155,16 +157,31 @@ struct RankDependentImpl {
     }
 };
 
-template <size_t Rank>
-std::string print_shape(const std::array<size_t, Rank>& shape) {
-    std::ostringstream retval;
-    retval << "{";
-    std::string sep;
-    for (const auto& s : shape) {
-        retval << sep << s;
-        sep = ", ";
+/*! STL collection as a string
+ *  \param[in] coll
+ *  \param[in] l
+ *  \param[in] r
+ *  \param[in] sep
+ */
+template <typename T>
+auto stream_collection(const T &coll, std::string l = "[", std::string r = "]", std::string sep = ", ") noexcept
+    -> std::string {
+    std::ostringstream os;
+    bool first = true;
+    os << l;
+    for (auto elem : coll) {
+        if (!first) os << sep;
+        os << elem;
+        first = false;
     }
-    retval << "}";
+    os << r;
+    return os.str();
+}
+
+template <size_t Rank>
+std::string print_shape(const std::array<size_t, Rank> &shape) noexcept {
+    std::ostringstream retval;
+    retval << stream_collection(shape, "{", "}");
     return retval.str();
 }
 
@@ -185,4 +202,14 @@ struct is_2arity_mixable
 template <typename T, typename U>
 constexpr bool is_2arity_mixable_v = is_2arity_mixable<T, U>::value;
 }  // namespace detail
+
+template <typename T, size_t N>
+auto operator<<(std::ostream &os, const std::array<T, N> &coll) -> std::ostream & {
+    return (os << detail::stream_collection(coll));
+}
+
+template <typename T>
+auto operator<<(std::ostream &os, const std::vector<T> &coll) -> std::ostream & {
+    return (os << detail::stream_collection(coll));
+}
 }  // namespace psi
