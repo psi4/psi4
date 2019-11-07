@@ -169,7 +169,8 @@ void DFHelper::initialize() {
 
     // if metric power for omega integrals, prepare its metric
     if (do_wK_) {
-        if (!(std::fabs(wmpower_ - 0.0) < 1e-13) && (std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
+        if (!(std::fabs(wmpower_ - 0.0) < 1e-13) && (std::fabs(mpower_ - 0.0) < 1e-13))
+            (hold_met_ ? prepare_metric_core() : prepare_metric());
     }
 
     // prepare sparsity masks
@@ -187,10 +188,10 @@ void DFHelper::initialize() {
     if (AO_core_) {
         if (do_wK_) {
             prepare_AO_wK_core();
-        } else { // It is possible to reformulate the expression for the 
-				 //   coulomb matrix to save memory in case do_wK_ is 
-                 //   is true, but do_K_ is false. This code isn't written
-  			prepare_AO_core();
+        } else {  // It is possible to reformulate the expression for the
+            //   coulomb matrix to save memory in case do_wK_ is
+            //   is true, but do_K_ is false. This code isn't written
+            prepare_AO_core();
         }
     } else if (!direct_ && !direct_iaQ_) {
         prepare_AO();
@@ -573,7 +574,7 @@ void DFHelper::prepare_AO_wK_core() {
     m1Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
 
     double* wppq = wPpq_.get();
-	double* ppq = Ppq_.get();
+    double* ppq = Ppq_.get();
     double* m1ppq = m1Ppq_.get();
 
     std::unique_ptr<double[]> Qpq(new double[std::get<0>(plargest)]);
@@ -582,7 +583,6 @@ void DFHelper::prepare_AO_wK_core() {
     double* met1p;
     std::unique_ptr<double[]> metric;
     double* metp;
-
 
     if (!hold_met_) {
         metric1 = std::unique_ptr<double[]>(new double[naux_ * naux_]);
@@ -595,7 +595,7 @@ void DFHelper::prepare_AO_wK_core() {
         get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
     } else {
         met1p = metric_prep_core(wmpower_);
-		metp = metric_prep_core(mpower_);
+        metp = metric_prep_core(mpower_);
     }
 
     for (size_t i = 0; i < psteps.size(); i++) {
@@ -614,7 +614,7 @@ void DFHelper::prepare_AO_wK_core() {
         contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
         timer_off("DFH: AO-Met. Contraction");
 
-		// contract half metric inverse
+        // contract half metric inverse
         timer_on("DFH: AO-Met. Contraction");
         contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
         timer_off("DFH: AO-Met. Contraction");
