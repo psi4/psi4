@@ -122,6 +122,9 @@ struct Decorator<T, 2> final {
     }
 
     static void declareRank2FreeFunctions(py::module& mod) {
+        // Back and forth conversions between SharedVector and SharedVector_<double>
+        mod.def("transmute", py::overload_cast<const SharedMatrix&>(&transmute<double>), "m"_a);
+        mod.def("transmute", py::overload_cast<const SharedMatrix_<double>&>(&transmute<double>), "m"_a);
         // Type-homogeneous GEMM-s
         mod.def("gemm",
                 [](const SharedTensor<T, 2>& A, const SharedTensor<T, 2>& B, Operation opA, Operation opB, double alpha,

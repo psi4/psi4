@@ -32,20 +32,18 @@
 #include <string>
 
 #include "dimension.h"
+#include "matrix.h"
 #include "tensor_impl.h"
 
 namespace psi {
 template <typename T, size_t Rank>
 class Tensor;
 
-template <typename T, size_t Rank>
-using SharedTensor = std::shared_ptr<Tensor<T, Rank>>;
-
 template <typename T>
 using Matrix_ = Tensor<T, 2>;
 
 template <typename T>
-using SharedMatrix_ = SharedTensor<T, 2>;
+using SharedMatrix_ = std::shared_ptr<Matrix_<T>>;
 
 namespace detail {
 template <typename T>
@@ -76,4 +74,72 @@ struct RankDependentImpl<Matrix_<T>> {
     size_t cols(size_t h = 0) const { return static_cast<const Matrix_<T>*>(this)->axes_dimpi_[1][h]; }
 };
 }  // namespace detail
+
+/*! Conversion from Matrix to Matrix_<double>
+ *  \param[in] m
+ */
+template <typename T>
+auto transmute(const Matrix& m) -> Matrix_<T> {
+    auto mat = Matrix_<T>(m.name(), m.rowspi(), m.colspi(), m.symmetry());
+    // Element-by-element copy
+    for (int h = 0; h < m.nirrep(); ++h) {
+        for (auto i = 0; i < m.rowdim(h); ++i) {
+            for (auto j = 0; i < m.coldim(h); ++j) {
+                mat.set(h, i, j, m.get(h, i, j));
+            }
+        }
+    }
+    return mat;
+}
+
+/*! Conversion from SharedMatrix to SharedMatrix_<T>
+ *  \param[in] m
+ */
+template <typename T>
+auto transmute(const std::shared_ptr<Matrix>& m) -> SharedMatrix_<T> {
+    auto mat = std::make_shared<Matrix_<T>>(m->name(), m->rowspi(), m->colspi(), m->symmetry());
+    // Element-by-element copy
+    for (int h = 0; h < m->nirrep(); ++h) {
+        for (auto i = 0; i < m->rowdim(h); ++i) {
+            for (auto j = 0; i < m->coldim(h); ++j) {
+                mat->set(h, i, j, m->get(h, i, j));
+            }
+        }
+    }
+    return mat;
+}
+
+/*! Conversion from Matrix_<T> to Matrix
+ *  \param[in] m
+ */
+template <typename T>
+auto transmute(const Matrix_<T>& m) -> Matrix {
+    auto mat = Matrix(m.label(), m.rowspi(), m.colspi(), m.symmetry());
+    // Element-by-element copy
+    for (int h = 0; h < m.nirrep(); ++h) {
+        for (auto i = 0; i < m.rows(h); ++i) {
+            for (auto j = 0; i < m.cols(h); ++j) {
+                mat.set(h, i, j, m.get(h, i, j));
+            }
+        }
+    }
+    return mat;
+}
+
+/*! Conversion from SharedMatrix_<T> to SharedMatrix
+ *  \param[in] v
+ */
+template <typename T>
+auto transmute(const SharedMatrix_<T>& m) -> SharedMatrix {
+    auto mat = std::make_shared<Matrix>(m->label(), m->rowspi(), m->colspi(), m->symmetry());
+    // Element-by-element copy
+    for (int h = 0; h < m->nirrep(); ++h) {
+        for (auto i = 0; i < m->rows(h); ++i) {
+            for (auto j = 0; i < m->cols(h); ++j) {
+                mat->set(h, i, j, m->get(h, i, j));
+            }
+        }
+    }
+    return mat;
+}
 }  // namespace psi
