@@ -96,10 +96,6 @@ void MemDFJK::compute_JK() {
             }
         }
     }
-
-    // J_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joeJ.txt", false, false, true);
-    // K_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joeK.txt", false, false, true);
-    // wK_ao_[0]->save("/theoryfs2/ds/obrien/Practice/Psi4/joewK.txt", false, false, true);
 }
 void MemDFJK::postiterations() {}
 void MemDFJK::print_header() const {
@@ -129,5 +125,5 @@ int MemDFJK::max_nocc() const {
     }
     return max_nocc;
 }
-void MemDFJK::set_do_wK(bool do_wK) { do_wK_ = do_wK; dfh_->set_do_wK(do_wK); }
+void MemDFJK::set_do_wK(bool tf) { do_wK_ = tf; dfh_->set_do_wK(tf); }
 }

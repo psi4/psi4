@@ -169,7 +169,7 @@ void DFHelper::initialize() {
 
     // if metric power for omega integrals, prepare its metric
     if (do_wK_) {
-        if (!(std::fabs(wmpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
+        if (!(std::fabs(wmpower_ - 0.0) < 1e-13) && (std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
     }
 
     // prepare sparsity masks
@@ -199,8 +199,6 @@ void DFHelper::initialize() {
             error << "DFHelper: not equipped to do wK";
             throw PSIEXCEPTION(error.str().c_str());
             prepare_AO_wK();
-        } else {
-            //        	prepare_AO();
         }
     }
 
@@ -219,7 +217,7 @@ void DFHelper::AO_core() {
         // if do_wK added to code, the following will need to be changed to match
         required_core_size_ = naux_ * nbf_ * nbf_;
     } else {
-        // total size of sparse AOs. beautiful
+        // total size of sparse AOs.
         required_core_size_ = (do_wK_ ? 3 * big_skips_[nbf_] : big_skips_[nbf_]);
     }
 
