@@ -29,7 +29,7 @@
 
 from ..core.linalg import *
 from .factory import Matrix_, Tensor_, Vector_
-from .utils import make_random_tensor_2d, make_tensor_2d_from_block, name_unary_test
+from .utils import (make_random_tensor_2d, make_tensor_2d_from_block, name_unary_test)
 
 # NOTE this is rather awkward, but I haven't found any other way to get the
 # help for all the stuff defined in core.linalg otherwise...
@@ -53,5 +53,7 @@ __all__ = [
     , "make_random_tensor_2d"
     , "make_tensor_2d_from_block"
     , "name_unary_test"
+    , "Vector3_"
+    , "dot", "norm", "cross", "normalize", "distance", "angle", "perp_unit", "rotate"
 ]
 # yapf: enable

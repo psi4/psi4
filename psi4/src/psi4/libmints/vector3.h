@@ -30,16 +30,31 @@
 
 #include <array>
 #include <cmath>
+#include <memory>
 #include <sstream>
 
-#include <xtensor/xfixed.hpp>
 #include <xtensor-blas/xlinalg.hpp>
+#include <xtensor/xadapt.hpp>
+#include <xtensor/xfixed.hpp>
 
 #include "psi4/pragma.h"
 
 namespace psi {
 template <typename T>
-using Vector3_ = xt::xtensor_fixed<T, xt::xshape<3, 1>>;
+using Vector3_ = xt::xtensor_fixed<T, xt::xshape<3>>;
+
+template <typename T>
+using SharedVector3_ = std::shared_ptr<Vector3_<T>>;
+
+template <typename T>
+Vector3_<T> from_array(const std::array<T, 3>& a) noexcept {
+    return xt::adapt(a, {3});
+}
+
+template <typename T>
+Vector3_<T> from_Ts(T x, T y, T z) noexcept {
+    return {x, y, z};
+}
 
 template <typename T>
 T dot(const Vector3_<T>& u, const Vector3_<T>& v) noexcept {
@@ -71,6 +86,14 @@ double angle(const Vector3_<T>& u, const Vector3_<T>& v) noexcept {
     Vector3_<T> _u = normalize(u);
     Vector3_<T> _v = normalize(v);
     return std::acos(psi::dot(_u, _v));
+}
+
+template <typename T>
+auto str(const Vector3_<T>& u) noexcept -> std::string {
+    std::ostringstream os;
+    os << xt::print_options::threshold(10000) << xt::print_options::line_width(120) << xt::print_options::precision(14)
+       << u << std::endl;
+    return os.str();
 }
 
 template <typename T>
