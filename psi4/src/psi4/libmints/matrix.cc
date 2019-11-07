@@ -81,7 +81,7 @@ Matrix::Matrix() {
     symmetry_ = 0;
 }
 
-Matrix::Matrix(const std::string &name, int symmetry)
+Matrix::Matrix(const std::string &name, unsigned int symmetry)
     : matrix_(nullptr), nirrep_(0), name_(name), symmetry_(symmetry) {}
 
 Matrix::Matrix(const Matrix &c) : rowspi_(c.rowspi_), colspi_(c.colspi_) {
@@ -124,7 +124,7 @@ Matrix::Matrix(const Matrix *c) : rowspi_(c->rowspi_), colspi_(c->colspi_) {
     copy_from(c->matrix_);
 }
 
-Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
+Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, unsigned int symmetry)
     : rowspi_(l_nirreps), colspi_(l_nirreps) {
     matrix_ = nullptr;
     nirrep_ = l_nirreps;
@@ -134,7 +134,7 @@ Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symm
     alloc();
 }
 
-Matrix::Matrix(const std::string &name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
+Matrix::Matrix(const std::string &name, int l_nirreps, const int *l_rowspi, const int *l_colspi, unsigned int symmetry)
     : rowspi_(l_nirreps), colspi_(l_nirreps), name_(name) {
     matrix_ = nullptr;
     nirrep_ = l_nirreps;
@@ -184,7 +184,7 @@ Matrix::Matrix(int nirrep, const int *rowspi, int cols) : rowspi_(nirrep), colsp
     alloc();
 }
 
-Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &cols, int symmetry) {
+Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &cols, unsigned int symmetry) {
     name_ = name;
     matrix_ = nullptr;
     symmetry_ = symmetry;
@@ -211,7 +211,7 @@ Matrix::Matrix(const std::string &name, const Dimension &rows, const Dimension &
     alloc();
 }
 
-Matrix::Matrix(const Dimension &rows, const Dimension &cols, int symmetry) {
+Matrix::Matrix(const Dimension &rows, const Dimension &cols, unsigned int symmetry) {
     matrix_ = nullptr;
     symmetry_ = symmetry;
 
@@ -274,7 +274,8 @@ Matrix::Matrix(dpdbuf4 *inBuf) : name_(inBuf->file.label), rowspi_(1), colspi_(1
 
 Matrix::~Matrix() { release(); }
 
-void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const std::string &name, int symmetry) {
+void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const std::string &name,
+                  unsigned int symmetry) {
     name_ = name;
     symmetry_ = symmetry;
     nirrep_ = l_nirreps;
@@ -287,7 +288,8 @@ void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const
     alloc();
 }
 
-void Matrix::init(const Dimension &l_rowspi, const Dimension &l_colspi, const std::string &name, int symmetry) {
+void Matrix::init(const Dimension &l_rowspi, const Dimension &l_colspi, const std::string &name,
+                  unsigned int symmetry) {
     if (l_rowspi.n() != l_colspi.n()) throw PSIEXCEPTION("Matrix rows and columns have different numbers of irreps!\n");
 
     name_ = name;
@@ -2414,10 +2416,10 @@ void Matrix::expm(int m, bool scale) {
         // print_mat(D,n,n,outfile);
 
         // Solve exp(A) = N / D = D^{1} N = D \ N
-        std::vector<int> ipiv(n);
+        int *ipiv = new int[n];
 
         // LU = D
-        int info1 = C_DGETRF(n, n, D[0], n, ipiv.data());
+        int info1 = C_DGETRF(n, n, D[0], n, ipiv);
         if (info1) throw PSIEXCEPTION("Matrix::expm: LU factorization of D failed");
 
         // Transpose N before solvation (FORTRAN)
@@ -2952,7 +2954,7 @@ void Matrix::save(psi::PSIO *const psio, size_t fileno, SaveType st) {
     if (st == SubBlocks) {
         for (int h = 0; h < nirrep_; ++h) {
             std::string str(name_);
-            str += " Symmetry " + to_string(symmetry_) + " Irrep " + to_string(h);
+            str += " Symmetry " + std::to_string(symmetry_) + " Irrep " + std::to_string(h);
 
             // Write the sub-blocks
             if (colspi_[h ^ symmetry_] > 0 && rowspi_[h] > 0)
@@ -3024,7 +3026,7 @@ void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st) {
     if (st == SubBlocks) {
         for (int h = 0; h < nirrep_; ++h) {
             std::string str(name_);
-            str += " Symmetry " + to_string(symmetry_) + " Irrep " + to_string(h);
+            str += " Symmetry " + std::to_string(symmetry_) + " Irrep " + std::to_string(h);
 
             // Read the sub-blocks
             if (colspi_[h] > 0 && rowspi_[h] > 0)

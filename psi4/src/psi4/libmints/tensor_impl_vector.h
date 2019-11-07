@@ -39,14 +39,11 @@ namespace psi {
 template <typename T, size_t Rank>
 class Tensor;
 
-template <typename T, size_t Rank>
-using SharedTensor = std::shared_ptr<Tensor<T, Rank>>;
-
 template <typename T>
 using Vector_ = Tensor<T, 1>;
 
 template <typename T>
-using SharedVector_ = SharedTensor<T, 1>;
+using SharedVector_ = std::shared_ptr<Vector_<T>>;
 
 namespace detail {
 template <typename T>
