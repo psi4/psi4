@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+import copy
 import itertools
 import math
 from typing import Any, Callable, Dict, List, Union
@@ -37,7 +38,7 @@ import pprint
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 import numpy as np
-from qcelemental.models import DriverEnum
+from qcelemental.models import DriverEnum, Result
 
 from psi4 import core
 from psi4.driver import p4util
@@ -45,7 +46,7 @@ from psi4.driver import constants
 from psi4.driver import driver_nbody_multilevel
 from psi4.driver.p4util.exceptions import *
 
-from psi4.driver.task_base import BaseTask
+from psi4.driver.task_base import BaseComputer, SingleComputer
 
 ### Math helper functions
 
@@ -53,7 +54,6 @@ from psi4.driver.task_base import BaseTask
 def nCr(n, r):
     f = math.factorial
     return f(n) // f(r) // f(n - r)
-
 
 
 def _sum_cluster_ptype_data(ptype,
@@ -302,7 +302,7 @@ def build_nbody_compute_list(bsse_type_list, nbody, max_frag):
     fragment_range = range(1, max_frag + 1)
 
     # Need nbody and all lower-body in full basis
-    cp_compute_list   = {x: set() for x in nbody}
+    cp_compute_list = {x: set() for x in nbody}
     nocp_compute_list = {x: set() for x in nbody}
     vmfc_compute_list = {x: set() for x in nbody}
     vmfc_level_list = {x: set() for x in nbody}  # Need to sum something slightly different
@@ -324,7 +324,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
                 for x in fragment_range:
                     cp_compute_list[1].add(((x, ), (x, )))
             else:
-                for sublevel in range(1, nb+1):
+                for sublevel in range(1, nb + 1):
                     for x in itertools.combinations(fragment_range, sublevel):
                         if nbody == 1: break
                         cp_compute_list[nb].add((x, basis_tuple))
@@ -332,7 +332,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
     if 'nocp' in bsse_type_list or metadata['return_total_data']:
         # Everything in monomer basis
         for nb in nbody:
-            for sublevel in range(1, nb+1):
+            for sublevel in range(1, nb + 1):
                 for x in itertools.combinations(fragment_range, sublevel):
                     nocp_compute_list[nb].add((x, x))
 
@@ -341,7 +341,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         for nb in nbody:
             for cp_combos in itertools.combinations(fragment_range, nb):
                 basis_tuple = tuple(cp_combos)
-                for interior_nbody in range(1, nb+1):
+                for interior_nbody in range(1, nb + 1):
                     for x in itertools.combinations(cp_combos, interior_nbody):
                         combo_tuple = (x, basis_tuple)
                         vmfc_compute_list[nb].add(combo_tuple)
@@ -349,7 +349,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
     # Build a comprehensive compute_range
     compute_list = {x: set() for x in nbody}
     for nb in nbody:
-        compute_list[nb] |=   cp_compute_list[nb]
+        compute_list[nb] |= cp_compute_list[nb]
         compute_list[nb] |= nocp_compute_list[nb]
         compute_list[nb] |= vmfc_compute_list[nb]
         core.print_out("        Number of %d-body computations:     %d\n" % (nb, len(compute_list[nb])))
@@ -436,7 +436,7 @@ def assemble_nbody_components(metadata, component_results):
     # get the range of nbodies for this level
     for idx in level_idx:
         level = idx
-        nbody_range = metadata['nbody_list'][level-1]
+        nbody_range = metadata['nbody_list'][level - 1]
         if nbody_range[0] == 'supersystem':
             # range for supersystem sub-components
             nbody_range = metadata['nbody_list'][level]
@@ -448,7 +448,6 @@ def assemble_nbody_components(metadata, component_results):
     nocp_ptype_compute_list = {x: set() for x in nbody_range}
     vmfc_compute_list = compute_dict['vmfc_compute']
     vmfc_level_list = compute_dict['vmfc_levels']
-
 
     # Build size and slices dictionaries
     fragment_size_dict = {
@@ -464,12 +463,12 @@ def assemble_nbody_components(metadata, component_results):
     molecule_total_atoms = sum(fragment_size_dict.values())
 
     # Final dictionaries
-    cp_energy_by_level = {n: 0.0 for n in range(1,nbody_range[-1]+1)}
-    nocp_energy_by_level = {n: 0.0 for n in range(1, nbody_range[-1]+1)}
+    cp_energy_by_level = {n: 0.0 for n in range(1, nbody_range[-1] + 1)}
+    nocp_energy_by_level = {n: 0.0 for n in range(1, nbody_range[-1] + 1)}
 
-    cp_energy_body_dict = {n: 0.0 for n in range(1,nbody_range[-1]+1)}
-    nocp_energy_body_dict = {n: 0.0 for n in range(1, nbody_range[-1]+1)}
-    vmfc_energy_body_dict = {n: 0.0 for n in range(1, nbody_range[-1]+1)}
+    cp_energy_body_dict = {n: 0.0 for n in range(1, nbody_range[-1] + 1)}
+    nocp_energy_body_dict = {n: 0.0 for n in range(1, nbody_range[-1] + 1)}
+    vmfc_energy_body_dict = {n: 0.0 for n in range(1, nbody_range[-1] + 1)}
 
     # Build out ptype dictionaries if needed
     if metadata['driver'] != 'energy':
@@ -480,13 +479,13 @@ def assemble_nbody_components(metadata, component_results):
         else:
             raise KeyError("N-Body: ptype '%s' not recognized" % metadata['driver'])
 
-        cp_ptype_by_level   = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1]+1)}
-        nocp_ptype_by_level = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1]+1)}
-        vmfc_ptype_by_level = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1]+1)}
+        cp_ptype_by_level = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1] + 1)}
+        nocp_ptype_by_level = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1] + 1)}
+        vmfc_ptype_by_level = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1] + 1)}
 
-        cp_ptype_body_dict   = {n: np.zeros(arr_shape) for n in range(1,nbody_range[-1]+1)}
-        nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in range(1,nbody_range[-1]+1)}
-        vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in range(1,nbody_range[-1]+1)}
+        cp_ptype_body_dict = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1] + 1)}
+        nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1] + 1)}
+        vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in range(1, nbody_range[-1] + 1)}
     else:
         cp_ptype_by_level, cp_ptype_body_dict = {}, {}
         nocp_ptype_by_level, nocp_ptype_body_dict = {}, {}
@@ -528,13 +527,13 @@ def assemble_nbody_components(metadata, component_results):
         if 'cp' in metadata['bsse_type']:
             for v in cp_compute_list[n]:
                 if v not in cp_add_dict:
-                    energy = component_results['energies'][str(level)+"_"+str(v)]
+                    energy = component_results['energies'][str(level) + "_" + str(v)]
                     cp_energy_by_level[len(v[0])] += energy
                     cp_add_dict.add(v)
         if 'nocp' in metadata['bsse_type']:
             for v in nocp_compute_list[n]:
                 if v not in nocp_add_dict:
-                    energy = component_results['energies'][str(level)+"_"+str(v)]
+                    energy = component_results['energies'][str(level) + "_" + str(v)]
                     nocp_energy_by_level[len(v[0])] += energy
                     nocp_add_dict.add(v)
 
@@ -547,20 +546,29 @@ def assemble_nbody_components(metadata, component_results):
 
         # Do ptype
         if metadata['driver'] != 'energy':
-            _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], cp_ptype_compute_list[n],
-                                    fragment_slice_dict, fragment_size_dict, cp_ptype_by_level[n], level=level)
-            _sum_cluster_ptype_data(metadata['driver'], component_results['ptype'], nocp_ptype_compute_list[n],
-                                    fragment_slice_dict, fragment_size_dict, nocp_ptype_by_level[n], level=level)
-            _sum_cluster_ptype_data(
-                metadata['driver'],
-                component_results['ptype'],
-                vmfc_level_list[n],
-                fragment_slice_dict,
-                fragment_size_dict,
-                vmfc_ptype_by_level[n],
-                vmfc=True,
-                n=n,
-                level=level)
+            _sum_cluster_ptype_data(metadata['driver'],
+                                    component_results['ptype'],
+                                    cp_ptype_compute_list[n],
+                                    fragment_slice_dict,
+                                    fragment_size_dict,
+                                    cp_ptype_by_level[n],
+                                    level=level)
+            _sum_cluster_ptype_data(metadata['driver'],
+                                    component_results['ptype'],
+                                    nocp_ptype_compute_list[n],
+                                    fragment_slice_dict,
+                                    fragment_size_dict,
+                                    nocp_ptype_by_level[n],
+                                    level=level)
+            _sum_cluster_ptype_data(metadata['driver'],
+                                    component_results['ptype'],
+                                    vmfc_level_list[n],
+                                    fragment_slice_dict,
+                                    fragment_size_dict,
+                                    vmfc_ptype_by_level[n],
+                                    vmfc=True,
+                                    n=n,
+                                    level=level)
 
     if metadata['driver'] != 'energy':
         # Extract ptype data for monomers in monomer basis for CP total data
@@ -570,7 +578,7 @@ def assemble_nbody_components(metadata, component_results):
 
     # Compute cp energy and ptype
     if 'cp' in metadata['bsse_type']:
-        for n in range(1,nbody_range[-1]+1):
+        for n in range(1, nbody_range[-1] + 1):
             if n == metadata['max_frag']:
                 cp_energy_body_dict[n] = cp_energy_by_level[n] - bsse
                 if metadata['driver'] != 'energy':
@@ -599,7 +607,6 @@ def assemble_nbody_components(metadata, component_results):
                 if metadata['driver'] != 'energy':
                     cp_ptype_body_dict[n] -= bsse_ptype
 
-
         cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
         nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
 
@@ -616,7 +623,7 @@ def assemble_nbody_components(metadata, component_results):
 
     # Compute nocp energy and ptype
     if 'nocp' in metadata['bsse_type']:
-        for n in range(1,nbody_range[-1]+1):
+        for n in range(1, nbody_range[-1] + 1):
             if n == metadata['max_frag']:
                 nocp_energy_body_dict[n] = nocp_energy_by_level[n]
                 if metadata['driver'] != 'energy':
@@ -634,7 +641,8 @@ def assemble_nbody_components(metadata, component_results):
                     nocp_ptype_body_dict[n] += take_nk * sign * value
 
         if not quiet:
-            _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)", metadata['embedding_charges'])
+            _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)",
+                                metadata['embedding_charges'])
         nocp_interaction_energy = nocp_energy_body_dict[metadata['max_nbody']] - nocp_energy_body_dict[1]
         nbody_dict['Non-Counterpoise Corrected Total Energy'] = nocp_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Non-Counterpoise Corrected Interaction Energy'] = nocp_interaction_energy
@@ -724,7 +732,7 @@ def electrostatic_embedding(embedding_charges):
     core.set_global_option_python('EXTERN', Chrgfield.extern)
 
 
-class NBodyComputer(BaseTask):
+class NBodyComputer(BaseComputer):
 
     molecule: Any
     driver: DriverEnum
@@ -742,14 +750,14 @@ class NBodyComputer(BaseTask):
     embedding_charges: Dict[int, list] = {}
     quiet: bool = False
 
-    task_list: Dict[str, Any] = {}
+    task_list: Dict[str, SingleComputer] = {}
 
     def __init__(self, **data):
 
         if not isinstance(data['bsse_type'], list):
             data['bsse_type'] = [data['bsse_type']]
 
-        BaseTask.__init__(self, **data)
+        BaseComputer.__init__(self, **data)
 
         self.max_frag = self.molecule.nfragments()
         if self.max_nbody == -1:
@@ -790,12 +798,12 @@ class NBodyComputer(BaseTask):
                 return False
 
     # Build task for a given level
-    def build_tasks(self, obj, bsse_type="all", **kwargs):
+    def build_tasks(self, obj, **kwargs):
+        bsse_type = "all"
 
-        import json
         nbody_level = kwargs.pop('nlevel', self.max_nbody)
         level = kwargs.pop('level', None)
-        template = json.dumps(kwargs)
+        template = copy.deepcopy(kwargs)
 
         # Store tasks by level
         # Get the n-body orders for this level
@@ -804,11 +812,12 @@ class NBodyComputer(BaseTask):
 
         # Add supersystem computation if requested
         if level == 'supersystem':
-            data = json.loads(template)
+            data = template
             data["molecule"] = self.molecule
             self.task_list[str(level) + '_' + str(self.max_frag)] = obj(**data)
             print(str(level) + ', ' + str(self.max_frag))
-            compute_dict = build_nbody_compute_list(self.bsse_type,[i for i in range(1,self.max_nbody+1)], self.max_frag)
+            compute_dict = build_nbody_compute_list(self.bsse_type, [i for i in range(1, self.max_nbody + 1)],
+                                                    self.max_frag)
         else:
             # Get compute list
             compute_dict = build_nbody_compute_list(self.bsse_type, nbody, self.max_frag)
@@ -820,10 +829,10 @@ class NBodyComputer(BaseTask):
         # Add current compute list to the master task list
         for count, n in enumerate(compute_list):
             for key, pair in enumerate(compute_list[n]):
-                if (str(nbody_level+1) + '_' + str(pair)) in self.task_list:
+                if (str(nbody_level + 1) + '_' + str(pair)) in self.task_list:
                     continue
                 print(pair)
-                data = json.loads(template)
+                data = template
                 ghost = list(set(pair[1]) - set(pair[0]))
                 data["molecule"] = self.molecule.extract_subsets(list(pair[0]), ghost)
                 if self.embedding_charges:
@@ -834,7 +843,7 @@ class NBodyComputer(BaseTask):
                         charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
                     data['keywords']['function_kwargs'].update({'embedding_charges': charges})
 
-                self.task_list[str(nbody_level+1) + '_' + str(pair)] = obj(**data)
+                self.task_list[str(nbody_level + 1) + '_' + str(pair)] = obj(**data)
                 counter += 1
 
         return counter
@@ -868,31 +877,23 @@ class NBodyComputer(BaseTask):
         energies = {k: v.properties.return_energy for k, v in results_list.items()}
 
         ptype = None
-        if self.driver == 'gradient':
-            ptype = {k: np.array(v["return_result"]).reshape((-1, 3)) for k, v in results_list.items()}
-        elif self.driver == 'hessian':
-            ptype = {
-                k: np.array(v["return_result"]).reshape(int(np.sqrt(len(v["return_result"]))), -1)
-                for k, v in results_list.items()
-            }
+        if self.driver.name in ['gradient', 'hessian']:
+            ptype = {k: v.return_result for k, v in results_list.items()}
         tmp = {"energies": energies, "ptype": ptype}
         nbody_results = assemble_nbody_components(metadata.copy(), tmp)
 
         if self.driver == 'hessian':
             # Compute nbody gradient
-            gradient = {k: np.array(v['extras']['qcvars']["CURRENT GRADIENT"]).reshape((-1, 3)) for k, v in results_list.items()}
+            gradient = {k: v.extras['qcvars']["CURRENT GRADIENT"] for k, v in results_list.items()}
             tmp['ptype'] = gradient
             metadata = metadata.copy()
             metadata['driver'] = 'gradient'
             grad_result = assemble_nbody_components(metadata, tmp)
-            nbody_results.update({
-                'ret_gradient': grad_result['ret_ptype']
-            })
-
+            nbody_results.update({'ret_gradient': grad_result['ret_ptype']})
 
         nbody_results['intermediates'] = {
-            "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join(str(i) for i in literal_eval(k.split("_")[1])[0]), ', '.join(str(i) for i in literal_eval(k.split("_")[1])[1])):
-            v.properties.return_energy
+            "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join(str(i) for i in literal_eval(k.split("_")[1])[0]), ', '.join(
+                str(i) for i in literal_eval(k.split("_")[1])[1])): v.properties.return_energy
             for k, v in results_list.items()
         }
 
@@ -907,7 +908,8 @@ class NBodyComputer(BaseTask):
         """Return nbody results as nbody-flavored QCSchema."""
 
         results = self.prepare_results(client=client)
-        ret_energy, ret_ptype, ret_gradient = results.pop('ret_energy'), results.pop('ret_ptype'), results.pop('ret_gradient', None)
+        ret_energy, ret_ptype, ret_gradient = results.pop('ret_energy'), results.pop('ret_ptype'), results.pop(
+            'ret_gradient', None)
 
         # load QCVariables
         qcvars = {
@@ -929,38 +931,40 @@ class NBodyComputer(BaseTask):
         for k, val in component_results.items():
             val['molecule'] = val['molecule'].to_schema(dtype=2)
 
-        data = {
-            'driver': self.driver,
-            'molecule': self.molecule.to_schema(dtype=2),
-            'properties': {
-                'calcinfo_natom': self.molecule.natom(),
-                'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
-                'return_energy': ret_energy,
-            },
-            'provenance': p4util.provenance_stamp(__name__),
-            'extras': {
-                'qcvars': qcvars,
-            },
-            #'raw_output': None,
-            'return_result': ret_ptype,
-            'schema_name': 'qcschema_output',
-            'schema_version': 1,
-            'success': True,
-            'component_results': component_results
-        }
+        nbodyjob = Result(
+            **{
+                'driver': self.driver,
+                'model': {
+                    'method': self.method,
+                    'basis': self.basis,
+                },
+                'molecule': self.molecule.to_schema(dtype=2),
+                'properties': {
+                    'calcinfo_natom': self.molecule.natom(),
+                    'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
+                    'return_energy': ret_energy,
+                },
+                'provenance': p4util.provenance_stamp(__name__),
+                'extras': {
+                    'qcvars': qcvars,
+                    'component_results': component_results,
+                },
+                'return_result': ret_ptype,
+                'success': True,
+            })
 
-        return data
+        return nbodyjob
 
     def get_psi_results(self, return_wfn=False):
 
         nbody_results = self.get_results()
-        ret = nbody_results['return_result']
+        ret = nbody_results.return_result
 
         wfn = core.Wavefunction.build(self.molecule, 'def2-svp')
 
         # this should be all the setting that's needed (and shouldn't need the isinstance
         #   to avoid dicts). can this be simplified, Asim?
-        for qcv, val in nbody_results['extras']['qcvars'].items():
+        for qcv, val in nbody_results.extras['qcvars'].items():
             if isinstance(val, (int, float)):
                 for obj in [core, wfn]:
                     obj.set_variable(qcv, val)
@@ -970,23 +974,26 @@ class NBodyComputer(BaseTask):
             'gradient_body_dict', 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
         ]
         if self.driver == 'gradient':
+            ret = core.Matrix.from_array(ret)
             wfn.set_gradient(ret)
-            nbody_results['extras']['qcvars']['gradient_body_dict'] = nbody_results['extras']['qcvars']['ptype_body_dict']
+            nbody_results.extras['qcvars']['gradient_body_dict'] = nbody_results.extras['qcvars']['ptype_body_dict']
         elif self.driver == 'hessian':
+            ret = core.Matrix.from_array(ret)
+            grad = core.Matrix.from_array(nbody_results.extras['qcvars']['CURRENT GRADIENT'])
             wfn.set_hessian(ret)
-            wfn.set_gradient(nbody_results['extras']['qcvars']['CURRENT GRADIENT'])
+            wfn.set_gradient(grad)
 
-        for d in nbody_results['extras']['qcvars']:
+        for d in nbody_results.extras['qcvars']:
             if d in dicts:
-                for var, value in nbody_results['extras']['qcvars'][d].items():
+                for var, value in nbody_results.extras['qcvars'][d].items():
                     try:
                         wfn.set_variable(str(var), value)
                         core.set_variable(str(var), value)
                     except:
-                        wfn.set_variable(self.driver + ' ' + str(var), plump_qcvar(value, self.driver, 'psi4'))
+                        wfn.set_variable(self.driver + ' ' + str(var), value)
 
-        core.set_variable("CURRENT ENERGY", nbody_results['properties']['return_energy'])
-#        wfn.set_energy(nbody_results['properties']['return_energy'])  # catches CURRENT ENERGY on Wfn
+        core.set_variable("CURRENT ENERGY", nbody_results.properties.return_energy)
+        # wfn.set_energy(nbody_results.properties['return_energy'])  # catches CURRENT ENERGY on Wfn
 
         if return_wfn:
             return (ret, wfn)

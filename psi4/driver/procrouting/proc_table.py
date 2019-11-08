@@ -245,6 +245,13 @@ for key in functionals:
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']
 
+# Integrate arbitrary order with driver routines
+for lvl in range(2, 99):
+    procedures['energy'][f'ci{lvl}'] = proc.run_detci
+    procedures['energy'][f'zapt{lvl}'] = proc.run_detci
+    if lvl >= 5:
+        procedures['energy'][f'mp{lvl}'] = proc.run_detci
+
 # Integrate DFT with driver routines
 for key in functionals:
     ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]

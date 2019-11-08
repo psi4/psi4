@@ -34,13 +34,13 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 import pydantic
 import qcelemental as qcel
-from qcelemental.models import DriverEnum
+from qcelemental.models import DriverEnum, Result
 
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver import qcdb
-from psi4.driver.task_base import BaseTask, SingleResult
+from psi4.driver.task_base import BaseComputer, SingleComputer
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -855,15 +855,16 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
         # ...define offdiag_en to do that for us.
         for i, salc in enumerate(salc_indices):
             for j, salc2 in enumerate(salc_indices[:i]):
-                offdiag_en = lambda index: displacements["{l}: {}, {k}: {}".format(k=salc, l=salc2, *data["disps"]["off"][index])]["energy"]
+                offdiag_en = lambda index: displacements["{l}: {}, {k}: {}".format(
+                    k=salc, l=salc2, *data["disps"]["off"][index])]["energy"]
                 if findifrec["stencil_size"] == 3:
-                    fc = (+offdiag_en(0) + offdiag_en(1) + 2 * ref_energy - E[i][0] - E[i][1] - E[j][0] - E[j][1]) / (
-                        2 * findifrec["step"]["size"]**2)
+                    fc = (+offdiag_en(0) + offdiag_en(1) + 2 * ref_energy - E[i][0] - E[i][1] - E[j][0] -
+                          E[j][1]) / (2 * findifrec["step"]["size"]**2)
                 elif findifrec["stencil_size"] == 5:
                     fc = (-offdiag_en(0) - offdiag_en(1) + 9 * offdiag_en(2) - offdiag_en(3) - offdiag_en(4) +
                           9 * offdiag_en(5) - offdiag_en(6) - offdiag_en(7) + E[i][0] - 7 * E[i][1] - 7 * E[i][2] +
-                          E[i][3] + E[j][0] - 7 * E[j][1] - 7 * E[j][2] + E[j][3] + 12 * ref_energy) / (
-                              12 * findifrec["step"]["size"]**2)
+                          E[i][3] + E[j][0] - 7 * E[j][1] - 7 * E[j][2] + E[j][3] +
+                          12 * ref_energy) / (12 * findifrec["step"]["size"]**2)
                 H_irr[i, j] = fc
                 H_irr[j, i] = fc
 
@@ -946,13 +947,14 @@ def hessian_from_energies_geometries(molecule, irrep, stencil_size=3, step_size=
     return _geom_generator(molecule, irrep, "2_0", stencil_size, step_size)
 
 
-class FinDifComputer(BaseTask):
+class FinDifComputer(BaseComputer):
 
     molecule: Any
-    driver: str
+    driver: DriverEnum
     metameta: Dict[str, Any] = {}
-    task_list: Dict[str, SingleResult] = {}
+    task_list: Dict[str, BaseComputer] = {}
     findifrec: Dict[str, Any] = {}
+    computer: BaseComputer = SingleComputer
 
     @pydantic.validator('driver')
     def set_driver(cls, driver):
@@ -973,7 +975,7 @@ class FinDifComputer(BaseTask):
         findif_stencil_size = data.pop('findif_stencil_size')
         findif_step_size = data.pop('findif_step_size')
 
-        BaseTask.__init__(self, **data)
+        BaseComputer.__init__(self, **data)
 
         print('FINDIFREC CLASS INIT DATA')
         pp.pprint(data)
@@ -985,7 +987,7 @@ class FinDifComputer(BaseTask):
         data['keywords']['PARENT_SYMMETRY'] = self.molecule.point_group().full_name()
 
         self.metameta['mode'] = str(data['findif_mode'][0]) + '_' + str(data['findif_mode'][1])
-        self.metameta['irrep'] = data.pop('irrep', -1)
+        self.metameta['irrep'] = data.pop('findif_irrep', -1)
 
         if self.metameta['mode'] == '1_0':
             self.metameta['proxy_driver'] = 'energy'
@@ -994,14 +996,12 @@ class FinDifComputer(BaseTask):
         elif self.metameta['mode'] == '2_1':
             self.metameta['proxy_driver'] = 'gradient'
             self.findifrec = hessian_from_gradients_geometries(self.molecule, self.metameta['irrep'],
-                                                               findif_stencil_size,
-                                                               findif_step_size)
+                                                               findif_stencil_size, findif_step_size)
 
         elif self.metameta['mode'] == '2_0':
             self.metameta['proxy_driver'] = 'energy'
             self.findifrec = hessian_from_energies_geometries(self.molecule, self.metameta['irrep'],
-                                                              findif_stencil_size,
-                                                              findif_step_size)
+                                                              findif_stencil_size, findif_step_size)
 
         print('FINDIFREC CLASS META DATA')
         pp.pprint(self.metameta)
@@ -1012,15 +1012,17 @@ class FinDifComputer(BaseTask):
         print(f""" {ndisp} displacements needed ...""", end='')
 
         # var_dict = core.variables()
-        reftask = SingleResult(
-            **{
-                "molecule": self.molecule,
-                "driver": self.metameta['proxy_driver'],
-                "method": data["method"],
-                "basis": data["basis"],
-                "keywords": data["keywords"] or {},
-            })
-        self.task_list["reference"] = reftask
+        packet = {
+            "molecule": self.molecule,
+            "driver": self.metameta['proxy_driver'],
+            "method": data["method"],
+            "basis": data["basis"],
+            "keywords": data["keywords"] or {},
+        }
+        if 'cbs_metadata' in data:
+            packet['cbs_metadata'] = data['cbs_metadata']
+
+        self.task_list["reference"] = self.computer(**packet)
 
         parent_group = self.molecule.point_group()
         for label, displacement in self.findifrec["displacements"].items():
@@ -1040,14 +1042,17 @@ class FinDifComputer(BaseTask):
                 new_symm_string = qcdb.PointGroup.bits_to_full_name(new_bits)
                 clone.reset_point_group(new_symm_string)
 
-            self.task_list[label] = SingleResult(
-                **{
-                    "molecule": clone,
-                    "driver": self.metameta['proxy_driver'],
-                    "method": data["method"],
-                    "basis": data["basis"],
-                    "keywords": data["keywords"] or {},
-                })
+            packet = {
+                "molecule": clone,
+                "driver": self.metameta['proxy_driver'],
+                "method": data["method"],
+                "basis": data["basis"],
+                "keywords": data["keywords"] or {},
+            }
+            if 'cbs_metadata' in data:
+                packet['cbs_metadata'] = data['cbs_metadata']
+
+            self.task_list[label] = self.computer(**packet)
 
 #        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
 #            _process_displacement(energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
@@ -1079,7 +1084,7 @@ class FinDifComputer(BaseTask):
         #    print('\nRESULT', i)
         #    pp.pprint(x)
 
-        # load SingleResult results into findifrec[reference]
+        # load SingleComputer results into findifrec[reference]
         reference = self.findifrec["reference"]
         task = results_list["reference"]
         response = task.return_result
@@ -1098,7 +1103,7 @@ class FinDifComputer(BaseTask):
             if 'CURRENT GRADIENT' in task.extras['qcvars']:
                 reference['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
-        # load SingleResult results into findifrec[displacements]
+        # load SingleComputer results into findifrec[displacements]
         for label, displacement in self.findifrec["displacements"].items():
             task = results_list[label]
             response = task.return_result
@@ -1174,25 +1179,27 @@ class FinDifComputer(BaseTask):
         if H0 is not None:
             qcvars['CURRENT HESSIAN'] = H0
 
-        findifjob = {
-            'findif_record': copy.deepcopy(self.findifrec),
-            'driver': self.driver,
-            # 'keywords':
-            'model': {
-                # 'basis':
-                # 'method':
-            },
-            'molecule': self.molecule.to_schema(dtype=2),
-            # 'properties':
-            'provenance': p4util.provenance_stamp(__name__),
-            'extras': {
-                'qcvars': qcvars,
-            },
-            'return_result': self.findifrec['reference'][self.driver.name],
-            'schema_name': 'qcschema_output',
-            'schema_version': 1,
-            # 'success': True,
-        }
+        findifjob = Result(
+            **{
+                'driver': self.driver,
+                'model': {
+                    'basis': '(auto)',  #self.basis,
+                    'method': '(auto)',  #self.method,
+                },
+                'molecule': self.molecule.to_schema(dtype=2),
+                'properties': {
+                    'calcinfo_natom': self.molecule.natom(),
+                    'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
+                    'return_energy': qcvars['CURRENT ENERGY'],
+                },
+                'provenance': p4util.provenance_stamp(__name__),
+                'extras': {
+                    'qcvars': qcvars,
+                    'findif_record': copy.deepcopy(self.findifrec),
+                },
+                'return_result': self.findifrec['reference'][self.driver.name],
+                'success': True,
+            })
 
         print('\nFINDIF QCSchema:')
         pp.pprint(findifjob)
@@ -1202,7 +1209,7 @@ class FinDifComputer(BaseTask):
 
         findifjob = self.get_results()
 
-        ret_ptype = core.Matrix.from_array(findifjob['return_result'])
+        ret_ptype = core.Matrix.from_array(findifjob.return_result)
         wfn = _findif_schema_to_wfn(findifjob)
 
         if return_wfn:
@@ -1215,14 +1222,15 @@ def _findif_schema_to_wfn(findifjob):
     """Helper function to keep Wavefunction dependent on FinDif-flavored QCSchemus."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(findifjob)
+    mol = core.Molecule.from_schema(findifjob.molecule.dict())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
-#    wfn.set_energy(findifjob['extras']['qcvars'].get('CURRENT ENERGY'))  # catches Wfn.energy_
-    for qcv, val in findifjob['extras']['qcvars'].items():
+    # wfn.set_energy(findifjob['extras']['qcvars'].get('CURRENT ENERGY'))  # catches Wfn.energy_
+    for qcv, val in findifjob.extras['qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, val)
+
 
 #    flat_grad = findifjob['extras']['qcvars'].get('CURRENT GRADIENT')
 #    if flat_grad is not None:

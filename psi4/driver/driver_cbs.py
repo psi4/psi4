@@ -47,7 +47,7 @@ from psi4.driver import psifiles as psif
 from psi4.driver.driver_cbs_helper import xtpl_procedures, register_xtpl_scheme
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import BaseTask, SingleResult
+from psi4.driver.task_base import BaseComputer, SingleComputer
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -67,6 +67,7 @@ _lmh_labels = {
 # these get input files to the point where they raise an UpgradeHelper
 def xtpl_highest_1():
     pass
+
 
 scf_xtpl_helgaker_2 = xtpl_highest_1
 scf_xtpl_truhlar_2 = xtpl_highest_1
@@ -1257,7 +1258,8 @@ def _build_cbs_compute(metameta, metadata):
         dups = -1
         for indx_job, job in enumerate(JOBS):
             if ((job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis'])
-                    and (job['f_options'] == mc['f_options']) and (job['f_options'] is not False)):
+                    and (job['f_options'] == mc['f_options'])):
+                    # TODO: I don't understand why I need this change #and (job['f_options'] is not False)):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
@@ -1274,7 +1276,8 @@ def _build_cbs_compute(metameta, metadata):
             for wfn in VARH[mc['f_wfn']]:
                 for indx_job, job in enumerate(JOBS):
                     if ((VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']])
-                            and (mc['f_basis'] == job['f_basis']) and not (mc['f_wfn'] == job['f_wfn']) and (mc['f_options'] is False)):
+                            and (mc['f_basis'] == job['f_basis']) and not (mc['f_wfn'] == job['f_wfn'])):
+                            # TODO: I don't understand why I need this change #and (mc['f_options'] is False)):
                         del JOBS[indx_job]
 
     instructions += """\n    Enlightened listing of computations required.\n"""
@@ -1435,11 +1438,11 @@ def _summary_table(metadata, TROVE, GRAND_NEED):
     return tables
 
 
-class CBSComputer(BaseTask):
+class CBSComputer(BaseComputer):
 
     molecule: Any
-    basis: str: "(auto)" #Union[str, None]
-    method: str: "(auto)"
+    basis: str = "(auto)"
+    method: str = "(auto)"
     driver: DriverEnum
     keywords: Dict[str, Any] = {}
     metadata: Any
@@ -1457,18 +1460,11 @@ class CBSComputer(BaseTask):
     # Minimal (enlightened) list of jobs to run to satisfy full CBS. Keys are _f_fields. Formerly JOBS.
     compute_list: List[Dict[str, Any]] = []
 
-    # One-to-One list of SingleResult-s corresponding to `compute_list`.
-    task_list: List[Any] = []
+    # One-to-One list of SingleComputer-s corresponding to `compute_list`.
+    task_list: List[SingleComputer] = []
 
     # One-to-One list of QCSchema corresponding to `task_list`.
     results_list: List[Any] = []
-
-    @pydantic.validator('driver')
-    def set_driver(cls, driver):
-        if driver not in ['energy', 'gradient', 'hessian']:
-            raise ValidationError(f"""Wrapper complete_basis_set is unhappy to be calling
-                                     function '{driver}' instead of 'energy', 'gradient' or 'hessian'.""")
-        return driver
 
     @pydantic.validator('molecule')
     def set_molecule(cls, mol):
@@ -1480,7 +1476,7 @@ class CBSComputer(BaseTask):
     def __init__(self, **data):
         data = p4util.kwargs_lower(data)
         data["metadata"] = _process_cbs_kwargs(data)
-        BaseTask.__init__(self, **data)
+        BaseComputer.__init__(self, **data)
 
         self.metameta = {
             'kwargs': data,
@@ -1517,7 +1513,7 @@ class CBSComputer(BaseTask):
                 if job["f_options"] is not False:
                     stage_keywords = dict(job["f_options"].items())
                     keywords = {**keywords, **stage_keywords}
-                task = SingleResult(
+                task = SingleComputer(
                     **{
                         "molecule": self.molecule,
                         "driver": self.driver,
@@ -1555,7 +1551,7 @@ class CBSComputer(BaseTask):
         #    print('\nRESULT')
         #    pp.pprint(x)
 
-        # load results_list numbers into compute_list (task_list is SingleResult-s)
+        # load results_list numbers into compute_list (task_list is SingleComputer-s)
         for itask, mc in enumerate(self.compute_list):
             task = results_list[itask]
             response = task.return_result
@@ -1630,30 +1626,28 @@ class CBSComputer(BaseTask):
             for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
                 qcvars[qcv] = assembled_results['hessian']
 
-        cbsjob = Result(**{
-            'driver': self.driver,
-            #'keywords': self.keywords,
-            'model': {
-                'method': self.method,
-                'basis': self.basis,
-            },
-            'molecule': self.molecule.to_schema(dtype=2),
-            'properties': {
-                #'calcinfo_nalpha': wfn.nalpha(),
-                #'calcinfo_nbeta': wfn.nbeta(),
-                'calcinfo_natom': self.molecule.natom(),
-                'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
-                'return_energy': assembled_results['energy'],
-            },
-            'provenance': p4util.provenance_stamp(__name__),
-            'extras': {
-                'qcvars': qcvars,
-                'cbs_record': copy.deepcopy(self.cbsrec),
-            },
-            #'raw_output': None,
-            'return_result': assembled_results['ret_ptype'],
-            'success': True,
-        })
+        cbsjob = Result(
+            **{
+                'driver': self.driver,
+                #'keywords': self.keywords,
+                'model': {
+                    'method': self.method,
+                    'basis': self.basis,
+                },
+                'molecule': self.molecule.to_schema(dtype=2),
+                'properties': {
+                    'calcinfo_natom': self.molecule.natom(),
+                    'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
+                    'return_energy': assembled_results['energy'],
+                },
+                'provenance': p4util.provenance_stamp(__name__),
+                'extras': {
+                    'qcvars': qcvars,
+                    'cbs_record': copy.deepcopy(self.cbsrec),
+                },
+                'return_result': assembled_results['ret_ptype'],
+                'success': True,
+            })
 
         print('\nCBS QCSchema:')
         pp.pprint(cbsjob.dict())
@@ -1685,10 +1679,11 @@ def _cbs_schema_to_wfn(cbsjob):
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
-#    wfn.set_energy(cbsjob['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
+    # wfn.set_energy(cbsjob['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
     for qcv, val in cbsjob.extras['qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, val)
+
 
 #    flat_grad = cbsjob['extras']['qcvars'].get('CBS TOTAL GRADIENT')
 #    if flat_grad is not None:

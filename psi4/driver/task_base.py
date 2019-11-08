@@ -45,10 +45,10 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util import exceptions
 
-__all__ = ["BaseTask", "SingleResult"]
+__all__ = ["BaseComputer", "SingleComputer"]
 
 
-class BaseTask(qcel.models.ProtoModel):
+class BaseComputer(qcel.models.ProtoModel):
     @abc.abstractmethod
     def compute(self):
         pass
@@ -58,11 +58,11 @@ class BaseTask(qcel.models.ProtoModel):
         pass
 
     class Config(qcel.models.ProtoModel.Config):
-        #extra: 'allow'
+        extra = 'allow'
         allow_mutation = True
 
 
-class SingleResult(BaseTask):
+class SingleComputer(BaseComputer):
 
     molecule: Any
     basis: str
@@ -76,8 +76,6 @@ class SingleResult(BaseTask):
 
     class Config(qcel.models.ProtoModel.Config):
         pass
-    #    extra: 'allow'
-    #    allow_mutation: True
 
     @pydantic.validator('basis')
     def set_basis(cls, basis):
@@ -86,15 +84,6 @@ class SingleResult(BaseTask):
     @pydantic.validator('method')
     def set_method(cls, method):
         return method.lower()
-
-    @pydantic.validator('driver')
-    def set_driver(cls, driver):
-        driver = driver.lower()
-        if driver not in ["energy", "gradient", "hessian"]:
-            raise exceptions.ValidationError(
-                f"Driver must be either energy, gradient, or hessian. Found {driver}.")
-
-        return driver
 
     def plan(self):
 
@@ -106,7 +95,9 @@ class SingleResult(BaseTask):
                 "basis": self.basis
             },
             "keywords": self.keywords,
-            "return_output": True,
+            "protocols": {
+                "stdout": True,
+            },
         })
 
         return data
@@ -150,17 +141,13 @@ class SingleResult(BaseTask):
         # core.close_outfile()
 
         print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
-        #print(json.dumps(self.plan(), indent=2))
-        #pp.pprint(self.plan())
+        #pp.pprint(self.plan().dict())
 
         # EITHER ...
-        #from psi4.driver import json_wrapper
-        #self.result = json_wrapper.run_json(self.plan())
+        #from psi4.driver import schema_wrapper
+        #self.result = schema_wrapper.run_qcschema(self.plan())
         # ... OR ...
-        newplan = self.plan()
-        newplan.pop('return_output', None)
-        newplan['keywords'] = {k.lower():v for k, v in newplan['keywords'].items()}  # drop after qcng 0.6.4
-        self.result = qcng.compute(newplan, 'psi4', raise_error=True,
+        self.result = qcng.compute(self.plan(), 'psi4', raise_error=True,
                                    # local_options below suitable for continuous mode
                                    local_options={"memory": core.get_memory()/1073741824, "ncores": core.get_num_threads()}
                                   )

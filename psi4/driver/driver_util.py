@@ -310,7 +310,7 @@ def highest_analytic_derivative_available(method: str,
                 raise MissingMethodError(_alternative_methods_message(method, 'any', proc))
 
     if dertype == '(auto)':
-        raise MissingMethodError(_alternative_methods_message(method, dertype, proc))
+        raise MissingMethodError(_alternative_methods_message(method, 'any', proc))
 
     return dertype
 
