@@ -435,7 +435,7 @@ def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype,
 
     if verbose > 1:
         print(
-            f'Dertivative negotiations: target/driver={egh.index(target_dertype)}, best_available={highest_analytic_dertype}, user_dertype={user_dertype} -> FINAL={dertype}'
+            f'Derivative negotiations: target/driver={egh.index(target_dertype)}, best_available={highest_analytic_dertype}, user_dertype={user_dertype} -> FINAL={dertype}'
         )
 
     return (egh.index(target_dertype), dertype)

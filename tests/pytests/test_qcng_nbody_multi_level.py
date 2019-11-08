@@ -63,8 +63,8 @@ def test_nbody_levels(inp, expected, base_schema):
     jin['model']['method'] = inp['method']
     jin['keywords']['function_kwargs'] = inp['kfk']
 
-    otp = psi4.json_wrapper.run_json(jin)
+    otp = psi4.schema_wrapper.run_qcschema(jin)
     pprint.pprint(otp)
 
     for b, v in expected.items():
-        assert psi4.compare_values(v, otp["extras"]["qcvars"][b], 6, b)
+        assert psi4.compare_values(v, otp.extras["qcvars"][b], 6, b)
