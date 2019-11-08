@@ -109,7 +109,8 @@ if os.path.isfile(infile):
     exelist = [psi, infile, outfile, '-l', psidatadir]
     # On Windows set Python interpreter explicitly as the shebang is ignored
     if sys.platform.startswith('win'):
-        exelist = [sys.executable] + exelist
+        #exelist = [sys.executable] + exelist
+        exelist = [python_exec] + exelist
     pyexitcode = backtick(exelist)
 elif os.path.isfile(infile.replace(".dat", ".py")):
     infile = infile.replace(".dat", ".py")
@@ -118,7 +119,7 @@ elif os.path.isfile(infile.replace(".dat", ".py")):
     else:
         os.environ["PYTHONPATH"] = psilibdir
     outfile = os.path.dirname(infile) + os.path.sep + outfile
-    pyexitcode = backtick(["python", infile, " > ", outfile])
+    pyexitcode = backtick([python_exec, infile, " > ", outfile])
 else:
     raise Exception("\n\nError: Input file %s not found\n" % infile)
 

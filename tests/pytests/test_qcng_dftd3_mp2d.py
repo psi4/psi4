@@ -487,8 +487,7 @@ def test_dftd3__run_dftd3__3body(inp, subjects, request):
         },
         'keywords': {},
     }
-    jrec = qcng.compute(resinp, 'dftd3', raise_error=True)
-    jrec = jrec.dict()
+    jrec = qcng.compute(resinp, 'dftd3', raise_error=True, return_dict=True)
 
     assert len(jrec['extras']['qcvars']) == 8
 
