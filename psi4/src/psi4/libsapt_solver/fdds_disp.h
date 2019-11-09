@@ -67,7 +67,7 @@ class FDDS_Dispersion {
     bool is_hybrid_;
 
     // QR factorization result
-    SharedMatrix R_A, R_B;
+    SharedMatrix R_A_, R_B_;
 
    public:
     /**
@@ -131,12 +131,35 @@ class FDDS_Dispersion {
      */
     SharedMatrix aux_overlap() { return aux_overlap_; }
 
-    // Forming (ar|X|Q) = (ar'|a'r)(a'r'|Q)
+    /**
+     * Returns R for QR decomposition of (ar|Q)
+     * @return R_A
+     */
+    SharedMatrix R_A() { return R_A_; }
+
+    /**
+     * Returns R for QR decomposition of (bs|Q)
+     * @return R_B
+     */
+    SharedMatrix R_B() { return R_B_; }
+
+    /**
+     * Forms X-type 3-index exchange integral tensor (ar|X|Q) = (ar'|a'r)(a'r'|Q)
+     * @param monomer Monomer "A" or "B"
+     */
     void form_X(std::string monomer);
 
-    // Forming (ar|Y|Q) = (aa'|rr')(a'r'|Q)
+    /**
+     * Forms Y-type 3-index exchange integral tensor (ar|Y|Q) = (aa'|rr')(a'r'|Q)
+     * @param monomer Monomer "A" or "B"
+     */
     void form_Y(std::string monomer);
 
+    /**
+     * Performs QR factorization and store (R^t)^-1 into R_A_ or R_B_
+     * @param monomer Monomer "A" or "B"
+     * @return (R^t)^-1
+     */
     SharedMatrix QR(std::string monomer);
 
     SharedMatrix get_tensor_pqQ(std::string name, std::tuple<size_t, size_t, size_t> dimensions);

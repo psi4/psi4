@@ -212,8 +212,8 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     
     if (is_hybrid_) {
         // QR Factorization of (ar|Q)
-        R_A = QR("A");
-        R_B = QR("B");
+        R_A_ = QR("A");
+        R_B_ = QR("B");
 
         // form (ar|(Q)X|Q) = (ar'|a'r) (a'r'|(Q)|Q)
         form_X("A");
@@ -224,52 +224,44 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         form_Y("B");
 
         // Debug
+        // size_t na = vector_cache_["eps_occ_A"]->dim(0);
+        // size_t nr = vector_cache_["eps_vir_A"]->dim(0);
         // size_t nQ = auxiliary_->nbf();
         // auto XarQ = std::make_shared<Matrix>("XarQ", na * nr, nQ);
+        // auto QXarQ = std::make_shared<Matrix>("QXarQ", na * nr, nQ);
         // auto YarQ = std::make_shared<Matrix>("YarQ", na * nr, nQ);
-        // auto arQ = std::make_shared<Matrix>("arQ", na * nr, nQ);
-        // auto arR = std::make_shared<Matrix>("arR", na * nr, nQ);
-        // auto aaR = std::make_shared<Matrix>("aaR", na * na, nQ);
-        // auto rrR = std::make_shared<Matrix>("rrR", nr * nr, nQ);
+        // auto QYarQ = std::make_shared<Matrix>("QYarQ", na * nr, nQ);
 
         // dfh_->fill_tensor("XarQ", XarQ, {0, na});
         // dfh_->fill_tensor("YarQ", YarQ, {0, na});
-        // dfh_->fill_tensor("arQ", arQ, {0, na});
-        // dfh_->fill_tensor("arR", arR, {0, na});
-        // dfh_->fill_tensor("aaR", aaR, {0, na});
-        // dfh_->fill_tensor("rrR", rrR, {0, nr});
+        // dfh_->fill_tensor("QXarQ", QXarQ, {0, na});
+        // dfh_->fill_tensor("QYarQ", QYarQ, {0, na});
 
-        // double** XP = XarQ->pointer();
-        // double** YP = YarQ->pointer();
-        // double** arQP = arQ->pointer();
-        // double** arRP = arR->pointer();
-        // double** aaRP = aaR->pointer();
-        // double** rrRP = rrR->pointer();
+        // double** Xp = XarQ->pointer();
+        // double** Yp = YarQ->pointer();
+        // double** QXp = QXarQ->pointer();
+        // double** QYp = QYarQ->pointer();
+        // double** Rp = R_A_->pointer();
 
-        // auto Xout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/XarQ.dat");
-        // auto Yout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/YarQ.dat");
-        // auto arQout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/arQ.dat");
-        // auto arRout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/arR.dat");
-        // auto aaRout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/aaR.dat");
-        // auto rrRout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/rrR.dat");
+        // auto Xout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/XA.dat");
+        // auto Yout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/YA.dat");
+        // auto QXout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/QXA.dat");
+        // auto QYout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/QYA.dat");
+        // auto Rout = std::make_shared<PsiOutStream>("/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/RA.dat");
+
+        // for (size_t row = 0; row < nQ; row++)
+        //     for (size_t col = 0; col < nQ; col++) 
+        //         Rout->Printf("%.10e\n", Rp[row][col]);
 
         // for (size_t row = 0; row < na * nr; row++) {
         //     for (size_t col = 0; col < nQ; col++) {
-        //         Xout->Printf(" %20.14f", XP[row][col]);  
-        //         Yout->Printf(" %20.14f", YP[row][col]);  
-        //         arQout->Printf(" %20.14f", arQP[row][col]);  
-        //         arRout->Printf(" %20.14f", arRP[row][col]);  
+        //         Xout->Printf("%.10e\n", Xp[row][col]);  
+        //         Yout->Printf("%.10e\n", Yp[row][col]);  
+        //         QXout->Printf("%.10e\n", QXp[row][col]);  
+        //         QYout->Printf("%.10e\n", QYp[row][col]);  
         //     }
         // }
 
-        // for (size_t row = 0; row < na * na; row++)
-        //     for (size_t col = 0; col < nQ; col++) 
-        //         aaRout->Printf(" %20.14f", aaRP[row][col]);
-
-        // for (size_t row = 0; row < nr * nr; row++)
-        //     for (size_t col = 0; col < nQ; col++) 
-        //         rrRout->Printf(" %20.14f", rrRP[row][col]);
-        
         // End Debug
     }
 
@@ -690,8 +682,8 @@ std::vector<SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer
         dfh_->fill_tensor(arQ_name, arQ, {astart, astart + nablock});
         dfh_->fill_tensor(XarQ_name, XarQ, {astart, astart + nablock});
         dfh_->fill_tensor(QXarQ_name, QXarQ, {astart, astart + nablock});
-        dfh_->fill_tensor(QYarQ_name, QYarQ, {astart, astart + nablock});
         dfh_->fill_tensor(YarQ_name, YarQ, {astart, astart + nablock});
+        dfh_->fill_tensor(QYarQ_name, QYarQ, {astart, astart + nablock});
 
         // X <- X + Y, Y <- Y - X
         XarQ->axpy(1.0, YarQ);
@@ -839,13 +831,13 @@ void FDDS_Dispersion::form_X(std::string monomer) {
 #endif
                 double** Vrrp = Vrr[thread]->pointer();
 
-                // => Contraction ((a')r|R) (R|(a)r') ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // <= Incorrect?
-                // => Contraction [((a')r'|R) (R|(a)r)]^T ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // <= Using this now
-                // => Similar for ((a)r|QX|Q) <= // <= Using this now
+                // => Contraction ((a')r|R) (R|(a)r') ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // 
+                // => Contraction [((a')r'|R) (R|(a)r)]^T ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // - Not sure which one to use 
+                // => Similar for ((a)r|QX|Q) <= //
 
                 C_DGEMM('N', 'T', nvir, nvir, naux, 1.0, aprRp[ap * nvir], naux, arRp[a * nvir], naux, 0.0, Vrrp[0], nvir);
-                C_DGEMM('T', 'N', nvir, naux, nvir, 1.0, Vrrp[0], nvir, arQp[ap * nvir], naux, 1.0, XarQp[a * nvir], naux);
-                C_DGEMM('T', 'N', nvir, naux, nvir, 1.0, Vrrp[0], nvir, QarQp[ap * nvir], naux, 1.0, QXarQp[a * nvir], naux);
+                C_DGEMM('N', 'N', nvir, naux, nvir, 1.0, Vrrp[0], nvir, arQp[ap * nvir], naux, 1.0, XarQp[a * nvir], naux);
+                C_DGEMM('N', 'N', nvir, naux, nvir, 1.0, Vrrp[0], nvir, QarQp[ap * nvir], naux, 1.0, QXarQp[a * nvir], naux);
             }
             // => TODO End Threading <= //
         }
@@ -1046,29 +1038,46 @@ SharedMatrix FDDS_Dispersion::QR(std::string monomer) {
     C_DGEQRF(nov, naux, Qarp[0], nov, taup, workp, lwork);
 
     // Save R
-    Q = Qar->transpose(); // R stored in Qar, needs to be transposed to extract
-    C_DCOPY(naux * naux, Qp[0], 1, Rp[0], 1);
+    // Q = Qar->transpose(); // R stored in Qar, needs to be transposed to extract
+    // C_DCOPY(naux * naux, Qp[0], 1, Rp[0], 1);
+    for (size_t row = 0; row < naux; row++)
+        for (size_t col = 0; col < naux; col++) {
+            Rp[row][col] = Qarp[col][row]; 
+        }
+
+    // Transpose and Invert R
+    C_DTRTRI('L', 'N', naux, Rp[0], naux);
+    R->transpose_this();
 
     // Save Q as (ar|Q|Q)
     C_DORGQR(nov, naux, naux, Qarp[0], nov, taup, workp, lwork);
-    Q = Qar->transpose();
+    size_t nar, nra;
+    // Q = Qar->transpose();
+    for (size_t nQ = 0; nQ < naux; nQ++) 
+        for (size_t na = 0; na < nocc; na++) 
+            for (size_t nr = 0; nr < nvir; nr++) {
+                nar = na * nvir + nr;
+                Qp[nar][nQ] = Qarp[nQ][nar]; 
+            }
+
     dfh_->add_disk_tensor(QarQ_name, std::make_tuple(nocc, nvir, naux)); 
     dfh_->write_disk_tensor(QarQ_name, Q, {0, nocc});
 
     // Save transposed Q (ra|Q|Q)
-    size_t nar, nra;
-    for (size_t nQ  = 0; nQ < naux; nQ++) 
+    
+    for (size_t nQ = 0; nQ < naux; nQ++) 
         for (size_t na = 0; na < nocc; na++) 
             for (size_t nr = 0; nr < nvir; nr++) {
                 nar = na * nvir + nr;
                 nra = nr * nocc + na;
                 Qp[nra][nQ] = Qarp[nQ][nar]; 
             }
-             
+
     dfh_->add_disk_tensor(QraQ_name, std::make_tuple(nvir, nocc, naux)); 
     dfh_->write_disk_tensor(QraQ_name, Q, {0, nvir});
 
     return R;
+
 }
 
 SharedMatrix FDDS_Dispersion::get_tensor_pqQ(std::string name, std::tuple<size_t, size_t, size_t> dimensions) {

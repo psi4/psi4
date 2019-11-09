@@ -30,8 +30,6 @@ import time
 
 import numpy as np
 
-from scipy import linalg 
-
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import p4util
@@ -123,8 +121,8 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
     # Nuke the densities
     del D
 
-    metric = fdds_obj.metric()
-    metric_inv = fdds_obj.metric_inv()
+    metric = fdds_obj.metric().clone()
+    metric_inv = fdds_obj.metric_inv().clone()
 
     # Debug
     # matdir = '/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/'
@@ -143,6 +141,11 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
     total_uc = 0
     total_c = 0
     nremoved = 0
+
+    # Read R
+    if is_hybrid:
+        R_A = fdds_obj.R_A();
+        R_B = fdds_obj.R_B();
 
     # Debug
     omega_count = 0
@@ -172,20 +175,22 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         X_A_coupled = X_A.clone()
         XSW_A = core.triplet(X_A, metric_inv, W_A, False, False, False)
         if is_hybrid:
-            XSW_A.axpy(1.0, K_A)
+            XSW_A.axpy(0.25, core.triplet(K_A, R_A, metric, False, False, False))
 
         amplitude_inv = metric.clone()
         amplitude_inv.axpy(-1.0, XSW_A)
         amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
         # amplitude.transpose_this()
+        tmp = core.triplet(XSW_A, amplitude, X_A, False, False, False)
         X_A_coupled.axpy(1.0, core.triplet(XSW_A, amplitude, X_A, False, False, False))
 
         # Debug
-        # matdir = '/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/' + str(omega_count) + '/'
-        # np.savetxt(matdir + 'Xcoup.dat', X_A_coupled.to_array().flatten())        
-        # np.savetxt(matdir + 'XSW.dat', XSW_A.to_array().flatten())        
-        # np.savetxt(matdir + 'amp.dat', amplitude.to_array().flatten())        
-        # np.savetxt(matdir + 'Pinv.dat', P_A_inv.to_array().flatten())        
+        # matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' + str(omega_count) + '/'
+        # np.savetxt(matdir + 'XSWA_c.dat', XSW_A.to_array().flatten())        
+        # np.savetxt(matdir + 'amp_c.dat', amplitude.to_array().flatten())        
+        # np.savetxt(matdir + 'ampi_c.dat', amplitude_inv.to_array().flatten())        
+        # np.savetxt(matdir + 'XA0_c.dat', X_A.to_array().flatten())        
+        # np.savetxt(matdir + 'tmp_c.dat', tmp.to_array().flatten())        
         # omega_count += 1
 
         del XSW_A, amplitude
@@ -212,13 +217,17 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         X_B_coupled = X_B.clone()
         XSW_B = core.triplet(X_B, metric_inv, W_B, False, False, False)
         if is_hybrid:
-            XSW_B.axpy(1.0, K_B)
+            XSW_B.axpy(0.25, core.triplet(K_B, R_B, metric, False, False, False))
 
         amplitude_inv = metric.clone()
         amplitude_inv.axpy(-1.0, XSW_B)
         amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
         # amplitude.transpose_this()
         X_B_coupled.axpy(1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))
+
+        # Debug
+        # np.savetxt(matdir + 'XB_c.dat', X_B_coupled.to_array().flatten())        
+        omega_count += 1
 
         del XSW_B, amplitude
         if is_hybrid:
