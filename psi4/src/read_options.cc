@@ -1815,7 +1815,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Number of components of transition amplitudes printed -*/
         options.add_int("NUM_AMPS_PRINT", 5);
         /*- Tolerance for extracted or printed amplitudes -*/
-        options.add_double("CUTOFF_AMPS_PRINT", 1e-3);
+        options.add_double("CUTOFF_AMPS_PRINT", 0.01);
         /*- Convergence threshold for ADC matrix diagonalisation. Negative values keep the
          *   adcc default (1e-6) -*/
         options.add_double("R_CONVERGENCE", -1);
@@ -1825,7 +1825,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Number of orbitals to place in the core -*/
         options.add_int("NUM_CORE_ORBITALS", 0);
         /*- The kind of states to compute. -*/
-        options.add_str("KIND", "SINGLET", "SINGLET TRIPLET SPIN_FLIP");
+        options.add_str("KIND", "SINGLET", "SINGLET TRIPLET SPIN_FLIP ANY");
         /*- Maximum number of iterations -*/
         options.add_int("MAXITER", 50);
         /*- Maximum number of subspace vectors. A negative value uses 

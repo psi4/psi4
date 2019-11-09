@@ -3239,7 +3239,17 @@ def run_adcc(name, **kwargs):
     if core.get_option("ADC", "MAX_NUM_VECS") > 0:
         kwargs["max_subspace"] = core.get_option("ADC", "MAX_NUM_VECS")
 
-    kwargs["kind"] = core.get_option("ADC", "KIND").lower()
+    kind = core.get_option("ADC", "KIND").lower()
+    if isinstance(ref_wfn, core.UHF):
+        if not core.has_option_changed("ADC", "KIND"):
+            kind = "any"
+        elif not kind in ["any", "spin_flip"]:
+            raise ValidationError("For UHF references the only valid values for 'KIND' are "
+                                  "'SPIN_FLIP' or 'ANY' and not '{}.".format(kind.upper()))
+    elif not kind in ["singlet", "triplet", "any"]:
+        raise ValidationError("For RHF references the value '{}' for 'KIND' is "
+                              "not supported.".format(kind.upper()))
+    kwargs["kind"] = kind
     kwargs["max_iter"] = core.get_option("ADC", "MAXITER")
 
     #
@@ -3254,8 +3264,11 @@ def run_adcc(name, **kwargs):
     if name not in adcrunner:
         raise ValidationError(f"Unsupported ADC method: {name}")
     if "cvs" in name and "core_orbitals" not in kwargs:
-        raise ValidationError("If a CVS-ADC variant is requested, the NUM_CORE_ORBITALS option"
+        raise ValidationError("If a CVS-ADC method is requested, the NUM_CORE_ORBITALS option "
                               "needs to be set.")
+    if "core_orbitals" in kwargs and not "cvs" in name:
+        raise ValidationError("The NUM_CORE_ORBITALS option needs to be set to '0' or absent "
+                              "unless a CVS ADC method is requested.")
     if "cvs" in name and kwargs["kind"] in ["spin_flip"]:
         raise ValidationError("Spin-flip for CVS-ADC variants is not available.")
 
@@ -3283,8 +3296,9 @@ def run_adcc(name, **kwargs):
     try:
         state = adcrunner[name](ref_wfn, **kwargs, output=CoreStream())
     except InvalidReference as e:
-        raise ValidationError("Cannot run ADC because of in unsupported Psi4 "
-                              "SCF reference") from e
+        raise ValidationError("Cannot run ADC because the passed reference wavefunction is "
+                              "not supported in adcc. Check Psi4 SCF parameters. adcc reports: "
+                              "{}".format(str(e)))
     core.print_out("\n")
 
     # TODO Should a non-converged calculation throw?
@@ -3299,22 +3313,29 @@ def run_adcc(name, **kwargs):
     adc_wfn.set_reference_wavefunction(ref_wfn)
     adc_wfn.set_name(name)
 
+    # MP(3) energy for CVS-ADC(3) calculations is still a missing feature in adcc
+    # ... we store this variant here to be able to fall back to MP(2) energies.
+    is_cvs_adc3 = state.method.level >= 3 and state.ground_state.has_core_occupied_space
+
     # Ground-state energies
     mp = state.ground_state
-    mp_energy = mp.energy(state.method.level)
+    mp_energy = mp.energy(state.method.level if not is_cvs_adc3 else 2)
     mp_corr = 0.0
     if state.method.level > 1:
         core.print_out("Ground state energy breakdown:\n")
         core.print_out("    Energy             SCF   {0:15.8g} Ha\n".format(ref_wfn.energy()))
         for level in range(2, state.method.level + 1):
+            if level >= 3 and is_cvs_adc3:
+                continue
             energy = mp.energy_correction(level)
             mp_corr += energy
             adc_wfn.set_variable(f"MP{level} correlation energy", energy)
             adc_wfn.set_variable(f"MP{level} total energy", mp.energy(level))
             core.print_out(f"    Energy correlation MP{level}   {energy:15.8g} Ha\n")
-            core.print_out("    Energy             total {0:15.8g} Ha\n".format(mp_energy))
+        core.print_out("    Energy             total {0:15.8g} Ha\n".format(mp_energy))
     adc_wfn.set_variable("current correlation energy", mp_corr)
     adc_wfn.set_variable("current energy", mp_energy)
+    core.set_variable("current energy", mp_energy)
 
     # Set results of excited-states computation
     # TODO Does not work: Can't use strings
@@ -3324,7 +3345,7 @@ def run_adcc(name, **kwargs):
                          core.Matrix.from_array(state.excitation_energies.reshape(-1, 1)))
     adc_wfn.set_variable("number of excited states", len(state.excitation_energies))
 
-    # Print results of excited-states computation
+    core.print_out("\n\n  ==> Excited states summary <==  \n")
     core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")
 
     # TODO Setting the excitation amplitude elements inside the wavefunction is a little
@@ -3332,6 +3353,7 @@ def run_adcc(name, **kwargs):
     #      and map the indices from the adcc to the Psi4 convention. For this reason it
     #      is not yet done.
 
+    core.print_out("\n  ==> Dominant amplitudes per state <==  \n\n")
     tol_ampl = core.get_option("ADC", "CUTOFF_AMPS_PRINT")
     core.print_out(state.describe_amplitudes(tolerance=tol_ampl) + "\n\n")
 
@@ -3383,11 +3405,13 @@ def run_adcc_property(name, **kwargs):
         lines += [ind + "Hartree-Fock (HF)"]
         lines += [ind + ind + format_vector("Dipole moment (in a.u.)", hf.dipole_moment)]
 
-        if level > 2:
+        if state.method.level > 1:
             lines += [ind + "Møller Plesset 2nd order (MP2)"]
-            lines += [ind + ind + format_vector("Dipole moment (in a.u.)", *mp.dipole_moment(2))]
+            lines += [ind + ind + format_vector("Dipole moment (in a.u.)", mp.dipole_moment(2))]
             for i, cart in enumerate(["X", "Y", "Z"]):
                 adc_wfn.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
+                core.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
+                core.set_variable("current dipole " + cart, mp.dipole_moment(2)[i])
         lines += [""]
         core.print_out("\n".join(lines) + "\n")
 
