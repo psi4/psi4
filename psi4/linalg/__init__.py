@@ -53,7 +53,7 @@ __all__ = [
     , "make_random_tensor_2d"
     , "make_tensor_2d_from_block"
     , "name_unary_test"
-    , "Vector3_"
+    , "Vector3"
     , "dot", "norm", "cross", "normalize", "distance", "angle", "perp_unit", "rotate"
 ]
 # yapf: enable

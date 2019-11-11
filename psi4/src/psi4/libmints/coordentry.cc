@@ -182,7 +182,7 @@ std::string CartesianEntry::string_in_input_format() {
     return ss.str();
 }
 
-const Vector3& CartesianEntry::compute() {
+const Vector3<double>& CartesianEntry::compute() {
     if (computed_) return coordinates_;
 
     coordinates_[0] = x_->compute();
@@ -345,7 +345,7 @@ std::string ZMatrixEntry::string_in_input_format() {
  * Computes the coordinates of the current atom's entry
  * @return The Cartesian Coordinates, in Bohr
  */
-const Vector3& ZMatrixEntry::compute() {
+const Vector3<double>& ZMatrixEntry::compute() {
     if (computed_) {
         return coordinates_;
     }
@@ -381,22 +381,21 @@ const Vector3& ZMatrixEntry::compute() {
         double a = aval_->compute() * M_PI / 180.0;
         double cosABC = cos(a);
         double sinABC = sin(a);
-        const Vector3& B = rto_->compute();
-        const Vector3& C = ato_->compute();
+        const Vector3<double>& B = rto_->compute();
+        const Vector3<double>& C = ato_->compute();
 
-        Vector3 eCB = B - C;
-        eCB.normalize();
-        Vector3 eX, eY;
-        if (std::fabs(1 - std::fabs(eCB[0])) < 1.0E-5) {
+        Vector3<double> eCB = normalize(B - C);
+        Vector3<double> eX, eY;
+        if (std::abs(1 - std::abs(eCB[0])) < 1.0E-5) {
             // CB is collinear with X, start by finding Y
             eY[1] = 1.0;
-            eX = eY.perp_unit(eCB);
-            eY = eX.perp_unit(eCB);
+            eX = perp_unit(eY, eCB);
+            eY = perp_unit(eX, eCB);
         } else {
             // CB is not collinear with X, we can safely find X first
             eX[0] = 1.0;
-            eY = eX.perp_unit(eCB);
-            eX = eY.perp_unit(eCB);
+            eY = perp_unit(eX, eCB);
+            eX = perp_unit(eY, eCB);
         }
         for (int xyz = 0; xyz < 3; ++xyz) {
             coordinates_[xyz] = B[xyz] + r * (eY[xyz] * sinABC - eCB[xyz] * cosABC);
@@ -414,20 +413,18 @@ const Vector3& ZMatrixEntry::compute() {
         double r = rval_->compute();
         double a = aval_->compute() * M_PI / 180.0;
         double d = dval_->compute() * M_PI / 180.0;
-        const Vector3& B = rto_->compute();
-        const Vector3& C = ato_->compute();
-        const Vector3& D = dto_->compute();
+        const Vector3<double>& B = rto_->compute();
+        const Vector3<double>& C = ato_->compute();
+        const Vector3<double>& D = dto_->compute();
 
-        Vector3 eDC = C - D;
-        Vector3 eCB = B - C;
-        eDC.normalize();
-        eCB.normalize();
+        Vector3<double> eDC = normalize(C - D);
+        Vector3<double> eCB = normalize(B - C);
         double cosABC = cos(a);
         double sinABC = sin(a);
         double cosABCD = cos(d);
         double sinABCD = sin(d);
-        Vector3 eY = eDC.perp_unit(eCB);
-        Vector3 eX = eY.perp_unit(eCB);
+        auto eY = perp_unit(eDC, eCB);
+        auto eX = perp_unit(eY, eCB);
 
         for (int xyz = 0; xyz < 3; ++xyz)
             coordinates_[xyz] =

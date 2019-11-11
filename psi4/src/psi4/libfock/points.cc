@@ -724,10 +724,8 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     // Declare tmps
     std::vector<double> center(3, 0.0);
 
-    auto is_in_temps = [temps = this->basis_temps_](const std::string& k) -> bool { return is_key_in_map(temps, k); };
-    auto is_in_values = [values = this->basis_values_](const std::string& k) -> bool {
-        return is_key_in_map(values, k);
-    };
+    auto is_in_temps = [temps = this->basis_temps_](const std::string& k)->bool { return is_key_in_map(temps, k); };
+    auto is_in_values = [values = this->basis_values_](const std::string& k)->bool { return is_key_in_map(values, k); };
 
     // Declare pointers
     auto tmpp = is_in_temps("PHI") ? basis_temps_.at("PHI")->pointer()[0] : nullptr;
@@ -757,7 +755,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
         int Qglobal = shells[Qlocal];
         const GaussianShell& Qshell = primary_->shell(Qglobal);
-        Vector3 v = Qshell.center();
+        auto v = Qshell.center();
         int L = Qshell.am();
         int nQ = Qshell.nfunction();
         int nprim = Qshell.nprimitive();

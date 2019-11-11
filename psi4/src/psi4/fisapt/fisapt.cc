@@ -585,7 +585,7 @@ void FISAPT::nuclear() {
     for (int A = 0; A < nA; A++) {
         for (int B = 0; B < nA; B++) {
             if (A == B) continue;
-            Rinvp[A][B] = 1.0 / mol->xyz(A).distance(mol->xyz(B));
+            Rinvp[A][B] = 1.0 / distance(mol->xyz(A), mol->xyz(B));
         }
     }
 
@@ -3133,7 +3133,7 @@ void FISAPT::felst() {
     for (int A = 0; A < nA; A++) {
         for (int B = 0; B < nB; B++) {
             if (A == B) continue;
-            double E = ZAp[A] * ZBp[B] / mol->xyz(A).distance(mol->xyz(B));
+            double E = ZAp[A] * ZBp[B] / distance(mol->xyz(A), mol->xyz(B));
             Ep[A][B] += E;
             Elst10_terms[3] += E;
         }

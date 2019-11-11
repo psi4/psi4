@@ -261,7 +261,7 @@ int **compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_p
 
     // loop over all centers
     for (int i = 0; i < natom; i++) {
-        Vector3 ac(mol.xyz(i));
+        auto ac = mol.xyz(i);
 
         // then for each symop in the pointgroup, transform the coordinates of
         // center "i" and see which atom it maps into
@@ -478,7 +478,7 @@ void PetiteList::init(double tol) {
 
     // loop over all centers
     for (i = 0; i < natom_; i++) {
-        Vector3 ac(mol.xyz(i));
+        auto ac = mol.xyz(i);
 
         stablizer_[i] = 0;
 

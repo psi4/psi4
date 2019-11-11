@@ -321,32 +321,33 @@ void export_linalg(py::module& mod) {
         .value("r", xt::linalg::qrmode::r)
         .value("raw", xt::linalg::qrmode::raw);
 
-    py::class_<Vector3_<double>>(
-        sub_mod, "Vector3_",
+    py::class_<Vector3<double>>(
+        sub_mod, "Vector3",
         "Class for vectors of length three, often Cartesian coordinate vectors, and their common operations")
         .def(py::init([](const std::array<double, 3>& arr) { return from_array(arr); }), "arr"_a)
         .def(py::init([](double x, double y, double z) { return from_Ts<double>(x, y, z); }), "x"_a, "y"_a, "z"_a)
         .def("__getitem__",
-             [](const Vector3_<double>& v, size_t idx) {
-                 if (idx >= 2) throw py::index_error();
+             [](const Vector3<double>& v, size_t idx) {
+                 if (idx > 2) throw py::index_error();
                  return v[idx];
              },
              "idx"_a, py::is_operator())
         .def("__setitem__",
-             [](Vector3_<double> v, size_t idx, double val) {
-                 if (idx >= 2) throw py::index_error();
+             [](Vector3<double> v, size_t idx, double val) {
+                 if (idx > 2) throw py::index_error();
                  v[idx] = val;
              },
              "idx"_a, "val"_a, py::is_operator())
-        .def("__len__", [](const Vector3_<double>&) { return static_cast<size_t>(3); })
-        .def("__iter__", [](const Vector3_<double>& v) { return py::make_iterator(v.begin(), v.end()); },
+        .def("__len__", [](const Vector3<double>&) { return static_cast<size_t>(3); })
+        .def("__iter__", [](const Vector3<double>& v) { return py::make_iterator(v.begin(), v.end()); },
              py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
-        .def("__str__", [](const Vector3_<double>& obj) { return str(obj); })
-        .def("__repr__", [](const Vector3_<double>&) { return "Vector3_<double>"; });
+        .def("__str__", [](const Vector3<double>& obj) { return str(obj); })
+        .def("__repr__", [](const Vector3<double>&) { return "Vector3<double>"; });
     sub_mod.def("dot", &dot<double>, "Dot product of two 3D vectors", "u"_a, "v"_a);
-    sub_mod.def("norm", &norm<double>, "Norm of 3D vector", "u"_a);
+    sub_mod.def("norm", [](const Vector3<double>& u) { return psi::norm(u); }, "Norm of 3D vector", "u"_a);
     sub_mod.def("cross", &cross<double>, "Cross product of two 3D vectors", "u"_a, "v"_a);
-    sub_mod.def("normalize", &normalize<double>, "Returns normalized 3D vector", "u"_a);
+    sub_mod.def("normalize", [](const Vector3<double>& u) { return psi::normalize(u); }, "Returns normalized 3D vector",
+                "u"_a);
     sub_mod.def("distance", &distance<double>, "Distance between two 3D vectors", "u"_a, "v"_a);
     sub_mod.def("angle", &angle<double>, "Angle between two 3D vectors", "u"_a, "v"_a);
     sub_mod.def("perp_unit", &perp_unit<double>, "Find normal unit vector to two 3D vectors", "u"_a, "v"_a);

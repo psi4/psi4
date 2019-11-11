@@ -100,7 +100,7 @@ double str_to_double(const std::string &s) {
     return d;
 }
 
-void if_to_invert_axis(const Vector3 &v1, int &must_invert, int &should_invert, double &maxproj) {
+void if_to_invert_axis(const Vector3<double> &v1, int &must_invert, int &should_invert, double &maxproj) {
     int xyz, nzero;
     double vabs;
 
@@ -111,11 +111,11 @@ void if_to_invert_axis(const Vector3 &v1, int &must_invert, int &should_invert, 
     nzero = 0;
 
     for (xyz = 0; xyz < 3; xyz++) {
-        vabs = std::fabs(v1[xyz]);
+        vabs = std::abs(v1[xyz]);
 
         if (vabs < PSI_ZERO) nzero++;
 
-        if (vabs > std::fabs(maxproj)) {
+        if (vabs > std::abs(maxproj)) {
             maxproj = v1[xyz];
         }
     }
@@ -196,13 +196,13 @@ Molecule &Molecule::operator=(const Molecule &other) {
 
     // Deep copy provenance
     provenance_.clear();
-    for(auto kv: other.provenance_) {
+    for (auto kv : other.provenance_) {
         provenance_[kv.first] = kv.second;
     }
 
     // Deep copy connectivity
     connectivity_.clear();
-    for (auto conn: other.connectivity_) {
+    for (auto conn : other.connectivity_) {
         connectivity_.push_back(std::make_tuple(std::get<0>(conn), std::get<1>(conn), std::get<2>(conn)));
     }
 
@@ -242,7 +242,7 @@ void Molecule::add_atom(double Z, double x, double y, double z, std::string symb
                         std::string label, int A) {
     lock_frame_ = false;
     set_has_cartesian(true);
-    Vector3 temp(x, y, z);
+    Vector3<double> temp({{x, y, z}});
     temp *= input_units_to_au_;
     if (label == "") label = symbol;
 
@@ -366,53 +366,49 @@ std::string Molecule::fsymbol(int atom) const { return full_atoms_[atom]->symbol
 std::string Molecule::label(int atom) const { return atoms_[atom]->label(); }
 
 int Molecule::atom_at_position1(double *coord, double tol) const {
-    Vector3 b(coord);
+    Vector3<double> b = {{coord[0], coord[1], coord[2]}};
     for (int i = 0; i < natom(); ++i) {
-        Vector3 a = xyz(i);
-        if (b.distance(a) < tol) return i;
+        auto a = xyz(i);
+        if (distance(a, b) < tol) return i;
     }
     return -1;
 }
 
-int Molecule::atom_at_position2(Vector3 &b, double tol) const {
+int Molecule::atom_at_position2(Vector3<double> b, double tol) const {
     for (int i = 0; i < natom(); ++i) {
-        Vector3 a = xyz(i);
-        if (b.distance(a) < tol) return i;
+        if (distance(xyz(i), b) < tol) return i;
     }
     return -1;
 }
 
 int Molecule::atom_at_position3(const std::array<double, 3> &coord, const double tol) const {
-    Vector3 b(coord);
+    Vector3<double> b = {{coord[0], coord[1], coord[2]}};
     for (int i = 0; i < natom(); ++i) {
-        Vector3 a = xyz(i);
-        if (b.distance(a) < tol) return i;
+        auto a = xyz(i);
+        if (distance(a, b) < tol) return i;
     }
     return -1;
 }
 
-Vector3 Molecule::nuclear_dipole() const {
-    Vector3 origin(0.0, 0.0, 0.0);
+Vector3<double> Molecule::nuclear_dipole() const {
+    Vector3<double> origin = {{0.0, 0.0, 0.0}};
     return nuclear_dipole(origin);
 }
 
-Vector3 Molecule::nuclear_dipole(const Vector3 &origin) const {
-    Vector3 dipole(0.0);
+Vector3<double> Molecule::nuclear_dipole(const Vector3<double> &origin) const {
+    Vector3<double> dipole = {{0.0, 0.0, 0.0}};
 
     for (int i = 0; i < natom(); ++i) dipole += Z(i) * (xyz(i) - origin);
 
     return dipole;
 }
 
-Vector3 Molecule::center_of_mass() const {
-    Vector3 ret;
-    double total_m;
-
-    ret = 0.0;
-    total_m = 0.0;
+Vector3<double> Molecule::center_of_mass() const {
+    Vector3<double> ret = {{0.0, 0.0, 0.0}};
+    double total_m = 0.0;
 
     for (int i = 0; i < natom(); ++i) {
-        double m = mass(i);
+        auto m = mass(i);
         ret += m * xyz(i);
         total_m += m;
     }
@@ -423,15 +419,15 @@ Vector3 Molecule::center_of_mass() const {
 }
 
 Matrix Molecule::distance_matrix() const {
-    Matrix distance("Distances between atoms in Bohr", natom(), natom());
+    Matrix distance_("Distances between atoms in Bohr", natom(), natom());
 
     for (int i = 0; i < natom(); ++i) {
         for (int j = 0; j <= i; ++j) {
-            distance(i, j) = distance(j, i) = xyz(i).distance(xyz(j));
+            distance_(i, j) = distance_(j, i) = distance(xyz(i), xyz(j));
         }
     }
 
-    return distance;
+    return distance_;
 }
 
 double Molecule::pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> mB) const {
@@ -439,7 +435,7 @@ double Molecule::pairwise_nuclear_repulsion_energy(std::shared_ptr<Molecule> mB)
     for (int A = 0; A < natom(); A++) {
         for (int B = 0; B < mB->natom(); B++) {
             if (Z(A) == 0.0 || mB->Z(B) == 0.0) continue;
-            V += Z(A) * mB->Z(B) / (xyz(A).distance(mB->xyz(B)));
+            V += Z(A) * mB->Z(B) / (distance(xyz(A), mB->xyz(B)));
         }
     }
     return V;
@@ -450,15 +446,15 @@ double Molecule::nuclear_repulsion_energy(const std::array<double, 3> &dipole_fi
 
     for (int i = 1; i < natom(); ++i) {
         for (int j = 0; j < i; ++j) {
-            double Zi = Z(i);
-            double Zj = Z(j);
-            double distance = xyz(i).distance(xyz(j));
+            auto Zi = Z(i);
+            auto Zj = Z(j);
+            auto distance = psi::distance(xyz(i), xyz(j));
             e += Zi * Zj / distance;
         }
     }
 
     if (dipole_field[0] != 0.0 || dipole_field[1] != 0.0 || dipole_field[2] != 0.0) {
-        Vector3 nucdip = nuclear_dipole();
+        auto nucdip = nuclear_dipole();
         e += dipole_field[0] * nucdip[0] + dipole_field[1] * nucdip[1] + dipole_field[2] * nucdip[2];
     }
 
@@ -469,14 +465,14 @@ Matrix Molecule::nuclear_repulsion_energy_deriv1(const std::array<double, 3> &di
     Matrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
 
     for (int i = 0; i < natom(); ++i) {
-        double Zi = Z(i);
+        auto Zi = Z(i);
         de(i, 0) += Zi * dipole_field[0];
         de(i, 1) += Zi * dipole_field[1];
         de(i, 2) += Zi * dipole_field[2];
         for (int j = 0; j < natom(); ++j) {
             if (i != j) {
-                double temp = pow((xyz(i).distance(xyz(j))), 3.0);
-                double Zj = Z(j);
+                auto temp = pow(distance(xyz(i), xyz(j)), 3.0);
+                auto Zj = Z(j);
                 de(i, 0) -= (x(i) - x(j)) * Zi * Zj / temp;
                 de(i, 1) -= (y(i) - y(j)) * Zi * Zj / temp;
                 de(i, 2) -= (z(i) - z(j)) * Zi * Zj / temp;
@@ -547,8 +543,8 @@ Matrix Molecule::nuclear_repulsion_energy_deriv2() const {
     return hess;
 }
 
-void Molecule::translate(const Vector3 &r) {
-    Vector3 temp;
+void Molecule::translate(const Vector3<double> &r) {
+    auto temp = Vector3<double>({{0.0, 0.0, 0.0}});
     for (int i = 0; i < nallatom(); ++i) {
         temp = input_units_to_au_ * full_atoms_[i]->compute();
         temp += r;
@@ -558,7 +554,7 @@ void Molecule::translate(const Vector3 &r) {
 }
 
 void Molecule::move_to_com() {
-    Vector3 com = -center_of_mass();
+    auto com = -center_of_mass();
     translate(com);
 }
 
@@ -1078,7 +1074,7 @@ void Molecule::print() const {
             "    ------------   -----------------  -----------------  -----------------  -----------------\n");
 
         for (int i = 0; i < natom(); ++i) {
-            Vector3 geom = atoms_[i]->compute();
+            Vector3<double> geom = atoms_[i]->compute();
             outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
             outfile->Printf("  %17.12f", mass(i));
@@ -1123,7 +1119,7 @@ void Molecule::print_cluster() const {
                 }
             }
 
-            Vector3 geom = atoms_[i]->compute();
+            Vector3<double> geom = atoms_[i]->compute();
             outfile->Printf("      %3s%-7s ", Z(i) ? "" : "Gh(", (symbol(i) + (Z(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
             outfile->Printf("\n");
@@ -1144,7 +1140,7 @@ void Molecule::print_full() const {
         outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
         for (size_t i = 0; i < full_atoms_.size(); ++i) {
-            Vector3 geom = full_atoms_[i]->compute();
+            Vector3<double> geom = full_atoms_[i]->compute();
             outfile->Printf("      %3s%-7s ", fZ(i) ? "" : "Gh(", (fsymbol(i) + (fZ(i) ? "" : ")")).c_str());
             for (int j = 0; j < 3; j++) outfile->Printf("  %17.12f", geom[j]);
             outfile->Printf("\n");
@@ -1159,8 +1155,7 @@ void Molecule::print_distances() const {
     outfile->Printf("        Interatomic Distances (Angstroms)\n\n");
     for (int i = 0; i < natom(); i++) {
         for (int j = i + 1; j < natom(); j++) {
-            Vector3 eij = xyz(j) - xyz(i);
-            double distance = eij.norm();
+            auto distance = psi::distance(xyz(j), xyz(i));
             outfile->Printf("        Distance %d to %d %-8.3lf\n", i + 1, j + 1, distance * pc_bohr2angstroms);
         }
     }
@@ -1174,12 +1169,7 @@ void Molecule::print_bond_angles() const {
             if (i == j) continue;
             for (int k = i + 1; k < natom(); k++) {
                 if (k == j) continue;
-                Vector3 eji = xyz(i) - xyz(j);
-                eji.normalize();
-                Vector3 ejk = xyz(k) - xyz(j);
-                ejk.normalize();
-                double dotproduct = eji.dot(ejk);
-                double phi = 180 * acos(dotproduct) / pc_pi;
+                auto phi = 180 * angle(xyz(i) - xyz(j), xyz(k) - xyz(j)) / pc_pi;
                 outfile->Printf("        Angle %d-%d-%d: %8.3lf\n", i + 1, j + 1, k + 1, phi);
             }
         }
@@ -1196,26 +1186,23 @@ void Molecule::print_dihedrals() const {
                 if (i == k || j == k) continue;
                 for (int l = 0; l < natom(); l++) {
                     if (i == l || j == l || k == l) continue;
-                    Vector3 eij = xyz(j) - xyz(i);
-                    eij.normalize();
-                    Vector3 ejk = xyz(k) - xyz(j);
-                    ejk.normalize();
-                    Vector3 ekl = xyz(l) - xyz(k);
-                    ekl.normalize();
+                    auto eij = normalize(xyz(j) - xyz(i));
+                    auto ejk = normalize(xyz(k) - xyz(j));
+                    auto ekl = normalize(xyz(l) - xyz(k));
                     // Compute angle ijk
-                    double angleijk = acos(-eij.dot(ejk));
+                    auto angleijk = angle(-eij, ejk);
                     // Compute angle jkl
-                    double anglejkl = acos(-ejk.dot(ekl));
+                    auto anglejkl = angle(-ejk, ekl);
                     // compute term1 (eij x ejk)
-                    Vector3 term1 = eij.cross(ejk);
+                    auto term1 = cross(eij, ejk);
                     // compute term2 (ejk x ekl)
-                    Vector3 term2 = ejk.cross(ekl);
-                    double numerator = term1.dot(term2);
-                    double denominator = sin(angleijk) * sin(anglejkl);
-                    double costau = (numerator / denominator);
+                    auto term2 = cross(ejk, ekl);
+                    auto numerator = dot(term1, term2);
+                    auto denominator = sin(angleijk) * sin(anglejkl);
+                    auto costau = (numerator / denominator);
                     if (costau > 1.00 && costau < 1.000001) costau = 1.00;
                     if (costau < -1.00 && costau > -1.000001) costau = -1.00;
-                    double tau = 180 * acos(costau) / pc_pi;
+                    auto tau = 180 * acos(costau) / pc_pi;
                     outfile->Printf("        Dihedral %d-%d-%d-%d: %8.3lf\n", i + 1, j + 1, k + 1, l + 1, tau);
                 }
             }
@@ -1234,22 +1221,19 @@ void Molecule::print_out_of_planes() const {
                 for (int l = 0; l < natom(); l++) {
                     if (i == l || j == l || k == l) continue;
                     // Compute vectors we need first
-                    Vector3 elj = xyz(j) - xyz(l);
-                    elj.normalize();
-                    Vector3 elk = xyz(k) - xyz(l);
-                    elk.normalize();
-                    Vector3 eli = xyz(i) - xyz(l);
-                    eli.normalize();
+                    auto elj = normalize(xyz(j) - xyz(l));
+                    auto elk = normalize(xyz(k) - xyz(l));
+                    auto eli = normalize(xyz(i) - xyz(l));
                     // Denominator
-                    double denominator = sin(acos(elj.dot(elk)));
+                    auto denominator = sin(acos(dot(elj, elk)));
                     // Numerator
-                    Vector3 eljxelk = elj.cross(elk);
-                    double numerator = eljxelk.dot(eli);
+                    auto eljxelk = cross(elj, elk);
+                    auto numerator = dot(eljxelk, eli);
                     // compute angle
-                    double sinetheta = numerator / denominator;
+                    auto sinetheta = numerator / denominator;
                     if (sinetheta > 1.00) sinetheta = 1.000;
                     if (sinetheta < -1.00) sinetheta = -1.000;
-                    double theta = 180 * asin(sinetheta) / pc_pi;
+                    auto theta = 180 * asin(sinetheta) / pc_pi;
                     outfile->Printf("        Out-of-plane %d-%d-%d-%d: %8.3lf\n", i + 1, j + 1, k + 1, l + 1, theta);
                 }
             }
@@ -1274,7 +1258,7 @@ void Molecule::save_xyz_file(const std::string &filename, bool save_ghosts) cons
     printer->Printf("%d\n\n", N);
 
     for (int i = 0; i < natom(); i++) {
-        Vector3 geom = atoms_[i]->compute();
+        auto geom = atoms_[i]->compute();
         if (save_ghosts || Z(i))
             printer->Printf("%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor * geom[0],
                             factor * geom[1], factor * geom[2]);
@@ -1291,7 +1275,7 @@ std::string Molecule::save_string_xyz_file() const {
     stream << N << std::endl << std::endl;
 
     for (int i = 0; i < natom(); i++) {
-        Vector3 geom = atoms_[i]->compute();
+        auto geom = atoms_[i]->compute();
         if (Z(i)) {
             snprintf(line, 100, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), (factor * geom[0]),
                      (factor * geom[1]), (factor * geom[2]));
@@ -1315,7 +1299,7 @@ std::string Molecule::save_string_xyz() const {
     ss << buffer;
 
     for (int i = 0; i < natom(); i++) {
-        Vector3 geom = atoms_[i]->compute();
+        auto geom = atoms_[i]->compute();
         sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor * geom[0],
                 factor * geom[1], factor * geom[2]);
         ss << buffer;
@@ -1349,7 +1333,7 @@ Matrix *Molecule::inertia_tensor() const {
     // Check the elements for zero and make them a hard zero.
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            if (std::fabs(tensor->get(i, j)) < PSI_ZERO) tensor->set(i, j, 0.0);
+            if (std::abs(tensor->get(i, j)) < PSI_ZERO) tensor->set(i, j, 0.0);
         }
     }
 
@@ -1423,7 +1407,7 @@ RotorType Molecule::rotor_type(double zero_tol) const {
     int degen = 0;
     for (int i = 0; i < 2; i++) {
         for (int j = i + 1; j < 3 && degen < 2; j++) {
-            abs = std::fabs(rot_const[i] - rot_const[j]);
+            abs = std::abs(rot_const[i] - rot_const[j]);
             tmp = (rot_const[i] > rot_const[j]) ? rot_const[i] : rot_const[j];
             if (abs > 1.0E-14)
                 rel = abs / tmp;
@@ -1454,9 +1438,9 @@ RotorType Molecule::rotor_type(double zero_tol) const {
 //
 // Symmetry
 //
-bool Molecule::has_inversion(Vector3 &origin, double tol) const {
+bool Molecule::has_inversion(Vector3<double> &origin, double tol) const {
     for (int i = 0; i < natom(); ++i) {
-        Vector3 inverted = origin - (xyz(i) - origin);
+        auto inverted = xt::eval(origin - (xyz(i) - origin));
         int atom = atom_at_position2(inverted, tol);
         if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
             return false;
@@ -1465,13 +1449,12 @@ bool Molecule::has_inversion(Vector3 &origin, double tol) const {
     return true;
 }
 
-bool Molecule::is_plane(Vector3 &origin, Vector3 &uperp, double tol) const {
+bool Molecule::is_plane(Vector3<double> &origin, Vector3<double> &uperp, double tol) const {
     for (int i = 0; i < natom(); ++i) {
-        Vector3 A = xyz(i) - origin;
-        Vector3 Apar = uperp.dot(A) * uperp;
-        Vector3 Aperp = A - Apar;
-        A = (Aperp - Apar) + origin;
-        int atom = atom_at_position2(A, tol);
+        auto A = xyz(i) - origin;
+        auto Apar = dot(uperp, A) * uperp;
+        auto Aperp = A - Apar;
+        int atom = atom_at_position2((Aperp - Apar) + origin, tol);
         if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
             return false;
         }
@@ -1479,12 +1462,11 @@ bool Molecule::is_plane(Vector3 &origin, Vector3 &uperp, double tol) const {
     return true;
 }
 
-bool Molecule::is_axis(Vector3 &origin, Vector3 &axis, int order, double tol) const {
+bool Molecule::is_axis(Vector3<double> &origin, Vector3<double> &axis, int order, double tol) const {
     for (int i = 0; i < natom(); ++i) {
-        Vector3 A = xyz(i) - origin;
+        auto A = Vector3<double>(xyz(i) - origin);
         for (int j = 1; j < order; ++j) {
-            Vector3 R = A;
-            R.rotate(j * 2.0 * M_PI / order, axis);
+            auto R = psi::rotate(A, j * 2.0 * M_PI / order, axis);
             R += origin;
             int atom = atom_at_position2(R, tol);
             if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
@@ -1497,21 +1479,21 @@ bool Molecule::is_axis(Vector3 &origin, Vector3 &axis, int order, double tol) co
 
 enum AxisName { XAxis, YAxis, ZAxis };
 
-static AxisName like_world_axis(Vector3 &axis, const Vector3 &worldxaxis, const Vector3 &worldyaxis,
-                                const Vector3 &worldzaxis) {
+static AxisName like_world_axis(Vector3<double> &axis, const Vector3<double> &worldxaxis,
+                                const Vector3<double> &worldyaxis, const Vector3<double> &worldzaxis) {
     AxisName like;
-    double xlikeness = std::fabs(axis.dot(worldxaxis));
-    double ylikeness = std::fabs(axis.dot(worldyaxis));
-    double zlikeness = std::fabs(axis.dot(worldzaxis));
+    double xlikeness = std::abs(dot(axis, worldxaxis));
+    double ylikeness = std::abs(dot(axis, worldyaxis));
+    double zlikeness = std::abs(dot(axis, worldzaxis));
     if ((xlikeness - ylikeness) > 1.0e-12 && (xlikeness - zlikeness) > 1.0e-12) {
         like = XAxis;
-        if (axis.dot(worldxaxis) < 0) axis = -axis;
+        if (dot(axis, worldxaxis) < 0) axis = -axis;
     } else if ((ylikeness - zlikeness) > 1.0e-12) {
         like = YAxis;
-        if (axis.dot(worldyaxis) < 0) axis = -axis;
+        if (dot(axis, worldyaxis) < 0) axis = -axis;
     } else {
         like = ZAxis;
-        if (axis.dot(worldzaxis) < 0) axis = -axis;
+        if (dot(axis, worldzaxis) < 0) axis = -axis;
     }
     return like;
 }
@@ -1524,20 +1506,18 @@ void Molecule::is_linear_planar(bool &linear, bool &planar, double tol) const {
     }
 
     // find three atoms not on the same line
-    Vector3 A = xyz(0);
-    Vector3 B = xyz(1);
-    Vector3 BA = B - A;
-    BA.normalize();
-    Vector3 CA;
+    auto A = xyz(0);
+    auto B = xyz(1);
+    auto BA = normalize(B - A);
+    auto CA = Vector3<double>({{0.0, 0.0, 0.0}});
 
     int i;
     double min_BAdotCA = 1.0;
     for (i = 2; i < natom(); ++i) {
-        Vector3 tmp = xyz(i) - A;
-        tmp.normalize();
-        if (std::fabs(BA.dot(tmp)) < min_BAdotCA) {
+        auto tmp = normalize(xyz(i) - A);
+        if (std::abs(dot(BA, tmp)) < min_BAdotCA) {
             CA = tmp;
-            min_BAdotCA = std::fabs(BA.dot(tmp));
+            min_BAdotCA = std::abs(dot(BA, tmp));
         }
     }
     if (min_BAdotCA >= 1.0 - tol) {
@@ -1553,11 +1533,10 @@ void Molecule::is_linear_planar(bool &linear, bool &planar, double tol) const {
     }
 
     // check for nontrivial planar molecules
-    Vector3 BAxCA = BA.cross(CA);
-    BAxCA.normalize();
+    auto BAxCA = normalize(cross(BA, CA));
     for (i = 2; i < natom(); ++i) {
-        Vector3 tmp = xyz(i) - A;
-        if (std::fabs(tmp.dot(BAxCA)) > tol) {
+        auto tmp = Vector3<double>(xyz(i) - A);
+        if (std::abs(dot(tmp, BAxCA)) > tol) {
             planar = false;
             return;
         }
@@ -1585,11 +1564,11 @@ int Molecule::max_nequivalent() const {
 std::shared_ptr<Matrix> Molecule::symmetry_frame(double tol) {
     int i, j;
 
-    Vector3 com = center_of_mass();
+    auto com = center_of_mass();
 
-    Vector3 worldxaxis(1.0, 0.0, 0.0);
-    Vector3 worldyaxis(0.0, 1.0, 0.0);
-    Vector3 worldzaxis(0.0, 0.0, 1.0);
+    auto worldxaxis = Vector3<double>({{1.0, 0.0, 0.0}});
+    auto worldyaxis = Vector3<double>({{0.0, 1.0, 0.0}});
+    auto worldzaxis = Vector3<double>({{0.0, 0.0, 1.0}});
 
     bool linear, planar;
     is_linear_planar(linear, planar, tol);
@@ -1597,47 +1576,45 @@ std::shared_ptr<Matrix> Molecule::symmetry_frame(double tol) {
     bool have_inversion = has_inversion(com, tol);
 
     // check for C2 axis
-    Vector3 c2axis;
+    Vector3<double> c2axis;
     bool have_c2axis = false;
     if (natom() < 2) {
         have_c2axis = true;
-        c2axis = Vector3(0.0, 0.0, 1.0);
+        c2axis = Vector3<double>({{0.0, 0.0, 1.0}});
     } else if (linear) {
         have_c2axis = true;
-        c2axis = xyz(1) - xyz(0);
-        c2axis.normalize();
+        c2axis = normalize(xyz(1) - xyz(0));
     } else if (planar && have_inversion) {
         // there is a c2 axis that won't be found using the usual
         // algorithm. fine two noncolinear atom-atom vectors (we know
         // that linear == 0)
-        Vector3 BA = xyz(1) - xyz(0);
-        BA.normalize();
+        auto BA = normalize(xyz(1) - xyz(0));
         for (i = 2; i < natom(); ++i) {
-            Vector3 CA = xyz(i) - xyz(0);
-            CA.normalize();
-            Vector3 BAxCA = BA.cross(CA);
-            if (BAxCA.norm() > tol) {
+            auto CA = normalize(xyz(i) - xyz(0));
+            auto BAxCA = cross(BA, CA);
+            double norm = psi::norm(BAxCA);
+            if (norm > tol) {
                 have_c2axis = true;
-                BAxCA.normalize();
-                c2axis = BAxCA;
+                c2axis = normalize(BAxCA);
                 break;
             }
         }
     } else {
         // loop through pairs of atoms o find c2 axis candidates
         for (i = 0; i < natom(); ++i) {
-            Vector3 A = xyz(i) - com;
-            double AdotA = A.dot(A);
+            Vector3<double> A = xyz(i) - com;
+            double AdotA = psi::dot(A, A);
             for (j = 0; j <= i; ++j) {
                 // the atoms must be identical
                 if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                Vector3 B = xyz(j) - com;
+                Vector3<double> B = xyz(j) - com;
                 // the atoms must be the same distance from the com
-                if (std::fabs(AdotA - B.dot(B)) > tol) continue;
-                Vector3 axis = A + B;
+                if (std::abs(AdotA - dot(B, B)) > tol) continue;
+                Vector3<double> axis = A + B;
                 // atoms colinear with the com don't work
-                if (axis.norm() < tol) continue;
-                axis.normalize();
+                double norm = psi::norm(axis);
+                if (norm < tol) continue;
+                axis = normalize(axis);
                 if (is_axis(com, axis, 2, tol)) {
                     have_c2axis = true;
                     c2axis = axis;
@@ -1656,34 +1633,35 @@ symmframe_found_c2axis:
     }
 
     // check for c2 axis perp to first c2 axis
-    Vector3 c2axisperp;
+    Vector3<double> c2axisperp;
     bool have_c2axisperp = false;
     if (have_c2axis) {
         if (natom() < 2) {
             have_c2axisperp = true;
-            c2axisperp = Vector3(1.0, 0.0, 0.0);
+            c2axisperp = Vector3<double>({{1.0, 0.0, 0.0}});
         } else if (linear) {
             if (have_inversion) {
                 have_c2axisperp = true;
-                c2axisperp = c2axis.perp_unit(Vector3(0.0, 0.0, 1.0));
+                c2axisperp = perp_unit(c2axis, Vector3<double>({{0.0, 0.0, 1.0}}));
             }
         } else {
             // loop through paris of atoms to find c2 axis candidates
             for (i = 0; i < natom(); ++i) {
-                Vector3 A = xyz(i) - com;
-                double AdotA = A.dot(A);
+                Vector3<double> A = xyz(i) - com;
+                double AdotA = dot(A, A);
                 for (j = 0; j < i; ++j) {
                     // the atoms must be identical
                     if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                    Vector3 B = xyz(j) - com;
+                    Vector3<double> B = xyz(j) - com;
                     // the atoms must be the same distance from the com
-                    if (std::fabs(AdotA - B.dot(B)) > tol) continue;
-                    Vector3 axis = A + B;
+                    if (std::abs(AdotA - dot(B, B)) > tol) continue;
+                    Vector3<double> axis = A + B;
                     // atoms colinear with the com don't work
-                    if (axis.norm() < tol) continue;
-                    axis.normalize();
+                    double norm = psi::norm(axis);
+                    if (norm < tol) continue;
+                    axis = normalize(axis);
                     // if axis is not perp continue
-                    if (std::fabs(axis.dot(c2axis)) > tol) continue;
+                    if (std::abs(dot(axis, c2axis)) > tol) continue;
                     if (is_axis(com, axis, 2, tol)) {
                         have_c2axisperp = true;
                         c2axisperp = axis;
@@ -1703,7 +1681,7 @@ symmframe_found_c2axisperp:
 
         // try to make c2axis the z axis
         if (c2perplike == ZAxis) {
-            Vector3 tmpv = c2axisperp;
+            Vector3<double> tmpv = c2axisperp;
             tmpv = c2axisperp;
             c2axisperp = c2axis;
             c2axis = tmpv;
@@ -1712,21 +1690,21 @@ symmframe_found_c2axisperp:
         }
         if (c2like != ZAxis) {
             if (c2like == XAxis)
-                c2axis = c2axis.cross(c2axisperp);
+                c2axis = cross(c2axis, c2axisperp);
             else
-                c2axis = c2axisperp.cross(c2axis);
+                c2axis = cross(c2axisperp, c2axis);
             c2like = like_world_axis(c2axis, worldxaxis, worldyaxis, worldzaxis);
         }
         // try to make c2axisperplike the x axis
         if (c2perplike == YAxis) {
-            c2axisperp = c2axisperp.cross(c2axis);
+            c2axisperp = cross(c2axisperp, c2axis);
             c2perplike = like_world_axis(c2axisperp, worldxaxis, worldyaxis, worldzaxis);
         }
     }
 
     // Check for vertical plane
     bool have_sigmav = false;
-    Vector3 sigmav;
+    Vector3<double> sigmav;
     if (have_c2axis) {
         if (natom() < 2) {
             have_sigmav = true;
@@ -1736,28 +1714,28 @@ symmframe_found_c2axisperp:
             if (have_c2axisperp) {
                 sigmav = c2axisperp;
             } else {
-                sigmav = c2axis.perp_unit(Vector3(0.0, 0.0, 1.0));
+                sigmav = perp_unit(c2axis, Vector3<double>({{0.0, 0.0, 1.0}}));
             }
         } else {
             // loop through pairs of atoms to find sigma v plane
             // candidates
             for (i = 0; i < natom(); ++i) {
-                Vector3 A = xyz(i) - com;
-                double AdotA = A.dot(A);
+                Vector3<double> A = xyz(i) - com;
+                double AdotA = dot(A, A);
                 // the second atom can equal i because i might be
                 // in the plane
                 for (j = 0; j <= i; ++j) {
                     // the atoms must be identical
                     if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                    Vector3 B = xyz(j) - com;
+                    Vector3<double> B = xyz(j) - com;
                     // the atoms must be the same distance from the com
-                    if (std::fabs(AdotA - B.dot(B)) > tol) continue;
-                    Vector3 inplane = B + A;
-                    double norm_inplane = inplane.norm();
+                    if (std::abs(AdotA - dot(B, B)) > tol) continue;
+                    Vector3<double> inplane = B + A;
+                    double norm_inplane = psi::norm(inplane);
                     if (norm_inplane < tol) continue;
                     inplane *= 1.0 / norm_inplane;
-                    Vector3 perp = c2axis.cross(inplane);
-                    double norm_perp = perp.norm();
+                    Vector3<double> perp = cross(c2axis, inplane);
+                    double norm_perp = psi::norm(perp);
                     if (norm_perp < tol) continue;
                     perp *= 1.0 / norm_perp;
                     if (is_plane(com, perp, tol)) {
@@ -1778,47 +1756,44 @@ symmframe_found_sigmav:
 
         // Choose sigmav to be the world x axis, if possible
         if (c2like == ZAxis && sigmavlike == YAxis) {
-            sigmav = sigmav.cross(c2axis);
+            sigmav = cross(sigmav, c2axis);
         } else if (c2like == YAxis && sigmavlike == ZAxis) {
-            sigmav = c2axis.cross(sigmav);
+            sigmav = cross(c2axis, sigmav);
         }
     }
 
     // under certain conditions i need to know if there is any sigma
     // plane
     bool have_sigma = false;
-    Vector3 sigma;
+    Vector3<double> sigma;
     if (!have_inversion && !have_c2axis) {
         if (planar) {
             // find two noncolinear atom-atom vectors
             // we know that linear==0 since !have_c2axis
-            Vector3 BA = xyz(1) - xyz(0);
-            BA.normalize();
+            auto BA = normalize(xyz(1) - xyz(0));
             for (i = 2; i < natom(); ++i) {
-                Vector3 CA = xyz(i) - xyz(0);
-                CA.normalize();
-                Vector3 BAxCA = BA.cross(CA);
-                if (BAxCA.norm() > tol) {
+                auto CA = normalize(xyz(i) - xyz(0));
+                auto BAxCA = cross(BA, CA);
+                if (psi::norm(BAxCA) > tol) {
                     have_sigma = true;
-                    BAxCA.normalize();
-                    sigma = BAxCA;
+                    sigma = normalize(BAxCA);
                     break;
                 }
             }
         } else {
             // loop through pairs of atoms to contruct trial planes
             for (i = 0; i < natom(); ++i) {
-                Vector3 A = xyz(i) - com;
-                double AdotA = A.dot(A);
+                Vector3<double> A = xyz(i) - com;
+                double AdotA = dot(A, A);
                 for (j = 0; j < i; ++j) {
                     // the atomsmust be identical
                     if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                    Vector3 B = xyz(j) - com;
-                    double BdotB = B.dot(B);
+                    Vector3<double> B = xyz(j) - com;
+                    double BdotB = dot(B, B);
                     // the atoms must be the same distance from the com
                     if (std::fabs(AdotA - BdotB) > tol) continue;
-                    Vector3 perp = B - A;
-                    double norm_perp = perp.norm();
+                    Vector3<double> perp = B - A;
+                    double norm_perp = psi::norm(perp);
                     if (norm_perp < tol) continue;
                     perp *= 1.0 / norm_perp;
                     if (is_plane(com, perp, tol)) {
@@ -1835,23 +1810,23 @@ found_sigma:
     if (have_sigma) {
         // try to make the sign of the oop vec correspond to one of
         // the world axes
-        double xlikeness = std::fabs(sigma.dot(worldxaxis));
-        double ylikeness = std::fabs(sigma.dot(worldyaxis));
-        double zlikeness = std::fabs(sigma.dot(worldzaxis));
+        double xlikeness = std::abs(dot(sigma, worldxaxis));
+        double ylikeness = std::abs(dot(sigma, worldyaxis));
+        double zlikeness = std::abs(dot(sigma, worldzaxis));
 
         if (xlikeness > ylikeness && xlikeness > zlikeness) {
-            if (sigma.dot(worldxaxis) < 0) sigma = -sigma;
+            if (dot(sigma, worldxaxis) < 0) sigma = -sigma;
         } else if (ylikeness > zlikeness) {
-            if (sigma.dot(worldyaxis) < 0) sigma = -sigma;
+            if (dot(sigma, worldyaxis) < 0) sigma = -sigma;
         } else {
-            if (sigma.dot(worldzaxis) < 0) sigma = -sigma;
+            if (dot(sigma, worldzaxis) < 0) sigma = -sigma;
         }
     }
 
     // Find the three axes for the symmetry frame
-    Vector3 xaxis = worldxaxis;
-    Vector3 yaxis;
-    Vector3 zaxis = worldzaxis;
+    Vector3<double> xaxis = worldxaxis;
+    Vector3<double> yaxis;
+    Vector3<double> zaxis = worldzaxis;
     if (have_c2axis) {
         zaxis = c2axis;
         if (have_sigmav) {
@@ -1860,27 +1835,26 @@ found_sigma:
             xaxis = c2axisperp;
         } else {
             // any axis orthogonal to the zaxis will do
-            xaxis = zaxis.perp_unit(zaxis);
+            xaxis = psi::perp_unit(zaxis, zaxis);
         }
     } else if (have_sigma) {
         zaxis = sigma;
-        xaxis = zaxis.perp_unit(zaxis);
+        xaxis = psi::perp_unit(zaxis, zaxis);
     }
 
-#define NOISY_ZERO 1.0e-8
+    constexpr double NOISY_ZERO = 1.0e-8;
     // Clean up our z axis
-    if (std::fabs(zaxis[0]) < NOISY_ZERO) zaxis[0] = 0.0;
-    if (std::fabs(zaxis[1]) < NOISY_ZERO) zaxis[1] = 0.0;
-    if (std::fabs(zaxis[2]) < NOISY_ZERO) zaxis[2] = 0.0;
+    if (std::abs(zaxis[0]) < NOISY_ZERO) zaxis[0] = 0.0;
+    if (std::abs(zaxis[1]) < NOISY_ZERO) zaxis[1] = 0.0;
+    if (std::abs(zaxis[2]) < NOISY_ZERO) zaxis[2] = 0.0;
 
     // Clean up our x axis
-    if (std::fabs(xaxis[0]) < NOISY_ZERO) xaxis[0] = 0.0;
-    if (std::fabs(xaxis[1]) < NOISY_ZERO) xaxis[1] = 0.0;
-    if (std::fabs(xaxis[2]) < NOISY_ZERO) xaxis[2] = 0.0;
-#undef NOISY_ZERO
+    if (std::abs(xaxis[0]) < NOISY_ZERO) xaxis[0] = 0.0;
+    if (std::abs(xaxis[1]) < NOISY_ZERO) xaxis[1] = 0.0;
+    if (std::abs(xaxis[2]) < NOISY_ZERO) xaxis[2] = 0.0;
 
     // the y is then -x cross z
-    yaxis = -xaxis.cross(zaxis);
+    yaxis = psi::cross(-xaxis, zaxis);
 
     //    outfile->Printf( "xaxis %20.14lf %20.14lf %20.14lf\n", xaxis[0], xaxis[1], xaxis[2]);
     //    outfile->Printf( "yaxis %20.14lf %20.14lf %20.14lf\n", yaxis[0], yaxis[1], yaxis[2]);
@@ -1922,8 +1896,8 @@ std::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
         bool found = true;
 
         for (int i = 0; i < natom(); ++i) {
-            Vector3 op(symop(0, 0), symop(1, 1), symop(2, 2));
-            Vector3 pos = xyz(i) * op;
+            auto op = Vector3<double>({{symop(0, 0), symop(1, 1), symop(2, 2)}});
+            Vector3<double> pos = xyz(i) * op;
 
             if ((matching_atom = atom_at_position2(pos, tol)) >= 0) {
                 if (atoms_[i]->is_equivalent_to(atoms_[matching_atom]) == false) {
@@ -2037,9 +2011,9 @@ void Molecule::set_point_group(std::shared_ptr<PointGroup> pg) {
     form_symmetry_information();
 }
 
-bool Molecule::has_symmetry_element(Vector3 &op, double tol) const {
+bool Molecule::has_symmetry_element(Vector3<double> &op, double tol) const {
     for (int i = 0; i < natom(); ++i) {
-        Vector3 result = xyz(i) * op;
+        auto result = Vector3<double>(xyz(i) * op);
         int atom = atom_at_position2(result, tol);
 
         if (atom != -1) {
@@ -2133,9 +2107,9 @@ void Molecule::form_symmetry_information(double tol) {
 
     CharacterTable ct = point_group()->char_table();
 
-    Vector3 ac;
+    Vector3<double> ac;
     SymmetryOperation so;
-    Vector3 np;
+    Vector3<double> np;
 
     // Find the equivalent atoms
     int i;
@@ -2156,8 +2130,8 @@ void Molecule::form_symmetry_information(double tol) {
             // unique atom
             for (int j = 0; j < nunique_; ++j) {
                 int unique = equiv_[j][0];
-                Vector3 aj(xyz(unique));
-                if (np.distance(aj) < tol && Z(unique) == Z(i) && std::fabs(mass(unique) - mass(i)) < tol) {
+                Vector3<double> aj = xyz(unique);
+                if (distance(np, aj) < tol && Z(unique) == Z(i) && std::abs(mass(unique) - mass(i)) < tol) {
                     i_is_unique = 0;
                     i_equiv = j;
                     break;
@@ -2230,12 +2204,12 @@ void Molecule::check_atom_(int atom, bool full) const {
     }
 }
 
-Vector3 Molecule::xyz(int atom) const {
+Vector3<double> Molecule::xyz(int atom) const {
     check_atom_(atom, false);
     return input_units_to_au_ * atoms_[atom]->compute();
 }
 
-Vector3 Molecule::fxyz(int atom) const {
+Vector3<double> Molecule::fxyz(int atom) const {
     check_atom_(atom, true);
     return input_units_to_au_ * full_atoms_[atom]->compute();
 }
@@ -2456,7 +2430,7 @@ bool Molecule::valid_atom_map(double tol) const {
 
     // loop over all centers
     for (int i = 0; i < natom(); i++) {
-        Vector3 ac(xyz(i));
+        Vector3<double> ac(xyz(i));
 
         // For each operation in the pointgroup, transform the coordinates of
         // center "i" and see which atom it maps into
@@ -2477,16 +2451,16 @@ bool Molecule::valid_atom_map(double tol) const {
 // These two declarations are left here as it's not clear that anyone else will use them:
 
 // Function used by set_full_point_group() to find the max. order of a rotational axis.
-int matrix_3d_rotation_Cn(Matrix &coord, Vector3 axis, bool reflect, double TOL, int max_Cn_to_check = -1);
+int matrix_3d_rotation_Cn(Matrix &coord, Vector3<double> axis, bool reflect, double TOL, int max_Cn_to_check = -1);
 
 // Function used by set_full_point_group() to scan a given geometry and
 // determine if an atom is present at a given location.
-bool atom_present_in_geom(Matrix &geom, Vector3 &b, double tol);
+bool atom_present_in_geom(Matrix &geom, Vector3<double> &b, double tol);
 
-bool atom_present_in_geom(Matrix &geom, Vector3 &b, double tol) {
+bool atom_present_in_geom(Matrix &geom, Vector3<double> &b, double tol) {
     for (int i = 0; i < geom.nrow(); ++i) {
-        Vector3 a(geom(i, 0), geom(i, 1), geom(i, 2));
-        if (b.distance(a) < tol) return true;
+        Vector3<double> a({{geom(i, 0), geom(i, 1), geom(i, 2)}});
+        if (distance(a, b) < tol) return true;
     }
     return false;
 }
@@ -2495,7 +2469,7 @@ bool atom_present_in_geom(Matrix &geom, Vector3 &b, double tol) {
 void Molecule::set_full_point_group(double zero_tol) {
     // Get cartesian geometry and put COM at origin
     Matrix geom = geometry();
-    Vector3 com = center_of_mass();
+    Vector3<double> com = center_of_mass();
     for (int i = 0; i < natom(); ++i) {
         geom.add(i, 0, -com[0]);
         geom.add(i, 1, -com[1]);
@@ -2514,17 +2488,17 @@ void Molecule::set_full_point_group(double zero_tol) {
     // outfile->Printf("d2h_subgroup %s \n", d2h_subgroup.c_str());
 
     // Check inversion
-    Vector3 v3_zero(0, 0, 0);
+    Vector3<double> v3_zero({{0, 0, 0}});
     bool op_i = has_inversion(v3_zero, zero_tol);
     // outfile->Printf("\t\tInversion symmetry: %s\n", (op_i ? "yes" : "no"));
 
     int i;
     double dot, phi;
-    Vector3 x_axis(1, 0, 0);
-    Vector3 y_axis(0, 1, 0);
-    Vector3 z_axis(0, 0, 1);
+    auto x_axis = Vector3<double>({{1, 0, 0}});
+    auto y_axis = Vector3<double>({{0, 1, 0}});
+    auto z_axis = Vector3<double>({{0, 0, 1}});
     SharedMatrix test_mat;
-    Vector3 rot_axis;
+    Vector3<double> rot_axis;
 
     if (rotor == RT_ATOM) {  // atoms
         full_pg_ = PG_ATOM;
@@ -2591,26 +2565,27 @@ void Molecule::set_full_point_group(double zero_tol) {
         // outfile->Printf("I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
 
         int unique_axis = 1;
-        if (std::fabs(I_evals[0] - I_evals[1]) < zero_tol)
+        if (std::abs(I_evals[0] - I_evals[1]) < zero_tol)
             unique_axis = 2;
-        else if (std::fabs(I_evals[1] - I_evals[2]) < zero_tol)
+        else if (std::abs(I_evals[1] - I_evals[2]) < zero_tol)
             unique_axis = 0;
 
         // Compute angle between unique axis and the z-axis
         // Returned eigenvectors appear to be columns (in Fortan style) ?!
-        Vector3 old_axis(I_evects->get(0, unique_axis), I_evects->get(1, unique_axis), I_evects->get(2, unique_axis));
+        auto old_axis = Vector3<double>(
+            {{I_evects->get(0, unique_axis), I_evects->get(1, unique_axis), I_evects->get(2, unique_axis)}});
 
-        dot = z_axis.dot(old_axis);
-        if (std::fabs(dot - 1) < 1.0e-10)
+        dot = psi::dot(z_axis, old_axis);
+        if (std::abs(dot - 1) < 1.0e-10)
             phi = 0.0;
-        else if (std::fabs(dot + 1) < 1.0e-10)
+        else if (std::abs(dot + 1) < 1.0e-10)
             phi = pc_pi;
         else
             phi = acos(dot);
 
         // Rotate geometry to put unique axis on the z-axis, if it isn't already.
-        if (std::fabs(phi) > 1.0e-14) {
-            rot_axis = z_axis.cross(old_axis);
+        if (std::abs(phi) > 1.0e-14) {
+            rot_axis = cross(z_axis, old_axis);
             test_mat = geom.matrix_3d_rotation(rot_axis, phi, false);
             // outfile->Printf( "Rotating by %lf to get principal axis on z-axis.\n", phi);
             geom.copy(test_mat);
@@ -2631,10 +2606,10 @@ void Molecule::set_full_point_group(double zero_tol) {
         // Check for sigma_h (xy plane).
         bool op_sigma_h = false;
         for (i = 0; i < natom(); ++i) {
-            if (std::fabs(geom(i, 2)) < zero_tol)
+            if (std::abs(geom(i, 2)) < zero_tol)
                 continue;  // atom is in xy plane
             else {
-                Vector3 test_atom(geom(i, 0), geom(i, 1), -1 * geom(i, 2));
+                auto test_atom = Vector3<double>({{geom(i, 0), geom(i, 1), -1 * geom(i, 2)}});
                 if (!atom_present_in_geom(geom, test_atom, zero_tol)) break;
             }
         }
@@ -2645,7 +2620,7 @@ void Molecule::set_full_point_group(double zero_tol) {
         int pivot_atom_i = -1;
         for (i = 0; i < natom(); ++i) {
             double dist_from_z = sqrt(geom(i, 0) * geom(i, 0) + geom(i, 1) * geom(i, 1));
-            if (std::fabs(dist_from_z) > zero_tol) {
+            if (std::abs(dist_from_z) > zero_tol) {
                 pivot_atom_i = i;
                 break;
             }
@@ -2653,13 +2628,12 @@ void Molecule::set_full_point_group(double zero_tol) {
         if (pivot_atom_i == natom()) throw PSIEXCEPTION("Not a linear molecule but could not find off-axis atom.");
 
         // Rotate around z-axis to put pivot atom in the yz plane
-        Vector3 xy_point(geom(pivot_atom_i, 0), geom(pivot_atom_i, 1), 0);
+        auto xy_point = normalize(Vector3<double>({{geom(pivot_atom_i, 0), geom(pivot_atom_i, 1), 0}}));
 
-        xy_point.normalize();
-        dot = y_axis.dot(xy_point);
-        if (std::fabs(dot - 1) < 1.0e-10)
+        dot = psi::dot(y_axis, xy_point);
+        if (std::abs(dot - 1) < 1.0e-10)
             phi = 0.0;
-        else if (std::fabs(dot + 1) < 1.0e-10)
+        else if (std::abs(dot + 1) < 1.0e-10)
             phi = pc_pi;
         else
             phi = acos(dot);
@@ -2677,7 +2651,7 @@ void Molecule::set_full_point_group(double zero_tol) {
             if (std::fabs(geom(i, 0)) < zero_tol)
                 continue;  // atom is in yz plane
             else {
-                Vector3 test_atom(-1 * geom(i, 0), geom(i, 1), geom(i, 2));
+                auto test_atom = Vector3<double>({{-1 * geom(i, 0), geom(i, 1), geom(i, 2)}});
                 if (!atom_present_in_geom(geom, test_atom, zero_tol)) break;
             }
         }
@@ -2692,21 +2666,21 @@ void Molecule::set_full_point_group(double zero_tol) {
         // Check for perpendicular C2's.
         // Loop through pairs of atoms to find c2 axis candidates.
         for (i = 0; i < natom(); ++i) {
-            Vector3 A(geom(i, 0), geom(i, 1), geom(i, 2));
-            double AdotA = A.dot(A);
+            auto A = Vector3<double>({{geom(i, 0), geom(i, 1), geom(i, 2)}});
+            double AdotA = psi::dot(A, A);
             for (int j = 0; j < i; ++j) {
                 if (Z(i) != Z(j)) continue;  // ensure same atomic number
 
-                Vector3 B(geom(j, 0), geom(j, 1), geom(j, 2));       // ensure same distance from com
-                if (std::fabs(AdotA - B.dot(B)) > 1.0e-6) continue;  // loose check
+                auto B = Vector3<double>({{geom(j, 0), geom(j, 1), geom(j, 2)}});  // ensure same distance from com
+                if (std::abs(AdotA - psi::dot(B, B)) > 1.0e-6) continue;           // loose check
 
                 // Use sum of atom vectors as axis if not 0.
-                Vector3 axis = A + B;
-                if (axis.norm() < 1.0e-12) continue;
-                axis.normalize();
+                Vector3<double> axis = A + B;
+                if (psi::norm(axis) < 1.0e-12) continue;
+                axis = psi::normalize(axis);
 
                 // Check if axis is perpendicular to z-axis.
-                if (std::fabs(axis.dot(z_axis)) > 1.0e-6) continue;
+                if (std::abs(psi::dot(axis, z_axis)) > 1.0e-6) continue;
 
                 // Do the thorough check for C2.
                 if (matrix_3d_rotation_Cn(geom, axis, false, zero_tol, 2) == 2) is_D = true;
@@ -2753,11 +2727,11 @@ void Molecule::set_full_point_group(double zero_tol) {
 ** @brief Find maximum n in Cn around given axis, i.e., the highest-order rotation axis.
 **
 ** @param coord Matrix    : points to rotate - column dim is 3
-** @param axis  Vector3   : axis around which to rotate, does not need to be normalized
+** @param axis  Vector3<double>   : axis around which to rotate, does not need to be normalized
 ** @param bool  reflect   : if true, really look for Sn not Cn
 ** @returns n
 */
-int matrix_3d_rotation_Cn(Matrix &coord, Vector3 axis, bool reflect, double TOL, int max_Cn_to_check) {
+int matrix_3d_rotation_Cn(Matrix &coord, Vector3<double> axis, bool reflect, double TOL, int max_Cn_to_check) {
     int max_possible;
     if (max_Cn_to_check == -1)        // default
         max_possible = coord.nrow();  // Check all atoms. In future, make more intelligent.

@@ -68,7 +68,7 @@ class MultipoleInt : public OneBodyAOInt {
     bool has_deriv1() override { return false; }
 
     /// Returns the nuclear contribution to the multipole moments, with angular momentum up to order
-    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin);
+    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3<double> &origin);
 };
 
 }  // namespace psi

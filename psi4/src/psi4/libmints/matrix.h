@@ -47,7 +47,6 @@ class Vector;
 using SharedVector = std::shared_ptr<Vector>;
 class Dimension;
 class Molecule;
-class Vector3;
 class Matrix;
 using SharedMatrix = std::shared_ptr<Matrix>;
 
@@ -279,7 +278,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     **                           perpendicular to rotation
     ** @returns SharedMatrix with rotated points (rows)
     */
-    SharedMatrix matrix_3d_rotation(Vector3 axis, double phi, bool Sn);
+    SharedMatrix matrix_3d_rotation(Vector3<double> axis, double phi, bool Sn);
 
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const* const data);

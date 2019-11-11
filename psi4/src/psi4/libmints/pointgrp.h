@@ -80,20 +80,17 @@
 #ifndef _math_symmetry_pointgrp_h
 #define _math_symmetry_pointgrp_h
 
-#include "psi4/libmints/vector3.h"
-#include "psi4/psi4-dec.h"
-
-#include <cstring>
-#include <cstdio>
 #include <cstdint>
-#include <vector>
+#include <cstdio>
+#include <cstring>
 #include <map>
-
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
-PRAGMA_WARNING_POP
+#include <vector>
+
+#include "psi4/psi4-dec.h"
+#include "psi4/pragma.h"
+
+#include "vector3.h"
 
 namespace psi {
 
@@ -536,7 +533,7 @@ class PSI_API CharacterTable {
 class PSI_API PointGroup {
    private:
     std::string symb;
-    Vector3 origin_;
+    Vector3<double> origin_;
     unsigned char bits_;
 
    public:
@@ -548,12 +545,12 @@ class PSI_API PointGroup {
     PointGroup(const std::string&);
     /** Like the above, but this constructor also takes a point of origin
         as an argument. */
-    PointGroup(const std::string&, const Vector3&);
+    PointGroup(const std::string&, const Vector3<double>&);
 
     /** Using the bitwise representation constructor the point group object. */
     PointGroup(unsigned char bits);
     /** Using the bitwise representation constructor the point group object. */
-    PointGroup(unsigned char bits, const Vector3&);
+    PointGroup(unsigned char bits, const Vector3<double>&);
 
     /** The PointGroup KeyVal constructor looks for three keywords:
        symmetry, symmetry_frame, and origin. symmetry is a string
@@ -611,8 +608,8 @@ class PSI_API PointGroup {
     std::string symbol() const { return symb; }
     /// Returns the frame of reference for this point group.
     /// Returns the origin of the symmetry frame.
-    Vector3& origin() { return origin_; }
-    const Vector3& origin() const { return origin_; }
+    Vector3<double>& origin() { return origin_; }
+    const Vector3<double>& origin() const { return origin_; }
 
     /// Sets (or resets) the Schoenflies symbol.
     void set_symbol(const std::string&);

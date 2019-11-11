@@ -69,7 +69,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     // Print the molecule to molden
     printer->Printf("[Atoms] (AU)\n");
     for (atom = 0; atom < mol.natom(); ++atom) {
-        Vector3 coord = mol.xyz(atom);
+        auto coord = mol.xyz(atom);
         printer->Printf("%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n", mol.symbol(atom).c_str(), atom + 1,
                         static_cast<int>(mol.Z(atom)), coord[0], coord[1], coord[2]);
     }
@@ -179,7 +179,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     // Dump MO's to the molden file
     printer->Printf("[MO]\n");
 
-    std::vector<std::pair<double, std::pair<int, int> > > mos;
+    std::vector<std::pair<double, std::pair<int, int>>> mos;
 
     // Number of MOs to write
     std::vector<int> nmoh(wavefunction_->nirrep());
@@ -390,7 +390,7 @@ void FCHKWriter::write(const std::string &filename) {
         int_atomic_weights.push_back(intmass);
         nuc_charges.push_back(Z);
         atomic_numbers.push_back(intZ);
-        const Vector3 &xyz = mol->xyz(atom);
+        auto xyz = mol->xyz(atom);
         coords.push_back(xyz[0]);
         coords.push_back(xyz[1]);
         coords.push_back(xyz[2]);
@@ -566,7 +566,7 @@ void FCHKWriter::write(const std::string &filename) {
         prim_per_shell.push_back(nprim);
         int center = basis->shell_to_center(shell);
         shell_to_atom.push_back(center + 1);
-        const Vector3 &xyz = mol->xyz(center);
+        auto xyz = mol->xyz(center);
         shell_coords.push_back(xyz[0]);
         shell_coords.push_back(xyz[1]);
         shell_coords.push_back(xyz[2]);
@@ -643,13 +643,13 @@ NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_
 
 void NBOWriter::write(const std::string &filename) {
     const std::vector<std::vector<int>> pure_order = {
-        {1},        // s
+        {1},              // s
         {103, 101, 102},  // p
         // z2  xz   yz  x2-y2 xy
         {255, 252, 253, 254, 251},  // d
         // z(z2-r2), x(z2-r2), y(z2-r2) z(x2-y2), xyz, x(x2-y2), y(x2-y2)
-        {351, 352, 353, 354, 355, 356, 357},  // f
-        {451, 452, 453, 454, 455, 456, 457, 458, 459},  // g
+        {351, 352, 353, 354, 355, 356, 357},                     // f
+        {451, 452, 453, 454, 455, 456, 457, 458, 459},           // g
         {551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561}  // h
     };
 

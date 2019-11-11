@@ -3262,9 +3262,6 @@ def compute_atom_map(mol, tol=0.05):
     for i in range(natom):
         atom_map[i] = [0] * ng
 
-    np3 = [0.0, 0.0, 0.0]
-    so = SymmetryOperation()
-
     # loop over all centers
     for i in range(natom):
         ac = mol.xyz(i)
@@ -3273,9 +3270,8 @@ def compute_atom_map(mol, tol=0.05):
         #   center "i" and see which atom it maps into
         for g in range(ng):
             so = ct.symm_operation(g)
-
+            np3 = [0.0, 0.0, 0.0]
             for ii in range(3):
-                np3[ii] = 0
                 for jj in range(3):
                     np3[ii] += so[ii][jj] * ac[jj]
             atom_map[i][g] = mol.atom_at_position(np3, tol)

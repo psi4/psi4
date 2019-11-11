@@ -50,7 +50,7 @@ ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, std::sha
 
 ElectrostaticInt::~ElectrostaticInt() {}
 
-void ElectrostaticInt::compute(SharedMatrix& result, const Vector3& C) {
+void ElectrostaticInt::compute(SharedMatrix& result, const Vector3<double>& C) {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
@@ -83,7 +83,7 @@ void ElectrostaticInt::compute(SharedMatrix& result, const Vector3& C) {
     }
 }
 
-void ElectrostaticInt::compute_shell(int sh1, int sh2, const Vector3& C) {
+void ElectrostaticInt::compute_shell(int sh1, int sh2, const Vector3<double>& C) {
     const GaussianShell& s1 = bs1_->shell(sh1);
     const GaussianShell& s2 = bs2_->shell(sh2);
 
@@ -99,7 +99,7 @@ void ElectrostaticInt::compute_shell(int sh1, int sh2, const Vector3& C) {
 }
 
 // The engine only supports segmented basis sets
-void ElectrostaticInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2, const Vector3& C) {
+void ElectrostaticInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2, const Vector3<double>& C) {
     int ao12;
     int am1 = s1.am();
     int am2 = s2.am();
@@ -197,10 +197,10 @@ SharedVector ElectrostaticInt::nuclear_contribution(std::shared_ptr<Molecule> mo
 
     int natom = mol->natom();
     for (int k = 0; k < natom; k++) {
-        Vector3 kgeom = mol->xyz(k);
+        auto kgeom = mol->xyz(k);
         for (int i = 0; i < natom; i++) {
             if (i != k) {
-                Vector3 igeom = mol->xyz(i);
+                auto igeom = mol->xyz(i);
 
                 double x = kgeom[0] - igeom[0];
                 double y = kgeom[1] - igeom[1];

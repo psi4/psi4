@@ -58,7 +58,7 @@ class PSI_API OneBodyAOInt {
     std::shared_ptr<BasisSet> bs2_;
     std::vector<SphericalTransform>& spherical_transforms_;
 
-    Vector3 origin_;
+    Vector3<double> origin_;
 
     double* buffer_;
     double* target_;
@@ -147,10 +147,10 @@ class PSI_API OneBodyAOInt {
     virtual OneBodyAOInt* clone() const;
 
     /// Returns the origin (useful for properties)
-    Vector3 origin() const { return origin_; }
+    Vector3<double> origin() const { return origin_; }
 
     /// Set the origin (useful for properties)
-    void set_origin(const Vector3& _origin) { origin_ = _origin; }
+    void set_origin(const Vector3<double>& _origin) { origin_ = _origin; }
 };
 
 typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;

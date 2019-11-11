@@ -340,14 +340,11 @@ void Matrix::copy(const Matrix *cp) {
     }
 }
 
-SharedMatrix Matrix::matrix_3d_rotation(Vector3 axis, double phi, bool Sn) {
+SharedMatrix Matrix::matrix_3d_rotation(Vector3<double> axis, double phi, bool Sn) {
     if (ncol() != 3) throw PSIEXCEPTION("Can only rotate matrix with 3d vectors");
 
     // Normalize rotation vector
-    double norm = sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
-    axis[0] /= norm;
-    axis[1] /= norm;
-    axis[2] /= norm;
+    axis = psi::normalize(axis);
 
     double wx, wy, wz, cp;
     wx = axis[0];

@@ -371,7 +371,7 @@ class BlockOPoints {
     std::shared_ptr<BasisExtents> extents_;
 
     /// Center of this BlockOPoints
-    Vector3 xc_;
+    Vector3<double> xc_;
     /// Bounding radius of the BlockOPoints
     double R_;
 

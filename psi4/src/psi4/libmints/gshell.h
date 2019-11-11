@@ -31,11 +31,12 @@
 
 #include <cstdio>
 #include <vector>
-#include "psi4/libmints/vector3.h"
+
+#include "psi4/pragma.h"
+
+#include "vector3.h"
 
 namespace psi {
-
-class Vector3;
 
 enum PrimitiveType { Normalized, Unnormalized };
 

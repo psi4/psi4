@@ -122,17 +122,17 @@ class PSI_API ERISieve {
     std::vector<double> shell_pair_values_;
 
     /// Significant unique bra- function pairs, in reduced triangular indexing
-    std::vector<std::pair<int, int> > function_pairs_;
+    std::vector<std::pair<int, int>> function_pairs_;
     /// Significant unique bra- shell pairs, in reduced triangular indexing
-    std::vector<std::pair<int, int> > shell_pairs_;
+    std::vector<std::pair<int, int>> shell_pairs_;
     /// Unique bra- function pair indexing, accessed in triangular order, or -1 for non-significant pair
     std::vector<long int> function_pairs_reverse_;
     /// Unique bra- shell pair indexing, accessed in triangular order, or -1 for non-significant pair
     std::vector<long int> shell_pairs_reverse_;
     /// Significant function pairs, indexes by function
-    std::vector<std::vector<int> > shell_to_shell_;
+    std::vector<std::vector<int>> shell_to_shell_;
     /// Significant shell pairs, indexes by shell
-    std::vector<std::vector<int> > function_to_function_;
+    std::vector<std::vector<int>> function_to_function_;
 
     ///////////////////////////////////////
     // adding stuff for QQR sieves
@@ -152,7 +152,7 @@ class PSI_API ERISieve {
     // integrals() - fills array of extents
 
     // r_{\mu \nu} in QQR paper (eqn. B2)
-    std::vector<Vector3> contracted_centers_;
+    std::vector<Vector3<double>> contracted_centers_;
 
     // ext'_{\mu \nu} (Eqn. B4)
     // Extents of contracted charge distributions
@@ -208,8 +208,7 @@ class PSI_API ERISieve {
 
     // inline bool shell_significant(int M, int N, int R, int S) {
     bool shell_significant(int M, int N, int R, int S) {
-        bool schwarz_bound =
-            shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= sieve2_;
+        bool schwarz_bound = shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= sieve2_;
         if (do_qqr_ && schwarz_bound) {
             return shell_significant_qqr(M, N, R, S);
         } else if (do_csam_ && schwarz_bound) {
@@ -231,9 +230,7 @@ class PSI_API ERISieve {
     }
 
     /// Is the shell pair (MN| ever significant according to sieve (no restriction on MN order)
-    inline bool shell_pair_significant(int M, int N) {
-        return shell_pair_values_[M * nshell_ + N] * max_ >= sieve2_;
-    }
+    inline bool shell_pair_significant(int M, int N) { return shell_pair_values_[M * nshell_ + N] * max_ >= sieve2_; }
 
     /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
     inline bool function_pair_significant(int m, int n) {
@@ -242,17 +239,17 @@ class PSI_API ERISieve {
     // => Indexing [these change after a call to sieve()] <= //
 
     /// Significant unique bra- function pairs, in reduced triangular indexing
-    const std::vector<std::pair<int, int> >& function_pairs() const { return function_pairs_; }
+    const std::vector<std::pair<int, int>>& function_pairs() const { return function_pairs_; }
     /// Significant unique bra- shell pairs, in reduced triangular indexing
-    const std::vector<std::pair<int, int> >& shell_pairs() const { return shell_pairs_; }
+    const std::vector<std::pair<int, int>>& shell_pairs() const { return shell_pairs_; }
     /// Unique bra- function pair indexing, accessed in triangular order, or -1 for non-significant pair
     const std::vector<long int> function_pairs_reverse() const { return function_pairs_reverse_; }
     /// Unique bra- shell pair indexing, accessed in triangular order, or -1 for non-significant pair
     const std::vector<long int> shell_pairs_reverse() const { return shell_pairs_reverse_; }
     /// Significant function pairs, indexes by function
-    const std::vector<std::vector<int> >& function_to_function() const { return function_to_function_; }
+    const std::vector<std::vector<int>>& function_to_function() const { return function_to_function_; }
     /// Significant shell pairs, indexes by shell
-    const std::vector<std::vector<int> >& shell_to_shell() const { return shell_to_shell_; }
+    const std::vector<std::vector<int>>& shell_to_shell() const { return shell_to_shell_; }
 
     // void shell_pair_values(std::vector<std::vector<std::pair<double, int> > >& values) const;
 

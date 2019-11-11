@@ -379,7 +379,7 @@ class PSI_API BasisSet {
     static std::string make_filename(const std::string &basisname);
 
     /// Global arrays of x, y, z exponents
-    static std::vector<Vector3> exp_ao[];
+    static std::vector<Vector3<double>> exp_ao[];
 
     //! Returns the value of the sorted shell list.
     int get_ao_sorted_shell(const int &i) { return sorted_ao_shell_list_[i]; }
@@ -388,11 +388,11 @@ class PSI_API BasisSet {
 
     // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the
     // underlying molecule object.
-    void move_atom(int atom, const Vector3 &trans);
+    void move_atom(int atom, const Vector3<double> &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
-    
-   private: 
+
+   private:
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);

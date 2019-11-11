@@ -140,7 +140,7 @@ std::string OperatorSymmetry::form_suffix(int x, int y, int z) {
 }
 
 std::string OperatorSymmetry::name_of_component(int i) {
-    Vector3 components = BasisSet::exp_ao[order_][i];
+    auto components = BasisSet::exp_ao[order_][i];
     return form_suffix(components[0], components[1], components[2]);
 }
 

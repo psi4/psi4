@@ -26,9 +26,9 @@
  * @END LICENSE
  */
 
-#include "psi4/pybind11.h"
-
 #include <string>
+
+#include "psi4/pybind11.h"
 
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/angularmomentum.h"
@@ -1082,31 +1082,6 @@ void export_mints(py::module& m) {
         .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
              "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
 
-    py::class_<Vector3>(m, "Vector3",
-                        "Class for vectors of length three, often Cartesian coordinate vectors, "
-                        "and their common operations")
-        .def(py::init<double>())
-        .def(py::init<double, double, double>())
-        .def(py::init<const Vector3&>())
-
-        //      def(self = other<double>()).
-        .def(py::self += py::self)
-        .def(py::self -= py::self)
-        .def(py::self *= double())
-
-        // def(py::self + py::self).
-        // def(py::self - py::self).
-        // def(-py::self).
-        .def("dot", &Vector3::dot, "Returns dot product of arg1 and arg2")
-        .def("distance", &Vector3::distance, "Returns distance between two points represented by arg1 and arg2")
-        .def("normalize", &Vector3::normalize, "Returns vector of unit length and arg1 direction")
-        .def("norm", &Vector3::norm, "Returns Euclidean norm of arg1")
-        .def("cross", &Vector3::cross, "Returns cross product of arg1 and arg2")
-        .def("__str__", &Vector3::to_string, "Returns a string representation of arg1, suitable for printing.")
-        .def(float() * py::self) /* The __mult__ operator */
-        .def("__getitem__", &Vector3::get, "Returns the arg2-th element of arg1.")
-        .def("__setitem__", &Vector3::set, "Set the ar2-th element of to val.");
-
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
 
@@ -1189,15 +1164,13 @@ void export_mints(py::module& m) {
              "Return the character of the i'th symmetry operation for the irrep. 0-indexed.")
         .def("symbol", &IrreducibleRepresentation::symbol, "Return the symbol for the irrep");
 
-    typedef Vector3 (Molecule::*vector_by_index)(int) const;
-
     py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule", py::dynamic_attr(),
                                                     "Class to store the elements, coordinates, "
                                                     "fragmentation pattern, basis sets, charge, "
                                                     "multiplicity, etc. of a molecule.")
         .def("set_geometry", [](Molecule& obj, const Matrix& m) { obj.set_geometry(m); },
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates [a0] (excluding dummies)")
-        .def("nuclear_dipole", [](const Molecule& obj, const Vector3& v) { return obj.nuclear_dipole(v); },
+        .def("nuclear_dipole", [](const Molecule& obj, const Vector3<double>& v) { return obj.nuclear_dipole(v); },
              "Gets the nuclear contribution to the dipole, with respect to a specified origin atg0")
         .def("nuclear_dipole", [](const Molecule& obj) { return obj.nuclear_dipole(); },
              "Gets the nuclear contribution to the dipole, with respect to the origin")

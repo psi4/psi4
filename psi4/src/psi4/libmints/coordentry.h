@@ -122,11 +122,10 @@ class VariableValue : public CoordValue {
 };
 
 class CoordEntry {
-
    protected:
     int entry_number_;
     bool computed_;
-    Vector3 coordinates_;
+    Vector3<double> coordinates_;
 
     /// Atomic number of the atom
     double Z_;
@@ -151,24 +150,24 @@ class CoordEntry {
     std::map<std::string, std::string> shells_;
 
     /// Computes the distance between two sets of coordinates
-    static double r(const Vector3& a1, const Vector3& a2) { return a1.distance(a2); }
+    static double r(const Vector3<double>& a1, const Vector3<double>& a2) { return distance(a1, a2); }
     /// Computes the angle (in rad.) between three sets of coordinates.
-    static double a(const Vector3& a1, const Vector3& a2, const Vector3& a3) {
-        Vector3 eBA(a2 - a1), eBC(a2 - a3);
-        eBA.normalize();
-        eBC.normalize();
-        double costheta = eBA.dot(eBC);
+    static double a(const Vector3<double>& a1, const Vector3<double>& a2, const Vector3<double>& a3) {
+        Vector3<double> eBA = normalize(a2 - a1);
+        Vector3<double> eBC = normalize(a2 - a3);
+        auto costheta = dot(eBA, eBC);
         if (costheta > 1.0 - CLEANUP_THRESH) costheta = 1.0;
         if (costheta < CLEANUP_THRESH - 1.0) costheta = -1.0;
         return acos(costheta);
     }
     /// Computes the dihedral (in rad.) between four sets of coordinates.
-    static double d(const Vector3& a1, const Vector3& a2, const Vector3& a3, const Vector3& a4) {
-        Vector3 eBA(a2 - a1), eDC(a4 - a3), eCB(a3 - a2);
-        double CBNorm = eCB.norm();
-        Vector3 DCxCB(eDC.cross(eCB));
-        Vector3 CBxBA(eCB.cross(eBA));
-        return -atan2(CBNorm * eDC.dot(eCB.cross(eBA)), DCxCB.dot(CBxBA));
+    static double d(const Vector3<double>& a1, const Vector3<double>& a2, const Vector3<double>& a3,
+                    const Vector3<double>& a4) {
+        Vector3<double> eBA(a2 - a1), eDC(a4 - a3), eCB(a3 - a2);
+        double CBNorm = psi::norm(eCB);
+        Vector3<double> DCxCB(cross(eDC, eCB));
+        Vector3<double> CBxBA(cross(eCB, eBA));
+        return -atan2(CBNorm * dot(eDC, cross(eCB, eBA)), dot(DCxCB, CBxBA));
     }
 
    public:
@@ -186,7 +185,7 @@ class CoordEntry {
     virtual ~CoordEntry();
 
     /// Computes the values of the coordinates (in whichever units were inputted), returning them in a Vector.
-    virtual const Vector3& compute() = 0;
+    virtual const Vector3<double>& compute() = 0;
     /// Given the current set of coordinates, updates the values of this atom's coordinates,
     /// and any variables that may depend on it.
     virtual void set_coordinates(double x, double y, double z) = 0;
@@ -201,9 +200,7 @@ class CoordEntry {
     /// Whether this atom has the same mass and basis sets as another atom
     bool is_equivalent_to(const std::shared_ptr<CoordEntry>& other) const;
     /// Flags the current coordinates as being outdated.
-    void invalidate() {
-        computed_ = false;
-    }
+    void invalidate() { computed_ = false; }
     /// Clones the current object, using a user-provided variable array, for deep copying
     virtual std::shared_ptr<CoordEntry> clone(std::vector<std::shared_ptr<CoordEntry> >& atoms,
                                               std::map<std::string, double>& map) = 0;
@@ -278,7 +275,7 @@ class CartesianEntry : public CoordEntry {
                    std::shared_ptr<CoordValue> z, const std::map<std::string, std::string>& basis,
                    const std::map<std::string, std::string>& shells);
 
-    const Vector3& compute() override;
+    const Vector3<double>& compute() override;
     void set_coordinates(double x, double y, double z) override;
     CoordEntryType type() override { return CartesianCoord; }
     void print_in_input_format() override;
@@ -288,7 +285,7 @@ class CartesianEntry : public CoordEntry {
         std::shared_ptr<CoordEntry> temp =
             std::make_shared<CartesianEntry>(entry_number_, Z_, charge_, mass_, symbol_, label_, A_, x_->clone(map),
                                              y_->clone(map), z_->clone(map), basissets_, shells_);
-        if (computed_) temp->compute(); // The constructor sets the coords we want, so this just sets computed_.
+        if (computed_) temp->compute();  // The constructor sets the coords we want, so this just sets computed_.
         return temp;
     }
 };
@@ -320,7 +317,7 @@ class ZMatrixEntry : public CoordEntry {
                  std::shared_ptr<CoordValue> dval = std::shared_ptr<CoordValue>());
 
     ~ZMatrixEntry() override;
-    const Vector3& compute() override;
+    const Vector3<double>& compute() override;
     void print_in_input_format() override;
     std::string string_in_input_format() override;
     void set_coordinates(double x, double y, double z) override;

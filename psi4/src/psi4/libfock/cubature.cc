@@ -2710,7 +2710,7 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     // inv_dist[A][B] = 1/(distance between atoms A and B)
     for (int A = 0; A < natom; A++) {
         for (int B = 0; B < A; B++) {
-            inv_dist_[A][B] = 1.0 / mol->xyz(A).distance(mol->xyz(B));  // Ewww...
+            inv_dist_[A][B] = 1.0 / distance(mol->xyz(A), mol->xyz(B));  // Ewww...
             inv_dist_[B][A] = inv_dist_[A][B];
         }
         inv_dist_[A][A] = NAN;  // For determinacy
@@ -3931,7 +3931,7 @@ void BasisExtents::print(std::string out) {
     printer->Printf("   Shell Extents:\n");
     printer->Printf("   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
     for (int Q = 0; Q < primary_->nshell(); Q++) {
-        Vector3 v = primary_->shell(Q).center();
+        auto v = primary_->shell(Q).center();
         printer->Printf("   %4d %14.6E %14.6E %14.6E %14.6E\n", Q + 1, v[0], v[1], v[2], Rp[Q]);
     }
     printer->Printf("\n\n");
@@ -3993,7 +3993,7 @@ void BlockOPoints::populate() {
     // Determine significant shell/functions
     for (int P = 0; P < primary->nshell(); P++) {
         // First pass: mean center/max spread of point clould
-        Vector3 v = primary->shell(P).center();
+        auto v = primary->shell(P).center();
         double Reff = sqrt((v[0] - xc_[0]) * (v[0] - xc_[0]) + (v[1] - xc_[1]) * (v[1] - xc_[1]) +
                            (v[2] - xc_[2]) * (v[2] - xc_[2]));
 
@@ -4238,7 +4238,7 @@ void MolecularGrid::remove_distant_points(double Rmax) {
     int npoints2 = npoints_;
     int offset = 0;
     for (int Q = 0; Q < npoints_; Q++) {
-        Vector3 v = molecule_->xyz(0);
+        auto v = molecule_->xyz(0);
         double R = (x_[Q] - v[0]) * (x_[Q] - v[0]) + (y_[Q] - v[1]) * (y_[Q] - v[1]) + (z_[Q] - v[2]) * (z_[Q] - v[2]);
         for (int A = 1; A < natom; A++) {
             v = molecule_->xyz(A);
@@ -4590,7 +4590,7 @@ void OctreeGridBlocker::block() {
         auto basis = extents_->basis();
         auto Rc = extents_->shell_extents();
         for (int Q = 0; Q < basis->nshell(); Q++) {
-            Vector3 v = basis->shell(Q).center();
+            auto v = basis->shell(Q).center();
             printer->Printf("    %4d %15.6E %15.6E %15.6E %15.6E\n", Q, v[0], v[1], v[2], Rc->get(0, Q));
         }
         // fclose(fh_extents);
@@ -4609,7 +4609,7 @@ void OctreeGridBlocker::block() {
             auto basis = extents_->basis();
             auto Rc = extents_->shell_extents();
             for (int Q = 0; Q < basis->nshell(); Q++) {
-                Vector3 v = basis->shell(Q).center();
+                auto v = basis->shell(Q).center();
                 printer->Printf("    %4d %15.6E %15.6E %15.6E %15.6E\n", Q, v[0], v[1], v[2], Rc->get(0, Q));
             }
             // fclose(fh_extents);

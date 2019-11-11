@@ -1593,7 +1593,7 @@ std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vec
 
 std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int max_k, int deriv) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
-    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    auto v3origin = from_vector(origin);
 
     std::vector<SharedMatrix> mult;
     bool do_dipole = (max_k >= 1);
@@ -1635,7 +1635,7 @@ std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<
 
 std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> &origin, int deriv) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
-    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    auto v3origin = from_vector(origin);
 
     std::vector<SharedMatrix> field;
     field.push_back(std::make_shared<Matrix>("Ex integrals", basisset_->nbf(), basisset_->nbf()));
