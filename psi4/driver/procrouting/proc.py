@@ -1074,6 +1074,10 @@ def select_adc2(name, **kwargs):
     module = core.get_global_option('QC_MODULE')
     # Considering only adcc/adc
 
+    # TODO Actually one should do selection on a couple of other options here
+    #      as well, e.g. adcc supports frozen-core and frozen-virtual,
+    #      spin-specific states or spin-flip methods.
+
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
@@ -3189,13 +3193,13 @@ def run_adcc(name, **kwargs):
     #      up and the whole thing went to a separate file (like for sapt,
     #      interface_cfour.py, ...
 
-    if not extras.addons("adcc"):
-        # TODO or PsiImportError ???
-        raise ValidationError("adcc extras module not available")
+    try:
+        import adcc
+        from adcc.backends import InvalidReference
+    except ModuleNotFoundError:
+        raise ValidationError("adcc extras qc_module not available. Try installing "
+            "via 'pip install adcc' or 'conda install -c adcc adcc'.")
 
-    import adcc
-
-    from adcc.backends import InvalidReference
 
     if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
         raise ValidationError('ADC requires reference RHF or UHF')
@@ -3295,10 +3299,10 @@ def run_adcc(name, **kwargs):
     core.print_out("\n" + adcc.banner(colour=False) + "\n")
     try:
         state = adcrunner[name](ref_wfn, **kwargs, output=CoreStream())
-    except InvalidReference as e:
+    except InvalidReference as ex:
         raise ValidationError("Cannot run ADC because the passed reference wavefunction is "
                               "not supported in adcc. Check Psi4 SCF parameters. adcc reports: "
-                              "{}".format(str(e)))
+                              "{}".format(str(ex)))
     core.print_out("\n")
 
     # TODO Should a non-converged calculation throw?
@@ -3420,7 +3424,6 @@ def run_adcc_property(name, **kwargs):
         data = state.transition_dipole_moments
         computed["Transition dipole moment (in a.u.)"] = data
         adc_wfn.set_variable("transition dipoles", core.Matrix.from_array(data))
-        pass
 
     if "OSCILLATOR_STRENGTH" in properties:
         data = state.oscillator_strengths.reshape(-1, 1)
