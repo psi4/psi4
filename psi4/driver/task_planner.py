@@ -26,30 +26,25 @@
 # @END LICENSE
 #
 
-import abc
-import copy
-import math
-import itertools
-import pydantic
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
-
-from typing import Dict, List, Any, Union
-
-import numpy as np
+import logging
+from pprint import PrettyPrinter, pformat
+from typing import Any, Dict, Tuple
 
 from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import UpgradeHelper
-from psi4.driver.task_base import SingleComputer
-from psi4.driver.driver_findif import FinDifComputer
-from psi4.driver.driver_nbody import NBodyComputer
-from psi4.driver.driver_cbs import CBSComputer, _cbs_text_parser
+from psi4.driver.task_base import BaseComputer, AtomicComputer
+from psi4.driver.driver_findif import FiniteDifferenceComputer
+from psi4.driver.driver_nbody import ManyBodyComputer
+from psi4.driver.driver_cbs import CompositeComputer, _cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+pp = PrettyPrinter(width=120, compact=True, indent=1)
 
 __all__ = ["task_planner"]
 
 
-def _expand_cbs_methods(method, basis, driver, **kwargs):
+def _expand_cbs_methods(method: str, basis: str, driver, **kwargs) -> Tuple[str, str, Dict]:
     if method == 'cbs' and kwargs.get('cbsmeta', None):
         return method, basis, kwargs['cbsmeta']
 
@@ -70,14 +65,14 @@ def _expand_cbs_methods(method, basis, driver, **kwargs):
     return method, basis, cbsmeta
 
 
-def task_planner(driver, method, molecule, **kwargs):
+def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> BaseComputer:
     """Plans a task graph of a complex computations.
 
     Canonical Task layering:
-     - NBody
-     - FinDif
-     - CBS
-     - Single
+     - ManyBody
+     - FiniteDifference
+     - Composite
+     - Atomic
 
     Parameters
     ----------
@@ -121,7 +116,7 @@ def task_planner(driver, method, molecule, **kwargs):
     if 'bsse_type' in kwargs:
         levels = kwargs.pop('levels', None)
 
-        plan = NBodyComputer(**packet, **kwargs)
+        plan = ManyBodyComputer(**packet, **kwargs)
         original_molecule = packet.pop("molecule")
 
         # Add tasks for every nbody level requested
@@ -155,37 +150,37 @@ def task_planner(driver, method, molecule, **kwargs):
 
             # Tell the task bulider which level to add a task list for
             if method == "cbs":
-                # This CBSComputer is discarded after being used for dermode.
-                dummyplan = CBSComputer(**packet, **cbsmeta, molecule=original_molecule)
+                # This CompositeComputer is discarded after being used for dermode.
+                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule)
 
                 methods = [sr.method for sr in dummyplan.task_list]
                 # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df
                 dermode = negotiate_derivative_type(driver, methods, kwargs.pop('dertype', None), verbose=1)
 
                 if dermode[0] == dermode[1]:  # analytic
-                    print('PLANNING NBody(CBS)', 'n=', n, nlevel, 'packet=', packet, 'cbsmeta=', cbsmeta, 'kw=', kwargs)
-                    plan.build_tasks(CBSComputer, **packet, nlevel=nlevel, level=n, **cbsmeta, **kwargs)
+                    logger.info('PLANNING MB(CBS):  n={n} {nlevel} packet={packet} cbsmeta={cbsmeta} kw={kwargs}')
+                    plan.build_tasks(CompositeComputer, **packet, nlevel=nlevel, level=n, **cbsmeta, **kwargs)
 
                 else:
-                    print('PLANNING NBody(FinDif(CBS)', 'n=', n, nlevel, 'packet=', packet, 'cbsmeta=', cbsmeta ,'findif_kw=', current_findif_kwargs, 'kw=', kwargs)
-                    plan.build_tasks(FinDifComputer, **packet, nlevel=nlevel, level=n, findif_mode=dermode, computer=CBSComputer, **cbsmeta, **current_findif_kwargs, **kwargs)
+                    logger.info(f'PLANNING MB(FD(CBS):  n={n}, {nlevel} packet={packet} cbsmeta={cbsmeta} findif_kw={current_findif_kwargs} kw={kwargs}')
+                    plan.build_tasks(FiniteDifferenceComputer, **packet, nlevel=nlevel, level=n, findif_mode=dermode, computer=CompositeComputer, **cbsmeta, **current_findif_kwargs, **kwargs)
 
             else:
                 dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1)
                 if dermode[0] == dermode[1]:  # analytic
-                    print('PLANNING NBody', 'n=', n, nlevel, 'packet=', packet)
-                    plan.build_tasks(SingleComputer, **packet, nlevel=nlevel, level=n)
+                    logger.info(f'PLANNING MB:  n={n}, {nlevel} packet={packet}')
+                    plan.build_tasks(AtomicComputer, **packet, nlevel=nlevel, level=n)
                 else:
-                    print('PLANNING NBody(FinDif)', 'n=', n, nlevel, 'packet=', packet, 'findif_kw=', current_findif_kwargs, 'kw=', kwargs)
-                    plan.build_tasks(FinDifComputer, **packet, nlevel=nlevel, level=n, findif_mode=dermode, **current_findif_kwargs, **kwargs)
+                    logger.info(f'PLANNING MB(FD):  n={n}, {nlevel} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}')
+                    plan.build_tasks(FiniteDifferenceComputer, **packet, nlevel=nlevel, level=n, findif_mode=dermode, **current_findif_kwargs, **kwargs)
 
         return plan
 
     # Check for CBS
     elif method == "cbs":
         kwargs.update(cbsmeta)
-        print('PLANNING CBS', 'keywords=', keywords)
-        plan = CBSComputer(**packet, **kwargs)
+        logger.info('PLANNING CBS:  keywords={keywords}')
+        plan = CompositeComputer(**packet, **kwargs)
 
         methods = [sr.method for sr in plan.task_list]
         # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df
@@ -194,20 +189,20 @@ def task_planner(driver, method, molecule, **kwargs):
         if dermode[0] == dermode[1]:  # analytic
             return plan
         else:
-            # For FD(CBS(Single)), the CBSComputer above is discarded after being used for dermode.
-            print('PLANNING FinDif(CBS)', 'dermode=', dermode, 'keywords=', keywords, 'findif_kw=', current_findif_kwargs)
-            plan = FinDifComputer(**packet, findif_mode=dermode, computer=CBSComputer, **current_findif_kwargs, **kwargs)
+            # For FD(CBS(Atomic)), the CompositeComputer above is discarded after being used for dermode.
+            logger.info(f'PLANNING FD(CBS):  dermode={dermode} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}')
+            plan = FiniteDifferenceComputer(**packet, findif_mode=dermode, computer=CompositeComputer, **current_findif_kwargs, **kwargs)
             return plan
 
-    # Done with Wrappers -- know we want E, G, or H -- but may still be FinDif or SingleComputer
+    # Done with Wrappers -- know we want E, G, or H -- but may still be FD or AtomicComputer
     else:
         dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1)
         convcrit = negotiate_convergence_criterion(dermode, method, return_optstash=False)
 
         if dermode[0] == dermode[1]:  # analytic
-            print('PLANNING Single', 'keywords=', keywords)
-            return SingleComputer(**packet, **kwargs)
+            logger.info(f'PLANNING Atomic:  keywords={keywords}')
+            return AtomicComputer(**packet, **kwargs)
         else:
             keywords.update(convcrit)
-            print('PLANNING FinDif', 'dermode=', dermode, 'keywords=', keywords, 'findif_kw=', current_findif_kwargs, 'kw=', kwargs)
-            return FinDifComputer(**packet, findif_mode=dermode, **current_findif_kwargs, **kwargs)
+            logger.info(f'PLANNING FD:  dermode={dermode} keywords={keywords} findif_kw={current_findif_kwargs} kw={kwargs}')
+            return FiniteDifferenceComputer(**packet, findif_mode=dermode, **current_findif_kwargs, **kwargs, logging='file.log')

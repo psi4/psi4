@@ -51,13 +51,7 @@ if not os.path.isdir(data_dir):
                     "      Current value of PSIDATADIR is %s" % data_dir)
 
 # Init core
-try:
-    from . import core
-except ImportError as err:
-    if 'CXXABI' in str(err):
-        raise ImportError("{0}\nLikely cause: GCC >= 4.9 not in [DY]LD_LIBRARY_PATH".format(err))
-    else:
-        raise ImportError("{0}".format(err))
+from . import core
 
 from psi4.core import set_output_file, get_num_threads, set_num_threads
 core.initialize()
@@ -104,3 +98,24 @@ if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
     sys.path.insert(1, "@cppe_PYMOD@")
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
     sys.path.insert(1, "@pylibefp_PYMOD@")
+
+
+# Create a custom logger
+import logging
+logger = logging.getLogger(__name__)
+
+# Create handlers
+#c_handler = logging.StreamHandler()
+f_handler = logging.FileHandler('file.log')
+#c_handler.setLevel(logging.WARNING)
+f_handler.setLevel(logging.DEBUG)
+
+# Create formatters and add it to handlers
+#c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+f_format = logging.Formatter('%(asctime)s,%(msecs)d %(levelname)-8s [%(name)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
+#c_handler.setFormatter(c_format)
+f_handler.setFormatter(f_format)
+
+# Add handlers to the logger
+#logger.addHandler(c_handler)
+logger.addHandler(f_handler)

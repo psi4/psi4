@@ -5,7 +5,6 @@ import pprint
 import pytest
 
 import psi4
-import qcengine as qcng
 
 
 @pytest.fixture

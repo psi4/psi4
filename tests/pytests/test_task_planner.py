@@ -7,16 +7,15 @@ from .utils import *
 from .addons import *
 
 import math
-import time
 
 import numpy as np
 
 import psi4
 from psi4.driver.task_planner import task_planner
-from psi4.driver.task_base import SingleComputer
-from psi4.driver.driver_cbs import CBSComputer
-from psi4.driver.driver_nbody import NBodyComputer
-from psi4.driver.driver_findif import FinDifComputer
+from psi4.driver.task_base import AtomicComputer
+from psi4.driver.driver_cbs import CompositeComputer
+from psi4.driver.driver_nbody import ManyBodyComputer
+from psi4.driver.driver_findif import FiniteDifferenceComputer
 
 pytestmark = pytest.mark.quick
 
@@ -25,7 +24,7 @@ def test_single_result():
     mol = psi4.geometry("He")
     plan = task_planner("energy", "HF", mol, basis="sto-3G")
 
-    assert isinstance(plan, SingleComputer)
+    assert isinstance(plan, AtomicComputer)
     assert plan.basis == "sto-3g"
     assert plan.method == "hf"
     assert plan.driver == "energy"
@@ -41,7 +40,7 @@ def test_single_result_cbs_unpack():
     mol = psi4.geometry("He")
     plan = task_planner("energy", "MP2/cc-pVDZ", mol)
 
-    assert isinstance(plan, SingleComputer)
+    assert isinstance(plan, AtomicComputer)
     assert plan.basis == "cc-pvdz"
     assert plan.method == "mp2"
     assert plan.driver == "energy"
@@ -51,11 +50,11 @@ def test_cbs_extrapolation():
     mol = psi4.geometry("He")
     plan = task_planner("energy", "MP2/cc-pV[D,T]Z", mol)
 
-    assert isinstance(plan, CBSComputer)
+    assert isinstance(plan, CompositeComputer)
     assert len(plan.task_list) == 2
 
     for ires, plan2 in enumerate(plan.task_list):
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == ["cc-pvdz", "cc-pvtz"][ires]
         assert plan2.method == "mp2"
         assert plan2.driver == "energy"
@@ -65,11 +64,11 @@ def test_cbs_extrapolation_gradient():
     mol = psi4.geometry("He")
     plan = task_planner("gradient", "MP2/cc-pV[D,T]Z", mol)
 
-    assert isinstance(plan, CBSComputer)
+    assert isinstance(plan, CompositeComputer)
     assert len(plan.task_list) == 4
 
     for ires, plan2 in enumerate(plan.task_list):
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == ["cc-pvtz", "cc-pvdz", "cc-pvtz", "cc-pvdz"][ires]
         assert plan2.method == ["hf", "mp2", "mp2", "hf"][ires]
         assert plan2.driver == "gradient"
@@ -83,15 +82,15 @@ def test_cbs_extrapolation_gradient_1_0(mtd, kw):
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
     plan = task_planner("gradient", f"{mtd}/cc-pV[D,T]Z", mol, **kw, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223), findif_verbose=4)
 
-    assert isinstance(plan, FinDifComputer)
+    assert isinstance(plan, FiniteDifferenceComputer)
     assert len(plan.task_list) == 3
 
     for key, plan2 in plan.task_list.items():
-        assert isinstance(plan2, CBSComputer)
+        assert isinstance(plan2, CompositeComputer)
         assert len(plan2.task_list) == 2
 
         for ires, plan3 in enumerate(plan2.task_list):
-            assert isinstance(plan3, SingleComputer)
+            assert isinstance(plan3, AtomicComputer)
             assert plan3.basis == ["cc-pvdz", "cc-pvtz"][ires]
             assert plan3.method == mtd
             assert plan3.driver == "energy"
@@ -113,13 +112,13 @@ def test_nbody_dimer():
         "1_((2,), (1, 2))": (['He', 'He'], [False, True]),
     }
 
-    assert isinstance(plan, NBodyComputer)
+    assert isinstance(plan, ManyBodyComputer)
     # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
     # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == "cc-pvdz"
         assert plan2.method == "mp2"
         assert plan2.driver == "energy"
@@ -145,13 +144,13 @@ def test_nbody_dimer_gradient():
         "1_((2,), (1, 2))": (['He', 'He'], [False, True]),
     }
 
-    assert isinstance(plan, NBodyComputer)
+    assert isinstance(plan, ManyBodyComputer)
     # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
     # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == "cc-pvdz"
         assert plan2.method == "mp2"
         assert plan2.driver == "gradient"
@@ -188,7 +187,7 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
         "1_((2,), (1, 2))": displacements,
     }
 
-    assert isinstance(plan, NBodyComputer)
+    assert isinstance(plan, ManyBodyComputer)
     # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
     # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
@@ -202,7 +201,7 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
     }
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, FinDifComputer)
+        assert isinstance(plan2, FiniteDifferenceComputer)
         assert plan2.basis == "cc-pvdz"
         assert plan2.method == f"{mtd}"
         assert plan2.driver == "gradient"
@@ -212,7 +211,7 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
         assert kmol['real'] == ghostiness[k2][1]
 
         for k3, plan3 in plan2.task_list.items():
-            assert isinstance(plan3, SingleComputer)
+            assert isinstance(plan3, AtomicComputer)
             assert plan3.basis == "cc-pvdz"
             assert plan3.method == f"{mtd}"
             assert plan3.driver == "energy"
@@ -230,17 +229,17 @@ def test_nbody_dimer_cbs():
                         units au""")
     plan = task_planner("energy", "MP2/cc-pV[D,T]Z", mol, bsse_type="cp")
 
-    assert isinstance(plan, NBodyComputer)
+    assert isinstance(plan, ManyBodyComputer)
     # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
     # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, CBSComputer)
+        assert isinstance(plan2, CompositeComputer)
         assert len(plan2.task_list) == 2
 
         for i3, plan3 in enumerate(plan2.task_list):
-            assert isinstance(plan3, SingleComputer)
+            assert isinstance(plan3, AtomicComputer)
             assert plan3.basis == ["cc-pvdz", "cc-pvtz"][i3]
             assert plan3.method == "mp2"
             assert plan3.driver == "energy"
@@ -254,17 +253,17 @@ def test_nbody_dimer_cbs_gradient():
                         units au""")
     plan = task_planner("gradient", "MP2/cc-pV[D,T]Z", mol, bsse_type="cp")
 
-    assert isinstance(plan, NBodyComputer)
+    assert isinstance(plan, ManyBodyComputer)
     # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
     # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, CBSComputer)
+        assert isinstance(plan2, CompositeComputer)
         assert len(plan2.task_list) == 4
 
         for i3, plan3 in enumerate(plan2.task_list):
-            assert isinstance(plan3, SingleComputer)
+            assert isinstance(plan3, AtomicComputer)
             assert plan3.basis == ["cc-pvtz", "cc-pvdz", "cc-pvtz", "cc-pvdz"][i3]
             assert plan3.method == ["hf", "mp2", "mp2", "hf"][i3]
             assert plan3.driver == "gradient"
@@ -304,13 +303,13 @@ def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
         "1_((2,), (1, 2))": (['He', 'He'], [False, True]),
     }
 
-    assert isinstance(plan, NBodyComputer)
+    assert isinstance(plan, ManyBodyComputer)
     # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
     # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, FinDifComputer)
+        assert isinstance(plan2, FiniteDifferenceComputer)
         assert plan2.driver == "gradient"
 
         kmol = plan2.molecule.to_schema(dtype=2)
@@ -318,11 +317,12 @@ def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
         assert kmol['real'] == ghostiness[k2][1]
 
         for k3, plan3 in plan2.task_list.items():
-            assert isinstance(plan3, CBSComputer)
+            assert isinstance(plan3, CompositeComputer)
             assert len(plan3.task_list) == 2
+            assert np.allclose(plan3.molecule.geometry().np, nbody_displacements[k2][k3])
 
             for i4, plan4 in enumerate(plan3.task_list):
-                assert isinstance(plan4, SingleComputer)
+                assert isinstance(plan4, AtomicComputer)
                 assert plan4.basis == ["cc-pvdz", "cc-pvtz"][i4]
                 assert plan4.method == mtd
                 assert plan4.driver == "energy"
@@ -332,11 +332,11 @@ def test_cbs_extrapolation_delta():
     mol = psi4.geometry("He")
     plan = task_planner("energy", "MP2/cc-pV[D,T]Z + D:ccsd(t)/cc-pv[tq]z", mol)
 
-    assert isinstance(plan, CBSComputer)
+    assert isinstance(plan, CompositeComputer)
     assert len(plan.task_list) == 3
 
     for i2, plan2 in enumerate(plan.task_list):
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == ["cc-pvdz", "cc-pvtz", "cc-pvqz"][i2]
         assert plan2.method == ["mp2", "ccsd(t)", "ccsd(t)"][i2]
         assert plan2.driver == "energy"
@@ -346,7 +346,7 @@ def test_findif_1_1():
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
     plan = task_planner("gradient", "MP2/cc-pVDZ", mol)
 
-    assert isinstance(plan, SingleComputer)
+    assert isinstance(plan, AtomicComputer)
     assert plan.basis == "cc-pvdz"
     assert plan.method == "mp2"
     assert plan.driver == "gradient"
@@ -370,11 +370,11 @@ def test_findif_1_0(mtd, kw):
         'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
     }
 
-    assert isinstance(plan, FinDifComputer)
+    assert isinstance(plan, FiniteDifferenceComputer)
     assert len(plan.task_list) == 3
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == "cc-pvdz"
         assert plan2.method == mtd
         assert plan2.driver == "energy"
@@ -395,11 +395,11 @@ def test_findif_2_1():
         'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
     }
 
-    assert isinstance(plan, FinDifComputer)
+    assert isinstance(plan, FiniteDifferenceComputer)
     assert len(plan.task_list) == 3
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == "cc-pvdz"
         assert plan2.method == "mp2"
         assert plan2.driver == "gradient"
@@ -421,11 +421,11 @@ def test_findif_2_0():
         'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
     }
 
-    assert isinstance(plan, FinDifComputer)
+    assert isinstance(plan, FiniteDifferenceComputer)
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
-        assert isinstance(plan2, SingleComputer)
+        assert isinstance(plan2, AtomicComputer)
         assert plan2.basis == "cc-pvdz"
         assert plan2.method == "mp2"
         assert plan2.driver == "energy"

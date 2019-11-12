@@ -27,6 +27,8 @@
 #
 
 import pickle
+import pprint
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 from . import dependency_check
 

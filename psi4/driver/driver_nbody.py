@@ -36,17 +36,19 @@ import pydantic
 
 import pprint
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+import logging
 
 import numpy as np
+import pydantic
 from qcelemental.models import DriverEnum, Result
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import constants
-from psi4.driver import driver_nbody_multilevel
+from psi4.driver import constants, driver_nbody_multilevel, p4util, pp
 from psi4.driver.p4util.exceptions import *
+from psi4.driver.task_base import AtomicComputer, BaseComputer
 
-from psi4.driver.task_base import BaseComputer, SingleComputer
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 ### Math helper functions
 
@@ -431,7 +433,7 @@ def assemble_nbody_components(metadata, component_results):
     level_idx = {int(i.split('_')[0]) for i in component_results['energies'].keys()}
 
     if len(level_idx) != 1:
-        print("Something's wrong")
+        raise ValidationError("Something's wrong")
 
     # get the range of nbodies for this level
     for idx in level_idx:
@@ -732,7 +734,7 @@ def electrostatic_embedding(embedding_charges):
     core.set_global_option_python('EXTERN', Chrgfield.extern)
 
 
-class NBodyComputer(BaseComputer):
+class ManyBodyComputer(BaseComputer):
 
     molecule: Any
     driver: DriverEnum
@@ -750,7 +752,7 @@ class NBodyComputer(BaseComputer):
     embedding_charges: Dict[int, list] = {}
     quiet: bool = False
 
-    task_list: Dict[str, SingleComputer] = {}
+    task_list: Dict[str, AtomicComputer] = {}
 
     def __init__(self, **data):
 
@@ -815,7 +817,7 @@ class NBodyComputer(BaseComputer):
             data = template
             data["molecule"] = self.molecule
             self.task_list[str(level) + '_' + str(self.max_frag)] = obj(**data)
-            print(str(level) + ', ' + str(self.max_frag))
+            logger.debug(str(level) + ', ' + str(self.max_frag))
             compute_dict = build_nbody_compute_list(self.bsse_type, [i for i in range(1, self.max_nbody + 1)],
                                                     self.max_frag)
         else:
@@ -831,7 +833,7 @@ class NBodyComputer(BaseComputer):
             for key, pair in enumerate(compute_list[n]):
                 if (str(nbody_level + 1) + '_' + str(pair)) in self.task_list:
                     continue
-                print(pair)
+                logger.debug(pair)
                 data = template
                 ghost = list(set(pair[1]) - set(pair[0]))
                 data["molecule"] = self.molecule.extract_subsets(list(pair[0]), ghost)
@@ -849,19 +851,12 @@ class NBodyComputer(BaseComputer):
         return counter
 
     def plan(self):
-        ret = []
-        for k, v in self.task_list.items():
-            ret.append(v.plan())
-        return ret
+        return [t.plan() for t in self.task_list.values()]
 
     def compute(self, client=None):
         with p4util.hold_options_state():
-            # gof = core.get_output_file()
-            # core.close_outfile()
-            for k, v in self.task_list.items():
-                v.compute(client)
-
-            # core.set_output_file(gof, True)
+            for k, t in self.task_list.items():
+                t.compute(client)
 
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)

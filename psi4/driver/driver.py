@@ -37,9 +37,8 @@ import re
 import shutil
 import sys
 from typing import Union
+import logging
 
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 import numpy as np
 
 from psi4 import core  # for typing
@@ -50,10 +49,14 @@ from psi4.driver import driver_findif
 from psi4.driver import task_planner
 from psi4.driver import p4util
 from psi4.driver import qcdb
-from psi4.driver.procrouting import *
+from psi4.driver import pp
 from psi4.driver.p4util.exceptions import *
+from psi4.driver.procrouting import *
 from psi4.driver.mdi_engine import mdi_run
-from psi4.driver.task_base import SingleComputer
+from psi4.driver.task_base import AtomicComputer
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
@@ -104,7 +107,7 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
     # print progress to file and screen
     core.print_out('\n')
     p4util.banner('Loading displacement %d of %d' % (n, ndisp))
-    print(""" %d""" % (n), end=('\n' if (n == ndisp) else ''))
+    logger.debug(f'{n}')
     sys.stdout.flush()
 
     parent_group = molecule.point_group()
@@ -143,7 +146,9 @@ def _process_displacement(derivfunc, method, molecule, displacement, n, ndisp, *
 def _filter_renamed_methods(compute, method):
     r"""Raises UpgradeHelper when a method has been renamed."""
     if method == "dcft":
-        raise UpgradeHelper(compute + "('dcft')", compute + "('dct')", 1.4, " All instances of 'dcft' should be replaced with 'dct'.")
+        raise UpgradeHelper(compute + "('dcft')", compute + "('dct')", 1.4,
+                            " All instances of 'dcft' should be replaced with 'dct'.")
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -486,19 +491,18 @@ def energy(name, **kwargs):
 
     # Are we planning?
     plan = task_planner.task_planner("energy", lowername, molecule, **kwargs)
-    print('ENERGY   PLAN', plan)
+    logger.debug('ENERGY PLAN')
+    logger.debug(pp.pformat(plan.dict()))
 
     if kwargs.get("return_plan", False):
         return plan
 
-    elif isinstance(plan, SingleComputer):
-        # We have unpacked to a Single Result
+    elif isinstance(plan, AtomicComputer):
+        # We have unpacked to a AtomicResult
         lowername = plan.method
         basis = plan.basis
         core.set_global_option("BASIS", basis)
         core_clean = True
-        print('ENERGY SingleComputer', plan.method, plan.basis, plan.driver, plan.keywords) #plan.molecule)
-        #print(plan.dict())
 
     else:
         plan.compute()
@@ -510,7 +514,7 @@ def energy(name, **kwargs):
     #for precallback in hooks['energy']['pre']:
     #    precallback(lowername, **kwargs)
 
-    # needed (+restore below) so long as SingleComputer-s aren't run through json (where convcrit also lives)
+    # needed (+restore below) so long as AtomicComputer-s aren't run through json (where convcrit also lives)
     optstash = driver_util.negotiate_convergence_criterion((0, 0), lowername, return_optstash=True)
     optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
 
@@ -603,7 +607,7 @@ def gradient(name, **kwargs):
     ## First half of this fn -- entry means user wants a 1st derivative by any means
 
     kwargs = p4util.kwargs_lower(kwargs)
-    
+
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
     basisstash = p4util.OptionsState(['BASIS'])
@@ -641,13 +645,14 @@ def gradient(name, **kwargs):
 
     # Are we planning?
     plan = task_planner.task_planner("gradient", lowername, molecule, **kwargs)
-    print('GRADIENT PLAN', plan)
+    logger.debug('GRADIENT PLAN')
+    logger.debug(pp.pformat(plan.dict()))
 
     if kwargs.get("return_plan", False):
         return plan
 
-    elif isinstance(plan, SingleComputer):
-        # We have unpacked to a Single Result
+    elif isinstance(plan, AtomicComputer):
+        # We have unpacked to a AtomicResult
         lowername = plan.method
         basis = plan.basis
         core.set_global_option("BASIS", basis)
@@ -725,7 +730,6 @@ def gradient(name, **kwargs):
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     optstash = driver_util.negotiate_convergence_criterion((1, 1), lowername, return_optstash=True)
 
-
     # Commit to procedures[] call hereafter
     core.clean_variables()
 
@@ -739,6 +743,7 @@ def gradient(name, **kwargs):
         driver_nbody.electrostatic_embedding(kwargs['embedding_charges'])
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
+
 #    if dertype == 1:
     core.print_out("""gradient() will perform analytic gradient computation.\n""")
 
@@ -1377,7 +1382,7 @@ def optimize(name, **kwargs):
             G = core.get_legacy_gradient()  # TODO
             core.IOManager.shared_object().set_specific_retention(1, True)
             core.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(hessian_with_method, molecule=moleculeclone, ref_gradient = G, **kwargs)
+            frequencies(hessian_with_method, molecule=moleculeclone, ref_gradient=G, **kwargs)
             steps_since_last_hessian = 0
             core.set_legacy_gradient(G)
             core.set_global_option('CART_HESS_READ', True)
@@ -1534,13 +1539,14 @@ def hessian(name, **kwargs):
 
     # Are we planning?
     plan = task_planner.task_planner("hessian", lowername, molecule, **kwargs)
-    print('HESSIAN  PLAN', plan.dict())
+    logger.debug('HESSIAN PLAN')
+    logger.debug(pp.pformat(plan.dict()))
 
     if kwargs.get("return_plan", False):
         return plan
 
-    elif isinstance(plan, SingleComputer):
-        # We have unpacked to a Single Result
+    elif isinstance(plan, AtomicComputer):
+        # We have unpacked to a AtomicResult
         lowername = plan.method
         basis = plan.basis
         core.set_global_option("BASIS", basis)
@@ -1581,7 +1587,7 @@ def hessian(name, **kwargs):
 #        lowername = name.lower()
 
     _filter_renamed_methods("frequency", lowername)
-    
+
     core.clean_variables()
 #    dertype = 2
 
@@ -1608,7 +1614,6 @@ def hessian(name, **kwargs):
         tmpkwargs.pop('dertype', None)
         G0 = gradient(lowername, molecule=molecule, **tmpkwargs)
 #        G0 = gradient(lowername, molecule=molecule, **kwargs)
-    print('RAN GRAD', G0)
     translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0)
     core.print_out(
         '\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'
@@ -1618,6 +1623,8 @@ def hessian(name, **kwargs):
         core.set_local_option('FINDIF', 'FD_PROJECT', rotations_projection_sound)
 
     # Does an analytic procedure exist for the requested method?
+
+
 #    if dertype == 2:
     core.print_out("""hessian() will perform analytic frequency computation.\n""")
 
@@ -1819,7 +1826,7 @@ def frequency(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-    
+
     return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one
@@ -1912,8 +1919,14 @@ def vibanal_wfn(wfn: core.Wavefunction, hess: np.ndarray = None, irrep: Union[in
     m = np.asarray([mol.mass(at) for at in range(mol.natom())])
     irrep_labels = mol.irrep_labels()
 
-    vibinfo, vibtext = qcdb.vib.harmonic_analysis(
-        nmwhess, geom, m, wfn.basisset(), irrep_labels, dipder=dipder, project_trans=project_trans, project_rot=project_rot)
+    vibinfo, vibtext = qcdb.vib.harmonic_analysis(nmwhess,
+                                                  geom,
+                                                  m,
+                                                  wfn.basisset(),
+                                                  irrep_labels,
+                                                  dipder=dipder,
+                                                  project_trans=project_trans,
+                                                  project_rot=project_rot)
     vibrec.update({k: qca.json() for k, qca in vibinfo.items()})
 
     core.print_out(vibtext)

@@ -33,21 +33,24 @@ import copy
 import pprint
 from typing import Any, Callable, Dict, List, Union
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+import logging
 
 import numpy as np
 import pydantic
 from qcelemental.models import DriverEnum, Result
 
 from psi4 import core
-from psi4.driver import qcdb
-from psi4.driver import p4util
-from psi4.driver import driver_util
-from psi4.driver.driver_util import UpgradeHelper
+from psi4.driver import driver_util, p4util, pp
 from psi4.driver import psifiles as psif
-from psi4.driver.driver_cbs_helper import xtpl_procedures, register_xtpl_scheme
+from psi4.driver import qcdb
+from psi4.driver.driver_cbs_helper import register_xtpl_scheme, xtpl_procedures
+from psi4.driver.driver_util import UpgradeHelper
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import BaseComputer, SingleComputer
+from psi4.driver.task_base import AtomicComputer, BaseComputer
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -1257,9 +1260,14 @@ def _build_cbs_compute(metameta, metadata):
     for mc in MODELCHEM:
         dups = -1
         for indx_job, job in enumerate(JOBS):
+            #print('')
+            #print(job['f_wfn'], mc['f_wfn'], job['f_wfn'] == mc['f_wfn'])
+            #print(job['f_basis'], mc['f_basis'], job['f_basis'] == mc['f_basis'])
+            #print(job['f_options'], mc['f_options'], job['f_options'] == mc['f_options'],
+            #      job['f_options'] is not False)
             if ((job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis'])
-                    and (job['f_options'] == mc['f_options'])):
-                    # TODO: I don't understand why I need this change #and (job['f_options'] is not False)):
+                    and (job['f_options'] == mc['f_options'])):  # and (job['f_options'] is not False)):
+                # TODO: I don't understand why I need this change
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
@@ -1276,8 +1284,10 @@ def _build_cbs_compute(metameta, metadata):
             for wfn in VARH[mc['f_wfn']]:
                 for indx_job, job in enumerate(JOBS):
                     if ((VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']])
-                            and (mc['f_basis'] == job['f_basis']) and not (mc['f_wfn'] == job['f_wfn'])):
-                            # TODO: I don't understand why I need this change #and (mc['f_options'] is False)):
+                            and (mc['f_basis'] == job['f_basis'])
+                            and not (mc['f_wfn'] == job['f_wfn'])  # and (mc['f_options'] is False)):
+                            and (mc['f_options'] == job['f_options'])):
+                        # TODO: I don't understand why I need this change
                         del JOBS[indx_job]
 
     instructions += """\n    Enlightened listing of computations required.\n"""
@@ -1285,6 +1295,7 @@ def _build_cbs_compute(metameta, metadata):
         instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
                                        VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
     core.print_out(instructions)
+    logger.debug(instructions)
 
     #     Expand listings to all that will be obtained
     TROVE = []
@@ -1297,6 +1308,7 @@ def _build_cbs_compute(metameta, metadata):
         instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
                                        VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
     core.print_out(instructions)
+    logger.debug(instructions)
 
     return GRAND_NEED, JOBS, TROVE
 
@@ -1438,7 +1450,7 @@ def _summary_table(metadata, TROVE, GRAND_NEED):
     return tables
 
 
-class CBSComputer(BaseComputer):
+class CompositeComputer(BaseComputer):
 
     molecule: Any
     basis: str = "(auto)"
@@ -1460,8 +1472,8 @@ class CBSComputer(BaseComputer):
     # Minimal (enlightened) list of jobs to run to satisfy full CBS. Keys are _f_fields. Formerly JOBS.
     compute_list: List[Dict[str, Any]] = []
 
-    # One-to-One list of SingleComputer-s corresponding to `compute_list`.
-    task_list: List[SingleComputer] = []
+    # One-to-One list of AtomicComputer-s corresponding to `compute_list`.
+    task_list: List[AtomicComputer] = []
 
     # One-to-One list of QCSchema corresponding to `task_list`.
     results_list: List[Any] = []
@@ -1485,11 +1497,10 @@ class CBSComputer(BaseComputer):
             'label': None,
             'molecule': self.molecule,
         }
-        print('METAMETA')
-        pp.pprint(self.metameta)
+        logger.debug('METAMETA')
+        logger.debug(pp.pformat(self.metameta))
 
         if data['metadata']:
-            print('DATAMETADATA', data['metadata'])
             if data['metadata'][0]["wfn"] not in VARH.keys():
                 raise ValidationError(
                     """Requested SCF method '%s' is not recognized. Add it to VARH in driver_cbs.py to proceed.""" %
@@ -1513,7 +1524,7 @@ class CBSComputer(BaseComputer):
                 if job["f_options"] is not False:
                     stage_keywords = dict(job["f_options"].items())
                     keywords = {**keywords, **stage_keywords}
-                task = SingleComputer(
+                task = AtomicComputer(
                     **{
                         "molecule": self.molecule,
                         "driver": self.driver,
@@ -1521,25 +1532,22 @@ class CBSComputer(BaseComputer):
                         "basis": job["f_basis"],
                         "keywords": keywords or {},
                     })
-                print('TASK', task)
                 self.task_list.append(task)
+
+                logger.debug('TASK')
+                logger.debug(pp.pformat(task.dict()))
 
     def build_tasks(self, obj, **kwargs):
         # permanently a dummy function
         pass
 
     def plan(self):
-        return [x.plan() for x in self.task_list]
+        return [t.plan() for t in self.task_list]
 
     def compute(self, client=None):
         with p4util.hold_options_state():
-            # gof = core.get_output_file()
-            # core.close_outfile()
-
-            for x in self.task_list:
-                x.compute(client=client)
-
-            # core.set_output_file(gof, True)
+            for t in self.task_list:
+                t.compute(client=client)
 
     def _prepare_results(self, client=None):
         results_list = [x.get_results(client=client) for x in self.task_list]
@@ -1551,7 +1559,7 @@ class CBSComputer(BaseComputer):
         #    print('\nRESULT')
         #    pp.pprint(x)
 
-        # load results_list numbers into compute_list (task_list is SingleComputer-s)
+        # load results_list numbers into compute_list (task_list is AtomicComputer-s)
         for itask, mc in enumerate(self.compute_list):
             task = results_list[itask]
             response = task.return_result
@@ -1585,14 +1593,17 @@ class CBSComputer(BaseComputer):
                     mce['f_gradient'] = mc['f_gradient']
                     mce['f_hessian'] = mc['f_hessian']
 
-            print('MC:\n', mc)
+            logger.debug('MC')
+            logger.debug(pp.pformat(mc))
 
         cbs_results, self.cbsrec = _assemble_cbs_components(self.metameta, self.trove, self.cbsrec)
 
         core.print_out(_summary_table(self.metadata, self.trove, self.cbsrec))
 
-        print('\nCBS_RESULTS', cbs_results)
-        print('\nGRAND_NEED', self.cbsrec)
+        # logger.debug('\nCBS_RESULTS')
+        # logger.debug(pp.pformat(cbs_results))
+        # logger.debug('\nGRAND_NEED')
+        # logger.debug(pp.pformat(self.cbsrec))
 
         return cbs_results
 
@@ -1649,8 +1660,9 @@ class CBSComputer(BaseComputer):
                 'success': True,
             })
 
-        print('\nCBS QCSchema:')
-        pp.pprint(cbsjob.dict())
+        logger.debug('\nCBS QCSchema:')
+        logger.debug(pp.pformat(cbsjob.dict()))
+
         return cbsjob
 
     def get_psi_results(self, return_wfn=False):
@@ -1664,7 +1676,6 @@ class CBSComputer(BaseComputer):
             ret_ptype = core.Matrix.from_array(cbsjob.return_result)
         wfn = _cbs_schema_to_wfn(cbsjob)
 
-        print('FINDIF RET', ret_ptype)
         if return_wfn:
             return (ret_ptype, wfn)
         else:

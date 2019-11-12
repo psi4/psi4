@@ -27,14 +27,9 @@
 #
 
 import abc
-import math
-import json
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
-from typing import Any, Dict, List, Optional, Union
-import itertools
+import logging
+from typing import Any, Dict
 
-import numpy as np
 import pydantic
 import qcelemental as qcel
 from qcelemental.models import DriverEnum, ResultInput
@@ -42,10 +37,11 @@ qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries fo
 import qcengine as qcng
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver.p4util import exceptions
 
-__all__ = ["BaseComputer", "SingleComputer"]
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+__all__ = ["BaseComputer", "AtomicComputer"]
 
 
 class BaseComputer(qcel.models.ProtoModel):
@@ -62,7 +58,7 @@ class BaseComputer(qcel.models.ProtoModel):
         allow_mutation = True
 
 
-class SingleComputer(BaseComputer):
+class AtomicComputer(BaseComputer):
 
     molecule: Any
     basis: str
@@ -103,6 +99,7 @@ class SingleComputer(BaseComputer):
         return data
 
     def compute(self, client=None):
+        from psi4.driver import pp
 
         if self.computed:
             return
@@ -126,21 +123,19 @@ class SingleComputer(BaseComputer):
                 ret = client.query_tasks(base_result=self.result_id)
                 if ret:
                     if ret[0].status == "ERROR":
-                        upd = client.modify_tasks("restart",base_result=self.result_id)
+                        client.modify_tasks("restart",base_result=self.result_id)
                         print("Resubmitting Errored Job {}".format(self.result_id))
                     elif ret[0].status == "COMPLETE":
                         print("Job already completed {}".format(self.result_id))
                 else:
                     print("Job already completed {}".format(self.result_id))
             else:
-                print("Submitting Single Result {}".format(self.result_id))
+                print("Submitting AtomicResult {}".format(self.result_id))
 
             return
 
-        # gof = core.get_output_file()
-        # core.close_outfile()
-
         print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
+        logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
         #pp.pprint(self.plan().dict())
 
         # EITHER ...
@@ -153,11 +148,10 @@ class SingleComputer(BaseComputer):
                                   )
         # ... END
 
+        logger.debug(pp.pformat(self.result.dict()))
         #pp.pprint(self.result.dict())
         #print('... JSON returns >>>')
         self.computed = True
-
-        # core.set_output_file(gof, True)
 
     def get_results(self, client=None):
         if self.result:
@@ -165,7 +159,7 @@ class SingleComputer(BaseComputer):
 
         if client:
             result = client.query_results(id=self.result_id)
-            print("Querying Single Result {}".format(self.result_id))
+            print("Querying AtomicResult {}".format(self.result_id))
             if len(result) == 0:
                 return self.result
 

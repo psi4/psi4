@@ -27,20 +27,20 @@
 #
 
 import copy
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
-from typing import Any, Dict, List, Tuple
+import logging
+from typing import Any, Dict
 
 import numpy as np
 import pydantic
-import qcelemental as qcel
 from qcelemental.models import DriverEnum, Result
 
 from psi4 import core
-from psi4.driver import p4util
+from psi4.driver import p4util, pp, qcdb
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver import qcdb
-from psi4.driver.task_base import BaseComputer, SingleComputer
+from psi4.driver.task_base import AtomicComputer, BaseComputer
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -422,7 +422,7 @@ def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
     return findifrec
 
 
-def assemble_gradient_from_energies(findifrec):
+def assemble_gradient_from_energies(findifrec: Dict):
     """Compute the gradient by finite difference of energies.
 
     Parameters
@@ -947,14 +947,14 @@ def hessian_from_energies_geometries(molecule, irrep, stencil_size=3, step_size=
     return _geom_generator(molecule, irrep, "2_0", stencil_size, step_size)
 
 
-class FinDifComputer(BaseComputer):
+class FiniteDifferenceComputer(BaseComputer):
 
     molecule: Any
     driver: DriverEnum
     metameta: Dict[str, Any] = {}
     task_list: Dict[str, BaseComputer] = {}
     findifrec: Dict[str, Any] = {}
-    computer: BaseComputer = SingleComputer
+    computer: BaseComputer = AtomicComputer
 
     @pydantic.validator('driver')
     def set_driver(cls, driver):
@@ -977,8 +977,8 @@ class FinDifComputer(BaseComputer):
 
         BaseComputer.__init__(self, **data)
 
-        print('FINDIFREC CLASS INIT DATA')
-        pp.pprint(data)
+        logger.debug('FINDIFREC CLASS INIT DATA')
+        logger.debug(pp.pformat(data))
         for kwg in ['dft_functional']:
             if kwg in data:
                 data['keywords']['function_kwargs'][kwg] = data.pop(kwg)
@@ -1003,13 +1003,14 @@ class FinDifComputer(BaseComputer):
             self.findifrec = hessian_from_energies_geometries(self.molecule, self.metameta['irrep'],
                                                               findif_stencil_size, findif_step_size)
 
-        print('FINDIFREC CLASS META DATA')
-        pp.pprint(self.metameta)
-        print('FINDIFREC CLASS')
-        pp.pprint(self.findifrec)
+        logger.debug('FINDIFREC CLASS META DATA')
+        logger.debug(pp.pformat(self.metameta))
+
+        logger.debug('FINDIFREC CLASS')
+        logger.debug(pp.pformat(self.findifrec))
 
         ndisp = len(self.findifrec["displacements"]) + 1
-        print(f""" {ndisp} displacements needed ...""", end='')
+        logger.info(f""" {ndisp} displacements needed ...""")
 
         # var_dict = core.variables()
         packet = {
@@ -1021,8 +1022,10 @@ class FinDifComputer(BaseComputer):
         }
         if 'cbs_metadata' in data:
             packet['cbs_metadata'] = data['cbs_metadata']
+        passalong = {k: v for k, v in data.items() if k not in packet}
+        passalong.pop('ptype', None)
 
-        self.task_list["reference"] = self.computer(**packet)
+        self.task_list["reference"] = self.computer(**packet, **passalong)
 
         parent_group = self.molecule.point_group()
         for label, displacement in self.findifrec["displacements"].items():
@@ -1035,7 +1038,7 @@ class FinDifComputer(BaseComputer):
 
             # If the user insists on symmetry, weaken it if some is lost when displacing.
             # or 'fix_symmetry' in self.findifrec.molecule
-            print('SYMM', clone.schoenflies_symbol())
+            logger.debug(f'SYMM {clone.schoenflies_symbol()}')
             if self.molecule.symmetry_from_input():
                 disp_group = clone.find_highest_point_group()
                 new_bits = parent_group.bits() & disp_group.bits()
@@ -1052,7 +1055,7 @@ class FinDifComputer(BaseComputer):
             if 'cbs_metadata' in data:
                 packet['cbs_metadata'] = data['cbs_metadata']
 
-            self.task_list[label] = self.computer(**packet)
+            self.task_list[label] = self.computer(**packet, **passalong)
 
 #        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
 #            _process_displacement(energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
@@ -1062,20 +1065,15 @@ class FinDifComputer(BaseComputer):
         pass
 
     def plan(self):
-        return [x.plan() for x in self.task_list.values()]
+        return [t.plan() for t in self.task_list.values()]
 
-    def compute(self):
+    def compute(self, client=None):
         with p4util.hold_options_state():
-            # gof = core.get_output_file()
-            # core.close_outfile()
+            for k, t in self.task_list.items():
+                t.compute(client=client)
 
-            for x in self.task_list.values():
-                x.compute()
-
-            # core.set_output_file(gof, True)
-
-    def _prepare_results(self):
-        results_list = {k: v.get_results() for k, v in self.task_list.items()}
+    def _prepare_results(self, client=None):
+        results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
 
         #for i, x in self.task_list.items():
         #    print('\nTASK', i)
@@ -1084,7 +1082,7 @@ class FinDifComputer(BaseComputer):
         #    print('\nRESULT', i)
         #    pp.pprint(x)
 
-        # load SingleComputer results into findifrec[reference]
+        # load AtomicComputer results into findifrec[reference]
         reference = self.findifrec["reference"]
         task = results_list["reference"]
         response = task.return_result
@@ -1093,7 +1091,6 @@ class FinDifComputer(BaseComputer):
             reference['energy'] = response
 
         elif task.driver == 'gradient':
-            print('RESPONSE', type(response), response)
             reference['gradient'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
@@ -1103,7 +1100,7 @@ class FinDifComputer(BaseComputer):
             if 'CURRENT GRADIENT' in task.extras['qcvars']:
                 reference['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
-        # load SingleComputer results into findifrec[displacements]
+        # load AtomicComputer results into findifrec[displacements]
         for label, displacement in self.findifrec["displacements"].items():
             task = results_list[label]
             response = task.return_result
@@ -1156,11 +1153,11 @@ class FinDifComputer(BaseComputer):
 #            filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
 #            qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=molecule, energy=wfn.energy())
 
-        print('\nFINDIF_RESULTS POST-LOAD')
-        pp.pprint(self.findifrec)
+        logger.debug('\nFINDIF_RESULTS POST-LOAD')
+        logger.debug(pp.pformat(self.findifrec))
 
-    def get_results(self):
-        assembled_results = self._prepare_results()
+    def get_results(self, client=None):
+        assembled_results = self._prepare_results(client=client)
 
         # load QCVariables
         qcvars = self.task_list['reference'].get_results().extras['qcvars']
@@ -1201,8 +1198,9 @@ class FinDifComputer(BaseComputer):
                 'success': True,
             })
 
-        print('\nFINDIF QCSchema:')
-        pp.pprint(findifjob)
+        logger.debug('\nFINDIF QCSchema:')
+        logger.debug(pp.pformat(findifjob))
+
         return findifjob
 
     def get_psi_results(self, return_wfn=False):
@@ -1234,19 +1232,17 @@ def _findif_schema_to_wfn(findifjob):
 
 #    flat_grad = findifjob['extras']['qcvars'].get('CURRENT GRADIENT')
 #    if flat_grad is not None:
-#        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
-#        wfn.set_gradient(finalgradient)
+#        wfn.set_gradient(flat_grad)
 #
-#        if finalgradient.rows(0) < 20:
+#        if flat_grad.rows(0) < 20:
 #            core.print_out('CURRENT GRADIENT')
 #            finalgradient.print_out()
 #
 #    flat_hess = findifjob['extras']['qcvars'].get('CURRENT HESSIAN')
 #    if flat_hess is not None:
-#        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
-#        wfn.set_hessian(finalhessian)
+#        wfn.set_hessian(flat_hess)
 #
-#        if finalhessian.rows(0) < 20:
+#        if flat_hess.rows(0) < 20:
 #            core.print_out('CURRENT HESSIAN')
 #            finalhessian.print_out()
 

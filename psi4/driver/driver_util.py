@@ -354,11 +354,11 @@ def negotiate_derivative_type(target_dertype: str,
         When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
 
     """
-    verbose = 2
     if isinstance(method, list):
         #highest_analytic_dertype = min([highest_analytic_derivative_available(mtd, proc) for mtd in method])
         anal = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
-        print(method, anal, '->', min(anal))
+        if verbose > 1:
+            print(method, anal, '->', min(anal))
         highest_analytic_dertype = min(anal)
     else:
         highest_analytic_dertype = highest_analytic_derivative_available(method, proc)
