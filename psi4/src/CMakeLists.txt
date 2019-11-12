@@ -53,6 +53,10 @@ target_link_libraries(core
 
 if(ENABLE_BrianQC)
   target_link_libraries(core PRIVATE brian_module_static_wrapper)
+  target_compile_definitions(core
+    PUBLIC
+      USING_BrianQC
+    )
 endif()
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)

@@ -77,11 +77,13 @@
 
 #include "psi4/psi4-dec.h"
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_scf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 namespace psi {
 namespace scf {
@@ -1219,6 +1221,7 @@ std::shared_ptr<Vector> HF::occupation_b() const {
 }
 
 void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm) {
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianInt basisRank = X_->coldim(0);
         
@@ -1236,6 +1239,7 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
         
         return;
     }
+#endif
     
     // Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);

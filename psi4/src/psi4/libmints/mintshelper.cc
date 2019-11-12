@@ -71,12 +71,14 @@ void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_orde
 }
 #endif
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_scf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 namespace psi {
 
@@ -587,6 +589,7 @@ SharedMatrix MintsHelper::ao_overlap() {
     }
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
     
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
         brianSCFBuild1e(&brianCookie, &integralType, overlap_mat->get_pointer(0));
@@ -594,6 +597,7 @@ SharedMatrix MintsHelper::ao_overlap() {
         
         return overlap_mat;
     }
+#endif
     
     one_body_ao_computer(ints_vec, overlap_mat, true);
 
@@ -620,6 +624,7 @@ SharedMatrix MintsHelper::ao_kinetic() {
     }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
     
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
         brianSCFBuild1e(&brianCookie, &integralType, kinetic_mat->get_pointer(0));
@@ -627,6 +632,7 @@ SharedMatrix MintsHelper::ao_kinetic() {
         
         return kinetic_mat;
     }
+#endif
     
     one_body_ao_computer(ints_vec, kinetic_mat, true);
     return kinetic_mat;
@@ -651,6 +657,7 @@ SharedMatrix MintsHelper::ao_potential() {
     SharedMatrix potential_mat =
         std::make_shared<Matrix>("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf());
     
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
         brianSCFBuild1e(&brianCookie, &integralType, potential_mat->get_pointer(0));
@@ -658,6 +665,7 @@ SharedMatrix MintsHelper::ao_potential() {
         
         return potential_mat;
     }
+#endif
     
     one_body_ao_computer(ints_vec, potential_mat, true);
     return potential_mat;

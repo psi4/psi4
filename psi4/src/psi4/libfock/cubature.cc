@@ -52,6 +52,7 @@
 #include <omp.h>
 #endif
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
@@ -73,6 +74,7 @@ struct brianBlock {
     std::vector<brianRadialPoint> radialPoints;
     std::vector<brianAngularPoint> angularPoints;
 };
+#endif
 
 using namespace psi;
 
@@ -3653,11 +3655,13 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         spherical_grids_.resize(molecule_->natom());
     }
     
+#ifdef USING_BrianQC
     std::vector<std::vector<double>> atomRotations(molecule_->natom());
     std::vector<std::vector<brianBlock>> atomBlocks(molecule_->natom());
     
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
     bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+#endif
 
 // Iterate over atoms
 #pragma omp parallel for schedule(static)
@@ -3665,10 +3669,12 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         int Z = molecule_->true_atomic_number(A);
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
         
+#ifdef USING_BrianQC
         if (brianCookie != 0 and brianPsi4DFT) {
             std::shared_ptr<Matrix> rotationMatrix = orientation_->transpose();
             atomRotations[A] = std::vector<double>(rotationMatrix->get_pointer(0), rotationMatrix->get_pointer(0) + 9);
         }
+#endif
 
         if (opt.namedGrid == -1) {  // Not using a named grid
             std::vector<double> r(opt.nradpts), wr(opt.nradpts);
@@ -3696,6 +3702,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 assert(numAngPts > 0);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
                 
+#ifdef USING_BrianQC
                 if (brianCookie != 0 and brianPsi4DFT) {
                     if (currentBlockIndex == -1 or atomBlocks[A][currentBlockIndex].angularPoints.size() != numAngPts) {
                         atomBlocks[A].push_back(brianBlock());
@@ -3709,6 +3716,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                     
                     atomBlocks[A][currentBlockIndex].radialPoints.push_back({r[i], wr[i]});
                 }
+#endif
 
                 // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
                 spherical_grids_[A].push_back(SphericalGrid::build("Unknown", numAngPts, anggrid));
@@ -3739,6 +3747,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         }
     }
     
+#ifdef USING_BrianQC
     // TODO: do the same for the other version of buildGridFromOptions below
     if (brianCookie != 0 and brianPsi4DFT) {
         brianInt atomBlockOffset = 0;
@@ -3805,6 +3814,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         );
         checkBrian();
     }
+#endif
 
     npoints_ = 0;
     for (int i = 0; i < grid.size(); ++i) {

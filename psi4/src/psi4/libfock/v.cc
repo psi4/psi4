@@ -57,12 +57,14 @@
 #include <omp.h>
 #endif
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_scf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 namespace psi {
 
@@ -150,6 +152,7 @@ void VBase::initialize() {
         functional_workers_.push_back(functional_->build_worker());
     }
     
+#ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
     bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
     if (brianCookie != 0 and brianPsi4DFT)
@@ -231,6 +234,7 @@ void VBase::initialize() {
         brianCOMInitDFT(&brianCookie);
         checkBrian();
     }
+#endif
 }
 SharedMatrix VBase::compute_gradient() { throw PSIEXCEPTION("VBase: gradient not implemented for this V instance."); }
 SharedMatrix VBase::compute_hessian() { throw PSIEXCEPTION("VBase: hessian not implemented for this V instance."); }
@@ -832,6 +836,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
     }
     
+#ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
     bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
     if (brianCookie != 0 and brianPsi4DFT) {
@@ -859,6 +864,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         
         return;
     }
+#endif
 
     // Thread info
     int rank = 0;
@@ -1970,6 +1976,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
     }
     
+#ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
     bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
     if (brianCookie != 0 and brianPsi4DFT) {
@@ -1996,6 +2003,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         
         return;
     }
+#endif
 
     if (functional_->needs_grac()) {
         throw PSIEXCEPTION("V: UKS cannot compute GRAC corrections.");

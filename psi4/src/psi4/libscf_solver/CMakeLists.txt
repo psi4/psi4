@@ -13,3 +13,10 @@ psi4_add_module(lib scf_solver sources)
 if(ENABLE_GTFOCK)
     add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
 endif()
+
+if(ENABLE_BrianQC)
+  target_compile_definitions(scf_solver
+    PUBLIC
+      USING_BrianQC
+    )
+endif()

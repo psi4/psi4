@@ -114,3 +114,10 @@ if(TARGET erd::erd)
       erd::erd
     )
 endif()
+
+if(ENABLE_BrianQC)
+  target_compile_definitions(mints
+    PUBLIC
+      USING_BrianQC
+    )
+endif()

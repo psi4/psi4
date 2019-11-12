@@ -61,11 +61,13 @@
 #include <algorithm>
 #include <tuple>
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 using namespace psi;
 
@@ -598,6 +600,7 @@ void Wavefunction::common_init() {
         }
     }
     
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         if (molecule_->point_group()->bits() != PointGroups::Groups::C1) {
             throw PSIEXCEPTION("BrianQC can only be used with C1 symmetry\n");
@@ -683,6 +686,7 @@ void Wavefunction::common_init() {
         brianCOMInitIntegrator(&brianCookie);
         checkBrian();
     }
+#endif
 }
 
 std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return dipole_field_strength_; }

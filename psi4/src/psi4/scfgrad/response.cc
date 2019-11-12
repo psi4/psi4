@@ -60,12 +60,14 @@
 #include <omp.h>
 #endif
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_cphf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 using namespace psi;
 
@@ -1084,11 +1086,13 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
     size_t max_A = (mem / 2L) / per_A;
     max_A = (max_A > 3 * natom ? 3 * natom : max_A);
     
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianInt cphfSegmentSize = max_A; // FIXME: this might be too large!
         brianCPHFInit(&brianCookie, &cphfSegmentSize);
         checkBrian();
     }
+#endif
 
     std::shared_ptr<JK> jk;
     jk = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, mem);

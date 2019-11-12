@@ -47,12 +47,14 @@
 #include "psi4/libpsi4util/process.h"
 #endif
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_geom_opt.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 using namespace psi;
 
@@ -2385,6 +2387,7 @@ void DirectJKGrad::compute_gradient()
 }
 std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
 {
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianBool computeCoulomb = BRIAN_TRUE;
         brianBool computeExchange = BRIAN_TRUE;
@@ -2420,6 +2423,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
         
         return val;
     }
+#endif
     
     int nthreads = ints.size();
 

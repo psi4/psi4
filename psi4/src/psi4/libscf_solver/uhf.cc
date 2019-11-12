@@ -63,11 +63,13 @@
 
 #include "stability.h"
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_types.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 namespace psi {
 namespace scf {
@@ -212,6 +214,8 @@ void UHF::form_G() {
     
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+    
+#ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
     bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
     if (brianCookie != 0 and brianPsi4DFT) {
@@ -219,6 +223,7 @@ void UHF::form_G() {
         alpha = 1.0;
         beta = 1.0;
     }
+#endif
 
     if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine()) ){
         Ga_->axpy(-alpha, Ka_);
@@ -346,6 +351,8 @@ double UHF::compute_E() {
 
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+    
+#ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
     bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
     if (brianCookie != 0 and brianPsi4DFT) {
@@ -353,6 +360,7 @@ double UHF::compute_E() {
         alpha = 1.0;
         beta = 1.0;
     }
+#endif
     
     double exchange_E = 0.0;
     if (functional_->is_x_hybrid()) {
@@ -592,6 +600,8 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     // Build return vector
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+    
+#ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
     bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
     if (brianCookie != 0 and brianPsi4DFT) {
@@ -599,6 +609,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         alpha = 1.0;
         beta = 1.0;
     }
+#endif
     
     std::vector<SharedMatrix> ret;
     if (combine) {

@@ -32,3 +32,10 @@ target_link_libraries(fock
   PRIVATE
     gau2grid::gg
   )
+
+if(ENABLE_BrianQC)
+  target_compile_definitions(fock
+    PUBLIC
+      USING_BrianQC
+    )
+endif()

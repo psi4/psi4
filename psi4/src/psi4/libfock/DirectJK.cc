@@ -54,6 +54,7 @@
 #include "psi4/libpsi4util/process.h"
 #endif
 
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
@@ -61,6 +62,7 @@
 #include <brian_cphf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+#endif
 
 using namespace psi;
 
@@ -93,10 +95,12 @@ void DirectJK::print_header() const {
 void DirectJK::preiterations() {
     sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_);
     
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianCOMSetPrecisionThresholds(&brianCookie, &cutoff_);
         checkBrian();
     }
+#endif
 }
 void DirectJK::compute_JK() {
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
@@ -148,6 +152,7 @@ void DirectJK::postiterations() { sieve_.reset(); }
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
                         std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K) {
     
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         brianBool computeCoulomb = do_J_ ? BRIAN_TRUE : BRIAN_FALSE;
         brianBool computeExchange = do_K_ ? BRIAN_TRUE : BRIAN_FALSE;
@@ -211,15 +216,9 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
             }
         }
         
-//         for (size_t ind = 0; ind < J.size(); ind++) {
-//             outfile->Printf("J[%d] brian:\n", ind);
-//             J[ind]->print();
-//             outfile->Printf("K[%d] brian:\n", ind);
-//             K[ind]->print();
-//         }
-        
         return;
     }
+#endif
     
     // => Zeroing <= //
 

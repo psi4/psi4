@@ -70,8 +70,7 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-// TODO: guard all BrianQC code with #ifdef
-
+#ifdef USING_BrianQC
 #include <use_brian_wrapper.h>
 #include <brian_module.h>
 #include <brian_macros.h>
@@ -84,6 +83,7 @@ void checkBrian() {
         throw PSIEXCEPTION("BrianQC error detected");
     }
 }
+#endif
 
 // Python helper wrappers
 void export_benchmarks(py::module&);
@@ -1000,6 +1000,7 @@ bool psi4_python_module_initialize() {
     for_rtl_init_(&argc, &argv);
 #endif
     
+#ifdef USING_BrianQC
     const char* brianEnableEnv = getenv("BRIANQC_ENABLE");
     if (brianEnableEnv) {
         outfile->Printf("BRIANQC_ENABLE environment variable found, checking value\n");
@@ -1013,6 +1014,7 @@ bool psi4_python_module_initialize() {
             outfile->Printf("BrianQC initialization successful\n");
         }
     }
+#endif
 
     initialized = true;
 
