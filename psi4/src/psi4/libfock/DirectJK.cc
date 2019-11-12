@@ -54,11 +54,11 @@
 #include "psi4/libpsi4util/process.h"
 #endif
 
-#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_common.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_scf.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_cphf.h>
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_common.h>
+#include <brian_scf.h>
+#include <brian_cphf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
 

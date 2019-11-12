@@ -63,9 +63,9 @@
 
 #include "stability.h"
 
-#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_types.h>
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_types.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
 

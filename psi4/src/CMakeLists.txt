@@ -1,5 +1,3 @@
-link_directories(/home/dzsi/dev/quantum/build/lib/)
-
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
 pybind11_add_module(core SHARED NO_EXTRAS core.cc)
@@ -51,8 +49,11 @@ target_link_libraries(core
     ${POST_LIBRARY_OPTION}
     ${LIBC_INTERJECT}
     tgt::lapack # OpenMP flags to core.cc
-    brian_module_static_wrapper
   )
+
+if(ENABLE_BrianQC)
+  target_link_libraries(core PRIVATE brian_module_static_wrapper)
+endif()
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the

@@ -57,10 +57,10 @@
 #include <omp.h>
 #endif
 
-#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_common.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_scf.h>
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_common.h>
+#include <brian_scf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
 

@@ -72,9 +72,9 @@ using namespace pybind11::literals;
 
 // TODO: guard all BrianQC code with #ifdef
 
-#include </home/dzsi/dev/quantum/src/brian_module/static_wrapper/use_brian_wrapper.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_module.h>
-#include </home/dzsi/dev/quantum/src/brian_module/api/brian_macros.h>
+#include <use_brian_wrapper.h>
+#include <brian_module.h>
+#include <brian_macros.h>
 
 BrianCookie brianCookie = 0;
 
