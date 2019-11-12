@@ -40,7 +40,7 @@ import logging
 
 import numpy as np
 import pydantic
-from qcelemental.models import DriverEnum, Result
+from qcelemental.models import DriverEnum, AtomicResult
 
 from psi4 import core
 from psi4.driver import constants, driver_nbody_multilevel, p4util, pp
@@ -926,7 +926,7 @@ class ManyBodyComputer(BaseComputer):
         for k, val in component_results.items():
             val['molecule'] = val['molecule'].to_schema(dtype=2)
 
-        nbodyjob = Result(
+        nbodyjob = AtomicResult(
             **{
                 'driver': self.driver,
                 'model': {

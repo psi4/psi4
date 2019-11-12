@@ -27,8 +27,7 @@
 #
 
 import logging
-from pprint import PrettyPrinter, pformat
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
 from psi4.driver import p4util
 from psi4.driver.task_base import BaseComputer, AtomicComputer
@@ -39,7 +38,6 @@ from psi4.driver.driver_util import negotiate_derivative_type, negotiate_converg
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-pp = PrettyPrinter(width=120, compact=True, indent=1)
 
 __all__ = ["task_planner"]
 

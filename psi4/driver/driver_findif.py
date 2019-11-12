@@ -32,7 +32,7 @@ from typing import Any, Dict
 
 import numpy as np
 import pydantic
-from qcelemental.models import DriverEnum, Result
+from qcelemental.models import DriverEnum, AtomicResult
 
 from psi4 import core
 from psi4.driver import p4util, pp, qcdb
@@ -1176,7 +1176,7 @@ class FiniteDifferenceComputer(BaseComputer):
         if H0 is not None:
             qcvars['CURRENT HESSIAN'] = H0
 
-        findifjob = Result(
+        findifjob = AtomicResult(
             **{
                 'driver': self.driver,
                 'model': {

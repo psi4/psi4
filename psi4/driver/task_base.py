@@ -32,7 +32,7 @@ from typing import Any, Dict
 
 import pydantic
 import qcelemental as qcel
-from qcelemental.models import DriverEnum, ResultInput
+from qcelemental.models import DriverEnum, AtomicInput
 qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
 import qcengine as qcng
 
@@ -83,7 +83,7 @@ class AtomicComputer(BaseComputer):
 
     def plan(self):
 
-        data = ResultInput(**{
+        data = AtomicInput(**{
             "molecule": self.molecule.to_schema(dtype=2),
             "driver": self.driver,
             "model": {

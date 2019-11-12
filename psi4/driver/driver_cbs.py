@@ -37,7 +37,7 @@ import logging
 
 import numpy as np
 import pydantic
-from qcelemental.models import DriverEnum, Result
+from qcelemental.models import DriverEnum, AtomicResult
 
 from psi4 import core
 from psi4.driver import driver_util, p4util, pp
@@ -1637,7 +1637,7 @@ class CompositeComputer(BaseComputer):
             for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
                 qcvars[qcv] = assembled_results['hessian']
 
-        cbsjob = Result(
+        cbsjob = AtomicResult(
             **{
                 'driver': self.driver,
                 #'keywords': self.keywords,
