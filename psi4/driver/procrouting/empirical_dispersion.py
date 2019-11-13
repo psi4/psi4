@@ -29,7 +29,6 @@
 import collections
 
 import numpy as np
-from qcelemental.models import ResultInput
 import qcengine as qcng
 
 from psi4 import core
@@ -58,7 +57,7 @@ class EmpiricalDispersion(object):
     dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
-        `empirical_dispersion_resources.dashcoeff`.
+        `dashparam.dashcoeff`.
     dashparams : dict
         Complete (number and parameter names vary by `dashlevel`)
         set of parameter values defining the flexible parts
@@ -79,15 +78,16 @@ class EmpiricalDispersion(object):
         corresponds to a defined, named, untweaked "functional-dashlevel"
         set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
-        See description in `qcengine.programs.empirical_dispersion_resources.from_arrays`. Used
+        See description in `qcengine.programs.dftd3.dashparam.from_arrays`. Used
         here to "bless" the dispersion definitions attached to
         the procedures/dft/*_functionals-defined dictionaries
         as legit, non-custom, and of equal validity to
-        `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
+        `qcengine.programs.dftd3.dashparam.dashcoeff` itself for purposes of
         validating `fctldash`.
-    engine : {'libdisp', 'dftd3', 'nl', 'mp2d'}
+    engine : {'libdisp', 'dftd3', 'nl'}
         Compute engine for dispersion. One of Psi4's internal libdisp
         library, Grimme's DFTD3 executable, or nl.
+    disp : psi4.core.Dispersion
     disp : psi4.core.Dispersion
         Only present for `engine=libdisp`. Psi4 class instance prepared
         to compute dispersion.
@@ -209,6 +209,7 @@ class EmpiricalDispersion(object):
             jobrec = qcng.compute(resi, self.engine, raise_error=True,
                                   local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
 
+            pairwise = jobrec.extras['D3pairs']
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
@@ -219,7 +220,10 @@ class EmpiricalDispersion(object):
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
                 dashd_part += gcp_part
 
-            return dashd_part
+            if return_pairwise:
+                return dashd_part, pairwise
+            else:
+                return dashd_part
 
         else:
             ene = self.disp.compute_energy(molecule)
@@ -310,18 +314,3 @@ class EmpiricalDispersion(object):
         molclone.fix_orientation(True)
         molclone.fix_com(True)
 
-        # Record undisplaced symmetry for projection of diplaced point groups
-        core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
-
-        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molclone, -1)
-        for displacement in findif_meta_dict["displacements"].values():
-            geom_array = np.reshape(displacement["geometry"], (-1, 3))
-            molclone.set_geometry(core.Matrix.from_array(geom_array))
-            molclone.update_geometry()
-            displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
-
-        H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, -1)
-        if wfn is not None:
-            wfn.set_variable('DISPERSION CORRECTION HESSIAN', H)
-        optstash.restore()
-        return core.Matrix.from_array(H)

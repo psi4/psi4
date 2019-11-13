@@ -95,21 +95,27 @@ def fisapt_compute_energy(self):
             core.timer_on("FISAPT:FSAPT:disp")
             self.fdisp()
             core.timer_off("FISAPT:FSAPT:disp")
-        #else:
-        #    # Build Empirical Dispersion
-        #    dashD = empirical_dispersion.EmpiricalDispersion(name_hint='SAPT0-D3M')
-        #    dashD.print_out()
-        #    # Compute -D
-        #    Edisp = dashD.compute_energy(core.get_active_molecule())
-        #    core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(dashD.fctldash), Edisp)            # Printing
-        #    text = []
-        #    text.append("   => {}: Empirical Dispersion <=".format(dashD.fctldash.upper()))
-        #    text.append(" ")
-        #    text.append(dashD.description)
-        #    text.append(dashD.dashlevel_citation.rstrip())
-        #    text.append("\n    Empirical Dispersion Energy [Eh] =     {:24.16f}\n".format(Edisp))
-        #    text.append('\n')
-        #    core.print_out('\n'.join(text))
+        else:
+            # Build Empirical Dispersion
+            dashD = empirical_dispersion.EmpiricalDispersion(name_hint='SAPT0-D3M')
+            dashD.print_out()
+            # Compute -D
+            Ntot = core.get_active_molecule().natom()
+            NA = core.get_active_molecule().extract_subsets(1).natom()
+            dimer_D3 = dashD.compute_energy(core.get_active_molecule())
+            # TODO: Scrape D3 output, form d3pairs dataframe (or equiv), pass to D3_IE
+            d3pairs = dimer_D3.extras[f'{dashd.fctldash} PAIRWISE DISPERSION ANALYSIS'] 
+            Edisp = fisapt_d3ie(d3pairs, NA=NA, Ntot=Ntot)
+            core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(dashD.fctldash), Edisp)  
+            # Printing
+            text = []
+            text.append("   => {}: Empirical Dispersion <=".format(dashD.fctldash.upper()))
+            text.append(" ")
+            text.append(dashD.description)
+            text.append(dashD.dashlevel_citation.rstrip())
+            text.append("\n    Empirical Dispersion Energy [Eh] =     {:24.16f}\n".format(Edisp))
+            text.append('\n')
+            core.print_out('\n'.join(text))
         self.fdrop()
 
     # => Scalar-Field Analysis <=
@@ -161,6 +167,20 @@ def fisapt_fdrop(self):
     if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
         matrices["Disp_AB"].name = "Disp"
         _drop(matrices["Disp_AB"], filepath)
+    else:
+        matrices["Disp_AB"].name = 'D3Disp'
+        # Populate (NA, NB) chunk of Disp_AB
+        Ntot = self.molecule().natom()
+        NA = self.molecule().extract_subset(1).natom()
+        NB = self.molecule().extract_subset(2).natom()
+
+        for a in range(NA):
+            A = a + 1
+            for b in range(NB):
+                B = b + NA + 1
+                matrices["Disp_AB"].np[a,b] = self.d3pairs.loc[idx[A,B], idx['Edisp']]
+
+        _drop(matrices["Disp_AB"], filepath)
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
         ssapt_filepath = core.get_option("FISAPT", "FISAPT_FSSAPT_FILEPATH")
@@ -186,6 +206,20 @@ def fisapt_fdrop(self):
 
         if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
             matrices["sDisp_AB"].name = "Disp"
+            _drop(matrices["Disp_AB"], ssapt_filepath)
+        else:
+            matrices["sDisp_AB"].name = 'D3Disp'
+            # Populate (NA, NB) chunk of Disp_AB
+            Ntot = self.molecule().natom()
+            NA = self.molecule().extract_subset(1).natom()
+            NB = self.molecule().extract_subset(2).natom()
+
+            for a in range(NA):
+                A = a + 1
+                for b in range(NB):
+                    B = b + NA + 1
+                    matrices["sDisp_AB"].np[a,b] = d3pairs.loc[idx[A,B], idx['Edisp']]
+
             _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 def fisapt_plot(self):
@@ -226,6 +260,38 @@ def _drop(array, filepath):
     with open(filename, 'wb') as handle:
         np.savetxt(handle, array.to_array(), fmt="%24.16E", delimiter=' ', newline='\n')
 
+def fisapt_d3ie(d3pairs, NA=0, Ntot=0):
+    """Helper function to compute the D3 dispersion interaction energy from
+    DFTD3 pairwise analysis.
+
+    Parameters
+    ----------
+    d3pairs : dict
+        Parsed atom-pairwise interaction info from DFTD3 output
+    NA : int
+        Integer number of atoms in monomer A
+    Ntot : int
+        Integer number of atoms in the total dimer
+
+    Returns
+    -------
+    Edisp : float64
+        Total -D dispersion interaction energy [kcal/mol]
+    """
+    Edisp = 0.0
+
+    AxB = [(i, j) for i in range(1, NA + 1) for j in range(NA+1, Ntot+1)]
+    for pair, Pdisp in d3pairs.items():
+        if pair in AxB:
+            Edisp += Pdisp
+
+    #else:
+    #    for i in range(1,NA+1):
+    #        for j in range(NA+1, Ntot+1):
+    #            #print(i,j)
+    #            Edisp += pairdf.loc[idx[i,j], idx['Edisp']]
+                
+    return Edisp
 
 core.FISAPT.compute_energy = fisapt_compute_energy
 core.FISAPT.fdrop = fisapt_fdrop
