@@ -11,7 +11,8 @@ variables:
 jobs:
 
   # Configure, build, install, and test job
-  - job: 'build'
+  - job: 'windows_build'
+    displayName: 'Windows VS2015'
     pool:
       vmImage: 'vs2015-win2012r2'
     timeoutInMinutes: 360
