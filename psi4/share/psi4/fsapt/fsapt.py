@@ -30,6 +30,7 @@
 
 from __future__ import print_function
 import sys, os, re, math, copy
+import numpy as np
 
 # => Global Data <= #
 
@@ -332,7 +333,11 @@ def extractOsaptData(filepath):
     vals['Exch']  = readBlock('%s/Exch.dat'  % filepath, H_to_kcal_)
     vals['IndAB'] = readBlock('%s/IndAB.dat' % filepath, H_to_kcal_)
     vals['IndBA'] = readBlock('%s/IndBA.dat' % filepath, H_to_kcal_)
-    vals['Disp']  = readBlock('%s/Disp.dat'  % filepath, H_to_kcal_)
+    try:
+        vals['Disp'] = readBlock('%s/Disp.dat'  % filepath, H_to_kcal_)
+    except FileNotFoundError:
+        vals['Disp'] = np.zeros_like(np.array(readBlock('%s/Elst.dat'  % filepath, H_to_kcal_)))
+
     vals['Total'] = [[0.0 for x in vals['Elst'][0]] for x2 in vals['Elst']]
     for key in ['Elst', 'Exch', 'IndAB', 'IndBA', 'Disp']:
         for k in range(len(vals['Total'])):
