@@ -60,6 +60,7 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
    private:
     void create_blocks(void);
 
+    size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3, int s4, bool is_bra) override;
     int maxam_;
     size_t batchsize_;
     size_t allwork_size_;

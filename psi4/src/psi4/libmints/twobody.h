@@ -32,6 +32,7 @@
 #include "psi4/pragma.h"
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #ifdef _POSIX_C_SOURCE
@@ -43,6 +44,8 @@
 #include "psi4/libpsi4util/exception.h"
 
 namespace psi {
+
+enum class ScreeningType { None, Schwarz, CSAM, QQR };
 
 enum PermutedOrder { ABCD = 0, BACD = 1, ABDC = 2, BADC = 3, CDAB = 4, CDBA = 5, DCAB = 6, DCBA = 7 };
 
@@ -108,6 +111,62 @@ class PSI_API TwoBodyAOInt {
     /// The blocking scheme used for the integrals
     std::vector<ShellPairBlock> blocks12_, blocks34_;
 
+    /*
+     * Sieve information
+     */
+    typedef std::vector<std::pair<int, int>> PairList;
+    /// The threshold below which integrals are to be neglected
+    double screening_threshold_;
+    double screening_threshold_squared_;
+    int nshell_;
+    int nbf_;
+    /// The algorithm to use for screening
+    ScreeningType screening_type_;
+    /// |(mn|mn)| values (nbf * nbf)
+    std::vector<double> function_pair_values_;
+    /// max |(MN|MN)| values (nshell * nshell)
+    std::vector<double> shell_pair_values_;
+    /// max |(MM|NN)| values (nshell * nshell)
+    std::vector<double> shell_pair_exchange_values_;
+    /// sqrt|(mm|mm)| values (nshell)
+    std::vector<double> function_sqrt_;
+    /// Significant unique function pairs, in reduced triangular indexing
+    PairList function_pairs_;
+    /// Significant unique shell pairs, in reduced triangular indexing
+    PairList shell_pairs_, shell_pairs_bra_, shell_pairs_ket_;
+    /// The largest value of any integral as predicted by the sieving method
+    double max_integral_;
+    /// Unique function pair indexing, accessed in triangular order, or -1 for non-significant pair
+    std::vector<long int> function_pairs_reverse_;
+    /// Unique shell pair indexing, accessed in triangular order, or -1 for non-significant pair
+    std::vector<long int> shell_pairs_reverse_;
+    /// Significant function pairs, indexes by function
+    std::vector<std::vector<int>> shell_to_shell_;
+    /// Significant shell pairs, indexes by shell
+    std::vector<std::vector<int>> function_to_function_;
+    std::function<bool(int, int, int, int)> sieve_impl_;
+
+    void setup_sieve();
+    void create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra);
+
+    /// Implements CSAM screening of a shell quartet
+    bool shell_significant_csam(int M, int N, int R, int S);
+    /// Implements Schwarz inequality screening of a shell quartet
+    bool shell_significant_schwarz(int M, int N, int R, int S);
+    /// Implements the null screening of a shell quartet - always true
+    bool shell_significant_none(int M, int N, int R, int S);
+
+    // make public
+    ///// Square of ceiling of shell quartet (MN|RS)
+    // inline double shell_ceiling2(int M, int N, int R, int S) {
+    //    return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
+    //}
+
+    ///// Square of ceiling of integral (mn|rs)
+    // inline double function_ceiling2(int m, int n, int r, int s) {
+    //    return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
+    //}
+
     /*! Create the optimal blocks of shell pairs
      *
      * Default implementation
@@ -133,6 +192,7 @@ class PSI_API TwoBodyAOInt {
 
     TwoBodyAOInt(const TwoBodyAOInt &rhs);
 
+    virtual size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int sh1, int sh2, int sh3, int sh4, bool is_bra) = 0;
    public:
     virtual ~TwoBodyAOInt();
 
@@ -147,6 +207,9 @@ class PSI_API TwoBodyAOInt {
     /// Basis set on center four
     std::shared_ptr<BasisSet> basis4();
 
+    /// Ask the built in sieve whether this quartet contributes
+    bool shell_significant(int M, int N, int R, int S) { return sieve_impl_(M, N, R, S); };
+
     /// Sets whether we're forcing this object to always generate Cartesian integrals
     void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
 
@@ -157,7 +220,7 @@ class PSI_API TwoBodyAOInt {
     const double *buffer() const { return target_full_; }
 
     /// Buffer where each chunk of integrals is placed
-    const std::vector<const double *> & buffers() const { return buffers_; }
+    const std::vector<const double *> &buffers() const { return buffers_; }
 
     /// Returns the integral factory used to create this object
     const IntegralFactory *integral() const { return integral_; }
@@ -170,7 +233,6 @@ class PSI_API TwoBodyAOInt {
 
     //! Get optimal blocks of shell pairs for centers 3 & 4
     std::vector<ShellPairBlock> get_blocks34() const;
-
 
     /*! Compute integrals for two blocks
      *

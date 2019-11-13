@@ -38,6 +38,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <algorithm>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -1658,7 +1659,7 @@ static void handle_reordering12(PermutedOrder permutation, Libderiv_t &libderiv_
  * @param deriv_lvl Derivitive level of the integral
  * @return The total number of primitive combinations found. This is passed to libint/libderiv.
  */
-static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt, const ShellPair &sp12, const ShellPair &sp34,
+static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt, const L1ShellPair &sp12, const L1ShellPair &sp34,
                                   int am, bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
     double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
     double a1, a2, a3, a4;
@@ -1864,8 +1865,6 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
         init_shell_pairs34();
     }
 
-    // form the blocking. We use the default
-    TwoBodyAOInt::create_blocks();
 }
 
 TwoElectronInt::~TwoElectronInt() {
@@ -1882,8 +1881,8 @@ void TwoElectronInt::init_shell_pairs12() {
     double a1, a2, ab2, gam, c1, c2, overlap;
 
     // Make a shared pointer to a vector of vectors of ShellPair
-    pairs12_ = std::make_shared<std::vector<std::vector<ShellPair>>>(
-        std::vector<std::vector<ShellPair>>(basis2()->nshell(), std::vector<ShellPair>(basis2()->nshell())));
+    pairs12_ = std::make_shared<std::vector<std::vector<L1ShellPair>>>(
+        std::vector<std::vector<L1ShellPair>>(basis2()->nshell(), std::vector<L1ShellPair>(basis2()->nshell())));
 
     // Counts of primitive pairs (over all shell pairs) [FOR PRINING]
     int prim_pairs_total = 0;
@@ -1904,7 +1903,7 @@ void TwoElectronInt::init_shell_pairs12() {
             ab2 = AB.dot(AB);
 
             // Make and populate fields of screened shell pair
-            ShellPair sp;
+            L1ShellPair sp;
             sp.i = si;
             sp.j = sj;
             sp.AB[0] = AB[0];
@@ -2011,8 +2010,13 @@ size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSe
     return mem;
 }
 
+
 size_t TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
     return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+}
+
+size_t TwoElectronInt::compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int sh1, int sh2, int sh3, int sh4, bool is_bra) {
+    return compute_shell(sh1, sh2, sh1, sh2);
 }
 
 size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
@@ -2234,8 +2238,8 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4) {
 
     // If we can, use the precomputed values found in ShellPair.
     if (use_shell_pairs_) {
-        const ShellPair &sp12 = (*pairs12_)[sh1][sh2];
-        const ShellPair &sp34 = (*pairs34_)[sh3][sh4];
+        const L1ShellPair &sp12 = (*pairs12_)[sh1][sh2];
+        const L1ShellPair &sp34 = (*pairs34_)[sh3][sh4];
 
         nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, sp12, sp34, am, sh1 == sh2, sh3 == sh4, 0);
 
@@ -2596,8 +2600,8 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
     nprim = 0;
 
     if (use_shell_pairs_) {
-        const ShellPair &sp12 = (*pairs12_)[sh1][sh2];
-        const ShellPair &sp34 = (*pairs34_)[sh3][sh4];
+        const L1ShellPair &sp12 = (*pairs12_)[sh1][sh2];
+        const L1ShellPair &sp34 = (*pairs34_)[sh3][sh4];
 
         nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, sp12, sp34, am, sh1 == sh2, sh3 == sh4, 1);
     } else {
@@ -2938,8 +2942,8 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
         // ShellPair *p12, *p34;
         // p12 = &(pairs12_[sh1][sh2]);
         // p34 = &(pairs34_[sh3][sh4]);
-        const ShellPair &sp12 = (*pairs12_)[sh1][sh2];
-        const ShellPair &sp34 = (*pairs34_)[sh3][sh4];
+        const L1ShellPair &sp12 = (*pairs12_)[sh1][sh2];
+        const L1ShellPair &sp34 = (*pairs34_)[sh3][sh4];
 
         nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, sp12, sp34, am, sh1 == sh2, sh3 == sh4, 2);
     } else {

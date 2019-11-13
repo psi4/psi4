@@ -48,7 +48,6 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libpsi4util/process.h"
 #endif
 
 #ifdef USING_BrianQC

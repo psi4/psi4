@@ -365,7 +365,6 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
 #else
         const int rank = 0;
 #endif
-        const double* buffer = ints[rank]->buffer();
         // loop over all the blocks of |R>=S)
         int loop_start = use_batching ? 0 : blockPQ_idx;
         for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
@@ -375,7 +374,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
 
             // compute the integrals and continue if none were computed
             ints[rank]->compute_shell_blocks(blockPQ_idx, blockRS_idx);
-            const double* block_start = buffer;
+            const double* block_start = ints[rank]->buffer();
 
             // Loop over all of the P,Q,R,S shells within the blocks.  We have P>=Q, R>=S and PQ<=RS.
             for (const auto& pairPQ : blockPQ) {

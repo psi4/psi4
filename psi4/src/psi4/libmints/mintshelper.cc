@@ -797,13 +797,13 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
 
     auto I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3 * nbf4);
     double **Ip = I->pointer();
-    const double *buffer = ints->buffer();
 
     for (int M = 0; M < bs1->nshell(); M++) {
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
                 for (int Q = 0; Q < bs4->nshell(); Q++) {
                     ints->compute_shell(M, N, P, Q);
+                    const double *buffer = ints->buffer();
 
                     for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
                         for (int n = 0; n < bs2->shell(N).nfunction(); n++) {

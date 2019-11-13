@@ -544,7 +544,7 @@ void DiskDFJK::initialize_JK_core() {
         for (int p_block_idx = 0; p_block_idx < p_blocks.size(); ++p_block_idx) {
             // compute the
             eri[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
-            double const* my_buffer = buffer[rank];
+            double const* my_buffer = eri[rank]->buffer();
 
             const auto& p_block = p_blocks[p_block_idx];
 
@@ -569,17 +569,19 @@ void DiskDFJK::initialize_JK_core() {
                         for (int in = 0; in < num_n; ++in) {
                             const int in_idx = n_start + in;
                             const int imn_idx = im * num_n + in;
-                            const int sfp_idx = (im_idx * (im_idx + 1)) / 2 + in_idx;
+                            const int sfp_idx = im_idx > in_idx ? (im_idx * (im_idx + 1)) / 2 + in_idx :
+                                               (in_idx * (in_idx + 1))/2 + im_idx;
 
                             int sfp;
 
                             // note the assignment in the following conditional
-                            if (im_idx >= in_idx && (sfp = schwarz_fun_pairs[sfp_idx]) > -1) {
+                            if ((sfp = schwarz_fun_pairs[sfp_idx]) > -1) {
                                 for (int ip = 0; ip < num_p; ++ip) {
                                     const int ip_idx = p_start + ip;
                                     Qmnp[ip_idx][sfp] = my_buffer[ip * num_mn + imn_idx];
                                 }
                             }
+
                         }
                     }
 
@@ -589,7 +591,6 @@ void DiskDFJK::initialize_JK_core() {
         }
     }
     timer_off("JK: (A|mn)");
-
     delete[] buffer;
     delete[] eri;
 
@@ -906,12 +907,15 @@ void DiskDFJK::initialize_JK_disk() {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
                 eri[rank]->compute_shell(P, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
                         int onu = nu + dn;
-                        if (omu >= onu && schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] >= 0) {
-                            int delta = schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] - mn_start_val;
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                  onu * (onu + 1) / 2 + omu;
+                        if (schwarz_fun_pairs_r[addr] >= 0) {
+                            int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
                                 int op = p + dp;
                                 Qmnp[op][delta] = buffer[rank][dp * nummu * numnu + dm * numnu + dn];
@@ -1030,14 +1034,17 @@ void DiskDFJK::initialize_wK_core() {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
                     eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                    buffer[rank] = eri[rank]->buffer();
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                            if (omu >= onu && schwarz_fun_pairs[omu * (omu + 1) / 2 + onu] > -1) {
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                  onu * (onu + 1) / 2 + omu;
+                            if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
-                                    Qmn2p[PHI][schwarz_fun_pairs[omu * (omu + 1) / 2 + onu]] =
+                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] =
                                         buffer[rank][P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
@@ -1097,14 +1104,17 @@ void DiskDFJK::initialize_wK_core() {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
                     eri2[rank]->compute_shell(Pshell, 0, MU, NU);
+                    buffer2[rank] = eri2[rank]->buffer();
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                            if (omu >= onu && schwarz_fun_pairs[omu * (omu + 1) / 2 + onu] > -1) {
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                  onu * (onu + 1) / 2 + omu;
+                            if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
-                                    Qmn2p[PHI][schwarz_fun_pairs[omu * (omu + 1) / 2 + onu]] =
+                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] =
                                         buffer2[rank][P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
@@ -1399,12 +1409,15 @@ void DiskDFJK::initialize_wK_disk() {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
                 eri[rank]->compute_shell(P, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
                         int onu = nu + dn;
-                        if (omu >= onu && schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] >= 0) {
-                            int delta = schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] - mn_start_val;
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                  onu * (onu + 1) / 2 + omu;
+                        if (schwarz_fun_pairs_r[addr] >= 0) {
+                            int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
                                 int op = p + dp;
                                 Qmnp[op][delta] = buffer[rank][dp * nummu * numnu + dm * numnu + dn];
@@ -1520,13 +1533,15 @@ void DiskDFJK::initialize_wK_disk() {
             int sn = primary_->shell(N).function_index();
 
             eri2[thread]->compute_shell(Q, 0, M, N);
+            buffer2[thread] = eri2[thread]->buffer();
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
                     long int m = sm + om;
                     long int n = sn + on;
-                    if (m >= n && schwarz_fun_pairs_r[m * (m + 1) / 2 + n] >= 0) {
-                        long int delta = schwarz_fun_pairs_r[m * (m + 1) / 2 + n];
+                    size_t addr = m > n ? m * (m + 1) / 2 + n : n * (n + 1) / 2 + m;
+                    if (m >= n && schwarz_fun_pairs_r[addr] >= 0) {
+                        long int delta = schwarz_fun_pairs_r[addr];
                         for (int oq = 0; oq < nq; oq++) {
                             Amn2p[sq + oq - qoff][delta] = buffer2[thread][oq * nm * nn + om * nn + on];
                         }
@@ -1643,13 +1658,15 @@ void DiskDFJK::rebuild_wK_disk() {
             int sn = primary_->shell(N).function_index();
 
             eri2[thread]->compute_shell(Q, 0, M, N);
+            buffer2[thread] = eri2[thread]->buffer();
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
                     long int m = sm + om;
                     long int n = sn + on;
-                    if (m >= n && schwarz_fun_pairs_r[m * (m + 1) / 2 + n] >= 0) {
-                        long int delta = schwarz_fun_pairs_r[m * (m + 1) / 2 + n];
+                    size_t addr = m > n ? m * (m + 1) / 2 + n : n * (n + 1) / 2 + m;
+                    if (m >= n && schwarz_fun_pairs_r[addr] >= 0) {
+                        long int delta = schwarz_fun_pairs_r[addr];
                         for (int oq = 0; oq < nq; oq++) {
                             Amn2p[sq + oq - qoff][delta] = buffer2[thread][oq * nm * nn + om * nn + on];
                         }

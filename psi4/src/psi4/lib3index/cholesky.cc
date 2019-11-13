@@ -165,10 +165,10 @@ CholeskyERI::CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz,
 CholeskyERI::~CholeskyERI() {}
 size_t CholeskyERI::N() { return basisset_->nbf() * basisset_->nbf(); }
 void CholeskyERI::compute_diagonal(double* target) {
-    const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
         for (size_t N = 0; N < basisset_->nshell(); N++) {
             integral_->compute_shell(M, N, M, N);
+            const double* buffer = integral_->buffer();
 
             size_t nM = basisset_->shell(M).nfunction();
             size_t nN = basisset_->shell(N).nfunction();
@@ -199,10 +199,10 @@ void CholeskyERI::compute_row(int row, double* target) {
     size_t os = s - sstart;
     int nshell = basisset_->nshell();
 
-    const double* buffer = integral_->buffer();
     for (size_t M = 0; M < basisset_->nshell(); M++) {
         for (size_t N = M; N < basisset_->nshell(); N++) {
             integral_->compute_shell(M, N, R, S);
+            const double* buffer = integral_->buffer();
 
             size_t nM = basisset_->shell(M).nfunction();
             size_t nN = basisset_->shell(N).nfunction();

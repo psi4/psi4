@@ -1103,6 +1103,7 @@ void DFHelper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t sto
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
@@ -1158,6 +1159,7 @@ void DFHelper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t st
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
@@ -1215,6 +1217,7 @@ void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t st
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {

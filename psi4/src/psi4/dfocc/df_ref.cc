@@ -225,7 +225,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
 #endif
 
         Jint[thread]->compute_shell(P, 0, Q, 0);
-        // const double* buffer = Jint[thread]->buffer();
+        const double* buf = Jint[thread]->buffer();
 
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
@@ -236,7 +236,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
         int index = 0;
         for (int p = 0; p < nP; p++) {
             for (int q = 0; q < nQ; q++, ++index) {
-                J[p + oP][q + oQ] = buffer[thread][index];
+                J[p + oP][q + oQ] = buf[index];
             }
         }
     }
@@ -380,6 +380,7 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
             int N = shell_pairs[MN].second;
 
             eri[thread]->compute_shell(P, 0, M, N);
+            const double *buf = eri[thread]->buffer();
 
             int nP = auxiliary_->shell(P).nfunction();
             int oP = auxiliary_->shell(P).function_index();
@@ -396,8 +397,8 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
                     for (int n = 0; n < nN; n++, index++) {
                         // Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][p * nM * nN + m * nN + n];
                         // Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][p * nM * nN + m * nN + n];
-                        Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index];
-                        Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index];
+                        Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buf[index];
+                        Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buf[index];
                     }
                 }
             }

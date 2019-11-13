@@ -963,6 +963,7 @@ void RDFMP2::form_Aia() {
             int sn = basisset_->shell(N).function_index();
 
             eri[thread]->compute_shell(Q, 0, M, N);
+            buffer[thread] = eri[thread]->buffer();
 
             for (int oq = 0; oq < nq; oq++) {
                 for (int om = 0; om < nm; om++) {
@@ -1655,6 +1656,7 @@ void RDFMP2::form_Amn_x_terms() {
             eri[thread]->compute_shell_deriv1(P, 0, M, N);
 
             const double* buffer = eri[thread]->buffer();
+            const auto &buffers = eri[thread]->buffers();
 
             int nP = ribasis_->shell(P).nfunction();
             int cP = ribasis_->shell(P).ncartesian();
@@ -1672,15 +1674,16 @@ void RDFMP2::form_Amn_x_terms() {
             int oN = basisset_->shell(N).function_index();
 
             int ncart = cP * cM * cN;
-            const double* Px = buffer + 0 * ncart;
-            const double* Py = buffer + 1 * ncart;
-            const double* Pz = buffer + 2 * ncart;
-            const double* Mx = buffer + 3 * ncart;
-            const double* My = buffer + 4 * ncart;
-            const double* Mz = buffer + 5 * ncart;
-            const double* Nx = buffer + 6 * ncart;
-            const double* Ny = buffer + 7 * ncart;
-            const double* Nz = buffer + 8 * ncart;
+            bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
+            const double* Px = libint1 ? buffer + 0 * ncart : buffers[0];
+            const double* Py = libint1 ? buffer + 1 * ncart : buffers[1];
+            const double* Pz = libint1 ? buffer + 2 * ncart : buffers[2];
+            const double* Mx = libint1 ? buffer + 3 * ncart : buffers[3];
+            const double* My = libint1 ? buffer + 4 * ncart : buffers[4];
+            const double* Mz = libint1 ? buffer + 5 * ncart : buffers[5];
+            const double* Nx = libint1 ? buffer + 6 * ncart : buffers[6];
+            const double* Ny = libint1 ? buffer + 7 * ncart : buffers[7];
+            const double* Nz = libint1 ? buffer + 8 * ncart : buffers[8];
 
             double perm = (M == N ? 1.0 : 2.0);
 

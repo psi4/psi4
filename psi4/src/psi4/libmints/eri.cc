@@ -42,6 +42,9 @@ ERI::ERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     // The +1 is needed for derivatives to work.
     fjt_ = new Taylor_Fjt(
         basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1, 1e-15);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 ERI::~ERI() { delete fjt_; }
@@ -54,6 +57,9 @@ F12::F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral,
     : TwoElectronInt(integral, deriv, use_shell_pairs) {
     fjt_ = new F12Fundamental(
         cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 F12::~F12() { delete fjt_; }
@@ -67,6 +73,9 @@ F12Scaled::F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactor
     : TwoElectronInt(integral, deriv, use_shell_pairs) {
     fjt_ = new F12ScaledFundamental(
         cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 F12Scaled::~F12Scaled() { delete fjt_; }
@@ -80,6 +89,9 @@ F12Squared::F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFact
     : TwoElectronInt(integral, deriv, use_shell_pairs) {
     fjt_ = new F12SquaredFundamental(
         cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 F12Squared::~F12Squared() { delete fjt_; }
@@ -92,6 +104,9 @@ F12G12::F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *int
     : TwoElectronInt(integral, deriv, use_shell_pairs) {
     fjt_ = new F12G12Fundamental(
         cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 F12G12::~F12G12() { delete fjt_; }
@@ -105,6 +120,9 @@ F12DoubleCommutator::F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, 
     : TwoElectronInt(integral, deriv, use_shell_pairs) {
     fjt_ = new F12DoubleCommutatorFundamental(
         cf, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 F12DoubleCommutator::~F12DoubleCommutator() { delete fjt_; }
@@ -118,6 +136,9 @@ ErfERI::ErfERI(double omega, const IntegralFactory *integral, int deriv, bool us
     // The +1 is needed for derivatives to work.
     fjt_ = new ErfFundamental(
         omega, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 ErfERI::~ErfERI() { delete fjt_; }
@@ -133,6 +154,9 @@ ErfComplementERI::ErfComplementERI(double omega, const IntegralFactory *integral
     // The +1 is needed for derivatives to work.
     fjt_ = new ErfComplementFundamental(
         omega, basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1);
+    // form the blocking. We use the default
+    setup_sieve();
+    TwoBodyAOInt::create_blocks();
 }
 
 ErfComplementERI::~ErfComplementERI() { delete fjt_; }
