@@ -3,37 +3,77 @@ jobs:
 - job: 'linux_build'
   displayName: 'Linux Builds'
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-18.04'
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
   strategy:
     maxParallel: 8
     matrix:
-      gcc_build:
+      gcc_52:
+        CXX_COMPILER: 'g++-5'
+        PYTHON_VER: '3.6'
+        C_COMPILER: 'gcc-5'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran gcc-5 g++-5'
+
+      gcc_latest:
         CXX_COMPILER: 'g++'
         PYTHON_VER: '3.7'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran'
+
+      clang_latest:
+        CXX_COMPILER: 'clang++'
+        PYTHON_VER: '3.7'
+        C_COMPILER: 'clang'
+        F_COMPILER: 'gfortran'
+        BUILD_TYPE: 'release'
+        APT_INSTALL: 'gfortran clang'
 
   steps:
   - bash: |
-      uname -a
-      free -m
-      df -h
-      ulimit -a
-    displayName: "Hardware Information"
+      [[ "${APT_REPOSITORY}" ]] && echo "Add Repo ${APT_REPOSITORY}" && sudo add-apt-repository "${APT_REPOSITORY}"
+      sudo apt-get update
+      sudo apt-get install ${APT_INSTALL}
+    displayName: "Apt-Get Packages"
 
   - bash: |
-      sudo apt-get update
-      sudo apt-get install gfortran
-    displayName: "Install gFortran"
+      echo "" && echo "Ubuntu"
+      lsb_release -a
+
+      echo "" && echo "Uname:"
+      uname -a
+
+      echo "" && echo "Free:"
+      free -m
+
+      echo "" && echo "df:"
+      df -h
+
+      echo "" && echo "Ulimit:"
+      ulimit -a
+
+      echo "" && echo "Nprocs:"
+      getconf _NPROCESSORS_ONLN
+
+      echo "CXX Ver:"
+      ${CXX_COMPILER} --version
+
+      echo "F Ver:"
+      ${F_COMPILER} --version
+
+      echo "C Ver:"
+      ${C_COMPILER} --version
+    displayName: "Setup Information"
 
   - bash: |
         echo "##vso[task.prependpath]$CONDA/bin"
         conda config --set always_yes yes
-    displayName: "Add conda to PATH"
+    displayName: "Add Conda to PATH"
 
   - bash: |
       conda create -q -n p4env python=$PYTHON_VER psi4 --only-deps -c psi4/label/dev
@@ -66,9 +106,6 @@ jobs:
       export CXX=${CXX_COMPILER}
       export CC=${C_COMPILER}
       export FC=${F_COMPILER}
-      ${CXX_COMPILER} --version
-      ${F_COMPILER} --version
-      ${C_COMPILER} --version
       # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
       #   b/c their c++ symbols don't mix with the different Travis compilers. for other
       #   reasons, pkgs are being compiled less statically, sad for CI.
@@ -96,7 +133,7 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      ../.scripts/travis_build.sh
+      ../devtools/scripts/ci_build.sh
     displayName: 'Build Psi4'
 
   - bash: |
@@ -108,8 +145,8 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      python ../.scripts/travis_run_test.py
-      python ../.scripts/travis_print_failing.py
+      python ../devtools/scripts/ci_run_test.py
+      python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
 
   - bash: |

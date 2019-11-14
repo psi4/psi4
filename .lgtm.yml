@@ -14,3 +14,4 @@ path_classifiers:
     - psi4/versioner.py
     - samples/*
     - conda/*
+    - devtools/*
