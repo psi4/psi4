@@ -290,6 +290,9 @@ void bind_tensor(py::module& mod) {
     cls.def("__iter__", [](const Class& obj) { return py::make_iterator(obj.begin(), obj.end()); },
             py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
 
+    // Operators
+    cls.def("__add__", [](const SharedClass& A, const SharedClass& B) { return A + B; }, py::is_operator());
+
     // Free functions shared by all ranks
     // Builders
     declareRankN_builders<Class, int>(mod);
