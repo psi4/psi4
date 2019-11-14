@@ -35,8 +35,10 @@
 #include "LibXCfunctional.h"
 
 #include "psi4/psi4-dec.h"
+
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
+#include "psi4/libmints/linalg.h"
 #include "psi4/libmints/tensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
@@ -621,8 +623,8 @@ std::map<std::string, SharedVector_<double>>& SuperFunctional::compute_functiona
     npoints = (npoints == -1 ? vals.at("RHO_A")->dimpi()[0] : npoints);
 
     // Zero out values
-    for (auto kv : values_) {
-        kv.second->zero();
+    for (auto& kv : values_) {
+        kv.second = zeros_like(kv.second);
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
@@ -634,8 +636,8 @@ std::map<std::string, SharedVector_<double>>& SuperFunctional::compute_functiona
 
     // Apply the grac shift, only valid for gradient computations
     if (needs_grac_ && (deriv_ == 1)) {
-        for (auto kv : ac_values_) {
-            kv.second->zero();
+        for (auto& kv : ac_values_) {
+            kv.second = zeros_like(kv.second);
         }
         if (grac_x_functional_) {
             grac_x_functional_->compute_functional(vals, ac_values_, npoints, 1);
@@ -742,8 +744,8 @@ std::map<std::string, SharedVector_<double>> SuperFunctional::compute_vv10_cache
     // rho_thresh = 0.0;
 
     // Zero out the vectors
-    vv_values_["W0"]->zero();
-    vv_values_["KAPPA"]->zero();
+    vv_values_["W0"] = zeros_like(vv_values_["W0"]);
+    vv_values_["KAPPA"] = zeros_like(vv_values_["KAPPA"]);
 
     auto w0p = vv_values_["W0"]->data();
     auto kappap = vv_values_["KAPPA"]->data();

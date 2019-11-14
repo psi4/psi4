@@ -388,11 +388,6 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
         printer->Printf("\n");
     }
 
-    void zero() noexcept {
-        std::transform(store_.begin(), store_.end(), store_.begin(),
-                       [](const block_type& blk) -> block_type { return xt::zeros<T>(blk.shape()); });
-    }
-
    protected:
     unsigned int symmetry_{0};
     std::string label_;
