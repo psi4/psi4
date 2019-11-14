@@ -52,8 +52,39 @@ inline bool do_transpose(Operation op) {
 
 /*! Whether the operation involves a conjugation */
 inline bool do_conjugate(Operation op) { return ((op == Operation::TransposeConj) ? true : false); }
+
+/*! Whether the two tensors are congruent */
+template <typename T, size_t Rank, typename U = T, typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+auto inline congruent(const SharedTensor<T, Rank>& A, const SharedTensor<U, Rank>& B) noexcept
+    -> std::tuple<bool, std::string> {
+    // Check that axes_dimpi_ are the same
+    if (A->axes_dimpi() != B->axes_dimpi()) {
+        std::ostringstream oss;
+        oss << A->label() << " and " << B->label() << " tensors NOT congruent!" << std::endl;
+        oss << "A->axes_dimpi() = " << A->axes_dimpi() << " differs from B->axes_dimpi() = " << B->axes_dimpi()
+            << std::endl;
+        return std::make_tuple(false, oss.str());
+    } else {
+        return std::make_tuple(true, "");
+    }
+}
+
+template <typename T, size_t Rank, typename U = T, typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+auto inline congruent(const Tensor<T, Rank>& A, const Tensor<U, Rank>& B) noexcept -> std::tuple<bool, std::string> {
+    // Check that axes_dimpi_ are the same
+    if (A.axes_dimpi() != B.axes_dimpi()) {
+        std::ostringstream oss;
+        oss << A.label() << " and " << B.label() << " tensors NOT congruent!" << std::endl;
+        oss << "A.axes_dimpi() = " << A.axes_dimpi() << " differs from B.axes_dimpi() = " << B.axes_dimpi()
+            << std::endl;
+        return std::make_tuple(false, oss.str());
+    } else {
+        return std::make_tuple(true, "");
+    }
+}
 }  // namespace detail
 
+/*! @{ Builders */
 /*! Return a tensor with all blocks filled with given value of same shape and value type as input
  *  \param[in] mold input tensor
  *  \param[in] fill_value the value in all blocks
@@ -104,6 +135,44 @@ template <typename T, size_t Rank, typename U = T>
 Tensor<U, Rank> ones_like(const Tensor<T, Rank>& mold) noexcept {
     return full_like(mold, static_cast<U>(1));
 }
+/* TODO
+ * Add builders from dpdfile2 and dpdfile4
+ */
+/*! @}*/
+
+/*! @{ Arithmetic operators */
+/*! Plus
+ */
+template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+inline auto operator+(const SharedTensor<T, Rank>& A, const SharedTensor<U, Rank>& B) -> SharedTensor<V, Rank> {
+    auto congruent = detail::congruent(A, B);
+    if (std::get<0>(congruent)) {
+        auto out = zeros_like(A);
+        for (auto h = 0; h < A->nirrep(); ++h) {
+            out->block(h) = A->block(h) + B->block(h);
+        }
+        return out;
+    } else {
+        throw PSIEXCEPTION(std::get<1>(congruent));
+    }
+}
+
+template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+inline auto operator+(const Tensor<T, Rank>& A, const Tensor<U, Rank>& B) -> Tensor<V, Rank> {
+    auto congruent = detail::congruent(A, B);
+    if (std::get<0>(congruent)) {
+        auto out = zeros_like(A);
+        for (auto h = 0; h < A.nirrep(); ++h) {
+            out[h] = A[h] + B[h];
+        }
+        return out;
+    } else {
+        throw PSIEXCEPTION(std::get<1>(congruent));
+    }
+}
+/*! @}*/
 
 /*! Symmetry-blocking aware GEneralized Matrix Vector multiplication (GEMV)
  *  \param[in] opA preliminary operation on A (None, Transpose, TransposeConj)
@@ -298,27 +367,33 @@ SharedTensor<V, 2> doublet(const SharedTensor<T, 2>& A, const SharedTensor<U, 2>
 template <typename T, size_t Rank, typename U = typename detail::is_complex<T>::real_type>
 SharedTensor<U, Rank> real(const SharedTensor<T, Rank>& in) noexcept {
     auto out = zeros_like<T, Rank, U>(in);
-    std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const typename Tensor<T, Rank>::block_type& blk) ->
-                   typename Tensor<U, Rank>::block_type { return xt::real(blk); });
+    std::transform(
+        in->cbegin(), in->cend(),
+        out->begin(), [](const typename Tensor<T, Rank>::block_type& blk) -> typename Tensor<U, Rank>::block_type {
+            return xt::real(blk);
+        });
     return out;
 }
 
 template <typename T, size_t Rank, typename U = typename detail::is_complex<T>::real_type>
 SharedTensor<U, Rank> imag(const SharedTensor<T, Rank>& in) noexcept {
     auto out = zeros_like<T, Rank, U>(in);
-    std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const typename Tensor<T, Rank>::block_type& blk) ->
-                   typename Tensor<U, Rank>::block_type { return xt::imag(blk); });
+    std::transform(
+        in->cbegin(), in->cend(),
+        out->begin(), [](const typename Tensor<T, Rank>::block_type& blk) -> typename Tensor<U, Rank>::block_type {
+            return xt::imag(blk);
+        });
     return out;
 }
 
 template <typename T, size_t Rank>
 SharedTensor<T, Rank> conj(const SharedTensor<T, Rank>& in) noexcept {
     auto out = zeros_like(in);
-    std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const typename Tensor<T, Rank>::block_type& blk) ->
-                   typename Tensor<T, Rank>::block_type { return xt::conj(blk); });
+    std::transform(
+        in->cbegin(), in->cend(),
+        out->begin(), [](const typename Tensor<T, Rank>::block_type& blk) -> typename Tensor<T, Rank>::block_type {
+            return xt::conj(blk);
+        });
     return out;
 }
 
@@ -329,9 +404,10 @@ Tensor<T, 2> cholesky(const Tensor<T, 2>& in) {
         throw PSIEXCEPTION("Matrix is non-totally symmetric.");
     }
     auto out = zeros_like(in);
-    std::transform(in.cbegin(), in.cend(), out.begin(),
-                   [](const typename Tensor<T, 2>::block_type& blk) ->
-                   typename Tensor<T, 2>::block_type { return xt::linalg::cholesky(blk); });
+    std::transform(in.cbegin(), in.cend(),
+                   out.begin(), [](const typename Tensor<T, 2>::block_type& blk) -> typename Tensor<T, 2>::block_type {
+                       return xt::linalg::cholesky(blk);
+                   });
     return out;
 }
 
@@ -341,9 +417,10 @@ SharedTensor<T, 2> cholesky(const SharedTensor<T, 2>& in) {
         throw PSIEXCEPTION("Matrix is non-totally symmetric.");
     }
     auto out = zeros_like(in);
-    std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const typename Tensor<T, 2>::block_type& blk) ->
-                   typename Tensor<T, 2>::block_type { return xt::linalg::cholesky(blk); });
+    std::transform(in->cbegin(), in->cend(),
+                   out->begin(), [](const typename Tensor<T, 2>::block_type& blk) -> typename Tensor<T, 2>::block_type {
+                       return xt::linalg::cholesky(blk);
+                   });
     return out;
 }
 
@@ -353,9 +430,10 @@ SharedTensor<T, 2> partial_cholesky(const SharedTensor<T, 2>& in) {
         throw PSIEXCEPTION("Matrix is non-totally symmetric.");
     }
     auto out = zeros_like(in);
-    std::transform(in->cbegin(), in->cend(), out->begin(),
-                   [](const typename Tensor<T, 2>::block_type& blk) ->
-                   typename Tensor<T, 2>::block_type { return xt::linalg::cholesky(blk); });
+    std::transform(in->cbegin(), in->cend(),
+                   out->begin(), [](const typename Tensor<T, 2>::block_type& blk) -> typename Tensor<T, 2>::block_type {
+                       return xt::linalg::cholesky(blk);
+                   });
     return out;
 }
 
@@ -419,8 +497,8 @@ auto svd(const Tensor<T, 2>& in, bool full_matrices = true, bool compute_uv = tr
     std::transform(tmp.cbegin(), tmp.cend(), U.begin(), [](const SVDs& res) -> Block { return std::get<0>(res); });
 
     auto S = Tensor<T, 1>("S matrix of " + in.label(), Kspi);
-    std::transform(tmp.cbegin(), tmp.cend(), S.begin(),
-                   [](const SVDs& res) -> typename Tensor<T, 1>::block_type { return std::get<1>(res); });
+    std::transform(tmp.cbegin(), tmp.cend(),
+                   S.begin(), [](const SVDs& res) -> typename Tensor<T, 1>::block_type { return std::get<1>(res); });
 
     auto Vh = Tensor<T, 2>("V^H matrix of " + in.label(), full_matrices ? in.colspi() : Kspi, in.colspi());
     std::transform(tmp.cbegin(), tmp.cend(), Vh.begin(), [](const SVDs& res) -> Block { return std::get<2>(res); });
@@ -451,8 +529,8 @@ auto svd(const SharedTensor<T, 2>& in, bool full_matrices = true, bool compute_u
     std::transform(tmp.cbegin(), tmp.cend(), U->begin(), [](const SVDs& res) -> Block { return std::get<0>(res); });
 
     auto S = std::make_shared<Tensor<T, 1>>("S matrix of " + in->label(), Kspi);
-    std::transform(tmp.cbegin(), tmp.cend(), S->begin(),
-                   [](const SVDs& res) -> typename Tensor<T, 1>::block_type { return std::get<1>(res); });
+    std::transform(tmp.cbegin(), tmp.cend(),
+                   S->begin(), [](const SVDs& res) -> typename Tensor<T, 1>::block_type { return std::get<1>(res); });
 
     auto Vh = std::make_shared<Tensor<T, 2>>("V^H matrix of " + in->label(), full_matrices ? in->colspi() : Kspi,
                                              in->colspi());
@@ -488,12 +566,18 @@ auto eig(const Tensor<T, 2>& in) -> std::tuple<Tensor<T, 1>, Tensor<T, 2>> {
                    });
 
     auto eigvals = eig_detail::Eigvals<U>("Eigenvalues of " + in.label(), in.rowspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvals.begin(), [
-    ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvals<U>::block_type { return std::get<0>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvals.begin(), [](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvals<U>::block_type {
+            return std::get<0>(res);
+        });
 
     auto eigvecs = eig_detail::Eigvecs<U>("Eigenvectors of " + in.label(), in.rowspi(), in.colspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvecs.begin(), [
-    ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvecs<U>::block_type { return std::get<1>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvecs.begin(), [](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvecs<U>::block_type {
+            return std::get<1>(res);
+        });
 
     return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
 }
@@ -515,13 +599,19 @@ auto eig(const SharedTensor<T, 2>& in) -> EigenResult<U> {
                    });
 
     auto eigvals = std::make_shared<eig_detail::Eigvals<U>>("Eigenvalues of " + in->label(), in->rowspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvals->begin(), [
-    ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvals<U>::block_type { return std::get<0>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvals->begin(), [](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvals<U>::block_type {
+            return std::get<0>(res);
+        });
 
     auto eigvecs =
         std::make_shared<eig_detail::Eigvecs<U>>("Eigenvectors of " + in->label(), in->rowspi(), in->colspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvecs->begin(), [
-    ](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvecs<U>::block_type { return std::get<1>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvecs->begin(), [](const eig_detail::Result<U>& res) -> typename eig_detail::Eigvecs<U>::block_type {
+            return std::get<1>(res);
+        });
 
     return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
 }
@@ -566,12 +656,18 @@ auto eigh(const Tensor<T, 2>& in, char UPLO = 'L') -> std::tuple<Tensor<T, 1>, T
                    });
 
     auto eigvals = eig_detail::Eigvals<T>("Eigenvalues of " + in.label(), in.rowspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvals.begin(), [
-    ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvals<T>::block_type { return std::get<0>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvals.begin(), [](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvals<T>::block_type {
+            return std::get<0>(res);
+        });
 
     auto eigvecs = eig_detail::Eigvecs<T>("Eigenvectors of " + in.label(), in.rowspi(), in.colspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvecs.begin(), [
-    ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvecs<T>::block_type { return std::get<1>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvecs.begin(), [](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvecs<T>::block_type {
+            return std::get<1>(res);
+        });
 
     return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
 }
@@ -590,13 +686,19 @@ auto eigh(const SharedTensor<T, 2>& in, char UPLO = 'L') -> EigenResult<T> {
                    });
 
     auto eigvals = std::make_shared<eig_detail::Eigvals<T>>("Eigenvalues of " + in->label(), in->rowspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvals->begin(), [
-    ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvals<T>::block_type { return std::get<0>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvals->begin(), [](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvals<T>::block_type {
+            return std::get<0>(res);
+        });
 
     auto eigvecs =
         std::make_shared<eig_detail::Eigvecs<T>>("Eigenvectors of " + in->label(), in->rowspi(), in->colspi());
-    std::transform(tmp.cbegin(), tmp.cend(), eigvecs->begin(), [
-    ](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvecs<T>::block_type { return std::get<1>(res); });
+    std::transform(
+        tmp.cbegin(), tmp.cend(),
+        eigvecs->begin(), [](const eig_detail::Result<T>& res) -> typename eig_detail::Eigvecs<T>::block_type {
+            return std::get<1>(res);
+        });
 
     return std::make_tuple(eigvals, eigvecs);  // NOTE for posterity in C++17 simplifies to return {};
 }
