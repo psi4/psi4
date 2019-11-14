@@ -568,8 +568,8 @@ def energy(name, **kwargs):
     basisstash.restore()
     optstash.restore()
     optstash2.restore()
-    if core_clean:
-        core.clean()
+    # if core_clean:
+        # core.clean()
 
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
