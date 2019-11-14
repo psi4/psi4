@@ -29,11 +29,11 @@
 import logging
 from typing import Dict, Tuple
 
-from psi4.driver import p4util
+from psi4.driver import p4util, pp
 from psi4.driver.task_base import BaseComputer, AtomicComputer
 from psi4.driver.driver_findif import FiniteDifferenceComputer
 from psi4.driver.driver_nbody import ManyBodyComputer
-from psi4.driver.driver_cbs import CompositeComputer, _cbs_text_parser
+from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, _cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
 
 logger = logging.getLogger(__name__)
@@ -102,6 +102,9 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
 
     # Expand CBS methods
     method, basis, cbsmeta = _expand_cbs_methods(method, basis, driver, **kwargs)
+    if method in composite_procedures:
+        kwargs.update({'cbs_metadata': composite_procedures[method](**kwargs)})
+        method = 'cbs'
 
     pertinent_findif_kwargs = ['findif_irrep', 'findif_stencil_size', 'findif_step_size', 'findif_verbose']
     current_findif_kwargs = {kw: kwargs.pop(kw) for kw in pertinent_findif_kwargs if kw in kwargs}
@@ -149,7 +152,7 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
             # Tell the task bulider which level to add a task list for
             if method == "cbs":
                 # This CompositeComputer is discarded after being used for dermode.
-                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule)
+                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule, **kwargs)
 
                 methods = [sr.method for sr in dummyplan.task_list]
                 # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df

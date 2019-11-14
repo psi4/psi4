@@ -82,7 +82,7 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
                 '', gradient.get(at, 0), gradient.get(at, 1), gradient.get(at, 2)))
 
 
-def sherrill_gold_standard(func, **kwargs):
+def sherrill_gold_standard(**kwargs):
     r"""Function to call the quantum chemical method known as 'Gold Standard'
     in the Sherrill group. Uses :py:func:`~psi4.driver.cbs` to evaluate
     the following expression. Two-point extrapolation of the correlation energy
@@ -116,13 +116,11 @@ def sherrill_gold_standard(func, **kwargs):
         'basis': kwargs.pop('delta_basis', 'aug-cc-pVTZ'),
         'scheme': kwargs.pop('delta_scheme', 'xtpl_highest_1')
     }
-    kwargs['cbs_metadata'] = [scf, corl, delta]
 
-    label = 'Sherrill Group Gold Standard'
-    return func('cbs', **kwargs)
+    return [scf, corl, delta]
 
 
-def allen_focal_point(func, **kwargs):
+def allen_focal_point(**kwargs):
     r"""Function to call Wes Allen-style Focal
     Point Analysis. JCP 127 014306.  Uses
     :py:func:`~psi4.driver.cbs` to evaluate the following
@@ -176,7 +174,5 @@ def allen_focal_point(func, **kwargs):
         'basis': kwargs.pop('delta4_basis', 'cc-pVDZ'),
         'scheme': kwargs.pop('delta4_scheme', 'xtpl_highest_1'),
     }
-    kwargs['cbs_metadata'] = [scf, corl, delta, delta2, delta3, delta4]
 
-    label = 'Allen Focal Point'
-    return func('cbs', **kwargs)
+    return [scf, corl, delta, delta2, delta3, delta4]

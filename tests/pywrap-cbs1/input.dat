@@ -124,6 +124,6 @@ h2.R = 0.747953788665
 #            delta_basis='cc-pV[dt]Z')
 #compare_values(-1.17505568495, e_cbs, 6, "[5a] user-def xtpl cbs()")
 
-register_xtpl_scheme(myownmy_2)
+register_xtpl_function(myownmy_2)
 e_cbs = energy('MP2/aug-cc-pV[T,Q]Z + D:CCSD(T)/cc-pv[dt]z', delta_scheme='myownmy_2', molecule=h2)
 compare_values(-1.17505568495, e_cbs, 6, "[5b] user-def xtpl energy(cbs)")  #TEST

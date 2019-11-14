@@ -31,6 +31,8 @@ import math
 import numpy as np
 
 from psi4 import core
+from psi4.driver.p4util.exceptions import ValidationError
+from psi4.driver.aliases import sherrill_gold_standard, allen_focal_point
 
 _zeta_val2sym = {k + 2: v for k, v in enumerate('dtq5678')}
 
@@ -627,10 +629,22 @@ xtpl_procedures = {
 }
 
 
-def register_xtpl_scheme(func):
+composite_procedures = {
+    'sherrill_gold_standard': sherrill_gold_standard,
+    'allen_focal_point': allen_focal_point,
+}
+
+
+def register_xtpl_function(func):
     """Enable user-defined extrapolation `func`."""
 
     if func.__name__.split('_')[-1].isdigit():
         xtpl_procedures[func.__name__] = func
     else:
         raise ValidationError("Extrapolation function names follow <scf|corl>_xtpl_<scientist>_<#basis>")
+
+
+def register_composite_function(func):
+    """Enable user-defined alias to composite method `func`."""
+
+    composite_procedures[func.__name__] = func
