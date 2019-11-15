@@ -175,7 +175,7 @@ class PSI_API Vector final : public std::enable_shared_from_this<Vector> {
     const double &operator[](int i) const { return vector_[0][i]; }
 
     /// Returns the dimension per irrep h
-    int dim(int h = 0) const { return dimpi_[h]; }
+    size_t dim(int h = 0) const { return dimpi_[h]; }
 
     /// Returns the dimension array
     const Dimension &dimpi() const { return dimpi_; }

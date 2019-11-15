@@ -31,6 +31,8 @@
 #include <memory>
 #include <string>
 
+#include <xtensor/xadapt.hpp>
+
 #include "dimension.h"
 #include "matrix.h"
 #include "tensor_impl.h"
@@ -78,41 +80,35 @@ struct RankDependentImpl<Matrix_<T>> {
 /*! Conversion from Matrix to Matrix_<double>
  *  \param[in] m
  */
-template <typename T>
+template <typename T = double>
 auto transmute(const Matrix& m) -> Matrix_<T> {
     auto mat = Matrix_<T>(m.name(), m.rowspi(), m.colspi(), m.symmetry());
-    // Element-by-element copy
+    // Adapt memory owned by matrix class
     for (int h = 0; h < m.nirrep(); ++h) {
-        for (auto i = 0; i < m.rowdim(h); ++i) {
-            for (auto j = 0; i < m.coldim(h); ++j) {
-                mat.set(h, i, j, m.get(h, i, j));
-            }
-        }
+        std::vector<std::size_t> shape = {m.rowdim(h), m.coldim(h)};
+        mat[h] = xt::adapt(m.get_pointer(h), m.rowdim(h) * m.coldim(h), xt::no_ownership(), shape);
     }
     return mat;
 }
 
-/*! Conversion from SharedMatrix to SharedMatrix_<T>
+/*! Conversion from SharedMatrix to SharedMatrix_<double>
  *  \param[in] m
  */
-template <typename T>
+template <typename T = double>
 auto transmute(const std::shared_ptr<Matrix>& m) -> SharedMatrix_<T> {
     auto mat = std::make_shared<Matrix_<T>>(m->name(), m->rowspi(), m->colspi(), m->symmetry());
-    // Element-by-element copy
+    // Adapt memory owned by matrix class
     for (int h = 0; h < m->nirrep(); ++h) {
-        for (auto i = 0; i < m->rowdim(h); ++i) {
-            for (auto j = 0; i < m->coldim(h); ++j) {
-                mat->set(h, i, j, m->get(h, i, j));
-            }
-        }
+        std::vector<std::size_t> shape = {m->rowdim(h), m->coldim(h)};
+        mat->block(h) = xt::adapt(m->get_pointer(h), m->rowdim(h) * m->coldim(h), xt::no_ownership(), shape);
     }
     return mat;
 }
 
-/*! Conversion from Matrix_<T> to Matrix
+/*! Conversion from Matrix_<double> to Matrix
  *  \param[in] m
  */
-template <typename T>
+template <typename T = double>
 auto transmute(const Matrix_<T>& m) -> Matrix {
     auto mat = Matrix(m.label(), m.rowspi(), m.colspi(), m.symmetry());
     // Element-by-element copy
@@ -126,10 +122,10 @@ auto transmute(const Matrix_<T>& m) -> Matrix {
     return mat;
 }
 
-/*! Conversion from SharedMatrix_<T> to SharedMatrix
+/*! Conversion from SharedMatrix_<double> to SharedMatrix
  *  \param[in] v
  */
-template <typename T>
+template <typename T = double>
 auto transmute(const SharedMatrix_<T>& m) -> SharedMatrix {
     auto mat = std::make_shared<Matrix>(m->label(), m->rowspi(), m->colspi(), m->symmetry());
     // Element-by-element copy

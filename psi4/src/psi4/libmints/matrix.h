@@ -601,9 +601,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void eivprint(const std::shared_ptr<Vector>& values, std::string out = "outfile");
 
     /// Returns the rows in irrep h
-    int rowdim(const int& h = 0) const { return rowspi_[h]; }
+    size_t rowdim(const int& h = 0) const { return rowspi_[h]; }
     /// Returns the cols in irrep h
-    int coldim(const int& h = 0) const { return colspi_[h]; }
+    size_t coldim(const int& h = 0) const { return colspi_[h]; }
 
     /// Returns the rows per irrep array
     const Dimension& rowspi() const { return rowspi_; }
