@@ -30,6 +30,7 @@ import collections
 
 import numpy as np
 import qcengine as qcng
+from qcelemental.models import ResultInput, Result
 
 from psi4 import core
 from psi4.driver import p4util
@@ -209,21 +210,23 @@ class EmpiricalDispersion(object):
             jobrec = qcng.compute(resi, self.engine, raise_error=True,
                                   local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
 
-            pairwise = jobrec.extras['D3pairs']
+            pairwise = jobrec.extras['qcvars']['PAIRWISE DISPERSION CORRECTION ANALYSIS']
+            core.set_variable('PAIRWISE DISPERSION CORRECTION ANALYSIS', pairwise)
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
+
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    if 'CURRENT' not in k:
+                    if 'PAIRWISE' in k:
+                        continue
+                    elif 'CURRENT' not in k:
                         wfn.set_variable(k, p4util.plump_qcvar(qca, k))
+                        #wfn.set_variable(k, qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
                 dashd_part += gcp_part
 
-            if return_pairwise:
-                return dashd_part, pairwise
-            else:
-                return dashd_part
+            return dashd_part
 
         else:
             ene = self.disp.compute_energy(molecule)

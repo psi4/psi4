@@ -33,7 +33,6 @@ import numpy as np
 from psi4 import core
 from .. import empirical_dispersion
 
-
 def fisapt_compute_energy(self):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
 
@@ -95,27 +94,26 @@ def fisapt_compute_energy(self):
             core.timer_on("FISAPT:FSAPT:disp")
             self.fdisp()
             core.timer_off("FISAPT:FSAPT:disp")
-        else:
+        if core.get_option("FISAPT", "FISAPT_DO_EMPIRICAL_DISP"):
             # Build Empirical Dispersion
-            dashD = empirical_dispersion.EmpiricalDispersion(name_hint='SAPT0-D3M')
+            dashlvl = core.get_option("FISAPT", "FISAPT_EMPIRICAL_DISP")
+            dashD = empirical_dispersion.EmpiricalDispersion(name_hint=f'SAPT0-{dashlvl}')
             dashD.print_out()
             # Compute -D
-            Ntot = core.get_active_molecule().natom()
-            NA = core.get_active_molecule().extract_subsets(1).natom()
-            dimer_D3 = dashD.compute_energy(core.get_active_molecule())
-            # TODO: Scrape D3 output, form d3pairs dataframe (or equiv), pass to D3_IE
-            d3pairs = dimer_D3.extras[f'{dashd.fctldash} PAIRWISE DISPERSION ANALYSIS'] 
-            Edisp = fisapt_d3ie(d3pairs, NA=NA, Ntot=Ntot)
-            core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(dashD.fctldash), Edisp)  
+            NA = self.molecule().extract_subsets(1).natom()
+            NB = self.molecule().extract_subsets(2).natom()
+            dimer_D3 = dashD.compute_energy(self.molecule())
+            d3pairs = core.variables()['PAIRWISE DISPERSION CORRECTION ANALYSIS'].to_array()
+
+            # Rebuild dispersion energy
+            Edisp = 0.0
+            for i in range(NA):
+                for j in range(NB):
+                    Edisp += d3pairs[i, NA + j]
+
+            core.set_variable('SAPT EMPIRICAL {} DISP ENERGY'.format(dashD.dashlevel.upper()), Edisp)
             # Printing
-            text = []
-            text.append("   => {}: Empirical Dispersion <=".format(dashD.fctldash.upper()))
-            text.append(" ")
-            text.append(dashD.description)
-            text.append(dashD.dashlevel_citation.rstrip())
-            text.append("\n    Empirical Dispersion Energy [Eh] =     {:24.16f}\n".format(Edisp))
-            text.append('\n')
-            core.print_out('\n'.join(text))
+            core.print_out("    Empirical Dispersion Interaction Energy [Eh] =     {:24.16f}\n\n".format(Edisp))
         self.fdrop()
 
     # => Scalar-Field Analysis <=
@@ -168,18 +166,20 @@ def fisapt_fdrop(self):
         matrices["Disp_AB"].name = "Disp"
         _drop(matrices["Disp_AB"], filepath)
     else:
-        matrices["Disp_AB"].name = 'D3Disp'
         # Populate (NA, NB) chunk of Disp_AB
+        d3pairs = core.variables()['PAIRWISE DISPERSION CORRECTION ANALYSIS'].to_array()
         Ntot = self.molecule().natom()
-        NA = self.molecule().extract_subset(1).natom()
-        NB = self.molecule().extract_subset(2).natom()
+        NA = self.molecule().extract_subsets(1).natom()
+        NB = self.molecule().extract_subsets(2).natom()
 
+        Disp_AB = np.zeros((NA, NB))
         for a in range(NA):
-            A = a + 1
-            for b in range(NB):
-                B = b + NA + 1
-                matrices["Disp_AB"].np[a,b] = self.d3pairs.loc[idx[A,B], idx['Edisp']]
+           for b in range(NB):
+                B = b + NA - 1
+                Disp_AB[a,b] = d3pairs[a,B]
 
+        matrices["Disp_AB"] = core.Matrix.from_array(Disp_AB)
+        matrices["Disp_AB"].name = 'D3Disp'
         _drop(matrices["Disp_AB"], filepath)
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
@@ -208,18 +208,21 @@ def fisapt_fdrop(self):
             matrices["sDisp_AB"].name = "Disp"
             _drop(matrices["Disp_AB"], ssapt_filepath)
         else:
-            matrices["sDisp_AB"].name = 'D3Disp'
             # Populate (NA, NB) chunk of Disp_AB
+            d3pairs = core.variables()['PAIRWISE DISPERSION CORRECTION ANALYSIS'].to_array()
             Ntot = self.molecule().natom()
-            NA = self.molecule().extract_subset(1).natom()
-            NB = self.molecule().extract_subset(2).natom()
-
+            NA = self.molecule().extract_subsets(1).natom()
+            NB = self.molecule().extract_subsets(2).natom()
+            
+            Disp_AB = np.zeros((NA, NB))
             for a in range(NA):
-                A = a + 1
-                for b in range(NB):
-                    B = b + NA + 1
-                    matrices["sDisp_AB"].np[a,b] = d3pairs.loc[idx[A,B], idx['Edisp']]
+               A = a + 1
+               for b in range(NB):
+                   B = b + NA + 1
+                   Disp_AB[a,b] = d3pairs[A,B]
 
+            matrices["sDisp_AB"] = core.Matrix.from_array(Disp_AB)
+            matrices["sDisp_AB"].name = 'D3Disp'
             _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 def fisapt_plot(self):

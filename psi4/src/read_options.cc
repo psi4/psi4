@@ -1039,6 +1039,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FISAPT_DO_FSAPT", true);
         /*- Do F-SAPT Dispersion? -*/
         options.add_bool("FISAPT_DO_FSAPT_DISP", true);
+        /*- Do F-SAPT Empirical Dispersion? -*/
+        options.add_bool("FISAPT_DO_EMPIRICAL_DISP", false);
+        /*- Specify F-SAPT-D Empirical Dispersion Damping Function -*/
+        options.add_str("FISAPT_EMPIRICAL_DISP", "D3MBJ", "D3M D3MBJ");
         /*- Filepath to drop F-SAPT data within input file directory -*/
         options.add_str_i("FISAPT_FSAPT_FILEPATH", "fsapt/");
         /*- Do F-SAPT exchange scaling? (ratio of S^\infty to S^2) -*/

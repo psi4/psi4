@@ -1314,7 +1314,12 @@ class Molecule(LibmintsMolecule):
         # hack as not checking type GRAD
         for k, qca in jobrec['extras']['qcvars'].items():
             if isinstance(qca, (list, np.ndarray)):
-                jobrec['extras']['qcvars'][k] = np.array(qca).reshape(-1, 3)
+                # Coerce gradient into proper shape
+                try:
+                    jobrec['extras']['qcvars'][k] = np.array(qca).reshape(-1, 3)
+                # Not working? It's a DFTD3 pairwise array.  Pass on directly
+                except ValueError:
+                    jobrec['extras']['qcvars'][k] = qca
 
         if isinstance(self, Molecule):
             pass
