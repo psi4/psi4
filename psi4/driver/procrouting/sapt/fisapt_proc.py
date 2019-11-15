@@ -213,7 +213,7 @@ def fisapt_fdrop(self):
             Ntot = self.molecule().natom()
             NA = self.molecule().extract_subsets(1).natom()
             NB = self.molecule().extract_subsets(2).natom()
-            
+
             Disp_AB = np.zeros((NA, NB))
             for a in range(NA):
                A = a + 1
@@ -262,39 +262,6 @@ def _drop(array, filepath):
     filename = filepath + os.sep + array.name + '.dat'
     with open(filename, 'wb') as handle:
         np.savetxt(handle, array.to_array(), fmt="%24.16E", delimiter=' ', newline='\n')
-
-def fisapt_d3ie(d3pairs, NA=0, Ntot=0):
-    """Helper function to compute the D3 dispersion interaction energy from
-    DFTD3 pairwise analysis.
-
-    Parameters
-    ----------
-    d3pairs : dict
-        Parsed atom-pairwise interaction info from DFTD3 output
-    NA : int
-        Integer number of atoms in monomer A
-    Ntot : int
-        Integer number of atoms in the total dimer
-
-    Returns
-    -------
-    Edisp : float64
-        Total -D dispersion interaction energy [kcal/mol]
-    """
-    Edisp = 0.0
-
-    AxB = [(i, j) for i in range(1, NA + 1) for j in range(NA+1, Ntot+1)]
-    for pair, Pdisp in d3pairs.items():
-        if pair in AxB:
-            Edisp += Pdisp
-
-    #else:
-    #    for i in range(1,NA+1):
-    #        for j in range(NA+1, Ntot+1):
-    #            #print(i,j)
-    #            Edisp += pairdf.loc[idx[i,j], idx['Edisp']]
-                
-    return Edisp
 
 core.FISAPT.compute_energy = fisapt_compute_energy
 core.FISAPT.fdrop = fisapt_fdrop
