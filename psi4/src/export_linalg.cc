@@ -290,9 +290,6 @@ void bind_tensor(py::module& mod) {
     cls.def("__iter__", [](const Class& obj) { return py::make_iterator(obj.begin(), obj.end()); },
             py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */);
 
-    // Operators
-    cls.def("__add__", [](const SharedClass& A, const SharedClass& B) { return A + B; }, py::is_operator());
-
     // Free functions shared by all ranks
     // Builders
     declareRankN_builders<Class, int>(mod);
@@ -302,6 +299,31 @@ void bind_tensor(py::module& mod) {
     mod.def("real", &real<T, Rank>, "Return real part of tensor", "in"_a);
     mod.def("imag", &imag<T, Rank>, "Return imaginary part of tensor. For real tensors, returns zeros.", "in"_a);
     mod.def("conj", &conj<T, Rank>, "Return complex conjugate of tensor", "in"_a);
+
+    // Type-homogeneous operators
+    cls.def("__add__", [](const SharedClass& A, const SharedClass& B) { return A + B; }, py::is_operator());
+    cls.def("__sub__", [](const SharedClass& A, const SharedClass& B) { return A - B; }, py::is_operator());
+    cls.def("__mul__", [](T alpha, const SharedClass& B) { return alpha * B; }, py::is_operator());
+    cls.def("__mul__", [](const SharedClass& B, T alpha) { return alpha * B; }, py::is_operator());
+    // Type-inhomogeneous operators
+    // T + double
+    cls.def("__add__", [](const SharedTensor<T, Rank>& A, const SharedTensor<double, Rank>& B) { return A + B; },
+            py::is_operator());
+    // double + T
+    cls.def("__add__", [](const SharedTensor<double, Rank>& A, const SharedTensor<T, Rank>& B) { return A + B; },
+            py::is_operator());
+    // T - double
+    cls.def("__sub__", [](const SharedTensor<T, Rank>& A, const SharedTensor<double, Rank>& B) { return A - B; },
+            py::is_operator());
+    // double - T
+    cls.def("__sub__", [](const SharedTensor<double, Rank>& A, const SharedTensor<T, Rank>& B) { return A - B; },
+            py::is_operator());
+    // T * double
+    cls.def("__mul__", [](T alpha, const SharedTensor<double, Rank>& B) { return alpha * B; }, py::is_operator());
+    cls.def("__mul__", [](const SharedTensor<double, Rank>& B, T alpha) { return alpha * B; }, py::is_operator());
+    // double * T
+    cls.def("__mul__", [](double alpha, const SharedClass& B) { return alpha * B; }, py::is_operator());
+    cls.def("__mul__", [](const SharedClass& B, double alpha) { return alpha * B; }, py::is_operator());
 
     // Rank-dependent bindings, e.g. CTORs, member and free functions
     Decorator<T, Rank>::decorate(mod, cls);

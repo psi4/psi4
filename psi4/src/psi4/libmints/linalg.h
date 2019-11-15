@@ -141,14 +141,13 @@ Tensor<U, Rank> ones_like(const Tensor<T, Rank>& mold) noexcept {
 /*! @}*/
 
 /*! @{ Arithmetic operators */
-/*! Plus
- */
+/*! Plus */
 template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
           typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
 inline auto operator+(const SharedTensor<T, Rank>& A, const SharedTensor<U, Rank>& B) -> SharedTensor<V, Rank> {
     auto congruent = detail::congruent(A, B);
     if (std::get<0>(congruent)) {
-        auto out = zeros_like(A);
+        auto out = zeros_like<T, Rank, V>(A);
         for (auto h = 0; h < A->nirrep(); ++h) {
             out->block(h) = A->block(h) + B->block(h);
         }
@@ -158,12 +157,13 @@ inline auto operator+(const SharedTensor<T, Rank>& A, const SharedTensor<U, Rank
     }
 }
 
+/*! Plus */
 template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
           typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
 inline auto operator+(const Tensor<T, Rank>& A, const Tensor<U, Rank>& B) -> Tensor<V, Rank> {
     auto congruent = detail::congruent(A, B);
     if (std::get<0>(congruent)) {
-        auto out = zeros_like(A);
+        auto out = zeros_like<T, Rank, V>(A);
         for (auto h = 0; h < A.nirrep(); ++h) {
             out[h] = A[h] + B[h];
         }
@@ -171,6 +171,78 @@ inline auto operator+(const Tensor<T, Rank>& A, const Tensor<U, Rank>& B) -> Ten
     } else {
         throw PSIEXCEPTION(std::get<1>(congruent));
     }
+}
+
+/*! Binary minus */
+template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+inline auto operator-(const SharedTensor<T, Rank>& A, const SharedTensor<U, Rank>& B) -> SharedTensor<V, Rank> {
+    auto congruent = detail::congruent(A, B);
+    if (std::get<0>(congruent)) {
+        auto out = zeros_like<T, Rank, V>(A);
+        for (auto h = 0; h < A->nirrep(); ++h) {
+            out->block(h) = A->block(h) - B->block(h);
+        }
+        return out;
+    } else {
+        throw PSIEXCEPTION(std::get<1>(congruent));
+    }
+}
+
+/*! Binary minus */
+template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+inline auto operator-(const Tensor<T, Rank>& A, const Tensor<U, Rank>& B) -> Tensor<V, Rank> {
+    auto congruent = detail::congruent(A, B);
+    if (std::get<0>(congruent)) {
+        auto out = zeros_like<T, Rank, V>(A);
+        for (auto h = 0; h < A.nirrep(); ++h) {
+            out[h] = A[h] - B[h];
+        }
+        return out;
+    } else {
+        throw PSIEXCEPTION(std::get<1>(congruent));
+    }
+}
+
+/*! Unary minus */
+template <typename T, size_t Rank>
+inline auto operator-(const SharedTensor<T, Rank>& in) -> SharedTensor<T, Rank> {
+    using block_type = typename Tensor<T, Rank>::block_type;
+    auto out = zeros_like(in);
+    std::transform(in->cbegin(), in->cend(), out->begin(), [](const block_type& blk) -> block_type { return -blk; });
+    return out;
+}
+
+/*! Unary minus */
+template <typename T, size_t Rank>
+inline auto operator-(const Tensor<T, Rank>& in) -> Tensor<T, Rank> {
+    using block_type = typename Tensor<T, Rank>::block_type;
+    auto out = zeros_like(in);
+    std::transform(in.cbegin(), in.cend(), out.begin(), [](const block_type& blk) -> block_type { return -blk; });
+    return out;
+}
+
+/*! Multiply by a scalar */
+template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+inline auto operator*(U alpha, const SharedTensor<T, Rank>& in) -> SharedTensor<V, Rank> {
+    using block_type = typename Tensor<V, Rank>::block_type;
+    auto out = zeros_like<T, Rank, V>(in);
+    std::transform(in->cbegin(), in->cend(), out->begin(),
+                   [alpha](const block_type& blk) -> block_type { return alpha * blk; });
+    return out;
+}
+
+/*! Multiply by a scalar */
+template <typename T, size_t Rank, typename U = T, typename V = decltype(std::declval<T>() * std::declval<U>()),
+          typename = std::enable_if_t<detail::is_2arity_mixable_v<T, U>>>
+inline auto operator*(U alpha, const Tensor<T, Rank>& in) -> Tensor<V, Rank> {
+    using block_type = typename Tensor<V, Rank>::block_type;
+    auto out = zeros_like<T, Rank, V>(in);
+    std::transform(in.cbegin(), in.cend(), out.begin(),
+                   [alpha](const block_type& blk) -> block_type { return alpha * blk; });
+    return out;
 }
 /*! @}*/
 
