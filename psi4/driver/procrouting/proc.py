@@ -3288,8 +3288,11 @@ def run_adcc(name, **kwargs):
     # Launch the rocket
     #
     # Copy thread setup from psi4
-    n_threads = core.get_num_threads()
-    adcc.thread_pool.reinit(n_threads, n_threads)
+    try:
+        adcc.set_n_threads(core.get_num_threads())
+    except AttributeError:
+        # Before adcc 0.13.3:
+        adcc.thread_pool.reinit(core.get_num_threads(), core.get_num_threads())
 
     # Hack to direct the stream-like interface adcc expects to the string interface of Psi4 core
     class CoreStream:
