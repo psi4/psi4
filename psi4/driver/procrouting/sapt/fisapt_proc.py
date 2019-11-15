@@ -162,24 +162,33 @@ def fisapt_fdrop(self):
     _drop(matrices["IndAB_AB"], filepath)
     _drop(matrices["IndBA_AB"], filepath)
 
+    # Drop disp matrix if it's computed
     if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
         matrices["Disp_AB"].name = "Disp"
         _drop(matrices["Disp_AB"], filepath)
-    else:
+
+    # Drop D3 disp matrix if it's computed
+    if core.get_option("FISAPT", "FISAPT_DO_EMPIRICAL_DISP"):
         # Populate (NA, NB) chunk of Disp_AB
+        core.variables()['PAIRWISE DISPERSION CORRECTION ANALYSIS'].print_out()
         d3pairs = core.variables()['PAIRWISE DISPERSION CORRECTION ANALYSIS'].to_array()
         Ntot = self.molecule().natom()
         NA = self.molecule().extract_subsets(1).natom()
         NB = self.molecule().extract_subsets(2).natom()
 
-        Disp_AB = np.zeros((NA, NB))
+        # Empirical disp doesn't preclude exact disp, test for both
+        try:
+            Disp_AB = matrices["Disp_AB"].to_array()
+        except KeyError:
+            Disp_AB = np.zeros((NA, NB))
+
         for a in range(NA):
            for b in range(NB):
-                B = b + NA - 1
+                B = b + NA
                 Disp_AB[a,b] = d3pairs[a,B]
 
         matrices["Disp_AB"] = core.Matrix.from_array(Disp_AB)
-        matrices["Disp_AB"].name = 'D3Disp'
+        matrices["Disp_AB"].name = "Disp"
         _drop(matrices["Disp_AB"], filepath)
 
     if core.get_option("FISAPT", "SSAPT0_SCALE"):
@@ -204,25 +213,32 @@ def fisapt_fdrop(self):
         _drop(matrices["sIndAB_AB"], ssapt_filepath)
         _drop(matrices["sIndBA_AB"], ssapt_filepath)
 
+        # Drop disp matrix if it's computed
         if core.get_option("FISAPT", "FISAPT_DO_FSAPT_DISP"):
-            matrices["sDisp_AB"].name = "Disp"
-            _drop(matrices["Disp_AB"], ssapt_filepath)
-        else:
+            matrices["sDisp_AB"].name = "sDisp"
+            _drop(matrices["sDisp_AB"], ssapt_filepath)
+
+        # Drop D3 disp matrix if it's computed
+        if core.get_option("FISAPT", "FISAPT_DO_EMPIRICAL_DISP"):
             # Populate (NA, NB) chunk of Disp_AB
             d3pairs = core.variables()['PAIRWISE DISPERSION CORRECTION ANALYSIS'].to_array()
             Ntot = self.molecule().natom()
             NA = self.molecule().extract_subsets(1).natom()
             NB = self.molecule().extract_subsets(2).natom()
 
-            Disp_AB = np.zeros((NA, NB))
+            # Empirical disp doesn't preclude exact disp, test for both
+            try:
+                Disp_AB = matrices["sDisp_AB"].to_array()
+            except KeyError:
+                Disp_AB = np.zeros((NA, NB))
+
             for a in range(NA):
-               A = a + 1
                for b in range(NB):
-                   B = b + NA + 1
-                   Disp_AB[a,b] = d3pairs[A,B]
+                    B = b + NA
+                    Disp_AB[a,b] = d3pairs[a,B]
 
             matrices["sDisp_AB"] = core.Matrix.from_array(Disp_AB)
-            matrices["sDisp_AB"].name = 'D3Disp'
+            matrices["sDisp_AB"].name = "sDisp"
             _drop(matrices["sDisp_AB"], ssapt_filepath)
 
 def fisapt_plot(self):
