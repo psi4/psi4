@@ -92,6 +92,9 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
             if (!all_axes_have_same_size) {
                 throw PSIEXCEPTION("In Tensor CTOR axes_dimpi do NOT have same size");
             }
+            if (nirrep != ax0_n) {
+                throw PSIEXCEPTION("In Tensor CTOR axes dimensions and number of irreps do not match");
+            }
         }
         for (int h = 0; h < store_.size(); ++h) {
             shapes_[h][0] = axes_dimpi[0][h];
@@ -116,6 +119,9 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
                                                        [ax0_n](const Dimension& dimpi) { return dimpi.n() == ax0_n; });
             if (!all_axes_have_same_size) {
                 throw PSIEXCEPTION("In Tensor CTOR axes_dimpi do NOT have same size");
+            }
+            if (nirrep != ax0_n) {
+                throw PSIEXCEPTION("In Tensor CTOR axes dimensions and number of irreps do not match");
             }
         }
         for (int h = 0; h < store_.size(); ++h) {
