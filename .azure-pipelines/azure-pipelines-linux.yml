@@ -44,6 +44,7 @@ jobs:
 
   - bash: |
       ./devtools/scripts/ninja.sh
+      echo "##vso[task.prependpath]$HOME/Deps/ninja"
     displayName: 'Install Ninja'
 
 
