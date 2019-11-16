@@ -43,7 +43,7 @@ jobs:
     displayName: "Apt-Get Packages"
 
   - bash: |
-      ../devtools/scripts/ninja.sh
+      ./devtools/scripts/ninja.sh
     displayName: 'Install Ninja'
 
 
