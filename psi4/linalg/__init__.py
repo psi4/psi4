@@ -28,7 +28,7 @@
 """Linear algebra utilities"""
 
 from ..core.linalg import *
-from .factory import Matrix_, Tensor_, Vector_
+from .factory import Matrix_, Tensor3, Tensor4, Vector_
 from .utils import (make_random_tensor_2d, make_tensor_2d_from_block, name_unary_test)
 
 # NOTE this is rather awkward, but I haven't found any other way to get the
@@ -37,7 +37,8 @@ from .utils import (make_random_tensor_2d, make_tensor_2d_from_block, name_unary
 __all__ = [
       "Vector_" , "Vector_F", "Vector_D", "Vector_CD"
     , "Matrix_", "Matrix_F", "Matrix_D", "Matrix_CD"
-    , "Tensor_", "Tensor3_F", "Tensor3_D", "Tensor3_CD"
+    , "Tensor3", "Tensor3_F", "Tensor3_D", "Tensor3_CD"
+    , "Tensor4", "Tensor4_F", "Tensor4_D", "Tensor4_CD"
     , "Operation"
     , "gemm"
     , "doublet"

@@ -368,16 +368,26 @@ void export_linalg(py::module& mod) {
              py::keep_alive<0, 1>() /* Essential: keep object alive while iterator exists */)
         .def("__str__", [](const Vector3<double>& obj) { return str(obj); })
         .def("__repr__", [](const Vector3<double>&) { return "Vector3<double>"; });
-    sub_mod.def("dot", &dot<double>, "Dot product of two 3D vectors", "u"_a, "v"_a);
+    // FIXME Most of these operations _could_ be done with NumPy _except_ that
+    // xtensor-python doesn't export the type correctly...
+    sub_mod.def("dot", [](const Vector3<double>& u, const Vector3<double>& v) { return psi::dot(u, v); },
+                "Dot product of two 3D vectors", "u"_a, "v"_a);
     sub_mod.def("norm", [](const Vector3<double>& u) { return psi::norm(u); }, "Norm of 3D vector", "u"_a);
-    sub_mod.def("cross", &cross<double>, "Cross product of two 3D vectors", "u"_a, "v"_a);
+    sub_mod.def("cross", [](const Vector3<double>& u, const Vector3<double>& v) { return psi::cross(u, v); },
+                "Cross product of two 3D vectors", "u"_a, "v"_a);
     sub_mod.def("normalize", [](const Vector3<double>& u) { return psi::normalize(u); }, "Returns normalized 3D vector",
                 "u"_a);
-    sub_mod.def("distance", &distance<double>, "Distance between two 3D vectors", "u"_a, "v"_a);
-    sub_mod.def("angle", &angle<double>, "Angle between two 3D vectors", "u"_a, "v"_a);
-    sub_mod.def("perp_unit", &perp_unit<double>, "Find normal unit vector to two 3D vectors", "u"_a, "v"_a);
-    sub_mod.def("rotate", &rotate<double>, "Returns 3D vector rotated by angle theta around given axis", "in"_a,
-                "theta"_a, "axis"_a);
+    sub_mod.def("distance", [](const Vector3<double>& u, const Vector3<double>& v) { return psi::distance(u, v); },
+                "Distance between two 3D vectors", "u"_a, "v"_a);
+    sub_mod.def("angle", [](const Vector3<double>& u, const Vector3<double>& v) { return psi::angle(u, v); },
+                "Angle between two 3D vectors", "u"_a, "v"_a);
+    sub_mod.def("perp_unit", [](const Vector3<double>& u, const Vector3<double>& v) { return psi::perp_unit(u, v); },
+                "Find normal unit vector to two 3D vectors", "u"_a, "v"_a);
+    sub_mod.def("rotate",
+                [](const Vector3<double>& in, double theta, const Vector3<double>& axis) {
+                    return psi::rotate(in, theta, axis);
+                },
+                "Returns 3D vector rotated by angle theta around given axis", "in"_a, "theta"_a, "axis"_a);
 
     // Rank-1 tensor, aka blocked vector
     bind_tensor<float, 1>(sub_mod);
@@ -393,4 +403,9 @@ void export_linalg(py::module& mod) {
     bind_tensor<float, 3>(sub_mod);
     bind_tensor<double, 3>(sub_mod);
     bind_tensor<std::complex<double>, 3>(sub_mod);
+
+    // Rank-4 tensor
+    bind_tensor<float, 4>(sub_mod);
+    bind_tensor<double, 4>(sub_mod);
+    bind_tensor<std::complex<double>, 4>(sub_mod);
 }

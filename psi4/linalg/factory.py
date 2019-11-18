@@ -29,8 +29,8 @@
 
 import numpy as np
 
-from ..core.linalg import (Matrix_CD, Matrix_D, Matrix_F, Tensor3_CD,
-                           Tensor3_D, Tensor3_F, Vector_CD, Vector_D, Vector_F)
+from ..core.linalg import (Matrix_CD, Matrix_D, Matrix_F, Tensor3_CD, Tensor3_D, Tensor3_F, Vector_CD, Vector_D,
+                           Vector_F, Tensor4_F, Tensor4_D, Tensor4_CD)
 
 
 class ObjectFactory:
@@ -66,9 +66,16 @@ Matrix_ = ObjectFactory(name="Matrix",
                             np.dtype(np.complex128): Matrix_CD
                         })
 
-Tensor_ = ObjectFactory(name="Tensor",
+Tensor3 = ObjectFactory(name="Tensor3",
                         builders={
                             np.dtype(np.float32): Tensor3_F,
                             np.dtype(np.float64): Tensor3_D,
                             np.dtype(np.complex128): Tensor3_CD
+                        })
+
+Tensor4 = ObjectFactory(name="Tensor4",
+                        builders={
+                            np.dtype(np.float32): Tensor4_F,
+                            np.dtype(np.float64): Tensor4_D,
+                            np.dtype(np.complex128): Tensor4_CD
                         })
