@@ -17,6 +17,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-5 g++-5'
+        ENABLE_ADCC: 'ON'  # adcc conda binary currently only for py3.6
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -96,6 +97,9 @@ jobs:
         qcengine \
         pybind11 \
         -c conda-forge
+      if [ "${ENABLE_ADCC}" == "ON" ]; then
+         conda install adcc -c adcc/label/dev_mkl -c conda-forge
+      fi
       conda list
     displayName: 'Build Environment'
 
@@ -117,6 +121,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
         -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
+        -DENABLE_adcc=${ENABLE_ADCC} \
         -DENABLE_CheMPS2=OFF \
         -DENABLE_dkh=ON \
         -DENABLE_libefp=ON \
