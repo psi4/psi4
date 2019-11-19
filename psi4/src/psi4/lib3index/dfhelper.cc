@@ -197,9 +197,9 @@ void DFHelper::initialize() {
         prepare_AO();
         if (do_wK_) {
             std::stringstream error;
-            error << "DFHelper: not equipped to do wK";
+            error << "DFHelper: not equipped to do wK out of core. \nPlease supply more memory or remove scf_type Mem_DF from the imput file";
             throw PSIEXCEPTION(error.str().c_str());
-            prepare_AO_wK();
+            //prepare_AO_wK();
         }
     }
 
