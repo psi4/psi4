@@ -20,11 +20,19 @@ H 1 1.0
 }
 
 # Define a TIP3P water as the external potential
-Chrgfield = QMMM()
-Chrgfield.extern.addCharge(-0.834,1.649232019048,0.0,-2.356023604706)
-Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-3.799961446760)
-Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
-psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+# Nov 2019: QMMM object directly is outdated -- pass as list in Bohr
+
+#Chrgfield = QMMM()
+#Chrgfield.extern.addCharge(-0.834,1.649232019048,0.0,-2.356023604706)
+#Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-3.799961446760)
+#Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
+#psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+
+import numpy as np
+embedding_charges = [
+    [-0.834, np.array([1.649232019048,0.0,-2.356023604706]) / psi_bohr2angstroms],
+    [ 0.417, np.array([0.544757019107,0.0,-3.799961446760]) / psi_bohr2angstroms],
+    [ 0.417, np.array([0.544757019107,0.0,-0.912085762652]) / psi_bohr2angstroms]]
 
 set {
     scf_type df
@@ -32,9 +40,9 @@ set {
     basis 6-31G*
 }
 
-fd_grad = gradient('scf', molecule=water, dertype=0)
+fd_grad = gradient('scf', molecule=water, dertype=0, embedding_charges=embedding_charges)
 fd_ener = psi4.variable('CURRENT ENERGY')
-an_grad = gradient('scf', molecule=water)
+an_grad = gradient('scf', molecule=water, embedding_charges=embedding_charges)
 an_ener = psi4.variable('CURRENT ENERGY')
 
 compare_matrices(an_grad, fd_grad, 5, "Finite difference (3-pt.) vs. analytic gradient to 10^-5") #TEST

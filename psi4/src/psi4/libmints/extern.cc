@@ -103,15 +103,15 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    double convfac = 1.0;
-    if (basis->molecule()->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
-
     // Monopoles
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i=0; i< charges_.size(); ++i) {
-        Zxyz.push_back({std::get<0>(charges_[i]),{{convfac * std::get<1>(charges_[i]),
-                                                   convfac * std::get<2>(charges_[i]),
-                                                   convfac * std::get<3>(charges_[i])}}});
+        Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
+                                                   std::get<2>(charges_[i]),
+                                                   std::get<3>(charges_[i])}}});
+        //Zxyz.push_back({std::get<0>(charges_[i]),{{convfac * std::get<1>(charges_[i]),
+        //                                           convfac * std::get<2>(charges_[i]),
+        //                                           convfac * std::get<3>(charges_[i])}}});
     }
 
     std::vector<SharedMatrix> V_charge;
@@ -215,9 +215,12 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i=0; i< charges_.size(); ++i) {
-        Zxyz.push_back({std::get<0>(charges_[i]),{{convfac * std::get<1>(charges_[i]),
-                                                   convfac * std::get<2>(charges_[i]),
-                                                   convfac * std::get<3>(charges_[i])}}});
+        //Zxyz.push_back({std::get<0>(charges_[i]),{{convfac * std::get<1>(charges_[i]),
+        //                                           convfac * std::get<2>(charges_[i]),
+        //                                           convfac * std::get<3>(charges_[i])}}});
+        Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
+                                                   std::get<2>(charges_[i]),
+                                                   std::get<3>(charges_[i])}}});
     }
 
     // Start with the nuclear contribution
@@ -313,9 +316,6 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
 double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     double E = 0.0;
-    double convfac = 1.0;
-
-    if (mol->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     // Nucleus-charge interaction
     for (int A = 0; A < mol->natom(); A++) {
@@ -327,9 +327,9 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
         if (ZA > 0) { // skip Ghost interaction
             for (size_t B = 0; B < charges_.size(); B++) {
                 double ZB = std::get<0>(charges_[B]);
-                double xB = convfac * std::get<1>(charges_[B]);
-                double yB = convfac * std::get<2>(charges_[B]);
-                double zB = convfac * std::get<3>(charges_[B]);
+                double xB = std::get<1>(charges_[B]);
+                double yB = std::get<2>(charges_[B]);
+                double zB = std::get<3>(charges_[B]);
 
                 double dx = xA - xB;
                 double dy = yA - yB;

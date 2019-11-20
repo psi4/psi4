@@ -111,8 +111,12 @@ f_handler = logging.FileHandler('file.log')
 f_handler.setLevel(logging.DEBUG)
 
 # Create formatters and add it to handlers
-#c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-f_format = logging.Formatter('%(asctime)s,%(msecs)d %(levelname)-8s [%(name)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
+# * detailed
+# example: 2019-11-20:01:13:46,811 DEBUG    [psi4.driver.task_base:156]
+# f_format = logging.Formatter('%(asctime)s,%(msecs)d %(levelname)-8s [%(name)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
+# * light
+# example: 2019-11-20:10:45:21 FINDIFREC CLASS INIT DATA
+f_format = logging.Formatter('%(asctime)s %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
 #c_handler.setFormatter(c_format)
 f_handler.setFormatter(f_format)
 

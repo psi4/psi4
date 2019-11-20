@@ -728,7 +728,7 @@ def electrostatic_embedding(embedding_charges):
     from psi4.driver import qmmm
 
     # Add embedding point charges
-    Chrgfield = qmmm.QMMM()
+    Chrgfield = qmmm.QMMMbohr()
     for i in embedding_charges:
         Chrgfield.extern.addCharge(i[0], i[1][0], i[1][1], i[1][2])
     core.set_global_option_python('EXTERN', Chrgfield.extern)
@@ -831,7 +831,8 @@ class ManyBodyComputer(BaseComputer):
         # Add current compute list to the master task list
         for count, n in enumerate(compute_list):
             for key, pair in enumerate(compute_list[n]):
-                if (str(nbody_level + 1) + '_' + str(pair)) in self.task_list:
+                lbl = str(nbody_level + 1) + '_' + str(pair)
+                if lbl in self.task_list:
                     continue
                 logger.debug(pair)
                 data = template
@@ -845,7 +846,7 @@ class ManyBodyComputer(BaseComputer):
                         charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
                     data['keywords']['function_kwargs'].update({'embedding_charges': charges})
 
-                self.task_list[str(nbody_level + 1) + '_' + str(pair)] = obj(**data)
+                self.task_list[lbl] = obj(**data)
                 counter += 1
 
         return counter

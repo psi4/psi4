@@ -42,6 +42,13 @@ def test_xtpl_gold_fn_error():
     assert 'Replace `energy(sherrill_gold_standard)' in str(e.value)
 
 
+def test_qmmm_class_error():
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        psi4.QMMM()
+
+    assert 'Replace object with a list of charges and locations in Bohr passed as keyword argument' in str(e.value)
+
+
 @pytest.mark.parametrize("inp,out", [
     ((2, 'C2V'), 2),
     (('A2', 'c2v'), 2),

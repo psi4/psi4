@@ -27,6 +27,7 @@
 #
 
 import abc
+import copy
 import logging
 from typing import Any, Dict
 
@@ -80,6 +81,10 @@ class AtomicComputer(BaseComputer):
     @pydantic.validator('method')
     def set_method(cls, method):
         return method.lower()
+
+    @pydantic.validator('keywords')
+    def set_keywords(cls, keywords):
+        return copy.deepcopy(keywords)
 
     def plan(self):
 

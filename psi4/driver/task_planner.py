@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+import copy
 import logging
 from typing import Dict, Tuple
 
@@ -94,6 +95,8 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
     # Only pull the changed options
     keywords = p4util.prepare_options_for_set_options()
     keywords["function_kwargs"] = {}
+    if "embedding_charges" in kwargs and "bsse_type" not in kwargs:
+        keywords["function_kwargs"].update({"embedding_charges": kwargs.pop("embedding_charges")})
 
     # Pull basis out of kwargs, override globals if user specified
     basis = keywords.pop("BASIS", "(auto)") #None)
@@ -152,7 +155,9 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
             # Tell the task bulider which level to add a task list for
             if method == "cbs":
                 # This CompositeComputer is discarded after being used for dermode.
-                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule, **kwargs)
+                simplekwargs = copy.deepcopy(kwargs)
+                simplekwargs.pop('dertype', None)
+                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule, **simplekwargs)
 
                 methods = [sr.method for sr in dummyplan.task_list]
                 # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df
@@ -170,7 +175,7 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
                 dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1)
                 if dermode[0] == dermode[1]:  # analytic
                     logger.info(f'PLANNING MB:  n={n}, {nlevel} packet={packet}')
-                    plan.build_tasks(AtomicComputer, **packet, nlevel=nlevel, level=n)
+                    plan.build_tasks(AtomicComputer, **packet, nlevel=nlevel, level=n, **kwargs)
                 else:
                     logger.info(f'PLANNING MB(FD):  n={n}, {nlevel} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}')
                     plan.build_tasks(FiniteDifferenceComputer, **packet, nlevel=nlevel, level=n, findif_mode=dermode, **current_findif_kwargs, **kwargs)

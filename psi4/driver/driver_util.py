@@ -102,7 +102,7 @@ def upgrade_interventions(method):
         elif method.__name__ in ['sherrill_gold_standard', 'allen_focal_point']:
             raise UpgradeHelper(
                 'argument ' + method.__name__, 'function ' + method.__name__, 1.4,
-                ' Replace `energy(sherrill_gold_standard)` with `sherrill_gold_standard(energy)` or similar.')
+                ' Replace `energy(sherrill_gold_standard)` with `energy("sherrill_gold_standard")` or similar.')
         else:
             raise e
 

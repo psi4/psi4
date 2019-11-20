@@ -72,6 +72,7 @@ class PSI_API ExternalPotential {
     void setName(const std::string& name) { name_ = name; }
 
     /// Add a charge Z at (x,y,z)
+    /// Nov 2019: now always [a0] rather than units of Molecule
     void addCharge(double Z, double x, double y, double z);
 
     /// get the vector of charges

@@ -28,6 +28,7 @@
 
 import copy
 import logging
+from functools import partial
 from typing import Any, Dict
 
 import numpy as np
@@ -93,7 +94,7 @@ def _displace_cart(mass, geom, salc_list, i_m, step_size):
     return disp_geom, label
 
 
-def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, verbose=0):
+def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, t_project, verbose=0):
     """Perform initialization tasks needed by all primary functions.
 
     Parameters
@@ -126,21 +127,22 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
         Miscellaneous information required by callers.
     """
 
-    core.print_out("\n         ----------------------------------------------------------\n")
-    core.print_out("                                   FINDIF\n")
-    core.print_out("                     R. A. King and Jonathon Misiewicz\n")
-    core.print_out("         ---------------------------------------------------------\n\n")
+    logger.info("""
+         ----------------------------------------------------------
+                                   FINDIF
+                     R. A. King and Jonathon Misiewicz
+         ---------------------------------------------------------""")
 
     print_lvl = core.get_option("FINDIF", "PRINT")
 
     data = {"print_lvl": print_lvl, "stencil_size": stencil_size, "step_size": step_size}
 
     if print_lvl:
-        core.print_out(initialize_string(data))
+        logger.info(initialize_string(data))
 
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
-    t_project = not core.get_global_option("EXTERN") and (not core.get_global_option("PERTURB_H"))
+    #t_project = not core.get_global_option("EXTERN") and (not core.get_global_option("PERTURB_H"))
     # core.get_option returns an int, but CdSalcList expect a bool, so re-cast
     r_project = t_project and bool(core.get_option("FINDIF", "FD_PROJECT"))
     salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
@@ -150,12 +152,12 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
     n_salc = salc_list.ncd()
 
     if print_lvl and verbose:
-        core.print_out(f"    Number of atoms is {n_atom}.\n")
+        logger.info(f"Number of atoms is {n_atom}.")
         if method_allowed_irreps != 0x1:
-            core.print_out(f"    Number of irreps is {n_irrep}.\n")
-        core.print_out("    Number of {!s}SALCs is {:d}.\n".format(
+            logger.info(f"Number of irreps is {n_irrep}.")
+        logger.info("Number of {!s}SALCs is {:d}.".format(
             "" if method_allowed_irreps != 0x1 else "symmetric ", n_salc))
-        core.print_out("    Translations projected? {:d}. Rotations projected? {:d}.\n".format(t_project, r_project))
+        logger.info(f"Translations projected? {t_project:d}. Rotations projected? {r_project:d}.")
 
     # TODO: Replace with a generator from a stencil to a set of points.
     # Diagonal displacements differ between the totally symmetric irrep, compared to all others.
@@ -196,15 +198,15 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
 
     # If the method allows more than one irrep, print how the irreps partition the SALCS.
     if print_lvl and method_allowed_irreps != 0x1 and verbose:
-        core.print_out("    Index of SALCs per irrep:\n")
+        logger.info("Index of SALCs per irrep:")
         for h in range(n_irrep):
             if print_lvl > 1 or freq_irrep_only in {h, -1}:
                 tmp = (" {:d} " * len(salc_indices_pi[h])).format(*salc_indices_pi[h])
-                core.print_out("     {:d} : ".format(h + 1) + tmp + "\n")
-        core.print_out("    Number of SALCs per irrep:\n")
+                logger.info("     {:d} : ".format(h + 1) + tmp + "")
+        logger.info("Number of SALCs per irrep:")
         for h in range(n_irrep):
             if print_lvl > 1 or freq_irrep_only in {h, -1}:
-                core.print_out("     Irrep {:d}: {:d}\n".format(h + 1, len(salc_indices_pi[h])))
+                logger.info("     Irrep {:d}: {:d}".format(h + 1, len(salc_indices_pi[h])))
 
     # Now that we've printed the SALCs, clear any that are not of user-specified symmetry.
     if freq_irrep_only != -1:
@@ -223,11 +225,11 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
 
     # Let's print out the number of geometries, the displacement multiplicity, and the CdSALCs!
     if print_lvl and verbose:
-        core.print_out("    Number of geometries (including reference) is {:d}.\n".format(sum(n_disp_pi) + 1))
+        logger.info(f"Number of geometries (including reference) is {sum(n_disp_pi) + 1}.")
         if method_allowed_irreps != 0x1:
-            core.print_out("    Number of displacements per irrep:\n")
+            logger.info("Number of displacements per irrep:")
             for i, ndisp in enumerate(n_disp_pi, start=1):
-                core.print_out(f"      Irrep {i}: {ndisp}\n")
+                logger.info(f"      Irrep {i}: {ndisp}")
 
     if print_lvl > 1 and verbose:
         for i in range(len(salc_list)):
@@ -248,7 +250,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
     return data
 
 
-def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
+def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, stencil_size=3, step_size=0.005):
     """
     Generate geometries for the specified molecule and derivative levels.
     You probably want to instead use one of the convenience functions:
@@ -261,7 +263,7 @@ def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
         The molecule on which to perform a finite difference calculation.
     freq_irrep_only : int
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
-        irreps.
+        irreps. Irrelevant for "1_0".
     mode : {"1_0", "2_0", "2_1"}
         The first number specifies the targeted derivative level. The
         second number is the compute derivative level. E.g., "2_0"
@@ -365,7 +367,7 @@ def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
     if isinstance(mol, qcdb.Molecule):
         mol = core.Molecule.from_dict(mol.to_dict())
 
-    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, 1)
+    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, 1)
 
     # We can finally start generating displacements.
     ref_geom = np.array(mol.geometry())
@@ -392,7 +394,7 @@ def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
         disp_geom, label = _displace_cart(findifrec['molecule']['masses'], ref_geom, data["salc_list"],
                                           zip(indices, steps), data["step_size"])
         if data["print_lvl"] > 2:
-            core.print_out("\nDisplacement '{}'\n{}\n".format(label, np.array_str(disp_geom, **array_format)))
+            logger.info("\nDisplacement '{}'\n{}\n".format(label, np.array_str(disp_geom, **array_format)))
         findifrec["displacements"][label] = {"geometry": disp_geom}
 
     for h in range(data["n_irrep"]):
@@ -413,11 +415,11 @@ def _geom_generator(mol, freq_irrep_only, mode, stencil_size, step_size):
                         append_geoms((index, index2), val)
 
     if data["print_lvl"] > 2:
-        core.print_out("\nReference\n{}\n".format(np.array_str(ref_geom, **array_format)))
+        logger.info("\nReference\n{}\n".format(np.array_str(ref_geom, **array_format)))
     findifrec["reference"]["geometry"] = ref_geom
 
     if data["print_lvl"] > 1:
-        core.print_out("\n-------------------------------------------------------------\n")
+        logger.info("\n-------------------------------------------------------------")
 
     return findifrec
 
@@ -446,7 +448,7 @@ def assemble_gradient_from_energies(findifrec: Dict):
     Check energies below for precision!
     Forces are for mass-weighted, symmetry-adapted cartesians [a0]."""
 
-    data = _initialize_findif(mol, -1, "1_0", findifrec['stencil_size'], findifrec['step']['size'], init_string)
+    data = _initialize_findif(mol, -1, "1_0", findifrec['stencil_size'], findifrec['step']['size'], init_string, findifrec['project_translations'])
     salc_indices = data["salc_indices_pi"][0]
 
     # Extract the energies, and turn then into an ndarray for easy manipulating
@@ -474,12 +476,11 @@ def assemble_gradient_from_energies(findifrec: Dict):
         energy_string = ""
         for i in range(1, max_disp + 1):
             energy_string = f"Energy(-{i})        " + energy_string + f"Energy(+{i})        "
-        core.print_out("\n     Coord      " + energy_string + "    Force\n")
+        logger.info("\n     Coord      " + energy_string + "    Force")
         for salc in range(data["n_salc"]):
-            print_str = "    {:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}" + "\n"
+            print_str = "    {:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}"
             energies = E[salc]
-            core.print_out(print_str.format(salc, force=g_q[salc], *energies))
-        core.print_out("\n")
+            logger.info(print_str.format(salc, force=g_q[salc], *energies))
 
     # Transform the gradient from mass-weighted SALCs to non-mass-weighted Cartesians
     B = data["salc_list"].matrix()
@@ -489,7 +490,7 @@ def assemble_gradient_from_energies(findifrec: Dict):
     g_cart = (g_cart.T * massweighter).T
 
     if data["print_lvl"]:
-        core.print_out("\n-------------------------------------------------------------\n")
+        logger.info("\n-------------------------------------------------------------\n")
 
     return g_cart
 
@@ -525,8 +526,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
     H_block = (H_block + H_block.T) / 2.0
 
     if print_lvl >= 3:
-        core.print_out("\n    Force Constants for irrep {} in mass-weighted, ".format(irrep))
-        core.print_out("symmetry-adapted cartesian coordinates.\n")
+        core.print_out(f"Force Constants for irrep {irrep} in mass-weighted, symmetry-adapted Cartesian coordinates.")
         core.print_out("\n{}\n".format(np.array_str(H_block, **array_format)))
 
     evals, evects = np.linalg.eigh(H_block)
@@ -626,7 +626,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
                 "  {:d} gradients passed in, including the reference geometry.\n".format(len(displacements) + 1))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_1", findifrec['stencil_size'], findifrec['step']['size'],
-                              init_string)
+                              init_string, findifrec["project_translations"])
 
     # For non-totally symmetric CdSALCs, a symmetry operation can convert + and - displacements.
     # Good News: By taking advantage of that, we (potentially) ran less computations.
@@ -808,7 +808,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
                     len(displacements) + 1, findifrec["stencil_size"], ref_energy, out_str))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_0", findifrec['stencil_size'], findifrec['step']['size'],
-                              init_string)
+                              init_string, findifrec["project_translations"])
 
     massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
@@ -875,76 +875,9 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def gradient_from_energies_geometries(molecule, stencil_size=3, step_size=0.005):
-    """
-    Generate geometries for a gradient by finite difference of energies.
-
-    Parameters
-    ----------
-    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
-        The molecule to compute the gradient of.
-    stencil_size : {3, 5}, optional
-        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
-    step_size : float, optional
-        Displacement size [a0].
-
-    Returns
-    -------
-    findifrec : dict
-        Dictionary of finite difference data, specified in _geom_generator docstring.
-
-    Notes
-    -----
-    Only symmetric displacements are necessary, so user specification of
-    symmetry is disabled.
-    """
-    return _geom_generator(molecule, -1, "1_0", stencil_size, step_size)
-
-
-def hessian_from_gradients_geometries(molecule, irrep, stencil_size=3, step_size=0.005):
-    """
-    Generate geometries for a hessian by finite difference of gradients.
-
-    Parameters
-    ----------
-    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
-        The molecule to compute the frequencies of.
-    irrep : int
-        The Cotton ordered irrep to get frequencies for. Choose -1 for all
-        irreps.
-    stencil_size : {3, 5}, optional
-        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
-    step_size : float, optional
-
-    Returns
-    -------
-    findifrec : dict
-        Dictionary of finite difference data, specified in _geom_generator docstring.
-    """
-    return _geom_generator(molecule, irrep, "2_1", stencil_size, step_size)
-
-
-def hessian_from_energies_geometries(molecule, irrep, stencil_size=3, step_size=0.005):
-    """
-    Generate geometries for a hessian by finite difference of energies.
-
-    Parameters
-    ----------
-    molecule : qcdb.molecule or :py:class:`~psi4.core.Molecule`
-        The molecule to compute the frequencies of.
-    irrep : int
-        The Cotton ordered irrep to get frequencies for. Choose -1 for all
-        irreps.
-    stencil_size : {3, 5}, optional
-        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
-    step_size : float, optional
-
-    Returns
-    -------
-    findifrec : dict
-        Dictionary of finite difference data, specified in _geom_generator docstring.
-    """
-    return _geom_generator(molecule, irrep, "2_0", stencil_size, step_size)
+gradient_from_energies_geometries = partial(_geom_generator, freq_irrep_only=-1, mode="1_0")
+hessian_from_gradients_geometries = partial(_geom_generator, mode="2_1")
+hessian_from_energies_geometries = partial(_geom_generator, mode="2_0")
 
 
 class FiniteDifferenceComputer(BaseComputer):
@@ -979,6 +912,10 @@ class FiniteDifferenceComputer(BaseComputer):
 
         logger.debug('FINDIFREC CLASS INIT DATA')
         logger.debug(pp.pformat(data))
+        t_project = True
+        if 'embedding_charges' in data['keywords']['function_kwargs']:
+            t_project = False
+
         for kwg in ['dft_functional']:
             if kwg in data:
                 data['keywords']['function_kwargs'][kwg] = data.pop(kwg)
@@ -991,17 +928,26 @@ class FiniteDifferenceComputer(BaseComputer):
 
         if self.metameta['mode'] == '1_0':
             self.metameta['proxy_driver'] = 'energy'
-            self.findifrec = gradient_from_energies_geometries(self.molecule, findif_stencil_size, findif_step_size)
+            self.findifrec = gradient_from_energies_geometries(self.molecule,
+                                                               stencil_size=findif_stencil_size,
+                                                               step_size=findif_step_size,
+                                                               t_project=t_project)
 
         elif self.metameta['mode'] == '2_1':
             self.metameta['proxy_driver'] = 'gradient'
-            self.findifrec = hessian_from_gradients_geometries(self.molecule, self.metameta['irrep'],
-                                                               findif_stencil_size, findif_step_size)
+            self.findifrec = hessian_from_gradients_geometries(self.molecule,
+                                                               freq_irrep_only=self.metameta['irrep'],
+                                                               stencil_size=findif_stencil_size,
+                                                               step_size=findif_step_size,
+                                                               t_project=t_project)
 
         elif self.metameta['mode'] == '2_0':
             self.metameta['proxy_driver'] = 'energy'
-            self.findifrec = hessian_from_energies_geometries(self.molecule, self.metameta['irrep'],
-                                                              findif_stencil_size, findif_step_size)
+            self.findifrec = hessian_from_energies_geometries(self.molecule,
+                                                              freq_irrep_only=self.metameta['irrep'],
+                                                              stencil_size=findif_stencil_size,
+                                                              step_size=findif_step_size,
+                                                              t_project=t_project)
 
         logger.debug('FINDIFREC CLASS META DATA')
         logger.debug(pp.pformat(self.metameta))

@@ -19,11 +19,19 @@ no_com
 }
 
 # External potential containing the third water from the trimer with TIP3P charges
-Chrgfield = QMMM()
-Chrgfield.extern.addCharge(-0.834, 0.179217, 2.438389, -1.484606)
-Chrgfield.extern.addCharge(0.417, -0.194107, 1.702697, -0.966751)
-Chrgfield.extern.addCharge(0.417, -0.426657, 2.563754, -2.222683)
-psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+# Nov 2019: QMMM object directly is outdated -- pass as list in Bohr
+
+#Chrgfield = QMMM()
+#Chrgfield.extern.addCharge(-0.834, 0.179217, 2.438389, -1.484606)
+#Chrgfield.extern.addCharge(0.417, -0.194107, 1.702697, -0.966751)
+#Chrgfield.extern.addCharge(0.417, -0.426657, 2.563754, -2.222683)
+#psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+
+import numpy as np
+embedding_charges = [
+    [-0.834, np.array([ 0.179217, 2.438389, -1.484606]) / psi_bohr2angstroms],
+    [ 0.417, np.array([-0.194107, 1.702697, -0.966751]) / psi_bohr2angstroms],
+    [ 0.417, np.array([-0.426657, 2.563754, -2.222683]) / psi_bohr2angstroms]]
 
 set {
 basis         jun-cc-pvdz
@@ -32,7 +40,7 @@ guess sad
 freeze_core true
 }
 
-energy('fisapt0')
+energy('fisapt0', embedding_charges=embedding_charges)
 
 keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
 
