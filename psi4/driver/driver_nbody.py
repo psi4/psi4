@@ -43,7 +43,7 @@ import pydantic
 from qcelemental.models import DriverEnum, AtomicResult
 
 from psi4 import core
-from psi4.driver import constants, driver_nbody_multilevel, p4util, pp
+from psi4.driver import constants, driver_nbody_multilevel, p4util
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.task_base import AtomicComputer, BaseComputer
 
