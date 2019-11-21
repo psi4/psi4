@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+import os
 import copy
 import logging
 from typing import Dict, Tuple
@@ -36,6 +37,7 @@ from psi4.driver.driver_findif import FiniteDifferenceComputer
 from psi4.driver.driver_nbody import ManyBodyComputer
 from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, _cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -94,9 +96,15 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
 
     # Only pull the changed options
     keywords = p4util.prepare_options_for_set_options()
+
     keywords["function_kwargs"] = {}
     if "embedding_charges" in kwargs and "bsse_type" not in kwargs:
         keywords["function_kwargs"].update({"embedding_charges": kwargs.pop("embedding_charges")})
+    
+    # Need to add full path to pcm file
+    if "PCM__PCMSOLVER_PARSED_FNAME" in keywords.keys():
+        fname = keywords["PCM__PCMSOLVER_PARSED_FNAME"]
+        keywords["PCM__PCMSOLVER_PARSED_FNAME"] = os.path.join(os.getcwd(), fname)
 
     # Pull basis out of kwargs, override globals if user specified
     basis = keywords.pop("BASIS", "(auto)") #None)
