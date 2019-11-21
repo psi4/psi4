@@ -233,8 +233,9 @@ jobs:
       # Test (ctest)
       - script: |
           setlocal EnableDelayedExpansion
-          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
-          set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
+          set PATH=$(Build.BinariesDirectory)\stage\bin;%PATH%
+          set PYTHONPATH=$(Build.BinariesDirectory)\stage\lib;%PYTHONPATH%
+          psi4 --version
           if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
           ctest --build-config %CMAKE_BUILD_TYPE% ^
                 --label-regex smoke ^
