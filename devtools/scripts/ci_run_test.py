@@ -1,10 +1,15 @@
 #!/usr/bin/env python
+import os
 import sys
 import time
+import shutil
 import subprocess
 
 
 # <<<  run ctest  >>>
+print(shutil.which("python"))
+print(shutil.which("psi4"))
+print(os.environ.copy())
 retcode = subprocess.Popen(['ctest', '-j2', '-L', 'quick'], bufsize=0,
                             stdout=subprocess.PIPE, universal_newlines=True)
 print_all = False

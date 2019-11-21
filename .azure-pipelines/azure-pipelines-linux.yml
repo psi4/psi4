@@ -182,7 +182,10 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      export PATH=stage/bin/:${PATH}
+      which conda python psi4
+      export PATH=$(Build.BinariesDirectory)/stage/bin:${PATH}
+      export PYTHONPATH=$(Build.BinariesDirectory)/stage/lib:${PYTHONPATH}
+      which conda python psi4
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
