@@ -49,6 +49,8 @@ class SOBasisSet;
 class Molecule;
 class CdSalcList;
 
+enum class DerivCalcType { Default, SCF, SCFandDF, Correlated };
+
 class PSI_API Deriv {
     const std::shared_ptr<Wavefunction> wfn_;
     std::shared_ptr<IntegralFactory> integral_;
@@ -108,7 +110,7 @@ class PSI_API Deriv {
     // Is the deriv_density already backtransformed? Default: False
     void set_deriv_density_backtransformed(bool val) { deriv_density_backtransformed_ = val; }
 
-    SharedMatrix compute();
+    SharedMatrix compute(DerivCalcType deriv_calc_type = DerivCalcType::Default);
 
     const SharedMatrix& one_electron() { return opdm_contr_; }
 

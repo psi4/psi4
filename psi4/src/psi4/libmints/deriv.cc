@@ -393,7 +393,7 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
     cdsalcs_.print();
 }
 
-SharedMatrix Deriv::compute() {
+SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     molecule_->print_in_bohr();
 
     if (natom_ == 1) {
@@ -444,9 +444,24 @@ SharedMatrix Deriv::compute() {
     // Whether the SCF contribution is separate from the correlated terms
     bool reference_separate = (X) && ref_wfn;
 
-    if (!ref_wfn) {
-        // If wavefunction doesn't have a reference wavefunction
-        // itself, we assume that we're dealing with SCF.
+    // If the function is called without specifying the type of derivative computation
+    // then use information from the wave function to determine it
+    if (deriv_calc_type == DerivCalcType::Default) {
+        if (!ref_wfn) {
+            // If wavefunction doesn't have a reference wavefunction
+            // itself, we assume that we're dealing with SCF.
+            deriv_calc_type = DerivCalcType::SCF;
+        } else {
+            if (wfn_->density_fitted()) {
+                deriv_calc_type = DerivCalcType::SCFandDF;
+            } else {
+                deriv_calc_type = DerivCalcType::Correlated;
+            }
+        }
+    }
+
+    if (deriv_calc_type == DerivCalcType::SCF) {
+        // Derivatives code for SCF computations
         if (!Da || !Db) throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
         if (!X) throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
 
@@ -462,88 +477,89 @@ SharedMatrix Deriv::compute() {
             functor.finalize();
         }
         for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) TPDMcont[cd] = TPDMcont_vector->get(cd);
+    }
 
-    } else {
-        /* For correlated calculations, we have two different types.  The older CI/CC codes dump the
-           Lagrangian to disk and density matrices to disk, and these both include the reference
-           contributions.  The newer codes hold these quantities as member variables, but these contain only
-           the correlated part.  The reference contributions must be harvested from the reference_wavefunction
-           member.  If density fitting was used, we don't want to compute two electron contributions here*/
-        if (wfn_->density_fitted()) {
-            X_ref_cont_vector = std::make_shared<Vector>(ncd);
-            TPDM_ref_cont_vector = std::make_shared<Vector>(ncd);
-            X_ref_cont = X_ref_cont_vector->pointer();
-            TPDM_ref_cont = TPDM_ref_cont_vector->pointer();
-            x_ref_contr_ = factory_->create_shared_matrix("Reference Lagrangian contribution to gradient", natom_, 3);
-            tpdm_ref_contr_ =
-                factory_->create_shared_matrix("Reference two-electron contribution to gradient", natom_, 3);
+    if (deriv_calc_type == DerivCalcType::SCFandDF) {
+        // Derivatives code for correlated calculations using density fitting
+        // The Lagrangian and density matrices are held as member variables, but these contain only
+        // the correlated part. The reference contributions are harvested from the
+        // reference_wavefunction member of wfn_.
+        // If density fitting was used, we don't want to compute two electron contributions here
 
-            // Here we need to extract the reference contributions
-            SharedMatrix X_ref = ref_wfn->Lagrangian();
-            SharedMatrix Da_ref = ref_wfn->Da();
+        X_ref_cont_vector = std::make_shared<Vector>(ncd);
+        TPDM_ref_cont_vector = std::make_shared<Vector>(ncd);
+        X_ref_cont = X_ref_cont_vector->pointer();
+        TPDM_ref_cont = TPDM_ref_cont_vector->pointer();
+        x_ref_contr_ = factory_->create_shared_matrix("Reference Lagrangian contribution to gradient", natom_, 3);
+        tpdm_ref_contr_ = factory_->create_shared_matrix("Reference two-electron contribution to gradient", natom_, 3);
 
-            for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = -X_ref->vector_dot(s_deriv[cd]);
-                X_ref_cont[cd] = temp;
-            }
+        // Here we need to extract the reference contributions
+        SharedMatrix X_ref = ref_wfn->Lagrangian();
+        SharedMatrix Da_ref = ref_wfn->Da();
 
-            if (wfn_->same_a_b_orbs()) {
-                // In the restricted case, the alpha D is really the total D.  Undefine the beta one, so
-                // that the one-electron contribution, computed below, is correct.
-                Db = factory_->create_shared_matrix("nullptr");
-                ScfRestrictedFunctor scf_functor(TPDM_ref_cont_vector, Da_ref);
-                ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, Da, Da_ref);
-                so_eri.compute_integrals_deriv1(functor);
-                functor.finalize();
-            } else
-                throw PSIEXCEPTION("Unrestricted DF gradient not implemented yet.");
-        } else {
-            /* This is the part of the code reached from CI/CC.  In this case, the total (alpha+beta) density
-               matrices are backtransformed to the SO basis and dumped to disk.  The one particle terms are
-               just combined into the alpha density (with the beta OPDM set to zero, so that the one-particle
-               terms below are computed correctly.  The two-particle terms are computed the same in both cases
-               as all spin cases have been collapsed into the a single SO TPDM. */
-
-            if (!deriv_density_backtransformed_) {
-                // Dial up an integral transformation object to backtransform the OPDM, TPDM and Lagrangian
-                std::vector<std::shared_ptr<MOSpace> > spaces;
-                spaces.push_back(MOSpace::all);
-                std::shared_ptr<IntegralTransform> ints_transform =
-                    std::shared_ptr<IntegralTransform>(new IntegralTransform(
-                        wfn_, spaces,
-                        wfn_->same_a_b_orbs()
-                            ? IntegralTransform::TransformationType::Restricted
-                            : IntegralTransform::TransformationType::Unrestricted,  // Transformation type
-                        IntegralTransform::OutputType::DPDOnly,                     // Output buffer
-                        IntegralTransform::MOOrdering::QTOrder,                     // MO ordering
-                        IntegralTransform::FrozenOrbitals::None));                  // Frozen orbitals?
-                dpd_set_default(ints_transform->get_dpd_id());
-
-                // Some codes already presort the tpdm, do not follow this as an example
-                if (tpdm_presorted_) ints_transform->set_tpdm_already_presorted(true);
-
-                ints_transform->backtransform_density();
-
-                Da = factory_->create_shared_matrix("SO-basis OPDM");
-                Db = factory_->create_shared_matrix("nullptr");
-                Da->load(_default_psio_lib_, PSIF_AO_OPDM);
-                X = factory_->create_shared_matrix("SO-basis Lagrangian");
-                X->load(_default_psio_lib_, PSIF_AO_OPDM);
-                // The CC lagrangian is defined with a different prefactor to SCF / MP2, so we account for it here
-                X->scale(0.5);
-            }
-
-            _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
-            CorrelatedFunctor functor(TPDMcont_vector);
-            so_eri.compute_integrals_deriv1(functor);
-            functor.finalize();
-            _default_psio_lib_->close(PSIF_AO_TPDM, 1);
-
-            for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) TPDMcont[cd] = TPDMcont_vector->get(cd);
+        for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) {
+            double temp = -X_ref->vector_dot(s_deriv[cd]);
+            X_ref_cont[cd] = temp;
         }
 
-        outfile->Printf("\n");
+        if (wfn_->same_a_b_orbs()) {
+            // In the restricted case, the alpha D is really the total D.  Undefine the beta one, so
+            // that the one-electron contribution, computed below, is correct.
+            Db = factory_->create_shared_matrix("nullptr");
+            ScfRestrictedFunctor scf_functor(TPDM_ref_cont_vector, Da_ref);
+            ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, Da, Da_ref);
+            so_eri.compute_integrals_deriv1(functor);
+            functor.finalize();
+        } else
+            throw PSIEXCEPTION("Unrestricted DF gradient not implemented yet.");
     }
+
+    if (deriv_calc_type == DerivCalcType::Correlated) {
+        // Derivatives code for correlated calculations for older codes (CI/CC)
+        // This is the part of the code reached from CI/CC.  In this case, the total (alpha+beta) density
+        // matrices are backtransformed to the SO basis and dumped to disk.  The one particle terms are
+        // just combined into the alpha density (with the beta OPDM set to zero, so that the one-particle
+        // terms below are computed correctly.  The two-particle terms are computed the same in both cases
+        // as all spin cases have been collapsed into the a single SO TPDM.
+
+        if (!deriv_density_backtransformed_) {
+            // Dial up an integral transformation object to backtransform the OPDM, TPDM and Lagrangian
+            std::vector<std::shared_ptr<MOSpace> > spaces;
+            spaces.push_back(MOSpace::all);
+            std::shared_ptr<IntegralTransform> ints_transform =
+                std::shared_ptr<IntegralTransform>(new IntegralTransform(
+                    wfn_, spaces,
+                    wfn_->same_a_b_orbs() ? IntegralTransform::TransformationType::Restricted
+                                          : IntegralTransform::TransformationType::Unrestricted,  // Transformation type
+                    IntegralTransform::OutputType::DPDOnly,                                       // Output buffer
+                    IntegralTransform::MOOrdering::QTOrder,                                       // MO ordering
+                    IntegralTransform::FrozenOrbitals::None));                                    // Frozen orbitals?
+            dpd_set_default(ints_transform->get_dpd_id());
+
+            // Some codes already presort the tpdm, do not follow this as an example
+            if (tpdm_presorted_) ints_transform->set_tpdm_already_presorted(true);
+
+            ints_transform->backtransform_density();
+
+            Da = factory_->create_shared_matrix("SO-basis OPDM");
+            Db = factory_->create_shared_matrix("nullptr");
+            Da->load(_default_psio_lib_, PSIF_AO_OPDM);
+            X = factory_->create_shared_matrix("SO-basis Lagrangian");
+            X->load(_default_psio_lib_, PSIF_AO_OPDM);
+            // The CC lagrangian is defined with a different prefactor to SCF / MP2, so we account for it here
+            X->scale(0.5);
+        }
+
+        _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
+        CorrelatedFunctor functor(TPDMcont_vector);
+        so_eri.compute_integrals_deriv1(functor);
+        functor.finalize();
+        _default_psio_lib_->close(PSIF_AO_TPDM, 1);
+
+        for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) TPDMcont[cd] = TPDMcont_vector->get(cd);
+    }
+
+    outfile->Printf("\n");
 
     // Now, compute the one electron terms
     auto Dtot_AO = std::make_shared<Matrix>("AO basis total D", wfn_->nso(), wfn_->nso());
