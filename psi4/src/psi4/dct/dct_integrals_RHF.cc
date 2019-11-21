@@ -204,6 +204,8 @@ void DCTSolver::sort_OOVV_integrals_RHF() {
         global_dpd_->buf4_mat_irrep_close(&Irs, h);
         global_dpd_->buf4_mat_irrep_close(&Isr, h);
     }
+    global_dpd_->buf4_close(&Isr);
+    global_dpd_->buf4_close(&Irs);
 }
 
 void DCTSolver::sort_VVVV_integrals_RHF() {
@@ -254,6 +256,7 @@ void DCTSolver::transform_core_integrals_RHF() {
         }
     }
     global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_mat_close(&H);
     global_dpd_->file2_close(&H);
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
@@ -266,6 +269,7 @@ void DCTSolver::transform_core_integrals_RHF() {
         }
     }
     global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_mat_close(&H);
     global_dpd_->file2_close(&H);
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
@@ -278,6 +282,7 @@ void DCTSolver::transform_core_integrals_RHF() {
         }
     }
     global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_mat_close(&H);
     global_dpd_->file2_close(&H);
 }
 
@@ -331,6 +336,11 @@ void DCTSolver::build_denominators_RHF() {
         }
     }
 
+    global_dpd_->file2_mat_close(&T_OO);
+    global_dpd_->file2_mat_close(&T_VV);
+    global_dpd_->file2_close(&T_OO);
+    global_dpd_->file2_close(&T_VV);
+
     // Elements of the Fock matrix
     if (!exact_tau_) {
         // Alpha occupied
@@ -347,6 +357,7 @@ void DCTSolver::build_denominators_RHF() {
             offset += nmopi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
+        global_dpd_->file2_mat_close(&F);
         global_dpd_->file2_close(&F);
 
         // Alpha Virtual
@@ -363,6 +374,7 @@ void DCTSolver::build_denominators_RHF() {
             offset += nmopi_[h] - naoccpi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
+        global_dpd_->file2_mat_close(&F);
         global_dpd_->file2_close(&F);
     }
 

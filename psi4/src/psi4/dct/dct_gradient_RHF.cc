@@ -179,6 +179,9 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
             }
         }
         global_dpd_->file2_mat_wrt(&X);
+        global_dpd_->file2_mat_close(&pT);
+        global_dpd_->file2_mat_close(&H);
+        global_dpd_->file2_mat_close(&X);
         global_dpd_->file2_close(&pT);
         global_dpd_->file2_close(&H);
         global_dpd_->file2_close(&X);
@@ -503,6 +506,10 @@ void DCTSolver::compute_ewdm_odc_RHF() {
             }
         }
     }
+    global_dpd_->file2_mat_close(&X_VO);
+    global_dpd_->file2_mat_close(&X_OV);
+    global_dpd_->file2_mat_close(&X_OO);
+    global_dpd_->file2_mat_close(&X_VV);
     global_dpd_->file2_close(&X_VO);
     global_dpd_->file2_close(&X_OV);
     global_dpd_->file2_close(&X_OO);
@@ -552,6 +559,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     psio_->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
     psio_->write_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
     psio_->close(PSIF_MO_OPDM, 1);
+    free_block(a_qt); 
 
     auto *aocc_qt = new int[nalpha_];
     auto *bocc_qt = new int[nbeta_];
@@ -796,6 +804,8 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     delete[] beta_pitzer_to_corr;
     delete[] aocc_qt;
     delete[] bocc_qt;
+    delete[] avir_qt;
+    delete[] bvir_qt;
 
     psio_->close(PSIF_DCT_DENSITY, 1);
 }

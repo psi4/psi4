@@ -141,6 +141,7 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
 
     // Lambda_IbkC -> Lambda_ICkb
     global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "Lambda SF (OV|OV):(OV|ov)");
+    global_dpd_->buf4_close(&Lab);
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Lambda SF (OV|OV):(OV|ov)");
@@ -283,6 +284,8 @@ void DCTSolver::form_density_weighted_fock_RHF() {
 
     b_tau_mo->copy(a_tau_mo);
 
+    global_dpd_->file2_mat_close(&T_OO);
+    global_dpd_->file2_mat_close(&T_VV);
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
@@ -354,6 +357,8 @@ void DCTSolver::form_density_weighted_fock_RHF() {
 
     global_dpd_->file2_mat_wrt(&F_OO);
     global_dpd_->file2_mat_wrt(&F_VV);
+    global_dpd_->file2_mat_close(&F_OO);
+    global_dpd_->file2_mat_close(&F_VV);
     global_dpd_->file2_close(&F_OO);
     global_dpd_->file2_close(&F_VV);
 }
