@@ -168,6 +168,8 @@ class PSI_API BasisSet {
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &ecp_shell_map);
 
+    ~BasisSet();
+
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
      * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from

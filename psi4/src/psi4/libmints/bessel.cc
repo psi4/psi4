@@ -31,6 +31,7 @@
         Robert A. Shaw 2016
  */
 
+#include "psi4/libciomr/libciomr.h"
 #include "bessel.h"
 #include "wavefunction.h"
 #include <cmath>
@@ -52,8 +53,7 @@ void BesselFunction::init(int _lMax, int _N, int _order, const double accuracy) 
     order = _order > 0 ? _order : 1;
 
     // Allocate arrays
-    K = new double *[N + 1];
-    for (int i = 0; i < N + 1; i++) K[i] = new double[lMax + TAYLOR_CUT + 1];
+    K = block_matrix(N+1, lMax + TAYLOR_CUT + 1);
     C = new double[lMax + TAYLOR_CUT];
     dK = std::vector<std::vector<double>>(TAYLOR_CUT + 1, std::vector<double>(lMax + TAYLOR_CUT));
 
@@ -62,7 +62,7 @@ void BesselFunction::init(int _lMax, int _N, int _order, const double accuracy) 
 }
 
 BesselFunction::~BesselFunction() {
-    delete[] K;
+    free_block(K);
     delete[] C;
 }
 

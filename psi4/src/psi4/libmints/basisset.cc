@@ -107,6 +107,13 @@ BasisSet::BasisSet() {
     center_to_nshell_ = new int[1];
     center_to_shell_ = new int[1];
     xyz_ = new double[3];
+    ecp_shell_center_ = nullptr;
+    center_to_ecp_nshell_ = nullptr;
+    center_to_ecp_shell_ = nullptr;
+    uecpexponents_ = nullptr;
+    uecpcoefficients_ = nullptr;
+    uecpns_ = nullptr;
+    ecp_shells_ = nullptr;
     n_prim_per_shell_[0] = 1;
     uexponents_[0] = 0.0;
     ucoefficients_[0] = 1.0;
@@ -131,6 +138,31 @@ BasisSet::BasisSet() {
     target_ = "(Empty Basis Set)";
     shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_, ucoefficients_, uerd_coefficients_,
                                uexponents_, GaussianType(0), 0, xyz_, 0);
+}
+
+BasisSet::~BasisSet() {
+    delete[] n_prim_per_shell_;
+    delete[] uexponents_;
+    delete[] ucoefficients_;
+    delete[] uerd_coefficients_;
+    delete[] uoriginal_coefficients_;
+    delete[] shell_first_ao_;
+    delete[] shell_first_basis_function_;
+    delete[] shells_;
+    delete[] ao_to_shell_;
+    delete[] function_to_shell_;
+    delete[] function_center_;
+    delete[] shell_center_;
+    delete[] center_to_nshell_;
+    delete[] center_to_shell_;
+    delete[] xyz_;
+    if (ecp_shell_center_) delete[] ecp_shell_center_;
+    if (center_to_ecp_nshell_) delete[] center_to_ecp_nshell_;
+    if (center_to_ecp_shell_) delete[] center_to_ecp_shell_;
+    if (uecpexponents_) delete[] uecpexponents_;
+    if (uecpcoefficients_) delete[] uecpcoefficients_;
+    if (uecpns_) delete[] uecpns_;
+    if (ecp_shells_) delete[] ecp_shells_;
 }
 
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,

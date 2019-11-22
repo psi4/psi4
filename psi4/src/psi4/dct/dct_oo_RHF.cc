@@ -242,6 +242,8 @@ double DCTSolver::compute_orbital_residual_RHF() {
         }
     }
 
+    global_dpd_->file2_mat_close(&Xia);
+    global_dpd_->file2_mat_close(&Xai);
     global_dpd_->file2_close(&Xai);
     global_dpd_->file2_close(&Xia);
 
@@ -463,6 +465,9 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
         }
     }
     global_dpd_->file2_mat_wrt(&X);
+    global_dpd_->file2_mat_close(&X);
+    global_dpd_->file2_mat_close(&H);
+    global_dpd_->file2_mat_close(&T);
     global_dpd_->file2_close(&T);
     global_dpd_->file2_close(&H);
     global_dpd_->file2_close(&X);
@@ -623,9 +628,7 @@ void DCTSolver::rotate_orbitals_RHF() {
     int rowA = U_a->nrow();
     int colA = U_a->ncol();
 
-    double **U_a_block = block_matrix(rowA, colA);
-    memset(U_a_block[0], 0, sizeof(double) * rowA * colA);
-    U_a_block = U_a->to_block_matrix();
+    auto U_a_block = U_a->to_block_matrix();
     schmidt(U_a_block, rowA, colA, "outfile");
     U_a->set(U_a_block);
     free_block(U_a_block);

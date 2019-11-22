@@ -92,29 +92,15 @@ void DCTSolver::build_tau_RHF() {
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
+    global_dpd_->buf4_close(&L1);
+    global_dpd_->buf4_close(&L2);
 
     // Read MO-basis Tau from disk into the memory
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_VV);
-
-    global_dpd_->file2_mat_rd(&T_OO);
-    global_dpd_->file2_mat_rd(&T_VV);
-
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                aocc_tau_->set(h, i, j, T_OO.matrix[h][i][j]);
-            }
-        }
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b < navirpi_[h]; ++b) {
-                avir_tau_->set(h, a, b, T_VV.matrix[h][a][b]);
-            }
-        }
-    }
+    aocc_tau_ = std::make_shared<Matrix>(&T_OO);
+    avir_tau_ = std::make_shared<Matrix>(&T_VV);
 
     bocc_tau_->copy(aocc_tau_);
     bvir_tau_->copy(avir_tau_);
@@ -229,24 +215,9 @@ void DCTSolver::refine_tau_RHF() {
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_VV);
+    aocc_tau_->write_to_dpdfile2(&T_OO);
+    avir_tau_->write_to_dpdfile2(&T_VV);
 
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                T_OO.matrix[h][i][j] = aocc_tau_->get(h, i, j);
-            }
-        }
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b < navirpi_[h]; ++b) {
-                T_VV.matrix[h][a][b] = avir_tau_->get(h, a, b);
-            }
-        }
-    }
-
-    global_dpd_->file2_mat_wrt(&T_OO);
-    global_dpd_->file2_mat_wrt(&T_VV);
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
@@ -300,6 +271,9 @@ void DCTSolver::transform_tau_RHF() {
         free_block(temp);
     }
 
+    global_dpd_->file2_mat_close(&T_OO);
+    global_dpd_->file2_mat_close(&T_VV);
+    
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
@@ -332,6 +306,8 @@ void DCTSolver::print_opdm_RHF() {
             aPairs.push_back(std::make_pair(T_VV.matrix[h][row][row], h));
     }
 
+    global_dpd_->file2_mat_close(&T_OO);
+    global_dpd_->file2_mat_close(&T_VV);
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
