@@ -49,6 +49,11 @@ class SOBasisSet;
 class Molecule;
 class CdSalcList;
 
+// Enum used to specify the type of derivative computation
+// Default:     use old internal logic
+// SCF: SCF     derivatives code
+// SCFandDF:    derivatives for correlated codes using DF
+// Correlated:  derivatives for correlated codes that use old format (CI/CC) and write RDMs to disk
 enum class DerivCalcType { Default, SCF, SCFandDF, Correlated };
 
 class PSI_API Deriv {
