@@ -647,10 +647,10 @@ void export_mints(py::module& m) {
           "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
 
     py::enum_<DerivCalcType>(m, "DerivCalcType")
-        .value("Default", DerivCalcType::Default)
-        .value("SCF", DerivCalcType::SCF)
-        .value("SCFandDF", DerivCalcType::SCFandDF)
-        .value("Correlated", DerivCalcType::Correlated);
+        .value("Default", DerivCalcType::Default, "Use internal logic.")
+        .value("SCF", DerivCalcType::SCF, "SCF methods.")
+        .value("SCFandDF", DerivCalcType::SCFandDF, "Correlated methods using DF (no reference contribution).")
+        .value("Correlated", DerivCalcType::Correlated, "Correlated methods that write RDMs and Lagrangian to disk.");
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "Computes gradients of wavefunctions")
         .def(py::init<std::shared_ptr<Wavefunction>>())
