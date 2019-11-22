@@ -649,8 +649,8 @@ void export_mints(py::module& m) {
     py::enum_<DerivCalcType>(m, "DerivCalcType")
         .value("Default", DerivCalcType::Default)
         .value("SCF", DerivCalcType::SCF)
-        .value("SCF", DerivCalcType::SCFandDF)
-        .value("SCF", DerivCalcType::Correlated);
+        .value("SCFandDF", DerivCalcType::SCFandDF)
+        .value("Correlated", DerivCalcType::Correlated);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "Computes gradients of wavefunctions")
         .def(py::init<std::shared_ptr<Wavefunction>>())
