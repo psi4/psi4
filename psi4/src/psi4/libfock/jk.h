@@ -429,7 +429,7 @@ class PSI_API JK {
     * @param do_wK do wK matrices or not,
     *        defaults to false
     */
-    void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
+    virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
     /**
     * Set the omega value for wK
     * @param omega range-separation parameter
@@ -1050,6 +1050,12 @@ class PSI_API MemDFJK : public JK {
      */
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
+    /**
+ * A set_do_wK function that affects the dfhelper object.
+ * used to control wK workflow.
+ */
+    void set_do_wK(bool do_wK) override;
+
     // => Accessors <= //
 
     /**
@@ -1063,5 +1069,8 @@ class PSI_API MemDFJK : public JK {
      */
     std::shared_ptr<DFHelper> dfh() { return dfh_; }
 };
+
 }
+
 #endif
+

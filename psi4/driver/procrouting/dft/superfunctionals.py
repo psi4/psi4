@@ -126,7 +126,7 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
         raise ValidationError("SCF: Decide between NL_DISPERSION_PARAMETERS and DFT_VV10_B !!")
 
     # Check SCF_TYPE
-    if sup[0].is_x_lrc() and (core.get_global_option("SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
+    if sup[0].is_x_lrc() and (core.get_global_option("SCF_TYPE") not in ["DISK_DF", "MEM_DF" ,"DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(
             "SCF: SCF_TYPE (%s) not supported for range-separated functionals, plese use SCF_TYPE = 'DF' to automatically select the correct JK build." % core.get_global_option("SCF_TYPE"))
 
