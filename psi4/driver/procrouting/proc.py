@@ -1195,7 +1195,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_global_option("SCF_TYPE") == "DIRECT"))):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
-                                        "JKFIT", core.get_global_option('BASIS'))
+                                        "JKFIT", core.get_global_option('BASIS'),
+                                        puream=wfn.basisset().has_puream())
         wfn.set_basisset("DF_BASIS_SCF", aux_basis)
     else:
         wfn.set_basisset("DF_BASIS_SCF", core.BasisSet.zero_ao_basis_set())
@@ -1483,7 +1484,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         if ("DF" in core.get_option("SCF", "SAD_SCF_TYPE")):
             sad_fitting_list = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_SAD",
                                                    core.get_option("SCF", "DF_BASIS_SAD"),
-                                                   puream=-1,
+                                                   puream=scf_wfn.basisset().has_puream(),
                                                    return_atomlist=True)
             scf_wfn.set_sad_fitting_basissets(sad_fitting_list)
 
@@ -1645,7 +1646,8 @@ def run_dct(name, **kwargs):
 
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
-                                            "JKFIT", core.get_global_option('BASIS'))
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
         dct_wfn = core.dct(ref_wfn)
 
@@ -1778,7 +1780,8 @@ def run_dfocc(name, **kwargs):
         core.print_out("  Constructing Basis Sets for DFOCC...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                            core.get_option("SCF", "DF_BASIS_SCF"),
-                                           "JKFIT", core.get_global_option('BASIS'))
+                                           "JKFIT", core.get_global_option('BASIS'),
+                                           puream=ref_wfn.basisset().has_puream())
 
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
@@ -1934,7 +1937,8 @@ def run_dfocc_property(name, **kwargs):
     core.print_out("  Constructing Basis Sets for DFOCC...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                     core.get_option("SCF", "DF_BASIS_SCF"),
-                                    "JKFIT", core.get_global_option('BASIS'))
+                                    "JKFIT", core.get_global_option('BASIS'),
+                                    puream=ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
@@ -4358,7 +4362,8 @@ def run_fisapt(name, **kwargs):
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
-                                        "JKFIT", core.get_global_option('BASIS'))
+                                        "JKFIT", core.get_global_option('BASIS'),
+                                        puream=ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     sapt_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SAPT",
@@ -4602,7 +4607,8 @@ def run_fnodfcc(name, **kwargs):
     core.print_out("  Constructing Basis Sets for FNOCC...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
-                                        "JKFIT", core.get_global_option('BASIS'))
+                                        "JKFIT", core.get_global_option('BASIS'),
+                                        puream=ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_CC",
@@ -4726,7 +4732,8 @@ def run_fnocc(name, **kwargs):
         core.print_out("  Constructing Basis Sets for FNOCC...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
-                                            "JKFIT", core.get_global_option('BASIS'))
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
@@ -4822,7 +4829,8 @@ def run_cepa(name, **kwargs):
         core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
-                                            "JKFIT", core.get_global_option('BASIS'))
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
 
@@ -4910,7 +4918,8 @@ def run_detcas(name, **kwargs):
         core.print_out("  Constructing Basis Sets for MCSCF...\n\n")
         scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
                                             core.get_option("SCF", "DF_BASIS_SCF"),
-                                            "JKFIT", core.get_global_option('BASIS'))
+                                            "JKFIT", core.get_global_option('BASIS'),
+                                            puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     # The AO case

@@ -37,6 +37,9 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include "libint2/engine.h"
+#include "libint2/shell.h"
+
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
@@ -1864,7 +1867,6 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
         // except assign pairs34_ to pairs12_
         init_shell_pairs34();
     }
-
 }
 
 TwoElectronInt::~TwoElectronInt() {
@@ -2010,12 +2012,12 @@ size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSe
     return mem;
 }
 
-
 size_t TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
     return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
 }
 
-size_t TwoElectronInt::compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int sh1, int sh2, int sh3, int sh4, bool is_bra) {
+size_t TwoElectronInt::compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int sh1, int sh2, int sh3, int sh4,
+                                               bool is_bra) {
     return compute_shell(sh1, sh2, sh1, sh2);
 }
 
@@ -3067,4 +3069,251 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
 
     // Results are in source_
     return size;
+}
+
+///// Libint2 implementation
+
+Libint2TwoElectronInt::Libint2TwoElectronInt(const IntegralFactory *integral, int deriv, double screening_threshold,
+                                             bool use_shell_pairs, bool needs_exchange)
+    : TwoBodyAOInt(integral, deriv), screening_threshold_(screening_threshold), use_shell_pairs_(use_shell_pairs) {
+    // Initialize libint static data
+    libint2::initialize();
+
+    zero_vec_ = std::vector<double>(basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
+                                        basis3()->max_function_per_shell() * basis4()->max_function_per_shell(),
+                                    0.0);
+}
+
+void Libint2TwoElectronInt::common_init() {
+    bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy3 = basis3()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy4 = basis4()->l2_shell(0) == libint2::Shell::unit();
+
+     if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xx_xx;
+    } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xs_xx;
+    } else if (!dummy1 && !dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xx_xs;
+    } else if (!dummy1 && dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xs_xs;
+    } else {
+        throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
+    }
+
+    for (auto &engine : engines_) engine.set(braket_);
+
+    int num_chunks;
+    switch (deriv_) {
+        case 0:
+            num_chunks = 1;
+            break;
+        case 1:
+            num_chunks = 12;
+            break;
+        case 2:
+            num_chunks = 78;
+            break;
+        default:
+            throw PSIEXCEPTION("Libint2 engine only supports up to second derivatives currently.");
+    }
+    buffers_.resize(num_chunks);
+
+    target_full_ = const_cast<double *>(engines_[0].results()[0]);
+    target_ = target_full_;
+
+    // Make sure the engine can handle the type of integral used to build a sieve
+    setup_sieve();
+    // Reset the engine type back to the general case needed
+    create_blocks();
+    const auto max_engine_precision = std::numeric_limits<double>::epsilon() * screening_threshold_;
+
+    size_t npairs = shell_pairs_bra_.size();
+    pairs12_.resize(npairs);
+#pragma omp parallel for
+    for (int pair = 0; pair < npairs; ++pair) {
+        auto s1 = shell_pairs_bra_[pair].first;
+        auto s2 = shell_pairs_bra_[pair].second;
+        pairs12_[pair] = std::make_shared<libint2::ShellPair>(basis1()->l2_shell(s1), basis2()->l2_shell(s2),
+                                                              std::log(max_engine_precision));
+    }
+    npairs = shell_pairs_ket_.size();
+    pairs34_.resize(npairs);
+#pragma omp parallel for
+    for (int pair = 0; pair < npairs; ++pair) {
+        auto s3 = shell_pairs_ket_[pair].first;
+        auto s4 = shell_pairs_ket_[pair].second;
+        pairs34_[pair] = std::make_shared<libint2::ShellPair>(basis3()->l2_shell(s3), basis4()->l2_shell(s4),
+                                                              std::log(max_engine_precision));
+    }
+}
+
+Libint2TwoElectronInt::~Libint2TwoElectronInt() { libint2::finalize(); }
+
+size_t Libint2TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
+    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+}
+
+size_t Libint2TwoElectronInt::compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3,
+                                                      int s4, bool is_bra) {
+#ifdef MINTS_TIMER
+    timer_on("Libint2ERI::compute_shell_for_sieve");
+#endif
+    auto sh1 = bs->l2_shell(s1);
+    auto sh2 = bs->l2_shell(s2);
+    auto sh3 = bs->l2_shell(s3);
+    auto sh4 = bs->l2_shell(s4);
+
+    schwarz_engine_.compute(sh1, sh2, sh3, sh4);
+
+    size_t ntot = sh1.size() * sh2.size() * sh3.size() * sh4.size();
+    buffers_[0] = target_full_ = const_cast<double *>(schwarz_engine_.results()[0]);
+    if (target_full_ == nullptr) {
+        // The caller will try to read the buffer if there isn't a check on the number of ints computed
+        // so we point to a valid array of zeros here to prevent memory bugs in the calling routine.
+        buffers_[0] = target_full_ = zero_vec_.data();
+        ntot = 0;
+    }
+
+#ifdef MINTS_TIMER
+    timer_off("Libint2ERI::compute_shell_for_sieve");
+#endif
+    return ntot;
+}
+
+size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
+#ifdef MINTS_TIMER
+    timer_on("Libint2ERI::compute_shell");
+#endif
+    if (force_cartesian_) {
+        throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
+    }
+
+    auto sh1 = bs1_->l2_shell(s1);
+    auto sh2 = bs2_->l2_shell(s2);
+    auto sh3 = bs3_->l2_shell(s3);
+    auto sh4 = bs4_->l2_shell(s4);
+
+    libint2_wrapper0(sh1, sh2, sh3, sh4);
+
+    size_t ntot = sh1.size() * sh2.size() * sh3.size() * sh4.size();
+
+    buffers_[0] = target_full_ = const_cast<double *>(engines_[0].results()[0]);
+    if (target_full_ == nullptr) {
+        // The caller will try to read the buffer if there isn't a check on the number of ints computed
+        // so we point to a valid array of zeros here to prevent memory bugs in the calling routine.
+        buffers_[0] = target_full_ = zero_vec_.data();
+        ntot = 0;
+    }
+
+#ifdef MINTS_TIMER
+    timer_off("Libint2ERI::compute_shell");
+#endif
+    return ntot;
+}
+
+size_t Libint2TwoElectronInt::compute_shell_deriv1(int s1, int s2, int s3, int s4) {
+#ifdef MINTS_TIMER
+    timer_on("Libint2ERI::compute_shell_deriv1");
+#endif
+    if (force_cartesian_) {
+        throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
+    }
+
+    auto sh1 = bs1_->l2_shell(s1);
+    auto sh2 = bs2_->l2_shell(s2);
+    auto sh3 = bs3_->l2_shell(s3);
+    auto sh4 = bs4_->l2_shell(s4);
+
+    libint2_wrapper1(sh1, sh2, sh3, sh4);
+
+
+    size_t ntot = 0;
+    bool none_computed = engines_[1].results()[0] == nullptr;
+    if (none_computed) {
+        for (int i = 0; i < 12; ++i) {
+            buffers_[i] = zero_vec_.data();
+        }
+    } else {
+        for (int i = 0; i < 12; ++i) {
+            buffers_[i] = engines_[1].results()[i];
+        }
+        ntot = 12 * sh1.size() * sh2.size() * sh3.size() * sh4.size();
+    }
+
+#ifdef MINTS_TIMER
+    timer_off("Libint2ERI::compute_shell_deriv1");
+#endif
+    return ntot;
+}
+
+size_t Libint2TwoElectronInt::compute_shell_deriv2(int s1, int s2, int s3, int s4) {
+#ifdef MINTS_TIMER
+    timer_on("Libint2ERI::compute_shell_deriv2");
+#endif
+    if (force_cartesian_) {
+        throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
+    }
+
+    auto sh1 = bs1_->l2_shell(s1);
+    auto sh2 = bs2_->l2_shell(s2);
+    auto sh3 = bs3_->l2_shell(s3);
+    auto sh4 = bs4_->l2_shell(s4);
+
+    libint2_wrapper2(sh1, sh2, sh3, sh4);
+
+    size_t ntot = 0;
+    bool none_computed = engines_[2].results()[0] == nullptr;
+    if (none_computed) {
+        for (int i = 0; i < 78; ++i) {
+            buffers_[i] = zero_vec_.data();
+        }
+    } else {
+        for (int i = 0; i < 78; ++i) {
+            buffers_[i] = engines_[2].results()[i];
+        }
+        ntot = 78 * sh1.size() * sh2.size() * sh3.size() * sh4.size();
+    }
+
+#ifdef MINTS_TIMER
+    timer_off("Libint2ERI::compute_shell_deriv2");
+#endif
+    return ntot;
+}
+
+void Libint2TwoElectronInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
+    if (npair12 != -1 || npair34 != -1)
+        throw PSIEXCEPTION("npair12 and npair34 arguments are not supported by the Libint2 engine.");
+#ifdef MINTS_TIMER
+    timer_on("Libint2ERI::compute_shell_blocks");
+#endif
+    // This engine doesn't block shells, so each "block" is just 1 shell
+    int s1 = blocks12_[shellpair12][0].first;
+    int s2 = blocks12_[shellpair12][0].second;
+    int s3 = blocks34_[shellpair34][0].first;
+    int s4 = blocks34_[shellpair34][0].second;
+
+    auto sh1 = bs1_->l2_shell(s1);
+    auto sh2 = bs2_->l2_shell(s2);
+    auto sh3 = bs3_->l2_shell(s3);
+    auto sh4 = bs4_->l2_shell(s4);
+
+    size_t ntot = 0;
+
+    const auto *sp12 = pairs12_[shellpair12].get();
+    const auto *sp34 = pairs34_[shellpair34].get();
+    libint2_wrapper0(sh1, sh2, sh3, sh4, sp12, sp34);
+
+    target_full_ = const_cast<double *>(engines_[0].results()[0]);
+    if (target_full_) {
+        buffers_[0] = engines_[0].results()[0];
+        ntot = sh1.size() * sh2.size() * sh3.size() * sh4.size();
+    } else {
+        target_full_ = zero_vec_.data();
+    }
+
+#ifdef MINTS_TIMER
+    timer_off("Libint2ERI::compute_shell_blocks");
+#endif
 }

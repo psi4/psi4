@@ -28,10 +28,10 @@ ntransforms = 6
 # form metric
 mints = psi4.core.MintsHelper(primary)
 zero_bas = psi4.core.BasisSet.zero_ao_basis_set()
-Jmetric = np.squeeze(mints.ao_eri(zero_bas, aux, zero_bas, aux))
+Jmetric = np.squeeze(mints.ao_eri(aux, zero_bas, aux, zero_bas))
 
 # form inverse metric
-Jmetric_inv = mints.ao_eri(zero_bas, aux, zero_bas, aux)
+Jmetric_inv = mints.ao_eri(aux, zero_bas, aux, zero_bas)
 Jmetric_inv.power(-0.5, 1.e-12)
 Jmetric_inv = np.squeeze(Jmetric_inv)
 

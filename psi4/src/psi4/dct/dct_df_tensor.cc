@@ -159,6 +159,7 @@ void DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<Ba
 #endif
 
         Jint[thread]->compute_shell(P, 0, Q, 0);
+        buffer[thread] = Jint[thread]->buffer();
 
         int nP = auxiliary->shell(P).nfunction();
         int oP = auxiliary->shell(P).function_index();
@@ -276,6 +277,7 @@ void DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
             int N = shell_pairs[MN].second;
 
             eri[thread]->compute_shell(P, 0, M, N);
+            buffer[thread] = eri[thread]->buffer();
 
             int nP = auxiliary->shell(P).nfunction();
             int oP = auxiliary->shell(P).function_index();
@@ -2613,6 +2615,7 @@ void DCTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_pt
 #endif
 
         Jint[thread]->compute_shell(P, 0, Q, 0);
+        buffer[thread] = Jint[thread]->buffer();
 
         int nP = auxiliary->shell(P).nfunction();
         int oP = auxiliary->shell(P).function_index();
@@ -2730,6 +2733,7 @@ void DCTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<
             int N = shell_pairs[MN].second;
 
             eri[thread]->compute_shell(P, 0, M, N);
+            buffer[thread] = eri[thread]->buffer();
 
             int nP = auxiliary->shell(P).nfunction();
             int oP = auxiliary->shell(P).function_index();

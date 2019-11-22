@@ -808,15 +808,20 @@ void export_mints(py::module& m) {
     py::class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>>(m, "AngularMomentumInt", pyOneBodyAOInt,
                                                                         "Computes angular momentum integrals");
 
+    typedef bool (TwoBodyAOInt::*compute_shell_significant)(int, int, int, int);
     typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
                                                                            "Two body integral base class");
     pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
-                       "Compute ERIs between 4 shells");  // <-- Semicolon
+                       "Compute ERIs between 4 shells")
+        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
+                       "Determines if the P,Q,R,S shell combination is significant");
 
     py::class_<TwoElectronInt, std::shared_ptr<TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
                                                                 "Computes two-electron repulsion integrals")
-        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells");
+        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
+        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
+                       "Determines if the P,Q,R,S shell combination is significant");
 
     py::class_<ERI, std::shared_ptr<ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron reuplsion integrals");
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
@@ -853,7 +858,7 @@ void export_mints(py::module& m) {
         // py::return_value_policy<manage_new_object>(), "docstring").
         .def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
              "Returns an ERI iterator object, only coded for standard ERIs")
-        .def("eri", &IntegralFactory::eri, "Returns an ERI integral object", "deriv"_a = 0, "use_shell_pairs"_a = true)
+        .def("eri", &IntegralFactory::eri, "Returns an ERI integral object", "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
         .def("f12", &IntegralFactory::f12, "Returns an F12 integral object", "cf"_a, "deriv"_a = 0,
              "use_shell_pairs"_a = true)
         .def("f12g12", &IntegralFactory::f12g12, "Returns an F12G12 integral object", "cf"_a, "deriv"_a = 0,
@@ -863,7 +868,7 @@ void export_mints(py::module& m) {
         .def("f12_squared", &IntegralFactory::f12_squared, "Returns an F12 squared integral object", "cf"_a,
              "deriv"_a = 0, "use_shell_pairs"_a = true)
         .def("erf_eri", &IntegralFactory::erf_eri, "Returns and erf ERI integral object (omega integral)", "omega"_a,
-             "deriv"_a = 0, "use_shell_pairs"_a = true)
+             "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
         .def("erf_complement_eri", &IntegralFactory::erf_complement_eri,
              "Returns an erf complement ERI integral object (omega integral)", "omega"_a, "deriv"_a = 0,
              "use_shell_pairs"_a = true)

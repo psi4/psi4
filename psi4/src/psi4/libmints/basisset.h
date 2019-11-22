@@ -35,8 +35,6 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/psi4-dec.h"
 
-#include <libint2.hpp>
-
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -46,6 +44,9 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 
+namespace libint2 {
+    class Shell;
+}
 namespace psi {
 
 class Molecule;

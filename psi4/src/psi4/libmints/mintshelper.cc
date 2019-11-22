@@ -836,9 +836,9 @@ SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_
     int qfxn = basisset_->shell(Q).nfunction();
     auto I = std::make_shared<Matrix>(label, mfxn * nfxn, pfxn * qfxn);
     double **Ip = I->pointer();
-    const double *buffer = ints->buffer();
 
     ints->compute_shell(M, N, P, Q);
+    const double *buffer = ints->buffer();
 
     for (int m = 0, index = 0; m < mfxn; m++) {
         for (int n = 0; n < nfxn; n++) {
@@ -947,12 +947,12 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
 
     auto I = std::make_shared<Matrix>(label, nbf1 * nbf2, nbf3);
     double **Ip = I->pointer();
-    const double *buffer = ints->buffer();
 
     for (int M = 0; M < bs1->nshell(); M++) {
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
                 ints->compute_shell(M, N, P);
+                const double *buffer = ints->buffer();
                 int Mfi = bs1->shell(M).function_index();
                 int Nfi = bs2->shell(N).function_index();
                 int Pfi = bs3->shell(P).function_index();
@@ -3085,8 +3085,8 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, double omega,
         grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1 * nbf2, nbf3 * nbf4));
     }
 
-    const double *buffer = ints->buffer();
 
+    const auto &buffers = ints->buffers();
     for (int P = 0; P < bs1->nshell(); P++) {
         for (int Q = 0; Q < bs2->nshell(); Q++) {
             for (int R = 0; R < bs3->nshell(); R++) {
@@ -3135,19 +3135,18 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, double omega,
                                     int i = (Poff + p) * nbf2 + Qoff + q;
                                     int j = (Roff + r) * nbf4 + Soff + s;
 
-                                    Ax = buffer[0 * stride + delta];
-                                    Ay = buffer[1 * stride + delta];
-                                    Az = buffer[2 * stride + delta];
-                                    Cx = buffer[3 * stride + delta];
-                                    Cy = buffer[4 * stride + delta];
-                                    Cz = buffer[5 * stride + delta];
-                                    Dx = buffer[6 * stride + delta];
-                                    Dy = buffer[7 * stride + delta];
-                                    Dz = buffer[8 * stride + delta];
-
-                                    Bx = -(Ax + Cx + Dx);
-                                    By = -(Ay + Cy + Dy);
-                                    Bz = -(Az + Cz + Dz);
+                                    Ax = buffers[0][delta];
+                                    Ay = buffers[1][delta];
+                                    Az = buffers[2][delta];
+                                    Bx = buffers[3][delta];
+                                    By = buffers[4][delta];
+                                    Bz = buffers[5][delta];
+                                    Cx = buffers[6][delta];
+                                    Cy = buffers[7][delta];
+                                    Cz = buffers[8][delta];
+                                    Dx = buffers[9][delta];
+                                    Dy = buffers[10][delta];
+                                    Dz = buffers[11][delta];
 
                                     if (Pcenter == atom) {
                                         X += Ax;
@@ -3320,8 +3319,8 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
 #endif
 
         ints[thread]->compute_shell_deriv2(P, Q, R, S);
+        const auto& buffers = ints[thread]->buffers();
 
-        const double *buffer = ints[thread]->buffer();
         std::unordered_map<std::string, double> hess_map;
 
         for (int p = 0; p < Psize; p++) {
@@ -3330,119 +3329,94 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
                     for (int s = 0; s < Ssize; s++) {
                         int i = (Poff + p) * nbf2 + Qoff + q;
                         int j = (Roff + r) * nbf4 + Soff + s;
-
-                        hess_map["AxAx"] = buffer[9 * stride + delta];
-                        hess_map["AxAy"] = buffer[10 * stride + delta];
-                        hess_map["AxAz"] = buffer[11 * stride + delta];
-                        hess_map["AxCx"] = buffer[12 * stride + delta];
-                        hess_map["AxCy"] = buffer[13 * stride + delta];
-                        hess_map["AxCz"] = buffer[14 * stride + delta];
-                        hess_map["AxDx"] = buffer[15 * stride + delta];
-                        hess_map["AxDy"] = buffer[16 * stride + delta];
-                        hess_map["AxDz"] = buffer[17 * stride + delta];
-                        hess_map["AyAy"] = buffer[18 * stride + delta];
-                        hess_map["AyAz"] = buffer[19 * stride + delta];
-                        hess_map["AyCx"] = buffer[20 * stride + delta];
-                        hess_map["AyCy"] = buffer[21 * stride + delta];
-                        hess_map["AyCz"] = buffer[22 * stride + delta];
-                        hess_map["AyDx"] = buffer[23 * stride + delta];
-                        hess_map["AyDy"] = buffer[24 * stride + delta];
-                        hess_map["AyDz"] = buffer[25 * stride + delta];
-                        hess_map["AzAz"] = buffer[26 * stride + delta];
-                        hess_map["AzCx"] = buffer[27 * stride + delta];
-                        hess_map["AzCy"] = buffer[28 * stride + delta];
-                        hess_map["AzCz"] = buffer[29 * stride + delta];
-                        hess_map["AzDx"] = buffer[30 * stride + delta];
-                        hess_map["AzDy"] = buffer[31 * stride + delta];
-                        hess_map["AzDz"] = buffer[32 * stride + delta];
-                        hess_map["CxCx"] = buffer[33 * stride + delta];
-                        hess_map["CxCy"] = buffer[34 * stride + delta];
-                        hess_map["CxCz"] = buffer[35 * stride + delta];
-                        hess_map["CxDx"] = buffer[36 * stride + delta];
-                        hess_map["CxDy"] = buffer[37 * stride + delta];
-                        hess_map["CxDz"] = buffer[38 * stride + delta];
-                        hess_map["CyCy"] = buffer[39 * stride + delta];
-                        hess_map["CyCz"] = buffer[40 * stride + delta];
-                        hess_map["CyDx"] = buffer[41 * stride + delta];
-                        hess_map["CyDy"] = buffer[42 * stride + delta];
-                        hess_map["CyDz"] = buffer[43 * stride + delta];
-                        hess_map["CzCz"] = buffer[44 * stride + delta];
-                        hess_map["CzDx"] = buffer[45 * stride + delta];
-                        hess_map["CzDy"] = buffer[46 * stride + delta];
-                        hess_map["CzDz"] = buffer[47 * stride + delta];
-                        hess_map["DxDx"] = buffer[48 * stride + delta];
-                        hess_map["DxDy"] = buffer[49 * stride + delta];
-                        hess_map["DxDz"] = buffer[50 * stride + delta];
-                        hess_map["DyDy"] = buffer[51 * stride + delta];
-                        hess_map["DyDz"] = buffer[52 * stride + delta];
-                        hess_map["DzDz"] = buffer[53 * stride + delta];
-
-                        // Translational invariance relationships
-
-                        hess_map["AxBx"] = -(hess_map["AxAx"] + hess_map["AxCx"] + hess_map["AxDx"]);
-                        hess_map["AxBy"] = -(hess_map["AxAy"] + hess_map["AxCy"] + hess_map["AxDy"]);
-                        hess_map["AxBz"] = -(hess_map["AxAz"] + hess_map["AxCz"] + hess_map["AxDz"]);
-                        hess_map["AyBx"] = -(hess_map["AxAy"] + hess_map["AyCx"] + hess_map["AyDx"]);
-                        hess_map["AyBy"] = -(hess_map["AyAy"] + hess_map["AyCy"] + hess_map["AyDy"]);
-                        hess_map["AyBz"] = -(hess_map["AyAz"] + hess_map["AyCz"] + hess_map["AyDz"]);
-                        hess_map["AzBx"] = -(hess_map["AxAz"] + hess_map["AzCx"] + hess_map["AzDx"]);
-                        hess_map["AzBy"] = -(hess_map["AyAz"] + hess_map["AzCy"] + hess_map["AzDy"]);
-                        hess_map["AzBz"] = -(hess_map["AzAz"] + hess_map["AzCz"] + hess_map["AzDz"]);
-                        hess_map["BxCx"] = -(hess_map["AxCx"] + hess_map["CxCx"] + hess_map["CxDx"]);
-                        hess_map["BxCy"] = -(hess_map["AxCy"] + hess_map["CxCy"] + hess_map["CyDx"]);
-                        hess_map["BxCz"] = -(hess_map["AxCz"] + hess_map["CxCz"] + hess_map["CzDx"]);
-                        hess_map["ByCx"] = -(hess_map["AyCx"] + hess_map["CxCy"] + hess_map["CxDy"]);
-                        hess_map["ByCy"] = -(hess_map["AyCy"] + hess_map["CyCy"] + hess_map["CyDy"]);
-                        hess_map["ByCz"] = -(hess_map["AyCz"] + hess_map["CyCz"] + hess_map["CzDy"]);
-                        hess_map["BzCx"] = -(hess_map["AzCx"] + hess_map["CxCz"] + hess_map["CxDz"]);
-                        hess_map["BzCy"] = -(hess_map["AzCy"] + hess_map["CyCz"] + hess_map["CyDz"]);
-                        hess_map["BzCz"] = -(hess_map["AzCz"] + hess_map["CzCz"] + hess_map["CzDz"]);
-                        hess_map["BxDx"] = -(hess_map["AxDx"] + hess_map["CxDx"] + hess_map["DxDx"]);
-                        hess_map["BxDy"] = -(hess_map["AxDy"] + hess_map["CxDy"] + hess_map["DxDy"]);
-                        hess_map["BxDz"] = -(hess_map["AxDz"] + hess_map["CxDz"] + hess_map["DxDz"]);
-                        hess_map["ByDx"] = -(hess_map["AyDx"] + hess_map["CyDx"] + hess_map["DxDy"]);
-                        hess_map["ByDy"] = -(hess_map["AyDy"] + hess_map["CyDy"] + hess_map["DyDy"]);
-                        hess_map["ByDz"] = -(hess_map["AyDz"] + hess_map["CyDz"] + hess_map["DyDz"]);
-                        hess_map["BzDx"] = -(hess_map["AzDx"] + hess_map["CzDx"] + hess_map["DxDz"]);
-                        hess_map["BzDy"] = -(hess_map["AzDy"] + hess_map["CzDy"] + hess_map["DyDz"]);
-                        hess_map["BzDz"] = -(hess_map["AzDz"] + hess_map["CzDz"] + hess_map["DzDz"]);
-
-                        hess_map["BxBx"] = hess_map["AxAx"] + hess_map["AxCx"] + hess_map["AxDx"] + hess_map["AxCx"] +
-                                           hess_map["CxCx"] + hess_map["CxDx"] + hess_map["AxDx"] + hess_map["CxDx"] +
-                                           hess_map["DxDx"];
-
-                        hess_map["ByBy"] = hess_map["AyAy"] + hess_map["AyCy"] + hess_map["AyDy"] + hess_map["AyCy"] +
-                                           hess_map["CyCy"] + hess_map["CyDy"] + hess_map["AyDy"] + hess_map["CyDy"] +
-                                           hess_map["DyDy"];
-
-                        hess_map["BzBz"] = hess_map["AzAz"] + hess_map["AzCz"] + hess_map["AzDz"] + hess_map["AzCz"] +
-                                           hess_map["CzCz"] + hess_map["CzDz"] + hess_map["AzDz"] + hess_map["CzDz"] +
-                                           hess_map["DzDz"];
-
-                        hess_map["BxBy"] = hess_map["AxAy"] + hess_map["AxCy"] + hess_map["AxDy"] + hess_map["AyCx"] +
-                                           hess_map["CxCy"] + hess_map["CxDy"] + hess_map["AyDx"] + hess_map["CyDx"] +
-                                           hess_map["DxDy"];
-
-                        hess_map["BxBz"] = hess_map["AxAz"] + hess_map["AxCz"] + hess_map["AxDz"] + hess_map["AzCx"] +
-                                           hess_map["CxCz"] + hess_map["CxDz"] + hess_map["AzDx"] + hess_map["CzDx"] +
-                                           hess_map["DxDz"];
-
-                        hess_map["ByBz"] = hess_map["AyAz"] + hess_map["AyCz"] + hess_map["AyDz"] + hess_map["AzCy"] +
-                                           hess_map["CyCz"] + hess_map["CyDz"] + hess_map["AzDy"] + hess_map["CzDy"] +
-                                           hess_map["DyDz"];
+                        hess_map["AxAx"] = buffers[0][delta];
+                        hess_map["AxAy"] = buffers[1][delta];
+                        hess_map["AxAz"] = buffers[2][delta];
+                        hess_map["AxBx"] = buffers[3][delta];
+                        hess_map["AxBy"] = buffers[4][delta];
+                        hess_map["AxBz"] = buffers[5][delta];
+                        hess_map["AxCx"] = buffers[6][delta];
+                        hess_map["AxCy"] = buffers[7][delta];
+                        hess_map["AxCz"] = buffers[8][delta];
+                        hess_map["AxDx"] = buffers[9][delta];
+                        hess_map["AxDy"] = buffers[10][delta];
+                        hess_map["AxDz"] = buffers[11][delta];
+                        hess_map["AyAy"] = buffers[12][delta];
+                        hess_map["AyAz"] = buffers[13][delta];
+                        hess_map["AyBx"] = buffers[14][delta];
+                        hess_map["AyBy"] = buffers[15][delta];
+                        hess_map["AyBz"] = buffers[16][delta];
+                        hess_map["AyCx"] = buffers[17][delta];
+                        hess_map["AyCy"] = buffers[18][delta];
+                        hess_map["AyCz"] = buffers[19][delta];
+                        hess_map["AyDx"] = buffers[20][delta];
+                        hess_map["AyDy"] = buffers[21][delta];
+                        hess_map["AyDz"] = buffers[22][delta];
+                        hess_map["AzAz"] = buffers[23][delta];
+                        hess_map["AzBx"] = buffers[24][delta];
+                        hess_map["AzBy"] = buffers[25][delta];
+                        hess_map["AzBz"] = buffers[26][delta];
+                        hess_map["AzCx"] = buffers[27][delta];
+                        hess_map["AzCy"] = buffers[28][delta];
+                        hess_map["AzCz"] = buffers[29][delta];
+                        hess_map["AzDx"] = buffers[30][delta];
+                        hess_map["AzDy"] = buffers[31][delta];
+                        hess_map["AzDz"] = buffers[32][delta];
+                        hess_map["BxBx"] = buffers[33][delta];
+                        hess_map["BxBy"] = buffers[34][delta];
+                        hess_map["BxBz"] = buffers[35][delta];
+                        hess_map["BxCx"] = buffers[36][delta];
+                        hess_map["BxCy"] = buffers[37][delta];
+                        hess_map["BxCz"] = buffers[38][delta];
+                        hess_map["BxDx"] = buffers[39][delta];
+                        hess_map["BxDy"] = buffers[40][delta];
+                        hess_map["BxDz"] = buffers[41][delta];
+                        hess_map["ByBy"] = buffers[42][delta];
+                        hess_map["ByBz"] = buffers[43][delta];
+                        hess_map["ByCx"] = buffers[44][delta];
+                        hess_map["ByCy"] = buffers[45][delta];
+                        hess_map["ByCz"] = buffers[46][delta];
+                        hess_map["ByDx"] = buffers[47][delta];
+                        hess_map["ByDy"] = buffers[48][delta];
+                        hess_map["ByDz"] = buffers[49][delta];
+                        hess_map["BzBz"] = buffers[50][delta];
+                        hess_map["BzCx"] = buffers[51][delta];
+                        hess_map["BzCy"] = buffers[52][delta];
+                        hess_map["BzCz"] = buffers[53][delta];
+                        hess_map["BzDx"] = buffers[54][delta];
+                        hess_map["BzDy"] = buffers[55][delta];
+                        hess_map["BzDz"] = buffers[56][delta];
+                        hess_map["CxCx"] = buffers[57][delta];
+                        hess_map["CxCy"] = buffers[58][delta];
+                        hess_map["CxCz"] = buffers[59][delta];
+                        hess_map["CxDx"] = buffers[60][delta];
+                        hess_map["CxDy"] = buffers[61][delta];
+                        hess_map["CxDz"] = buffers[62][delta];
+                        hess_map["CyCy"] = buffers[63][delta];
+                        hess_map["CyCz"] = buffers[64][delta];
+                        hess_map["CyDx"] = buffers[65][delta];
+                        hess_map["CyDy"] = buffers[66][delta];
+                        hess_map["CyDz"] = buffers[67][delta];
+                        hess_map["CzCz"] = buffers[68][delta];
+                        hess_map["CzDx"] = buffers[69][delta];
+                        hess_map["CzDy"] = buffers[70][delta];
+                        hess_map["CzDz"] = buffers[71][delta];
+                        hess_map["DxDx"] = buffers[72][delta];
+                        hess_map["DxDy"] = buffers[73][delta];
+                        hess_map["DxDz"] = buffers[74][delta];
+                        hess_map["DyDy"] = buffers[75][delta];
+                        hess_map["DyDz"] = buffers[76][delta];
+                        hess_map["DzDz"] = buffers[77][delta];
 
                         hess_map["AyAx"] = hess_map["AxAy"];
                         hess_map["AzAx"] = hess_map["AxAz"];
                         hess_map["AzAy"] = hess_map["AyAz"];
-
                         hess_map["ByBx"] = hess_map["BxBy"];
                         hess_map["BzBx"] = hess_map["BxBz"];
                         hess_map["BzBy"] = hess_map["ByBz"];
-
                         hess_map["CyCx"] = hess_map["CxCy"];
                         hess_map["CzCx"] = hess_map["CxCz"];
                         hess_map["CzCy"] = hess_map["CyCz"];
-
                         hess_map["DyDx"] = hess_map["DxDy"];
                         hess_map["DzDx"] = hess_map["DxDz"];
                         hess_map["DzDy"] = hess_map["DyDz"];

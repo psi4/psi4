@@ -53,7 +53,7 @@
 #include "psi4/libscf_solver/uhf.h"
 
 #include <algorithm>
-
+#include <mutex>
 #include <sstream>
 
 #ifdef _OPENMP

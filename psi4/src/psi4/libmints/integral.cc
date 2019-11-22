@@ -55,10 +55,6 @@
 #include "psi4/libmints/siminteri.h"
 #endif
 
-#include <libint/libint.h>
-#include <libint2.hpp>
-#include <libint2/engine.h>
-
 using namespace psi;
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -85,22 +81,6 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     bs3_ = bs3;
     bs4_ = bs4;
 
-    bool dummy1 = bs1->l2_shell(0) == libint2::Shell::unit();
-    bool dummy2 = bs2->l2_shell(0) == libint2::Shell::unit();
-    bool dummy3 = bs3->l2_shell(0) == libint2::Shell::unit();
-    bool dummy4 = bs4->l2_shell(0) == libint2::Shell::unit();
-
-    if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
-        braket_ = libint2::BraKet::xx_xx;
-    } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
-        braket_ = libint2::BraKet::xs_xx;
-    } else if (!dummy1 && !dummy2 && !dummy3 && dummy4) {
-        braket_ = libint2::BraKet::xx_xs;
-    } else if (!dummy1 && dummy2 && !dummy3 && dummy4) {
-        braket_ = libint2::BraKet::xs_xs;
-    } else {
-        throw PSIEXCEPTION("Bad BraKet type in IntegralFactory::set_basis()");
-    }
     // Use the max am from libint
     init_spherical_harmonics(LIBINT_MAX_AM + 1);
 }
@@ -221,26 +201,13 @@ OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
 #ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
 #endif
-    if (integral_package == "LIBINT2") {
-        switch (braket_) {
-            case libint2::BraKet::xx_xx:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xx_xx>(this, deriv, threshold, use_shell_pairs);
-            case libint2::BraKet::xs_xx:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xs_xx>(this, deriv, threshold, use_shell_pairs);
-            case libint2::BraKet::xx_xs:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xx_xs>(this, deriv, threshold, use_shell_pairs);
-            case libint2::BraKet::xs_xs:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xs_xs>(this, deriv, threshold, use_shell_pairs);
-            default:
-                throw PSIEXCEPTION("Unrecognized BraKet type in IntegralFactory::erd_eri");
-            }
-        }
+    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef USING_erd
     if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
@@ -252,26 +219,13 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
     return new ERI(this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
 #ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
 #endif
-    if (integral_package == "LIBINT2") {
-        switch (braket_) {
-            case libint2::BraKet::xx_xx:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xx_xx>(this, deriv, threshold, use_shell_pairs);
-            case libint2::BraKet::xs_xx:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xs_xx>(this, deriv, threshold, use_shell_pairs);
-            case libint2::BraKet::xx_xs:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xx_xs>(this, deriv, threshold, use_shell_pairs);
-            case libint2::BraKet::xs_xs:
-                return new Libint2TwoElectronInt<libint2::Operator::coulomb, libint2::BraKet::xs_xs>(this, deriv, threshold, use_shell_pairs);
-            default:
-                throw PSIEXCEPTION("Unrecognized BraKet type in IntegralFactory::eri");
-            }
-    }
+    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef USING_erd
     if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
@@ -283,7 +237,10 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs) {
     return new ERI(this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
+    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    if (integral_package == "LIBINT2") return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
     return new ErfERI(omega, this, deriv, use_shell_pairs);
 }
 

@@ -2477,6 +2477,7 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
             Bx = -(Ax + Cx + Dx);
             By = -(Ay + Cy + Dy);
             Bz = -(Az + Cz + Dz);
+
             int Pam = primary_->shell(P).am();
             int Qam = primary_->shell(Q).am();
             int Ram = primary_->shell(R).am();
@@ -2566,7 +2567,7 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
         auto blocksPQ = ints[0]->get_blocks12();
         auto blocksRS = ints[0]->get_blocks34();
         bool use_batching = blocksPQ != blocksRS;
-
+    
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         // loop over all the blocks of (P>=Q|
         for (size_t blockPQ_idx = 0; blockPQ_idx < blocksPQ.size(); blockPQ_idx++) {
@@ -2578,7 +2579,6 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
 #endif
             double** Jp = Jgrad[rank]->pointer();
             double** Kp = Kgrad[rank]->pointer();
-            auto& buffers = ints[rank]->buffers();
             // loop over all the blocks of |R>=S)
             int loop_start = use_batching ? 0 : blockPQ_idx;
             for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
@@ -2588,6 +2588,7 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
 
                 // compute the integrals and continue if none were computed
                 ints[rank]->compute_shell_blocks_deriv1(blockPQ_idx, blockRS_idx);
+                auto& buffers = ints[rank]->buffers();
 
                 const double* pAx = buffers[0];
                 const double* pAy = buffers[1];

@@ -36,8 +36,6 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include <vector>
 
-#include <libint2/engine.h>
-
 #include "onebody.h"
 #include "twobody.h"
 
@@ -396,9 +394,6 @@ class PSI_API IntegralFactory {
     /// Center 4 basis set
     std::shared_ptr<BasisSet> bs4_;
 
-    /// An enum describing whether each of the four basis sets are dummies
-    libint2::BraKet braket_;
-
     /// Provides ability to transform to sphericals (d=0, f=1, g=2)
     std::vector<SphericalTransform> spherical_transforms_;
     /// Provides ability to transform from sphericals (d=0, f=1, g=2)
@@ -493,13 +488,13 @@ class PSI_API IntegralFactory {
     virtual OneBodyAOInt* pcm_potentialint();
 
     /// Returns an ERI integral object
-    virtual TwoBodyAOInt* eri(int deriv = 0, bool use_shell_pairs = true);
+    virtual TwoBodyAOInt* eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual TwoBodyAOInt* erd_eri(int deriv = 0, bool use_shell_pairs = true);
+    virtual TwoBodyAOInt* erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true);
+    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf complement ERI integral object (omega integral)
     virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true);

@@ -156,17 +156,6 @@ class PSI_API TwoBodyAOInt {
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);
 
-    // make public
-    ///// Square of ceiling of shell quartet (MN|RS)
-    // inline double shell_ceiling2(int M, int N, int R, int S) {
-    //    return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
-    //}
-
-    ///// Square of ceiling of integral (mn|rs)
-    // inline double function_ceiling2(int m, int n, int r, int s) {
-    //    return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
-    //}
-
     /*! Create the optimal blocks of shell pairs
      *
      * Default implementation
@@ -207,8 +196,34 @@ class PSI_API TwoBodyAOInt {
     /// Basis set on center four
     std::shared_ptr<BasisSet> basis4();
 
+    /*
+     * Sieve information
+     */
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) { return sieve_impl_(M, N, R, S); };
+    /// Square of ceiling of shell quartet (MN|RS)
+     inline double shell_ceiling2(int M, int N, int R, int S) {
+        return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
+    }
+    /// Square of ceiling of integral (mn|rs)
+     inline double function_ceiling2(int m, int n, int r, int s) {
+        return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
+    }
+
+    /// Significant unique function pair list, with only m>=n elements listed
+    const std::vector<std::pair<int, int> >& function_pairs() const { return function_pairs_; }
+    /// Significant unique shell pair pair list, with only M>=N elements listed
+    const std::vector<std::pair<int, int> >& shell_pairs() const { return shell_pairs_; }
+    /// Unique function pair indexing, element m*(m+1)/2 + n (where m>=n) gives the dense index or
+    /// -1 if the function pair does not contribute
+    const std::vector<long int> function_pairs_to_dense() const { return function_pairs_reverse_; }
+    /// Unique shell pair indexing, element M*(M+1)/2 + N (where M>=N) gives the dense index or
+    /// -1 if the shell pair does not contribute
+    const std::vector<long int> shell_pairs_to_dense() const { return shell_pairs_reverse_; }
+    /// Significant function pairs; for each function it gives a list of functions that contribute to make a function pair
+    const std::vector<std::vector<int> >& significant_partners_per_function() const { return function_to_function_; }
+    /// Significant shell pairs; for each shell it gives a list of shells that contribute to make a shell pair
+    const std::vector<std::vector<int> >& significant_parterns_per_shell() const { return shell_to_shell_; }
 
     /// Sets whether we're forcing this object to always generate Cartesian integrals
     void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }

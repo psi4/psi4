@@ -40,7 +40,7 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
     typedef std::vector<simint_multi_shellpair> ShellPairVec;
     typedef std::vector<simint_shell> ShellVec;
 
-    SimintTwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    SimintTwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
     ~SimintTwoElectronInt() override;
 
     size_t compute_shell(const AOShellCombinationsIterator&) override;
@@ -92,7 +92,7 @@ class SimintERI : public SimintTwoElectronInt {
     bool cloneable() const override { return true; };
     SimintERI* clone() const override { return new SimintERI(*this); }
 
-    SimintERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    SimintERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
 };
 
 }  // namespace psi

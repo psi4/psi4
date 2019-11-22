@@ -408,6 +408,7 @@ void SAPT2::df_integrals() {
             double tei, max = 0.0;
 
             ao_eri->compute_shell(P, Q, P, Q);
+            ao_buffer = ao_eri->buffer();
 
             for (int w = 0; w < numw; w++) {
                 for (int x = 0; x < numx; x++) {
@@ -425,6 +426,7 @@ void SAPT2::df_integrals() {
         double tei, max = 0.0;
 
         Jint->compute_shell(P, 0, P, 0);
+        Jbuffer = Jint->buffer();
 
         for (int w = 0; w < numw; w++) {
             tei = Jbuffer[w];
@@ -482,6 +484,7 @@ void SAPT2::df_integrals() {
 
             if (sqrt(Schwartz[mn] * DFSchwartz[Pshell]) > schwarz_) {
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
 
                 for (int P = 0, index = 0; P < numPshell; ++P) {
                     for (int mu = 0; mu < nummu; ++mu) {
@@ -601,6 +604,7 @@ void SAPT2::df_integrals() {
 
             if (sqrt(Schwartz[mn] * DFSchwartz[Pshell]) > schwarz_) {
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
 
                 for (int P = 0, index = 0; P < numPshell; ++P) {
                     for (int mu = 0; mu < nummu; ++mu) {
@@ -713,6 +717,7 @@ void SAPT2::df_integrals() {
 
             if (sqrt(Schwartz[mn] * DFSchwartz[Pshell]) > schwarz_) {
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
 
                 for (int P = 0, index = 0; P < numPshell; ++P) {
                     for (int mu = 0; mu < nummu; ++mu) {

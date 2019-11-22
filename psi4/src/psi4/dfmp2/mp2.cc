@@ -2830,6 +2830,7 @@ void UDFMP2::form_Aia() {
             int sn = basisset_->shell(N).function_index();
 
             eri[thread]->compute_shell(Q, 0, M, N);
+            buffer[thread] = eri[thread]->buffer();
 
             for (int oq = 0; oq < nq; oq++) {
                 for (int om = 0; om < nm; om++) {

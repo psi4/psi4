@@ -34,6 +34,8 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libpsi4util/process.h"
 
+#include "libint2/shell.h"
+
 ;
 using namespace psi;
 
@@ -76,8 +78,8 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
         screening_type_ = ScreeningType::CSAM;
     else
         throw PSIEXCEPTION("Unknown screening type " + screentype + " in TwoBodyAOInt()");
-
-    if (!screening_threshold_ == 0.0) screening_type_ = ScreeningType::None;
+    
+    if (screening_threshold_ == 0.0) screening_type_ = ScreeningType::None;
 }
 
 TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
@@ -136,6 +138,7 @@ void TwoBodyAOInt::setup_sieve() {
         default:
             throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");
     }
+
 
     // We assume that only the bra or the ket has a pair that generates a sieve.  If all bases are the same, either
     // can be used.  If only bra or ket has a matching pair, that matching pair is used.  If both bra and ket have
@@ -280,6 +283,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
         for (int P = 0; P < nshell_; P++) {
             for (int Q = P; Q >= 0; Q--) {
+            //for (int Q = 0; Q < nshell_; Q++) {
                 int nP = bs->shell(P).nfunction();
                 int nQ = bs->shell(Q).nfunction();
                 int oP = bs->shell(P).function_index();
@@ -299,7 +303,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
                 double max_val = 0.0;
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        max_val = std::max(max_val, std::abs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ * nQ + 1)]) /
+                        max_val = std::max(max_val, std::abs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ + 1)]) /
                                                         (function_sqrt_[p + oP] * function_sqrt_[q + oQ]));
                     }
                 }

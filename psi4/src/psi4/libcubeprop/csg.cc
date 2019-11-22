@@ -403,7 +403,6 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
         auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
 
     std::shared_ptr<TwoBodyAOInt> Jints(Jfact->eri());
-    const double* Jbuffer = Jints->buffer();
 
     for (int P = 0; P < auxiliary_->nshell(); P++) {
         int nP = auxiliary_->shell(P).nfunction();
@@ -414,6 +413,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
             int oQ = auxiliary_->shell(Q).function_index();
 
             Jints->compute_shell(P, 0, Q, 0);
+            const double* Jbuffer = Jints->buffer();
 
             int index = 0;
             for (int p = 0; p < nP; p++) {

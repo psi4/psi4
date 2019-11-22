@@ -30,7 +30,9 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/fjt.h"
-;
+
+#include "libint2/engine.h"
+#include "libint2/shell.h"
 using namespace psi;
 
 /////////
@@ -162,3 +164,162 @@ ErfComplementERI::ErfComplementERI(double omega, const IntegralFactory *integral
 ErfComplementERI::~ErfComplementERI() { delete fjt_; }
 
 void ErfComplementERI::setOmega(double omega) { (static_cast<ErfComplementFundamental *>(fjt_))->setOmega(omega); }
+
+//// Libint2 implementation
+Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_threshold, int deriv, bool use_shell_pairs,
+                       bool needs_exchange)
+    : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
+    int max_am =
+        std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
+    int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
+                             std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
+    const auto max_engine_precision = std::numeric_limits<double>::epsilon() * screening_threshold;
+    for (int der = 0; der <= deriv; ++der) {
+        engines_.emplace_back(libint2::Operator::coulomb, max_nprim, max_am, der, max_engine_precision);
+    }
+
+    schwarz_engine_ = libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, 0.0);
+    common_init();
+}
+
+void Libint2ERI::libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                 const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[0].compute2<libint2::Operator::coulomb, libint2::BraKet::xx_xx, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[0].compute2<libint2::Operator::coulomb, libint2::BraKet::xs_xx, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[0].compute2<libint2::Operator::coulomb, libint2::BraKet::xx_xs, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[0].compute2<libint2::Operator::coulomb, libint2::BraKet::xs_xs, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2ERI::libint2wrapper0");
+    }
+}
+
+void Libint2ERI::libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                 const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[1].compute2<libint2::Operator::coulomb, libint2::BraKet::xx_xx, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[1].compute2<libint2::Operator::coulomb, libint2::BraKet::xs_xx, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[1].compute2<libint2::Operator::coulomb, libint2::BraKet::xx_xs, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[1].compute2<libint2::Operator::coulomb, libint2::BraKet::xs_xs, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2ERI::libint2wrapper1");
+    }
+}
+
+void Libint2ERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                 const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[2].compute2<libint2::Operator::coulomb, libint2::BraKet::xx_xx, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[2].compute2<libint2::Operator::coulomb, libint2::BraKet::xs_xx, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[2].compute2<libint2::Operator::coulomb, libint2::BraKet::xx_xs, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[2].compute2<libint2::Operator::coulomb, libint2::BraKet::xs_xs, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2ERI::libint2wrapper2");
+    }
+}
+
+Libint2ERI::~Libint2ERI(){};
+
+Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, double screening_threshold, int deriv,
+                             bool use_shell_pairs, bool needs_exchange)
+    : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
+    int max_am =
+        std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
+    int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
+                             std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
+    const auto max_engine_precision = std::numeric_limits<double>::epsilon() * screening_threshold;
+    for (int der = 0; der <= deriv; ++der) {
+        engines_.emplace_back(libint2::Operator::erf_coulomb, max_nprim, max_am, der, max_engine_precision, omega);
+    }
+    // todo: figure out epsilon
+    schwarz_engine_ = libint2::Engine(libint2::Operator::erf_coulomb, max_nprim, max_am, 0, 0.0, omega);
+    common_init();
+}
+
+void Libint2ErfERI::libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[0].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xx_xx, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[0].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xs_xx, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[0].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xx_xs, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[0].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xs_xs, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2ErfERI::libint2wrapper0");
+    }
+}
+
+void Libint2ErfERI::libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[1].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xx_xx, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[1].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xs_xx, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[1].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xx_xs, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[1].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xs_xs, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2ErfERI::libint2wrapper1");
+    }
+}
+void Libint2ErfERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[2].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xx_xx, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[2].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xs_xx, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[2].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xx_xs, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[2].compute2<libint2::Operator::erf_coulomb, libint2::BraKet::xs_xs, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2ErfERI::libint2wrapper2");
+    }
+}
+
+Libint2ErfERI::~Libint2ErfERI(){};
+
+void Libint2ErfERI::setOmega(double omega) { /*TODO!!!*/
+}
