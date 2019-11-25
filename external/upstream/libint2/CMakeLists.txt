@@ -3,9 +3,9 @@ find_package(Libint2 CONFIG)
 
 if(${Libint2_FOUND})
     # CHOOSE! `make export`
-    get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
+    #get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
     # CHOOSE! pure cmake
-    #get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
+    get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
     message(STATUS "${Cyan}Found Libint2 ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
     add_library(libint2_external INTERFACE)  # dummy
 else()
@@ -57,9 +57,9 @@ else()
     )
 
     # CHOOSE! `make export`
-    set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
+    #set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
     # CHOOSE! pure cmake
-    #set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint2 CACHE PATH "path to internally built Libint2Config.cmake" FORCE)
+    set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint2 CACHE PATH "path to internally built Libint2Config.cmake" FORCE)
 
 endif()
 

@@ -139,6 +139,7 @@ jobs:
         -DENABLE_gdma=ON \
         -DENABLE_PCMSolver=OFF \
         -DENABLE_simint=ON \
+        -DENABLE_Libint1t=OFF \
         -DENABLE_snsmp2=OFF \
         -DENABLE_v2rdm_casscf=OFF \
         -DENABLE_PLUGIN_TESTING=ON \
