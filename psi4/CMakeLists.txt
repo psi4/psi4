@@ -129,10 +129,12 @@ else()
     message(STATUS "Disabled gdma")
 endif()
 
+if(${ENABLE_Libint1t})
 find_package(Libint 1.2.0 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
+endif()
 
 # CHOOSE! this one for `make export` libint2 library (bad caps)
 find_package(libint2 2.6 CONFIG REQUIRED) # COMPONENTS ${MAX_AM_ERI})

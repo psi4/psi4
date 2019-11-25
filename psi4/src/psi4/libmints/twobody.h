@@ -31,6 +31,7 @@
 
 #include "psi4/pragma.h"
 
+#include <functional>
 #include <memory>
 #include <tuple>
 #include <vector>

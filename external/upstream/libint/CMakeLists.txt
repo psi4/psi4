@@ -1,3 +1,4 @@
+if(${ENABLE_Libint1t})
 find_package(Libint 1.2.0 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 
 if(${Libint_FOUND})
@@ -32,5 +33,8 @@ else()
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
     set(Libint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint CACHE PATH "path to internally built LibintConfig.cmake" FORCE)
+endif()
+else()
+    add_library(libint_external INTERFACE)  # dummy
 endif()
 
