@@ -354,7 +354,8 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
     // shell pair blocks
     auto blocksPQ = ints[0]->get_blocks12();
     auto blocksRS = ints[0]->get_blocks34();
-    bool use_batching = blocksPQ != blocksRS;
+    auto blocksize = ints[0]->maximum_block_size();
+    bool use_batching = blocksize > 1;
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
     // loop over all the blocks of (P>=Q|
@@ -365,16 +366,19 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
 #else
         const int rank = 0;
 #endif
+        const auto& buffers = ints[rank]->buffers();
         // loop over all the blocks of |R>=S)
-        int loop_start = use_batching ? 0 : blockPQ_idx;
-        for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
+        size_t start = ints[rank]->first_RS_shell_block(blockPQ_idx);
+        for (int blockRS_idx = start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
+        //for (int blockRS_idx = blockPQ_idx / blocksize; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
             const auto& blockRS = blocksRS[blockRS_idx];
 
-            // This is where we want to screen with density and schwarz-like screening
+            // use integral and density screening to figure out if this block is significant
+            if(!ints[rank]->shell_block_significant(blockPQ_idx, blockRS_idx)) continue;
 
             // compute the integrals and continue if none were computed
             ints[rank]->compute_shell_blocks(blockPQ_idx, blockRS_idx);
-            const double* block_start = ints[rank]->buffer();
+            const double* block_start = buffers[0];
 
             // Loop over all of the P,Q,R,S shells within the blocks.  We have P>=Q, R>=S and PQ<=RS.
             for (const auto& pairPQ : blockPQ) {
@@ -382,6 +386,8 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
                 const auto &Q = pairPQ.second;
                 const auto& Pshell = primary_->shell(P);
                 const auto& Qshell = primary_->shell(Q);
+                const auto& Pam = Pshell.am();
+                const auto& Qam = Qshell.am();
                 const auto& Psize = Pshell.nfunction();
                 const auto& Qsize = Qshell.nfunction();
                 const auto& Poff = Pshell.function_index();
@@ -392,6 +398,8 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
                     const auto &S = pairRS.second;
                     const auto & Rshell = primary_->shell(R);
                     const auto & Sshell = primary_->shell(S);
+                    const auto& Ram = Rshell.am();
+                    const auto& Sam = Sshell.am();
                     int Rsize = Rshell.nfunction();
                     int Ssize = Sshell.nfunction();
                     int Roff = Rshell.function_index();
@@ -401,7 +409,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
                     // When there are chunks of shellpairs in RS, we need to make sure
                     // we filter out redundant combinations.  This should probably be done
                     // by having a block of RS generated for each PQ at list build time.
-                    if (use_batching && ((P > R) || (P == R && Q > S))) {
+                    if (use_batching && Pam == Ram && Qam == Sam && ((P > R) || (P == R && Q > S))) {
                         block_start += block_size;
                         continue;
                     }

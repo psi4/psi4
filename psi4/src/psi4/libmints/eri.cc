@@ -30,6 +30,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/fjt.h"
+#include "psi4/libqt/qt.h"
 
 #include "libint2/engine.h"
 #include "libint2/shell.h"
@@ -171,6 +172,7 @@ void ErfComplementERI::setOmega(double omega) { (static_cast<ErfComplementFundam
 Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_threshold, int deriv, bool use_shell_pairs,
                        bool needs_exchange)
     : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
+    timer_on("Libint2ERI::Libint2ERI");
     int max_am =
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
@@ -182,6 +184,7 @@ Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_thresho
 
     schwarz_engine_ = libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, 0.0);
     common_init();
+    timer_off("Libint2ERI::Libint2ERI");
 }
 
 void Libint2ERI::libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
@@ -249,6 +252,7 @@ Libint2ERI::~Libint2ERI(){};
 Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, double screening_threshold, int deriv,
                              bool use_shell_pairs, bool needs_exchange)
     : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
+    timer_on("Libint2ErfERI::Libint2ErfERI");
     int max_am =
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
@@ -260,6 +264,7 @@ Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, doub
     // todo: figure out epsilon
     schwarz_engine_ = libint2::Engine(libint2::Operator::erf_coulomb, max_nprim, max_am, 0, 0.0, omega);
     common_init();
+    timer_off("Libint2ErfERI::Libint2ErfERI");
 }
 
 void Libint2ErfERI::libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,

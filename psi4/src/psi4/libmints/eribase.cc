@@ -3164,10 +3164,10 @@ size_t Libint2TwoElectronInt::compute_shell_for_sieve(const std::shared_ptr<Basi
 #ifdef MINTS_TIMER
     timer_on("Libint2ERI::compute_shell_for_sieve");
 #endif
-    auto sh1 = bs->l2_shell(s1);
-    auto sh2 = bs->l2_shell(s2);
-    auto sh3 = bs->l2_shell(s3);
-    auto sh4 = bs->l2_shell(s4);
+    const auto &sh1 = bs->l2_shell(s1);
+    const auto &sh2 = bs->l2_shell(s2);
+    const auto &sh3 = bs->l2_shell(s3);
+    const auto &sh4 = bs->l2_shell(s4);
 
     schwarz_engine_.compute(sh1, sh2, sh3, sh4);
 
@@ -3194,10 +3194,10 @@ size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
         throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
     }
 
-    auto sh1 = bs1_->l2_shell(s1);
-    auto sh2 = bs2_->l2_shell(s2);
-    auto sh3 = bs3_->l2_shell(s3);
-    auto sh4 = bs4_->l2_shell(s4);
+    const auto &sh1 = bs1_->l2_shell(s1);
+    const auto &sh2 = bs2_->l2_shell(s2);
+    const auto &sh3 = bs3_->l2_shell(s3);
+    const auto &sh4 = bs4_->l2_shell(s4);
 
     libint2_wrapper0(sh1, sh2, sh3, sh4);
 
@@ -3225,10 +3225,10 @@ size_t Libint2TwoElectronInt::compute_shell_deriv1(int s1, int s2, int s3, int s
         throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
     }
 
-    auto sh1 = bs1_->l2_shell(s1);
-    auto sh2 = bs2_->l2_shell(s2);
-    auto sh3 = bs3_->l2_shell(s3);
-    auto sh4 = bs4_->l2_shell(s4);
+    const auto &sh1 = bs1_->l2_shell(s1);
+    const auto &sh2 = bs2_->l2_shell(s2);
+    const auto &sh3 = bs3_->l2_shell(s3);
+    const auto &sh4 = bs4_->l2_shell(s4);
 
     libint2_wrapper1(sh1, sh2, sh3, sh4);
 
@@ -3260,10 +3260,10 @@ size_t Libint2TwoElectronInt::compute_shell_deriv2(int s1, int s2, int s3, int s
         throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
     }
 
-    auto sh1 = bs1_->l2_shell(s1);
-    auto sh2 = bs2_->l2_shell(s2);
-    auto sh3 = bs3_->l2_shell(s3);
-    auto sh4 = bs4_->l2_shell(s4);
+    const auto &sh1 = bs1_->l2_shell(s1);
+    const auto &sh2 = bs2_->l2_shell(s2);
+    const auto &sh3 = bs3_->l2_shell(s3);
+    const auto &sh4 = bs4_->l2_shell(s4);
 
     libint2_wrapper2(sh1, sh2, sh3, sh4);
 
@@ -3298,10 +3298,10 @@ void Libint2TwoElectronInt::compute_shell_blocks(int shellpair12, int shellpair3
     int s3 = blocks34_[shellpair34][0].first;
     int s4 = blocks34_[shellpair34][0].second;
 
-    auto sh1 = bs1_->l2_shell(s1);
-    auto sh2 = bs2_->l2_shell(s2);
-    auto sh3 = bs3_->l2_shell(s3);
-    auto sh4 = bs4_->l2_shell(s4);
+    const auto &sh1 = bs1_->l2_shell(s1);
+    const auto &sh2 = bs2_->l2_shell(s2);
+    const auto &sh3 = bs3_->l2_shell(s3);
+    const auto &sh4 = bs4_->l2_shell(s4);
 
     size_t ntot = 0;
 

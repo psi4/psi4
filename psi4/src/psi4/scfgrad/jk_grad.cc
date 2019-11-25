@@ -2566,7 +2566,7 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
         // shell pair blocks
         auto blocksPQ = ints[0]->get_blocks12();
         auto blocksRS = ints[0]->get_blocks34();
-        bool use_batching = blocksPQ != blocksRS;
+        bool use_batching = ints[0]->maximum_block_size() > 1;
     
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
         // loop over all the blocks of (P>=Q|
@@ -2580,11 +2580,11 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
             double** Jp = Jgrad[rank]->pointer();
             double** Kp = Kgrad[rank]->pointer();
             // loop over all the blocks of |R>=S)
-            int loop_start = use_batching ? 0 : blockPQ_idx;
-            for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
+            size_t start = ints[rank]->first_RS_shell_block(blockPQ_idx);
+            for (int blockRS_idx = start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
                 const auto& blockRS = blocksRS[blockRS_idx];
 
-                // This is where we want to screen with density and schwarz-like screening
+                if (!ints[rank]->shell_block_significant(blockPQ_idx, blockRS_idx)) continue;
 
                 // compute the integrals and continue if none were computed
                 ints[rank]->compute_shell_blocks_deriv1(blockPQ_idx, blockRS_idx);
@@ -2609,6 +2609,8 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
                     const auto& Q = pairPQ.second;
                     const auto& Pshell = primary_->shell(P);
                     const auto& Qshell = primary_->shell(Q);
+                    const auto Pam = Pshell.am();
+                    const auto Qam = Qshell.am();
                     const auto& Psize = Pshell.nfunction();
                     const auto& Qsize = Qshell.nfunction();
                     const auto& Poff = Pshell.function_index();
@@ -2621,6 +2623,8 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
                         const auto& S = pairRS.second;
                         const auto& Rshell = primary_->shell(R);
                         const auto& Sshell = primary_->shell(S);
+                        const auto Ram = Rshell.am();
+                        const auto Sam = Sshell.am();
                         const auto& Rsize = Rshell.nfunction();
                         const auto& Ssize = Sshell.nfunction();
                         const auto& Roff = Rshell.function_index();
@@ -2636,9 +2640,8 @@ std::map<std::string, std::shared_ptr<Matrix>> DirectJKGrad::compute1(
                         size_t block_size = (size_t)Psize * Qsize * Rsize * Ssize;
 
                         // When there are chunks of shellpairs in RS, we need to make sure
-                        // we filter out redundant combinations.  This should probably be done
-                        // by having a block of RS generated for each PQ at list build time.
-                        if (use_batching && ((P > R) || (P == R && Q > S))) {
+                        // we filter out redundant combinations.
+                        if (use_batching && Pam == Ram && Qam == Sam && ((P > R) || (P == R && Q > S))) {
                             pAx += block_size;
                             pAy += block_size;
                             pAz += block_size;

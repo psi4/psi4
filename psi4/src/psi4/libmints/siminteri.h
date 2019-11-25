@@ -67,6 +67,12 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
 
     double* allwork_;
     double* sharedwork_;
+    std::vector<size_t> RSblock_starts_;
+
+
+    virtual size_t first_RS_shell_block(size_t PQpair) const override { return braket_same_ ? RSblock_starts_[PQpair] : 0; }
+
+    virtual int maximum_block_size() const override { return batchsize_; }
 
     // plain simint shells
     // WARNING - these may be shared across threads, so

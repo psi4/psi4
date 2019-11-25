@@ -396,6 +396,19 @@ void TwoBodyAOInt::create_blocks() {
     //}
 }
 
+bool TwoBodyAOInt::shell_block_significant(int shellpair12, int shellpair34) const {
+    const auto &vsh12 = blocks12_[shellpair12];
+    const auto &vsh34 = blocks34_[shellpair34];
+
+    for (const auto &sh12 : vsh12) {
+        for (const auto &sh34 : vsh34) {
+            if(shell_significant(sh12.first, sh12.second, sh34.first, sh34.second)) return true;
+        }
+    }
+
+    return false;
+}
+
 void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
     // Default implementation - go through the blocks and do each quartet
     // one at a time
@@ -404,10 +417,10 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int np
     target_ = target_full_;
     source_ = source_full_;
 
-    auto vsh12 = blocks12_[shellpair12];
-    auto vsh34 = blocks34_[shellpair34];
+    const auto &vsh12 = blocks12_[shellpair12];
+    const auto &vsh34 = blocks34_[shellpair34];
 
-    for (const auto sh12 : vsh12) {
+    for (const auto &sh12 : vsh12) {
         const auto &shell1 = bs1_->shell(sh12.first);
         const auto &shell2 = bs2_->shell(sh12.second);
 
@@ -420,7 +433,7 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int np
             n2 = shell2.nfunction();
         }
 
-        for (const auto sh34 : vsh34) {
+        for (const auto &sh34 : vsh34) {
             const auto &shell3 = bs3_->shell(sh34.first);
             const auto &shell4 = bs4_->shell(sh34.second);
 

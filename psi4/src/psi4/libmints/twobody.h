@@ -201,7 +201,9 @@ class PSI_API TwoBodyAOInt {
      * Sieve information
      */
     /// Ask the built in sieve whether this quartet contributes
-    bool shell_significant(int M, int N, int R, int S) { return sieve_impl_(M, N, R, S); };
+    bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
+    /// Are any of the quartets within a given shellpair list significant
+    bool shell_block_significant(int shellpair12, int shellpair34) const;
     /// Square of ceiling of shell quartet (MN|RS)
      inline double shell_ceiling2(int M, int N, int R, int S) {
         return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
@@ -210,6 +212,11 @@ class PSI_API TwoBodyAOInt {
      inline double function_ceiling2(int m, int n, int r, int s) {
         return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
     }
+
+    /// For a given PQ shellpair index, what's the first RS pair that should be processed such
+    /// that loops may be processed generating only permutationally unique PQ<=RS.  For engines
+    /// that don't use blocking in the ket it is trivial, but a little more complex with ket blocks
+    virtual size_t first_RS_shell_block(size_t PQpair) const { return PQpair; }
 
     /// Significant unique function pair list, with only m>=n elements listed
     const std::vector<std::pair<int, int> >& function_pairs() const { return function_pairs_; }
@@ -237,6 +244,9 @@ class PSI_API TwoBodyAOInt {
 
     /// Buffer where each chunk of integrals is placed
     const std::vector<const double *> &buffers() const { return buffers_; }
+
+    /// The maximum number of batched functions in the ket (1 for a non vectorized engine).
+    virtual int maximum_block_size() const { return 1; }
 
     /// Returns the integral factory used to create this object
     const IntegralFactory *integral() const { return integral_; }
