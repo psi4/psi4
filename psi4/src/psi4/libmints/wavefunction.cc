@@ -626,12 +626,7 @@ void Wavefunction::common_init() {
         std::vector<brianInt> shellSchemas(basisset_->max_am() + 1, -1);
         for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
             int shellType = basisset_->shell(shellIndex).am();
-            
-            // TODO: if spherical, the ordering is different!!! must implement a new schema
-            if (basisset_->shell(shellIndex).is_pure()) {
-                throw PSIEXCEPTION("BrianQC doesn't yet support Psi4's spherical shell ordering\n");
-            }
-            brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_STANDARD : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
+            brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_PSI4 : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
             
             if (shellSchemas[shellType] != -1 and shellSchemas[shellType] != shellSchema) {
                 throw PSIEXCEPTION("BrianQC needs shells of the same angular momentum to be either all pure or all cartesian\n");
