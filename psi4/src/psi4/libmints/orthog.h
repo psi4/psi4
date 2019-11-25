@@ -37,52 +37,47 @@ namespace psi {
 class PSI_API OverlapOrthog {
    public:
     /// An enum for the types of orthogonalization.
-    enum OrthogMethod { Symmetric, Canonical, GramSchmidt };
+    enum OrthogMethod { Symmetric, Canonical, Automatic };
 
    private:
-    int debug_;
-
-    Dimension dim_;
-    Dimension orthog_dim_;
+    int print_;
 
     /** The tolerance for linearly independent basis functions.
      * The interpretation depends on the orthogonalization
      * method.
      */
     double lindep_tol_;
-    /// The number of linearly dependent functions
-    int nlindep_;
     /// The orthogonalization method
     OrthogMethod orthog_method_;
-    // The orthogonalization matrices
-    SharedMatrix orthog_trans_;
-    SharedMatrix orthog_trans_inverse_;
+    /// The orthogonalizing matrix
+    SharedMatrix X_;
+    /// ... and its inverse
+    SharedMatrix Xinv_;
 
-    /// @{
-    /** The minimum and maximum residual from the
-     * orthogonalizationprocedure. The interpretation depends
-     * on the method used. For symmetry and canonical, these
-     * are the min and max overlap eigenvalues. These are the
-     * residuals for the basis functions that actually end
-     * up being used.
-     */
-    double min_orthog_res_;
-    double max_orthog_res_;
+    /// Smallest eigenvalue
+    double min_S;
     /// @}
 
-    void compute_overlap_eig(Matrix& overlap_eigvec, Vector& isqrt_eigval, Vector& sqrt_eigval);
+    /// Given X, compute Xinv = S*X
+    void compute_inverse();
+    /// Compute eigendecomposition
+    void compute_overlap_eig();
+    /// Symmetric orthogonalization
     void compute_symmetric_orthog();
+    /// Canonical orthogonalization
     void compute_canonical_orthog();
-    void compute_gs_orthog();
+    /// Driver routine
     void compute_orthog_trans();
 
+    /// Decomposed matrix
     SharedMatrix overlap_;
+    /// Eigenvectors
+    SharedMatrix eigvec_;
+    /// Eigenvalues
+    SharedVector eigval_;
 
    public:
-    OverlapOrthog(OrthogMethod method, SharedMatrix overlap, double lindep_tolerance, int debug = 0);
-
-    double min_orthog_res() const { return min_orthog_res_; }
-    double max_orthog_res() const { return max_orthog_res_; }
+    OverlapOrthog(OrthogMethod method, SharedMatrix overlap, double lindep_tolerance, int print = 0);
 
     OrthogMethod orthog_method() const { return orthog_method_; }
 
@@ -107,10 +102,15 @@ class PSI_API OverlapOrthog {
     /// Return an $S^{-1}$.
     SharedMatrix overlap_inverse();
 
+    /// Number of basis functions
     Dimension dim();
+    /// Number of orthogonal functions
     Dimension orthog_dim();
 
+    /// Number of independent functions
     int nlindep();
+    /// Number of independent functions in symmetry block h
+    int nlindep(int h);
 };
 
 }  // namespace psi
