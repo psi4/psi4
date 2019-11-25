@@ -113,6 +113,9 @@ jobs:
                         mpmath ^
                         networkx ^
                         ninja ^
+                        eigen ^
+                        boost ^
+                        mpfr ^
                         numpy ^
                         pint ^
                         pybind11 ^
