@@ -61,6 +61,7 @@ namespace {
 
 unsigned char ntypes[] = {1, ERI_1DER_NTYPE, ERI_2DER_NTYPE};
 
+#ifdef ENABLE_Libint1t
 /**
  * @brief Takes care of the changing the results buffer for any reordering done for libderiv.
  * @param permutation How the shells were permuted to satisfy Libint angular momentum requirements.
@@ -1759,9 +1760,11 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt, const L1Shel
     }
     return nprim;
 }
+#endif  // ENABLE_Libint1t
 
 }  // end namespace
 
+#ifdef ENABLE_Libint1t
 TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
     // Initialize libint static data
@@ -3070,6 +3073,7 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
     // Results are in source_
     return size;
 }
+#endif  // ENABLE_Libint1t
 
 ///// Libint2 implementation
 

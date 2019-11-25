@@ -817,13 +817,14 @@ void export_mints(py::module& m) {
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
                        "Determines if the P,Q,R,S shell combination is significant");
 
-    py::class_<TwoElectronInt, std::shared_ptr<TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
+    py::class_<Libint2TwoElectronInt, std::shared_ptr<Libint2TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
                                                                 "Computes two-electron repulsion integrals")
         .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
                        "Determines if the P,Q,R,S shell combination is significant");
 
-    py::class_<ERI, std::shared_ptr<ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron reuplsion integrals");
+    py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron repulsion integrals");
+#ifdef ENABLE_Libint1t
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
     py::class_<F12G12, std::shared_ptr<F12G12>>(m, "F12G12", pyTwoBodyAOInt,
                                                 "Computes F12G12 electron repulsion integrals");
@@ -835,6 +836,7 @@ void export_mints(py::module& m) {
                                                 "Computes ERF electron repulsion integrals");
     py::class_<ErfComplementERI, std::shared_ptr<ErfComplementERI>>(
         m, "ErfComplementERI", pyTwoBodyAOInt, "Computes ERF complement electron repulsion integrals");
+#endif  // ENABLE_Libint1t
 
     py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(m,
                                                                                           "AOShellCombinationsIterator")

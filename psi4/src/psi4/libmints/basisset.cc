@@ -26,7 +26,9 @@
  * @END LICENSE
  */
 // Need libint for maximum angular momentum
+#ifdef ENABLE_Libint1t
 #include <libint/libint.h>
+#endif
 #include <libint2/shell.h>
 /*!
     \defgroup MINTS libmints: Integral library

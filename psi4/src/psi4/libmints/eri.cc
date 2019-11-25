@@ -39,6 +39,7 @@ using namespace psi;
 // Normal two-electron repulsion integrals
 /////////
 
+#ifdef ENABLE_Libint1
 ERI::ERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : TwoElectronInt(integral, deriv, use_shell_pairs) {
     // The +1 is needed for derivatives to work.
@@ -164,6 +165,7 @@ ErfComplementERI::ErfComplementERI(double omega, const IntegralFactory *integral
 ErfComplementERI::~ErfComplementERI() { delete fjt_; }
 
 void ErfComplementERI::setOmega(double omega) { (static_cast<ErfComplementFundamental *>(fjt_))->setOmega(omega); }
+#endif  // ENABLE_Libint1
 
 //// Libint2 implementation
 Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_threshold, int deriv, bool use_shell_pairs,

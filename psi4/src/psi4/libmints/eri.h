@@ -34,8 +34,10 @@
 #endif
 #include <unordered_map>
 #include <numeric>
+#ifdef ENABLE_Libint1t
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
+#endif  // ENABLE_Libint1t
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libmints/shellpair.h"
@@ -78,6 +80,7 @@ struct PrimPair {
     double overlap;
 };
 
+#ifdef ENABLE_Libint1t
 /**
  * \ingroup MINTS
  * Structure to hold precomputed shell pair information
@@ -216,6 +219,7 @@ class ErfComplementERI : public TwoElectronInt {
 
     void setOmega(double omega);
 };
+#endif  // ENABLE_Libint1t
 
 /// Libint2 implementation
 
