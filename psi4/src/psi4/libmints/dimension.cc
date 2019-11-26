@@ -44,8 +44,6 @@ Dimension::Dimension(int n, const std::string& name) : name_(name), blocks_(n, 0
 
 Dimension::Dimension(const std::vector<int>& v) : blocks_(v) {}
 
-Dimension::~Dimension() {}
-
 void Dimension::init(int n, const std::string& name) {
     name_ = name;
     blocks_.assign(n, 0);
