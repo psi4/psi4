@@ -104,6 +104,7 @@ jobs:
 
       # Create conda enviroment
       # Note: conda activate doesn't work here, because it creates a new shell!
+      # Note: c-f eigen has Config.cmake file
       - script: |
           conda install cmake ^
                         conda-build ^
@@ -113,7 +114,7 @@ jobs:
                         mpmath ^
                         networkx ^
                         ninja ^
-                        eigen ^
+                        conda-forge::eigen ^
                         boost ^
                         mpfr ^
                         numpy ^
