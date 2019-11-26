@@ -250,7 +250,10 @@ TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_p
 #endif
 }
 
-TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
+    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    if (integral_package == "LIBINT2") return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef ENABLE_Libint1t
     return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
 #endif

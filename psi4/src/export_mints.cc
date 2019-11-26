@@ -873,7 +873,7 @@ void export_mints(py::module& m) {
              "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
         .def("erf_complement_eri", &IntegralFactory::erf_complement_eri,
              "Returns an erf complement ERI integral object (omega integral)", "omega"_a, "deriv"_a = 0,
-             "use_shell_pairs"_a = true)
+             "use_shell_pairs"_a = true, "needs_exchange"_a = false)
         .def("ao_overlap", &IntegralFactory::ao_overlap, "Returns a OneBodyInt that computes the AO overlap integrals",
              "deriv"_a = 0)
         .def("so_overlap", &IntegralFactory::so_overlap, "Returns a OneBodyInt that computes the SO overlap integrals",
