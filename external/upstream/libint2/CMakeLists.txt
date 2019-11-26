@@ -45,8 +45,8 @@ else()
                    -DMPFR_ROOT=${MPFR_ROOT}
                    -DBOOST_ROOT=${BOOST_ROOT}
                    -DEigen3_DIR=${Eigen3_DIR}
-                   -DERI3_PURE_SH=ON
-                   -DERI2_PURE_SH=ON
+                   -DERI3_PURE_SH=OFF
+                   -DERI2_PURE_SH=OFF
                    -DLIBINT2_SHGAUSS_ORDERING=gaussian
                    -DBUILD_SHARED=${_so_only}
                    -DBUILD_STATIC=${_a_only}
