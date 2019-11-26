@@ -52,7 +52,7 @@ target_link_libraries(core
   )
 
 if(ENABLE_BrianQC)
-  target_link_libraries(core PRIVATE brian_module_static_wrapper)
+  target_link_libraries(core PRIVATE static_wrapper)
   target_compile_definitions(core
     PUBLIC
       USING_BrianQC
