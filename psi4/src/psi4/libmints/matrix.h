@@ -216,8 +216,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      *
      * @param inBuf dpdbuf4 object to replicate (must already be initialized).
      */
-    Matrix(dpdbuf4 *inBuf);
-
+    Matrix(dpdbuf4* inBuf);
 
     /**
      * Constructor using Dimension objects to define order and dimensionality.
@@ -908,6 +907,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * \return L, SharedMatrix, with rows of dimension dimpi and columns of
      * dimension sigpi
      */
+    SharedMatrix partial_cholesky_factorize_pivot(double delta, bool throw_if_negative,
+                                                  std::vector<std::vector<int>>& pivot);
     SharedMatrix partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
 
     /*! Computes a low-rank factorization <P,N> such that PP'-NN' \approx A in an optimal sense in the 2-norm.
@@ -1074,7 +1075,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void write_to_dpdfile2(dpdfile2* outFile);
 
     /// Writes this to the dpdbuf4 given
-    void write_to_dpdbuf4(dpdbuf4 *outBuf);
+    void write_to_dpdbuf4(dpdbuf4* outBuf);
 
     /// @{
     /// Checks matrix equality.

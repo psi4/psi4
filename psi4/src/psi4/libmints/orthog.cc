@@ -40,8 +40,14 @@
 
 namespace psi {
 
-OverlapOrthog::OverlapOrthog(OrthogMethod method, SharedMatrix overlap, double lindep_tolerance, int print)
-    : orthog_method_(method), overlap_(overlap), lindep_tol_(lindep_tolerance), print_(print) {
+OverlapOrthog::OverlapOrthog(OrthogMethod method, SharedMatrix overlap, SharedVector rsq, double lindep_tolerance,
+                             double cholesky_tolerance, int print)
+    : orthog_method_(method),
+      overlap_(overlap),
+      rsq_(rsq),
+      lindep_tol_(lindep_tolerance),
+      cholesky_tol_(cholesky_tolerance),
+      print_(print) {
     eigval_ = nullptr;
     eigvec_ = nullptr;
 }
@@ -134,10 +140,67 @@ void OverlapOrthog::compute_canonical_orthog() {
     }
 }
 
+void OverlapOrthog::compute_partial_cholesky_orthog() {
+    // Original dimensions
+    const Dimension& nbf = overlap_->rowspi();
+
+    // Do pivoted Cholesky to find important basis functions
+    std::vector<std::vector<int>> pivots;
+    auto Stmp = std::make_shared<Matrix>(nbf, nbf);
+    Stmp->copy(overlap_);
+    printf("Cholesky thr %e\n", cholesky_tol_);
+    Stmp->partial_cholesky_factorize_pivot(cholesky_tol_, true, pivots);
+
+    // Size of Cholesky basis
+    Dimension nchol(nbf);
+    for (int h = 0; h < overlap_->nirrep(); h++) {
+        nchol[h] = pivots[h].size();
+        outfile->Printf("  Cholesky: irrep %d, %d of %d possible MOs eliminated.\n", h, nbf[h] - nchol[h], nbf[h]);
+    }
+    if (nchol.sum() != nbf.sum() && print_)
+        outfile->Printf("  Cholesky: overall, %d of %d possible MOs eliminated.\n\n", nbf.sum() - nchol.sum(),
+                        nbf.sum());
+
+    // Copy over data
+    auto Ssub = std::make_shared<Matrix>(nchol, nchol);
+    for (int h = 0; h < overlap_->nirrep(); h++)
+        for (int m = 0; m < (int)pivots[h].size(); m++)
+            for (int n = 0; n < (int)pivots[h].size(); n++)
+                Ssub->set(h, m, n, overlap_->get(h, pivots[h][m], pivots[h][n]));
+
+    // Switch overlap matrix to use
+    auto overlap0 = overlap_;
+    overlap_ = Ssub;
+    // Reset eigendecomposition
+    eigvec_ = nullptr;
+    eigval_ = nullptr;
+
+    // Compute orthogonalization as usual in submatrix
+    if (print_) outfile->Printf("    Proceeding with conventional orthogonalization in reduced basis.\n");
+    orthog_method_ = Automatic;
+    compute_orthog_trans();
+
+    // Find out number of vectors in each symmetry block
+    const Dimension& nmo(X_->colspi());
+
+    // Padded matrices
+    SharedMatrix padX = std::make_shared<Matrix>("Orthogonal Transformation", nbf, nmo);
+    padX->zero();
+    for (int h = 0; h < X_->nirrep(); h++)
+        for (int n = 0; n < nmo[h]; n++)
+            for (int m = 0; m < (int)pivots[h].size(); m++) padX->set(h, pivots[h][m], n, X_->get(h, m, n));
+
+    orthog_method_ = PartialCholesky;
+    // Restore original overlap matrix
+    overlap_ = overlap0;
+    // Get orthogonal transformation
+    X_ = padX;
+}
+
 void OverlapOrthog::compute_orthog_trans() {
     compute_overlap_eig();
     if (orthog_method_ == Automatic) {
-        orthog_method_ = (min_S > lindep_tol_) ? Symmetric : Canonical;
+        orthog_method_ = (min_S < lindep_tol_) ? Canonical : Symmetric;
     }
 
     switch (orthog_method_) {
@@ -148,6 +211,10 @@ void OverlapOrthog::compute_orthog_trans() {
         case Canonical:
             if (print_) outfile->Printf("    Using canonical orthogonalization.\n");
             compute_canonical_orthog();
+            break;
+        case PartialCholesky:
+            if (print_) outfile->Printf("    Using partial Cholesky orthogonalization.\n");
+            compute_partial_cholesky_orthog();
             break;
         default:
             throw PSIEXCEPTION("OverlapOrthog::compute_orthog_trans: bad value.");

@@ -284,6 +284,8 @@ void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const
 }
 
 void Matrix::init(const Dimension &l_rowspi, const Dimension &l_colspi, const std::string &name, int symmetry) {
+    if (l_rowspi.n() != l_colspi.n()) throw PSIEXCEPTION("Matrix rows and columns have different numbers of irreps!\n");
+
     name_ = name;
     symmetry_ = symmetry;
     nirrep_ = l_rowspi.n();
@@ -1978,6 +1980,12 @@ void Matrix::cholesky_factorize() {
 }
 
 SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative) {
+    std::vector<std::vector<int>> pivot;
+    return partial_cholesky_factorize_pivot(delta, throw_if_negative, pivot);
+}
+
+SharedMatrix Matrix::partial_cholesky_factorize_pivot(double delta, bool throw_if_negative,
+                                                      std::vector<std::vector<int>> &pivot) {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::partial_cholesky_factorize: Matrix is non-totally symmetric.");
     }
@@ -1989,6 +1997,9 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     int *sigpi = new int[nirrep_];
     ::memset(static_cast<void *>(sigpi), '\0', nirrep_ * sizeof(int));
 
+    // Pivot indices
+    pivot.clear();
+    pivot.resize(nirrep_);
     for (int h = 0; h < nirrep_; ++h) {
         if (!rowspi_[h]) continue;
 
@@ -2016,6 +2027,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
                 if (std::fabs(Dp[i]) > std::fabs(Dp[imax])) imax = i;
 
             double dmax = Dp[imax];
+
             if (std::fabs(dmax) <= delta) break;
 
             if (dmax <= 0.0) {
@@ -2024,6 +2036,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
                 else
                     break;
             }
+            pivot[h].push_back(imax);
 
             // New vector!
             nQ++;

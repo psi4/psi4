@@ -702,13 +702,17 @@ void HF::form_Shalf() {
         method = OverlapOrthog::Symmetric;
     else if (options_.get_str("S_ORTHOGONALIZATION") == "CANONICAL")
         method = OverlapOrthog::Canonical;
+    else if (options_.get_str("S_ORTHOGONALIZATION") == "PARTIALCHOLESKY")
+        method = OverlapOrthog::PartialCholesky;
     else if (options_.get_str("S_ORTHOGONALIZATION") == "AUTO")
         method = OverlapOrthog::Automatic;
     else
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
 
     double lindep_tolerance = options_.get_double("S_TOLERANCE");
-    OverlapOrthog orthog(method, S_, lindep_tolerance, print_);
+    double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
+    SharedVector rsq;
+    OverlapOrthog orthog(method, S_, rsq, lindep_tolerance, cholesky_tolerance, print_);
 
     // Transform
     X_ = orthog.basis_to_orthog_basis();

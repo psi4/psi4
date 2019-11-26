@@ -37,16 +37,27 @@ namespace psi {
 class PSI_API OverlapOrthog {
    public:
     /// An enum for the types of orthogonalization.
-    enum OrthogMethod { Symmetric, Canonical, Automatic };
+    enum OrthogMethod { Symmetric, Canonical, PartialCholesky, Automatic };
 
    private:
     int print_;
+
+    /// Matrix to decompose
+    SharedMatrix overlap_;
+    /// its eigenvectors
+    SharedMatrix eigvec_;
+    /// and eigenvalues
+    SharedVector eigval_;
+    /// Basis function <r^2> values
+    SharedVector rsq_;
 
     /** The tolerance for linearly independent basis functions.
      * The interpretation depends on the orthogonalization
      * method.
      */
     double lindep_tol_;
+    /// The Cholesky decomposition threshold
+    double cholesky_tol_;
     /// The orthogonalization method
     OrthogMethod orthog_method_;
     /// The orthogonalizing matrix
@@ -66,18 +77,14 @@ class PSI_API OverlapOrthog {
     void compute_symmetric_orthog();
     /// Canonical orthogonalization
     void compute_canonical_orthog();
+    /// Partial Cholesky orthogonalization
+    void compute_partial_cholesky_orthog();
     /// Driver routine
     void compute_orthog_trans();
 
-    /// Decomposed matrix
-    SharedMatrix overlap_;
-    /// Eigenvectors
-    SharedMatrix eigvec_;
-    /// Eigenvalues
-    SharedVector eigval_;
-
    public:
-    OverlapOrthog(OrthogMethod method, SharedMatrix overlap, double lindep_tolerance, int print = 0);
+    OverlapOrthog(OrthogMethod method, SharedMatrix overlap, SharedVector rsq, double lindep_tolerance,
+                  double cholesky_tolerance, int print = 0);
 
     OrthogMethod orthog_method() const { return orthog_method_; }
 
