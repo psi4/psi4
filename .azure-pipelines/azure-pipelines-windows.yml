@@ -116,7 +116,7 @@ jobs:
                         ninja ^
                         conda-forge::eigen ^
                         boost ^
-                        mpfr ^
+                        conda-forge::mpfr ^
                         numpy ^
                         pint ^
                         pybind11 ^
