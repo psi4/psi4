@@ -372,47 +372,48 @@ void export_mints(py::module& m) {
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
         .def("set_block", &Vector::set_block, "Set a vector block", "slice"_a, "block"_a)
-        .def("array_interface",
-             [](Vector& v) {
-                 // Build a list of NumPy views, used for the .np and .nph accessors.Vy
-                 py::list ret;
+        .def(
+            "array_interface",
+            [](Vector& v) {
+                // Build a list of NumPy views, used for the .np and .nph accessors.Vy
+                py::list ret;
 
-                 // If we set a NumPy shape
-                 if (v.numpy_shape().size()) {
-                     if (v.nirrep() > 1) {
-                         throw PSIEXCEPTION(
-                             "Vector::array_interface numpy shape with more than one irrep is not "
-                             "valid.");
-                     }
+                // If we set a NumPy shape
+                if (v.numpy_shape().size()) {
+                    if (v.nirrep() > 1) {
+                        throw PSIEXCEPTION(
+                            "Vector::array_interface numpy shape with more than one irrep is not "
+                            "valid.");
+                    }
 
-                     // Cast the NumPy shape vector
-                     std::vector<size_t> shape;
-                     for (int val : v.numpy_shape()) {
-                         shape.push_back((size_t)val);
-                     }
+                    // Cast the NumPy shape vector
+                    std::vector<size_t> shape;
+                    for (int val : v.numpy_shape()) {
+                        shape.push_back((size_t)val);
+                    }
 
-                     // Build the array
-                     py::array arr(shape, v.pointer(0), py::cast(&v));
-                     ret.append(arr);
+                    // Build the array
+                    py::array arr(shape, v.pointer(0), py::cast(&v));
+                    ret.append(arr);
 
-                 } else {
-                     for (size_t h = 0; h < v.nirrep(); h++) {
-                         // Hmm, sometimes we need to handle empty ptr's correctly
-                         double* ptr = nullptr;
-                         if (v.dim(h) != 0) {
-                             ptr = v.pointer(h);
-                         }
+                } else {
+                    for (size_t h = 0; h < v.nirrep(); h++) {
+                        // Hmm, sometimes we need to handle empty ptr's correctly
+                        double* ptr = nullptr;
+                        if (v.dim(h) != 0) {
+                            ptr = v.pointer(h);
+                        }
 
-                         // Build the array
-                         std::vector<size_t> shape{(size_t)v.dim(h)};
-                         py::array arr(shape, ptr, py::cast(&v));
-                         ret.append(arr);
-                     }
-                 }
+                        // Build the array
+                        std::vector<size_t> shape{(size_t)v.dim(h)};
+                        py::array arr(shape, ptr, py::cast(&v));
+                        ret.append(arr);
+                    }
+                }
 
-                 return ret;
-             },
-             py::return_value_policy::reference_internal);
+                return ret;
+            },
+            py::return_value_policy::reference_internal);
 
     typedef void (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "Class handling vectors with integer values")
@@ -595,46 +596,47 @@ void export_mints(py::module& m) {
              "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", "mol"_a)
         .def("rotate_columns", &Matrix::rotate_columns, "Rotates columns i and j in irrep h by angle theta", "h"_a,
              "i"_a, "j"_a, "theta"_a)
-        .def("array_interface",
-             [](Matrix& m) {
-                 // Build a list of NumPy views, used for the .np and .nph accessors.Vy
-                 py::list ret;
+        .def(
+            "array_interface",
+            [](Matrix& m) {
+                // Build a list of NumPy views, used for the .np and .nph accessors.Vy
+                py::list ret;
 
-                 // If we set a NumPy shape
-                 if (m.numpy_shape().size()) {
-                     if (m.nirrep() > 1) {
-                         throw PSIEXCEPTION(
-                             "Vector::array_interface numpy shape with more than one irrep is not "
-                             "valid.");
-                     }
+                // If we set a NumPy shape
+                if (m.numpy_shape().size()) {
+                    if (m.nirrep() > 1) {
+                        throw PSIEXCEPTION(
+                            "Vector::array_interface numpy shape with more than one irrep is not "
+                            "valid.");
+                    }
 
-                     // Cast the NumPy shape vector
-                     std::vector<size_t> shape;
-                     for (int val : m.numpy_shape()) {
-                         shape.push_back((size_t)val);
-                     }
+                    // Cast the NumPy shape vector
+                    std::vector<size_t> shape;
+                    for (int val : m.numpy_shape()) {
+                        shape.push_back((size_t)val);
+                    }
 
-                     // Build the array
-                     py::array arr(shape, m.pointer(0)[0], py::cast(&m));
-                     ret.append(arr);
+                    // Build the array
+                    py::array arr(shape, m.pointer(0)[0], py::cast(&m));
+                    ret.append(arr);
 
-                 } else {
-                     for (size_t h = 0; h < m.nirrep(); h++) {
-                         // Hmm, sometimes we need to overload to nullptr
-                         double* ptr = nullptr;
-                         if ((m.rowdim(h) * m.coldim(h ^ m.symmetry())) != 0) {
-                             ptr = m.pointer(h)[0];
-                         }
+                } else {
+                    for (size_t h = 0; h < m.nirrep(); h++) {
+                        // Hmm, sometimes we need to overload to nullptr
+                        double* ptr = nullptr;
+                        if ((m.rowdim(h) * m.coldim(h ^ m.symmetry())) != 0) {
+                            ptr = m.pointer(h)[0];
+                        }
 
-                         // Build the array
-                         py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h ^ m.symmetry())}, ptr, py::cast(&m));
-                         ret.append(arr);
-                     }
-                 }
+                        // Build the array
+                        py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h ^ m.symmetry())}, ptr, py::cast(&m));
+                        ret.append(arr);
+                    }
+                }
 
-                 return ret;
-             },
-             py::return_value_policy::reference_internal);
+                return ret;
+            },
+            py::return_value_policy::reference_internal);
 
     // Free functions
     m.def("doublet", &linalg::doublet,
@@ -643,6 +645,12 @@ void export_mints(py::module& m) {
     m.def("triplet", &linalg::triplet,
           "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
           "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
+
+    py::enum_<DerivCalcType>(m, "DerivCalcType")
+        .value("Default", DerivCalcType::Default, "Use internal logic.")
+        .value("SCF", DerivCalcType::SCF, "SCF methods.")
+        .value("SCFandDF", DerivCalcType::SCFandDF, "Correlated methods using DF (no reference contribution).")
+        .value("Correlated", DerivCalcType::Correlated, "Correlated methods that write RDMs and Lagrangian to disk.");
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "Computes gradients of wavefunctions")
         .def(py::init<std::shared_ptr<Wavefunction>>())
@@ -653,7 +661,7 @@ void export_mints(py::module& m) {
              "Ignore reference contributions to the gradient? Default is False", "val"_a = false)
         .def("set_deriv_density_backtransformed", &Deriv::set_deriv_density_backtransformed,
              "Is the deriv_density already backtransformed? Default is False", "val"_a = false)
-        .def("compute", &Deriv::compute, "Compute the gradient");
+        .def("compute", &Deriv::compute, "Compute the gradient", "deriv_calc_type"_a = DerivCalcType::Default);
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)() const;
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&) const;
@@ -675,14 +683,16 @@ void export_mints(py::module& m) {
 
     py::class_<CdSalc, std::shared_ptr<CdSalc>>(m, "CdSalc", "Cartesian displacement SALC")
         .def("irrep", &CdSalc::irrep, "Return the irrep bit representation")
-        .def("irrep_index", [](const CdSalc& salc) { return static_cast<int>(salc.irrep()); }, "Return the irrep index")
+        .def(
+            "irrep_index", [](const CdSalc& salc) { return static_cast<int>(salc.irrep()); }, "Return the irrep index")
         .def("print_out", &CdSalc::print,
              "Print the irrep index and the coordinates of the SALC of Cartesian displacements. \
                                            Irrep index is 0-indexed and Cotton ordered.")
         .def("__getitem__", [](const CdSalc& salc, size_t i) { return salc.component(i); })
         .def("__len__", [](const CdSalc& salc) { return salc.ncomponent(); })
-        .def("__iter__", [](const CdSalc& salc) { return py::make_iterator(salc.get_components()); },
-             py::keep_alive<0, 1>());
+        .def(
+            "__iter__", [](const CdSalc& salc) { return py::make_iterator(salc.get_components()); },
+            py::keep_alive<0, 1>());
 
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
         m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
@@ -695,8 +705,9 @@ void export_mints(py::module& m) {
         .def("nirrep", &CdSalcList::nirrep, "Return the number of irreps")
         .def("__getitem__", [](const CdSalcList& salclist, size_t i) { return salclist[i]; })
         .def("__len__", [](const CdSalcList& salclist) { return salclist.ncd(); })
-        .def("__iter__", [](const CdSalcList& salclist) { return py::make_iterator(salclist.get_salcs()); },
-             py::keep_alive<0, 1>())
+        .def(
+            "__iter__", [](const CdSalcList& salclist) { return py::make_iterator(salclist.get_salcs()); },
+            py::keep_alive<0, 1>())
         .def("print_out", &CdSalcList::print, "Print the SALCs to the output file")
         .def("matrix", &CdSalcList::matrix, "Return the matrix that transforms Cartesian displacements to SALCs")
         .def("matrix_irrep", &CdSalcList::matrix_irrep,
@@ -1287,14 +1298,15 @@ void export_mints(py::module& m) {
         .def("get_fragments", &Molecule::get_fragments,
              "Returns list of pairs of atom ranges defining each fragment from parent molecule"
              "(fragments[frag_ind] = <Afirst,Alast+1>)")
-        .def("get_fragment_types",
-             [](Molecule& mol) {
-                 const std::string FragmentTypeList[] = {"Absent", "Real", "Ghost"};
-                 std::vector<std::string> srt;
-                 for (auto item : mol.get_fragment_types()) srt.push_back(FragmentTypeList[item]);
-                 return srt;
-             },
-             "Returns a list describing how to handle each fragment {Real, Ghost, Absent}")
+        .def(
+            "get_fragment_types",
+            [](Molecule& mol) {
+                const std::string FragmentTypeList[] = {"Absent", "Real", "Ghost"};
+                std::vector<std::string> srt;
+                for (auto item : mol.get_fragment_types()) srt.push_back(FragmentTypeList[item]);
+                return srt;
+            },
+            "Returns a list describing how to handle each fragment {Real, Ghost, Absent}")
         .def("get_fragment_charges", &Molecule::get_fragment_charges, "Gets the charge of each fragment")
         .def("get_fragment_multiplicities", &Molecule::get_fragment_multiplicities,
              "Gets the multiplicity of each fragment")
@@ -1308,8 +1320,9 @@ void export_mints(py::module& m) {
              "Prints the molecule in Cartesians in Angstroms to output file")
         .def("print_cluster", &Molecule::print_cluster,
              "Prints the molecule in Cartesians in input units adding fragment separators")
-        .def("rotational_constants", [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
-             "Returns the rotational constants [cm^-1] of the molecule")
+        .def(
+            "rotational_constants", [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
+            "Returns the rotational constants [cm^-1] of the molecule")
         .def("print_rotational_constants", &Molecule::print_rotational_constants,
              "Print the rotational constants to output file")
         .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy,
@@ -1366,13 +1379,14 @@ void export_mints(py::module& m) {
         .def("print_out_of_planes", &Molecule::print_out_of_planes,
              "Print the out-of-plane angle geometrical parameters to output file")
         .def("irrep_labels", &Molecule::irrep_labels, "Returns Irreducible Representation symmetry labels")
-        .def("units",
-             [](Molecule& mol) {
-                 const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
-                 std::string srt = GeometryUnitsList[mol.units()];
-                 return srt;
-             },
-             "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
+        .def(
+            "units",
+            [](Molecule& mol) {
+                const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
+                std::string srt = GeometryUnitsList[mol.units()];
+                return srt;
+            },
+            "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
         .def("set_units", &Molecule::set_units,
              "Sets units (Angstrom or Bohr) used to define the geometry. Imposes Psi4 physical constants conversion "
              "for input_units_to_au.")
@@ -1384,14 +1398,15 @@ void export_mints(py::module& m) {
                     "should not be relied upon")
         .def("rotational_symmetry_number", &Molecule::rotational_symmetry_number,
              "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")
-        .def("rotor_type",
-             [](Molecule& mol) {
-                 const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP",
-                                                      "RT_LINEAR", "RT_ATOM"};
-                 std::string srt = RotorTypeList[mol.rotor_type()];
-                 return srt;
-             },
-             "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
+        .def(
+            "rotor_type",
+            [](Molecule& mol) {
+                const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP",
+                                                     "RT_LINEAR", "RT_ATOM"};
+                std::string srt = RotorTypeList[mol.rotor_type()];
+                return srt;
+            },
+            "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
         .def("geometry", &Molecule::geometry,
              "Gets the geometry [Bohr] as a (Natom X 3) matrix of coordinates (excluding dummies)")
         .def("full_geometry", &Molecule::full_geometry,
@@ -1434,8 +1449,7 @@ void export_mints(py::module& m) {
         .def("nshell", &BasisSet::nshell, "Returns number of shells")
         .def("shell", no_center_version(&BasisSet::shell), py::return_value_policy::copy,
              "Return the si'th Gaussian shell", "si"_a)
-        .def("ecp_shell", &BasisSet::ecp_shell, py::return_value_policy::copy,
-             "Return the si'th ECP shell", "si"_a)
+        .def("ecp_shell", &BasisSet::ecp_shell, py::return_value_policy::copy, "Return the si'th ECP shell", "si"_a)
         .def("shell", center_version(&BasisSet::shell), py::return_value_policy::copy,
              "Return the si'th Gaussian shell on center", "center"_a, "si"_a)
         .def("n_frozen_core", &BasisSet::n_frozen_core,
@@ -1460,8 +1474,10 @@ void export_mints(py::module& m) {
         .def("function_to_center", &BasisSet::function_to_center, "The atomic center for the i'th function", "i"_a)
         .def("nshell_on_center", &BasisSet::nshell_on_center, "Return the number of shells on a given center", "i"_a)
         .def("shell_on_center", &BasisSet::shell_on_center, "Return the i'th shell on center.", "c"_a, "i"_a)
-        .def("n_ecp_shell_on_center", &BasisSet::n_ecp_shell_on_center, "Return the number of ECP shells on a given center", "i"_a)
-        .def("ecp_shell_on_center", &BasisSet::ecp_shell_on_center, "Return the i'th ECP shell on center.", "c"_a, "i"_a)
+        .def("n_ecp_shell_on_center", &BasisSet::n_ecp_shell_on_center,
+             "Return the number of ECP shells on a given center", "i"_a)
+        .def("ecp_shell_on_center", &BasisSet::ecp_shell_on_center, "Return the i'th ECP shell on center.", "c"_a,
+             "i"_a)
 
         //            def("decontract", &BasisSet::decontract, "docstring").
         .def("ao_to_shell", &BasisSet::ao_to_shell,
