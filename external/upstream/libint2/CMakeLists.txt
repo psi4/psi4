@@ -36,7 +36,7 @@ else()
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DENABLE_ONEBODY=1
-                   #-DONEBODY_MAX_AM=4  # don't mess with this one, causes errors
+                   -DONEBODY_MAX_AM=3
                    -DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
                    -DMULTIPOLE_MAX_ORDER=4
                    -DENABLE_ERI=2
