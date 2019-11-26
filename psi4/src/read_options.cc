@@ -1272,8 +1272,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/
         options.add_double("SCF_MEM_SAFETY_FACTOR", 0.75);
-        /*- SO orthogonalization: symmetric or canonical? -*/
-        options.add_str("S_ORTHOGONALIZATION", "SYMMETRIC", "SYMMETRIC CANONICAL");
+        /*- SO orthogonalization: automatic, symmetric, or canonical? -*/
+        options.add_str("S_ORTHOGONALIZATION", "AUTO", "AUTO SYMMETRIC CANONICAL");
         /*- Minimum S matrix eigenvalue to allow before linear dependencies are removed. -*/
         options.add_double("S_TOLERANCE", 1E-7);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/

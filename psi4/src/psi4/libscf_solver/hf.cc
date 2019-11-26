@@ -64,6 +64,7 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/oeprop.h"
+#include "psi4/libmints/orthog.h"
 
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
@@ -696,112 +697,40 @@ void HF::form_H() {
 }
 
 void HF::form_Shalf() {
-    // ==> SYMMETRIC ORTHOGONALIZATION <== //
+    OverlapOrthog::OrthogMethod method;
+    if (options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC")
+        method = OverlapOrthog::Symmetric;
+    else if (options_.get_str("S_ORTHOGONALIZATION") == "CANONICAL")
+        method = OverlapOrthog::Canonical;
+    else if (options_.get_str("S_ORTHOGONALIZATION") == "AUTO")
+        method = OverlapOrthog::Automatic;
+    else
+        throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
 
-    // S_ is computed by wavefunction
+    double lindep_tolerance = options_.get_double("S_TOLERANCE");
+    OverlapOrthog orthog(method, S_, lindep_tolerance, print_);
 
-    SharedMatrix eigvec = factory_->create_shared_matrix("L");
-    SharedMatrix eigtemp = factory_->create_shared_matrix("Temp");
-    SharedMatrix eigtemp2 = factory_->create_shared_matrix("Temp2");
-    SharedMatrix eigvec_store = factory_->create_shared_matrix("TempStore");
-    SharedVector eigval(factory_->create_vector());
-    SharedVector eigval_store(factory_->create_vector());
+    // Transform
+    X_ = orthog.basis_to_orthog_basis();
 
-    // Used to do this 3 times, now only once
-    S_->diagonalize(eigvec, eigval);
-    eigvec_store->copy(eigvec);
-    eigval_store->copy(eigval.get());
+    // Update nmo_
+    nmopi_ = X_->colspi();
+    nmo_ = nmopi_.sum();
 
-    // Convert the eigenvales to 1/sqrt(eigenvalues)
-    const Dimension& dimpi = eigval->dimpi();
-    // Cannot assume that (0,0) is a valid reference
-    bool min_S_initialized = false;
-    double min_S;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < dimpi[h]; ++i) {
-            if (!min_S_initialized) {
-                min_S = eigval->get(h, i);
-                min_S_initialized = true;
-            } else if (min_S > eigval->get(h, i)) {
-                min_S = eigval->get(h, i);
-            }
-            double scale = 1.0 / std::sqrt(eigval->get(h, i));
-            eigval->set(h, i, scale);
+    // Double check occupation vectors
+    for (int h = 0; h < X_->nirrep(); ++h) {
+        if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+            throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
         }
     }
-    if (print_) outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n", min_S);
+    // Refreshes twice in RHF, no big deal
+    epsilon_a_->init(nmopi_);
+    Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
+    epsilon_b_->init(nmopi_);
+    Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
 
-    // Create a vector matrix from the converted eigenvalues
-    eigtemp2->set_diagonal(eigval);
-    eigtemp->gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
-    X_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
-
-    // ==> CANONICAL ORTHOGONALIZATION <== //
-
-    // Decide symmetric or canonical
-    double S_cutoff = options_.get_double("S_TOLERANCE");
-    if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
-        if (print_) outfile->Printf("  Using Symmetric Orthogonalization.\n\n");
-
-    } else {
-        if (print_) outfile->Printf("  Using Canonical Orthogonalization with cutoff of %14.10E.\n", S_cutoff);
-
-        // Diagonalize S (or just get a fresh copy)
-        eigvec->copy(eigvec_store.get());
-        eigval->copy(eigval_store.get());
-        int delta_mos = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            // in each irrep, scale significant cols i  by 1.0/sqrt(s_i)
-            int start_index = 0;
-            for (int i = 0; i < dimpi[h]; ++i) {
-                if (S_cutoff < eigval->get(h, i)) {
-                    double scale = 1.0 / std::sqrt(eigval->get(h, i));
-                    eigvec->scale_column(h, i, scale);
-                } else {
-                    start_index++;
-                    nmopi_[h]--;
-                    nmo_--;
-                }
-            }
-            if (print_ > 2)
-                outfile->Printf("  Irrep %d, %d of %d possible MOs eliminated.\n", h, start_index, nsopi_[h]);
-
-            delta_mos += start_index;
-        }
-
-        X_->init(nirrep_, nsopi_, nmopi_, "X (Canonical Orthogonalization)");
-        for (int h = 0; h < eigval->nirrep(); ++h) {
-            // Copy significant columns of eigvec into X in
-            // descending order
-            int start_index = 0;
-            for (int i = 0; i < dimpi[h]; ++i) {
-                if (S_cutoff >= eigval->get(h, i)) {
-                    start_index++;
-                }
-            }
-            for (int i = 0; i < dimpi[h] - start_index; ++i) {
-                for (int m = 0; m < dimpi[h]; m++) X_->set(h, m, i, eigvec->get(h, m, dimpi[h] - i - 1));
-            }
-        }
-
-        if (print_) outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", delta_mos, nso_);
-
-        // Double check occupation vectors
-        for (int h = 0; h < eigval->nirrep(); ++h) {
-            if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
-                throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
-            }
-        }
-
-        // Refreshes twice in RHF, no big deal
-        epsilon_a_->init(nmopi_);
-        Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
-        epsilon_b_->init(nmopi_);
-        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
-
-        // Extra matrix dimension changes for specific derived classes
-        prepare_canonical_orthogonalization();
-    }
+    // Extra matrix dimension changes for specific derived classes
+    prepare_canonical_orthogonalization();
 
     // Temporary variables needed by diagonalize_F
     diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);

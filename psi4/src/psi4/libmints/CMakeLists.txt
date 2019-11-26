@@ -66,6 +66,7 @@ list(APPEND sources
   bessel.cc
   gaussquad.cc
   ecpint.cc
+  orthog.cc
   )
 
 psi4_add_module(lib mints sources)

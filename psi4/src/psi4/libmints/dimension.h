@@ -44,13 +44,8 @@ class PSI_API Dimension {
 
    public:
     Dimension();
-    Dimension(const Dimension& other);
     Dimension(int n, const std::string& name = "");
     Dimension(const std::vector<int>& other);
-    ~Dimension();
-
-    /// Assignment operator
-    Dimension& operator=(const Dimension& other);
 
     /// Assignment operator, this one can be very dangerous
     Dimension& operator=(const int* other);
