@@ -38,9 +38,9 @@ else()
                    -DENABLE_ONEBODY=1
                    -DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
                    -DMULTIPOLE_MAX_ORDER=4
-                   -DENABLE_ERI=2
-                   -DENABLE_ERI3=2
-                   -DENABLE_ERI2=2
+                   -DENABLE_ERI=1
+                   -DENABLE_ERI3=1
+                   -DENABLE_ERI2=1
                    -DMPFR_ROOT=${MPFR_ROOT}
                    -DBOOST_ROOT=${BOOST_ROOT}
                    -DEigen3_DIR=${Eigen3_DIR}
@@ -50,9 +50,9 @@ else()
                    -DBUILD_SHARED=${_so_only}
                    -DBUILD_STATIC=${_a_only}
         CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                         -DWITH_ERI_MAX_AM:STRING=4;4;3
-                         -DWITH_ERI3_MAX_AM:STRING=5
-                         -DWITH_ERI2_MAX_AM:STRING=5
+                         -DWITH_ERI_MAX_AM:STRING=3;2
+                         -DWITH_ERI3_MAX_AM:STRING=3
+                         -DWITH_ERI2_MAX_AM:STRING=3
     )
 
     # CHOOSE! `make export`
