@@ -165,7 +165,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
-                -DMPFR_ROOT=%CONDA_PREFIX% ^
+                -DMPFR_ROOT="C:\tools\miniconda3\Library" ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
