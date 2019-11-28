@@ -192,8 +192,9 @@ void QuadrupoleInt::compute_pair(const GaussianShell &s1, const GaussianShell &s
 }
 
 std::vector<double> QuadrupoleInt::compute_R_squared() {
-    std::vector<double> rsq(bs1_->nbf());
+    if (bs1_ != bs2_) throw PSIEXCEPTION("QuadrupoleInt::compute_R_squared needs bs1_ == bs2_.");
 
+    std::vector<double> rsq(bs1_->nbf());
     int ns1 = bs1_->nshell();
     int offset = 0;
     for (int is = 0; is < ns1; ++is) {
@@ -214,7 +215,8 @@ std::vector<double> QuadrupoleInt::compute_R_squared() {
             double yy = buffer_[ioff + 3 * length];
             double zz = buffer_[ioff + 5 * length];
 
-            rsq[offset + i] = xx + yy + zz;
+            // Looks like the quadrupoles are computed with a minus sign
+            rsq[offset + i] = -(xx + yy + zz);
         }
 
         offset += ni;

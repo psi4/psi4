@@ -82,6 +82,9 @@ class PSI_API OverlapOrthog {
     /// Driver routine
     void compute_orthog_trans();
 
+    /// Sort the basis functions from tight to diffuse
+    std::vector<std::vector<int>> sort_indices() const;
+
    public:
     OverlapOrthog(OrthogMethod method, SharedMatrix overlap, SharedVector rsq, double lindep_tolerance,
                   double cholesky_tolerance, int print = 0);

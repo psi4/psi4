@@ -30,6 +30,7 @@
 #include <cmath>
 #include <iterator>
 #include <algorithm>
+#include <numeric>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -140,16 +141,43 @@ void OverlapOrthog::compute_canonical_orthog() {
     }
 }
 
+std::vector<std::vector<int>> OverlapOrthog::sort_indices() const {
+    std::vector<std::vector<int>> order(rsq_->nirrep());
+    for (int h = 0; h < rsq_->nirrep(); h++) {
+        // initialize ordering as 0, 1, 2, ..., n-1
+        order[h].resize(rsq_->dim(h));
+        iota(order[h].begin(), order[h].end(), 0);
+
+        // and then sort the indices by rsq
+        std::sort(order[h].begin(), order[h].end(),
+                  [this, h](int i1, int i2) { return rsq_->get(h, i1) < rsq_->get(h, i2); });
+    }
+
+    return order;
+}
+
 void OverlapOrthog::compute_partial_cholesky_orthog() {
     // Original dimensions
     const Dimension& nbf = overlap_->rowspi();
 
-    // Do pivoted Cholesky to find important basis functions
-    std::vector<std::vector<int>> pivots;
+    // Order basis functions from tight to diffuse
+    std::vector<std::vector<int>> order = sort_indices();
+    // Reorder overlap matrix
     auto Stmp = std::make_shared<Matrix>(nbf, nbf);
-    Stmp->copy(overlap_);
-    printf("Cholesky thr %e\n", cholesky_tol_);
+    for (size_t h = 0; h < order.size(); h++) {
+        for (size_t i = 0; i < order[h].size(); i++) {
+            for (size_t j = 0; j <= i; j++) {
+                Stmp->set(h, i, j, overlap_->get(h, order[h][i], order[h][j]));
+                Stmp->set(h, j, i, overlap_->get(h, order[h][i], order[h][j]));
+            }
+        }
+    }
+    // Do pivoted Cholesky to find the important basis functions
+    std::vector<std::vector<int>> pivots;
     Stmp->partial_cholesky_factorize_pivot(cholesky_tol_, true, pivots);
+    // Rewrite the pivot indices in terms of the original indexing
+    for (size_t h = 0; h < pivots.size(); h++)
+        for (size_t i = 0; i < pivots[h].size(); i++) pivots[h][i] = order[h][pivots[h][i]];
 
     // Size of Cholesky basis
     Dimension nchol(nbf);
