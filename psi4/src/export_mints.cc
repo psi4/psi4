@@ -31,6 +31,7 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl_bind.h>
 #include <pybind11/operators.h>
+#include <libint2/shell.h>
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/deriv.h"
