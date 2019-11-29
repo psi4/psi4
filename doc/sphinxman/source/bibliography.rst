@@ -447,3 +447,10 @@ Bibliography
    J. M. Olsen, K. Aidas, and J. Kongsted.
    *J. Chem. Theory Comput.* **6**, 3721–3734 (2010).
 
+.. [Dreuw:2014:82]
+   A. Dreuw and M. Wormit.
+   *WIREs Comput. Mol. Sci.*  **5**, 82-95 (2014).
+
+.. [Herbst2019]
+   M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw.
+   *WIREs Comput. Mol. Sci.*, *submitted*, Preprint https://adc-connect.org/q/publications

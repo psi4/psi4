@@ -1796,40 +1796,41 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
            states. -*/
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF", "RHF UHF");
-        /*- How to cache quantities within the DPD library -*/
+        /*- How to cache quantities within the DPD library. This option is only available for the built-in ADC backend. -*/
         options.add_int("CACHELEVEL", 2);
-        /*- The amount of memory available (in Mb) -*/
+        /*- The amount of memory available (in Mb) This option is only available for the built-in ADC backend. -*/
         options.add_int("MEMORY", 1000);
-        /*- The convergence criterion for pole searching step. -*/
+        /*- The convergence criterion for pole searching step. This option is only available for the built-in ADC backend. -*/
         options.add_double("NEWTON_CONVERGENCE", 1e-7);
-        /*- Maximum iteration number in pole searching -*/
+        /*- Maximum iteration number in pole searching. This option is only available for the built-in ADC backend. -*/
         options.add_int("POLE_MAXITER", 20);
-        /*- Maximum iteration number in simultaneous expansion method -*/
+        /*- Maximum iteration number in simultaneous expansion method. This option is only available for the built-in ADC backend. -*/
         options.add_int("SEM_MAXITER", 30);
-        /*- The cutoff norm of residual vector in SEM step. -*/
+        /*- The cutoff norm of residual vector in SEM step. This option is only available for the built-in ADC backend. -*/
         options.add_double("NORM_TOLERANCE", 1e-6);
-        /*- The poles per irrep vector -*/
+        /*- The number of poles / excited states to obtain per irrep vector -*/
         options.add("ROOTS_PER_IRREP", new ArrayType());
-        /*- Do use the partial renormalization scheme for the ground state wavefunction? -*/
+        /*- Do use the partial renormalization scheme for the ground state wavefunction?
+         *   This option is only available for the built-in ADC backend. -*/
         options.add_bool("PR", false);
-        /*- Number of components of transition amplitudes printed -*/
+        /*- Number of components of transition amplitudes printed. This option is only available for the built-in ADC backend. -*/
         options.add_int("NUM_AMPS_PRINT", 5);
-        /*- Tolerance for extracted or printed amplitudes -*/
+        /*- Tolerance for extracted or printed amplitudes. This option is only available for the adcc backend. -*/
         options.add_double("CUTOFF_AMPS_PRINT", 0.01);
         /*- Convergence threshold for ADC matrix diagonalisation. Negative values keep the
          *   adcc default (1e-6) -*/
         options.add_double("R_CONVERGENCE", -1);
         /*- Number of guess vectors to generate and use. Negative values keep
-         *  the adcc default (currently 2 * ROOTS_PER_IRREP) -*/
+         *  the adcc default (currently 2 * ROOTS_PER_IRREP). This option is only available for the adcc backend. -*/
         options.add_int("NUM_GUESSES", -1);
-        /*- Number of orbitals to place in the core -*/
+        /*- Number of orbitals to place in the core. This option is only available for the adcc backend.  -*/
         options.add_int("NUM_CORE_ORBITALS", 0);
         /*- The kind of states to compute. -*/
         options.add_str("KIND", "SINGLET", "SINGLET TRIPLET SPIN_FLIP ANY");
         /*- Maximum number of iterations -*/
         options.add_int("MAXITER", 50);
         /*- Maximum number of subspace vectors. A negative value uses 
-         *  the adcc default (roughly between 20 and 5 * N_GUESSES) -*/
+         *  the adcc default (roughly between 20 and 5 * N_GUESSES). This option is only available for the adcc backend. -*/
         options.add_int("MAX_NUM_VECS", -1);
     }
     if (name == "CCHBAR" || options.read_globals()) {
