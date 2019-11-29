@@ -32,8 +32,8 @@
 #include "psi4/libmints/fjt.h"
 #include "psi4/libqt/qt.h"
 
-#include "libint2/engine.h"
-#include "libint2/shell.h"
+#include <libint2/engine.h>
+#include <libint2/shell.h>
 using namespace psi;
 
 /////////
