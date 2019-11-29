@@ -63,7 +63,7 @@ macro(psi4_add_module binlib libname sources)
       tgt::lapack
     )
   if(MSVC)
-    target_link_libraries(mints
+    target_link_libraries(${libname}
       PRIVATE
         Libint2::cxx
       )

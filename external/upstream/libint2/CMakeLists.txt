@@ -35,12 +35,12 @@ else()
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                   -DENABLE_ONEBODY=1
+                   -DENABLE_ONEBODY=0
                    -DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
-                   -DMULTIPOLE_MAX_ORDER=4
-                   -DENABLE_ERI=1
-                   -DENABLE_ERI3=1
-                   -DENABLE_ERI2=1
+                   -DMULTIPOLE_MAX_ORDER=2
+                   -DENABLE_ERI=0
+                   -DENABLE_ERI3=0
+                   -DENABLE_ERI2=0
                    -DMPFR_ROOT=${MPFR_ROOT}
                    -DBOOST_ROOT=${BOOST_ROOT}
                    -DEigen3_DIR=${Eigen3_DIR}
@@ -50,7 +50,7 @@ else()
                    -DBUILD_SHARED=${_so_only}
                    -DBUILD_STATIC=${_a_only}
         CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                         -DWITH_ERI_MAX_AM:STRING=3;2
+                         -DWITH_ERI_MAX_AM:STRING=3
                          -DWITH_ERI3_MAX_AM:STRING=3
                          -DWITH_ERI2_MAX_AM:STRING=2
     )
