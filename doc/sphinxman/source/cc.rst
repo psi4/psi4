@@ -156,8 +156,8 @@ to functions like :py:func:`~psi4.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'ccsd(at
 ``'cc3'``, ``'bccd'`` (CCD with Brueckner orbitals), ``'bccd(t)'`` (CCD(T) with
 Brueckner orbitals), ``'eom-ccsd'``, ``'eom-cc2'`` (CC2 for excited states),
 ``'eom-cc3'`` (CC3 for excited states).  Response properties can be obtained
-by calling the function :py:func:`~psi4.property` (instead of, for example, :py:func:`~psi4.energy`,
-*e.g.*, ``property('ccsd')``.  There are many sample
+by calling the function :py:func:`~psi4.properties` (instead of, for example, :py:func:`~psi4.energy`,
+*e.g.*, ``properties('ccsd')``.  There are many sample
 coupled cluster inputs provided in :source:`samples`.
 
 Basic Keywords
@@ -219,8 +219,8 @@ The most important keywords associated with EOM-CC calculations are:
 Linear Response (CCLR) Calculations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Linear response computations are invoked like ``property('ccsd')``
-or ``property('cc2')``, along with a list of requested properties.
+Linear response computations are invoked like ``properties('ccsd')``
+or ``properties('cc2')``, along with a list of requested properties.
 A complete list of keywords related to
 coupled cluster linear response is provided in Appendix :ref:`apdx:ccresponse`.
 
