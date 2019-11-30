@@ -36,7 +36,7 @@ from psi4.driver.p4util.exceptions import *
 def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials=True, weighted=True, polynomial_order=4):
     """Performs and unweighted least squares fit of a polynomial, with specified order
        to an array of input function values (fvals) evaluated at given locations (xvals).
-       See http://dx.doi.org/10.1063/1.4862157, particularly eqn (7) for details. """
+       See https://doi.org/10.1063/1.4862157, particularly eqn (7) for details. """
     xpts = np.array(xvals) - localization_point
     if weighted:
         R = 1.0
@@ -59,7 +59,7 @@ def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials
 def anharmonicity(rvals, energies, plot_fit='', mol = None):
     """Generates spectroscopic constants for a diatomic molecules.
        Fits a diatomic potential energy curve using a weighted least squares approach
-       (c.f. http://dx.doi.org/10.1063/1.4862157, particularly eqn. 7), locates the minimum
+       (c.f. https://doi.org/10.1063/1.4862157, particularly eqn. 7), locates the minimum
        energy point, and then applies second order vibrational perturbation theory to obtain spectroscopic
        constants.  Any number of points greater than 4 may be provided, and they should bracket the minimum.
        The data need not be evenly spaced, and can be provided in any order.  The data are weighted such that

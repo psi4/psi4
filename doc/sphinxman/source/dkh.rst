@@ -121,7 +121,7 @@ When using this code please make reference to the appropriate following paper:
 
 * "The Generalized Douglas-Kroll Transformation," A. Wolf,
   M. Reiher, and B. A. Hess, *J. Chem. Phys.* **117**, 9215 (2002).
-  (doi: `10.1063/1.1515314 <http://dx.doi.org/10.1063/1.1515314>`_)
+  (doi: `10.1063/1.1515314 <https://doi.org/10.1063/1.1515314>`_)
 
 .. _`cmake:dkh`:
 

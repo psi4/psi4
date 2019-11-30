@@ -91,7 +91,7 @@ COPYING.LESSER file of this repository, and can also be found
 [here](https://www.gnu.org/licenses/lgpl.txt).
 
 
-Citation [![doi](https://img.shields.io/badge/doi-10.1021/acs.jctc.7b00174-5077AB.svg)](http://dx.doi.org/10.1021/acs.jctc.7b00174)
+Citation [![doi](https://img.shields.io/badge/doi-10.1021/acs.jctc.7b00174-5077AB.svg)](https://doi.org/10.1021/acs.jctc.7b00174)
 ========
 
 The journal article reference describing Psi4 is:
