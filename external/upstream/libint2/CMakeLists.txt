@@ -37,7 +37,7 @@ else()
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DENABLE_ONEBODY=0
                    -DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
-                   -DMULTIPOLE_MAX_ORDER=2
+                   -DMULTIPOLE_MAX_ORDER=4
                    -DENABLE_ERI=0
                    -DENABLE_ERI3=0
                    -DENABLE_ERI2=0
@@ -50,10 +50,13 @@ else()
                    -DBUILD_SHARED=${_so_only}
                    -DBUILD_STATIC=${_a_only}
         CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                         -DWITH_ERI_MAX_AM:STRING=3
-                         -DWITH_ERI3_MAX_AM:STRING=3
-                         -DWITH_ERI2_MAX_AM:STRING=2
+                         -DWITH_ERI_MAX_AM:STRING=5
+                         -DWITH_ERI3_MAX_AM:STRING=6
+                         -DWITH_ERI2_MAX_AM:STRING=6
     )
+                         #-DWITH_ERI_MAX_AM:STRING=5;4;4
+                         #-DWITH_ERI3_MAX_AM:STRING=6;5;5
+                         #-DWITH_ERI2_MAX_AM:STRING=6;5;5
 
     # CHOOSE! `make export`
     #set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
