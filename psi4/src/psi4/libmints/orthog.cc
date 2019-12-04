@@ -51,14 +51,48 @@ OverlapOrthog::OverlapOrthog(OrthogMethod method, SharedMatrix overlap, SharedVe
       print_(print) {
     eigval_ = nullptr;
     eigvec_ = nullptr;
+    normalization_ = nullptr;
+    normalized_overlap_ = nullptr;
+}
+
+void OverlapOrthog::normalize() {
+    // Compute normalization coefficients
+    if (normalization_ != nullptr) throw PSIEXCEPTION("OverlapOrthog::normalizate: normalization_ should be nullptr");
+    normalization_ = std::make_shared<Vector>(overlap_->rowspi());
+    normalization_->set_name("SO normalization factors");
+    for (int h = 0; h < overlap_->nirrep(); h++)
+        for (int i = 0; i < overlap_->rowdim(h); i++) normalization_->set(h, i, 1.0 / sqrt(overlap_->get(h, i, i)));
+    if (print_ > 3) normalization_->print();
+
+    // Normalize overlap matrix
+    if (normalized_overlap_ != nullptr)
+        throw PSIEXCEPTION("OverlapOrthog::normalizate: normalized_overlap_ should be nullptr");
+    normalized_overlap_ = std::make_shared<Matrix>(overlap_->rowspi(), overlap_->colspi());
+    for (int h = 0; h < overlap_->nirrep(); h++)
+        for (int j = 0; j < overlap_->coldim(h); j++)
+            for (int i = 0; i < overlap_->rowdim(h); i++)
+                normalized_overlap_->set(
+                    h, i, j, overlap_->get(h, i, j) * normalization_->get(h, i) * normalization_->get(h, j));
+}
+
+void OverlapOrthog::unroll_normalization() {
+    if (!normalization_)
+        throw PSIEXCEPTION("OverlapOrthog::unroll_normalization: normalization has not been yet computed.");
+    if (!X_) throw PSIEXCEPTION("OverlapOrthog::unroll_normalization: X has not been yet computed.");
+    // Plug the normalization back into X
+    for (int h = 0; h < X_->nirrep(); h++)
+        for (int i = 0; i < X_->rowdim(h); i++) X_->scale_row(h, i, normalization_->get(h, i));
 }
 
 void OverlapOrthog::compute_overlap_eig() {
+    if (!normalized_overlap_)
+        throw PSIEXCEPTION("OverlapOrthog::compute_overlap_eig: normalized overlap has not yet been computed.");
+
     // Eigenvectors
-    eigvec_ = std::make_shared<Matrix>("U", overlap_->rowspi(), overlap_->colspi());
+    eigvec_ = std::make_shared<Matrix>("U", normalized_overlap_->rowspi(), normalized_overlap_->colspi());
     // Eigenvalues
-    eigval_ = std::make_shared<Vector>(overlap_->colspi());
-    overlap_->diagonalize(eigvec_, eigval_);
+    eigval_ = std::make_shared<Vector>(normalized_overlap_->colspi());
+    normalized_overlap_->diagonalize(eigvec_, eigval_);
 
     bool min_S_initialized = false;
     for (int h = 0; h < eigval_->nirrep(); ++h) {
@@ -128,6 +162,8 @@ void OverlapOrthog::compute_canonical_orthog() {
         }
         if (print_ > 2) outfile->Printf("  Irrep %d, %d of %d possible MOs eliminated.\n", h, nbf[h] - nmo[h], nbf[h]);
     }
+    if (nmo.sum() != nbf.sum() && print_)
+        outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", nbf.sum() - nmo.sum(), nbf.sum());
 
     // Form vectors
     X_ = std::make_shared<Matrix>("X (Canonical Orthogonalization)", nbf, nmo);
@@ -158,7 +194,7 @@ std::vector<std::vector<int>> OverlapOrthog::sort_indices() const {
 
 void OverlapOrthog::compute_partial_cholesky_orthog() {
     // Original dimensions
-    const Dimension& nbf = overlap_->rowspi();
+    const Dimension& nbf = normalized_overlap_->rowspi();
 
     // Order basis functions from tight to diffuse
     std::vector<std::vector<int>> order = sort_indices();
@@ -167,8 +203,8 @@ void OverlapOrthog::compute_partial_cholesky_orthog() {
     for (size_t h = 0; h < order.size(); h++) {
         for (size_t i = 0; i < order[h].size(); i++) {
             for (size_t j = 0; j <= i; j++) {
-                Stmp->set(h, i, j, overlap_->get(h, order[h][i], order[h][j]));
-                Stmp->set(h, j, i, overlap_->get(h, order[h][i], order[h][j]));
+                Stmp->set(h, i, j, normalized_overlap_->get(h, order[h][i], order[h][j]));
+                Stmp->set(h, j, i, normalized_overlap_->get(h, order[h][i], order[h][j]));
             }
         }
     }
@@ -181,7 +217,7 @@ void OverlapOrthog::compute_partial_cholesky_orthog() {
 
     // Size of Cholesky basis
     Dimension nchol(nbf);
-    for (int h = 0; h < overlap_->nirrep(); h++) {
+    for (int h = 0; h < normalized_overlap_->nirrep(); h++) {
         nchol[h] = pivots[h].size();
         outfile->Printf("  Cholesky: irrep %d, %d of %d possible MOs eliminated.\n", h, nbf[h] - nchol[h], nbf[h]);
     }
@@ -191,22 +227,21 @@ void OverlapOrthog::compute_partial_cholesky_orthog() {
 
     // Copy over data
     auto Ssub = std::make_shared<Matrix>(nchol, nchol);
-    for (int h = 0; h < overlap_->nirrep(); h++)
+    for (int h = 0; h < normalized_overlap_->nirrep(); h++)
         for (int m = 0; m < (int)pivots[h].size(); m++)
             for (int n = 0; n < (int)pivots[h].size(); n++)
-                Ssub->set(h, m, n, overlap_->get(h, pivots[h][m], pivots[h][n]));
+                Ssub->set(h, m, n, normalized_overlap_->get(h, pivots[h][m], pivots[h][n]));
 
     // Switch overlap matrix to use
-    auto overlap0 = overlap_;
-    overlap_ = Ssub;
+    auto normalized_overlap0 = normalized_overlap_;
+    normalized_overlap_ = Ssub;
     // Reset eigendecomposition
     eigvec_ = nullptr;
     eigval_ = nullptr;
 
     // Compute orthogonalization as usual in submatrix
-    if (print_) outfile->Printf("    Proceeding with conventional orthogonalization in reduced basis.\n");
-    orthog_method_ = Automatic;
-    compute_orthog_trans();
+    if (print_) outfile->Printf("    Proceeding with canonical orthogonalization in reduced basis.\n");
+    compute_canonical_orthog();
 
     // Find out number of vectors in each symmetry block
     const Dimension& nmo(X_->colspi());
@@ -220,14 +255,18 @@ void OverlapOrthog::compute_partial_cholesky_orthog() {
 
     orthog_method_ = PartialCholesky;
     // Restore original overlap matrix
-    overlap_ = overlap0;
+    normalized_overlap_ = normalized_overlap0;
     // Get orthogonal transformation
     X_ = padX;
 }
 
 void OverlapOrthog::compute_orthog_trans() {
-    compute_overlap_eig();
+    // Normalize basis
+    normalize();
+
+    // Determine what method to use
     if (orthog_method_ == Automatic) {
+        compute_overlap_eig();
         orthog_method_ = (min_S < lindep_tol_) ? Canonical : Symmetric;
     }
 
@@ -248,7 +287,9 @@ void OverlapOrthog::compute_orthog_trans() {
             throw PSIEXCEPTION("OverlapOrthog::compute_orthog_trans: bad value.");
     }
 
-    // Compute inverse transformation, too.
+    // Include basis function normalization in X
+    unroll_normalization();
+    // Compute the inverse transformation, too.
     compute_inverse();
 }
 

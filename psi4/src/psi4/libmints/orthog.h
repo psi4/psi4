@@ -44,6 +44,10 @@ class PSI_API OverlapOrthog {
 
     /// Matrix to decompose
     SharedMatrix overlap_;
+    /// Normalized version of the input matrix
+    SharedMatrix normalized_overlap_;
+    /// Normalization coefficients
+    SharedVector normalization_;
     /// its eigenvectors
     SharedMatrix eigvec_;
     /// and eigenvalues
@@ -68,6 +72,15 @@ class PSI_API OverlapOrthog {
     /// Smallest eigenvalue
     double min_S;
     /// @}
+
+    /** Normalizes the basis set. This is important for the partial
+        Cholesky decomposition, as otherwise the functions with most
+        overlap i.e. the most diffuse ones get handled first by the
+        algorithm, which is exactly the wrong way around.
+    */
+    void normalize();
+    /// Once X has been formed, unroll the normalization into X
+    void unroll_normalization();
 
     /// Given X, compute Xinv = S*X
     void compute_inverse();
