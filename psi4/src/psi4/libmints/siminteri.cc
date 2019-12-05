@@ -218,7 +218,8 @@ SimintTwoElectronInt::SimintTwoElectronInt(const SimintTwoElectronInt &rhs)
       single_spairs_bra_(rhs.single_spairs_bra_),
       single_spairs_ket_(rhs.single_spairs_ket_),
       multi_spairs_bra_(rhs.multi_spairs_bra_),
-      multi_spairs_ket_(rhs.multi_spairs_ket_) {
+      multi_spairs_ket_(rhs.multi_spairs_ket_),
+      RSblock_starts_(rhs.RSblock_starts_) {
     // allocate and reconfigure workspace
     const size_t simint_workmem = simint_ostei_workmem(deriv_, maxam_);
     sharedwork_ = (double *)SIMINT_ALLOC(simint_workmem);
@@ -354,6 +355,7 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
         ncomputed = simint_compute_eri(P, Q, SIMINT_SCREEN_TOL, sharedwork_, source_);
         pure_transform(sh1, sh2, sh3, sh4, 1, false);
     }
+    buffers_[0] = target_full_;
 
     return ncomputed;
 }
@@ -362,6 +364,7 @@ void SimintTwoElectronInt::compute_shell_blocks(int shellpair1, int shellpair2, 
     // set the pointers to the beginning of the work spaces
     target_ = target_full_;
     source_ = source_full_;
+    buffers_[0] = target_full_;
 
     auto vsh12 = blocks12_[shellpair1];
     auto vsh34 = blocks34_[shellpair2];

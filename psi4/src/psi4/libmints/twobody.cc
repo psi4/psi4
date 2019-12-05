@@ -83,8 +83,28 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
 }
 
 TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
+    buffers_.resize(rhs.buffers_.size());
     blocks12_ = rhs.blocks12_;
     blocks34_ = rhs.blocks34_;
+    screening_threshold_ = rhs.screening_threshold_;
+    screening_threshold_squared_ = rhs.screening_threshold_squared_;
+    nshell_ = rhs.nshell_;
+    nbf_ = rhs.nbf_;
+    screening_type_ = rhs.screening_type_;
+    function_pair_values_ = rhs.function_pair_values_;
+    shell_pair_values_ = rhs.shell_pair_values_;
+    shell_pair_exchange_values_ = rhs.shell_pair_exchange_values_;
+    function_sqrt_ = rhs.function_sqrt_;
+    function_pairs_ = rhs.function_pairs_;
+    shell_pairs_ = rhs.shell_pairs_;
+    shell_pairs_bra_ = rhs.shell_pairs_bra_;
+    shell_pairs_ket_ = rhs.shell_pairs_ket_;
+    max_integral_ = rhs.max_integral_;
+    function_pairs_reverse_ = rhs.function_pairs_reverse_;
+    shell_pairs_reverse_ = rhs.shell_pairs_reverse_;
+    shell_to_shell_ = rhs.shell_to_shell_;
+    function_to_function_ = rhs.function_to_function_;
+    sieve_impl_ = rhs.sieve_impl_;
 }
 
 TwoBodyAOInt::~TwoBodyAOInt() {}
