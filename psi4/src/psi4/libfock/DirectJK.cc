@@ -97,7 +97,8 @@ void DirectJK::preiterations() {
     
 #ifdef USING_BrianQC
     if (brianCookie != 0) {
-        brianCOMSetPrecisionThresholds(&brianCookie, &cutoff_);
+        double threshold = cutoff_ * 1e-2;
+        brianCOMSetPrecisionThresholds(&brianCookie, &threshold);
         checkBrian();
     }
 #endif

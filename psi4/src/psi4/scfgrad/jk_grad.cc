@@ -197,6 +197,14 @@ void DFJKGrad::compute_gradient()
     // => Build ERI Sieve <= //
     sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 
+#ifdef USING_BrianQC
+    if (brianCookie != 0) {
+        double threshold = cutoff_ * 1e-2;
+        brianCOMSetPrecisionThresholds(&brianCookie, &threshold);
+        checkBrian();
+    }
+#endif
+
     // => Open temp files <= //
     psio_->open(unit_a_, PSIO_OPEN_NEW);
     psio_->open(unit_b_, PSIO_OPEN_NEW);
