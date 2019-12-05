@@ -681,7 +681,7 @@ into |PSIfour| data objects.
   stowed in PSI Variables.
 
 * Property calls that required extra computation not yet translated into
-  :py:func:`~psi4.property` computation command
+  :py:func:`~psi4.properties` computation command
 
 * Frequencies
 

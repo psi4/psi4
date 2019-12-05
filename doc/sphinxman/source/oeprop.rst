@@ -97,12 +97,12 @@ properties to compute.  The available properties are shown in the table above.
 The syntax above works well for computing properties using the SCF
 wavefunction, however, may be difficult (or impossible) to use for some of the
 correlated levels of theory. Alternatively, one-electron properties can be
-computed using the built-in property() function, e.g.::
+computed using the built-in properties() function, e.g.::
 
-  property('ccsd', properties=['dipole'])
+  properties('ccsd', properties=['dipole'])
 
-The :py:func:`~psi4.property` function provides limited functionality, but is a lot easier to
-use for correlated methods. For capabilities of :py:func:`~psi4.property` see the
+The :py:func:`~psi4.properties` function provides limited functionality, but is a lot easier to
+use for correlated methods. For capabilities of :py:func:`~psi4.properties` see the
 corresponding section of the manual.
 
 
