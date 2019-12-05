@@ -297,10 +297,7 @@ void DirectJK::compute_JK() {
         std::vector<std::shared_ptr<TwoBodyAOInt> > ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
-            if (ints[0]->cloneable())
-                ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
-            else
-                ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+            ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_ && do_K_) {
             build_JK(ints, D_ao_, J_ao_, K_ao_);

@@ -231,7 +231,6 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
    protected:
     //! Libint2 engine
     std::vector<libint2::Engine> engines_;
-    std::vector<double> results_;
 
     /// The engine to used to set up the Schwarz screening
     libint2::Engine schwarz_engine_;
@@ -245,8 +244,6 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
     /// A vector of zeros that we can point to if libint2 gives us back a nullptr
     std::vector<double> zero_vec_;
     bool use_shell_pairs_;
-    //! The threshold below which shell pairs are neglected on the basis of their overlap
-    double screening_threshold_;
 
     //! Setup metadata and screening info
     void common_init();
@@ -255,6 +252,8 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
     //! Constructor. Use an IntegralFactory to create this object.
     Libint2TwoElectronInt(const IntegralFactory* integral, int deriv = 0, double screening_threshold = 0,
                           bool use_shell_pairs = false, bool needs_exchange = false);
+
+    Libint2TwoElectronInt(const Libint2TwoElectronInt &rhs);
 
     ~Libint2TwoElectronInt() override;
 
@@ -288,6 +287,7 @@ class Libint2ERI : public Libint2TwoElectronInt {
     Libint2ERI(const IntegralFactory* integral, double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
                bool needs_exchange = false);
     ~Libint2ERI() override;
+    Libint2ERI* clone() const override { return new Libint2ERI(*this); }
 
    protected:
     void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
@@ -303,8 +303,7 @@ class Libint2ErfERI : public Libint2TwoElectronInt {
     Libint2ErfERI(double omega, const IntegralFactory* integral, double screening_threshold, int deriv = 0,
                   bool use_shell_pairs = false, bool needs_exchange = false);
     ~Libint2ErfERI() override;
-
-    void setOmega(double omega);
+    Libint2ErfERI* clone() const override { return new Libint2ErfERI(*this); }
 
    protected:
     void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
@@ -320,8 +319,7 @@ class Libint2ErfComplementERI : public Libint2TwoElectronInt {
     Libint2ErfComplementERI(double omega, const IntegralFactory* integral, double screening_threshold, int deriv = 0,
                   bool use_shell_pairs = false, bool needs_exchange = false);
     ~Libint2ErfComplementERI() override;
-
-    void setOmega(double omega);
+    Libint2ErfComplementERI* clone() const override { return new Libint2ErfComplementERI(*this); }
 
    protected:
     void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,

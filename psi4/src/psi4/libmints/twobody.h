@@ -293,11 +293,8 @@ class PSI_API TwoBodyAOInt {
     void normalize_am(std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>,
                       std::shared_ptr<GaussianShell>, int nchunk = 1);
 
-    /// Return true if the clone member can be called. By default returns false.
-    virtual bool cloneable() const;
-
     /// Returns a clone of this object. By default throws an exception
-    virtual TwoBodyAOInt *clone() const;
+    virtual TwoBodyAOInt *clone()  const = 0;
 
     /// Results go back to buffer_
     void pure_transform(int, int, int, int, int nchunk, bool copy_to_source = true);

@@ -3079,13 +3079,22 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
 
 Libint2TwoElectronInt::Libint2TwoElectronInt(const IntegralFactory *integral, int deriv, double screening_threshold,
                                              bool use_shell_pairs, bool needs_exchange)
-    : TwoBodyAOInt(integral, deriv), screening_threshold_(screening_threshold), use_shell_pairs_(use_shell_pairs) {
+    : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
     // Initialize libint static data
     libint2::initialize();
 
     zero_vec_ = std::vector<double>(basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
                                         basis3()->max_function_per_shell() * basis4()->max_function_per_shell(),
                                     0.0);
+}
+
+Libint2TwoElectronInt::Libint2TwoElectronInt(const Libint2TwoElectronInt &rhs)
+    : TwoBodyAOInt(rhs), schwarz_engine_(rhs.schwarz_engine_), braket_(rhs.braket_), use_shell_pairs_(rhs.use_shell_pairs_)
+{
+    pairs12_ = rhs.pairs12_;
+    pairs34_ = rhs.pairs34_;
+    zero_vec_ = rhs.zero_vec_;
+    for (const auto &e : rhs.engines_) engines_.emplace_back(e);
 }
 
 void Libint2TwoElectronInt::common_init() {

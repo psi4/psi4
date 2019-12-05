@@ -491,11 +491,7 @@ void DiskDFJK::initialize_JK_core() {
     buffer[0] = eri[0]->buffer();
 
     for (int Q = 1; Q < nthread; Q++) {
-        if (eri[0]->cloneable())
-            eri[Q] = std::shared_ptr<TwoBodyAOInt>(eri[0]->clone());
-        else
-            eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-
+        eri[Q] = std::shared_ptr<TwoBodyAOInt>(eri[0]->clone());
         buffer[Q] = eri[Q]->buffer();
     }
 

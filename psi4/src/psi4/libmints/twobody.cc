@@ -86,6 +86,9 @@ TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_
     buffers_.resize(rhs.buffers_.size());
     blocks12_ = rhs.blocks12_;
     blocks34_ = rhs.blocks34_;
+    bra_same_ = rhs.bra_same_;
+    ket_same_ = rhs.ket_same_;
+    braket_same_ = rhs.braket_same_;
     screening_threshold_ = rhs.screening_threshold_;
     screening_threshold_squared_ = rhs.screening_threshold_squared_;
     nshell_ = rhs.nshell_;
@@ -342,12 +345,6 @@ std::shared_ptr<BasisSet> TwoBodyAOInt::basis2() { return original_bs2_; }
 std::shared_ptr<BasisSet> TwoBodyAOInt::basis3() { return original_bs3_; }
 
 std::shared_ptr<BasisSet> TwoBodyAOInt::basis4() { return original_bs4_; }
-
-bool TwoBodyAOInt::cloneable() const { return false; }
-
-TwoBodyAOInt *TwoBodyAOInt::clone() const {
-    throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
-}
 
 std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks12() const { return blocks12_; }
 

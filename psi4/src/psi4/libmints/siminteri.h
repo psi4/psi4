@@ -95,7 +95,6 @@ class SimintERI : public SimintTwoElectronInt {
     SimintERI(const SimintERI& rhs);
 
    public:
-    bool cloneable() const override { return true; };
     SimintERI* clone() const override { return new SimintERI(*this); }
 
     SimintERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);

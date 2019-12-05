@@ -241,3 +241,38 @@ is not batched in any of our engines currently: only the ket is.  For this
 reason, density fitting integrals should be written as (A0|PQ) rather than
 (PQ|A0) where possible, because we want the ket to contain more functions than
 the bra for efficient blocking.
+
+Instantiating integral objects
+..............................
+
+With sieving being introduced in the new integral objects, the cost of their
+construction has increased.  Although significantly cheaper than computing
+integrals themselves, construction of integral objects can be non-negligible,
+especially if many threads are used.  For example, this pattern can be found in
+old versions of the code:
+
+.. code-block:: cpp
+
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
+    ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+    for (int thread = 1; thread < num_threads; thread++) {
+        ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+    }
+
+This builds many objects and the cost can add up.  With the new scheme,
+integral objects are forced to implement a `clone()` member that can be used as
+follows:
+
+.. code-block:: cpp
+
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
+    ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+    for (int thread = 1; thread < num_threads; thread++) {
+        ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
+    }
+
+This method only incurs the cost of creating a single integral object, and
+performs much cheaper cloning operations to create the other objects for each
+thread.  Moreover, if integral objects are created only in the initialization
+of each code that uses them, and stored persistently, the cost of integral
+object creation is further reduced.
