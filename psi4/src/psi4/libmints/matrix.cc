@@ -1969,13 +1969,55 @@ void Matrix::cholesky_factorize() {
     }
 }
 
-SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative) {
-    std::vector<std::vector<int>> pivot;
-    return partial_cholesky_factorize_pivot(delta, throw_if_negative, pivot);
+void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::pivoted_cholesky: Matrix is non-totally symmetric.");
+    }
+
+    // Returned matrix
+    auto K = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, rowspi_);
+    // Cholesky size
+    Dimension nchol(rowspi_);
+
+    pivot.clear();
+    pivot.resize(nirrep_);
+    std::vector<double> work(2 * max_nrow());
+
+    for (int h = 0; h < nirrep_; ++h) {
+        if (!rowspi_[h]) continue;
+
+        // Dimension
+        int n = rowspi_[h];
+        // Pivot
+        pivot[h].resize(n);
+
+        // Perform decomposition
+        int rank;
+        int err = C_DPSTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
+
+        // Fix pivots
+        pivot[h].resize(rank);
+        // Fortran to C
+        for (int i = 0; i < rank; i++) pivot[h][i]--;
+
+        if (err != 0) {
+            if (err < 0) {
+                outfile->Printf("pivoted_cholesky: C_DPSTRF: argument %d has invalid parameter.\n", -err);
+
+                abort();
+            }
+            if (err > 1) {
+                outfile->Printf(
+                    "pivoted_cholesky: C_DPSTRF error code %d: the matrix A is either rank deficient with computed "
+                    "rank as returned in RANK, or is not positive semidefinite.",
+                    err);
+                abort();
+            }
+        }
+    }
 }
 
-SharedMatrix Matrix::partial_cholesky_factorize_pivot(double delta, bool throw_if_negative,
-                                                      std::vector<std::vector<int>> &pivot) {
+SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative) {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::partial_cholesky_factorize: Matrix is non-totally symmetric.");
     }
@@ -1986,9 +2028,6 @@ SharedMatrix Matrix::partial_cholesky_factorize_pivot(double delta, bool throw_i
     // Significant Cholesky columns per irrep
     std::vector<int> sigpi(nirrep_, 0);
 
-    // Pivot indices
-    pivot.clear();
-    pivot.resize(nirrep_);
     for (int h = 0; h < nirrep_; ++h) {
         if (!rowspi_[h]) continue;
 
@@ -2025,7 +2064,6 @@ SharedMatrix Matrix::partial_cholesky_factorize_pivot(double delta, bool throw_i
                 else
                     break;
             }
-            pivot[h].push_back(imax);
 
             // New vector!
             nQ++;

@@ -185,8 +185,8 @@ std::vector<std::vector<int>> OverlapOrthog::sort_indices() const {
         iota(order[h].begin(), order[h].end(), 0);
 
         // and then sort the indices by rsq
-        std::sort(order[h].begin(), order[h].end(),
-                  [this, h](int i1, int i2) { return rsq_->get(h, i1) < rsq_->get(h, i2); });
+        std::stable_sort(order[h].begin(), order[h].end(),
+                         [this, h](int i1, int i2) { return rsq_->get(h, i1) < rsq_->get(h, i2); });
     }
 
     return order;
@@ -211,7 +211,7 @@ void OverlapOrthog::compute_partial_cholesky_orthog() {
 
     // Do pivoted Cholesky to find the important basis functions
     std::vector<std::vector<int>> pivots;
-    Stmp->partial_cholesky_factorize_pivot(cholesky_tol_, true, pivots);
+    Stmp->pivoted_cholesky(cholesky_tol_, pivots);
     // and rewrite the pivot indices in terms of the original indexing
     for (size_t h = 0; h < pivots.size(); h++)
         for (size_t i = 0; i < pivots[h].size(); i++) pivots[h][i] = order[h][pivots[h][i]];

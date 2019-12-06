@@ -907,8 +907,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * \return L, SharedMatrix, with rows of dimension dimpi and columns of
      * dimension sigpi
      */
-    SharedMatrix partial_cholesky_factorize_pivot(double delta, bool throw_if_negative,
-                                                  std::vector<std::vector<int>>& pivot);
     SharedMatrix partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
 
     /*! Computes a low-rank factorization <P,N> such that PP'-NN' \approx A in an optimal sense in the 2-norm.
@@ -930,9 +928,18 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
      *
-     *  This is the block version of the algorithm, calling Level 3 BLAS.
+     *  This is the block version of the algorithm, calling Level 3
+     *  BLAS (dpotrf).
      */
     void cholesky_factorize();
+
+    /*! Computes the Cholesky factorization with complete pivoting of
+     * a real symmetric positive semidefinite matrix A.
+     *
+     * This is the block version of the algorithm, calling Level 3
+     * BLAS (dpstrf).
+     */
+    void pivoted_cholesky(double tol, std::vector<std::vector<int>>& pivot);
 
     /*! Computes the inverse of a real symmetric positive definite
      *  matrix A using the Cholesky factorization A = L*L**T
