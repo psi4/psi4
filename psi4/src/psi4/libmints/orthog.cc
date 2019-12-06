@@ -208,12 +208,19 @@ void OverlapOrthog::compute_partial_cholesky_orthog() {
             }
         }
     }
+
     // Do pivoted Cholesky to find the important basis functions
     std::vector<std::vector<int>> pivots;
     Stmp->partial_cholesky_factorize_pivot(cholesky_tol_, true, pivots);
-    // Rewrite the pivot indices in terms of the original indexing
+    // and rewrite the pivot indices in terms of the original indexing
     for (size_t h = 0; h < pivots.size(); h++)
         for (size_t i = 0; i < pivots[h].size(); i++) pivots[h][i] = order[h][pivots[h][i]];
+    if (print_ > 2) {
+        outfile->Printf("    Cholesky pivot functions:\n");
+        for (size_t h = 0; h < pivots.size(); h++)
+            for (size_t i = 0; i < pivots[h].size(); i++)
+                outfile->Printf("    Symmetry %i function %i: SO basis function %i\n", h + 1, i + 1, pivots[h][i] + 1);
+    }
 
     // Size of Cholesky basis
     Dimension nchol(nbf);
