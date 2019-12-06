@@ -141,7 +141,7 @@ endif()
 #get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
 
 # CHOOSE! this one for pure cmake libint2 library
-find_package(Libint2 CONFIG REQUIRED) # 2.6 COMPONENTS ${MAX_AM_ERI})
+find_package(Libint2 CONFIG REQUIRED COMPONENTS gss) # 2.6 COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
 
 list(APPEND _addons ${_loc})
