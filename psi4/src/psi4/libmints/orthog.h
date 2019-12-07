@@ -34,10 +34,10 @@
 
 namespace psi {
 
-class PSI_API OverlapOrthog {
+class PSI_API OverlapOrthogonalization {
    public:
     /// An enum for the types of orthogonalization.
-    enum OrthogMethod { Symmetric, Canonical, PartialCholesky, Automatic };
+    enum OrthogonalizationMethod { Symmetric, Canonical, PartialCholesky, Automatic };
 
    private:
     int print_;
@@ -63,7 +63,7 @@ class PSI_API OverlapOrthog {
     /// The Cholesky decomposition threshold
     double cholesky_tol_;
     /// The orthogonalization method
-    OrthogMethod orthog_method_;
+    OrthogonalizationMethod orthog_method_;
     /// The orthogonalizing matrix
     SharedMatrix X_;
     /// ... and its inverse
@@ -99,10 +99,10 @@ class PSI_API OverlapOrthog {
     std::vector<std::vector<int>> sort_indices() const;
 
    public:
-    OverlapOrthog(OrthogMethod method, SharedMatrix overlap, SharedVector rsq, double lindep_tolerance,
-                  double cholesky_tolerance, int print = 0);
+    OverlapOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap, SharedVector rsq,
+                             double lindep_tolerance, double cholesky_tolerance, int print = 0);
 
-    OrthogMethod orthog_method() const { return orthog_method_; }
+    OrthogonalizationMethod orthog_method() const { return orthog_method_; }
 
     double lindep_tol() const { return lindep_tol_; }
 

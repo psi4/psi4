@@ -700,15 +700,15 @@ void HF::form_H() {
 }
 
 void HF::form_Shalf() {
-    OverlapOrthog::OrthogMethod method;
+    OverlapOrthogonalization::OrthogonalizationMethod method;
     if (options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC")
-        method = OverlapOrthog::Symmetric;
+        method = OverlapOrthogonalization::Symmetric;
     else if (options_.get_str("S_ORTHOGONALIZATION") == "CANONICAL")
-        method = OverlapOrthog::Canonical;
+        method = OverlapOrthogonalization::Canonical;
     else if (options_.get_str("S_ORTHOGONALIZATION") == "PARTIALCHOLESKY")
-        method = OverlapOrthog::PartialCholesky;
+        method = OverlapOrthogonalization::PartialCholesky;
     else if (options_.get_str("S_ORTHOGONALIZATION") == "AUTO")
-        method = OverlapOrthog::Automatic;
+        method = OverlapOrthogonalization::Automatic;
     else
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
 
@@ -717,7 +717,7 @@ void HF::form_Shalf() {
 
     // Compute <r^2> for Cholesky
     SharedVector rsq;
-    if (method == OverlapOrthog::PartialCholesky) {
+    if (method == OverlapOrthogonalization::PartialCholesky) {
         // Integral factory
         IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
         auto quad = (QuadrupoleInt*)integral.ao_quadrupole();
@@ -743,7 +743,7 @@ void HF::form_Shalf() {
         }
     }
 
-    OverlapOrthog orthog(method, S_, rsq, lindep_tolerance, cholesky_tolerance, print_);
+    OverlapOrthogonalization orthog(method, S_, rsq, lindep_tolerance, cholesky_tolerance, print_);
 
     // Transform
     X_ = orthog.basis_to_orthog_basis();
