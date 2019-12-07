@@ -2023,7 +2023,7 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
     L->zero();
     for (int h = 0; h < nirrep_; ++h) {
         for (int m = 0; m < rowspi_[h]; ++m) {
-            for (int n = 0; n < std::min(m, nchol[h]); ++n) {
+            for (int n = 0; n < std::min(m + 1, nchol[h]); ++n) {
                 L->set(h, m, n, get(h, m, n));
             }
         }
