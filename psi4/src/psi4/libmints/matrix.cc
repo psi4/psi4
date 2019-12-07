@@ -2470,8 +2470,8 @@ void Matrix::zero_lower() {
 
     for (int h = 0; h < nirrep_; ++h) {
 #pragma omp parallel for schedule(dynamic)
-        for (int m = 0; m < rowspi_[h]; ++m) {
-            for (int n = 0; n < m; ++n) {
+        for (int n = 0; n < colspi_[h]; ++n) {
+            for (int m = 0; m < std::min(n, rowspi_[h]); ++m) {
                 matrix_[h][m][n] = 0.0;
             }
         }
@@ -2485,8 +2485,8 @@ void Matrix::zero_upper() {
 
     for (int h = 0; h < nirrep_; ++h) {
 #pragma omp parallel for schedule(dynamic)
-        for (int m = 0; m < rowspi_[h]; ++m) {
-            for (int n = 0; n < m; ++n) {
+        for (int n = 0; n < colspi_[h]; ++n) {
+            for (int m = n + 1; m < rowspi_[h]; ++m) {
                 matrix_[h][n][m] = 0.0;
             }
         }
