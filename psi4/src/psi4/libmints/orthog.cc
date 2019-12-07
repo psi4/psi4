@@ -27,6 +27,7 @@
  */
 
 #include <cstdlib>
+#include <cfloat>
 #include <cmath>
 #include <iterator>
 #include <algorithm>
@@ -97,20 +98,37 @@ void OverlapOrthogonalization::compute_overlap_eig() {
     eigval_ = std::make_shared<Vector>(normalized_overlap_->colspi());
     normalized_overlap_->diagonalize(eigvec_, eigval_);
 
+    // Find minimum eigenvalue
     bool min_S_initialized = false;
     for (int h = 0; h < eigval_->nirrep(); ++h) {
         for (int i = 0; i < eigval_->dim(h); i++) {
             double eval = eigval_->get(h, i);
-
             if (!min_S_initialized) {
-                min_S = eval;
+                min_S_ = eval;
                 min_S_initialized = true;
-            } else if (min_S > eval) {
-                min_S = eval;
+            } else if (min_S_ > eval) {
+                min_S_ = eval;
             }
         }
     }
-    outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n", min_S);
+    outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n", min_S_);
+
+    // Find reciprocal condition number
+    rcond_ = DBL_MAX;
+    for (int h = 0; h < eigval_->nirrep(); ++h) {
+        if (!eigval_->dim(h)) continue;
+        // Min and max eigenvalue in symmetry block
+        double e_min, e_max;
+        e_min = e_max = eigval_->get(h, 0);
+        for (int i = 0; i < eigval_->dim(h); i++) {
+            double eval = eigval_->get(h, i);
+            e_min = std::min(e_min, eval);
+            e_max = std::max(e_max, eval);
+        }
+        // Condition number
+        rcond_ = std::min(rcond_, std::abs(e_max / e_min));
+    }
+    outfile->Printf("  Reciprocal condition number of the overlap matrix is %14.10E.\n", rcond_);
 }
 
 void OverlapOrthogonalization::compute_inverse() {
@@ -126,8 +144,8 @@ SharedMatrix OverlapOrthogonalization::overlap_inverse() {
 
 void OverlapOrthogonalization::compute_symmetric_orthog() {
     if (!eigval_) compute_overlap_eig();
-    if (min_S < lindep_tol_) {
-        outfile->Printf("WARNING: smallest overlap eigenvalue %e is smaller than S_TOLERANCE!\n", min_S);
+    if (min_S_ < lindep_tol_) {
+        outfile->Printf("WARNING: smallest overlap eigenvalue %e is smaller than S_TOLERANCE!\n", min_S_);
     }
     const Dimension& nbf = eigval_->dimpi();
 
@@ -151,6 +169,12 @@ void OverlapOrthogonalization::compute_symmetric_orthog() {
 
 void OverlapOrthogonalization::compute_canonical_orthog() {
     if (!eigval_) compute_overlap_eig();
+    if (rcond_ <= DBL_EPSILON)
+        outfile->Printf(
+            "WARNING: overlap condition number is close to machine precision %14.10E, indicating a pathologically "
+            "overcomplete basis. Think about switching to partial Cholesky.\n",
+            DBL_EPSILON);
+
     const Dimension& nbf = eigval_->dimpi();
     int nirrep = eigval_->nirrep();
 
@@ -277,7 +301,12 @@ void OverlapOrthogonalization::compute_orthog_trans() {
     // Determine what method to use
     if (orthog_method_ == Automatic) {
         compute_overlap_eig();
-        orthog_method_ = (min_S < lindep_tol_) ? Canonical : Symmetric;
+        if (rcond_ <= DBL_EPSILON)
+            orthog_method_ = PartialCholesky;
+        else if (min_S_ < lindep_tol_)
+            orthog_method_ = Canonical;
+        else
+            orthog_method_ = Symmetric;
     }
 
     switch (orthog_method_) {
@@ -290,7 +319,7 @@ void OverlapOrthogonalization::compute_orthog_trans() {
             compute_canonical_orthog();
             break;
         case PartialCholesky:
-            if (print_) outfile->Printf("    Using partial Cholesky orthogonalization.\n");
+            if (print_) outfile->Printf("    Using partial Cholesky orthogonalization (arXiv:1911.10372).\n");
             compute_partial_cholesky_orthog();
             break;
         default:

@@ -70,7 +70,9 @@ class PSI_API OverlapOrthogonalization {
     SharedMatrix Xinv_;
 
     /// Smallest eigenvalue
-    double min_S;
+    double min_S_;
+    /// Reciprocal condition number
+    double rcond_;
     /// @}
 
     /** Normalizes the basis set. This is important for the partial
