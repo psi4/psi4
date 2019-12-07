@@ -1,12 +1,12 @@
 #find_package(Libint2 2.6 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
-find_package(Libint2 CONFIG COMPONENTS gss)
+find_package(Libint2 CONFIG COMPONENTS gss "e${MAX_AM_ERI}" g3)
 
 if(${Libint2_FOUND})
     # CHOOSE! `make export`
     #get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
     # CHOOSE! pure cmake
     get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
-    message(STATUS "${Cyan}Found Libint2 ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
+    message(STATUS "${Cyan}Found Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
     add_library(libint2_external INTERFACE)  # dummy
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_Libint2})
@@ -59,12 +59,13 @@ else()
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DENABLE_ONEBODY=2  # ?
-                       -DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
-                       -DMULTIPOLE_MAX_ORDER=4
-                       -DENABLE_ERI=2
-                       -DENABLE_ERI3=2
-                       -DENABLE_ERI2=2
+                       -DWITH_MAX_AM=4
+                       #-DENABLE_ONEBODY=2  # ?
+                       #-DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
+                       #-DMULTIPOLE_MAX_ORDER=4
+                       -DENABLE_ERI=1
+                       -DENABLE_ERI3=1
+                       -DENABLE_ERI2=1
                        -DBOOST_ROOT=${BOOST_ROOT}
                        -DEigen3_DIR=${Eigen3_DIR}
                        -DMPFR_ROOT=${MPFR_ROOT}
@@ -74,11 +75,11 @@ else()
                        -DBUILD_SHARED=${_so_only}
                        -DBUILD_STATIC=${_a_only}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                             -DWITH_ERI_MAX_AM:STRING=5;5;5
-                             -DWITH_ERI3_MAX_AM:STRING=6
-                             -DWITH_ERI2_MAX_AM:STRING=6
+                             -DWITH_ERI_MAX_AM:STRING=4;3
         )
-
+                             #-DWITH_ERI_MAX_AM:STRING=5;5;5
+                             #-DWITH_ERI3_MAX_AM:STRING=6
+                             #-DWITH_ERI2_MAX_AM:STRING=6
     endif()
 
     # CHOOSE! `make export`

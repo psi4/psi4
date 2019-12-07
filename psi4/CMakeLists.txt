@@ -141,11 +141,11 @@ endif()
 #get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
 
 # CHOOSE! this one for pure cmake libint2 library
-find_package(Libint2 CONFIG REQUIRED COMPONENTS gss) # 2.6 COMPONENTS ${MAX_AM_ERI})
+find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}")
 get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
 
 list(APPEND _addons ${_loc})
-message(STATUS "${Cyan}Using Libint2${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
+message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 
 if(${ENABLE_mdi})
     find_package(mdi 1.1.6 CONFIG REQUIRED)
