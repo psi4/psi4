@@ -89,23 +89,24 @@ set s_orthogonalization partialcholesky
 set d_convergence  10
     
 set s_cholesky_tolerance 1e-4
+set print 4
 e_chol_4 = energy('HF')
-compare_values(e_cholesky_4, e_chol_4, 10, "Energy with Cholesky 1e-4")                                        #TEST
+compare_values(e_cholesky_4, e_chol_4, 8, "Energy with Cholesky 1e-4")                                        #TEST
 
 set df_scf_guess false
 set guess read
 set s_cholesky_tolerance 1e-5
 e_chol_5 = energy('HF')
-compare_values(e_cholesky_5, e_chol_5, 10, "Energy with Cholesky 1e-5")                                        #TEST
+compare_values(e_cholesky_5, e_chol_5, 8, "Energy with Cholesky 1e-5")                                        #TEST
 
 set s_cholesky_tolerance 1e-6
 e_chol_6 = energy('HF')
-compare_values(e_cholesky_6, e_chol_6, 10, "Energy with Cholesky 1e-6")                                        #TEST
+compare_values(e_cholesky_6, e_chol_6, 8, "Energy with Cholesky 1e-6")                                        #TEST
 
 set s_cholesky_tolerance 1e-7
 e_chol_7 = energy('HF')
-compare_values(e_cholesky_7, e_chol_7, 10, "Energy with Cholesky 1e-7")                                        #TEST
+compare_values(e_cholesky_7, e_chol_7, 8, "Energy with Cholesky 1e-7")                                        #TEST
 
 set s_orthogonalization canonical
 e_can = energy('HF')
-compare_values(e_canonical, e_can, 10, "Energy with canonical orthogonalization")                              #TEST
+compare_values(e_canonical, e_can, 8, "Energy with canonical orthogonalization")                              #TEST
