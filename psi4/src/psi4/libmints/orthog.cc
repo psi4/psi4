@@ -246,7 +246,8 @@ void OverlapOrthogonalization::compute_partial_cholesky_orthog() {
         outfile->Printf("    Cholesky pivot functions:\n");
         for (size_t h = 0; h < pivots.size(); h++)
             for (size_t i = 0; i < pivots[h].size(); i++)
-                outfile->Printf("    Symmetry %i function %i: SO basis function %i\n", h + 1, i + 1, pivots[h][i] + 1);
+                outfile->Printf("    Symmetry %u function %u: SO basis function %i\n", (unsigned int)h + 1,
+                                (unsigned int)i + 1, pivots[h][i] + 1);
     }
 
     // Size of Cholesky basis
