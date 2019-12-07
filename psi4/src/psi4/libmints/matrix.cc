@@ -1967,6 +1967,8 @@ void Matrix::cholesky_factorize() {
             }
         }
     }
+    // Zero the upper triangle which hasn't been touched by LAPACK
+    zero_upper();
 }
 
 void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) {
@@ -1974,13 +1976,13 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
         throw PSIEXCEPTION("Matrix::pivoted_cholesky: Matrix is non-totally symmetric.");
     }
 
-    // Returned matrix
-    auto K = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, rowspi_);
-    // Cholesky size
+    // Cholesky basis size
     Dimension nchol(rowspi_);
 
+    // Pivot indices
     pivot.clear();
     pivot.resize(nirrep_);
+    // Work array for LAPACK
     std::vector<double> work(2 * max_nrow());
 
     for (int h = 0; h < nirrep_; ++h) {
@@ -1994,10 +1996,10 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
         // Perform decomposition
         int rank;
         int err = C_DPSTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
+        nchol[h] = rank;
 
-        // Fix pivots
+        // Fix pivots, Fortran to C
         pivot[h].resize(rank);
-        // Fortran to C
         for (int i = 0; i < rank; i++) pivot[h][i]--;
 
         if (err != 0) {
@@ -2015,6 +2017,20 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
             }
         }
     }
+
+    // Properly sized return matrix
+    auto L = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
+    L->zero();
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int m = 0; m < rowspi_[h]; ++m) {
+            for (int n = 0; n < std::min(m, nchol[h]); ++n) {
+                L->set(h, m, n, get(h, m, n));
+            }
+        }
+    }
+    // Switch to the properly sized matrix
+    *this = *L;
+    print();
 }
 
 SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative) {
