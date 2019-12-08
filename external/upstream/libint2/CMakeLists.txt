@@ -1,4 +1,4 @@
-find_package(Libint2 CONFIG COMPONENTS gss "e${MAX_AM_ERI}" g3)
+find_package(Libint2 CONFIG COMPONENTS gss "e${MAX_AM_ERI}") # g3)
 
 if(${Libint2_FOUND})
     # CHOOSE! `make export`
@@ -63,9 +63,9 @@ else()
                        #-DENABLE_ONEBODY=2  # ?
                        #-DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
                        #-DMULTIPOLE_MAX_ORDER=4
-                       -DENABLE_ERI=1
-                       -DENABLE_ERI3=1
-                       -DENABLE_ERI2=1
+                       -DENABLE_ERI=0
+                       -DENABLE_ERI3=0
+                       -DENABLE_ERI2=0
                        -DBOOST_ROOT=${BOOST_ROOT}
                        -DEigen3_DIR=${Eigen3_DIR}
                        -DEigen3_ROOT=${Eigen3_ROOT}
