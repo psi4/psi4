@@ -154,6 +154,7 @@ jobs:
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=6
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=8
+          set MAX_AM_ERI=4
           if not defined MAX_AM_ERI exit 1
           if "%CMAKE_BUILD_TYPE%"=="Debug" set ENABLE_XHOST=OFF
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
@@ -164,12 +165,11 @@ jobs:
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
-                -DMAX_AM_ERI=4 ^
+                -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
                 -DBUILD_Libint2_GENERATOR=ON ^
                 $(Build.SourcesDirectory)
-                #-DMAX_AM_ERI=!MAX_AM_ERI! ^
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
 
