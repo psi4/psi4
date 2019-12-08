@@ -1,4 +1,3 @@
-#find_package(Libint2 2.6 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 find_package(Libint2 CONFIG COMPONENTS gss "e${MAX_AM_ERI}" g3)
 
 if(${Libint2_FOUND})
