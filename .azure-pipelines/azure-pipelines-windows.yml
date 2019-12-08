@@ -9,7 +9,7 @@ jobs:
     variables:
       llvm.version: '7.0.1' # Note: LLVM 8.0.0 fails to build the optimized libint
       mkl.version: '2019.1'
-      #cmake.build_type: 'Release'
+      cmake.build_type: 'Release'
     steps:
 
       # Check Python
