@@ -166,6 +166,7 @@ jobs:
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
+                -DEigen_ROOT="C:/tools/miniconda3/Library" ^
                 -DBUILD_Libint2_GENERATOR=ON ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"

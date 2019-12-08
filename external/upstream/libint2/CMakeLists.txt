@@ -68,6 +68,7 @@ else()
                        -DENABLE_ERI2=1
                        -DBOOST_ROOT=${BOOST_ROOT}
                        -DEigen3_DIR=${Eigen3_DIR}
+                       -DEigen3_ROOT=${Eigen3_ROOT}
                        -DMPFR_ROOT=${MPFR_ROOT}
                        -DERI3_PURE_SH=OFF
                        -DERI2_PURE_SH=OFF
