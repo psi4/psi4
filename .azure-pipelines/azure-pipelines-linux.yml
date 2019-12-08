@@ -133,6 +133,7 @@ jobs:
         -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DENABLE_adcc=ON \
         -DMPFR_ROOT=${CONDA}/envs/p4env \
+        -DBOOST_ROOT=${CONDA}/envs/p4env \
         -DENABLE_CheMPS2=OFF \
         -DENABLE_dkh=ON \
         -DENABLE_libefp=ON \
