@@ -29,7 +29,7 @@ else()
 #            #URL https://github.com/evaleev/libint/releases/download/v2.6.0/libint-2.6.0.tgz
 #            URL https://github.com/loriab/libint/archive/l2cmake.zip
 #            URL "/home/psilocaluser/tars/Libint2-export.tgz"
-            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export.tgz"
+            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-2.tgz"
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -50,9 +50,6 @@ else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
 
         ExternalProject_Add(libint2_external
-            # "git checkout" fails on Windows, because of "*" in filenames (e.g. basis set files)
-            #URL https://github.com/evaleev/libint/archive/b13e71d3cf9960460c4019e5ecf2546a5f361c71.zip
-            #URL https://github.com/evaleev/libint/releases/download/v2.6.0/libint-2.6.0.tgz
             URL https://github.com/loriab/libint/archive/l2cmake3.zip
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
