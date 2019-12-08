@@ -132,6 +132,7 @@ jobs:
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
         -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DENABLE_adcc=ON \
+        -DMPFR_ROOT=${CONDA}/envs/p4env \
         -DENABLE_CheMPS2=OFF \
         -DENABLE_dkh=ON \
         -DENABLE_libefp=ON \
