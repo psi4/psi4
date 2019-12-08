@@ -129,6 +129,7 @@ jobs:
         -DCMAKE_C_COMPILER=${C_COMPILER} \
         -DCMAKE_Fortran_COMPILER=${F_COMPILER} \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DMAX_AM_ERI=4 \
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
         -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DENABLE_adcc=ON \

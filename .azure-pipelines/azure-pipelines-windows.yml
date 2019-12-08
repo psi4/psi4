@@ -164,11 +164,12 @@ jobs:
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
-                -DMAX_AM_ERI=!MAX_AM_ERI! ^
+                -DMAX_AM_ERI=4 ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
                 -DBUILD_Libint2_GENERATOR=ON ^
                 $(Build.SourcesDirectory)
+                #-DMAX_AM_ERI=!MAX_AM_ERI! ^
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
 
