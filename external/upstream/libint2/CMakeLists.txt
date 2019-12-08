@@ -26,7 +26,6 @@ else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} instead.")
 
         ExternalProject_Add(libint2_external
-#            #URL https://github.com/evaleev/libint/archive/b13e71d3cf9960460c4019e5ecf2546a5f361c71.zip
 #            #URL https://github.com/evaleev/libint/releases/download/v2.6.0/libint-2.6.0.tgz
 #            URL https://github.com/loriab/libint/archive/l2cmake.zip
             URL "/home/psilocaluser/tars/Libint2-export.tgz"
