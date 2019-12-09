@@ -29,7 +29,7 @@ else()
 #            #URL https://github.com/evaleev/libint/releases/download/v2.6.0/libint-2.6.0.tgz
 #            URL https://github.com/loriab/libint/archive/l2cmake.zip
 #            URL "/home/psilocaluser/tars/Libint2-export.tgz"
-            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-2.tgz"
+            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-5.tgz"
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
