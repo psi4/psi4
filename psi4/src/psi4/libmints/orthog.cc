@@ -137,7 +137,7 @@ void OverlapOrthog::compute_canonical_orthog() {
 void OverlapOrthog::compute_orthog_trans() {
     compute_overlap_eig();
     if (orthog_method_ == Automatic) {
-        orthog_method_ = (min_S < lindep_tol_) ? Symmetric : Canonical;
+        orthog_method_ = (min_S > lindep_tol_) ? Symmetric : Canonical;
     }
 
     switch (orthog_method_) {
