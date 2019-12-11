@@ -120,7 +120,7 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
         print(e)
 
     assert compare_integers(True, parsed, "Result Model Parsed")
-    assert compare_integers(-76.22831410207938, ret.return_result, "Return")
+    assert compare_values(-76.22831410207938, ret.return_result, "Return")
 
 def test_qcschema_wavefunction_basis(result_data_fixture):
     result_data_fixture["protocols"] = {"wavefunction": "orbitals_and_eigenvalues"}
