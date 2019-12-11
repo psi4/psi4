@@ -3163,6 +3163,12 @@ def run_eom_cc_gradient(name, **kwargs):
     return ref_wfn
 
 
+def run_adc_deprecated(*args, **kwargs):
+     warnings.warn("The method 'adc' has been deprecated, please use 'adc2' instead."
+                   "The method key 'adc' will be removed Psi4 1.6.", DeprecationWarning)
+     return select_adc2(*args, **kwargs)
+
+
 def run_adc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an algebraic diagrammatic construction calculation.
