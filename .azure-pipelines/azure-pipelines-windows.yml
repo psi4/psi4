@@ -188,6 +188,13 @@ jobs:
         displayName: "Test Psi4 (OpenMP)"
         workingDirectory: $(Build.BinariesDirectory)/install/lib
 
+      # Spot Test
+      - script: |
+          setlocal EnableDelayedExpansion
+          stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+        displayName: 'Spot Test'
+        workingDirectory: $(Build.BinariesDirectory)/build
+
       # Test (ctest)
       - script: |
           setlocal EnableDelayedExpansion
