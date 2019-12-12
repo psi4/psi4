@@ -191,7 +191,8 @@ jobs:
       # Spot Test
       - script: |
           setlocal EnableDelayedExpansion
-          stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+          psi4 $(Build.BinariesDirectory)\tests\tu1-h2o-energy\input.dat
         displayName: 'Spot Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
