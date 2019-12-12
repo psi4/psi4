@@ -10,6 +10,13 @@ molecule h2o {
 }
 
 set basis cc-pVDZ
-energy('scf')
 
-compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+set scf_type pk
+set DF_SCF_GUESS false
+energy('scf')
+compare_values(-76.02665366, variable('SCF TOTAL ENERGY'), 4, 'SCF energy PK')  #TEST
+
+set scf_type df
+set DF_SCF_GUESS true
+energy('scf')
+compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy DF')  #TEST

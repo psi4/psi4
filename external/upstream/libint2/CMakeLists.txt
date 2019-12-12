@@ -1,3 +1,6 @@
+# CHOOSE! `make export`
+#find_package(Libint2 CONFIG)
+# CHOOSE! pure cmake
 find_package(Libint2 CONFIG COMPONENTS gss "e${MAX_AM_ERI}") # g3)
 
 if(${Libint2_FOUND})
@@ -29,7 +32,7 @@ else()
 #            #URL https://github.com/evaleev/libint/releases/download/v2.6.0/libint-2.6.0.tgz
 #            URL https://github.com/loriab/libint/archive/l2cmake.zip
 #            URL "/home/psilocaluser/tars/Libint2-export.tgz"
-            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-5.tgz"
+            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-6.tgz"
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -48,9 +51,10 @@ else()
 
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
+        # NOTE: active AM settings below will pass few tests. Please edit for desired use.
 
         ExternalProject_Add(libint2_external
-            URL https://github.com/loriab/libint/archive/l2cmake3.zip
+            URL https://github.com/loriab/libint/archive/l2cmake.zip
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -77,6 +81,8 @@ else()
                        -DBUILD_FPIC=${BUILD_FPIC}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DWITH_ERI_MAX_AM:STRING=4;3
+                             -DWITH_ERI3_MAX_AM:STRING=5;4
+                             -DWITH_ERI2_MAX_AM:STRING=5;4
         )
                              #-DWITH_ERI_MAX_AM:STRING=5;5;5
                              #-DWITH_ERI3_MAX_AM:STRING=6

@@ -146,7 +146,7 @@ option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires s
                   "-fsanitize=undefined -fno-omit-frame-pointer")
 option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
                   "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
-option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals" 5)
+option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals. The definition changed with Libint2; default fine for production." 5)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
@@ -159,7 +159,7 @@ option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar 
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
 option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and
                     run generator (several hours for production library). Edit angular momentum and integrals
-                    classes directly in `external/upstream libint2/CMakeLists.txt`." OFF)
+                    classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
