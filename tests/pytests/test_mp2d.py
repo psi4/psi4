@@ -4,7 +4,7 @@ from .utils import *
 
 import psi4
 import numpy as np
-from qcengine.testing import using_mp2d
+from qcengine.testing import using
 
 pytestmark = [pytest.mark.quick]
 
@@ -44,11 +44,11 @@ for bas in ['cc-pVDZ', 'cc-pVTZ']:
 
 @pytest.mark.parametrize("inp", [
     pytest.param({'driver': 'energy', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2-energy'),
-    pytest.param({'driver': 'energy', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d-energy', marks=using_mp2d),
+    pytest.param({'driver': 'energy', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d-energy', marks=using('mp2d')),
     pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2-gradient'),
     pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'dertype': 0, 'options': {}}, id='mp2-gradient-findif'),
-    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d-gradient', marks=using_mp2d),
-    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'dertype': 0, 'options': {}}, id='mp2d-gradient-findif', marks=using_mp2d),
+    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d-gradient', marks=using('mp2d')),
+    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'dertype': 0, 'options': {}}, id='mp2d-gradient-findif', marks=using('mp2d')),
 #    ('mp2mp2'),
 #    ('mp2-dmp2'),
 ])
@@ -133,7 +133,7 @@ def test_dft_mp2(inp):
 #TABLE 14259 -1.155358302362078 0.7013114524160179
 
 
-@using_mp2d
+@using('mp2d')
 def test_mp2d_opt():
 
     h2 = psi4.geometry("""
