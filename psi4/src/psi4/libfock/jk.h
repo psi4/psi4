@@ -847,6 +847,10 @@ class PSI_API DiskDFJK : public JK {
     int max_nocc_;
     /// Sieve, must be static throughout the life of the object
     std::shared_ptr<ERISieve> sieve_;
+    /// Integral engines for each thread
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri_;
+    /// Integral engines for each thread for erf integrals
+    std::vector<std::shared_ptr<TwoBodyAOInt>> erf_eri_;
 
     /// Main (Q|mn) Tensor (or chunk for disk-based)
     SharedMatrix Qmn_;

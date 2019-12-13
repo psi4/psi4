@@ -74,6 +74,11 @@ size_t DiskDFJK::memory_estimate() {
     if (!sieve_) {
         sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
     }
+    // We need to make an integral object so we can figure out memory requirements from the sieve
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory =
+        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    auto tmp = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 
     size_t ntri = sieve_->function_pairs().size();
     size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
@@ -402,6 +407,26 @@ void DiskDFJK::preiterations() {
     if (!sieve_) {
         sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
     }
+    // Setup integral objects
+    eri_.clear();
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory =
+        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    eri_.emplace_back(rifactory->eri());
+    for (int Q = 1; Q < df_ints_num_threads_; Q++) {
+        eri_.emplace_back(eri_.front()->clone());
+    }
+    // Setup erf integrals, if needed
+    if (do_wK_) {
+        erf_eri_.clear();
+        std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+        std::shared_ptr<IntegralFactory> rifactory =
+            std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+        erf_eri_.emplace_back(rifactory->erf_eri(omega_));
+        for (int Q = 1; Q < df_ints_num_threads_; Q++) {
+            erf_eri_.emplace_back(erf_eri_.front()->clone());
+        }
+    }
 
     // Core or disk?
     is_core_ = is_core();
@@ -481,23 +506,9 @@ void DiskDFJK::initialize_JK_core() {
     const std::vector<long int>& schwarz_shell_pairs = sieve_->shell_pairs_reverse();
     const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
 
-    // Get a TEI for each thread
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-    buffer[0] = eri[0]->buffer();
-
-    for (int Q = 1; Q < nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(eri[0]->clone());
-        buffer[Q] = eri[Q]->buffer();
-    }
-
     // shell pair blocks
-    std::vector<ShellPairBlock> p_blocks = eri[0]->get_blocks12();
-    std::vector<ShellPairBlock> mn_blocks = eri[0]->get_blocks34();
+    std::vector<ShellPairBlock> p_blocks = eri_[0]->get_blocks12();
+    std::vector<ShellPairBlock> mn_blocks = eri_[0]->get_blocks34();
 
     timer_on("JK: (A|mn)");
 
@@ -533,14 +544,14 @@ void DiskDFJK::initialize_JK_core() {
 #else
         const int rank = 0;
 #endif
-
+        const auto &buffers = eri_[rank]->buffers();
         const auto& mn_block = mn_blocks[mn_block_idx];
 
         // loop over all the blocks of P
         for (int p_block_idx = 0; p_block_idx < p_blocks.size(); ++p_block_idx) {
             // compute the
-            eri[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
-            double const* my_buffer = eri[rank]->buffer();
+            eri_[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
+            const auto* buffer = buffers[0];
 
             const auto& p_block = p_blocks[p_block_idx];
 
@@ -574,21 +585,19 @@ void DiskDFJK::initialize_JK_core() {
                             if ((sfp = schwarz_fun_pairs[sfp_idx]) > -1) {
                                 for (int ip = 0; ip < num_p; ++ip) {
                                     const int ip_idx = p_start + ip;
-                                    Qmnp[ip_idx][sfp] = my_buffer[ip * num_mn + imn_idx];
+                                    Qmnp[ip_idx][sfp] = buffer[ip * num_mn + imn_idx];
                                 }
                             }
 
                         }
                     }
 
-                    my_buffer += num_mn * num_p;
+                    buffer += num_mn * num_p;
                 }
             }
         }
     }
     timer_off("JK: (A|mn)");
-    delete[] buffer;
-    delete[] eri;
 
     timer_on("JK: (A|Q)^-1/2");
 
@@ -864,17 +873,6 @@ void DiskDFJK::initialize_JK_disk() {
     nthread = df_ints_num_threads_;
 #endif
 
-    // ==> ERI initialization <== //
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[Q] = eri[Q]->buffer();
-    }
-
     // ==> Main loop <== //
     for (int block = 0; block < nblock; block++) {
         int MN_start_val = MN_start_b[block];
@@ -892,7 +890,7 @@ void DiskDFJK::initialize_JK_disk() {
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
-
+            const auto &buffers = eri_[rank]->buffers();
             int MU = schwarz_shell_pairs[MUNU + 0].first;
             int NU = schwarz_shell_pairs[MUNU + 0].second;
             int nummu = primary_->shell(MU).nfunction();
@@ -902,8 +900,8 @@ void DiskDFJK::initialize_JK_disk() {
             for (int P = 0; P < auxiliary_->nshell(); P++) {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
-                eri[rank]->compute_shell(P, 0, MU, NU);
-                buffer[rank] = eri[rank]->buffer();
+                eri_[rank]->compute_shell(P, 0, MU, NU);
+                const auto *buffer = buffers[0];
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
@@ -914,7 +912,7 @@ void DiskDFJK::initialize_JK_disk() {
                             int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
                                 int op = p + dp;
-                                Qmnp[op][delta] = buffer[rank][dp * nummu * numnu + dm * numnu + dn];
+                                Qmnp[op][delta] = buffer[dp * nummu * numnu + dm * numnu + dn];
                             }
                         }
                     }
@@ -954,8 +952,6 @@ void DiskDFJK::initialize_JK_disk() {
 
     // ==> Close out <== //
     Qmn_.reset();
-    delete[] eri;
-    delete[] buffer;
 
     psio_->close(unit_, 1);
 }
@@ -998,17 +994,6 @@ void DiskDFJK::initialize_wK_core() {
 
     // => Left Integrals <= //
 
-    // Get a TEI for each thread
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[Q] = eri[Q]->buffer();
-    }
-
     const std::vector<long int>& schwarz_shell_pairs = sieve_->shell_pairs_reverse();
     const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
 
@@ -1023,14 +1008,15 @@ void DiskDFJK::initialize_wK_core() {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
+        const auto& buffers = eri_[rank]->buffers();
         nummu = primary_->shell(MU).nfunction();
         for (NU = 0; NU <= MU; ++NU) {
             numnu = primary_->shell(NU).nfunction();
             if (schwarz_shell_pairs[MU * (MU + 1) / 2 + NU] > -1) {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
-                    eri[rank]->compute_shell(Pshell, 0, MU, NU);
-                    buffer[rank] = eri[rank]->buffer();
+                    eri_[rank]->compute_shell(Pshell, 0, MU, NU);
+                    const auto *buffer = buffers[0];
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
@@ -1041,7 +1027,7 @@ void DiskDFJK::initialize_wK_core() {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
                                     Qmn2p[PHI][schwarz_fun_pairs[addr]] =
-                                        buffer[rank][P * nummu * numnu + mu * numnu + nu];
+                                        buffer[P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
                         }
@@ -1052,9 +1038,6 @@ void DiskDFJK::initialize_wK_core() {
     }
 
     timer_off("JK: (A|mn)^L");
-
-    delete[] buffer;
-    delete[] eri;
 
     // => Fitting <= //
 
@@ -1074,15 +1057,6 @@ void DiskDFJK::initialize_wK_core() {
 
     timer_off("JK: (Q|mn)^L");
 
-    // => Right Integrals <= //
-
-    const auto** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
-        buffer2[Q] = eri2[Q]->buffer();
-    }
-
     // The integrals (A|w|mn)
 
     timer_on("JK: (A|mn)^R");
@@ -1093,14 +1067,15 @@ void DiskDFJK::initialize_wK_core() {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
+        const auto& buffers = erf_eri_[rank]->buffers();
         nummu = primary_->shell(MU).nfunction();
         for (NU = 0; NU <= MU; ++NU) {
             numnu = primary_->shell(NU).nfunction();
             if (schwarz_shell_pairs[MU * (MU + 1) / 2 + NU] > -1) {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
-                    eri2[rank]->compute_shell(Pshell, 0, MU, NU);
-                    buffer2[rank] = eri2[rank]->buffer();
+                    erf_eri_[rank]->compute_shell(Pshell, 0, MU, NU);
+                    const auto *buffer = buffers[0];
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
@@ -1111,7 +1086,7 @@ void DiskDFJK::initialize_wK_core() {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
                                     Qmn2p[PHI][schwarz_fun_pairs[addr]] =
-                                        buffer2[rank][P * nummu * numnu + mu * numnu + nu];
+                                        buffer[P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
                         }
@@ -1122,9 +1097,6 @@ void DiskDFJK::initialize_wK_core() {
     }
 
     timer_off("JK: (A|mn)^R");
-
-    delete[] buffer2;
-    delete[] eri2;
 
     // Try to save
     if (df_ints_io_ == "SAVE") {
@@ -1366,17 +1338,6 @@ void DiskDFJK::initialize_wK_disk() {
     nthread = df_ints_num_threads_;
 #endif
 
-    // ==> ERI initialization <== //
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[Q] = eri[Q]->buffer();
-    }
-
     // ==> Main loop <== //
     for (int block = 0; block < nblock; block++) {
         int MN_start_val = MN_start_b[block];
@@ -1394,7 +1355,7 @@ void DiskDFJK::initialize_wK_disk() {
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
-
+            const auto& buffers = eri_[rank]->buffers();
             int MU = schwarz_shell_pairs[MUNU + 0].first;
             int NU = schwarz_shell_pairs[MUNU + 0].second;
             int nummu = primary_->shell(MU).nfunction();
@@ -1404,8 +1365,8 @@ void DiskDFJK::initialize_wK_disk() {
             for (int P = 0; P < auxiliary_->nshell(); P++) {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
-                eri[rank]->compute_shell(P, 0, MU, NU);
-                buffer[rank] = eri[rank]->buffer();
+                eri_[rank]->compute_shell(P, 0, MU, NU);
+                const auto *buffer = buffers[0];
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
@@ -1416,7 +1377,7 @@ void DiskDFJK::initialize_wK_disk() {
                             int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
                                 int op = p + dp;
-                                Qmnp[op][delta] = buffer[rank][dp * nummu * numnu + dm * numnu + dn];
+                                Qmnp[op][delta] = buffer[dp * nummu * numnu + dm * numnu + dn];
                             }
                         }
                     }
@@ -1455,16 +1416,8 @@ void DiskDFJK::initialize_wK_disk() {
     }
 
     Qmn_.reset();
-    delete[] eri;
 
     // => Right Integrals <= //
-
-    const auto** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
-        buffer2[Q] = eri2[Q]->buffer();
-    }
 
     size_t maxP = auxiliary_->max_function_per_shell();
     size_t max_rows = memory_ / ntri;
@@ -1512,7 +1465,7 @@ void DiskDFJK::initialize_wK_disk() {
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
-
+            const auto &buffers = erf_eri_[thread]->buffers();
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
@@ -1528,8 +1481,8 @@ void DiskDFJK::initialize_wK_disk() {
             int sm = primary_->shell(M).function_index();
             int sn = primary_->shell(N).function_index();
 
-            eri2[thread]->compute_shell(Q, 0, M, N);
-            buffer2[thread] = eri2[thread]->buffer();
+            erf_eri_[thread]->compute_shell(Q, 0, M, N);
+            const auto *buffer = buffers[0];
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
@@ -1539,7 +1492,7 @@ void DiskDFJK::initialize_wK_disk() {
                     if (m >= n && schwarz_fun_pairs_r[addr] >= 0) {
                         long int delta = schwarz_fun_pairs_r[addr];
                         for (int oq = 0; oq < nq; oq++) {
-                            Amn2p[sq + oq - qoff][delta] = buffer2[thread][oq * nm * nn + om * nn + on];
+                            Amn2p[sq + oq - qoff][delta] = buffer[oq * nm * nn + om * nn + on];
                         }
                     }
                 }
@@ -1557,9 +1510,6 @@ void DiskDFJK::initialize_wK_disk() {
         timer_off("JK: (Q|mn)^R Write");
     }
     Amn2.reset();
-    delete[] eri2;
-    delete[] buffer;
-    delete[] buffer2;
 
     psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
     psio_->close(unit_, 1);
@@ -1584,12 +1534,6 @@ void DiskDFJK::rebuild_wK_disk() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
-        buffer2[Q] = eri2[Q]->buffer();
-    }
 
     size_t maxP = auxiliary_->max_function_per_shell();
     size_t max_rows = memory_ / ntri;
@@ -1637,7 +1581,7 @@ void DiskDFJK::rebuild_wK_disk() {
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
-
+            const auto &buffers = erf_eri_[thread]->buffers();
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
@@ -1653,8 +1597,8 @@ void DiskDFJK::rebuild_wK_disk() {
             int sm = primary_->shell(M).function_index();
             int sn = primary_->shell(N).function_index();
 
-            eri2[thread]->compute_shell(Q, 0, M, N);
-            buffer2[thread] = eri2[thread]->buffer();
+            erf_eri_[thread]->compute_shell(Q, 0, M, N);
+            const auto *buffer = buffers[0];
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
@@ -1664,7 +1608,7 @@ void DiskDFJK::rebuild_wK_disk() {
                     if (m >= n && schwarz_fun_pairs_r[addr] >= 0) {
                         long int delta = schwarz_fun_pairs_r[addr];
                         for (int oq = 0; oq < nq; oq++) {
-                            Amn2p[sq + oq - qoff][delta] = buffer2[thread][oq * nm * nn + om * nn + on];
+                            Amn2p[sq + oq - qoff][delta] = buffer[oq * nm * nn + om * nn + on];
                         }
                     }
                 }
@@ -1682,8 +1626,6 @@ void DiskDFJK::rebuild_wK_disk() {
         timer_off("JK: (Q|mn)^R Write");
     }
     Amn2.reset();
-    delete[] eri2;
-    delete[] buffer2;
 
     psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
     // No need to close
