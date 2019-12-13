@@ -204,7 +204,7 @@ jobs:
           setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat
-        displayName: 'Run, Spot, Run Test'
+        displayName: 'Run, Spot Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
       # Test (ctest)
