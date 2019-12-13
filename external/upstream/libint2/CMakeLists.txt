@@ -62,7 +62,7 @@ else()
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DWITH_MAX_AM=4
+                       -DWITH_MAX_AM=3 #4
                        #-DENABLE_ONEBODY=2  # ?
                        #-DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
                        #-DMULTIPOLE_MAX_ORDER=4
@@ -82,9 +82,9 @@ else()
                        -DBUILD_FPIC=${BUILD_FPIC}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                             -DWITH_ERI_MAX_AM:STRING=4;3
-                             -DWITH_ERI3_MAX_AM:STRING=5;4
-                             -DWITH_ERI2_MAX_AM:STRING=5;4
+                             #-DWITH_ERI_MAX_AM:STRING=4;3
+                             #-DWITH_ERI3_MAX_AM:STRING=5;4
+                             #-DWITH_ERI2_MAX_AM:STRING=5;4
         )
                              #-DWITH_ERI_MAX_AM:STRING=5;5;5
                              #-DWITH_ERI3_MAX_AM:STRING=6
