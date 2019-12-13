@@ -63,6 +63,8 @@ class PSI_API MintsHelper {
     int print_;
     int nthread_;
 
+    std::map<std::string,SharedMatrix> cached_oe_ints_;
+
     /// Value which any two-electron integral is below is discarded
     double cutoff_;
 
@@ -83,6 +85,8 @@ class PSI_API MintsHelper {
 
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
     void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
+    /// Returns true if an integral type is already computed and cached
+    bool are_ints_cached(const std::string &label);
 
    public:
     void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
@@ -296,6 +300,7 @@ class PSI_API MintsHelper {
 
     /// Play function
     void play();
+
 };
 }  // namespace psi
 

@@ -349,37 +349,43 @@ void MintsHelper::one_electron_integrals() {
     //    }
     //    outfile->Printf( "]\n\n");
 
-    // Compute and dump one-electron SO integrals.
+    // Compute and save one-electron SO integrals to cache.
 
     if (options_.get_str("RELATIVISTIC") == "NO" || options_.get_str("RELATIVISTIC") == "DKH") {
         // Overlap
-        so_overlap()->save(psio_, PSIF_OEI);
+        so_overlap()->save(psio_, PSIF_OEI); // TODO:remove
 
         // Kinetic
-        so_kinetic()->save(psio_, PSIF_OEI);
+        so_kinetic()->save(psio_, PSIF_OEI); // TODO:remove
 
         // Potential -- DKH perturbation added to potential integrals if needed.
-        so_potential()->save(psio_, PSIF_OEI);
+        so_potential()->save(psio_, PSIF_OEI); // TODO:remove
     } else if (options_.get_str("RELATIVISTIC") == "X2C") {
         outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
 
         if (!rel_basisset_) {
             throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis was not set.");
         }
-        X2CInt x2cint;
         SharedMatrix so_overlap_x2c = so_overlap();
         SharedMatrix so_kinetic_x2c = so_kinetic();
         SharedMatrix so_potential_x2c = so_potential();
+
+        X2CInt x2cint;
         x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
 
+        // Overwrite cached integrals
+        cached_oe_ints_["so_overlap"] = so_overlap_x2c;
+        cached_oe_ints_["so_kinetic"] = so_kinetic_x2c;
+        cached_oe_ints_["so_potential"] = so_potential_x2c;
+
         // Overlap
-        so_overlap_x2c->save(psio_, PSIF_OEI);
+        so_overlap_x2c->save(psio_, PSIF_OEI); // TODO:remove
 
         // Kinetic
-        so_kinetic_x2c->save(psio_, PSIF_OEI);
+        so_kinetic_x2c->save(psio_, PSIF_OEI); // TODO:remove
 
         // Potential
-        so_potential_x2c->save(psio_, PSIF_OEI);
+        so_potential_x2c->save(psio_, PSIF_OEI); // TODO:remove
     }
 
     // Dipoles
@@ -1215,16 +1221,22 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2) {
     return Ispin;
 }
 
+bool MintsHelper::are_ints_cached(const std::string &label) {
+    auto it = cached_oe_ints_.find(label);
+    return it != cached_oe_ints_.end();
+}
+
 SharedMatrix MintsHelper::so_overlap() {
-    if (factory_->nirrep() == 1) {
-        SharedMatrix ret = ao_overlap();
-        ret->set_name(PSIF_SO_S);
-        return ret;
-    } else {
-        SharedMatrix overlap_mat(factory_->create_matrix(PSIF_SO_S));
-        overlap_mat->apply_symmetry(ao_overlap(), petite_list()->aotoso());
-        return overlap_mat;
+    if (!are_ints_cached("so_overlap")) {
+        if (factory_->nirrep() == 1) {
+            cached_oe_ints_["so_overlap"] = ao_overlap();
+        } else {
+            SharedMatrix overlap_mat(factory_->create_matrix(PSIF_SO_S));
+            overlap_mat->apply_symmetry(ao_overlap(), petite_list()->aotoso());
+            cached_oe_ints_["so_overlap"] = overlap_mat;
+        }
     }
+    return cached_oe_ints_["so_overlap"];
 }
 
 SharedMatrix MintsHelper::so_kinetic() {
@@ -1566,7 +1578,7 @@ std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> 
 SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix moments) {
     SharedMatrix mat = std::make_shared<Matrix>("Induction operator", basisset_->nao(), basisset_->nao());
     ContractOverDipolesFunctor dipfun(moments, mat);
-    auto field_integrals_ = static_cast<ElectricFieldInt*>(integral_->electric_field());
+    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
     field_integrals_->compute_with_functor(dipfun, coords);
     mat->scale(-1.0);
 
@@ -1583,7 +1595,7 @@ SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix m
 }
 
 SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix D) {
-    auto field_integrals_ = static_cast<ElectricFieldInt*>(integral_->electric_field());
+    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
     PetiteList petite(basisset_, integral_, true);
     auto my_aotoso_ = petite.aotoso();
 
@@ -1601,7 +1613,6 @@ SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix
 
     return efields;
 }
-
 
 std::vector<SharedMatrix> MintsHelper::ao_nabla() {
     // Create a vector of matrices with the proper symmetry
