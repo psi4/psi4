@@ -62,7 +62,7 @@ else()
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DWITH_MAX_AM=3 #4
+                       -DWITH_MAX_AM=4
                        #-DENABLE_ONEBODY=2  # ?
                        #-DDISABLE_ONEBODY_PROPERTY_DERIVS=ON
                        #-DMULTIPOLE_MAX_ORDER=4
