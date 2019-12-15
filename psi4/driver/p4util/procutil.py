@@ -434,6 +434,7 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False, gl
        - not all kwargs are independent
 
     """
+    has_changed_snapshot = {module: core.options_to_python(module) for module in _modules}
     options = collections.defaultdict(dict)
     commands = ''
     for opt in core.get_global_option_list():
@@ -450,12 +451,12 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False, gl
         if globalsOnly:
             continue
 
-        for module in _modules:
-            if core.option_exists_in_module(module, opt):
+        opt_snapshot = {k: v[opt] for k, v in has_changed_snapshot.items() if opt in v}
+        for module, (lhoc, ohoc) in opt_snapshot.items():
                 if stateInsteadMediated:
-                    hoc = core.has_local_option_changed(module, opt)
+                    hoc = lhoc
                 else:
-                    hoc = core.has_option_changed(module, opt)
+                    hoc = ohoc
                 if hoc or not changedOnly:
                     if stateInsteadMediated:
                         val = core.get_local_option(module, opt)

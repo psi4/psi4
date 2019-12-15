@@ -99,6 +99,9 @@ class AtomicComputer(BaseComputer):
             "protocols": {
                 "stdout": True,
             },
+            "extras": {
+                "psiapi": True,
+            },
         })
 
         return data
@@ -149,7 +152,7 @@ class AtomicComputer(BaseComputer):
         # ... OR ...
         self.result = qcng.compute(self.plan(), 'psi4', raise_error=True,
                                    # local_options below suitable for continuous mode
-                                   local_options={"memory": core.get_memory()/1073741824, "ncores": core.get_num_threads()}
+                                   local_options={"memory": core.get_memory()/1000000000, "ncores": core.get_num_threads()}
                                   )
         # ... END
 
