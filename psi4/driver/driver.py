@@ -605,6 +605,7 @@ def gradient(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
+    print('scratch ENE', core.IOManager.shared_object().get_default_path())
 
     basisstash = p4util.OptionsState(['BASIS'])
     return_wfn = kwargs.pop('return_wfn', False)

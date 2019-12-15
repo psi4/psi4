@@ -38,8 +38,8 @@ set num_frozen_docc 1
 set guess read
 # [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
 EfHe = energy('mp2')
-compare_integers(1, int(variable('SCF ITERATIONS')), 'niter')                            #TEST
 compare_values(reffHe, EfHe, 8, "MP2 energy with frozen [He] and ECP")                   #TEST
+#compare_integers(1, int(variable('SCF ITERATIONS')), 'niter')                            #TEST
 
 molecule ghne {
     0 1
