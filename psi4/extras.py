@@ -42,11 +42,13 @@ numpy_files = []
 def register_numpy_file(filename):
     if not filename.endswith('.npy'): filename += '.npy'
     if filename not in numpy_files:
+        print("register numpy file:", filename)
         numpy_files.append(filename)
 
 
 def clean_numpy_files():
     for nfile in numpy_files:
+        print("cleaning numpy file:", nfile)
         os.unlink(nfile)
 
 
