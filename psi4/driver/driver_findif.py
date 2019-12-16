@@ -1156,6 +1156,8 @@ class FiniteDifferenceComputer(BaseComputer):
         ret_ptype = core.Matrix.from_array(findifjob.return_result)
         wfn = _findif_schema_to_wfn(findifjob)
 
+        _hessian_write(wfn)
+
         if return_wfn:
             return (ret_ptype, wfn)
         else:
@@ -1193,3 +1195,10 @@ def _findif_schema_to_wfn(findifjob):
 #            finalhessian.print_out()
 
     return wfn
+
+
+def _hessian_write(wfn):
+    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
+        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
+        with open(filename, 'wb') as handle:
+            qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
