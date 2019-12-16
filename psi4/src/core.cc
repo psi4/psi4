@@ -272,6 +272,7 @@ void py_flush_outfile() {}
 
 void py_close_outfile() {
     if (outfile) {
+        printf("core closing %s\n", outfile_name.c_str());
         outfile = std::shared_ptr<PsiOutStream>();
     }
 }

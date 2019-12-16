@@ -384,8 +384,10 @@ def _quiet_remove(filename):
     Destroy the created at file at exit, pass if error.
     """
     try:
+        print('trying to unlink', filename)
         os.unlink(filename)
     except OSError:
+        print('passing OSError')
         pass
 
 
@@ -435,6 +437,8 @@ def run_qcschema(input_data, clean=True):
                                               'error_message': input_data["stdout"] + ''.join(traceback.format_exception(*sys.exc_info())),
                                           })
 
+    core.close_outfile()
+    print('closing outfile')
     atexit.register(_quiet_remove, outfile)
 
     return ret
