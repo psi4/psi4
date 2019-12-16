@@ -320,7 +320,7 @@ void OverlapOrthogonalization::compute_orthog_trans() {
             compute_canonical_orthog();
             break;
         case PartialCholesky:
-            if (print_) outfile->Printf("    Using partial Cholesky orthogonalization (arXiv:1911.10372).\n");
+            if (print_) outfile->Printf("    Using partial Cholesky orthogonalization (doi:10.1063/1.5139948).\n");
             compute_partial_cholesky_orthog();
             break;
         default:
