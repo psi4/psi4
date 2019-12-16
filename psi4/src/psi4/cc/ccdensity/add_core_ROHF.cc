@@ -43,7 +43,7 @@ namespace psi {
 namespace ccdensity {
 
 void add_core_ROHF(struct iwlbuf *OutBuf) {
-    int p, q, m, n;
+    int p, q, m;
     int nmo, nfzv, nfzc;
     double value;
 
