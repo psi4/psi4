@@ -60,7 +60,6 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
       source_(nullptr),
       deriv_(deriv) {
     // The derived classes allocate this memory.
-    force_cartesian_ = false;
     tformbuf_ = nullptr;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
 
@@ -441,27 +440,15 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int np
         const auto &shell1 = bs1_->shell(sh12.first);
         const auto &shell2 = bs2_->shell(sh12.second);
 
-        int n1, n2;
-        if (force_cartesian_) {
-            n1 = shell1.ncartesian();
-            n2 = shell2.ncartesian();
-        } else {
-            n1 = shell1.nfunction();
-            n2 = shell2.nfunction();
-        }
+        int n1 = shell1.nfunction();
+        int n2 = shell2.nfunction();
 
         for (const auto &sh34 : vsh34) {
             const auto &shell3 = bs3_->shell(sh34.first);
             const auto &shell4 = bs4_->shell(sh34.second);
 
-            int n3, n4;
-            if (force_cartesian_) {
-                n3 = shell3.ncartesian();
-                n4 = shell4.ncartesian();
-            } else {
-                n3 = shell3.nfunction();
-                n4 = shell4.nfunction();
-            }
+            int n3 = shell3.nfunction();
+            int n4 = shell4.nfunction();
 
             const int n1234 = n1 * n2 * n3 * n4;
 
@@ -493,27 +480,15 @@ void TwoBodyAOInt::compute_shell_blocks_deriv1(int shellpair12, int shellpair34,
         const auto &shell1 = original_bs1_->shell(sh12.first);
         const auto &shell2 = original_bs2_->shell(sh12.second);
 
-        int n1, n2;
-        if (force_cartesian_) {
-            n1 = shell1.ncartesian();
-            n2 = shell2.ncartesian();
-        } else {
-            n1 = shell1.nfunction();
-            n2 = shell2.nfunction();
-        }
+        int n1 = shell1.nfunction();
+        int n2 = shell2.nfunction();
 
         for (const auto sh34 : vsh34) {
             const auto &shell3 = original_bs3_->shell(sh34.first);
             const auto &shell4 = original_bs4_->shell(sh34.second);
 
-            int n3, n4;
-            if (force_cartesian_) {
-                n3 = shell3.ncartesian();
-                n4 = shell4.ncartesian();
-            } else {
-                n3 = shell3.nfunction();
-                n4 = shell4.nfunction();
-            }
+            int n3 = shell3.nfunction();
+            int n4 = shell4.nfunction();
 
             const int n1234 = 12 * n1 * n2 * n3 * n4;
 
@@ -545,27 +520,15 @@ void TwoBodyAOInt::compute_shell_blocks_deriv2(int shellpair12, int shellpair34,
         const auto &shell1 = original_bs1_->shell(sh12.first);
         const auto &shell2 = original_bs2_->shell(sh12.second);
 
-        int n1, n2;
-        if (force_cartesian_) {
-            n1 = shell1.ncartesian();
-            n2 = shell2.ncartesian();
-        } else {
-            n1 = shell1.nfunction();
-            n2 = shell2.nfunction();
-        }
+        int n1 = shell1.nfunction();
+        int n2 = shell2.nfunction();
 
         for (const auto sh34 : vsh34) {
             const auto &shell3 = original_bs3_->shell(sh34.first);
             const auto &shell4 = original_bs4_->shell(sh34.second);
 
-            int n3, n4;
-            if (force_cartesian_) {
-                n3 = shell3.ncartesian();
-                n4 = shell4.ncartesian();
-            } else {
-                n3 = shell3.nfunction();
-                n4 = shell4.nfunction();
-            }
+            int n3 = shell3.nfunction();
+            int n4 = shell4.nfunction();
 
             // TODO: figure out if tranlational invariance relations are applied automagically
             const int n1234 = 78 * n1 * n2 * n3 * n4;
@@ -657,18 +620,10 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
     const GaussianShell &s3 = bs3_->shell(sh3);
     const GaussianShell &s4 = bs4_->shell(sh4);
 
-    int nbf1, nbf2, nbf3, nbf4;
-    if (force_cartesian_) {
-        nbf1 = s1.ncartesian();
-        nbf2 = s2.ncartesian();
-        nbf3 = s3.ncartesian();
-        nbf4 = s4.ncartesian();
-    } else {
-        nbf1 = s1.nfunction();
-        nbf2 = s2.nfunction();
-        nbf3 = s3.nfunction();
-        nbf4 = s4.nfunction();
-    }
+    int nbf1 = s1.nfunction();
+    int nbf2 = s2.nfunction();
+    int nbf3 = s3.nfunction();
+    int nbf4 = s4.nfunction();
 
     if (!p13p24) {
         if (p12) {

@@ -80,7 +80,6 @@ static void transform1e_2(int am, SphericalTransformIter &sti, double *s, double
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1) {
-    force_cartesian_ = false;
     buffer_ = nullptr;
     natom_ = bs1_->molecule()->natom();
 
@@ -206,13 +205,9 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2) {
 
     // Normalize for angular momentum
     normalize_am(s1, s2, nchunk_);
-    if (!force_cartesian_) {
-        // Pure angular momentum (6d->5d, ...) transformation
-        pure_transform(s1, s2, nchunk_);
-        buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
-    } else {
-        buffer_size_ = nchunk_ * s1.ncartesian() * s2.ncartesian();
-    }
+    // Pure angular momentum (6d->5d, ...) transformation
+    pure_transform(s1, s2, nchunk_);
+    buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
 }
 
 void OneBodyAOInt::compute_pair_deriv1(const GaussianShell &, const GaussianShell &) {
@@ -234,7 +229,7 @@ void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2) {
     normalize_am(s1, s2, nchunk_);
 
     // Pure angular momentum (6d->5d, ...) transformation
-    if (!force_cartesian_) pure_transform(s1, s2, nchunk_);
+    pure_transform(s1, s2, nchunk_);
 }
 
 void OneBodyAOInt::compute(SharedMatrix &result) {
@@ -247,10 +242,10 @@ void OneBodyAOInt::compute(SharedMatrix &result) {
 
     // Leave as this full double for loop. We could be computing nonsymmetric integrals
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
 
             // Compute the shell (automatically transforms to pure am in needed)
             compute_shell(i, j);
@@ -293,10 +288,10 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
     }
 
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
 
             // Compute the shell
             compute_shell(i, j);
@@ -337,11 +332,11 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix> &result) {
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__, __LINE__);
 
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int center_i3 = 3 * bs1_->shell(i).ncenter();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(i).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
             int center_j3 = 3 * bs2_->shell(j).ncenter();
 
             if (center_i3 != center_j3) {
@@ -395,11 +390,11 @@ void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix> &result) {
         throw SanityCheckError("OneBodyInt::compute_deriv2(result): results must be C1 symmetry.", __FILE__, __LINE__);
 
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int center_i3 = 3 * bs1_->shell(i).ncenter();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(i).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
             int center_j3 = 3 * bs2_->shell(j).ncenter();
 
             if (center_i3 != center_j3) {
@@ -440,7 +435,7 @@ void OneBodyAOInt::compute_shell_deriv2(int i, int j) {
     normalize_am(bs1_->shell(i), bs2_->shell(j), nchunk_);
 
     // Pure angular momentum (6d->5d, ...) transformation
-    if (!force_cartesian_) pure_transform(bs1_->shell(i), bs2_->shell(j), nchunk_);
+    pure_transform(bs1_->shell(i), bs2_->shell(j), nchunk_);
 }
 
 }  // namespace psi

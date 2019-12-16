@@ -2066,17 +2066,10 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
 
     int n1, n2, n3, n4;
 
-    if (force_cartesian_) {
-        n1 = original_bs1_->shell(sh1).ncartesian();
-        n2 = original_bs2_->shell(sh2).ncartesian();
-        n3 = original_bs3_->shell(sh3).ncartesian();
-        n4 = original_bs4_->shell(sh4).ncartesian();
-    } else {
-        n1 = original_bs1_->shell(sh1).nfunction();
-        n2 = original_bs2_->shell(sh2).nfunction();
-        n3 = original_bs3_->shell(sh3).nfunction();
-        n4 = original_bs4_->shell(sh4).nfunction();
-    }
+    n1 = original_bs1_->shell(sh1).nfunction();
+    n2 = original_bs2_->shell(sh2).nfunction();
+    n3 = original_bs3_->shell(sh3).nfunction();
+    n4 = original_bs4_->shell(sh4).nfunction();
     curr_buff_size_ = n1 * n2 * n3 * n4;
 
     // Save the original requested shell ordering. The pre-computed shell pair information
@@ -2402,7 +2395,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4) {
     // normalize_am(s1, s2, s3, s4);
 
     // Transform the integrals into pure angular momentum
-    if (!force_cartesian_) pure_transform(sh1, sh2, sh3, sh4, 1);
+    pure_transform(sh1, sh2, sh3, sh4, 1);
 
     // Results are in source_
     return size;
@@ -2751,7 +2744,7 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
 
     handle_reordering1(permuted_order_, libderiv_, source_, size);
     // Transform the integrals to the spherical basis
-    if (!force_cartesian_) pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
+    pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
 
     // Results are in source_
     return size;
@@ -3068,7 +3061,7 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
     handle_reordering12(permuted_order_, libderiv_, source_, size);
 
     // Transform the integrals to the spherical basis
-    if (!force_cartesian_) pure_transform(sh1, sh2, sh3, sh4, ERI_2DER_NTYPE);
+    pure_transform(sh1, sh2, sh3, sh4, ERI_2DER_NTYPE);
 
     // Results are in source_
     return size;
@@ -3199,9 +3192,6 @@ size_t Libint2TwoElectronInt::compute_shell(int s1, int s2, int s3, int s4) {
 #ifdef MINTS_TIMER
     timer_on("Libint2ERI::compute_shell");
 #endif
-    if (force_cartesian_) {
-        throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
-    }
 
     const auto &sh1 = bs1_->l2_shell(s1);
     const auto &sh2 = bs2_->l2_shell(s2);
@@ -3230,9 +3220,6 @@ size_t Libint2TwoElectronInt::compute_shell_deriv1(int s1, int s2, int s3, int s
 #ifdef MINTS_TIMER
     timer_on("Libint2ERI::compute_shell_deriv1");
 #endif
-    if (force_cartesian_) {
-        throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
-    }
 
     const auto &sh1 = bs1_->l2_shell(s1);
     const auto &sh2 = bs2_->l2_shell(s2);
@@ -3265,9 +3252,6 @@ size_t Libint2TwoElectronInt::compute_shell_deriv2(int s1, int s2, int s3, int s
 #ifdef MINTS_TIMER
     timer_on("Libint2ERI::compute_shell_deriv2");
 #endif
-    if (force_cartesian_) {
-        throw PSIEXCEPTION("TwoElectronInt: bad instruction routing.");
-    }
 
     const auto &sh1 = bs1_->l2_shell(s1);
     const auto &sh2 = bs2_->l2_shell(s2);

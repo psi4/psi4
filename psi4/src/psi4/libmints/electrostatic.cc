@@ -57,10 +57,10 @@ void ElectrostaticInt::compute(SharedMatrix& result, const Vector3& C) {
 
     // Leave as this full double for loop. We could be computing nonsymmetric integrals
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
 
             // Compute the shell (automatically transforms to pure am in needed)
             compute_shell(i, j, C);
@@ -89,10 +89,8 @@ void ElectrostaticInt::compute_shell(int sh1, int sh2, const Vector3& C) {
 
     // Normalize for angular momentum
     normalize_am(s1, s2, nchunk_);
-    if (!force_cartesian_) {
-        // Pure angular momentum (6d->5d, ...) transformation
-        pure_transform(s1, s2, nchunk_);
-    }
+    // Pure angular momentum (6d->5d, ...) transformation
+    pure_transform(s1, s2, nchunk_);
 }
 
 // The engine only supports segmented basis sets

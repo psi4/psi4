@@ -98,8 +98,6 @@ class PSI_API TwoBodyAOInt {
     int natom_;
     /// Derivative level.
     int deriv_;
-    /// Whether to force integrals to be generated in the Cartesian (AO) basis;
-    bool force_cartesian_;
     /// How the shells were reordered for libint
     PermutedOrder permuted_order_;
     /// Are the basis sets in the bra the same?
@@ -232,9 +230,6 @@ class PSI_API TwoBodyAOInt {
     const std::vector<std::vector<int> >& significant_partners_per_function() const { return function_to_function_; }
     /// Significant shell pairs; for each shell it gives a list of shells that contribute to make a shell pair
     const std::vector<std::vector<int> >& significant_parterns_per_shell() const { return shell_to_shell_; }
-
-    /// Sets whether we're forcing this object to always generate Cartesian integrals
-    void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
 
     /// Returns the derivative level this object is setup for.
     int deriv() const { return deriv_; }

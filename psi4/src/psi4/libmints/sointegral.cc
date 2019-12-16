@@ -66,8 +66,6 @@ void OneBodySOInt::common_init() {
         b2_ = b1_;
     else
         b2_ = std::make_shared<SOBasisSet>(ob_->basis2(), integral_);
-
-    ob_->set_force_cartesian(b1_->petite_list()->include_pure_transform());
 }
 
 std::shared_ptr<SOBasisSet> OneBodySOInt::basis() const { return b1_; }
@@ -384,8 +382,6 @@ void TwoBodySOInt::common_init() {
         b4_ = b3_;
     else
         b4_ = std::make_shared<SOBasisSet>(tb_[0]->basis4(), integral_);
-
-    for (int i = 0; i < nthread_; ++i) tb_[i]->set_force_cartesian(b1_->petite_list()->include_pure_transform());
 
     size_ = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() * b3_->max_nfunction_in_shell() *
             b4_->max_nfunction_in_shell();

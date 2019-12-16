@@ -270,23 +270,13 @@ size_t SimintTwoElectronInt::compute_shell_for_sieve(const std::shared_ptr<Basis
     bs3_ = bs;
     bs4_ = bs;
 
-
-    int n1, n2, n3, n4;
-
-    if (force_cartesian_) {
-        n1 = shell1.ncartesian();
-        n2 = shell2.ncartesian();
-        n3 = shell3.ncartesian();
-        n4 = shell4.ncartesian();
-    } else {
-        n1 = shell1.nfunction();
-        n2 = shell2.nfunction();
-        n3 = shell3.nfunction();
-        n4 = shell4.nfunction();
-    }
+    int n1 = shell1.nfunction();
+    int n2 = shell2.nfunction();
+    int n3 = shell3.nfunction();
+    int n4 = shell4.nfunction();
 
     curr_buff_size_ = n1 * n2 * n3 * n4;
-    bool do_cart = force_cartesian_ || curr_buff_size_ == 1 ||
+    bool do_cart = curr_buff_size_ == 1 ||
                    (shell1.is_cartesian() && shell2.is_cartesian() && shell3.is_cartesian() && shell4.is_cartesian());
 
     const simint_multi_shellpair *PQ = is_bra ? &(*single_spairs_bra_)[sh1 * nsh + sh2] :  &(*single_spairs_ket_)[sh1 * nsh + sh2] ;
@@ -323,22 +313,12 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
     const auto &shell3 = original_bs3_->shell(sh3);
     const auto &shell4 = original_bs4_->shell(sh4);
 
-    bool do_cart = force_cartesian_ ||
-                   (shell1.is_cartesian() && shell2.is_cartesian() && shell3.is_cartesian() && shell4.is_cartesian());
+    bool do_cart = (shell1.is_cartesian() && shell2.is_cartesian() && shell3.is_cartesian() && shell4.is_cartesian());
 
-    int n1, n2, n3, n4;
-
-    if (force_cartesian_) {
-        n1 = shell1.ncartesian();
-        n2 = shell2.ncartesian();
-        n3 = shell3.ncartesian();
-        n4 = shell4.ncartesian();
-    } else {
-        n1 = shell1.nfunction();
-        n2 = shell2.nfunction();
-        n3 = shell3.nfunction();
-        n4 = shell4.nfunction();
-    }
+    int n1 = shell1.nfunction();
+    int n2 = shell2.nfunction();
+    int n3 = shell3.nfunction();
+    int n4 = shell4.nfunction();
 
     curr_buff_size_ = n1 * n2 * n3 * n4;
     const simint_multi_shellpair *P = &(*single_spairs_bra_)[sh1 * nsh2 + sh2];
@@ -390,7 +370,7 @@ void SimintTwoElectronInt::compute_shell_blocks(int shellpair1, int shellpair2, 
     const int ncart1234 = ncart1 * ncart2 * ncart3 * ncart4;
     const int n1234 = n1 * n2 * n3 * n4;
     curr_buff_size_ = n1234;
-    bool do_cart = force_cartesian_ || n1234 == 1 ||
+    bool do_cart = n1234 == 1 ||
                    (shell1.is_cartesian() && shell2.is_cartesian() && shell3.is_cartesian() && shell4.is_cartesian());
 
 
