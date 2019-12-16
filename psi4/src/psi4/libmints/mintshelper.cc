@@ -1416,9 +1416,9 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
 
     // Overwrite cached integrals
-    cached_oe_ints_["so_overlap"] = so_overlap_x2c;
-    cached_oe_ints_["so_kinetic"] = so_kinetic_x2c;
-    cached_oe_ints_["so_potential"] = so_potential_x2c;
+    cached_oe_ints_[PSIF_SO_S] = so_overlap_x2c;
+    cached_oe_ints_[PSIF_SO_T] = so_kinetic_x2c;
+    cached_oe_ints_[PSIF_SO_V] = so_potential_x2c;
 }
 
 std::vector<SharedMatrix> MintsHelper::so_dipole() {
