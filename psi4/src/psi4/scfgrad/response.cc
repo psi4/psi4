@@ -755,15 +755,13 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                         if (!pert_incore[Pcenter] && !pert_incore[Qcenter]) continue;
 
                         PQint->compute_shell_deriv1(P, 0, Q, 0);
-                        auto buffers = PQint->buffers();
-                        bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
-                        const double* buffer = PQint->buffer();
-                        const double* PxBuf = libint1 ? buffer + 0 * stride : buffers[0];
-                        const double* PyBuf = libint1 ? buffer + 1 * stride : buffers[1];
-                        const double* PzBuf = libint1 ? buffer + 2 * stride : buffers[2];
-                        const double* QxBuf = libint1 ? buffer + 3 * stride : buffers[3];
-                        const double* QyBuf = libint1 ? buffer + 4 * stride : buffers[4];
-                        const double* QzBuf = libint1 ? buffer + 5 * stride : buffers[5];
+                        const auto& buffers = PQint->buffers();
+                        const double* PxBuf = buffers[0];
+                        const double* PyBuf = buffers[1];
+                        const double* PzBuf = buffers[2];
+                        const double* QxBuf = buffers[3];
+                        const double* QyBuf = buffers[4];
+                        const double* QzBuf = buffers[5];
 
                         if (pert_incore[Pcenter]) {
                             // J terms
@@ -866,18 +864,16 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                             if (!pert_incore[Pcenter] && !pert_incore[Mcenter] && !pert_incore[Ncenter]) continue;
 
                             Pmnint->compute_shell_deriv1(P, 0, M, N);
-                            auto buffers = Pmnint->buffers();
-                            bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
-                            const double* buffer = Pmnint->buffer();
-                            const double* PxBuf = libint1 ? buffer + 0 * stride : buffers[0];
-                            const double* PyBuf = libint1 ? buffer + 1 * stride : buffers[1];
-                            const double* PzBuf = libint1 ? buffer + 2 * stride : buffers[2];
-                            const double* mxBuf = libint1 ? buffer + 3 * stride : buffers[3];
-                            const double* myBuf = libint1 ? buffer + 4 * stride : buffers[4];
-                            const double* mzBuf = libint1 ? buffer + 5 * stride : buffers[5];
-                            const double* nxBuf = libint1 ? buffer + 6 * stride : buffers[6];
-                            const double* nyBuf = libint1 ? buffer + 7 * stride : buffers[7];
-                            const double* nzBuf = libint1 ? buffer + 8 * stride : buffers[8];
+                            const auto& buffers = Pmnint->buffers();
+                            const double* PxBuf = buffers[0];
+                            const double* PyBuf = buffers[1];
+                            const double* PzBuf = buffers[2];
+                            const double* mxBuf = buffers[3];
+                            const double* myBuf = buffers[4];
+                            const double* mzBuf = buffers[5];
+                            const double* nxBuf = buffers[6];
+                            const double* nyBuf = buffers[7];
+                            const double* nzBuf = buffers[8];
 
                             /*
                              * J terms have 2 contributions:
@@ -1112,435 +1108,296 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     dGmats[a]->zero();
                 }
 
-                // TODO: this should be deleted when libint1 is removed
-                Options& options = Process::environment.options;
-                bool oldcode = options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
-                if (oldcode) {
-                    std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
-                    const double* buffer = ints->buffer();
-                    for (size_t index = 0L; index < npairs2; index++) {
-                        size_t PQ = index / npairs;
-                        size_t RS = index % npairs;
-
-                        if (RS > PQ) continue;
-
-                        int P = shell_pairs[PQ].first;
-                        int Q = shell_pairs[PQ].second;
-                        int R = shell_pairs[RS].first;
-                        int S = shell_pairs[RS].second;
-
-                        if (!sieve->shell_significant(P, Q, R, S)) continue;
-
-                        int Pcenter = basisset_->shell(P).ncenter();
-                        int Qcenter = basisset_->shell(Q).ncenter();
-                        int Rcenter = basisset_->shell(R).ncenter();
-                        int Scenter = basisset_->shell(S).ncenter();
-                        if (!pert_incore[Pcenter] && !pert_incore[Qcenter] && !pert_incore[Rcenter] &&
-                            !pert_incore[Scenter])
-                            continue;
-
-                        int am1 = basisset_->shell(P).am();
-                        int am2 = basisset_->shell(Q).am();
-                        int am3 = basisset_->shell(R).am();
-                        int am4 = basisset_->shell(S).am();
-
-                        // Correct libint ordering to libint's expected P>=Q, R>=S, PQ<=RS, for efficiency.
-                        if (am1 < am2) {
-                            std::swap(P, Q);
-                            std::swap(Pcenter, Qcenter);
-                        }
-                        if (am3 < am4) {
-                            std::swap(R, S);
-                            std::swap(Rcenter, Scenter);
-                        }
-                        if ((am1 + am2) > (am3 + am4)) {
-                            std::swap(P, R);
-                            std::swap(Q, S);
-                            std::swap(Pcenter, Rcenter);
-                            std::swap(Qcenter, Scenter);
-                        }
-
-                        ints->compute_shell_deriv1(P, Q, R, S);
-
-                        const int Psize = basisset_->shell(P).nfunction();
-                        const int Qsize = basisset_->shell(Q).nfunction();
-                        const int Rsize = basisset_->shell(R).nfunction();
-                        const int Ssize = basisset_->shell(S).nfunction();
-
-                        const int Pncart = basisset_->shell(P).ncartesian();
-                        const int Qncart = basisset_->shell(Q).ncartesian();
-                        const int Rncart = basisset_->shell(R).ncartesian();
-                        const int Sncart = basisset_->shell(S).ncartesian();
-
-                        const int Poff = basisset_->shell(P).function_index();
-                        const int Qoff = basisset_->shell(Q).function_index();
-                        const int Roff = basisset_->shell(R).function_index();
-                        const int Soff = basisset_->shell(S).function_index();
-
-                        double prefactor = 1.0;
-                        if (P != Q) prefactor *= 2.0;
-                        if (R != S) prefactor *= 2.0;
-                        if (PQ != RS) prefactor *= 2.0;
-
-                        size_t stride = static_cast<size_t>(Pncart) * Qncart * Rncart * Sncart;
-
-                        double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
-                        size_t delta;
-                        double Ax, Ay, Az;
-                        double Bx, By, Bz;
-                        double Cx, Cy, Cz;
-                        double Dx, Dy, Dz;
-
-                        // => Coulomb Term <= //
-
-                        Ax = 0.0;
-                        Ay = 0.0;
-                        Az = 0.0;
-                        Bx = 0.0;
-                        By = 0.0;
-                        Bz = 0.0;
-                        Cx = 0.0;
-                        Cy = 0.0;
-                        Cz = 0.0;
-                        Dx = 0.0;
-                        Dy = 0.0;
-                        Dz = 0.0;
-                        delta = 0L;
-                        for (int p = Poff; p < Poff + Psize; p++) {
-                            for (int q = Qoff; q < Qoff + Qsize; q++) {
-                                for (int r = Roff; r < Roff + Rsize; r++) {
-                                    for (int s = Soff; s < Soff + Ssize; s++) {
-                                        Dpq = Dap[p][q];
-                                        Drs = Dap[r][s];
-                                        Ax = prefactor * buffer[0 * stride + delta];
-                                        Ay = prefactor * buffer[1 * stride + delta];
-                                        Az = prefactor * buffer[2 * stride + delta];
-                                        Cx = prefactor * buffer[3 * stride + delta];
-                                        Cy = prefactor * buffer[4 * stride + delta];
-                                        Cz = prefactor * buffer[5 * stride + delta];
-                                        Dx = prefactor * buffer[6 * stride + delta];
-                                        Dy = prefactor * buffer[7 * stride + delta];
-                                        Dz = prefactor * buffer[8 * stride + delta];
-                                        Bx = -(Ax + Cx + Dx);
-                                        By = -(Ay + Cy + Dy);
-                                        Bz = -(Az + Cz + Dz);
-
-                                        if (pert_incore[Pcenter]) {
-                                            pdG[Pcenter * 3 + 0][p][q] += Ax * Drs;
-                                            pdG[Pcenter * 3 + 0][r][s] += Ax * Dpq;
-                                            pdG[Pcenter * 3 + 1][p][q] += Ay * Drs;
-                                            pdG[Pcenter * 3 + 1][r][s] += Ay * Dpq;
-                                            pdG[Pcenter * 3 + 2][p][q] += Az * Drs;
-                                            pdG[Pcenter * 3 + 2][r][s] += Az * Dpq;
-                                        }
-                                        if (pert_incore[Qcenter]) {
-                                            pdG[Qcenter * 3 + 0][p][q] += Bx * Drs;
-                                            pdG[Qcenter * 3 + 0][r][s] += Bx * Dpq;
-                                            pdG[Qcenter * 3 + 1][p][q] += By * Drs;
-                                            pdG[Qcenter * 3 + 1][r][s] += By * Dpq;
-                                            pdG[Qcenter * 3 + 2][p][q] += Bz * Drs;
-                                            pdG[Qcenter * 3 + 2][r][s] += Bz * Dpq;
-                                        }
-                                        if (pert_incore[Rcenter]) {
-                                            pdG[Rcenter * 3 + 0][p][q] += Cx * Drs;
-                                            pdG[Rcenter * 3 + 0][r][s] += Cx * Dpq;
-                                            pdG[Rcenter * 3 + 1][p][q] += Cy * Drs;
-                                            pdG[Rcenter * 3 + 1][r][s] += Cy * Dpq;
-                                            pdG[Rcenter * 3 + 2][p][q] += Cz * Drs;
-                                            pdG[Rcenter * 3 + 2][r][s] += Cz * Dpq;
-                                        }
-                                        if (pert_incore[Scenter]) {
-                                            pdG[Scenter * 3 + 0][p][q] += Dx * Drs;
-                                            pdG[Scenter * 3 + 0][r][s] += Dx * Dpq;
-                                            pdG[Scenter * 3 + 1][p][q] += Dy * Drs;
-                                            pdG[Scenter * 3 + 1][r][s] += Dy * Dpq;
-                                            pdG[Scenter * 3 + 2][p][q] += Dz * Drs;
-                                            pdG[Scenter * 3 + 2][r][s] += Dz * Dpq;
-                                        }
-                                        delta++;
-                                    }
-                                }
-                            }
-                        }
-
-                        // => Exchange Term <= //
-                        if (Kscale) {
-                            Ax = 0.0;
-                            Ay = 0.0;
-                            Az = 0.0;
-                            Bx = 0.0;
-                            By = 0.0;
-                            Bz = 0.0;
-                            Cx = 0.0;
-                            Cy = 0.0;
-                            Cz = 0.0;
-                            Dx = 0.0;
-                            Dy = 0.0;
-                            Dz = 0.0;
-                            delta = 0L;
-                            prefactor *= -0.25 * Kscale;
-                            for (int p = Poff; p < Poff + Psize; p++) {
-                                for (int q = Qoff; q < Qoff + Qsize; q++) {
-                                    for (int r = Roff; r < Roff + Rsize; r++) {
-                                        for (int s = Soff; s < Soff + Ssize; s++) {
-                                            Ax = prefactor * buffer[0 * stride + delta];
-                                            Ay = prefactor * buffer[1 * stride + delta];
-                                            Az = prefactor * buffer[2 * stride + delta];
-                                            Cx = prefactor * buffer[3 * stride + delta];
-                                            Cy = prefactor * buffer[4 * stride + delta];
-                                            Cz = prefactor * buffer[5 * stride + delta];
-                                            Dx = prefactor * buffer[6 * stride + delta];
-                                            Dy = prefactor * buffer[7 * stride + delta];
-                                            Dz = prefactor * buffer[8 * stride + delta];
-                                            Bx = -(Ax + Cx + Dx);
-                                            By = -(Ay + Cy + Dy);
-                                            Bz = -(Az + Cz + Dz);
-
-                                            Dpr = Dap[p][r];
-                                            Dqs = Dap[q][s];
-                                            Dps = Dap[p][s];
-                                            Dqr = Dap[q][r];
-                                            if (pert_incore[Pcenter]) {
-                                                pdG[Pcenter * 3 + 0][p][r] += Ax * Dqs;
-                                                pdG[Pcenter * 3 + 0][q][s] += Ax * Dpr;
-                                                pdG[Pcenter * 3 + 0][p][s] += Ax * Dqr;
-                                                pdG[Pcenter * 3 + 0][q][r] += Ax * Dps;
-                                                pdG[Pcenter * 3 + 1][p][r] += Ay * Dqs;
-                                                pdG[Pcenter * 3 + 1][q][s] += Ay * Dpr;
-                                                pdG[Pcenter * 3 + 1][p][s] += Ay * Dqr;
-                                                pdG[Pcenter * 3 + 1][q][r] += Ay * Dps;
-                                                pdG[Pcenter * 3 + 2][p][r] += Az * Dqs;
-                                                pdG[Pcenter * 3 + 2][q][s] += Az * Dpr;
-                                                pdG[Pcenter * 3 + 2][p][s] += Az * Dqr;
-                                                pdG[Pcenter * 3 + 2][q][r] += Az * Dps;
-                                            }
-                                            if (pert_incore[Qcenter]) {
-                                                pdG[Qcenter * 3 + 0][p][r] += Bx * Dqs;
-                                                pdG[Qcenter * 3 + 0][q][s] += Bx * Dpr;
-                                                pdG[Qcenter * 3 + 0][p][s] += Bx * Dqr;
-                                                pdG[Qcenter * 3 + 0][q][r] += Bx * Dps;
-                                                pdG[Qcenter * 3 + 1][p][r] += By * Dqs;
-                                                pdG[Qcenter * 3 + 1][q][s] += By * Dpr;
-                                                pdG[Qcenter * 3 + 1][p][s] += By * Dqr;
-                                                pdG[Qcenter * 3 + 1][q][r] += By * Dps;
-                                                pdG[Qcenter * 3 + 2][p][r] += Bz * Dqs;
-                                                pdG[Qcenter * 3 + 2][q][s] += Bz * Dpr;
-                                                pdG[Qcenter * 3 + 2][p][s] += Bz * Dqr;
-                                                pdG[Qcenter * 3 + 2][q][r] += Bz * Dps;
-                                            }
-                                            if (pert_incore[Rcenter]) {
-                                                pdG[Rcenter * 3 + 0][p][r] += Cx * Dqs;
-                                                pdG[Rcenter * 3 + 0][q][s] += Cx * Dpr;
-                                                pdG[Rcenter * 3 + 0][p][s] += Cx * Dqr;
-                                                pdG[Rcenter * 3 + 0][q][r] += Cx * Dps;
-                                                pdG[Rcenter * 3 + 1][p][r] += Cy * Dqs;
-                                                pdG[Rcenter * 3 + 1][q][s] += Cy * Dpr;
-                                                pdG[Rcenter * 3 + 1][p][s] += Cy * Dqr;
-                                                pdG[Rcenter * 3 + 1][q][r] += Cy * Dps;
-                                                pdG[Rcenter * 3 + 2][p][r] += Cz * Dqs;
-                                                pdG[Rcenter * 3 + 2][q][s] += Cz * Dpr;
-                                                pdG[Rcenter * 3 + 2][p][s] += Cz * Dqr;
-                                                pdG[Rcenter * 3 + 2][q][r] += Cz * Dps;
-                                            }
-                                            if (pert_incore[Scenter]) {
-                                                pdG[Scenter * 3 + 0][p][r] += Dx * Dqs;
-                                                pdG[Scenter * 3 + 0][q][s] += Dx * Dpr;
-                                                pdG[Scenter * 3 + 0][p][s] += Dx * Dqr;
-                                                pdG[Scenter * 3 + 0][q][r] += Dx * Dps;
-                                                pdG[Scenter * 3 + 1][p][r] += Dy * Dqs;
-                                                pdG[Scenter * 3 + 1][q][s] += Dy * Dpr;
-                                                pdG[Scenter * 3 + 1][p][s] += Dy * Dqr;
-                                                pdG[Scenter * 3 + 1][q][r] += Dy * Dps;
-                                                pdG[Scenter * 3 + 2][p][r] += Dz * Dqs;
-                                                pdG[Scenter * 3 + 2][q][s] += Dz * Dpr;
-                                                pdG[Scenter * 3 + 2][p][s] += Dz * Dqr;
-                                                pdG[Scenter * 3 + 2][q][r] += Dz * Dps;
-                                            }
-                                            delta++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }  // End shell loops
-                } else {
-                    // newcode
-                    int maxfunc = basisset_->max_function_per_shell();
-                    int maxnpair = maxfunc * maxfunc;
-                    std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-                    // clang-format off
+                int maxfunc = basisset_->max_function_per_shell();
+                int maxnpair = maxfunc * maxfunc;
+                std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
+                // clang-format off
                     // Ordering of per-thread scratch buffers:
                     //    Jpq     |    Jrs    |    Kpr    |    Kqs    |    Kps    |    Kqr
                     //  ---------------------------------------------------------------------
                     //  x   y   z | x   y   z | x   y   z | x   y   z | x   y   z | x   y   z
                     //  0   1   2 | 3   4   5 | 6   7   8 | 9  10  11 | 12 13  14 |15  16  17
-                    // clang-format on
-                    int nbuffers = (Kscale != 0.0 ? 6 : 2) * 3;
-                    int nthreads = Process::environment.get_n_threads();
-                    std::vector<std::vector<std::vector<double>>> thread_temps;
-                    for (int thread = 0; thread < nthreads; thread++) {
-                        ints.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
-                        std::vector<std::vector<double>> temps(4);
-                        for (auto& t : temps) t.resize(nbuffers * maxnpair);
-                        thread_temps.push_back(temps);
-                    }
-                    size_t computed_shells = 0L;
-                    // shell pair blocks
-                    auto blocksPQ = ints[0]->get_blocks12();
-                    auto blocksRS = ints[0]->get_blocks34();
-                    bool use_batching = blocksPQ != blocksRS;
+                // clang-format on
+                int nbuffers = (Kscale != 0.0 ? 6 : 2) * 3;
+                int nthreads = Process::environment.get_n_threads();
+                std::vector<std::vector<std::vector<double>>> thread_temps;
+                for (int thread = 0; thread < nthreads; thread++) {
+                    ints.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
+                    std::vector<std::vector<double>> temps(4);
+                    for (auto& t : temps) t.resize(nbuffers * maxnpair);
+                    thread_temps.push_back(temps);
+                }
+                size_t computed_shells = 0L;
+                // shell pair blocks
+                auto blocksPQ = ints[0]->get_blocks12();
+                auto blocksRS = ints[0]->get_blocks34();
+                bool use_batching = blocksPQ != blocksRS;
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    // loop over all the blocks of (P>=Q|
-                    for (size_t blockPQ_idx = 0; blockPQ_idx < blocksPQ.size(); blockPQ_idx++) {
-                        const auto& blockPQ = blocksPQ[blockPQ_idx];
+                // loop over all the blocks of (P>=Q|
+                for (size_t blockPQ_idx = 0; blockPQ_idx < blocksPQ.size(); blockPQ_idx++) {
+                    const auto& blockPQ = blocksPQ[blockPQ_idx];
 #ifdef _OPENMP
-                        const int rank = omp_get_thread_num();
+                    const int rank = omp_get_thread_num();
 #else
-                        const int rank = 0;
+                    const int rank = 0;
 #endif
-                        auto& buffers = ints[rank]->buffers();
-                        // loop over all the blocks of |R>=S)
-                        int loop_start = use_batching ? 0 : blockPQ_idx;
-                        for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
-                            const auto& blockRS = blocksRS[blockRS_idx];
+                    auto& buffers = ints[rank]->buffers();
+                    // loop over all the blocks of |R>=S)
+                    int loop_start = use_batching ? 0 : blockPQ_idx;
+                    for (int blockRS_idx = loop_start; blockRS_idx < blocksRS.size(); ++blockRS_idx) {
+                        const auto& blockRS = blocksRS[blockRS_idx];
 
-                            // Check to see if any of these integrals could contribute
-                            bool contributes = false;
-                            for (const auto& pairPQ : blockPQ) {
-                                const auto& Pcenter = basisset_->shell(pairPQ.first).ncenter();
-                                const auto& Qcenter = basisset_->shell(pairPQ.second).ncenter();
-                                if (pert_incore[Pcenter] || pert_incore[Qcenter]) {
+                        // Check to see if any of these integrals could contribute
+                        bool contributes = false;
+                        for (const auto& pairPQ : blockPQ) {
+                            const auto& Pcenter = basisset_->shell(pairPQ.first).ncenter();
+                            const auto& Qcenter = basisset_->shell(pairPQ.second).ncenter();
+                            if (pert_incore[Pcenter] || pert_incore[Qcenter]) {
+                                contributes = true;
+                                break;
+                            }
+                        }
+                        if (!contributes) {
+                            for (const auto& pairRS : blockRS) {
+                                const auto& Rcenter = basisset_->shell(pairRS.first).ncenter();
+                                const auto& Scenter = basisset_->shell(pairRS.second).ncenter();
+                                if (pert_incore[Rcenter] || pert_incore[Scenter]) {
                                     contributes = true;
                                     break;
                                 }
                             }
-                            if (!contributes) {
-                                for (const auto& pairRS : blockRS) {
-                                    const auto& Rcenter = basisset_->shell(pairRS.first).ncenter();
-                                    const auto& Scenter = basisset_->shell(pairRS.second).ncenter();
-                                    if (pert_incore[Rcenter] || pert_incore[Scenter]) {
-                                        contributes = true;
-                                        break;
+                        }
+                        if (!contributes) continue;
+
+                        // This is where we want to screen with density and schwarz-like screening
+                        // compute the integrals and continue if none were computed
+                        ints[rank]->compute_shell_blocks_deriv1(blockPQ_idx, blockRS_idx);
+
+                        const double* pAx = buffers[0];
+                        const double* pAy = buffers[1];
+                        const double* pAz = buffers[2];
+                        const double* pBx = buffers[3];
+                        const double* pBy = buffers[4];
+                        const double* pBz = buffers[5];
+                        const double* pCx = buffers[6];
+                        const double* pCy = buffers[7];
+                        const double* pCz = buffers[8];
+                        const double* pDx = buffers[9];
+                        const double* pDy = buffers[10];
+                        const double* pDz = buffers[11];
+                        std::array<double*, 4> pTemps;
+                        for (int i = 0; i < 4; ++i) pTemps[i] = thread_temps[rank][i].data();
+                        // Loop over all of the P,Q,R,S shells within the blocks.  We have P>=Q, R>=S and PQ<=RS.
+                        for (const auto& pairPQ : blockPQ) {
+                            const auto& P = pairPQ.first;
+                            const auto& Q = pairPQ.second;
+                            const auto& Pshell = basisset_->shell(P);
+                            const auto& Qshell = basisset_->shell(Q);
+                            const auto& Psize = Pshell.nfunction();
+                            const auto& Qsize = Qshell.nfunction();
+                            const auto& Poff = Pshell.function_index();
+                            const auto& Qoff = Qshell.function_index();
+                            const auto& Pcenter = Pshell.ncenter();
+                            const auto& Qcenter = Qshell.ncenter();
+
+                            for (const auto& pairRS : blockRS) {
+                                const auto& R = pairRS.first;
+                                const auto& S = pairRS.second;
+                                const auto& Rshell = basisset_->shell(R);
+                                const auto& Sshell = basisset_->shell(S);
+                                const auto& Rsize = Rshell.nfunction();
+                                const auto& Ssize = Sshell.nfunction();
+                                const auto& Roff = Rshell.function_index();
+                                const auto& Soff = Sshell.function_index();
+                                const auto& Rcenter = Rshell.ncenter();
+                                const auto& Scenter = Sshell.ncenter();
+
+                                size_t block_size = Psize * Qsize * Rsize * Ssize;
+                                // When there are chunks of shellpairs in RS, we need to make sure
+                                // we filter out redundant combinations.  This should probably be done
+                                // by having a block of RS generated for each PQ at list build time.
+                                if (use_batching && ((P > R) || (P == R && Q > S))) {
+                                    pAx += block_size;
+                                    pAy += block_size;
+                                    pAz += block_size;
+                                    pBx += block_size;
+                                    pBy += block_size;
+                                    pBz += block_size;
+                                    pCx += block_size;
+                                    pCy += block_size;
+                                    pCz += block_size;
+                                    pDx += block_size;
+                                    pDy += block_size;
+                                    pDz += block_size;
+                                    continue;
+                                }
+
+                                double prefactor = 8.0;
+                                if (P == Q) prefactor *= 0.5;
+                                if (R == S) prefactor *= 0.5;
+                                if (P == R && Q == S) prefactor *= 0.5;
+
+                                double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
+                                size_t delta;
+                                double Ax, Ay, Az;
+                                double Bx, By, Bz;
+                                double Cx, Cy, Cz;
+                                double Dx, Dy, Dz;
+
+                                // => Coulomb Term <= //
+                                if (pert_incore[Pcenter]) {
+                                    std::fill_n(pTemps[0] + 0 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[0] + 1 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[0] + 2 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[0] + 3 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[0] + 4 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[0] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                }
+                                if (pert_incore[Qcenter]) {
+                                    std::fill_n(pTemps[1] + 0 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[1] + 1 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[1] + 2 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[1] + 3 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[1] + 4 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[1] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                }
+                                if (pert_incore[Rcenter]) {
+                                    std::fill_n(pTemps[2] + 0 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[2] + 1 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[2] + 2 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[2] + 3 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[2] + 4 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[2] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                }
+                                if (pert_incore[Scenter]) {
+                                    std::fill_n(pTemps[3] + 0 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[3] + 1 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[3] + 2 * maxnpair, Psize * Qsize, 0.0);
+                                    std::fill_n(pTemps[3] + 3 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[3] + 4 * maxnpair, Rsize * Ssize, 0.0);
+                                    std::fill_n(pTemps[3] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                }
+                                delta = 0L;
+                                for (int p = 0; p < Psize; p++) {
+                                    for (int q = 0; q < Qsize; q++) {
+                                        for (int r = 0; r < Rsize; r++) {
+                                            for (int s = 0; s < Ssize; s++) {
+                                                Dpq = Dap[p + Poff][q + Qoff];
+                                                Drs = Dap[r + Roff][s + Soff];
+                                                Ax = prefactor * pAx[delta];
+                                                Ay = prefactor * pAy[delta];
+                                                Az = prefactor * pAz[delta];
+                                                Bx = prefactor * pBx[delta];
+                                                By = prefactor * pBy[delta];
+                                                Bz = prefactor * pBz[delta];
+                                                Cx = prefactor * pCx[delta];
+                                                Cy = prefactor * pCy[delta];
+                                                Cz = prefactor * pCz[delta];
+                                                Dx = prefactor * pDx[delta];
+                                                Dy = prefactor * pDy[delta];
+                                                Dz = prefactor * pDz[delta];
+
+                                                if (pert_incore[Pcenter]) {
+                                                    pTemps[0][0 * maxnpair + p * Qsize + q] += Ax * Drs;
+                                                    pTemps[0][1 * maxnpair + p * Qsize + q] += Ay * Drs;
+                                                    pTemps[0][2 * maxnpair + p * Qsize + q] += Az * Drs;
+                                                    pTemps[0][3 * maxnpair + r * Ssize + s] += Ax * Dpq;
+                                                    pTemps[0][4 * maxnpair + r * Ssize + s] += Ay * Dpq;
+                                                    pTemps[0][5 * maxnpair + r * Ssize + s] += Az * Dpq;
+                                                }
+                                                if (pert_incore[Qcenter]) {
+                                                    pTemps[1][0 * maxnpair + p * Qsize + q] += Bx * Drs;
+                                                    pTemps[1][1 * maxnpair + p * Qsize + q] += By * Drs;
+                                                    pTemps[1][2 * maxnpair + p * Qsize + q] += Bz * Drs;
+                                                    pTemps[1][3 * maxnpair + r * Ssize + s] += Bx * Dpq;
+                                                    pTemps[1][4 * maxnpair + r * Ssize + s] += By * Dpq;
+                                                    pTemps[1][5 * maxnpair + r * Ssize + s] += Bz * Dpq;
+                                                }
+                                                if (pert_incore[Rcenter]) {
+                                                    pTemps[2][0 * maxnpair + p * Qsize + q] += Cx * Drs;
+                                                    pTemps[2][1 * maxnpair + p * Qsize + q] += Cy * Drs;
+                                                    pTemps[2][2 * maxnpair + p * Qsize + q] += Cz * Drs;
+                                                    pTemps[2][3 * maxnpair + r * Ssize + s] += Cx * Dpq;
+                                                    pTemps[2][4 * maxnpair + r * Ssize + s] += Cy * Dpq;
+                                                    pTemps[2][5 * maxnpair + r * Ssize + s] += Cz * Dpq;
+                                                }
+                                                if (pert_incore[Scenter]) {
+                                                    pTemps[3][0 * maxnpair + p * Qsize + q] += Dx * Drs;
+                                                    pTemps[3][1 * maxnpair + p * Qsize + q] += Dy * Drs;
+                                                    pTemps[3][2 * maxnpair + p * Qsize + q] += Dz * Drs;
+                                                    pTemps[3][3 * maxnpair + r * Ssize + s] += Dx * Dpq;
+                                                    pTemps[3][4 * maxnpair + r * Ssize + s] += Dy * Dpq;
+                                                    pTemps[3][5 * maxnpair + r * Ssize + s] += Dz * Dpq;
+                                                }
+                                                delta++;
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                            if (!contributes) continue;
-
-                            // This is where we want to screen with density and schwarz-like screening
-                            // compute the integrals and continue if none were computed
-                            ints[rank]->compute_shell_blocks_deriv1(blockPQ_idx, blockRS_idx);
-
-                            const double* pAx = buffers[0];
-                            const double* pAy = buffers[1];
-                            const double* pAz = buffers[2];
-                            const double* pBx = buffers[3];
-                            const double* pBy = buffers[4];
-                            const double* pBz = buffers[5];
-                            const double* pCx = buffers[6];
-                            const double* pCy = buffers[7];
-                            const double* pCz = buffers[8];
-                            const double* pDx = buffers[9];
-                            const double* pDy = buffers[10];
-                            const double* pDz = buffers[11];
-                            std::array<double*, 4> pTemps;
-                            for (int i = 0; i < 4; ++i) pTemps[i] = thread_temps[rank][i].data();
-                            // Loop over all of the P,Q,R,S shells within the blocks.  We have P>=Q, R>=S and PQ<=RS.
-                            for (const auto& pairPQ : blockPQ) {
-                                const auto& P = pairPQ.first;
-                                const auto& Q = pairPQ.second;
-                                const auto& Pshell = basisset_->shell(P);
-                                const auto& Qshell = basisset_->shell(Q);
-                                const auto& Psize = Pshell.nfunction();
-                                const auto& Qsize = Qshell.nfunction();
-                                const auto& Poff = Pshell.function_index();
-                                const auto& Qoff = Qshell.function_index();
-                                const auto& Pcenter = Pshell.ncenter();
-                                const auto& Qcenter = Qshell.ncenter();
-
-                                for (const auto& pairRS : blockRS) {
-                                    const auto& R = pairRS.first;
-                                    const auto& S = pairRS.second;
-                                    const auto& Rshell = basisset_->shell(R);
-                                    const auto& Sshell = basisset_->shell(S);
-                                    const auto& Rsize = Rshell.nfunction();
-                                    const auto& Ssize = Sshell.nfunction();
-                                    const auto& Roff = Rshell.function_index();
-                                    const auto& Soff = Sshell.function_index();
-                                    const auto& Rcenter = Rshell.ncenter();
-                                    const auto& Scenter = Sshell.ncenter();
-
-                                    size_t block_size = Psize * Qsize * Rsize * Ssize;
-                                    // When there are chunks of shellpairs in RS, we need to make sure
-                                    // we filter out redundant combinations.  This should probably be done
-                                    // by having a block of RS generated for each PQ at list build time.
-                                    if (use_batching && ((P > R) || (P == R && Q > S))) {
-                                        pAx += block_size;
-                                        pAy += block_size;
-                                        pAz += block_size;
-                                        pBx += block_size;
-                                        pBy += block_size;
-                                        pBz += block_size;
-                                        pCx += block_size;
-                                        pCy += block_size;
-                                        pCz += block_size;
-                                        pDx += block_size;
-                                        pDy += block_size;
-                                        pDz += block_size;
-                                        continue;
-                                    }
-
-                                    double prefactor = 8.0;
-                                    if (P == Q) prefactor *= 0.5;
-                                    if (R == S) prefactor *= 0.5;
-                                    if (P == R && Q == S) prefactor *= 0.5;
-
-                                    double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
-                                    size_t delta;
-                                    double Ax, Ay, Az;
-                                    double Bx, By, Bz;
-                                    double Cx, Cy, Cz;
-                                    double Dx, Dy, Dz;
-
-                                    // => Coulomb Term <= //
+                                // => Exchange Term <= //
+                                if (Kscale) {
                                     if (pert_incore[Pcenter]) {
-                                        std::fill_n(pTemps[0] + 0 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[0] + 1 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[0] + 2 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[0] + 3 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[0] + 4 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[0] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[0] + 6 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[0] + 7 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[0] + 8 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[0] + 9 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[0] + 10 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[0] + 11 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[0] + 12 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[0] + 13 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[0] + 14 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[0] + 15 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[0] + 16 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[0] + 17 * maxnpair, Qsize * Rsize, 0.0);
                                     }
                                     if (pert_incore[Qcenter]) {
-                                        std::fill_n(pTemps[1] + 0 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[1] + 1 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[1] + 2 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[1] + 3 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[1] + 4 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[1] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[1] + 6 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[1] + 7 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[1] + 8 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[1] + 9 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[1] + 10 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[1] + 11 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[1] + 12 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[1] + 13 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[1] + 14 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[1] + 15 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[1] + 16 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[1] + 17 * maxnpair, Qsize * Rsize, 0.0);
                                     }
                                     if (pert_incore[Rcenter]) {
-                                        std::fill_n(pTemps[2] + 0 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[2] + 1 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[2] + 2 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[2] + 3 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[2] + 4 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[2] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[2] + 6 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[2] + 7 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[2] + 8 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[2] + 9 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[2] + 10 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[2] + 11 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[2] + 12 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[2] + 13 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[2] + 14 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[2] + 15 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[2] + 16 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[2] + 17 * maxnpair, Qsize * Rsize, 0.0);
                                     }
                                     if (pert_incore[Scenter]) {
-                                        std::fill_n(pTemps[3] + 0 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[3] + 1 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[3] + 2 * maxnpair, Psize * Qsize, 0.0);
-                                        std::fill_n(pTemps[3] + 3 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[3] + 4 * maxnpair, Rsize * Ssize, 0.0);
-                                        std::fill_n(pTemps[3] + 5 * maxnpair, Rsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[3] + 6 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[3] + 7 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[3] + 8 * maxnpair, Psize * Rsize, 0.0);
+                                        std::fill_n(pTemps[3] + 9 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[3] + 10 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[3] + 11 * maxnpair, Qsize * Ssize, 0.0);
+                                        std::fill_n(pTemps[3] + 12 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[3] + 13 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[3] + 14 * maxnpair, Psize * Ssize, 0.0);
+                                        std::fill_n(pTemps[3] + 15 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[3] + 16 * maxnpair, Qsize * Rsize, 0.0);
+                                        std::fill_n(pTemps[3] + 17 * maxnpair, Qsize * Rsize, 0.0);
                                     }
                                     delta = 0L;
+                                    prefactor *= -0.25 * Kscale;
                                     for (int p = 0; p < Psize; p++) {
                                         for (int q = 0; q < Qsize; q++) {
                                             for (int r = 0; r < Rsize; r++) {
                                                 for (int s = 0; s < Ssize; s++) {
-                                                    Dpq = Dap[p + Poff][q + Qoff];
-                                                    Drs = Dap[r + Roff][s + Soff];
                                                     Ax = prefactor * pAx[delta];
                                                     Ay = prefactor * pAy[delta];
                                                     Az = prefactor * pAz[delta];
@@ -1554,439 +1411,324 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                                                     Dy = prefactor * pDy[delta];
                                                     Dz = prefactor * pDz[delta];
 
+                                                    Dpr = Dap[p + Poff][r + Roff];
+                                                    Dqs = Dap[q + Qoff][s + Soff];
+                                                    Dps = Dap[p + Poff][s + Soff];
+                                                    Dqr = Dap[q + Qoff][r + Roff];
                                                     if (pert_incore[Pcenter]) {
-                                                        pTemps[0][0 * maxnpair + p * Qsize + q] += Ax * Drs;
-                                                        pTemps[0][1 * maxnpair + p * Qsize + q] += Ay * Drs;
-                                                        pTemps[0][2 * maxnpair + p * Qsize + q] += Az * Drs;
-                                                        pTemps[0][3 * maxnpair + r * Ssize + s] += Ax * Dpq;
-                                                        pTemps[0][4 * maxnpair + r * Ssize + s] += Ay * Dpq;
-                                                        pTemps[0][5 * maxnpair + r * Ssize + s] += Az * Dpq;
+                                                        pTemps[0][6 * maxnpair + p * Rsize + r] += Ax * Dqs;
+                                                        pTemps[0][7 * maxnpair + p * Rsize + r] += Ay * Dqs;
+                                                        pTemps[0][8 * maxnpair + p * Rsize + r] += Az * Dqs;
+                                                        pTemps[0][9 * maxnpair + q * Ssize + s] += Ax * Dpr;
+                                                        pTemps[0][10 * maxnpair + q * Ssize + s] += Ay * Dpr;
+                                                        pTemps[0][11 * maxnpair + q * Ssize + s] += Az * Dpr;
+                                                        pTemps[0][12 * maxnpair + p * Ssize + s] += Ax * Dqr;
+                                                        pTemps[0][13 * maxnpair + p * Ssize + s] += Ay * Dqr;
+                                                        pTemps[0][14 * maxnpair + p * Ssize + s] += Az * Dqr;
+                                                        pTemps[0][15 * maxnpair + q * Rsize + r] += Ax * Dps;
+                                                        pTemps[0][16 * maxnpair + q * Rsize + r] += Ay * Dps;
+                                                        pTemps[0][17 * maxnpair + q * Rsize + r] += Az * Dps;
                                                     }
                                                     if (pert_incore[Qcenter]) {
-                                                        pTemps[1][0 * maxnpair + p * Qsize + q] += Bx * Drs;
-                                                        pTemps[1][1 * maxnpair + p * Qsize + q] += By * Drs;
-                                                        pTemps[1][2 * maxnpair + p * Qsize + q] += Bz * Drs;
-                                                        pTemps[1][3 * maxnpair + r * Ssize + s] += Bx * Dpq;
-                                                        pTemps[1][4 * maxnpair + r * Ssize + s] += By * Dpq;
-                                                        pTemps[1][5 * maxnpair + r * Ssize + s] += Bz * Dpq;
+                                                        pTemps[1][6 * maxnpair + p * Rsize + r] += Bx * Dqs;
+                                                        pTemps[1][7 * maxnpair + p * Rsize + r] += By * Dqs;
+                                                        pTemps[1][8 * maxnpair + p * Rsize + r] += Bz * Dqs;
+                                                        pTemps[1][9 * maxnpair + q * Ssize + s] += Bx * Dpr;
+                                                        pTemps[1][10 * maxnpair + q * Ssize + s] += By * Dpr;
+                                                        pTemps[1][11 * maxnpair + q * Ssize + s] += Bz * Dpr;
+                                                        pTemps[1][12 * maxnpair + p * Ssize + s] += Bx * Dqr;
+                                                        pTemps[1][13 * maxnpair + p * Ssize + s] += By * Dqr;
+                                                        pTemps[1][14 * maxnpair + p * Ssize + s] += Bz * Dqr;
+                                                        pTemps[1][15 * maxnpair + q * Rsize + r] += Bx * Dps;
+                                                        pTemps[1][16 * maxnpair + q * Rsize + r] += By * Dps;
+                                                        pTemps[1][17 * maxnpair + q * Rsize + r] += Bz * Dps;
                                                     }
                                                     if (pert_incore[Rcenter]) {
-                                                        pTemps[2][0 * maxnpair + p * Qsize + q] += Cx * Drs;
-                                                        pTemps[2][1 * maxnpair + p * Qsize + q] += Cy * Drs;
-                                                        pTemps[2][2 * maxnpair + p * Qsize + q] += Cz * Drs;
-                                                        pTemps[2][3 * maxnpair + r * Ssize + s] += Cx * Dpq;
-                                                        pTemps[2][4 * maxnpair + r * Ssize + s] += Cy * Dpq;
-                                                        pTemps[2][5 * maxnpair + r * Ssize + s] += Cz * Dpq;
+                                                        pTemps[2][6 * maxnpair + p * Rsize + r] += Cx * Dqs;
+                                                        pTemps[2][7 * maxnpair + p * Rsize + r] += Cy * Dqs;
+                                                        pTemps[2][8 * maxnpair + p * Rsize + r] += Cz * Dqs;
+                                                        pTemps[2][9 * maxnpair + q * Ssize + s] += Cx * Dpr;
+                                                        pTemps[2][10 * maxnpair + q * Ssize + s] += Cy * Dpr;
+                                                        pTemps[2][11 * maxnpair + q * Ssize + s] += Cz * Dpr;
+                                                        pTemps[2][12 * maxnpair + p * Ssize + s] += Cx * Dqr;
+                                                        pTemps[2][13 * maxnpair + p * Ssize + s] += Cy * Dqr;
+                                                        pTemps[2][14 * maxnpair + p * Ssize + s] += Cz * Dqr;
+                                                        pTemps[2][15 * maxnpair + q * Rsize + r] += Cx * Dps;
+                                                        pTemps[2][16 * maxnpair + q * Rsize + r] += Cy * Dps;
+                                                        pTemps[2][17 * maxnpair + q * Rsize + r] += Cz * Dps;
                                                     }
                                                     if (pert_incore[Scenter]) {
-                                                        pTemps[3][0 * maxnpair + p * Qsize + q] += Dx * Drs;
-                                                        pTemps[3][1 * maxnpair + p * Qsize + q] += Dy * Drs;
-                                                        pTemps[3][2 * maxnpair + p * Qsize + q] += Dz * Drs;
-                                                        pTemps[3][3 * maxnpair + r * Ssize + s] += Dx * Dpq;
-                                                        pTemps[3][4 * maxnpair + r * Ssize + s] += Dy * Dpq;
-                                                        pTemps[3][5 * maxnpair + r * Ssize + s] += Dz * Dpq;
+                                                        pTemps[3][6 * maxnpair + p * Rsize + r] += Dx * Dqs;
+                                                        pTemps[3][7 * maxnpair + p * Rsize + r] += Dy * Dqs;
+                                                        pTemps[3][8 * maxnpair + p * Rsize + r] += Dz * Dqs;
+                                                        pTemps[3][9 * maxnpair + q * Ssize + s] += Dx * Dpr;
+                                                        pTemps[3][10 * maxnpair + q * Ssize + s] += Dy * Dpr;
+                                                        pTemps[3][11 * maxnpair + q * Ssize + s] += Dz * Dpr;
+                                                        pTemps[3][12 * maxnpair + p * Ssize + s] += Dx * Dqr;
+                                                        pTemps[3][13 * maxnpair + p * Ssize + s] += Dy * Dqr;
+                                                        pTemps[3][14 * maxnpair + p * Ssize + s] += Dz * Dqr;
+                                                        pTemps[3][15 * maxnpair + q * Rsize + r] += Dx * Dps;
+                                                        pTemps[3][16 * maxnpair + q * Rsize + r] += Dy * Dps;
+                                                        pTemps[3][17 * maxnpair + q * Rsize + r] += Dz * Dps;
                                                     }
                                                     delta++;
                                                 }
                                             }
                                         }
                                     }
-                                    // => Exchange Term <= //
-                                    if (Kscale) {
-                                        if (pert_incore[Pcenter]) {
-                                            std::fill_n(pTemps[0] + 6 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[0] + 7 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[0] + 8 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[0] + 9 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[0] + 10 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[0] + 11 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[0] + 12 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[0] + 13 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[0] + 14 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[0] + 15 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[0] + 16 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[0] + 17 * maxnpair, Qsize * Rsize, 0.0);
-                                        }
-                                        if (pert_incore[Qcenter]) {
-                                            std::fill_n(pTemps[1] + 6 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[1] + 7 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[1] + 8 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[1] + 9 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[1] + 10 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[1] + 11 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[1] + 12 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[1] + 13 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[1] + 14 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[1] + 15 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[1] + 16 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[1] + 17 * maxnpair, Qsize * Rsize, 0.0);
-                                        }
-                                        if (pert_incore[Rcenter]) {
-                                            std::fill_n(pTemps[2] + 6 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[2] + 7 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[2] + 8 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[2] + 9 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[2] + 10 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[2] + 11 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[2] + 12 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[2] + 13 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[2] + 14 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[2] + 15 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[2] + 16 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[2] + 17 * maxnpair, Qsize * Rsize, 0.0);
-                                        }
-                                        if (pert_incore[Scenter]) {
-                                            std::fill_n(pTemps[3] + 6 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[3] + 7 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[3] + 8 * maxnpair, Psize * Rsize, 0.0);
-                                            std::fill_n(pTemps[3] + 9 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[3] + 10 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[3] + 11 * maxnpair, Qsize * Ssize, 0.0);
-                                            std::fill_n(pTemps[3] + 12 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[3] + 13 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[3] + 14 * maxnpair, Psize * Ssize, 0.0);
-                                            std::fill_n(pTemps[3] + 15 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[3] + 16 * maxnpair, Qsize * Rsize, 0.0);
-                                            std::fill_n(pTemps[3] + 17 * maxnpair, Qsize * Rsize, 0.0);
-                                        }
-                                        delta = 0L;
-                                        prefactor *= -0.25 * Kscale;
-                                        for (int p = 0; p < Psize; p++) {
-                                            for (int q = 0; q < Qsize; q++) {
-                                                for (int r = 0; r < Rsize; r++) {
-                                                    for (int s = 0; s < Ssize; s++) {
-                                                        Ax = prefactor * pAx[delta];
-                                                        Ay = prefactor * pAy[delta];
-                                                        Az = prefactor * pAz[delta];
-                                                        Bx = prefactor * pBx[delta];
-                                                        By = prefactor * pBy[delta];
-                                                        Bz = prefactor * pBz[delta];
-                                                        Cx = prefactor * pCx[delta];
-                                                        Cy = prefactor * pCy[delta];
-                                                        Cz = prefactor * pCz[delta];
-                                                        Dx = prefactor * pDx[delta];
-                                                        Dy = prefactor * pDy[delta];
-                                                        Dz = prefactor * pDz[delta];
-
-                                                        Dpr = Dap[p + Poff][r + Roff];
-                                                        Dqs = Dap[q + Qoff][s + Soff];
-                                                        Dps = Dap[p + Poff][s + Soff];
-                                                        Dqr = Dap[q + Qoff][r + Roff];
-                                                        if (pert_incore[Pcenter]) {
-                                                            pTemps[0][6 * maxnpair + p * Rsize + r] += Ax * Dqs;
-                                                            pTemps[0][7 * maxnpair + p * Rsize + r] += Ay * Dqs;
-                                                            pTemps[0][8 * maxnpair + p * Rsize + r] += Az * Dqs;
-                                                            pTemps[0][9 * maxnpair + q * Ssize + s] += Ax * Dpr;
-                                                            pTemps[0][10 * maxnpair + q * Ssize + s] += Ay * Dpr;
-                                                            pTemps[0][11 * maxnpair + q * Ssize + s] += Az * Dpr;
-                                                            pTemps[0][12 * maxnpair + p * Ssize + s] += Ax * Dqr;
-                                                            pTemps[0][13 * maxnpair + p * Ssize + s] += Ay * Dqr;
-                                                            pTemps[0][14 * maxnpair + p * Ssize + s] += Az * Dqr;
-                                                            pTemps[0][15 * maxnpair + q * Rsize + r] += Ax * Dps;
-                                                            pTemps[0][16 * maxnpair + q * Rsize + r] += Ay * Dps;
-                                                            pTemps[0][17 * maxnpair + q * Rsize + r] += Az * Dps;
-                                                        }
-                                                        if (pert_incore[Qcenter]) {
-                                                            pTemps[1][6 * maxnpair + p * Rsize + r] += Bx * Dqs;
-                                                            pTemps[1][7 * maxnpair + p * Rsize + r] += By * Dqs;
-                                                            pTemps[1][8 * maxnpair + p * Rsize + r] += Bz * Dqs;
-                                                            pTemps[1][9 * maxnpair + q * Ssize + s] += Bx * Dpr;
-                                                            pTemps[1][10 * maxnpair + q * Ssize + s] += By * Dpr;
-                                                            pTemps[1][11 * maxnpair + q * Ssize + s] += Bz * Dpr;
-                                                            pTemps[1][12 * maxnpair + p * Ssize + s] += Bx * Dqr;
-                                                            pTemps[1][13 * maxnpair + p * Ssize + s] += By * Dqr;
-                                                            pTemps[1][14 * maxnpair + p * Ssize + s] += Bz * Dqr;
-                                                            pTemps[1][15 * maxnpair + q * Rsize + r] += Bx * Dps;
-                                                            pTemps[1][16 * maxnpair + q * Rsize + r] += By * Dps;
-                                                            pTemps[1][17 * maxnpair + q * Rsize + r] += Bz * Dps;
-                                                        }
-                                                        if (pert_incore[Rcenter]) {
-                                                            pTemps[2][6 * maxnpair + p * Rsize + r] += Cx * Dqs;
-                                                            pTemps[2][7 * maxnpair + p * Rsize + r] += Cy * Dqs;
-                                                            pTemps[2][8 * maxnpair + p * Rsize + r] += Cz * Dqs;
-                                                            pTemps[2][9 * maxnpair + q * Ssize + s] += Cx * Dpr;
-                                                            pTemps[2][10 * maxnpair + q * Ssize + s] += Cy * Dpr;
-                                                            pTemps[2][11 * maxnpair + q * Ssize + s] += Cz * Dpr;
-                                                            pTemps[2][12 * maxnpair + p * Ssize + s] += Cx * Dqr;
-                                                            pTemps[2][13 * maxnpair + p * Ssize + s] += Cy * Dqr;
-                                                            pTemps[2][14 * maxnpair + p * Ssize + s] += Cz * Dqr;
-                                                            pTemps[2][15 * maxnpair + q * Rsize + r] += Cx * Dps;
-                                                            pTemps[2][16 * maxnpair + q * Rsize + r] += Cy * Dps;
-                                                            pTemps[2][17 * maxnpair + q * Rsize + r] += Cz * Dps;
-                                                        }
-                                                        if (pert_incore[Scenter]) {
-                                                            pTemps[3][6 * maxnpair + p * Rsize + r] += Dx * Dqs;
-                                                            pTemps[3][7 * maxnpair + p * Rsize + r] += Dy * Dqs;
-                                                            pTemps[3][8 * maxnpair + p * Rsize + r] += Dz * Dqs;
-                                                            pTemps[3][9 * maxnpair + q * Ssize + s] += Dx * Dpr;
-                                                            pTemps[3][10 * maxnpair + q * Ssize + s] += Dy * Dpr;
-                                                            pTemps[3][11 * maxnpair + q * Ssize + s] += Dz * Dpr;
-                                                            pTemps[3][12 * maxnpair + p * Ssize + s] += Dx * Dqr;
-                                                            pTemps[3][13 * maxnpair + p * Ssize + s] += Dy * Dqr;
-                                                            pTemps[3][14 * maxnpair + p * Ssize + s] += Dz * Dqr;
-                                                            pTemps[3][15 * maxnpair + q * Rsize + r] += Dx * Dps;
-                                                            pTemps[3][16 * maxnpair + q * Rsize + r] += Dy * Dps;
-                                                            pTemps[3][17 * maxnpair + q * Rsize + r] += Dz * Dps;
-                                                        }
-                                                        delta++;
-                                                    }
-                                                }
-                                            }
-                                        }
+                                }
+                                // copy over temp data from per-thread buffers to the derivative fock matrices
+                                if (pert_incore[Pcenter]) {
+                                    // Jpq
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Pcenter + xyz].lock();
+                                        for (int p = 0; p < Psize; ++p)
+                                            for (int q = 0; q < Qsize; ++q)
+                                                pdG[Pcenter * 3 + xyz][p + Poff][q + Qoff] +=
+                                                    pTemps[0][(0 + xyz) * maxnpair + p * Qsize + q];
+                                        mutexes[3 * Pcenter + xyz].unlock();
                                     }
-                                    // copy over temp data from per-thread buffers to the derivative fock matrices
-                                    if (pert_incore[Pcenter]) {
-                                        // Jpq
+                                    // Jrs
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Pcenter + xyz].lock();
+                                        for (int r = 0; r < Rsize; ++r)
+                                            for (int s = 0; s < Ssize; ++s)
+                                                pdG[Pcenter * 3 + xyz][r + Roff][s + Soff] +=
+                                                    pTemps[0][(3 + xyz) * maxnpair + r * Ssize + s];
+                                        mutexes[3 * Pcenter + xyz].unlock();
+                                    }
+                                    if (Kscale != 0.0) {
+                                        // Kpr
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Pcenter + xyz].lock();
                                             for (int p = 0; p < Psize; ++p)
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    pdG[Pcenter * 3 + xyz][p + Poff][q + Qoff] +=
-                                                        pTemps[0][(0 + xyz) * maxnpair + p * Qsize + q];
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Pcenter * 3 + xyz][p + Poff][r + Roff] +=
+                                                        pTemps[0][(6 + xyz) * maxnpair + p * Rsize + r];
                                             mutexes[3 * Pcenter + xyz].unlock();
                                         }
-                                        // Jrs
+                                        // Kqs
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Pcenter + xyz].lock();
-                                            for (int r = 0; r < Rsize; ++r)
+                                            for (int q = 0; q < Qsize; ++q)
                                                 for (int s = 0; s < Ssize; ++s)
-                                                    pdG[Pcenter * 3 + xyz][r + Roff][s + Soff] +=
-                                                        pTemps[0][(3 + xyz) * maxnpair + r * Ssize + s];
+                                                    pdG[Pcenter * 3 + xyz][q + Qoff][s + Soff] +=
+                                                        pTemps[0][(9 + xyz) * maxnpair + q * Ssize + s];
                                             mutexes[3 * Pcenter + xyz].unlock();
                                         }
-                                        if (Kscale != 0.0) {
-                                            // Kpr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Pcenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Pcenter * 3 + xyz][p + Poff][r + Roff] +=
-                                                            pTemps[0][(6 + xyz) * maxnpair + p * Rsize + r];
-                                                mutexes[3 * Pcenter + xyz].unlock();
-                                            }
-                                            // Kqs
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Pcenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Pcenter * 3 + xyz][q + Qoff][s + Soff] +=
-                                                            pTemps[0][(9 + xyz) * maxnpair + q * Ssize + s];
-                                                mutexes[3 * Pcenter + xyz].unlock();
-                                            }
-                                            // Kps
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Pcenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Pcenter * 3 + xyz][p + Poff][s + Soff] +=
-                                                            pTemps[0][(12 + xyz) * maxnpair + p * Ssize + s];
-                                                mutexes[3 * Pcenter + xyz].unlock();
-                                            }
-                                            // Kqr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Pcenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Pcenter * 3 + xyz][q + Qoff][r + Roff] +=
-                                                            pTemps[0][(15 + xyz) * maxnpair + q * Rsize + r];
-                                                mutexes[3 * Pcenter + xyz].unlock();
-                                            }
+                                        // Kps
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Pcenter + xyz].lock();
+                                            for (int p = 0; p < Psize; ++p)
+                                                for (int s = 0; s < Ssize; ++s)
+                                                    pdG[Pcenter * 3 + xyz][p + Poff][s + Soff] +=
+                                                        pTemps[0][(12 + xyz) * maxnpair + p * Ssize + s];
+                                            mutexes[3 * Pcenter + xyz].unlock();
+                                        }
+                                        // Kqr
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Pcenter + xyz].lock();
+                                            for (int q = 0; q < Qsize; ++q)
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Pcenter * 3 + xyz][q + Qoff][r + Roff] +=
+                                                        pTemps[0][(15 + xyz) * maxnpair + q * Rsize + r];
+                                            mutexes[3 * Pcenter + xyz].unlock();
                                         }
                                     }
+                                }
 
-                                    if (pert_incore[Qcenter]) {
-                                        // Jpq
+                                if (pert_incore[Qcenter]) {
+                                    // Jpq
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Qcenter + xyz].lock();
+                                        for (int p = 0; p < Psize; ++p)
+                                            for (int q = 0; q < Qsize; ++q)
+                                                pdG[Qcenter * 3 + xyz][p + Poff][q + Qoff] +=
+                                                    pTemps[1][(0 + xyz) * maxnpair + p * Qsize + q];
+                                        mutexes[3 * Qcenter + xyz].unlock();
+                                    }
+                                    // Jrs
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Qcenter + xyz].lock();
+                                        for (int r = 0; r < Rsize; ++r)
+                                            for (int s = 0; s < Ssize; ++s)
+                                                pdG[Qcenter * 3 + xyz][r + Roff][s + Soff] +=
+                                                    pTemps[1][(3 + xyz) * maxnpair + r * Ssize + s];
+                                        mutexes[3 * Qcenter + xyz].unlock();
+                                    }
+                                    if (Kscale != 0.0) {
+                                        // Kpr
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Qcenter + xyz].lock();
                                             for (int p = 0; p < Psize; ++p)
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    pdG[Qcenter * 3 + xyz][p + Poff][q + Qoff] +=
-                                                        pTemps[1][(0 + xyz) * maxnpair + p * Qsize + q];
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Qcenter * 3 + xyz][p + Poff][r + Roff] +=
+                                                        pTemps[1][(6 + xyz) * maxnpair + p * Rsize + r];
                                             mutexes[3 * Qcenter + xyz].unlock();
                                         }
-                                        // Jrs
+                                        // Kqs
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Qcenter + xyz].lock();
-                                            for (int r = 0; r < Rsize; ++r)
+                                            for (int q = 0; q < Qsize; ++q)
                                                 for (int s = 0; s < Ssize; ++s)
-                                                    pdG[Qcenter * 3 + xyz][r + Roff][s + Soff] +=
-                                                        pTemps[1][(3 + xyz) * maxnpair + r * Ssize + s];
+                                                    pdG[Qcenter * 3 + xyz][q + Qoff][s + Soff] +=
+                                                        pTemps[1][(9 + xyz) * maxnpair + q * Ssize + s];
                                             mutexes[3 * Qcenter + xyz].unlock();
                                         }
-                                        if (Kscale != 0.0) {
-                                            // Kpr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Qcenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Qcenter * 3 + xyz][p + Poff][r + Roff] +=
-                                                            pTemps[1][(6 + xyz) * maxnpair + p * Rsize + r];
-                                                mutexes[3 * Qcenter + xyz].unlock();
-                                            }
-                                            // Kqs
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Qcenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Qcenter * 3 + xyz][q + Qoff][s + Soff] +=
-                                                            pTemps[1][(9 + xyz) * maxnpair + q * Ssize + s];
-                                                mutexes[3 * Qcenter + xyz].unlock();
-                                            }
-                                            // Kps
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Qcenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Qcenter * 3 + xyz][p + Poff][s + Soff] +=
-                                                            pTemps[1][(12 + xyz) * maxnpair + p * Ssize + s];
-                                                mutexes[3 * Qcenter + xyz].unlock();
-                                            }
-                                            // Kqr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Qcenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Qcenter * 3 + xyz][q + Qoff][r + Roff] +=
-                                                            pTemps[1][(15 + xyz) * maxnpair + q * Rsize + r];
-                                                mutexes[3 * Qcenter + xyz].unlock();
-                                            }
+                                        // Kps
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Qcenter + xyz].lock();
+                                            for (int p = 0; p < Psize; ++p)
+                                                for (int s = 0; s < Ssize; ++s)
+                                                    pdG[Qcenter * 3 + xyz][p + Poff][s + Soff] +=
+                                                        pTemps[1][(12 + xyz) * maxnpair + p * Ssize + s];
+                                            mutexes[3 * Qcenter + xyz].unlock();
+                                        }
+                                        // Kqr
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Qcenter + xyz].lock();
+                                            for (int q = 0; q < Qsize; ++q)
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Qcenter * 3 + xyz][q + Qoff][r + Roff] +=
+                                                        pTemps[1][(15 + xyz) * maxnpair + q * Rsize + r];
+                                            mutexes[3 * Qcenter + xyz].unlock();
                                         }
                                     }
+                                }
 
-                                    if (pert_incore[Rcenter]) {
-                                        // Jpq
+                                if (pert_incore[Rcenter]) {
+                                    // Jpq
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Rcenter + xyz].lock();
+                                        for (int p = 0; p < Psize; ++p)
+                                            for (int q = 0; q < Qsize; ++q)
+                                                pdG[Rcenter * 3 + xyz][p + Poff][q + Qoff] +=
+                                                    pTemps[2][(0 + xyz) * maxnpair + p * Qsize + q];
+                                        mutexes[3 * Rcenter + xyz].unlock();
+                                    }
+                                    // Jrs
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Rcenter + xyz].lock();
+                                        for (int r = 0; r < Rsize; ++r)
+                                            for (int s = 0; s < Ssize; ++s)
+                                                pdG[Rcenter * 3 + xyz][r + Roff][s + Soff] +=
+                                                    pTemps[2][(3 + xyz) * maxnpair + r * Ssize + s];
+                                        mutexes[3 * Rcenter + xyz].unlock();
+                                    }
+                                    if (Kscale != 0.0) {
+                                        // Kpr
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Rcenter + xyz].lock();
                                             for (int p = 0; p < Psize; ++p)
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    pdG[Rcenter * 3 + xyz][p + Poff][q + Qoff] +=
-                                                        pTemps[2][(0 + xyz) * maxnpair + p * Qsize + q];
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Rcenter * 3 + xyz][p + Poff][r + Roff] +=
+                                                        pTemps[2][(6 + xyz) * maxnpair + p * Rsize + r];
                                             mutexes[3 * Rcenter + xyz].unlock();
                                         }
-                                        // Jrs
+                                        // Kqs
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Rcenter + xyz].lock();
-                                            for (int r = 0; r < Rsize; ++r)
+                                            for (int q = 0; q < Qsize; ++q)
                                                 for (int s = 0; s < Ssize; ++s)
-                                                    pdG[Rcenter * 3 + xyz][r + Roff][s + Soff] +=
-                                                        pTemps[2][(3 + xyz) * maxnpair + r * Ssize + s];
+                                                    pdG[Rcenter * 3 + xyz][q + Qoff][s + Soff] +=
+                                                        pTemps[2][(9 + xyz) * maxnpair + q * Ssize + s];
                                             mutexes[3 * Rcenter + xyz].unlock();
                                         }
-                                        if (Kscale != 0.0) {
-                                            // Kpr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Rcenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Rcenter * 3 + xyz][p + Poff][r + Roff] +=
-                                                            pTemps[2][(6 + xyz) * maxnpair + p * Rsize + r];
-                                                mutexes[3 * Rcenter + xyz].unlock();
-                                            }
-                                            // Kqs
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Rcenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Rcenter * 3 + xyz][q + Qoff][s + Soff] +=
-                                                            pTemps[2][(9 + xyz) * maxnpair + q * Ssize + s];
-                                                mutexes[3 * Rcenter + xyz].unlock();
-                                            }
-                                            // Kps
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Rcenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Rcenter * 3 + xyz][p + Poff][s + Soff] +=
-                                                            pTemps[2][(12 + xyz) * maxnpair + p * Ssize + s];
-                                                mutexes[3 * Rcenter + xyz].unlock();
-                                            }
-                                            // Kqr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Rcenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Rcenter * 3 + xyz][q + Qoff][r + Roff] +=
-                                                            pTemps[2][(15 + xyz) * maxnpair + q * Rsize + r];
-                                                mutexes[3 * Rcenter + xyz].unlock();
-                                            }
+                                        // Kps
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Rcenter + xyz].lock();
+                                            for (int p = 0; p < Psize; ++p)
+                                                for (int s = 0; s < Ssize; ++s)
+                                                    pdG[Rcenter * 3 + xyz][p + Poff][s + Soff] +=
+                                                        pTemps[2][(12 + xyz) * maxnpair + p * Ssize + s];
+                                            mutexes[3 * Rcenter + xyz].unlock();
+                                        }
+                                        // Kqr
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Rcenter + xyz].lock();
+                                            for (int q = 0; q < Qsize; ++q)
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Rcenter * 3 + xyz][q + Qoff][r + Roff] +=
+                                                        pTemps[2][(15 + xyz) * maxnpair + q * Rsize + r];
+                                            mutexes[3 * Rcenter + xyz].unlock();
                                         }
                                     }
-                                    if (pert_incore[Scenter]) {
-                                        // Jpq
+                                }
+                                if (pert_incore[Scenter]) {
+                                    // Jpq
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Scenter + xyz].lock();
+                                        for (int p = 0; p < Psize; ++p)
+                                            for (int q = 0; q < Qsize; ++q)
+                                                pdG[Scenter * 3 + xyz][p + Poff][q + Qoff] +=
+                                                    pTemps[3][(0 + xyz) * maxnpair + p * Qsize + q];
+                                        mutexes[3 * Scenter + xyz].unlock();
+                                    }
+                                    // Jrs
+                                    for (int xyz = 0; xyz < 3; ++xyz) {
+                                        mutexes[3 * Scenter + xyz].lock();
+                                        for (int r = 0; r < Rsize; ++r)
+                                            for (int s = 0; s < Ssize; ++s)
+                                                pdG[Scenter * 3 + xyz][r + Roff][s + Soff] +=
+                                                    pTemps[3][(3 + xyz) * maxnpair + r * Ssize + s];
+                                        mutexes[3 * Scenter + xyz].unlock();
+                                    }
+                                    if (Kscale != 0.0) {
+                                        // Kpr
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Scenter + xyz].lock();
                                             for (int p = 0; p < Psize; ++p)
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    pdG[Scenter * 3 + xyz][p + Poff][q + Qoff] +=
-                                                        pTemps[3][(0 + xyz) * maxnpair + p * Qsize + q];
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Scenter * 3 + xyz][p + Poff][r + Roff] +=
+                                                        pTemps[3][(6 + xyz) * maxnpair + p * Rsize + r];
                                             mutexes[3 * Scenter + xyz].unlock();
                                         }
-                                        // Jrs
+                                        // Kqs
                                         for (int xyz = 0; xyz < 3; ++xyz) {
                                             mutexes[3 * Scenter + xyz].lock();
-                                            for (int r = 0; r < Rsize; ++r)
+                                            for (int q = 0; q < Qsize; ++q)
                                                 for (int s = 0; s < Ssize; ++s)
-                                                    pdG[Scenter * 3 + xyz][r + Roff][s + Soff] +=
-                                                        pTemps[3][(3 + xyz) * maxnpair + r * Ssize + s];
+                                                    pdG[Scenter * 3 + xyz][q + Qoff][s + Soff] +=
+                                                        pTemps[3][(9 + xyz) * maxnpair + q * Ssize + s];
                                             mutexes[3 * Scenter + xyz].unlock();
                                         }
-                                        if (Kscale != 0.0) {
-                                            // Kpr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Scenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Scenter * 3 + xyz][p + Poff][r + Roff] +=
-                                                            pTemps[3][(6 + xyz) * maxnpair + p * Rsize + r];
-                                                mutexes[3 * Scenter + xyz].unlock();
-                                            }
-                                            // Kqs
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Scenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Scenter * 3 + xyz][q + Qoff][s + Soff] +=
-                                                            pTemps[3][(9 + xyz) * maxnpair + q * Ssize + s];
-                                                mutexes[3 * Scenter + xyz].unlock();
-                                            }
-                                            // Kps
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Scenter + xyz].lock();
-                                                for (int p = 0; p < Psize; ++p)
-                                                    for (int s = 0; s < Ssize; ++s)
-                                                        pdG[Scenter * 3 + xyz][p + Poff][s + Soff] +=
-                                                            pTemps[3][(12 + xyz) * maxnpair + p * Ssize + s];
-                                                mutexes[3 * Scenter + xyz].unlock();
-                                            }
-                                            // Kqr
-                                            for (int xyz = 0; xyz < 3; ++xyz) {
-                                                mutexes[3 * Scenter + xyz].lock();
-                                                for (int q = 0; q < Qsize; ++q)
-                                                    for (int r = 0; r < Rsize; ++r)
-                                                        pdG[Scenter * 3 + xyz][q + Qoff][r + Roff] +=
-                                                            pTemps[3][(15 + xyz) * maxnpair + q * Rsize + r];
-                                                mutexes[3 * Scenter + xyz].unlock();
-                                            }
+                                        // Kps
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Scenter + xyz].lock();
+                                            for (int p = 0; p < Psize; ++p)
+                                                for (int s = 0; s < Ssize; ++s)
+                                                    pdG[Scenter * 3 + xyz][p + Poff][s + Soff] +=
+                                                        pTemps[3][(12 + xyz) * maxnpair + p * Ssize + s];
+                                            mutexes[3 * Scenter + xyz].unlock();
+                                        }
+                                        // Kqr
+                                        for (int xyz = 0; xyz < 3; ++xyz) {
+                                            mutexes[3 * Scenter + xyz].lock();
+                                            for (int q = 0; q < Qsize; ++q)
+                                                for (int r = 0; r < Rsize; ++r)
+                                                    pdG[Scenter * 3 + xyz][q + Qoff][r + Roff] +=
+                                                        pTemps[3][(15 + xyz) * maxnpair + q * Rsize + r];
+                                            mutexes[3 * Scenter + xyz].unlock();
                                         }
                                     }
+                                }
 
-                                    pAx += block_size;
-                                    pAy += block_size;
-                                    pAz += block_size;
-                                    pBx += block_size;
-                                    pBy += block_size;
-                                    pBz += block_size;
-                                    pCx += block_size;
-                                    pCy += block_size;
-                                    pCz += block_size;
-                                    pDx += block_size;
-                                    pDy += block_size;
-                                    pDz += block_size;
-                                }  // pairRS
-                            }      // pairPQ
-                        }          // blockRS
-                    }              // blockPQ
-                }
+                                pAx += block_size;
+                                pAy += block_size;
+                                pAz += block_size;
+                                pBx += block_size;
+                                pBy += block_size;
+                                pBz += block_size;
+                                pCx += block_size;
+                                pCy += block_size;
+                                pCz += block_size;
+                                pDx += block_size;
+                                pDy += block_size;
+                                pDz += block_size;
+                            }  // pairRS
+                        }      // pairPQ
+                    }          // blockRS
+                }              // blockPQ
 
                 for (int a = 0; a < nA; ++a) {
                     // Symmetrize the derivative Fock contributions

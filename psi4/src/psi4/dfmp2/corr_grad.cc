@@ -830,16 +830,16 @@ void DFCorrGrad::build_Amn_x_terms() {
             int oN = primary_->shell(N).function_index();
 
             int ncart = cP * cM * cN;
-            bool libint1 = Process::environment.options.get_str("INTEGRAL_PACKAGE") != "LIBINT2";
-            const double* Px = libint1 ? buffer + 0 * ncart : eri[thread]->buffers()[0];
-            const double* Py = libint1 ? buffer + 1 * ncart : eri[thread]->buffers()[1];
-            const double* Pz = libint1 ? buffer + 2 * ncart : eri[thread]->buffers()[2];
-            const double* Mx = libint1 ? buffer + 3 * ncart : eri[thread]->buffers()[3];
-            const double* My = libint1 ? buffer + 4 * ncart : eri[thread]->buffers()[4];
-            const double* Mz = libint1 ? buffer + 5 * ncart : eri[thread]->buffers()[5];
-            const double* Nx = libint1 ? buffer + 6 * ncart : eri[thread]->buffers()[6];
-            const double* Ny = libint1 ? buffer + 7 * ncart : eri[thread]->buffers()[7];
-            const double* Nz = libint1 ? buffer + 8 * ncart : eri[thread]->buffers()[8];
+            const auto & buffers = eri[thread]->buffers();
+            const double* Px = buffers[0];
+            const double* Py = buffers[1];
+            const double* Pz = buffers[2];
+            const double* Mx = buffers[3];
+            const double* My = buffers[4];
+            const double* Mz = buffers[5];
+            const double* Nx = buffers[6];
+            const double* Ny = buffers[7];
+            const double* Nz = buffers[8];
 
             double perm = (M == N ? 1.0 : 2.0);
 
