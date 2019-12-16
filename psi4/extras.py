@@ -49,7 +49,10 @@ def register_numpy_file(filename):
 def clean_numpy_files():
     for nfile in numpy_files:
         print("cleaning numpy file:", nfile)
-        os.unlink(nfile)
+        try:
+            os.unlink(nfile)
+        except OSError:
+            pass
 
 
 atexit.register(clean_numpy_files)

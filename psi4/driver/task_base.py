@@ -145,6 +145,7 @@ class AtomicComputer(BaseComputer):
         print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
         logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
         #pp.pprint(self.plan().dict())
+        gof = core.get_output_file()
 
         # EITHER ...
         #from psi4.driver import schema_wrapper
@@ -159,6 +160,7 @@ class AtomicComputer(BaseComputer):
         logger.debug(pp.pformat(self.result.dict()))
         #pp.pprint(self.result.dict())
         #print('... JSON returns >>>')
+        core.set_output_file(gof, True)
         self.computed = True
 
     def get_results(self, client=None):
