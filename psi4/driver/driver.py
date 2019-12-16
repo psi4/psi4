@@ -1338,6 +1338,8 @@ def optimize(name, **kwargs):
                                   """carefully making sure all symmetry-dependent """
                                   """input, such as DOCC, is correct.""" % (current_sym, initial_sym))
         kwargs['opt_iter'] = n
+        core.set_variable('GEOMETRY ITERATIONS', n)
+        print('GEOMETRY ITERATIONS', core.variable('GEOMETRY ITERATIONS'))
 
         # Use orbitals from previous iteration as a guess
         #   set within loop so that can be influenced by fns to optimize (e.g., cbs)
