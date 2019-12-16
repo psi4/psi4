@@ -1,3 +1,4 @@
+import os
 import pytest
 
 
@@ -30,10 +31,11 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def set_up_overall(request):
+def set_up_overall(request, tmp_path_factory):
     import psi4
 
     psi4.set_output_file("pytest_output.dat", False)
+    os.chdir(tmp_path_factory.getbasetemp())
     request.addfinalizer(tear_down)
 
 
