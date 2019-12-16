@@ -275,11 +275,6 @@ void DFOCC::occ_iterations() {
             break;
         }
 
-        if (wfn_type_ != "DF-OLCCD") {
-            if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
-            if (std::fabs(DE) <= tol_Eod) break;
-        }
-
         if (rms_wog >= DIVERGE) {
             throw PSIEXCEPTION("DF-OCC iterations are diverging");
         }

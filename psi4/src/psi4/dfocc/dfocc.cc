@@ -109,40 +109,8 @@ void DFOCC::common_init() {
     // title
     title();
 
-    //   Tying orbital convergence to the desired e_conv,
-    //   particularly important for the same numerical frequencies by energy
-    //   These have been determined by linear fits to a step fn
-    //   based on e_conv on limited numerical tests.
-    //   The printed value from options_.print() will not be accurate
-    //   since newly set orbital conv is not written back to options
-    if (orb_opt_ == "TRUE") {
-        if (options_["RMS_MOGRAD_CONVERGENCE"].has_changed()) {
-            tol_grad = options_.get_double("RMS_MOGRAD_CONVERGENCE");
-        } else {
-            double temp;
-            temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
-            if (temp < 4.0) {
-                temp = 4.0;
-            }
-            tol_grad = pow(10.0, -temp);
-            // tol_grad = 100.0*tol_Eod;
-            outfile->Printf("\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
-        }
-
-        // Determine the MAXIMUM MOGRAD CONVERGENCE
-        if (options_["MAX_MOGRAD_CONVERGENCE"].has_changed()) {
-            mograd_max = options_.get_double("MAX_MOGRAD_CONVERGENCE");
-        } else {
-            double temp2;
-            temp2 = (-0.8 * std::log10(tol_grad)) - 0.5;
-            if (temp2 < 3.0) {
-                temp2 = 3.0;
-            }
-            mograd_max = pow(10.0, -temp2);
-            // mograd_max = 10.0*tol_grad;
-            outfile->Printf("\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
-        }
-    }  // end if (orb_opt_ == "TRUE")
+    tol_grad = options_.get_double("RMS_MOGRAD_CONVERGENCE");
+    mograd_max = options_.get_double("MAX_MOGRAD_CONVERGENCE");
 
     // Figure out REF
     if (reference == "RHF" || reference == "RKS")
