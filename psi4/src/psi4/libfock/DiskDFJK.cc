@@ -413,6 +413,7 @@ void DiskDFJK::preiterations() {
     for (int Q = 1; Q < df_ints_num_threads_; Q++) {
         eri_.emplace_back(eri_.front()->clone());
     }
+    n_function_pairs_ = eri_.front()->function_pairs().size();
     // Setup erf integrals, if needed
     if (do_wK_) {
         erf_eri_.clear();
