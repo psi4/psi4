@@ -63,7 +63,7 @@ class PSI_API MintsHelper {
     int print_;
     int nthread_;
 
-    std::map<std::string,SharedMatrix> cached_oe_ints_;
+    std::map<std::string, SharedMatrix> cached_oe_ints_;
 
     /// Value which any two-electron integral is below is discarded
     double cutoff_;
@@ -85,8 +85,20 @@ class PSI_API MintsHelper {
 
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
     void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
+    /// Helper function to convert ao integrals to so and cache them
+    void cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string& label);
     /// Returns true if an integral type is already computed and cached
-    bool are_ints_cached(const std::string &label);
+    bool are_ints_cached(const std::string& label);
+
+    /// Computes X2C overlap, kinetic, and potential integrals
+    void compute_so_x2c_ints(bool include_perturbations = true);
+
+    void add_dipole_perturbation(SharedMatrix potential_mat);
+
+    SharedMatrix so_overlap_nr();
+    SharedMatrix so_kinetic_nr();
+    /// Returns the non-relativistic potential integrals in the so basis
+    SharedMatrix so_potential_nr(bool include_perturbations = true);
 
    public:
     void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
@@ -248,9 +260,11 @@ class PSI_API MintsHelper {
     /// Vector AO Traceless Quadrupole Integrals
     std::vector<SharedMatrix> ao_traceless_quadrupole();
     /// AO EFP Multipole Potential Integrals
-    std::vector<SharedMatrix> ao_efp_multipole_potential(const std::vector<double>& origin = {0., 0., 0.}, int deriv = 0);
+    std::vector<SharedMatrix> ao_efp_multipole_potential(const std::vector<double>& origin = {0., 0., 0.},
+                                                         int deriv = 0);
     // AO EFP Multipole Potential Integrals
-    std::vector<SharedMatrix> ao_multipole_potential(const std::vector<double>& origin = {0., 0., 0.}, int max_k = 0, int deriv = 0);
+    std::vector<SharedMatrix> ao_multipole_potential(const std::vector<double>& origin = {0., 0., 0.}, int max_k = 0,
+                                                     int deriv = 0);
     /// Electric Field Integrals
     std::vector<SharedMatrix> electric_field(const std::vector<double>& origin = {0., 0., 0.}, int deriv = 0);
     /// Induction Operator for dipole moments at given sites
@@ -300,7 +314,6 @@ class PSI_API MintsHelper {
 
     /// Play function
     void play();
-
 };
 }  // namespace psi
 

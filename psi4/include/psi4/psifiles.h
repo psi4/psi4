@@ -304,6 +304,7 @@
 #define PSIF_SO_T                "SO-basis Kinetic Energy Ints"
 #define PSIF_SO_V                "SO-basis Potential Energy Ints"
 #define PSIF_SO_H                "SO-basis Core Hamiltonian"
+#define PSIF_SO_ECP              "SO-basis ECP Ints"
 #define PSIF_AO_S                "AO-basis Overlap Ints"
 #define PSIF_AO_MX               "AO-basis Mu-X Ints"
 #define PSIF_AO_MY               "AO-basis Mu-Y Ints"

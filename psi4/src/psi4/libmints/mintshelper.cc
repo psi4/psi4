@@ -353,13 +353,13 @@ void MintsHelper::one_electron_integrals() {
 
     if (options_.get_str("RELATIVISTIC") == "NO" || options_.get_str("RELATIVISTIC") == "DKH") {
         // Overlap
-        so_overlap()->save(psio_, PSIF_OEI); // TODO:remove
+        so_overlap()->save(psio_, PSIF_OEI);  // TODO:remove
 
         // Kinetic
-        so_kinetic()->save(psio_, PSIF_OEI); // TODO:remove
+        so_kinetic()->save(psio_, PSIF_OEI);  // TODO:remove
 
         // Potential -- DKH perturbation added to potential integrals if needed.
-        so_potential()->save(psio_, PSIF_OEI); // TODO:remove
+        so_potential()->save(psio_, PSIF_OEI);  // TODO:remove
     } else if (options_.get_str("RELATIVISTIC") == "X2C") {
         outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
 
@@ -379,13 +379,13 @@ void MintsHelper::one_electron_integrals() {
         cached_oe_ints_["so_potential"] = so_potential_x2c;
 
         // Overlap
-        so_overlap_x2c->save(psio_, PSIF_OEI); // TODO:remove
+        so_overlap_x2c->save(psio_, PSIF_OEI);  // TODO:remove
 
         // Kinetic
-        so_kinetic_x2c->save(psio_, PSIF_OEI); // TODO:remove
+        so_kinetic_x2c->save(psio_, PSIF_OEI);  // TODO:remove
 
         // Potential
-        so_potential_x2c->save(psio_, PSIF_OEI); // TODO:remove
+        so_potential_x2c->save(psio_, PSIF_OEI);  // TODO:remove
     }
 
     // Dipoles
@@ -602,8 +602,6 @@ SharedMatrix MintsHelper::ao_overlap() {
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
     one_body_ao_computer(ints_vec, overlap_mat, true);
 
-    // Is this needed?
-    //    overlap_mat->save(psio_, PSIF_OEI);
     return overlap_mat;
 }
 
@@ -1226,58 +1224,52 @@ bool MintsHelper::are_ints_cached(const std::string &label) {
     return it != cached_oe_ints_.end();
 }
 
-SharedMatrix MintsHelper::so_overlap() {
-    if (!are_ints_cached("so_overlap")) {
-        if (factory_->nirrep() == 1) {
-            cached_oe_ints_["so_overlap"] = ao_overlap();
-        } else {
-            SharedMatrix overlap_mat(factory_->create_matrix(PSIF_SO_S));
-            overlap_mat->apply_symmetry(ao_overlap(), petite_list()->aotoso());
-            cached_oe_ints_["so_overlap"] = overlap_mat;
-        }
+void MintsHelper::cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string &label) {
+    if (factory_->nirrep() == 1) {
+        //        ao_ints.set_name(label);
+        cached_oe_ints_[label] = ao_ints;
+    } else {
+        SharedMatrix so_ints_sym(factory_->create_matrix(label));
+        so_ints_sym->apply_symmetry(ao_ints, petite_list()->aotoso());
+        cached_oe_ints_[label] = so_ints_sym;
     }
-    return cached_oe_ints_["so_overlap"];
 }
 
-SharedMatrix MintsHelper::so_kinetic() {
+SharedMatrix MintsHelper::so_overlap_nr() {
+    std::string label(PSIF_SO_S);
+    SharedMatrix overlap_mat;
     if (factory_->nirrep() == 1) {
-        SharedMatrix ret = ao_kinetic();
-        ret->set_name(PSIF_SO_T);
-        return ret;
+        overlap_mat = ao_overlap();
+        overlap_mat->set_name(label);
     } else {
-        SharedMatrix kinetic_mat(factory_->create_matrix(PSIF_SO_T));
+        overlap_mat = factory_->create_shared_matrix(label);
+        overlap_mat->apply_symmetry(ao_overlap(), petite_list()->aotoso());
+    }
+    return overlap_mat;
+}
+
+SharedMatrix MintsHelper::so_kinetic_nr() {
+    std::string label(PSIF_SO_T);
+    SharedMatrix kinetic_mat;
+    if (factory_->nirrep() == 1) {
+        kinetic_mat = ao_kinetic();
+        kinetic_mat->set_name(label);
+    } else {
+        kinetic_mat = factory_->create_shared_matrix(label);
         kinetic_mat->apply_symmetry(ao_kinetic(), petite_list()->aotoso());
-        return kinetic_mat;
     }
+    return kinetic_mat;
 }
 
-SharedMatrix MintsHelper::so_ecp() {
-    if (!basisset_->has_ECP()) {
-        SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
-        ecp_mat->zero();
-        outfile->Printf("\n\tWarning! ECP integrals requested, but no ECP basis detected.  Returning zeros.\n");
-        return ecp_mat;
-    }
-
-    if (factory_->nirrep() == 1) {
-        SharedMatrix ecp_mat(ao_ecp());
-        ecp_mat->set_name("AO Basis ECP");
-        return ecp_mat;
-    } else {
-        SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
-        ecp_mat->apply_symmetry(ao_ecp(), petite_list()->aotoso());
-        return ecp_mat;
-    }
-}
-
-SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
+SharedMatrix MintsHelper::so_potential_nr(bool include_perturbations) {
+    std::string label(PSIF_SO_V);
     // No symmetry
     SharedMatrix potential_mat;
     if (factory_->nirrep() == 1) {
         potential_mat = ao_potential();
-        potential_mat->set_name(PSIF_SO_V);
+        potential_mat->set_name(label);
     } else {
-        potential_mat = factory_->create_shared_matrix(PSIF_SO_V);
+        potential_mat = factory_->create_shared_matrix(label);
         potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
     }
 
@@ -1289,68 +1281,144 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
     // Handle addition of any perturbations here and not in SCF code.
     if (include_perturbations) {
         if (options_.get_bool("PERTURB_H")) {
-            std::string perturb_with = options_.get_str("PERTURB_WITH");
-            Vector3 lambda(0.0, 0.0, 0.0);
-
-            if (perturb_with == "DIPOLE_X")
-                lambda[0] = options_.get_double("PERTURB_MAGNITUDE");
-            else if (perturb_with == "DIPOLE_Y")
-                lambda[1] = options_.get_double("PERTURB_MAGNITUDE");
-            else if (perturb_with == "DIPOLE_Z")
-                lambda[2] = options_.get_double("PERTURB_MAGNITUDE");
-            else if (perturb_with == "DIPOLE") {
-                if (options_["PERTURB_DIPOLE"].size() != 3)
-                    throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
-                for (int n = 0; n < 3; ++n) lambda[n] = options_["PERTURB_DIPOLE"][n].to_double();
-            } else {
-                outfile->Printf("  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
-            }
-
-            OperatorSymmetry msymm(1, molecule_, integral_, factory_);
-            std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-            OneBodySOInt *so_dipole = integral_->so_dipole();
-            so_dipole->compute(dipoles);
-
-            if (lambda[0] != 0.0) {
-                if (msymm.component_symmetry(0) != 0) {
-                    outfile->Printf("  WARNING: Requested mu(x) perturbation, but mu(x) is not symmetric.\n");
-                } else {
-                    outfile->Printf("  Perturbing V by %f mu(x).\n", lambda[0]);
-                    dipoles[0]->scale(lambda[0]);
-                    potential_mat->add(dipoles[0]);
-                }
-            }
-            if (lambda[1] != 0.0) {
-                if (msymm.component_symmetry(1) != 0) {
-                    outfile->Printf("  WARNING: Requested mu(y) perturbation, but mu(y) is not symmetric.\n");
-                } else {
-                    outfile->Printf("  Perturbing V by %f mu(y).\n", lambda[1]);
-                    dipoles[1]->scale(lambda[1]);
-                    potential_mat->add(dipoles[1]);
-                }
-            }
-            if (lambda[2] != 0.0) {
-                if (msymm.component_symmetry(2) != 0) {
-                    outfile->Printf("  WARNING: Requested mu(z) perturbation, but mu(z) is not symmetric.\n");
-                } else {
-                    outfile->Printf("  Perturbing V by %f mu(z).\n", lambda[2]);
-                    dipoles[2]->scale(lambda[2]);
-                    potential_mat->add(dipoles[2]);
-                }
-            }
-        }
-
-        if (options_.get_str("RELATIVISTIC") == "DKH") {
-            int dkh_order = options_.get_int("DKH_ORDER");
-            SharedMatrix dkh = so_dkh(dkh_order);
-
-            outfile->Printf("    Adding Douglas-Kroll-Hess corrections to the potential integrals.\n");
-
-            potential_mat->add(dkh);
+            add_dipole_perturbation(potential_mat);
         }
     }
 
     return potential_mat;
+}
+
+SharedMatrix MintsHelper::so_overlap() {
+    std::string label(PSIF_SO_S);
+    if (!are_ints_cached(label)) {
+        if (options_.get_str("RELATIVISTIC") == "X2C") {
+            // generate so_overlap, so_kinetic, so_potential and cache them
+            compute_so_x2c_ints();
+        } else {
+            cached_oe_ints_[label] = so_overlap_nr();
+        }
+    }
+    return cached_oe_ints_[label];
+}
+
+SharedMatrix MintsHelper::so_kinetic() {
+    std::string label(PSIF_SO_T);
+    if (!are_ints_cached(label)) {
+        if (options_.get_str("RELATIVISTIC") == "X2C") {
+            // generate so_overlap, so_kinetic, so_potential and cache them
+            compute_so_x2c_ints();
+        } else {
+            cached_oe_ints_[label] = so_kinetic_nr();
+        }
+    }
+    return cached_oe_ints_[label];
+}
+
+SharedMatrix MintsHelper::so_ecp() {
+    std::string label(PSIF_SO_ECP);
+    if (!basisset_->has_ECP()) {
+        SharedMatrix ecp_mat = factory_->create_shared_matrix(label);
+        ecp_mat->zero();
+        outfile->Printf("\n\tWarning! ECP integrals requested, but no ECP basis detected.  Returning zeros.\n");
+        return ecp_mat;
+    }
+    if (!are_ints_cached(label)) {
+        cache_ao_to_so_ints(ao_ecp(), label);
+    }
+    return cached_oe_ints_[label];
+}
+
+SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
+    std::string label(PSIF_SO_V);
+    if (!are_ints_cached(label)) {
+        if (options_.get_str("RELATIVISTIC") == "X2C") {
+            // generate so_overlap, so_kinetic, so_potential and cache them
+            compute_so_x2c_ints(include_perturbations);
+        } else {
+            cached_oe_ints_[label] = so_potential_nr(include_perturbations);
+
+            if (options_.get_str("RELATIVISTIC") == "DKH") {
+                if (include_perturbations) {
+                    int dkh_order = options_.get_int("DKH_ORDER");
+                    SharedMatrix dkh = so_dkh(dkh_order);
+                    outfile->Printf("    Adding Douglas-Kroll-Hess corrections to the potential integrals.\n");
+                    cached_oe_ints_[label]->add(dkh);
+                }
+            }
+        }
+    }
+    return cached_oe_ints_[label];
+}
+
+void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
+    std::string perturb_with = options_.get_str("PERTURB_WITH");
+    Vector3 lambda(0.0, 0.0, 0.0);
+
+    if (perturb_with == "DIPOLE_X")
+        lambda[0] = options_.get_double("PERTURB_MAGNITUDE");
+    else if (perturb_with == "DIPOLE_Y")
+        lambda[1] = options_.get_double("PERTURB_MAGNITUDE");
+    else if (perturb_with == "DIPOLE_Z")
+        lambda[2] = options_.get_double("PERTURB_MAGNITUDE");
+    else if (perturb_with == "DIPOLE") {
+        if (options_["PERTURB_DIPOLE"].size() != 3)
+            throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
+        for (int n = 0; n < 3; ++n) lambda[n] = options_["PERTURB_DIPOLE"][n].to_double();
+    } else {
+        outfile->Printf("  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
+    }
+
+    OperatorSymmetry msymm(1, molecule_, integral_, factory_);
+    std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
+    OneBodySOInt *so_dipole = integral_->so_dipole();
+    so_dipole->compute(dipoles);
+
+    if (lambda[0] != 0.0) {
+        if (msymm.component_symmetry(0) != 0) {
+            outfile->Printf("  WARNING: Requested mu(x) perturbation, but mu(x) is not symmetric.\n");
+        } else {
+            outfile->Printf("  Perturbing V by %f mu(x).\n", lambda[0]);
+            dipoles[0]->scale(lambda[0]);
+            potential_mat->add(dipoles[0]);
+        }
+    }
+    if (lambda[1] != 0.0) {
+        if (msymm.component_symmetry(1) != 0) {
+            outfile->Printf("  WARNING: Requested mu(y) perturbation, but mu(y) is not symmetric.\n");
+        } else {
+            outfile->Printf("  Perturbing V by %f mu(y).\n", lambda[1]);
+            dipoles[1]->scale(lambda[1]);
+            potential_mat->add(dipoles[1]);
+        }
+    }
+    if (lambda[2] != 0.0) {
+        if (msymm.component_symmetry(2) != 0) {
+            outfile->Printf("  WARNING: Requested mu(z) perturbation, but mu(z) is not symmetric.\n");
+        } else {
+            outfile->Printf("  Perturbing V by %f mu(z).\n", lambda[2]);
+            dipoles[2]->scale(lambda[2]);
+            potential_mat->add(dipoles[2]);
+        }
+    }
+}
+
+void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
+    outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
+
+    if (!rel_basisset_) {
+        throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis was not set.");
+    }
+    SharedMatrix so_overlap_x2c = so_overlap_nr();
+    SharedMatrix so_kinetic_x2c = so_kinetic_nr();
+    SharedMatrix so_potential_x2c = so_potential_nr(include_perturbations);
+
+    X2CInt x2cint;
+    x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
+
+    // Overwrite cached integrals
+    cached_oe_ints_["so_overlap"] = so_overlap_x2c;
+    cached_oe_ints_["so_kinetic"] = so_kinetic_x2c;
+    cached_oe_ints_["so_potential"] = so_potential_x2c;
 }
 
 std::vector<SharedMatrix> MintsHelper::so_dipole() {
