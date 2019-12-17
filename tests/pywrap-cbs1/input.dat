@@ -126,4 +126,4 @@ clean()
 #
 #register_xtpl_function(myownmy_2)
 #e_cbs = energy('MP2/aug-cc-pV[T,Q]Z + D:CCSD(T)/cc-pv[dt]z', delta_scheme='myownmy_2', molecule=h2)
-compare_values(-1.17505568495, e_cbs, 6, "[5b] user-def xtpl energy(cbs)")  #TEST
+#compare_values(-1.17505568495, e_cbs, 6, "[5b] user-def xtpl energy(cbs)")  #TEST
