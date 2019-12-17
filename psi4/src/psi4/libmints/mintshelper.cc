@@ -361,33 +361,29 @@ void MintsHelper::one_electron_integrals() {
         // Potential -- DKH perturbation added to potential integrals if needed.
         so_potential()->save(psio_, PSIF_OEI);  // TODO:remove
     } else if (options_.get_str("RELATIVISTIC") == "X2C") {
-        outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
+        //        outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
 
-        if (!rel_basisset_) {
-            throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis was not set.");
-        }
-        SharedMatrix so_overlap_x2c = so_overlap();
-        SharedMatrix so_kinetic_x2c = so_kinetic();
-        SharedMatrix so_potential_x2c = so_potential();
+        //        if (!rel_basisset_) {
+        //            throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis was not set.");
+        //        }
+        //        SharedMatrix so_overlap_x2c = so_overlap();
+        //        SharedMatrix so_kinetic_x2c = so_kinetic();
+        //        SharedMatrix so_potential_x2c = so_potential();
 
-        X2CInt x2cint;
-        x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
+        //        X2CInt x2cint;
+        //        x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
 
-        // Overwrite cached integrals
-        cached_oe_ints_["so_overlap"] = so_overlap_x2c;
-        cached_oe_ints_["so_kinetic"] = so_kinetic_x2c;
-        cached_oe_ints_["so_potential"] = so_potential_x2c;
+        compute_so_x2c_ints(true);
 
         // Overlap
-        so_overlap_x2c->save(psio_, PSIF_OEI);  // TODO:remove
+        so_overlap()->save(psio_, PSIF_OEI);  // TODO:remove
 
         // Kinetic
-        so_kinetic_x2c->save(psio_, PSIF_OEI);  // TODO:remove
+        so_kinetic()->save(psio_, PSIF_OEI);  // TODO:remove
 
         // Potential
-        so_potential_x2c->save(psio_, PSIF_OEI);  // TODO:remove
+        so_potential()->save(psio_, PSIF_OEI);  // TODO:remove
     }
-
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();
     for (SharedMatrix m : dipole_mats) {
@@ -1412,8 +1408,30 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     SharedMatrix so_kinetic_x2c = so_kinetic_nr();
     SharedMatrix so_potential_x2c = so_potential_nr(include_perturbations);
 
+    std::string perturb_with = options_.get_str("PERTURB_WITH");
+    std::vector<double> lambda(3, 0.0);
+    outfile->Printf("perturb_with = %s", perturb_with.c_str());
+
+    if (include_perturbations) {
+        if (options_.get_bool("PERTURB_H")) {
+            if (perturb_with == "DIPOLE_X")
+                lambda[0] = options_.get_double("PERTURB_MAGNITUDE");
+            else if (perturb_with == "DIPOLE_Y")
+                lambda[1] = options_.get_double("PERTURB_MAGNITUDE");
+            else if (perturb_with == "DIPOLE_Z")
+                lambda[2] = options_.get_double("PERTURB_MAGNITUDE");
+            else if (perturb_with == "DIPOLE") {
+                if (options_["PERTURB_DIPOLE"].size() != 3)
+                    throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
+                for (int n = 0; n < 3; ++n) lambda[n] = options_["PERTURB_DIPOLE"][n].to_double();
+            } else {
+                outfile->Printf("  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
+            }
+        }
+    }
+
     X2CInt x2cint;
-    x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
+    x2cint.compute(molecule_, basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c, lambda);
 
     // Overwrite cached integrals
     cached_oe_ints_[PSIF_SO_S] = so_overlap_x2c;

@@ -36,6 +36,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/x2cint.h"
 #include "psi4/libmints/sointegral_onebody.h"
+#include "psi4/libmints/multipolesymmetry.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sobasis.h"
@@ -48,9 +49,12 @@ X2CInt::X2CInt() {}
 
 X2CInt::~X2CInt() {}
 
-void X2CInt::compute(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S,
-                     SharedMatrix T, SharedMatrix V) {
+void X2CInt::compute(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis,
+                     std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S, SharedMatrix T, SharedMatrix V,
+                     const std::vector<double> lambda) {
     // tstart();
+    molecule_ = molecule;
+    lambda_ = lambda;
     setup(basis, x2c_basis);
     compute_integrals();
     form_dirac_h();
@@ -135,6 +139,27 @@ void X2CInt::compute_integrals() {
     tOBI->compute(tMat);
     vOBI->compute(vMat);
     wOBI->compute(wMat);
+
+    // Add any a dipole perturbation
+    if ((lambda_[0] != 0.0) or (lambda_[1] != 0) or (lambda_[2] != 0)) {
+        OperatorSymmetry msymm(1, molecule_, integral_, soFactory_);
+        std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
+        OneBodySOInt *so_dipole = integral_->so_dipole();
+        so_dipole->compute(dipoles);
+
+        std::vector<std::string> axis_label{"x", "y", "z"};
+        for (int i = 0; i < 3; i++) {
+            if (lambda_[i] != 0.0) {
+                if (msymm.component_symmetry(i) != 0) {
+                    outfile->Printf("\n    WARNING: Requested mu(x) perturbation, but mu(x) is not symmetric.\n");
+                } else {
+                    outfile->Printf("\n    Perturbing V by %f mu(%s).\n", lambda_[i], axis_label[i].c_str());
+                    dipoles[i]->scale(lambda_[i]);
+                    vMat->add(dipoles[i]);
+                }
+            }
+        }
+    }
 
 #if X2CDEBUG
     sMat->print();
