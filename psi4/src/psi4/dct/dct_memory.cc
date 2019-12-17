@@ -179,11 +179,7 @@ void DCTSolver::init() {
         }
     }
 
-    // Store the AO overlap matrix
-    //    auto *sArray = new double[ntriso_];
-    //    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, "outfile");
-    //    ao_s_->set(sArray);
-    //    delete[] sArray;
+    // Grab the SO overlap matrix from MintsHelper
     ao_s_->copy(mintshelper_->so_overlap());
 
     // Form S^(-1/2) matrix
