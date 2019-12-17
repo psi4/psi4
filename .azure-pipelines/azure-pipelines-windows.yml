@@ -237,14 +237,12 @@ jobs:
           setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --version
           if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
           ctest --build-config %CMAKE_BUILD_TYPE% ^
-                --label-regex smoke ^
+                --label-regex !CTEST_TYPE! ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS% ^
                 --timeout 3000
-                #--label-regex !CTEST_TYPE! ^
         displayName: "Test Psi4 (ctest $(ctest.type))"
         workingDirectory: $(Build.BinariesDirectory)/build
 
