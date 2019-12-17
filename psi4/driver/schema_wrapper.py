@@ -391,7 +391,7 @@ def _quiet_remove(filename):
         pass
 
 
-def run_qcschema(input_data, clean=True):
+def run_qcschema(input_data, clean=True, postclean=True):
 
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
@@ -437,9 +437,11 @@ def run_qcschema(input_data, clean=True):
                                               'error_message': input_data["stdout"] + ''.join(traceback.format_exception(*sys.exc_info())),
                                           })
 
-    core.close_outfile()
-    print('closing outfile')
-    atexit.register(_quiet_remove, outfile)
+    if postclean:  # subprocess
+        atexit.register(_quiet_remove, outfile)
+    else:  # psiapi
+        core.close_outfile()
+        print('closing outfile')
 
     return ret
 

@@ -232,6 +232,14 @@ jobs:
         displayName: 'Run, Run, Spot, Run Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
+      # Spot Test
+      - script: |
+          setlocal EnableDelayedExpansion
+          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+          psi4 $(Build.SourcesDirectory)\tests\pywrap-cbs1\input.dat
+        displayName: 'Spot Test 2'
+        workingDirectory: $(Build.BinariesDirectory)/build
+
       # Test (ctest)
       - script: |
           setlocal EnableDelayedExpansion
