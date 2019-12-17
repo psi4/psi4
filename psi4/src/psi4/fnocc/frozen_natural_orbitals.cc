@@ -537,10 +537,10 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 
         nQ_scf = auxiliary->nbf();
         Process::environment.globals["NAUX (SCF)"] = nQ_scf;
-    }else if ( options_.get_str("SCF_TYPE") == "CD" ) {
-        psio->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+    } else if (options_.get_str("SCF_TYPE") == "CD") {
+        psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ_scf, sizeof(long int));
-        psio->close(PSIF_DFSCF_BJ,1);
+        psio->close(PSIF_DFSCF_BJ, 1);
         Process::environment.globals["NAUX (SCF)"] = nQ_scf;
     }
 
@@ -592,9 +592,9 @@ void DFFrozenNO::ThreeIndexIntegrals() {
         if (options_.get_str("SCF_TYPE") == "CD") {
             outfile->Printf("        Reading Cholesky vectors from disk ...\n");
 
-            psio->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+            psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
             psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ, sizeof(long int));
-            psio->close(PSIF_DFSCF_BJ,1);
+            psio->close(PSIF_DFSCF_BJ, 1);
 
             outfile->Printf("        Cholesky decomposition threshold: %8.2le\n",
                             options_.get_double("CHOLESKY_TOLERANCE"));
