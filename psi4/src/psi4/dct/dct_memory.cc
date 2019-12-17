@@ -33,6 +33,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libtrans/integraltransform.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libtrans/mospace.h"
@@ -179,10 +180,11 @@ void DCTSolver::init() {
     }
 
     // Store the AO overlap matrix
-    auto *sArray = new double[ntriso_];
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, "outfile");
-    ao_s_->set(sArray);
-    delete[] sArray;
+    //    auto *sArray = new double[ntriso_];
+    //    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, "outfile");
+    //    ao_s_->set(sArray);
+    //    delete[] sArray;
+    ao_s_->copy(mintshelper_->so_overlap());
 
     // Form S^(-1/2) matrix
     Matrix eigvec(nirrep_, nsopi_, nsopi_);

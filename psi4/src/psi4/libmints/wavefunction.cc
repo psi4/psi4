@@ -40,6 +40,7 @@
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/sobasis.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/vector3.h"
@@ -108,6 +109,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
 
     // Create an SO basis...we need the point group for this part.
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
+    mintshelper_ = std::make_shared<MintsHelper>(basisset_,options_);
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
 
     // set matrices
@@ -183,6 +185,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 
     psio_ = other->psio_;
     integral_ = other->integral_;
+    mintshelper_ = other->mintshelper_;
     factory_ = other->factory_;
     memory_ = other->memory_;
     nalpha_ = other->nalpha_;
@@ -256,6 +259,7 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     basisset_ = other->basisset_;
     basissets_ = other->basissets_;  // Still cannot copy basissets
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
+    mintshelper_ = std::make_shared<MintsHelper>(basisset_,options_);
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
     factory_ = std::make_shared<MatrixFactory>();
     factory_->init_with(other->nsopi_, other->nsopi_);
@@ -341,6 +345,7 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     /// Some member data is not clone-able so we will copy
     wfn->name_ = name_;
     wfn->integral_ = std::make_shared<IntegralFactory>(wfn->basisset_, wfn->basisset_, wfn->basisset_, wfn->basisset_);
+    wfn->mintshelper_ = std::make_shared<MintsHelper>(wfn->basisset_,wfn->options_);
     wfn->sobasisset_ = std::make_shared<SOBasisSet>(wfn->basisset_, wfn->integral_);
     wfn->factory_ = std::make_shared<MatrixFactory>();
 
@@ -455,6 +460,7 @@ void Wavefunction::common_init() {
 
     // Create an SO basis...we need the point group for this part.
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
+    mintshelper_ = std::make_shared<MintsHelper>(basisset_,options_);
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
 
     auto pet = std::make_shared<PetiteList>(basisset_, integral_);
