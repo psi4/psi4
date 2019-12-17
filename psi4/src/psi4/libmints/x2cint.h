@@ -58,8 +58,9 @@ class PSI_API X2CInt {
      * @param V Shared matrix object that will hold the X2C potential energy integrals.
      * @param options an Options object used to read basis set information.
      */
-    void compute(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S, SharedMatrix T,
-                 SharedMatrix V);
+    void compute(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis,
+                 std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S, SharedMatrix T, SharedMatrix V,
+                 const std::vector<double> lambda);
     /*! @} */
 
    private:
@@ -70,6 +71,8 @@ class PSI_API X2CInt {
     /// Do basis set projection?
     bool do_project_;
 
+    /// The molecule object
+    std::shared_ptr<Molecule> molecule_;
     /// Integral factory
     std::shared_ptr<IntegralFactory> integral_;
 
@@ -78,6 +81,8 @@ class PSI_API X2CInt {
     /// The basis onto which we project the final FW (Foldy-Wouthuysen) Hamiltonian
     /// This is used only if we project (do_project)
     std::shared_ptr<BasisSet> aoBasis_contracted_;
+    /// The magnitude of a perturbation (if provided)
+    std::vector<double> lambda_;
 
     /// Matrix factory for matrices of dimension 2 nbf x 2 nbf
     std::shared_ptr<MatrixFactory> ssFactory_;
