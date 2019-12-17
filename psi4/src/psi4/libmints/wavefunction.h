@@ -68,6 +68,7 @@ namespace psi {
 class Molecule;
 class BasisSet;
 class IntegralFactory;
+class MintsHelper;
 class Matrix;
 class Vector;
 class MatrixFactory;
@@ -110,6 +111,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Integral factory
     std::shared_ptr<IntegralFactory> integral_;
+
+    /// MintsHelper
+    std::shared_ptr<MintsHelper> mintshelper_;
 
     /// Matrix factory for creating standard sized matrices
     std::shared_ptr<MatrixFactory> factory_;
