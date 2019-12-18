@@ -34,6 +34,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
@@ -51,15 +52,8 @@ namespace dct {
  */
 void DCTSolver::scf_guess_RHF() {
     dct_timer_on("DCTSolver::rhf_guess");
-    auto T = std::make_shared<Matrix>("SO basis kinetic energy integrals", nirrep_, nsopi_, nsopi_);
-    auto V = std::make_shared<Matrix>("SO basis potential energy integrals", nirrep_, nsopi_, nsopi_);
-    double *ints = init_array(ntriso_);
-
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, ints, ntriso_, 0, 0, "outfile");
-    T->set(ints);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, ints, ntriso_, 0, 0, "outfile");
-    V->set(ints);
-    free(ints);
+    auto T = mintshelper()->so_kinetic()->clone();
+    auto V = mintshelper()->so_potential()->clone();
 
     so_h_->add(T);
     so_h_->add(V);
