@@ -332,58 +332,6 @@ void MintsHelper::integrals_erfc(double w) {
 }
 
 void MintsHelper::one_electron_integrals() {
-    //    outfile->Printf( " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
-    //
-    //    // Print out some useful information
-    //    outfile->Printf( "   Calculation information:\n");
-    //    outfile->Printf( "      Number of atoms:                %4d\n", molecule_->natom());
-    //    outfile->Printf( "      Number of AO shells:            %4d\n", basisset_->nshell());
-    //    outfile->Printf( "      Number of SO shells:            %4d\n", sobasis_->nshell());
-    //    outfile->Printf( "      Number of primitives:           %4d\n", basisset_->nprimitive());
-    //    outfile->Printf( "      Number of atomic orbitals:      %4d\n", basisset_->nao());
-    //    outfile->Printf( "      Number of basis functions:      %4d\n\n", basisset_->nbf());
-    //    outfile->Printf( "      Number of irreps:               %4d\n", sobasis_->nirrep());
-    //    outfile->Printf( "      Number of functions per irrep: [");
-    //    for (int i=0; i<sobasis_->nirrep(); ++i) {
-    //        outfile->Printf( "%4d ", sobasis_->nfunction_in_irrep(i));
-    //    }
-    //    outfile->Printf( "]\n\n");
-
-    // Compute and save one-electron SO integrals to cache.
-
-    if (options_.get_str("RELATIVISTIC") == "NO" || options_.get_str("RELATIVISTIC") == "DKH") {
-        // Overlap
-        so_overlap()->save(psio_, PSIF_OEI);  // TODO:remove
-
-        // Kinetic
-        so_kinetic()->save(psio_, PSIF_OEI);  // TODO:remove
-
-        // Potential -- DKH perturbation added to potential integrals if needed.
-        so_potential()->save(psio_, PSIF_OEI);  // TODO:remove
-    } else if (options_.get_str("RELATIVISTIC") == "X2C") {
-        //        outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
-
-        //        if (!rel_basisset_) {
-        //            throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis was not set.");
-        //        }
-        //        SharedMatrix so_overlap_x2c = so_overlap();
-        //        SharedMatrix so_kinetic_x2c = so_kinetic();
-        //        SharedMatrix so_potential_x2c = so_potential();
-
-        //        X2CInt x2cint;
-        //        x2cint.compute(basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c);
-
-        compute_so_x2c_ints(true);
-
-        // Overlap
-        so_overlap()->save(psio_, PSIF_OEI);  // TODO:remove
-
-        // Kinetic
-        so_kinetic()->save(psio_, PSIF_OEI);  // TODO:remove
-
-        // Potential
-        so_potential()->save(psio_, PSIF_OEI);  // TODO:remove
-    }
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();
     for (SharedMatrix m : dipole_mats) {
