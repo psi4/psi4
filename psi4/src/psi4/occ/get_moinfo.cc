@@ -752,9 +752,11 @@ void OCCWave::get_moinfo() {
     /************************** Create all required matrice *************************************/
     /********************************************************************************************/
 
+    Hso = std::make_shared<Matrix>("SO-basis One-electron Ints", nirrep_, nsopi_, nsopi_);
+
     // Read SO-basis one-electron integrals
-    Tso->copy(mintshelper()->so_kinetic());
-    Vso->copy(mintshelper()->so_potential());
+    Tso = SharedMatrix(mintshelper()->so_kinetic()->clone());
+    Vso = SharedMatrix(mintshelper()->so_potential()->clone());
     Hso->copy(Tso);
     Hso->add(Vso);
 }
