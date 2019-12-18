@@ -34,7 +34,11 @@
 
 namespace psi {
 
-class PSI_API OverlapOrthogonalization {
+/*! \ingroup MINTS
+ *  \class BasisSetOrthogonalization
+ *  \brief Implements methods for orthogonalizing basis sets.
+ */
+class PSI_API BasisSetOrthogonalization {
    public:
     /// An enum for the types of orthogonalization.
     enum OrthogonalizationMethod { Symmetric, Canonical, PartialCholesky, Automatic };
@@ -101,8 +105,8 @@ class PSI_API OverlapOrthogonalization {
     std::vector<std::vector<int>> sort_indices() const;
 
    public:
-    OverlapOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap, SharedVector rsq,
-                             double lindep_tolerance, double cholesky_tolerance, int print = 0);
+    BasisSetOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap, SharedVector rsq,
+                              double lindep_tolerance, double cholesky_tolerance, int print = 0);
 
     OrthogonalizationMethod orthog_method() const { return orthog_method_; }
 

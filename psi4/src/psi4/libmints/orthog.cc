@@ -42,9 +42,9 @@
 
 namespace psi {
 
-OverlapOrthogonalization::OverlapOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap,
-                                                   SharedVector rsq, double lindep_tolerance, double cholesky_tolerance,
-                                                   int print)
+BasisSetOrthogonalization::BasisSetOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap,
+                                                     SharedVector rsq, double lindep_tolerance,
+                                                     double cholesky_tolerance, int print)
     : orthog_method_(method),
       overlap_(overlap),
       rsq_(rsq),
@@ -57,10 +57,10 @@ OverlapOrthogonalization::OverlapOrthogonalization(OrthogonalizationMethod metho
     normalized_overlap_ = nullptr;
 }
 
-void OverlapOrthogonalization::normalize() {
+void BasisSetOrthogonalization::normalize() {
     // Compute normalization coefficients
     if (normalization_ != nullptr)
-        throw PSIEXCEPTION("OverlapOrthogonalization::normalizate: normalization_ should be nullptr");
+        throw PSIEXCEPTION("BasisSetOrthogonalization::normalizate: normalization_ should be nullptr");
     normalization_ = std::make_shared<Vector>(overlap_->rowspi());
     normalization_->set_name("SO normalization factors");
     for (int h = 0; h < overlap_->nirrep(); h++)
@@ -69,7 +69,7 @@ void OverlapOrthogonalization::normalize() {
 
     // Normalize overlap matrix
     if (normalized_overlap_ != nullptr)
-        throw PSIEXCEPTION("OverlapOrthogonalization::normalizate: normalized_overlap_ should be nullptr");
+        throw PSIEXCEPTION("BasisSetOrthogonalization::normalizate: normalized_overlap_ should be nullptr");
     normalized_overlap_ = std::make_shared<Matrix>(overlap_->rowspi(), overlap_->colspi());
     for (int h = 0; h < overlap_->nirrep(); h++)
         for (int j = 0; j < overlap_->coldim(h); j++)
@@ -78,19 +78,19 @@ void OverlapOrthogonalization::normalize() {
                     h, i, j, overlap_->get(h, i, j) * normalization_->get(h, i) * normalization_->get(h, j));
 }
 
-void OverlapOrthogonalization::unroll_normalization() {
+void BasisSetOrthogonalization::unroll_normalization() {
     if (!normalization_)
-        throw PSIEXCEPTION("OverlapOrthogonalization::unroll_normalization: normalization has not been yet computed.");
-    if (!X_) throw PSIEXCEPTION("OverlapOrthogonalization::unroll_normalization: X has not been yet computed.");
+        throw PSIEXCEPTION("BasisSetOrthogonalization::unroll_normalization: normalization has not been yet computed.");
+    if (!X_) throw PSIEXCEPTION("BasisSetOrthogonalization::unroll_normalization: X has not been yet computed.");
     // Plug the normalization back into X
     for (int h = 0; h < X_->nirrep(); h++)
         for (int i = 0; i < X_->rowdim(h); i++) X_->scale_row(h, i, normalization_->get(h, i));
 }
 
-void OverlapOrthogonalization::compute_overlap_eig() {
+void BasisSetOrthogonalization::compute_overlap_eig() {
     if (!normalized_overlap_)
         throw PSIEXCEPTION(
-            "OverlapOrthogonalization::compute_overlap_eig: normalized overlap has not yet been computed.");
+            "BasisSetOrthogonalization::compute_overlap_eig: normalized overlap has not yet been computed.");
 
     // Eigenvectors
     eigvec_ = std::make_shared<Matrix>("U", normalized_overlap_->rowspi(), normalized_overlap_->colspi());
@@ -131,18 +131,18 @@ void OverlapOrthogonalization::compute_overlap_eig() {
     outfile->Printf("  Reciprocal condition number of the overlap matrix is %14.10E.\n", rcond_);
 }
 
-void OverlapOrthogonalization::compute_inverse() {
+void BasisSetOrthogonalization::compute_inverse() {
     Xinv_ = std::make_shared<Matrix>("Orthogonal Inverse Transformation", X_->rowspi(), X_->colspi());
     Xinv_->gemm(false, false, 1.0, overlap_, X_, 0.0);
 }
 
-SharedMatrix OverlapOrthogonalization::overlap_inverse() {
+SharedMatrix BasisSetOrthogonalization::overlap_inverse() {
     auto Sinv = std::make_shared<Matrix>("Inverse Transformation", X_->rowspi(), X_->rowspi());
     Sinv->gemm(false, true, 1.0, X_, X_, 0.0);
     return Sinv;
 }
 
-void OverlapOrthogonalization::compute_symmetric_orthog() {
+void BasisSetOrthogonalization::compute_symmetric_orthog() {
     if (!eigval_) compute_overlap_eig();
     if (min_S_ < lindep_tol_) {
         outfile->Printf("WARNING: smallest overlap eigenvalue %e is smaller than S_TOLERANCE!\n", min_S_);
@@ -167,7 +167,7 @@ void OverlapOrthogonalization::compute_symmetric_orthog() {
     X_->gemm(false, false, 1.0, eigvec_, eigtemp, 0.0);
 }
 
-void OverlapOrthogonalization::compute_canonical_orthog() {
+void BasisSetOrthogonalization::compute_canonical_orthog() {
     if (!eigval_) compute_overlap_eig();
     if (rcond_ <= DBL_EPSILON)
         outfile->Printf(
@@ -204,7 +204,7 @@ void OverlapOrthogonalization::compute_canonical_orthog() {
     }
 }
 
-std::vector<std::vector<int>> OverlapOrthogonalization::sort_indices() const {
+std::vector<std::vector<int>> BasisSetOrthogonalization::sort_indices() const {
     std::vector<std::vector<int>> order(rsq_->nirrep());
     for (int h = 0; h < rsq_->nirrep(); h++) {
         // initialize ordering as 0, 1, 2, ..., n-1
@@ -219,7 +219,7 @@ std::vector<std::vector<int>> OverlapOrthogonalization::sort_indices() const {
     return order;
 }
 
-void OverlapOrthogonalization::compute_partial_cholesky_orthog() {
+void BasisSetOrthogonalization::compute_partial_cholesky_orthog() {
     // Original dimensions
     const Dimension& nbf = normalized_overlap_->rowspi();
 
@@ -295,7 +295,7 @@ void OverlapOrthogonalization::compute_partial_cholesky_orthog() {
     X_ = padX;
 }
 
-void OverlapOrthogonalization::compute_orthog_trans() {
+void BasisSetOrthogonalization::compute_orthog_trans() {
     // Normalize basis
     normalize();
 
@@ -324,7 +324,7 @@ void OverlapOrthogonalization::compute_orthog_trans() {
             compute_partial_cholesky_orthog();
             break;
         default:
-            throw PSIEXCEPTION("OverlapOrthogonalization::compute_orthog_trans: bad value.");
+            throw PSIEXCEPTION("BasisSetOrthogonalization::compute_orthog_trans: bad value.");
     }
 
     // Include basis function normalization in X
@@ -333,34 +333,34 @@ void OverlapOrthogonalization::compute_orthog_trans() {
     compute_inverse();
 }
 
-SharedMatrix OverlapOrthogonalization::basis_to_orthog_basis() {
+SharedMatrix BasisSetOrthogonalization::basis_to_orthog_basis() {
     if (!X_) compute_orthog_trans();
 
     return X_;
 }
 
-SharedMatrix OverlapOrthogonalization::basis_to_orthog_basis_inverse() {
+SharedMatrix BasisSetOrthogonalization::basis_to_orthog_basis_inverse() {
     if (!X_) compute_orthog_trans();
     if (!Xinv_) compute_inverse();
 
     return Xinv_;
 }
 
-Dimension OverlapOrthogonalization::dim() { return X_->rowdim(); }
+Dimension BasisSetOrthogonalization::dim() { return X_->rowdim(); }
 
-Dimension OverlapOrthogonalization::orthog_dim() {
+Dimension BasisSetOrthogonalization::orthog_dim() {
     if (!X_) compute_orthog_trans();
 
     return X_->coldim();
 }
 
-int OverlapOrthogonalization::nlindep() {
+int BasisSetOrthogonalization::nlindep() {
     if (!X_) compute_orthog_trans();
 
     return X_->colspi().sum();
 }
 
-int OverlapOrthogonalization::nlindep(int h) {
+int BasisSetOrthogonalization::nlindep(int h) {
     if (!X_) compute_orthog_trans();
 
     return X_->coldim(h);
