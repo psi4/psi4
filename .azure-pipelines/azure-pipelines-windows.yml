@@ -235,7 +235,7 @@ jobs:
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           psi4 $(Build.SourcesDirectory)\tests\pywrap-cbs1\input.dat
-        displayName: 'CBS Spot Test 2'
+        displayName: 'CBS Spot Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
       # Test (ctest)
