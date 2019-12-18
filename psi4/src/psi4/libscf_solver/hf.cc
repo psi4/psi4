@@ -538,15 +538,10 @@ void HF::print_header() {
 }
 
 void HF::form_H() {
-    T_ = SharedMatrix(factory_->create_matrix(PSIF_SO_T));
-    V_ = SharedMatrix(factory_->create_matrix(PSIF_SO_V));
-
-    // Assumes these have already been created and stored
-    T_->load(psio_, PSIF_OEI);
-    V_->load(psio_, PSIF_OEI);
+    T_ = mintshelper()->so_kinetic()->clone();
+    V_ = mintshelper()->so_potential()->clone();
 
     if (debug_ > 2) T_->print("outfile");
-
     if (debug_ > 2) V_->print("outfile");
 
     if (perturb_h_) {
