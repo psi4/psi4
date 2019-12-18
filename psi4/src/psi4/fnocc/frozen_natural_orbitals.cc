@@ -527,6 +527,8 @@ void DFFrozenNO::ThreeIndexIntegrals() {
     const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
     long int ntri = function_pairs.size();
 
+    auto psio = std::make_shared<PSIO>();
+
     // read integrals that were written to disk in the scf
     long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
     if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos) {
@@ -535,11 +537,16 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 
         nQ_scf = auxiliary->nbf();
         Process::environment.globals["NAUX (SCF)"] = nQ_scf;
+    } else if (options_.get_str("SCF_TYPE") == "CD") {
+        psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
+        psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ_scf, sizeof(long int));
+        psio->close(PSIF_DFSCF_BJ, 1);
+        Process::environment.globals["NAUX (SCF)"] = nQ_scf;
     }
 
     auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_scf, ntri);
     double** Qmnp = Qmn->pointer();
-    auto psio = std::make_shared<PSIO>();
+
     psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * nQ_scf);
     psio->close(PSIF_DFSCF_BJ, 1);
@@ -584,7 +591,11 @@ void DFFrozenNO::ThreeIndexIntegrals() {
         // read integrals from disk if they were generated in the SCF
         if (options_.get_str("SCF_TYPE") == "CD") {
             outfile->Printf("        Reading Cholesky vectors from disk ...\n");
-            nQ = Process::environment.globals["NAUX (SCF)"];
+
+            psio->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
+            psio->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ, sizeof(long int));
+            psio->close(PSIF_DFSCF_BJ, 1);
+
             outfile->Printf("        Cholesky decomposition threshold: %8.2le\n",
                             options_.get_double("CHOLESKY_TOLERANCE"));
             outfile->Printf("        Number of Cholesky vectors:          %5li\n", nQ);
