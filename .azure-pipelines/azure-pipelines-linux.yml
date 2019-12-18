@@ -176,9 +176,9 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
       export PATH=$(Build.SourcesDirectory)/build/stage/bin:${PATH}
       export PYTHONPATH=$(Build.SourcesDirectory)/build/stage/lib:${PYTHONPATH}
+      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
       psi4 --version
       python -c "import psi4; print(psi4.__file__, psi4.__version__)"
     displayName: 'Spot Test'

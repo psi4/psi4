@@ -226,7 +226,6 @@ jobs:
 
       # Spot Test
       - script: |
-          setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat -o stdout
         displayName: 'Run, Run, Spot, Run Test'
@@ -234,7 +233,6 @@ jobs:
 
       # Spot Test
       - script: |
-          setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           psi4 $(Build.SourcesDirectory)\tests\pywrap-cbs1\input.dat
         displayName: 'Spot Test 2'

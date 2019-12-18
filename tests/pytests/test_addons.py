@@ -752,7 +752,7 @@ def test_json():
 
     # Generate JSON data
     json_input = {
-        "schema_name": "qc_schema_input",
+        "schema_name": "qcschema_input",
         "schema_version": 1,
         "molecule": {
             "symbols": ["He", "He"],
@@ -766,18 +766,16 @@ def test_json():
         "keywords": {}
     }
 
-    json_ret = psi4.json_wrapper.run_json(json_input)
+    json_ret = psi4.schema_wrapper.run_qcschema(json_input)
+    print(json_ret.dict())
 
-    assert psi4.compare_integers(True, json_ret["success"], "Success")
-    assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")
+    assert psi4.compare_integers(True, json_ret.success, "Success")
+    assert psi4.compare_values(-5.474227786274896, json_ret.properties.return_energy, 4, "SCF ENERGY")
 
     bench_gradient = np.array([[  0.0 , 0.0 ,   0.32746933],
                                [  0.0 , 0.0 ,  -0.32746933]])
-    cgradient = np.array(json_ret["return_result"]).reshape(-1, 3)
+    cgradient = np.array(json_ret.return_result).reshape(-1, 3)
     assert psi4.compare_arrays(bench_gradient, cgradient, 4, "SCF RETURN GRADIENT")
-
-    with open("pytest_output.dat", "w") as f:
-        json.dump(json_ret["raw_output"], f)
 
 
 @using("cfour")
