@@ -36,6 +36,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/mintshelper.h"
 #include "occwave.h"
 
 using namespace psi;
