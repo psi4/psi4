@@ -58,7 +58,7 @@ namespace psimrcc {
 extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
-CCTransform::CCTransform() : fraction_of_memory_for_presorting(0.75) {
+CCTransform::CCTransform(std::shared_ptr<Wavefunction> wfn) : fraction_of_memory_for_presorting(0.75), wfn_(wfn) {
     blas->add_index("[s>=s]");
     blas->add_index("[n>=n]");
     blas->add_index("[s]");
@@ -67,7 +67,6 @@ CCTransform::CCTransform() : fraction_of_memory_for_presorting(0.75) {
     oei_so_indexing = blas->get_index("[s]");
     first_irrep_in_core = 0;
     last_irrep_in_core = 0;
-    s_so = nullptr;
     oei_so = nullptr;
     oei_mo = nullptr;
     tei_so = nullptr;
@@ -446,10 +445,6 @@ void CCTransform::allocate_oei_so() {
         int nso = moinfo->get_nso();
         allocate2(double, oei_so, nso, nso);
     }
-    if (s_so == nullptr) {
-        int nso = moinfo->get_nso();
-        allocate2(double, s_so, nso, nso);
-    }
 }
 
 /**
@@ -459,10 +454,6 @@ void CCTransform::free_oei_so() {
     if (oei_so != nullptr) {
         release2(oei_so);
         oei_so = nullptr;
-    }
-    if (s_so != nullptr) {
-        release2(s_so);
-        s_so = nullptr;
     }
 }
 

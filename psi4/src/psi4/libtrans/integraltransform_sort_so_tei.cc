@@ -220,11 +220,8 @@ void IntegralTransform::presort_so_tei() {
         soOffset += sopi_[h];
     }
 
-    /*double *T = init_array(nTriSo_);
-    if(print_>4) outfile->Printf( "The SO basis kinetic energy integrals\n");
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T,   T, nTriSo_, 0, print_ > 4, "outfile");
-    if(print_>4) outfile->Printf( "The SO basis nuclear attraction integrals\n");
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, aoH, nTriSo_, 0, print_ > 4, "outfile");
+    /*
+    double *T = init_array(nTriSo_);
 
     for(int pq=0; pq < nTriSo_; ++pq){
         aoH[pq] += T[pq];

@@ -44,7 +44,7 @@ class CCIndex;
 */
 class CCTransform {
    public:
-    CCTransform();
+    CCTransform(std::shared_ptr<Wavefunction> wfn);
     ~CCTransform();
     void print();
     // Presorting
@@ -62,7 +62,6 @@ class CCTransform {
     double tei_mrpt2(int p, int q, int r, int s);
 
    private:
-    double** s_so;
     double** oei_mo;
     double** oei_so;
     double** tei_so;
@@ -71,6 +70,7 @@ class CCTransform {
     CCIndex* oei_so_indexing;
     CCIndex* tei_so_indexing;
     CCIndex* tei_mo_indexing;
+    std::shared_ptr<Wavefunction> wfn_;
 
     void read_mo_integrals();
     void read_so_integrals();

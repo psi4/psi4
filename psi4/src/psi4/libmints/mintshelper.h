@@ -92,10 +92,11 @@ class PSI_API MintsHelper {
 
     /// Computes X2C overlap, kinetic, and potential integrals
     void compute_so_x2c_ints(bool include_perturbations = true);
-
+    /// Add dipole perturbation to the potential integrals
     void add_dipole_perturbation(SharedMatrix potential_mat);
-
+    /// Returns the non-relativistic overlap integrals in the so basis
     SharedMatrix so_overlap_nr();
+    /// Returns the non-relativistic kinetic integrals in the so basis
     SharedMatrix so_kinetic_nr();
     /// Returns the non-relativistic potential integrals in the so basis
     SharedMatrix so_potential_nr(bool include_perturbations = true);

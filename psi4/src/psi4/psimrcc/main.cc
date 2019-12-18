@@ -120,7 +120,7 @@ PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
     }
 
     blas = new CCBLAS(options);
-    trans = new CCTransform();
+    trans = new CCTransform(ref_wfn);
     if (options.get_str("CORR_WFN") == "PT2") {
         mrpt2(ref_wfn, options);
     } else {

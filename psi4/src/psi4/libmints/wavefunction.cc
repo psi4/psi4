@@ -109,7 +109,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
 
     // Create an SO basis...we need the point group for this part.
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    mintshelper_ = std::make_shared<MintsHelper>(basisset_,options_);
+    mintshelper_ = std::make_shared<MintsHelper>(basisset_, options_);
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
 
     // set matrices
@@ -259,7 +259,7 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     basisset_ = other->basisset_;
     basissets_ = other->basissets_;  // Still cannot copy basissets
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    mintshelper_ = std::make_shared<MintsHelper>(basisset_,options_);
+    mintshelper_ = std::make_shared<MintsHelper>(basisset_, options_);
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
     factory_ = std::make_shared<MatrixFactory>();
     factory_->init_with(other->nsopi_, other->nsopi_);
@@ -345,7 +345,7 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     /// Some member data is not clone-able so we will copy
     wfn->name_ = name_;
     wfn->integral_ = std::make_shared<IntegralFactory>(wfn->basisset_, wfn->basisset_, wfn->basisset_, wfn->basisset_);
-    wfn->mintshelper_ = std::make_shared<MintsHelper>(wfn->basisset_,wfn->options_);
+    wfn->mintshelper_ = std::make_shared<MintsHelper>(wfn->basisset_, wfn->options_);
     wfn->sobasisset_ = std::make_shared<SOBasisSet>(wfn->basisset_, wfn->integral_);
     wfn->factory_ = std::make_shared<MatrixFactory>();
 
@@ -460,7 +460,7 @@ void Wavefunction::common_init() {
 
     // Create an SO basis...we need the point group for this part.
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
-    mintshelper_ = std::make_shared<MintsHelper>(basisset_,options_);
+    mintshelper_ = std::make_shared<MintsHelper>(basisset_, options_);
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
 
     auto pet = std::make_shared<PetiteList>(basisset_, integral_);
@@ -599,7 +599,7 @@ Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
     // If the parent symmetry hasn't been set, no displacements have been made
     if (ps == "") return dimpi;
 
-    auto full = std::make_shared<PointGroup> (ps);
+    auto full = std::make_shared<PointGroup>(ps);
     std::shared_ptr<PointGroup> sub = molecule_->point_group();
 
     // If the point group between the full and sub are the same return
@@ -654,6 +654,8 @@ std::shared_ptr<PSIO> Wavefunction::psio() const { return psio_; }
 Options &Wavefunction::options() const { return options_; }
 
 std::shared_ptr<IntegralFactory> Wavefunction::integral() const { return integral_; }
+
+std::shared_ptr<MintsHelper> Wavefunction::mintshelper() const { return mintshelper_; }
 
 std::shared_ptr<BasisSet> Wavefunction::basisset() const { return basisset_; }
 
@@ -1157,21 +1159,15 @@ SharedMatrix Wavefunction::Db() const { return Db_; }
 
 SharedMatrix Wavefunction::X() const { return Lagrangian_; }
 
-void Wavefunction::set_energy(double ene) {
-    set_scalar_variable("CURRENT ENERGY", ene);
-}
+void Wavefunction::set_energy(double ene) { set_scalar_variable("CURRENT ENERGY", ene); }
 
 SharedMatrix Wavefunction::gradient() const { return gradient_; }
 
-void Wavefunction::set_gradient(SharedMatrix grad) {
-    set_array_variable("CURRENT GRADIENT", grad);
-}
+void Wavefunction::set_gradient(SharedMatrix grad) { set_array_variable("CURRENT GRADIENT", grad); }
 
 SharedMatrix Wavefunction::hessian() const { return hessian_; }
 
-void Wavefunction::set_hessian(SharedMatrix hess) {
-    set_array_variable("CURRENT HESSIAN", hess);
-}
+void Wavefunction::set_hessian(SharedMatrix hess) { set_array_variable("CURRENT HESSIAN", hess); }
 
 SharedVector Wavefunction::frequencies() const { return frequencies_; }
 

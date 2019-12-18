@@ -54,7 +54,7 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     int nmo, noei, stat, i, I, h, j, nclsd;
     int *order, *doccpi;
     double junk, tcorr, vcorr, tref, vref, ttot, vtot;
-    double *s, *t, **T, **S, **scf_pitzer, **scf_qt, **X;
+    double *t, **T, **scf_pitzer, **scf_qt, **X;
 
     /* RHF/ROHF only for now */
     if (params.ref == 2) return;
@@ -84,15 +84,11 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
 
     t = init_array(noei);
     stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, t, noei, 0, 0, "outfile");
-    s = init_array(noei);
-    stat = iwl_rdone(PSIF_OEI, PSIF_SO_S, s, noei, 0, 0, "outfile");
 
     T = block_matrix(nmo, nmo);
-    S = block_matrix(nmo, nmo);
     for (i = 0; i < nmo; i++)
         for (j = 0; j < nmo; j++) {
             T[i][j] = t[INDEX(i, j)];
-            S[i][j] = s[INDEX(i, j)];
         }
 
     X = block_matrix(nmo, nmo);
