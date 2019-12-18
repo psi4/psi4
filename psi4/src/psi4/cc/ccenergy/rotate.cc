@@ -126,16 +126,9 @@ int CCEnergyWavefunction::rotate() {
         outfile->Printf("    Rotating orbitals.  Maximum T1 = %15.12f\n", std::fabs(max));
 
     /* grab the SO-basis overlap integrals for later use */
-    auto SO_S = block_matrix(nso, nso);
-    auto ntri = nso * (nso + 1) / 2;
-    auto scratch = init_array(ntri);
-    auto stat = iwl_rdone(PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, "outfile");
-    for (int i = 0, ij = 0; i < nso; i++)
-        for (int j = 0; j <= i; j++, ij++) {
-            SO_S[i][j] = SO_S[j][i] = scratch[ij];
-        }
-    free(scratch);
+    auto SO_S = S_->to_block_matrix();
 
+    int stat = 0;
     if (params_.ref == 0) { /* RHF */
 
         U = block_matrix(nmo, nmo);

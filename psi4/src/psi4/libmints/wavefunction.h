@@ -340,6 +340,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// An integral factory with basisset() on each center.
     std::shared_ptr<IntegralFactory> integral() const;
+    /// An molecular integrals helper with basisset() on each center.
+    std::shared_ptr<MintsHelper> mintshelper() const;
     /// Returns the basis set object that pertains to this wavefunction.
     std::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.

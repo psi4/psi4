@@ -1333,6 +1333,7 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
         } else {
             cached_oe_ints_[label] = so_potential_nr(include_perturbations);
 
+            // Add DKH correction if requested
             if (options_.get_str("RELATIVISTIC") == "DKH") {
                 if (include_perturbations) {
                     int dkh_order = options_.get_int("DKH_ORDER");
