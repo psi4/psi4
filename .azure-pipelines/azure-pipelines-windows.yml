@@ -234,6 +234,7 @@ jobs:
       # Spot Test
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+          psi4 $(Build.SourcesDirectory)\tests\pywrap-alias\input.dat
           psi4 $(Build.SourcesDirectory)\tests\pywrap-cbs1\input.dat
         displayName: 'MP5 Spot Test'
         workingDirectory: $(Build.BinariesDirectory)/build
