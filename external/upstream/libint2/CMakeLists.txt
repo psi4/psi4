@@ -78,6 +78,7 @@ else()
                        -DLIBINT2_SHGAUSS_ORDERING=gaussian
                        -DBUILD_SHARED=${_so_only}
                        -DBUILD_STATIC=${_a_only}
+                       -DBUILD_TESTING=${BUILD_TESTING}
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}

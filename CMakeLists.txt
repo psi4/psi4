@@ -181,8 +181,10 @@ find_package(PythonLibsNew 3.6 REQUIRED)
 message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
 
 if(DEFINED ENV{LGTM_SRC})
+    set(BUILD_TESTING OFF)
     set(BUILD_Libint2_GENERATOR ON)
     set(MAX_AM_ERI 3)
+    message(STATUS "LGTM enviroment detected so downgrading Libint2 build.")
 endif()
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
