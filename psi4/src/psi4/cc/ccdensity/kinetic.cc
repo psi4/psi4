@@ -38,6 +38,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -54,7 +55,7 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     int nmo, noei, stat, i, I, h, j, nclsd;
     int *order, *doccpi;
     double junk, tcorr, vcorr, tref, vref, ttot, vtot;
-    double *t, **T, **scf_pitzer, **scf_qt, **X;
+    double **T, **scf_pitzer, **scf_qt, **X;
 
     /* RHF/ROHF only for now */
     if (params.ref == 2) return;
@@ -81,16 +82,7 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     }
 
     /*** Transform the kinetic energy integrals to the MO basis ***/
-
-    t = init_array(noei);
-    stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, t, noei, 0, 0, "outfile");
-
-    T = block_matrix(nmo, nmo);
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            T[i][j] = t[INDEX(i, j)];
-        }
-
+    T = wfn->mintshelper()->so_kinetic()->to_block_matrix();
     X = block_matrix(nmo, nmo);
 
     C_DGEMM('t', 'n', nmo, nmo, nmo, 1, &(scf_qt[0][0]), nmo, &(T[0][0]), nmo, 0, &(X[0][0]), nmo);
@@ -128,11 +120,10 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     /*** Release memory ***/
     free_block(X);
     free_block(T);
-    free(t);
     free_block(scf_qt);
     free_block(scf_pitzer);
     free(doccpi);
     free(order);
 }
-}
+}  // namespace ccdensity
 }  // namespace psi
