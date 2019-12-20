@@ -35,6 +35,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - networkx >=2.4 (runtime only; e.g., `conda install networkx`)
 #    - pint (runtime only; e.g., `conda install pint -c conda-forge`)
 #    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
+#    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -49,9 +50,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 #  <<<  Detecting dependencies and add-ons  >>>
 #
-#    - PYTHON_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python2.7)"
-#    - PYTHON_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python2.7.so)"
-#    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
+#    - PYTHON_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.7)"
+#    - PYTHON_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.7.so)"
+#    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint, PCMSolver, pybind11, pylibefp,
@@ -113,7 +114,7 @@ if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
 endif()
 
 if(ENABLE_erd)
-    message(FATAL_ERROR "The Psi4/ERD interface is broken, probably since spring 2017. We'll try to fix it (comment this line to try), but disabling for now.")
+    message(FATAL_ERROR "The Psi4/ERD interface is broken, probably since spring 2017. It's toast (comment this line to try), but disabling for now.")
     message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
 

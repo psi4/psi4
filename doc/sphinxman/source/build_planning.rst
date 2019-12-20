@@ -1607,7 +1607,7 @@ run via pytest.
      python -c "import psi4; psi4.test()"
 
   * From pytest directly. If package ``pytest-xdist`` is installed,
-  can run in parallel, though final file cleanup may not exit cleanly.
+  can run in parallel.
 
     .. code-block:: bash
 
