@@ -100,7 +100,7 @@ class AtomicComputer(BaseComputer):
                 "stdout": True,
             },
             "extras": {
-                "psiapi": True,
+                #"psiapi": True,
             },
         })
 
@@ -144,7 +144,7 @@ class AtomicComputer(BaseComputer):
 
         print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
         logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
-        #pp.pprint(self.plan().dict())
+        pp.pprint(self.plan().dict())
         gof = core.get_output_file()
 
         # EITHER ...
@@ -158,8 +158,8 @@ class AtomicComputer(BaseComputer):
         # ... END
 
         logger.debug(pp.pformat(self.result.dict()))
-        #pp.pprint(self.result.dict())
-        #print('... JSON returns >>>')
+        pp.pprint(self.result.dict())
+        print('... JSON returns >>>')
         core.set_output_file(gof, True)
         self.computed = True
 
