@@ -2626,10 +2626,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Convergence criterion for amplitudes (residuals). -*/
         options.add_double("R_CONVERGENCE", 1e-5);
         /*- Convergence criterion for RMS orbital gradient. Default adjusts
-        depending on |occ__e_convergence|. -*/
-        options.add_double("RMS_MOGRAD_CONVERGENCE", 1e-6);
-        /*- Convergence criterion for maximum orbital gradient -*/
-        options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-3);
+        depending on |occ__e_convergence|. Default represents the default
+        with the default energy cutoff.-*/
+        options.add_double("RMS_MOGRAD_CONVERGENCE", 1e-4);
+        /*- Convergence criterion for maximum orbital gradient. Default adjusts
+        depending on |occ__e_convergence|. Default represents the default
+        with the default energy cutoff.-*/
+        options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-4);
         /*- Maximum step size in orbital-optimization procedure -*/
         options.add_double("MO_STEP_MAX", 0.5);
         /*- Level shift to aid convergence -*/
@@ -2756,10 +2759,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Convergence criterion for amplitudes (residuals). -*/
         options.add_double("R_CONVERGENCE", 1e-5);
         /*- Convergence criterion for RMS orbital gradient. Default adjusts
-        depending on |occ__e_convergence|. -*/
-        options.add_double("RMS_MOGRAD_CONVERGENCE", 1e-6);
-        /*- Convergence criterion for maximum orbital gradient -*/
-        options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-3);
+        depending on |dfocc__e_convergence|. Default represents the default
+        with the default energy cutoff.-*/
+        options.add_double("RMS_MOGRAD_CONVERGENCE", 1e-4);
+        /*- Convergence criterion for RMS orbital gradient. Default adjusts
+        depending on |dfocc__e_convergence|. Default represents the default
+        with the default energy cutoff.-*/
+        options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-4);
         /*- Maximum step size in orbital-optimization procedure -*/
         options.add_double("MO_STEP_MAX", 0.5);
         /*- Level shift to aid convergence -*/

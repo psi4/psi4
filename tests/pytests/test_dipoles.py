@@ -7,6 +7,7 @@ from .utils import compare_values
 
 perturbation_strength = 0.001
 
+@pytest.mark.slow
 # TODO: That "true" needs to be a string is silly. Convert it to a boolean when you can do that without incurring a NaN energy.
 @pytest.mark.parametrize("inp", [
     pytest.param({'name': 'omp2', 'options': {'mp2_type': 'df', 'max_mograd_convergence': 6}, 'varname': 'DF-OMP2'}, id='df-omp2 ae'),

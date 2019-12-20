@@ -109,8 +109,40 @@ void DFOCC::common_init() {
     // title
     title();
 
-    tol_grad = options_.get_double("RMS_MOGRAD_CONVERGENCE");
-    mograd_max = options_.get_double("MAX_MOGRAD_CONVERGENCE");
+    //   Given default orbital convergence, set the criteria by what should
+    //   be necessary to achieve the target energy convergence.
+    //   These formulae are based on experiments and are nothing rigorous.
+    //   The printed value from options_.print() will not be accurate
+    //   since newly set orbital conv is not written back to options.
+    //   We still want these to be the default values, after all!
+    if (orb_opt_ == "TRUE") {
+        if (options_["RMS_MOGRAD_CONVERGENCE"].has_changed()) {
+            tol_grad = options_.get_double("RMS_MOGRAD_CONVERGENCE");
+        } else {
+            double temp;
+            temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
+            if (temp < 4.0) {
+                temp = 4.0;
+            }
+            tol_grad = pow(10.0, -temp);
+            // tol_grad = 100.0*tol_Eod;
+            outfile->Printf("\tFor this energy convergence, default RMS orbital gradient is: %12.2e\n", mograd_max);
+        }
+
+        // Determine the MAXIMUM MOGRAD CONVERGENCE
+        if (options_["MAX_MOGRAD_CONVERGENCE"].has_changed()) {
+            mograd_max = options_.get_double("MAX_MOGRAD_CONVERGENCE");
+        } else {
+            double temp2;
+            temp2 = (-0.8 * std::log10(tol_grad)) - 0.5;
+            if (temp2 < 3.0) {
+                temp2 = 3.0;
+            }
+            mograd_max = pow(10.0, -temp2 - 1);
+            // mograd_max = 10.0*tol_grad;
+            outfile->Printf("\tFor this energy convergence, default MAX orbital gradient is: %12.2e\n", mograd_max);
+        }
+    }  // end if (orb_opt_ == "TRUE")
 
     // Figure out REF
     if (reference == "RHF" || reference == "RKS")

@@ -348,7 +348,7 @@ def select_olccd_property(name, **kwargs):
                 func = run_dfocc_property
 
     if func is None:
-        raise ManagedMethodError(['select_omp3_property', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_olccd_property', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1862,8 +1862,10 @@ def run_dfocc_property(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     # Shove variables into global space
-    for k, v in dfocc_wfn.variables().items():
-        core.set_variable(k, v)
+    # TODO: Make other methods in DFOCC update all variables, then add them to the list. Adding now, risks setting outdated information.
+    if name in ['mp2', 'omp2']:
+        for k, v in dfocc_wfn.variables().items():
+            core.set_variable(k, v)
 
     optstash.restore()
     return dfocc_wfn
