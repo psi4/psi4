@@ -94,7 +94,7 @@ def _displace_cart(mass, geom, salc_list, i_m, step_size):
     return disp_geom, label
 
 
-def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, t_project, verbose=0):
+def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, t_project, r_project, verbose=0):
     """Perform initialization tasks needed by all primary functions.
 
     Parameters
@@ -142,9 +142,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
 
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
-    #t_project = not core.get_global_option("EXTERN") and (not core.get_global_option("PERTURB_H"))
     # core.get_option returns an int, but CdSalcList expect a bool, so re-cast
-    r_project = t_project and bool(core.get_option("FINDIF", "FD_PROJECT"))
     salc_list = core.CdSalcList(mol, method_allowed_irreps, t_project, r_project)
 
     n_atom = mol.natom()
@@ -250,7 +248,7 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
     return data
 
 
-def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, stencil_size=3, step_size=0.005):
+def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=True, stencil_size=3, step_size=0.005):
     """
     Generate geometries for the specified molecule and derivative levels.
     You probably want to instead use one of the convenience functions:
@@ -367,7 +365,7 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, stencil_size=
     if isinstance(mol, qcdb.Molecule):
         mol = core.Molecule.from_dict(mol.to_dict())
 
-    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, 1)
+    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, r_project, 1)
 
     # We can finally start generating displacements.
     ref_geom = np.array(mol.geometry())
@@ -448,7 +446,8 @@ def assemble_gradient_from_energies(findifrec: Dict):
     Check energies below for precision!
     Forces are for mass-weighted, symmetry-adapted cartesians [a0]."""
 
-    data = _initialize_findif(mol, -1, "1_0", findifrec['stencil_size'], findifrec['step']['size'], init_string, findifrec['project_translations'])
+    data = _initialize_findif(mol, -1, "1_0", findifrec['stencil_size'], findifrec['step']['size'], init_string,
+                              findifrec['project_translations'], findifrec['project_rotations'])
     salc_indices = data["salc_indices_pi"][0]
 
     # Extract the energies, and turn then into an ndarray for easy manipulating
@@ -626,7 +625,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
                 "  {:d} gradients passed in, including the reference geometry.\n".format(len(displacements) + 1))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_1", findifrec['stencil_size'], findifrec['step']['size'],
-                              init_string, findifrec["project_translations"])
+                              init_string, findifrec['project_translations'], findifrec['project_rotations'])
 
     # For non-totally symmetric CdSALCs, a symmetry operation can convert + and - displacements.
     # Good News: By taking advantage of that, we (potentially) ran less computations.
@@ -808,7 +807,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
                     len(displacements) + 1, findifrec["stencil_size"], ref_energy, out_str))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_0", findifrec['stencil_size'], findifrec['step']['size'],
-                              init_string, findifrec["project_translations"])
+                              init_string, findifrec['project_translations'], findifrec['project_rotations'])
 
     massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
@@ -912,9 +911,25 @@ class FiniteDifferenceComputer(BaseComputer):
 
         logger.debug('FINDIFREC CLASS INIT DATA')
         logger.debug(pp.pformat(data))
-        t_project = True
-        if 'embedding_charges' in data['keywords']['function_kwargs']:
-            t_project = False
+
+        translations_projection_sound = (not 'embedding_charges' in data['keywords']['function_kwargs'] and
+                                         not core.get_option('SCF', 'PERTURB_H') and
+                                         not hasattr(self.molecule, 'EFP'))
+        if 'ref_gradient' in data:
+            logger.info("""hessian() using ref_gradient to assess stationary point.""")
+            stationary_criterion = 1.e-2  # pulled out of a hat
+            stationary_point = data['ref_gradient'].rms() < stationary_criterion
+        else:
+            stationary_point = False  # unknown, so F to be safe
+        rotations_projection_sound_grad = translations_projection_sound
+        rotations_projection_sound_hess = translations_projection_sound and stationary_point
+        if core.has_option_changed('FINDIF', 'FD_PROJECT'):
+            r_project_grad = core.get_option('FINDIF', 'FD_PROJECT')
+            r_project_hess = core.get_option('FINDIF', 'FD_PROJECT')
+        else:
+            r_project_grad = rotations_projection_sound_grad
+            r_project_hess = rotations_projection_sound_hess
+
 
         for kwg in ['dft_functional']:
             if kwg in data:
@@ -931,7 +946,8 @@ class FiniteDifferenceComputer(BaseComputer):
             self.findifrec = gradient_from_energies_geometries(self.molecule,
                                                                stencil_size=findif_stencil_size,
                                                                step_size=findif_step_size,
-                                                               t_project=t_project)
+                                                               t_project=translations_projection_sound,
+                                                               r_project=r_project_grad)
 
         elif self.metameta['mode'] == '2_1':
             self.metameta['proxy_driver'] = 'gradient'
@@ -939,7 +955,8 @@ class FiniteDifferenceComputer(BaseComputer):
                                                                freq_irrep_only=self.metameta['irrep'],
                                                                stencil_size=findif_stencil_size,
                                                                step_size=findif_step_size,
-                                                               t_project=t_project)
+                                                               t_project=translations_projection_sound,
+                                                               r_project=r_project_hess)
 
         elif self.metameta['mode'] == '2_0':
             self.metameta['proxy_driver'] = 'energy'
@@ -947,7 +964,8 @@ class FiniteDifferenceComputer(BaseComputer):
                                                               freq_irrep_only=self.metameta['irrep'],
                                                               stencil_size=findif_stencil_size,
                                                               step_size=findif_step_size,
-                                                              t_project=t_project)
+                                                              t_project=translations_projection_sound,
+                                                              r_project=r_project_hess)
 
         logger.debug('FINDIFREC CLASS META DATA')
         logger.debug(pp.pformat(self.metameta))
@@ -1094,11 +1112,6 @@ class FiniteDifferenceComputer(BaseComputer):
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0
 
-
-#        if core.get_option('FINDIF', 'GRADIENT_WRITE'):
-#            filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
-#            qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=molecule, energy=wfn.energy())
-
         logger.debug('\nFINDIF_RESULTS POST-LOAD')
         logger.debug(pp.pformat(self.findifrec))
 
@@ -1156,6 +1169,7 @@ class FiniteDifferenceComputer(BaseComputer):
         ret_ptype = core.Matrix.from_array(findifjob.return_result)
         wfn = _findif_schema_to_wfn(findifjob)
 
+        _gradient_write(wfn)
         _hessian_write(wfn)
 
         if return_wfn:
@@ -1202,3 +1216,9 @@ def _hessian_write(wfn):
         filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
         with open(filename, 'wb') as handle:
             qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
+
+
+def _gradient_write(wfn):
+    if core.get_option('FINDIF', 'GRADIENT_WRITE'):
+        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
+        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=wfn.molecule(), energy=wfn.energy())

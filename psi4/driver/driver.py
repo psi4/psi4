@@ -1706,11 +1706,9 @@ def frequency(name, **kwargs):
     H, wfn = hessian(name, return_wfn=True, molecule=molecule, **kwargs)
 
     # Project final frequencies?
-#    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(wfn.gradient())
-#    project_trans = kwargs.get('project_trans', translations_projection_sound)
-#    project_rot = kwargs.get('project_rot', rotations_projection_sound)
-    project_trans = True
-    project_rot = True
+    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(wfn.gradient())
+    project_trans = kwargs.get('project_trans', translations_projection_sound)
+    project_rot = kwargs.get('project_rot', rotations_projection_sound)
 
     irrep = kwargs.get('irrep', None)
     vibinfo = vibanal_wfn(wfn, irrep=irrep, project_trans=project_trans, project_rot=project_rot)
