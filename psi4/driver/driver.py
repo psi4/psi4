@@ -59,13 +59,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
+def _energy_is_invariant(gradient_rms, stationary_criterion=1.e-2):
     """Polls options and probes `gradient` to return whether current method
     and system expected to be invariant to translations and rotations of
     the coordinate system.
 
     """
-    stationary_point = gradient.rms() < stationary_criterion  # 1.e-2 pulled out of a hat
+    stationary_point = gradient_rms < stationary_criterion  # 1.e-2 pulled out of a hat
 
     mol = core.get_active_molecule()
     efp_present = hasattr(mol, 'EFP')
@@ -1573,7 +1573,7 @@ def hessian(name, **kwargs):
         tmpkwargs = copy.deepcopy(kwargs)
         tmpkwargs.pop('dertype', None)
         G0 = gradient(lowername, molecule=molecule, **tmpkwargs)
-    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0)
+    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0.rms())
     core.print_out(
         '\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'
         .format(G0.rms(), '' if translations_projection_sound else 'not ',
@@ -1704,7 +1704,12 @@ def frequency(name, **kwargs):
     H, wfn = hessian(name, return_wfn=True, molecule=molecule, **kwargs)
 
     # Project final frequencies?
-    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(wfn.gradient())
+    if wfn.gradient():  # available for analytic and any findif including totally symmetric space
+        gradient_rms = wfn.gradient().rms()
+    else:
+        gradient_rms = 1  # choose to force non-projection of rotations
+    translations_projection_sound, rotations_projection_sound = _energy_is_invariant(gradient_rms)
+
     project_trans = kwargs.get('project_trans', translations_projection_sound)
     project_rot = kwargs.get('project_rot', rotations_projection_sound)
 
