@@ -18,10 +18,10 @@ set {
   guess sad
   reference uhf
   mp2_type df
-  rms_mograd_convergence 5
 }
 energy('omp2')
 
+# Warning! DFOCC orbitals converge so slowly, we can't be sure we have the OMP2 energy to 6 decimals.
 compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
 compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                        #TEST
 compare_values(refomp2, variable("OMP2 TOTAL ENERGY"), 5, "DF-OMP2 Total Energy (a.u.)");               #TEST

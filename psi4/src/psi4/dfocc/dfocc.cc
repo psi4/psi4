@@ -126,7 +126,7 @@ void DFOCC::common_init() {
             }
             tol_grad = pow(10.0, -temp);
             // tol_grad = 100.0*tol_Eod;
-            outfile->Printf("\tFor this energy convergence, default RMS orbital gradient is: %12.2e\n", mograd_max);
+            outfile->Printf("\tFor this energy convergence, default RMS orbital gradient is: %12.2e\n", tol_grad);
         }
 
         // Determine the MAXIMUM MOGRAD CONVERGENCE
