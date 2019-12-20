@@ -1070,13 +1070,15 @@ def select_adc2(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')  # TODO or ADC_TYPE or CC_TYPE or ...
+    mtd_type = core.get_global_option('MP_TYPE')
     module = core.get_global_option('QC_MODULE')
     # Considering only adcc/adc
 
     # TODO Actually one should do selection on a couple of other options here
     #      as well, e.g. adcc supports frozen-core and frozen-virtual,
     #      spin-specific states or spin-flip methods.
+    #      But as far as I know the BUILTIN ADC routine only supports
+    #      singlet states and without freezing some core or some virtual orbitals.
 
     func = None
     if reference == 'RHF':
@@ -1085,7 +1087,6 @@ def select_adc2(name, **kwargs):
                 func = run_adcc
             elif module in ['', 'BUILTIN']:
                 func = run_adc
-        # TODO Does the builtin support any other MP type?
 
     if reference == 'UHF':
         if mtd_type == 'CONV':
