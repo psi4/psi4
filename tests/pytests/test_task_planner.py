@@ -384,19 +384,26 @@ def test_findif_1_0(mtd, kw):
         assert plan2.keywords['E_CONVERGENCE'] == 1.e-8
 
 
-def test_findif_2_1():
+@pytest.mark.parametrize("kw, pts", [
+    ({'ref_gradient': np.zeros((2, 3))}, 3),
+    ({}, 5),
+])
+def test_findif_2_1(kw, pts):
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
     psi4.set_options({"E_CONVERGENCE": 6})
-    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, dertype=1, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, **kw, dertype=1, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223))
 
     displacements = {
         '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
         '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
         'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+        # below here for r_proj False
+        '1: -1': np.array([[-0.0025,  0.    , -1.    ], [ 0.0025,  0.    ,  1.    ]]),
+        '2: -1': np.array([[ 0.    , -0.0025, -1.    ], [ 0.    ,  0.0025,  1.    ]]),
     }
 
     assert isinstance(plan, FiniteDifferenceComputer)
-    assert len(plan.task_list) == 3
+    assert len(plan.task_list) == pts
 
     for k2, plan2 in plan.task_list.items():
         assert isinstance(plan2, AtomicComputer)
@@ -408,10 +415,14 @@ def test_findif_2_1():
         assert plan2.keywords['E_CONVERGENCE'] == 1.e-6
 
 
-def test_findif_2_0():
+@pytest.mark.parametrize("kw, pts", [
+    ({'ref_gradient': np.zeros((2, 3))}, 5),
+    ({}, 9),
+])
+def test_findif_2_0(kw, pts):
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
     psi4.set_options({"scf__E_CONVERGENCE": 6})
-    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, dertype=0, findif_stencil_size=5, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, **kw, dertype=0, findif_stencil_size=5, findif_step_size=0.005/math.sqrt(2/1.00782503223))
 
     displacements = {
         '0: -2': np.array([[ 0.    ,  0.    , -1.0050], [ 0.    ,  0.    ,  1.0050]]),
@@ -419,10 +430,15 @@ def test_findif_2_0():
         '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
         '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
         'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+        # below here for r_proj False
+        '1: -1': np.array([[-0.0025,  0.    , -1.    ], [ 0.0025,  0.    ,  1.    ]]),
+        '1: -2': np.array([[-0.005 ,  0.    , -1.    ], [ 0.005 ,  0.    ,  1.    ]]),
+        '2: -1': np.array([[ 0.    , -0.0025, -1.    ], [ 0.    ,  0.0025,  1.    ]]),
+        '2: -2': np.array([[ 0.    , -0.005 , -1.    ], [ 0.    ,  0.005 ,  1.    ]]),
     }
 
     assert isinstance(plan, FiniteDifferenceComputer)
-    assert len(plan.task_list) == 5
+    assert len(plan.task_list) == pts
 
     for k2, plan2 in plan.task_list.items():
         assert isinstance(plan2, AtomicComputer)

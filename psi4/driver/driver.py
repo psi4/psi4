@@ -605,7 +605,6 @@ def gradient(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
-    print('scratch ENE', core.IOManager.shared_object().get_default_path())
 
     basisstash = p4util.OptionsState(['BASIS'])
     return_wfn = kwargs.pop('return_wfn', False)
@@ -1339,7 +1338,6 @@ def optimize(name, **kwargs):
                                   """input, such as DOCC, is correct.""" % (current_sym, initial_sym))
         kwargs['opt_iter'] = n
         core.set_variable('GEOMETRY ITERATIONS', n)
-        print('GEOMETRY ITERATIONS', core.variable('GEOMETRY ITERATIONS'))
 
         # Use orbitals from previous iteration as a guess
         #   set within loop so that can be influenced by fns to optimize (e.g., cbs)

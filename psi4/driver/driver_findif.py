@@ -918,7 +918,7 @@ class FiniteDifferenceComputer(BaseComputer):
         if 'ref_gradient' in data:
             logger.info("""hessian() using ref_gradient to assess stationary point.""")
             stationary_criterion = 1.e-2  # pulled out of a hat
-            stationary_point = data['ref_gradient'].rms() < stationary_criterion
+            stationary_point = _rms(data['ref_gradient']) < stationary_criterion
         else:
             stationary_point = False  # unknown, so F to be safe
         rotations_projection_sound_grad = translations_projection_sound
@@ -1222,3 +1222,11 @@ def _gradient_write(wfn):
     if core.get_option('FINDIF', 'GRADIENT_WRITE'):
         filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
         qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=wfn.molecule(), energy=wfn.energy())
+
+
+def _rms(arr):
+    """Compute root-mean-square of array, be it psi4.core.Matrix or np.ndarray."""
+    if isinstance(arr, np.ndarray):
+        return np.sqrt(np.mean(np.square(arr)))
+    else:
+        return arr.rms()
