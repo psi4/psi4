@@ -86,3 +86,52 @@ if these are not a vital part of the test. In choosing the number of
 digits for :py:class:`compare_values` and other compare_* functions,
 select a number looser than the convergence set in the test or the
 default convergence for the calculation type (energy, gradient, *etc.*).
+
+
+.. _`faq:add_psiapi_tests`:
+
+Adding PsiAPI Test Cases
+========================
+
+Sometimes you want to add tests that check several variations of a
+template job or that test error handling or that are PsiAPI rather than
+PSIthon focused. In these cases, you'll want to add to the second test
+suite that lives at :source:`tests/pytests`. Presently, the "normal"
+(everything in the ``tests/`` directory that isn't in ``tests/pytests/``)
+are run through CTest, while the pytests are run through Pytest. In
+future, all will be run through Pytest, but the former will still be
+run as PSIthon (``psi4 input.dat``) while the latter will still be
+run as PsiAPI (``import psi4``). In other words, in designing a test,
+choose its mode based on whether PSIthon or PsiAPI suits it better and
+whether it's a simple model for users (probably PSIthon) or for expert
+users (probably PsiAPI). Both will continue to work in future.
+
+In developing a pytest test, you probably want to edit it in place,
+rather than running ``make`` after each change. Easiest is from
+<objdir>, run ``pytest ../tests/pytests``. Add any filters (``-k
+test_name_fragment``) or parallelism (``-n <N>`` if ``pytest-xdist``
+installed) or print test names (``-v``) or print warnings (``-rws``). To
+see stdout output from an otherwise passing test, easiest to add ``assert
+0`` at its end to trigger failure. An important point is that because
+they're PsiAPI, ``import psi4`` is happening, so the <objdir> |PSIfour|
+module must be in :envvar:`PYTHONPATH`. Also, any call to QCEngine is
+using ``which psi4``, so the <objdir> |PSIfour| executable must be in
+:envvar:`PATH`. Easiest thing is to execute ``<objdir>/stage/bin/psi4
+--psiapi`` and execute what it prints.
+
+* Test must be in the :source:`tests/pytests/` directory.
+* Test file name must start with ``test_``. This is how pytest knows to collect it.
+* Test file may contain many tests. To be recognized as a test, the Python function must start with ``test_``.
+* No registration required to bring test to pytest's attention. But to get it installed and runnable by the user through ``make pytest`` or tested in the conda build, add it around https://github.com/psi4/psi4/blob/master/psi4/CMakeLists.txt#L245
+
+There are individual "marks" that can be added to whole tests or parts
+of parameterized tests so that they can be run by category (``pytest -m
+<mark>`` vs. ``ctest -L <mark>``) rather than just by name (``pytest -k
+<name_fragment>`` vs. ``ctest -R <name_fragment>``). Most important are
+"quick" and "long" that opt tests into the quick CI suite or out of
+the normal full suite. Mark with a decorator for the full test or the
+marks argument in a parameterized test. Search "mark" in the test suite
+for examples. Use "quick" freely for tests that cover functionality and
+are under 15s. Use "long" sparingly to winnow out the longest examples,
+particularly those over a minute.
+
