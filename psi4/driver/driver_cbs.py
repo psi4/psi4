@@ -1547,7 +1547,7 @@ class CompositeComputer(BaseComputer):
 
     def compute(self, client=None):
         with p4util.hold_options_state():
-            for t in self.task_list:
+            for t in reversed(self.task_list):
                 t.compute(client=client)
 
     def _prepare_results(self, client=None):
