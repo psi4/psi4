@@ -384,10 +384,8 @@ def _quiet_remove(filename):
     Destroy the created at file at exit, pass if error.
     """
     try:
-        print('trying to unlink', filename)
         os.unlink(filename)
     except OSError:
-        print('passing OSError')
         pass
 
 

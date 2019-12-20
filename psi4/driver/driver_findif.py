@@ -1103,7 +1103,7 @@ class FiniteDifferenceComputer(BaseComputer):
         logger.debug(pp.pformat(self.findifrec))
 
     def get_results(self, client=None):
-        assembled_results = self._prepare_results(client=client)
+        #assembled_results = self._prepare_results(client=client)
 
         # load QCVariables
         qcvars = self.task_list['reference'].get_results().extras['qcvars']

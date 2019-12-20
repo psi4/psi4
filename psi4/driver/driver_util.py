@@ -420,9 +420,8 @@ def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype,
         if user_dertype <= dertype:
             dertype = user_dertype
         else:
-            raise MissingMethodError(
-                f"""Derivative level requested ({user_dertype}) exceeds that available ({highest_analytic_dertype})."""
-            )
+            msg = f"""Derivative level requested ({user_dertype}) exceeds that available ({highest_analytic_dertype})."""
+            raise MissingMethodError(msg)
 
     # hack section
     if core.get_global_option('PCM') and dertype != 0:

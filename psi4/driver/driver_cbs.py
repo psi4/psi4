@@ -1511,12 +1511,10 @@ class CompositeComputer(BaseComputer):
                 for delta in self.metadata[1:]:
                     if delta["wfn"] not in VARH.keys():
                         raise ValidationError(
-                            f"""Requested higher {delta["treatment"]} method '{delta["wfn"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
-                        )
+                            f"""Requested higher {delta["treatment"]} method '{delta["wfn"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed.""")
                     if delta["wfn_lo"] not in VARH.keys():
                         raise ValidationError(
-                            f"""Requested lesser {delta["treament"]} method '{delta["wfn_lo"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
-                        )
+                            f"""Requested lesser {delta["treament"]} method '{delta["wfn_lo"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed.""")
 
             self.cbsrec, self.compute_list, self.trove = _build_cbs_compute(self.metameta, self.metadata)
 
@@ -1547,7 +1545,7 @@ class CompositeComputer(BaseComputer):
 
     def compute(self, client=None):
         with p4util.hold_options_state():
-            for t in reversed(self.task_list):
+            for t in self.task_list:
                 t.compute(client=client)
 
     def _prepare_results(self, client=None):
