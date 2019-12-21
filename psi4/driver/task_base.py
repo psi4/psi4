@@ -100,7 +100,7 @@ class AtomicComputer(BaseComputer):
                 "stdout": True,
             },
             "extras": {
-                #"psiapi": True,
+                "psiapi": True,
             },
         })
 
