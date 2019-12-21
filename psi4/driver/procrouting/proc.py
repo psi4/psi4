@@ -1090,7 +1090,7 @@ def select_adc2(name, **kwargs):
 
     if reference == 'UHF':
         if mtd_type == 'CONV':
-            if module == 'ADCC' and extras.addons("adcc"):
+            if module in ['ADCC', ''] and extras.addons("adcc"):
                 func = run_adcc
 
     # Note: ROHF is theoretically available in adcc, but are not fully tested

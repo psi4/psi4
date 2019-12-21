@@ -15,5 +15,6 @@ add_subdirectory(h2o-cvs-adc2x-triplets)
 add_subdirectory(h2o-adc2-any)
 
 # Unrestricted HF reference
-add_subdirectory(hf-adc2-spin-flip)
+add_subdirectory(cn-adc1)
 add_subdirectory(cn-adc2)
+add_subdirectory(hf-adc2-spin-flip)
