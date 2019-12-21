@@ -28,7 +28,7 @@ def test_single_result():
     assert plan.basis == "sto-3g"
     assert plan.method == "hf"
     assert plan.driver == "energy"
-    assert plan.keywords == {'function_kwargs': {}}
+    assert plan.keywords == {"function_kwargs": {}}
 
     # Local options currently taking ~3 seconds per call!
     # psi4.set_options({"basis": "cc-pVQZ"})
@@ -74,13 +74,18 @@ def test_cbs_extrapolation_gradient():
         assert plan2.driver == "gradient"
 
 
-@pytest.mark.parametrize("mtd, kw", [
-    ('mp2', {'dertype': 0}),
-    ('mp5', {}),
-])
+@pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_cbs_extrapolation_gradient_1_0(mtd, kw):
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
-    plan = task_planner("gradient", f"{mtd}/cc-pV[D,T]Z", mol, **kw, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223), findif_verbose=4)
+    plan = task_planner(
+        "gradient",
+        f"{mtd}/cc-pV[D,T]Z",
+        mol,
+        **kw,
+        findif_stencil_size=3,
+        findif_step_size=0.005 / math.sqrt(2 / 1.00782503223),
+        findif_verbose=4,
+    )
 
     assert isinstance(plan, FiniteDifferenceComputer)
     assert len(plan.task_list) == 3
@@ -97,19 +102,21 @@ def test_cbs_extrapolation_gradient_1_0(mtd, kw):
 
 
 def test_nbody_dimer():
-    mol = psi4.geometry("""
+    mol = psi4.geometry(
+        """
                         He 0 0 -5
                         --
                         He 0 0 5
-                        units au""")
+                        units au"""
+    )
     plan = task_planner("energy", "MP2/cc-pVDZ", mol, bsse_type="cp")
 
     ghostiness = {
-        "1_((2,), (2,))": (['He'], [True]),
-        "1_((1,), (1,))": (['He'], [True]),
-        "1_((1, 2), (1, 2))": (['He', 'He'], [True, True]),
-        "1_((1,), (1, 2))": (['He', 'He'], [True, False]),
-        "1_((2,), (1, 2))": (['He', 'He'], [False, True]),
+        "1_((2,), (2,))": (["He"], [True]),
+        "1_((1,), (1,))": (["He"], [True]),
+        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
+        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
+        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
     }
 
     assert isinstance(plan, ManyBodyComputer)
@@ -124,24 +131,26 @@ def test_nbody_dimer():
         assert plan2.driver == "energy"
 
         kmol = plan2.molecule.to_schema(dtype=2)
-        assert kmol['symbols'] == ghostiness[k2][0]
-        assert kmol['real'] == ghostiness[k2][1]
+        assert kmol["symbols"] == ghostiness[k2][0]
+        assert kmol["real"] == ghostiness[k2][1]
 
 
 def test_nbody_dimer_gradient():
-    mol = psi4.geometry("""
+    mol = psi4.geometry(
+        """
                         He 0 0 -5
                         --
                         He 0 0 5
-                        units au""")
+                        units au"""
+    )
     plan = task_planner("gradient", "MP2/cc-pVDZ", mol, bsse_type="cp")
 
     ghostiness = {
-        "1_((2,), (2,))": (['He'], [True]),
-        "1_((1,), (1,))": (['He'], [True]),
-        "1_((1, 2), (1, 2))": (['He', 'He'], [True, True]),
-        "1_((1,), (1, 2))": (['He', 'He'], [True, False]),
-        "1_((2,), (1, 2))": (['He', 'He'], [False, True]),
+        "1_((2,), (2,))": (["He"], [True]),
+        "1_((1,), (1,))": (["He"], [True]),
+        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
+        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
+        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
     }
 
     assert isinstance(plan, ManyBodyComputer)
@@ -156,27 +165,34 @@ def test_nbody_dimer_gradient():
         assert plan2.driver == "gradient"
 
         kmol = plan2.molecule.to_schema(dtype=2)
-        assert kmol['symbols'] == ghostiness[k2][0]
-        assert kmol['real'] == ghostiness[k2][1]
+        assert kmol["symbols"] == ghostiness[k2][0]
+        assert kmol["real"] == ghostiness[k2][1]
 
 
-@pytest.mark.parametrize("mtd, kw", [
-    ('mp2', {'dertype': 0}),
-    ('mp5', {}),
-])
+@pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_nbody_dimer_gradient_1_0(mtd, kw):
-    mol = psi4.geometry("""
+    mol = psi4.geometry(
+        """
                         He 0 0 -5
                         --
                         He 0 0 5
                         units au
-                        """)
-    plan = task_planner("gradient", f"{mtd}/cc-pVDZ", mol, **kw, bsse_type="cp", findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/4.00260325413))
+                        """
+    )
+    plan = task_planner(
+        "gradient",
+        f"{mtd}/cc-pVDZ",
+        mol,
+        **kw,
+        bsse_type="cp",
+        findif_stencil_size=3,
+        findif_step_size=0.005 / math.sqrt(2 / 4.00260325413),
+    )
 
     displacements = {
-        '0: -1': np.array([[ 0.    ,  0.    , -5.0025], [ 0.    ,  0.    ,  5.0025]]),
-        '0: 1':  np.array([[ 0.    ,  0.    , -4.9975], [ 0.    ,  0.    ,  4.9975]]),
-        'reference':  np.array([[ 0.    ,  0.    , -5.0], [ 0.    ,  0.    ,  5.0]]),
+        "0: -1": np.array([[0.0, 0.0, -5.0025], [0.0, 0.0, 5.0025]]),
+        "0: 1": np.array([[0.0, 0.0, -4.9975], [0.0, 0.0, 4.9975]]),
+        "reference": np.array([[0.0, 0.0, -5.0], [0.0, 0.0, 5.0]]),
     }
 
     nbody_displacements = {
@@ -193,11 +209,11 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
     assert len(plan.task_list) == 5
 
     ghostiness = {
-        "1_((2,), (2,))": (['He'], [True]),
-        "1_((1,), (1,))": (['He'], [True]),
-        "1_((1, 2), (1, 2))": (['He', 'He'], [True, True]),
-        "1_((1,), (1, 2))": (['He', 'He'], [True, False]),
-        "1_((2,), (1, 2))": (['He', 'He'], [False, True]),
+        "1_((2,), (2,))": (["He"], [True]),
+        "1_((1,), (1,))": (["He"], [True]),
+        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
+        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
+        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
     }
 
     for k2, plan2 in plan.task_list.items():
@@ -207,8 +223,8 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
         assert plan2.driver == "gradient"
 
         kmol = plan2.molecule.to_schema(dtype=2)
-        assert kmol['symbols'] == ghostiness[k2][0]
-        assert kmol['real'] == ghostiness[k2][1]
+        assert kmol["symbols"] == ghostiness[k2][0]
+        assert kmol["real"] == ghostiness[k2][1]
 
         for k3, plan3 in plan2.task_list.items():
             assert isinstance(plan3, AtomicComputer)
@@ -216,17 +232,19 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
             assert plan3.method == f"{mtd}"
             assert plan3.driver == "energy"
             assert np.allclose(plan3.molecule.geometry().np, nbody_displacements[k2][k3])
-            #assert plan3.keywords['SCF__E_CONVERGENCE'] == 1.e-6
-            #assert plan3.keywords['SCF__D_CONVERGENCE'] == 1.e-11
-            #assert plan3.keywords['E_CONVERGENCE'] == 1.e-10
+            # assert plan3.keywords['SCF__E_CONVERGENCE'] == 1.e-6
+            # assert plan3.keywords['SCF__D_CONVERGENCE'] == 1.e-11
+            # assert plan3.keywords['E_CONVERGENCE'] == 1.e-10
 
 
 def test_nbody_dimer_cbs():
-    mol = psi4.geometry("""
+    mol = psi4.geometry(
+        """
                         He 0 0 -5
                         --
                         He 0 0 5
-                        units au""")
+                        units au"""
+    )
     plan = task_planner("energy", "MP2/cc-pV[D,T]Z", mol, bsse_type="cp")
 
     assert isinstance(plan, ManyBodyComputer)
@@ -246,11 +264,13 @@ def test_nbody_dimer_cbs():
 
 
 def test_nbody_dimer_cbs_gradient():
-    mol = psi4.geometry("""
+    mol = psi4.geometry(
+        """
                         He 0 0 -5
                         --
                         He 0 0 5
-                        units au""")
+                        units au"""
+    )
     plan = task_planner("gradient", "MP2/cc-pV[D,T]Z", mol, bsse_type="cp")
 
     assert isinstance(plan, ManyBodyComputer)
@@ -269,22 +289,29 @@ def test_nbody_dimer_cbs_gradient():
             assert plan3.driver == "gradient"
 
 
-@pytest.mark.parametrize("mtd, kw", [
-    ('mp2', {'dertype': 0}),
-    ('mp5', {}),
-])
+@pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
-    mol = psi4.geometry("""
+    mol = psi4.geometry(
+        """
                         He 0 0 -5
                         --
                         He 0 0 5
-                        units au""")
-    plan = task_planner("gradient", f"{mtd}/cc-pV[D,T]Z", mol, **kw, bsse_type="cp", findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/4.00260325413))
+                        units au"""
+    )
+    plan = task_planner(
+        "gradient",
+        f"{mtd}/cc-pV[D,T]Z",
+        mol,
+        **kw,
+        bsse_type="cp",
+        findif_stencil_size=3,
+        findif_step_size=0.005 / math.sqrt(2 / 4.00260325413),
+    )
 
     displacements = {
-        '0: -1': np.array([[ 0.    ,  0.    , -5.0025], [ 0.    ,  0.    ,  5.0025]]),
-        '0: 1':  np.array([[ 0.    ,  0.    , -4.9975], [ 0.    ,  0.    ,  4.9975]]),
-        'reference':  np.array([[ 0.    ,  0.    , -5.0], [ 0.    ,  0.    ,  5.0]]),
+        "0: -1": np.array([[0.0, 0.0, -5.0025], [0.0, 0.0, 5.0025]]),
+        "0: 1": np.array([[0.0, 0.0, -4.9975], [0.0, 0.0, 4.9975]]),
+        "reference": np.array([[0.0, 0.0, -5.0], [0.0, 0.0, 5.0]]),
     }
 
     nbody_displacements = {
@@ -296,11 +323,11 @@ def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
     }
 
     ghostiness = {
-        "1_((2,), (2,))": (['He'], [True]),
-        "1_((1,), (1,))": (['He'], [True]),
-        "1_((1, 2), (1, 2))": (['He', 'He'], [True, True]),
-        "1_((1,), (1, 2))": (['He', 'He'], [True, False]),
-        "1_((2,), (1, 2))": (['He', 'He'], [False, True]),
+        "1_((2,), (2,))": (["He"], [True]),
+        "1_((1,), (1,))": (["He"], [True]),
+        "1_((1, 2), (1, 2))": (["He", "He"], [True, True]),
+        "1_((1,), (1, 2))": (["He", "He"], [True, False]),
+        "1_((2,), (1, 2))": (["He", "He"], [False, True]),
     }
 
     assert isinstance(plan, ManyBodyComputer)
@@ -313,8 +340,8 @@ def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
         assert plan2.driver == "gradient"
 
         kmol = plan2.molecule.to_schema(dtype=2)
-        assert kmol['symbols'] == ghostiness[k2][0]
-        assert kmol['real'] == ghostiness[k2][1]
+        assert kmol["symbols"] == ghostiness[k2][0]
+        assert kmol["real"] == ghostiness[k2][1]
 
         for k3, plan3 in plan2.task_list.items():
             assert isinstance(plan3, CompositeComputer)
@@ -351,23 +378,27 @@ def test_findif_1_1():
     assert plan.method == "mp2"
     assert plan.driver == "gradient"
     # below are now back to optstash
-    #assert plan.task_list[key].keywords['E_CONVERGENCE'] == 10
-    #assert plan.task_list[key].keywords['SCF__E_CONVERGENCE'] == 10
-    #assert plan.task_list[key].keywords['SCF__D_CONVERGENCE'] == 10
+    # assert plan.task_list[key].keywords['E_CONVERGENCE'] == 10
+    # assert plan.task_list[key].keywords['SCF__E_CONVERGENCE'] == 10
+    # assert plan.task_list[key].keywords['SCF__D_CONVERGENCE'] == 10
 
 
-@pytest.mark.parametrize("mtd, kw", [
-    ('mp2', {'dertype': 0}),
-    ('mp5', {}),
-])
+@pytest.mark.parametrize("mtd, kw", [("mp2", {"dertype": 0}), ("mp5", {})])
 def test_findif_1_0(mtd, kw):
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
-    plan = task_planner("gradient", f"{mtd}/cc-pVDZ", mol, **kw, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+    plan = task_planner(
+        "gradient",
+        f"{mtd}/cc-pVDZ",
+        mol,
+        **kw,
+        findif_stencil_size=3,
+        findif_step_size=0.005 / math.sqrt(2 / 1.00782503223),
+    )
 
     displacements = {
-        '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
-        '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
-        'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+        "0: -1": np.array([[0.0, 0.0, -1.0025], [0.0, 0.0, 1.0025]]),
+        "0: 1": np.array([[0.0, 0.0, -0.9975], [0.0, 0.0, 0.9975]]),
+        "reference": np.array([[0.0, 0.0, -1.0], [0.0, 0.0, 1.0]]),
     }
 
     assert isinstance(plan, FiniteDifferenceComputer)
@@ -379,27 +410,32 @@ def test_findif_1_0(mtd, kw):
         assert plan2.method == mtd
         assert plan2.driver == "energy"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
-        assert plan2.keywords['SCF__E_CONVERGENCE'] == 1.e-10
-        assert plan2.keywords['SCF__D_CONVERGENCE'] == 1.e-10
-        assert plan2.keywords['E_CONVERGENCE'] == 1.e-8
+        assert plan2.keywords["SCF__E_CONVERGENCE"] == 1.0e-10
+        assert plan2.keywords["SCF__D_CONVERGENCE"] == 1.0e-10
+        assert plan2.keywords["E_CONVERGENCE"] == 1.0e-8
 
 
-@pytest.mark.parametrize("kw, pts", [
-    ({'ref_gradient': np.zeros((2, 3))}, 3),
-    ({}, 5),
-])
+@pytest.mark.parametrize("kw, pts", [({"ref_gradient": np.zeros((2, 3))}, 3), ({}, 5)])
 def test_findif_2_1(kw, pts):
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
     psi4.set_options({"E_CONVERGENCE": 6})
-    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, **kw, dertype=1, findif_stencil_size=3, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+    plan = task_planner(
+        "hessian",
+        "MP2/cc-pVDZ",
+        mol,
+        **kw,
+        dertype=1,
+        findif_stencil_size=3,
+        findif_step_size=0.005 / math.sqrt(2 / 1.00782503223),
+    )
 
     displacements = {
-        '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
-        '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
-        'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+        "0: -1": np.array([[0.0, 0.0, -1.0025], [0.0, 0.0, 1.0025]]),
+        "0: 1": np.array([[0.0, 0.0, -0.9975], [0.0, 0.0, 0.9975]]),
+        "reference": np.array([[0.0, 0.0, -1.0], [0.0, 0.0, 1.0]]),
         # below here for r_proj False
-        '1: -1': np.array([[-0.0025,  0.    , -1.    ], [ 0.0025,  0.    ,  1.    ]]),
-        '2: -1': np.array([[ 0.    , -0.0025, -1.    ], [ 0.    ,  0.0025,  1.    ]]),
+        "1: -1": np.array([[-0.0025, 0.0, -1.0], [0.0025, 0.0, 1.0]]),
+        "2: -1": np.array([[0.0, -0.0025, -1.0], [0.0, 0.0025, 1.0]]),
     }
 
     assert isinstance(plan, FiniteDifferenceComputer)
@@ -411,30 +447,35 @@ def test_findif_2_1(kw, pts):
         assert plan2.method == "mp2"
         assert plan2.driver == "gradient"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
-        assert plan2.keywords['SCF__D_CONVERGENCE'] == 1.e-10
-        assert plan2.keywords['E_CONVERGENCE'] == 1.e-6
+        assert plan2.keywords["SCF__D_CONVERGENCE"] == 1.0e-10
+        assert plan2.keywords["E_CONVERGENCE"] == 1.0e-6
 
 
-@pytest.mark.parametrize("kw, pts", [
-    ({'ref_gradient': np.zeros((2, 3))}, 5),
-    ({}, 9),
-])
+@pytest.mark.parametrize("kw, pts", [({"ref_gradient": np.zeros((2, 3))}, 5), ({}, 9)])
 def test_findif_2_0(kw, pts):
     mol = psi4.geometry("H\nH 1 2.0\nunits au")
     psi4.set_options({"scf__E_CONVERGENCE": 6})
-    plan = task_planner("hessian", "MP2/cc-pVDZ", mol, **kw, dertype=0, findif_stencil_size=5, findif_step_size=0.005/math.sqrt(2/1.00782503223))
+    plan = task_planner(
+        "hessian",
+        "MP2/cc-pVDZ",
+        mol,
+        **kw,
+        dertype=0,
+        findif_stencil_size=5,
+        findif_step_size=0.005 / math.sqrt(2 / 1.00782503223),
+    )
 
     displacements = {
-        '0: -2': np.array([[ 0.    ,  0.    , -1.0050], [ 0.    ,  0.    ,  1.0050]]),
-        '0: 2':  np.array([[ 0.    ,  0.    , -0.9950], [ 0.    ,  0.    ,  0.9950]]),
-        '0: -1': np.array([[ 0.    ,  0.    , -1.0025], [ 0.    ,  0.    ,  1.0025]]),
-        '0: 1':  np.array([[ 0.    ,  0.    , -0.9975], [ 0.    ,  0.    ,  0.9975]]),
-        'reference':  np.array([[ 0.    ,  0.    , -1.0], [ 0.    ,  0.    ,  1.0]]),
+        "0: -2": np.array([[0.0, 0.0, -1.0050], [0.0, 0.0, 1.0050]]),
+        "0: 2": np.array([[0.0, 0.0, -0.9950], [0.0, 0.0, 0.9950]]),
+        "0: -1": np.array([[0.0, 0.0, -1.0025], [0.0, 0.0, 1.0025]]),
+        "0: 1": np.array([[0.0, 0.0, -0.9975], [0.0, 0.0, 0.9975]]),
+        "reference": np.array([[0.0, 0.0, -1.0], [0.0, 0.0, 1.0]]),
         # below here for r_proj False
-        '1: -1': np.array([[-0.0025,  0.    , -1.    ], [ 0.0025,  0.    ,  1.    ]]),
-        '1: -2': np.array([[-0.005 ,  0.    , -1.    ], [ 0.005 ,  0.    ,  1.    ]]),
-        '2: -1': np.array([[ 0.    , -0.0025, -1.    ], [ 0.    ,  0.0025,  1.    ]]),
-        '2: -2': np.array([[ 0.    , -0.005 , -1.    ], [ 0.    ,  0.005 ,  1.    ]]),
+        "1: -1": np.array([[-0.0025, 0.0, -1.0], [0.0025, 0.0, 1.0]]),
+        "1: -2": np.array([[-0.005, 0.0, -1.0], [0.005, 0.0, 1.0]]),
+        "2: -1": np.array([[0.0, -0.0025, -1.0], [0.0, 0.0025, 1.0]]),
+        "2: -2": np.array([[0.0, -0.005, -1.0], [0.0, 0.005, 1.0]]),
     }
 
     assert isinstance(plan, FiniteDifferenceComputer)
@@ -446,6 +487,6 @@ def test_findif_2_0(kw, pts):
         assert plan2.method == "mp2"
         assert plan2.driver == "energy"
         assert np.allclose(plan2.molecule.geometry().np, displacements[k2])
-        assert plan2.keywords['SCF__E_CONVERGENCE'] == 1.e-6
-        assert plan2.keywords['SCF__D_CONVERGENCE'] == 1.e-11
-        assert plan2.keywords['E_CONVERGENCE'] == 1.e-10
+        assert plan2.keywords["SCF__E_CONVERGENCE"] == 1.0e-6
+        assert plan2.keywords["SCF__D_CONVERGENCE"] == 1.0e-11
+        assert plan2.keywords["E_CONVERGENCE"] == 1.0e-10

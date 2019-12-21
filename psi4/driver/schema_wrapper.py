@@ -392,7 +392,6 @@ def _quiet_remove(filename):
 def run_qcschema(input_data, clean=True, postclean=True):
 
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
-    print('outfile', outfile)
     core.set_output_file(outfile, False)
     print_header()
 
