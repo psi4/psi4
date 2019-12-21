@@ -38,7 +38,6 @@ from psi4.driver.driver_nbody import ManyBodyComputer
 from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, _cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
 
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -100,14 +99,14 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
     keywords["function_kwargs"] = {}
     if "embedding_charges" in kwargs and "bsse_type" not in kwargs:
         keywords["function_kwargs"].update({"embedding_charges": kwargs.pop("embedding_charges")})
-    
+
     # Need to add full path to pcm file
     if "PCM__PCMSOLVER_PARSED_FNAME" in keywords.keys():
         fname = keywords["PCM__PCMSOLVER_PARSED_FNAME"]
         keywords["PCM__PCMSOLVER_PARSED_FNAME"] = os.path.join(os.getcwd(), fname)
 
     # Pull basis out of kwargs, override globals if user specified
-    basis = keywords.pop("BASIS", "(auto)") #None)
+    basis = keywords.pop("BASIS", "(auto)")
     basis = kwargs.pop("basis", basis)
     method = method.lower()
 
@@ -134,7 +133,7 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
         # Add tasks for every nbody level requested
         if levels is None:
             levels = {plan.max_nbody: method}
-        
+
         # Organize nbody calculations into levels
         nbody_list = []
         prev_body = 0
@@ -157,8 +156,8 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
             method, basis, cbsmeta = _expand_cbs_methods(level, basis, driver, cbsmeta=cbsmeta, **kwargs)
             packet.update({'method': method, 'basis': basis})
 
-      #      if n == 'supersytem':
-      #          nlevel = plan.max_nbody
+            # if n == 'supersytem':
+            #     nlevel = plan.max_nbody
 
             # Tell the task bulider which level to add a task list for
             if method == "cbs":
@@ -176,8 +175,18 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
                     plan.build_tasks(CompositeComputer, **packet, nlevel=nlevel, level=n, **cbsmeta, **kwargs)
 
                 else:
-                    logger.info(f'PLANNING MB(FD(CBS):  n={n}, {nlevel} packet={packet} cbsmeta={cbsmeta} findif_kw={current_findif_kwargs} kw={kwargs}')
-                    plan.build_tasks(FiniteDifferenceComputer, **packet, nlevel=nlevel, level=n, findif_mode=dermode, computer=CompositeComputer, **cbsmeta, **current_findif_kwargs, **kwargs)
+                    logger.info(
+                        f'PLANNING MB(FD(CBS):  n={n}, {nlevel} packet={packet} cbsmeta={cbsmeta} findif_kw={current_findif_kwargs} kw={kwargs}'
+                    )
+                    plan.build_tasks(FiniteDifferenceComputer,
+                                     **packet,
+                                     nlevel=nlevel,
+                                     level=n,
+                                     findif_mode=dermode,
+                                     computer=CompositeComputer,
+                                     **cbsmeta,
+                                     **current_findif_kwargs,
+                                     **kwargs)
 
             else:
                 dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1)
@@ -185,8 +194,16 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
                     logger.info(f'PLANNING MB:  n={n}, {nlevel} packet={packet}')
                     plan.build_tasks(AtomicComputer, **packet, nlevel=nlevel, level=n, **kwargs)
                 else:
-                    logger.info(f'PLANNING MB(FD):  n={n}, {nlevel} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}')
-                    plan.build_tasks(FiniteDifferenceComputer, **packet, nlevel=nlevel, level=n, findif_mode=dermode, **current_findif_kwargs, **kwargs)
+                    logger.info(
+                        f'PLANNING MB(FD):  n={n}, {nlevel} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}'
+                    )
+                    plan.build_tasks(FiniteDifferenceComputer,
+                                     **packet,
+                                     nlevel=nlevel,
+                                     level=n,
+                                     findif_mode=dermode,
+                                     **current_findif_kwargs,
+                                     **kwargs)
 
         return plan
 
@@ -204,8 +221,13 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
             return plan
         else:
             # For FD(CBS(Atomic)), the CompositeComputer above is discarded after being used for dermode.
-            logger.info(f'PLANNING FD(CBS):  dermode={dermode} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}')
-            plan = FiniteDifferenceComputer(**packet, findif_mode=dermode, computer=CompositeComputer, **current_findif_kwargs, **kwargs)
+            logger.info(
+                f'PLANNING FD(CBS):  dermode={dermode} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}')
+            plan = FiniteDifferenceComputer(**packet,
+                                            findif_mode=dermode,
+                                            computer=CompositeComputer,
+                                            **current_findif_kwargs,
+                                            **kwargs)
             return plan
 
     # Done with Wrappers -- know we want E, G, or H -- but may still be FD or AtomicComputer
@@ -218,5 +240,10 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
             return AtomicComputer(**packet, **kwargs)
         else:
             keywords.update(convcrit)
-            logger.info(f'PLANNING FD:  dermode={dermode} keywords={keywords} findif_kw={current_findif_kwargs} kw={kwargs}')
-            return FiniteDifferenceComputer(**packet, findif_mode=dermode, **current_findif_kwargs, **kwargs, logging='file.log')
+            logger.info(
+                f'PLANNING FD:  dermode={dermode} keywords={keywords} findif_kw={current_findif_kwargs} kw={kwargs}')
+            return FiniteDifferenceComputer(**packet,
+                                            findif_mode=dermode,
+                                            **current_findif_kwargs,
+                                            **kwargs,
+                                            logging='file.log')
