@@ -1193,6 +1193,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
 
 
 def _build_cbs_compute(metameta, metadata):
+    label = metameta['label']
     ptype = metameta['ptype']
 
     # Build string of title banner
