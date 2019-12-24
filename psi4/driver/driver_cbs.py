@@ -41,10 +41,9 @@ from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
 from psi4.driver import driver_util, p4util, pp
-from psi4.driver import psifiles as psif
 from psi4.driver import qcdb
 from psi4.driver.driver_cbs_helper import (composite_procedures, register_composite_function, register_xtpl_function,
-                                           xtpl_procedures)
+                                           xtpl_procedures)  # lgtm[py/unused-import]
 from psi4.driver.driver_util import UpgradeHelper
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
@@ -1061,7 +1060,6 @@ def _cbs_text_parser(total_method_name, **kwargs):
     ptype = kwargs.pop('ptype', None)
 
     # Sanitize total_method_name
-    label = total_method_name
     total_method_name = total_method_name.lower()
     total_method_name = total_method_name.replace(' ', '')
 
@@ -1195,8 +1193,6 @@ def _cbs_text_parser(total_method_name, **kwargs):
 
 
 def _build_cbs_compute(metameta, metadata):
-    label = metameta['label']
-    nat = metameta['molecule'].natom()
     ptype = metameta['ptype']
 
     # Build string of title banner

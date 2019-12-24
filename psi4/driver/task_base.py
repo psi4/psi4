@@ -55,7 +55,7 @@ class BaseComputer(qcel.models.ProtoModel):
         pass
 
     class Config(qcel.models.ProtoModel.Config):
-        extra = 'allow'
+        extra = "allow"
         allow_mutation = True
 
 
@@ -74,15 +74,15 @@ class AtomicComputer(BaseComputer):
     class Config(qcel.models.ProtoModel.Config):
         pass
 
-    @pydantic.validator('basis')
+    @pydantic.validator("basis")
     def set_basis(cls, basis):
         return basis.lower()
 
-    @pydantic.validator('method')
+    @pydantic.validator("method")
     def set_method(cls, method):
         return method.lower()
 
-    @pydantic.validator('keywords')
+    @pydantic.validator("keywords")
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
 
@@ -100,7 +100,7 @@ class AtomicComputer(BaseComputer):
                 "stdout": True,
             },
             "extras": {
-                "psiapi": True,
+#                "psiapi": True,
             },
         })
 
@@ -124,14 +124,16 @@ class AtomicComputer(BaseComputer):
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=2))
 
-            r = client.add_compute("psi4", self.method, self.basis, self.driver, keyword_id, [mol])
+            r = client.add_compute(
+                "psi4", self.method, self.basis, self.driver, keyword_id, [mol]
+            )
             self.result_id = r.ids[0]
             # NOTE: The following will re-run errored jobs by default
             if self.result_id in r.existing:
                 ret = client.query_tasks(base_result=self.result_id)
                 if ret:
                     if ret[0].status == "ERROR":
-                        client.modify_tasks("restart",base_result=self.result_id)
+                        client.modify_tasks("restart", base_result=self.result_id)
                         print("Resubmitting Errored Job {}".format(self.result_id))
                     elif ret[0].status == "COMPLETE":
                         print("Job already completed {}".format(self.result_id))
@@ -148,18 +150,24 @@ class AtomicComputer(BaseComputer):
         gof = core.get_output_file()
 
         # EITHER ...
-        #from psi4.driver import schema_wrapper
-        #self.result = schema_wrapper.run_qcschema(self.plan())
+        # from psi4.driver import schema_wrapper
+        # self.result = schema_wrapper.run_qcschema(self.plan())
         # ... OR ...
-        self.result = qcng.compute(self.plan(), 'psi4', raise_error=True,
-                                   # local_options below suitable for continuous mode
-                                   local_options={"memory": core.get_memory()/1000000000, "ncores": core.get_num_threads()}
-                                  )
+        self.result = qcng.compute(
+            self.plan(),
+            "psi4",
+            raise_error=True,
+            # local_options below suitable for continuous mode
+            local_options={
+                "memory": core.get_memory() / 1000000000,
+                "ncores": core.get_num_threads(),
+            },
+        )
         # ... END
 
         logger.debug(pp.pformat(self.result.dict()))
         pp.pprint(self.result.dict())
-        print('... JSON returns >>>')
+        print("... JSON returns >>>")
         core.set_output_file(gof, True)
         self.computed = True
 
@@ -173,7 +181,7 @@ class AtomicComputer(BaseComputer):
             if len(result) == 0:
                 return self.result
 
-            self.result = result[0].dict(encoding='msgpack-ext')
+            self.result = result[0].dict(encoding="msgpack-ext")
             return self.result
 
     def get_json_results(self):

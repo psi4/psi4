@@ -186,8 +186,6 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      pwd
-      which conda python psi4
       export PATH=$(Build.SourcesDirectory)/build/stage/bin:${PATH}
       export PYTHONPATH=$(Build.SourcesDirectory)/build/stage/lib:${PYTHONPATH}
       which conda python psi4
