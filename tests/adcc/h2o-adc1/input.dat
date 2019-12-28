@@ -31,6 +31,6 @@ ref_oscillator = [0.03088937957937796, 1.0224950564637748e-07, 0.093364439065834
                   8.186576063665832e-07, 0.08070426614247558, 0.12397520336438952,    #TEST
                   0.0028151704615164913]                                              #TEST
                                                                                       #TEST
-compare_values(ref_gs, energy_adc, 7, "ADC(1) GS energy")                             #TEST
+compare_values(ref_gs, energy_adc, 6, "ADC(1) GS energy")                             #TEST
 compare_arrays(np.array([ref_energies]).T, wfn.variable("excitation energies").np,    #TEST
                1e-5, "ADC(1) excitation energies")                                    #TEST

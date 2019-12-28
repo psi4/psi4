@@ -34,6 +34,6 @@ ref_oscillator = [0.031745607226392594, 0.07067401789077107, 0.06258391743191072
                   0.046067265580675934, 7.343311132539717e-05, 4.603792497085604e-09, #TEST
                   3.774045221207538e-05]                                              #TEST
                                                                                       #TEST
-compare_values(ref_gs, energy_adc, 7, "CVS-ADC(1) GS energy")                         #TEST
+compare_values(ref_gs, energy_adc, 6, "CVS-ADC(1) GS energy")                         #TEST
 compare_arrays(np.array([ref_energies]).T, wfn.variable("excitation energies").np,    #TEST
                1e-5, "CVS-ADC(1) excitation energies")                                #TEST

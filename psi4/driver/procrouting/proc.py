@@ -3337,7 +3337,7 @@ def run_adcc(name, **kwargs):
     mp_corr = 0.0
     if state.method.level > 1:
         core.print_out("Ground state energy breakdown:\n")
-        core.print_out("    Energy             SCF   {0:15.8g} Ha\n".format(ref_wfn.energy()))
+        core.print_out("    Energy             SCF   {0:15.8g} [Eh]\n".format(ref_wfn.energy()))
         for level in range(2, state.method.level + 1):
             if level >= 3 and is_cvs_adc3:
                 continue
@@ -3345,11 +3345,10 @@ def run_adcc(name, **kwargs):
             mp_corr += energy
             adc_wfn.set_variable(f"MP{level} correlation energy", energy)
             adc_wfn.set_variable(f"MP{level} total energy", mp.energy(level))
-            core.print_out(f"    Energy correlation MP{level}   {energy:15.8g} Ha\n")
-        core.print_out("    Energy             total {0:15.8g} Ha\n".format(mp_energy))
+            core.print_out(f"    Energy correlation MP{level}   {energy:15.8g} [Eh]\n")
+        core.print_out("    Energy             total {0:15.8g} [Eh]\n".format(mp_energy))
     adc_wfn.set_variable("current correlation energy", mp_corr)
     adc_wfn.set_variable("current energy", mp_energy)
-    core.set_variable("current energy", mp_energy)
 
     # Set results of excited-states computation
     # TODO Does not work: Can't use strings
@@ -3370,6 +3369,10 @@ def run_adcc(name, **kwargs):
     core.print_out("\n  ==> Dominant amplitudes per state <==  \n\n")
     tol_ampl = core.get_option("ADC", "CUTOFF_AMPS_PRINT")
     core.print_out(state.describe_amplitudes(tolerance=tol_ampl) + "\n\n")
+
+    # Shove variables into global space
+    for k, v in adc_wfn.variables().items():
+        core.set_variable(k, v)
 
     if do_timer:
         core.tstop()
@@ -3424,8 +3427,7 @@ def run_adcc_property(name, **kwargs):
             lines += [ind + ind + format_vector("Dipole moment (in a.u.)", mp.dipole_moment(2))]
             for i, cart in enumerate(["X", "Y", "Z"]):
                 adc_wfn.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
-                core.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
-                core.set_variable("current dipole " + cart, mp.dipole_moment(2)[i])
+                adc_wfn.set_variable("current dipole " + cart, mp.dipole_moment(2)[i])
         lines += [""]
         core.print_out("\n".join(lines) + "\n")
 
@@ -3452,6 +3454,10 @@ def run_adcc_property(name, **kwargs):
         for prop, data in sorted(computed.items()):
             lines += [ind + ind + format_vector(prop, data[i])]
         core.print_out("\n".join(lines) + "\n")
+
+    # Shove variables into global space
+    for k, v in adc_wfn.variables().items():
+        core.set_variable(k, v)
 
     if do_timer:
         core.tstop()
