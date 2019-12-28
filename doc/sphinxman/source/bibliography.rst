@@ -453,4 +453,4 @@ Bibliography
 
 .. [Herbst2019]
    M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw.
-   *WIREs Comput. Mol. Sci.*, *submitted*, Preprint https://adc-connect.org/q/publications
+   *WIREs Comput. Mol. Sci.*, *accepted*, Preprint https://adc-connect.org/q/publications

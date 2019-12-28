@@ -235,7 +235,7 @@ Interface to adcc
 .. sectionauthor:: Michael F. Herbst
 
 For most implemented ADC methods |PSIfour| relies
-on an interface to the adcc python package.
+on an interface to the `adcc <https://adc-connect.org>`_ python package.
 The approach of adcc is to directly diagonalise the
 ADC matrix :math:`\mathbf{A}` in an iterative diagonalisation
 procedure, usually a Jacobi-preconditioned Davidson. Expensive parts
