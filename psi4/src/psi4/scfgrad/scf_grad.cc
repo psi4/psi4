@@ -1036,11 +1036,14 @@ SharedMatrix SCFGrad::compute_hessian()
     timer_off("Hess: JK");
 
     // => Response Terms (Brace Yourself) <= //
-    if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
+    if (options_.get_str("REFERENCE") == "RHF" || 
+        options_.get_str("REFERENCE") == "RKS" || 
+        options_.get_str("REFERENCE") == "UHF") {
         hessians_["Response"] = hessian_response();
     } else {
-        hessians_["Response"] = uhf_hessian_response();
+        throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
     }
+
 
     // => Total Hessian <= //
     SharedMatrix total = SharedMatrix(hessians_["Nuclear"]->clone());
