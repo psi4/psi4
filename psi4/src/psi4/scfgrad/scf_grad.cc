@@ -55,6 +55,10 @@
 
 #include "jk_grad.h"
 
+#ifdef USING_BrianQC
+extern bool brianCPHFFlag;
+#endif
+
 namespace psi {
 namespace scfgrad {
 
@@ -1037,6 +1041,9 @@ SharedMatrix SCFDeriv::compute_hessian()
     timer_off("Hess: JK");
 
     // => Response Terms (Brace Yourself) <= //
+#ifdef USING_BrianQC
+    brianCPHFFlag = true;
+#endif
     if (options_.get_str("REFERENCE") == "RHF" || 
         options_.get_str("REFERENCE") == "RKS" || 
         options_.get_str("REFERENCE") == "UHF") {
@@ -1044,7 +1051,9 @@ SharedMatrix SCFDeriv::compute_hessian()
     } else {
         throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
     }
-
+#ifdef USING_BrianQC
+    brianCPHFFlag = false;
+#endif
 
     // => Total Hessian <= //
     SharedMatrix total = SharedMatrix(hessians_["Nuclear"]->clone());

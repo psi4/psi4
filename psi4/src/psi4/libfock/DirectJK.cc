@@ -62,6 +62,7 @@
 #include <brian_cphf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianCPHFFlag;
 #endif
 
 using namespace psi;
@@ -97,7 +98,7 @@ void DirectJK::preiterations() {
     
 #ifdef USING_BrianQC
     if (brianCookie != 0) {
-        double threshold = cutoff_ * 1e-2;
+        double threshold = cutoff_ * (brianCPHFFlag ? 1e-3 : 1e-0); // CPHF needs higher precision
         brianCOMSetPrecisionThresholds(&brianCookie, &threshold);
         checkBrian();
     }
@@ -158,8 +159,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
         brianBool computeCoulomb = do_J_ ? BRIAN_TRUE : BRIAN_FALSE;
         brianBool computeExchange = do_K_ ? BRIAN_TRUE : BRIAN_FALSE;
         
-        // TODO: need a more reliable way to determine if this is a CPHF or a regular Fock build
-        if (lr_symmetric_) {
+        if (not brianCPHFFlag) {
             brianSCFBuildFockRepulsion(&brianCookie,
                 &computeCoulomb,
                 &computeExchange,
