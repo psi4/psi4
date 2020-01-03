@@ -259,7 +259,7 @@ More detailed documentation about adcc and its features can be found
 at `<https://adc-connect.org>`_,
 especially the `theory section <https://adc-connect.org/latest/theory.html>`_.
 If you are using adcc from |PSIfour| for your calculations,
-please cite both |PSIfour| as well as adcc [Herbst2019]_
+please cite both |PSIfour| as well as adcc [Herbst2020]_
 in your published work.
 
 **The ADC wavefunction object.**
