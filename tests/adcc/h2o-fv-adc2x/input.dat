@@ -24,11 +24,11 @@ energy_adc, wfn = energy('adc(2)-x', return_wfn=True)
 properties('adc(2)-x', properties=["oscillator_strength", "dipole"])
 
 ref_gs = -76.17758646463754
-ref_energies = [0.27923294183912084, 0.3561581713403726, 0.3687934240091567,          #TEST
-                0.4475153025920463, 0.5444444277989609]                               #TEST
-ref_oscillator = [0.02522186041966282, 6.117976294676366e-08, 0.08634173428781433,    #TEST
-                  0.06691737304606193, 0.301840010718239]                             #TEST
-                                                                                      #TEST
-compare_values(ref_gs, energy_adc, 7, "ADC(2)-x GS energy")                           #TEST
-compare_arrays(np.array([ref_energies]).T, wfn.variable("excitation energies").np,    #TEST
-               1e-5, "ADC(2)-x excitation energies")                                  #TEST
+ref_energies = [0.27923294183912084, 0.3561581713403726, 0.3687934240091567,                 #TEST
+                0.4475153025920463, 0.5444444277989609]                                      #TEST
+ref_oscillator = [0.02522186041966282, 6.117976294676366e-08, 0.08634173428781433,           #TEST
+                  0.06691737304606193, 0.301840010718239]                                    #TEST
+                                                                                             #TEST
+compare_values(ref_gs, energy_adc, 7, "ADC(2)-x GS energy")                                  #TEST
+compare_arrays(np.array([ref_energies]).T, wfn.variable("ADC(2)-x excitation energies").np,  #TEST
+               1e-5, "ADC(2)-x excitation energies")                                         #TEST

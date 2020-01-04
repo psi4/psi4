@@ -3354,7 +3354,7 @@ def run_adcc(name, **kwargs):
     # TODO Does not work: Can't use strings
     # adc_wfn.set_variable("excitation kind", state.kind)
     adc_wfn.set_variable("number of iterations", state.n_iter)
-    adc_wfn.set_variable("excitation energies",
+    adc_wfn.set_variable(name + " excitation energies",
                          core.Matrix.from_array(state.excitation_energies.reshape(-1, 1)))
     adc_wfn.set_variable("number of excited states", len(state.excitation_energies))
 
@@ -3435,17 +3435,17 @@ def run_adcc_property(name, **kwargs):
     if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
         data = state.transition_dipole_moments
         computed["Transition dipole moment (in a.u.)"] = data
-        adc_wfn.set_variable("transition dipoles", core.Matrix.from_array(data))
+        adc_wfn.set_variable(name + " transition dipoles", core.Matrix.from_array(data))
 
     if "OSCILLATOR_STRENGTH" in properties:
         data = state.oscillator_strengths.reshape(-1, 1)
         computed["Oscillator strength (length gauge)"] = data
-        adc_wfn.set_variable("oscillator strengths", core.Matrix.from_array(data))
+        adc_wfn.set_variable(name + " oscillator strengths", core.Matrix.from_array(data))
 
     if "DIPOLE" in properties:
         data = state.state_dipole_moments
         computed["State dipole moment (in a.u.)"] = data
-        adc_wfn.set_variable("dipoles", core.Matrix.from_array(data))
+        adc_wfn.set_variable(name + " state dipoles", core.Matrix.from_array(data))
 
     core.print_out("\nExcited state properties:\n")
     n_states = adc_wfn.variable("number of excited states")
