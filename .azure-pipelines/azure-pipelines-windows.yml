@@ -196,6 +196,14 @@ jobs:
         displayName: 'Spot Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
+      # Spot Test
+      - script: |
+          setlocal EnableDelayedExpansion
+          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+          psi4 -o stdout $(Build.SourcesDirectory)\tests\scf-cholesky-basis\input.dat
+        displayName: 'CHolesky basis Spot Test'
+        workingDirectory: $(Build.BinariesDirectory)/build
+
       # Test (ctest)
       - script: |
           setlocal EnableDelayedExpansion

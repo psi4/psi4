@@ -89,7 +89,7 @@ set s_orthogonalization partialcholesky
 set d_convergence  10
     
 set s_cholesky_tolerance 1e-4
-set print 4
+set print 3
 e_chol_4 = energy('HF')
 compare_values(e_cholesky_4, e_chol_4, 7, "Energy with Cholesky 1e-4")                                        #TEST
 
