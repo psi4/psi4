@@ -171,10 +171,10 @@ procedures = {
         'lccd'          : proc.select_lccd_gradient,
         'olccd'         : proc.select_olccd_gradient,
         'ccd'           : proc.run_dfocc_gradient,
-        # Upon adding a method to this list, add it to the docstring in optimize() below
+        # Upon adding a method to this list, add it to the docstring in driver.optimize below
     },
     'hessian' : {
-        # Upon adding a method to this list, add it to the docstring in frequency() below
+        # Upon adding a method to this list, add it to the docstring in driver.frequency
         'hf'            : proc.run_scf_hessian,
         'scf'           : proc.run_scf_hessian,
     },
@@ -194,7 +194,11 @@ procedures = {
         'fci'      : proc.run_detci_property,
         'rasscf'   : proc.run_detci_property,
         'casscf'   : proc.run_detci_property,
-        # Upon adding a method to this list, add it to the docstring in property() below
+        'omp2'     : proc.select_omp2_property,
+        'omp2.5'   : proc.select_omp2p5_property,
+        'omp3'     : proc.select_omp3_property,
+        'olccd'    : proc.select_olccd_property
+        # Upon adding a method to this list, add it to the docstring in driver.properties
     }} # yapf: disable
 
 # Will only allow energy to be run for the following methods

@@ -119,39 +119,40 @@ void OCCWave::common_init() {
     oeprop_ = options_.get_str("OEPROP");
     // comput_s2_=options_.get_str("COMPUT_S2");
 
-    //   Tying orbital convergence to the desired e_conv,
-    //   particularly important for sane numerical frequencies by energy
-    //   These have been determined by linear fits to a step fn
-    //   based on e_conv on limited numerical tests.
+    //   Given default orbital convergence, set the criteria by what should
+    //   be necessary to achieve the target energy convergence.
+    //   These formulae are based on experiments and are nothing rigorous.
     //   The printed value from options_.print() will not be accurate
-    //   since newly set orbital conv is not written back to options
-    if (options_["RMS_MOGRAD_CONVERGENCE"].has_changed()) {
-        tol_grad = options_.get_double("RMS_MOGRAD_CONVERGENCE");
-    } else {
-        double temp;
-        temp = 2.0 -
-               0.5 * std::log10(tol_Eod);  // I think (U.B) this is the desirable map balancing accuracy and efficiency.
-        // temp = 3.0 - 0.5 * log10(tol_Eod); // Lori's old map leads unecessary iterations for the omp2-2 test case.
-        // temp = 1.74 - 0.71 * log10(tol_Eod); //OLD map for wfn != OMP2
-        if (temp < 5.0) {
-            temp = 5.0;
+    //   since newly set orbital conv is not written back to options.
+    //   We still want these to be the default values, after all!
+    if (orb_opt_ == "TRUE") {
+        if (options_["RMS_MOGRAD_CONVERGENCE"].has_changed()) {
+            tol_grad = options_.get_double("RMS_MOGRAD_CONVERGENCE");
+        } else {
+            double temp;
+            temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
+            if (temp < 4.0) {
+                temp = 4.0;
+            }
+            tol_grad = pow(10.0, -temp);
+            // tol_grad = 100.0*tol_Eod;
+            outfile->Printf("\tFor this energy convergence, default RMS orbital gradient is: %12.2e\n", tol_grad);
         }
-        tol_grad = pow(10.0, -temp);
-        outfile->Printf("\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
-    }
 
-    // Determine the MAXIMUM MOGRAD CONVERGENCE
-    if (options_["MAX_MOGRAD_CONVERGENCE"].has_changed()) {
-        mograd_max = options_.get_double("MAX_MOGRAD_CONVERGENCE");
-    } else {
-        double temp2;
-        temp2 = -std::log10(tol_grad) - 1.5;
-        if (temp2 > 4.0) {
-            temp2 = 4.0;
+        // Determine the MAXIMUM MOGRAD CONVERGENCE
+        if (options_["MAX_MOGRAD_CONVERGENCE"].has_changed()) {
+            mograd_max = options_.get_double("MAX_MOGRAD_CONVERGENCE");
+        } else {
+            double temp2;
+            temp2 = (-0.8 * std::log10(tol_grad)) - 0.5;
+            if (temp2 < 3.0) {
+                temp2 = 3.0;
+            }
+            mograd_max = pow(10.0, -temp2 - 1);
+            // mograd_max = 10.0*tol_grad;
+            outfile->Printf("\tFor this energy convergence, default MAX orbital gradient is: %12.2e\n", mograd_max);
         }
-        mograd_max = pow(10.0, -temp2);
-        outfile->Printf("\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
-    }
+    }  // end if (orb_opt_ == "TRUE")
 
     // Figure out REF
     if (reference == "RHF" || reference == "RKS")

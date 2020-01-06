@@ -275,11 +275,6 @@ void DFOCC::occ_iterations() {
             break;
         }
 
-        if (wfn_type_ != "DF-OLCCD") {
-            if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
-            if (std::fabs(DE) <= tol_Eod) break;
-        }
-
         if (rms_wog >= DIVERGE) {
             throw PSIEXCEPTION("DF-OCC iterations are diverging");
         }
@@ -325,10 +320,8 @@ void DFOCC::occ_iterations() {
 // SAVE MOs to wfn
 //=========================
 void DFOCC::save_mo_to_wfn() {
-    // make sure we have semicanonic MOs
-    if (orbs_already_sc == 0) semi_canonic();
 
-    // Save mos to wfn
+    // Save MOs to wfn_; We cannot semicanonicalize them, as we'd need to do the same to all MO-basis quantities
     if (reference_ == "RESTRICTED") {
         SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
         CmoA->to_shared_matrix(Ca);

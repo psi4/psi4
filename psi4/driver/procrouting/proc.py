@@ -281,6 +281,81 @@ def select_omp2_property(name, **kwargs):
         return func(name, **kwargs)
 
 
+def select_omp2p5_property(name, **kwargs):
+    """Function selecting the algorithm for an OMP2.5 property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_omp2p5_property', name, 'MP_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_omp3_property(name, **kwargs):
+    """Function selecting the algorithm for an OMP3 property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_omp3_property', name, 'MP_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_olccd_property(name, **kwargs):
+    """Function selecting the algorithm for an OLCCD property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_olccd_property', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
 def select_mp3(name, **kwargs):
     """Function selecting the algorithm for a MP3 energy call
     and directing to specified or best-performance default modules.
@@ -1740,6 +1815,12 @@ def run_dfocc_property(name, **kwargs):
 
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+    elif name in ['omp3']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+    elif name in ['omp2.5']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+    elif name in ['olccd']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
     else:
         raise ValidationError('Unidentified method ' % (name))
 
@@ -1747,7 +1828,7 @@ def run_dfocc_property(name, **kwargs):
 
     if name in ['mp2']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2']:
+    elif name in ['omp2', 'omp3', 'omp2.5', 'olccd']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     core.set_local_option('DFOCC', 'OEPROP', 'TRUE')
@@ -1781,6 +1862,7 @@ def run_dfocc_property(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     # Shove variables into global space
+    # TODO: Make other methods in DFOCC update all variables, then add them to the list. Adding now, risks setting outdated information.
     if name in ['mp2', 'omp2']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)

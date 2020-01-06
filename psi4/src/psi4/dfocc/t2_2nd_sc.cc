@@ -293,7 +293,7 @@ void DFOCC::t2_2nd_sc() {
 
         // Overall energy
         Ecorr = Emp3AA + Emp3BB + Emp3AB;
-        Emp3 = Escf + Ecorr;
+        Emp3 = Eref + Ecorr;
 
         // Free ints
         bQijA.reset();
