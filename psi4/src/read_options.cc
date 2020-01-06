@@ -2625,13 +2625,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("E_CONVERGENCE", 1e-6);
         /*- Convergence criterion for amplitudes (residuals). -*/
         options.add_double("R_CONVERGENCE", 1e-5);
-        /*- Convergence criterion for RMS orbital gradient. Default adjusts
-        depending on |occ__e_convergence|. Default represents the default
-        with the default energy cutoff.-*/
+        /*- Convergence criterion for RMS orbital gradient. If this keyword is not
+        set by the user, OCC will estimate and use a value required to achieve the
+        desired |occ__e_convergence|. The listed default will be used for the default
+        value of |occ__e_convergence|. -*/
         options.add_double("RMS_MOGRAD_CONVERGENCE", 1e-4);
-        /*- Convergence criterion for maximum orbital gradient. Default adjusts
-        depending on |occ__e_convergence|. Default represents the default
-        with the default energy cutoff.-*/
+        /*- Convergence criterion for maximum orbital gradient. If this keyword is not
+        set by the user, OCC will estimate and use a value required to achieve the
+        desired |occ__e_convergence|. The listed default will be used for the default
+        value of |occ__e_convergence|. -*/
         options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-4);
         /*- Maximum step size in orbital-optimization procedure -*/
         options.add_double("MO_STEP_MAX", 0.5);
@@ -2758,13 +2760,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("E_CONVERGENCE", 1e-6);
         /*- Convergence criterion for amplitudes (residuals). -*/
         options.add_double("R_CONVERGENCE", 1e-5);
-        /*- Convergence criterion for RMS orbital gradient. Default adjusts
-        depending on |dfocc__e_convergence|. Default represents the default
-        with the default energy cutoff.-*/
+        /*- Convergence criterion for RMS orbital gradient. If this keyword is not
+        set by the user, DFOCC will estimate and use a value required to achieve the
+        desired |dfocc__e_convergence|. The listed default will be used for the default
+        value of |dfocc__e_convergence|. -*/
         options.add_double("RMS_MOGRAD_CONVERGENCE", 1e-4);
-        /*- Convergence criterion for RMS orbital gradient. Default adjusts
-        depending on |dfocc__e_convergence|. Default represents the default
-        with the default energy cutoff.-*/
+        /*- Convergence criterion for maximum orbital gradient. If this keyword is not
+        set by the user, DFOCC will estimate and use a value required to achieve the
+        desired |dfocc__e_convergence|. The listed default will be used for the default
+        value of |dfocc__e_convergence|. -*/
         options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-4);
         /*- Maximum step size in orbital-optimization procedure -*/
         options.add_double("MO_STEP_MAX", 0.5);

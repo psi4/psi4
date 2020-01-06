@@ -29,11 +29,11 @@ def test_dipole(inp):
 
     psi4.set_options({'perturb_h': True, 'perturb_with': 'dipole', 'basis': 'cc-pvdz'})
     psi4.set_options(inp['options'])
-    energies = []
+    energies = dict()
     for l in [1, -1, 2, -2]:
         psi4.set_options({'perturb_dipole': [0, 0, l * perturbation_strength]})
-        energies.append(psi4.energy(inp['name']))
-    findif_dipole = (8 * energies[0] - 8 * energies[1] - energies[2] + energies[3]) / (12 * perturbation_strength) * qcel.constants.dipmom_au2debye
+        energies[l] = psi4.energy(inp['name'])
+    findif_dipole = (8 * energies[1] - 8 * energies[-1] - energies[2] + energies[-2]) / (12 * perturbation_strength) * qcel.constants.dipmom_au2debye
 
     psi4.set_options({'perturb_h': False})
     wfn = psi4.properties(inp['name'], properties=['dipole'], return_wfn=True)[1]
