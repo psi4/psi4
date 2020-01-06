@@ -125,8 +125,8 @@ void BasisSetOrthogonalization::compute_overlap_eig() {
             e_min = std::min(e_min, eval);
             e_max = std::max(e_max, eval);
         }
-        // Condition number
-        rcond_ = std::min(rcond_, std::abs(e_max / e_min));
+        // Reciprocal condition number
+        rcond_ = std::min(rcond_, e_min / e_max);
     }
     outfile->Printf("  Reciprocal condition number of the overlap matrix is %14.10E.\n", rcond_);
 }
