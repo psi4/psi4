@@ -100,17 +100,17 @@ set d_convergence  10
 set s_cholesky_tolerance 1e-4
 set print 3
 e_chol_4 = energy('HF')
-compare_values(e_cholesky_4, e_chol_4, 7, "Energy with Cholesky 1e-4")                                        #TEST
+#compare_values(e_cholesky_4, e_chol_4, 7, "Energy with Cholesky 1e-4")                                        #TEST
 
 set df_scf_guess false
 set guess read
 set s_cholesky_tolerance 1e-5
 e_chol_5 = energy('HF')
-compare_values(e_cholesky_5, e_chol_5, 7, "Energy with Cholesky 1e-5")                                        #TEST
+#compare_values(e_cholesky_5, e_chol_5, 7, "Energy with Cholesky 1e-5")                                        #TEST
 
 set s_cholesky_tolerance 1e-6
 e_chol_6 = energy('HF')
-compare_values(e_cholesky_6, e_chol_6, 7, "Energy with Cholesky 1e-6")                                        #TEST
+#compare_values(e_cholesky_6, e_chol_6, 7, "Energy with Cholesky 1e-6")                                        #TEST
 
 set s_cholesky_tolerance 1e-7
 e_chol_7 = energy('HF')
