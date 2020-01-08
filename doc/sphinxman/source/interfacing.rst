@@ -43,6 +43,7 @@ platform capabilities, *etc*.
    :maxdepth: 2
 
    numpy
+   adcc
    cfour
    chemps2
    cppe

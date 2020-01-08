@@ -113,7 +113,6 @@ procedures = {
         'fci'           : proc.run_detci,
         'casscf'        : proc.run_detcas,
         'rasscf'        : proc.run_detcas,
-        'adc'           : proc.run_adc,
         'psimrcc'       : proc.run_psimrcc,
         'psimrcc_scf'   : proc.run_psimrcc_scf,
         'qcisd'         : proc.run_fnocc,
@@ -146,6 +145,15 @@ procedures = {
         'dmrg-scf'      : proc.run_dmrgscf,
         'dmrg-caspt2'   : proc.run_dmrgscf,
         'dmrg-ci'       : proc.run_dmrgci,
+        'adc'           : proc.run_adc_deprecated,
+        'adc(1)'        : proc.run_adcc,
+        'adc(2)'        : proc.select_adc2,
+        'adc(2)-x'      : proc.run_adcc,
+        'adc(3)'        : proc.run_adcc,
+        'cvs-adc(1)'    : proc.run_adcc,
+        'cvs-adc(2)'    : proc.run_adcc,
+        'cvs-adc(2)-x'  : proc.run_adcc,
+        'cvs-adc(3)'    : proc.run_adcc,
         # Upon adding a method to this list, add it to the docstring in energy() below
         # Aliases are discouraged. If you must add an alias to this list (e.g.,
         #    lccsd/cepa(0)), please search the whole driver to find uses of
@@ -179,31 +187,39 @@ procedures = {
         'scf'           : proc.run_scf_hessian,
     },
     'properties' : {
-        'hf'       : proc.run_scf_property,
-        'scf'      : proc.run_scf_property,
-        'mp2'      : proc.select_mp2_property,
-        'cc2'      : proc.run_cc_property,
-        'ccsd'     : proc.run_cc_property,
-        'eom-cc2'  : proc.run_cc_property,
-        'eom-ccsd' : proc.run_cc_property,
-        'detci'    : proc.run_detci_property,  # full control over detci
-        'cisd'     : proc.run_detci_property,
-        'cisdt'    : proc.run_detci_property,
-        'cisdtq'   : proc.run_detci_property,
-        'ci'       : proc.run_detci_property,  # arbitrary order ci(n)
-        'fci'      : proc.run_detci_property,
-        'rasscf'   : proc.run_detci_property,
-        'casscf'   : proc.run_detci_property,
-        'omp2'     : proc.select_omp2_property,
-        'omp2.5'   : proc.select_omp2p5_property,
-        'omp3'     : proc.select_omp3_property,
-        'olccd'    : proc.select_olccd_property
-        # Upon adding a method to this list, add it to the docstring in driver.properties
+        'hf'           : proc.run_scf_property,
+        'scf'          : proc.run_scf_property,
+        'mp2'          : proc.select_mp2_property,
+        'cc2'          : proc.run_cc_property,
+        'ccsd'         : proc.run_cc_property,
+        'eom-cc2'      : proc.run_cc_property,
+        'eom-ccsd'     : proc.run_cc_property,
+        'detci'        : proc.run_detci_property,  # full control over detci
+        'cisd'         : proc.run_detci_property,
+        'cisdt'        : proc.run_detci_property,
+        'cisdtq'       : proc.run_detci_property,
+        'ci'           : proc.run_detci_property,  # arbitrary order ci(n)
+        'fci'          : proc.run_detci_property,
+        'rasscf'       : proc.run_detci_property,
+        'casscf'       : proc.run_detci_property,
+        'omp2'         : proc.select_omp2_property,
+        'omp2.5'       : proc.select_omp2p5_property,
+        'omp3'         : proc.select_omp3_property,
+        'olccd'        : proc.select_olccd_property,
+        'adc(1)'       : proc.run_adcc_property,
+        'adc(2)'       : proc.run_adcc_property,
+        'adc(2)-x'     : proc.run_adcc_property,
+        'adc(3)'       : proc.run_adcc_property,
+        'cvs-adc(1)'   : proc.run_adcc_property,
+        'cvs-adc(2)'   : proc.run_adcc_property,
+        'cvs-adc(2)-x' : proc.run_adcc_property,
+        'cvs-adc(3)'   : proc.run_adcc_property,
+        # Upon adding a method to this list, add it to the docstring in property() below
     }} # yapf: disable
 
 # Will only allow energy to be run for the following methods
 energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
-energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis']
+energy_only_methods += ['efp', 'cphf', 'tdhf', 'cis']
 
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']
