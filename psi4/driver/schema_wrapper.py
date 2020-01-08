@@ -383,7 +383,7 @@ def run_qcschema(input_data, clean=True):
     start_time = datetime.datetime.now()
 
     try:
-        input_model = qcng.util.model_wrapper(input_data, qcel.models.ResultInput)
+        input_model = qcng.util.model_wrapper(input_data, qcel.models.AtomicInput)
 
         keep_wfn = input_model.protocols.wavefunction != 'none'
 
@@ -397,7 +397,7 @@ def run_qcschema(input_data, clean=True):
 
         exit_printing(start_time=start_time, success=True)
 
-        ret = qcel.models.Result(**ret_data, stdout=_read_output(outfile))
+        ret = qcel.models.AtomicResult(**ret_data, stdout=_read_output(outfile))
 
     except Exception as exc:
 
