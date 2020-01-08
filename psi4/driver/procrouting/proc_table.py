@@ -187,28 +187,6 @@ procedures = {
         'scf'           : proc.run_scf_hessian,
     },
     'properties' : {
-<<<<<<< HEAD
-        'hf'       : proc.run_scf_property,
-        'scf'      : proc.run_scf_property,
-        'mp2'      : proc.select_mp2_property,
-        'cc2'      : proc.run_cc_property,
-        'ccsd'     : proc.run_cc_property,
-        'eom-cc2'  : proc.run_cc_property,
-        'eom-ccsd' : proc.run_cc_property,
-        'detci'    : proc.run_detci_property,  # full control over detci
-        'cisd'     : proc.run_detci_property,
-        'cisdt'    : proc.run_detci_property,
-        'cisdtq'   : proc.run_detci_property,
-        'ci'       : proc.run_detci_property,  # arbitrary order ci(n)
-        'fci'      : proc.run_detci_property,
-        'rasscf'   : proc.run_detci_property,
-        'casscf'   : proc.run_detci_property,
-        'omp2'     : proc.select_omp2_property,
-        'omp2.5'   : proc.select_omp2p5_property,
-        'omp3'     : proc.select_omp3_property,
-        'olccd'    : proc.select_olccd_property
-        # Upon adding a method to this list, add it to the docstring in driver.properties
-=======
         'hf'           : proc.run_scf_property,
         'scf'          : proc.run_scf_property,
         'mp2'          : proc.select_mp2_property,
@@ -224,6 +202,10 @@ procedures = {
         'fci'          : proc.run_detci_property,
         'rasscf'       : proc.run_detci_property,
         'casscf'       : proc.run_detci_property,
+        'omp2'         : proc.select_omp2_property,
+        'omp2.5'       : proc.select_omp2p5_property,
+        'omp3'         : proc.select_omp3_property,
+        'olccd'        : proc.select_olccd_property
         'adc(1)'       : proc.run_adcc_property,
         'adc(2)'       : proc.run_adcc_property,
         'adc(2)-x'     : proc.run_adcc_property,
@@ -233,7 +215,6 @@ procedures = {
         'cvs-adc(2)-x' : proc.run_adcc_property,
         'cvs-adc(3)'   : proc.run_adcc_property,
         # Upon adding a method to this list, add it to the docstring in property() below
->>>>>>> Add run_adcc and run_adcc_property methods
     }} # yapf: disable
 
 # Will only allow energy to be run for the following methods
