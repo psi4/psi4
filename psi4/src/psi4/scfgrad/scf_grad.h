@@ -31,12 +31,14 @@
 
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/typedefs.h"
+#include "psi4/libfock/jk.h"
 
 namespace psi {
 class SuperFunctional;
 class VBase;
 namespace scf {
     class RHF;
+    class UHF;
 }
 
 namespace scfgrad {
@@ -74,6 +76,49 @@ public:
 class USCFDeriv : public SCFDeriv {
 protected:
     std::shared_ptr<scf::UHF> uhf_wfn_;
+    SharedMatrix hessian_response_spin(int spin);
+    void overlap_deriv(std::shared_ptr<Matrix> C, 
+                              std::shared_ptr<Matrix> Cocc,
+                              std::shared_ptr<Matrix> Cvir,
+                              int nso, int nocc, int nvir, bool alpha);
+
+    void kinetic_deriv(std::shared_ptr<Matrix> C, 
+                       std::shared_ptr<Matrix> Cocc,
+                       std::shared_ptr<Matrix> Cvir,
+                       int nso, int nocc, int nvir, bool alpha);
+
+    void potential_deriv(std::shared_ptr<Matrix> C, 
+                         std::shared_ptr<Matrix> Cocc,
+                         std::shared_ptr<Matrix> Cvir,
+                         int nso, int nocc, int nvir, bool alpha);
+
+    void JK_deriv1(std::shared_ptr<Matrix> D1,
+                   std::shared_ptr<Matrix> C1, 
+                   std::shared_ptr<Matrix> C1occ,
+                   std::shared_ptr<Matrix> C1vir,
+                   std::shared_ptr<Matrix> D2, 
+                   int nso, int nocc, int nvir, bool alpha);
+
+    void JK_deriv2(std::shared_ptr<JK> jk, int mem, 
+                   std::shared_ptr<Matrix> C, 
+                   std::shared_ptr<Matrix> Cocc,
+                   int nso, int nocc, int nvir, bool alpha);
+
+    void VXC_deriv(std::shared_ptr<Matrix> C, 
+                   std::shared_ptr<Matrix> Cocc,
+                   std::shared_ptr<Matrix> Cvir,
+                   int nso, int nocc, int nvir, bool alpha);
+
+    void assemble_Fock(int nocc, int nvir, bool alpha);
+
+    void assemble_B(std::shared_ptr<Vector> eocc, int nocc, int nvir, bool alpha);
+    void assemble_U(int nocc, int nvir, bool alpha);
+    void assemble_Q(std::shared_ptr<JK> jk,
+                    std::shared_ptr<Matrix> C, 
+                    std::shared_ptr<Matrix> Cocc,
+                    std::shared_ptr<Matrix> Cvir,
+                    int nso, int nocc, int nvir, bool alpha);
+
 public:
     USCFDeriv(std::shared_ptr<scf::UHF> uhf_wfn, Options& options): SCFDeriv(std::dynamic_pointer_cast<Wavefunction>(uhf_wfn), options), uhf_wfn_(uhf_wfn) {}
     ~USCFDeriv() override {}

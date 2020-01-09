@@ -33,6 +33,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libscf_solver/rhf.h"
+#include "psi4/libscf_solver/uhf.h"
 
 namespace psi{
 namespace scfgrad {
@@ -62,7 +63,8 @@ SharedMatrix scfhess(SharedWavefunction ref_wfn, Options &options)
         RSCFDeriv hessian_computer(std::dynamic_pointer_cast<scf::RHF>(ref_wfn), options);
         H = hessian_computer.compute_hessian();
     } else {
-        throw PSIEXCEPTION("Only RHF hessians are supported at this time.");
+        USCFDeriv hessian_computer(std::dynamic_pointer_cast<scf::UHF>(ref_wfn), options);
+        H = hessian_computer.compute_hessian();
     }
     ref_wfn->set_hessian(H);
 

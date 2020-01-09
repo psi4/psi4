@@ -48,6 +48,7 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
+#include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
@@ -288,7 +289,7 @@ SharedMatrix SCFDeriv::compute_gradient()
     return gradients_["Total"];
 }
 
-SharedMatrix SCFGrad::compute_hessian()
+SharedMatrix SCFDeriv::compute_hessian()
 {
     // => Echo <= //
 
