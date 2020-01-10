@@ -100,9 +100,11 @@ protected:
                    int nso, int nocc, int nvir, bool alpha);
 
     void JK_deriv2(std::shared_ptr<JK> jk, int mem, 
-                   std::shared_ptr<Matrix> C, 
-                   std::shared_ptr<Matrix> Cocc,
-                   int nso, int nocc, int nvir, bool alpha);
+                   std::shared_ptr<Matrix> C1, 
+                   std::shared_ptr<Matrix> C1occ,
+                   std::shared_ptr<Matrix> C2, 
+                   std::shared_ptr<Matrix> C2occ,
+                   int nso, int n1occ, int n2occ, int nvir, bool alpha);
 
     void VXC_deriv(std::shared_ptr<Matrix> C, 
                    std::shared_ptr<Matrix> Cocc,
