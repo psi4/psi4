@@ -42,8 +42,7 @@ from qcelemental.models import AtomicResult, DriverEnum
 from psi4 import core
 from psi4.driver import driver_util, p4util, pp
 from psi4.driver import qcdb
-from psi4.driver.driver_cbs_helper import (composite_procedures, register_composite_function, register_xtpl_function,
-                                           xtpl_procedures)  # lgtm[py/unused-import]
+from psi4.driver.driver_cbs_helper import composite_procedures, register_composite_function, register_xtpl_function, xtpl_procedures  # lgtm[py/unused-import]
 from psi4.driver.driver_util import UpgradeHelper
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list

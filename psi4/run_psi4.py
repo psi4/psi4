@@ -64,6 +64,8 @@ parser.add_argument("-m", "--messy", action='store_true',
 parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
                          """interpreter and path for ``python -c "import psi4"``""")
+parser.add_argument("--module", action='store_true',
+                    help="""Generates the path to PsiAPI loading.""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
 parser.add_argument("--inplace", action='store_true',
                     help="Runs Psi4 from the source directory. !Warning! expert option.")
@@ -163,6 +165,10 @@ if args['psiapi_path']:
     pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
     bin_dir = Path(cmake_install_prefix) / 'bin'
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
+    sys.exit()
+
+if args['module']:
+    print(lib_dir)
     sys.exit()
 
 # Transmit any argument psidatadir through environ
