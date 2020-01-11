@@ -533,12 +533,12 @@ class OCCWave : public Wavefunction {
     SharedMatrix HG1;
     SharedMatrix HG1A;
     SharedMatrix HG1B;
-    SharedMatrix gamma1corr;
-    SharedMatrix gamma1corrA;
-    SharedMatrix gamma1corrB;
-    SharedMatrix g1symm;
-    SharedMatrix g1symmA;
-    SharedMatrix g1symmB;
+    SharedMatrix gamma1corr;   // Correlation contribution to 1PDM, for RHF
+    SharedMatrix gamma1corrA;  // Correlation contribution to alpha 1PDM, for UHF
+    SharedMatrix gamma1corrB;  // Correlation contribution to beta 1PDM, for UHF
+    SharedMatrix g1symm;       // 1PDM, for RHF
+    SharedMatrix g1symmA;      // Alpha 1PDM, for UHF
+    SharedMatrix g1symmB;      // Beta 1PDM, for UHF
     SharedMatrix G1tilde;
     SharedMatrix G1tildeA;
     SharedMatrix G1tildeB;
@@ -549,10 +549,10 @@ class OCCWave : public Wavefunction {
     SharedMatrix HCB;
     SharedMatrix FCA;
     SharedMatrix FCB;
-    SharedMatrix GooA;
-    SharedMatrix GooB;
-    SharedMatrix GvvA;
-    SharedMatrix GvvB;
+    SharedMatrix GooA;  // -1 * OO block of the correlation contribution to alpha 1PDM
+    SharedMatrix GooB;  // -1 * OO block of the correlation contribution to beta 1PDM
+    SharedMatrix GvvA;  // -1 * VV block of the correlation contribution to alpha 1PDM
+    SharedMatrix GvvB;  // -1 * VV block of the correlation contribution to beta 1PDM
     SharedMatrix ZmatA;
     SharedMatrix ZmatB;
     SharedMatrix t1A;
