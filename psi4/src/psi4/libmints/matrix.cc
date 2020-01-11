@@ -1993,7 +1993,7 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
         // Pivot
         pivot[h].resize(n);
 
-        // Perform decomposition
+        // Perform decomposition. Since the matrix is symmetric, row vs column major ordering makes no difference.
         int rank;
         int err = C_DPSTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
         nchol[h] = rank;
@@ -2024,7 +2024,8 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
     for (int h = 0; h < nirrep_; ++h) {
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < std::min(m + 1, nchol[h]); ++n) {
-                L->set(h, m, n, get(h, m, n));
+              // Psi4 stores matrices as row major, LAPACK as column major
+              L->set(h, m, n, get(h, n, m));
             }
         }
     }
