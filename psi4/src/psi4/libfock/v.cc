@@ -159,7 +159,7 @@ void VBase::initialize() {
     {
         static const std::map<std::string, brianInt> functionalIDMap = {
             {"XC_LDA_X", BRIAN_FUNCTIONAL_LDA_SLATER_X},
-            {"XC_LDA_C_VWN_RPA", BRIAN_FUNCTIONAL_LDA_VWNRPA_C},
+            {"XC_LDA_C_VWN_RPA", BRIAN_FUNCTIONAL_LDA_VWN5RPA_C},
             {"XC_LDA_C_PW", BRIAN_FUNCTIONAL_LDA_PW_C},
             {"XC_LDA_C_PW_MOD", BRIAN_FUNCTIONAL_LDA_PW_MOD_C},
             {"XC_GGA_X_B88", BRIAN_FUNCTIONAL_GGA_B88_X},
@@ -167,6 +167,7 @@ void VBase::initialize() {
             {"XC_GGA_X_PBE", BRIAN_FUNCTIONAL_GGA_PBE_X},
             {"XC_GGA_C_PBE", BRIAN_FUNCTIONAL_GGA_PBE_C},
             {"XC_HYB_GGA_XC_B3LYP", BRIAN_FUNCTIONAL_HGGA_B3LYP_XC},
+            {"XC_HYB_GGA_XC_WB97X_V", BRIAN_FUNCTIONAL_HGGA_WB97X_V_XC},
             {"XC_MGGA_C_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_C},
             {"XC_MGGA_X_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_X},
         };
