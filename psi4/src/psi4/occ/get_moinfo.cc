@@ -82,6 +82,7 @@ void OCCWave::get_moinfo() {
             virtpiA[h] = nmopi_[h] - doccpi_[h];
             occpiA[h] = doccpi_[h];
         }
+        occpi_ = {{SpinType::Alpha, occpiA}};
 
         // active occ and virt
         adoccpi = init_int_array(nirrep_);
@@ -355,7 +356,7 @@ void OCCWave::get_moinfo() {
         /********************************************************************************************/
         // read orbital coefficients from reference
         Ca_ = SharedMatrix(reference_wavefunction_->Ca());
-        Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_);
+        auto Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_);
 
         // read orbital coefficients from external files
         if (read_mo_coeff == "TRUE") {
@@ -377,6 +378,8 @@ void OCCWave::get_moinfo() {
 
         // Build Reference MOs
         Ca_ref->copy(Ca_);
+        C_ = {{SpinType::Alpha, Ca_}};
+        C_ref_ = {{SpinType::Alpha, Ca_ref}};
         if (print_ > 2) Ca_->print();
 
     }  // end if (reference_ == "RESTRICTED")
@@ -424,6 +427,7 @@ void OCCWave::get_moinfo() {
             occpiB[h] = doccpi_[h];
             occpiA[h] = doccpi_[h] + soccpi_[h];
         }
+        occpi_ = {{SpinType::Alpha, occpiA}, {SpinType::Beta, occpiB}};
 
         // active occ and virt
         adoccpi = init_int_array(nirrep_);
@@ -697,8 +701,8 @@ void OCCWave::get_moinfo() {
         // read orbital coefficients from reference
         Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
-        Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_);
-        Cb_ref = std::make_shared<Matrix>("Ref beta MO coefficients", nirrep_, nsopi_, nmopi_);
+        auto Ca_ref = std::make_shared<Matrix>("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_);
+        auto Cb_ref = std::make_shared<Matrix>("Ref beta MO coefficients", nirrep_, nsopi_, nmopi_);
 
         // read orbital coefficients from external files
         if (read_mo_coeff == "TRUE") {
@@ -733,6 +737,8 @@ void OCCWave::get_moinfo() {
         // Build Reference MOs
         Ca_ref->copy(Ca_);
         Cb_ref->copy(Cb_);
+        C_ = {{SpinType::Alpha, Ca_}, {SpinType::Beta, Cb_}};
+        C_ref_ = {{SpinType::Alpha, Ca_ref}, {SpinType::Beta, Cb_ref}};
 
         if (print_ > 2) {
             Ca_->print();

@@ -40,6 +40,10 @@ class Matrix;
 class Vector;
 using SharedVector = std::shared_ptr<Vector>;
 
+namespace occwave {
+class Array1d;
+}
+
 /*! \ingroup MINTS */
 class PSI_API Vector final {
    protected:
@@ -95,6 +99,10 @@ class PSI_API Vector final {
 
     /// Constructor, takes Dimension object
     explicit Vector(const std::string &name, const Dimension &dimpi);
+
+    // Convert occ's Array1d into Vector.
+    // Defined in occ/arrays.cc. Remove when no longer needed.
+    explicit Vector(const Dimension &dimpi, const occwave::Array1d &array);
 
     /// Destructor, frees memory
     ~Vector();

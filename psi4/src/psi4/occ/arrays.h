@@ -94,6 +94,8 @@ class Array1d {
     int dim1() const { return dim1_; }
     // dirprd: A1d_[i] = a[i] * b[i]
     void dirprd(Array1d* a, Array1d* b);
+    std::string name() const { return name_; }
+    const double* array() const { return A1d_; }
 
     friend class Array2d;
     friend class Array3d;
