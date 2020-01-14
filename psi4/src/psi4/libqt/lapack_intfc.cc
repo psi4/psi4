@@ -180,6 +180,7 @@ extern int F_DPPSVX(char*, char*, int*, int*, double*, double*, char*, double*, 
 extern int F_DPPTRF(char*, int*, double*, int*);
 extern int F_DPPTRI(char*, int*, double*, int*);
 extern int F_DPPTRS(char*, int*, int*, double*, double*, int*, int*);
+extern int F_DPSTRF(char*, int*, double*, int*, int*, int*, double*, double*, int*);
 extern int F_DPTCON(int*, double*, double*, double*, double*, double*, int*);
 extern int F_DPTEQR(char*, int*, double*, double*, double*, int*, double*, int*);
 extern int F_DPTRFS(int*, int*, double*, double*, double*, double*, double*, int*, double*, int*, double*, double*,
@@ -11921,6 +11922,70 @@ int C_DPPTRS(char uplo, int n, int nrhs, double* ap, double* b, int ldb) {
     ::F_DPPTRS(&uplo, &n, &nrhs, ap, b, &ldb, &info);
     return info;
 }
+
+/**
+ *  Purpose
+ *  =======
+ *
+ * DPSTRF computes the Cholesky factorization with complete pivoting
+ * of a real symmetric positive semidefinite matrix A.
+ *
+ * The factorization has the form P**T * A * P = U**T * U , if UPLO =
+ * 'U', P**T * A * P = L * L**T, if UPLO = 'L', where U is an upper
+ * triangular matrix and L is lower triangular, and P is stored as
+ * vector PIV.
+ *
+ * This algorithm does not attempt to check that A is positive
+ * semidefinite. This version of the algorithm calls level 3 BLAS.
+ *
+ *  Arguments
+ *  =========
+ *
+ *  UPLO    (input) CHARACTER*1
+ *          = 'U':  Upper triangle of A is stored;
+ *          = 'L':  Lower triangle of A is stored.
+ *
+ *  N (input) INTEGER The order of the matrix A.  N >= 0.
+ *
+ *  A (input, output) DOUBLE PRECISION array, dimension (LDA,N).
+ *
+ *          On entry, the symmetric matrix A.  If UPLO = 'U', the
+ *          leading n by n upper triangular part of A contains the
+ *          upper triangular part of the matrix A, and the strictly
+ *          lower triangular part of A is not referenced.  If UPLO =
+ *          'L', the leading n by n lower triangular part of A
+ *          contains the lower triangular part of the matrix A, and
+ *          the strictly upper triangular part of A is not referenced.
+ *
+ *  LDA     (input) INTEGER
+ *          The leading dimension of the array A.  LDA >= max(1,N).
+ *
+ *  PIV     (output) INTEGER array, dimension (N)
+ *          PIV is such that the nonzero entries are P( PIV(K), K ) = 1
+ *
+ *  RANK    (output) INTEGER
+ *          The effective rank of A, i.e., the number of singular values
+ *          which are greater than RCOND*S(1).
+ *
+ *  TOL (input) DOUBLE PRECISION User defined tolerance. If TOL < 0,
+ *          then N*U*MAX( A(K,K) ) will be used. The algorithm
+ *          terminates at the (K-1)st step if the pivot <= TOL.
+ *
+ *  WORK    (workspace) DOUBLE PRECISION array, dimension (2*N)
+ *
+ *  C++ Return value: INFO    (output) INTEGER
+ *          = 0:  successful exit
+ *          < 0:  if INFO = -i, the i-th argument had an illegal value
+ *
+ *  =====================================================================
+ *
+ *     .. Local Scalars ..
+ **/
+int C_DPSTRF(char uplo, int n, double* a, int lda, int* piv, int* rank, double tol, double* work) {
+    int info;
+    ::F_DPSTRF(&uplo, &n, a, &lda, piv, rank, &tol, work, &info);
+    return info;
+}  // namespace psi
 
 /**
  *  Purpose

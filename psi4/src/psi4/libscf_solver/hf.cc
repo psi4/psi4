@@ -65,6 +65,9 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orthog.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/quadrupole.h"
+#include "psi4/libmints/sobasis.h"
 
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
@@ -697,18 +700,50 @@ void HF::form_H() {
 }
 
 void HF::form_Shalf() {
-    OverlapOrthog::OrthogMethod method;
+    BasisSetOrthogonalization::OrthogonalizationMethod method;
     if (options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC")
-        method = OverlapOrthog::Symmetric;
+        method = BasisSetOrthogonalization::Symmetric;
     else if (options_.get_str("S_ORTHOGONALIZATION") == "CANONICAL")
-        method = OverlapOrthog::Canonical;
+        method = BasisSetOrthogonalization::Canonical;
+    else if (options_.get_str("S_ORTHOGONALIZATION") == "PARTIALCHOLESKY")
+        method = BasisSetOrthogonalization::PartialCholesky;
     else if (options_.get_str("S_ORTHOGONALIZATION") == "AUTO")
-        method = OverlapOrthog::Automatic;
+        method = BasisSetOrthogonalization::Automatic;
     else
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
 
     double lindep_tolerance = options_.get_double("S_TOLERANCE");
-    OverlapOrthog orthog(method, S_, lindep_tolerance, print_);
+    double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
+
+    // Compute <r^2> for Cholesky
+    SharedVector rsq;
+    if (method == BasisSetOrthogonalization::PartialCholesky) {
+        // Integral factory
+        IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
+        auto quad = (QuadrupoleInt*)integral.ao_quadrupole();
+        // Basis funtion r^2 values
+        std::vector<double> bf_rsq = quad->compute_R_squared();
+
+        const Dimension& nao = AO2SO_->rowspi();
+        const Dimension& nso = AO2SO_->colspi();
+
+        // AO2SO has the info we need for the translation
+        rsq = std::make_shared<Vector>(nso);
+        for (int h = 0; h < nirrep_; h++) {
+            for (int so = 0; so < nso[h]; so++) {
+                // Find an AO that contributes to the SO
+                int ao;
+                for (ao = 0; ao < nao[h]; ao++)
+                    if (AO2SO_->get(h, ao, so) != 0.0) {
+                        rsq->set(h, so, bf_rsq[ao]);
+                        break;
+                    }
+                if (ao == nao[h]) throw PSIEXCEPTION("Did not find atomic orbital!");
+            }
+        }
+    }
+
+    BasisSetOrthogonalization orthog(method, S_, rsq, lindep_tolerance, cholesky_tolerance, print_);
 
     // Transform
     X_ = orthog.basis_to_orthog_basis();

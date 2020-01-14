@@ -1273,9 +1273,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Memory safety factor for allocating JK -*/
         options.add_double("SCF_MEM_SAFETY_FACTOR", 0.75);
         /*- SO orthogonalization: automatic, symmetric, or canonical? -*/
-        options.add_str("S_ORTHOGONALIZATION", "AUTO", "AUTO SYMMETRIC CANONICAL");
+        options.add_str("S_ORTHOGONALIZATION", "AUTO", "AUTO SYMMETRIC CANONICAL PARTIALCHOLESKY");
         /*- Minimum S matrix eigenvalue to allow before linear dependencies are removed. -*/
         options.add_double("S_TOLERANCE", 1E-7);
+        /*- Tolerance for partial Cholesky decomposition of overlap matrix. -*/
+        options.add_double("S_CHOLESKY_TOLERANCE", 1E-8);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 0.0);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
