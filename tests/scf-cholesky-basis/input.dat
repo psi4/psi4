@@ -19,11 +19,11 @@ e_canonical   = -230.64152543331906
 tol_4 = 3
 tol_5 = 4
 tol_6 = 5
-tol_7 = 9
-tol_8 = 9
-tol_9 = 9
-tol_10 = 10
-tol_11 = 10
+tol_7 = 8
+tol_8 = 8
+tol_9 = 8
+tol_10 = 9
+tol_11 = 9
 tol_can = 10
 
 molecule {
@@ -138,12 +138,12 @@ compare_values(e_cholesky_9, e_chol_9, tol_9, "Energy with Cholesky 1e-9")      
 
 set s_cholesky_tolerance 1e-10
 e_chol_10 = energy('HF')
-compare_values(e_cholesky_10, e_chol_10, tol_10, "Energy with Cholesky 1e-10")                                        #TEST
+compare_values(e_cholesky_10, e_chol_10, tol_10, "Energy with Cholesky 1e-10")                                    #TEST
 
 set s_cholesky_tolerance 1e-11
 e_chol_11 = energy('HF')
-compare_values(e_cholesky_11, e_chol_11, tol_11, "Energy with Cholesky 1e-11")                                        #TEST
+compare_values(e_cholesky_11, e_chol_11, tol_11, "Energy with Cholesky 1e-11")                                    #TEST
 
 set s_orthogonalization canonical
 e_can = energy('HF')
-compare_values(e_canonical, e_can, tol_can, "Energy with canonical orthogonalization")                              #TEST
+compare_values(e_canonical, e_can, tol_can, "Energy with canonical orthogonalization")                            #TEST
