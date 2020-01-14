@@ -96,6 +96,8 @@ Matrix &Matrix::operator=(const Matrix &c) {
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
     name_ = c.name();
+    rowspi_ = c.rowspi_;
+    colspi_ = c.colspi_;
     alloc();
     copy_from(c.matrix_);
 
