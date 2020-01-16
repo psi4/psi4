@@ -1615,8 +1615,8 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     JK_deriv2(jk,mem, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir, true);
     JK_deriv2(jk,mem, Cb, Cb_occ, Ca, Ca_occ, nso, nbocc, naocc, nbvir, false);
 
-    VXC_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
-    VXC_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
+  //  VXC_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
+  //  VXC_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
 
     assemble_Fock(naocc, navir,true);
     assemble_Fock(nbocc, nbvir,false);
@@ -1738,9 +1738,7 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     // => Zipper <= //
     {
         double* eao_p = eps_aocc->pointer();
-        double* eav_p = eps_avir->pointer();
         double* ebo_p = eps_bocc->pointer();
-        double* ebv_p = eps_bvir->pointer();
 
         double* ea_p = eps_a->pointer();
         double* eb_p = eps_b->pointer();
@@ -3189,6 +3187,7 @@ void USCFDeriv::JK_deriv2(std::shared_ptr<JK> jk, int mem,
             // Add the alpha J contribution to G
             C_DGEMM('N','N',nso,n1occ,nso,1.0,J[2*a]->pointer()[0],nso,C1op[0],n1occ,0.0,Tp[0],n1occ);
             C_DGEMM('T','N',nmo,n1occ,nso,-1.0,C1p[0],nmo,Tp[0],n1occ,0.0,Up[0],n1occ);
+            T->zero();
 
             C_DGEMM('N','N',nso,n1occ,nso,1.0,J[2*a+1]->pointer()[0],nso,C1op[0],n1occ,0.0,Tp[0],n1occ);
             C_DGEMM('T','N',nmo,n1occ,nso,-1.0,C1p[0],nmo,Tp[0],n1occ,1.0,Up[0],n1occ);
@@ -3202,6 +3201,7 @@ void USCFDeriv::JK_deriv2(std::shared_ptr<JK> jk, int mem,
 
             // Subtract the K term from G
             if( Kscale) {
+                T->zero();
                 C_DGEMM('N','N',nso,n1occ,nso,1.0,K[2*a]->pointer()[0],nso,C1op[0],n1occ,0.0,Tp[0],n1occ);
                 C_DGEMM('T','N',nmo,n1occ,nso,Kscale,C1p[0],nmo,Tp[0],n1occ,1.0,Up[0],n1occ);
             }
