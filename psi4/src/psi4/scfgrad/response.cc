@@ -2379,6 +2379,11 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
     double** C1vp = C1vir->pointer(); 
 
     double** D2p  = D2->pointer();  
+
+    auto Dt = D1->clone();
+    Dt->add(D2);
+    double** Dtp = Dt->pointer();
+
     size_t nmo = nocc + nvir;
     int natom = molecule_->natom();
 
@@ -2870,8 +2875,8 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     for (int q = Qoff; q < Qoff+Qsize; q++) {
                         for (int r = Roff; r < Roff+Rsize; r++) {
                             for (int s = Soff; s < Soff+Ssize; s++) {
-                                Dpq = D1p[p][q];
-                                Drs = D1p[r][s];
+                                Dpq = Dtp[p][q];
+                                Drs = Dtp[r][s];
                                 Ax = prefactor * buffer[0 * stride + delta];
                                 Ay = prefactor * buffer[1 * stride + delta];
                                 Az = prefactor * buffer[2 * stride + delta];
@@ -2923,68 +2928,6 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     }
                 }
 
-                // (p1q1|r2s2)
-                Ax = 0.0; Ay = 0.0; Az = 0.0;
-                Bx = 0.0; By = 0.0; Bz = 0.0;
-                Cx = 0.0; Cy = 0.0; Cz = 0.0;
-                Dx = 0.0; Dy = 0.0; Dz = 0.0;
-                delta = 0L;
-                for (int p = Poff; p < Poff+Psize; p++) {
-                    for (int q = Qoff; q < Qoff+Qsize; q++) {
-                        for (int r = Roff; r < Roff+Rsize; r++) {
-                            for (int s = Soff; s < Soff+Ssize; s++) {
-                                Dpq = D1p[p][q];
-                                Drs = D2p[r][s];
-                                Ax = prefactor * buffer[0 * stride + delta];
-                                Ay = prefactor * buffer[1 * stride + delta];
-                                Az = prefactor * buffer[2 * stride + delta];
-                                Cx = prefactor * buffer[3 * stride + delta];
-                                Cy = prefactor * buffer[4 * stride + delta];
-                                Cz = prefactor * buffer[5 * stride + delta];
-                                Dx = prefactor * buffer[6 * stride + delta];
-                                Dy = prefactor * buffer[7 * stride + delta];
-                                Dz = prefactor * buffer[8 * stride + delta];
-                                Bx = -(Ax + Cx + Dx);
-                                By = -(Ay + Cy + Dy);
-                                Bz = -(Az + Cz + Dz);
-
-                                if(pert_incore[Pcenter]){
-                                    pdG[Pcenter*3+0][p][q] += Ax * Drs;
-                                    pdG[Pcenter*3+0][r][s] += Ax * Dpq;
-                                    pdG[Pcenter*3+1][p][q] += Ay * Drs;
-                                    pdG[Pcenter*3+1][r][s] += Ay * Dpq;
-                                    pdG[Pcenter*3+2][p][q] += Az * Drs;
-                                    pdG[Pcenter*3+2][r][s] += Az * Dpq;
-                                }
-                                if(pert_incore[Qcenter]){
-                                    pdG[Qcenter*3+0][p][q] += Bx * Drs;
-                                    pdG[Qcenter*3+0][r][s] += Bx * Dpq;
-                                    pdG[Qcenter*3+1][p][q] += By * Drs;
-                                    pdG[Qcenter*3+1][r][s] += By * Dpq;
-                                    pdG[Qcenter*3+2][p][q] += Bz * Drs;
-                                    pdG[Qcenter*3+2][r][s] += Bz * Dpq;
-                                }
-                                if(pert_incore[Rcenter]){
-                                    pdG[Rcenter*3+0][p][q] += Cx * Drs;
-                                    pdG[Rcenter*3+0][r][s] += Cx * Dpq;
-                                    pdG[Rcenter*3+1][p][q] += Cy * Drs;
-                                    pdG[Rcenter*3+1][r][s] += Cy * Dpq;
-                                    pdG[Rcenter*3+2][p][q] += Cz * Drs;
-                                    pdG[Rcenter*3+2][r][s] += Cz * Dpq;
-                                }
-                                if(pert_incore[Scenter]){
-                                    pdG[Scenter*3+0][p][q] += Dx * Drs;
-                                    pdG[Scenter*3+0][r][s] += Dx * Dpq;
-                                    pdG[Scenter*3+1][p][q] += Dy * Drs;
-                                    pdG[Scenter*3+1][r][s] += Dy * Dpq;
-                                    pdG[Scenter*3+2][p][q] += Dz * Drs;
-                                    pdG[Scenter*3+2][r][s] += Dz * Dpq;
-                                }
-                                delta++;
-                            }
-                        }
-                    }
-                }
                 prefactor *= 2.0;
                 // => Exchange Term <= //
                 if(Kscale) {
@@ -3183,7 +3126,9 @@ void USCFDeriv::JK_deriv2(std::shared_ptr<JK> jk, int mem,
             potential_->compute_Vx(Dx, Vx);
         }
 
+
         for (int a = 0; a < nA; a++) {
+
             // Add the alpha J contribution to G
             C_DGEMM('N','N',nso,n1occ,nso,1.0,J[2*a]->pointer()[0],nso,C1op[0],n1occ,0.0,Tp[0],n1occ);
             C_DGEMM('T','N',nmo,n1occ,nso,-1.0,C1p[0],nmo,Tp[0],n1occ,0.0,Up[0],n1occ);
