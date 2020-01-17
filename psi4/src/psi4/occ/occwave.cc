@@ -76,7 +76,6 @@ void OCCWave::common_init() {
     ep_maxiter = options_.get_int("EP_MAXITER");
 
     step_max = options_.get_double("MO_STEP_MAX");
-    lshift_parameter = options_.get_double("LEVEL_SHIFT");
     os_scale = options_.get_double("MP2_OS_SCALE");
     ss_scale = options_.get_double("MP2_SS_SCALE");
     sos_scale = options_.get_double("MP2_SOS_SCALE");
@@ -98,7 +97,6 @@ void OCCWave::common_init() {
     write_mo_coeff = options_.get_str("MO_WRITE");
     read_mo_coeff = options_.get_str("MO_READ");
     lineq = options_.get_str("LINEQ_SOLVER");
-    level_shift = options_.get_str("DO_LEVEL_SHIFT");
     scs_type_ = options_.get_str("SCS_TYPE");
     sos_type_ = options_.get_str("SOS_TYPE");
     dertype = options_.get_str("DERTYPE");
@@ -118,6 +116,11 @@ void OCCWave::common_init() {
     sym_gfm_ = options_.get_str("SYMMETRIZE");
     oeprop_ = options_.get_str("OEPROP");
     // comput_s2_=options_.get_str("COMPUT_S2");
+
+    if (options_["DO_LEVEL_SHIFT"].has_changed() || options_["LEVEL_SHIFT"].has_changed()) {
+        outfile->Printf(
+            "\t'Level shifting' was removed from OCC in 1.4. Contact a developer for more information.\n\n");
+    }
 
     //   Given default orbital convergence, set the criteria by what should
     //   be necessary to achieve the target energy convergence.
@@ -194,7 +197,6 @@ void OCCWave::common_init() {
         GFock = std::make_shared<Matrix>("MO-basis alpha generalized Fock matrix", nirrep_, nmopi_, nmopi_);
         UorbA = std::make_shared<Matrix>("Alpha MO rotation matrix", nirrep_, nmopi_, nmopi_);
         KorbA = std::make_shared<Matrix>("K alpha MO rotation", nirrep_, nmopi_, nmopi_);
-        KsqrA = std::make_shared<Matrix>("K^2 alpha MO rotation", nirrep_, nmopi_, nmopi_);
         HG1 = std::make_shared<Matrix>("h*g1symm", nirrep_, nmopi_, nmopi_);
         WorbA = std::make_shared<Matrix>("Alpha MO gradient matrix", nirrep_, nmopi_, nmopi_);
         GooA = std::make_shared<Matrix>("Alpha Goo intermediate", nirrep_, aoccpiA, aoccpiA);
@@ -302,8 +304,6 @@ void OCCWave::common_init() {
         UorbB = std::make_shared<Matrix>("Beta MO rotation matrix", nirrep_, nmopi_, nmopi_);
         KorbA = std::make_shared<Matrix>("K alpha MO rotation", nirrep_, nmopi_, nmopi_);
         KorbB = std::make_shared<Matrix>("K beta MO rotation", nirrep_, nmopi_, nmopi_);
-        KsqrA = std::make_shared<Matrix>("K^2 alpha MO rotation", nirrep_, nmopi_, nmopi_);
-        KsqrB = std::make_shared<Matrix>("K^2 beta MO rotation", nirrep_, nmopi_, nmopi_);
         HG1A = std::make_shared<Matrix>("Alpha h*g1symm", nirrep_, nmopi_, nmopi_);
         HG1B = std::make_shared<Matrix>("Beta h*g1symm", nirrep_, nmopi_, nmopi_);
         WorbA = std::make_shared<Matrix>("Alpha MO gradient matrix", nirrep_, nmopi_, nmopi_);
@@ -579,7 +579,7 @@ void OCCWave::mem_release() {
         delete vv_pairidxAA;
 
         // Ca_.reset();
-        Ca_ref.reset();
+        C_ref_[SpinType::Alpha].reset();
         Hso.reset();
         Tso.reset();
         Vso.reset();
@@ -590,7 +590,6 @@ void OCCWave::mem_release() {
         GFock.reset();
         UorbA.reset();
         KorbA.reset();
-        KsqrA.reset();
         HG1.reset();
         WorbA.reset();
         GooA.reset();
@@ -612,8 +611,8 @@ void OCCWave::mem_release() {
 
         Ca_.reset();
         Cb_.reset();
-        Ca_ref.reset();
-        Cb_ref.reset();
+        C_ref_[SpinType::Alpha].reset();
+        C_ref_[SpinType::Beta].reset();
         Hso.reset();
         Tso.reset();
         Vso.reset();
@@ -631,8 +630,6 @@ void OCCWave::mem_release() {
         UorbB.reset();
         KorbA.reset();
         KorbB.reset();
-        KsqrA.reset();
-        KsqrB.reset();
         HG1A.reset();
         HG1B.reset();
         WorbA.reset();

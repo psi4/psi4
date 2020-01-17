@@ -36,7 +36,7 @@ namespace occwave {
 void OCCWave::ocepa_response_pdms() {
     // outfile->Printf("\n response_pdms is starting... \n");
 
-    // Build G intermediates
+    // Build G intermediates, correlation correction to 1PDM
     timer_on("G int");
     ocepa_g_int();
     timer_off("G int");
@@ -46,7 +46,7 @@ void OCCWave::ocepa_response_pdms() {
         gamma1corr->zero();
         g1symm->zero();
 
-        // OPDM
+        // Impose hermitian symmetry on the OPDM blocks, and assemble them into a single matrix.
         timer_on("OPDM");
 // OO-block alpha contrb.
 #pragma omp parallel for
@@ -125,7 +125,7 @@ void OCCWave::ocepa_response_pdms() {
         g1symmA->zero();
         g1symmB->zero();
 
-        // OPDM
+        // For each spin: Impose hermitian symmetry on the OPDM blocks, and assemble them into a single matrix.
         timer_on("OPDM");
 // OO-block alpha contrb.
 #pragma omp parallel for

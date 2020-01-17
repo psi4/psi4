@@ -5,7 +5,6 @@ list(APPEND sources
   cepa_iterations.cc
   coord_grad.cc
   corr_tpdm.cc
-  diis.cc
   dpd.cc
   ekt_ea.cc
   ekt_ip.cc
