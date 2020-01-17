@@ -381,6 +381,10 @@ void OCCWave::occ_iterations() {
         delete kappa_newB;
     }
 
+    if (do_diis_) {
+        delete orbitalDiis;
+    }
+
     // Clean up the mess of ORB-RESP
     if (opt_method == "ORB_RESP") {
         if (orb_resp_solver_ == "LINEQ") {

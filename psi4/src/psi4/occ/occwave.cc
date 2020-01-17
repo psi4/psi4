@@ -117,6 +117,11 @@ void OCCWave::common_init() {
     oeprop_ = options_.get_str("OEPROP");
     // comput_s2_=options_.get_str("COMPUT_S2");
 
+    if (options_["DO_LEVEL_SHIFT"].has_changed() || options_["LEVEL_SHIFT"].has_changed()) {
+        outfile->Printf(
+            "\t'Level shifting' was removed from OCC in 1.4. Contact a developer for more information.\n\n");
+    }
+
     //   Given default orbital convergence, set the criteria by what should
     //   be necessary to achieve the target energy convergence.
     //   These formulae are based on experiments and are nothing rigorous.

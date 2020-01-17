@@ -2657,6 +2657,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-4);
         /*- Maximum step size in orbital-optimization procedure -*/
         options.add_double("MO_STEP_MAX", 0.5);
+        /*- Level shift to aid convergence -*/
+        options.add_double("LEVEL_SHIFT", 0.02);
         /*- MP2 opposite-spin scaling value -*/
         options.add_double("MP2_OS_SCALE", 6.0 / 5.0);
         /*- MP2 same-spin scaling value -*/
@@ -2709,6 +2711,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Do compute natural orbitals? -*/
         options.add_bool("NAT_ORBS", false);
+        /*- Do apply level shifting? -*/
+        options.add_bool("DO_LEVEL_SHIFT", true);
         /*- Do print OCC orbital energies? -*/
         options.add_bool("OCC_ORBS_PRINT", false);
         /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed
