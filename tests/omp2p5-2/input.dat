@@ -2,7 +2,7 @@
 refnuc      =  25.59060766929188 #TEST
 refscf      = -129.25245637508348 #TEST
 refmp3      = -129.58077576726413 #TEST
-refomp3     = -129.58887635080728 #TEST
+refomp3     = -129.58890163328363 #TEST
 
 molecule {
 0 2
