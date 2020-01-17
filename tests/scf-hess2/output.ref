@@ -1,0 +1,2077 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 undefined 
+
+                         Git: Rev {uhf_hessian} c149bc2 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 17 January 2020 11:19AM
+
+    Process ID: 28873
+    Host:       lawn-128-61-18-63.lawn.gatech.edu
+    PSIDATADIR: /Users/jeffschriber/src/psi4-debug-install/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! UHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
+#! This test should match RHF values exactly
+
+psi3_hess = np.array([                                                                                    #TEST
+    [ 0.6349786,-0.0002790,-0.0000000,-0.3185355, 0.2164913, 0.0000000,-0.3164431,-0.2162124, 0.0000000], #TEST
+    [-0.0002790, 0.8039939,-0.0000000, 0.3373248,-0.4009174,-0.0000000,-0.3370458,-0.4030765, 0.0000000], #TEST
+    [-0.0000000,-0.0000000,-0.0000130, 0.0000000,-0.0000000,-0.0000008, 0.0000000, 0.0000000, 0.0000138], #TEST
+    [-0.3185355, 0.3373248, 0.0000000, 0.3011910,-0.2770123,-0.0000000, 0.0173445,-0.0603125, 0.0000000], #TEST
+    [ 0.2164913,-0.4009174,-0.0000000,-0.2770123, 0.4378681, 0.0000000, 0.0605209,-0.0369508,-0.0000000], #TEST
+    [ 0.0000000,-0.0000000,-0.0000008,-0.0000000, 0.0000000,-0.0000069, 0.0000000, 0.0000000, 0.0000077], #TEST
+    [-0.3164431,-0.3370458, 0.0000000, 0.0173445, 0.0605209, 0.0000000, 0.2990986, 0.2765248,-0.0000000], #TEST
+    [-0.2162124,-0.4030765, 0.0000000,-0.0603125,-0.0369508, 0.0000000, 0.2765248, 0.4400273,-0.0000000], #TEST
+    [ 0.0000000, 0.0000000, 0.0000138, 0.0000000,-0.0000000, 0.0000077,-0.0000000,-0.0000000,-0.0000215]  #TEST
+])                                                                                                        #TEST
+ref_ene = -74.96590118978119
+
+molecule {
+units bohr
+nocom
+noreorient
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+set {
+  puream false
+  df_scf_guess false
+  scf_type pk
+  guess sad 
+  basis sto-3g
+  d_convergence 10
+  reference uhf
+}
+
+psi4_hess, wfn = hessian('scf', return_wfn=True)
+
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST
+compare_values(ref_ene, variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, variable('current ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
+#compare_arrays(psi3_hess, variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
+#compare_arrays(psi3_hess, variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
+compare_values(ref_ene, wfn.variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, wfn.variable('current ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_values(ref_ene, wfn.variable('HF TOTAL ENERGY'), 6, 'STO-3G energy')  #TEST
+compare_arrays(psi3_hess, wfn.variable('CURRENT HESSIAN'), 7, "STO-3G Hessian")  #TEST
+compare_arrays(psi3_hess, wfn.variable('HF TOTAL HESSIAN'), 7, "STO-3G Hessian")  #TEST
+
+# Clean out scratch files and go again with cc-pVDZ
+psi4.clean()
+
+psi3_hess = np.array([                                                                                    #TEST
+    [ 0.4644069,-0.0001622,-0.0000000,-0.2329078, 0.1572370, 0.0000000,-0.2314991,-0.1570748, 0.0000000], #TEST
+    [-0.0001622, 0.5691441, 0.0000000, 0.2174186,-0.2838372,-0.0000000,-0.2172564,-0.2853069, 0.0000000], #TEST
+    [-0.0000000, 0.0000000, 0.0509099, 0.0000000, 0.0000000,-0.0254596, 0.0000000,-0.0000000,-0.0254502], #TEST
+    [-0.2329078, 0.2174186, 0.0000000, 0.2177992,-0.1874277,-0.0000000, 0.0151086,-0.0299909, 0.0000000], #TEST
+    [ 0.1572370,-0.2838372, 0.0000000,-0.1874277, 0.3206988, 0.0000000, 0.0301908,-0.0368616,-0.0000000], #TEST
+    [ 0.0000000,-0.0000000,-0.0254596,-0.0000000, 0.0000000, 0.0225767, 0.0000000, 0.0000000, 0.0028829], #TEST
+    [-0.2314991,-0.2172564, 0.0000000, 0.0151086, 0.0301908, 0.0000000, 0.2163905, 0.1870657,-0.0000000], #TEST
+    [-0.1570748,-0.2853069,-0.0000000,-0.0299909,-0.0368616, 0.0000000, 0.1870657, 0.3221685,-0.0000000], #TEST
+    [ 0.0000000, 0.0000000,-0.0254502, 0.0000000,-0.0000000, 0.0028829,-0.0000000,-0.0000000, 0.0225673]  #TEST
+])                                                                                                        #TEST
+
+set {
+  puream true
+  basis cc-pvdz
+}
+
+psi4_hess = hessian('scf')
+
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "cc-pVDZ Hessian") #TEST
+
+# Now repeat the test, permuting the first two atoms' coordinates;
+# this exposes a (now-fixed) bug in the overlap hessian.
+molecule {
+units bohr
+nocom
+noreorient
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+psi4_hess = hessian('scf')
+
+permuted_indices = [ 3, 4, 5, 0, 1, 2, 6, 7, 8 ]                       #TEST
+psi3_hess = psi3_hess[:,permuted_indices][permuted_indices,:]          #TEST
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "Permuted cc-pVDZ Hessian") #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:52 2020
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54224  B = 436334.11658  C = 268547.31273 [MHz]
+  Nuclear repulsion =    8.906699592615716
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         6       6       0       0       0       0
+     A"         1       1       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 812 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.6316582588E-01.
+    Using symmetric orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -74.14831740995237   -7.41483e+01   0.00000e+00 
+   @UHF iter   1:   -74.91085891512090   -7.62542e-01   4.25450e-02 DIIS
+   @UHF iter   2:   -74.96483493726195   -5.39760e-02   6.83315e-03 DIIS
+   @UHF iter   3:   -74.96583207135262   -9.97134e-04   1.47692e-03 DIIS
+   @UHF iter   4:   -74.96590036230990   -6.82910e-05   1.20339e-04 DIIS
+   @UHF iter   5:   -74.96590118024378   -8.17934e-07   1.38614e-05 DIIS
+   @UHF iter   6:   -74.96590118977963   -9.53585e-09   1.98526e-07 DIIS
+   @UHF iter   7:   -74.96590118978129   -1.66267e-12   7.61437e-10 DIIS
+   @UHF iter   8:   -74.96590118978125    4.26326e-14   2.58828e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   5.329070518E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                5.329070518E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -20.251579     2Ap    -1.257564     3Ap    -0.593858  
+       4Ap    -0.459743     1App   -0.392621  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.581822     6Ap     0.692688  
+
+    Beta Occupied:                                                        
+
+       1Ap   -20.251579     2Ap    -1.257564     3Ap    -0.593858  
+       4Ap    -0.459743     1App   -0.392621  
+
+    Beta Virtual:                                                         
+
+       5Ap     0.581822     6Ap     0.692688  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+    SOCC [     0,    0 ]
+
+  @UHF Final Energy:   -74.96590118978125
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157162
+    One-Electron Energy =                -121.8344691610797668
+    Two-Electron Energy =                  37.9618683786827873
+    Total Energy =                        -74.9659011897812491
+
+  UHF NO Occupations:
+  HONO-2 :    2 Ap 2.0000000
+  HONO-1 :    3 Ap 2.0000000
+  HONO-0 :    4 Ap 2.0000000
+  LUNO+0 :    5 Ap 0.0000000
+  LUNO+1 :    6 Ap -0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.3859      Y:     0.0007      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.6725      Y:    -0.0013      Z:     0.0000     Total:     0.6725
+
+  Dipole Moment: [D]
+     X:    -1.7093      Y:    -0.0033      Z:     0.0000     Total:     1.7093
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:52 2020
+Module time:
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:52 2020
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    8.906699592615716
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000015585708    -0.000020945466     0.000000000000
+       2       -0.000000918733    -0.000020846319     0.000000000000
+       3        0.000016504441     0.000041791784     0.000000000000
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:52 2020
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+  Based on options and gradient (rms=1.87E-05), recommend projecting translations and projecting rotations.
+hessian() will perform analytic frequency computation.
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:52 2020
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54224  B = 436334.11658  C = 268547.31273 [MHz]
+  Nuclear repulsion =    8.906699592615716
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         6       6       0       0       0       0
+     A"         1       1       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 812 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.6316582588E-01.
+    Using symmetric orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -74.14831740995237   -7.41483e+01   0.00000e+00 
+   @UHF iter   1:   -74.91085891512090   -7.62542e-01   4.25450e-02 DIIS
+   @UHF iter   2:   -74.96483493726195   -5.39760e-02   6.83315e-03 DIIS
+   @UHF iter   3:   -74.96583207135265   -9.97134e-04   1.47692e-03 DIIS
+   @UHF iter   4:   -74.96590036230988   -6.82910e-05   1.20339e-04 DIIS
+   @UHF iter   5:   -74.96590118024375   -8.17934e-07   1.38614e-05 DIIS
+   @UHF iter   6:   -74.96590118977953   -9.53578e-09   1.98526e-07 DIIS
+   @UHF iter   7:   -74.96590118978123   -1.70530e-12   7.61436e-10 DIIS
+   @UHF iter   8:   -74.96590118978122    1.42109e-14   2.58827e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   5.329070518E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                5.329070518E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -20.251579     2Ap    -1.257564     3Ap    -0.593858  
+       4Ap    -0.459743     1App   -0.392621  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.581822     6Ap     0.692688  
+
+    Beta Occupied:                                                        
+
+       1Ap   -20.251579     2Ap    -1.257564     3Ap    -0.593858  
+       4Ap    -0.459743     1App   -0.392621  
+
+    Beta Virtual:                                                         
+
+       5Ap     0.581822     6Ap     0.692688  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+    SOCC [     0,    0 ]
+
+  @UHF Final Energy:   -74.96590118978122
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157162
+    One-Electron Energy =                -121.8344691610797099
+    Two-Electron Energy =                  37.9618683786827589
+    Total Energy =                        -74.9659011897812206
+
+  UHF NO Occupations:
+  HONO-2 :    2 Ap 2.0000000
+  HONO-1 :    3 Ap 2.0000000
+  HONO-0 :    4 Ap 2.0000000
+  LUNO+0 :    5 Ap 0.0000000
+  LUNO+1 :    6 Ap 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.3859      Y:     0.0007      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.6725      Y:    -0.0013      Z:     0.0000     Total:     0.6725
+
+  Dipole Moment: [D]
+     X:    -1.7093      Y:    -0.0033      Z:     0.0000     Total:     1.7093
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:53 2020
+Module time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.77 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:53 2020
+
+
+         ------------------------------------------------------------
+                                   SCF HESS                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    8.906699592615716
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    2
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 812 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+
+   ==> Coupled-Perturbed UHF Solver <==
+
+    Maxiter             =         100
+    Convergence         =   1.000E-06
+    Number of equations =          18
+   -----------------------------------------------------
+     Iter   Residual RMS      Max RMS  Remain  Time [s]
+   -----------------------------------------------------
+        1      3.227e-01    5.460e-01       9         0
+        2      5.664e-02    1.088e-01       6         0
+        3      1.232e-02    3.022e-02       6         0
+        4      8.478e-04    2.741e-03       6         0
+        5      4.105e-05    1.031e-04       5         0
+        6      3.314e-06    7.642e-06       4         0
+        7      2.551e-07    7.521e-07       0         0
+
+  Building U
+  Building Q  ## Total Hessian (Symmetry 0) ##
+  Irrep: 1 Size: 9 x 9
+
+                 1                   2                   3                   4                   5
+
+    1     0.63497862538895    -0.00027896868165     0.00000000000000    -0.31853552031824     0.21649132383518
+    2    -0.00027896868165     0.80399389223982     0.00000000000000     0.33732475096936    -0.40091737321355
+    3     0.00000000000000     0.00000000000000    -0.00001300512582     0.00000000000000     0.00000000000000
+    4    -0.31853552031824     0.33732475096936     0.00000000000000     0.30119099855546    -0.27701227296865
+    5     0.21649132383518    -0.40091737321355     0.00000000000000    -0.27701227296865     0.43786813722518
+    6     0.00000000000000     0.00000000000000    -0.00000079797010     0.00000000000000     0.00000000000000
+    7    -0.31644310507078    -0.33704578228771     0.00000000000000     0.01734452176278     0.06052094913347
+    8    -0.21621235515353    -0.40307651902634     0.00000000000000    -0.06031247800070    -0.03695076401163
+    9     0.00000000000000     0.00000000000000     0.00001380309585     0.00000000000000     0.00000000000000
+
+                 6                   7                   8                   9
+
+    1     0.00000000000000    -0.31644310507078    -0.21621235515353     0.00000000000000
+    2     0.00000000000000    -0.33704578228771    -0.40307651902634     0.00000000000000
+    3    -0.00000079797010     0.00000000000000     0.00000000000000     0.00001380309585
+    4     0.00000000000000     0.01734452176278    -0.06031247800070     0.00000000000000
+    5     0.00000000000000     0.06052094913347    -0.03695076401163     0.00000000000000
+    6    -0.00000687666529     0.00000000000000     0.00000000000000     0.00000767463539
+    7     0.00000000000000     0.29909858330800     0.27652483315424     0.00000000000000
+    8     0.00000000000000     0.27652483315424     0.44002728303797     0.00000000000000
+    9     0.00000767463539     0.00000000000000     0.00000000000000    -0.00002147773123
+
+
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:53 2020
+Module time:
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.16 seconds =       0.02 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    STO-3G Hessian....................................................PASSED
+    STO-3G energy.....................................................PASSED
+    STO-3G energy.....................................................PASSED
+    STO-3G energy.....................................................PASSED
+    STO-3G energy.....................................................PASSED
+    STO-3G energy.....................................................PASSED
+    STO-3G energy.....................................................PASSED
+    STO-3G Hessian....................................................PASSED
+    STO-3G Hessian....................................................PASSED
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:53 2020
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54224  B = 436334.11658  C = 268547.31273 [MHz]
+  Nuclear repulsion =    8.906699592615716
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.5860806671E-02.
+    Using symmetric orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.47175999519550   -7.54718e+01   0.00000e+00 
+   @UHF iter   1:   -75.94751034485181   -4.75750e-01   2.20605e-02 DIIS
+   @UHF iter   2:   -76.00163455995752   -5.41242e-02   1.31679e-02 DIIS
+   @UHF iter   3:   -76.02267132211735   -2.10368e-02   1.19798e-03 DIIS
+   @UHF iter   4:   -76.02309963773502   -4.28316e-04   2.98004e-04 DIIS
+   @UHF iter   5:   -76.02312453260957   -2.48949e-05   5.28257e-05 DIIS
+   @UHF iter   6:   -76.02312559149762   -1.05889e-06   7.57347e-06 DIIS
+   @UHF iter   7:   -76.02312561341684   -2.19192e-08   8.50370e-07 DIIS
+   @UHF iter   8:   -76.02312561367913   -2.62290e-10   1.94261e-07 DIIS
+   @UHF iter   9:   -76.02312561369803   -1.89004e-11   4.71087e-08 DIIS
+   @UHF iter  10:   -76.02312561369922   -1.19371e-12   4.34863e-09 DIIS
+   @UHF iter  11:   -76.02312561369924   -1.42109e-14   7.10148e-10 DIIS
+   @UHF iter  12:   -76.02312561369921    2.84217e-14   3.72582e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:  -1.421085472E-14
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:               -1.421085472E-14
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Beta Occupied:                                                        
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Beta Virtual:                                                         
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+    SOCC [     0,    0 ]
+
+  @UHF Final Energy:   -76.02312561369921
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157162
+    One-Electron Energy =                -122.6202273472981830
+    Two-Electron Energy =                  37.6904021409832666
+    Total Energy =                        -76.0231256136992073
+
+  UHF NO Occupations:
+  HONO-2 :    3 Ap 2.0000000
+  HONO-1 :    1App 2.0000000
+  HONO-0 :    4 Ap 2.0000000
+  LUNO+0 :    5 Ap 0.0000000
+  LUNO+1 :    6 Ap 0.0000000
+  LUNO+2 :    7 Ap 0.0000000
+  LUNO+3 :    8 Ap 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.2111      Y:     0.0004      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.8473      Y:    -0.0016      Z:     0.0000     Total:     0.8473
+
+  Dipole Moment: [D]
+     X:    -2.1536      Y:    -0.0041      Z:     0.0000     Total:     2.1536
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:54 2020
+Module time:
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.70 seconds =       0.03 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:54 2020
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    8.906699592615716
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.061169225455     0.000102762724     0.000000000000
+       2       -0.030644475945     0.028152863266     0.000000000000
+       3       -0.030524749510    -0.028255625990     0.000000000000
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:54 2020
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.06 seconds =       0.03 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+  Based on options and gradient (rms=2.83E-02), recommend projecting translations and not projecting rotations.
+hessian() will perform analytic frequency computation.
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:54 2020
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54224  B = 436334.11658  C = 268547.31273 [MHz]
+  Nuclear repulsion =    8.906699592615716
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.5860806671E-02.
+    Using symmetric orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.47175999519554   -7.54718e+01   0.00000e+00 
+   @UHF iter   1:   -75.94751034485191   -4.75750e-01   2.20605e-02 DIIS
+   @UHF iter   2:   -76.00163455995758   -5.41242e-02   1.31679e-02 DIIS
+   @UHF iter   3:   -76.02267132211742   -2.10368e-02   1.19798e-03 DIIS
+   @UHF iter   4:   -76.02309963773510   -4.28316e-04   2.98004e-04 DIIS
+   @UHF iter   5:   -76.02312453260961   -2.48949e-05   5.28257e-05 DIIS
+   @UHF iter   6:   -76.02312559149776   -1.05889e-06   7.57347e-06 DIIS
+   @UHF iter   7:   -76.02312561341692   -2.19192e-08   8.50370e-07 DIIS
+   @UHF iter   8:   -76.02312561367918   -2.62261e-10   1.94261e-07 DIIS
+   @UHF iter   9:   -76.02312561369803   -1.88436e-11   4.71087e-08 DIIS
+   @UHF iter  10:   -76.02312561369925   -1.22213e-12   4.34863e-09 DIIS
+   @UHF iter  11:   -76.02312561369928   -2.84217e-14   7.10148e-10 DIIS
+   @UHF iter  12:   -76.02312561369935   -7.10543e-14   3.72588e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:  -2.486899575E-14
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:               -2.486899575E-14
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Beta Occupied:                                                        
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Beta Virtual:                                                         
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+    SOCC [     0,    0 ]
+
+  @UHF Final Energy:   -76.02312561369935
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157162
+    One-Electron Energy =                -122.6202273472984245
+    Two-Electron Energy =                  37.6904021409833447
+    Total Energy =                        -76.0231256136993636
+
+  UHF NO Occupations:
+  HONO-2 :    3 Ap 2.0000000
+  HONO-1 :    1App 2.0000000
+  HONO-0 :    4 Ap 2.0000000
+  LUNO+0 :    5 Ap 0.0000000
+  LUNO+1 :    6 Ap 0.0000000
+  LUNO+2 :    7 Ap 0.0000000
+  LUNO+3 :    8 Ap 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.2111      Y:     0.0004      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.8473      Y:    -0.0016      Z:     0.0000     Total:     0.8473
+
+  Dipole Moment: [D]
+     X:    -2.1536      Y:    -0.0041      Z:     0.0000     Total:     2.1536
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:55 2020
+Module time:
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.75 seconds =       0.05 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:55 2020
+
+
+         ------------------------------------------------------------
+                                   SCF HESS                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    8.906699592615716
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    2
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+
+   ==> Coupled-Perturbed UHF Solver <==
+
+    Maxiter             =         100
+    Convergence         =   1.000E-06
+    Number of equations =          18
+   -----------------------------------------------------
+     Iter   Residual RMS      Max RMS  Remain  Time [s]
+   -----------------------------------------------------
+        1      4.279e-01    6.580e-01       9         0
+        2      1.133e-01    1.479e-01       9         0
+        3      3.359e-02    4.825e-02       9         0
+        4      5.342e-03    9.536e-03       9         0
+        5      8.519e-04    1.234e-03       9         0
+        6      1.990e-04    2.854e-04       9         0
+        7      3.637e-05    6.070e-05       9         0
+        8      4.764e-06    9.327e-06       8         0
+        9      1.107e-06    2.234e-06       4         0
+       10      2.548e-07    3.546e-07       0         0
+
+  Building U
+  Building Q  ## Total Hessian (Symmetry 0) ##
+  Irrep: 1 Size: 9 x 9
+
+                 1                   2                   3                   4                   5
+
+    1     0.46440692022193    -0.00016217026948     0.00000000000000    -0.23290778565892     0.15723697189273
+    2    -0.00016217026948     0.56914406455632     0.00000000000000     0.21741859896236    -0.28383716570277
+    3     0.00000000000000     0.00000000000000     0.05090987977776     0.00000000000000     0.00000000000000
+    4    -0.23290778565892     0.21741859896236     0.00000000000000     0.21779915850584    -0.18742773412997
+    5     0.15723697189273    -0.28383716570277     0.00000000000000    -0.18742773412997     0.32069879089684
+    6     0.00000000000000     0.00000000000000    -0.02545964556522     0.00000000000000     0.00000000000000
+    7    -0.23149913458169    -0.21725642869288     0.00000000000000     0.01510862715309     0.03019076223723
+    8    -0.15707480162327    -0.28530689887240     0.00000000000000    -0.02999086483239    -0.03686162519408
+    9     0.00000000000000     0.00000000000000    -0.02545023423128     0.00000000000000     0.00000000000000
+
+                 6                   7                   8                   9
+
+    1     0.00000000000000    -0.23149913458169    -0.15707480162327     0.00000000000000
+    2     0.00000000000000    -0.21725642869288    -0.28530689887240     0.00000000000000
+    3    -0.02545964556522     0.00000000000000     0.00000000000000    -0.02545023423128
+    4     0.00000000000000     0.01510862715309    -0.02999086483239     0.00000000000000
+    5     0.00000000000000     0.03019076223723    -0.03686162519408     0.00000000000000
+    6     0.02257670891316     0.00000000000000     0.00000000000000     0.00288293665205
+    7     0.00000000000000     0.21639050742861     0.18706566645565     0.00000000000000
+    8     0.00000000000000     0.18706566645565     0.32216852406648     0.00000000000000
+    9     0.00288293665205     0.00000000000000     0.00000000000000     0.02256729757922
+
+
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:58 2020
+Module time:
+	user time   =       2.72 seconds =       0.05 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       5.47 seconds =       0.09 minutes
+	system time =       0.38 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
+    cc-pVDZ Hessian...................................................PASSED
+
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:58 2020
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3 entry H          line    22 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2    entry O          line   198 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54224  B = 436334.11658  C = 268547.31273 [MHz]
+  Nuclear repulsion =    8.906699592615716
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.5860806671E-02.
+    Using symmetric orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.47175999519547   -7.54718e+01   0.00000e+00 
+   @UHF iter   1:   -75.94751034485162   -4.75750e-01   2.20605e-02 DIIS
+   @UHF iter   2:   -76.00163455995744   -5.41242e-02   1.31679e-02 DIIS
+   @UHF iter   3:   -76.02267132211726   -2.10368e-02   1.19798e-03 DIIS
+   @UHF iter   4:   -76.02309963773492   -4.28316e-04   2.98004e-04 DIIS
+   @UHF iter   5:   -76.02312453260940   -2.48949e-05   5.28257e-05 DIIS
+   @UHF iter   6:   -76.02312559149749   -1.05889e-06   7.57347e-06 DIIS
+   @UHF iter   7:   -76.02312561341668   -2.19192e-08   8.50370e-07 DIIS
+   @UHF iter   8:   -76.02312561367896   -2.62276e-10   1.94261e-07 DIIS
+   @UHF iter   9:   -76.02312561369783   -1.88720e-11   4.71087e-08 DIIS
+   @UHF iter  10:   -76.02312561369911   -1.27898e-12   4.34863e-09 DIIS
+   @UHF iter  11:   -76.02312561369908    2.84217e-14   7.10148e-10 DIIS
+   @UHF iter  12:   -76.02312561369907    1.42109e-14   3.72584e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   1.776356839E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                1.776356839E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Beta Occupied:                                                        
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Beta Virtual:                                                         
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+    SOCC [     0,    0 ]
+
+  @UHF Final Energy:   -76.02312561369907
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157162
+    One-Electron Energy =                -122.6202273472979272
+    Two-Electron Energy =                  37.6904021409831600
+    Total Energy =                        -76.0231256136990510
+
+  UHF NO Occupations:
+  HONO-2 :    1App 2.0000000
+  HONO-1 :    3 Ap 2.0000000
+  HONO-0 :    4 Ap 2.0000000
+  LUNO+0 :    5 Ap 0.0000000
+  LUNO+1 :    2App 0.0000000
+  LUNO+2 :    6 Ap 0.0000000
+  LUNO+3 :    7 Ap 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.2111      Y:     0.0004      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.8473      Y:    -0.0016      Z:     0.0000     Total:     0.8473
+
+  Dipole Moment: [D]
+     X:    -2.1536      Y:    -0.0041      Z:     0.0000     Total:     2.1536
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:59 2020
+Module time:
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       5.99 seconds =       0.10 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:59 2020
+
+
+         ------------------------------------------------------------
+                                   SCF GRAD                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    8.906699592615716
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    1
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.030644475945     0.028152863266     0.000000000000
+       2        0.061169225455     0.000102762724     0.000000000000
+       3       -0.030524749510    -0.028255625990     0.000000000000
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:59 2020
+Module time:
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       6.22 seconds =       0.10 minutes
+	system time =       0.40 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+  Based on options and gradient (rms=2.83E-02), recommend projecting translations and not projecting rotations.
+hessian() will perform analytic frequency computation.
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:59 2020
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3 entry H          line    22 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2    entry O          line   198 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54224  B = 436334.11658  C = 268547.31273 [MHz]
+  Nuclear repulsion =    8.906699592615716
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.5860806671E-02.
+    Using symmetric orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.47175999519547   -7.54718e+01   0.00000e+00 
+   @UHF iter   1:   -75.94751034485171   -4.75750e-01   2.20605e-02 DIIS
+   @UHF iter   2:   -76.00163455995741   -5.41242e-02   1.31679e-02 DIIS
+   @UHF iter   3:   -76.02267132211728   -2.10368e-02   1.19798e-03 DIIS
+   @UHF iter   4:   -76.02309963773503   -4.28316e-04   2.98004e-04 DIIS
+   @UHF iter   5:   -76.02312453260950   -2.48949e-05   5.28257e-05 DIIS
+   @UHF iter   6:   -76.02312559149762   -1.05889e-06   7.57347e-06 DIIS
+   @UHF iter   7:   -76.02312561341681   -2.19192e-08   8.50370e-07 DIIS
+   @UHF iter   8:   -76.02312561367903   -2.62219e-10   1.94261e-07 DIIS
+   @UHF iter   9:   -76.02312561369790   -1.88720e-11   4.71087e-08 DIIS
+   @UHF iter  10:   -76.02312561369914   -1.23634e-12   4.34863e-09 DIIS
+   @UHF iter  11:   -76.02312561369918   -4.26326e-14   7.10148e-10 DIIS
+   @UHF iter  12:   -76.02312561369915    2.84217e-14   3.72582e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:  -8.881784197E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:               -8.881784197E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Beta Occupied:                                                        
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Beta Virtual:                                                         
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+    SOCC [     0,    0 ]
+
+  @UHF Final Energy:   -76.02312561369915
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157162
+    One-Electron Energy =                -122.6202273472980977
+    Two-Electron Energy =                  37.6904021409832382
+    Total Energy =                        -76.0231256136991504
+
+  UHF NO Occupations:
+  HONO-2 :    3 Ap 2.0000000
+  HONO-1 :    1App 2.0000000
+  HONO-0 :    4 Ap 2.0000000
+  LUNO+0 :    5 Ap 0.0000000
+  LUNO+1 :    6 Ap 0.0000000
+  LUNO+2 :    7 Ap 0.0000000
+  LUNO+3 :    2App 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.2111      Y:     0.0004      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.8473      Y:    -0.0016      Z:     0.0000     Total:     0.8473
+
+  Dipole Moment: [D]
+     X:    -2.1536      Y:    -0.0041      Z:     0.0000     Total:     2.1536
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:19:59 2020
+Module time:
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       6.73 seconds =       0.11 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** tstart() called on lawn-128-61-18-63.lawn.gatech.edu
+*** at Fri Jan 17 11:19:59 2020
+
+
+         ------------------------------------------------------------
+                                   SCF HESS                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H           -1.069804624577     1.430455315728     0.000000000000     1.007825032230
+         O            0.134467872279     0.000255539126     0.000000000000    15.994914619570
+         H           -1.064298089419    -1.434510907104     0.000000000000     1.007825032230
+
+  Nuclear repulsion =    8.906699592615716
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    2
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+
+   ==> Coupled-Perturbed UHF Solver <==
+
+    Maxiter             =         100
+    Convergence         =   1.000E-06
+    Number of equations =          18
+   -----------------------------------------------------
+     Iter   Residual RMS      Max RMS  Remain  Time [s]
+   -----------------------------------------------------
+        1      4.279e-01    6.580e-01       9         0
+        2      1.133e-01    1.479e-01       9         0
+        3      3.359e-02    4.825e-02       9         0
+        4      5.342e-03    9.536e-03       9         0
+        5      8.519e-04    1.234e-03       9         0
+        6      1.990e-04    2.854e-04       9         0
+        7      3.637e-05    6.070e-05       9         0
+        8      4.764e-06    9.327e-06       8         1
+        9      1.107e-06    2.234e-06       4         1
+       10      2.548e-07    3.546e-07       0         1
+
+  Building U
+  Building Q  ## Total Hessian (Symmetry 0) ##
+  Irrep: 1 Size: 9 x 9
+
+                 1                   2                   3                   4                   5
+
+    1     0.21779915850584    -0.18742773412997     0.00000000000000    -0.23290778565891     0.21741859896236
+    2    -0.18742773412997     0.32069879089685     0.00000000000000     0.15723697189273    -0.28383716570279
+    3     0.00000000000000     0.00000000000000     0.02257670891315     0.00000000000000     0.00000000000000
+    4    -0.23290778565891     0.15723697189273     0.00000000000000     0.46440692022149    -0.00016217026947
+    5     0.21741859896236    -0.28383716570279     0.00000000000000    -0.00016217026947     0.56914406455657
+    6     0.00000000000000     0.00000000000000    -0.02545964556520     0.00000000000000     0.00000000000000
+    7     0.01510862715309     0.03019076223723     0.00000000000000    -0.23149913458170    -0.21725642869288
+    8    -0.02999086483239    -0.03686162519408     0.00000000000000    -0.15707480162326    -0.28530689887240
+    9     0.00000000000000     0.00000000000000     0.00288293665205     0.00000000000000     0.00000000000000
+
+                 6                   7                   8                   9
+
+    1     0.00000000000000     0.01510862715309    -0.02999086483239     0.00000000000000
+    2     0.00000000000000     0.03019076223723    -0.03686162519408     0.00000000000000
+    3    -0.02545964556520     0.00000000000000     0.00000000000000     0.00288293665205
+    4     0.00000000000000    -0.23149913458170    -0.15707480162326     0.00000000000000
+    5     0.00000000000000    -0.21725642869288    -0.28530689887240     0.00000000000000
+    6     0.05090987977871     0.00000000000000     0.00000000000000    -0.02545023423128
+    7     0.00000000000000     0.21639050742861     0.18706566645566     0.00000000000000
+    8     0.00000000000000     0.18706566645566     0.32216852406648     0.00000000000000
+    9    -0.02545023423128     0.00000000000000     0.00000000000000     0.02256729757923
+
+
+
+
+*** tstop() called on lawn-128-61-18-63.lawn.gatech.edu at Fri Jan 17 11:20:03 2020
+Module time:
+	user time   =       2.78 seconds =       0.05 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       9.51 seconds =       0.16 minutes
+	system time =       0.61 seconds =       0.01 minutes
+	total time  =         11 seconds =       0.18 minutes
+    Permuted cc-pVDZ Hessian..........................................PASSED
+
+    Psi4 stopped on: Friday, 17 January 2020 11:20AM
+    Psi4 wall time for execution: 0:00:10.96
+
+*** Psi4 exiting successfully. Buy a developer a beer!
