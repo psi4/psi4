@@ -107,6 +107,7 @@ class OCCWave : public Wavefunction {
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
+    void mp2p5_printing(bool scf = false);
     void mp3_printing(bool scf = false);
     void mp2_postprocessing(bool include_singles = false);
     void mp2p5_postprocessing();

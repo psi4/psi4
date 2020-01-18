@@ -62,6 +62,25 @@ void OCCWave::mp2_printing(bool scf, bool include_singles) {
     outfile->Printf("\n");
 }
 
+void OCCWave::mp2p5_printing(bool scf) {
+    outfile->Printf("\n");
+    std::string which_mos = scf ? "SCF" : "optimized";
+    std::string parenthetical = scf ? " (Canonical MP2.5)" : "";
+    outfile->Printf("\tComputing MP2.5 energy using %s MOs%s... \n", which_mos.c_str(), parenthetical.c_str());
+    outfile->Printf("\t============================================================================== \n");
+    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+    outfile->Printf("\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3 - Emp2);
+    outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
+    outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
+    outfile->Printf("\t============================================================================== \n");
+    outfile->Printf("\n");
+}
+
 void OCCWave::mp3_printing(bool scf) {
     outfile->Printf("\n");
     std::string which_mos = scf ? "SCF" : "optimized";
@@ -135,20 +154,7 @@ void OCCWave::mp3_postprocessing() {
 }
 
 void OCCWave::mp2p5_postprocessing() {
-    outfile->Printf("\n");
-    outfile->Printf("\tComputing MP2.5 energy using SCF MOs (Canonical MP2.5)... \n");
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-    outfile->Printf("\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3 - Emp2);
-    outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
-    outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\n");
+    mp2p5_printing(true);
 
     variables_["MP2.5 TOTAL ENERGY"] = Emp3;
     variables_["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
