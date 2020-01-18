@@ -33,9 +33,11 @@
 namespace psi {
 namespace occwave {
 
-void OCCWave::mp2_postprocessing(bool include_singles) {
+void OCCWave::mp2_printing(bool scf, bool include_singles) {
     outfile->Printf("\n");
-    outfile->Printf("\tComputing MP2 energy using SCF MOs (%sMP2)... \n", include_singles ? "ROHF-" : "Canonical ");
+    std::string which_mos = scf ? "SCF" % "optimized";
+    std::string parenthetical = scf ? (include_singles ? " (ROHF-MP2)" : " (Canonical MP2)") : "";
+    outfile->Printf("\tComputing MP2 energy using %s MOs%s... \n", which_mos, parenthetical);
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
     outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -58,6 +60,10 @@ void OCCWave::mp2_postprocessing(bool include_singles) {
     outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\n");
+}
+
+void OCCWave::mp2_postprocessing(bool include_singles) {
+    mp2_printing(true, include_singles);
 
     // Wavefunctions saved to variables are set on the wavefunction Py-side.
     // Other variables will be set Py-side via QCDB formulas, per a future Lori project.
@@ -102,5 +108,6 @@ void OCCWave::mp2p5_postprocessing() {
     variables_["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
     variables_["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
 }
+
 }
 }

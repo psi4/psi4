@@ -140,25 +140,7 @@ void OCCWave::omp2_manager() {
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
-        outfile->Printf("\n");
-        outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
-        outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-        outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-        outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-        outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA + Escsmp2BB);
-        outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-        outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-        outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-        outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-        outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-        outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-        outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-        outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-        outfile->Printf("\t============================================================================== \n");
+        mp2_printing();
 
         outfile->Printf("\n");
         outfile->Printf("\t============================================================================== \n");
@@ -519,26 +501,7 @@ void OCCWave::omp3_manager() {
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
-        outfile->Printf("\n");
-        outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
-        outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-        outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-        outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-        outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA + Escsmp2BB);
-        outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-        outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-        outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-        outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-        outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-        outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-        outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-        outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-        outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\n");
+        mp2_printing();
 
         outfile->Printf("\n");
         outfile->Printf("\tComputing MP3 energy using optimized MOs... \n");
@@ -1103,26 +1066,7 @@ void OCCWave::omp2_5_manager() {
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
-        outfile->Printf("\n");
-        outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
-        outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-        outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-        outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
-        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
-        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
-        outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA + Escsmp2BB);
-        outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
-        outfile->Printf("\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
-        outfile->Printf("\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
-        outfile->Printf("\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-        outfile->Printf("\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
-        outfile->Printf("\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
-        outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-        outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
-        outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\n");
+        mp2_printing();
 
         outfile->Printf("\n");
         outfile->Printf("\tComputing MP2.5 energy using optimized MOs... \n");
