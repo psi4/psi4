@@ -136,16 +136,16 @@ void OCCWave::mp2_postprocessing(bool include_singles) {
 void OCCWave::mp3_postprocessing() {
     mp3_printing(true);
 
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
+    variables_["MP3 TOTAL ENERGY"] = Emp3;
     Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
     Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
     Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
     Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
     Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
 
-    Process::environment.globals["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
-    Process::environment.globals["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
-    Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
+    variables_["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
+    variables_["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
     Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
     Process::environment.globals["SOS-MP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
     Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;

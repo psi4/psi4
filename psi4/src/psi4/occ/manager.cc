@@ -172,10 +172,7 @@ void OCCWave::omp2_manager() {
         // LAB: variables_ and energy_ here are what I vouch for and test.
         //      The P::e.globals will diminish and go into the West and be
         //      replaced by qcvar formulas computed py-side from wfn vars.
-        energy_ = Emp2L;
-        variables_["CURRENT ENERGY"] = Emp2L;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
-        variables_["CURRENT CORRELATION ENERGY"] = Emp2L - Escf;
 
         variables_["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
         Process::environment.globals["SCS-OMP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
@@ -187,38 +184,32 @@ void OCCWave::omp2_manager() {
         // if scs on
         if (do_scs == "TRUE") {
             if (scs_type_ == "SCS") {
-                energy_ = Escsmp2;
                 variables_["CURRENT ENERGY"] = Escsmp2;
-                variables_["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
             }
 
             else if (scs_type_ == "SCSN") {
-                energy_ = Escsnmp2;
                 variables_["CURRENT ENERGY"] = Escsnmp2;
-                variables_["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
             }
 
             else if (scs_type_ == "SCSVDW") {
-                energy_ = Escsmp2vdw;
                 variables_["CURRENT ENERGY"] = Escsmp2vdw;
-                variables_["CURRENT CORRELATION ENERGY"] = Escsmp2vdw - Escf;
             }
         }
 
         // else if sos on
         else if (do_sos == "TRUE") {
             if (sos_type_ == "SOS") {
-                energy_ = Esosmp2;
                 variables_["CURRENT ENERGY"] = Esosmp2;
-                variables_["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
             }
 
             else if (sos_type_ == "SOSPI") {
-                energy_ = Esospimp2;
                 variables_["CURRENT ENERGY"] = Esospimp2;
-                variables_["CURRENT CORRELATION ENERGY"] = Esospimp2 - Escf;
             }
+        } else {
+            variables_["CURRENT ENERGY"] = Emp2L;
         }
+        energy_ = variables_["CURRENT ENERGY"];
+        variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -275,49 +266,34 @@ void OCCWave::mp2_manager() {
 
     mp2_postprocessing();
 
-    variables_["CURRENT REFERENCE ENERGY"] = Escf;
-    variables_["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
-    variables_["CURRENT ENERGY"] = Emp2;
-    energy_ = Emp2;
-
     // Why is the below line commented?
     // if (reference == "ROHF") Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
-    // if scs on
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
     if (do_scs == "TRUE") {
         if (scs_type_ == "SCS") {
-            energy_ = Escsmp2;
             variables_["CURRENT ENERGY"] = Escsmp2;
-            variables_["CURRENT CORRELATION ENERGY"] = Escsmp2 - Escf;
         }
-
         else if (scs_type_ == "SCSN") {
-            energy_ = Escsnmp2;
             variables_["CURRENT ENERGY"] = Escsnmp2;
-            variables_["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
         }
-
         else if (scs_type_ == "SCSVDW") {
-            energy_ = Escsmp2vdw;
             variables_["CURRENT ENERGY"] = Escsmp2vdw;
-            variables_["CURRENT CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         }
     }
-
-    // else if sos on
     else if (do_sos == "TRUE") {
         if (sos_type_ == "SOS") {
-            energy_ = Esosmp2;
             variables_["CURRENT ENERGY"] = Esosmp2;
-            variables_["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
         }
-
         else if (sos_type_ == "SOSPI") {
-            energy_ = Esospimp2;
             variables_["CURRENT ENERGY"] = Esospimp2;
-            variables_["CURRENT CORRELATION ENERGY"] = Esospimp2 - Escf;
         }
+    } else {
+        variables_["CURRENT ENERGY"] = Emp2;
     }
+    energy_ = variables_["CURRENT ENERGY"];
+    variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+
 
     /* updates the wavefunction for checkpointing */
     name_ = "MP2";
@@ -488,53 +464,46 @@ void OCCWave::omp3_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        Process::environment.globals["OMP3 TOTAL ENERGY"] = Emp3L;
+        variables_["OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["SCS-OMP3 TOTAL ENERGY"] = Escsmp3;
         Process::environment.globals["SOS-OMP3 TOTAL ENERGY"] = Esosmp3;
         Process::environment.globals["SCSN-OMP3 TOTAL ENERGY"] = Escsnmp3;
         Process::environment.globals["SCS-OMP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
         Process::environment.globals["SOS-PI-OMP3 TOTAL ENERGY"] = Esospimp3;
-        Process::environment.globals["CURRENT ENERGY"] = Emp3L;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
 
-        Process::environment.globals["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
         Process::environment.globals["SCS-OMP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
         Process::environment.globals["SOS-OMP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
         Process::environment.globals["SCSN-OMP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
         Process::environment.globals["SCS-OMP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
         Process::environment.globals["SOS-PI-OMP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 
-        // if scs on
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
         if (do_scs == "TRUE") {
             if (scs_type_ == "SCS") {
                 Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp3 - Escf;
             }
 
             else if (scs_type_ == "SCSN") {
                 Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp3 - Escf;
             }
 
             else if (scs_type_ == "SCSVDW") {
                 Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp3vdw - Escf;
             }
         }
-
-        // else if sos on
         else if (do_sos == "TRUE") {
             if (sos_type_ == "SOS") {
                 Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp3 - Escf;
             }
 
             else if (sos_type_ == "SOSPI") {
                 Process::environment.globals["CURRENT ENERGY"] = Esospimp3;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esospimp3 - Escf;
             }
+        } else {
+            variables_["CURRENT ENERGY"] = Emp3;
         }
+        variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -585,40 +554,32 @@ void OCCWave::mp3_manager() {
 
     mp3_postprocessing();
 
-    Process::environment.globals["CURRENT ENERGY"] = Emp3;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-
-    // if scs on
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
     if (do_scs == "TRUE") {
         if (scs_type_ == "SCS") {
             Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp3 - Escf;
         }
 
         else if (scs_type_ == "SCSN") {
             Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp3 - Escf;
         }
 
         else if (scs_type_ == "SCSVDW") {
             Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmp3vdw - Escf;
         }
     }
-
-    // else if sos on
     else if (do_sos == "TRUE") {
         if (sos_type_ == "SOS") {
             Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp3 - Escf;
         }
 
         else if (sos_type_ == "SOSPI") {
             Process::environment.globals["CURRENT ENERGY"] = Esospimp3;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esospimp3 - Escf;
         }
+    } else {
+        variables_["CURRENT ENERGY"] = Emp3;
     }
+    variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
@@ -753,14 +714,14 @@ void OCCWave::ocepa_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        Process::environment.globals["OLCCD TOTAL ENERGY"] = EcepaL;
+        variables_["OLCCD TOTAL ENERGY"] = EcepaL;
         Process::environment.globals["SCS-OLCCD TOTAL ENERGY"] = Escscepa;
         Process::environment.globals["SOS-OLCCD TOTAL ENERGY"] = Esoscepa;
-        Process::environment.globals["CURRENT ENERGY"] = EcepaL;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = EcepaL - Escf;
+        variables_["CURRENT ENERGY"] = EcepaL;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = EcepaL - Escf;
 
-        Process::environment.globals["OLCCD CORRELATION ENERGY"] = EcepaL - Escf;
+        variables_["OLCCD CORRELATION ENERGY"] = EcepaL - Escf;
         Process::environment.globals["SCS-OLCCD CORRELATION ENERGY"] = Escscepa - Escf;
         Process::environment.globals["SOS-OLCCD CORRELATION ENERGY"] = Esoscepa - Escf;
 
@@ -830,11 +791,11 @@ void OCCWave::cepa_manager() {
     outfile->Printf("\n");
 
     // Set the global variables with the energies
-    Process::environment.globals["LCCD TOTAL ENERGY"] = Ecepa;
-    Process::environment.globals["LCCD CORRELATION ENERGY"] = Ecorr;
-    Process::environment.globals["CURRENT ENERGY"] = Ecepa;
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Ecorr;
+    variables_["LCCD TOTAL ENERGY"] = Ecepa;
+    variables_["LCCD CORRELATION ENERGY"] = Ecorr;
+    variables_["CURRENT ENERGY"] = Ecepa;
+    variables_["CURRENT REFERENCE ENERGY"] = Eref;
+    variables_["CURRENT CORRELATION ENERGY"] = Ecorr;
     // EcepaL = Ecepa;
 
     // Compute Analytic Gradients
@@ -991,11 +952,11 @@ void OCCWave::omp2_5_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        Process::environment.globals["OMP2.5 TOTAL ENERGY"] = Emp3L;
-        Process::environment.globals["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
-        Process::environment.globals["CURRENT ENERGY"] = Emp3L;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["OMP2.5 TOTAL ENERGY"] = Emp3L;
+        variables_["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["CURRENT ENERGY"] = Emp3L;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -1045,9 +1006,9 @@ void OCCWave::mp2_5_manager() {
     if (ip_poles == "TRUE") omp3_ip_poles();
 
     mp2p5_postprocessing();
-    Process::environment.globals["CURRENT ENERGY"] = Emp3L;
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
+    variables_["CURRENT ENERGY"] = Emp3L;
+    variables_["CURRENT REFERENCE ENERGY"] = Eref;
+    variables_["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
 
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
