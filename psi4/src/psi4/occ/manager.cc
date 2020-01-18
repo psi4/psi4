@@ -1040,23 +1040,7 @@ void OCCWave::omp2_5_manager() {
     Emp3L_old = Emp3;
     if (ip_poles == "TRUE") omp3_ip_poles();
 
-    outfile->Printf("\n");
-    outfile->Printf("\tComputing MP2.5 energy using SCF MOs (Canonical MP2.5)... \n");
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-    outfile->Printf("\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3 - Emp2);
-    outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
-    outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\n");
-
-    Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+    mp2p5_postprocessing();
 
     omp3_response_pdms();
     gfock();
@@ -1222,24 +1206,7 @@ void OCCWave::mp2_5_manager() {
     Emp3L_old = Emp3;
     if (ip_poles == "TRUE") omp3_ip_poles();
 
-    outfile->Printf("\n");
-    outfile->Printf("\tComputing MP2.5 energy using SCF MOs (Canonical MP2.5)... \n");
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-    outfile->Printf("\t0.5 Energy Correction (a.u.)       : %20.14f\n", Emp3 - Emp2);
-    outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", Ecorr);
-    outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", Emp3);
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\n");
-
-    Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+    mp2p5_postprocessing();
     Process::environment.globals["CURRENT ENERGY"] = Emp3L;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
