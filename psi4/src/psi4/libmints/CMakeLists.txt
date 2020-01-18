@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 list(APPEND sources
   local.cc
   onebody.cc
