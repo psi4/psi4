@@ -304,6 +304,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_tensor_2d_doublet.py
               ../tests/pytests/test_tensor_2d_cholesky.py
               ../tests/pytests/test_tensor_eig.py
+              ../tests/pytests/test_tensor_eigh.py
               ../tests/pytests/test_qcvars.py
               ../tests/pytests/test_dft_benchmarks.py
               ../tests/pytests/test_vibanalysis.py

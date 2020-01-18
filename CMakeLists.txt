@@ -157,7 +157,7 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
-option_with_default(USE_XSIMD "Enable use of xsimd for vectorization of xtensor expressions" OFF)
+option_with_default(USE_XSIMD "Enable use of xsimd for vectorization of xtensor expressions" ON)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
@@ -182,11 +182,11 @@ set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 add_subdirectory(external/common)
 # Pin versions of the xtensor stack
-set(xtl_pinned 0.6.7)
-set(xsimd_pinned 7.4.1)
-set(xtensor_pinned 0.20.10)
-set(xtensor-blas_pinned 0.16.1)
-set(xtensor-python_pinned 0.23.1)
+set(xtl_pinned 0.6.11)
+set(xsimd_pinned 7.4.5)
+set(xtensor_pinned 0.21.2)
+set(xtensor-blas_pinned 0.17.1)
+set(xtensor-python_pinned 0.24.1)
 add_subdirectory(external/upstream)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
