@@ -403,43 +403,7 @@ void OCCWave::omp3_manager() {
     Emp3L_old = Emp3;
     if (ip_poles == "TRUE") omp3_ip_poles();
 
-    outfile->Printf("\n");
-    outfile->Printf("\tComputing MP3 energy using SCF MOs (Canonical MP3)... \n");
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-    outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3 - Emp2));
-    outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3 + Emp2));
-    outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
-    outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
-    outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-    outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
-    outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
-    outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3 - Emp2);
-    outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-    outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\n");
-
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
-    Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
-    Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
-    Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
-    Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
-
-    Process::environment.globals["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
-    Process::environment.globals["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
-    Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
-    Process::environment.globals["SOS-MP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
-    Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
-    Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
-    Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
+    mp3_postprocessing();
 
     omp3_response_pdms();
     gfock();
@@ -503,27 +467,7 @@ void OCCWave::omp3_manager() {
 
         mp2_printing();
 
-        outfile->Printf("\n");
-        outfile->Printf("\tComputing MP3 energy using optimized MOs... \n");
-        outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-        outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-        outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-        outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3 - Emp2));
-        outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3 + Emp2));
-        outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
-        outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
-        outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-        outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
-        outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
-        outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3 - Emp2);
-        outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-        outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
-        outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\n");
+        mp3_printing();
 
         outfile->Printf("\n");
         outfile->Printf("\t============================================================================== \n");
@@ -639,47 +583,11 @@ void OCCWave::mp3_manager() {
     Emp3L_old = Emp3;
     if (ip_poles == "TRUE") omp3_ip_poles();
 
-    outfile->Printf("\n");
-    outfile->Printf("\tComputing MP3 energy using SCF MOs (Canonical MP3)... \n");
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
-    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
-    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
-    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
-    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
-    outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3 - Emp2));
-    outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3 + Emp2));
-    outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
-    outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
-    outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-    outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
-    outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
-    outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3 - Emp2);
-    outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
-    outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
-    outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\n");
+    mp3_postprocessing();
 
     Process::environment.globals["CURRENT ENERGY"] = Emp3;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
-    Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
-    Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
-    Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
-    Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
-
-    Process::environment.globals["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
-    Process::environment.globals["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
-    Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
-    Process::environment.globals["SOS-MP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
-    Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
-    Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
-    Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 
     // if scs on
     if (do_scs == "TRUE") {

@@ -35,9 +35,9 @@ namespace occwave {
 
 void OCCWave::mp2_printing(bool scf, bool include_singles) {
     outfile->Printf("\n");
-    std::string which_mos = scf ? "SCF" % "optimized";
+    std::string which_mos = scf ? "SCF" : "optimized";
     std::string parenthetical = scf ? (include_singles ? " (ROHF-MP2)" : " (Canonical MP2)") : "";
-    outfile->Printf("\tComputing MP2 energy using %s MOs%s... \n", which_mos, parenthetical);
+    outfile->Printf("\tComputing MP2 energy using %s MOs%s... \n", which_mos.c_str(), parenthetical.c_str());
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
     outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -58,6 +58,32 @@ void OCCWave::mp2_printing(bool scf, bool include_singles) {
     }
     outfile->Printf("\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
     outfile->Printf("\tMP2 Total Energy (a.u.)            : %20.14f\n", Emp2);
+    outfile->Printf("\t============================================================================== \n");
+    outfile->Printf("\n");
+}
+
+void OCCWave::mp3_printing(bool scf) {
+    outfile->Printf("\n");
+    std::string which_mos = scf ? "SCF" : "optimized";
+    std::string parenthetical = scf ? " (Canonical MP2)" : "";
+    outfile->Printf("\tComputing MP3 energy using %s MOs%s... \n", which_mos.c_str(), parenthetical.c_str());
+    outfile->Printf("\t============================================================================== \n");
+    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp3AA);
+    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp3AB);
+    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp3BB);
+    outfile->Printf("\tMP2.5 Correlation Energy (a.u.)    : %20.14f\n", (Emp2 - Escf) + 0.5 * (Emp3 - Emp2));
+    outfile->Printf("\tMP2.5 Total Energy (a.u.)          : %20.14f\n", 0.5 * (Emp3 + Emp2));
+    outfile->Printf("\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
+    outfile->Printf("\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
+    outfile->Printf("\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
+    outfile->Printf("\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
+    outfile->Printf("\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
+    outfile->Printf("\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3 - Emp2);
+    outfile->Printf("\tMP3 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
+    outfile->Printf("\tMP3 Total Energy (a.u.)            : %20.14f\n", Emp3);
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\n");
 }
@@ -86,6 +112,26 @@ void OCCWave::mp2_postprocessing(bool include_singles) {
 
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+}
+
+void OCCWave::mp3_postprocessing() {
+    mp3_printing(true);
+
+    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
+    Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
+    Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
+    Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
+    Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
+    Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
+
+    Process::environment.globals["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
+    Process::environment.globals["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
+    Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+    Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
+    Process::environment.globals["SOS-MP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
+    Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
+    Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
+    Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 }
 
 void OCCWave::mp2p5_postprocessing() {
