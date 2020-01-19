@@ -84,7 +84,7 @@ void OCCWave::mp2p5_printing(bool scf) {
 void OCCWave::mp3_printing(bool scf) {
     outfile->Printf("\n");
     std::string which_mos = scf ? "SCF" : "optimized";
-    std::string parenthetical = scf ? " (Canonical MP2)" : "";
+    std::string parenthetical = scf ? " (Canonical MP3)" : "";
     outfile->Printf("\tComputing MP3 energy using %s MOs%s... \n", which_mos.c_str(), parenthetical.c_str());
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);

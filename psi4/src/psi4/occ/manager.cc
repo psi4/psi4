@@ -481,24 +481,24 @@ void OCCWave::omp3_manager() {
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
         if (do_scs == "TRUE") {
             if (scs_type_ == "SCS") {
-                Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
+                variables_["CURRENT ENERGY"] = Escsmp3;
             }
 
             else if (scs_type_ == "SCSN") {
-                Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
+                variables_["CURRENT ENERGY"] = Escsnmp3;
             }
 
             else if (scs_type_ == "SCSVDW") {
-                Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
+                variables_["CURRENT ENERGY"] = Escsmp3vdw;
             }
         }
         else if (do_sos == "TRUE") {
             if (sos_type_ == "SOS") {
-                Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
+                variables_["CURRENT ENERGY"] = Esosmp3;
             }
 
             else if (sos_type_ == "SOSPI") {
-                Process::environment.globals["CURRENT ENERGY"] = Esospimp3;
+                variables_["CURRENT ENERGY"] = Esospimp3;
             }
         } else {
             variables_["CURRENT ENERGY"] = Emp3;
@@ -557,24 +557,24 @@ void OCCWave::mp3_manager() {
     variables_["CURRENT REFERENCE ENERGY"] = Escf;
     if (do_scs == "TRUE") {
         if (scs_type_ == "SCS") {
-            Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
+            variables_["CURRENT ENERGY"] = Escsmp3;
         }
 
         else if (scs_type_ == "SCSN") {
-            Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
+            variables_["CURRENT ENERGY"] = Escsnmp3;
         }
 
         else if (scs_type_ == "SCSVDW") {
-            Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
+            variables_["CURRENT ENERGY"] = Escsmp3vdw;
         }
     }
     else if (do_sos == "TRUE") {
         if (sos_type_ == "SOS") {
-            Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
+            variables_["CURRENT ENERGY"] = Esosmp3;
         }
 
         else if (sos_type_ == "SOSPI") {
-            Process::environment.globals["CURRENT ENERGY"] = Esospimp3;
+            variables_["CURRENT ENERGY"] = Esospimp3;
         }
     } else {
         variables_["CURRENT ENERGY"] = Emp3;
@@ -717,26 +717,21 @@ void OCCWave::ocepa_manager() {
         variables_["OLCCD TOTAL ENERGY"] = EcepaL;
         Process::environment.globals["SCS-OLCCD TOTAL ENERGY"] = Escscepa;
         Process::environment.globals["SOS-OLCCD TOTAL ENERGY"] = Esoscepa;
-        variables_["CURRENT ENERGY"] = EcepaL;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
-        variables_["CURRENT CORRELATION ENERGY"] = EcepaL - Escf;
 
         variables_["OLCCD CORRELATION ENERGY"] = EcepaL - Escf;
         Process::environment.globals["SCS-OLCCD CORRELATION ENERGY"] = Escscepa - Escf;
         Process::environment.globals["SOS-OLCCD CORRELATION ENERGY"] = Esoscepa - Escf;
 
-        // if scs on
         if (do_scs == "TRUE") {
-            Process::environment.globals["CURRENT ENERGY"] = Escscepa;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escscepa - Escf;
-
+            variables_["CURRENT ENERGY"] = Escscepa;
         }
-
-        // else if sos on
         else if (do_sos == "TRUE") {
-            Process::environment.globals["CURRENT ENERGY"] = Esoscepa;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esoscepa - Escf;
+            variables_["CURRENT ENERGY"] = Esoscepa;
+        } else {
+            variables_["CURRENT ENERGY"] = EcepaL;
         }
+        variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
