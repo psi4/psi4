@@ -35,9 +35,9 @@
 namespace psi {
 namespace occwave {
 
-/* Compute (opposites of) Eq. 29 and 30 of the OCEPA paper, the correlation corrections to 1PDM. */
-void OCCWave::ocepa_g_int() {
-    // outfile->Printf("\n G_int is starting... \n");
+/* Compute (opposites of) the second-order correlation correction to 1PDM. Used in MP2 and CEPA theories.
+ * See eqn. 29 and 30 of the OCEPA paper. Or eqn. A4-A7 of the OMP2 paper. */
+void OCCWave::second_order_opdm() {
     if (reference_ == "RESTRICTED") {
         // initialize
         GooA->zero();
@@ -50,8 +50,10 @@ void OCCWave::ocepa_g_int() {
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
         // Open amplitude files
+        std::string prefix = (wfn_type_ == "OMP2") ? "T" : "T2";
+        std::string temp = prefix + " <OO|VV>";
         global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "T2 <OO|VV>");
+                               temp.c_str());
         global_dpd_->buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "Tau <OO|VV>");
 
@@ -109,18 +111,23 @@ void OCCWave::ocepa_g_int() {
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
         // Open amplitude files
+        // ...Why are we opening the same buf4 with two different dpdbuf4 objects?
+        std::string prefix = (wfn_type_ == "OMP2") ? "T2_1" : "T2";
+        std::string temp = prefix + " <OO|VV>";
         global_dpd_->buf4_init(&TAA, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "T2 <OO|VV>");
-        global_dpd_->buf4_init(&TBB, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                               "T2 <oo|vv>");
-        global_dpd_->buf4_init(&TAB, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "T2 <Oo|Vv>");
+                               temp.c_str());
         global_dpd_->buf4_init(&LAA, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "T2 <OO|VV>");
+                               temp.c_str());
+        temp = prefix + " <oo|vv>";
+        global_dpd_->buf4_init(&TBB, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
+                               temp.c_str());
         global_dpd_->buf4_init(&LBB, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                               "T2 <oo|vv>");
+                               temp.c_str());
+        temp = prefix + " <Oo|Vv>";
+        global_dpd_->buf4_init(&TAB, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                               temp.c_str());
         global_dpd_->buf4_init(&LAB, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "T2 <Oo|Vv>");
+                               temp.c_str());
 
         // Occupied-Occupied block
         // Alpha-Alpha spin case
@@ -200,8 +207,6 @@ void OCCWave::ocepa_g_int() {
             GvvB->print();
         }
     }  // end if (reference_ == "UNRESTRICTED")
-
-    // outfile->Printf("\n G_int done... \n");
 
 }  // end of G_int
 }

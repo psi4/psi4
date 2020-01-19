@@ -104,6 +104,7 @@ class OCCWave : public Wavefunction {
     void oeprop();
     void s2_response();
     void s2_lagrangian();
+    void second_order_opdm();
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
@@ -153,7 +154,6 @@ class OCCWave : public Wavefunction {
     void ocepa_mp2_energy();
     void ocepa_t2_1st_sc();
     void ocepa_tpdm_vvvv();
-    void ocepa_g_int();
     void ocepa_response_pdms();
     void t2_amps();
     void w_int();

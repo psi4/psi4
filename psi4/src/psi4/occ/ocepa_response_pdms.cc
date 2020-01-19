@@ -38,7 +38,7 @@ void OCCWave::ocepa_response_pdms() {
 
     // Build G intermediates, correlation correction to 1PDM
     timer_on("G int");
-    ocepa_g_int();
+    second_order_opdm();
     timer_off("G int");
 
     if (reference_ == "RESTRICTED") {
