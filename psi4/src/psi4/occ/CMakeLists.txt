@@ -26,7 +26,6 @@ list(APPEND sources
   occ_iterations.cc
   occwave.cc
   ocepa_response_pdms.cc
-  ocepa_t2_1st_sc.cc
   omp2_ip_poles.cc
   omp2_response_pdms.cc
   omp2_t2_1st.cc
@@ -34,10 +33,10 @@ list(APPEND sources
   omp3_ip_poles.cc
   omp3_response_pdms.cc
   omp3_t2_1st_general.cc
-  omp3_t2_1st_sc.cc
   postprocessing.cc
   second_order_opdm.cc
   semi_canonic.cc
+  set_t2_amplitudes_mp2.cc
   t1_1st.cc
   t2_2nd_general.cc
   t2_2nd_sc.cc

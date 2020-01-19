@@ -52,7 +52,7 @@ void OCCWave::omp2_manager() {
         trans_ints_uhf();
     timer_off("trans_ints");
     timer_on("T2(1)");
-    omp2_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("REF Energy");
     ref_energy();
@@ -89,7 +89,7 @@ void OCCWave::omp2_manager() {
             trans_ints_rhf();
         else if (reference_ == "UNRESTRICTED")
             trans_ints_uhf();
-        omp2_t2_1st_sc();
+        set_t2_amplitudes_mp2();
         conver = 1;
         if (dertype == "FIRST") {
             omp2_response_pdms();
@@ -113,7 +113,7 @@ void OCCWave::omp2_manager() {
                     trans_ints_rhf();
                 else if (reference_ == "UNRESTRICTED")
                     trans_ints_uhf();
-                omp2_t2_1st_sc();
+                set_t2_amplitudes_mp2();
             }
             omp2_ip_poles();
         }
@@ -252,7 +252,7 @@ void OCCWave::mp2_manager() {
         timer_off("T1(1)");
     }  // end if (reference == "ROHF")
     timer_on("T2(1)");
-    omp2_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     Eref = Escf;
     timer_on("MP2 Energy");
@@ -360,7 +360,7 @@ void OCCWave::omp3_manager() {
     ref_energy();
     timer_off("REF Energy");
     timer_on("T2(1)");
-    omp3_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
     omp3_mp2_energy();
@@ -402,7 +402,7 @@ void OCCWave::omp3_manager() {
             trans_ints_rhf();
         else if (reference_ == "UNRESTRICTED")
             trans_ints_uhf();
-        omp3_t2_1st_sc();
+        set_t2_amplitudes_mp2();
         t2_2nd_sc();
         conver = 1;
         if (dertype == "FIRST") {
@@ -424,7 +424,7 @@ void OCCWave::omp3_manager() {
                     trans_ints_rhf();
                 else if (reference_ == "UNRESTRICTED")
                     trans_ints_uhf();
-                omp3_t2_1st_sc();
+                set_t2_amplitudes_mp2();
                 t2_2nd_sc();
             }
             omp3_ip_poles();
@@ -533,7 +533,7 @@ void OCCWave::mp3_manager() {
     timer_off("trans_ints");
     Eref = Escf;
     timer_on("T2(1)");
-    omp3_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
     omp3_mp2_energy();
@@ -637,7 +637,7 @@ void OCCWave::ocepa_manager() {
     ref_energy();
     timer_off("REF Energy");
     timer_on("T2(1)");
-    ocepa_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
     ocepa_mp2_energy();
@@ -760,7 +760,7 @@ void OCCWave::cepa_manager() {
     timer_off("trans_ints");
     Eref = Escf;
     timer_on("T2(1)");
-    ocepa_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
     ocepa_mp2_energy();
@@ -848,7 +848,7 @@ void OCCWave::omp2_5_manager() {
     ref_energy();
     timer_off("REF Energy");
     timer_on("T2(1)");
-    omp3_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
     omp3_mp2_energy();
@@ -891,7 +891,7 @@ void OCCWave::omp2_5_manager() {
             trans_ints_rhf();
         else if (reference_ == "UNRESTRICTED")
             trans_ints_uhf();
-        omp3_t2_1st_sc();
+        set_t2_amplitudes_mp2();
         t2_2nd_sc();
         conver = 1;
         if (dertype == "FIRST") {
@@ -913,7 +913,7 @@ void OCCWave::omp2_5_manager() {
                     trans_ints_rhf();
                 else if (reference_ == "UNRESTRICTED")
                     trans_ints_uhf();
-                omp3_t2_1st_sc();
+                set_t2_amplitudes_mp2();
                 t2_2nd_sc();
             }
             omp3_ip_poles();
@@ -981,7 +981,7 @@ void OCCWave::mp2_5_manager() {
     timer_off("trans_ints");
     Eref = Escf;
     timer_on("T2(1)");
-    omp3_t2_1st_sc();
+    set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
     omp3_mp2_energy();
