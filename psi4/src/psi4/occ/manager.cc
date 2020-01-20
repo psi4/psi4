@@ -264,7 +264,7 @@ void OCCWave::mp2_manager() {
     if (ip_poles == "TRUE") omp2_ip_poles();
     if (ep_ip_poles == "TRUE") ep2_ip();
 
-    mp2_postprocessing();
+    mp2_postprocessing(reference == "ROHF");
 
     // Why is the below line commented?
     // if (reference == "ROHF") Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
