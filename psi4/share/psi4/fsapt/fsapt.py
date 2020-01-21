@@ -37,7 +37,7 @@ import psi4
 # => Global Data <= #
 
 # H to kcal constant
-H_to_kcal_ = 627.5095
+H_to_kcal_ = psi4.constants.hartree2kcalmol
 
 # SAPT Keys
 saptkeys_ = [
@@ -341,7 +341,7 @@ def extractOsaptData(filepath):
     try:
         vals['Disp'] = readBlock('%s/Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
     except FileNotFoundError:
-        print('No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`')
+        print('No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n')
         vals['Disp'] = np.zeros_like(np.array(readBlock('%s/Elst.dat'  % filepath, H_to_kcal_)))
 
     # Read empirical F-SAPT0-D dispersion data
@@ -388,9 +388,9 @@ def fragmentD3Disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]]) -
                     mask[i-1,j-1] = True
             # Add up contributions from fA@fB block
             Edisp += d3disp[mask].sum()
-            D3frags[fA][fB] = d3disp[mask].sum() * H_to_kcal_ #psi4.constants.hartree2kcalmol
+            D3frags[fA][fB] = d3disp[mask].sum() * H_to_kcal_
 
-    return Edisp * H_to_kcal_, D3frags #psi4.constants.hartree2kcalmol, D3frags
+    return Edisp * H_to_kcal_, D3frags
 
 
 def extractOrder2Fsapt(osapt, wsA, wsB, frags):
