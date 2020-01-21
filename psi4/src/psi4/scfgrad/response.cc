@@ -1615,8 +1615,8 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     JK_deriv2(jk,mem, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir, true);
     JK_deriv2(jk,mem, Cb, Cb_occ, Ca, Ca_occ, nso, nbocc, naocc, nbvir, false);
 
-  //  VXC_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
-  //  VXC_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
+    VXC_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
+    VXC_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
 
     assemble_Fock(naocc, navir,true);
     assemble_Fock(nbocc, nbvir,false);
@@ -1624,7 +1624,6 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     assemble_B(eps_aocc, naocc, navir,true);
     assemble_B(eps_bocc, nbocc, nbvir,false);
 
-    
     // => CPHF (Uai) <= //
     // This needs both alpha and beta components simultaneously,
     // so we'll leave it here rather than in a separate function
@@ -1726,11 +1725,9 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
 
     //uhf_wfn_->set_array_variable("SCF DIPOLE GRADIENT", dipole_gradient);
     //uhf_wfn_->set_array_variable("CURRENT DIPOLE GRADIENT", dipole_gradient);
-    outfile->Printf("\n  Building U");
     assemble_U(naocc, navir, true);
     assemble_U(nbocc, nbvir, false);
 
-    outfile->Printf("\n  Building Q");
     assemble_Q(jk, Ca, Ca_occ, Ca_vir, Cb, Cb_occ, nso, naocc, nbocc, navir, true);
     assemble_Q(jk, Cb, Cb_occ, Cb_vir, Ca, Ca_occ, nso, nbocc, naocc, nbvir, false);
     jk.reset();
@@ -2403,7 +2400,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
         dGmats.push_back(std::make_shared<Matrix>("G derivative contribution", nso, nso));
 
     auto Gpi = std::make_shared<Matrix>("MO G Deriv", nmo, nocc);
-    double**pGpi = Gpi->pointer();
+    double** pGpi = Gpi->pointer();
     psio_address next_Gpi = PSIO_ZERO;
     auto Gpi_str = (alpha) ? "Gpi^A_a" : "Gpi^A_b";
 
@@ -2415,350 +2412,343 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
     next_Gpi = PSIO_ZERO;
 
     if (options_.get_str("SCF_TYPE").find("DF") != std::string::npos){
-//        /*
-//         *  The DF algorithm
-//         */
-//        std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_SCF");
-//
-//        auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
-//        auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
-//        std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
-//        std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
-//        int np = auxiliary_->nbf();
-//        int nso = basisset_->nbf();
-//        int nauxshell = auxiliary_->nshell();
-//        int nshell = basisset_->nshell();
-//        int maxp = auxiliary_->max_function_per_shell();
-//
-//        auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
-//        auto Ami = std::make_shared<Matrix>("(A|mi)", np, nso*nocc);
-//        auto Aij = std::make_shared<Matrix>("(A|ij)", np, nocc*nocc);
-//        auto Bmn = std::make_shared<Matrix>("Minv[B][A] (A|mn)", np, nso*nso);
-//        auto Tmn = std::make_shared<Matrix>("Tmn", np, nso*nso);
-//        auto TempP = std::make_shared<Matrix>("Temp[P]", 9, maxp);
-//        auto TempPmn = std::make_shared<Matrix>("Temp[P][mn]", maxp, nso*nso);
-//        auto c = std::make_shared<Vector>("c[A] = (mn|A) D[m][n]", np);
-//        auto d = std::make_shared<Vector>("d[A] = Minv[A][B] C[B]", np);
-//        double **Amnp = Amn->pointer();
-//        double **Amip = Ami->pointer();
-//        double **Aijp = Aij->pointer();
-//        double **Bmnp = Bmn->pointer();
-//        double **pTmn = Tmn->pointer();
-//        double **pTempP = TempP->pointer();
-//        double **pTmpPmn = TempPmn->pointer();
-//        double *cp = c->pointer();
-//        double *dp = d->pointer();
-//
-//        // This probably shouldn't be recomputed here; we already needed it to get the
-//        // second derivative integrals.  One fine day, this should be refactored.
-//        auto metric = std::make_shared<FittingMetric>(auxiliary_, true);            
-//        metric->form_full_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
-//        SharedMatrix PQ = metric->get_metric();
-//        double** PQp = PQ->pointer();
-//
-//        // Same applies to these terms.  There are already hooks to compute c and d vectors, and store them on disk,
-//        // so we should make better use of those intermediates between the second derivative integrals and these
-//        // first derivative terms needed for the Fock matrix derivatives.
-//        for (int P = 0; P < nauxshell; ++P){
-//            int nP = auxiliary_->shell(P).nfunction();
-//            int oP = auxiliary_->shell(P).function_index();
-//            for(int M = 0; M < nshell; ++M){
-//                int nM = basisset_->shell(M).nfunction();
-//                int oM = basisset_->shell(M).function_index();
-//                for(int N = 0; N < nshell; ++N){
-//                    int nN = basisset_->shell(N).nfunction();
-//                    int oN = basisset_->shell(N).function_index();
-//
-//                    Pmnint->compute_shell(P,0,M,N);
-//                    const double* buffer = Pmnint->buffer();
-//
-//                    for (int p = oP; p < oP+nP; p++) {
-//                        for (int m = oM; m < oM+nM; m++) {
-//                            for (int n = oN; n < oN+nN; n++) {
-//                                Amnp[p][m*nso+n] += (*buffer++);
-//                            }
-//                        }
-//                    }
-//                    // c[A] = (A|mn) D[m][n]
-//                    C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dp[0], 1, 0.0, cp, 1);
-//                    // (A|mj) = (A|mn) C[n][j]
-//                    C_DGEMM('N','N',np*(size_t)nso,nocc,nso,1.0,Amnp[0],nso,Cop[0],nocc,0.0,Amip[0],nocc);
-//                    // (A|ij) = (A|mj) C[m][i]
-//                    #pragma omp parallel for
-//                    for (int p = 0; p < np; p++) {
-//                        C_DGEMM('T','N',nocc,nocc,nso,1.0,Amip[p],nocc,Cop[0],nocc,0.0,&Aijp[0][p * (size_t) nocc * nocc],nocc);
-//                    }
-//
-//                }
-//            }
-//        }
-//        // d[A] = Minv[A][B] c[B]  (factor of 2, to account for RHF)
-//        C_DGEMV('n', np, np, 2.0, PQp[0], np, cp, 1, 0.0, dp, 1);
-//
-//        // B[B][m,n] = Minv[A][B] (A|mn)
-//        C_DGEMM('n','n', np, nso*nso, np, 1.0, PQp[0], np, Amnp[0], nso*nso, 0.0, Bmnp[0], nso*nso);
-//
-//        // T[p][m,n] = B[p][r,n] D[m,r]
-//#pragma omp parallel for
-//        for(int p = 0; p < np; ++p)
-//            C_DGEMM('t', 'n', nso, nso, nso, 1.0, Dp[0], nso, Bmnp[p], nso, 0.0, pTmn[p], nso);
-//
-//
-//        for (int A = 0; A < 3 * natom; A+=max_a) {
-//            int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
-//
-//            // Keep track of which centers are loaded into memory, so we know when to skip
-//            std::fill(pert_incore.begin(), pert_incore.end(), false);
-//            std::fill(pdG.begin(), pdG.end(), (double**)nullptr);
-//            for (int a = 0; a < nA; a++){
-//                pert_incore[floor((A+a)/3.0)] = true;
-//                pdG[A+a] = dGmats[a]->pointer();
-//                dGmats[a]->zero();
-//            }
-//
-//            for (int P = 0; P < nauxshell; ++P){
-//                int nP = auxiliary_->shell(P).nfunction();
-//                int oP = auxiliary_->shell(P).function_index();
-//                int Pcenter = auxiliary_->shell(P).ncenter();
-//                int Pncart = auxiliary_->shell(P).ncartesian();
-//                int Px = 3 * Pcenter + 0;
-//                int Py = 3 * Pcenter + 1;
-//                int Pz = 3 * Pcenter + 2;
-//                for(int Q = 0; Q < nauxshell; ++Q){
-//                    int nQ = auxiliary_->shell(Q).nfunction();
-//                    int oQ = auxiliary_->shell(Q).function_index();
-//                    int Qcenter = auxiliary_->shell(Q).ncenter();
-//                    int Qncart = auxiliary_->shell(Q).ncartesian();
-//                    int Qx = 3 * Qcenter + 0;
-//                    int Qy = 3 * Qcenter + 1;
-//                    int Qz = 3 * Qcenter + 2;
-//
-//                    size_t stride = static_cast<size_t> (Pncart) * Qncart;
-//
-//                    if(!pert_incore[Pcenter] && !pert_incore[Qcenter])
-//                        continue;
-//
-//                    PQint->compute_shell_deriv1(P,0,Q,0);
-//                    const double* buffer = PQint->buffer();
-//
-//                    auto *ptr = const_cast<double*>(buffer);
-//
-//                    if(pert_incore[Pcenter]){
-//                        // J terms
-//                        // Px
-//                        C_DGEMV('n', nP, nQ, 1.0, ptr+0*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
-//                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Px][0], 1);
-//                        // Py
-//                        C_DGEMV('n', nP, nQ, 1.0, ptr+1*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
-//                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Py][0], 1);
-//                        // Pz
-//                        C_DGEMV('n', nP, nQ, 1.0, ptr+2*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
-//                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Pz][0], 1);
-//
-//                        if (Kscale) {
-//                            // K terms
-//                            // Px
-//                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+0*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
-//                            for(int p = 0; p < nP; ++p)
-//                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Px][0], nso);
-//                            // Py
-//                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+1*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
-//                            for(int p = 0; p < nP; ++p)
-//                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Py][0], nso);
-//                            // Pz
-//                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+2*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
-//                            for(int p = 0; p < nP; ++p)
-//                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Pz][0], nso);
-//                        }
-//
-//                    }
-//                    if(pert_incore[Qcenter]){
-//                        // J terms
-//                        // Qx
-//                        C_DGEMV('n', nP, nQ, 1.0, ptr+3*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
-//                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qx][0], 1);
-//                        // Qy
-//                        C_DGEMV('n', nP, nQ, 1.0, ptr+4*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
-//                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qy][0], 1);
-//                        // Qz
-//                        C_DGEMV('n', nP, nQ, 1.0, ptr+5*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
-//                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qz][0], 1);
-//
-//                        if (Kscale) {
-//                            // K terms
-//                            // Qx
-//                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+3*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
-//                            for(int p = 0; p < nP; ++p)
-//                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qx][0], nso);
-//                            // Qy
-//                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+4*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
-//                            for(int p = 0; p < nP; ++p)
-//                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qy][0], nso);
-//                            // Qz
-//                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+5*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
-//                            for(int p = 0; p < nP; ++p)
-//                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qz][0], nso);
-//                        }
-//                    }
-//
-//                }
-//            }
-//
-//
-//            for (int P = 0; P < nauxshell; ++P){
-//                int nP = auxiliary_->shell(P).nfunction();
-//                int oP = auxiliary_->shell(P).function_index();
-//                int Pcenter = auxiliary_->shell(P).ncenter();
-//                int Pncart = auxiliary_->shell(P).ncartesian();
-//                int Px = 3 * Pcenter + 0;
-//                int Py = 3 * Pcenter + 1;
-//                int Pz = 3 * Pcenter + 2;
-//                for(int M = 0; M < nshell; ++M){
-//                    int nM = basisset_->shell(M).nfunction();
-//                    int oM = basisset_->shell(M).function_index();
-//                    int Mcenter = basisset_->shell(M).ncenter();
-//                    int Mncart = basisset_->shell(M).ncartesian();
-//                    int mx = 3 * Mcenter + 0;
-//                    int my = 3 * Mcenter + 1;
-//                    int mz = 3 * Mcenter + 2;
-//                    for(int N = 0; N < nshell; ++N){
-//                        int nN = basisset_->shell(N).nfunction();
-//                        int oN = basisset_->shell(N).function_index();
-//                        int Ncenter = basisset_->shell(N).ncenter();
-//                        int Nncart = basisset_->shell(N).ncartesian();
-//                        int nx = 3 * Ncenter + 0;
-//                        int ny = 3 * Ncenter + 1;
-//                        int nz = 3 * Ncenter + 2;
-//
-//                        size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
-//
-//                        if(!pert_incore[Pcenter] &&
-//                                !pert_incore[Mcenter] &&
-//                                !pert_incore[Ncenter])
-//                            continue;
-//
-//                        Pmnint->compute_shell_deriv1(P,0,M,N);
-//                        const double* buffer = Pmnint->buffer();
-//
-//                        /*
-//                         * J terms have 2 contributions:
-//                         *      F^x[m][n] <- (P|mn)^x d[P]
-//                         * and
-//                         *      F^x[r][s] <- D[m][n] (P|mn)^x B[P][r,s]
-//                         * The second term factorizes into...
-//                         * ... Temp[P] = D[m][n] (P|mn)^x ...
-//                         * ... and then F^x[r][s] <- Temp[P] B[P][r,s]  (factor of 2 for RHF)
-//                         */
-//
-//                        for(int x = 0; x < 9; ++ x){
-//                            size_t delta = 0L;
-//                            for(int p = 0; p < nP; ++p){
-//                                double val = 0.0;
-//                                for(int m = oM; m < nM+oM; ++m){
-//                                    for(int n = oN; n < nN+oN; ++n){
-//                                        val += Dp[m][n] * buffer[x*stride+delta];
-//                                        ++delta;
-//                                    }
-//                                }
-//                                pTempP[x][p] = val;
-//                            }
-//                        }
-//
-//                        auto *ptr = const_cast<double*>(buffer);
-//
-//                        if(pert_incore[Pcenter]){
-//                            // J Terms
-//                            size_t delta = 0L;
-//                            for(int p = oP; p < oP+nP; ++p){
-//                                for(int m = oM; m < nM+oM; ++m){
-//                                    for(int n = oN; n < nN+oN; ++n){
-//                                        pdG[Px][m][n] += buffer[0*stride+delta] * dp[p];
-//                                        pdG[Py][m][n] += buffer[1*stride+delta] * dp[p];
-//                                        pdG[Pz][m][n] += buffer[2*stride+delta] * dp[p];
-//                                        ++delta;
-//                                    }
-//                                }
-//                            }
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Px][0], 1);
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[1], 1, 1.0, pdG[Py][0], 1);
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[2], 1, 1.0, pdG[Pz][0], 1);
-//                            // K Terms
-//                            if (Kscale) {
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+0*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Px][oN], nso);
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+1*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Py][oN], nso);
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+2*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Pz][oN], nso);
-//                            }
-//                        }
-//                        if(pert_incore[Mcenter]){
-//                            // J Terms
-//                            size_t delta = 0L;
-//                            for(int p = oP; p < oP+nP; ++p){
-//                                for(int m = oM; m < nM+oM; ++m){
-//                                    for(int n = oN; n < nN+oN; ++n){
-//                                        pdG[mx][m][n] += buffer[3*stride+delta] * dp[p];
-//                                        pdG[my][m][n] += buffer[4*stride+delta] * dp[p];
-//                                        pdG[mz][m][n] += buffer[5*stride+delta] * dp[p];
-//                                        ++delta;
-//                                    }
-//                                }
-//                            }
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[3], 1, 1.0, pdG[mx][0], 1);
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[4], 1, 1.0, pdG[my][0], 1);
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[5], 1, 1.0, pdG[mz][0], 1);
-//                            // K Terms
-//                            if (Kscale) {
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+3*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mx][oN], nso);
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+4*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[my][oN], nso);
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+5*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mz][oN], nso);
-//                            }
-//                        }
-//                        if(pert_incore[Ncenter]){
-//                            // J Terms
-//                            size_t delta = 0L;
-//                            for(int p = oP; p < oP+nP; ++p){
-//                                for(int m = oM; m < nM+oM; ++m){
-//                                    for(int n = oN; n < nN+oN; ++n){
-//                                        pdG[nx][m][n] += buffer[6*stride+delta] * dp[p];
-//                                        pdG[ny][m][n] += buffer[7*stride+delta] * dp[p];
-//                                        pdG[nz][m][n] += buffer[8*stride+delta] * dp[p];
-//                                        ++delta;
-//                                    }
-//                                }
-//                            }
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[6], 1, 1.0, pdG[nx][0], 1);
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[7], 1, 1.0, pdG[ny][0], 1);
-//                            C_DGEMV('t', nP, nso*nso, 2.0, Bmnp[oP], nso*nso, pTempP[8], 1, 1.0, pdG[nz][0], 1);
-//                            // K Terms
-//                            if (Kscale) {
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+6*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nx][oN], nso);
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+7*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[ny][oN], nso);
-//                                for(int p = 0; p < nP; ++p)
-//                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+8*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nz][oN], nso);
-//                            }
-//                        }
-//
-//                    }
-//                }
-//            }
-//
-//            for(int a = 0; a < nA; ++a){
-//                // Symmetrize the derivative Fock contributions
-//                SharedMatrix G = dGmats[a];
-//                G->add(G->transpose());
-//                Gpi->transform(C, G, Cocc);
-//                Gpi->scale(0.5);
-//                psio_->write(PSIF_HESS,Gpi_str,(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
-//            }
-//        } // End loop over A batches
-//
+        /*
+         *  The DF algorithm
+         */
+        std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_SCF");
+
+        auto Pmnfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+        auto PQfactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
+        std::shared_ptr<TwoBodyAOInt> Pmnint(Pmnfactory->eri(2));
+        std::shared_ptr<TwoBodyAOInt> PQint(PQfactory->eri(2));
+        int np = auxiliary_->nbf();
+        int nso = basisset_->nbf();
+        int nauxshell = auxiliary_->nshell();
+        int nshell = basisset_->nshell();
+        int maxp = auxiliary_->max_function_per_shell();
+
+        auto Amn = std::make_shared<Matrix>("(A|mn)", np, nso*nso);
+        auto Ami = std::make_shared<Matrix>("(A|mi)", np, nso*nocc);
+        auto Aij = std::make_shared<Matrix>("(A|ij)", np, nocc*nocc);
+        auto Bmn = std::make_shared<Matrix>("Minv[B][A] (A|mn)", np, nso*nso);
+        auto Tmn = std::make_shared<Matrix>("Tmn", np, nso*nso);
+        auto TempP = std::make_shared<Matrix>("Temp[P]", 9, maxp);
+        auto TempPmn = std::make_shared<Matrix>("Temp[P][mn]", maxp, nso*nso);
+        auto c = std::make_shared<Vector>("c[A] = (mn|A) D[m][n]", np);
+        auto d = std::make_shared<Vector>("d[A] = Minv[A][B] C[B]", np);
+        double **Amnp = Amn->pointer();
+        double **Amip = Ami->pointer();
+        double **Aijp = Aij->pointer();
+        double **Bmnp = Bmn->pointer();
+        double **pTmn = Tmn->pointer();
+        double **pTempP = TempP->pointer();
+        double **pTmpPmn = TempPmn->pointer();
+        double *cp = c->pointer();
+        double *dp = d->pointer();
+
+        // This probably shouldn't be recomputed here; we already needed it to get the
+        // second derivative integrals.  One fine day, this should be refactored.
+        auto metric = std::make_shared<FittingMetric>(auxiliary_, true);            
+        metric->form_full_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
+        SharedMatrix PQ = metric->get_metric();
+        double** PQp = PQ->pointer();
+
+        // Same applies to these terms.  There are already hooks to compute c and d vectors, and store them on disk,
+        // so we should make better use of those intermediates between the second derivative integrals and these
+        // first derivative terms needed for the Fock matrix derivatives.
+        for (int P = 0; P < nauxshell; ++P){
+            int nP = auxiliary_->shell(P).nfunction();
+            int oP = auxiliary_->shell(P).function_index();
+            for(int M = 0; M < nshell; ++M){
+                int nM = basisset_->shell(M).nfunction();
+                int oM = basisset_->shell(M).function_index();
+                for(int N = 0; N < nshell; ++N){
+                    int nN = basisset_->shell(N).nfunction();
+                    int oN = basisset_->shell(N).function_index();
+
+                    Pmnint->compute_shell(P,0,M,N);
+                    const double* buffer = Pmnint->buffer();
+
+                    for (int p = oP; p < oP+nP; p++) {
+                        for (int m = oM; m < oM+nM; m++) {
+                            for (int n = oN; n < oN+nN; n++) {
+                                Amnp[p][m*nso+n] += (*buffer++);
+                            }
+                        }
+                    }
+                    // c[A] = (A|mn) D[m][n]
+                    C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dtp[0], 1, 0.0, cp, 1);
+                }
+            }
+        }
+        // d[A] = Minv[A][B] c[B]
+        //C_DGEMV('n', np, np, 2.0, PQp[0], np, cp, 1, 0.0, dp, 1);
+        C_DGEMV('n', np, np, 1.0, PQp[0], np, cp, 1, 0.0, dp, 1);
+
+        // B[B][m,n] = Minv[A][B] (A|mn)
+        C_DGEMM('n','n', np, nso*nso, np, 1.0, PQp[0], np, Amnp[0], nso*nso, 0.0, Bmnp[0], nso*nso);
+
+        // T[p][m,n] = B[p][r,n] D[m,r]
+#pragma omp parallel for
+        for(int p = 0; p < np; ++p)
+            C_DGEMM('t', 'n', nso, nso, nso, 1.0, D1p[0], nso, Bmnp[p], nso, 0.0, pTmn[p], nso);
+
+
+        for (int A = 0; A < 3 * natom; A+=max_a) {
+            int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
+
+            // Keep track of which centers are loaded into memory, so we know when to skip
+            std::fill(pert_incore.begin(), pert_incore.end(), false);
+            std::fill(pdG.begin(), pdG.end(), (double**)nullptr);
+            for (int a = 0; a < nA; a++){
+                pert_incore[floor((A+a)/3.0)] = true;
+                pdG[A+a] = dGmats[a]->pointer();
+                dGmats[a]->zero();
+            }
+
+            for (int P = 0; P < nauxshell; ++P){
+                int nP = auxiliary_->shell(P).nfunction();
+                int oP = auxiliary_->shell(P).function_index();
+                int Pcenter = auxiliary_->shell(P).ncenter();
+                int Pncart = auxiliary_->shell(P).ncartesian();
+                int Px = 3 * Pcenter + 0;
+                int Py = 3 * Pcenter + 1;
+                int Pz = 3 * Pcenter + 2;
+                for(int Q = 0; Q < nauxshell; ++Q){
+                    int nQ = auxiliary_->shell(Q).nfunction();
+                    int oQ = auxiliary_->shell(Q).function_index();
+                    int Qcenter = auxiliary_->shell(Q).ncenter();
+                    int Qncart = auxiliary_->shell(Q).ncartesian();
+                    int Qx = 3 * Qcenter + 0;
+                    int Qy = 3 * Qcenter + 1;
+                    int Qz = 3 * Qcenter + 2;
+
+                    size_t stride = static_cast<size_t> (Pncart) * Qncart;
+
+                    if(!pert_incore[Pcenter] && !pert_incore[Qcenter])
+                        continue;
+
+                    PQint->compute_shell_deriv1(P,0,Q,0);
+                    const double* buffer = PQint->buffer();
+
+                    auto *ptr = const_cast<double*>(buffer);
+
+                    if(pert_incore[Pcenter]){
+                        // J terms
+                        // Px
+                        C_DGEMV('n', nP, nQ, 1.0, ptr+0*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Px][0], 1);
+                        // Py
+                        C_DGEMV('n', nP, nQ, 1.0, ptr+1*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Py][0], 1);
+                        // Pz
+                        C_DGEMV('n', nP, nQ, 1.0, ptr+2*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Pz][0], 1);
+
+                        if (Kscale) {
+                            // K terms
+                            // Px
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+0*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Px][0], nso);
+                            // Py
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+1*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Py][0], nso);
+                            // Pz
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+2*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Pz][0], nso);
+                        }
+
+                    }
+                    if(pert_incore[Qcenter]){
+                        // J terms
+                        // Qx
+                        C_DGEMV('n', nP, nQ, 1.0, ptr+3*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qx][0], 1);
+                        // Qy
+                        C_DGEMV('n', nP, nQ, 1.0, ptr+4*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qy][0], 1);
+                        // Qz
+                        C_DGEMV('n', nP, nQ, 1.0, ptr+5*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qz][0], 1);
+
+                        if (Kscale) {
+                            // K terms
+                            // Qx
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+3*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qx][0], nso);
+                            // Qy
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+4*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qy][0], nso);
+                            // Qz
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+5*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            for(int p = 0; p < nP; ++p)
+                                C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qz][0], nso);
+                        }
+                    }
+
+                }
+            }
+
+
+            for (int P = 0; P < nauxshell; ++P){
+                int nP = auxiliary_->shell(P).nfunction();
+                int oP = auxiliary_->shell(P).function_index();
+                int Pcenter = auxiliary_->shell(P).ncenter();
+                int Pncart = auxiliary_->shell(P).ncartesian();
+                int Px = 3 * Pcenter + 0;
+                int Py = 3 * Pcenter + 1;
+                int Pz = 3 * Pcenter + 2;
+                for(int M = 0; M < nshell; ++M){
+                    int nM = basisset_->shell(M).nfunction();
+                    int oM = basisset_->shell(M).function_index();
+                    int Mcenter = basisset_->shell(M).ncenter();
+                    int Mncart = basisset_->shell(M).ncartesian();
+                    int mx = 3 * Mcenter + 0;
+                    int my = 3 * Mcenter + 1;
+                    int mz = 3 * Mcenter + 2;
+                    for(int N = 0; N < nshell; ++N){
+                        int nN = basisset_->shell(N).nfunction();
+                        int oN = basisset_->shell(N).function_index();
+                        int Ncenter = basisset_->shell(N).ncenter();
+                        int Nncart = basisset_->shell(N).ncartesian();
+                        int nx = 3 * Ncenter + 0;
+                        int ny = 3 * Ncenter + 1;
+                        int nz = 3 * Ncenter + 2;
+
+                        size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
+
+                        if(!pert_incore[Pcenter] &&
+                                !pert_incore[Mcenter] &&
+                                !pert_incore[Ncenter])
+                            continue;
+
+                        Pmnint->compute_shell_deriv1(P,0,M,N);
+                        const double* buffer = Pmnint->buffer();
+
+                        /*
+                         * J terms have 2 contributions:
+                         *      F^x[m][n] <- (P|mn)^x d[P]
+                         * and
+                         *      F^x[r][s] <- D[m][n] (P|mn)^x B[P][r,s]
+                         * The second term factorizes into...
+                         * ... Temp[P] = D[m][n] (P|mn)^x ...
+                         * ... and then F^x[r][s] <- Temp[P] B[P][r,s]
+                         */
+
+                        for(int x = 0; x < 9; ++ x){
+                            size_t delta = 0L;
+                            for(int p = 0; p < nP; ++p){
+                                double val = 0.0;
+                                for(int m = oM; m < nM+oM; ++m){
+                                    for(int n = oN; n < nN+oN; ++n){
+                                        val += Dtp[m][n] * buffer[x*stride+delta];
+                                        ++delta;
+                                    }
+                                }
+                                pTempP[x][p] = val;
+                            }
+                        }
+
+                        auto *ptr = const_cast<double*>(buffer);
+
+                        if(pert_incore[Pcenter]){
+                            // J Terms
+                            size_t delta = 0L;
+                            for(int p = oP; p < oP+nP; ++p){
+                                for(int m = oM; m < nM+oM; ++m){
+                                    for(int n = oN; n < nN+oN; ++n){
+                                        pdG[Px][m][n] += buffer[0*stride+delta] * dp[p];
+                                        pdG[Py][m][n] += buffer[1*stride+delta] * dp[p];
+                                        pdG[Pz][m][n] += buffer[2*stride+delta] * dp[p];
+                                        ++delta;
+                                    }
+                                }
+                            }
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Px][0], 1);
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[1], 1, 1.0, pdG[Py][0], 1);
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[2], 1, 1.0, pdG[Pz][0], 1);
+                            // K Terms
+                            if (Kscale) {
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+0*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Px][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+1*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Py][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+2*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Pz][oN], nso);
+                            }
+                        }
+                        if(pert_incore[Mcenter]){
+                            // J Terms
+                            size_t delta = 0L;
+                            for(int p = oP; p < oP+nP; ++p){
+                                for(int m = oM; m < nM+oM; ++m){
+                                    for(int n = oN; n < nN+oN; ++n){
+                                        pdG[mx][m][n] += buffer[3*stride+delta] * dp[p];
+                                        pdG[my][m][n] += buffer[4*stride+delta] * dp[p];
+                                        pdG[mz][m][n] += buffer[5*stride+delta] * dp[p];
+                                        ++delta;
+                                    }
+                                }
+                            }
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[3], 1, 1.0, pdG[mx][0], 1);
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[4], 1, 1.0, pdG[my][0], 1);
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[5], 1, 1.0, pdG[mz][0], 1);
+                            // K Terms
+                            if (Kscale) {
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+3*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mx][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+4*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[my][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+5*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mz][oN], nso);
+                            }
+                        }
+                        if(pert_incore[Ncenter]){
+                            // J Terms
+                            size_t delta = 0L;
+                            for(int p = oP; p < oP+nP; ++p){
+                                for(int m = oM; m < nM+oM; ++m){
+                                    for(int n = oN; n < nN+oN; ++n){
+                                        pdG[nx][m][n] += buffer[6*stride+delta] * dp[p];
+                                        pdG[ny][m][n] += buffer[7*stride+delta] * dp[p];
+                                        pdG[nz][m][n] += buffer[8*stride+delta] * dp[p];
+                                        ++delta;
+                                    }
+                                }
+                            }
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[6], 1, 1.0, pdG[nx][0], 1);
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[7], 1, 1.0, pdG[ny][0], 1);
+                            C_DGEMV('t', nP, nso*nso, 1.0, Bmnp[oP], nso*nso, pTempP[8], 1, 1.0, pdG[nz][0], 1);
+                            // K Terms
+                            if (Kscale) {
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+6*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nx][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+7*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[ny][oN], nso);
+                                for(int p = 0; p < nP; ++p)
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+8*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nz][oN], nso);
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            for(int a = 0; a < nA; ++a){
+                // Symmetrize the derivative Fock contributions
+                SharedMatrix G = dGmats[a];
+                G->add(G->transpose());
+                Gpi->transform(C1, G, C1occ);
+                Gpi->scale(0.5);
+                psio_->write(PSIF_HESS,Gpi_str,(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
+            }
+        } // End loop over A batches
+
     }else{
         /*
          * The conventional integral algorithm
@@ -3236,6 +3226,7 @@ void USCFDeriv::assemble_Fock(int nocc, int nvir, bool alpha)
             psio_->read(PSIF_HESS,VXC_str,(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_VXCpi,&next_VXCpi);
             Fpi->add(Tpi);
         }
+
         psio_->write(PSIF_HESS,F_str,(char*)Fpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Fpi,&next_Fpi);
     }
 }
