@@ -14,10 +14,9 @@ molecule h2o {
 
 set { 
 puream false
-df_scf_guess false
 d_convergence 10
 r_convergence 10
-scf_type pk
+scf_type df
 basis 6-31g 
 reference uhf
 }
