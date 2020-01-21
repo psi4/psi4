@@ -147,7 +147,7 @@ jobs:
         -DENABLE_snsmp2=OFF \
         -DENABLE_v2rdm_casscf=OFF \
         -DENABLE_PLUGIN_TESTING=ON \
-        -DBUILD_Libint2_GENERATOR=OFF \
+        -DBUILD_Libint2_GENERATOR=ON \
         -DCMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
     displayName: 'Configure Build'
 
