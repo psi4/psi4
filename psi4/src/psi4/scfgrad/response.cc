@@ -1591,22 +1591,22 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
 
     psio_->open(PSIF_HESS,PSIO_OPEN_NEW);
 
-    // =>  These functions write alpha/beta components to disk <= //
+    // =>  These functions write alpha/beta components of intermediates to disk <= //
     // Overlap derivatives
     overlap_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
     overlap_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
 
     // Kinetic derivatives
-    kinetic_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
-    kinetic_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
+    kinetic_deriv(Ca, Ca_occ, nso, naocc, navir, true);
+    kinetic_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
 
     // Potential derivatives (Vpi)
-    potential_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
-    potential_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
+    potential_deriv(Ca, Ca_occ, nso, naocc, navir, true);
+    potential_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
 
     // Jpi/Kpi
-    JK_deriv1(Da, Ca, Ca_occ, Ca_vir, Db, nso, naocc, navir, true);
-    JK_deriv1(Db, Cb, Cb_occ, Cb_vir, Da, nso, nbocc, nbvir, false);
+    JK_deriv1(Da, Ca, Ca_occ, Db, nso, naocc, navir, true);
+    JK_deriv1(Db, Cb, Cb_occ, Da, nso, nbocc, nbvir, false);
 
     std::shared_ptr<JK> jk;
     jk = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, mem);
@@ -1618,8 +1618,8 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     JK_deriv2(jk,mem, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir, true);
     JK_deriv2(jk,mem, Cb, Cb_occ, Ca, Ca_occ, nso, nbocc, naocc, nbvir, false);
 
-    VXC_deriv(Ca, Ca_occ, Ca_vir, nso, naocc, navir, true);
-    VXC_deriv(Cb, Cb_occ, Cb_vir, nso, nbocc, nbvir, false);
+    VXC_deriv(Ca, Ca_occ, nso, naocc, navir, true);
+    VXC_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
 
     assemble_Fock(naocc, navir,true);
     assemble_Fock(nbocc, nbvir,false);
@@ -1675,6 +1675,8 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
                 for (int i = 0; i < nbocc; i++) {
                     C_DCOPY(nbvir,&Tbp[0][i],nbocc,Bbp[i],1);
                 }
+                
+                // U matrices from CPHF will accordingly return in alternating alpha/beta order
                 b_vecs.push_back(Ba);
                 b_vecs.push_back(Bb);
             }
@@ -1684,6 +1686,7 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
                                                    options_.get_int("SOLVER_MAXITER"), print_);
     
             // Result in x
+            // Write Uas to disk
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
@@ -1694,6 +1697,7 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
                 }
                 psio_->write(PSIF_HESS,"Uai^A_a",(char*)Tap[0], static_cast<size_t> (navir) * naocc * sizeof(double),next_Uaia,&next_Uaia);
             }
+            // Write Ubs to disk
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
                 ss << "Perturbation " << a + A;
@@ -1712,8 +1716,8 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     assemble_U(naocc, navir, true);
     assemble_U(nbocc, nbvir, false);
 
-    assemble_Q(jk, Ca, Ca_occ, Ca_vir, Cb, Cb_occ, nso, naocc, nbocc, navir, true);
-    assemble_Q(jk, Cb, Cb_occ, Cb_vir, Ca, Ca_occ, nso, nbocc, naocc, nbvir, false);
+    assemble_Q(jk, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir, true);
+    assemble_Q(jk, Cb, Cb_occ, Ca, Ca_occ, nso, nbocc, naocc, nbvir, false);
     jk.reset();
 
     // => Zipper <= //
@@ -2159,7 +2163,6 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
 
 void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C, 
                               std::shared_ptr<Matrix> Cocc,
-                              std::shared_ptr<Matrix> Cvir,
                               int nso, int nocc, int nvir, bool alpha)
 {
     // Kinetic derivatives
@@ -2170,7 +2173,6 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
 
     double** Cp  = C->pointer();  
     double** Cop = Cocc->pointer();
-    double** Cvp = Cvir->pointer(); 
 
     auto Tmix = std::make_shared<Matrix>("Tmix",nso,nocc);
     auto Tmiy = std::make_shared<Matrix>("Tmiy",nso,nocc);
@@ -2269,7 +2271,6 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
 }
 void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C, 
                                 std::shared_ptr<Matrix> Cocc,
-                                std::shared_ptr<Matrix> Cvir,
                                 int nso, int nocc, int nvir, bool alpha)
 {
     std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
@@ -2279,7 +2280,6 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
 
     double** Cp  = C->pointer();  
     double** Cop = Cocc->pointer();
-    double** Cvp = Cvir->pointer(); 
 
     auto Vmix = std::make_shared<Matrix>("Vmix",nso,nocc);
     auto Vmiy = std::make_shared<Matrix>("Vmiy",nso,nocc);
@@ -2349,7 +2349,6 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
 void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                           std::shared_ptr<Matrix> C1, 
                           std::shared_ptr<Matrix> C1occ,
-                          std::shared_ptr<Matrix> C1vir,
                           std::shared_ptr<Matrix> D2, 
                           int nso, int nocc, int nvir, bool alpha)
 {
@@ -2357,7 +2356,6 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
     double** D1p  = D1->pointer();  
     double** C1p  = C1->pointer();  
     double** C1op = C1occ->pointer();
-    double** C1vp = C1vir->pointer(); 
 
     double** D2p  = D2->pointer();  
 
@@ -2472,6 +2470,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
         // B[B][m,n] = Minv[A][B] (A|mn)
         C_DGEMM('n','n', np, nso*nso, np, 1.0, PQp[0], np, Amnp[0], nso*nso, 0.0, Bmnp[0], nso*nso);
 
+        // This intermediate is for K, so use D1 rather than Dt
         // T[p][m,n] = B[p][r,n] D[m,r]
 #pragma omp parallel for
         for(int p = 0; p < np; ++p)
@@ -3133,13 +3132,11 @@ void USCFDeriv::JK_deriv2(std::shared_ptr<JK> jk, int mem,
 
 void USCFDeriv::VXC_deriv(std::shared_ptr<Matrix> C, 
                           std::shared_ptr<Matrix> Cocc,
-                          std::shared_ptr<Matrix> Cvir,
                           int nso, int nocc, int nvir, bool alpha)
 {
     // => XC Gradient <= //
     double** Cp  = C->pointer();  
     double** Cop = Cocc->pointer();
-    double** Cvp = Cvir->pointer(); 
     size_t nmo = nocc + nvir;
     int natom = molecule_->natom();
 
@@ -3154,13 +3151,8 @@ void USCFDeriv::VXC_deriv(std::shared_ptr<Matrix> C,
         // Write some placeholder data to PSIO, to get the sizing right
         psio_address next_VXCpi = PSIO_ZERO;
 
-        if(alpha){
-            for (int A = 0; A < 3 * natom; A++)
-                psio_->write(PSIF_HESS,"VXCpi^A_a",(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_VXCpi,&next_VXCpi);
-        } else {
-            for (int A = 0; A < 3 * natom; A++)
-                psio_->write(PSIF_HESS,"VXCpi^A_b",(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_VXCpi,&next_VXCpi);
-        }
+        for (int A = 0; A < 3 * natom; A++)
+            psio_->write(PSIF_HESS,VXCpi_str,(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_VXCpi,&next_VXCpi);
 
         // For now we just compute all 3N matrices in one go.  If this becomes to burdensome
         // in terms of memory we can reevaluate and implement a batching mechanism instead.
@@ -3200,6 +3192,8 @@ void USCFDeriv::assemble_Fock(int nocc, int nvir, bool alpha)
     auto VXC_str = (alpha) ? "VXCpi^A_a" : "VXCpi^A_b";
     auto F_str = (alpha) ? "Fpi^A_a" : "Fpi^A_b";
 
+    // Add all of the same-spin components
+    // opposite spin already included in G
     for (int A = 0; A < 3*natom; A++) {
         psio_->read(PSIF_HESS,T_str,(char*)Fpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
         psio_->read(PSIF_HESS,V_str,(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
@@ -3274,16 +3268,12 @@ void USCFDeriv::assemble_U(int nocc, int nvir, bool alpha)
         C_DSCAL(nocc * (size_t) nocc,-0.5, Upqp[0], 1);
         psio_->read(PSIF_HESS,Uai_str,(char*)Upqp[nocc], static_cast<size_t> (nvir) * nocc * sizeof(double),next_Uai,&next_Uai);
         psio_->write(PSIF_HESS,Upi_str,(char*)Upqp[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Upi,&next_Upi);
-//        pdip_grad[A][0] += 4*mu_x.vector_dot(Upi);
-//        pdip_grad[A][1] += 4*mu_y.vector_dot(Upi);
-//        pdip_grad[A][2] += 4*mu_z.vector_dot(Upi);
     }
 }
 
 void USCFDeriv::assemble_Q(std::shared_ptr<JK> jk,
                            std::shared_ptr<Matrix> C1, 
                            std::shared_ptr<Matrix> C1occ,
-                           std::shared_ptr<Matrix> C1vir,
                            std::shared_ptr<Matrix> C2, 
                            std::shared_ptr<Matrix> C2occ,
                            int nso, int n1occ, int n2occ, int n1vir, bool alpha)
@@ -3297,7 +3287,6 @@ void USCFDeriv::assemble_Q(std::shared_ptr<JK> jk,
 
     double** C1p  = C1->pointer();  
     double** C1op = C1occ->pointer();
-    double** C1vp = C1vir->pointer(); 
     double** C2p = C2->pointer();
     double** C2op = C2occ->pointer();
 

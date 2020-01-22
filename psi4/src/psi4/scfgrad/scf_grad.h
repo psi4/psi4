@@ -84,18 +84,15 @@ protected:
 
     void kinetic_deriv(std::shared_ptr<Matrix> C, 
                        std::shared_ptr<Matrix> Cocc,
-                       std::shared_ptr<Matrix> Cvir,
                        int nso, int nocc, int nvir, bool alpha);
 
     void potential_deriv(std::shared_ptr<Matrix> C, 
                          std::shared_ptr<Matrix> Cocc,
-                         std::shared_ptr<Matrix> Cvir,
                          int nso, int nocc, int nvir, bool alpha);
 
     void JK_deriv1(std::shared_ptr<Matrix> D1,
                    std::shared_ptr<Matrix> C1, 
                    std::shared_ptr<Matrix> C1occ,
-                   std::shared_ptr<Matrix> C1vir,
                    std::shared_ptr<Matrix> D2, 
                    int nso, int nocc, int nvir, bool alpha);
 
@@ -108,7 +105,6 @@ protected:
 
     void VXC_deriv(std::shared_ptr<Matrix> C, 
                    std::shared_ptr<Matrix> Cocc,
-                   std::shared_ptr<Matrix> Cvir,
                    int nso, int nocc, int nvir, bool alpha);
 
     void assemble_Fock(int nocc, int nvir, bool alpha);
@@ -118,7 +114,6 @@ protected:
     void assemble_Q(std::shared_ptr<JK> jk,
                     std::shared_ptr<Matrix> C1, 
                     std::shared_ptr<Matrix> C1occ,
-                    std::shared_ptr<Matrix> C1vir,
                     std::shared_ptr<Matrix> C2, 
                     std::shared_ptr<Matrix> C2occ, 
                     int nso, int n1occ, int n2occ, int nvir,bool alpha);
