@@ -123,6 +123,13 @@ protected:
                     std::shared_ptr<Matrix> C2occ, 
                     int nso, int n1occ, int n2occ, int nvir,bool alpha);
 
+    void dipole_derivatives(std::shared_ptr<Matrix> C1, 
+                            std::shared_ptr<Matrix> C1occ,
+                            std::shared_ptr<Matrix> C2, 
+                            std::shared_ptr<Matrix> C2occ,
+                            std::shared_ptr<Matrix> Dt,
+                            int nso, int n1occ, int n2occ, int n1vir);
+
 public:
     USCFDeriv(std::shared_ptr<scf::UHF> uhf_wfn, Options& options): SCFDeriv(std::dynamic_pointer_cast<Wavefunction>(uhf_wfn), options), uhf_wfn_(uhf_wfn) {}
     ~USCFDeriv() override {}

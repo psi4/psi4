@@ -1569,6 +1569,9 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     std::shared_ptr<Matrix> Cb_vir = Cb_subset("AO","VIR");
     std::shared_ptr<Matrix> Db = Db_subset("AO");
 
+    std::shared_ptr<Matrix> Dt = Da_subset("AO")->clone();
+    Dt->add(Db);
+
     // => Sizing <= //
 
     int natom = molecule_->natom();
@@ -1705,26 +1708,7 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
         }
     }
 
-    // => Dipole derivatives (for IR intensities) <= //
-   // MintsHelper mints(basisset_);
-   // auto ao_dipole = mints.ao_dipole();
-   // auto Ca = Ca_subset("AO");
-   // auto Caocc = Ca_subset("AO", "OCC");
-   // Matrix mu_x("mu X", nmo_, nocc);
-   // Matrix mu_y("mu Y", nmo_, nocc);
-   // Matrix mu_z("mu Z", nmo_, nocc);
-   // mu_x.transform(Ca, ao_dipole[0], Caocc);
-   // mu_y.transform(Ca, ao_dipole[1], Caocc);
-   // mu_z.transform(Ca, ao_dipole[2], Caocc);
-   // // Start by computing the skeleton derivatives
-   // auto dipole_gradient = mints.dipole_grad(Da_subset("AO"));
-   // // Account for alpha and beta orbitals
-   // dipole_gradient->scale(2);
-   // dipole_gradient->add(DipoleInt::nuclear_gradient_contribution(molecule_));
-   // double **pdip_grad = dipole_gradient->pointer();
 
-    //uhf_wfn_->set_array_variable("SCF DIPOLE GRADIENT", dipole_gradient);
-    //uhf_wfn_->set_array_variable("CURRENT DIPOLE GRADIENT", dipole_gradient);
     assemble_U(naocc, navir, true);
     assemble_U(nbocc, nbvir, false);
 
@@ -3393,6 +3377,61 @@ void USCFDeriv::assemble_Q(std::shared_ptr<JK> jk,
             psio_->write(PSIF_HESS,Qstr,(char*)Up[0], static_cast<size_t> (nmo)*n1occ*sizeof(double),next_Qpi,&next_Qpi);
         }
     }
+}
+
+void USCFDeriv::dipole_derivatives(std::shared_ptr<Matrix> C1, 
+                           std::shared_ptr<Matrix> C1occ,
+                           std::shared_ptr<Matrix> C2, 
+                           std::shared_ptr<Matrix> C2occ,
+                           std::shared_ptr<Matrix> Dt,
+                           int nso, int n1occ, int n2occ, int n1vir)
+{
+    // => Dipole derivatives (for IR intensities) <= //
+
+    size_t nmo = n1occ + n1vir;
+    int natom = molecule_->natom();
+
+    MintsHelper mints(basisset_);
+    auto ao_dipole = mints.ao_dipole();
+    Matrix mu1_x("mu X", nmo_, n1occ);
+    Matrix mu1_y("mu Y", nmo_, n1occ);
+    Matrix mu1_z("mu Z", nmo_, n1occ);
+    Matrix mu2_x("mu X", nmo_, n2occ);
+    Matrix mu2_y("mu Y", nmo_, n2occ);
+    Matrix mu2_z("mu Z", nmo_, n2occ);
+    mu1_x.transform(C1, ao_dipole[0], C1occ);
+    mu1_y.transform(C1, ao_dipole[1], C1occ);
+    mu1_z.transform(C1, ao_dipole[2], C1occ);
+    mu2_x.transform(C2, ao_dipole[0], C2occ);
+    mu2_y.transform(C2, ao_dipole[1], C2occ);
+    mu2_z.transform(C2, ao_dipole[2], C2occ);
+    // Start by computing the skeleton derivatives
+    auto dipole_gradient = mints.dipole_grad(Dt);
+    dipole_gradient->add(DipoleInt::nuclear_gradient_contribution(molecule_));
+    double **pdip_grad = dipole_gradient->pointer();
+
+    auto U1pi = std::make_shared<Matrix>("Upi",nmo,n1occ);
+    double** U1pip = U1pi->pointer();
+    auto U2pi = std::make_shared<Matrix>("Upi",nmo,n2occ);
+    double** U2pip = U2pi->pointer();
+
+    psio_address next_Upi = PSIO_ZERO;
+
+    // TODO: Check this factor of 2
+    for (int A = 0; A < 3*natom; A++) {
+        psio_->read(PSIF_HESS,"Upi^A_a",(char*)U1pip[0], static_cast<size_t> (nmo) * n1occ * sizeof(double),next_Upi,&next_Upi);
+        pdip_grad[A][0] += 2*mu1_x.vector_dot(U1pi);
+        pdip_grad[A][1] += 2*mu1_y.vector_dot(U1pi);
+        pdip_grad[A][2] += 2*mu1_z.vector_dot(U1pi);
+    }
+    for (int A = 0; A < 3*natom; A++) {
+        psio_->read(PSIF_HESS,"Upi^A_b",(char*)U2pip[0], static_cast<size_t> (nmo) * n2occ * sizeof(double),next_Upi,&next_Upi);
+        pdip_grad[A][0] += 2*mu2_x.vector_dot(U2pi);
+        pdip_grad[A][1] += 2*mu2_y.vector_dot(U2pi);
+        pdip_grad[A][2] += 2*mu2_z.vector_dot(U2pi);
+    }
+    uhf_wfn_->set_array_variable("SCF DIPOLE GRADIENT", dipole_gradient);
+    uhf_wfn_->set_array_variable("CURRENT DIPOLE GRADIENT", dipole_gradient);
 }
 
 }}
