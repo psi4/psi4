@@ -32,11 +32,13 @@ else()
 #            #URL https://github.com/evaleev/libint/releases/download/v2.6.0/libint-2.6.0.tgz
 #            URL https://github.com/loriab/libint/archive/l2cmake.zip
 #            URL "/home/psilocaluser/tars/Libint2-export.tgz"
-            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-6.tgz"
+            #URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-6.tgz"  # good, afaik
+            URL "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-sm7.tgz"
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                       -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBOOST_ROOT=${BOOST_ROOT}
@@ -47,7 +49,8 @@ else()
                        -DBUILD_STATIC=${_a_only}
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}
-            CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+            CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
