@@ -35,6 +35,7 @@ import os
 import sys
 import shutil
 import subprocess
+import warnings
 
 import numpy as np
 from qcelemental import constants

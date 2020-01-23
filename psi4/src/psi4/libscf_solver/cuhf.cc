@@ -229,8 +229,7 @@ void CUHF::form_initial_F() {
 
 void CUHF::form_F() {
     // Form (rho_a + rho_b) / 2
-    Dp_->copy(Da_);
-    Dp_->add(Db_);
+    Dp_->copy(Dt_);
     Dp_->scale(-0.5);  // This is a hack to get the eigenvectors in the
                        // order that I want
     if (debug_) {
@@ -238,11 +237,11 @@ void CUHF::form_F() {
         Dp_->print();
     }
 
-    // Transfrom to an orthonormal basis, C_a is convenient
+    // Transfrom to the orthonormal basis
     Dp_->transform(S_);
-    Dp_->transform(Ca_);
+    Dp_->transform(X_);
     if (debug_) {
-        outfile->Printf("Charge Density Matrix (Alpha Basis):\n");
+        outfile->Printf("Charge Density Matrix (Orthonormal Basis):\n");
         Dp_->print();
     }
 
@@ -252,7 +251,7 @@ void CUHF::form_F() {
         outfile->Printf("CUHF Natural Orbital Occupations:\n");
         No_->print();
     }
-    Cno_->gemm(false, false, 1.0, Ca_, Cno_temp_, 0.0);
+    Cno_->gemm(false, false, 1.0, X_, Cno_temp_, 0.0);
 
     // Now we form the contributions to the Fock matrix from
     // the charge and spin densities

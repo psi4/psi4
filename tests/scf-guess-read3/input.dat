@@ -1,0 +1,20 @@
+#! Test if the the guess read in the same basis converges. 
+
+molecule neon {
+    0 3
+    Ne
+    Ne 1 0.5
+}
+
+set reference rohf
+set basis aug-pcseg-2
+set guess sad
+set s_tolerance 4
+set d_convergence 8
+energy('scf')
+compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy')  #TEST
+
+set guess read
+energy('scf')
+compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
+compare_values(1, variable('SCF ITERATIONS'), 1, 'ROHF Iterations, read-in guess')  #TEST

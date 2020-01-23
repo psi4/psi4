@@ -100,7 +100,8 @@ class PSI_API BasisSetOrthogonalization {
     void compute_partial_cholesky_orthog();
     /// Driver routine
     void compute_orthog_trans();
-
+    /// Check computed basis is orthonormal
+    void check_orth();
     /// Sort the basis functions from tight to diffuse
     std::vector<std::vector<int>> sort_indices() const;
 

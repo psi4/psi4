@@ -60,7 +60,7 @@ BasisSetOrthogonalization::BasisSetOrthogonalization(OrthogonalizationMethod met
 void BasisSetOrthogonalization::normalize() {
     // Compute normalization coefficients
     if (normalization_ != nullptr)
-        throw PSIEXCEPTION("BasisSetOrthogonalization::normalizate: normalization_ should be nullptr");
+        throw PSIEXCEPTION("BasisSetOrthogonalization::normalize: normalization_ should be nullptr");
     normalization_ = std::make_shared<Vector>(overlap_->rowspi());
     normalization_->set_name("SO normalization factors");
     for (int h = 0; h < overlap_->nirrep(); h++)
@@ -69,11 +69,11 @@ void BasisSetOrthogonalization::normalize() {
 
     // Normalize overlap matrix
     if (normalized_overlap_ != nullptr)
-        throw PSIEXCEPTION("BasisSetOrthogonalization::normalizate: normalized_overlap_ should be nullptr");
+        throw PSIEXCEPTION("BasisSetOrthogonalization::normalize: normalized_overlap_ should be nullptr");
     normalized_overlap_ = std::make_shared<Matrix>(overlap_->rowspi(), overlap_->colspi());
     for (int h = 0; h < overlap_->nirrep(); h++)
-        for (int j = 0; j < overlap_->coldim(h); j++)
-            for (int i = 0; i < overlap_->rowdim(h); i++)
+        for (int i = 0; i < overlap_->rowdim(h); i++)
+            for (int j = 0; j < overlap_->coldim(h); j++)
                 normalized_overlap_->set(
                     h, i, j, overlap_->get(h, i, j) * normalization_->get(h, i) * normalization_->get(h, j));
 }
@@ -82,7 +82,10 @@ void BasisSetOrthogonalization::unroll_normalization() {
     if (!normalization_)
         throw PSIEXCEPTION("BasisSetOrthogonalization::unroll_normalization: normalization has not been yet computed.");
     if (!X_) throw PSIEXCEPTION("BasisSetOrthogonalization::unroll_normalization: X has not been yet computed.");
-    // Plug the normalization back into X
+
+    // Scaling the rows by the normalization coefficients leads to
+    // X^T*S*X = 1, since S is thereby transformed to the normalized
+    // basis used to form X.
     for (int h = 0; h < X_->nirrep(); h++)
         for (int i = 0; i < X_->rowdim(h); i++) X_->scale_row(h, i, normalization_->get(h, i));
 }
@@ -137,34 +140,56 @@ void BasisSetOrthogonalization::compute_inverse() {
 }
 
 SharedMatrix BasisSetOrthogonalization::overlap_inverse() {
-    auto Sinv = std::make_shared<Matrix>("Inverse Transformation", X_->rowspi(), X_->rowspi());
+    auto Sinv = std::make_shared<Matrix>("Inverse overlap matrix", X_->rowspi(), X_->rowspi());
     Sinv->gemm(false, true, 1.0, X_, X_, 0.0);
     return Sinv;
 }
 
 void BasisSetOrthogonalization::compute_symmetric_orthog() {
+    /*
+      Susi Lehtola Jan 16 2020
+
+      SO basis functions aren't normalized, which causes X to be
+      asymmetric at the end (see unroll_normalization function). It
+      might be possible to achieve a symmetric X even with the use of
+      balancing i.e. renormalization of the basis set, but this would
+      require tracking the dependence of the eigenvectors and
+      eigenvalues on the scaling transform.
+
+      If one omits the normalization with the commented code below, X
+      becomes symmetric. However, the symmetricity of X or the lack of
+      it makes no difference at the end, since the orbitals anyway arise
+      from diagonalizing the Fock matrix or orbital optimization, and
+      any code in Psi4 should also work with canonical orthogonalization
+      which is asymmetric by force.
+    */
+
+    /*
+      // Bypass re-normalization of the basis set
+      normalized_overlap_ = overlap_;
+      for (int h = 0; h < overlap_->nirrep(); h++)
+        for (int i = 0; i < overlap_->rowdim(h); i++) normalization_->set(h, i, 1.0);
+      compute_overlap_eig();
+    */
+
     if (!eigval_) compute_overlap_eig();
     if (min_S_ < lindep_tol_) {
         outfile->Printf("WARNING: smallest overlap eigenvalue %e is smaller than S_TOLERANCE!\n", min_S_);
     }
     const Dimension& nbf = eigval_->dimpi();
+    int nirrep = eigval_->nirrep();
 
-    SharedVector eval(std::make_shared<Vector>(nbf));
-    eval->copy(*eigval_);
-    for (int h = 0; h < eval->nirrep(); ++h) {
-        for (int i = 0; i < eval->dim(h); i++) {
-            double val = 1.0 / sqrt(eval->get(h, i));
-            eval->set(h, i, val);
+    // Symmetric orthogonalization obtained as U s^{-1/2} U^t
+    auto Us = std::make_shared<Matrix>("Half-transformed matrix Us", nbf, nbf);
+    Us->copy(eigvec_);
+    for (int h = 0; h < nirrep; ++h) {
+        for (int i = 0; i < nbf[h]; ++i) {
+            Us->scale_column(h, i, 1.0 / sqrt(eigval_->get(h, i)));
         }
     }
-
-    auto eigtemp2 = std::make_shared<Matrix>("Scratch matrix 1", nbf, nbf);
-    eigtemp2->set_diagonal(eval);
-    auto eigtemp = std::make_shared<Matrix>("Scratch matrix 2", nbf, nbf);
-    eigtemp->gemm(false, true, 1.0, eigtemp2, eigvec_, 0.0);
-
     X_ = std::make_shared<Matrix>("X (Symmetric Orthogonalization)", nbf, nbf);
-    X_->gemm(false, false, 1.0, eigvec_, eigtemp, 0.0);
+    // X = U s U^t
+    X_->gemm(false, true, 1.0, Us, eigvec_, 0.0);
 }
 
 void BasisSetOrthogonalization::compute_canonical_orthog() {
@@ -331,6 +356,34 @@ void BasisSetOrthogonalization::compute_orthog_trans() {
     unroll_normalization();
     // Compute the inverse transformation, too.
     compute_inverse();
+    // Check that the computed basis truly is orthonormal
+    check_orth();
+}
+
+void BasisSetOrthogonalization::check_orth() {
+    // Check that orbitals are orthonormal
+    const Dimension& nbf(X_->rowspi());
+    const Dimension& nmo(X_->colspi());
+    auto SX = std::make_shared<Matrix>("SX", nbf, nmo);
+    SX->gemm(false, false, 1.0, overlap_, X_, 0.0);
+    auto XtSX = std::make_shared<Matrix>("MO overlap", nmo, nmo);
+    XtSX->gemm(true, false, 1.0, X_, SX, 0.0);
+
+    if (print_ > 3) XtSX->print();
+
+    // Remove unity from diagonal
+    for (int h = 0; h < X_->nirrep(); h++)
+        for (int n = 0; n < nmo[h]; n++) XtSX->set(h, n, n, XtSX->get(h, n, n) - 1.0);
+
+    // Compute norm
+    double norm = 0.0;
+    for (int h = 0; h < X_->nirrep(); h++)
+        for (int m = 0; m < nmo[h]; m++)
+            for (int n = 0; n < nmo[h]; n++) norm += std::pow(XtSX->get(h, m, n), 2);
+
+    if (print_ > 2) outfile->Printf("  MO non-orthonormality %e\n", norm);
+
+    if (norm >= 1e-10) throw PSIEXCEPTION("BasisSetOrthogonalization::check_orth: orbitals are not orthonormal");
 }
 
 SharedMatrix BasisSetOrthogonalization::basis_to_orthog_basis() {
