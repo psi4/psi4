@@ -106,6 +106,7 @@ class OCCWave : public Wavefunction {
     void s2_lagrangian();
     void second_order_opdm();
     void set_t2_amplitudes_mp2();
+    void mp2_energy(bool include_singles = false);
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
@@ -122,7 +123,6 @@ class OCCWave : public Wavefunction {
     void omp2_response_pdms();
     void omp2_t2_1st_general();
     void omp2_tpdm_oovv();
-    void omp2_mp2_energy();
     void omp2_ip_poles();
     void omp2_ea_poles();
     void ep2_ip();
@@ -134,7 +134,6 @@ class OCCWave : public Wavefunction {
     void omp3_t2_1st_general();
     void omp3_tpdm_vvvv();
     void omp3_g_int();
-    void omp3_mp2_energy();
     void w_1st_order();
     void v_2nd_order();
     void t2_2nd_sc();
@@ -150,7 +149,6 @@ class OCCWave : public Wavefunction {
     void ocepa_manager();
     void cepa_manager();
     void cepa_iterations();
-    void ocepa_mp2_energy();
     void ocepa_tpdm_vvvv();
     void ocepa_response_pdms();
     void t2_amps();

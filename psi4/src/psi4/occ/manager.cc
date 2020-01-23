@@ -58,7 +58,7 @@ void OCCWave::omp2_manager() {
     ref_energy();
     timer_off("REF Energy");
     timer_on("MP2 Energy");
-    omp2_mp2_energy();
+    mp2_energy();
     timer_off("MP2 Energy");
     Emp2L = Emp2;
     EcorrL = Emp2L - Escf;
@@ -99,7 +99,7 @@ void OCCWave::omp2_manager() {
 
     if (conver == 1) {
         ref_energy();
-        omp2_mp2_energy();
+        mp2_energy();
         if (orbs_already_opt == 1) Emp2L = Emp2;
 
         // S2
@@ -260,7 +260,7 @@ void OCCWave::mp2_manager() {
     timer_off("T2(1)");
     Eref = Escf;
     timer_on("MP2 Energy");
-    omp2_mp2_energy();
+    mp2_energy(reference == "ROHF");
     timer_off("MP2 Energy");
     Emp2L = Emp2;
     EcorrL = Emp2L - Escf;
@@ -362,7 +362,7 @@ void OCCWave::omp3_manager() {
     set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
-    omp3_mp2_energy();
+    mp2_energy();
     timer_off("MP2 Energy");
 
     mp2_postprocessing();
@@ -412,7 +412,7 @@ void OCCWave::omp3_manager() {
 
     if (conver == 1) {
         ref_energy();
-        omp3_mp2_energy();
+        mp2_energy();
         mp3_energy();
         if (orbs_already_opt == 1) Emp3L = Emp3;
 
@@ -538,7 +538,7 @@ void OCCWave::mp3_manager() {
     set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
-    omp3_mp2_energy();
+    mp2_energy();
     timer_off("MP2 Energy");
 
     mp2_postprocessing();
@@ -641,7 +641,7 @@ void OCCWave::ocepa_manager() {
     set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
-    ocepa_mp2_energy();
+    mp2_energy();
     timer_off("MP2 Energy");
     Ecepa = Emp2;
     EcepaL = Ecepa;
@@ -767,7 +767,7 @@ void OCCWave::cepa_manager() {
     set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
-    ocepa_mp2_energy();
+    mp2_energy();
     timer_off("MP2 Energy");
     Ecepa = Emp2;
     Ecepa_old = Emp2;
@@ -857,7 +857,7 @@ void OCCWave::omp2_5_manager() {
     set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
-    omp3_mp2_energy();
+    mp2_energy();
     timer_off("MP2 Energy");
 
     mp2_postprocessing();
@@ -908,7 +908,7 @@ void OCCWave::omp2_5_manager() {
 
     if (conver == 1) {
         ref_energy();
-        omp3_mp2_energy();
+        mp2_energy();
         mp3_energy();
         if (orbs_already_opt == 1) Emp3L = Emp3;
 
@@ -990,7 +990,7 @@ void OCCWave::mp2_5_manager() {
     set_t2_amplitudes_mp2();
     timer_off("T2(1)");
     timer_on("MP2 Energy");
-    omp3_mp2_energy();
+    mp2_energy();
     timer_off("MP2 Energy");
 
     mp2_postprocessing();
