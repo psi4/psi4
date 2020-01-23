@@ -2657,22 +2657,26 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("MAX_MOGRAD_CONVERGENCE", 1e-4);
         /*- Maximum step size in orbital-optimization procedure -*/
         options.add_double("MO_STEP_MAX", 0.5);
-        /*- Level shift to aid convergence -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("LEVEL_SHIFT", 0.02);
-        /*- MP2 opposite-spin scaling value -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("MP2_OS_SCALE", 6.0 / 5.0);
-        /*- MP2 same-spin scaling value -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("MP2_SS_SCALE", 1.0 / 3.0);
-        /*- MP2 Spin-opposite scaling (SOS) value -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("MP2_SOS_SCALE", 1.3);
-        /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("MP2_SOS_SCALE2", 1.2);
-        /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("CEPA_OS_SCALE", 1.27);
-        /*- CEPA same-spin scaling value from SCS-CCSD -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("CEPA_SS_SCALE", 1.13);
-        /*- CEPA Spin-opposite scaling (SOS) value -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_double("CEPA_SOS_SCALE", 1.3);
+        /*- A custom scaling parameter for opposite-spin terms in OCC. The result goes to a CUSTOM SCS variable, exact name method-dependent. -*/
+        options.add_double("OS_SCALE", 1);
+        /*- A custom scaling parameter for same-spin terms in OCC. The result goes to a CUSTOM SCS variable, exact name method-dependent. -*/
+        options.add_double("SS_SCALE", 1);
         /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
         options.add_double("E3_SCALE", 0.25);
         /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
@@ -2711,7 +2715,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Do compute natural orbitals? -*/
         options.add_bool("NAT_ORBS", false);
-        /*- Do apply level shifting? -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_bool("DO_LEVEL_SHIFT", true);
         /*- Do print OCC orbital energies? -*/
         options.add_bool("OCC_ORBS_PRINT", false);

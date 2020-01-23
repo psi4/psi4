@@ -305,8 +305,6 @@ class OCCWave : public Wavefunction {
     double cutoff;
     double os_scale;
     double ss_scale;
-    double sos_scale;
-    double sos_scale2;
     double a_pcgA;
     double a_pcgB;
     double b_pcgA;
@@ -362,10 +360,6 @@ class OCCWave : public Wavefunction {
     double Escsmicepa;
     double Escscepavdw;
     double Esospicepa;
-    double cepa_os_scale_;
-    double cepa_ss_scale_;
-    double cepa_sos_scale_;
-    double sos_scale_ocepa;
 
     std::string wfn;
     std::string reference;

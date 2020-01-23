@@ -76,13 +76,8 @@ void OCCWave::common_init() {
     ep_maxiter = options_.get_int("EP_MAXITER");
 
     step_max = options_.get_double("MO_STEP_MAX");
-    os_scale = options_.get_double("MP2_OS_SCALE");
-    ss_scale = options_.get_double("MP2_SS_SCALE");
-    sos_scale = options_.get_double("MP2_SOS_SCALE");
-    sos_scale2 = options_.get_double("MP2_SOS_SCALE2");
-    cepa_os_scale_ = options_.get_double("CEPA_OS_SCALE");
-    cepa_ss_scale_ = options_.get_double("CEPA_SS_SCALE");
-    cepa_sos_scale_ = options_.get_double("CEPA_SOS_SCALE");
+    os_scale = options_.get_double("OS_SCALE");
+    ss_scale = options_.get_double("SS_SCALE");
     e3_scale = options_.get_double("E3_SCALE");
     lambda_damping = options_.get_double("MOGRAD_DAMPING");
 
@@ -120,6 +115,14 @@ void OCCWave::common_init() {
     if (options_["DO_LEVEL_SHIFT"].has_changed() || options_["LEVEL_SHIFT"].has_changed()) {
         outfile->Printf(
             "\t'Level shifting' was removed from OCC in 1.4. Contact a developer for more information.\n\n");
+    }
+    if (options_["MP2_SOS_SCALE"].has_changed() || options_["MP2_SOS_SCALE2"].has_changed() ||
+        options_["CEPA_SOS_SCALE"] || options_["MP2_OS_SCALE"].has_changed() ||
+        options_["CEPA_OS_SCALE"].has_changed() || options_["MP2_SS_SCALE"].has_changed() ||
+        options_["CEPA_SS_SCALE"].has_changed()) {
+        outfile->Printf(
+            "\tSpin-scaling in OCC changed in 1.4. Psi variables use canonical scaling. You can supply custom values "
+            "with OS_SCALE and SS_SCALE.\n\n");
     }
 
     //   Given default orbital convergence, set the criteria by what should

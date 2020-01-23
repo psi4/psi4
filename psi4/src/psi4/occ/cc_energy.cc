@@ -75,7 +75,7 @@ void OCCWave::ref_energy() {
 // omp2_mp2_energy       //
 //=======================//
 void OCCWave::omp2_mp2_energy() {
-    dpdbuf4 K, T, Tau, Tss;
+    dpdbuf4 K, T;
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
@@ -110,20 +110,20 @@ void OCCWave::omp2_mp2_energy() {
 
     if (reference_ == "RESTRICTED") {
         // Same-spin contribution
-        global_dpd_->buf4_init(&Tss, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+        global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "TAA <OO|VV>");
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "MO Ints <OO|VV>");
-        Emp2AA = 0.5 * global_dpd_->buf4_dot(&Tss, &K);
-        global_dpd_->buf4_close(&Tss);
+        Emp2AA = 0.5 * global_dpd_->buf4_dot(&T, &K);
+        global_dpd_->buf4_close(&T);
 
-        Escsmp2AA = ss_scale * Emp2AA;
+        Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
         Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.5 * Emp2AA;
 
         Emp2BB = Emp2AA;
-        Escsmp2BB = ss_scale * Emp2BB;
+        Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
         Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
@@ -134,11 +134,8 @@ void OCCWave::omp2_mp2_energy() {
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
 
-        Escsmp2AB = os_scale * Emp2AB;
-        if (mo_optimized == 0)
-            Esosmp2AB = sos_scale * Emp2AB;
-        else if (mo_optimized == 1)
-            Esosmp2AB = sos_scale2 * Emp2AB;
+        Escsmp2AB = 1.2 * Emp2AB;
+        Esosmp2AB = Emp2AB * (mo_optimized ? 1.2 : 1.3); // OMP2 has a special "canonical" opposite spin scaling factor.
         Escsmimp2AB = 0.40 * Emp2AB;
         Escsmp2vdwAB = 1.28 * Emp2AB;
         Esospimp2AB = 1.40 * Emp2AB;
@@ -156,7 +153,7 @@ void OCCWave::omp2_mp2_energy() {
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
 
-        Escsmp2AA = ss_scale * Emp2AA;
+        Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
         Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.50 * Emp2AA;
@@ -170,11 +167,8 @@ void OCCWave::omp2_mp2_energy() {
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
 
-        Escsmp2AB = os_scale * Emp2AB;
-        if (mo_optimized == 0)
-            Esosmp2AB = sos_scale * Emp2AB;
-        else if (mo_optimized == 1)
-            Esosmp2AB = sos_scale2 * Emp2AB;
+        Escsmp2AB = 1.2 * Emp2AB;
+        Esosmp2AB = Emp2AB * (mo_optimized ? 1.2 : 1.3); // OMP2 has a special "canonical" opposite spin scaling factor.
         Escsmimp2AB = 0.40 * Emp2AB;
         Escsmp2vdwAB = 1.28 * Emp2AB;
         Esospimp2AB = 1.40 * Emp2AB;
@@ -188,7 +182,7 @@ void OCCWave::omp2_mp2_energy() {
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
 
-        Escsmp2BB = ss_scale * Emp2BB;
+        Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
         Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
@@ -276,12 +270,12 @@ void OCCWave::omp3_mp2_energy() {
         global_dpd_->buf4_close(&T);
         Emp2BB = Emp2AA;
 
-        Escsmp2AA = ss_scale * Emp2AA;
+        Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
         Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.50 * Emp2AA;
 
-        Escsmp2BB = ss_scale * Emp2BB;
+        Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
         Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
@@ -293,10 +287,8 @@ void OCCWave::omp3_mp2_energy() {
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
 
-        Escsmp2AB = os_scale * Emp2AB;
-        Esosmp2AB = sos_scale * Emp2AB;
-        // if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
-        // else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
+        Escsmp2AB = 1.2 * Emp2AB;
+        Esosmp2AB = 1.3 * Emp2AB;
         Escsmimp2AB = 0.40 * Emp2AB;
         Escsmp2vdwAB = 1.28 * Emp2AB;
         Esospimp2AB = 1.40 * Emp2AB;
@@ -317,7 +309,7 @@ void OCCWave::omp3_mp2_energy() {
         global_dpd_->buf4_close(&K);
 
         Emp2AA = Ecorr;
-        Escsmp2AA = ss_scale * Emp2AA;
+        Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
         Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.50 * Emp2AA;
@@ -332,10 +324,8 @@ void OCCWave::omp3_mp2_energy() {
         global_dpd_->buf4_close(&K);
 
         Emp2AB = Ecorr - Emp2AA;
-        Escsmp2AB = os_scale * Emp2AB;
-        Esosmp2AB = sos_scale * Emp2AB;
-        // if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
-        // else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
+        Escsmp2AB = 1.2 * Emp2AB;
+        Esosmp2AB = 1.3 * Emp2AB;
         Escsmimp2AB = 0.40 * Emp2AB;
         Escsmp2vdwAB = 1.28 * Emp2AB;
         Esospimp2AB = 1.40 * Emp2AB;
@@ -350,7 +340,7 @@ void OCCWave::omp3_mp2_energy() {
         global_dpd_->buf4_close(&K);
 
         Emp2BB = Ecorr - Emp2AA - Emp2AB;
-        Escsmp2BB = ss_scale * Emp2BB;
+        Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
         Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
@@ -493,12 +483,12 @@ void OCCWave::ocepa_mp2_energy() {
         global_dpd_->buf4_close(&T);
         Emp2BB = Emp2AA;
 
-        Escsmp2AA = ss_scale * Emp2AA;
+        Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
         Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.50 * Emp2AA;
 
-        Escsmp2BB = ss_scale * Emp2BB;
+        Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
         Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
@@ -510,8 +500,8 @@ void OCCWave::ocepa_mp2_energy() {
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
 
-        Escsmp2AB = os_scale * Emp2AB;
-        Esosmp2AB = sos_scale * Emp2AB;
+        Escsmp2AB = 1.2 * Emp2AB;
+        Esosmp2AB = 1.3 * Emp2AB;
         Escsmimp2AB = 0.40 * Emp2AB;
         Escsmp2vdwAB = 1.28 * Emp2AB;
         Esospimp2AB = 1.40 * Emp2AB;
@@ -531,7 +521,7 @@ void OCCWave::ocepa_mp2_energy() {
         global_dpd_->buf4_close(&K);
 
         Emp2AA = Ecorr;
-        Escsmp2AA = ss_scale * Emp2AA;
+        Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
         Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.50 * Emp2AA;
@@ -546,8 +536,8 @@ void OCCWave::ocepa_mp2_energy() {
         global_dpd_->buf4_close(&K);
 
         Emp2AB = Ecorr - Emp2AA;
-        Escsmp2AB = os_scale * Emp2AB;
-        Esosmp2AB = sos_scale * Emp2AB;
+        Escsmp2AB = 1.2 * Emp2AB;
+        Esosmp2AB = 1.3 * Emp2AB;
         Escsmimp2AB = 0.40 * Emp2AB;
         Escsmp2vdwAB = 1.28 * Emp2AB;
         Esospimp2AB = 1.40 * Emp2AB;
@@ -562,7 +552,7 @@ void OCCWave::ocepa_mp2_energy() {
         global_dpd_->buf4_close(&K);
 
         Emp2BB = Ecorr - Emp2AA - Emp2AB;
-        Escsmp2BB = ss_scale * Emp2BB;
+        Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
         Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
@@ -646,8 +636,9 @@ void OCCWave::cepa_energy() {
 
     Ecorr = EcepaAA + EcepaBB + EcepaAB;
     Ecepa = Eref + Ecorr;
-    Escscepa = Eref + ((cepa_ss_scale_ * (EcepaAA + EcepaBB)) + (cepa_os_scale_ * EcepaAB));
-    Esoscepa = Eref + (cepa_sos_scale_ * EcepaAB);
+    // The SCS-CEPA numbers were taken from SCS-CCSD
+    Escscepa = Eref + ((1.13 * (EcepaAA + EcepaBB)) + (1.27 * EcepaAB));
+    Esoscepa = Eref + (1.3 * EcepaAB);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_OCC_DPD, 1);

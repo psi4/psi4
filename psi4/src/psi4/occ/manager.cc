@@ -181,6 +181,9 @@ void OCCWave::omp2_manager() {
         Process::environment.globals["SCS-OMP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-OMP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
+        variables_["CUSTOM SCS-OMP2 CORRELATION ENERGY"] = os_scale * Emp2AB + ss_scale * (Emp2AA + Emp2BB);
+        variables_["CUSTOM SCS-OMP2 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OMP2 CORRELATION ENERGY"];
+
         // if scs on
         if (do_scs == "TRUE") {
             if (scs_type_ == "SCS") {
@@ -209,7 +212,8 @@ void OCCWave::omp2_manager() {
             variables_["CURRENT ENERGY"] = Emp2L;
         }
         energy_ = variables_["CURRENT ENERGY"];
-        variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+        variables_["CURRENT CORRELATION ENERGY"] =
+            variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -273,19 +277,15 @@ void OCCWave::mp2_manager() {
     if (do_scs == "TRUE") {
         if (scs_type_ == "SCS") {
             variables_["CURRENT ENERGY"] = Escsmp2;
-        }
-        else if (scs_type_ == "SCSN") {
+        } else if (scs_type_ == "SCSN") {
             variables_["CURRENT ENERGY"] = Escsnmp2;
-        }
-        else if (scs_type_ == "SCSVDW") {
+        } else if (scs_type_ == "SCSVDW") {
             variables_["CURRENT ENERGY"] = Escsmp2vdw;
         }
-    }
-    else if (do_sos == "TRUE") {
+    } else if (do_sos == "TRUE") {
         if (sos_type_ == "SOS") {
             variables_["CURRENT ENERGY"] = Esosmp2;
-        }
-        else if (sos_type_ == "SOSPI") {
+        } else if (sos_type_ == "SOSPI") {
             variables_["CURRENT ENERGY"] = Esospimp2;
         }
     } else {
@@ -293,7 +293,6 @@ void OCCWave::mp2_manager() {
     }
     energy_ = variables_["CURRENT ENERGY"];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
-
 
     /* updates the wavefunction for checkpointing */
     name_ = "MP2";
@@ -478,6 +477,9 @@ void OCCWave::omp3_manager() {
         Process::environment.globals["SCS-OMP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
         Process::environment.globals["SOS-PI-OMP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 
+        variables_["CUSTOM SCS-OMP3 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
+        variables_["CUSTOM SCS-OMP3 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OMP3 CORRELATION ENERGY"];
+
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
         if (do_scs == "TRUE") {
             if (scs_type_ == "SCS") {
@@ -491,8 +493,7 @@ void OCCWave::omp3_manager() {
             else if (scs_type_ == "SCSVDW") {
                 variables_["CURRENT ENERGY"] = Escsmp3vdw;
             }
-        }
-        else if (do_sos == "TRUE") {
+        } else if (do_sos == "TRUE") {
             if (sos_type_ == "SOS") {
                 variables_["CURRENT ENERGY"] = Esosmp3;
             }
@@ -503,7 +504,8 @@ void OCCWave::omp3_manager() {
         } else {
             variables_["CURRENT ENERGY"] = Emp3;
         }
-        variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+        variables_["CURRENT CORRELATION ENERGY"] =
+            variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -567,8 +569,7 @@ void OCCWave::mp3_manager() {
         else if (scs_type_ == "SCSVDW") {
             variables_["CURRENT ENERGY"] = Escsmp3vdw;
         }
-    }
-    else if (do_sos == "TRUE") {
+    } else if (do_sos == "TRUE") {
         if (sos_type_ == "SOS") {
             variables_["CURRENT ENERGY"] = Esosmp3;
         }
@@ -733,6 +734,9 @@ void OCCWave::ocepa_manager() {
         }
         variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
+        variables_["CUSTOM SCS-OLCCD CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
+        variables_["CUSTOM SCS-OLCCD TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OLCCD CORRELATION ENERGY"];
+
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
 
@@ -791,6 +795,8 @@ void OCCWave::cepa_manager() {
     variables_["CURRENT ENERGY"] = Ecepa;
     variables_["CURRENT REFERENCE ENERGY"] = Eref;
     variables_["CURRENT CORRELATION ENERGY"] = Ecorr;
+    variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
+    variables_["CUSTOM SCS-LCCD TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"];
     // EcepaL = Ecepa;
 
     // Compute Analytic Gradients
@@ -1004,6 +1010,8 @@ void OCCWave::mp2_5_manager() {
     variables_["CURRENT ENERGY"] = Emp3L;
     variables_["CURRENT REFERENCE ENERGY"] = Eref;
     variables_["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
+    variables_["CUSTOM SCS-OMP2.5 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
+    variables_["CUSTOM SCS-OMP2.5 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OMP2.5 CORRELATION ENERGY"];
 
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
