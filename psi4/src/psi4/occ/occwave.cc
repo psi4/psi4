@@ -87,13 +87,10 @@ void OCCWave::common_init() {
     occ_orb_energy = options_.get_str("OCC_ORBS_PRINT");
     natorb = options_.get_str("NAT_ORBS");
     reference = options_.get_str("REFERENCE");
-    do_scs = options_.get_str("DO_SCS");
-    do_sos = options_.get_str("DO_SOS");
+    spin_scale_type_ = options_.get_str("SPIN_SCALE_TYPE");
     write_mo_coeff = options_.get_str("MO_WRITE");
     read_mo_coeff = options_.get_str("MO_READ");
     lineq = options_.get_str("LINEQ_SOLVER");
-    scs_type_ = options_.get_str("SCS_TYPE");
-    sos_type_ = options_.get_str("SOS_TYPE");
     dertype = options_.get_str("DERTYPE");
     pcg_beta_type_ = options_.get_str("PCG_BETA_TYPE");
     twopdm_abcd_type = options_.get_str("TPDM_ABCD_TYPE");
@@ -123,6 +120,12 @@ void OCCWave::common_init() {
         outfile->Printf(
             "\tSpin-scaling in OCC changed in 1.4. Psi variables use canonical scaling. You can supply custom values "
             "with OS_SCALE and SS_SCALE.\n\n");
+    }
+    if (options_["DO_SCS"].has_changed() || options_["DO_SOS"].has_changed() || options_["SCS_TYPE"].has_changed() ||
+        options_["SOS_TYPE"].has_changed()) {
+        outfile->Printf(
+            "\tSpin-scaling in OCC changed in 1.4. Leave options to the energy call. Just pass in the method name, "
+            "like scs-mp2.\n\n");
     }
 
     //   Given default orbital convergence, set the criteria by what should

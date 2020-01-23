@@ -372,12 +372,9 @@ class OCCWave : public Wavefunction {
     std::string opt_method;
     std::string hess_type;
     std::string occ_orb_energy;
-    std::string do_scs;          // Spin-Component-Scaling
-    std::string do_sos;          // Spin-Opposite-Scaling
     std::string write_mo_coeff;  // Write CmoA to CmoA.psi and CmoB to CmoB.psi
     std::string read_mo_coeff;   // Read CmoA from CmoA.psi and CmoB from CmoB.psi
-    std::string scs_type_;
-    std::string sos_type_;
+    std::string spin_scale_type_;
     std::string pcg_beta_type_;
     std::string compute_mp3l;      // Do compute mp3l energy during iterations?
     std::string compute_cepal;     // Do compute cepal energy during iterations?

@@ -1959,107 +1959,172 @@ def run_occ(name, **kwargs):
     a conventional integral (O)MPN computation
 
     """
+    # Stash these options so we can reload them at computation end.
     optstash = p4util.OptionsState(
-        ['OCC', 'SCS_TYPE'],
-        ['OCC', 'DO_SCS'],
-        ['OCC', 'SOS_TYPE'],
-        ['OCC', 'DO_SOS'],
+        ['OCC', 'SPIN_SCALE_TYPE'],
         ['OCC', 'ORB_OPT'],
         ['OCC', 'WFN_TYPE'])
 
     if name == 'mp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+    elif name == 'scs-mp2':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
+    elif name == 'scs(n)-mp2':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSN')
+    elif name == 'scs-mp2-vdw':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSVDW')
+    elif name == 'sos-mp2':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
+    elif name == 'sos-pi-mp2':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOSPI')
+    elif name == 'custom-scs-mp2':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+
     elif name == 'omp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
     elif name == 'scs-omp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
     elif name == 'scs(n)-omp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSN')
     elif name == 'scs-omp2-vdw':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSVDW')
     elif name == 'sos-omp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
     elif name == 'sos-pi-omp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOSPI')
+    elif name == 'custom-scs-omp2':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
     elif name == 'mp2.5':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+    elif name == 'custom-scs-mp2.5':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+
     elif name == 'omp2.5':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+    elif name == 'custom-scs-omp2.5':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
     elif name == 'mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+    elif name == 'scs-mp3':
+        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
+    elif name == 'scs(n)-mp3':
+        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSN')
+    elif name == 'scs-mp3-vdw':
+        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSVDW')
+    elif name == 'sos-mp3':
+        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
+    elif name == 'sos-pi-mp3':
+        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOSPI')
+    elif name == 'custom-scs-mp3':
+        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+
     elif name == 'omp3':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
     elif name == 'scs-omp3':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
     elif name == 'scs(n)-omp3':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSN')
     elif name == 'scs-omp3-vdw':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'TRUE')
-        core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSVDW')
     elif name == 'sos-omp3':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
     elif name == 'sos-pi-omp3':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SOS', 'TRUE')
-        core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOSPI')
+    elif name == 'custom-scs-omp3':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
     elif name == 'lccd':
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+    elif name == 'custom-scs-lccd':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+
     elif name == 'olccd':
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-        core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+    elif name == 'scs-olccd':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
+    elif name == 'sos-olccd':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
+    elif name == 'custom-scs-olccd':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+
     else:
         raise ValidationError("""Invalid method %s""" % name)
 
@@ -2130,8 +2195,7 @@ def run_occ_gradient(name, **kwargs):
     # locking out SCS through explicit keyword setting
     # * so that current energy must match call
     # * since grads not avail for scs
-    core.set_local_option('OCC', 'DO_SCS', 'FALSE')
-    core.set_local_option('OCC', 'DO_SOS', 'FALSE')
+    core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)

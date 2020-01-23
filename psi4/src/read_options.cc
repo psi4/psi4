@@ -2712,6 +2712,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("TPDM_ABCD_TYPE", "DIRECT", "DIRECT COMPUTE");
         /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
         options.add_str("CEPA_TYPE", "CEPA0", "CEPA0");
+        /*- Controls the spin scaling set to current energy. This is set by Psi internally. !expert -*/
+        options.add_str("SPIN_SCALE_TYPE", "NONE", "NONE CUSTOM SCS SCSN SCSVDW SOS SOSPI");
 
         /*- Do compute natural orbitals? -*/
         options.add_bool("NAT_ORBS", false);
@@ -2719,13 +2721,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("DO_LEVEL_SHIFT", true);
         /*- Do print OCC orbital energies? -*/
         options.add_bool("OCC_ORBS_PRINT", false);
-        /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed
-         automatically. However, in order to perform geometry optimizations and frequency computations with SCS-OMP2,
-         one needs to set 'DO_SCS' to true -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. Pass the method name, like scs-mp2, to energy instead. -*/
         options.add_bool("DO_SCS", false);
-        /*- Do perform spin-opposite-scaled OMP2 (SOS-OMP2)? In all computation, SOS-OMP2 energy is computed
-         automatically. However, in order to perform geometry optimizations and frequency computations with SOS-OMP2,
-         one needs to set 'DO_SOS' to true -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. Pass the method name, like scs-mp2, to energy instead. -*/
         options.add_bool("DO_SOS", false);
         /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
         options.add_bool("MO_WRITE", false);
