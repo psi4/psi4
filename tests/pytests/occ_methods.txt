@@ -1,0 +1,9 @@
+Candidate Structure for other method-tests
+
+_ref_module = {scftype: {ref: {frz: {mp2type: {} for mp2type in ['conv', 'df', 'cd']} for frz in ['true', 'false']} for ref in ['rhf', 'uhf']} for scftype in ['pk', 'df']}
+
+* The above will work for mp2, mp2.5, mp3, cepa, and the orbital-optimized variants thereof. MP2 has ROHF, but that's special.
+* The dct module can also supply non-FC, conventional integral cepa.
+* At present, occ has no frozen core energies for orbital optimized methods or frozen core gradients for anything. dfocc does. Jonathon will be changing this in a future
+  project, as well as adding some frozen virtual. ETA is Spring 2021, because that depends on the Gradient Rewrite.
+* dfocc has all DF gradients and CD energies for all options.

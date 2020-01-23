@@ -36,6 +36,7 @@ list(APPEND sources
   omp3_response_pdms.cc
   omp3_t2_1st_general.cc
   omp3_t2_1st_sc.cc
+  postprocessing.cc
   semi_canonic.cc
   t1_1st.cc
   t2_2nd_general.cc
