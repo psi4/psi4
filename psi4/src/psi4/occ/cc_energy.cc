@@ -138,13 +138,6 @@ void OCCWave::mp2_energy(bool include_singles) {
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
 
-        Escsmp2AB = 1.2 * Emp2AB;
-        Esosmp2AB =
-            Emp2AB * (mo_optimized ? 1.2 : 1.3);  // OMP2 has a special "canonical" opposite spin scaling factor.
-        Escsmimp2AB = 0.40 * Emp2AB;
-        Escsmp2vdwAB = 1.28 * Emp2AB;
-        Esospimp2AB = 1.40 * Emp2AB;
-
     }  // end rhf
 
     else if (reference_ == "UNRESTRICTED") {
@@ -174,13 +167,6 @@ void OCCWave::mp2_energy(bool include_singles) {
         Emp2AB = global_dpd_->buf4_dot(&T, &K);
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&K);
-
-        Escsmp2AB = 1.2 * Emp2AB;
-        Esosmp2AB =
-            Emp2AB * (mo_optimized ? 1.2 : 1.3);  // OMP2 has a special "canonical" opposite spin scaling factor.
-        Escsmimp2AB = 0.40 * Emp2AB;
-        Escsmp2vdwAB = 1.28 * Emp2AB;
-        Esospimp2AB = 1.40 * Emp2AB;
 
         // Beta-Beta spin contribution
         std::string t_beta = "T" + temp + " <oo|vv>";
@@ -219,6 +205,17 @@ void OCCWave::mp2_energy(bool include_singles) {
         }  // end if (reference == "ROHF")
 
     }  // end uhf
+
+    Escsmp2AB = 1.2 * Emp2AB;
+    // OMP2 has a special "canonical" opposite spin scaling factor 10.1063/1.2718952.
+    // U.B. decided that spin-scaling in OMP3 should be defined as SOS-OMP2 spin-scaling plus an additional
+    // scaling to the MP3 contribution, following Grimme's conventional MP3 work 10.1002/jcc.10320.
+    // However, SOS-OMP3's intermediate SOS-OMP2 does NOT use the special opposite spin factor from the
+    // first paper. Why did U.B. define it that way? No idea!
+    Esosmp2AB = Emp2AB * ((mo_optimized && wfn_type_ == "OMP2") ? 1.2 : 1.3);
+    Escsmimp2AB = 0.40 * Emp2AB;
+    Escsmp2vdwAB = 1.28 * Emp2AB;
+    Esospimp2AB = 1.40 * Emp2AB;
 
     Ecorr = Emp2AA + Emp2AB + Emp2BB + Emp2_t1;
     Emp2 = Eref + Ecorr;

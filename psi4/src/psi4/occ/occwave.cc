@@ -117,7 +117,7 @@ void OCCWave::common_init() {
             "\t'Level shifting' was removed from OCC in 1.4. Contact a developer for more information.\n\n");
     }
     if (options_["MP2_SOS_SCALE"].has_changed() || options_["MP2_SOS_SCALE2"].has_changed() ||
-        options_["CEPA_SOS_SCALE"] || options_["MP2_OS_SCALE"].has_changed() ||
+        options_["CEPA_SOS_SCALE"].has_changed() || options_["MP2_OS_SCALE"].has_changed() ||
         options_["CEPA_OS_SCALE"].has_changed() || options_["MP2_SS_SCALE"].has_changed() ||
         options_["CEPA_SS_SCALE"].has_changed()) {
         outfile->Printf(
