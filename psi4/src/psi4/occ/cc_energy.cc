@@ -211,7 +211,7 @@ void OCCWave::mp2_energy(bool include_singles) {
     // U.B. decided that spin-scaling in OMP3 should be defined as SOS-OMP2 spin-scaling plus an additional
     // scaling to the MP3 contribution, following Grimme's conventional MP3 work 10.1002/jcc.10320.
     // However, SOS-OMP3's intermediate SOS-OMP2 does NOT use the special opposite spin factor from the
-    // first paper. Why did U.B. define it that way? No idea!
+    // first paper. (10.1021/ct301078q) Why did U.B. define it that way? No idea!
     Esosmp2AB = Emp2AB * ((mo_optimized && wfn_type_ == "OMP2") ? 1.2 : 1.3);
     Escsmimp2AB = 0.40 * Emp2AB;
     Escsmp2vdwAB = 1.28 * Emp2AB;
