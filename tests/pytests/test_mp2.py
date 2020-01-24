@@ -39,11 +39,11 @@ for mp2type in ['df', 'conv']:
 
 @pytest.mark.parametrize("inp", [
     pytest.param({'name': 'Mp2', 'custom': 'SCS-MP2', 'options': {'mp2_type': 'df'}}, id='mp2 (df)'),
-    pytest.param({'name': 'Mp2', 'custom': 'SCS-MP2', 'options': {'mp2_type': 'conv'}}, id='mp2 (conv)'),
+    pytest.param({'name': 'Mp2', 'custom': 'MP2', 'options': {'mp2_type': 'conv'}}, id='mp2 (conv)'),
     pytest.param({'name': 'Mp2', 'custom': 'SCS-MP2', 'options': {'mp2_type': 'df', 'mp2_os_scale': 1.2, 'mp2_ss_scale': 0.33333333}}, id='explicit scs mp2 (df)'),
-    pytest.param({'name': 'Mp2', 'custom': 'SCS-MP2', 'options': {'mp2_type': 'conv', 'mp2_os_scale': 1.2, 'mp2_ss_scale': 0.33333333}}, id='explicit scs mp2 (conv)'),
+    pytest.param({'name': 'Mp2', 'custom': 'SCS-MP2', 'options': {'mp2_type': 'conv', 'os_scale': 1.2, 'ss_scale': 0.33333333}}, id='explicit scs mp2 (conv)'),
     pytest.param({'name': 'Mp2', 'custom': '5050SCS-MP2', 'options': {'mp2_type': 'df', 'mp2_os_scale': 0.5, 'mp2_ss_scale': 0.5}}, id='user-def scs mp2 (df)'),
-    pytest.param({'name': 'Mp2', 'custom': '5050SCS-MP2', 'options': {'mp2_type': 'conv', 'mp2_os_scale': 0.5, 'mp2_ss_scale': 0.5}}, id='user-def scs mp2 (conv)'),
+    pytest.param({'name': 'Mp2', 'custom': '5050SCS-MP2', 'options': {'mp2_type': 'conv', 'os_scale': 0.5, 'ss_scale': 0.5}}, id='user-def scs mp2 (conv)'),
 ])  # yapf: disable
 def test_scsmp2(inp):
     """Formerly known as dfmp2-4"""
