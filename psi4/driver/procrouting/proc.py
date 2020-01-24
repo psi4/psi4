@@ -2042,31 +2042,31 @@ def run_occ(name, **kwargs):
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
     elif name == 'mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
     elif name == 'scs-mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
     elif name == 'scs(n)-mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSN')
     elif name == 'scs-mp3-vdw':
-        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSVDW')
     elif name == 'sos-mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
     elif name == 'sos-pi-mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOSPI')
     elif name == 'custom-scs-mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'MP3')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
