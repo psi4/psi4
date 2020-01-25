@@ -45,7 +45,7 @@ parser.add_argument("-o", "--output", help="""\
 Redirect output elsewhere.
 Default: when input filename is 'input.dat', 'output.dat'.
 Otherwise, output filename defaults to input filename with
-any '.in' or 'dat' extension replaced by '.out'""")
+'.out' extension""")
 parser.add_argument("-a", "--append", action='store_true',
                     help="Appends results to output file. Default: Truncate first")
 parser.add_argument("-V", "--version", action='store_true',
@@ -142,12 +142,10 @@ if len(unknown) > 2:
 if (args["output"] is None) and (args["qcschema"] is False):
     if args["input"] == "input.dat":
         args["output"] = "output.dat"
-    elif args["input"].endswith(".in"):
-        args["output"] = args["input"][:-2] + "out"
-    elif args["input"].endswith(".dat"):
-        args["output"] = args["input"][:-3] + "out"
     else:
-        args["output"] = args["input"] + ".dat"
+        pinput = Path(args["input"])
+        presuffix = pinput.suffix if pinput.suffix in [".out", ".log"] else ""
+        args["output"] = str(pinput.with_suffix(presuffix + ".out"))
 
 # Plugin compile line
 if args['plugin_compile']:
@@ -155,8 +153,7 @@ if args['plugin_compile']:
 
     plugincachealongside = os.path.isfile(share_cmake_dir + os.path.sep + 'psi4PluginCache.cmake')
     if plugincachealongside:
-        print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(
-            share_cmake_dir, cmake_install_prefix))
+        print(f"""cmake -C {share_cmake_dir}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={cmake_install_prefix} .""")
         sys.exit()
     else:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
@@ -230,7 +227,7 @@ _clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
 if args["append"] is None:
     args["append"] = False
 if (args["output"] != "stdout") and (args["qcschema"] is False):
-    psi4.core.set_output_file(args["output"], args["append"])
+    psi4.set_output_file(args["output"], args["append"])
 
 # Set a few options
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)

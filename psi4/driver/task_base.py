@@ -146,7 +146,6 @@ class AtomicComputer(BaseComputer):
 
         #print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
         logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
-        #pp.pprint(self.plan().dict())
         gof = core.get_output_file()
 
         # EITHER ...
@@ -165,10 +164,12 @@ class AtomicComputer(BaseComputer):
         )
         # ... END
 
-        logger.debug(pp.pformat(self.result.dict()))
         #pp.pprint(self.result.dict())
         #print("... JSON returns >>>")
         core.set_output_file(gof, True)
+        core.reopen_outfile()
+        logger.debug(pp.pformat(self.result.dict()))
+        core.print_out(_drink_filter(self.result.dict()["stdout"]))
         self.computed = True
 
     def get_results(self, client=None):
@@ -186,3 +187,11 @@ class AtomicComputer(BaseComputer):
 
     def get_json_results(self):
         return self.result
+
+
+def _drink_filter(stdout: str) -> str:
+    """Don't mess up the widespread ``grep beer`` test of Psi4 doneness by printing multiple drinks per outfile."""
+
+    stdout = stdout.replace("\n*** Psi4 exiting successfully. Buy a developer a beer!", "")
+    stdout = stdout.replace("\n*** Psi4 encountered an error. Buy a developer more coffee!", "")
+    return stdout

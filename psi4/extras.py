@@ -30,6 +30,7 @@ import atexit
 import datetime
 import os
 from typing import List, Union
+from pathlib import Path
 
 from qcelemental.util import which, which_import
 
@@ -216,3 +217,48 @@ def test(extent: str = "full", extras: List = None) -> int:
     retcode = pytest.main(command)
     return retcode
 
+
+def set_output_file(ofile: str, append: bool = False, *, execute: bool = True) -> str:
+    """Set the name for output and logging files.
+
+    Parameters
+    ----------
+    ofile : str
+        Name of ASCII output file including extension. The logging file is set from this string with a ``.log`` extension.
+    append : bool, optional
+        Do append to the output and logging files rather than (the default) truncating them?
+
+    Returns
+    -------
+    Path
+        ``Path(ofile)``
+
+    Notes
+    -----
+    This ``psi4.set_output_file`` command calls and should be used it preference to ``psi4.core.set_output_file``
+    as this additionally sets up logging.
+
+    """
+    out = Path(ofile)
+    log = out.with_suffix('.log')
+
+    # Get the custom logger
+    import logging
+    from psi4 import logger
+
+    # Create formatters
+    # * detailed:  example: 2019-11-20:01:13:46,811 DEBUG    [psi4.driver.task_base:156]
+    # f_format = logging.Formatter('%(asctime)s,%(msecs)d %(levelname)-8s [%(name)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
+    # * light:     example: 2019-11-20:10:45:21 FINDIFREC CLASS INIT DATA
+    f_format = logging.Formatter('%(asctime)s %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
+
+    # Create handlers, add formatters to handlers, and add handlers to logger (StreamHandler() also available)
+    filemode = 'a' if append else 'w'
+    f_handler = logging.FileHandler(log, filemode)
+    f_handler.setLevel(logging.DEBUG)
+    f_handler.setFormatter(f_format)
+
+    if execute:
+        core.set_output_file(str(out), append)
+        logger.addHandler(f_handler)
+    return out

@@ -26,7 +26,6 @@
 # @END LICENSE
 #
 
-
 # Figure out psidatadir: envvar trumps staged/installed
 import os
 psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
@@ -48,12 +47,12 @@ elif "CMAKE_INSTALL_DATADIR" in data_dir:
 data_dir = os.path.abspath(data_dir)
 if not os.path.isdir(data_dir):
     raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
-                    "      Current value of PSIDATADIR is %s" % data_dir)
+                   "      Current value of PSIDATADIR is %s" % data_dir)
 
 # Init core
 from . import core
 
-from psi4.core import set_output_file, get_num_threads, set_num_threads
+from psi4.core import get_num_threads, set_num_threads
 core.initialize()
 
 if "PSI_SCRATCH" in os.environ.keys():
@@ -84,7 +83,7 @@ from .header import print_header
 from .metadata import __version__, version_formatter
 
 # A few extraneous functions
-from .extras import get_input_directory, addons, test
+from .extras import get_input_directory, addons, test, set_output_file
 from psi4.core import get_variable  # kill off in 1.4
 from psi4.core import variable, set_variable
 
@@ -99,27 +98,6 @@ if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
     sys.path.insert(1, "@pylibefp_PYMOD@")
 
-
 # Create a custom logger
 import logging
 logger = logging.getLogger(__name__)
-
-# Create handlers
-#c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('file.log')
-#c_handler.setLevel(logging.WARNING)
-f_handler.setLevel(logging.DEBUG)
-
-# Create formatters and add it to handlers
-# * detailed
-# example: 2019-11-20:01:13:46,811 DEBUG    [psi4.driver.task_base:156]
-# f_format = logging.Formatter('%(asctime)s,%(msecs)d %(levelname)-8s [%(name)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
-# * light
-# example: 2019-11-20:10:45:21 FINDIFREC CLASS INIT DATA
-f_format = logging.Formatter('%(asctime)s %(message)s', datefmt='%Y-%m-%d:%H:%M:%S')
-#c_handler.setFormatter(c_format)
-f_handler.setFormatter(f_format)
-
-# Add handlers to the logger
-#logger.addHandler(c_handler)
-logger.addHandler(f_handler)
