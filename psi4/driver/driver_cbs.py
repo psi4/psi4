@@ -1194,6 +1194,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
 def _build_cbs_compute(metameta, metadata):
     label = metameta['label']
     ptype = metameta['ptype']
+    verbose = metameta['verbose']
 
     # Build string of title banner
     instructions = "\n" + p4util.banner(f" CBS Setup{':' + label if label else ''} ", strNotOutfile=True) + "\n"
@@ -1297,8 +1298,9 @@ def _build_cbs_compute(metameta, metadata):
     for mc in TROVE:
         instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
                                        VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
-    core.print_out(instructions)
-    logger.info(instructions)
+    if verbose:
+        core.print_out(instructions)
+        logger.info(instructions)
 
     return GRAND_NEED, JOBS, TROVE
 
@@ -1450,7 +1452,7 @@ class CompositeComputer(BaseComputer):
     metameta: Dict[str, Any] = {}
 
     return_wfn: bool = False
-    verbose: int = 0
+    verbose: int = 1
 
     # List of model chemistries with extrapolation scheme applied. Can reconstruct CBS. Keys are d_fields. Formerly GRAND_NEED.
     cbsrec: List[Dict[str, Any]] = []

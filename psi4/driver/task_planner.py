@@ -164,7 +164,7 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
                 # This CompositeComputer is discarded after being used for dermode.
                 simplekwargs = copy.deepcopy(kwargs)
                 simplekwargs.pop('dertype', None)
-                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule, **simplekwargs)
+                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule, **simplekwargs, verbose=0)
 
                 methods = [sr.method for sr in dummyplan.task_list]
                 # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df
@@ -245,5 +245,4 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
             return FiniteDifferenceComputer(**packet,
                                             findif_mode=dermode,
                                             **current_findif_kwargs,
-                                            **kwargs,
-                                            logging='file.log')
+                                            **kwargs)

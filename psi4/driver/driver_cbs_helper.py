@@ -592,22 +592,16 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=1, al
 
     if isinstance(valueLO, float):
         value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
-        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
+        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))  # lgtm[py/unused-local-variable]
 
         final = value
         if verbose:
             # Output string with extrapolation parameters
-            cbsscheme = """\n\n   ==> Helgaker 2-point correlated extrapolation for method: %s <==\n\n""" % (
-                functionname.upper())
-            #            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.12f\n""" % (str(zHI), valueSCF)
+            cbsscheme = f"""\n\n   ==> Helgaker 2-point correlated extrapolation for method: {functionname.upper()} <==\n\n"""
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % alpha
             cbsscheme += """   Extrapolated Energy:              % 16.12f\n\n""" % value
-            #cbsscheme += """   LO-zeta (%s) Correlation Energy:   % 16.12f\n""" % (str(zLO), valueLO)
-            #cbsscheme += """   HI-zeta (%s) Correlation Energy:   % 16.12f\n""" % (str(zHI), valueHI)
-            #cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n""" % beta
-            #cbsscheme += """   Extrapolated Correlation Energy:  % 16.12f\n\n""" % value
 
             name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
             cbsscheme += """   @Extrapolated """
@@ -620,7 +614,6 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=1, al
         return final
 
     elif isinstance(valueLO, np.ndarray):
-        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
         value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
 
         if verbose > 2:
@@ -629,8 +622,6 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=1, al
             cbsscheme += nppp(valueLO)
             cbsscheme += f"""\n   HI-zeta ({zHI}) Data\n"""
             cbsscheme += nppp(valueHI)
-            cbsscheme += f"""\n   Beta Data\n"""
-            cbsscheme += nppp(beta)
             cbsscheme += f"""\n   Extrapolated Data\n"""
             cbsscheme += nppp(value)
             core.print_out(cbsscheme)

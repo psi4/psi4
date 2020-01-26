@@ -36,7 +36,7 @@ import pydantic
 from qcelemental.models import DriverEnum, AtomicResult
 
 from psi4 import core
-from psi4.driver import p4util, pp, qcdb
+from psi4.driver import p4util, pp, qcdb, nppp10
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.task_base import AtomicComputer, BaseComputer
 
@@ -47,8 +47,6 @@ logger.setLevel(logging.DEBUG)
 # n_ at the start of a variable name is short for "number of."
 # _pi at the end of a variable name is short for "per irrep."
 # h is the index of an irrep.
-
-array_format = {"precision": 10}
 
 
 def _displace_cart(mass, geom, salc_list, i_m, step_size):
@@ -94,7 +92,7 @@ def _displace_cart(mass, geom, salc_list, i_m, step_size):
     return disp_geom, label
 
 
-def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, t_project, r_project, verbose=0):
+def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, t_project, r_project, initialize, verbose=0):
     """Perform initialization tasks needed by all primary functions.
 
     Parameters
@@ -111,11 +109,12 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
         Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
     step_size : float
         [a0]
-
     initialize_string : function
          A function that returns the string to print to show the caller was entered.
          The string is both caller-specific and dependent on values determined
          in this function.
+    initialize : bool
+        For printing, whether call is from generator or assembly stages.
     verbose : int
          Set to 0 to silence extra print information, regardless of the print level.
          Used so the information is printed only during geometry generation, and not
@@ -127,18 +126,25 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
         Miscellaneous information required by callers.
     """
 
-    logger.info("""
+    info = """
          ----------------------------------------------------------
                                    FINDIF
                      R. A. King and Jonathon Misiewicz
-         ---------------------------------------------------------""")
+         ----------------------------------------------------------
+
+"""
+    if initialize:
+        core.print_out(info)
+        logger.info(info)
 
     print_lvl = core.get_option("FINDIF", "PRINT")
 
     data = {"print_lvl": print_lvl, "stencil_size": stencil_size, "step_size": step_size}
 
     if print_lvl:
-        logger.info(initialize_string(data))
+        info = initialize_string(data)
+        core.print_out(info)
+        logger.info(info)
 
     # Get settings for CdSalcList, then get the CdSalcList.
     method_allowed_irreps = 0x1 if mode == "1_0" else 0xFF
@@ -150,12 +156,14 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
     n_salc = salc_list.ncd()
 
     if print_lvl and verbose:
-        logger.info(f"Number of atoms is {n_atom}.")
+        info = f"    Number of atoms is {n_atom}.\n"
         if method_allowed_irreps != 0x1:
-            logger.info(f"Number of irreps is {n_irrep}.")
-        logger.info("Number of {!s}SALCs is {:d}.".format(
-            "" if method_allowed_irreps != 0x1 else "symmetric ", n_salc))
-        logger.info(f"Translations projected? {t_project:d}. Rotations projected? {r_project:d}.")
+            info += f"    Number of irreps is {n_irrep}.\n"
+        info += "    Number of {!s}SALCs is {:d}.\n".format(
+            "" if method_allowed_irreps != 0x1 else "symmetric ", n_salc)
+        info += f"    Translations projected? {t_project:d}. Rotations projected? {r_project:d}.\n"
+        core.print_out(info)
+        logger.info(info)
 
     # TODO: Replace with a generator from a stencil to a set of points.
     # Diagonal displacements differ between the totally symmetric irrep, compared to all others.
@@ -196,15 +204,17 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
 
     # If the method allows more than one irrep, print how the irreps partition the SALCS.
     if print_lvl and method_allowed_irreps != 0x1 and verbose:
-        logger.info("Index of SALCs per irrep:")
+        info = "    Index of SALCs per irrep:\n"
         for h in range(n_irrep):
             if print_lvl > 1 or freq_irrep_only in {h, -1}:
                 tmp = (" {:d} " * len(salc_indices_pi[h])).format(*salc_indices_pi[h])
-                logger.info("     {:d} : ".format(h + 1) + tmp + "")
-        logger.info("Number of SALCs per irrep:")
+                info += "      {:d} : ".format(h + 1) + tmp + "\n"
+        info += "    Number of SALCs per irrep:\n"
         for h in range(n_irrep):
             if print_lvl > 1 or freq_irrep_only in {h, -1}:
-                logger.info("     Irrep {:d}: {:d}".format(h + 1, len(salc_indices_pi[h])))
+                info += "      Irrep {:d}: {:d}\n".format(h + 1, len(salc_indices_pi[h]))
+        core.print_out(info)
+        logger.info(info)
 
     # Now that we've printed the SALCs, clear any that are not of user-specified symmetry.
     if freq_irrep_only != -1:
@@ -223,11 +233,13 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
 
     # Let's print out the number of geometries, the displacement multiplicity, and the CdSALCs!
     if print_lvl and verbose:
-        logger.info(f"Number of geometries (including reference) is {sum(n_disp_pi) + 1}.")
+        info = f"    Number of geometries (including reference) is {sum(n_disp_pi) + 1}.\n"
         if method_allowed_irreps != 0x1:
-            logger.info("Number of displacements per irrep:")
+            info += "    Number of displacements per irrep:\n"
             for i, ndisp in enumerate(n_disp_pi, start=1):
-                logger.info(f"      Irrep {i}: {ndisp}")
+                info += f"      Irrep {i}: {ndisp}\n"
+        core.print_out(info)
+        logger.info(info)
 
     if print_lvl > 1 and verbose:
         for i in range(len(salc_list)):
@@ -365,7 +377,7 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=Tru
     if isinstance(mol, qcdb.Molecule):
         mol = core.Molecule.from_dict(mol.to_dict())
 
-    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, r_project, 1)
+    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, r_project, True, 1)
 
     # We can finally start generating displacements.
     ref_geom = np.array(mol.geometry())
@@ -392,7 +404,9 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=Tru
         disp_geom, label = _displace_cart(findifrec['molecule']['masses'], ref_geom, data["salc_list"],
                                           zip(indices, steps), data["step_size"])
         if data["print_lvl"] > 2:
-            logger.info("\nDisplacement '{}'\n{}\n".format(label, np.array_str(disp_geom, **array_format)))
+            info = "\nDisplacement '{}'\n{}\n".format(label, nppp10(disp_geom))
+            core.print_out(info)
+            logger.info(info)
         findifrec["displacements"][label] = {"geometry": disp_geom}
 
     for h in range(data["n_irrep"]):
@@ -413,7 +427,7 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=Tru
                         append_geoms((index, index2), val)
 
     if data["print_lvl"] > 2:
-        logger.info("\nReference\n{}\n".format(np.array_str(ref_geom, **array_format)))
+        logger.info("\nReference\n{}\n".format(nppp10(ref_geom)))
     findifrec["reference"]["geometry"] = ref_geom
 
     if data["print_lvl"] > 1:
@@ -444,10 +458,10 @@ def assemble_gradient_from_energies(findifrec: Dict):
     Using {findifrec["stencil_size"]}-point formula.
     Energy without displacement: {findifrec["reference"]["energy"]:15.10f}
     Check energies below for precision!
-    Forces are for mass-weighted, symmetry-adapted cartesians [a0]."""
+    Forces are for mass-weighted, symmetry-adapted cartesians [a0].\n"""
 
     data = _initialize_findif(mol, -1, "1_0", findifrec['stencil_size'], findifrec['step']['size'], init_string,
-                              findifrec['project_translations'], findifrec['project_rotations'])
+                              findifrec['project_translations'], findifrec['project_rotations'], False)
     salc_indices = data["salc_indices_pi"][0]
 
     # Extract the energies, and turn then into an ndarray for easy manipulating
@@ -475,11 +489,13 @@ def assemble_gradient_from_energies(findifrec: Dict):
         energy_string = ""
         for i in range(1, max_disp + 1):
             energy_string = f"Energy(-{i})        " + energy_string + f"Energy(+{i})        "
-        logger.info("\n     Coord      " + energy_string + "    Force")
+        info = "\n     Coord      " + energy_string + "    Force"
         for salc in range(data["n_salc"]):
-            print_str = "    {:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}"
+            print_str = "\n    {:5d}" + " {:17.10f}" * (e_per_salc) + " {force:17.10f}"
             energies = E[salc]
-            logger.info(print_str.format(salc, force=g_q[salc], *energies))
+            info += print_str.format(salc, force=g_q[salc], *energies)
+        core.print_out(info)
+        logger.info(info)
 
     # Transform the gradient from mass-weighted SALCs to non-mass-weighted Cartesians
     B = data["salc_list"].matrix()
@@ -489,7 +505,9 @@ def assemble_gradient_from_energies(findifrec: Dict):
     g_cart = (g_cart.T * massweighter).T
 
     if data["print_lvl"]:
-        logger.info("\n-------------------------------------------------------------\n")
+        info = "\n         -------------------------------------------------------------\n"
+        core.print_out(info)
+        logger.info(info)
 
     return g_cart
 
@@ -526,7 +544,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     if print_lvl >= 3:
         core.print_out(f"Force Constants for irrep {irrep} in mass-weighted, symmetry-adapted Cartesian coordinates.")
-        core.print_out("\n{}\n".format(np.array_str(H_block, **array_format)))
+        core.print_out("\n{}\n".format(nppp10(H_block)))
 
     evals, evects = np.linalg.eigh(H_block)
     # Get our eigenvalues and eigenvectors in descending order.
@@ -538,7 +556,7 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
 
     if print_lvl >= 2:
         core.print_out("\n    Normal coordinates (non-mass-weighted) for irrep {}:\n".format(irrep))
-        core.print_out("\n{}\n".format(np.array_str(normal_irr, **array_format)))
+        core.print_out("\n{}\n".format(nppp10(normal_irr)))
 
     return H_block
 
@@ -573,7 +591,7 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
 
     if print_lvl >= 3:
         core.print_out("\n    Force constant matrix for all computed irreps in mass-weighted SALCS.\n")
-        core.print_out("\n{}\n".format(np.array_str(H, **array_format)))
+        core.print_out("\n{}\n".format(nppp10(H)))
 
     # Transform the massweighted Hessian from the CdSalc basis to Cartesians.
     # The Hessian is the matrix not of a linear transformation, but of a (symmetric) bilinear form
@@ -582,14 +600,14 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     Hx = np.dot(np.dot(B.T, H), B)
     if print_lvl >= 3:
         core.print_out("\n    Force constants in mass-weighted Cartesian coordinates.\n")
-        core.print_out("\n{}\n".format(np.array_str(Hx, **array_format)))
+        core.print_out("\n{}\n".format(nppp10(Hx)))
 
     # Un-massweight the Hessian.
     Hx = np.transpose(Hx / massweighter) / massweighter
 
     if print_lvl >= 3:
         core.print_out("\n    Force constants in Cartesian coordinates.\n")
-        core.print_out("\n{}\n".format(np.array_str(Hx, **array_format)))
+        core.print_out("\n{}\n".format(nppp10(Hx)))
 
     if print_lvl:
         core.print_out("\n-------------------------------------------------------------\n")
@@ -625,7 +643,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
                 "  {:d} gradients passed in, including the reference geometry.\n".format(len(displacements) + 1))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_1", findifrec['stencil_size'], findifrec['step']['size'],
-                              init_string, findifrec['project_translations'], findifrec['project_rotations'])
+                              init_string, findifrec['project_translations'], findifrec['project_rotations'], False)
 
     # For non-totally symmetric CdSALCs, a symmetry operation can convert + and - displacements.
     # Good News: By taking advantage of that, we (potentially) ran less computations.
@@ -665,7 +683,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
     if data["print_lvl"] >= 3:
         core.print_out("    Symmetric gradients\n")
         for gradient in gradients_pi[0]:
-            core.print_out("\n{}\n".format(np.array_str(gradient, **array_format)))
+            core.print_out("\n{}\n".format(nppp10(gradient)))
 
     # Asymmetric gradient. There's always SOME operation that transforms a positive
     # into a negative displacement.By doing extra things here, we can find the
@@ -723,7 +741,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
         core.print_out("    All mass-weighted gradients\n")
         for gradients in gradients_pi:
             for grad in gradients:
-                core.print_out("\n{}\n".format(np.array_str(grad, **array_format)))
+                core.print_out("\n{}\n".format(nppp10(grad)))
 
     # We have all our gradients generated now!
     # Next, time to get our Hessian.
@@ -807,7 +825,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
                     len(displacements) + 1, findifrec["stencil_size"], ref_energy, out_str))
 
     data = _initialize_findif(mol, freq_irrep_only, "2_0", findifrec['stencil_size'], findifrec['step']['size'],
-                              init_string, findifrec['project_translations'], findifrec['project_rotations'])
+                              init_string, findifrec['project_translations'], findifrec['project_rotations'], False)
 
     massweighter = np.repeat([mol.mass(a) for a in range(data["n_atom"])], 3)**(-0.5)
     B_pi = []
@@ -909,8 +927,7 @@ class FiniteDifferenceComputer(BaseComputer):
 
         BaseComputer.__init__(self, **data)
 
-        logger.debug('FINDIFREC CLASS INIT DATA')
-        logger.debug(pp.pformat(data))
+        # logger.debug('FINDIFREC CLASS INIT DATA\n' + pp.pformat(data))
 
         translations_projection_sound = (not 'embedding_charges' in data['keywords']['function_kwargs'] and
                                          not core.get_option('SCF', 'PERTURB_H') and
@@ -967,14 +984,13 @@ class FiniteDifferenceComputer(BaseComputer):
                                                               t_project=translations_projection_sound,
                                                               r_project=r_project_hess)
 
-        logger.debug('FINDIFREC CLASS META DATA')
-        logger.debug(pp.pformat(self.metameta))
-
-        logger.debug('FINDIFREC CLASS')
-        logger.debug(pp.pformat(self.findifrec))
+        # logger.debug('FINDIFREC CLASS META DATA\n' + pp.pformat(self.metameta))
+        # logger.debug('FINDIFREC CLASS\n' + pp.pformat(self.findifrec))
 
         ndisp = len(self.findifrec["displacements"]) + 1
-        logger.info(f""" {ndisp} displacements needed ...""")
+        info = f""" {ndisp} displacements needed ...\n"""
+        core.print_out(info)
+        logger.debug(info)
 
         # var_dict = core.variables()
         packet = {
@@ -1032,6 +1048,10 @@ class FiniteDifferenceComputer(BaseComputer):
         return [t.plan() for t in self.task_list.values()]
 
     def compute(self, client=None):
+        instructions = "\n" + p4util.banner(f" FiniteDifference Computations", strNotOutfile=True) + "\n"
+        logger.debug(instructions)
+        core.print_out(instructions)
+
         with p4util.hold_options_state():
             for k, t in self.task_list.items():
                 t.compute(client=client)
@@ -1112,10 +1132,12 @@ class FiniteDifferenceComputer(BaseComputer):
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0
 
-        logger.debug('\nFINDIF_RESULTS POST-LOAD')
-        logger.debug(pp.pformat(self.findifrec))
+        # logger.debug('\nFINDIF_RESULTS POST-LOAD\n' + pp.pformat(self.findifrec))
 
     def get_results(self, client=None):
+        instructions = "\n" + p4util.banner(f" FiniteDifference Results", strNotOutfile=True) + "\n"
+        core.print_out(instructions)
+
         self._prepare_results(client=client)  # assembled_results
 
         # load QCVariables
@@ -1157,8 +1179,7 @@ class FiniteDifferenceComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nFINDIF QCSchema:')
-        logger.debug(pp.pformat(findifjob))
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findifjob))
 
         return findifjob
 
