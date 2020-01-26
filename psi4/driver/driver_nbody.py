@@ -151,8 +151,8 @@ def _sum_cluster_ptype_data(ptype,
 
 
 def _print_nbody_energy(energy_body_dict, header, embedding=False):
-    core.print_out("""\n   ==> N-Body: %s energies <==\n\n""" % header)
-    core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
+    info = f"""\n   ==> N-Body: {header} energies <==\n\n"""
+    info += """   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n"""
     previous_e = energy_body_dict[1]
     if previous_e == 0.0:
         tot_e = False
@@ -166,13 +166,14 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
         int_e_kcal = (
             energy_body_dict[n] - energy_body_dict[1]) * constants.hartree2kcalmol if not embedding else np.nan
         if tot_e:
-            core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal,
-                                                                       delta_e_kcal))
+            info += """     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal,
+                                                                       delta_e_kcal)
         else:
-            core.print_out("""     %4s  %20s  %20.12f  %20.12f\n""" % (n, "N/A", int_e_kcal,
-                                                                       delta_e_kcal))
+            info += """     %4s  %20s  %20.12f  %20.12f\n""" % (n, "N/A", int_e_kcal, delta_e_kcal)
         previous_e = energy_body_dict[n]
-    core.print_out("\n")
+    info += "\n"
+    core.print_out(info)
+    logger.debug(info)
 
 
     """
@@ -354,7 +355,9 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         compute_list[nb] |= cp_compute_list[nb]
         compute_list[nb] |= nocp_compute_list[nb]
         compute_list[nb] |= vmfc_compute_list[nb]
-        core.print_out("        Number of %d-body computations:     %d\n" % (nb, len(compute_list[nb])))
+        info = f"        Number of {nb}-body computations:     {len(compute_list[nb])}"
+        core.print_out(info)
+        logger.debug(info)
 
     compute_dict = {
         'all': compute_list,
@@ -771,6 +774,10 @@ class ManyBodyComputer(BaseComputer):
             if self.embedding_charges:
                 raise Exception('Cannot return interaction data when using embedding scheme.')
 
+        info = "\n" + p4util.banner(f" ManyBody Setup ", strNotOutfile=True) + "\n"
+        core.print_out(info)
+        logger.debug(info)
+
     @pydantic.validator('molecule')
     def set_molecule(cls, mol):
         mol.update_geometry()
@@ -817,7 +824,9 @@ class ManyBodyComputer(BaseComputer):
             data = template
             data["molecule"] = self.molecule
             self.task_list[str(level) + '_' + str(self.max_frag)] = obj(**data)
-            logger.debug(str(level) + ', ' + str(self.max_frag))
+            info = str(level) + ', ' + str(self.max_frag)
+            core.print_out(info)
+            logger.debug(info)
             compute_dict = build_nbody_compute_list(self.bsse_type, [i for i in range(1, self.max_nbody + 1)],
                                                     self.max_frag)
         else:
@@ -855,6 +864,10 @@ class ManyBodyComputer(BaseComputer):
         return [t.plan() for t in self.task_list.values()]
 
     def compute(self, client=None):
+        info = "\n" + p4util.banner(f" ManyBody Computations ", strNotOutfile=True) + "\n"
+        core.print_out(info)
+        logger.info(info)
+
         with p4util.hold_options_state():
             for k, t in self.task_list.items():
                 t.compute(client)
@@ -902,6 +915,10 @@ class ManyBodyComputer(BaseComputer):
 
     def get_results(self, client=None):
         """Return nbody results as nbody-flavored QCSchema."""
+
+        info = "\n" + p4util.banner(f" ManyBody Results ", strNotOutfile=True) + "\n"
+        core.print_out(info)
+        logger.info(info)
 
         results = self.prepare_results(client=client)
         ret_energy, ret_ptype, ret_gradient = results.pop('ret_energy'), results.pop('ret_ptype'), results.pop(
