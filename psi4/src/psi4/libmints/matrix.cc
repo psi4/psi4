@@ -2413,10 +2413,10 @@ void Matrix::expm(int m, bool scale) {
         // print_mat(D,n,n,outfile);
 
         // Solve exp(A) = N / D = D^{1} N = D \ N
-        int *ipiv = new int[n];
+        auto ipiv = std::vector<int>(n);
 
         // LU = D
-        int info1 = C_DGETRF(n, n, D[0], n, ipiv);
+        int info1 = C_DGETRF(n, n, D[0], n, ipiv.data());
         if (info1) throw PSIEXCEPTION("Matrix::expm: LU factorization of D failed");
 
         // Transpose N before solvation (FORTRAN)
