@@ -296,10 +296,6 @@ void OCCWave::mp3_energy() {
     Emp3 = Eref + Ecorr;
     Escsmp3 = Escsmp2 + (e3_scale * (Emp3 - Emp2));
     Esosmp3 = Esosmp2 + (e3_scale * (Emp3 - Emp2));
-    Escsnmp3 = Escsnmp2 + (e3_scale * (Emp3 - Emp2));
-    Escsmimp3 = Escsmimp2 + (e3_scale * (Emp3 - Emp2));
-    Escsmp3vdw = Escsmp2vdw + (e3_scale * (Emp3 - Emp2));
-    Esospimp3 = Esospimp2 + (e3_scale * (Emp3 - Emp2));
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_OCC_DPD, 1);
@@ -370,9 +366,6 @@ void OCCWave::cepa_energy() {
 
     Ecorr = EcepaAA + EcepaBB + EcepaAB;
     Ecepa = Eref + Ecorr;
-    // The SCS-CEPA numbers were taken from SCS-CCSD
-    Escscepa = Eref + ((1.13 * (EcepaAA + EcepaBB)) + (1.27 * EcepaAB));
-    Esoscepa = Eref + (1.3 * EcepaAB);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_OCC_DPD, 1);

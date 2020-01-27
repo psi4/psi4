@@ -333,12 +333,7 @@ class OCCWave : public Wavefunction {
     double Escsmp3AA;
     double Escsmp3AB;
     double Escsmp3;
-    double Esosmp3AB;
     double Esosmp3;
-    double Escsnmp3;
-    double Escsmimp3;
-    double Escsmp3vdw;
-    double Esospimp3;
 
     // OCEPA
     double Ecepa;
@@ -348,16 +343,6 @@ class OCCWave : public Wavefunction {
     double EcepaAB;
     double EcepaL;
     double EcepaL_old;
-    double EscscepaBB;
-    double EscscepaAA;
-    double EscscepaAB;
-    double Escscepa;
-    double EsoscepaAB;
-    double Esoscepa;
-    double Escsncepa;
-    double Escsmicepa;
-    double Escscepavdw;
-    double Esospicepa;
 
     std::string wfn;
     std::string reference;

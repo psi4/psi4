@@ -151,9 +151,6 @@ void OCCWave::omp2_manager() {
         outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
         outfile->Printf("\tSCS-OMP2 Total Energy (a.u.)       : %20.14f\n", Escsmp2);
         outfile->Printf("\tSOS-OMP2 Total Energy (a.u.)       : %20.14f\n", Esosmp2);
-        outfile->Printf("\tSCSN-OMP2 Total Energy (a.u.)      : %20.14f\n", Escsnmp2);
-        outfile->Printf("\tSCS-OMP2-VDW Total Energy (a.u.)   : %20.14f\n", Escsmp2vdw);
-        outfile->Printf("\tSOS-PI-OMP2 Total Energy (a.u.)    : %20.14f\n", Esospimp2);
         outfile->Printf("\tOMP2 Correlation Energy (a.u.)     : %20.14f\n", Emp2L - Escf);
         outfile->Printf("\tEomp2 - Eref (a.u.)                : %20.14f\n", Emp2L - Eref);
         outfile->Printf("\tOMP2 Total Energy (a.u.)           : %20.14f\n", Emp2L);
@@ -165,9 +162,6 @@ void OCCWave::omp2_manager() {
         Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
         Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] = Escsmp2;
         Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] = Esosmp2;
-        Process::environment.globals["SCSN-OMP2 TOTAL ENERGY"] = Escsnmp2;
-        Process::environment.globals["SCS-OMP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
-        Process::environment.globals["SOS-PI-OMP2 TOTAL ENERGY"] = Esospimp2;
 
         // LAB: variables_ and energy_ here are what I vouch for and test.
         //      The P::e.globals will diminish and go into the West and be
@@ -177,17 +171,14 @@ void OCCWave::omp2_manager() {
         variables_["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
         Process::environment.globals["SCS-OMP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["SOS-OMP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-        Process::environment.globals["SCSN-OMP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-        Process::environment.globals["SCS-OMP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
-        Process::environment.globals["SOS-PI-OMP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
         variables_["CUSTOM SCS-OMP2 CORRELATION ENERGY"] = os_scale * Emp2AB + ss_scale * (Emp2AA + Emp2BB);
         variables_["CUSTOM SCS-OMP2 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OMP2 CORRELATION ENERGY"];
 
-        std::map<std::string, double> spin_scale_energies = {
-            {"SCS", Escsmp2}, {"SCSN", Escsnmp2},   {"SCSVDW", Escsmp2vdw},
-            {"SOS", Esosmp2}, {"SOSPI", Esospimp2}, {"CUSTOM", variables_["CUSTOM SCS-OMP2 TOTAL ENERGY"]},
-            {"NONE", Emp2L}};
+        std::map<std::string, double> spin_scale_energies = {{"SCS", Escsmp2},
+                                                             {"SOS", Esosmp2},
+                                                             {"CUSTOM", variables_["CUSTOM SCS-OMP2 TOTAL ENERGY"]},
+                                                             {"NONE", Emp2L}};
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
         energy_ = variables_["CURRENT ENERGY"];
         variables_["CURRENT CORRELATION ENERGY"] =
@@ -419,9 +410,6 @@ void OCCWave::omp3_manager() {
         outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
         outfile->Printf("\tSCS-OMP3 Total Energy (a.u.)       : %20.14f\n", Escsmp3);
         outfile->Printf("\tSOS-OMP3 Total Energy (a.u.)       : %20.14f\n", Esosmp3);
-        outfile->Printf("\tSCSN-OMP3 Total Energy (a.u.)      : %20.14f\n", Escsnmp3);
-        outfile->Printf("\tSCS-OMP3-VDW Total Energy (a.u.    : %20.14f\n", Escsmp3vdw);
-        outfile->Printf("\tSOS-PI-OMP3 Total Energy (a.u.)    : %20.14f\n", Esospimp3);
         outfile->Printf("\tOMP3 Correlation Energy (a.u.)     : %20.14f\n", Emp3L - Escf);
         outfile->Printf("\tEomp3 - Eref (a.u.)                : %20.14f\n", Emp3L - Eref);
         outfile->Printf("\tOMP3 Total Energy (a.u.)           : %20.14f\n", Emp3L);
@@ -432,25 +420,17 @@ void OCCWave::omp3_manager() {
         variables_["OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["SCS-OMP3 TOTAL ENERGY"] = Escsmp3;
         Process::environment.globals["SOS-OMP3 TOTAL ENERGY"] = Esosmp3;
-        Process::environment.globals["SCSN-OMP3 TOTAL ENERGY"] = Escsnmp3;
-        Process::environment.globals["SCS-OMP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
-        Process::environment.globals["SOS-PI-OMP3 TOTAL ENERGY"] = Esospimp3;
 
         variables_["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
         Process::environment.globals["SCS-OMP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
         Process::environment.globals["SOS-OMP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
-        Process::environment.globals["SCSN-OMP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
-        Process::environment.globals["SCS-OMP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
-        Process::environment.globals["SOS-PI-OMP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 
         variables_["CUSTOM SCS-OMP3 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
         variables_["CUSTOM SCS-OMP3 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OMP3 CORRELATION ENERGY"];
 
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
         std::map<std::string, double> spin_scale_energies = {
-            {"SCS", Escsmp3}, {"SCSN", Escsnmp3},   {"SCSVDW", Escsmp3vdw},
-            {"SOS", Esosmp3}, {"SOSPI", Esospimp3}, {"CUSTOM", variables_["CUSTOM SCS-OMP3 TOTAL ENERGY"]},
-            {"NONE", Emp3}};
+            {"SCS", Escsmp3}, {"SOS", Esosmp3}, {"CUSTOM", variables_["CUSTOM SCS-OMP3 TOTAL ENERGY"]}, {"NONE", Emp3}};
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
@@ -506,9 +486,7 @@ void OCCWave::mp3_manager() {
 
     variables_["CURRENT REFERENCE ENERGY"] = Escf;
     std::map<std::string, double> spin_scale_energies = {
-        {"SCS", Escsmp3}, {"SCSN", Escsnmp3},   {"SCSVDW", Escsmp3vdw},
-        {"SOS", Esosmp3}, {"SOSPI", Esospimp3}, {"CUSTOM", variables_["CUSTOM SCS-MP3 TOTAL ENERGY"]},
-        {"NONE", Emp3}};
+        {"SCS", Escsmp3}, {"CUSTOM", variables_["CUSTOM SCS-MP3 TOTAL ENERGY"]}, {"NONE", Emp3}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
@@ -636,8 +614,6 @@ void OCCWave::ocepa_manager() {
         outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
         outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
         outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-        outfile->Printf("\tSCS-OCEPA(0) Total Energy (a.u.)   : %20.14f\n", Escscepa);
-        outfile->Printf("\tSOS-OCEPA(0) Total Energy (a.u.)   : %20.14f\n", Esoscepa);
         outfile->Printf("\tOCEPA(0) Correlation Energy (a.u.) : %20.14f\n", EcepaL - Escf);
         outfile->Printf("\tEocepa - Eref (a.u.)               : %20.14f\n", EcepaL - Eref);
         outfile->Printf("\tOCEPA(0) Total Energy (a.u.)       : %20.14f\n", EcepaL);
@@ -646,21 +622,15 @@ void OCCWave::ocepa_manager() {
 
         // Set the global variables with the energies
         variables_["OLCCD TOTAL ENERGY"] = EcepaL;
-        Process::environment.globals["SCS-OLCCD TOTAL ENERGY"] = Escscepa;
-        Process::environment.globals["SOS-OLCCD TOTAL ENERGY"] = Esoscepa;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
 
         variables_["OLCCD CORRELATION ENERGY"] = EcepaL - Escf;
-        Process::environment.globals["SCS-OLCCD CORRELATION ENERGY"] = Escscepa - Escf;
-        Process::environment.globals["SOS-OLCCD CORRELATION ENERGY"] = Esoscepa - Escf;
 
         variables_["CUSTOM SCS-OLCCD CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
         variables_["CUSTOM SCS-OLCCD TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OLCCD CORRELATION ENERGY"];
 
-        std::map<std::string, double> spin_scale_energies = {{"SCS", Escscepa},
-                                                            {"SOS", Esoscepa},
-                                                            {"CUSTOM", variables_["CUSTOM SCS-OLCCD TOTAL ENERGY"]},
-                                                            {"NONE", EcepaL}};
+        std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-OLCCD TOTAL ENERGY"]},
+                                                             {"NONE", EcepaL}};
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
@@ -726,7 +696,7 @@ void OCCWave::cepa_manager() {
     // EcepaL = Ecepa;
 
     std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-LCCD TOTAL ENERGY"]},
-                                                        {"NONE", Ecepa}};
+                                                         {"NONE", Ecepa}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
@@ -888,8 +858,8 @@ void OCCWave::omp2_5_manager() {
         variables_["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
 
-        std::map<std::string, double> spin_scale_energies = {
-            {"CUSTOM", variables_["CUSTOM SCS-OMP2.5 TOTAL ENERGY"]}, {"NONE", Emp3L}};
+        std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-OMP2.5 TOTAL ENERGY"]},
+                                                             {"NONE", Emp3L}};
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
@@ -946,7 +916,7 @@ void OCCWave::mp2_5_manager() {
     variables_["CUSTOM SCS-MP2.5 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
     variables_["CUSTOM SCS-MP2.5 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-MP2.5 CORRELATION ENERGY"];
     std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-MP2.5 TOTAL ENERGY"]},
-                                                        {"NONE", Emp3L}};
+                                                         {"NONE", Emp3L}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
