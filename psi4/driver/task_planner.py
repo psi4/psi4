@@ -164,7 +164,9 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
                 # This CompositeComputer is discarded after being used for dermode.
                 simplekwargs = copy.deepcopy(kwargs)
                 simplekwargs.pop('dertype', None)
-                dummyplan = CompositeComputer(**packet, **cbsmeta, molecule=original_molecule, **simplekwargs, verbose=0)
+                simplecbsmeta = copy.deepcopy(cbsmeta)
+                simplecbsmeta['verbose'] = 0
+                dummyplan = CompositeComputer(**packet, **simplecbsmeta, molecule=original_molecule, **simplekwargs)
 
                 methods = [sr.method for sr in dummyplan.task_list]
                 # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df
@@ -210,14 +212,18 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
     # Check for CBS
     elif method == "cbs":
         kwargs.update(cbsmeta)
-        logger.info('PLANNING CBS:  keywords={keywords}')
-        plan = CompositeComputer(**packet, **kwargs)
+        # This CompositeComputer is discarded after being used for dermode. Could have used directly for analytic except for excess printing with FD
+        simplekwargs = copy.deepcopy(kwargs)
+        simplekwargs['verbose'] = 0
+        dummyplan = CompositeComputer(**packet, **simplekwargs)
 
-        methods = [sr.method for sr in plan.task_list]
+        methods = [sr.method for sr in dummyplan.task_list]
         # TODO: pass more info, so fn can use for managed_methods -- ref, qc_module, fc/ae, conv/df
         dermode = negotiate_derivative_type(driver, methods, kwargs.pop('dertype', None), verbose=1)
 
         if dermode[0] == dermode[1]:  # analytic
+            logger.info('PLANNING CBS:  packet={packet} kw={kwargs}')
+            plan = CompositeComputer(**packet, **kwargs)
             return plan
         else:
             # For FD(CBS(Atomic)), the CompositeComputer above is discarded after being used for dermode.
