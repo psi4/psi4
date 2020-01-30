@@ -659,6 +659,8 @@ std::shared_ptr<MintsHelper> Wavefunction::mintshelper() const { return mintshel
 
 std::shared_ptr<BasisSet> Wavefunction::basisset() const { return basisset_; }
 
+std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const { return basissets_; }
+
 std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) {
     // This may be slightly confusing, but better than changing this in 800 other places
     if (label == "ORBITAL") {

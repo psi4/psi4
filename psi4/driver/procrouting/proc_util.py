@@ -103,7 +103,7 @@ def check_iwl_file_from_scf_type(scf_type, wfn):
                                           core.get_option("SCF", "BASIS_RELATIVISTIC"),
                                           "DECON", core.get_global_option('BASIS'),
                                           puream=wfn.basisset().has_puream())
-            mints.set_rel_basisset(rel_bas)
+            mints.set_basisset('BASIS_RELATIVISTIC',rel_bas)
 
         mints.set_print(1)
         mints.integrals()

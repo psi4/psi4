@@ -1039,7 +1039,7 @@ void export_mints(py::module& m) {
         .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", "C1"_a, "C2"_a)
         .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory", "Iso"_a, "C1"_a, "C2"_a,
              "C3"_a, "C4"_a)
-        .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "Sets the relativistic basis set", "rel_basis"_a)
+        .def("set_basisset", &MintsHelper::set_basisset, "Sets a basis set", "label"_a, "basis"_a)
         .def("play", &MintsHelper::play, "play function")
 
         // Contracted gradient terms

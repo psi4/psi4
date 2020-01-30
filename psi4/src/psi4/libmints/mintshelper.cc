@@ -137,6 +137,7 @@ void MintsHelper::init_helper(std::shared_ptr<Wavefunction> wavefunction) {
 
     psio_ = wavefunction->psio();
     basisset_ = wavefunction->basisset();
+    basissets_ = wavefunction->basissets();
     molecule_ = basisset_->molecule();
 
     // Make sure molecule is valid.
@@ -199,6 +200,32 @@ std::shared_ptr<PetiteList> MintsHelper::petite_list(bool val) const {
 std::shared_ptr<BasisSet> MintsHelper::basisset() const { return basisset_; }
 
 std::shared_ptr<SOBasisSet> MintsHelper::sobasisset() const { return sobasis_; }
+
+std::shared_ptr<BasisSet> MintsHelper::get_basisset(std::string label) {
+    // This may be slightly confusing, but better than changing this in 800 other places
+    if (label == "ORBITAL") {
+        return basisset_;
+    } else if (not basisset_exists(label)) {
+        outfile->Printf("Could not find requested basisset (%s).", label.c_str());
+        throw PSIEXCEPTION("MintsHelper::get_basisset: Requested basis set (" + label + ") was not set!\n");
+    } else {
+        return basissets_[label];
+    }
+}
+void MintsHelper::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
+    if (label == "ORBITAL") {
+        throw PSIEXCEPTION("Cannot set the ORBITAL basis after the Wavefunction is built!");
+    } else {
+        basissets_[label] = basis;
+    }
+}
+
+bool MintsHelper::basisset_exists(std::string label) {
+    if (basissets_.count(label) == 0)
+        return false;
+    else
+        return true;
+}
 
 std::shared_ptr<MatrixFactory> MintsHelper::factory() const { return factory_; }
 
@@ -1350,8 +1377,8 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
 void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     outfile->Printf(" OEINTS: Using relativistic (X2C) overlap, kinetic, and potential integrals.\n");
 
-    if (!rel_basisset_) {
-        throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis was not set.");
+    if (!basisset_exists("BASIS_RELATIVISTIC")) {
+        throw PSIEXCEPTION("OEINTS: X2C requested, but relativistic basis (BASIS_RELATIVISTIC) was not set.");
     }
     SharedMatrix so_overlap_x2c = so_overlap_nr();
     SharedMatrix so_kinetic_x2c = so_kinetic_nr();
@@ -1380,7 +1407,8 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     }
 
     X2CInt x2cint;
-    x2cint.compute(molecule_, basisset_, rel_basisset_, so_overlap_x2c, so_kinetic_x2c, so_potential_x2c, lambda);
+    x2cint.compute(molecule_, basisset_, get_basisset("BASIS_RELATIVISTIC"), so_overlap_x2c, so_kinetic_x2c,
+                   so_potential_x2c, lambda);
 
     // Overwrite cached integrals
     cached_oe_ints_[PSIF_SO_S] = so_overlap_x2c;
