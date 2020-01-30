@@ -30,13 +30,10 @@
 from psi4 import core
 from psi4.driver import constants
 
-import numpy as np
-
 
 def _write_nbo(self, name):
     basisset = self.basisset()
     mints = core.MintsHelper(basisset)
-    sotoao = mints.petite_list().sotoao()
     mol = self.molecule()
 
     # Populate header and coordinates.
