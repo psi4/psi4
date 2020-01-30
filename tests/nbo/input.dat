@@ -10,6 +10,12 @@ set scf_type pk
 set basis cc-pvdz
 set r_convergence 12
 
-energy, wfn = energy('hf', return_wfn = True)
+wfn = energy('hf', return_wfn = True)[1]
 wfn.write_nbo('input.47')
-compare_values( -76.02141844, variable('current energy'), 6, 'WATER')  #TEST
+compare_values( -76.02141844, variable('current energy'), 6, 'WATER: SPHERICAL')  #TEST
+
+set basis 6-31+G(d)
+
+wfn = energy('hf', return_wfn = True)[1]
+wfn.write_nbo('cartesian.47')
+compare_values( -76.0125142358969015, variable('current energy'), 6, 'WATER: CARTESIAN') # TEST
