@@ -59,11 +59,11 @@ void normalize(double** A, int rows, int cols);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
 PSI_API
-void reorder_qt(int* docc_in, int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order,
-                        int* orbs_per_irrep, int nirreps);
+void reorder_qt(int* docc_in, int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order, int* orbs_per_irrep,
+                int nirreps);
 PSI_API
 void reorder_qt_uhf(int* docc, int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
-                            int* orbspi, int nirreps);
+                    int* orbspi, int nirreps);
 // int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
 //      int *docc, int *socc, int *frdocc, int *fruocc,
 //      int **ras_opi, int *order, int ras_type);
@@ -118,8 +118,8 @@ size_t C_IDAMAX(size_t n, double* X, int inc_x);
 void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx,
              double beta, double* y, int incy);
 PSI_API
-void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta,
-                     double* y, int incy);
+void C_DGEMV(char trans, int m, int n, double alpha, double* a, int lda, double* x, int incx, double beta, double* y,
+             int incy);
 PSI_API
 void C_DGER(int m, int n, double alpha, double* x, int incx, double* y, int incy, double* a, int lda);
 void C_DSBMV(char uplo, int n, int k, double alpha, double* a, int lda, double* x, int incx, double beta, double* y,
@@ -140,8 +140,8 @@ void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double 
 
 // BLAS 3 Double routines
 PSI_API
-void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b,
-                     int ldb, double beta, double* c, int ldc);
+void C_DGEMM(char transa, char transb, int m, int n, int k, double alpha, double* a, int lda, double* b, int ldb,
+             double beta, double* c, int ldc);
 void C_DSYMM(char side, char uplo, int m, int n, double alpha, double* a, int lda, double* b, int ldb, double beta,
              double* c, int ldc);
 void C_DTRMM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b,
@@ -344,6 +344,7 @@ int C_DPPSVX(char fact, char uplo, int n, int nrhs, double* ap, double* afp, cha
 int C_DPPTRF(char uplo, int n, double* ap);
 int C_DPPTRI(char uplo, int n, double* ap);
 int C_DPPTRS(char uplo, int n, int nrhs, double* ap, double* b, int ldb);
+int C_DPSTRF(char uplo, int n, double* a, int lda, int* piv, int* rank, double tol, double* work);
 int C_DPTCON(int n, double* d, double* e, double anorm, double* rcond, double* work);
 int C_DPTEQR(char compz, int n, double* d, double* e, double* z, int ldz, double* work);
 int C_DPTRFS(int n, int nrhs, double* d, double* e, double* df, double* ef, double* b, int ldb, double* x, int ldx,
@@ -415,7 +416,7 @@ int C_DSYCON(char uplo, int n, double* a, int lda, int* ipiv, double anorm, doub
 int C_DSYEV(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork);
 PSI_API
 int C_DSYEVD(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork, int* iwork,
-                     int liwork);
+             int liwork);
 int C_DSYEVR(char jobz, char range, char uplo, int n, double* a, int lda, double vl, double vu, int il, int iu,
              double abstol, int* m, double* w, double* z, int ldz, int* isuppz, double* work, int lwork, int* iwork,
              int liwork);
@@ -423,8 +424,8 @@ int C_DSYEVX(char jobz, char range, char uplo, int n, double* a, int lda, double
              double abstol, int* m, double* w, double* z, int ldz, double* work, int lwork, int* iwork, int* ifail);
 int C_DSYGST(int itype, char uplo, int n, double* a, int lda, double* b, int ldb);
 PSI_API
-int C_DSYGV(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w,
-                    double* work, int lwork);
+int C_DSYGV(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w, double* work,
+            int lwork);
 int C_DSYGVD(int itype, char jobz, char uplo, int n, double* a, int lda, double* b, int ldb, double* w, double* work,
              int lwork, int* iwork, int liwork);
 int C_DSYGVX(int itype, char jobz, char range, char uplo, int n, double* a, int lda, double* b, int ldb, double vl,

@@ -250,6 +250,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_tdscf_excitations.py
               ../tests/pytests/test_misc.py
               ../tests/pytests/test_multipole_potential.py
+              ../tests/pytests/test_dipoles.py
               ../tests/pytests/test_dertype.py
               ../tests/pytests/test_mp2.py
               ../tests/pytests/test_qcng_dftd3_mp2d.py

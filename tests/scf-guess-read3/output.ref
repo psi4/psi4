@@ -1,0 +1,529 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4a2.dev297 
+
+                         Git: Rev {fix_scf_guess_read2} 56747d1 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 16 January 2020 10:45AM
+
+    Process ID: 1706998
+    Host:       dx7-lehtola.chem.helsinki.fi
+    PSIDATADIR: /home/work/psi4/install.susi/share/psi4
+    Memory:     500.0 MiB
+    Threads:    4
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test if the the guess read in the same basis converges. 
+
+molecule neon {
+    0 3
+    Ne
+    Ne 1 0.5
+}
+
+set reference rohf
+set basis aug-pcseg-2
+set guess sad
+set s_tolerance 4
+set d_convergence 8
+energy('scf')
+compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy')  #TEST
+
+set guess read
+energy('scf')
+compare_values(-247.03173864745776, variable('SCF TOTAL ENERGY'), 6, 'ROHF SCF energy, read-in guess')  #TEST
+compare_values(1, variable('SCF ITERATIONS'), 1, 'ROHF Iterations, read-in guess')  #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /home/work/scratch//
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Thu Jan 16 10:45:38 2020
+
+   => Loading Basis Set <=
+
+    Name: AUG-PCSEG-2
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry NE         line   321 file /home/work/psi4/install.susi/share/psi4/basis/aug-pcseg-2.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             ROHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         NE           0.000000000000     0.000000000000    -0.250000000000    19.992440176200
+         NE           0.000000000000     0.000000000000     0.250000000000    19.992440176200
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      6.74560  C =      6.74560 [cm^-1]
+  Rotational constants: A = ************  B = 202228.04396  C = 202228.04396 [MHz]
+  Nuclear repulsion =  105.835442133999948
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 20
+  Nalpha       = 11
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-PCSEG-2
+    Blend: AUG-PCSEG-2
+    Number of shells: 28
+    Number of basis function: 92
+    Number of Cartesian functions: 110
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+   => Loading Basis Set <=
+
+    Name: (AUG-PCSEG-2 AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry NE         line   443 file /home/work/psi4/install.susi/share/psi4/basis/def2-tzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        19      19       0       0       0       0
+     B1g        5       5       0       0       0       0
+     B2g       11      11       0       0       0       0
+     B3g       11      11       0       0       0       0
+     Au         5       5       0       0       0       0
+     B1u       19      19       0       0       0       0
+     B2u       11      11       0       0       0       0
+     B3u       11      11       0       0       0       0
+   -------------------------------------------------------
+    Total      92      92      11       9       9       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.012 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-PCSEG-2 AUX)
+    Blend: DEF2-TZVPP-JKFIT
+    Number of shells: 50
+    Number of basis function: 154
+    Number of Cartesian functions: 186
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Minimum eigenvalue in the overlap matrix is 8.2844365235E-06.
+  Reciprocal condition number of the overlap matrix is 1.4697691577E-06.
+    Using canonical orthogonalization.
+  Overall, 1 of 92 possible MOs eliminated.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-ROHF iter SAD:  -264.68670903766832   -2.64687e+02   0.00000e+00 
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    1,    0,    2,    1,    1 ]
+    SOCC [     1,    0,    0,    0,    0,    0,    1,    0 ]
+
+   @DF-ROHF iter   1:  -246.42432095290536    1.82624e+01   2.55210e-02 DIIS
+   @DF-ROHF iter   2:  -246.94453964071585   -5.20219e-01   1.44614e-02 DIIS
+   @DF-ROHF iter   3:  -247.03027744318661   -8.57378e-02   1.16095e-03 DIIS
+   @DF-ROHF iter   4:  -247.03169353680090   -1.41609e-03   1.76232e-04 DIIS
+   @DF-ROHF iter   5:  -247.03173739280521   -4.38560e-05   2.46222e-05 DIIS
+   @DF-ROHF iter   6:  -247.03173862190494   -1.22910e-06   4.29748e-06 DIIS
+   @DF-ROHF iter   7:  -247.03173864702023   -2.51153e-08   4.85013e-07 DIIS
+   @DF-ROHF iter   8:  -247.03173864744457   -4.24336e-10   9.58832e-08 DIIS
+   @DF-ROHF iter   9:  -247.03173864745781   -1.32445e-11   8.00336e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -34.051260     1B1u  -33.898168     2Ag    -4.801585  
+       1B3u   -2.958965     1B2u   -2.955368     3Ag    -2.225573  
+       2B1u   -2.078333     1B2g   -0.732063     1B3g   -0.724559  
+
+    Singly Occupied:                                                      
+
+       4Ag    -0.071914     2B2u   -0.035357  
+
+    Virtual:                                                              
+
+       2B3u    0.060344     3B1u    0.071227     5Ag     0.156460  
+       2B3g    0.175854     2B2g    0.177756     4B1u    0.302356  
+       3B2u    0.398987     3B3u    0.400995     6Ag     0.403188  
+       1B1g    0.405467     7Ag     0.463748     3B2g    0.563796  
+       3B3g    0.570254     5B1u    0.593324     1Au     0.609917  
+       6B1u    0.611988     4B3u    0.676076     4B2u    0.687884  
+       8Ag     0.745404     7B1u    0.854193     5B2u    0.961420  
+       5B3u    0.961536     9Ag     1.114717     2B1g    1.184619  
+      10Ag     1.185648     4B2g    1.244183     6B3u    1.260379  
+       4B3g    1.260735     6B2u    1.275104     5B2g    1.287580  
+       5B3g    1.288418    11Ag     1.325007     8B1u    1.352053  
+       6B2g    1.387315     6B3g    1.402565     2Au     1.408545  
+       9B1u    1.410574     3B1g    1.782213    12Ag     1.782356  
+      10B1u    2.037962    13Ag     2.582938    11B1u    2.816632  
+       7B3u    2.875584     7B2u    2.888895     8B3u    2.995279  
+       8B2u    3.008369     3Au     3.198571    12B1u    3.198785  
+       7B2g    3.689552     7B3g    3.713051     8B2g    3.892454  
+       8B3g    3.901181    14Ag     4.094464     9B3u    4.313321  
+       9B2u    4.313322    15Ag     5.041020     4B1g    5.075218  
+      16Ag     5.076602    13B1u    5.470728     9B2g    5.721227  
+       9B3g    5.721227    14B1u    6.191163     4Au     6.648074  
+      15B1u    6.648140     5B1g    7.460046    17Ag     7.460048  
+      10B3u    7.524943    10B2u    7.534293    10B2g    8.191315  
+      10B3g    8.204716    11B3u    8.265103    11B2u    8.273511  
+      18Ag     8.679724     5Au     9.942476    16B1u    9.942490  
+      17B1u   10.005828    11B2g   11.814947    11B3g   11.820343  
+      18B1u   21.530353    19Ag    46.220753  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    1,    0,    2,    1,    1 ]
+    SOCC [     1,    0,    0,    0,    0,    0,    1,    0 ]
+
+  @DF-ROHF Final Energy:  -247.03173864745781
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            105.8354421339999476
+    One-Electron Energy =                -536.4336984762602469
+    Two-Electron Energy =                 183.5665176948024850
+    Total Energy =                       -247.0317386474578143
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Thu Jan 16 10:45:40 2020
+Module time:
+	user time   =       2.17 seconds =       0.04 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       2.17 seconds =       0.04 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+    ROHF SCF energy...................................................PASSED
+
+Scratch directory: /home/work/scratch//
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Thu Jan 16 10:45:40 2020
+
+   => Loading Basis Set <=
+
+    Name: AUG-PCSEG-2
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry NE         line   321 file /home/work/psi4/install.susi/share/psi4/basis/aug-pcseg-2.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             ROHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         NE           0.000000000000     0.000000000000    -0.250000000000    19.992440176200
+         NE           0.000000000000     0.000000000000     0.250000000000    19.992440176200
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      6.74560  C =      6.74560 [cm^-1]
+  Rotational constants: A = ************  B = 202228.04396  C = 202228.04396 [MHz]
+  Nuclear repulsion =  105.835442133999891
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 20
+  Nalpha       = 11
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is READ.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-PCSEG-2
+    Blend: AUG-PCSEG-2
+    Number of shells: 28
+    Number of basis function: 92
+    Number of Cartesian functions: 110
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+   => Loading Basis Set <=
+
+    Name: (AUG-PCSEG-2 AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry NE         line   443 file /home/work/psi4/install.susi/share/psi4/basis/def2-tzvpp-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: AUG-PCSEG-2
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry NE         line   321 file /home/work/psi4/install.susi/share/psi4/basis/aug-pcseg-2.gbs 
+
+  Reading orbitals from file 180, no projection.
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        19      19       0       0       0       0
+     B1g        5       5       0       0       0       0
+     B2g       11      11       0       0       0       0
+     B3g       11      11       0       0       0       0
+     Au         5       5       0       0       0       0
+     B1u       19      19       0       0       0       0
+     B2u       11      11       0       0       0       0
+     B3u       11      11       0       0       0       0
+   -------------------------------------------------------
+    Total      92      92      11       9       9       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.012 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-PCSEG-2 AUX)
+    Blend: DEF2-TZVPP-JKFIT
+    Number of shells: 50
+    Number of basis function: 154
+    Number of Cartesian functions: 186
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Minimum eigenvalue in the overlap matrix is 8.2844365229E-06.
+  Reciprocal condition number of the overlap matrix is 1.4697691576E-06.
+    Using canonical orthogonalization.
+  Overall, 1 of 92 possible MOs eliminated.
+
+  SCF Guess: Orbitals guess was supplied from a previous computation.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-ROHF iter   0:  -247.03173864706213   -2.47032e+02   9.78460e-11 
+   @DF-ROHF iter   1:  -247.03173864706207    5.68434e-14   8.43050e-10 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -34.051261     1B1u  -33.898168     2Ag    -4.801585  
+       1B3u   -2.958965     1B2u   -2.955368     3Ag    -2.225573  
+       2B1u   -2.078333     1B2g   -0.732063     1B3g   -0.724559  
+
+    Singly Occupied:                                                      
+
+       4Ag    -0.071914     2B2u   -0.035357  
+
+    Virtual:                                                              
+
+       2B3u    0.060344     3B1u    0.071227     5Ag     0.156460  
+       2B3g    0.175854     2B2g    0.177756     4B1u    0.302356  
+       3B2u    0.398987     3B3u    0.400995     6Ag     0.403188  
+       1B1g    0.405467     7Ag     0.463748     3B2g    0.563796  
+       3B3g    0.570254     5B1u    0.593324     1Au     0.609917  
+       6B1u    0.611988     4B3u    0.676076     4B2u    0.687884  
+       8Ag     0.745404     7B1u    0.854193     5B2u    0.961419  
+       5B3u    0.961536     9Ag     1.114717     2B1g    1.184619  
+      10Ag     1.185648     4B2g    1.244183     6B3u    1.260379  
+       4B3g    1.260735     6B2u    1.275104     5B2g    1.287580  
+       5B3g    1.288418    11Ag     1.325007     8B1u    1.352053  
+       6B2g    1.387315     6B3g    1.402565     2Au     1.408545  
+       9B1u    1.410574     3B1g    1.782213    12Ag     1.782356  
+      10B1u    2.037962    13Ag     2.582938    11B1u    2.816632  
+       7B3u    2.875584     7B2u    2.888895     8B3u    2.995279  
+       8B2u    3.008369     3Au     3.198571    12B1u    3.198785  
+       7B2g    3.689552     7B3g    3.713051     8B2g    3.892454  
+       8B3g    3.901181    14Ag     4.094464     9B3u    4.313321  
+       9B2u    4.313321    15Ag     5.041020     4B1g    5.075218  
+      16Ag     5.076602    13B1u    5.470728     9B2g    5.721227  
+       9B3g    5.721227    14B1u    6.191163     4Au     6.648074  
+      15B1u    6.648140     5B1g    7.460046    17Ag     7.460048  
+      10B3u    7.524942    10B2u    7.534293    10B2g    8.191315  
+      10B3g    8.204716    11B3u    8.265103    11B2u    8.273511  
+      18Ag     8.679724     5Au     9.942476    16B1u    9.942490  
+      17B1u   10.005828    11B2g   11.814947    11B3g   11.820343  
+      18B1u   21.530353    19Ag    46.220753  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    1,    0,    2,    1,    1 ]
+    SOCC [     1,    0,    0,    0,    0,    0,    1,    0 ]
+
+  @DF-ROHF Final Energy:  -247.03173864706207
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            105.8354421339998908
+    One-Electron Energy =                -536.4336979779689045
+    Two-Electron Energy =                 183.5665171969069434
+    Total Energy =                       -247.0317386470620704
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Thu Jan 16 10:45:41 2020
+Module time:
+	user time   =       1.25 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       3.43 seconds =       0.06 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+    ROHF SCF energy, read-in guess....................................PASSED
+    ROHF Iterations, read-in guess....................................PASSED
+
+    Psi4 stopped on: Thursday, 16 January 2020 10:45AM
+    Psi4 wall time for execution: 0:00:02.71
+
+*** Psi4 exiting successfully. Buy a developer a beer!

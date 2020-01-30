@@ -84,7 +84,7 @@ def test_qcschema_keyword_error(result_data_fixture):
 ])
 def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fixture):
 
-    data = qcel.models.ResultInput(**result_data_fixture)
+    data = qcel.models.AtomicInput(**result_data_fixture)
 
     if (input_enc == "msgpack-ext") or (output_enc == "msgpack-ext"):
         try:
@@ -114,7 +114,7 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
 
     try:
         parsed = True
-        ret = qcel.models.Result.parse_raw(ret["outfiles"][output_fn], encoding=output_enc)
+        ret = qcel.models.AtomicResult.parse_raw(ret["outfiles"][output_fn], encoding=output_enc)
     except Exception as e:
         parsed = False
         print(e)

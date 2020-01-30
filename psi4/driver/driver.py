@@ -786,6 +786,20 @@ def properties(*args, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | omp2               | orbital-optimized second-order                | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
+    |                    | MP perturbation theory                        |                | Density fitted only                                           |
+    |                    | :ref:`[manual] <sec:occ_oo>`                  |                |                                                               |
+    +-------------------------+-----------------------------------------------------------+---------------------------------------------------------------+
+    | omp3               | orbital-optimized third-order                 | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
+    |                    | MP perturbation theory                        |                | Density fitted only                                           |
+    |                    | :ref:`[manual] <sec:occ_oo>`                  |                |                                                               |
+    +-------------------------+-----------------------------------------------------------+---------------------------------------------------------------+
+    | omp2.5             | orbital-optimized MP2.5                       | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
+    |                    | :ref:`[manual] <sec:occ_oo>`                  |                | Density fitted only                                           |
+    +-------------------------+-----------------------------------------------------------+---------------------------------------------------------------+
+    | olccd              | orbital optimized LCCD                        | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
+    |                    | :ref:`[manual] <sec:occ_oo>`                  |                | Density fitted only                                           |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------------------+
     | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
@@ -796,6 +810,11 @@ def properties(*args, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | casscf, rasscf     | Multi-configurational SCF                     | RHF/ROHF       | Listed :ref:`here <sec:oeprop>`, transition_dipole,           |
     |                    |                                               |                | transition_quadrupole                                         |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | adc(0), adc(1),    | Algebraic-diagrammatic construction methods   | RHF/UHF        | dipole, transition_dipole, oscillator_strength                |
+    | ..., adc(3),       | :ref:`[manual] <sec:adc>`                     |                |                                                               |
+    | cvs-adc(0), ...    |                                               |                |                                                               |
+    | cvs-adc(3)         |                                               |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
     :type name: string

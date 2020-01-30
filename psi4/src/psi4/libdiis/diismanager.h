@@ -65,7 +65,8 @@ class PSI_API DIISManager {
     DIISManager() { _maxSubspaceSize = 0; }
     ~DIISManager();
 
-    // C-style variadic? Why?
+    // C-style variadic allows you to DIIS "direct sums" of quantities.
+    // For instance, orbital-optimized theories can do a combined DIIS on orbital amplitudes and T2
     void set_error_vector_size(int numQuantities, ...);
     void set_vector_size(int numQuantities, ...);
     bool extrapolate(int numQuatities, ...);

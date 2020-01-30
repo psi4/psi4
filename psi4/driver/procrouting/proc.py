@@ -32,8 +32,10 @@ response(), and frequency() function. *name* can be assumed lowercase by here.
 
 """
 import os
+import sys
 import shutil
 import subprocess
+import warnings
 
 import numpy as np
 from qcelemental import constants
@@ -274,6 +276,81 @@ def select_omp2_property(name, **kwargs):
 
     if func is None:
         raise ManagedMethodError(['select_omp2_property', name, 'MP2_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_omp2p5_property(name, **kwargs):
+    """Function selecting the algorithm for an OMP2.5 property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_omp2p5_property', name, 'MP_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_omp3_property(name, **kwargs):
+    """Function selecting the algorithm for an OMP3 property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_omp3_property', name, 'MP_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_olccd_property(name, **kwargs):
+    """Function selecting the algorithm for an OLCCD property call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_property
+
+    if func is None:
+        raise ManagedMethodError(['select_olccd_property', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -981,6 +1058,47 @@ def select_mp4(name, **kwargs):
 
     if func is None:
         raise ManagedMethodError(['select_mp4', name, 'MP_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_adc2(name, **kwargs):
+    """Function selecting the algorithm for ADC(2) excited state energy
+    call and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only adcc/adc
+
+    # TODO Actually one should do selection on a couple of other options here
+    #      as well, e.g. adcc supports frozen-core and frozen-virtual,
+    #      spin-specific states or spin-flip methods.
+    #      But as far as I know the BUILTIN ADC routine only supports
+    #      singlet states and without freezing some core or some virtual orbitals.
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'ADCC' and extras.addons("adcc"):
+                func = run_adcc
+            elif module in ['', 'BUILTIN']:
+                func = run_adc
+
+    if reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['ADCC', ''] and extras.addons("adcc"):
+                func = run_adcc
+
+    # Note: ROHF is theoretically available in adcc, but are not fully tested
+    #       ... so will be added later.
+
+    if func is None:
+        raise ManagedMethodError(['select_adc2', name, 'MP_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1740,6 +1858,12 @@ def run_dfocc_property(name, **kwargs):
 
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
+    elif name in ['omp3']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+    elif name in ['omp2.5']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+    elif name in ['olccd']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
     else:
         raise ValidationError('Unidentified method ' % (name))
 
@@ -1747,7 +1871,7 @@ def run_dfocc_property(name, **kwargs):
 
     if name in ['mp2']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2']:
+    elif name in ['omp2', 'omp3', 'omp2.5', 'olccd']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     core.set_local_option('DFOCC', 'OEPROP', 'TRUE')
@@ -1781,6 +1905,7 @@ def run_dfocc_property(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     # Shove variables into global space
+    # TODO: Make other methods in DFOCC update all variables, then add them to the list. Adding now, risks setting outdated information.
     if name in ['mp2', 'omp2']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
@@ -1843,112 +1968,94 @@ def run_occ(name, **kwargs):
         ['OCC', 'WFN_TYPE'])
 
     if name == 'mp2':
-        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp2':
-        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'scs-omp2':
-        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif name == 'scs(n)-omp2':
-        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif name == 'scs-omp2-vdw':
-        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
     elif name == 'sos-omp2':
-        vars_on_wfn = True
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif name == 'sos-pi-omp2':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     elif name == 'mp2.5':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp2.5':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
 
     elif name == 'mp3':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'omp3':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'scs-omp3':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif name == 'scs(n)-omp3':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif name == 'scs-omp3-vdw':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'TRUE')
         core.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
     elif name == 'sos-omp3':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif name == 'sos-pi-omp3':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SOS', 'TRUE')
         core.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     elif name == 'lccd':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
         core.set_local_option('OCC', 'DO_SOS', 'FALSE')
     elif name == 'olccd':
-        vars_on_wfn = False
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'DO_SCS', 'FALSE')
@@ -1970,9 +2077,8 @@ def run_occ(name, **kwargs):
     occ_wfn = core.occ(ref_wfn)
 
     # Shove variables into global space
-    if vars_on_wfn:
-        for k, v in occ_wfn.variables().items():
-            core.set_variable(k, v)
+    for k, v in occ_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return occ_wfn
@@ -2046,9 +2152,8 @@ def run_occ_gradient(name, **kwargs):
     occ_wfn.set_gradient(grad)
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2']:
-        for k, v in occ_wfn.variables().items():
-            core.set_variable(k, v)
+    for k, v in occ_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return occ_wfn
@@ -3040,6 +3145,12 @@ def run_eom_cc_gradient(name, **kwargs):
     return ref_wfn
 
 
+def run_adc_deprecated(*args, **kwargs):
+     warnings.warn("The method 'adc' has been deprecated, please use 'adc2' instead."
+                   "The method key 'adc' will be removed Psi4 1.6.", DeprecationWarning)
+     return select_adc2(*args, **kwargs)
+
+
 def run_adc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an algebraic diagrammatic construction calculation.
@@ -3061,6 +3172,277 @@ def run_adc(name, **kwargs):
     return core.adc(ref_wfn)
 
 
+def run_adcc(name, **kwargs):
+    """Prepare and run an ADC calculation in adcc, interpret the result and return
+    as a wavefunction.
+
+    """
+    # TODO Maybe it would improve readability if this function was spilt
+    #      up and the whole thing went to a separate file (like for sapt,
+    #      interface_cfour.py, ...
+
+    try:
+        import adcc
+        from adcc.backends import InvalidReference
+    except ModuleNotFoundError:
+        raise ValidationError("adcc extras qc_module not available. Try installing "
+            "via 'pip install adcc' or 'conda install -c adcc adcc'.")
+
+
+    if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
+        raise ValidationError('ADC requires reference RHF or UHF')
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.pop('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)
+
+    # Start timer
+    do_timer = kwargs.pop("do_timer", True)
+    if do_timer:
+        core.tstart()
+
+    #
+    # Build kwargs for adcc
+    #
+    kwargs.pop("molecule", None)
+
+    if ref_wfn.frzcpi()[0] > 0:
+        kwargs["frozen_core"] = ref_wfn.frzcpi()[0]
+    if ref_wfn.frzvpi()[0] > 0:
+        kwargs["frozen_virtual"] = ref_wfn.frzvpi()[0]
+    if core.get_option("ADC", "NUM_CORE_ORBITALS"):
+        kwargs["core_orbitals"] = core.get_option("ADC", "NUM_CORE_ORBITALS")
+
+    scf_accuracy = max(core.get_option("SCF", "E_CONVERGENCE"),
+                       core.get_option("SCF", "D_CONVERGENCE"))
+    if core.get_option("ADC", "R_CONVERGENCE") < 0:
+        kwargs["conv_tol"] = max(100 * scf_accuracy, 1e-6)
+    else:
+        kwargs["conv_tol"] = core.get_option("ADC", "R_CONVERGENCE")
+
+    n_roots = core.get_option('ADC', 'ROOTS_PER_IRREP')
+    if len(n_roots) > 1:
+        raise ValidationError("adcc can only deal with a single irrep.")
+    kwargs["n_states"] = n_roots[0]
+
+    if core.get_option("ADC", "NUM_GUESSES") > 0:
+        kwargs["n_guesses"] = core.get_option("ADC", "NUM_GUESSES")
+    if core.get_option("ADC", "MAX_NUM_VECS") > 0:
+        kwargs["max_subspace"] = core.get_option("ADC", "MAX_NUM_VECS")
+
+    kind = core.get_option("ADC", "KIND").lower()
+    if isinstance(ref_wfn, core.UHF):
+        if not core.has_option_changed("ADC", "KIND"):
+            kind = "any"
+        elif not kind in ["any", "spin_flip"]:
+            raise ValidationError("For UHF references the only valid values for 'KIND' are "
+                                  "'SPIN_FLIP' or 'ANY' and not '{}.".format(kind.upper()))
+    elif not kind in ["singlet", "triplet", "any"]:
+        raise ValidationError("For RHF references the value '{}' for 'KIND' is "
+                              "not supported.".format(kind.upper()))
+    kwargs["kind"] = kind
+    kwargs["max_iter"] = core.get_option("ADC", "MAXITER")
+
+    #
+    # Determine ADC function method from adcc to run ADC
+    #
+    adcrunner = {
+        "cvs-adc(1)": adcc.cvs_adc1, "cvs-adc(2)": adcc.cvs_adc2,
+        "cvs-adc(2)-x": adcc.cvs_adc2x, "cvs-adc(3)": adcc.cvs_adc3,
+        "adc(1)": adcc.adc1, "adc(2)": adcc.adc2,
+        "adc(2)-x": adcc.adc2x, "adc(3)": adcc.adc3,
+    }
+    if name not in adcrunner:
+        raise ValidationError(f"Unsupported ADC method: {name}")
+    if "cvs" in name and "core_orbitals" not in kwargs:
+        raise ValidationError("If a CVS-ADC method is requested, the NUM_CORE_ORBITALS option "
+                              "needs to be set.")
+    if "core_orbitals" in kwargs and not "cvs" in name:
+        raise ValidationError("The NUM_CORE_ORBITALS option needs to be set to '0' or absent "
+                              "unless a CVS ADC method is requested.")
+    if "cvs" in name and kwargs["kind"] in ["spin_flip"]:
+        raise ValidationError("Spin-flip for CVS-ADC variants is not available.")
+
+    #
+    # Check for unsupported options
+    #
+    for option in ["PR", "NORM_TOLERANCE", "POLE_MAXITER", "SEM_MAXITER",
+                   "NEWTON_CONVERGENCE", "MEMORY", "CACHELEVEL", "NUM_AMPS_PRINT"]:
+        if core.has_option_changed("ADC", option):
+            raise ValidationError(f"ADC backend adcc does not support option '{option}'")
+
+    #
+    # Launch the rocket
+    #
+    # Copy thread setup from psi4
+    try:
+        adcc.set_n_threads(core.get_num_threads())
+    except AttributeError:
+        # Before adcc 0.13.3:
+        adcc.thread_pool.reinit(core.get_num_threads(), core.get_num_threads())
+
+    # Hack to direct the stream-like interface adcc expects to the string interface of Psi4 core
+    class CoreStream:
+        def write(self, text):
+            core.print_out(text)
+
+    core.print_out("\n" + adcc.banner(colour=False) + "\n")
+    try:
+        state = adcrunner[name](ref_wfn, **kwargs, output=CoreStream())
+    except InvalidReference as ex:
+        raise ValidationError("Cannot run ADC because the passed reference wavefunction is "
+                              "not supported in adcc. Check Psi4 SCF parameters. adcc reports: "
+                              "{}".format(str(ex)))
+    core.print_out("\n")
+
+    # TODO Should a non-converged calculation throw?
+
+    #
+    # Interpret results
+    #
+    # Note: This wavefunction is not consistent ... the density
+    # is e.g. not the proper one (i.e. not the MP(n) one)
+    adc_wfn = core.Wavefunction(ref_wfn.molecule(), ref_wfn.basisset())
+    adc_wfn.shallow_copy(ref_wfn)
+    adc_wfn.set_reference_wavefunction(ref_wfn)
+    adc_wfn.set_name(name)
+
+    # MP(3) energy for CVS-ADC(3) calculations is still a missing feature in adcc
+    # ... we store this variant here to be able to fall back to MP(2) energies.
+    is_cvs_adc3 = state.method.level >= 3 and state.ground_state.has_core_occupied_space
+
+    # Ground-state energies
+    mp = state.ground_state
+    mp_energy = mp.energy(state.method.level if not is_cvs_adc3 else 2)
+    mp_corr = 0.0
+    if state.method.level > 1:
+        core.print_out("Ground state energy breakdown:\n")
+        core.print_out("    Energy             SCF   {0:15.8g} [Eh]\n".format(ref_wfn.energy()))
+        for level in range(2, state.method.level + 1):
+            if level >= 3 and is_cvs_adc3:
+                continue
+            energy = mp.energy_correction(level)
+            mp_corr += energy
+            adc_wfn.set_variable(f"MP{level} correlation energy", energy)
+            adc_wfn.set_variable(f"MP{level} total energy", mp.energy(level))
+            core.print_out(f"    Energy correlation MP{level}   {energy:15.8g} [Eh]\n")
+        core.print_out("    Energy             total {0:15.8g} [Eh]\n".format(mp_energy))
+    adc_wfn.set_variable("current correlation energy", mp_corr)
+    adc_wfn.set_variable("current energy", mp_energy)
+
+    # Set results of excited-states computation
+    # TODO Does not work: Can't use strings
+    # adc_wfn.set_variable("excitation kind", state.kind)
+    adc_wfn.set_variable("number of iterations", state.n_iter)
+    adc_wfn.set_variable(name + " excitation energies",
+                         core.Matrix.from_array(state.excitation_energies.reshape(-1, 1)))
+    adc_wfn.set_variable("number of excited states", len(state.excitation_energies))
+
+    core.print_out("\n\n  ==> Excited states summary <==  \n")
+    core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")
+
+    # TODO Setting the excitation amplitude elements inside the wavefunction is a little
+    #      challenging, since for each excitation vector one needs to extract the elements
+    #      and map the indices from the adcc to the Psi4 convention. For this reason it
+    #      is not yet done.
+
+    core.print_out("\n  ==> Dominant amplitudes per state <==  \n\n")
+    tol_ampl = core.get_option("ADC", "CUTOFF_AMPS_PRINT")
+    core.print_out(state.describe_amplitudes(tolerance=tol_ampl) + "\n\n")
+
+    # Shove variables into global space
+    for k, v in adc_wfn.variables().items():
+        core.set_variable(k, v)
+
+    if do_timer:
+        core.tstop()
+    adc_wfn.adcc_state = state
+    return adc_wfn
+
+
+def run_adcc_property(name, **kwargs):
+    """Run a ADC excited-states property calculation in adcc
+    and return the resulting properties.
+
+    """
+    # TODO Things available in ADCC, but not yet implemented here:
+    #      Export of difference and transition density matrices for all states
+
+    properties = [prop.upper() for prop in kwargs.pop('properties')]
+    valid_properties = ['DIPOLE', 'OSCILLATOR_STRENGTH', 'TRANSITION_DIPOLE']
+    unknown_properties = [prop for prop in properties if prop not in valid_properties]
+
+    if unknown_properties:
+        alternatives = ""
+        alt_method_name = p4util.text.find_approximate_string_matches(unknown_properties[0],
+                                                                      valid_properties, 2)
+        if alt_method_name:
+            alternatives = " Did you mean? " + " ".join(alt_method_name)
+
+        raise ValidationError("ADC property: Feature '{}' is not recognized. {}"
+                              "".format(unknown_properties[0], alternatives))
+
+    # Start timer
+    do_timer = kwargs.pop("do_timer", True)
+    if do_timer:
+        core.tstart()
+    adc_wfn = run_adcc(name, do_timer=False, **kwargs)
+    state = adc_wfn.adcc_state
+    hf = state.reference_state
+    mp = state.ground_state
+
+    # Formats and indention
+    ind = "    "
+    def format_vector(label, data):
+        assert data.ndim == 1
+        return f"{label:<40s} " + " ".join(f"{d:12.6g}" for d in data)
+
+    if "DIPOLE" in properties:
+        lines = ["\nGround state properties"]
+        lines += [ind + "Hartree-Fock (HF)"]
+        lines += [ind + ind + format_vector("Dipole moment (in a.u.)", hf.dipole_moment)]
+
+        if state.method.level > 1:
+            lines += [ind + "Møller Plesset 2nd order (MP2)"]
+            lines += [ind + ind + format_vector("Dipole moment (in a.u.)", mp.dipole_moment(2))]
+            for i, cart in enumerate(["X", "Y", "Z"]):
+                adc_wfn.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
+                adc_wfn.set_variable("current dipole " + cart, mp.dipole_moment(2)[i])
+        lines += [""]
+        core.print_out("\n".join(lines) + "\n")
+
+    computed = {}
+    if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
+        data = state.transition_dipole_moments
+        computed["Transition dipole moment (in a.u.)"] = data
+        adc_wfn.set_variable(name + " transition dipoles", core.Matrix.from_array(data))
+
+    if "OSCILLATOR_STRENGTH" in properties:
+        data = state.oscillator_strengths.reshape(-1, 1)
+        computed["Oscillator strength (length gauge)"] = data
+        adc_wfn.set_variable(name + " oscillator strengths", core.Matrix.from_array(data))
+
+    if "DIPOLE" in properties:
+        data = state.state_dipole_moments
+        computed["State dipole moment (in a.u.)"] = data
+        adc_wfn.set_variable(name + " state dipoles", core.Matrix.from_array(data))
+
+    core.print_out("\nExcited state properties:\n")
+    n_states = adc_wfn.variable("number of excited states")
+    for i in range(int(n_states)):
+        lines = [ind + f"Excited state  {i}"]
+        for prop, data in sorted(computed.items()):
+            lines += [ind + ind + format_vector(prop, data[i])]
+        core.print_out("\n".join(lines) + "\n")
+
+    # Shove variables into global space
+    for k, v in adc_wfn.variables().items():
+        core.set_variable(k, v)
+
+    if do_timer:
+        core.tstop()
+    return adc_wfn
 
 
 def run_detci(name, **kwargs):

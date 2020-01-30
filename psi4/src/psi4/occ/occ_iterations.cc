@@ -72,17 +72,15 @@ void OCCWave::occ_iterations() {
     // If diis?
     // if (nooA + nooB != 1) {
     if (do_diis_ == 1) {
-        nvar = num_vecs + 1;
-        vecsA = new Array2d("Alpha MO DIIS Vectors", num_vecs, nidpA);
-        errvecsA = new Array2d("Alpha MO DIIS Error Vectors", num_vecs, nidpA);
-        vecsA->zero();
-        errvecsA->zero();
-
-        if (reference_ == "UNRESTRICTED") {
-            vecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
-            errvecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
-            vecsB->zero();
-            errvecsB->zero();
+        // It's safe to store O(o*v) quantities in core, but we'll be merging this with T2 amplitude DIIS soon!
+        orbitalDiis = new DIISManager(num_vecs, "OCC Orbital Amplitude DIIS", DIISManager::LargestError, DIISManager:: OnDisk);
+        // The error vectors are wogA/wogB, but kappa_bar_ has the same dimensions and is (unlike wog) a Vector.
+        if (reference_ == "RESTRICTED") {
+            orbitalDiis->set_error_vector_size(1, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get());
+            orbitalDiis->set_vector_size(1, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get());
+        } else if (reference_ == "UNRESTRICTED") {
+            orbitalDiis->set_error_vector_size(2, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::Vector, kappa_bar_[SpinType::Beta].get());
+            orbitalDiis->set_vector_size(2, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::Vector, kappa_bar_[SpinType::Beta].get());
         }
     }
     //}
@@ -372,7 +370,6 @@ void OCCWave::occ_iterations() {
     delete wog_intA;
     delete kappaA;
     delete kappa_newA;
-    delete kappa_barA;
 
     if (reference_ == "UNRESTRICTED") {
         delete[] idprowB;
@@ -382,14 +379,10 @@ void OCCWave::occ_iterations() {
         delete wog_intB;
         delete kappaB;
         delete kappa_newB;
-        delete kappa_barB;
     }
 
-    if (do_diis_ == 1) {
-        delete vecsA;
-        delete errvecsA;
-        if (reference_ == "UNRESTRICTED") delete vecsB;
-        if (reference_ == "UNRESTRICTED") delete errvecsB;
+    if (do_diis_) {
+        delete orbitalDiis;
     }
 
     // Clean up the mess of ORB-RESP

@@ -4,7 +4,7 @@ from .addons import hardware_nvidia_gpu, using_dftd3, using_gcp, using_cppe
 import json
 
 import qcengine as qcng
-from qcengine.testing import using_mp2d
+from qcengine.testing import using
 
 import psi4
 
@@ -173,7 +173,7 @@ def test_chemps2():
 
 
 @pytest.mark.smoke
-@using_mp2d
+@using('mp2d')
 def test_mp2d():
     eneyne = psi4.geometry("""
     C   0.000000  -0.667578  -2.124659

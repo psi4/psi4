@@ -48,9 +48,12 @@ def multi_level(func, **kwargs):
     ptype = kwargs['ptype']
     return_wfn = kwargs.get('return_wfn', False)
     kwargs['return_wfn'] = True
-    levels = kwargs.pop('levels')
-    for i in levels:
-        if isinstance(i, str): levels[i.lower()] = levels.pop(i)
+    levels = {}
+    for k, v in kwargs.pop('levels').items():
+        if isinstance(k, str):
+            levels[k.lower()] = v
+        else:
+            levels[k] = v
     supersystem = levels.pop('supersystem', False)
     molecule = kwargs.get('molecule', core.get_active_molecule())
     kwargs['bsse_type'] = [kwargs['bsse_type']] if isinstance(kwargs['bsse_type'], str) else kwargs['bsse_type']

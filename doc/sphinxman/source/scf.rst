@@ -337,31 +337,57 @@ Orthogonalization
 ~~~~~~~~~~~~~~~~~
 
 One of the first steps in the SCF procedure is the determination of an
-orthogonal basis (known as the OSO basis) from the atomic orbital basis (known
-as the AO basis). The Molecular Orbital basis (MO basis) is then built as a
-particular unitary transformation of the OSO basis. In |PSIfour|, the
-determination of the OSO basis is accomplished via either symmetric or canonical
-orthogonalization. Symmetric orthogonalization uses the symmetric inverse square
-root of the overlap matrix for the orthogonalization matrix. Use of symmetric
-orthogonalization always yields the same number of OSO functions (and thereby
-MOs) as AO functions. However, this may lead to numerical problems if the
-overlap matrix has small eigenvalues, which may occur for large systems or for
-systems where diffuse basis sets are used. This problem may be avoided by using
-canonical orthogonalization, in which an asymmetric inverse square root of the
-overlap matrix is formed, with numerical stability enhanced by the elimination
-of eigenvectors corresponding to very small eigenvalues. As a few combinations
-of AO basis functions may be discarded, the number of canonical-orthogonalized
-OSOs and MOs may be slightly smaller than the number of AOs. In |PSIfour|,
-symmetric orthogonalization is used by default, unless the smallest overlap
-eigenvalue falls below the user-supplied double option |scf__s_tolerance|, which
-defaults to 1E-7. If the smallest eigenvalue is below this cutoff, canonical
-orthogonalization is forced, and all eigenvectors corresponding to eigenvalues
-below the cutoff are eliminated.  Use of canonical orthogonalization can be
-forced by setting the |scf__s_orthogonalization| option to ``CANONICAL``. Note
-that in practice, the MOs and OSOs are built separately within each irrep from
-the symmetry-adapted combinations of AOs known as Unique Symmetry Orbitals
-(USOs).  For canonical orthogonalization, this implies that the number of MOs
-and OSOs per irrep may be slightly smaller than the number of USOs per irrep.
+orthogonal basis (known as the OSO basis) from the atomic orbital
+basis (known as the AO basis). The Molecular Orbital basis (MO basis)
+is then built as a particular unitary transformation of the OSO
+basis. In |PSIfour|, the determination of the OSO basis is
+accomplished via either symmetric, canonical, or partial Cholesky
+orthogonalization.
+
+Symmetric orthogonalization uses the symmetric inverse square root of
+the overlap matrix for the orthogonalization matrix. Use of symmetric
+orthogonalization always yields the same number of OSO functions (and
+thereby MOs) as AO functions. However, this may lead to numerical
+problems if the overlap matrix has small eigenvalues, which may occur
+for large systems or for systems where diffuse basis sets are used.
+
+This problem may be avoided by using canonical orthogonalization, in
+which an asymmetric inverse square root of the overlap matrix is
+formed, with numerical stability enhanced by the elimination of
+eigenvectors corresponding to very small eigenvalues. As a few
+combinations of AO basis functions may be discarded, the number of
+canonical-orthogonalized OSOs and MOs may be slightly smaller than the
+number of AOs.
+
+When the basis set is too overcomplete, the eigendecomposition of the
+overlap matrix is no longer numerically stable. In this case the
+partial Cholesky decomposition can be used to pick a subset of basis
+functions that span a sufficiently complete set, see
+[Lehtola:2019:241102]. This subset can then be orthonormalized as
+usual, and the rest of the functions hidden from the calculation.
+
+In |PSIfour|, symmetric orthogonalization is used by default, unless
+the smallest overlap eigenvalue falls below the user-supplied double
+option |scf__s_tolerance|, which defaults to 1E-7. If the smallest
+eigenvalue is below this cutoff, canonical orthogonalization is
+forced, and all eigenvectors corresponding to eigenvalues below the
+cutoff are eliminated.
+
+If the eigendecomposition is detected to be numerically unstable - the
+reciprocal condition number of the overlap matrix to be smaller than
+the machine epsilon - the partial Cholesky decomposition is undertaken
+until |scf__s_cholesky_tolerance|, which defaults to 1E-8.
+
+Use of symmetric, canonical, and partial Cholesky orthogonalization
+can be forced by setting the |scf__s_orthogonalization| option to
+``SYMMETRIC``, ``CANONICAL``, or ``PARTIALCHOLESKY``,
+respectively.
+
+Note that in practice, the MOs and OSOs are built separately within
+each irrep from the symmetry-adapted combinations of AOs known as
+Unique Symmetry Orbitals (USOs).  For canonical orthogonalization,
+this implies that the number of MOs and OSOs per irrep may be slightly
+smaller than the number of USOs per irrep.
 
 A contrived example demonstrating OSOs/MOs vs. AOs with symmetry is shown
 below::
