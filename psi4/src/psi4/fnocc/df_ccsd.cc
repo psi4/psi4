@@ -243,7 +243,6 @@ double DFCoupledCluster::compute_energy() {
         free(Qvv);
     }
 
-
     // free remaining memory
     free(Fia);
     free(Fai);
@@ -712,7 +711,8 @@ void DFCoupledCluster::AllocateMemory() {
     Ca = reference_wavefunction_->Ca()->pointer();
 
     // one-electron integrals
-    auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
+    //    auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
+    auto mints = std::make_shared<MintsHelper>(reference_wavefunction_);
     H = mints->so_kinetic();
     H->add(mints->so_potential());
 
@@ -924,5 +924,5 @@ void DFCoupledCluster::Vabcd1() {
     }
     C_DCOPY(nQ * v * v, integrals, 1, Qvv, 1);
 }
-}
-}  // end of namespaces
+}  // namespace fnocc
+}  // namespace psi

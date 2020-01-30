@@ -1190,19 +1190,19 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2) {
     return Ispin;
 }
 
-bool MintsHelper::are_ints_cached(const std::string &label) {
-    auto it = cached_oe_ints_.find(label);
+bool MintsHelper::are_ints_cached(const std::string &label, bool include_perturbation) {
+    auto it = cached_oe_ints_.find(std::make_pair(label, include_perturbation));
     return it != cached_oe_ints_.end();
 }
 
-void MintsHelper::cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string &label) {
+void MintsHelper::cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string &label, bool include_perturbation) {
+    auto p = std::make_pair(label, include_perturbation);
     if (factory_->nirrep() == 1) {
-        //        ao_ints.set_name(label);
-        cached_oe_ints_[label] = ao_ints;
+        cached_oe_ints_[p] = ao_ints;
     } else {
         SharedMatrix so_ints_sym(factory_->create_matrix(label));
         so_ints_sym->apply_symmetry(ao_ints, petite_list()->aotoso());
-        cached_oe_ints_[label] = so_ints_sym;
+        cached_oe_ints_[p] = so_ints_sym;
     }
 }
 
@@ -1259,30 +1259,32 @@ SharedMatrix MintsHelper::so_potential_nr(bool include_perturbations) {
     return potential_mat;
 }
 
-SharedMatrix MintsHelper::so_overlap() {
+SharedMatrix MintsHelper::so_overlap(bool include_perturbations) {
     std::string label(PSIF_SO_S);
-    if (!are_ints_cached(label)) {
+    auto p = std::make_pair(label, include_perturbations);
+    if (!are_ints_cached(label, include_perturbations)) {
         if (options_.get_str("RELATIVISTIC") == "X2C") {
             // generate so_overlap, so_kinetic, so_potential and cache them
-            compute_so_x2c_ints();
+            compute_so_x2c_ints(include_perturbations);
         } else {
-            cached_oe_ints_[label] = so_overlap_nr();
+            cached_oe_ints_[p] = so_overlap_nr();
         }
     }
-    return cached_oe_ints_[label];
+    return cached_oe_ints_[p];
 }
 
-SharedMatrix MintsHelper::so_kinetic() {
+SharedMatrix MintsHelper::so_kinetic(bool include_perturbations) {
     std::string label(PSIF_SO_T);
-    if (!are_ints_cached(label)) {
+    auto p = std::make_pair(label, include_perturbations);
+    if (!are_ints_cached(label, include_perturbations)) {
         if (options_.get_str("RELATIVISTIC") == "X2C") {
             // generate so_overlap, so_kinetic, so_potential and cache them
-            compute_so_x2c_ints();
+            compute_so_x2c_ints(include_perturbations);
         } else {
-            cached_oe_ints_[label] = so_kinetic_nr();
+            cached_oe_ints_[p] = so_kinetic_nr();
         }
     }
-    return cached_oe_ints_[label];
+    return cached_oe_ints_[p];
 }
 
 SharedMatrix MintsHelper::so_ecp() {
@@ -1293,33 +1295,34 @@ SharedMatrix MintsHelper::so_ecp() {
         outfile->Printf("\n\tWarning! ECP integrals requested, but no ECP basis detected.  Returning zeros.\n");
         return ecp_mat;
     }
-    if (!are_ints_cached(label)) {
-        cache_ao_to_so_ints(ao_ecp(), label);
+    if (!are_ints_cached(label, false)) {
+        cache_ao_to_so_ints(ao_ecp(), label, false);
     }
-    return cached_oe_ints_[label];
+    auto p = std::make_pair(label, false);
+    return cached_oe_ints_[p];
 }
 
 SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
     std::string label(PSIF_SO_V);
-    if (!are_ints_cached(label)) {
+    auto p = std::make_pair(label, include_perturbations);
+    if (!are_ints_cached(label, include_perturbations)) {
         if (options_.get_str("RELATIVISTIC") == "X2C") {
             // generate so_overlap, so_kinetic, so_potential and cache them
             compute_so_x2c_ints(include_perturbations);
         } else {
-            cached_oe_ints_[label] = so_potential_nr(include_perturbations);
-
+            cached_oe_ints_[p] = so_potential_nr(include_perturbations);
             // Add DKH correction if requested
             if (options_.get_str("RELATIVISTIC") == "DKH") {
                 if (include_perturbations) {
                     int dkh_order = options_.get_int("DKH_ORDER");
                     SharedMatrix dkh = so_dkh(dkh_order);
                     outfile->Printf("    Adding Douglas-Kroll-Hess corrections to the potential integrals.\n");
-                    cached_oe_ints_[label]->add(dkh);
+                    cached_oe_ints_[p]->add(dkh);
                 }
             }
         }
     }
-    return cached_oe_ints_[label];
+    return cached_oe_ints_[p];
 }
 
 void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
@@ -1384,12 +1387,12 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     SharedMatrix so_kinetic_x2c = so_kinetic_nr();
     SharedMatrix so_potential_x2c = so_potential_nr(include_perturbations);
 
-    std::string perturb_with = options_.get_str("PERTURB_WITH");
     std::vector<double> lambda(3, 0.0);
-    outfile->Printf("perturb_with = %s", perturb_with.c_str());
 
     if (include_perturbations) {
         if (options_.get_bool("PERTURB_H")) {
+            std::string perturb_with = options_.get_str("PERTURB_WITH");
+            outfile->Printf("\n  perturb_with = %s", perturb_with.c_str());
             if (perturb_with == "DIPOLE_X")
                 lambda[0] = options_.get_double("PERTURB_MAGNITUDE");
             else if (perturb_with == "DIPOLE_Y")
@@ -1411,9 +1414,9 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
                    so_potential_x2c, lambda);
 
     // Overwrite cached integrals
-    cached_oe_ints_[PSIF_SO_S] = so_overlap_x2c;
-    cached_oe_ints_[PSIF_SO_T] = so_kinetic_x2c;
-    cached_oe_ints_[PSIF_SO_V] = so_potential_x2c;
+    cached_oe_ints_[std::make_pair(PSIF_SO_S, include_perturbations)] = so_overlap_x2c;
+    cached_oe_ints_[std::make_pair(PSIF_SO_T, include_perturbations)] = so_kinetic_x2c;
+    cached_oe_ints_[std::make_pair(PSIF_SO_V, include_perturbations)] = so_potential_x2c;
 }
 
 std::vector<SharedMatrix> MintsHelper::so_dipole() {

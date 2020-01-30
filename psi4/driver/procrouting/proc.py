@@ -4036,6 +4036,13 @@ def run_fnodfcc(name, **kwargs):
                                         "RIFIT", core.get_global_option("BASIS"))
     ref_wfn.set_basisset("DF_BASIS_CC", aux_basis)
 
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+        rel_bas = core.BasisSet.build(ref_wfn.molecule(), "BASIS_RELATIVISTIC",
+                                          core.get_option("SCF", "BASIS_RELATIVISTIC"),
+                                          "DECON", core.get_global_option('BASIS'),
+                                          puream=ref_wfn.basisset().has_puream())
+        ref_wfn.set_basisset('BASIS_RELATIVISTIC',rel_bas)
+
     fnocc_wfn = core.fnocc(ref_wfn)
 
     optstash.restore()
@@ -4144,6 +4151,13 @@ def run_fnocc(name, **kwargs):
                                             "JKFIT", core.get_global_option('BASIS'),
                                             puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
+
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+        rel_bas = core.BasisSet.build(ref_wfn.molecule(), "BASIS_RELATIVISTIC",
+                                          core.get_option("SCF", "BASIS_RELATIVISTIC"),
+                                          "DECON", core.get_global_option('BASIS'),
+                                          puream=ref_wfn.basisset().has_puream())
+        ref_wfn.set_basisset('BASIS_RELATIVISTIC',rel_bas)
 
     fnocc_wfn = core.fnocc(ref_wfn)
 
