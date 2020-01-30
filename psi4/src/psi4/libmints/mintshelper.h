@@ -56,10 +56,16 @@ class PSI_API MintsHelper {
     std::shared_ptr<MatrixFactory> factory_;
     std::shared_ptr<Molecule> molecule_;
     std::shared_ptr<IntegralFactory> integral_;
+
+    /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
+
+    /// DF/RI/F12/etc basis sets
+    std::map<std::string, std::shared_ptr<BasisSet>> basissets_;
+
     std::shared_ptr<SOBasisSet> sobasis_;
     std::shared_ptr<TwoBodyAOInt> eriInts_;
-    std::shared_ptr<BasisSet> rel_basisset_;
+
     int print_;
     int nthread_;
 
@@ -139,7 +145,10 @@ class PSI_API MintsHelper {
     /// Integral factory being used
     std::shared_ptr<IntegralFactory> integral() const;
 
-    void set_rel_basisset(std::shared_ptr<BasisSet> rel_basis) { rel_basisset_ = rel_basis; }
+    /// Getters and setters for other basis sets
+    std::shared_ptr<BasisSet> get_basisset(std::string label);
+    void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
+    bool basisset_exists(std::string label);
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
