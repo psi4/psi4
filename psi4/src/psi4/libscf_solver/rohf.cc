@@ -107,15 +107,7 @@ void ROHF::common_init() {
 
 void ROHF::format_guess() {
     // Need to build Ct_
-
-    // Canonical Orthogonalization
-    if (X_->rowspi() != X_->colspi()) {
-        throw PSIEXCEPTION("ROHF::format_guess: 'GUESS READ' is not available for canonical orthogonalization cases.");
-
-        // Symmetric Orthogonalization
-    } else {
-        Ct_ = linalg::triplet(X_, S_, Ca_);
-    }
+    Ct_ = linalg::triplet(X_, S_, Ca_, true, false, false);
 }
 
 void ROHF::semicanonicalize() {

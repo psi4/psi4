@@ -96,6 +96,8 @@ Matrix &Matrix::operator=(const Matrix &c) {
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
     name_ = c.name();
+    rowspi_ = c.rowspi_;
+    colspi_ = c.colspi_;
     alloc();
     copy_from(c.matrix_);
 
@@ -284,6 +286,8 @@ void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const
 }
 
 void Matrix::init(const Dimension &l_rowspi, const Dimension &l_colspi, const std::string &name, int symmetry) {
+    if (l_rowspi.n() != l_colspi.n()) throw PSIEXCEPTION("Matrix rows and columns have different numbers of irreps!\n");
+
     name_ = name;
     symmetry_ = symmetry;
     nirrep_ = l_rowspi.n();
@@ -688,7 +692,7 @@ double **Matrix::to_block_matrix() const {
         sizec += colspi_[h ^ symmetry_];
     }
 
-    auto *col_offset = new int[nirrep_];
+    std::vector<int> col_offset(nirrep_);
     col_offset[0] = 0;
     for (int h = 1; h < nirrep_; ++h) {
         col_offset[h] = col_offset[h - 1] + colspi_[h - 1];
@@ -707,7 +711,6 @@ double **Matrix::to_block_matrix() const {
         //        offsetc += colspi_[h^symmetry_];
     }
 
-    delete[] col_offset;
     return temp;
 }
 
@@ -1582,12 +1585,12 @@ void Matrix::project_out(Matrix &constraints) {
 
     //    constraints.print();
 
-    double *v = new double[coldim()];
+    std::vector<double> v(coldim());
     //    outfile->Printf( "coldim(): %d\n", coldim());
     for (int h = 0; h < nirrep(); ++h) {
         for (int i = 0; i < rowdim(h); ++i) {
             //            outfile->Printf( "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i);
-            memcpy(v, temp[h][i], sizeof(double) * coldim(h));
+            memcpy(v.data(), temp[h][i], sizeof(double) * coldim(h));
 
             //            outfile->Printf( "temp[%d][] ", h);
             //            for(int z=0; z<coldim(h); ++z)
@@ -1619,7 +1622,7 @@ void Matrix::project_out(Matrix &constraints) {
 
             // At this point all constraints have been projected out of "v"
             // Normalize it add Schmidt orthogonalize it against this
-            double normval = C_DDOT(coldim(h), v, 1, v, 1);
+            double normval = C_DDOT(coldim(h), v.data(), 1, v.data(), 1);
             if (normval > 1.0E-10) {
                 normval = sqrt(normval);
                 for (int j = 0; j < coldim(h); ++j) v[j] /= normval;
@@ -1628,12 +1631,10 @@ void Matrix::project_out(Matrix &constraints) {
                 //                for(int z=0; z<coldim(h); ++z)
                 //                    outfile->Printf( "%lf ", v[z]);
                 //                outfile->Printf( "\n");
-                schmidt_add_row(h, i, v);
+                schmidt_add_row(h, i, v.data());
             }
         }
     }
-
-    delete[] v;
 }
 
 double Matrix::vector_dot(const Matrix *const rhs) {
@@ -1688,13 +1689,13 @@ void Matrix::diagonalize(SharedMatrix &metric, SharedMatrix & /*eigvectors*/, st
     Matrix m(metric);
 
     int lwork = 3 * max_nrow();
-    double *work = new double[lwork];
+    std::vector<double> work(lwork);
 
     for (int h = 0; h < nirrep_; ++h) {
         if (!rowspi_[h] && !colspi_[h]) continue;
 
         int err = C_DSYGV(1, 'V', 'U', rowspi_[h], t.matrix_[h][0], rowspi_[h], m.matrix_[h][0], rowspi_[h],
-                          eigvalues->pointer(h), work, lwork);
+                          eigvalues->pointer(h), work.data(), lwork);
 
         if (err != 0) {
             if (err < 0) {
@@ -1711,7 +1712,6 @@ void Matrix::diagonalize(SharedMatrix &metric, SharedMatrix & /*eigvectors*/, st
 
         // TODO: Sort the data according to eigenvalues.
     }
-    delete[] work;
 }
 
 std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps() {
@@ -1757,19 +1757,16 @@ void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
         double **Up = U->pointer(h);
         double **Vp = V->pointer(h ^ symmetry_);
 
-        int *iwork = new int[8L * k];
+        std::vector<int> iwork(8L * k);
 
         // Workspace Query
         double lwork;
-        int info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, &lwork, -1, iwork);
+        int info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, &lwork, -1, iwork.data());
 
-        double *work = new double[(int)lwork];
+        std::vector<double> work((int)lwork);
 
         // SVD
-        info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, work, (int)lwork, iwork);
-
-        delete[] work;
-        delete[] iwork;
+        info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, work.data(), (int)lwork, iwork.data());
 
         if (info != 0) {
             if (info < 0) {
@@ -1802,19 +1799,16 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
             double **Up = U->pointer(h);
             double **Vp = V->pointer(h ^ symmetry_);
 
-            int *iwork = new int[8L * k];
+            std::vector<int> iwork(8L * k);
 
             // Workspace Query
             double lwork;
-            int info = C_DGESDD('A', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], m, &lwork, -1, iwork);
+            int info = C_DGESDD('A', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], m, &lwork, -1, iwork.data());
 
-            double *work = new double[(int)lwork];
+            std::vector<double> work((int)lwork);
 
             // SVD
-            info = C_DGESDD('A', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], m, work, (int)lwork, iwork);
-
-            delete[] work;
-            delete[] iwork;
+            info = C_DGESDD('A', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], m, work.data(), (int)lwork, iwork.data());
 
             if (info != 0) {
                 if (info < 0) {
@@ -1975,6 +1969,71 @@ void Matrix::cholesky_factorize() {
             }
         }
     }
+    // Zero the upper triangle which hasn't been touched by LAPACK
+    zero_upper();
+}
+
+void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) {
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::pivoted_cholesky: Matrix is non-totally symmetric.");
+    }
+
+    // Cholesky basis size
+    Dimension nchol(rowspi_);
+
+    // Pivot indices
+    pivot.clear();
+    pivot.resize(nirrep_);
+    // Work array for LAPACK
+    std::vector<double> work(2 * max_nrow());
+
+    for (int h = 0; h < nirrep_; ++h) {
+        if (!rowspi_[h]) continue;
+
+        // Dimension
+        int n = rowspi_[h];
+        // Pivot
+        pivot[h].resize(n);
+
+        // Perform decomposition. Since the matrix is symmetric, row vs column major ordering makes no difference.
+        int rank;
+        int err = C_DPSTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h], pivot[h].data(), &rank, tol, work.data());
+        nchol[h] = rank;
+
+        // Fix pivots, Fortran to C
+        pivot[h].resize(rank);
+        for (int i = 0; i < rank; i++) pivot[h][i]--;
+
+        if (err != 0) {
+            if (err < 0) {
+                outfile->Printf("pivoted_cholesky: C_DPSTRF: argument %d has invalid parameter.\n", -err);
+
+                abort();
+            }
+            if (err > 1) {
+                outfile->Printf(
+                    "pivoted_cholesky: C_DPSTRF error code %d: the matrix A is either rank deficient with computed "
+                    "rank as returned in RANK, or is not positive semidefinite.",
+                    err);
+                abort();
+            }
+        }
+    }
+
+    // Properly sized return matrix
+    auto L = std::make_shared<Matrix>("Cholesky decomposed matrix", nirrep_, rowspi_, nchol);
+    L->zero();
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int m = 0; m < rowspi_[h]; ++m) {
+            for (int n = 0; n < std::min(m + 1, nchol[h]); ++n) {
+              // Psi4 stores matrices as row major, LAPACK as column major
+              L->set(h, m, n, get(h, n, m));
+            }
+        }
+    }
+    // Switch to the properly sized matrix
+    *this = *L;
+    print();
 }
 
 SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative) {
@@ -1986,8 +2045,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     auto K = std::make_shared<Matrix>("L Temp", nirrep_, rowspi_, rowspi_);
 
     // Significant Cholesky columns per irrep
-    int *sigpi = new int[nirrep_];
-    ::memset(static_cast<void *>(sigpi), '\0', nirrep_ * sizeof(int));
+    std::vector<int> sigpi(nirrep_, 0);
 
     for (int h = 0; h < nirrep_; ++h) {
         if (!rowspi_[h]) continue;
@@ -2000,7 +2058,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
         double **Ap = matrix_[h];
 
         // Diagonal (or later Schur complement diagonal)
-        double *Dp = new double[n];
+        std::vector<double> Dp(n);
         for (int i = 0; i < n; i++) Dp[i] = Ap[i][i];
 
         // Vector of completed columns (absolute)
@@ -2016,6 +2074,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
                 if (std::fabs(Dp[i]) > std::fabs(Dp[imax])) imax = i;
 
             double dmax = Dp[imax];
+
             if (std::fabs(dmax) <= delta) break;
 
             if (dmax <= 0.0) {
@@ -2056,12 +2115,10 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
             order.push_back(imax);
         }
         sigpi[h] = nQ;
-
-        delete[] Dp;
     }
 
     // Copy out to properly sized array
-    auto L = std::make_shared<Matrix>("Partial Cholesky Factor", nirrep_, rowspi_, sigpi);
+    auto L = std::make_shared<Matrix>("Partial Cholesky Factor", nirrep_, rowspi_, sigpi.data());
 
     // K->print();
     // L->print();
@@ -2076,7 +2133,6 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
         }
     }
 
-    delete[] sigpi;
     return L;
 }
 
@@ -2155,12 +2211,12 @@ void Matrix::general_invert() {
     }
 
     int lwork = max_nrow() * max_ncol();
-    double *work = new double[lwork];
-    int *ipiv = new int[max_nrow()];
+    std::vector<double> work(lwork);
+    std::vector<int> ipiv(max_nrow());
 
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] && colspi_[h]) {
-            int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
+            int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv.data());
             if (err != 0) {
                 if (err < 0) {
                     outfile->Printf("invert: C_DGETRF: argument %d has invalid parameter.\n", -err);
@@ -2177,7 +2233,7 @@ void Matrix::general_invert() {
                 }
             }
 
-            err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
+            err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv.data(), work.data(), lwork);
             if (err != 0) {
                 if (err < 0) {
                     outfile->Printf("invert: C_DGETRI: argument %d has invalid parameter.\n", -err);
@@ -2195,8 +2251,6 @@ void Matrix::general_invert() {
             }
         }
     }
-    delete[] ipiv;
-    delete[] work;
 }
 
 Dimension Matrix::power(double alpha, double cutoff) {
@@ -2214,16 +2268,15 @@ Dimension Matrix::power(double alpha, double cutoff) {
 
         double **A1 = linalg::detail::matrix(n, n);
         double **A2 = linalg::detail::matrix(n, n);
-        double *a = new double[n];
+        std::vector<double> a(n);
 
         memcpy(static_cast<void *>(A1[0]), static_cast<void *>(A[0]), sizeof(double) * n * n);
 
         // Eigendecomposition
         double lwork;
-        int stat = C_DSYEV('V', 'U', n, A1[0], n, a, &lwork, -1);
-        double *work = new double[(int)lwork];
-        stat = C_DSYEV('V', 'U', n, A1[0], n, a, work, (int)lwork);
-        delete[] work;
+        int stat = C_DSYEV('V', 'U', n, A1[0], n, a.data(), &lwork, -1);
+        std::vector<double> work((int)lwork);
+        stat = C_DSYEV('V', 'U', n, A1[0], n, a.data(), work.data(), (int)lwork);
 
         if (stat) throw PSIEXCEPTION("Matrix::power: C_DSYEV failed");
 
@@ -2249,7 +2302,6 @@ Dimension Matrix::power(double alpha, double cutoff) {
 
         C_DGEMM('T', 'N', n, n, n, 1.0, A2[0], n, A1[0], n, 0.0, A[0], n);
 
-        delete[] a;
         linalg::detail::free(A1);
         linalg::detail::free(A2);
     }
@@ -2351,10 +2403,10 @@ void Matrix::expm(int m, bool scale) {
         // print_mat(D,n,n,outfile);
 
         // Solve exp(A) = N / D = D^{1} N = D \ N
-        int *ipiv = new int[n];
+        std::vector<int> ipiv(n);
 
         // LU = D
-        int info1 = C_DGETRF(n, n, D[0], n, ipiv);
+        int info1 = C_DGETRF(n, n, D[0], n, ipiv.data());
         if (info1) throw PSIEXCEPTION("Matrix::expm: LU factorization of D failed");
 
         // Transpose N before solvation (FORTRAN)
@@ -2372,10 +2424,8 @@ void Matrix::expm(int m, bool scale) {
         // print_mat(N,n,n,outfile);
 
         // D \ N
-        int info2 = C_DGETRS('N', n, n, D[0], n, ipiv, N[0], n);
+        int info2 = C_DGETRS('N', n, n, D[0], n, ipiv.data(), N[0], n);
         if (info2) throw PSIEXCEPTION("Matrix::expm: LU solution of D failed");
-
-        delete[] ipiv;
 
         // outfile->Printf("  ## S ##\n\n");
         // print_mat(N,n,n,outfile);
@@ -2423,8 +2473,8 @@ void Matrix::zero_lower() {
 
     for (int h = 0; h < nirrep_; ++h) {
 #pragma omp parallel for schedule(dynamic)
-        for (int m = 0; m < rowspi_[h]; ++m) {
-            for (int n = 0; n < m; ++n) {
+        for (int n = 0; n < colspi_[h]; ++n) {
+            for (int m = 0; m < std::min(n, rowspi_[h]); ++m) {
                 matrix_[h][m][n] = 0.0;
             }
         }
@@ -2438,8 +2488,8 @@ void Matrix::zero_upper() {
 
     for (int h = 0; h < nirrep_; ++h) {
 #pragma omp parallel for schedule(dynamic)
-        for (int m = 0; m < rowspi_[h]; ++m) {
-            for (int n = 0; n < m; ++n) {
+        for (int n = 0; n < colspi_[h]; ++n) {
+            for (int m = n + 1; m < rowspi_[h]; ++m) {
                 matrix_[h][n][m] = 0.0;
             }
         }
@@ -2708,7 +2758,6 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
             throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
         }
         if (outFile->params->coltot[h] != colspi_[h]) {
-            char *str = new char[100];
             std::stringstream msg;
             msg << "Column count mismatch for irrep " << h << ". Matrix has " << colspi_[h] << " cols and dpdfile2 has "
                 << outFile->params->coltot[h] << ".";
@@ -2726,26 +2775,26 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
 
 void Matrix::write_to_dpdbuf4(dpdbuf4 *outBuf) {
     if (outBuf->params->nirreps != nirrep_) {
-        char *str = new char[100];
-        sprintf(str, "Irrep count mismatch.  Matrix class has %d irreps, but dpdbuf4 has %d.", nirrep_,
-                outBuf->params->nirreps);
-        throw SanityCheckError(str, __FILE__, __LINE__);
+        std::stringstream msg;
+        msg << "Irrep count mismatch.  Matrix class has " << nirrep_ << " irreps, but dpdbuf4 has "
+            << outBuf->params->nirreps << ".";
+        throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
     }
 
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(outBuf, h);
 
         if (outBuf->params->rowtot[h] != rowspi_[h]) {
-            char *str = new char[100];
-            sprintf(str, "Row count mismatch for irrep %d.  Matrix class has %d rows, but dpdbuf4 has %d.", h,
-                    rowspi_[h], outBuf->params->rowtot[h]);
-            throw SanityCheckError(str, __FILE__, __LINE__);
+            std::stringstream msg;
+            msg << "Row count mismatch for irrep " << h << ".  Matrix class has " << rowspi_[h]
+                << " rows, but dpdbuf4 has " << outBuf->params->rowtot[h] << ".";
+            throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
         }
         if (outBuf->params->coltot[h] != colspi_[h]) {
-            char *str = new char[100];
-            sprintf(str, "Column count mismatch for irrep %d.  Matrix class has %d columns, but dpdbuf4 has %d.", h,
-                    colspi_[h], outBuf->params->coltot[h]);
-            throw SanityCheckError(str, __FILE__, __LINE__);
+            std::stringstream msg;
+            msg << "Column count mismatch for irrep " << h << ".  Matrix class has " << colspi_[h]
+                << " rows, but dpdbuf4 has " << outBuf->params->coltot[h] << ".";
+            throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
         }
 
         for (int row = 0; row < rowspi_[h]; ++row) {

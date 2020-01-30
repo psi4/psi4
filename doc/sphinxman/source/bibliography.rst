@@ -396,7 +396,7 @@ Bibliography
    *J. Chem. Phys.* **148**, 164110 (2018).
 
 .. [Morell:2005:205]
-   Christophe Morell, Andr\ |e_acute|\  Grand, and Alejandro Toro-Labb\ |e_acute| 
+   Christophe Morell, Andr\ |e_acute|\  Grand, and Alejandro Toro-Labb\ |e_acute|
    *J. Phys. Chem. A* **109**, 205 (2005).
 
 .. [Martinez-Araya:2015:451]
@@ -429,7 +429,7 @@ Bibliography
 
 .. [Laqua:2018:204111]
    H. Laque, J. Kussmann and C. Ochsenfeld
-   *J. Chem. Phys.* **149**, 204111 (2018) 
+   *J. Chem. Phys.* **149**, 204111 (2018)
 
 .. [Lehtola:2019:1593]
    S. Lehtola
@@ -443,7 +443,19 @@ Bibliography
    S. Lehtola
    *arXiv* preprint 1908.02528 (2019)
 
+.. [Lehtola:2019:241102]
+   S. Lehtola
+   *J. Chem. Phys.* **151**, 241102 (2019), doi: 10.1063/1.5139948.
+
 .. [Olsen:2010:3721]
    J. M. Olsen, K. Aidas, and J. Kongsted.
    *J. Chem. Theory Comput.* **6**, 3721–3734 (2010).
+
+.. [Dreuw:2014:82]
+   A. Dreuw and M. Wormit.
+   *WIREs Comput. Mol. Sci.*  **5**, 82-95 (2014).
+
+.. [Herbst2020]
+   M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw.
+   *WIREs Comput. Mol. Sci.*, **DOI: 10.1002/wcms.1462**, Preprint https://adc-connect.org/q/publications
 

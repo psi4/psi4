@@ -47,6 +47,7 @@
 #define F_DGETRF FC_GLOBAL(dgetrf, DGETRF)
 #define F_DGETRI FC_GLOBAL(dgetri, DGETRI)
 #define F_DPOTRF FC_GLOBAL(dpotrf, DPOTRF)
+#define F_DPSTRF FC_GLOBAL(dpstrf, DPSTRF)
 #define F_DPOTRI FC_GLOBAL(dpotri, DPOTRI)
 #define F_DPOTRS FC_GLOBAL(dpotrs, DPOTRS)
 #define F_DGESVD FC_GLOBAL(dgesvd, DGESVD)
@@ -148,6 +149,7 @@
 #define F_DPOSV FC_GLOBAL(dposv, DPOSV)
 #define F_DPOSVX FC_GLOBAL(dposvx, DPOSVX)
 #define F_DPOTRF FC_GLOBAL(dpotrf, DPOTRF)
+#define F_DPSTRF FC_GLOBAL(dpstrf, DPSTRF)
 #define F_DPOTRI FC_GLOBAL(dpotri, DPOTRI)
 #define F_DPOTRS FC_GLOBAL(dpotrs, DPOTRS)
 #define F_DPPCON FC_GLOBAL(dppcon, DPPCON)
@@ -246,6 +248,7 @@
 #define F_DGETRF dgetrf_
 #define F_DGETRI dgetri_
 #define F_DPOTRF dpotrf_
+#define F_DPSTRF dpstrf_
 #define F_DPOTRI dpotri_
 #define F_DPOTRS dpotrs_
 #define F_DGESVD dgesvd_
@@ -347,6 +350,7 @@
 #define F_DPOSV dposv_
 #define F_DPOSVX dposvx_
 #define F_DPOTRF dpotrf_
+#define F_DPSTRF dpstrf_
 #define F_DPOTRI dpotri_
 #define F_DPOTRS dpotrs_
 #define F_DPPCON dppcon_
@@ -444,6 +448,7 @@
 #define F_DGETRF dgetrf
 #define F_DGETRI dgetri
 #define F_DPOTRF dpotrf
+#define F_DPSTRF dpstrf
 #define F_DPOTRI dpotri
 #define F_DPOTRS dpotrs
 #define F_DGESVD dgesvd
@@ -545,6 +550,7 @@
 #define F_DPOSV dposv
 #define F_DPOSVX dposvx
 #define F_DPOTRF dpotrf
+#define F_DPSTRF dpstrf
 #define F_DPOTRI dpotri
 #define F_DPOTRS dpotrs
 #define F_DPPCON dppcon
@@ -642,6 +648,7 @@
 #define F_DGETRF DGETRF
 #define F_DGETRI DGETRI
 #define F_DPOTRF DPOTRF
+#define F_DPSTRF DPSTRF
 #define F_DPOTRI DPOTRI
 #define F_DPOTRS DPOTRS
 #define F_DGESVD DGESVD
@@ -743,6 +750,7 @@
 #define F_DPOSV DPOSV
 #define F_DPOSVX DPOSVX
 #define F_DPOTRF DPOTRF
+#define F_DPSTRF DPSTRF
 #define F_DPOTRI DPOTRI
 #define F_DPOTRS DPOTRS
 #define F_DPPCON DPPCON
@@ -840,6 +848,7 @@
 #define F_DGETRF DGETRF_
 #define F_DGETRI DGETRI_
 #define F_DPOTRF DPOTRF_
+#define F_DPSTRF DPSTRF_
 #define F_DPOTRI DPOTRI_
 #define F_DPOTRS DPOTRS_
 #define F_DGESVD DGESVD_
@@ -941,6 +950,7 @@
 #define F_DPOSV DPOSV_
 #define F_DPOSVX DPOSVX_
 #define F_DPOTRF DPOTRF_
+#define F_DPSTRF DPSTRF_
 #define F_DPOTRI DPOTRI_
 #define F_DPOTRS DPOTRS_
 #define F_DPPCON DPPCON_

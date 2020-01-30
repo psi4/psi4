@@ -34,29 +34,59 @@
 
 namespace psi {
 
-class PSI_API OverlapOrthog {
+/*! \ingroup MINTS
+ *  \class BasisSetOrthogonalization
+ *  \brief Implements methods for orthogonalizing basis sets.
+ */
+class PSI_API BasisSetOrthogonalization {
    public:
     /// An enum for the types of orthogonalization.
-    enum OrthogMethod { Symmetric, Canonical, Automatic };
+    enum OrthogonalizationMethod { Symmetric, Canonical, PartialCholesky, Automatic };
 
    private:
     int print_;
+
+    /// Matrix to decompose
+    SharedMatrix overlap_;
+    /// Normalized version of the input matrix
+    SharedMatrix normalized_overlap_;
+    /// Normalization coefficients
+    SharedVector normalization_;
+    /// its eigenvectors
+    SharedMatrix eigvec_;
+    /// and eigenvalues
+    SharedVector eigval_;
+    /// Basis function <r^2> values
+    SharedVector rsq_;
 
     /** The tolerance for linearly independent basis functions.
      * The interpretation depends on the orthogonalization
      * method.
      */
     double lindep_tol_;
+    /// The Cholesky decomposition threshold
+    double cholesky_tol_;
     /// The orthogonalization method
-    OrthogMethod orthog_method_;
+    OrthogonalizationMethod orthog_method_;
     /// The orthogonalizing matrix
     SharedMatrix X_;
     /// ... and its inverse
     SharedMatrix Xinv_;
 
     /// Smallest eigenvalue
-    double min_S;
+    double min_S_;
+    /// Reciprocal condition number
+    double rcond_;
     /// @}
+
+    /** Normalizes the basis set. This is important for the partial
+        Cholesky decomposition, as otherwise the functions with most
+        overlap i.e. the most diffuse ones get handled first by the
+        algorithm, which is exactly the wrong way around.
+    */
+    void normalize();
+    /// Once X has been formed, unroll the normalization into X
+    void unroll_normalization();
 
     /// Given X, compute Xinv = S*X
     void compute_inverse();
@@ -66,20 +96,20 @@ class PSI_API OverlapOrthog {
     void compute_symmetric_orthog();
     /// Canonical orthogonalization
     void compute_canonical_orthog();
+    /// Partial Cholesky orthogonalization
+    void compute_partial_cholesky_orthog();
     /// Driver routine
     void compute_orthog_trans();
-
-    /// Decomposed matrix
-    SharedMatrix overlap_;
-    /// Eigenvectors
-    SharedMatrix eigvec_;
-    /// Eigenvalues
-    SharedVector eigval_;
+    /// Check computed basis is orthonormal
+    void check_orth();
+    /// Sort the basis functions from tight to diffuse
+    std::vector<std::vector<int>> sort_indices() const;
 
    public:
-    OverlapOrthog(OrthogMethod method, SharedMatrix overlap, double lindep_tolerance, int print = 0);
+    BasisSetOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap, SharedVector rsq,
+                              double lindep_tolerance, double cholesky_tolerance, int print = 0);
 
-    OrthogMethod orthog_method() const { return orthog_method_; }
+    OrthogonalizationMethod orthog_method() const { return orthog_method_; }
 
     double lindep_tol() const { return lindep_tol_; }
 

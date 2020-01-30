@@ -15,6 +15,7 @@ set {
   reference rohf
   guess gwh
   mp2_type conv
+  max_mograd_convergence 3e-4
 }
 energy('omp2')
 

@@ -1,6 +1,17 @@
 *******************************************************************************
 *******************************************************************************
 
+Thursday, December 19, 2019 -- LAB
+
+[46] Pursuant to sworn affidavit of Kirk Peterson, it's ok to use
+valence JKFIT basis sets for the JKFIT role of core-valence orbital
+basis sets. Accordingly, JKFITs have been attached to the pwCV Dunning
+families. (pCV Dunning families not similarly supplied since they don't
+have RIs defined.)
+
+*******************************************************************************
+*******************************************************************************
+
 Sunday, September 15, 2019 -- LAB
 
 [45] Added qz2p basis translated from CFOUR's GENBAS.

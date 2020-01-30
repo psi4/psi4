@@ -1,4 +1,4 @@
-#! ADC/aug-cc-pVDZ on two water molecules that are distant from 1000 angstroms from each other
+#! ADC(2)/aug-cc-pVDZ on two water molecules that are distant from 1000 angstroms from each other
 
 molecule h2ox2 {
    o                               0.000000    0.000000    0.118621
@@ -18,5 +18,5 @@ set {
 }
 
 ref_energy = -152.52670794053822
-adc_energy = energy('adc')
-compare_values(ref_energy, adc_energy, 7, "ADC GS energy")                            #TEST
+adc_energy = energy('adc(2)')
+compare_values(ref_energy, adc_energy, 7, "ADC(2) GS energy")                            #TEST

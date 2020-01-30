@@ -63,7 +63,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   fcidump
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient
                   fd-freq-gradient-large fd-gradient freq-isotope1 freq-isotope2 fnocc1 fnocc2
-                  fnocc3 fnocc4 frac frac-ip-fitting frac-traverse ghosts gibbs matrix1
+                  fnocc3 fnocc4 fnocc5 frac frac-ip-fitting frac-traverse ghosts gibbs matrix1
                   mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2
@@ -89,10 +89,11 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
                   sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
-                  scf-guess-read2 scf-bs scf1 scf-occ
-                  scf2 scf3 scf4 scf5 scf6 scf7 scf-property serial-wfn soscf-large soscf-ref
+                  scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6 scf7 scf-property serial-wfn soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1
+                  tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2
+                  stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-cholesky-basis
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
@@ -267,6 +268,12 @@ endif()
 if(ENABLE_snsmp2)
     add_subdirectory(snsmp2)
     message(STATUS "Adding test cases: Psi4 + snsmp2")
+endif()
+
+# <<<  adcc  >>>
+if(ENABLE_adcc)
+    add_subdirectory(adcc)
+    message(STATUS "Adding test cases: Psi4 + adcc")
 endif()
 
 # plugin regime

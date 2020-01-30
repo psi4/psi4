@@ -75,7 +75,6 @@ void OCCWave::kappa_msd() {
         // print
         if (print_ > 2) {
             kappaA->print();
-            kappa_barA->print();
         }
 
     }  // end if (reference_ == "RESTRICTED")

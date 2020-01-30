@@ -38,7 +38,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     set(CCBD "${CMAKE_CURRENT_BINARY_DIR}")
 
     # Static-doc reST files
-    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst
+    set(STATICDOC abbr_accents.rst adc.rst adcc.rst appendices.rst basissets.rst
     basissets_byelement.rst bibliography.rst cbs.rst cbs_eqn.rst
     nbody.rst customizing.rst db.rst detci.rst dfmp2.rst
     diatomic.rst documentation.rst energy.rst external.rst fchk.rst

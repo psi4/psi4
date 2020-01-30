@@ -517,16 +517,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix Db_subset(const std::string& basis = "SO") const;
 
     /**
-     * Return the D matrix in the desired basis
-     * @param D matrix in the SO basis to transform
-     * @param C matrix in the SO basis to use for transforms to the MO basis
-     * @param basis the symmetry basis to use
-     *  AO, SO, MO, CartAO
-     * @return the D matrix in the desired basis
-     **/
-    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis) const;
-
-    /**
      * Return the Fa matrix in the desired basis
      * @param basis the symmetry basis to use
      *  AO, SO, MO
@@ -541,16 +531,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
      * @return the matrix in the desired basis
      **/
     SharedMatrix Fb_subset(const std::string& basis = "SO") const;
-
-    /**
-     * Return the F matrix in the desired basis
-     * @param F matrix in the SO basis to transform
-     * @param C matrix in the SO basis to use for transforms to the MO basis
-     * @param basis the symmetry basis to use
-     *  AO, SO, MO, CartAO
-     * @return the F matrix in the desired basis
-     **/
-    SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis) const;
 
     /**
      * Transform a matrix M into the desired basis

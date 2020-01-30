@@ -507,10 +507,10 @@ Density-Fitted and Cholesky-Decomposed Orbital-Optimized Linearized Coupled-Clus
   (doi: `10.1039/c6cp00164e <https://doi.org/10.1039/c6cp00164e>`_).
 
 
-Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Algebraic-Diagrammatic Construction methods (ADC)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-General ADC(2) theory
+General ADC theory
 
 * "Intermediate state representation approach to physical properties of
   electronically excited molecules,"
@@ -518,8 +518,17 @@ General ADC(2) theory
   11449-11464 (2004).
   (doi: `10.1063/1.1752875 <https://doi.org/10.1063/1.1752875>`_).
 
-Theory of "Partially-renormalized" CIS(D) and ADC(2) [PR-CIS(D) and PR-ADC(2)]
-and their implementation in |PSIfour|
+Implementation inside `adcc <https://adc-connect.org>`_,
+the ADC backend used for most ADC methods available in |PSIfour|
+
+* "adcc: A versatile toolkit for rapid development of
+  algebraic-diagrammatic construction methods,"
+  M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw,
+  *WIREs Comput. Mol. Sci.*, *submitted*,
+  Preprint https://adc-connect.org/q/publications
+
+"Partially-renormalized" CIS(D) and ADC(2) [PR-CIS(D) and PR-ADC(2)]
+and the implementation for ADC(2) excitation energies within |PSIfour|
 
 * "Excited State Calculation for Free-Base and Metalloporphyrins with
   the Partially Renormalized Polarization Propagator Approach,"
@@ -687,7 +696,21 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | SAPT                    | RHF            | CONV              | ---          | ---            | threaded                    |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | ADC(2)                  | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           |            |
+    | ADC(1)                  | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | ADC(2)                  | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | ADC(2)-x                | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | ADC(3)                  | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | CVS-ADC(1)              | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | CVS-ADC(2)              | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | CVS-ADC(2)-x            | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | CVS-ADC(3)              | RHF/UHF        | CONV              | ---          | ---            | threaded                    |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | EOM-CC2                 | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+

@@ -329,6 +329,9 @@ void DFOCC::omp2_manager() {
         // if (natorb == "TRUE") nbo();
         // if (occ_orb_energy == "TRUE") semi_canonic();
 
+        // Save MOs to wfn
+        save_mo_to_wfn();
+
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
@@ -341,9 +344,6 @@ void DFOCC::omp2_manager() {
 
         // EKT-IP
         if (ekt_ip_ == "TRUE") ekt_ip();
-
-        // Save MOs to wfn
-        save_mo_to_wfn();
 
     }  // end if (conver == 1)
 }  // end omp2_manager
@@ -2195,6 +2195,9 @@ void DFOCC::omp3_manager() {
         energy_ = Process::environment.globals["OMP3 TOTAL ENERGY"];
         name_ = "DF-OMP3";
 
+        // Save MOs to wfn
+        save_mo_to_wfn();
+
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
@@ -2203,9 +2206,6 @@ void DFOCC::omp3_manager() {
 
         // EKT-IP
         if (ekt_ip_ == "TRUE") ekt_ip();
-
-        // Save MOs to wfn
-        save_mo_to_wfn();
 
     }  // end if (conver == 1)
 
@@ -2729,6 +2729,9 @@ void DFOCC::omp2_5_manager() {
         energy_ = Process::environment.globals["OMP2.5 TOTAL ENERGY"];
         name_ = "DF-OMP2.5";
 
+        // Save MOs to wfn
+        save_mo_to_wfn();
+
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
@@ -2737,9 +2740,6 @@ void DFOCC::omp2_5_manager() {
 
         // EKT-IP
         if (ekt_ip_ == "TRUE") ekt_ip();
-
-        // Save MOs to wfn
-        save_mo_to_wfn();
 
     }  // end if (conver == 1)
 
@@ -3216,6 +3216,9 @@ void DFOCC::olccd_manager() {
         energy_ = Process::environment.globals["OLCCD TOTAL ENERGY"];
         name_ = "DF-OLCCD";
 
+        // Save MOs to wfn
+        save_mo_to_wfn();
+
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
@@ -3224,9 +3227,6 @@ void DFOCC::olccd_manager() {
 
         // EKT-IP
         if (ekt_ip_ == "TRUE") ekt_ip();
-
-        // Save MOs to wfn
-        save_mo_to_wfn();
 
     }  // end if (conver == 1)
 

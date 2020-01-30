@@ -30,9 +30,10 @@
 
 #include "arrays.h"
 
-#include "psi4/libqt/qt.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 
 #include <cstdio>
 #include <cmath>
@@ -1053,5 +1054,12 @@ int Array3i::get(int h, int i, int j) { return A3i_[h][i][j]; }  //
 
 /********************************************************************************************/
 /********************************************************************************************/
+}
+Vector::Vector(const Dimension& dimpi, const occwave::Array1d& array) {
+    nirrep_ = dimpi.n();
+    dimpi_ = dimpi;
+    name_ = array.name();
+    v_ = std::vector<double>(array.array(), array.array() + array.dim1());
+    assign_pointer_offsets();
 }
 }  // End Namespaces

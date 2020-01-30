@@ -237,7 +237,7 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
     std::vector<double> elez = molrec["elez"].cast<std::vector<double>>();
     std::vector<std::string> elem = molrec["elem"].cast<std::vector<std::string>>();
     std::vector<double> mass = molrec["mass"].cast<std::vector<double>>();
-    std::vector<int> real = molrec["real"].cast<std::vector<int>>();
+    std::vector<bool> real = molrec["real"].cast<std::vector<bool>>();
     std::vector<std::string> elbl = molrec["elbl"].cast<std::vector<std::string>>();
 
     size_t nat;
@@ -253,8 +253,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
             std::string label = elbl.at(iat);
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
             std::transform(label.begin(), label.end(), label.begin(), ::toupper);
-            mol->add_unsettled_atom(elez.at(iat) * real.at(iat), geom_unsettled.at(iat), symbol, mass.at(iat),
-                                    elez.at(iat) * real.at(iat), symbol + label, elea.at(iat));
+            mol->add_unsettled_atom(elez.at(iat) * int(real.at(iat)), geom_unsettled.at(iat), symbol, mass.at(iat),
+                                    elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }
 
         std::vector<std::pair<std::string, double>> variables =
@@ -272,8 +272,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
             std::string label = elbl.at(iat);
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
             std::transform(label.begin(), label.end(), label.begin(), ::toupper);
-            mol->add_atom(elez.at(iat) * real.at(iat), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
-                          symbol, mass.at(iat), elez.at(iat) * real.at(iat), symbol + label, elea.at(iat));
+            mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
+                          symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }
     }
 

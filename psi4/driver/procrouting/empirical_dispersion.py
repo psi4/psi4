@@ -29,7 +29,7 @@
 import collections
 
 import numpy as np
-from qcelemental.models import ResultInput
+from qcelemental.models import AtomicInput
 import qcengine as qcng
 
 from psi4 import core
@@ -190,7 +190,7 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine in ['dftd3', 'mp2d']:
-            resi = ResultInput(
+            resi = AtomicInput(
                 **{
                     'driver': 'energy',
                     'model': {
@@ -246,7 +246,7 @@ class EmpiricalDispersion(object):
 
         """
         if self.engine in ['dftd3', 'mp2d']:
-            resi = ResultInput(
+            resi = AtomicInput(
                 **{
                     'driver': 'gradient',
                     'model': {
