@@ -69,7 +69,7 @@ class PSI_API MintsHelper {
     int print_;
     int nthread_;
 
-    std::map<std::string, SharedMatrix> cached_oe_ints_;
+    std::map<std::pair<std::string, bool>, SharedMatrix> cached_oe_ints_;
 
     /// Value which any two-electron integral is below is discarded
     double cutoff_;
@@ -92,9 +92,9 @@ class PSI_API MintsHelper {
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
     void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
     /// Helper function to convert ao integrals to so and cache them
-    void cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string& label);
+    void cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string& label, bool include_perturbation);
     /// Returns true if an integral type is already computed and cached
-    bool are_ints_cached(const std::string& label);
+    bool are_ints_cached(const std::string& label, bool include_perturbation);
 
     /// Computes X2C overlap, kinetic, and potential integrals
     void compute_so_x2c_ints(bool include_perturbations = true);
@@ -286,9 +286,9 @@ class PSI_API MintsHelper {
     /// Vector AO Nabla Integrals
     std::vector<SharedMatrix> ao_nabla();
     /// SO Overlap Integrals
-    SharedMatrix so_overlap();
+    SharedMatrix so_overlap(bool include_perturbations = true);
     /// SO Kinetic Integrals
-    SharedMatrix so_kinetic();
+    SharedMatrix so_kinetic(bool include_perturbations = true);
     /// SO ECP Integrals
     SharedMatrix so_ecp();
     /// SO Potential Integrals
