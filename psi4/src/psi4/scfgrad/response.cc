@@ -1085,14 +1085,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
     size_t per_A = 3L * nso * nso + 1L * nocc * nso;
     size_t max_A = (mem / 2L) / per_A;
     max_A = (max_A > 3 * natom ? 3 * natom : max_A);
-    
-#ifdef USING_BrianQC
-    if (brianCookie != 0) {
-        brianInt cphfSegmentSize = max_A; // FIXME: this might be too large!
-        brianCPHFInit(&brianCookie, &cphfSegmentSize);
-        checkBrian();
-    }
-#endif
 
     std::shared_ptr<JK> jk;
     jk = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_, false, mem);

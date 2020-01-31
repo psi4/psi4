@@ -2419,10 +2419,9 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
         
         if (unrestrictedFlag) {
             Kgrada->add(Kgradb);
-            Kgrada->scale(-1.0);
         }
         else {
-            Kgrada->scale(-2.0);
+            Kgrada->scale(2.0);
         }
         
         std::map<std::string, std::shared_ptr<Matrix>> val;

@@ -191,7 +191,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
                 }
             }
             
-            // TODO: loop over sub-segments if bigger than segment size, or at least assert if bigger            
+            // TODO: loop over sub-segments if bigger than segment size, or at least assert if bigger
             std::vector<double> pseudoCoulombBuffer(segmentSize * fineSize * fineSize);
             std::vector<double> pseudoExchangeBuffer(segmentSize * fineSize * fineSize);
             brianCPHFBuildRepulsion(&brianCookie,
