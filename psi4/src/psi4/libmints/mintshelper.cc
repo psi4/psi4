@@ -665,7 +665,7 @@ SharedMatrix MintsHelper::ao_pvp() {
 
 SharedMatrix MintsHelper::ao_dkh(int dkh_order) {
 #ifdef USING_dkh
-    MintsHelper decon(rel_basisset_);
+    MintsHelper decon(get_basisset("BASIS_RELATIVISTIC"));
     SharedMatrix S = decon.ao_overlap();
     SharedMatrix T = decon.ao_kinetic();
     SharedMatrix Torig = T->clone();
