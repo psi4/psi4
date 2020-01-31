@@ -685,7 +685,7 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order) {
 
     outfile->Printf("    Computing %d-order Douglas-Kroll-Hess integrals.\n", dkh_order);
 
-    int nbf = rel_basisset_->nbf();
+    int nbf = get_basisset("BASIS_RELATIVISTIC")->nbf();
     //    rel_basisset_->print_detail();
 
     // Call DKH code from Markus Reiher
@@ -704,7 +704,7 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order) {
     SharedMatrix S_inv = S->clone();
     S_inv->general_invert();
 
-    SharedMatrix S_cd = ao_overlap(basisset_, rel_basisset_);
+    SharedMatrix S_cd = ao_overlap(basisset_, get_basisset("BASIS_RELATIVISTIC"));
     //    S_cd->print();
 
     auto D = std::make_shared<Matrix>("D", nbf, basisset_->nbf());
