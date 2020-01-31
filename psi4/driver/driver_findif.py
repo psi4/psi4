@@ -34,6 +34,7 @@ from typing import Any, Dict
 import numpy as np
 import pydantic
 from qcelemental.models import DriverEnum, AtomicResult
+from qcelemental import constants
 
 from psi4 import core
 from psi4.driver import p4util, pp, qcdb, nppp10
@@ -92,7 +93,16 @@ def _displace_cart(mass, geom, salc_list, i_m, step_size):
     return disp_geom, label
 
 
-def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, initialize_string, t_project, r_project, initialize, verbose=0):
+def _initialize_findif(mol,
+                       freq_irrep_only,
+                       mode,
+                       stencil_size,
+                       step_size,
+                       initialize_string,
+                       t_project,
+                       r_project,
+                       initialize,
+                       verbose=0):
     """Perform initialization tasks needed by all primary functions.
 
     Parameters
@@ -159,8 +169,8 @@ def _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init
         info = f"    Number of atoms is {n_atom}.\n"
         if method_allowed_irreps != 0x1:
             info += f"    Number of irreps is {n_irrep}.\n"
-        info += "    Number of {!s}SALCs is {:d}.\n".format(
-            "" if method_allowed_irreps != 0x1 else "symmetric ", n_salc)
+        info += "    Number of {!s}SALCs is {:d}.\n".format("" if method_allowed_irreps != 0x1 else "symmetric ",
+                                                            n_salc)
         info += f"    Translations projected? {t_project:d}. Rotations projected? {r_project:d}.\n"
         core.print_out(info)
         logger.info(info)
@@ -377,7 +387,8 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=Tru
     if isinstance(mol, qcdb.Molecule):
         mol = core.Molecule.from_dict(mol.to_dict())
 
-    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, r_project, True, 1)
+    data = _initialize_findif(mol, freq_irrep_only, mode, stencil_size, step_size, init_string, t_project, r_project,
+                              True, 1)
 
     # We can finally start generating displacements.
     ref_geom = np.array(mol.geometry())
@@ -613,6 +624,86 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
         core.print_out("\n-------------------------------------------------------------\n")
 
     return Hx
+
+
+def assemble_dipder_from_dipoles(findifrec, freq_irrep_only):
+    """Compute the dipole derivatives by finite difference of dipoles.
+    Parameters
+    ----------
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
+    freq_irrep_only : int
+        The Cotton ordered irrep to get frequencies for. Choose -1 for all
+        irreps.
+
+    Returns
+    -------
+    dipder : ndarray
+        (3 * nat, 3) Cartesian Dipole Derivatives [Eh/a0^2]
+
+    """
+
+    # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
+    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+
+    pg = mol.point_group()
+    ct = pg.char_table()
+    order = pg.order()
+
+    displacements = findifrec["displacements"]
+
+    def init_string(data):
+        return ("")
+
+    data = _initialize_findif(mol, freq_irrep_only, "2_1", findifrec['stencil_size'], findifrec['step']['size'],
+                              init_string, findifrec['project_translations'], findifrec['project_rotations'], False)
+    salc_indices = data["salc_indices_pi"][0]
+    max_disp = (findifrec["stencil_size"] - 1) // 2  # The numerator had better be divisible by two.
+    d_per_salc = 2 * max_disp
+
+    # Populating with positive and negative displacements for the identity point group
+    dipole = np.zeros(shape=(data['n_salc'], d_per_salc, 3))
+    for salc_index in salc_indices:
+        for j in range(1, max_disp + 1):
+            dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+            dipole[salc_index, max_disp + j - 1] = displacements[f"{salc_index}: {j}"]["dipole"]
+
+    for h in range(1, data["n_irrep"]):
+        # Find the group operation that converts + to - displacements.
+        gamma = ct.gamma(h)
+        for group_op in range(order):
+            if gamma.character(group_op) == -1:
+                break
+        else:
+            raise ValidationError("A symmetric dipole passed for a non-symmetric one.")
+
+        sym_op = np.array(ct.symm_operation(group_op).matrix())
+        salc_indices = data["salc_indices_pi"][h]
+
+        # Creating positive displacements and populating for the other point groups
+        for salc_index in salc_indices:
+            for j in range(1, max_disp + 1):
+                pos_disp_dipole = np.dot(sym_op, displacements[f"{salc_index}: {-j}"]["dipole"].T)
+                dipole[salc_index, max_disp - j] = displacements[f"{salc_index}: {-j}"]["dipole"]
+                dipole[salc_index, max_disp + j - 1] = pos_disp_dipole
+
+    # Computing the dipole derivative by finite differnce
+    if findifrec["stencil_size"] == 3:
+        dipder_q = (dipole[:, 1] - dipole[:, 0]) / (2.0 * findifrec["step"]["size"])
+    elif findifrec["stencil_size"] == 5:
+        dipder_q = (dipole[:, 0] - 8.0 * dipole[:, 1] + 8.0 * dipole[:, 2] -
+                    dipole[:, 3]) / (12.0 * findifrec["step"]["size"])
+
+    # Transform the dipole derivates from mass-weighted SALCs to non-mass-weighted Cartesians
+    B = np.asarray(data["salc_list"].matrix())
+    dipder_cart = np.dot(dipder_q.T, B)
+    dipder_cart = dipder_cart.T.reshape(data["n_atom"], 9)
+
+    massweighter = np.array([mol.mass(a) for a in range(data["n_atom"])])**(0.5)
+    dipder_cart = (dipder_cart.T * massweighter).T
+
+    dipder_cart = dipder_cart.reshape(3 * data["n_atom"], 3)
+    return dipder_cart
 
 
 def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
@@ -929,9 +1020,9 @@ class FiniteDifferenceComputer(BaseComputer):
 
         # logger.debug('FINDIFREC CLASS INIT DATA\n' + pp.pformat(data))
 
-        translations_projection_sound = (not 'embedding_charges' in data['keywords']['function_kwargs'] and
-                                         not core.get_option('SCF', 'PERTURB_H') and
-                                         not hasattr(self.molecule, 'EFP'))
+        translations_projection_sound = (not 'embedding_charges' in data['keywords']['function_kwargs']
+                                         and not core.get_option('SCF', 'PERTURB_H')
+                                         and not hasattr(self.molecule, 'EFP'))
         if 'ref_gradient' in data:
             logger.info("""hessian() using ref_gradient to assess stationary point.""")
             stationary_criterion = 1.e-2  # pulled out of a hat
@@ -946,7 +1037,6 @@ class FiniteDifferenceComputer(BaseComputer):
         else:
             r_project_grad = rotations_projection_sound_grad
             r_project_hess = rotations_projection_sound_hess
-
 
         for kwg in ['dft_functional']:
             if kwg in data:
@@ -1037,6 +1127,7 @@ class FiniteDifferenceComputer(BaseComputer):
 
             self.task_list[label] = self.computer(**packet, **passalong)
 
+
 #        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
 #            _process_displacement(energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
 
@@ -1077,6 +1168,13 @@ class FiniteDifferenceComputer(BaseComputer):
         elif task.driver == 'gradient':
             reference['gradient'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+            if 'CURRENT DIPOLE' in task.extras['qcvars']:
+                reference['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'] / constants.dipmom_au2debye
+            else:
+                reference["dipole"] = np.array([
+                    task.extras["qcvars"]["CURRENT DIPOLE X"], task.extras["qcvars"]["CURRENT DIPOLE Y"],
+                    task.extras["qcvars"]["CURRENT DIPOLE Z"]
+                ]) / constants.dipmom_au2debye
 
         elif task.driver == 'hessian':
             reference['hessian'] = response
@@ -1095,6 +1193,13 @@ class FiniteDifferenceComputer(BaseComputer):
             elif task.driver == 'gradient':
                 displacement['gradient'] = response
                 displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+                if 'CURRENT DIPOLE' in task.extras['qcvars']:
+                    displacement['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'] / constants.dipmom_au2debye
+                else:
+                    displacement["dipole"] = np.array([
+                        task.extras["qcvars"]["CURRENT DIPOLE X"], task.extras["qcvars"]["CURRENT DIPOLE Y"],
+                        task.extras["qcvars"]["CURRENT DIPOLE Z"]
+                    ]) / constants.dipmom_au2debye
 
             elif task.driver == 'hessian':
                 displacement['hessian'] = response
@@ -1108,6 +1213,9 @@ class FiniteDifferenceComputer(BaseComputer):
             self.findifrec["reference"][self.driver.name] = G0
 
         elif self.metameta['mode'] == '2_1':
+            DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
+            self.findifrec["reference"]["dipole derivative"] = DD0
+
             H0 = assemble_hessian_from_gradients(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0
 
@@ -1148,6 +1256,10 @@ class FiniteDifferenceComputer(BaseComputer):
         qcvars['FINDIF NUMBER'] = len(self.task_list)
         qcvars['NUCLEAR REPULSION ENERGY'] = self.molecule.nuclear_repulsion_energy()
         qcvars['CURRENT ENERGY'] = self.findifrec['reference']['energy']
+
+        DD0 = self.findifrec['reference'].get('dipole derivative')
+        if DD0 is not None:
+            qcvars['CURRENT DIPOLE GRADIENT'] = DD0
 
         G0 = self.findifrec['reference'].get('gradient')
         if G0 is not None:
@@ -1242,7 +1354,11 @@ def _hessian_write(wfn):
 def _gradient_write(wfn):
     if core.get_option('FINDIF', 'GRADIENT_WRITE'):
         filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
-        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=wfn.molecule(), energy=wfn.energy())
+        qcdb.gradparse.to_string(np.asarray(wfn.gradient()),
+                                 filename,
+                                 dtype='GRD',
+                                 mol=wfn.molecule(),
+                                 energy=wfn.energy())
 
 
 def _rms(arr):
