@@ -30,7 +30,9 @@ import pickle
 
 from . import dependency_check
 
-from qcelemental import constants
+from qcelemental import PhysicalConstantsContext
+constants = PhysicalConstantsContext("CODATA2018")
+del PhysicalConstantsContext
 from psi4.driver import psifiles as psif
 
 from psi4.driver.molutil import *
