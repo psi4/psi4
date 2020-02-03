@@ -362,12 +362,14 @@ def extractOsaptData(filepath):
 
 def fragmentD3Disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]]) -> Tuple[float, Dict[str, Dict[str, float]]]:
     """Fragments atomic pairwise dispersion contributions from DFTD3 for inclusion in F-SAPT-D.
+
     Arguments
     ---------
     d3disp : numpy.ndarray[float]
         (NA, NB) array of atom-pairwise dispersion computed by DFTD3
     frags : Dict[str, Dict[str, List[str]]]
         Dictionary containing fragment information read from `fA.dat` and `fB.dat`
+
     Returns
     -------
     Edisp : float
@@ -392,6 +394,44 @@ def fragmentD3Disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]]) -
 
     return Edisp * H_to_kcal_, D3frags
 
+def buildOrder2FsaptD(order2r: Dict[str, Dict[str, Dict[str, float]]], frags: Dict[str, Dict[str, List[str]]]) -> Dict[str, Dict[str, Dict[str, float]]]:
+    """Builds total F-SAPT--D from order2r dict containing F-SAPT terms and -D dispersion.
+
+    Arguments
+    ---------
+    order2r : Dict[str, Dict[str, Dict[str, float]]]
+        Dictionary containing reduced order 2 F-SAPT fragment analysis
+    frags : Dict[str, Dict[str, List[str]]]
+        Dictionary containing fragment information read from `fA.dat` and `fB.dat`
+
+    Returns
+    -------
+    D3order2r : Dict[str, Dict[str, Dict[str, float]]]
+        Dictionary containing reduced order 2 F-SAPT fragment analysis, with total F-SAPT--D if -D disp present
+    """
+    flavors = {'F-SAPT0-D3M(BJ)': ['Elst', 'Exch', 'IndAB', 'IndBA', 'D3MBJ'],
+               'F-SAPT0-D3M(0)': ['Elst', 'Exch', 'IndAB', 'IndBA', 'D3MZero']
+              }
+
+    # If D3 dispersion not already in order2r, return unmolested
+    if ('D3MBJ' not in order2r.keys()) and ('D3MZero' not in order2r.keys()):
+        return order2r
+    else:
+        for flavor, terms in flavors.items():
+            # Add term for total F-SAPT--D to order2r
+            order2r[flavor] = {}
+            # iterate over fA:fB order2 pairs
+            for keyA in frags['A']:#.keys():
+                order2r[flavor][keyA] = {}
+                for keyB in frags['B']:#.keys():
+                    val = 0.0
+                    # Add up contributions from terms to get total F-SAPT--D energy
+                    for term in terms:
+                        val += order2r[term][keyA][keyB]
+                    # Save F-SAPT--D energy in order2r[fsapt-d flavor][keyA][keyB]
+                    order2r[flavor][keyA][keyB] = val
+
+        return order2r
 
 def extractOrder2Fsapt(osapt, wsA, wsB, frags):
 
@@ -595,7 +635,8 @@ def printOrder2(order2, fragkeys):
 
     order1A = {}
     order1B = {}
-    for saptkey in saptkeys_:
+    for saptkey in order2.keys():
+    #for saptkey in saptkeys_:
         order1A[saptkey] = {}
         order1B[saptkey] = {}
         for keyA in fragkeys['A']:
@@ -610,37 +651,43 @@ def printOrder2(order2, fragkeys):
             order1B[saptkey][keyB] = val
 
     order0 = {}
-    for saptkey in saptkeys_:
+    for saptkey in order2.keys():
+    #for saptkey in saptkeys_:
         val = 0.0
         for keyA in fragkeys['A']:
             val += order1A[saptkey][keyA]
         order0[saptkey] = val
 
     print('%-9s %-9s ' % ('Frag1', 'Frag2'), end='')
-    for saptkey in saptkeys_:
+    for saptkey in order2.keys():
+    #for saptkey in saptkeys_:
         print('%8s ' % (saptkey), end='')
     print('')
     for keyA in fragkeys['A']:
         for keyB in fragkeys['B']:
             print('%-9s %-9s ' % (keyA, keyB), end='')
-            for saptkey in saptkeys_:
+            for saptkey in order2.keys():
+            #for saptkey in saptkeys_:
                 print('%8.3f ' % (order2[saptkey][keyA][keyB]), end='')
             print('')
 
     for keyA in fragkeys['A']:
         print('%-9s %-9s ' % (keyA, 'All'), end='')
-        for saptkey in saptkeys_:
+        for saptkey in order2.keys():
+        #for saptkey in saptkeys_:
             print('%8.3f ' % (order1A[saptkey][keyA]), end='')
         print('')
 
     for keyB in fragkeys['B']:
         print('%-9s %-9s ' % ('All', keyB), end='')
-        for saptkey in saptkeys_:
+        for saptkey in order2.keys():
+        #for saptkey in saptkeys_:
             print('%8.3f ' % (order1B[saptkey][keyB]), end='')
         print('')
 
     print('%-9s %-9s ' % ('All', 'All'), end='')
-    for saptkey in saptkeys_:
+    for saptkey in order2.keys():
+    #for saptkey in saptkeys_:
         print('%8.3f ' % (order0[saptkey]), end='')
     print('')
 
@@ -688,7 +735,7 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
     holder1 = partitionFragments(fragkeys['A'], frags['A'], Zs['A'], Qs['A'], completeness)
     holder2 = partitionFragments(fragkeys['B'], frags['B'], Zs['B'], Qs['B'], completeness)
 
-    fragkeysr = {}
+    fragkeysr = {} # Dict[str, List[str]]
     fragkeysr['A'] = fragkeys['A']
     fragkeysr['B'] = fragkeys['B']
 
@@ -717,6 +764,7 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
 
     order2  = extractOrder2Fsapt(osapt, total_ws['A'], total_ws['B'], frags)
     order2r = collapseLinks(order2, frags, Qs, orbital_ws, links5050)
+    order2r = buildOrder2FsaptD(order2r, fragkeysr) # Only adds total F-SAPT--D if -D is present
 
     stuff = {}
     stuff['order2'] = order2
@@ -837,7 +885,8 @@ class PDB:
 
 def printOrder1(dirname, order2, pdb, frags, reA = r'\S+', reB = r'\S+'):
 
-    for saptkey in saptkeys_:
+    #for saptkey in saptkeys_:
+    for saptkey in order2.keys():
         E = [0.0 for x in pdb.atoms]
         for keyA in order2[saptkey].keys():
             if not re.match(reA, keyA):
