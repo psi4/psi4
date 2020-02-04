@@ -119,3 +119,14 @@ def test_deprecated_dcft_calls():
         psi4.set_module_options('dct', {'dcft_functional': 'odc-06'})
 
     assert err_substr in str(e.value)
+
+
+def test_deprecated_component_dipole():
+
+    with pytest.warns(FutureWarning) as e:
+        psi4.set_variable("current dipole x", 5)
+
+    with pytest.warns(FutureWarning) as e:
+        ans = psi4.variable("current dipole x")
+
+    assert ans == 5

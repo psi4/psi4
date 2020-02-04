@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 import psi4
@@ -186,6 +187,11 @@ def test_psi4_scfproperty():
     """scf-property"""
     #! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
 
+    ref_hf_di_au = np.array([[0.0, 0.0, 0.22531665104559076]])
+    ref_hf_quad_au = np.array([[-5.69804565317, 0.0, 0.0], [0.0, -4.53353128969, 0.0], [0.0, 0.0, -5.25978856037]])
+    ref_b3lyp_di_au = np.array([[0.0, 0.0, 0.252480541747]])
+    ref_b3lyp_quad_au = np.array([[-5.66266837697, 0.0, 0.0], [0.0, -4.46523692003, 0.0], [0.0, 0.0, -5.22054902407]])
+
     with open('grid.dat', 'w') as handle:
         handle.write("""\
 0.0  0.0  0.0
@@ -221,26 +227,12 @@ def test_psi4_scfproperty():
 
     psi4.properties('scf', properties=props)
 
-    assert psi4.compare_values(psi4.variable("CURRENT ENERGY"), -38.91591819679808, 6, "SCF energy")
-    assert psi4.compare_values(psi4.variable('SCF DIPOLE X'), 0.000000000000, 4, "SCF DIPOLE X")
-    assert psi4.compare_values(psi4.variable('SCF DIPOLE Y'), 0.000000000000, 4, "SCF DIPOLE Y")
-    assert psi4.compare_values(psi4.variable('SCF DIPOLE Z'), 0.572697798348, 4, "SCF DIPOLE Z")
-    assert psi4.compare_values(psi4.variable('SCF QUADRUPOLE XX'), -7.664066833060, 4, "SCF QUADRUPOLE XX")
-    assert psi4.compare_values(psi4.variable('SCF QUADRUPOLE YY'), -6.097755074075, 4, "SCF QUADRUPOLE YY")
-    assert psi4.compare_values(psi4.variable('SCF QUADRUPOLE ZZ'), -7.074596012050, 4, "SCF QUADRUPOLE ZZ")
-    assert psi4.compare_values(psi4.variable('SCF QUADRUPOLE XY'), 0.000000000000, 4, "SCF QUADRUPOLE XY")
-    assert psi4.compare_values(psi4.variable('SCF QUADRUPOLE XZ'), 0.000000000000, 4, "SCF QUADRUPOLE XZ")
-    assert psi4.compare_values(psi4.variable('SCF QUADRUPOLE YZ'), 0.000000000000, 4, "SCF QUADRUPOLE YZ")
+    assert psi4.compare_values(-38.91591819679808, psi4.variable("CURRENT ENERGY"), 6, "SCF energy")
+    assert psi4.compare_values(ref_hf_di_au, psi4.variable('SCF DIPOLE'), 4, "SCF DIPOLE")
+    assert psi4.compare_values(ref_hf_quad_au, psi4.variable('SCF QUADRUPOLE'), 4, "SCF QUADRUPOLE")
 
     psi4.properties('B3LYP', properties=props)
 
     assert psi4.compare_values(psi4.variable('CURRENT ENERGY'), -39.14134740550916, 6, "B3LYP energy")
-    assert psi4.compare_values(psi4.variable('B3LYP DIPOLE X'), 0.000000000000, 4, "B3LYP DIPOLE X")
-    assert psi4.compare_values(psi4.variable('B3LYP DIPOLE Y'), -0.000000000000, 4, "B3LYP DIPOLE Y")
-    assert psi4.compare_values(psi4.variable('B3LYP DIPOLE Z'), 0.641741521158, 4, "B3LYP DIPOLE Z")
-    assert psi4.compare_values(psi4.variable('B3LYP QUADRUPOLE XX'), -7.616483183211, 4, "B3LYP QUADRUPOLE XX")
-    assert psi4.compare_values(psi4.variable('B3LYP QUADRUPOLE YY'), -6.005896804551, 4, "B3LYP QUADRUPOLE YY")
-    assert psi4.compare_values(psi4.variable('B3LYP QUADRUPOLE ZZ'), -7.021817489904, 4, "B3LYP QUADRUPOLE ZZ")
-    assert psi4.compare_values(psi4.variable('B3LYP QUADRUPOLE XY'), 0.000000000000, 4, "B3LYP QUADRUPOLE XY")
-    assert psi4.compare_values(psi4.variable('B3LYP QUADRUPOLE XZ'), 0.000000000000, 4, "B3LYP QUADRUPOLE XZ")
-    assert psi4.compare_values(psi4.variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3LYP QUADRUPOLE YZ")
+    assert psi4.compare_values(ref_b3lyp_di_au, psi4.variable('B3LYP DIPOLE'), 4, "B3LYP DIPOLE")
+    assert psi4.compare_values(ref_b3lyp_quad_au, psi4.variable('B3LYP QUADRUPOLE'), 4, "B3LYP QUADRUPOLE")

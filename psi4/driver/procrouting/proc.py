@@ -1535,8 +1535,12 @@ def scf_helper(name, post_scf=True, **kwargs):
         # Compute properties
         oeprop.compute()
         for obj in [core, scf_wfn]:
-            for xyz in 'XYZ':
-                obj.set_variable('CURRENT DIPOLE ' + xyz, obj.variable('SCF DIPOLE ' + xyz))
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                # component qcvars can be retired at v1.5
+                for xyz in 'XYZ':
+                    obj.set_variable('CURRENT DIPOLE ' + xyz, obj.variable('SCF DIPOLE ' + xyz))
+            obj.set_variable('CURRENT DIPOLE', obj.variable("SCF DIPOLE"))
 
     # Write out MO's
     if core.get_option("SCF", "PRINT_MOS"):
@@ -2746,9 +2750,12 @@ def run_scf_property(name, **kwargs):
     oe.compute()
     scf_wfn.oeprop = oe
 
-    # Always must set SCF dipole
-    for cart in ["X", "Y", "Z"]:
-        core.set_variable("SCF DIPOLE " + cart, core.variable(name + " DIPOLE " + cart))
+    # Always must set SCF dipole (retire components at v1.5)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for cart in ["X", "Y", "Z"]:
+            core.set_variable("SCF DIPOLE " + cart, core.variable(name + " DIPOLE " + cart))
+    core.set_variable("SCF DIPOLE", core.variable(name + " DIPOLE"))
 
     # Run Linear Respsonse
     if len(linear_response):
@@ -2899,17 +2906,24 @@ def run_cc_property(name, **kwargs):
         # call oe prop for each ES density
         if name.startswith('eom'):
             # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ... if we are doing multiple roots
+            # retire components at v1.5
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if 'dipole' in one:
+                    core.set_variable("CC ROOT 0 DIPOLE X", core.variable("CC DIPOLE X"))
+                    core.set_variable("CC ROOT 0 DIPOLE Y", core.variable("CC DIPOLE Y"))
+                    core.set_variable("CC ROOT 0 DIPOLE Z", core.variable("CC DIPOLE Z"))
+                if 'quadrupole' in one:
+                    core.set_variable("CC ROOT 0 QUADRUPOLE XX", core.variable("CC QUADRUPOLE XX"))
+                    core.set_variable("CC ROOT 0 QUADRUPOLE XY", core.variable("CC QUADRUPOLE XY"))
+                    core.set_variable("CC ROOT 0 QUADRUPOLE XZ", core.variable("CC QUADRUPOLE XZ"))
+                    core.set_variable("CC ROOT 0 QUADRUPOLE YY", core.variable("CC QUADRUPOLE YY"))
+                    core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.variable("CC QUADRUPOLE YZ"))
+                    core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.variable("CC QUADRUPOLE ZZ"))
             if 'dipole' in one:
-                core.set_variable("CC ROOT 0 DIPOLE X", core.variable("CC DIPOLE X"))
-                core.set_variable("CC ROOT 0 DIPOLE Y", core.variable("CC DIPOLE Y"))
-                core.set_variable("CC ROOT 0 DIPOLE Z", core.variable("CC DIPOLE Z"))
+                core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))
             if 'quadrupole' in one:
-                core.set_variable("CC ROOT 0 QUADRUPOLE XX", core.variable("CC QUADRUPOLE XX"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE XY", core.variable("CC QUADRUPOLE XY"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE XZ", core.variable("CC QUADRUPOLE XZ"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE YY", core.variable("CC QUADRUPOLE YY"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.variable("CC QUADRUPOLE YZ"))
-                core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.variable("CC QUADRUPOLE ZZ"))
+                core.set_variable("CC ROOT 0 QUADRUPOLE", core.variable("CC QUADRUPOLE"))
 
             n_root = sum(core.get_global_option("ROOTS_PER_IRREP"))
             for rn in range(n_root):
@@ -3435,9 +3449,14 @@ def run_adcc_property(name, **kwargs):
         if state.method.level > 1:
             lines += [ind + "Møller Plesset 2nd order (MP2)"]
             lines += [ind + ind + format_vector("Dipole moment (in a.u.)", mp.dipole_moment(2))]
-            for i, cart in enumerate(["X", "Y", "Z"]):
-                adc_wfn.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                for i, cart in enumerate(["X", "Y", "Z"]):
+                    # retire components at v1.5
+                    adc_wfn.set_variable("MP2 dipole " + cart, mp.dipole_moment(2)[i])
                 adc_wfn.set_variable("current dipole " + cart, mp.dipole_moment(2)[i])
+            adc_wfn.set_variable("MP2 dipole", mp.dipole_moment(2))
+            adc_wfn.set_variable("current dipole", mp.dipole_moment(2))
         lines += [""]
         core.print_out("\n".join(lines) + "\n")
 
@@ -3575,9 +3594,13 @@ def run_detci(name, **kwargs):
         oeprop.add("DIPOLE")
         oeprop.compute()
         ciwfn.oeprop = oeprop
-        core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
-        core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
-        core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
+        # retire components in v1.5
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
+            core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
+            core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
+        core.set_variable("CURRENT DIPOLE", core.variable(name.upper() + " DIPOLE"))
 
     ciwfn.cleanup_ci()
     ciwfn.cleanup_dpd()
@@ -4786,9 +4809,13 @@ def run_detcas(name, **kwargs):
     oeprop.add("DIPOLE")
     oeprop.compute()
     ciwfn.oeprop = oeprop
-    core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
-    core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
-    core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
+    # retire components by v1.5
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
+        core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
+        core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
+    core.set_variable("CURRENT DIPOLE", core.variable(name.upper() + " DIPOLE"))
 
     # Shove variables into global space
     for k, v in ciwfn.variables().items():

@@ -87,7 +87,7 @@ _qcschema_translation = {
     "scf": {
         "scf_one_electron_energy": {"variables": "ONE-ELECTRON ENERGY"},
         "scf_two_electron_energy": {"variables": "TWO-ELECTRON ENERGY"},
-        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"], "conversion_factor": (1 / qcel.constants.dipmom_au2debye)},
+        "scf_dipole_moment": {"variables": "SCF DIPOLE"},
         "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
         "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},

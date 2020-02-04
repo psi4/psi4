@@ -390,6 +390,10 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
         // For psivar scraper
 
+        // Process::environment.globals["CC ROOT 0 DIPOLE"] = Process::environment.globals["CC DIPOLE"];
+        // Process::environment.globals["CC ROOT 0 QUADRUPOLE"] = Process::environment.globals["CC QUADRUPOLE"];
+        // Process::environment.globals["CC ROOT n DIPOLE"]
+        // Process::environment.globals["CC ROOT n QUADRUPOLE"]
         // Process::environment.globals["CC ROOT 0 DIPOLE X"] = Process::environment.globals["CC DIPOLE X"];
         // Process::environment.globals["CC ROOT 0 DIPOLE Y"] = Process::environment.globals["CC DIPOLE Y"];
         // Process::environment.globals["CC ROOT 0 DIPOLE Z"] = Process::environment.globals["CC DIPOLE Z"];

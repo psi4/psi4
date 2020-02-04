@@ -1194,6 +1194,17 @@ void OEProp::compute_dipole(bool transition) {
     s << title_ << " DIPOLE Z";
     Process::environment.globals[s.str()] = dipole->get(2);
     wfn_->set_scalar_variable(s.str(), dipole->get(2));
+
+    // Dipole array in au
+    auto dipole_array = std::make_shared<Matrix>(1, 3);
+    dipole_array->set(0, 0, dipole->get(0) / pc_dipmom_au2debye);
+    dipole_array->set(0, 1, dipole->get(1) / pc_dipmom_au2debye);
+    dipole_array->set(0, 2, dipole->get(2) / pc_dipmom_au2debye);
+
+    s.str(std::string());
+    s << title_ << " DIPOLE";
+    Process::environment.arrays[s.str()] = dipole_array;
+    wfn_->set_array_variable(s.str(), dipole_array);
 }
 
 SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_output, bool verbose) {
@@ -1319,6 +1330,23 @@ void OEProp::compute_quadrupole(bool transition) {
     s << title_ << " QUADRUPOLE YZ";
     Process::environment.globals[s.str()] = quadrupole->get(1, 2);
     wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 2));
+
+    // Quadrupole array in au
+    auto quadrupole_array = std::make_shared<Matrix>(3, 3);
+    quadrupole_array->set(0, 0, quadrupole->get(0, 0) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(1, 1, quadrupole->get(1, 1) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(2, 2, quadrupole->get(2, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(0, 1, quadrupole->get(0, 1) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(0, 2, quadrupole->get(0, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(1, 2, quadrupole->get(1, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(1, 0, quadrupole_array->get(0, 1));
+    quadrupole_array->set(2, 0, quadrupole_array->get(0, 2));
+    quadrupole_array->set(2, 1, quadrupole_array->get(1, 2));
+
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE";
+    Process::environment.arrays[s.str()] = quadrupole_array;
+    wfn_->set_array_variable(s.str(), quadrupole_array);
 }
 
 SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_output, bool verbose) {

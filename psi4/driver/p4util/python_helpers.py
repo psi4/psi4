@@ -604,6 +604,19 @@ core.set_global_option_python = _core_set_global_option_python
 
 ## QCvar helps
 
+def _qcvar_warnings(key):
+    if any([key.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]]):
+        warnings.warn(
+            f"Using scalar QCVariable `{key.upper()}` [D] instead of array `{key.upper()[:-2]}` [e a0] is deprecated, and in 1.5 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=3)
+
+    if any([key.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]]):
+        warnings.warn(
+            f"Using scalar QCVariable `{key.upper()}` [D A] instead of array `{key.upper()[:-3]}` [e a0^2] is deprecated, and in 1.5 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=3)
+
 
 def _core_has_variable(key):
     return core.has_scalar_variable(key) or core.has_array_variable(key)
@@ -614,6 +627,8 @@ def _core_wavefunction_has_variable(cls, key):
 
 
 def _core_variable(key):
+    _qcvar_warnings(key)
+
     if core.has_scalar_variable(key):
         return core.scalar_variable(key)
     elif core.has_array_variable(key):
@@ -623,6 +638,8 @@ def _core_variable(key):
 
 
 def _core_wavefunction_variable(cls, key):
+    _qcvar_warnings(key)
+
     if cls.has_scalar_variable(key):
         return cls.scalar_variable(key)
     elif cls.has_array_variable(key):
@@ -632,6 +649,8 @@ def _core_wavefunction_variable(cls, key):
 
 
 def _core_set_variable(key, val):
+    _qcvar_warnings(key)
+
     if isinstance(val, core.Matrix):
         if core.has_scalar_variable(key):
             raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
@@ -650,6 +669,8 @@ def _core_set_variable(key, val):
 
 
 def _core_wavefunction_set_variable(cls, key, val):
+    _qcvar_warnings(key)
+
     if isinstance(val, core.Matrix):
         if cls.has_scalar_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +

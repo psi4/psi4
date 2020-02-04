@@ -1,5 +1,8 @@
 #! EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
 
+d2au = 1 / constants.dipmom_au2debye  #TEST
+q2au = d2au / constants.bohr2angstroms  #TEST
+
 molecule h2o2 {
   0 1
   O
@@ -35,6 +38,11 @@ gs_refs = {
         "CC QUADRUPOLE YZ":            0.0000,
         "CC QUADRUPOLE ZZ":           -9.3692
         }
+pole = [gs_refs["CC DIPOLE " + cart] for cart in "XYZ"]  #TEST
+gs_refs["CC DIPOLE"] = np.array(pole).reshape((1, 3)) * d2au  #TEST
+pole = [gs_refs["CC QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
+gs_refs["CC QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
+
 root_refs = {
         "CC ROOT 1 DIPOLE X":          0.0000,
         "CC ROOT 1 DIPOLE Y":          0.0000,
@@ -73,18 +81,27 @@ root_refs = {
         "CC ROOT 4 QUADRUPOLE YZ":     0.0000,
         "CC ROOT 4 QUADRUPOLE ZZ":   -15.3582
 }
-
-# check ground state
-for tag,refval in gs_refs.items():
-    compare_values(psi4.variable(tag),refval,4, tag)                          #TEST
-
-# check eom roots
-for tag,refval in root_refs.items():
-    compare_values(psi4.variable(tag),refval,4, tag)                          #TEST
+for root in range(1, 5):
+    pole = [root_refs[f"CC ROOT {root} DIPOLE {cart}"] for cart in "XYZ"]  #TEST
+    root_refs[f"CC ROOT {root} DIPOLE"] = np.array(pole).reshape((1, 3)) * d2au  #TEST
+    pole = [root_refs[f"CC ROOT {root} QUADRUPOLE {cart}"] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
+    root_refs[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
 
-# Checking that the wfn.Da/Db have been set by ccdensity
-oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST CC")
-for tag,refval in gs_refs.items():
-    oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
-    compare_values(oeprop_val,refval,4,"CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+
+    # check ground state
+    for tag,refval in gs_refs.items():  #TEST
+        compare_values(psi4.variable(tag),refval,4, tag)                          #TEST
+
+    # check eom roots
+    for tag,refval in root_refs.items():  #TEST
+        compare_values(psi4.variable(tag),refval,4, tag)                          #TEST
+
+
+    # Checking that the wfn.Da/Db have been set by ccdensity
+    oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST CC")
+    for tag,refval in gs_refs.items():
+        oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
+        compare_values(oeprop_val,refval,4,"CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
