@@ -184,6 +184,10 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> mo_oei_deriv1(const std::string& oei_type, int atom, SharedMatrix C1, SharedMatrix C2);
     std::vector<SharedMatrix> mo_oei_deriv2(const std::string& oei_type, int atom1, int atom2, SharedMatrix C1,
                                             SharedMatrix C2);
+    // Derivatives of electric dipole moment integrals in AO and MO basis
+    std::vector<SharedMatrix> ao_elec_dip_deriv1(int atom);
+    std::vector<SharedMatrix> ao_elec_dip_deriv1(int atom, SharedMatrix C1, SharedMatrix C2);
+
     // Derivatives of TEI in AO and MO basis
     std::vector<SharedMatrix> ao_tei_deriv1(int atom, double omega = 0.0, std::shared_ptr<IntegralFactory> = nullptr);
     std::vector<SharedMatrix> ao_tei_deriv2(int atom1, int atom2);

@@ -3222,6 +3222,38 @@ std::vector<SharedMatrix> MintsHelper::mo_oei_deriv2(const std::string &oei_type
     return mo_grad;
 }
 
+/* Electric dipole moment derivatives in both AO and MO basis */
+
+std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1(int atom) {
+    std::vector<SharedMatrix> ao_grad = ao_elec_dip_deriv1_helper(atom);
+
+    return ao_grad;
+}
+
+std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix C1, SharedMatrix, C2) {
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
+
+    std::vector<SharedMatrix> ao_grad;
+    ao_grad = ao_elec_dip_deriv1(atom);
+
+    // Assuming C1 symmetry
+    int nbf1 = ao_grad[0]->rowdim();
+    int nbf2 = ao_grad[0]->coldim();
+
+    std::vector<SharedMatrix> mo_grad;
+    for (int p = 0; p < 3; p++) {
+        std::stringstream sstream;
+        sstream << "mo_elec_dip_deriv1_" << atom << cartcomp[p];
+        SharedMatrix temp(new Matrix(sstream.str(), nbf1, nbf2));
+        temp->transform(C1, ao_grad[p], C2);
+        mo_grad.push_back(temp);
+    }
+    return mo_grad;
+}
+
 /*  TEI derivatives in  MO basis */
 
 std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3,
