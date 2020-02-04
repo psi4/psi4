@@ -633,7 +633,10 @@ void FCHKWriter::write(const std::string &filename) {
     chk_ = 0;
 }
 
-NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
+NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
+    outfile->Printf("\tConstructing an NBOWriter and then calling write instead of using `wfn.nbo_write(name)`\n");
+    outfile->Printf("\tis both buggy and deprecated, and in 1.5 it will stop working.\n\n");
+}
 
 void NBOWriter::write(const std::string &filename) {
     const std::vector<std::vector<int>> pure_order = {

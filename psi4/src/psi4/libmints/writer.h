@@ -92,8 +92,14 @@ class PSI_API NBOWriter {
     std::shared_ptr<Wavefunction> wavefunction_;
 
    public:
+    PSI_DEPRECATED(
+        "Constructing an NBOWriter and then calling write instead of using `wfn.nbo_write(name)` "
+        "is both buggy and deprecated, and in 1.5 it will stop working")
     NBOWriter(std::shared_ptr<Wavefunction> wavefunction);
 
+    PSI_DEPRECATED(
+        "Constructing an NBOWriter and then calling write instead of using `wfn.nbo_write(name)` "
+        "is both buggy and deprecated, and in 1.5 it will stop working")
     void write(const std::string &filename);
 };
 }  // namespace psi
