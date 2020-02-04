@@ -152,6 +152,31 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         next_Spi = PSIO_ZERO;
 
         for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+            if (brianCookie != 0) {
+                std::vector<double> brianBuffer(3 * nso * nso);
+                brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
+                brianInt segmentAtomCount = 1;
+                brianInt segmentAtomIndexStart = A;
+                brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, brianBuffer.data());
+                
+                std::shared_ptr<Matrix> Smnx = std::make_shared<Matrix>("Smnx", nso, nso);
+                std::shared_ptr<Matrix> Smny = std::make_shared<Matrix>("Smny", nso, nso);
+                std::shared_ptr<Matrix> Smnz = std::make_shared<Matrix>("Smnz", nso, nso);
+                for (unsigned int i = 0; i < nso; i++) {
+                    for (unsigned int j = 0; j < nso; j++) {
+                        (*Smnx)(i, j) = brianBuffer[0 * nso * nso + i * nso + j];
+                        (*Smny)(i, j) = brianBuffer[1 * nso * nso + i * nso + j];
+                        (*Smnz)(i, j) = brianBuffer[2 * nso * nso + i * nso + j];
+                    }
+                }
+                
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnx->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smix->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smny->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiy->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnz->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiz->get_pointer(), nocc);
+            }
+            else {
+#endif
             Smix->zero();
             Smiy->zero();
             Smiz->zero();
@@ -220,6 +245,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     }
                 }
             }
+#ifdef USING_BrianQC
+            }
+#endif
             // Smi_x
             psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0], static_cast<size_t> (nso) * nocc * sizeof(double),next_Smi,&next_Smi);
             // Smi_y
@@ -278,6 +306,31 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
 
         for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+            if (brianCookie != 0) {
+                std::vector<double> brianBuffer(3 * nso * nso);
+                brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
+                brianInt segmentAtomCount = 1;
+                brianInt segmentAtomIndexStart = A;
+                brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, brianBuffer.data());
+                
+                std::shared_ptr<Matrix> Tmnx = std::make_shared<Matrix>("Tmnx", nso, nso);
+                std::shared_ptr<Matrix> Tmny = std::make_shared<Matrix>("Tmny", nso, nso);
+                std::shared_ptr<Matrix> Tmnz = std::make_shared<Matrix>("Tmnz", nso, nso);
+                for (unsigned int i = 0; i < nso; i++) {
+                    for (unsigned int j = 0; j < nso; j++) {
+                        (*Tmnx)(i, j) = brianBuffer[0 * nso * nso + i * nso + j];
+                        (*Tmny)(i, j) = brianBuffer[1 * nso * nso + i * nso + j];
+                        (*Tmnz)(i, j) = brianBuffer[2 * nso * nso + i * nso + j];
+                    }
+                }
+                
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnx->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmix->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmny->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiy->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnz->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiz->get_pointer(), nocc);
+            }
+            else {
+#endif
             Tmix->zero();
             Tmiy->zero();
             Tmiz->zero();
@@ -346,7 +399,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     }
                 }
             }
-
+#ifdef USING_BrianQC
+            }
+#endif
             // Tpi_x
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmixp[0],nocc,0.0,Tpip[0],nocc);
             psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
@@ -379,6 +434,31 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
 
         for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+            if (brianCookie != 0) {
+                std::vector<double> brianBuffer(3 * nso * nso);
+                brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+                brianInt segmentAtomCount = 1;
+                brianInt segmentAtomIndexStart = A;
+                brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, brianBuffer.data());
+                
+                std::shared_ptr<Matrix> Vmnx = std::make_shared<Matrix>("Vmnx", nso, nso);
+                std::shared_ptr<Matrix> Vmny = std::make_shared<Matrix>("Vmny", nso, nso);
+                std::shared_ptr<Matrix> Vmnz = std::make_shared<Matrix>("Vmnz", nso, nso);
+                for (unsigned int i = 0; i < nso; i++) {
+                    for (unsigned int j = 0; j < nso; j++) {
+                        (*Vmnx)(i, j) = brianBuffer[0 * nso * nso + i * nso + j];
+                        (*Vmny)(i, j) = brianBuffer[1 * nso * nso + i * nso + j];
+                        (*Vmnz)(i, j) = brianBuffer[2 * nso * nso + i * nso + j];
+                    }
+                }
+                
+                C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnx->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmix->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmny->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiy->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnz->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiz->get_pointer(), nocc);
+            }
+            else {
+#endif
             Vmix->zero();
             Vmiy->zero();
             Vmiz->zero();
@@ -418,7 +498,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     }
                 }
             }
-
+#ifdef USING_BrianQC
+            }
+#endif
             // Vpi_x
             C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Vmixp[0],nocc,0.0,Vpip[0],nocc);
             psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
