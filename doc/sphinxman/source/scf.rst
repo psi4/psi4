@@ -495,12 +495,12 @@ SAP
     effects by using a radially screened effective atomic charge. The
     screening effects have been calculated at the complete basis set
     limit with finite-element calculations, see [Lehtola:2019:25945]
-    and [Lehtola:2019:02528]. The guess and its implementation have
+    and [Lehtola:2020:012516]. The guess and its implementation have
     been described in [Lehtola:2019:1593]. The guess is evaluated on a
     DFT quadrature grid, so the guess energy depends slightly on the
     used DFT quadrature. The current implementation is based on
     exchange-only local density calculations that are but nanohartree
-    away from the complete basis set limit [Lehtola:2019:02528].
+    away from the complete basis set limit [Lehtola:2020:012516].
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
