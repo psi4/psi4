@@ -2025,7 +2025,7 @@ def run_occ(name, **kwargs):
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
     elif name == 'custom-scs-omp2.5':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
@@ -2094,8 +2094,13 @@ def run_occ(name, **kwargs):
     occ_wfn = core.occ(ref_wfn)
 
     # Shove variables into global space
+    keep_custom_spin_scaling = core.has_option_changed("OCC", "SS_SCALE") or core.has_option_changed("OCC", "OS_SCALE")
     for k, v in occ_wfn.variables().items():
-        core.set_variable(k, v)
+        # Custom spin component scaling variables are meaningless if custom scalings hasn't been set. Delete them.
+        if k.startswith("CUSTOM SCS") and not keep_custom_spin_scaling:
+            occ_wfn.del_variable(k)
+        else:
+            core.set_variable(k, v)
 
     optstash.restore()
     return occ_wfn
@@ -2168,8 +2173,13 @@ def run_occ_gradient(name, **kwargs):
     occ_wfn.set_gradient(grad)
 
     # Shove variables into global space
+    keep_custom_spin_scaling = core.has_option_changed("OCC", "SS_SCALE") or core.has_option_changed("OCC", "OS_SCALE")
     for k, v in occ_wfn.variables().items():
-        core.set_variable(k, v)
+        # Custom spin component scaling variables are meaningless if custom scalings hasn't been set. Delete them.
+        if k.startswith("CUSTOM SCS") and not keep_custom_spin_scaling:
+            occ_wfn.del_variable(k)
+        else:
+            core.set_variable(k, v)
 
     optstash.restore()
     return occ_wfn

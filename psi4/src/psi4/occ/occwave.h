@@ -262,10 +262,6 @@ class OCCWave : public Wavefunction {
     double Escsnmp2;
     double Escsnmp2BB;
     double Escsnmp2AA;
-    double Escsmimp2;
-    double Escsmimp2BB;
-    double Escsmimp2AA;
-    double Escsmimp2AB;
     double Escsmp2vdw;
     double Escsmp2vdwBB;
     double Escsmp2vdwAA;

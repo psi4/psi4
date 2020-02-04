@@ -95,11 +95,6 @@ void OCCWave::mp2_energy(bool include_singles) {
     Escsnmp2BB = 0.0;
     Escsnmp2 = 0.0;
 
-    Escsmimp2AA = 0.0;
-    Escsmimp2AB = 0.0;
-    Escsmimp2BB = 0.0;
-    Escsmimp2 = 0.0;
-
     Escsmp2vdwAA = 0.0;
     Escsmp2vdwAB = 0.0;
     Escsmp2vdwBB = 0.0;
@@ -121,13 +116,11 @@ void OCCWave::mp2_energy(bool include_singles) {
 
         Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
-        Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.5 * Emp2AA;
 
         Emp2BB = Emp2AA;
         Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
-        Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
 
         std::string t_opp = "T" + temp + " <OO|VV>";
@@ -155,7 +148,6 @@ void OCCWave::mp2_energy(bool include_singles) {
 
         Escsmp2AA = 1.0 / 3.0 * Emp2AA;
         Escsnmp2AA = 1.76 * Emp2AA;
-        Escsmimp2AA = 1.29 * Emp2AA;
         Escsmp2vdwAA = 0.50 * Emp2AA;
 
         // Alpha-Beta spin contribution
@@ -180,7 +172,6 @@ void OCCWave::mp2_energy(bool include_singles) {
 
         Escsmp2BB = 1.0 / 3.0 * Emp2BB;
         Escsnmp2BB = 1.76 * Emp2BB;
-        Escsmimp2BB = 1.29 * Emp2BB;
         Escsmp2vdwBB = 0.50 * Emp2BB;
 
         if (include_singles) {
@@ -213,16 +204,15 @@ void OCCWave::mp2_energy(bool include_singles) {
     // However, SOS-OMP3's intermediate SOS-OMP2 does NOT use the special opposite spin factor from the
     // first paper. (10.1021/ct301078q) Why did U.B. define it that way? No idea!
     Esosmp2AB = Emp2AB * ((mo_optimized && wfn_type_ == "OMP2") ? 1.2 : 1.3);
-    Escsmimp2AB = 0.40 * Emp2AB;
     Escsmp2vdwAB = 1.28 * Emp2AB;
     Esospimp2AB = 1.40 * Emp2AB;
 
     Ecorr = Emp2AA + Emp2AB + Emp2BB + Emp2_t1;
     Emp2 = Eref + Ecorr;
-    Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
+    // TODO: Double-check whether SCSMP2 is defined to include T1 terms. Grimme's paper is ambiguous.
+    Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB + Emp2_t1;
     Esosmp2 = Eref + Esosmp2AB;
     Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
-    Escsmimp2 = Eref + Escsmimp2AA + Escsmimp2AB + Escsmimp2BB;
     Escsmp2vdw = Eref + Escsmp2vdwAA + Escsmp2vdwAB + Escsmp2vdwBB;
     Esospimp2 = Eref + Esospimp2AB;
 

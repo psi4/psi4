@@ -159,18 +159,16 @@ void OCCWave::omp2_manager() {
 
         // Set the global variables with the energies
         variables_["OMP2 TOTAL ENERGY"] = Emp2L;
-        Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
-        Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] = Escsmp2;
-        Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] = Esosmp2;
+        variables_["OMP2 TOTAL ENERGY"] = Emp2L;
+        variables_["SCS-OMP2 TOTAL ENERGY"] = Escsmp2;
+        variables_["SOS-OMP2 TOTAL ENERGY"] = Esosmp2;
 
-        // LAB: variables_ and energy_ here are what I vouch for and test.
-        //      The P::e.globals will diminish and go into the West and be
-        //      replaced by qcvar formulas computed py-side from wfn vars.
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
 
         variables_["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
-        Process::environment.globals["SCS-OMP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
-        Process::environment.globals["SOS-OMP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
+        variables_["SCS-OMP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
+        variables_["SOS-OMP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
+
 
         variables_["CUSTOM SCS-OMP2 CORRELATION ENERGY"] = os_scale * Emp2AB + ss_scale * (Emp2AA + Emp2BB);
         variables_["CUSTOM SCS-OMP2 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OMP2 CORRELATION ENERGY"];
@@ -238,9 +236,6 @@ void OCCWave::mp2_manager() {
     if (ep_ip_poles == "TRUE") ep2_ip();
 
     mp2_postprocessing(reference == "ROHF");
-
-    // Why is the below line commented?
-    // if (reference == "ROHF") Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
     variables_["CURRENT REFERENCE ENERGY"] = Escf;
     std::map<std::string, double> spin_scale_energies = {
@@ -418,12 +413,12 @@ void OCCWave::omp3_manager() {
 
         // Set the global variables with the energies
         variables_["OMP3 TOTAL ENERGY"] = Emp3L;
-        Process::environment.globals["SCS-OMP3 TOTAL ENERGY"] = Escsmp3;
-        Process::environment.globals["SOS-OMP3 TOTAL ENERGY"] = Esosmp3;
+        variables_["SCS-OMP3 TOTAL ENERGY"] = Escsmp3;
+        variables_["SOS-OMP3 TOTAL ENERGY"] = Esosmp3;
 
         variables_["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
-        Process::environment.globals["SCS-OMP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
-        Process::environment.globals["SOS-OMP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
+        variables_["SCS-OMP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
+        variables_["SOS-OMP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
 
         variables_["CUSTOM SCS-OMP3 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
         variables_["CUSTOM SCS-OMP3 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OMP3 CORRELATION ENERGY"];

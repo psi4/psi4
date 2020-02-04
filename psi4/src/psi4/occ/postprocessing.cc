@@ -109,20 +109,20 @@ void OCCWave::mp2_postprocessing(bool include_singles) {
     // Wavefunctions saved to variables are set on the wavefunction Py-side.
     // Other variables will be set Py-side via QCDB formulas, per a future Lori project.
     variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
-    variables_["SCS-MP2 CORRELATION ENERGY"] = 6.0 / 5.0 * Emp2AB + 1.0 / 3.0 * (Emp2AA + Emp2BB) + Emp2_t1;
+    variables_["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"] = os_scale * Emp2AB + ss_scale * (Emp2AA + Emp2BB) + Emp2_t1;
-    Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-    Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
-    Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
+    variables_["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
+    variables_["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    variables_["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
+    variables_["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
     variables_["MP2 TOTAL ENERGY"] = Emp2;
     variables_["SCS-MP2 TOTAL ENERGY"] = Escf + variables_["SCS-MP2 CORRELATION ENERGY"];
     variables_["CUSTOM SCS-MP2 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"];
-    Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-    Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
-    Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
+    variables_["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+    variables_["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    variables_["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
+    variables_["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -132,12 +132,12 @@ void OCCWave::mp3_postprocessing() {
     mp3_printing(true);
 
     variables_["MP3 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
+    variables_["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
 
     variables_["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
     variables_["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
     variables_["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
+    variables_["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
 
     variables_["CUSTOM SCS-MP3 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
     variables_["CUSTOM SCS-MP3 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-MP3 CORRELATION ENERGY"];
