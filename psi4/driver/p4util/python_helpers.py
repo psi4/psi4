@@ -893,6 +893,7 @@ def _core_wavefunction_variable(cls: core.Wavefunction, key: str) -> Union[float
 
 def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
     """Sets scalar or array QCVariable *key* to *val* in global memory."""
+    _qcvar_warnings(key)
 
     if isinstance(val, core.Matrix):
         if core.has_scalar_variable(key):
@@ -915,6 +916,7 @@ def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> 
 
 def _core_wavefunction_set_variable(cls: core.Wavefunction, key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
     """Sets scalar or array QCVariable *key* to *val* on *cls*."""
+    _qcvar_warnings(key)
 
     if isinstance(val, core.Matrix):
         if cls.has_scalar_variable(key):

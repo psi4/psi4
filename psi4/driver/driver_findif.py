@@ -1169,12 +1169,7 @@ class FiniteDifferenceComputer(BaseComputer):
             reference['gradient'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
             if 'CURRENT DIPOLE' in task.extras['qcvars']:
-                reference['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'] / constants.dipmom_au2debye
-            else:
-                reference["dipole"] = np.array([
-                    task.extras["qcvars"]["CURRENT DIPOLE X"], task.extras["qcvars"]["CURRENT DIPOLE Y"],
-                    task.extras["qcvars"]["CURRENT DIPOLE Z"]
-                ]) / constants.dipmom_au2debye
+                reference['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'].reshape((3,))
 
         elif task.driver == 'hessian':
             reference['hessian'] = response
@@ -1194,12 +1189,7 @@ class FiniteDifferenceComputer(BaseComputer):
                 displacement['gradient'] = response
                 displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
                 if 'CURRENT DIPOLE' in task.extras['qcvars']:
-                    displacement['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'] / constants.dipmom_au2debye
-                else:
-                    displacement["dipole"] = np.array([
-                        task.extras["qcvars"]["CURRENT DIPOLE X"], task.extras["qcvars"]["CURRENT DIPOLE Y"],
-                        task.extras["qcvars"]["CURRENT DIPOLE Z"]
-                    ]) / constants.dipmom_au2debye
+                    displacement['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'].reshape((3,))
 
             elif task.driver == 'hessian':
                 displacement['hessian'] = response
