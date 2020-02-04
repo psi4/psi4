@@ -30,7 +30,6 @@
 
 import sys, os
 
-sys.path.append('%s/fsapt' % os.environ['PSIDATADIR'])
 from fsapt import *
 
 # => Driver Code <= #
@@ -56,56 +55,61 @@ if __name__ == '__main__':
 
     # > Order-2 Analysis < #
 
+    # Charge-Partitioned F-SAPT on dir A
     fh = open('%s/fsapt.dat' % dirA, 'w')
     fh, sys.stdout = sys.stdout, fh
     print('  ==> F-ISAPT: Links by Charge <==\n')
     stuffA = computeFsapt(dirA, False)
     print('   => Full Analysis <=\n')
-    printOrder2(stuffA['order2'], stuffA['fragkeys']) 
+    printOrder2(stuffA['order2'], stuffA['fragkeys'], saptkeys=stuffA['order2r'].keys()) 
     print('   => Reduced Analysis <=\n')
-    printOrder2(stuffA['order2r'], stuffA['fragkeysr']) 
+    printOrder2(stuffA['order2r'], stuffA['fragkeysr'], saptkeys=stuffA['order2r'].keys()) 
     fh, sys.stdout = sys.stdout, fh
     fh.close()
 
+    # Charge-Partitioned F-SAPT on dir B
     fh = open('%s/fsapt.dat' % dirB, 'w')
     fh, sys.stdout = sys.stdout, fh
     print('  ==> F-ISAPT: Links by Charge <==\n')
     stuffB = computeFsapt(dirB, False)
     print('   => Full Analysis <=\n')
-    printOrder2(stuffB['order2'], stuffB['fragkeys']) 
+    printOrder2(stuffB['order2'], stuffB['fragkeys'], saptkeys=stuffB['order2r'].keys()) 
     print('   => Reduced Analysis <=\n')
-    printOrder2(stuffB['order2r'], stuffB['fragkeysr']) 
+    printOrder2(stuffB['order2r'], stuffB['fragkeysr'], saptkeys=stuffB['order2r'].keys()) 
     fh, sys.stdout = sys.stdout, fh
     fh.close()
 
-    fh = open('%s/fsapt.dat' % dirD, 'w')
-    fh, sys.stdout = sys.stdout, fh
-    print('  ==> F-ISAPT: Links by Charge <==\n')
-    order2D = diffOrder2(stuffA['order2r'], stuffB['order2r'])
-    print('   => Reduced Analysis <=\n')
-    printOrder2(order2D, stuffB['fragkeysr']) 
-    fh, sys.stdout = sys.stdout, fh
-    fh.close()
-
+    # 50/50-Partitioned F-SAPT on dir A
     fh = open('%s/fsapt.dat' % dirA, 'a')
     fh, sys.stdout = sys.stdout, fh
     print('  ==> F-ISAPT: Links 50-50 <==\n')
     stuffA = computeFsapt(dirA, True)
     print('   => Full Analysis <=\n')
-    printOrder2(stuffA['order2'], stuffA['fragkeys']) 
+    printOrder2(stuffA['order2'], stuffA['fragkeys'])
     print('   => Reduced Analysis <=\n')
-    printOrder2(stuffA['order2r'], stuffA['fragkeysr']) 
+    printOrder2(stuffA['order2r'], stuffA['fragkeysr'])
     fh, sys.stdout = sys.stdout, fh
     fh.close()
 
+    # 50/50-Partitioned F-SAPT on dir B
     fh = open('%s/fsapt.dat' % dirB, 'a')
     fh, sys.stdout = sys.stdout, fh
     print('  ==> F-ISAPT: Links 50-50 <==\n')
     stuffB = computeFsapt(dirB, True)
     print('   => Full Analysis <=\n')
-    printOrder2(stuffB['order2'], stuffB['fragkeys']) 
+    printOrder2(stuffB['order2'], stuffB['fragkeys'])
     print('   => Reduced Analysis <=\n')
-    printOrder2(stuffB['order2r'], stuffB['fragkeysr']) 
+    printOrder2(stuffB['order2r'], stuffB['fragkeysr'])
+    fh, sys.stdout = sys.stdout, fh
+    fh.close()
+
+    # Difference F-SAPT
+    fh = open('%s/fsapt.dat' % dirD, 'w')
+    fh, sys.stdout = sys.stdout, fh
+    print('  ==> F-ISAPT: Links by Charge <==\n')
+    order2D = diffOrder2(stuffA['order2r'], stuffB['order2r'])
+    print('   => Reduced Analysis <=\n')
+    printOrder2(order2D, stuffB['fragkeysr'], saptkeys=stuffB['order2r'].keys()) 
     fh, sys.stdout = sys.stdout, fh
     fh.close()
 
@@ -114,20 +118,18 @@ if __name__ == '__main__':
     print('  ==> F-ISAPT: Links 50-50 <==\n')
     order2D = diffOrder2(stuffA['order2r'], stuffB['order2r'])
     print('   => Reduced Analysis <=\n')
-    printOrder2(order2D, stuffB['fragkeysr']) 
-    fh, sys.stdout = sys.stdout, fh
-    fh.close()
+    printOrder2(order2D, stuffB['fragkeysr'])
 
     # > Order-1 PBD Files < #
 
     pdbA = PDB.fromGeom(stuffA['geom'])
-    printOrder1(dirA, stuffA['order2r'], pdbA, stuffA['frags'])
+    printOrder1(dirA, stuffA['order2r'], pdbA, stuffA['frags'], saptkeys=stuffA['order2r'].keys())
 
     pdbB = PDB.fromGeom(stuffB['geom'])
-    printOrder1(dirB, stuffB['order2r'], pdbB, stuffB['frags'])
+    printOrder1(dirB, stuffB['order2r'], pdbB, stuffB['frags'], saptkeys=stuffB['order2r'].keys())
 
-    # Using A geometry
-    printOrder1(dirD, order2D, pdbA, stuffA['frags'])
+    # Export Diff PDB's Using A geometry
+    printOrder1(dirD, order2D, pdbA, stuffA['frags'], saptkeys=stuffA['order2r'].keys())
 
 
 

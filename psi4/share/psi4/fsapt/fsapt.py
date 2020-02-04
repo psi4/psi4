@@ -28,11 +28,10 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
-import sys, os, re, math, copy
+import psi4
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
-import psi4
+import sys, os, re, math, copy
 
 # => Global Data <= #
 
@@ -50,6 +49,8 @@ saptkeys_ = [
     'D3MBJ',
     'Total',
 ]
+
+d3keys_ = ['D3MZero', 'D3MBJ']
 
 # Map from atom name to charge, vDW radius, nfrozen
 atom_data_ = {
@@ -121,7 +122,7 @@ def readBlock(filename, factor = 1.0):
 
     return val
 
-def readFrags(filename: str) -> Tuple[List[str], List[List[int]]]:
+def readFrags(filename):
 
     frags = {}
     fragkeys = []
@@ -138,6 +139,64 @@ def readFrags(filename: str) -> Tuple[List[str], List[List[int]]]:
         fragkeys.append(key)
 
     return [frags, fragkeys]
+
+def get_natoms(frags: Dict[str, Dict[str, List[int]]]) -> Dict[str, int]:
+    """Given dictionary with fragment information, returns dict with number of atoms in monomers
+
+    Arguments
+    ---------
+    frags : Dict[str, Dict[str, List[int]]]
+        Output dictionary from `readFrags` or `readD3Frags`
+
+    Returns
+    -------
+    natoms : Dict[str, int]
+        Number of atoms in each monomer
+    """
+    natoms = {}
+    for mono, fragdict in frags.items():
+        # Get number of atoms in each monomer
+        na = 0
+        for fname, fatoms in fragdict.items():
+            if 'Link' in fname:
+                continue
+            na += len(fatoms)
+        natoms[mono] = na
+
+    return natoms
+
+def readD3Frags(dirname: Optional[str] = '.') -> Dict[str, Dict[str, List[int]]]:
+    """Creates a dictionary of fragments from fsapt fragment files for post-analysis
+
+    Arguments
+    ---------
+    dirname : Optional[str]
+        Path to directory containing F-SAPT fragment files
+        Default: '.'
+
+    Returns
+    -------
+    frags : Dict[str, Dict[str, List[int]]]
+        Dictionary of dictionaries with fragment lists for each monomer
+    """
+    frags = {'A': {}, 'B': {}}
+    natoms = {}
+    for mono in ['A', 'B']:
+        fragdict = {}
+        # Read lines from frag file
+        with open(f"{dirname}{os.sep}f{mono}.dat", 'r') as f:
+            fraglines = f.readlines()
+
+        # Iterate over lines, save into dict as <fragname>: [list of atom numbers]
+        for l in fraglines:
+            stuff = l.split()
+            # Get number of atoms in each fragment
+            fragdict[stuff[0]] = [int(i) for i in stuff[1:]]
+
+        # Save fragdict into frags
+        frags[mono] = fragdict
+
+    return frags
 
 def collapseRows(vals):
     vals2 = [0.0 for x in vals[0]]
@@ -333,23 +392,23 @@ def printFrag(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filename):
 def extractOsaptData(filepath):
 
     vals = {}
-    vals['Elst']  = readBlock('%s/Elst.dat'  % filepath, H_to_kcal_)
-    vals['Exch']  = readBlock('%s/Exch.dat'  % filepath, H_to_kcal_)
-    vals['IndAB'] = readBlock('%s/IndAB.dat' % filepath, H_to_kcal_)
-    vals['IndBA'] = readBlock('%s/IndBA.dat' % filepath, H_to_kcal_)
+    vals['Elst']  = np.array(readBlock('%s/Elst.dat'  % filepath, H_to_kcal_))
+    vals['Exch']  = np.array(readBlock('%s/Exch.dat'  % filepath, H_to_kcal_))
+    vals['IndAB'] = np.array(readBlock('%s/IndAB.dat' % filepath, H_to_kcal_))
+    vals['IndBA'] = np.array(readBlock('%s/IndBA.dat' % filepath, H_to_kcal_))
     # Read exact F-SAPT0 dispersion data
     try:
         vals['Disp'] = readBlock('%s/Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
     except FileNotFoundError:
         print('No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n')
-        vals['Disp'] = np.zeros_like(np.array(readBlock('%s/Elst.dat'  % filepath, H_to_kcal_)))
+        vals['Disp'] = np.zeros_like(np.array(vals['Elst']))
 
     # Read empirical F-SAPT0-D dispersion data
     for d3disp in ['D3MZero', 'D3MBJ']:
         try:
-            vals[d3disp] = np.loadtxt(f"{dirname}{os.sep}{d3disp}.dat") # Empirical F-SAPT0-D3M(0) Dispersion
+            vals[d3disp] = np.loadtxt(f"{filepath}{os.sep}{d3disp}.dat") # Empirical F-SAPT0-D3M(0) Dispersion
         except (FileNotFoundError, OSError):
-            continue
+            vals[d3disp] = np.zeros_like(np.array(vals['Elst']))
 
     # For total, only include exact terms
     vals['Total'] = [[0.0 for x in vals['Elst'][0]] for x2 in vals['Elst']]
@@ -358,18 +417,26 @@ def extractOsaptData(filepath):
             for l in range(len(vals['Total'][0])):
                 vals['Total'][k][l] += vals[key][k][l]
 
+    # Original fsapt code
+    #vals['Disp']  = readBlock('%s/Disp.dat'  % filepath, H_to_kcal_)
+    #vals['Total'] = [[0.0 for x in vals['Elst'][0]] for x2 in vals['Elst']]
+    #for key in ['Elst', 'Exch', 'IndAB', 'IndBA', 'Disp']:
+    #    for k in range(len(vals['Total'])):
+    #        for l in range(len(vals['Total'][0])):
+    #            vals['Total'][k][l] += vals[key][k][l]
+
     return vals
 
 def fragmentD3Disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]]) -> Tuple[float, Dict[str, Dict[str, float]]]:
     """Fragments atomic pairwise dispersion contributions from DFTD3 for inclusion in F-SAPT-D.
-
     Arguments
     ---------
     d3disp : numpy.ndarray[float]
         (NA, NB) array of atom-pairwise dispersion computed by DFTD3
     frags : Dict[str, Dict[str, List[str]]]
         Dictionary containing fragment information read from `fA.dat` and `fB.dat`
-
+    natoms : Dict[str, int]
+        Dictionary containing number of atoms in each monomer
     Returns
     -------
     Edisp : float
@@ -377,22 +444,34 @@ def fragmentD3Disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]]) -
     D3pairs : Dict[str, Dict[str, float]]
         Dictionary containing reduced order-2 dispersion interactions between fragments
     """
+    # Get (NA, NB) slice of d3disp
+    natoms = get_natoms(frags)
+    AxBd3disp = d3disp[:natoms['A'], natoms['A']:]
+    #print('AxB slice shape: ',AxBd3disp.shape)
+    #print(AxBd3disp)
+
     # Iterate over fragments, pull out relevant contributions to each
     D3frags = {}
     Edisp = 0.0
     for fA, idA in frags['A'].items():
+        if 'Link' in fA:
+            continue
+        idA = np.array(idA)
         D3frags[fA] = {}
         for fB, idB in frags['B'].items():
+            if 'Link' in fA:
+                continue
+            idB = np.array(idB) - natoms['A']
             # Build indexing mask for order2 fA@fB interaction
-            mask = np.zeros_like(d3disp, dtype='bool')
+            mask = np.zeros_like(AxBd3disp, dtype='bool')
             for i in idA:
                 for j in idB:
-                    mask[i-1,j-1] = True
+                    mask[i,j] = True
             # Add up contributions from fA@fB block
-            Edisp += d3disp[mask].sum()
-            D3frags[fA][fB] = d3disp[mask].sum() * H_to_kcal_
+            Edisp += AxBd3disp[mask].sum() * H_to_kcal_
+            D3frags[fA][fB] = AxBd3disp[mask].sum() * H_to_kcal_
 
-    return Edisp * H_to_kcal_, D3frags
+    return Edisp, D3frags
 
 def buildOrder2FsaptD(order2r: Dict[str, Dict[str, Dict[str, float]]], frags: Dict[str, Dict[str, List[str]]]) -> Dict[str, Dict[str, Dict[str, float]]]:
     """Builds total F-SAPT--D from order2r dict containing F-SAPT terms and -D dispersion.
@@ -409,37 +488,33 @@ def buildOrder2FsaptD(order2r: Dict[str, Dict[str, Dict[str, float]]], frags: Di
     D3order2r : Dict[str, Dict[str, Dict[str, float]]]
         Dictionary containing reduced order 2 F-SAPT fragment analysis, with total F-SAPT--D if -D disp present
     """
-    flavors = {'F-SAPT0-D3M(BJ)': ['Elst', 'Exch', 'IndAB', 'IndBA', 'D3MBJ'],
-               'F-SAPT0-D3M(0)': ['Elst', 'Exch', 'IndAB', 'IndBA', 'D3MZero']
+    flavors = {'F-SAPT0-D3MBJ': ['Elst', 'Exch', 'IndAB', 'IndBA', 'D3MBJ'],
+               'F-SAPT0-D3MZero': ['Elst', 'Exch', 'IndAB', 'IndBA', 'D3MZero']
               }
 
-    # If D3 dispersion not already in order2r, return unmolested
-    if ('D3MBJ' not in order2r.keys()) and ('D3MZero' not in order2r.keys()):
-        return order2r
-    else:
-        for flavor, terms in flavors.items():
-            # Add term for total F-SAPT--D to order2r
-            order2r[flavor] = {}
-            # iterate over fA:fB order2 pairs
-            for keyA in frags['A']:#.keys():
-                order2r[flavor][keyA] = {}
-                for keyB in frags['B']:#.keys():
-                    val = 0.0
-                    # Add up contributions from terms to get total F-SAPT--D energy
-                    for term in terms:
-                        val += order2r[term][keyA][keyB]
-                    # Save F-SAPT--D energy in order2r[fsapt-d flavor][keyA][keyB]
-                    order2r[flavor][keyA][keyB] = val
+    for flavor, terms in flavors.items():
+        # Add term for total F-SAPT--D to order2r
+        order2r[flavor] = {}
+        # iterate over fA:fB order2 pairs
+        for keyA in frags['A']:#.keys():
+            order2r[flavor][keyA] = {}
+            for keyB in frags['B']:#.keys():
+                val = 0.0
+                # Add up contributions from terms to get total F-SAPT--D energy
+                for term in terms:
+                    val += order2r[term][keyA][keyB]
+                # Save F-SAPT--D energy in order2r[fsapt-d flavor][keyA][keyB]
+                order2r[flavor][keyA][keyB] = val
 
-        return order2r
+    return order2r
 
 def extractOrder2Fsapt(osapt, wsA, wsB, frags):
 
     vals = {}
     for key, value in osapt.items():
-        # No order2 for D3 dispersion, only reduced. Fragment separately
+        # No full order 2 analysis for D3 dispersion, only reduced.  Fragment separately
         if 'D3' in key:
-            Edisp, vals[key] = fragmentD3Disp(value, frags) # Return is {<fA> : {<fB>: Edisp}} already
+            Edisp, vals[key] = fragmentD3Disp(value, frags)
         else:
             vals[key] = {}
             for keyA, valueA in wsA.items():
@@ -457,10 +532,10 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
 
     vals = {}
     for key in order2.keys():
-        # Fragmented D3 disp data already reduced.  Copy from order2 dict
         if 'D3' in key:
             vals[key] = order2[key].copy()
-        vals[key] = {}
+        else:
+            vals[key] = {}
         for keyA in frags['A'].keys():
             if len(keyA) > 4 and keyA[:4] == 'Link':
                 continue
@@ -471,6 +546,8 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
                 vals[key][keyA][keyB] = order2[key][keyA][keyB]
 
     for key in order2.keys():
+        if 'D3' in key:
+            continue
         for keyA in frags['A'].keys():
             if not (len(keyA) > 4 and keyA[:4] == 'Link'):
                 continue
@@ -515,6 +592,8 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
                 vals[key][key2A][keyB] += V2A * energy
 
     for key in order2.keys():
+        if 'D3' in key:
+            continue
         for keyA in frags['A'].keys():
             if (len(keyA) > 4 and keyA[:4] == 'Link'):
                 continue
@@ -559,6 +638,8 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
                 vals[key][keyA][key2B] += V2B * energy
 
     for key in order2.keys():
+        if 'D3' in key:
+            continue
         for keyA in frags['A'].keys():
             if not (len(keyA) > 4 and keyA[:4] == 'Link'):
                 continue
@@ -631,63 +712,71 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
 
     return vals
 
-def printOrder2(order2, fragkeys):
+def printOrder2(order2, fragkeys, saptkeys=saptkeys_):
 
     order1A = {}
     order1B = {}
-    for saptkey in order2.keys():
-    #for saptkey in saptkeys_:
+    for saptkey in saptkeys:
         order1A[saptkey] = {}
         order1B[saptkey] = {}
         for keyA in fragkeys['A']:
             val = 0.0
             for keyB in fragkeys['B']:
-                val += order2[saptkey][keyA][keyB]
+                try:
+                    val += order2[saptkey][keyA][keyB]
+                except KeyError:
+                    val += 0
             order1A[saptkey][keyA] = val
         for keyB in fragkeys['B']:
             val = 0.0
             for keyA in fragkeys['A']:
-                val += order2[saptkey][keyA][keyB]
+                try:
+                    val += order2[saptkey][keyA][keyB]
+                except KeyError:
+                    val += 0.0
             order1B[saptkey][keyB] = val
 
     order0 = {}
-    for saptkey in order2.keys():
-    #for saptkey in saptkeys_:
+    for saptkey in saptkeys:
         val = 0.0
         for keyA in fragkeys['A']:
-            val += order1A[saptkey][keyA]
+            try:
+                val += order1A[saptkey][keyA]
+            except KeyError:
+                val += 0.0
         order0[saptkey] = val
 
     print('%-9s %-9s ' % ('Frag1', 'Frag2'), end='')
-    for saptkey in order2.keys():
-    #for saptkey in saptkeys_:
+    for saptkey in saptkeys:
         print('%8s ' % (saptkey), end='')
     print('')
     for keyA in fragkeys['A']:
         for keyB in fragkeys['B']:
             print('%-9s %-9s ' % (keyA, keyB), end='')
-            for saptkey in order2.keys():
-            #for saptkey in saptkeys_:
-                print('%8.3f ' % (order2[saptkey][keyA][keyB]), end='')
+            for saptkey in saptkeys:
+                if 'D3' in saptkey and ('Link' in keyA or 'Link' in keyB):
+                    print('%8.3f' % 0.0, end='')
+                else:
+                    try:
+                        print('%8.3f ' % (order2[saptkey][keyA][keyB]), end='')
+                    except KeyError:
+                        continue
             print('')
 
     for keyA in fragkeys['A']:
         print('%-9s %-9s ' % (keyA, 'All'), end='')
-        for saptkey in order2.keys():
-        #for saptkey in saptkeys_:
+        for saptkey in saptkeys:
             print('%8.3f ' % (order1A[saptkey][keyA]), end='')
         print('')
 
     for keyB in fragkeys['B']:
         print('%-9s %-9s ' % ('All', keyB), end='')
-        for saptkey in order2.keys():
-        #for saptkey in saptkeys_:
+        for saptkey in saptkeys:
             print('%8.3f ' % (order1B[saptkey][keyB]), end='')
         print('')
 
     print('%-9s %-9s ' % ('All', 'All'), end='')
-    for saptkey in order2.keys():
-    #for saptkey in saptkeys_:
+    for saptkey in saptkeys:
         print('%8.3f ' % (order0[saptkey]), end='')
     print('')
 
@@ -722,8 +811,8 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
     fragkeys['B'] = holder['B'][1]
 
     frags = {}
-    frags['A'] = holder['A'][0] # List of frag names in fA.dat
-    frags['B'] = holder['B'][0] # List of frag names in fB.dat
+    frags['A'] = holder['A'][0]
+    frags['B'] = holder['B'][0]
 
     checkFragments(geom, Zs['A'], frags['A'])
     checkFragments(geom, Zs['B'], frags['B'])
@@ -735,15 +824,15 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
     holder1 = partitionFragments(fragkeys['A'], frags['A'], Zs['A'], Qs['A'], completeness)
     holder2 = partitionFragments(fragkeys['B'], frags['B'], Zs['B'], Qs['B'], completeness)
 
-    fragkeysr = {} # Dict[str, List[str]]
+    fragkeysr = {}
     fragkeysr['A'] = fragkeys['A']
     fragkeysr['B'] = fragkeys['B']
 
     fragkeys['A'] = holder1[0]
     fragkeys['B'] = holder2[0]
 
-    frags['A']    = holder1[1] # List of reduced frag names in fA.dat
-    frags['B']    = holder2[1] # List of reduced frag names in fB.dat
+    frags['A']    = holder1[1]
+    frags['B']    = holder2[1]
 
     nuclear_ws = {}
     nuclear_ws['A'] = holder1[2]
@@ -764,7 +853,7 @@ def computeFsapt(dirname, links5050, completeness = 0.85):
 
     order2  = extractOrder2Fsapt(osapt, total_ws['A'], total_ws['B'], frags)
     order2r = collapseLinks(order2, frags, Qs, orbital_ws, links5050)
-    order2r = buildOrder2FsaptD(order2r, fragkeysr) # Only adds total F-SAPT--D if -D is present
+    order2r = buildOrder2FsaptD(order2r, fragkeysr)
 
     stuff = {}
     stuff['order2'] = order2
@@ -883,10 +972,9 @@ class PDB:
             frozen += atom.frozen()
         return frozen
 
-def printOrder1(dirname, order2, pdb, frags, reA = r'\S+', reB = r'\S+'):
+def printOrder1(dirname, order2, pdb, frags, reA = r'\S+', reB = r'\S+', saptkeys=saptkeys_):
 
-    #for saptkey in saptkeys_:
-    for saptkey in order2.keys():
+    for saptkey in saptkeys:
         E = [0.0 for x in pdb.atoms]
         for keyA in order2[saptkey].keys():
             if not re.match(reA, keyA):
@@ -932,6 +1020,7 @@ if __name__ == '__main__':
 
     print('  ==> F-ISAPT: Links 50-50 <==\n')
     stuff = computeFsapt(dirname, True)
+    saptkeys_ = stuff['order2r'].keys()
     print('   => Full Analysis <=\n')
     printOrder2(stuff['order2'], stuff['fragkeys'])
     print('   => Reduced Analysis <=\n')
