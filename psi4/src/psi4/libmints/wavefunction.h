@@ -68,6 +68,7 @@ namespace psi {
 class Molecule;
 class BasisSet;
 class IntegralFactory;
+class MintsHelper;
 class Matrix;
 class Vector;
 class MatrixFactory;
@@ -110,6 +111,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Integral factory
     std::shared_ptr<IntegralFactory> integral_;
+
+    /// MintsHelper
+    std::shared_ptr<MintsHelper> mintshelper_;
 
     /// Matrix factory for creating standard sized matrices
     std::shared_ptr<MatrixFactory> factory_;
@@ -336,12 +340,15 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// An integral factory with basisset() on each center.
     std::shared_ptr<IntegralFactory> integral() const;
+    /// An molecular integrals helper with basisset() on each center.
+    std::shared_ptr<MintsHelper> mintshelper() const;
     /// Returns the basis set object that pertains to this wavefunction.
     std::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     std::shared_ptr<SOBasisSet> sobasisset() const;
 
     /// Getters and setters for other basis sets
+    std::map<std::string, std::shared_ptr<BasisSet>> basissets() const;
     std::shared_ptr<BasisSet> get_basisset(std::string label);
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
     bool basisset_exists(std::string label);

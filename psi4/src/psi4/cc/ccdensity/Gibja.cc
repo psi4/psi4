@@ -71,8 +71,8 @@ namespace ccdensity {
 void Gibja() {
     int h, nirreps, row, col;
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
-    dpdfile2 T1, L1, T1A, T1B, L1A, L1B;
-    dpdbuf4 G, L, T, Z, Z1, V, G1, G2;
+    dpdfile2 T1, T1A, T1B, L1A, L1B;
+    dpdbuf4 G, L, Z, Z1, V, G1, G2;
     bool T2_L2_V = true;
 
     /*  T2 * L2 * V is absent in CC2 Lagrangian */

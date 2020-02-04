@@ -128,17 +128,21 @@ void export_wavefunction(py::module& m) {
              "Projects a orbital matrix from one basis to another.")
         .def("H", &Wavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.")
         .def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.")
+        .def("mintshelper", &Wavefunction::mintshelper, "Returns the current MintsHelper object.")
         .def("aotoso", &Wavefunction::aotoso, "Returns the Atomic Orbital to Symmetry Orbital transformer.")
         .def("basisset", &Wavefunction::basisset, "Returns the current orbital basis.")
         .def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.")
         .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
         .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
         .def("energy", &Wavefunction::energy, "Returns the Wavefunction's energy.")
-        .def("set_energy", &Wavefunction::set_energy, "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
+        .def("set_energy", &Wavefunction::set_energy,
+             "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
         .def("gradient", &Wavefunction::gradient, "Returns the Wavefunction's gradient.")
-        .def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunction's gradient. Syncs with Wavefunction's QC variable ``CURRENT GRADIENT``.")
+        .def("set_gradient", &Wavefunction::set_gradient,
+             "Sets the Wavefunction's gradient. Syncs with Wavefunction's QC variable ``CURRENT GRADIENT``.")
         .def("hessian", &Wavefunction::hessian, "Returns the Wavefunction's Hessian.")
-        .def("set_hessian", &Wavefunction::set_hessian, "Sets the Wavefunction's Hessian. Syncs with Wavefunction's QC variable ``CURRENT HESSIAN``.")
+        .def("set_hessian", &Wavefunction::set_hessian,
+             "Sets the Wavefunction's Hessian. Syncs with Wavefunction's QC variable ``CURRENT HESSIAN``.")
         .def("legacy_frequencies", &Wavefunction::frequencies, "Returns the frequencies of the Hessian.")
         .def("set_legacy_frequencies", &Wavefunction::set_frequencies, "Sets the frequencies of the Hessian.")
         .def("esp_at_nuclei", &Wavefunction::get_esp_at_nuclei, "returns electrostatic potentials at nuclei")
@@ -193,9 +197,11 @@ void export_wavefunction(py::module& m) {
         .def("array_variable", &Wavefunction::array_variable,
              "Returns copy of the requested (case-insensitive) Matrix QC variable.")
         .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
-             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT ENERGY.")
+             "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
+             "ENERGY.")
         .def("set_array_variable", &Wavefunction::set_array_variable,
-             "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or ``hessian_`` if CURRENT GRADIENT or HESSIAN.")
+             "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or "
+             "``hessian_`` if CURRENT GRADIENT or HESSIAN.")
         .def("del_scalar_variable", &Wavefunction::del_scalar_variable,
              "Removes the requested (case-insensitive) double QC variable.")
         .def("del_array_variable", &Wavefunction::del_array_variable,
@@ -289,7 +295,8 @@ void export_wavefunction(py::module& m) {
         .def("c1_deep_copy", &scf::RHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
-             "basis"_a);
+             "basis"_a)
+        .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
@@ -299,21 +306,24 @@ void export_wavefunction(py::module& m) {
         .def("c1_deep_copy", &scf::ROHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
-             "basis"_a);
+             "basis"_a)
+        .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::UHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
-             "basis"_a);
+             "basis"_a)
+        .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::CUHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
-             "basis"_a);
+             "basis"_a)
+        .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     /// EP2 functions
     py::class_<dfep2::DFEP2Wavefunction, std::shared_ptr<dfep2::DFEP2Wavefunction>, Wavefunction>(
@@ -344,7 +354,8 @@ void export_wavefunction(py::module& m) {
         .def("exch", &fisapt::FISAPT::exch, "SAPT0 exchange.")
         .def("ind", &fisapt::FISAPT::ind, "SAPT0 induction.")
         .def("disp", &fisapt::FISAPT::disp, "Computes the MP2-based DispE20 and Exch-DispE20 energy.")
-        .def("sinf_disp", &fisapt::FISAPT::sinf_disp, "Computes the MP2-based DispE20 and Exch-DispE20 energy without S^2.")
+        .def("sinf_disp", &fisapt::FISAPT::sinf_disp,
+             "Computes the MP2-based DispE20 and Exch-DispE20 energy without S^2.")
         .def("flocalize", &fisapt::FISAPT::flocalize, "F-SAPT0 localize.")
         .def("felst", &fisapt::FISAPT::felst, "F-SAPT0 electrostatics.")
         .def("fexch", &fisapt::FISAPT::fexch, "F-SAPT0 exchange.")

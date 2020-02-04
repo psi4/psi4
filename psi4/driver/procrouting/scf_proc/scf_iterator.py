@@ -192,9 +192,9 @@ def scf_initialize(self):
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
         if core.get_global_option('RELATIVISTIC') in ['X2C', 'DKH']:
-            mints.set_rel_basisset(self.get_basisset('BASIS_RELATIVISTIC'))
+            mintshelper = self.mintshelper()
+            mintshelper.set_basisset('BASIS_RELATIVISTIC',self.get_basisset('BASIS_RELATIVISTIC'))
 
-        mints.one_electron_integrals()
         self.initialize_jk(self.memory_jk_, jk=jk)
         if self.V_potential():
             self.V_potential().build_collocation_cache(self.memory_collocation_)
@@ -507,7 +507,8 @@ def scf_finalize_energy(self):
             mints = core.MintsHelper(self.basisset())
             #next 2 lines fix a bug that prohibits relativistic stability analysis
             if core.get_global_option('RELATIVISTIC') in ['X2C', 'DKH']:
-                mints.set_rel_basisset(self.get_basisset('BASIS_RELATIVISTIC'))
+                mints.set_basisset('BASIS_RELATIVISTIC',self.get_basisset('BASIS_RELATIVISTIC'))
+
             mints.integrals()
             core.print_out("done.\n")
 

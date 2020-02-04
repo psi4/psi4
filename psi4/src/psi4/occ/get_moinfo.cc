@@ -36,6 +36,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/mintshelper.h"
 #include "occwave.h"
 
 using namespace psi;
@@ -750,24 +751,12 @@ void OCCWave::get_moinfo() {
     /********************************************************************************************/
     /************************** Create all required matrice *************************************/
     /********************************************************************************************/
-    // Build Hso
-    Hso = std::make_shared<Matrix>("SO-basis One-electron Ints", nirrep_, nsopi_, nsopi_);
-    Tso = std::make_shared<Matrix>("SO-basis Kinetic Energy Ints", nirrep_, nsopi_, nsopi_);
-    Vso = std::make_shared<Matrix>("SO-basis Potential Energy Ints", nirrep_, nsopi_, nsopi_);
-    Hso->zero();
-    Tso->zero();
-    Vso->zero();
 
     // Read SO-basis one-electron integrals
-    double *so_ints = init_array(ntri_so);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
-    Tso->set(so_ints);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, "outfile");
-    Vso->set(so_ints);
-    free(so_ints);
-    Hso->copy(Tso);
+    Tso = SharedMatrix(mintshelper()->so_kinetic()->clone());
+    Vso = SharedMatrix(mintshelper()->so_potential()->clone());
+    Hso = SharedMatrix(Tso->clone());
     Hso->add(Vso);
-    // outfile->Printf("\n get_moinfo is done. \n");
 }
 }
 }  // End Namespaces

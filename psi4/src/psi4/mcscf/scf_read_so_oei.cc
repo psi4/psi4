@@ -42,6 +42,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/mintshelper.h"
 
 extern FILE* outfile;
 
@@ -49,64 +50,28 @@ namespace psi {
 namespace mcscf {
 
 void SCF::read_so_oei() {
-    // Read all the SO one electron integrals in Pitzer order
-    auto* buffer = new double[nso * (nso + 1) / 2];
 
-    // Read the kinetic energy integrals
-    for (int k = 0; k < nso * (nso + 1) / 2; ++k) buffer[k] = 0.0;
+    S_ = SharedMatrix(mintshelper()->so_overlap()->clone());
+    H_ = SharedMatrix(mintshelper()->so_kinetic()->clone());
+    H_->add(mintshelper()->so_potential());
 
-    IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_T), buffer, nso * (nso + 1) / 2, 0, 0, "outfile");
-
-    for (int h = 0; h < nirreps; h++) {
-        for (int i = 0; i < H->get_rows(h); i++) {
-            for (int j = 0; j < H->get_cols(h); j++) {
-                int ij = INDEX(H->get_abs_row(h, i), H->get_abs_col(h, j));
-                H->set(h, i, j, buffer[ij]);
-            }
-        }
-    }
-    // Read the potential energy integrals
-    for (int k = 0; k < nso * (nso + 1) / 2; ++k) buffer[k] = 0.0;
-
-    IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_V), buffer, nso * (nso + 1) / 2, 0, 0, "outfile");
-    //  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_V),buffer,nso*(nso+1)/2,0,0,outfile);
-
-    for (int h = 0; h < nirreps; h++) {
-        for (int i = 0; i < H->get_rows(h); i++) {
-            for (int j = 0; j < H->get_cols(h); j++) {
-                int ij = INDEX(H->get_abs_row(h, i), H->get_abs_col(h, j));
-                H->add(h, i, j, buffer[ij]);
-            }
-        }
-    }
-
-    // Read the overlap integrals
-    for (int k = 0; k < nso * (nso + 1) / 2; ++k) buffer[k] = 0.0;
-
-    //  iwl_rdone(PSIF_OEI,const_cast<char*>(PSIF_SO_S),buffer,nso*(nso+1)/2,0,0,outfile);
-    IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_S), buffer, nso * (nso + 1) / 2, 0, 0, "outfile");
-
+    // Grab the overlap integrals in Pitzer order
     for (int h = 0; h < nirreps; h++) {
         for (int i = 0; i < S->get_rows(h); i++) {
             for (int j = 0; j < S->get_rows(h); j++) {
-                int ij = INDEX(H->get_abs_row(h, i), H->get_abs_col(h, j));
-                S->set(h, i, j, buffer[ij]);
+                S->set(h, i, j, S_->get(h,i,j));
             }
         }
     }
-
-    H_.reset(factory_->create_matrix("One-electron Hamiltonian"));
+    // Grab the one-electron integrals in Pitzer order
     for (int h = 0; h < nirreps; h++) {
         for (int i = 0; i < H->get_rows(h); i++) {
             for (int j = 0; j < H->get_cols(h); j++) {
                 int ij = INDEX(H->get_abs_row(h, i), H->get_abs_col(h, j));
-                H_->set(h, i, j, H->get(h, i, j));
+                H->set(h, i, j, H_->get(h, i, j));
             }
         }
     }
-
-    delete[] buffer;
-
     if (options_.get_int("DEBUG") > 4) {
         S->print();
         H->print();

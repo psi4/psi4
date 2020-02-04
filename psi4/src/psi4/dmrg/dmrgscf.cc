@@ -34,6 +34,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/writer.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -310,33 +311,29 @@ void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices 
 
     const int nirrep = wfn->nirrep();
     const int nmo    = wfn->nmo();
-    const int nTriMo = nmo * (nmo + 1) / 2;
     const int nso    = wfn->nso();
-    const int nTriSo = nso * (nso + 1) / 2;
     int * mopi       = init_int_array(nirrep);
     int * sopi       = init_int_array(nirrep);
     for ( int h = 0; h < nirrep; ++h ){
         mopi[h] = wfn->nmopi()[h];
         sopi[h] = wfn->nsopi()[h];
     }
-    double * work1   = new double[ nTriSo ];
-    double * work2   = new double[ nTriSo ];
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_T, work1, nTriSo, 0, 0, "outfile");
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_V, work2, nTriSo, 0, 0, "outfile");
-    for (int n = 0; n < nTriSo; n++){ work1[n] += work2[n]; }
-    delete [] work2;
 
+    // Note this code is untested
     SharedMatrix soOei; soOei = SharedMatrix( new Matrix("SO OEI", nirrep, sopi, sopi) );
+    soOei->add(wfn->mintshelper()->so_kinetic());
+    soOei->add(wfn->mintshelper()->so_potential());
+
     SharedMatrix half;   half = SharedMatrix( new Matrix(  "Half", nirrep, mopi, sopi) );
     SharedMatrix moOei; moOei = SharedMatrix( new Matrix("MO OEI", nirrep, mopi, mopi) );
 
-    soOei->set( work1 );
     half->gemm(true, false, 1.0, Cmat, soOei, 0.0);
     moOei->gemm(false, false, 1.0, half, Cmat, 0.0);
-    delete [] work1;
 
     copyPSIMXtoCHEMPS2MX( moOei, iHandler, theTmatrix );
 
+    free_int_array(mopi);
+    free_int_array(sopi);
 }
 
 

@@ -56,13 +56,22 @@ using namespace psi;
  */
 void IntegralTransform::transform_T_plus_V(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2) {
     check_initialized();
+
+//    wfn_->mintshelper()->so_kinetic();
+
+    //
+    // This code is never called
     std::vector<double> soInts(nTriSo_), T(nTriSo_);
-    if (print_ > 4) outfile->Printf("The SO basis kinetic energy integrals\n");
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, T.data(), nTriSo_, 0, print_ > 4, "outfile");
-    if (print_ > 4) outfile->Printf("The SO basis nuclear attraction integrals\n");
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, soInts.data(), nTriSo_, 0, print_ > 4, "outfile");
-    // Add the nuclear and kinetic energy integrals
-    std::transform(soInts.begin(), soInts.end(), T.begin(), soInts.begin(), std::plus<double>());
+//    if (print_ > 4) outfile->Printf("The SO basis kinetic energy integrals\n");
+//    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, T.data(), nTriSo_, 0, print_ > 4, "outfile");
+//    if (print_ > 4) outfile->Printf("The SO basis nuclear attraction integrals\n");
+//    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, soInts.data(), nTriSo_, 0, print_ > 4, "outfile");
+//    // Add the nuclear and kinetic energy integrals
+//    std::transform(soInts.begin(), soInts.end(), T.begin(), soInts.begin(), std::plus<double>());
+
+
+
+
     if (transformationType_ == TransformationType::Restricted) {
         transform_oei_restricted(s1, s2, soInts, PSIF_MO_OEI);
     } else {

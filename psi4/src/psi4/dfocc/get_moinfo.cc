@@ -351,20 +351,7 @@ void DFOCC::get_moinfo() {
     // Vso_->zero();
     // Sso_->zero();
 
-    //// Read SO-basis one-electron integrals
-    // double *so_ints = init_array(ntri_so);
-    // IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
-    // Tso_->set(so_ints);
-    // IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, "outfile");
-    // Vso_->set(so_ints);
-    // IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, so_ints, ntri_so, 0, 0, "outfile");
-    // Sso_->set(so_ints);
-    // free(so_ints);
-    // Hso_->copy(Tso_);
-    // Hso_->add(Vso_);
-    // Tso_.reset();
-    // Vso_.reset();
-    // CDS: Migrate these from disk reads to grabbing off Wavefunction
+    // Grab SO-basis one-electron integrals off Wavefunction
     Hso = SharedTensor2d(new Tensor2d("SO-basis One-electron Ints", nso_, nso_));
     Hso->set(H_);
     Sso = SharedTensor2d(new Tensor2d("SO-basis Overlap Ints", nso_, nso_));
