@@ -76,9 +76,11 @@ def test_scsmp2(inp):
 
             assert compare_values(ref_block[pv], obj.variable(pv), 5, pv)
 
-        assert compare_values(ref_custom_corl, obj.variable('CUSTOM SCS-MP2 CORRELATION ENERGY'), 5,
-                              'custom scsmp2 corl')
-        assert compare_values(ref_custom_tot, obj.variable('CUSTOM SCS-MP2 TOTAL ENERGY'), 5, 'custom scsmp2 ')
+
+        if any((x in inp['options'] for x in ['os_scale', 'ss_scale', 'mp2_os_scale', 'mp2_ss_scale'])):
+            assert compare_values(ref_custom_corl, obj.variable('CUSTOM SCS-MP2 CORRELATION ENERGY'), 5,
+                                  'custom scsmp2 corl')
+            assert compare_values(ref_custom_tot, obj.variable('CUSTOM SCS-MP2 TOTAL ENERGY'), 5, 'custom scsmp2 ')
 
         assert compare_values(ref_corl, obj.variable('CURRENT CORRELATION ENERGY'), 5, 'current corl')
         assert compare_values(ref_tot, obj.variable('CURRENT ENERGY'), 5, 'current')
