@@ -39,7 +39,7 @@ gs_refs = {
         "CC QUADRUPOLE ZZ":           -9.3692
         }
 pole = [gs_refs["CC DIPOLE " + cart] for cart in "XYZ"]  #TEST
-gs_refs["CC DIPOLE"] = np.array(pole).reshape((1, 3)) * d2au  #TEST
+gs_refs["CC DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
 pole = [gs_refs["CC QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
 gs_refs["CC QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
@@ -83,7 +83,7 @@ root_refs = {
 }
 for root in range(1, 5):
     pole = [root_refs[f"CC ROOT {root} DIPOLE {cart}"] for cart in "XYZ"]  #TEST
-    root_refs[f"CC ROOT {root} DIPOLE"] = np.array(pole).reshape((1, 3)) * d2au  #TEST
+    root_refs[f"CC ROOT {root} DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
     pole = [root_refs[f"CC ROOT {root} QUADRUPOLE {cart}"] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
     root_refs[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 

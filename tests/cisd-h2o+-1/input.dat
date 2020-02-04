@@ -32,7 +32,7 @@ with warnings.catch_warnings():  #TEST
     warnings.simplefilter("ignore")  #TEST
     compare_values(2.68224970371, variable("CISD DIPOLE Z"), 3, "CISD Z Dipole")  #TEST
     compare_values(2.79760370969, variable("SCF DIPOLE Z"), 3, "SCF Z Dipole")  #TEST
-compare_values(2.68224970371 / constants.dipmom_au2debye, variable("CISD DIPOLE").get(0, 2), 3, "CISD Z Dipole")  #TEST
-compare_values(2.79760370969 / constants.dipmom_au2debye, variable("SCF DIPOLE").get(0, 2), 3, "SCF Z Dipole")  #TEST
+compare_values(2.68224970371 / constants.dipmom_au2debye, variable("CISD DIPOLE")[2], 3, "CISD Z Dipole")  #TEST
+compare_values(2.79760370969 / constants.dipmom_au2debye, variable("SCF DIPOLE")[2], 3, "SCF Z Dipole")  #TEST
 
 

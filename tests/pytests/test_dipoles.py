@@ -33,7 +33,7 @@ def test_dipole(inp):
     for l in [1, -1, 2, -2]:
         psi4.set_options({'perturb_dipole': [0, 0, l * perturbation_strength]})
         energies[l] = psi4.energy(inp['name'])
-    findif_dipole = [[0, 0, (8 * energies[1] - 8 * energies[-1] - energies[2] + energies[-2]) / (12 * perturbation_strength)]]
+    findif_dipole = [0, 0, (8 * energies[1] - 8 * energies[-1] - energies[2] + energies[-2]) / (12 * perturbation_strength)]
 
     psi4.set_options({'perturb_h': False})
     wfn = psi4.properties(inp['name'], properties=['dipole'], return_wfn=True)[1]

@@ -36,6 +36,6 @@ with warnings.catch_warnings():
     compare_values(0.000000000000, psi4.variable('MP2 QUADRUPOLE XY'), 4, "MP2 QUADRUPOLE XY") #TEST
     compare_values(0.000000000000, psi4.variable('MP2 QUADRUPOLE XZ'), 4, "MP2 QUADRUPOLE XZ") #TEST
     compare_values(0.000000000000, psi4.variable('MP2 QUADRUPOLE YZ'), 4, "MP2 QUADRUPOLE YZ") #TEST
-compare_values(np.array([[0, 0, 0.234000203994]]) / constants.dipmom_au2debye, variable("MP2 DIPOLE"), 4, "MP2 DIPOLE")  #TEST
+compare_values(np.array([0, 0, 0.234000203994]) / constants.dipmom_au2debye, variable("MP2 DIPOLE"), 4, "MP2 DIPOLE")  #TEST
 compare_values(np.array([[-14.731131601691, 0, 0], [0, -14.731131601691, 0], [0, 0, -19.287283345539]]) / (constants.dipmom_au2debye * constants.bohr2angstroms),  #TEST
     variable("MP2 QUADRUPOLE"), 4, "MP2 QUADRUPOLE")  #TEST

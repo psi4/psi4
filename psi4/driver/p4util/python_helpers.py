@@ -618,6 +618,41 @@ def _qcvar_warnings(key):
         stacklevel=3)
 
 
+def _qcvar_reshape_set(key, val):
+    reshaper = None
+    if key.upper().endswith("DIPOLE"):
+        reshaper = (1, 3)
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+        reshaper = (1, -1)
+
+    if reshaper:
+        return val.reshape(reshaper)
+    else:
+        return val
+
+def _qcvar_reshape_get(key, val):
+    reshaper = None
+    if key.upper().endswith("DIPOLE"):
+        reshaper = (3,)
+    elif key.upper().endswith("QUADRUPOLE"):
+        reshaper = (3, 3)
+    elif key.upper().endswith("OCTUPOLE"):
+        reshaper = (3, 3, 3)
+    elif key.upper().endswith("HEXADECAPOLE"):
+        reshaper = (3, 3, 3, 3)
+    elif key.upper().endswith("64-POLE"):
+        reshaper = (3, 3, 3, 3, 3)
+    elif key.upper().endswith("128-POLE"):
+        reshaper = (3, 3, 3, 3, 3, 3)
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+        reshaper = (-1,)
+
+    if reshaper:
+        return val.np.reshape(reshaper)
+    else:
+        return val
+
+
 def _core_has_variable(key):
     return core.has_scalar_variable(key) or core.has_array_variable(key)
 
@@ -632,7 +667,7 @@ def _core_variable(key):
     if core.has_scalar_variable(key):
         return core.scalar_variable(key)
     elif core.has_array_variable(key):
-        return core.array_variable(key)
+        return _qcvar_reshape_get(key, core.array_variable(key))
     else:
         raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
 
@@ -643,14 +678,12 @@ def _core_wavefunction_variable(cls, key):
     if cls.has_scalar_variable(key):
         return cls.scalar_variable(key)
     elif cls.has_array_variable(key):
-        return cls.array_variable(key)
+        return _qcvar_reshape_get(key, cls.array_variable(key))
     else:
         raise KeyError("psi4.core.Wavefunction.variable: Requested variable " + key + " was not set!\n")
 
 
 def _core_set_variable(key, val):
-    _qcvar_warnings(key)
-
     if isinstance(val, core.Matrix):
         if core.has_scalar_variable(key):
             raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
@@ -660,17 +693,17 @@ def _core_set_variable(key, val):
         if core.has_scalar_variable(key):
             raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
         else:
-            core.set_array_variable(key, core.Matrix.from_array(val))
+            core.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if core.has_array_variable(key):
             raise ValidationError("psi4.core.set_variable: Target variable " + key + " already an array variable!")
         else:
             core.set_scalar_variable(key, val)
 
+    # TODO _qcvar_warnings(key)
+
 
 def _core_wavefunction_set_variable(cls, key, val):
-    _qcvar_warnings(key)
-
     if isinstance(val, core.Matrix):
         if cls.has_scalar_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
@@ -682,13 +715,15 @@ def _core_wavefunction_set_variable(cls, key, val):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
                                   " already a scalar variable!")
         else:
-            cls.set_array_variable(key, core.Matrix.from_array(val))
+            cls.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if cls.has_array_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
                                   " already an array variable!")
         else:
             cls.set_scalar_variable(key, val)
+
+    # TODO _qcvar_warnings(key)
 
 
 def _core_del_variable(key):
@@ -706,11 +741,11 @@ def _core_wavefunction_del_variable(cls, key):
 
 
 def _core_variables():
-    return {**core.scalar_variables(), **core.array_variables()}
+    return {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
 
 
 def _core_wavefunction_variables(cls):
-    return {**cls.scalar_variables(), **cls.array_variables()}
+    return {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
 
 
 core.has_variable = _core_has_variable

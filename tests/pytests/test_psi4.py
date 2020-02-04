@@ -187,9 +187,9 @@ def test_psi4_scfproperty():
     """scf-property"""
     #! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
 
-    ref_hf_di_au = np.array([[0.0, 0.0, 0.22531665104559076]])
+    ref_hf_di_au = np.array([0.0, 0.0, 0.22531665104559076])
     ref_hf_quad_au = np.array([[-5.69804565317, 0.0, 0.0], [0.0, -4.53353128969, 0.0], [0.0, 0.0, -5.25978856037]])
-    ref_b3lyp_di_au = np.array([[0.0, 0.0, 0.252480541747]])
+    ref_b3lyp_di_au = np.array([0.0, 0.0, 0.252480541747])
     ref_b3lyp_quad_au = np.array([[-5.66266837697, 0.0, 0.0], [0.0, -4.46523692003, 0.0], [0.0, 0.0, -5.22054902407]])
 
     with open('grid.dat', 'w') as handle:

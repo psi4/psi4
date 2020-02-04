@@ -1,6 +1,6 @@
 #! CCSD dipole with user-specified basis set
 
-ref_di_au = [[0.0, 0.0, -0.724043461736]]  #TEST
+ref_di_au = [0.0, 0.0, -0.724043461736]  #TEST
 ref_quad_au = [[-5.84669623357, 0.0, 0.0], [0.0, -3.37343584714, 0.0], [0.0, 0.0, -4.70310405195]]  #TEST
 
 molecule h2o {

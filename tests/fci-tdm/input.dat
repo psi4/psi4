@@ -42,7 +42,7 @@ with warnings.catch_warnings():  #TEST
     compare_values(refDipCI1, variable("CI ROOT 0 DIPOLE Z"), 5, "CI ROOT 0 Z Component of dipole")        #TEST
     compare_values(refDipCI2, variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
     compare_values(abs(refTDM), abs(variable("CI ROOT 0 -> ROOT 1 DIPOLE Z")), 5, "CI ROOT 0 -> ROOT 1 Z Component of dipole") #TEST
-compare_values(refDipHF, variable("SCF DIPOLE").get(0, 2), 5, "SCF Z Component of dipole")      #TEST
-compare_values(refDipCI1, variable("CI ROOT 0 DIPOLE").get(0, 2), 5, "CI ROOT 0 Z Component of dipole")        #TEST
-compare_values(refDipCI2, variable("CI ROOT 1 DIPOLE").get(0, 2), 5, "CI ROOT 1 Z Component of dipole")        #TEST
-compare_values(refTDM / constants.dipmom_au2debye, abs(variable("CI ROOT 0 -> ROOT 1 DIPOLE").get(0, 2)), 5, "CI ROOT 0 -> ROOT 1 Z Component of dipole") #TEST
+compare_values(refDipHF, variable("SCF DIPOLE")[2], 5, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1, variable("CI ROOT 0 DIPOLE")[2], 5, "CI ROOT 0 Z Component of dipole")        #TEST
+compare_values(refDipCI2, variable("CI ROOT 1 DIPOLE")[2], 5, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(refTDM / constants.dipmom_au2debye, abs(variable("CI ROOT 0 -> ROOT 1 DIPOLE")[2]), 5, "CI ROOT 0 -> ROOT 1 Z Component of dipole") #TEST
