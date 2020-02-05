@@ -119,7 +119,13 @@ class PSI_API IWLWriter {
 
 MintsHelper::MintsHelper(std::shared_ptr<BasisSet> basis, Options &options, int print)
     : options_(options), print_(print) {
-    init_helper(basis);
+    init_helper(basis, std::map<std::string, std::shared_ptr<psi::BasisSet>>());
+}
+
+MintsHelper::MintsHelper(std::shared_ptr<BasisSet> basis,
+                         std::map<std::string, std::shared_ptr<psi::BasisSet>> basissets, Options &options, int print)
+    : options_(options), print_(print) {
+    init_helper(basis, basissets);
 }
 
 MintsHelper::MintsHelper(std::shared_ptr<Wavefunction> wavefunction)
@@ -146,8 +152,10 @@ void MintsHelper::init_helper(std::shared_ptr<Wavefunction> wavefunction) {
     common_init();
 }
 
-void MintsHelper::init_helper(std::shared_ptr<BasisSet> basis) {
+void MintsHelper::init_helper(std::shared_ptr<BasisSet> basis,
+                              std::map<std::string, std::shared_ptr<psi::BasisSet>> basissets) {
     basisset_ = basis;
+    basissets_ = basissets;
     molecule_ = basis->molecule();
     psio_ = _default_psio_lib_;
 
