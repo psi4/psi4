@@ -119,7 +119,7 @@ class PSI_API IWLWriter {
 
 MintsHelper::MintsHelper(std::shared_ptr<BasisSet> basis, Options &options, int print)
     : options_(options), print_(print) {
-    init_helper(basis, std::map<std::string, std::shared_ptr<psi::BasisSet>>());
+    init_helper(basis);
 }
 
 MintsHelper::MintsHelper(std::shared_ptr<BasisSet> basis,

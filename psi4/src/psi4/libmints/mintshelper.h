@@ -108,9 +108,11 @@ class PSI_API MintsHelper {
     SharedMatrix so_potential_nr(bool include_perturbations = true);
 
    public:
+    /// Class initialization from Wavefunction
     void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
-//    void init_helper(std::shared_ptr<BasisSet> basis);
-    void init_helper(std::shared_ptr<BasisSet> basis, std::map<std::string, std::shared_ptr<psi::BasisSet>> basissets);
+    /// Class initialization from orbital BasisSet and a map of BasisSet objects
+    void init_helper(std::shared_ptr<BasisSet> basis, std::map<std::string, std::shared_ptr<psi::BasisSet>> basissets =
+                                                          std::map<std::string, std::shared_ptr<psi::BasisSet>>());
 
     /// Constructor, using basisset
     MintsHelper(std::shared_ptr<BasisSet> basis, Options& options = Process::environment.options, int print = 0);
