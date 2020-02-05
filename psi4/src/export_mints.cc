@@ -812,15 +812,17 @@ void export_mints(py::module& m) {
     py::class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>>(m, "AngularMomentumInt", pyOneBodyAOInt,
                                                                         "Computes angular momentum integrals");
 
-    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
+    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int, const std::vector<int>& AM);
     py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
                                                                            "Two body integral base class");
     pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
-                       "Compute ERIs between 4 shells");  // <-- Semicolon
+                       "Compute ERIs between 4 shells", "sh1"_a, "sh2"_a, "sh3"_a, "sh4"_a, 
+                       "AM_increment"_a = std::vector<int>{0, 0, 0, 0});  // <-- Semicolon
 
     py::class_<TwoElectronInt, std::shared_ptr<TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
                                                                 "Computes two-electron repulsion integrals")
-        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells");
+        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells", 
+                              "sh1"_a, "sh2"_a, "sh3"_a, "sh4"_a, "AM_increment"_a = std::vector<int>{0, 0, 0, 0});
 
     py::class_<ERI, std::shared_ptr<ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron reuplsion integrals");
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");

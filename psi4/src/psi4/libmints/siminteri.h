@@ -43,9 +43,9 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
     SimintTwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
     ~SimintTwoElectronInt() override;
 
-    size_t compute_shell(const AOShellCombinationsIterator&) override;
+    size_t compute_shell(const AOShellCombinationsIterator&, const std::vector<int>& AM_increments = {0, 0, 0, 0}) override;
 
-    size_t compute_shell(int, int, int, int) override;
+    size_t compute_shell(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0}) override;
 
     void compute_shell_blocks(int shellpair1, int shellpair2, int npair1 = -1, int npair2 = -1) override;
 

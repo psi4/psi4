@@ -2199,11 +2199,11 @@ size_t TwoElectronInt::memory_to_store_shell_pairs(const std::shared_ptr<BasisSe
     return mem;
 }
 
-size_t TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
-    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+size_t TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter, const std::vector<int>& AM_increments) {
+    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s(), AM_increments);
 }
 
-size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
+size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const std::vector<int>& AM_increments) {
 #ifdef MINTS_TIMER
     timer_on("ERI::compute_shell");
 #endif

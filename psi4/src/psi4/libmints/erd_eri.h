@@ -125,8 +125,8 @@ class ERDTwoElectronInt : public TwoBodyAOInt {
     ERDTwoElectronInt(const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     virtual ~ERDTwoElectronInt();
     void compute_scratch_size();
-    virtual size_t compute_shell(const psi::AOShellCombinationsIterator &);
-    virtual size_t compute_shell(int, int, int, int);
+    virtual size_t compute_shell(const psi::AOShellCombinationsIterator &, const std::vector<int>& AM_increments = {0, 0, 0, 0});
+    virtual size_t compute_shell(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0});
     virtual size_t compute_shell_deriv1(int, int, int, int);
     virtual size_t compute_shell_deriv2(int, int, int, int);
 };

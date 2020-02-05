@@ -150,10 +150,10 @@ class PSI_API TwoBodyAOInt {
     const IntegralFactory *integral() const { return integral_; }
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual size_t compute_shell(const AOShellCombinationsIterator &) = 0;
+    virtual size_t compute_shell(const AOShellCombinationsIterator &, const std::vector<int>& AM_increments = {0, 0, 0, 0}) = 0;
 
     /// Compute the integrals
-    virtual size_t compute_shell(int, int, int, int) = 0;
+    virtual size_t compute_shell(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0}) = 0;
 
     //! Get optimal blocks of shell pairs for centers 1 & 2
     std::vector<ShellPairBlock> get_blocks12() const;

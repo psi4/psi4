@@ -126,10 +126,10 @@ class TwoElectronInt : public TwoBodyAOInt {
     ~TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(const AOShellCombinationsIterator&) override;
+    size_t compute_shell(const AOShellCombinationsIterator&, const std::vector<int>& AM_increments = {0, 0, 0, 0}) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(int, int, int, int) override;
+    size_t compute_shell(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0}) override;
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
     size_t compute_shell_deriv1(int, int, int, int) override;
