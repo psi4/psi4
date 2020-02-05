@@ -79,8 +79,6 @@ class DIISEntry {
     void invalidate_dot(int n) { _knownDotProducts[n] = false; }
     /// Set the vector
     void set_vector(double *vec) { _vector = vec; }
-    /// set the error vector
-    void set_error_vector(double *vec) { _errorVector = vec; }
     /// Put this vector entry on disk and free the memory
     void dump_vector_to_disk();
     /// Allocate vector memory and read from disk

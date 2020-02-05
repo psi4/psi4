@@ -61,6 +61,7 @@ namespace psi {
 #define PSIO_ERROR_BLKEND 18
 #define PSIO_ERROR_IDENTVOLPATH 19
 #define PSIO_ERROR_MAXUNIT 20
+#define PSIO_ERROR_UNOPENED 21
 
 struct psio_address {
     /*! First page of entry */

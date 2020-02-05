@@ -73,7 +73,7 @@ void psio_error(size_t unit, size_t errval) {
             fprintf(stderr, "PSIO_ERROR: %d (two identical volume paths)\n", PSIO_ERROR_IDENTVOLPATH);
             break;
         case PSIO_ERROR_OPEN:
-            fprintf(stderr, "PSIO_ERROR: %d (file not open or open call failed)\n", PSIO_ERROR_OPEN);
+            fprintf(stderr, "PSIO_ERROR: %d (open call failed)\n", PSIO_ERROR_OPEN);
             fprintf(stderr, "PSIO_ERROR:\n");
             fprintf(stderr, "PSIO_ERROR: Check the location of your scratch directory which can be\n");
             fprintf(stderr, "PSIO_ERROR: specified via the $PSI_SCRATCH environment variable or in\n");
@@ -122,6 +122,12 @@ void psio_error(size_t unit, size_t errval) {
             fprintf(stderr, "PSIO_ERROR: %d (Maximum unit number exceeded)\n", PSIO_ERROR_MAXUNIT);
             fprintf(stderr, "Open failed because unit %zu exceeds ", unit);
             fprintf(stderr, "PSIO_MAXUNIT = %d.\n", PSIO_MAXUNIT);
+            break;
+        case PSIO_ERROR_UNOPENED:
+            fprintf(stderr, "PSIO_ERROR: %d (File not opened)\n", PSIO_ERROR_UNOPENED);
+            fprintf(stderr, "You need to open file %zu before you attempt this operation,\n", unit);
+            fprintf(stderr, "If you're an user, contact developers immediately. This is a bug.\n");
+            fprintf(stderr, "If you're a developer, get yourself some coffee.\n");
             break;
     }
     fflush(stderr);
