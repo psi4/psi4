@@ -830,17 +830,52 @@ void OEProp::compute() {
 
 void OEProp::compute_multipoles(int order, bool transition) {
     MultipolePropCalc::MultipoleOutputType mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
-    for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
-        std::string name;
-        double total_mpole = 0.0;
-        // unpack the multipole, which is: name, nuc, elec, total, ignore nuc and elec:
-        std::tie(name, std::ignore, std::ignore, total_mpole) = *it;
-        /*- Process::environment.globals["DIPOLE X"] -*/
-        /*- Process::environment.globals["DIPOLE Y"] -*/
-        /*- Process::environment.globals["32-POLE XXXXX"] -*/
-        /*- Process::environment.globals["32-POLE XXXXY"] -*/
-        Process::environment.globals[name] = total_mpole;
-        wfn_->set_scalar_variable(name, total_mpole);
+
+    for (int l = 1; l <= order; ++l) {
+        int component = 0;
+        int ncomponents = (l + 1) * (l + 2) / 2;
+        auto multipole_array = std::make_shared<Matrix>(1, ncomponents);
+
+        std::stringstream sstream;
+        sstream << title_;
+        if (title_ != "")
+            sstream << " ";
+        if (l == 1) {
+            sstream << "DIPOLE";
+        } else if (l == 2) {
+            sstream << "QUADRUPOLE";
+        } else if (l == 3) {
+            sstream << "OCTUPOLE";
+        } else if (l == 4) {
+            sstream << "HEXADECAPOLE";
+        } else {
+            int n = (1 << l);
+            sstream << n << "-POLE";
+        }
+        std::string mname = sstream.str();
+
+        for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
+            std::string name;
+            double total_mpole = 0.0;
+            int order_mpole;
+            // unpack the multipole, which is: name, nuc, elec, total, order, ignore nuc and elec:
+            std::tie(name, std::ignore, std::ignore, total_mpole, order_mpole) = *it;
+            /*- Process::environment.globals["DIPOLE X"] -*/
+            /*- Process::environment.globals["DIPOLE Y"] -*/
+            /*- Process::environment.globals["title DIPOLE"] -*/
+            /*- Process::environment.globals["32-POLE XXXXX"] -*/
+            /*- Process::environment.globals["32-POLE XXXXY"] -*/
+            /*- Process::environment.globals["title 32-POLE"] -*/
+
+            if (order_mpole == l) {
+                Process::environment.globals[name] = total_mpole;
+                wfn_->set_scalar_variable(name, total_mpole);
+                multipole_array->set(0, component, total_mpole);
+                ++component;
+            }
+        }
+        Process::environment.arrays[sstream.str()] = multipole_array;
+        wfn_->set_array_variable(sstream.str(), multipole_array);
     }
 }
 
@@ -919,7 +954,7 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
                 outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", name.c_str(), elec, nuc, tot);
             }
             std::string upper_name = to_upper_copy(name);
-            mot->push_back(std::make_tuple(upper_name, nuc, elec, tot));
+            mot->push_back(std::make_tuple(upper_name, nuc, elec, tot, l));
             ++address;
         }
         if (print_output) {
@@ -1202,7 +1237,9 @@ void OEProp::compute_dipole(bool transition) {
     dipole_array->set(0, 2, dipole->get(2) / pc_dipmom_au2debye);
 
     s.str(std::string());
-    s << title_ << " DIPOLE";
+    s << title_;
+    if (title_ != "") s << " ";
+    s << "DIPOLE";
     Process::environment.arrays[s.str()] = dipole_array;
     wfn_->set_array_variable(s.str(), dipole_array);
 }
@@ -1332,19 +1369,18 @@ void OEProp::compute_quadrupole(bool transition) {
     wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 2));
 
     // Quadrupole array in au
-    auto quadrupole_array = std::make_shared<Matrix>(3, 3);
+    auto quadrupole_array = std::make_shared<Matrix>(1, 6);
     quadrupole_array->set(0, 0, quadrupole->get(0, 0) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(1, 1, quadrupole->get(1, 1) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(2, 2, quadrupole->get(2, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
     quadrupole_array->set(0, 1, quadrupole->get(0, 1) / (pc_dipmom_au2debye * pc_bohr2angstroms));
     quadrupole_array->set(0, 2, quadrupole->get(0, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(1, 2, quadrupole->get(1, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(1, 0, quadrupole_array->get(0, 1));
-    quadrupole_array->set(2, 0, quadrupole_array->get(0, 2));
-    quadrupole_array->set(2, 1, quadrupole_array->get(1, 2));
+    quadrupole_array->set(0, 3, quadrupole->get(1, 1) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(0, 4, quadrupole->get(1, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
+    quadrupole_array->set(0, 5, quadrupole->get(2, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
 
     s.str(std::string());
-    s << title_ << " QUADRUPOLE";
+    s << title_;
+    if (title_ != "") s << " ";
+    s << "QUADRUPOLE";
     Process::environment.arrays[s.str()] = quadrupole_array;
     wfn_->set_array_variable(s.str(), quadrupole_array);
 }
