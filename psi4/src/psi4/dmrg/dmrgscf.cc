@@ -332,8 +332,8 @@ void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices 
 
     copyPSIMXtoCHEMPS2MX( moOei, iHandler, theTmatrix );
 
-    free_int_array(mopi);
-    free_int_array(sopi);
+    free(mopi);
+    free(sopi);
 }
 
 
