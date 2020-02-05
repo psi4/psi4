@@ -178,42 +178,48 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
                     J[ind]->copy(J[0].get());
                 }
             }
-        }
-        else {
-            brianInt segmentSize = D.size();
-            brianInt fineSize = D[0]->rowdim(0);
+        } else {
+            // WARNING: the current implementation only works with RHF
+            brianInt maxSegmentSize;
+            brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
             
-            // TODO: use memcopies, this is inefficient
-            std::vector<double> pseudoDensityBuffer(segmentSize * fineSize * fineSize);
-            for (unsigned int segmentIndex = 0; segmentIndex < D.size(); segmentIndex++) {
-                for (unsigned int i = 0; i < fineSize; i++) {
-                    for (unsigned int j = 0; j < fineSize; j++) {
-                        pseudoDensityBuffer[segmentIndex * fineSize * fineSize + i * fineSize + j] = 0.5 * (D[segmentIndex]->get(0, i, j) + D[segmentIndex]->get(0, j, i));
+            for (brianInt segmentStartIndex = 0; segmentStartIndex < D.size(); segmentStartIndex += maxSegmentSize) {
+                brianInt segmentSize = std::min(maxSegmentSize, (brianInt)D.size() - segmentStartIndex);
+                
+                std::vector<std::shared_ptr<Matrix>> Dsymm(segmentSize);
+                std::vector<const double*> pseudoDensityAlphas(segmentSize);
+                std::vector<double*> pseudoCoulombTotals(segmentSize);
+                std::vector<double*> pseudoExchangeAlphas(segmentSize);
+                for (brianInt i = 0; i < segmentSize; i++) {
+                    Dsymm[i] = D[i + segmentStartIndex]->clone();
+                    Dsymm[i]->add(D[i + segmentStartIndex]->transpose());
+                    Dsymm[i]->scale(0.5);
+                    pseudoDensityAlphas[i] = Dsymm[i]->get_pointer();
+                    
+                    if (do_J_) {
+                        pseudoCoulombTotals[i] = J[i + segmentStartIndex]->get_pointer();
+                    }
+                    
+                    if (do_K_) {
+                        pseudoExchangeAlphas[i] = K[i + segmentStartIndex]->get_pointer();
                     }
                 }
-            }
-            
-            // TODO: loop over sub-segments if bigger than segment size, or at least assert if bigger
-            std::vector<double> pseudoCoulombBuffer(segmentSize * fineSize * fineSize);
-            std::vector<double> pseudoExchangeBuffer(segmentSize * fineSize * fineSize);
-            brianCPHFBuildRepulsion(&brianCookie,
-                &computeCoulomb,
-                &computeExchange,
-                &segmentSize,
-                pseudoDensityBuffer.data(),
-                nullptr,
-                pseudoCoulombBuffer.data(),
-                pseudoExchangeBuffer.data(),
-                nullptr
-            );
-            checkBrian();
-            
-            // TODO: use memcopies
-            for (unsigned int segmentIndex = 0; segmentIndex < D.size(); segmentIndex++) {
-                for (unsigned int i = 0; i < fineSize; i++) {
-                    for (unsigned int j = 0; j < fineSize; j++) {
-                        J[segmentIndex]->set(0, i, j, 0.5 * pseudoCoulombBuffer[segmentIndex * fineSize * fineSize + i * fineSize + j]);
-                        K[segmentIndex]->set(0, i, j, pseudoExchangeBuffer[segmentIndex * fineSize * fineSize + i * fineSize + j]);
+                
+                brianCPHFBuildRepulsion(&brianCookie,
+                    &computeCoulomb,
+                    &computeExchange,
+                    &segmentSize,
+                    pseudoDensityAlphas.data(),
+                    nullptr,
+                    pseudoCoulombTotals.data(),
+                    pseudoExchangeAlphas.data(),
+                    nullptr
+                );
+                checkBrian();
+                
+                if (do_J_) {
+                    for (brianInt i = 0; i < segmentSize; i++) {
+                        J[i + segmentStartIndex]->scale(0.5);
                     }
                 }
             }
