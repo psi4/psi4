@@ -891,7 +891,39 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             /*
              * The conventional integral algorithm
              */
-
+#ifdef USING_BrianQC
+            if (brianCookie != 0) {
+                std::vector<double> brianCoulombBuffer(3 * nso * nso);
+                std::vector<double> brianExchangeBuffer(3 * nso * nso);
+                brianInt segmentAtomCount = 1;
+                brianBool computeCoulomb = BRIAN_TRUE;
+                brianBool computeExchange = BRIAN_TRUE;
+                
+                for (int A = 0; A < natom; A++) {
+                    brianInt segmentAtomIndexStart = A;
+                    brianCPHFBuildRepulsionDeriv(&brianCookie, &computeCoulomb, &computeExchange, &segmentAtomCount, &segmentAtomIndexStart, Dt->get_pointer(), nullptr, brianCoulombBuffer.data(), brianExchangeBuffer.data(), nullptr);
+                    
+                    std::shared_ptr<Matrix> Gmnx = std::make_shared<Matrix>("Gmnx", nso, nso);
+                    std::shared_ptr<Matrix> Gmny = std::make_shared<Matrix>("Gmny", nso, nso);
+                    std::shared_ptr<Matrix> Gmnz = std::make_shared<Matrix>("Gmnz", nso, nso);
+                    for (unsigned int i = 0; i < nso; i++) {
+                        for (unsigned int j = 0; j < nso; j++) {
+                            (*Gmnx)(i, j) = brianCoulombBuffer[0 * nso * nso + i * nso + j] - brianExchangeBuffer[0 * nso * nso + i * nso + j];
+                            (*Gmny)(i, j) = brianCoulombBuffer[1 * nso * nso + i * nso + j] - brianExchangeBuffer[1 * nso * nso + i * nso + j];
+                            (*Gmnz)(i, j) = brianCoulombBuffer[2 * nso * nso + i * nso + j] - brianExchangeBuffer[2 * nso * nso + i * nso + j];
+                        }
+                    }
+                    
+                    Gpi->transform(C, Gmnx, Cocc);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                    Gpi->transform(C, Gmny, Cocc);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                    Gpi->transform(C, Gmnz, Cocc);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                }
+            }
+            else {
+#endif
             std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
             auto sieve = std::make_shared<ERISieve>(basisset_, 0.0);
@@ -1159,7 +1191,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
                 }
             } // End loop over A batches
-
+#ifdef USING_BrianQC
+            }
+#endif
         } // End if density fitted
     }
 
