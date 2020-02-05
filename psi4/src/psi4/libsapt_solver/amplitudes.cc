@@ -1122,19 +1122,23 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
 
     double **uAR = block_matrix(noccA, nvirA);
 
-    C_DGEMM('N', 'T', noccA, nvirA, nvirA, 1.0, sAR[0], nvirA, wBRR[0], nvirA, 0.0, uAR[0], nvirA);
-
-    C_DGEMM('N', 'N', noccA, nvirA, noccA, -1.0, wBAA[0], noccA, sAR[0], nvirA, 1.0, uAR[0], nvirA);
-
     double **B_p_AR = get_DF_ints(AAfile, ARlabel, 0, noccA, 0, nvirA);
     double **B_p_BS = get_DF_ints(BBfile, BSlabel, 0, noccB, 0, nvirB);
 
     double *X = init_array(ndf_ + 3);
 
     C_DGEMV('t', noccB * nvirB, ndf_ + 3, 1.0, B_p_BS[0], ndf_ + 3, sBS[0], 1, 0.0, X, 1);
-    C_DGEMV('n', noccA * nvirA, ndf_ + 3, 2.0, B_p_AR[0], ndf_ + 3, X, 1, 1.0, uAR[0], 1);
+    C_DGEMV('n', noccA * nvirA, ndf_ + 3, 2.0, B_p_AR[0], ndf_ + 3, X, 1, 0.0, uAR[0], 1);
 
     free(X);
+
+    if (amplabel == "Ind30 uAR Amplitudes") {
+        e_ind30_vsasb_term_ = 2.0 * C_DDOT(noccA * nvirA, uAR[0], 1, sAR[0], 1);
+    }
+
+    C_DGEMM('N', 'T', noccA, nvirA, nvirA, 1.0, sAR[0], nvirA, wBRR[0], nvirA, 1.0, uAR[0], nvirA);
+
+    C_DGEMM('N', 'N', noccA, nvirA, noccA, -1.0, wBAA[0], noccA, sAR[0], nvirA, 1.0, uAR[0], nvirA);
 
     double **tARBS = block_matrix(noccA * nvirA, noccB * nvirB);
 
