@@ -428,24 +428,24 @@ Bibliography
    *Mol. Phys.* **111**, 2570 (2013).
 
 .. [Laqua:2018:204111]
-   H. Laque, J. Kussmann and C. Ochsenfeld
+   H. Laqua, J. Kussmann and C. Ochsenfeld
    *J. Chem. Phys.* **149**, 204111 (2018)
 
 .. [Lehtola:2019:1593]
    S. Lehtola
-   *J. Chem. Theory Comput.* **15**, 1593 (2019)
-
-.. [Lehtola:2019:25945]
-   S. Lehtola
-   *Int. J. Quantum Chem.* e25945 (2019)
-
-.. [Lehtola:2019:02528]
-   S. Lehtola
-   *arXiv* preprint 1908.02528 (2019)
+   *J. Chem. Theory Comput.* **15**, 1593 (2019), doi: 10.1021/acs.jctc.8b01089.
 
 .. [Lehtola:2019:241102]
    S. Lehtola
    *J. Chem. Phys.* **151**, 241102 (2019), doi: 10.1063/1.5139948.
+
+ .. [Lehtola:2019:25945]
+   S. Lehtola
+   *Int. J. Quantum Chem.* **119**, e25945 (2019), doi: 10.1002/qua.25945.
+
+.. [Lehtola:2020:012516]
+   S. Lehtola
+   *Phys. Rev. A.* **101**, 012516 (2020), doi: 10.1103/PhysRevA.101.012516.
 
 .. [Olsen:2010:3721]
    J. M. Olsen, K. Aidas, and J. Kongsted.
