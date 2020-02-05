@@ -104,6 +104,9 @@ class OCCWave : public Wavefunction {
     void oeprop();
     void s2_response();
     void s2_lagrangian();
+    void second_order_opdm();
+    void set_t2_amplitudes_mp2();
+    void mp2_energy(bool include_singles = false);
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
@@ -118,10 +121,8 @@ class OCCWave : public Wavefunction {
     void mp2_manager();
     void omp2_g_int();
     void omp2_response_pdms();
-    void omp2_t2_1st_sc();
     void omp2_t2_1st_general();
     void omp2_tpdm_oovv();
-    void omp2_mp2_energy();
     void omp2_ip_poles();
     void omp2_ea_poles();
     void ep2_ip();
@@ -130,11 +131,9 @@ class OCCWave : public Wavefunction {
     void omp3_manager();
     void mp3_manager();
     void omp3_response_pdms();
-    void omp3_t2_1st_sc();
     void omp3_t2_1st_general();
     void omp3_tpdm_vvvv();
     void omp3_g_int();
-    void omp3_mp2_energy();
     void w_1st_order();
     void v_2nd_order();
     void t2_2nd_sc();
@@ -150,10 +149,7 @@ class OCCWave : public Wavefunction {
     void ocepa_manager();
     void cepa_manager();
     void cepa_iterations();
-    void ocepa_mp2_energy();
-    void ocepa_t2_1st_sc();
     void ocepa_tpdm_vvvv();
-    void ocepa_g_int();
     void ocepa_response_pdms();
     void t2_amps();
     void w_int();
@@ -266,10 +262,6 @@ class OCCWave : public Wavefunction {
     double Escsnmp2;
     double Escsnmp2BB;
     double Escsnmp2AA;
-    double Escsmimp2;
-    double Escsmimp2BB;
-    double Escsmimp2AA;
-    double Escsmimp2AB;
     double Escsmp2vdw;
     double Escsmp2vdwBB;
     double Escsmp2vdwAA;
@@ -307,8 +299,6 @@ class OCCWave : public Wavefunction {
     double cutoff;
     double os_scale;
     double ss_scale;
-    double sos_scale;
-    double sos_scale2;
     double a_pcgA;
     double a_pcgB;
     double b_pcgA;
@@ -339,12 +329,7 @@ class OCCWave : public Wavefunction {
     double Escsmp3AA;
     double Escsmp3AB;
     double Escsmp3;
-    double Esosmp3AB;
     double Esosmp3;
-    double Escsnmp3;
-    double Escsmimp3;
-    double Escsmp3vdw;
-    double Esospimp3;
 
     // OCEPA
     double Ecepa;
@@ -354,20 +339,6 @@ class OCCWave : public Wavefunction {
     double EcepaAB;
     double EcepaL;
     double EcepaL_old;
-    double EscscepaBB;
-    double EscscepaAA;
-    double EscscepaAB;
-    double Escscepa;
-    double EsoscepaAB;
-    double Esoscepa;
-    double Escsncepa;
-    double Escsmicepa;
-    double Escscepavdw;
-    double Esospicepa;
-    double cepa_os_scale_;
-    double cepa_ss_scale_;
-    double cepa_sos_scale_;
-    double sos_scale_ocepa;
 
     std::string wfn;
     std::string reference;
@@ -382,12 +353,9 @@ class OCCWave : public Wavefunction {
     std::string opt_method;
     std::string hess_type;
     std::string occ_orb_energy;
-    std::string do_scs;          // Spin-Component-Scaling
-    std::string do_sos;          // Spin-Opposite-Scaling
     std::string write_mo_coeff;  // Write CmoA to CmoA.psi and CmoB to CmoB.psi
     std::string read_mo_coeff;   // Read CmoA from CmoA.psi and CmoB from CmoB.psi
-    std::string scs_type_;
-    std::string sos_type_;
+    std::string spin_scale_type_;
     std::string pcg_beta_type_;
     std::string compute_mp3l;      // Do compute mp3l energy during iterations?
     std::string compute_cepal;     // Do compute cepal energy during iterations?
