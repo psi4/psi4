@@ -68,10 +68,6 @@ void OCCWave::omp2_manager() {
 
     mp2_postprocessing();
 
-    omp2_response_pdms();
-    gfock();
-    idp();
-    mograd();
     occ_iterations();
 
     if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
@@ -79,7 +75,7 @@ void OCCWave::omp2_manager() {
         if (conver == 1)
             outfile->Printf("\n\tOrbitals are optimized now.\n");
         else if (conver == 0) {
-            outfile->Printf("\n\tMAX MOGRAD did NOEscsmp2 - EscfoT converged, but RMS MOGRAD converged!!!\n");
+            outfile->Printf("\n\tMAX MOGRAD did NOT converge, but RMS MOGRAD converged!!!\n");
             outfile->Printf("\tI will consider the present orbitals as optimized.\n");
         }
         outfile->Printf("\tSwitching to the standard MP2 computation after semicanonicalization of the MOs... \n");
@@ -332,10 +328,6 @@ void OCCWave::omp3_manager() {
 
     mp3_postprocessing();
 
-    omp3_response_pdms();
-    gfock();
-    idp();
-    mograd();
     occ_iterations();
 
     if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
@@ -343,7 +335,7 @@ void OCCWave::omp3_manager() {
         if (conver == 1)
             outfile->Printf("\n\tOrbitals are optimized now.\n");
         else if (conver == 0) {
-            outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+            outfile->Printf("\n\tMAX MOGRAD did NOT converge, but RMS MOGRAD converged!!!\n");
             outfile->Printf("\tI will consider the present orbitals as optimized.\n");
         }
         outfile->Printf("\tSwitching to the standard MP3 computation after semicanonicalization of the MOs... \n");
@@ -553,25 +545,14 @@ void OCCWave::ocepa_manager() {
 
     mp2_postprocessing();
 
-    ocepa_response_pdms();
-    gfock();
-    idp();
-    mograd();
-    if (rms_wog > tol_grad)
-        occ_iterations();
-    else {
-        orbs_already_opt = 1;
-        outfile->Printf("\n\tOrbitals are already optimized, switching to the canonical CEPA computation... \n");
-
-        cepa_iterations();
-    }
+    occ_iterations();
 
     if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
         orbs_already_opt = 1;
         if (conver == 1)
             outfile->Printf("\n\tOrbitals are optimized now.\n");
         else if (conver == 0) {
-            outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+            outfile->Printf("\n\tMAX MOGRAD did NOT converge, but RMS MOGRAD converged!!!\n");
             outfile->Printf("\tI will consider the present orbitals as optimized.\n");
         }
         outfile->Printf("\tSwitching to the standard CEPA computation... \n");
@@ -771,11 +752,6 @@ void OCCWave::omp2_5_manager() {
 
     mp2p5_postprocessing();
 
-    omp3_response_pdms();
-    gfock();
-    // ccl_energy();
-    idp();
-    mograd();
     occ_iterations();
 
     if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
@@ -783,7 +759,7 @@ void OCCWave::omp2_5_manager() {
         if (conver == 1)
             outfile->Printf("\n\tOrbitals are optimized now.\n");
         else if (conver == 0) {
-            outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+            outfile->Printf("\n\tMAX MOGRAD did NOT converge, but RMS MOGRAD converged!!!\n");
             outfile->Printf("\tI will consider the present orbitals as optimized.\n");
         }
         outfile->Printf("\tSwitching to the standard MP2.5 computation after semicanonicalization of the MOs... \n");

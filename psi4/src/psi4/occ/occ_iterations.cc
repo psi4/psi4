@@ -37,6 +37,13 @@ namespace psi {
 namespace occwave {
 
 void OCCWave::occ_iterations() {
+
+    // Construct initial orbital gradient
+    response_pdms();
+    gfock();
+    idp();
+    mograd();
+
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     if (wfn_type_ == "OMP2")
@@ -200,16 +207,11 @@ void OCCWave::occ_iterations() {
         /************************** One-particle and two-particle density matrices ******************/
         /********************************************************************************************/
         timer_on("Response PDMs");
-        if (wfn_type_ == "OMP2")
-            omp2_response_pdms();
-        else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5")
-            omp3_response_pdms();
-        else if (wfn_type_ == "OCEPA")
-            ocepa_response_pdms();
+        response_pdms();
         timer_off("Response PDMs");
 
         /********************************************************************************************/
-        /************************** Asymmetric Generalizd-Fock matrix *******************************/
+        /************************** Asymmetric Generalized-Fock matrix ******************************/
         /********************************************************************************************/
         timer_on("Generalized-Fock");
         gfock();
@@ -409,6 +411,15 @@ void OCCWave::occ_iterations() {
             }
         }
     }  // end orb resp if
+}
+
+void OCCWave::response_pdms() {
+    if (wfn_type_ == "OMP2")
+        omp2_response_pdms();
+    else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5")
+        omp3_response_pdms();
+    else if (wfn_type_ == "OCEPA")
+        ocepa_response_pdms();
 }
 }
 }  // End Namespaces

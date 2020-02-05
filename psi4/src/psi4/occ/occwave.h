@@ -95,6 +95,7 @@ class OCCWave : public Wavefunction {
     void coord_grad();
     void dump_pdms();
     void occ_iterations();
+    void response_pdms();
     void tei_sort_iabc();
     void ekt_ip();
     void ekt_ea();
