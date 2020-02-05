@@ -174,8 +174,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnx->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smix->get_pointer(), nocc);
                 C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smny->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiy->get_pointer(), nocc);
                 C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnz->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiz->get_pointer(), nocc);
-            }
-            else {
+            } else {
 #endif
             Smix->zero();
             Smiy->zero();
@@ -328,8 +327,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnx->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmix->get_pointer(), nocc);
                 C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmny->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiy->get_pointer(), nocc);
                 C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnz->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiz->get_pointer(), nocc);
-            }
-            else {
+            } else {
 #endif
             Tmix->zero();
             Tmiy->zero();
@@ -456,8 +454,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnx->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmix->get_pointer(), nocc);
                 C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmny->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiy->get_pointer(), nocc);
                 C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnz->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiz->get_pointer(), nocc);
-            }
-            else {
+            } else {
 #endif
             Vmix->zero();
             Vmiy->zero();
@@ -921,8 +918,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     Gpi->transform(C, Gmnz, Cocc);
                     psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
                 }
-            }
-            else {
+            } else {
 #endif
             std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 

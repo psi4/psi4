@@ -2397,36 +2397,48 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vect
 {
 #ifdef USING_BrianQC
     if (brianCookie != 0) {
-        brianBool computeCoulomb = BRIAN_TRUE;
-        brianBool computeExchange = BRIAN_TRUE;
+        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
+        brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
         
         // TODO: need a more reliable way to know what BrianQC has been set to
         bool unrestrictedFlag = (Da_->get_pointer() != Db_->get_pointer());
         
-        std::shared_ptr<Matrix> Jgrad = std::make_shared<Matrix>("JGrad", primary_->molecule()->natom(), 3);
-        std::shared_ptr<Matrix> Kgrada = std::make_shared<Matrix>("KGrad", primary_->molecule()->natom(), 3);
-        std::shared_ptr<Matrix> Kgradb = std::make_shared<Matrix>("KGrad", primary_->molecule()->natom(), 3);
+        std::shared_ptr<Matrix> Jgrad, Kgrada, Kgradb;
+        if (do_J_) {
+            Jgrad = std::make_shared<Matrix>("JGrad", primary_->molecule()->natom(), 3);
+        }
+        if (do_K_) {
+            Kgrada = std::make_shared<Matrix>("KGrada", primary_->molecule()->natom(), 3);
+            if (unrestrictedFlag) {
+                Kgradb = std::make_shared<Matrix>("KGradb", primary_->molecule()->natom(), 3);
+            }
+        }
         
         brianOPTBuildGradientRepulsionDeriv(&brianCookie,
             &computeCoulomb,
             &computeExchange,
-            Da_->get_pointer(0),
-            (unrestrictedFlag ? Db_->get_pointer(0) : nullptr),
-            Jgrad->get_pointer(0),
-            Kgrada->get_pointer(0),
-            (unrestrictedFlag ? Kgradb->get_pointer(0) : nullptr)
+            Da_->get_pointer(),
+            (unrestrictedFlag ? Db_->get_pointer() : nullptr),
+            (do_J_ ? Jgrad->get_pointer() : nullptr),
+            (do_K_ ? Kgrada->get_pointer() : nullptr),
+            ((do_K_ && unrestrictedFlag) ? Kgradb->get_pointer() : nullptr)
         );
         
-        if (unrestrictedFlag) {
-            Kgrada->add(Kgradb);
-        }
-        else {
-            Kgrada->scale(2.0);
+        if (do_K_) {
+            if (unrestrictedFlag) {
+                Kgrada->add(Kgradb);
+            } else {
+                Kgrada->scale(2.0);
+            }
         }
         
         std::map<std::string, std::shared_ptr<Matrix>> val;
-        val["J"] = Jgrad;
-        val["K"] = Kgrada;
+        if (do_J_) {
+            val["J"] = Jgrad;
+        }
+        if (do_K_) {
+            val["K"] = Kgrada;
+        }
         
         return val;
     }

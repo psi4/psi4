@@ -156,25 +156,27 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::
     
 #ifdef USING_BrianQC
     if (brianCookie != 0) {
-        brianBool computeCoulomb = do_J_ ? BRIAN_TRUE : BRIAN_FALSE;
-        brianBool computeExchange = do_K_ ? BRIAN_TRUE : BRIAN_FALSE;
+        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
+        brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
         
         if (not brianCPHFFlag) {
             brianSCFBuildFockRepulsion(&brianCookie,
                 &computeCoulomb,
                 &computeExchange,
                 D[0]->get_pointer(0),
-                (D.size() > 1 ? D[1]->get_pointer(0) : nullptr),
-                J[0]->get_pointer(0),
-                K[0]->get_pointer(0),
-                (D.size() > 1 ? K[1]->get_pointer(0) : nullptr)
+                (D.size() > 1 ? D[1]->get_pointer() : nullptr),
+                (do_J_ ? J[0]->get_pointer() : nullptr),
+                (do_K_ ? K[0]->get_pointer() : nullptr),
+                ((D.size() > 1 && do_K_) ? K[1]->get_pointer() : nullptr)
             );
             checkBrian();
             
             // BrianQC only computes the total (alpha + beta) Coulomb matrix
-            J[0]->scale(0.5);
-            for (size_t ind = 1; ind < J.size(); ind++) {
-                J[ind]->copy(J[0].get());
+            if (do_J_) {
+                J[0]->scale(0.5);
+                for (size_t ind = 1; ind < J.size(); ind++) {
+                    J[ind]->copy(J[0].get());
+                }
             }
         }
         else {
