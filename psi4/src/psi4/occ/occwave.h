@@ -58,6 +58,7 @@ class OCCWave : public Wavefunction {
     // General
     void mem_release();
     void mograd();
+    void compute_orbital_step();
     void update_mo();
     void update_mo_spincase(SpinType);
     void ccl_energy();

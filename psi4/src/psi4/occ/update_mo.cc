@@ -39,8 +39,6 @@ void OCCWave::update_mo() {
     if (do_diis_) {
         // Convert the Array1d of the orbital amplitude update to a Vector, then add it to the total orbital amplitude
         // Vector, and DIIS extrapolate.
-        const auto kappaA_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Alpha], *kappaA);
-        kappa_bar_[SpinType::Alpha]->add(kappaA_vec);
         const auto wogA_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Alpha], *wogA);
         if (reference_ == "RESTRICTED") {
             orbitalDiis->add_entry(2, wogA_vec.get(), kappa_bar_[SpinType::Alpha].get());
@@ -50,8 +48,6 @@ void OCCWave::update_mo() {
                 orbitalDiis->extrapolate(1, kappa_bar_[SpinType::Alpha].get());
             }
         } else if (reference_ == "UNRESTRICTED") {
-            const auto kappaB_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Beta], *kappaB);
-            kappa_bar_[SpinType::Beta]->add(kappaB_vec);
             const auto wogB_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Beta], *wogB);
             orbitalDiis->add_entry(4, wogA_vec.get(), wogB_vec.get(), kappa_bar_[SpinType::Alpha].get(),
                                    kappa_bar_[SpinType::Beta].get());

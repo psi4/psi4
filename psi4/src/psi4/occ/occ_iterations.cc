@@ -38,12 +38,6 @@ namespace occwave {
 
 void OCCWave::occ_iterations() {
 
-    // Construct initial orbital gradient
-    response_pdms();
-    gfock();
-    idp();
-    mograd();
-
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     if (wfn_type_ == "OMP2")
@@ -75,6 +69,7 @@ void OCCWave::occ_iterations() {
     conver = 1;  // Assuming that the MOs will be optimized.
     mo_optimized = 0;
     itr_diis = 0;
+    idp();
 
     // If diis?
     // if (nooA + nooB != 1) {
@@ -143,24 +138,17 @@ void OCCWave::occ_iterations() {
         }  // pcg if
     }      // orb_resp if
 
+    // Construct initial orbital gradient
+    response_pdms();
+    gfock();
+    mograd();
+    compute_orbital_step();
+
     /********************************************************************************************/
     /************************** Head of the Loop ************************************************/
     /********************************************************************************************/
     do {
         itr_occ++;
-
-        /********************************************************************************************/
-        /************************** New orbital step ************************************************/
-        /********************************************************************************************/
-        timer_on("kappa orb rot");
-        if (opt_method == "ORB_RESP") {
-            if (orb_resp_solver_ == "LINEQ")
-                kappa_orb_resp();
-            else if (orb_resp_solver_ == "PCG")
-                kappa_orb_resp_iter();
-        } else if (opt_method == "MSD")
-            kappa_msd();
-        timer_off("kappa orb rot");
 
         /********************************************************************************************/
         /************************** update mo coefficients ******************************************/
@@ -178,30 +166,6 @@ void OCCWave::occ_iterations() {
         else if (reference_ == "UNRESTRICTED")
             trans_ints_uhf();
         timer_off("trans_ints");
-
-        /********************************************************************************************/
-        /************************** NEW amplitudes **************************************************/
-        /********************************************************************************************/
-        if (wfn_type_ == "OMP2") {
-            timer_on("T2(1)");
-            iterate_t2o1_amplitudes();
-            timer_off("T2(1)");
-        }
-
-        else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
-            timer_on("T2(1)");
-            iterate_t2o1_amplitudes();
-            timer_off("T2(1)");
-            timer_on("T2(2)");
-            t2_2nd_general();
-            timer_off("T2(2)");
-        }
-
-        else if (wfn_type_ == "OCEPA") {
-            timer_on("T2");
-            t2_amps();
-            timer_off("T2");
-        }
 
         /********************************************************************************************/
         /************************** One-particle and two-particle density matrices ******************/
@@ -274,6 +238,37 @@ void OCCWave::occ_iterations() {
         timer_on("MO Grad");
         mograd();
         timer_off("MO Grad");
+
+        /********************************************************************************************/
+        /************************** New orbital step ************************************************/
+        /********************************************************************************************/
+        timer_on("kappa orb rot");
+        compute_orbital_step();
+        timer_off("kappa orb rot");
+
+        /********************************************************************************************/
+        /************************** NEW amplitudes **************************************************/
+        /********************************************************************************************/
+        if (wfn_type_ == "OMP2") {
+            timer_on("T2(1)");
+            iterate_t2o1_amplitudes();
+            timer_off("T2(1)");
+        }
+
+        else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
+            timer_on("T2(1)");
+            iterate_t2o1_amplitudes();
+            timer_off("T2(1)");
+            timer_on("T2(2)");
+            t2_2nd_general();
+            timer_off("T2(2)");
+        }
+
+        else if (wfn_type_ == "OCEPA") {
+            timer_on("T2");
+            t2_amps();
+            timer_off("T2");
+        }
 
         /********************************************************************************************/
         /************************** Print ***********************************************************/
@@ -420,6 +415,26 @@ void OCCWave::response_pdms() {
         omp3_response_pdms();
     else if (wfn_type_ == "OCEPA")
         ocepa_response_pdms();
+}
+
+void OCCWave::compute_orbital_step() {
+    // Compute kappa, the update to orbital amplitudes.
+    if (opt_method == "ORB_RESP") {
+        if (orb_resp_solver_ == "LINEQ")
+            kappa_orb_resp();
+        else if (orb_resp_solver_ == "PCG")
+            kappa_orb_resp_iter();
+    } else if (opt_method == "MSD")
+        kappa_msd();
+
+    // Update the orbital amplitude. Trust the rest of the program to DIIS when ready.
+    // DIIS is tied to both orbitals and amplitudes, so having stepped orbitals isn't enough.
+    const auto kappaA_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Alpha], *kappaA);
+    kappa_bar_[SpinType::Alpha]->add(kappaA_vec);
+    if (reference_ == "UNRESTRICTED") {
+        const auto kappaB_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Beta], *kappaB);
+        kappa_bar_[SpinType::Beta]->add(kappaB_vec);
+    }
 }
 }
 }  // End Namespaces
