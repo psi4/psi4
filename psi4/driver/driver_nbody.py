@@ -827,7 +827,8 @@ class ManyBodyComputer(BaseComputer):
             info = str(level) + ', ' + str(self.max_frag)
             core.print_out(info)
             logger.debug(info)
-            compute_dict = build_nbody_compute_list(self.bsse_type, [i for i in range(1, self.max_nbody + 1)],
+            # This should always be NOCP
+            compute_dict = build_nbody_compute_list(["nocp"], [i for i in range(1, self.max_nbody + 1)],
                                                     self.max_frag)
         else:
             # Get compute list
