@@ -758,8 +758,8 @@ class BasisSet(object):
 
         # Validate deffit for key
         univdef_zeta = 4
-        univdef = {'JFIT': ('def2-qzvpp-jfit', 'def2-qzvpp-jfit', None),
-                   'JKFIT': ('def2-qzvpp-jkfit', 'def2-qzvpp-jkfit', None),
+        univdef = {'JFIT': ('def2-universal-jfit', 'def2-universal-jfit', None),
+                   'JKFIT': ('def2-universal-jkfit', 'def2-universal-jkfit', None),
                    'RIFIT': ('def2-qzvpp-ri', 'def2-qzvpp-ri', None),
                    'DECON': (None, None, BasisSet.decontract),
                    'F12': ('def2-qzvpp-f12', 'def2-qzvpp-f12', None)}
