@@ -246,10 +246,10 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
     int am1, am2, am3, am4;
     int am_inc_1, am_inc_2, am_inc_3, am_inc_4;
 
-    am1 = original_bs1_->shell(sh1).am();
-    am2 = original_bs2_->shell(sh2).am();
-    am3 = original_bs3_->shell(sh3).am();
-    am4 = original_bs4_->shell(sh4).am();
+    am1 = bs1_->shell(sh1).am();
+    am2 = bs2_->shell(sh2).am();
+    am3 = bs3_->shell(sh3).am();
+    am4 = bs4_->shell(sh4).am();
 
     am_inc_1 = AM_increments[0];
     am_inc_2 = AM_increments[1];
