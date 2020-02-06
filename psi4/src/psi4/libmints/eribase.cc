@@ -2216,6 +2216,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
 
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
+    int am_inc_1, am_inc_2, am_inc_3, am_inc_4;
     std::shared_ptr<BasisSet> bs_temp;
 
     p13p24_ = false;
@@ -2228,10 +2229,10 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     am3 = original_bs3_->shell(sh3).am();
     am4 = original_bs4_->shell(sh4).am();
 
-    int am_inc_1 = AM_increments[0];
-    int am_inc_2 = AM_increments[1];
-    int am_inc_3 = AM_increments[2];
-    int am_inc_4 = AM_increments[3];
+    am_inc_1 = AM_increments[0];
+    am_inc_2 = AM_increments[1];
+    am_inc_3 = AM_increments[2];
+    am_inc_4 = AM_increments[3];
 
     am1 += am_inc_1;
     am2 += am_inc_2;
@@ -2268,8 +2269,10 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
         //n2 = original_bs2_->shell(sh2).nfunction();
         //n3 = original_bs3_->shell(sh3).nfunction();
         //n4 = original_bs4_->shell(sh4).nfunction();
-        n1 = INT_NPURE(am1); n2 = INT_NPURE(am2) ;
-        n3 = INT_NPURE(am3); n4 = INT_NPURE(am4) ;
+        n1 = INT_NFUNC(original_bs1_->shell(sh1).is_pure(), am1); 
+        n2 = INT_NFUNC(original_bs2_->shell(sh2).is_pure(), am2);
+        n3 = INT_NFUNC(original_bs3_->shell(sh3).is_pure(), am3); 
+        n4 = INT_NFUNC(original_bs4_->shell(sh4).is_pure(), am4);
     }
     curr_buff_size_ = n1 * n2 * n3 * n4;
 
@@ -2348,7 +2351,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
 #ifdef MINTS_TIMER
             timer_on("permute_target");
 #endif
-            permute_target(source_, target_, s1, s2, s3, s4, p12_, p34_, p13p24_);
+            permute_target(source_, target_, s1, s2, s3, s4, p12_, p34_, p13p24_, AM_increments);
 #ifdef MINTS_TIMER
             timer_off("permute_target");
 #endif
@@ -2384,7 +2387,20 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4, const
     int am2 = s2.am();
     int am3 = s3.am();
     int am4 = s4.am();
+
+    int am_inc_1, am_inc_2, am_inc_3, am_inc_4;
+    am_inc_1 = AM_increments[0];
+    am_inc_2 = AM_increments[1];
+    am_inc_3 = AM_increments[2];
+    am_inc_4 = AM_increments[3];
+
+    am1 += am_inc_1;
+    am2 += am_inc_2;
+    am3 += am_inc_3;
+    am4 += am_inc_4;
+
     int am = am1 + am2 + am3 + am4;  // total am
+
     int nprim1;
     int nprim2;
     int nprim3;
