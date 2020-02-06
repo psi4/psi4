@@ -211,8 +211,8 @@ ERDTwoElectronInt::~ERDTwoElectronInt() {
     delete[] iscratch_;
 }
 
-size_t ERDTwoElectronInt::compute_shell(const psi::AOShellCombinationsIterator &shellIter) {
-    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+size_t ERDTwoElectronInt::compute_shell(const psi::AOShellCombinationsIterator &shellIter, const std::vector<int>& AM_increments) {
+    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s(), AM_increments);
 }
 
 void ERDTwoElectronInt::compute_scratch_size() {
@@ -462,7 +462,7 @@ void ERDTwoElectronInt::normalize_basis() {
 #endif
 }
 
-size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, int shell_l) {
+size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, int shell_l, const std::vector<int>& AM_increments) {
 #if OLDCODE
     double *xyzptr1 = &xyz_1_[3 * shell_i];
     double x1 = *(xyzptr1++);
