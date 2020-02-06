@@ -85,7 +85,7 @@ class TwoElectronInt : public TwoBodyAOInt {
     Fjt* fjt_;
 
     //! Computes the ERIs between four shells.
-    size_t compute_quartet(int, int, int, int);
+    size_t compute_quartet(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0});
 
     //! Computes the ERI derivatives between four shells.
     size_t compute_quartet_deriv1(int, int, int, int);

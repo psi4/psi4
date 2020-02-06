@@ -2227,6 +2227,17 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     am2 = original_bs2_->shell(sh2).am();
     am3 = original_bs3_->shell(sh3).am();
     am4 = original_bs4_->shell(sh4).am();
+
+    int am_inc_1 = AM_increments[0];
+    int am_inc_2 = AM_increments[1];
+    int am_inc_3 = AM_increments[2];
+    int am_inc_4 = AM_increments[3];
+
+    am1 += am_inc_1;
+    am2 += am_inc_2;
+    am3 += am_inc_3;
+    am4 += am_inc_4;
+
     temp = am1 + am2 + am3 + am4;
 
     // c1 = original_bs1_->shell(sh1).ncenter();
@@ -2246,15 +2257,19 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     int n1, n2, n3, n4;
 
     if (force_cartesian_) {
-        n1 = original_bs1_->shell(sh1).ncartesian();
-        n2 = original_bs2_->shell(sh2).ncartesian();
-        n3 = original_bs3_->shell(sh3).ncartesian();
-        n4 = original_bs4_->shell(sh4).ncartesian();
+        //n1 = original_bs1_->shell(sh1).ncartesian();
+        //n2 = original_bs2_->shell(sh2).ncartesian();
+        //n3 = original_bs3_->shell(sh3).ncartesian();
+        //n4 = original_bs4_->shell(sh4).ncartesian();
+        n1 = INT_NCART(am1); n2 = INT_NCART(am2) ;
+        n3 = INT_NCART(am3); n4 = INT_NCART(am4) ;
     } else {
-        n1 = original_bs1_->shell(sh1).nfunction();
-        n2 = original_bs2_->shell(sh2).nfunction();
-        n3 = original_bs3_->shell(sh3).nfunction();
-        n4 = original_bs4_->shell(sh4).nfunction();
+        //n1 = original_bs1_->shell(sh1).nfunction();
+        //n2 = original_bs2_->shell(sh2).nfunction();
+        //n3 = original_bs3_->shell(sh3).nfunction();
+        //n4 = original_bs4_->shell(sh4).nfunction();
+        n1 = INT_NPURE(am1); n2 = INT_NPURE(am2) ;
+        n3 = INT_NPURE(am3); n4 = INT_NPURE(am4) ;
     }
     curr_buff_size_ = n1 * n2 * n3 * n4;
 
@@ -2324,7 +2339,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
 #endif
 
     // s1, s2, s3, s4 contain the shells to do in libint order
-    size_t ncomputed = compute_quartet(s1, s2, s3, s4);
+    size_t ncomputed = compute_quartet(s1, s2, s3, s4, AM_increments);
     if (ncomputed) {
         // Only do the following if we did any work.
 
@@ -2355,7 +2370,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     return ncomputed;
 }
 
-size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4) {
+size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4, const std::vector<int>& AM_increments) {
 #ifdef MINTS_TIMER
     timer_on("setup");
 #endif
