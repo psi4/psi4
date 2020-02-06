@@ -510,23 +510,23 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                         for (int p = oP; p < oP+nP; p++) {
                             for (int m = oM; m < oM+nM; m++) {
                                 for (int n = oN; n < oN+nN; n++) {
-                                    Amnp[p][m*nso+n] += (*buffer++);
+                                    Amnp[p][m*nso+n] = (*buffer++);
                                 }
                             }
                         }
-                        // c[A] = (A|mn) D[m][n]
-                        C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dap[0], 1, 0.0, cp, 1);
-                        // (A|mj) = (A|mn) C[n][j]
-                        C_DGEMM('N','N',np*(size_t)nso,nocc,nso,1.0,Amnp[0],nso,Cop[0],nocc,0.0,Amip[0],nocc);
-                        // (A|ij) = (A|mj) C[m][i]
-                        #pragma omp parallel for
-                        for (int p = 0; p < np; p++) {
-                            C_DGEMM('T','N',nocc,nocc,nso,1.0,Amip[p],nocc,Cop[0],nocc,0.0,&Aijp[0][p * (size_t) nocc * nocc],nocc);
-                        }
-
                     }
                 }
             }
+            // c[A] = (A|mn) D[m][n]
+            C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dap[0], 1, 0.0, cp, 1);
+            // (A|mj) = (A|mn) C[n][j]
+            C_DGEMM('N','N',np*(size_t)nso,nocc,nso,1.0,Amnp[0],nso,Cop[0],nocc,0.0,Amip[0],nocc);
+            // (A|ij) = (A|mj) C[m][i]
+            #pragma omp parallel for
+            for (int p = 0; p < np; p++) {
+                C_DGEMM('T','N',nocc,nocc,nso,1.0,Amip[p],nocc,Cop[0],nocc,0.0,&Aijp[0][p * (size_t) nocc * nocc],nocc);
+            }
+
             // d[A] = Minv[A][B] c[B]  (factor of 2, to account for RHF)
             C_DGEMV('n', np, np, 2.0, PQp[0], np, cp, 1, 0.0, dp, 1);
 
