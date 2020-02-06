@@ -2460,7 +2460,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4, const
         p34 = &(pairs34_[sh3][sh4]);
 
         nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2,
-                                    sh3 == sh4, 0);
+                                    sh3 == sh4, 0); // sh1 == sh2 && sh3 == sh4 is not used anywhere, so safe to ignore for now!
     } else {
         const double *a1s = s1.exps();
         const double *a2s = s2.exps();
