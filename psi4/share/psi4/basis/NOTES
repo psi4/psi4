@@ -1,6 +1,15 @@
 *******************************************************************************
 *******************************************************************************
 
+Thursday, February 6, 2020 -- SL
+
+[47] The def2 JFIT and JKFIT basis sets have been replaced with the
+universal def2 fitting basis set. The sets are all supposed to be the
+same but weren't, see #1804.
+
+*******************************************************************************
+*******************************************************************************
+
 Thursday, December 19, 2019 -- LAB
 
 [46] Pursuant to sworn affidavit of Kirk Peterson, it's ok to use
