@@ -53,11 +53,12 @@ void SAPT2p3::ind30() {
 
     free_block(tBS);
 
-    e_ind30_ = indA_B + indB_A;
+    e_ind30_ = indA_B + indB_A + e_ind30_vsasb_term_;
 
     if (debug_) {
         outfile->Printf("\n    Ind30_1             = %18.12lf [Eh]\n", indA_B);
         outfile->Printf("    Ind30_2             = %18.12lf [Eh]\n", indB_A);
+        outfile->Printf("    Ind30_3             = %18.12lf [Eh]\n", e_ind30_vsasb_term_);
     }
     if (print_) {
         outfile->Printf("    Ind30               = %18.12lf [Eh]\n", e_ind30_);
