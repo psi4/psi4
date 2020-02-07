@@ -59,7 +59,6 @@ class OCCWave : public Wavefunction {
     void mem_release();
     void mograd();
     void compute_orbital_step();
-    void update_mo();
     void update_mo_spincase(SpinType);
     void ccl_energy();
     void nbo();
@@ -110,6 +109,7 @@ class OCCWave : public Wavefunction {
     void second_order_opdm();
     void set_t2_amplitudes_mp2();
     void mp2_energy(bool include_singles = false);
+    void oo_diis();
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
@@ -151,6 +151,8 @@ class OCCWave : public Wavefunction {
     void ocepa_manager();
     void cepa_manager();
     void cepa_iterations();
+    void cepa_diis();
+    void cepa_chemist();
     void ocepa_tpdm_vvvv();
     void ocepa_response_pdms();
     void t2_amps();
@@ -296,7 +298,6 @@ class OCCWave : public Wavefunction {
     double rms_t2AB;
     double rms_t2BB;
     double rms_l2;
-    double mu_ls;
     double sc_ls;
     double cutoff;
     double os_scale;

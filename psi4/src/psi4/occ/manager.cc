@@ -547,26 +547,6 @@ void OCCWave::ocepa_manager() {
 
     occ_iterations();
 
-    if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
-        orbs_already_opt = 1;
-        if (conver == 1)
-            outfile->Printf("\n\tOrbitals are optimized now.\n");
-        else if (conver == 0) {
-            outfile->Printf("\n\tMAX MOGRAD did NOT converge, but RMS MOGRAD converged!!!\n");
-            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
-        }
-        outfile->Printf("\tSwitching to the standard CEPA computation... \n");
-
-        ref_energy();
-        cepa_energy();
-        Ecepa_old = EcepaL;
-        cepa_iterations();
-        if (dertype == "FIRST") {
-            ocepa_response_pdms();
-            gfock();
-        }
-    }
-
     if (conver == 1) {
         ref_energy();
         cepa_energy();
