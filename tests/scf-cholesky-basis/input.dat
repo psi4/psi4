@@ -102,7 +102,7 @@ D   1   1.00
 }
 
 df_basis_scf {
-assign def2-svp-jkfit
+assign def2-universal-jkfit
 }
 
 set reference uhf
