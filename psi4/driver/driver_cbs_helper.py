@@ -274,16 +274,9 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=1, alph
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-        beta = valueHI.clone()
-        beta.name = 'Truhlar SCF (%s, %s) beta' % (zLO, zHI)
-        beta.subtract(valueLO)
-        beta.scale(beta_division)
-        beta.scale(beta_mult)
-
-        value = valueHI.clone()
-        value.subtract(beta)
-        value.name = 'Truhlar SCF (%s, %s) data' % (zLO, zHI)
+    elif isinstance(valueLO, np.ndarray):
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta * beta_mult
 
         if verbose > 2:
             cbsscheme = f"""\n   ==> Truhlar 2-point power SCF extrapolation for method: {functionname.upper()} <==\n"""
@@ -377,16 +370,9 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=1, alpha
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-        beta = valueHI.clone()
-        beta.name = 'Karton SCF (%s, %s) beta' % (zLO, zHI)
-        beta.subtract(valueLO)
-        beta.scale(beta_division)
-        beta.scale(beta_mult)
-
-        value = valueHI.clone()
-        value.subtract(beta)
-        value.name = 'Karton SCF (%s, %s) data' % (zLO, zHI)
+    elif isinstance(valueLO, np.ndarray):
+        beta = (valueHI - valueLO) * beta_division
+        value = valueHI - beta_mult * beta
 
         if verbose > 2:
             cbsscheme = f"""\n   ==> Karton 2-point power SCF extrapolation for method: {functionname.upper()} <==\n"""

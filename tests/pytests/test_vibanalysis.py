@@ -1028,8 +1028,6 @@ def test_hessian_vs_cfour(scf_type, subject, dertype, request):
 
     verbose = 2
     forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries
-    if dertype == 0:
-        forgive.append('IR_intensity')
 
     qmol = qcdb.Molecule(_psi4_systems[subject])
     rqmol = qcdb.Molecule(_cfour_ref[subject]['xyz'])

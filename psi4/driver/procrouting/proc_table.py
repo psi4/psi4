@@ -194,7 +194,9 @@ procedures = {
         # Upon adding a method to this list, add it to the docstring in driver.optimize below
     },
     'hessian' : {
-        # Upon adding a method to this list, add it to the docstring in driver.frequency
+        # Upon adding a method to this list:
+        # * add it to the docstring in driver.frequency
+        # * program up and set DIPOLE GRADIENT, too, otherwise IR intensities logic will fail
         'hf'            : proc.run_scf_hessian,
         'scf'           : proc.run_scf_hessian,
     },

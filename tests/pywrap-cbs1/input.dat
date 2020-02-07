@@ -92,7 +92,16 @@ def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None
 
         return value
 
+    elif isinstance(valueLO, np.ndarray):
+        # use extra section like this in case numpy arrays need different code than scalars
+        value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
+        beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))
+
+        return value
+
     elif isinstance(valueLO, (core.Matrix, core.Vector)):
+        # legacy/unneeded -- much nicer to work in ndarray like above
+
         beta = valueHI.clone()
         beta.subtract(valueLO)
         beta.scale(1 / (zHI ** (-3) - zLO ** (-3)))

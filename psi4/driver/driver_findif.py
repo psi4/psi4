@@ -1168,14 +1168,15 @@ class FiniteDifferenceComputer(BaseComputer):
         elif task.driver == 'gradient':
             reference['gradient'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
-            if 'CURRENT DIPOLE' in task.extras['qcvars']:
-                reference['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'].reshape((3,))
 
         elif task.driver == 'hessian':
             reference['hessian'] = response
             reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
             if 'CURRENT GRADIENT' in task.extras['qcvars']:
                 reference['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
+
+        if 'CURRENT DIPOLE' in task.extras['qcvars']:
+            reference['dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
 
         # load AtomicComputer results into findifrec[displacements]
         for label, displacement in self.findifrec["displacements"].items():
@@ -1188,14 +1189,15 @@ class FiniteDifferenceComputer(BaseComputer):
             elif task.driver == 'gradient':
                 displacement['gradient'] = response
                 displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
-                if 'CURRENT DIPOLE' in task.extras['qcvars']:
-                    displacement['dipole'] = task.extras['qcvars']['CURRENT DIPOLE'].reshape((3,))
 
             elif task.driver == 'hessian':
                 displacement['hessian'] = response
                 displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
                 if 'CURRENT GRADIENT' in task.extras['qcvars']:
                     displacement['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
+
+            if 'CURRENT DIPOLE' in task.extras['qcvars']:
+                displacement['dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
 
         # apply finite difference formulas and load derivatives into findifrec[reference]
         if self.metameta['mode'] == '1_0':
@@ -1226,6 +1228,9 @@ class FiniteDifferenceComputer(BaseComputer):
                 #  to construct another quantity.
             else:
                 self.findifrec["reference"]["gradient"] = G0
+
+            DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
+            self.findifrec["reference"]["dipole derivative"] = DD0
 
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0

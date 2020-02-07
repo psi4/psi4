@@ -55,7 +55,7 @@ zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
 _zeta_sym2val = {v: k for k, v in _zeta_val2sym.items()}
 _addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
-_f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_options', 'f_energy', 'f_gradient', 'f_hessian']
+_f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_options', 'f_energy', 'f_gradient', 'f_hessian', 'f_dipole', 'f_dipder']
 _lmh_labels = {
     1: ['HI'],
     2: ['LO', 'HI'],
@@ -943,7 +943,7 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options):
     NEED = {}
     for idx in range(Nxtpl):
         NEED[_lmh_labels[Nxtpl][idx]] = dict(
-            zip(_f_fields, [wfnname, basisname[idx], basiszeta[idx], options, 0.0, None, None]))
+            zip(_f_fields, [wfnname, basisname[idx], basiszeta[idx], options, 0.0, None, None, None, None]))
     return NEED
 
 
@@ -1201,7 +1201,7 @@ def _build_cbs_compute(metameta, metadata):
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
     d_fields = [
-        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_alpha', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian'
+        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_alpha', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_dipole', 'd_dipder'
     ]
     GRAND_NEED = []
 
@@ -1212,7 +1212,7 @@ def _build_cbs_compute(metameta, metadata):
             zip(d_fields, [
                 'scf', metadata[0]["scheme"],
                 _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], metadata[0]["alpha"], NEED, +1,
-                0.0, None, None
+                0.0, None, None, None, None
             ])))
     if len(metadata) > 1:
         for delta in metadata[1:]:
@@ -1223,7 +1223,7 @@ def _build_cbs_compute(metameta, metadata):
                     zip(d_fields, [
                         delta["stage"], delta["scheme"],
                         _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], delta["alpha"], NEED, +1, 0.0,
-                        None, None
+                        None, None, None, None
                     ])))
             NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
                                          delta["options_lo"])
@@ -1232,7 +1232,7 @@ def _build_cbs_compute(metameta, metadata):
                     zip(d_fields, [
                         delta["stage"], delta["scheme"],
                         _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], delta["alpha"], NEED, -1,
-                        0.0, None, None
+                        0.0, None, None, None, None
                     ])))
 
     # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
@@ -1292,7 +1292,7 @@ def _build_cbs_compute(metameta, metadata):
     TROVE = []
     for job in JOBS:
         for wfn in VARH[job['f_wfn']]:
-            TROVE.append(dict(zip(_f_fields, [wfn, job['f_basis'], job['f_zeta'], job['f_options'], 0.0, None, None])))
+            TROVE.append(dict(zip(_f_fields, [wfn, job['f_basis'], job['f_zeta'], job['f_options'], 0.0, None, None, None, None])))
 
     instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
     for mc in TROVE:
@@ -1334,17 +1334,23 @@ def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
                     lvl['f_energy'] = job['f_energy']
                     lvl['f_gradient'] = job['f_gradient']
                     lvl['f_hessian'] = job['f_hessian']
+                    lvl['f_dipole'] = job['f_dipole']
+                    lvl['f_dipder'] = job['f_dipder']
 
     # Make xtpl() call
     finalenergy = 0.0
     finalgradient = None
     finalhessian = None
+    finaldipole = None
+    finaldipder = None
 
     for stage in GRAND_NEED:
         hiloargs = {'alpha': stage['d_alpha'], 'verbose': verbose}
 
         grad_available = all([lmh['f_gradient'] is not None for lmh in stage['d_need'].values()])
         hess_available = all([lmh['f_hessian'] is not None for lmh in stage['d_need'].values()])
+        dipole_available = all([lmh['f_dipole'] is not None for lmh in stage['d_need'].values()])
+        dipder_available = all([lmh['f_dipder'] is not None for lmh in stage['d_need'].values()])
 
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
         stage['d_energy'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
@@ -1364,6 +1370,20 @@ def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
             stage['d_hessian'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
             finalhessian += stage['d_hessian'] * stage['d_coef']
 
+        if dipole_available:
+            if finaldipole is None:
+                finaldipole = np.zeros((3))
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_dipole'))
+            stage['d_dipole'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
+            finaldipole += stage['d_dipole'] * stage['d_coef']
+
+        if dipder_available:
+            if finaldipder is None:
+                finaldipder = np.zeros((3 * nat, 3))
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_dipder'))
+            stage['d_dipder'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
+            finaldipder += stage['d_dipder'] * stage['d_coef']
+
     cbs_results = {
         'ret_ptype': {
             'energy': finalenergy,
@@ -1373,6 +1393,8 @@ def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
         'energy': finalenergy,
         'gradient': finalgradient,
         'hessian': finalhessian,
+        'dipole': finaldipole,
+        'dipole gradient': finaldipder,
     }
 
     return cbs_results, GRAND_NEED
@@ -1563,7 +1585,7 @@ class CompositeComputer(BaseComputer):
                 mc['f_energy'] = response
 
             elif self.metameta['ptype'] == 'gradient':
-                mc['f_gradient'] = np.array(response).reshape((-1, 3))
+                mc['f_gradient'] = response
                 mc['f_energy'] = task.extras['qcvars']['CURRENT ENERGY']
 
             elif self.metameta['ptype'] == 'hessian':
@@ -1571,6 +1593,12 @@ class CompositeComputer(BaseComputer):
                 mc['f_energy'] = task.extras['qcvars']['CURRENT ENERGY']
                 if 'CURRENT GRADIENT' in task.extras['qcvars']:
                     mc['f_gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
+
+            if 'CURRENT DIPOLE' in task.extras['qcvars']:
+                mc['f_dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
+
+            if 'CURRENT DIPOLE GRADIENT' in task.extras['qcvars']:
+                mc['f_dipder'] = task.extras['qcvars']['CURRENT DIPOLE GRADIENT']
 
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
@@ -1587,6 +1615,8 @@ class CompositeComputer(BaseComputer):
                     mce['f_energy'] = mc['f_energy']
                     mce['f_gradient'] = mc['f_gradient']
                     mce['f_hessian'] = mc['f_hessian']
+                    mce['f_dipole'] = mc['f_dipole']
+                    mce['f_dipder'] = mc['f_dipder']
 
             # logger.debug("MC\n" + pp.pformat(mc))
 
@@ -1630,6 +1660,14 @@ class CompositeComputer(BaseComputer):
         if np.count_nonzero(assembled_results['hessian']):
             for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
                 qcvars[qcv] = assembled_results['hessian']
+
+        if np.count_nonzero(assembled_results['dipole']):
+            for qcv in ['CURRENT DIPOLE', 'CBS DIPOLE']:
+                qcvars[qcv] = assembled_results['dipole']
+
+        if np.count_nonzero(assembled_results['dipole gradient']):
+            for qcv in ['CURRENT DIPOLE GRADIENT', 'CBS DIPOLE GRADIENT']:
+                qcvars[qcv] = assembled_results['dipole gradient']
 
         cbsjob = AtomicResult(
             **{
