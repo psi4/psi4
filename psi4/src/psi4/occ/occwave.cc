@@ -55,6 +55,7 @@ OCCWave::~OCCWave() {}  //
 
 void OCCWave::common_init() {
     // print title and options
+    print_ = options_.get_int("PRINT");
     if (print_ > 0) options_.print();
     wfn_type_ = options_.get_str("WFN_TYPE");
     orb_opt_ = options_.get_str("ORB_OPT");
@@ -65,7 +66,6 @@ void OCCWave::common_init() {
 
     cc_maxiter = options_.get_int("CC_MAXITER");
     mo_maxiter = options_.get_int("MO_MAXITER");
-    print_ = options_.get_int("PRINT");
     cachelev = options_.get_int("CACHELEVEL");
     exp_cutoff = options_.get_int("CUTOFF");
     tol_pcg = options_.get_double("PCG_CONVERGENCE");
