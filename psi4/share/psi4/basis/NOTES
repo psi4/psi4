@@ -1,6 +1,23 @@
 *******************************************************************************
 *******************************************************************************
 
+Friday, January 7, 2020 -- LAB
+
+[48] Realizing that the diff_gbs.py script is great for detecting format
+errors preventing the parser from forming an atomic basis, I ran the
+orbital and RI def2 bases through it. Many missing ``1.0`` coefficients
+have been added, along with a couple sets of shells that were missing
+entirely (values replaced from MolSSI BSE), and some spurious stars
+and a concatenated basis removed. One change involved calcium, but
+others were high atomic number elements. I recommend new basis set
+files be run through the script to detect simple errors. (Note that
+Dunning have already done so, since the purpose of the script was to
+check newly edited and composed primitives against the previous fully
+composed basis files.)
+
+*******************************************************************************
+*******************************************************************************
+
 Thursday, December 19, 2019 -- LAB
 
 [46] Pursuant to sworn affidavit of Kirk Peterson, it's ok to use
