@@ -70,29 +70,6 @@ void OCCWave::omp2_manager() {
 
     occ_iterations();
 
-    if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
-        orbs_already_opt = 1;
-        if (conver == 1)
-            outfile->Printf("\n\tOrbitals are optimized now.\n");
-        else if (conver == 0) {
-            outfile->Printf("\n\tMAX MOGRAD did NOT converge, but RMS MOGRAD converged!!!\n");
-            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
-        }
-        outfile->Printf("\tSwitching to the standard MP2 computation after semicanonicalization of the MOs... \n");
-
-        semi_canonic();
-        if (reference_ == "RESTRICTED")
-            trans_ints_rhf();
-        else if (reference_ == "UNRESTRICTED")
-            trans_ints_uhf();
-        set_t2_amplitudes_mp2();
-        conver = 1;
-        if (dertype == "FIRST") {
-            omp2_response_pdms();
-            gfock();
-        }
-    }
-
     if (conver == 1) {
         ref_energy();
         mp2_energy();

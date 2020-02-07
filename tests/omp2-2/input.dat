@@ -2,7 +2,7 @@
 
 refnuc      =   25.59060766929188  #TEST
 refscf      = -129.25292774600072 #TEST
-refomp2     = -129.66800278355504 #TEST
+refomp2     = -129.66800293494742 #TEST
 
 molecule no {
 0 2
@@ -15,7 +15,6 @@ set {
   reference rohf
   guess gwh
   mp2_type conv
-  max_mograd_convergence 3e-4
 }
 energy('omp2')
 

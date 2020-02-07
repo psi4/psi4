@@ -490,7 +490,7 @@ void OCCWave::oo_diis() {
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "T <OO|VV>");
             global_dpd_->buf4_init(&R, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "R <OO|VV>");
+                               "RT2_1 <OO|VV>");
             orbitalDiis->add_entry(4, wogA_vec.get(), &R, kappa_bar_[SpinType::Alpha].get(), &T);
             if (orbitalDiis->subspace_size() >= cc_mindiis_) {
                 orbitalDiis->extrapolate(2, kappa_bar_[SpinType::Alpha].get(), &T);
