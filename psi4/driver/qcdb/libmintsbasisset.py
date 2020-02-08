@@ -29,6 +29,7 @@
 import os
 import sys
 import hashlib
+import warnings
 import itertools
 import collections
 
@@ -758,8 +759,8 @@ class BasisSet(object):
 
         # Validate deffit for key
         univdef_zeta = 4
-        univdef = {'JFIT': ('def2-qzvpp-jfit', 'def2-qzvpp-jfit', None),
-                   'JKFIT': ('def2-qzvpp-jkfit', 'def2-qzvpp-jkfit', None),
+        univdef = {'JFIT': ('def2-universal-jfit', 'def2-universal-jfit', None),
+                   'JKFIT': ('def2-universal-jkfit', 'def2-universal-jkfit', None),
                    'RIFIT': ('def2-qzvpp-ri', 'def2-qzvpp-ri', None),
                    'DECON': (None, None, BasisSet.decontract),
                    'F12': ('def2-qzvpp-f12', 'def2-qzvpp-f12', None)}
@@ -844,7 +845,7 @@ class BasisSet(object):
                         names[index] = basstrings[filename[:-4]].split('\n')
                 else:
                     # -- Else seek bas.gbs file in path
-                    fullfilename = search_file(filename, seek['path'])
+                    fullfilename = search_file(_basis_file_warner_and_aliaser(filename), seek['path'])
                     if fullfilename is None:
                         # -- Else skip to next bas
                         continue
@@ -1534,3 +1535,30 @@ class BasisSet(object):
     @staticmethod
     def shell_sorter_am(d1, d2):
         return d1.am() < d2.am()
+
+
+def _basis_file_warner_and_aliaser(filename):
+    aliased_in_1p4 = {
+        "def2-qzvp-jkfit": "def2-universal-jkfit",
+        "def2-qzvpp-jkfit": "def2-universal-jkfit",
+        "def2-sv_p_-jkfit": "def2-universal-jkfit",
+        "def2-svp-jkfit": "def2-universal-jkfit",
+        "def2-tzvp-jkfit": "def2-universal-jkfit",
+        "def2-tzvpp-jkfit": "def2-universal-jkfit",
+
+        "def2-qzvp-jfit": "def2-universal-jfit",
+        "def2-qzvpp-jfit": "def2-universal-jfit",
+        "def2-sv_p_-jfit": "def2-universal-jfit",
+        "def2-svp-jfit": "def2-universal-jfit",
+        "def2-tzvp-jfit": "def2-universal-jfit",
+        "def2-tzvpp-jfit": "def2-universal-jfit",
+    }
+    for k, v in aliased_in_1p4.items():
+        if filename.endswith(k + ".gbs"):
+            warnings.warn(
+                f"Using basis set `{k}` instead of its generic name `{v}` is deprecated, and in 1.5 it will stop working\n",
+                category=FutureWarning,
+                stacklevel=2)
+            return filename.replace(k, v)
+    else:
+        return filename
