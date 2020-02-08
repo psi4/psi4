@@ -1580,11 +1580,11 @@ void DFJKGrad::compute_hessian()
     // c[A] = (A|mn) D[m][n]
     C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dtp[0], 1, 0.0, cp, 1);
     // (A|mj) = (A|mn) C[n][j]
-    C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
+    C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Aa_mip[0],na);
     // (A|ij) = (A|mj) C[m][i]
     #pragma omp parallel for
     for (int p = 0; p < np; p++) {
-        C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (size_t) na * na],na);
+        C_DGEMM('T','N',na,na,nso,1.0,Aa_mip[p],na,Cap[0],na,0.0,&Aa_ijp[0][p * (size_t) na * na],na);
     }
 
     // d[A] = Minv[A][B] c[B]
