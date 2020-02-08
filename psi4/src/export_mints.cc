@@ -918,11 +918,12 @@ void export_mints(py::module& m) {
         .def("electrostatic", &IntegralFactory::electrostatic,
              "Returns a OneBodyInt that computes the point electrostatic potential")
         .def("overlap_3c", &IntegralFactory::overlap_3c,
-             "Returns a OneBodyInt that computes the 3 center overlap integral")
-        .def("giao_overlap_deriv", &IntegralFactory::giao_overlap_deriv, 
-             "Returns a OneBodyInt that computes the derivative of GIAO overlap integrals", py::arg("deriv") = 0)
-        .def("giao_angmom", &IntegralFactory::giao_angmom, 
-             "Returns a OneBodyInt that computes the GIAO angular momentum integrals", py::arg("deriv") = 0);
+             "Returns a OneBodyInt that computes the 3 center overlap integral");
+         // I might not need this below!
+        //.def("giao_overlap_deriv", &IntegralFactory::giao_overlap_deriv, 
+        //     "Returns a OneBodyInt that computes the derivative of GIAO overlap integrals", py::arg("deriv") = 0)
+        //.def("giao_angmom", &IntegralFactory::giao_angmom, 
+        //     "Returns a OneBodyInt that computes the GIAO angular momentum integrals", py::arg("deriv") = 0);
 
     typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
@@ -1017,6 +1018,7 @@ void export_mints(py::module& m) {
         .def("giao_angmom", &MintsHelper::giao_angmom, "Vector of GIAO angular momentum integrals")
         .def("giao_kinetic", &MintsHelper::giao_kinetic, "Vector of GIAO kinetic energy integrals")
         .def("giao_potential", &MintsHelper::giao_potential, "Vector of GIAO potential energy integrals")
+        .def("giao_tei_deriv1", &MintsHelper::giao_tei_deriv1, "Vector of first deriv. of GIAO tei integrals")
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)

@@ -316,6 +316,8 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> giao_kinetic();
     // Vector GIAO or LONDON potential energy Integrals
     std::vector<SharedMatrix> giao_potential();
+    // Vector GIAO or LONDON two electron Integrals 
+    std::vector<SharedMatrix> giao_tei_deriv1();
 
     /// Returns a CdSalcList object
     std::shared_ptr<CdSalcList> cdsalcs(int needed_irreps = 0xF, bool project_out_translations = true,

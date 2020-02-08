@@ -3316,4 +3316,67 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
     return mo_grad;
 }
 
+std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
+
+    std::shared_ptr<TwoBodyAOInt> ints(integral_->giao_eri_deriv());
+
+    std::shared_ptr<BasisSet> bs1 = ints->basis1();
+    std::shared_ptr<BasisSet> bs2 = ints->basis2();
+    std::shared_ptr<BasisSet> bs3 = ints->basis3();
+    std::shared_ptr<BasisSet> bs4 = ints->basis4();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+    int nbf3 = bs3->nbf();
+    int nbf4 = bs4->nbf();
+
+    std::vector<SharedMatrix> Giao_tei;
+
+    auto I = std::make_shared<Matrix>("Test", nbf1 * nbf2, nbf3 * nbf4);
+    double **Ip = I->pointer();
+    const double *buffer = ints->buffer();
+
+    for (int M = 0; M < bs1->nshell(); M++) {
+        for (int N = 0; N < bs2->nshell(); N++) {
+            for (int P = 0; P < bs3->nshell(); P++) {
+                for (int Q = 0; Q < bs4->nshell(); Q++) {
+                    ints->compute_shell(M, N, P, Q);
+
+                    for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
+                        for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
+                            for (int p = 0; p < bs3->shell(P).nfunction(); p++) {
+                                for (int q = 0; q < bs4->shell(Q).nfunction(); q++, index++) {
+                                    Ip[(bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n]
+                                      [(bs3->shell(P).function_index() + p) * nbf4 + bs4->shell(Q).function_index() +
+                                       q] = buffer[index];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{nbf1, nbf2, nbf3, nbf4};
+    I->set_numpy_shape(nshape);
+
+    Giao_tei.push_back(I);
+    /*int SizeBasis = basisset_->nbf();
+
+    Giao_tei.push_back(std::make_shared<Matrix>("GIAO dG/dBx", SizeBasis, SizeBasis));
+    Giao_tei.push_back(std::make_shared<Matrix>("GIAO dG/dBy", SizeBasis, SizeBasis));
+    Giao_tei.push_back(std::make_shared<Matrix>("GIAO dG/dBz", SizeBasis, SizeBasis));
+
+    std::shared_ptr<TwoBodyAOInt> ints(integral_->giao_eri_deriv());
+    ints->compute(Giao_tei);
+
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{SizeBasis, SizeBasis, SizeBasis, SizeBasis};
+    for (int p = 0; p < 3; p++) Giao_tei[p]->set_numpy_shape(nshape);*/
+
+    return Giao_tei;
+}
+
 }  // namespace psi
