@@ -195,6 +195,16 @@ class ErfComplementERI : public TwoElectronInt {
     void setOmega(double omega);
 };
 
+class GiaoERI : public TwoElectronInt {
+   public:
+    // may need to increase deriv values
+    GiaoERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    /// Compute ERIs between 4 shells. Result is stored in buffer.
+    /// I am overloading TwoElectronInt's compute_shell function
+    size_t compute_shell(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0}) override;
+    ~GiaoERI() override;
+};
+
 }  // namespace psi
 
 #endif

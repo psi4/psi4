@@ -520,6 +520,9 @@ class PSI_API IntegralFactory {
     virtual TwoBodyAOInt* f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
                                                 bool use_shell_pairs = true);
 
+    /// Returns an GIAO integral object
+    virtual TwoBodyAOInt* giao_eri_deriv(int deriv=0, bool use_shell_pairs=true);
+
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     AOIntegralsIterator integrals_iterator(int p, int q, int r, int s);
 

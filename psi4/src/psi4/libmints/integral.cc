@@ -289,6 +289,12 @@ TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::shared_ptr<Correlation
     return new F12DoubleCommutator(cf, this, deriv, use_shell_pairs);
 }
 
+TwoBodyAOInt* IntegralFactory::giao_eri_deriv(int deriv, bool use_shell_pairs) {
+     return new GiaoERI(this, deriv, use_shell_pairs);
+}
+
+
+
 void IntegralFactory::init_spherical_harmonics(int max_am) {
     spherical_transforms_.clear();
     ispherical_transforms_.clear();
