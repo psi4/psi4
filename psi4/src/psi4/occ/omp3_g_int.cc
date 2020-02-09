@@ -91,31 +91,13 @@ void OCCWave::omp3_g_int() {
         // Load dpd_file2 to Matrix (Goo)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < aoccpiA[h]; ++i) {
-                for (int j = 0; j < aoccpiA[h]; ++j) {
-                    GooA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GooA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Load dpd_file2 to Matrix (Gvv)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < avirtpiA[h]; ++i) {
-                for (int j = 0; j < avirtpiA[h]; ++j) {
-                    GvvA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GvvA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         psio_->close(PSIF_OCC_DPD, 1);
@@ -274,59 +256,23 @@ void OCCWave::omp3_g_int() {
         // Load dpd_file2 to Matrix (Goo)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < aoccpiA[h]; ++i) {
-                for (int j = 0; j < aoccpiA[h]; ++j) {
-                    GooA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GooA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Beta-Beta spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('o'), ID('o'), "G <o|o>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < aoccpiB[h]; ++i) {
-                for (int j = 0; j < aoccpiB[h]; ++j) {
-                    GooB->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GooB = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Load dpd_file2 to Matrix (Gvv)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < avirtpiA[h]; ++i) {
-                for (int j = 0; j < avirtpiA[h]; ++j) {
-                    GvvA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GvvA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Beta-Beta spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('v'), ID('v'), "G <v|v>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < avirtpiB[h]; ++i) {
-                for (int j = 0; j < avirtpiB[h]; ++j) {
-                    GvvB->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GvvB = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         psio_->close(PSIF_OCC_DPD, 1);
