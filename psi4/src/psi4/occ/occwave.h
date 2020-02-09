@@ -121,17 +121,16 @@ class OCCWave : public Wavefunction {
     void mp2_manager();
     void omp2_g_int();
     void omp2_response_pdms();
-    void omp2_t2_1st_general();
     void omp2_tpdm_oovv();
     void omp2_ip_poles();
     void omp2_ea_poles();
     void ep2_ip();
+    void iterate_t2o1_amplitudes(); // Used by all OMP methods, as all need T2(1)
 
     // OMP3
     void omp3_manager();
     void mp3_manager();
     void omp3_response_pdms();
-    void omp3_t2_1st_general();
     void omp3_tpdm_vvvv();
     void omp3_g_int();
     void w_1st_order();
