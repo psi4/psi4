@@ -1132,7 +1132,7 @@ void SAPT2p3::ind30_amps(int AAfile, const char *ARlabel, int BBfile, const char
 
     free(X);
 
-    if (strcmp(amplabel, "Ind30 uAR Amplitudes")) {
+    if (amplabel == std::string("Ind30 uAR Amplitudes")) {
         e_ind30_vsasb_term_ = 2.0 * C_DDOT(noccA * nvirA, uAR[0], 1, sAR[0], 1);
     }
 
