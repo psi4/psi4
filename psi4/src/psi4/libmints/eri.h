@@ -121,7 +121,7 @@ class TwoElectronInt : public TwoBodyAOInt {
 
    public:
     //! Constructor. Use an IntegralFactory to create this object.
-    TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false, int increment=0);
 
     ~TwoElectronInt() override;
 
@@ -198,7 +198,7 @@ class ErfComplementERI : public TwoElectronInt {
 class GiaoERI : public TwoElectronInt {
    public:
     // may need to increase deriv values
-    GiaoERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
+    GiaoERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false, int increment = 0);
     ~GiaoERI() override;
 };
 

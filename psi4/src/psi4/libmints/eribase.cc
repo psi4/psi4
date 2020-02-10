@@ -1782,7 +1782,7 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt, const ShellP
 
 }  // end namespace
 
-TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool use_shell_pairs, int increment)
     : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
     // Initialize libint static data
     init_libint_base();
@@ -1790,13 +1790,15 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
 
     // Figure out some information to initialize libint/libderiv with
     // 1. Maximum angular momentum
-    int max_am = MAX(MAX(basis1()->max_am(), basis2()->max_am()), MAX(basis3()->max_am(), basis4()->max_am()));
+    // For GIAO, implicit assumption: basis1 == basis2 == basis3 == basis4
+    int max_am = MAX(MAX(basis1()->max_am()+increment, basis2()->max_am()), 
+                 MAX(basis3()->max_am(), basis4()->max_am()));
     // 2. Maximum number of primitive combinations
     int max_nprim = basis1()->max_nprimitive() * basis2()->max_nprimitive() * basis3()->max_nprimitive() *
                     basis4()->max_nprimitive();
     // 3. Maximum Cartesian class size
-    max_cart_ = ioff[basis1()->max_am() + 1] * ioff[basis2()->max_am() + 1] * ioff[basis3()->max_am() + 1] *
-                ioff[basis4()->max_am() + 1];
+    max_cart_ = ioff[basis1()->max_am() + increment + 1] * ioff[basis2()->max_am() + 1] 
+                * ioff[basis3()->max_am() + 1] * ioff[basis4()->max_am() + 1];
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
@@ -1843,7 +1845,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
         outfile->Printf("Error allocating memory for libint/libderiv.\n");
         exit(EXIT_FAILURE);
     }
-    size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) * INT_NCART(basis3()->max_am()) *
+    size_t size = INT_NCART(basis1()->max_am()+increment) * INT_NCART(basis2()->max_am()) * INT_NCART(basis3()->max_am()) *
                   INT_NCART(basis4()->max_am());
 
     // Used in pure_transform
@@ -2217,6 +2219,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
     int am_inc_1, am_inc_2, am_inc_3, am_inc_4;
+    int am_inc_1_new, am_inc_2_new, am_inc_3_new, am_inc_4_new;
     std::shared_ptr<BasisSet> bs_temp;
 
     p13p24_ = false;
@@ -2239,7 +2242,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     am3 += am_inc_3;
     am4 += am_inc_4;
 
-    temp = am1 + am2 + am3 + am4;
+    //temp = am1 + am2 + am3 + am4;
 
     // c1 = original_bs1_->shell(sh1).ncenter();
     // c2 = original_bs1_->shell(sh2).ncenter();
@@ -2256,6 +2259,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     //	}
 
     int n1, n2, n3, n4;
+    int am1_new, am2_new, am3_new, am4_new;
 
     if (force_cartesian_) {
         //n1 = original_bs1_->shell(sh1).ncartesian();
@@ -2290,12 +2294,18 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
 
         bs1_ = original_bs1_;
         bs2_ = original_bs2_;
+        
+        am_inc_1_new = am_inc_1;
+        am_inc_2_new = am_inc_2;
     } else {
         s1 = sh2;
         s2 = sh1;
 
         bs1_ = original_bs2_;
         bs2_ = original_bs1_;
+
+        am_inc_1_new = am_inc_2;
+        am_inc_2_new = am_inc_1;
 
         p12_ = true;
     }
@@ -2307,12 +2317,18 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
         bs3_ = original_bs3_;
         bs4_ = original_bs4_;
 
+        am_inc_3_new = am_inc_3;
+        am_inc_4_new = am_inc_4;
+
     } else {
         s3 = sh4;
         s4 = sh3;
 
         bs3_ = original_bs4_;
         bs4_ = original_bs3_;
+
+        am_inc_3_new = am_inc_4;
+        am_inc_4_new = am_inc_3;
 
         p34_ = true;
     }
@@ -2335,14 +2351,21 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
         bs2_ = bs4_;
         bs4_ = bs_temp;
 
+        am_inc_1_new = am_inc_3;
+        am_inc_3_new = am_inc_1; 
+        am_inc_2_new = am_inc_4;
+        am_inc_4_new = am_inc_2;
+        
         p13p24_ = true;
     }
 #ifdef MINTS_TIMER
     timer_off("reorder");
 #endif
 
+   const std::vector<int> AM_increments_ordered {am_inc_1_new,am_inc_2_new,am_inc_3_new,am_inc_4_new};
+
     // s1, s2, s3, s4 contain the shells to do in libint order
-    size_t ncomputed = compute_quartet(s1, s2, s3, s4, AM_increments);
+    size_t ncomputed = compute_quartet(s1, s2, s3, s4, AM_increments_ordered);
     if (ncomputed) {
         // Only do the following if we did any work.
 
@@ -2388,16 +2411,10 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4, const
     int am3 = s3.am();
     int am4 = s4.am();
 
-    int am_inc_1, am_inc_2, am_inc_3, am_inc_4;
-    am_inc_1 = AM_increments[0];
-    am_inc_2 = AM_increments[1];
-    am_inc_3 = AM_increments[2];
-    am_inc_4 = AM_increments[3];
-
-    am1 += am_inc_1;
-    am2 += am_inc_2;
-    am3 += am_inc_3;
-    am4 += am_inc_4;
+    am1 += AM_increments[0];
+    am2 += AM_increments[1];
+    am3 += AM_increments[2];
+    am4 += AM_increments[3];
 
     int am = am1 + am2 + am3 + am4;  // total am
 

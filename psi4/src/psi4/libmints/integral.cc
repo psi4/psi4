@@ -289,8 +289,8 @@ TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::shared_ptr<Correlation
     return new F12DoubleCommutator(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::giao_eri_deriv(int deriv, bool use_shell_pairs) {
-     return new GiaoERI(this, deriv, use_shell_pairs);
+TwoBodyAOInt* IntegralFactory::giao_eri_deriv(int deriv, bool use_shell_pairs, int increment) {
+     return new GiaoERI(this, deriv, use_shell_pairs, increment);
 }
 
 

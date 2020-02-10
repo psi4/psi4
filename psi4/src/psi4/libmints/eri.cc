@@ -143,11 +143,12 @@ void ErfComplementERI::setOmega(double omega) { (static_cast<ErfComplementFundam
 // Derivative of two electron integrals of GIAOs.
 /////////
 
-GiaoERI::GiaoERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
-    : TwoElectronInt(integral, deriv, use_shell_pairs) {
-    // The +1 is needed for derivatives to work.
+GiaoERI::GiaoERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs, int increment)
+    //: TwoElectronInt(integral, deriv, use_shell_pairs) {
+    : TwoElectronInt(integral, deriv, false, increment) {
+    // The +1 is needed for derivatives to work. either +1 or +2
     fjt_ = new Taylor_Fjt(
-        basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + 1, 1e-15);
+        basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + increment, 1e-15);
 }
 
 GiaoERI::~GiaoERI() { delete fjt_; }

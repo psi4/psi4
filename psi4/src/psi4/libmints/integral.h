@@ -521,7 +521,7 @@ class PSI_API IntegralFactory {
                                                 bool use_shell_pairs = true);
 
     /// Returns an GIAO integral object
-    virtual TwoBodyAOInt* giao_eri_deriv(int deriv=0, bool use_shell_pairs=true);
+    virtual TwoBodyAOInt* giao_eri_deriv(int deriv=0, bool use_shell_pairs=true, int increment = 0);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     AOIntegralsIterator integrals_iterator(int p, int q, int r, int s);
