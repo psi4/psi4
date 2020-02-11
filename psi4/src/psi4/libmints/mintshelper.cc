@@ -66,12 +66,16 @@
 #include <DKH/DKH_MANGLE.h>
 #define F_DKH DKH_MANGLE_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
 
+
+
 extern "C" {
 void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
 }
 #endif
 
 namespace psi {
+
+static inline int hash(int L, int M, int N);
 
 /**
  * IWLWriter functor for use with SO TEIs
@@ -3340,7 +3344,16 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     double **ptry = Giao_tei[1]->pointer();
     double **ptrz = Giao_tei[2]->pointer();
 
+
+    int max_cart_size = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am()) * INT_NCART(bs3->max_am()) *
+                  INT_NCART(bs4->max_am());
+
+    double* dgdBx_buf = new double[max_cart_size];
+    double* dgdBy_buf = new double[max_cart_size];
+    double* dgdBz_buf = new double[max_cart_size];
+
     const double *buffer = ints->buffer();
+
     const std::vector<int> AM_increments_abcd {0, 0, 0, 0};
     const std::vector<int> AM_increments_ap1bcd {1, 0, 0, 0};
     const std::vector<int> AM_increments_abcp1d {0, 0, 1, 0};
@@ -3350,6 +3363,8 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     double A[3], B[3], C[3], D[3];
     double AB[3], CD[3];
     double ABxA_plus_CDxC[3];
+    int am1, am2, am3, am4;
+    int num_ints;
 
    // (ab|cd) integrals
     for (int M = 0; M < bs1->nshell(); M++) {
@@ -3361,6 +3376,11 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                     const GaussianShell &s2 = bs2->shell(N);
                     const GaussianShell &s3 = bs3->shell(P);
                     const GaussianShell &s4 = bs4->shell(Q);
+
+                    am1 = bs1->shell(M).am()-1;
+                    am2 = bs1->shell(N).am()-1;
+                    am3 = bs1->shell(P).am()-1;
+                    am4 = bs1->shell(Q).am()-1;
 
 
                      A[0] = s1.center()[0];
@@ -3382,6 +3402,9 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                      CD[0] = (C[0] - D[0]);
                      CD[1] = (C[1] - D[1]);
                      CD[2] = (C[2] - D[2]);  
+    
+                     double AB2 = AB[0] * AB[0] + AB[1] * AB[1] + AB[2] * AB[2];
+                     double CD2 = CD[0] * CD[0] + CD[1] * CD[1] + CD[2] * CD[2];
 
 
                      ABxA_plus_CDxC[0] = (AB[1]*A[2] - AB[2]*A[1]) + (CD[1]*C[2] - CD[2]*C[1]);
@@ -3389,8 +3412,126 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                      ABxA_plus_CDxC[2] = (AB[0]*A[1] - AB[1]*A[0]) + (CD[0]*C[1] - CD[1]*C[0]);
 
                      // (ab|cd) integrals
+                     int quartet_size = bs1->shell(M).nfunction() * bs2->shell(N).nfunction() *
+                                        bs3->shell(P).nfunction() * bs4->shell(Q).nfunction();
 
-                    ints->compute_shell(M, N, P, Q, AM_increments_abcd);
+                    num_ints = ints->compute_shell(M, N, P, Q, AM_increments_abcd);
+                    if (num_ints) {
+                       for(int i=0; i<quartet_size; i++) {
+                         double value = buffer[i];
+                         dgdBx_buf[i] = dgdB_pfac * ABxA_plus_CDxC[0] * value;
+                         dgdBy_buf[i] = dgdB_pfac * ABxA_plus_CDxC[1] * value;
+                         dgdBz_buf[i] = dgdB_pfac * ABxA_plus_CDxC[2] * value;
+                       }
+                    }
+                    else {
+                       for(int i=0; i<quartet_size; i++) {
+                         dgdBx_buf[i] = 0.0;
+                         dgdBy_buf[i] = 0.0;
+                         dgdBz_buf[i] = 0.0;
+                       }
+                    }
+
+                    
+
+                    if (AB2 != 0) {
+
+                       /// now lets do another 2 types of integrals: (a+1b|cd), (ab|c+1d)
+                       ints->compute_shell(M, N, P, Q, AM_increments_ap1bcd);
+
+                       /// (a+1x b|cd) contributes to dg/dBy and dg/dBz with these coefficients
+                       double ap1xpfac_y =  dgdB_pfac * AB[2];
+                       double ap1xpfac_z = -dgdB_pfac * AB[1];
+                       // (a+1y b|cd) contributes to dg/dBx and dg/dBz with these coefficients
+                       double ap1ypfac_x = -dgdB_pfac * AB[2];
+                       double ap1ypfac_z =  dgdB_pfac * AB[0];
+                       // (a+1z b|cd) contributes to dg/dBx and dg/dBy with these coefficients
+                       double ap1zpfac_x =  dgdB_pfac * AB[1];
+                       double ap1zpfac_y = -dgdB_pfac * AB[0];
+
+
+                       // Contract ERIs into the target GIAO derivative integral
+                       /*--- create all am components of si ---*/
+                       double* dgdBx_ptr = dgdBx_buf; 
+                       double* dgdBy_ptr = dgdBy_buf;
+                       double* dgdBz_ptr = dgdBz_buf;
+                       for(int ii = 0; ii <= am1; ii++){ // am[0] 
+                         int l1 = am1 - ii;
+                         for(int jj = 0; jj <= ii; jj++){
+                           int m1 = ii - jj;
+                           int n1 = jj;
+
+                           int ap1x = hash(l1+1,m1,n1); // need to resolve hash function!
+                           int ap1y = hash(l1,m1+1,n1);
+                           int ap1z = hash(l1,m1,n1+1);
+
+                           int njkl = bs2->shell(N).nfunction() * bs3->shell(P).nfunction() * 
+                                      bs4->shell(Q).nfunction();
+
+                           double* ap1xbcd_ptr = buffer + njkl*ap1x; // won't work!
+                           double* ap1ybcd_ptr = buffer + njkl*ap1y;
+                           double* ap1zbcd_ptr = buffer + njkl*ap1z;
+                           for(int jkl=0; jkl<njkl; jkl++, ap1xbcd_ptr++, ap1ybcd_ptr++, ap1zbcd_ptr++,
+                                                    dgdBx_ptr++, dgdBy_ptr++, dgdBz_ptr++) {
+                             double ap1xbcd = *ap1xbcd_ptr;
+                             double ap1ybcd = *ap1ybcd_ptr;
+                             double ap1zbcd = *ap1zbcd_ptr;
+                             *dgdBx_ptr += ap1ybcd * ap1ypfac_x + ap1zbcd * ap1zpfac_x;
+                             *dgdBy_ptr += ap1zbcd * ap1zpfac_y + ap1xbcd * ap1xpfac_y;
+                             *dgdBz_ptr += ap1xbcd * ap1xpfac_z + ap1ybcd * ap1ypfac_z;
+                           }
+                         }
+                       }
+                    }
+                    if (CD2 != 0) {
+                       ints->compute_shell(M, N, P, Q, AM_increments_abcp1d);
+                       // (ab|c+1x d) contributes to dg/dBy and dg/dBz with these coefficients
+                       double cp1xpfac_y =  dgdB_pfac * CD[2];
+                       double cp1xpfac_z = -dgdB_pfac * CD[1];
+                       // (ab|c+1y d) contributes to dg/dBx and dg/dBz with these coefficients
+                       double cp1ypfac_x = -dgdB_pfac * CD[2];
+                       double cp1ypfac_z =  dgdB_pfac * CD[0];
+                       // (ab|c+1z d) contributes to dg/dBx and dg/dBy with these coefficients
+                       double cp1zpfac_x =  dgdB_pfac * CD[1];
+                       double cp1zpfac_y = -dgdB_pfac * CD[0];
+
+                       // Contract ERIs into the target GIAO derivative integral
+                       int nij = nao[0]*nao[1];   // change
+                       int nk1l = nao_cp1[2] * nao[3]; // change
+                       int nl = nao[3]; // change
+                       double* dgdBx_ptr = dgdBx_buf;
+                       double* dgdBy_ptr = dgdBy_buf;
+                       double* dgdBz_ptr = dgdBz_buf;
+                       //double* ab_ptr = abcp1d_buf;
+                       for(int ij=0; ij<nij; ij++, ab_ptr+=nk1l) {
+                         /*--- create all am components of sk ---*/
+                         for(int ii = 0; ii <= am2; ii++){
+                           int l1 = am2 - ii;
+                           for(int jj = 0; jj <= ii; jj++){
+                             int m1 = ii - jj;
+                             int n1 = jj;
+
+                             int cp1x = hash(l1+1,m1,n1);
+                             int cp1y = hash(l1,m1+1,n1);
+                             int cp1z = hash(l1,m1,n1+1);
+
+                             double* abcp1xd_ptr = buffer + cp1x*nl; // won't work!
+                             double* abcp1yd_ptr = buffer + cp1y*nl;
+                             double* abcp1zd_ptr = buffer + cp1z*nl;
+                             for(int l=0; l<nl; l++, abcp1xd_ptr++, abcp1yd_ptr++, abcp1zd_ptr++,
+                                                     dgdBx_ptr++, dgdBy_ptr++, dgdBz_ptr++) {
+                               double abcp1xd = *abcp1xd_ptr;
+                               double abcp1yd = *abcp1yd_ptr;
+                               double abcp1zd = *abcp1zd_ptr;
+                               *dgdBx_ptr += abcp1yd * cp1ypfac_x + abcp1zd * cp1zpfac_x;
+                               *dgdBy_ptr += abcp1zd * cp1zpfac_y + abcp1xd * cp1xpfac_y;
+                               *dgdBz_ptr += abcp1xd * cp1xpfac_z + abcp1yd * cp1ypfac_z;
+                             }
+                           }
+                         }
+                       }      
+                    }
+
 
                     for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
                         for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
@@ -3398,62 +3539,13 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                                 for (int q = 0; q < bs4->shell(Q).nfunction(); q++, index++) {
                                     int mn = (bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n;          
                                     int pq = (bs3->shell(P).function_index() + p) * nbf4 + bs4->shell(Q).function_index() + q;          
-                                    
-                         
-                                    ptrx[mn][pq] =  dgdB_pfac * ABxA_plus_CDxC[0] * buffer[index]; 
-                                    ptry[mn][pq] =  dgdB_pfac * ABxA_plus_CDxC[1] * buffer[index]; 
-                                    ptrz[mn][pq] =  dgdB_pfac * ABxA_plus_CDxC[2] * buffer[index]; 
-
+                                    ptrx[mn][pq] =  dgdBx_buf[index]; 
+                                    ptry[mn][pq] =  dgdBy_buf[index]; 
+                                    ptrz[mn][pq] =  dgdBz_buf[index]; 
                                 }
                             }
                         }
                     }
-
-                    /// now lets do another 2 types of integrals: (a+1b|cd), (ab|c+1d)
-                    ints->compute_shell(M, N, P, Q, AM_increments_ap1bcd);
-                    /// (a+1x b|cd) contributes to dg/dBy and dg/dBz with these coefficients
-                    double ap1xpfac_y =  dgdB_pfac * AB[2];
-                    double ap1xpfac_z = -dgdB_pfac * AB[1];
-                    // (a+1y b|cd) contributes to dg/dBx and dg/dBz with these coefficients
-                    double ap1ypfac_x = -dgdB_pfac * AB[2];
-                    double ap1ypfac_z =  dgdB_pfac * AB[0];
-                    // (a+1z b|cd) contributes to dg/dBx and dg/dBy with these coefficients
-                    double ap1zpfac_x =  dgdB_pfac * AB[1];
-                    double ap1zpfac_y = -dgdB_pfac * AB[0];
-
-
-                    // Contract ERIs into the target GIAO derivative integral
-                    /*--- create all am components of si ---*/
-                    /*int a = 0;
-                    double* dgdBx_ptr = dgdBx_buf;
-                    double* dgdBy_ptr = dgdBy_buf;
-                    double* dgdBz_ptr = dgdBz_buf;
-                    for(int ii = 0; ii <= am[0]; ii++){
-                      int l1 = am[0] - ii;
-                      for(int jj = 0; jj <= ii; jj++, a++){
-                        int m1 = ii - jj;
-                        int n1 = jj;
-
-                        int ap1x = hash(l1+1,m1,n1);
-                        int ap1y = hash(l1,m1+1,n1);
-                        int ap1z = hash(l1,m1,n1+1);
-
-                        int njkl = nao[1]*nao[2]*nao[3];
-                        double* ap1xbcd_ptr = ap1bcd_buf + njkl*ap1x;
-                        double* ap1ybcd_ptr = ap1bcd_buf + njkl*ap1y;
-                        double* ap1zbcd_ptr = ap1bcd_buf + njkl*ap1z;
-                        for(int jkl=0; jkl<njkl; jkl++, ap1xbcd_ptr++, ap1ybcd_ptr++, ap1zbcd_ptr++,
-                                                 dgdBx_ptr++, dgdBy_ptr++, dgdBz_ptr++) {
-                          double ap1xbcd = *ap1xbcd_ptr;
-                          double ap1ybcd = *ap1ybcd_ptr;
-                          double ap1zbcd = *ap1zbcd_ptr;
-                          *dgdBx_ptr += ap1ybcd * ap1ypfac_x + ap1zbcd * ap1zpfac_x;
-                          *dgdBy_ptr += ap1zbcd * ap1zpfac_y + ap1xbcd * ap1xpfac_y;
-                          *dgdBz_ptr += ap1xbcd * ap1xpfac_z + ap1ybcd * ap1ypfac_z;
-                        }
-                      }
-                    }*/
-                    ints->compute_shell(M, N, P, Q, AM_increments_abcp1d);
                 }
             }
         }
@@ -3464,6 +3556,15 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     for (int p = 0; p < 3; p++) Giao_tei[p]->set_numpy_shape(nshape);
 
     return Giao_tei;
+}
+
+static inline int hash(int L, int M, int N)
+{
+  static int io[] = {0,1,3,6,10,15,21,28,36,45,55,66,78,91,105,120,136,153};
+
+  int MpN = M+N;
+  int result = N + io[MpN];
+  return result;
 }
 
 }  // namespace psi
