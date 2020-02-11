@@ -3377,7 +3377,7 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                     const GaussianShell &s3 = bs3->shell(P);
                     const GaussianShell &s4 = bs4->shell(Q);
 
-                    am1 = bs1->shell(M).am()-1;
+                    am1 = bs1->shell(M).am()-1; // double check about -1
                     am2 = bs1->shell(N).am()-1;
                     am3 = bs1->shell(P).am()-1;
                     am4 = bs1->shell(Q).am()-1;
@@ -3410,10 +3410,16 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                      ABxA_plus_CDxC[0] = (AB[1]*A[2] - AB[2]*A[1]) + (CD[1]*C[2] - CD[2]*C[1]);
                      ABxA_plus_CDxC[1] = (AB[2]*A[0] - AB[0]*A[2]) + (CD[2]*C[0] - CD[0]*C[2]);
                      ABxA_plus_CDxC[2] = (AB[0]*A[1] - AB[1]*A[0]) + (CD[0]*C[1] - CD[1]*C[0]);
+    
+                     int mfunc = bs1->shell(M).nfunction();
+                     int nfunc = bs1->shell(N).nfunction();
+                     int pfunc = bs1->shell(P).nfunction();
+                     int qfunc = bs1->shell(Q).nfunction();
+                     int nao_cp1 = INT_NFUNC(s3.is_pure(), am3+2); // because of -1: +2
 
                      // (ab|cd) integrals
-                     int quartet_size = bs1->shell(M).nfunction() * bs2->shell(N).nfunction() *
-                                        bs3->shell(P).nfunction() * bs4->shell(Q).nfunction();
+                     int quartet_size = mfunc * nfunc * pfunc * qfunc;
+                                       
 
                     num_ints = ints->compute_shell(M, N, P, Q, AM_increments_abcd);
                     if (num_ints) {
@@ -3465,12 +3471,11 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                            int ap1y = hash(l1,m1+1,n1);
                            int ap1z = hash(l1,m1,n1+1);
 
-                           int njkl = bs2->shell(N).nfunction() * bs3->shell(P).nfunction() * 
-                                      bs4->shell(Q).nfunction();
+                           int njkl = nfunc * pfunc * qfunc;
 
-                           double* ap1xbcd_ptr = buffer + njkl*ap1x; // won't work!
-                           double* ap1ybcd_ptr = buffer + njkl*ap1y;
-                           double* ap1zbcd_ptr = buffer + njkl*ap1z;
+                           const double* ap1xbcd_ptr = buffer + njkl*ap1x; 
+                           const double* ap1ybcd_ptr = buffer + njkl*ap1y;
+                           const double* ap1zbcd_ptr = buffer + njkl*ap1z;
                            for(int jkl=0; jkl<njkl; jkl++, ap1xbcd_ptr++, ap1ybcd_ptr++, ap1zbcd_ptr++,
                                                     dgdBx_ptr++, dgdBy_ptr++, dgdBz_ptr++) {
                              double ap1xbcd = *ap1xbcd_ptr;
@@ -3496,14 +3501,13 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                        double cp1zpfac_y = -dgdB_pfac * CD[0];
 
                        // Contract ERIs into the target GIAO derivative integral
-                       int nij = nao[0]*nao[1];   // change
-                       int nk1l = nao_cp1[2] * nao[3]; // change
-                       int nl = nao[3]; // change
+                       int nij = mfunc * nfunc;
+                       int nk1l = nao_cp1 * qfunc; // change
+                       int nl = qfunc;
                        double* dgdBx_ptr = dgdBx_buf;
                        double* dgdBy_ptr = dgdBy_buf;
                        double* dgdBz_ptr = dgdBz_buf;
-                       //double* ab_ptr = abcp1d_buf;
-                       for(int ij=0; ij<nij; ij++, ab_ptr+=nk1l) {
+                       for(int ij=0; ij<nij; ij++, buffer+=nk1l) {
                          /*--- create all am components of sk ---*/
                          for(int ii = 0; ii <= am2; ii++){
                            int l1 = am2 - ii;
@@ -3515,9 +3519,9 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                              int cp1y = hash(l1,m1+1,n1);
                              int cp1z = hash(l1,m1,n1+1);
 
-                             double* abcp1xd_ptr = buffer + cp1x*nl; // won't work!
-                             double* abcp1yd_ptr = buffer + cp1y*nl;
-                             double* abcp1zd_ptr = buffer + cp1z*nl;
+                             const double* abcp1xd_ptr = buffer + cp1x*nl; 
+                             const double* abcp1yd_ptr = buffer + cp1y*nl;
+                             const double* abcp1zd_ptr = buffer + cp1z*nl;
                              for(int l=0; l<nl; l++, abcp1xd_ptr++, abcp1yd_ptr++, abcp1zd_ptr++,
                                                      dgdBx_ptr++, dgdBy_ptr++, dgdBz_ptr++) {
                                double abcp1xd = *abcp1xd_ptr;
