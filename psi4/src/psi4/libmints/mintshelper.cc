@@ -3337,26 +3337,73 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     Giao_tei.push_back(std::make_shared<Matrix>("GIAO dG/dBz", nbf1 * nbf2, nbf3 * nbf4));
 
     double **ptrx = Giao_tei[0]->pointer();
+    double **ptry = Giao_tei[1]->pointer();
+    double **ptrz = Giao_tei[2]->pointer();
+
     const double *buffer = ints->buffer();
     const std::vector<int> AM_increments_abcd {0, 0, 0, 0};
     const std::vector<int> AM_increments_ap1bcd {1, 0, 0, 0};
     const std::vector<int> AM_increments_abcp1d {0, 0, 1, 0};
+
+    int dgdB_pfac = 0.5;
   
+    double A[3], B[3], C[3], D[3];
+    double AB[3], CD[3];
+    double ABxA_plus_CDxC[3];
 
    // (ab|cd) integrals
     for (int M = 0; M < bs1->nshell(); M++) {
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
                 for (int Q = 0; Q < bs4->nshell(); Q++) {
+
+                    const GaussianShell &s1 = bs1->shell(M);
+                    const GaussianShell &s2 = bs2->shell(N);
+                    const GaussianShell &s3 = bs3->shell(P);
+                    const GaussianShell &s4 = bs4->shell(Q);
+
+
+                     A[0] = s1.center()[0];
+                     A[1] = s1.center()[1];
+                     A[2] = s1.center()[2];
+                     B[0] = s2.center()[0];
+                     B[1] = s2.center()[1];
+                     B[2] = s2.center()[2];
+                     C[0] = s3.center()[0];
+                     C[1] = s3.center()[1];
+                     C[2] = s3.center()[2];
+                     D[0] = s4.center()[0];
+                     D[1] = s4.center()[1];
+                     D[2] = s4.center()[2];
+
+                     AB[0] = (A[0] - B[0]);
+                     AB[1] = (A[1] - B[1]);
+                     AB[2] = (A[2] - B[2]);
+                     CD[0] = (C[0] - D[0]);
+                     CD[1] = (C[1] - D[1]);
+                     CD[2] = (C[2] - D[2]);  
+
+
+                     ABxA_plus_CDxC[0] = (AB[1]*A[2] - AB[2]*A[1]) + (CD[1]*C[2] - CD[2]*C[1]);
+                     ABxA_plus_CDxC[1] = (AB[2]*A[0] - AB[0]*A[2]) + (CD[2]*C[0] - CD[0]*C[2]);
+                     ABxA_plus_CDxC[2] = (AB[0]*A[1] - AB[1]*A[0]) + (CD[0]*C[1] - CD[1]*C[0]);
+
+                     // (ab|cd) integrals
+
                     ints->compute_shell(M, N, P, Q, AM_increments_abcd);
 
                     for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
                         for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
                             for (int p = 0; p < bs3->shell(P).nfunction(); p++) {
                                 for (int q = 0; q < bs4->shell(Q).nfunction(); q++, index++) {
-                                    ptrx[(bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n]
-                                      [(bs3->shell(P).function_index() + p) * nbf4 + bs4->shell(Q).function_index() +
-                                       q] = buffer[index];
+                                    int mn = (bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n;          
+                                    int pq = (bs3->shell(P).function_index() + p) * nbf4 + bs4->shell(Q).function_index() + q;          
+                                    
+                         
+                                    ptrx[mn][pq] =  dgdB_pfac * ABxA_plus_CDxC[0] * buffer[index]; 
+                                    ptry[mn][pq] =  dgdB_pfac * ABxA_plus_CDxC[1] * buffer[index]; 
+                                    ptrz[mn][pq] =  dgdB_pfac * ABxA_plus_CDxC[2] * buffer[index]; 
+
                                 }
                             }
                         }
@@ -3364,6 +3411,48 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
 
                     /// now lets do another 2 types of integrals: (a+1b|cd), (ab|c+1d)
                     ints->compute_shell(M, N, P, Q, AM_increments_ap1bcd);
+                    /// (a+1x b|cd) contributes to dg/dBy and dg/dBz with these coefficients
+                    double ap1xpfac_y =  dgdB_pfac * AB[2];
+                    double ap1xpfac_z = -dgdB_pfac * AB[1];
+                    // (a+1y b|cd) contributes to dg/dBx and dg/dBz with these coefficients
+                    double ap1ypfac_x = -dgdB_pfac * AB[2];
+                    double ap1ypfac_z =  dgdB_pfac * AB[0];
+                    // (a+1z b|cd) contributes to dg/dBx and dg/dBy with these coefficients
+                    double ap1zpfac_x =  dgdB_pfac * AB[1];
+                    double ap1zpfac_y = -dgdB_pfac * AB[0];
+
+
+                    // Contract ERIs into the target GIAO derivative integral
+                    /*--- create all am components of si ---*/
+                    /*int a = 0;
+                    double* dgdBx_ptr = dgdBx_buf;
+                    double* dgdBy_ptr = dgdBy_buf;
+                    double* dgdBz_ptr = dgdBz_buf;
+                    for(int ii = 0; ii <= am[0]; ii++){
+                      int l1 = am[0] - ii;
+                      for(int jj = 0; jj <= ii; jj++, a++){
+                        int m1 = ii - jj;
+                        int n1 = jj;
+
+                        int ap1x = hash(l1+1,m1,n1);
+                        int ap1y = hash(l1,m1+1,n1);
+                        int ap1z = hash(l1,m1,n1+1);
+
+                        int njkl = nao[1]*nao[2]*nao[3];
+                        double* ap1xbcd_ptr = ap1bcd_buf + njkl*ap1x;
+                        double* ap1ybcd_ptr = ap1bcd_buf + njkl*ap1y;
+                        double* ap1zbcd_ptr = ap1bcd_buf + njkl*ap1z;
+                        for(int jkl=0; jkl<njkl; jkl++, ap1xbcd_ptr++, ap1ybcd_ptr++, ap1zbcd_ptr++,
+                                                 dgdBx_ptr++, dgdBy_ptr++, dgdBz_ptr++) {
+                          double ap1xbcd = *ap1xbcd_ptr;
+                          double ap1ybcd = *ap1ybcd_ptr;
+                          double ap1zbcd = *ap1zbcd_ptr;
+                          *dgdBx_ptr += ap1ybcd * ap1ypfac_x + ap1zbcd * ap1zpfac_x;
+                          *dgdBy_ptr += ap1zbcd * ap1zpfac_y + ap1xbcd * ap1xpfac_y;
+                          *dgdBz_ptr += ap1xbcd * ap1xpfac_z + ap1ybcd * ap1ypfac_z;
+                        }
+                      }
+                    }*/
                     ints->compute_shell(M, N, P, Q, AM_increments_abcp1d);
                 }
             }
