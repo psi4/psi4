@@ -355,7 +355,7 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         compute_list[nb] |= cp_compute_list[nb]
         compute_list[nb] |= nocp_compute_list[nb]
         compute_list[nb] |= vmfc_compute_list[nb]
-        info = f"        Number of {nb}-body computations:     {len(compute_list[nb])}"
+        info = f"        Number of {nb}-body computations:     {len(compute_list[nb])}" + "\n"
         core.print_out(info)
         logger.debug(info)
 
@@ -445,6 +445,7 @@ def assemble_nbody_components(metadata, component_results):
         if nbody_range[0] == 'supersystem':
             # range for supersystem sub-components
             nbody_range = metadata['nbody_list'][level]
+            metadata['bsse_type'] = ['nocp']
 
     compute_dict = build_nbody_compute_list(metadata['bsse_type'], nbody_range, metadata['max_frag'])
     cp_compute_list = compute_dict['cp']
@@ -824,7 +825,7 @@ class ManyBodyComputer(BaseComputer):
             data = template
             data["molecule"] = self.molecule
             self.task_list[str(level) + '_' + str(self.max_frag)] = obj(**data)
-            info = str(level) + ', ' + str(self.max_frag)
+            info = str(level) + ', ' + str(self.max_frag) + '\n'
             core.print_out(info)
             logger.debug(info)
             # This should always be NOCP
@@ -866,7 +867,7 @@ class ManyBodyComputer(BaseComputer):
 
     def compute(self, client=None):
         info = "\n" + p4util.banner(f" ManyBody Computations ", strNotOutfile=True) + "\n"
-        core.print_out(info)
+        #core.print_out(info)
         logger.info(info)
 
         with p4util.hold_options_state():
@@ -906,7 +907,6 @@ class ManyBodyComputer(BaseComputer):
                 str(i) for i in literal_eval(k.split("_")[1])[1])): v.properties.return_energy
             for k, v in results_list.items()
         }
-
         nbody_results['intermediates2'] = {str(k): v.properties.return_energy for k, v in results_list.items()}
 
         if ptype is not None:

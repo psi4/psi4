@@ -134,13 +134,13 @@ class AtomicComputer(BaseComputer):
                 if ret:
                     if ret[0].status == "ERROR":
                         client.modify_tasks("restart", base_result=self.result_id)
-                        print("Resubmitting Errored Job {}".format(self.result_id))
+                        logger.info("Resubmitting Errored Job {}".format(self.result_id))
                     elif ret[0].status == "COMPLETE":
-                        print("Job already completed {}".format(self.result_id))
+                        logger.debug("Job already completed {}".format(self.result_id))
                 else:
-                    print("Job already completed {}".format(self.result_id))
+                    logger.debug("Job already completed {}".format(self.result_id))
             else:
-                print("Submitting AtomicResult {}".format(self.result_id))
+                logger.debug("Submitting AtomicResult {}".format(self.result_id))
 
             return
 
@@ -178,11 +178,11 @@ class AtomicComputer(BaseComputer):
 
         if client:
             result = client.query_results(id=self.result_id)
-            print("Querying AtomicResult {}".format(self.result_id))
+            logger.debug("Querying AtomicResult {}".format(self.result_id))
             if len(result) == 0:
                 return self.result
 
-            self.result = result[0].dict(encoding="msgpack-ext")
+            self.result = result[0]
             return self.result
 
     def get_json_results(self):
