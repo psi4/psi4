@@ -57,6 +57,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include<unistd.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -3322,6 +3323,7 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
 
 std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
 
+    //sleep(60);
     std::shared_ptr<TwoBodyAOInt> ints(integral_->giao_eri_deriv(0,false,1));
 
     std::shared_ptr<BasisSet> bs1 = ints->basis1();
@@ -3352,13 +3354,13 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     double* dgdBy_buf = new double[max_cart_size];
     double* dgdBz_buf = new double[max_cart_size];
 
-    const double *buffer = ints->buffer();
+    //const double *buffer = ints->buffer();
 
     const std::vector<int> AM_increments_abcd {0, 0, 0, 0};
     const std::vector<int> AM_increments_ap1bcd {1, 0, 0, 0};
     const std::vector<int> AM_increments_abcp1d {0, 0, 1, 0};
 
-    int dgdB_pfac = 0.5;
+    double dgdB_pfac = 0.5;
   
     double A[3], B[3], C[3], D[3];
     double AB[3], CD[3];
@@ -3377,10 +3379,10 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                     const GaussianShell &s3 = bs3->shell(P);
                     const GaussianShell &s4 = bs4->shell(Q);
 
-                    am1 = bs1->shell(M).am()-1; // double check about -1
-                    am2 = bs1->shell(N).am()-1;
-                    am3 = bs1->shell(P).am()-1;
-                    am4 = bs1->shell(Q).am()-1;
+                    am1 = bs1->shell(M).am(); // double check about -1
+                    am2 = bs1->shell(N).am();
+                    am3 = bs1->shell(P).am();
+                    am4 = bs1->shell(Q).am();
 
 
                      A[0] = s1.center()[0];
@@ -3415,13 +3417,14 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                      int nfunc = bs1->shell(N).nfunction();
                      int pfunc = bs1->shell(P).nfunction();
                      int qfunc = bs1->shell(Q).nfunction();
-                     int nao_cp1 = INT_NFUNC(s3.is_pure(), am3+2); // because of -1: +2
+                     int nao_cp1 = INT_NFUNC(s3.is_pure(), am3+1);
 
                      // (ab|cd) integrals
                      int quartet_size = mfunc * nfunc * pfunc * qfunc;
                                        
 
                     num_ints = ints->compute_shell(M, N, P, Q, AM_increments_abcd);
+                    const double *buffer = ints->buffer();
                     if (num_ints) {
                        for(int i=0; i<quartet_size; i++) {
                          double value = buffer[i];
@@ -3444,6 +3447,7 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
 
                        /// now lets do another 2 types of integrals: (a+1b|cd), (ab|c+1d)
                        ints->compute_shell(M, N, P, Q, AM_increments_ap1bcd);
+                       const double *buffer = ints->buffer();
 
                        /// (a+1x b|cd) contributes to dg/dBy and dg/dBz with these coefficients
                        double ap1xpfac_y =  dgdB_pfac * AB[2];
@@ -3490,6 +3494,7 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                     }
                     if (CD2 != 0) {
                        ints->compute_shell(M, N, P, Q, AM_increments_abcp1d);
+                       const double *buffer = ints->buffer();
                        // (ab|c+1x d) contributes to dg/dBy and dg/dBz with these coefficients
                        double cp1xpfac_y =  dgdB_pfac * CD[2];
                        double cp1xpfac_z = -dgdB_pfac * CD[1];
@@ -3535,6 +3540,8 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                          }
                        }      
                     }
+        
+                    //outfile->Printf("  he he \n");
 
 
                     for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
