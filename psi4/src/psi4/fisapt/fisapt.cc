@@ -64,6 +64,7 @@ namespace fisapt {
 FISAPT::FISAPT(SharedWavefunction scf) : options_(Process::environment.options), reference_(scf) { common_init(); }
 FISAPT::FISAPT(SharedWavefunction scf, Options& options) : options_(options), reference_(scf) { common_init(); }
 FISAPT::~FISAPT() {}
+
 void FISAPT::common_init() {
     primary_ = reference_->basisset();
     doubles_ = Process::environment.get_memory() / sizeof(double) * options_.get_double("FISAPT_MEM_SAFETY_FACTOR");
@@ -88,6 +89,7 @@ void FISAPT::common_init() {
     vectors_["eps_avir"] = reference_->epsilon_a_subset("AO", "ACTIVE_VIR");
     vectors_["eps_fvir"] = reference_->epsilon_a_subset("AO", "FROZEN_VIR");
 }
+
 void FISAPT::print_header() {
     outfile->Printf("\t --------------------------------------------\n");
     outfile->Printf("\t                    FISAPT0                  \n");
@@ -100,6 +102,7 @@ void FISAPT::print_header() {
     outfile->Printf("    Memory    = %11.3f [GD]\n", doubles_ / (1024. * 1024. * 1024.));
     outfile->Printf("\n");
 }
+
 void FISAPT::localize() {
     outfile->Printf("  ==> Localization (IBO) <==\n\n");
 
@@ -120,6 +123,7 @@ void FISAPT::localize() {
     matrices_["Locc"] = ret["L"];
     matrices_["Qocc"] = ret["Q"];
 }
+
 void FISAPT::partition() {
     outfile->Printf("  ==> Partitioning <==\n\n");
 
@@ -484,6 +488,7 @@ void FISAPT::partition() {
                     (int)YC, orbsC.size());
     outfile->Printf("\n");
 }
+
 void FISAPT::overlap() {
     outfile->Printf("  ==> Overlap Integrals <==\n\n");
 
@@ -493,6 +498,7 @@ void FISAPT::overlap() {
     matrices_["S"] = std::make_shared<Matrix>("S", nm, nm);
     Tint->compute(matrices_["S"]);
 }
+
 void FISAPT::kinetic() {
     outfile->Printf("  ==> Kinetic Integrals <==\n\n");
 
@@ -502,6 +508,7 @@ void FISAPT::kinetic() {
     matrices_["T"] = std::make_shared<Matrix>("T", nm, nm);
     Tint->compute(matrices_["T"]);
 }
+
 void FISAPT::nuclear() {
     outfile->Printf("  ==> Nuclear Integrals <==\n\n");
 
@@ -648,6 +655,7 @@ void FISAPT::nuclear() {
     outfile->Printf("    Nuclear Repulsion Tot: %24.16E [Eh]\n", Etot);
     outfile->Printf("\n");
 }
+
 void FISAPT::coulomb() {
     outfile->Printf("  ==> Coulomb Integrals <==\n\n");
 
@@ -689,6 +697,7 @@ void FISAPT::coulomb() {
         matrices_["KC"]->copy(K[0]);
     }
 }
+
 void FISAPT::scf() {
     outfile->Printf("  ==> Relaxed SCF Equations <==\n\n");
 
@@ -748,6 +757,8 @@ void FISAPT::scf() {
     vectors_["eps_occ0B"] = scfB->vectors()["eps_occ"];
     vectors_["eps_vir0B"] = scfB->vectors()["eps_vir"];
 }
+
+// Prep the computation to handle frozen core orbitals
 void FISAPT::freeze_core() {
     outfile->Printf("  ==> Frozen Core <==\n\n");
 
@@ -853,6 +864,8 @@ void FISAPT::freeze_core() {
     // vectors_["eps_aocc0A"]->print();
     // vectors_["eps_aocc0B"]->print();
 }
+
+
 void FISAPT::unify() {
     outfile->Printf("  ==> Unification <==\n\n");
 
@@ -902,6 +915,8 @@ void FISAPT::unify() {
     matrices_["K_B"] = matrices_["K0B"];
     matrices_["K_C"] = matrices_["KC"];
 }
+
+// Compute deltaHF contribution (counted as induction)
 void FISAPT::dHF() {
     outfile->Printf("  ==> dHF <==\n\n");
 
@@ -1236,6 +1251,8 @@ void FISAPT::dHF() {
     scalars_["E_A_HF"] = LE_A;
     scalars_["E_B_HF"] = LE_B;
 }
+
+// Compute total electrostatics contribution
 void FISAPT::elst() {
     outfile->Printf("  ==> Electrostatics <==\n\n");
 
@@ -1268,6 +1285,8 @@ void FISAPT::elst() {
     outfile->Printf("\n");
     // fflush(outfile);
 }
+
+// Compute total exchange contribution
 void FISAPT::exch() {
     outfile->Printf("  ==> Exchange <==\n\n");
 
@@ -1467,6 +1486,8 @@ void FISAPT::exch() {
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
 }
+
+// Compute the total induction contribution
 void FISAPT::ind() {
     outfile->Printf("  ==> Induction <==\n\n");
 
@@ -1741,6 +1762,8 @@ void FISAPT::ind() {
 
     jk_.reset();
 }
+
+// build potential for induction contribution
 std::shared_ptr<Matrix> FISAPT::build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
     std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
     std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
@@ -1754,6 +1777,8 @@ std::shared_ptr<Matrix> FISAPT::build_ind_pot(std::map<std::string, std::shared_
 
     return linalg::triplet(Ca, W, Cr, true, false, false);
 }
+
+// build exchange-induction potential
 std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
     std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
     std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
@@ -1868,6 +1893,7 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::sh
     return linalg::triplet(Ca, W, Cr, true, false, false);
 }
 
+// Compute total dispersion contribution
 void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
                   bool do_print) {
     if (do_print) {
@@ -2112,18 +2138,24 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     Cs.clear();
     dfh->clear_spaces();
 
-    // => Blocking <= //
+    // => Blocking ... figure out how big a tensor slice to handle at a time <= //
 
     long int overhead = 0L;
-    overhead += 2L * nT * nr * ns;
-    overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns;
+    overhead += 2L * nT * nr * ns; // Thread work arrays Trs and Vrs below
+    overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
+    // account for a few of the smaller matrices already defined, but not exhaustively
+    overhead += 12L * nn * nn; // D, V, J, K, P, and C matrices for A and B (neglecting C)
+
     long int rem = doubles_ - overhead;
+
+    outfile->Printf("    %ld doubles - %ld overhead leaves %ld for dispersion\n", doubles_, overhead, rem);
 
     if (rem < 0L) {
         throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
     }
 
-    long int cost_a = 2L * nr * nQ + 2L * ns * nQ;
+    long int cost_a = 2L * nr * nQ + 2L * ns * nQ; // how much mem for Aar, Bas, Cas, Dar for a single a
+    // cost_b would be the same value, and would be how much mem for Abs, Bbr, Cbr, Dbs for a single b
     long int max_a = rem / (2L * cost_a);
     long int max_b = max_a;
     max_a = (max_a > na ? na : max_a);
@@ -2131,6 +2163,13 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     if (max_a < 1L || max_b < 1L) {
         throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
     }
+    int nablocks = (na / (int) max_a);
+    if (na % (int) max_a) nablocks++;
+    int nbblocks = (nb / (int) max_b);
+    if (nb % (int) max_b) nbblocks++;
+    outfile->Printf("    Processing a single (a,b) pair requires %ld doubles\n", cost_a * 2L);
+    outfile->Printf("    %d values of a processed in %d blocks of %d\n", na, nablocks, max_a);
+    outfile->Printf("    %d values of b processed in %d blocks of %d\n\n", nb, nbblocks, max_b);
 
     // => Tensor Slices <= //
 
@@ -2294,6 +2333,8 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
         outfile->Printf("\n");
     }
 }
+
+// Compute total dispersion energy and S-infinity version of total exchange-dispersion
 void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
                         bool do_print) {
     if (do_print) {
@@ -2730,6 +2771,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
         outfile->Printf("\n");
     }
 }
+
 void FISAPT::print_trailer() {
     scalars_["Electrostatics"] = scalars_["Elst10,r"];
     scalars_["Exchange"] = scalars_["Exch10"];
@@ -2851,6 +2893,7 @@ void FISAPT::print_trailer() {
     Process::environment.globals["SAPT HF(2) ENERGY C"] = scalars_["E_C"];
     Process::environment.globals["SAPT HF(2) ENERGY HF"] = scalars_["HF"];
 }
+
 void FISAPT::raw_plot(const std::string& filepath) {
     outfile->Printf("  ==> Scalar Field Plots <==\n\n");
 
@@ -2916,6 +2959,7 @@ void FISAPT::raw_plot(const std::string& filepath) {
     D_B->scale(0.5);
     D_C->scale(0.5);
 }
+
 void FISAPT::flocalize() {
     outfile->Printf("  ==> F-SAPT Localization (IBO) <==\n\n");
 
@@ -3056,6 +3100,8 @@ void FISAPT::flocalize() {
         matrices_["Qocc0B"]->set_name("Qocc0B");
     }
 }
+
+// Compute fragment-fragment partitioning of electrostatic contribution
 void FISAPT::felst() {
     outfile->Printf("  ==> F-SAPT Electrostatics <==\n\n");
 
@@ -3204,6 +3250,8 @@ void FISAPT::felst() {
     outfile->Printf("\n");
     // fflush(outfile);
 }
+
+// Compute fragment-fragment partitioning of exchange contribution
 void FISAPT::fexch() {
     outfile->Printf("  ==> F-SAPT Exchange <==\n\n");
 
@@ -3397,6 +3445,8 @@ void FISAPT::fexch() {
     // Prepare DFHelper object for the next module
     dfh_->clear_spaces();
 }
+
+// Compute fragment-fragment partitioning of induction contribution
 void FISAPT::find() {
     outfile->Printf("  ==> F-SAPT Induction <==\n\n");
 
@@ -4019,6 +4069,8 @@ void FISAPT::find() {
     // We're done with dfh_'s integrals
     dfh_->clear_all();
 }
+
+// Compute fragment-fragment partitioning of dispersion contribution
 void FISAPT::fdisp() {
     outfile->Printf("  ==> F-SAPT Dispersion <==\n\n");
 
@@ -4290,25 +4342,43 @@ void FISAPT::fdisp() {
     Cs.clear();
     dfh->clear_spaces();
 
-    // => Blocking <= //
+    // => Blocking ... figure out how big a tensor slice to handle at a time <= //
 
     long int overhead = 0L;
-    overhead += 5L * nT * na * nb;
-    overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns;
+    overhead += 5L * nT * na * nb; // Tab, Vab, T2ab, V2ab, and Iab work arrays below
+    overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
+    // the next few matrices allocated here don't take too much room (but might if large numbers of threads)
+    overhead += 2L * na * nb * (nT + 1); // E_disp20 and E_exch_disp20 thread work and final matrices
+    overhead += 1L * sna * snb * (nT + 1); // sE_exch_disp20 thread work and final matrices
+    overhead += 1L * (nA + nfa + na) * (nB + nfb + nb); // Disp_AB
+    overhead += 1L * (snA + snfa + sna) * (snB + snfb + snb); // sDisp_AB
+    // account for a few of the smaller matrices already defined, but not exhaustively
+    overhead += 12L * nn * nn; // D, V, J, K, P, and C matrices for A and B (neglecting C)
     long int rem = doubles_ - overhead;
 
+    outfile->Printf("    %ld doubles - %ld overhead leaves %ld for dispersion\n", doubles_, overhead, rem);
+    
     if (rem < 0L) {
         throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
     }
 
-    long int cost_r = 2L * na * nQ + 2L * nb * nQ;
-    long int max_r = rem / (2L * cost_r);
+    // cost_r is how much mem for Aar, Bbr, Cbr, Dar for a single r
+    // cost_s would be the same value, and is the mem requirement for Abs, Bas, Cas, and Dbs for single s
+    long int cost_r = 2L * na * nQ + 2L * nb * nQ; 
+    long int max_r = rem / (2L * cost_r); // 2 b/c need to hold both an r and an s
     long int max_s = max_r;
     max_r = (max_r > nr ? nr : max_r);
     max_s = (max_s > ns ? ns : max_s);
     if (max_r < 1L || max_s < 1L) {
         throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
     }
+    int nrblocks = (nr / (int) max_r);
+    if (nr % (int) max_r) nrblocks++;
+    int nsblocks = (ns / (int) max_s);
+    if (ns % (int) max_s) nsblocks++;
+    outfile->Printf("    Processing a single (r,s) pair requires %ld doubles\n", cost_r * 2L);
+    outfile->Printf("    %d values of r processed in %d blocks of %d\n", nr, nrblocks, max_r);
+    outfile->Printf("    %d values of s processed in %d blocks of %d\n\n", ns, nsblocks, max_s);
 
     // => Tensor Slices <= //
 
@@ -4557,6 +4627,7 @@ void FISAPT::fdisp() {
     outfile->Printf("\n");
     // fflush(outfile);
 }
+
 std::shared_ptr<Matrix> FISAPT::extract_columns(const std::vector<int>& cols, std::shared_ptr<Matrix> A) {
     int nm = A->rowspi()[0];
     int na = A->colspi()[0];
@@ -4587,6 +4658,7 @@ FISAPTSCF::FISAPTSCF(std::shared_ptr<JK> jk, double enuc, std::shared_ptr<Matrix
     matrices_["W"] = W;
     matrices_["C0"] = C;
 }
+
 FISAPTSCF::~FISAPTSCF() {}
 void FISAPTSCF::compute_energy() {
     // => Sizing <= //
@@ -4964,6 +5036,7 @@ void CPHF_FISAPT::compute_cphf() {
 
     if (iter == maxiter_) throw PSIEXCEPTION("CPHF did not converge.");
 }
+
 void CPHF_FISAPT::preconditioner(std::shared_ptr<Matrix> r, std::shared_ptr<Matrix> z, std::shared_ptr<Vector> o,
                                  std::shared_ptr<Vector> v) {
     int no = o->dim();
@@ -4981,6 +5054,7 @@ void CPHF_FISAPT::preconditioner(std::shared_ptr<Matrix> r, std::shared_ptr<Matr
         }
     }
 }
+
 std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
     std::map<std::string, std::shared_ptr<Matrix> > b) {
     std::map<std::string, std::shared_ptr<Matrix> > s;
