@@ -2156,17 +2156,17 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 
     long int cost_a = 2L * nr * nQ + 2L * ns * nQ; // how much mem for Aar, Bas, Cas, Dar for a single a
     // cost_b would be the same value, and would be how much mem for Abs, Bbr, Cbr, Dbs for a single b
-    long int max_a = rem / (2L * cost_a);
-    long int max_b = max_a;
-    max_a = (max_a > na ? na : max_a);
-    max_b = (max_b > nb ? nb : max_b);
-    if (max_a < 1L || max_b < 1L) {
+    long int max_a_l = rem / (2L * cost_a);
+    long int max_b_l = max_a_l;
+    int max_a = (max_a_l > na ? na : (int) max_a_l);
+    int max_b = (max_b_l > nb ? nb : (int) max_b_l);
+    if (max_a < 1 || max_b < 1) {
         throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
     }
-    int nablocks = (na / (int) max_a);
-    if (na % (int) max_a) nablocks++;
-    int nbblocks = (nb / (int) max_b);
-    if (nb % (int) max_b) nbblocks++;
+    int nablocks = (na / max_a);
+    if (na % max_a) nablocks++;
+    int nbblocks = (nb / max_b);
+    if (nb % max_b) nbblocks++;
     outfile->Printf("    Processing a single (a,b) pair requires %ld doubles\n", cost_a * 2L);
     outfile->Printf("    %d values of a processed in %d blocks of %d\n", na, nablocks, max_a);
     outfile->Printf("    %d values of b processed in %d blocks of %d\n\n", nb, nbblocks, max_b);
@@ -4365,17 +4365,17 @@ void FISAPT::fdisp() {
     // cost_r is how much mem for Aar, Bbr, Cbr, Dar for a single r
     // cost_s would be the same value, and is the mem requirement for Abs, Bas, Cas, and Dbs for single s
     long int cost_r = 2L * na * nQ + 2L * nb * nQ; 
-    long int max_r = rem / (2L * cost_r); // 2 b/c need to hold both an r and an s
-    long int max_s = max_r;
-    max_r = (max_r > nr ? nr : max_r);
-    max_s = (max_s > ns ? ns : max_s);
-    if (max_r < 1L || max_s < 1L) {
+    long int max_r_l = rem / (2L * cost_r); // 2 b/c need to hold both an r and an s
+    long int max_s_l = max_r_l;
+    int max_r = (max_r_l > nr ? nr : (int) max_r_l);
+    int max_s = (max_s_l > ns ? ns : (int) max_s_l);
+    if (max_r < 1 || max_s < 1) {
         throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
     }
-    int nrblocks = (nr / (int) max_r);
-    if (nr % (int) max_r) nrblocks++;
-    int nsblocks = (ns / (int) max_s);
-    if (ns % (int) max_s) nsblocks++;
+    int nrblocks = (nr / max_r);
+    if (nr % max_r) nrblocks++;
+    int nsblocks = (ns / max_s);
+    if (ns % max_s) nsblocks++;
     outfile->Printf("    Processing a single (r,s) pair requires %ld doubles\n", cost_r * 2L);
     outfile->Printf("    %d values of r processed in %d blocks of %d\n", nr, nrblocks, max_r);
     outfile->Printf("    %d values of s processed in %d blocks of %d\n\n", ns, nsblocks, max_s);
