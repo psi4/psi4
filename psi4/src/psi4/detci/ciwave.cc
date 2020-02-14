@@ -379,7 +379,7 @@ void CIWavefunction::convergence_death() {
 }
 SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize) {
     if (!tpdm_called_) {
-        throw PSIEXCEPTION("CIWavefunction::get_opdm: OPDM was not formed!");
+        throw PSIEXCEPTION("CIWavefunction::get_tpdm: TPDM was not formed!");
     }
 
     if (symmetrize) {
