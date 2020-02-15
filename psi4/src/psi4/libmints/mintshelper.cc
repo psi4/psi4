@@ -57,7 +57,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include<unistd.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -3323,8 +3322,11 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv2(int atom1, int atom2, Share
 
 std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
 
-    //sleep(60);
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->giao_eri_deriv(0,false,1));
+    // 0, true, 1 ==> deriv, use_shell_pairs, increment
+    std::shared_ptr<TwoBodyAOInt> ints(integral_->giao_eri_deriv(0,true,1));
+    // only cartesian, no transformation to spherical harmonics basis
+    ints->set_force_cartesian(true);
+    
 
     std::shared_ptr<BasisSet> bs1 = ints->basis1();
     std::shared_ptr<BasisSet> bs2 = ints->basis2();
@@ -3354,7 +3356,6 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     double* dgdBy_buf = new double[max_cart_size];
     double* dgdBz_buf = new double[max_cart_size];
 
-    //const double *buffer = ints->buffer();
 
     const std::vector<int> AM_increments_abcd {0, 0, 0, 0};
     const std::vector<int> AM_increments_ap1bcd {1, 0, 0, 0};
@@ -3368,18 +3369,17 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     int am1, am2, am3, am4;
     int num_ints;
 
-   // (ab|cd) integrals
     for (int M = 0; M < bs1->nshell(); M++) {
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
                 for (int Q = 0; Q < bs4->nshell(); Q++) {
-
+                    
                     const GaussianShell &s1 = bs1->shell(M);
                     const GaussianShell &s2 = bs2->shell(N);
                     const GaussianShell &s3 = bs3->shell(P);
                     const GaussianShell &s4 = bs4->shell(Q);
 
-                    am1 = bs1->shell(M).am(); // double check about -1
+                    am1 = bs1->shell(M).am(); 
                     am2 = bs1->shell(N).am();
                     am3 = bs1->shell(P).am();
                     am4 = bs1->shell(Q).am();
@@ -3412,40 +3412,38 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                      ABxA_plus_CDxC[0] = (AB[1]*A[2] - AB[2]*A[1]) + (CD[1]*C[2] - CD[2]*C[1]);
                      ABxA_plus_CDxC[1] = (AB[2]*A[0] - AB[0]*A[2]) + (CD[2]*C[0] - CD[0]*C[2]);
                      ABxA_plus_CDxC[2] = (AB[0]*A[1] - AB[1]*A[0]) + (CD[0]*C[1] - CD[1]*C[0]);
-    
-                     int mfunc = bs1->shell(M).nfunction();
-                     int nfunc = bs1->shell(N).nfunction();
-                     int pfunc = bs1->shell(P).nfunction();
-                     int qfunc = bs1->shell(Q).nfunction();
-                     int nao_cp1 = INT_NFUNC(s3.is_pure(), am3+1);
+ 
+                     int mfunc = ioff[am1+1];
+                     int nfunc = ioff[am2+1];
+                     int pfunc = ioff[am3+1];
+                     int qfunc = ioff[am4+1];
+                     int nao_cp1 = ioff[am3+2];
+
+
 
                      // (ab|cd) integrals
                      int quartet_size = mfunc * nfunc * pfunc * qfunc;
-                                       
-
-                    num_ints = ints->compute_shell(M, N, P, Q, AM_increments_abcd);
-                    const double *buffer = ints->buffer();
-                    if (num_ints) {
-                       for(int i=0; i<quartet_size; i++) {
-                         double value = buffer[i];
-                         dgdBx_buf[i] = dgdB_pfac * ABxA_plus_CDxC[0] * value;
-                         dgdBy_buf[i] = dgdB_pfac * ABxA_plus_CDxC[1] * value;
-                         dgdBz_buf[i] = dgdB_pfac * ABxA_plus_CDxC[2] * value;
-                       }
-                    }
-                    else {
-                       for(int i=0; i<quartet_size; i++) {
-                         dgdBx_buf[i] = 0.0;
-                         dgdBy_buf[i] = 0.0;
-                         dgdBz_buf[i] = 0.0;
-                       }
-                    }
-
-                    
+                     num_ints = ints->compute_shell(M, N, P, Q, AM_increments_abcd);
+                     const double *buffer = ints->buffer();
+                     if (num_ints) {
+                        for(int i=0; i<quartet_size; i++) {
+                          double value = buffer[i];
+                          dgdBx_buf[i] = dgdB_pfac * ABxA_plus_CDxC[0] * value;
+                          dgdBy_buf[i] = dgdB_pfac * ABxA_plus_CDxC[1] * value;
+                          dgdBz_buf[i] = dgdB_pfac * ABxA_plus_CDxC[2] * value;
+                        }
+                     }
+                     else {
+                        for(int i=0; i<quartet_size; i++) {
+                          dgdBx_buf[i] = 0.0;
+                          dgdBy_buf[i] = 0.0;
+                          dgdBz_buf[i] = 0.0;
+                        }
+                     }
+                   
 
                     if (AB2 != 0) {
-
-                       /// now lets do another 2 types of integrals: (a+1b|cd), (ab|c+1d)
+                       /// (a+1b|cd) integrals (ab|c+1d)
                        ints->compute_shell(M, N, P, Q, AM_increments_ap1bcd);
                        const double *buffer = ints->buffer();
 
@@ -3461,7 +3459,7 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
 
 
                        // Contract ERIs into the target GIAO derivative integral
-                       /*--- create all am components of si ---*/
+                       //--- create all am components of si ---//
                        double* dgdBx_ptr = dgdBx_buf; 
                        double* dgdBy_ptr = dgdBy_buf;
                        double* dgdBz_ptr = dgdBz_buf;
@@ -3471,7 +3469,7 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                            int m1 = ii - jj;
                            int n1 = jj;
 
-                           int ap1x = hash(l1+1,m1,n1); // need to resolve hash function!
+                           int ap1x = hash(l1+1,m1,n1); 
                            int ap1y = hash(l1,m1+1,n1);
                            int ap1z = hash(l1,m1,n1+1);
 
@@ -3493,8 +3491,10 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                        }
                     }
                     if (CD2 != 0) {
+                       // (ab|c+1d) integrals
                        ints->compute_shell(M, N, P, Q, AM_increments_abcp1d);
                        const double *buffer = ints->buffer();
+
                        // (ab|c+1x d) contributes to dg/dBy and dg/dBz with these coefficients
                        double cp1xpfac_y =  dgdB_pfac * CD[2];
                        double cp1xpfac_z = -dgdB_pfac * CD[1];
@@ -3507,15 +3507,15 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
 
                        // Contract ERIs into the target GIAO derivative integral
                        int nij = mfunc * nfunc;
-                       int nk1l = nao_cp1 * qfunc; // change
+                       int nk1l = nao_cp1 * qfunc;
                        int nl = qfunc;
                        double* dgdBx_ptr = dgdBx_buf;
                        double* dgdBy_ptr = dgdBy_buf;
                        double* dgdBz_ptr = dgdBz_buf;
                        for(int ij=0; ij<nij; ij++, buffer+=nk1l) {
-                         /*--- create all am components of sk ---*/
-                         for(int ii = 0; ii <= am2; ii++){
-                           int l1 = am2 - ii;
+                         //--- create all am components of sk ---//
+                         for(int ii = 0; ii <= am3; ii++){
+                           int l1 = am3 - ii;
                            for(int jj = 0; jj <= ii; jj++){
                              int m1 = ii - jj;
                              int n1 = jj;
@@ -3541,9 +3541,6 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                        }      
                     }
         
-                    //outfile->Printf("  he he \n");
-
-
                     for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
                         for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
                             for (int p = 0; p < bs3->shell(P).nfunction(); p++) {

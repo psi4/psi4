@@ -919,11 +919,6 @@ void export_mints(py::module& m) {
              "Returns a OneBodyInt that computes the point electrostatic potential")
         .def("overlap_3c", &IntegralFactory::overlap_3c,
              "Returns a OneBodyInt that computes the 3 center overlap integral");
-         // I might not need this below!
-        //.def("giao_overlap_deriv", &IntegralFactory::giao_overlap_deriv, 
-        //     "Returns a OneBodyInt that computes the derivative of GIAO overlap integrals", py::arg("deriv") = 0)
-        //.def("giao_angmom", &IntegralFactory::giao_angmom, 
-        //     "Returns a OneBodyInt that computes the GIAO angular momentum integrals", py::arg("deriv") = 0);
 
     typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;

@@ -427,7 +427,7 @@ void TwoBodyAOInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk, bool copy_to_source, const std::vector<int>& AM_increments) {
+void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk, bool copy_to_source) {
 #ifdef MINTS_TIMER
     timer_on("Pure transformation");
 #endif
@@ -442,49 +442,28 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
     int am3 = s3.am();
     int am4 = s4.am();
 
-    int am_inc_1, am_inc_2, am_inc_3, am_inc_4;
-    am_inc_1 = AM_increments[0];
-    am_inc_2 = AM_increments[1];
-    am_inc_3 = AM_increments[2];
-    am_inc_4 = AM_increments[3];
-
-    am1 += am_inc_1;
-    am2 += am_inc_2;
-    am3 += am_inc_3;
-    am4 += am_inc_4;
-
     // Get the transforms from the basis set
-    //SphericalTransformIter trans1(*integral()->spherical_transform(s1.am()));
-    //SphericalTransformIter trans2(*integral()->spherical_transform(s2.am()));
-    //SphericalTransformIter trans3(*integral()->spherical_transform(s3.am()));
-    //SphericalTransformIter trans4(*integral()->spherical_transform(s4.am()));
-    SphericalTransformIter trans1(*integral()->spherical_transform(am1));
-    SphericalTransformIter trans2(*integral()->spherical_transform(am2));
-    SphericalTransformIter trans3(*integral()->spherical_transform(am3));
-    SphericalTransformIter trans4(*integral()->spherical_transform(am4));
+    SphericalTransformIter trans1(*integral()->spherical_transform(s1.am()));
+    SphericalTransformIter trans2(*integral()->spherical_transform(s2.am()));
+    SphericalTransformIter trans3(*integral()->spherical_transform(s3.am()));
+    SphericalTransformIter trans4(*integral()->spherical_transform(s4.am()));
 
     // Get the angular momentum for each shell
-    //int am1 = s1.am();
-    //int am2 = s2.am();
-    //int am3 = s3.am();
-    //int am4 = s4.am();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int am3 = s3.am();
+    int am4 = s4.am();
 
     // Get number of Cartesian functions for each shell
-    //int nao1 = s1.ncartesian();
-    //int nao2 = s2.ncartesian();
-    //int nao3 = s3.ncartesian();
-    //int nao4 = s4.ncartesian();
-    int nao1 = INT_NCART(am1); int nao2 = INT_NCART(am2) ;
-    int nao3 = INT_NCART(am3); int nao4 = INT_NCART(am4) ;
-
-    int nbf1 = INT_NFUNC(s1.is_pure(), am1); int nbf2 = INT_NFUNC(s2.is_pure(), am2);
-    int nbf3 = INT_NFUNC(s3.is_pure(), am3); int nbf4 = INT_NFUNC(s4.is_pure(), am4);
+    int nao1 = s1.ncartesian();
+    int nao2 = s2.ncartesian();
+    int nao3 = s3.ncartesian();
+    int nao4 = s4.ncartesian();
     
-
-    //int nbf1 = s1.nfunction();
-    //int nbf2 = s2.nfunction();
-    //int nbf3 = s3.nfunction();
-    //int nbf4 = s4.nfunction();
+    int nbf1 = s1.nfunction();
+    int nbf2 = s2.nfunction();
+    int nbf3 = s3.nfunction();
+    int nbf4 = s4.nfunction();
 
     // Get if each shell has pure functions
     bool is_pure1 = s1.is_pure();

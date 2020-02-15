@@ -2242,7 +2242,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     am3 += am_inc_3;
     am4 += am_inc_4;
 
-    //temp = am1 + am2 + am3 + am4;
+    temp = am1 + am2 + am3 + am4;
 
     // c1 = original_bs1_->shell(sh1).ncenter();
     // c2 = original_bs1_->shell(sh2).ncenter();
@@ -2262,17 +2262,9 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
     int am1_new, am2_new, am3_new, am4_new;
 
     if (force_cartesian_) {
-        //n1 = original_bs1_->shell(sh1).ncartesian();
-        //n2 = original_bs2_->shell(sh2).ncartesian();
-        //n3 = original_bs3_->shell(sh3).ncartesian();
-        //n4 = original_bs4_->shell(sh4).ncartesian();
         n1 = INT_NCART(am1); n2 = INT_NCART(am2) ;
         n3 = INT_NCART(am3); n4 = INT_NCART(am4) ;
     } else {
-        //n1 = original_bs1_->shell(sh1).nfunction();
-        //n2 = original_bs2_->shell(sh2).nfunction();
-        //n3 = original_bs3_->shell(sh3).nfunction();
-        //n4 = original_bs4_->shell(sh4).nfunction();
         n1 = INT_NFUNC(original_bs1_->shell(sh1).is_pure(), am1); 
         n2 = INT_NFUNC(original_bs2_->shell(sh2).is_pure(), am2);
         n3 = INT_NFUNC(original_bs3_->shell(sh3).is_pure(), am3); 
@@ -2477,7 +2469,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4, const
         p34 = &(pairs34_[sh3][sh4]);
 
         nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2,
-                                    sh3 == sh4, 0); // sh1 == sh2 && sh3 == sh4 is not used anywhere, so safe to ignore for now!
+                                    sh3 == sh4, 0); // sh1 == sh2 && sh3 == sh4 is not used anywhere!
     } else {
         const double *a1s = s1.exps();
         const double *a2s = s2.exps();

@@ -196,7 +196,7 @@ class PSI_API TwoBodyAOInt {
     virtual TwoBodyAOInt *clone() const;
 
     /// Results go back to buffer_
-    void pure_transform(int, int, int, int, int nchunk, bool copy_to_source = true, const std::vector<int>& AM_increments = {0, 0, 0, 0});
+    void pure_transform(int, int, int, int, int nchunk, bool copy_to_source = true});
 };
 
 typedef std::shared_ptr<TwoBodyAOInt> SharedTwoBodyAOInt;
