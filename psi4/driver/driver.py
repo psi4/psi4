@@ -875,19 +875,28 @@ def properties(*args, **kwargs):
 def optimize_geometric(name, **kwargs):
 
     # will move imports to top of file when i'm sure where this method goes
-    # TODO: check if GeomeTRIC is installed
+    # TODO: check if GeomeTRIC is installed at the start
     import qcengine as qcng
     import qcelemental as qcel
     from qcelemental.models import OptimizationInput
 
-    # TODO: return dummy wavefunction? Or run gradient at optimized geometry
+    core.print_out('\n  Optimizing system with GeomeTRIC through QCEngine\n')
+
+    # TODO: return dummy wavefunction? Or run gradient at optimized geometry to get a wfn?
     return_wfn = kwargs.pop('return_wfn', False)
     if return_wfn:
         raise ValidationError(f"return_wfn=True is not supported with GeomeTRIC.")
 
-    # TODO: account for basis being in name, and/or composite methods
+    # TODO: fully account for basis being in name, and/or composite methods
     if '/' in name:
         raise ValidationError(f'Composite methods like {name} are not yet supported with GeomeTRIC')
+                                 
+    # Collect all user-specified keywords
+    keywords = {}
+    for opt in core.get_global_option_list():
+        if core.has_global_option_changed(opt):
+            keywords[opt] = core.get_global_option(opt)
+    basis = keywords['BASIS']
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
@@ -897,13 +906,6 @@ def optimize_geometric(name, **kwargs):
         molecule.fix_orientation(True)
         molecule.fix_com(True)
     molecule.update_geometry()
-                                 
-    # Collect all user-specified keywords
-    keywords = {}
-    for opt in core.get_global_option_list():
-        if core.has_global_option_changed(opt):
-            keywords[opt] = core.get_global_option(opt)
-    basis = keywords['BASIS']
 
     input_data = OptimizationInput(**{
             'initial_molecule' : molecule.to_schema(dtype=2),
@@ -917,14 +919,21 @@ def optimize_geometric(name, **kwargs):
     })
 
     # TODO: return history if requested
-    ret = qcng.compute_procedure(input_data, "geometric", raise_error=True) # qcelemental.models.procedures.OptimizationResult
-    last_iteration = ret.trajectory[-1] # qcelemental.models.results.AtomicResult
+    ret = qcng.compute_procedure(input_data, "geometric", raise_error=True, local_options={})
+    last_iteration = ret.trajectory[-1]
     return_energy = last_iteration.properties.return_energy
 
+    # Update molecule with optimized geometry
     # is there a better way to do this?
     molecule_opt = last_iteration.molecule # qcelemental.models.molecule.Molecule
     molecule_opt = core.Molecule.from_schema(molecule_opt.dict())
     molecule.set_geometry(molecule_opt.geometry())
+
+
+    core.print_out('\n  Optimization Complete!\n')
+    core.print_out(f'\n  Final Energy : {last_iteration.properties.return_energy} \n')
+    core.print_out('\n  Final Geometry : \n')
+    molecule.print_in_input_format()
 
     return return_energy
 
