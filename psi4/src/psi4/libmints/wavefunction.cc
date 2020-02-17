@@ -659,7 +659,9 @@ void Wavefunction::common_init() {
             }
         }
         
-        brianCOMSetBasis(&brianCookie, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data());
+        // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and map it to the macro value
+        brianInt basisSetNameID = BRIAN_BASIS_SET_NAME_CUSTOM_BASIS_SET;
+        brianCOMSetBasis(&brianCookie, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data(), &basisSetNameID);
         checkBrian();
         
         brianInt restrictionType;
