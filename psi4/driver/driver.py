@@ -880,9 +880,14 @@ def optimize_geometric(name, **kwargs):
     import qcelemental as qcel
     from qcelemental.models import OptimizationInput
 
+    # TODO: return dummy wavefunction? Or run gradient at optimized geometry
     return_wfn = kwargs.pop('return_wfn', False)
     if return_wfn:
         raise ValidationError(f"return_wfn=True is not supported with GeomeTRIC.")
+
+    # TODO: account for basis being in name, and/or composite methods
+    if '/' in name:
+        raise ValidationError(f'Composite methods like {name} are not yet supported with GeomeTRIC')
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
@@ -892,18 +897,22 @@ def optimize_geometric(name, **kwargs):
         molecule.fix_orientation(True)
         molecule.fix_com(True)
     molecule.update_geometry()
-    print('Geometry before')
-    print(molecule.geometry().np)
+                                 
+    # Collect all user-specified keywords
+    keywords = {}
+    for opt in core.get_global_option_list():
+        if core.has_global_option_changed(opt):
+            keywords[opt] = core.get_global_option(opt)
+    basis = keywords['BASIS']
 
-    # TODO: what is the basis is in name?
-    basis = core.get_global_option('BASIS')
     input_data = OptimizationInput(**{
             'initial_molecule' : molecule.to_schema(dtype=2),
             'input_specification' : {
                 'model' : { 'method' : name,
                             'basis' : basis,
-                }
-             },
+                },
+                'keywords' : keywords,
+            },
             'keywords' : {'program' : 'psi4'},
     })
 
@@ -916,9 +925,6 @@ def optimize_geometric(name, **kwargs):
     molecule_opt = last_iteration.molecule # qcelemental.models.molecule.Molecule
     molecule_opt = core.Molecule.from_schema(molecule_opt.dict())
     molecule.set_geometry(molecule_opt.geometry())
-
-    print('Geometry after')
-    print(molecule.geometry().np)
 
     return return_energy
 
