@@ -2366,7 +2366,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const s
 #ifdef MINTS_TIMER
             timer_on("permute_target");
 #endif
-            permute_target(source_, target_, s1, s2, s3, s4, p12_, p34_, p13p24_, AM_increments);
+            permute_target(source_, target_, s1, s2, s3, s4, p12_, p34_, p13p24_, AM_increments_ordered);
 #ifdef MINTS_TIMER
             timer_off("permute_target");
 #endif
