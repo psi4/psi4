@@ -872,6 +872,55 @@ def properties(*args, **kwargs):
     else:
         return core.variable('CURRENT ENERGY')
 
+def optimize_geometric(name, **kwargs):
+
+    # will move imports to top of file when i'm sure where this method goes
+    # TODO: check if GeomeTRIC is installed
+    import qcengine as qcng
+    import qcelemental as qcel
+    from qcelemental.models import OptimizationInput
+
+    return_wfn = kwargs.pop('return_wfn', False)
+    if return_wfn:
+        raise ValidationError(f"return_wfn=True is not supported with GeomeTRIC.")
+
+    # Make sure the molecule the user provided is the active one
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
+
+    # If we are freezing cartesian, do not orient or COM
+    if core.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
+        molecule.fix_orientation(True)
+        molecule.fix_com(True)
+    molecule.update_geometry()
+    print('Geometry before')
+    print(molecule.geometry().np)
+
+    # TODO: what is the basis is in name?
+    basis = core.get_global_option('BASIS')
+    input_data = OptimizationInput(**{
+            'initial_molecule' : molecule.to_schema(dtype=2),
+            'input_specification' : {
+                'model' : { 'method' : name,
+                            'basis' : basis,
+                }
+             },
+            'keywords' : {'program' : 'psi4'},
+    })
+
+    # TODO: return history if requested
+    ret = qcng.compute_procedure(input_data, "geometric", raise_error=True) # qcelemental.models.procedures.OptimizationResult
+    last_iteration = ret.trajectory[-1] # qcelemental.models.results.AtomicResult
+    return_energy = last_iteration.properties.return_energy
+
+    # is there a better way to do this?
+    molecule_opt = last_iteration.molecule # qcelemental.models.molecule.Molecule
+    molecule_opt = core.Molecule.from_schema(molecule_opt.dict())
+    molecule.set_geometry(molecule_opt.geometry())
+
+    print('Geometry after')
+    print(molecule.geometry().np)
+
+    return return_energy
 
 def optimize(name, **kwargs):
     r"""Function to perform a geometry optimization.
@@ -1018,6 +1067,12 @@ def optimize(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+
+    engine = kwargs.pop('engine', 'optking')
+    if engine == 'geometric':
+        return optimize_geometric(name, **kwargs)
+    elif engine is not 'optking':
+        raise ValidationError(f"Optimizer {engine} is not supported.")
 
     if hasattr(name, '__call__'):
         lowername = name
