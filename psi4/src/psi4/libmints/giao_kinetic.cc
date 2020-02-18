@@ -94,7 +94,7 @@ void GiaoKineticInt::compute_pair(const GaussianShell& s1, const GaussianShell& 
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, s1.ncartesian() * s2.ncartesian() * sizeof(double));
+    memset(buffer_, 0, 3 * INT_NCART(am1) * INT_NCART(am2) * sizeof(double));
 
     double **x = overlap_recur_.x();
     double **y = overlap_recur_.y();
