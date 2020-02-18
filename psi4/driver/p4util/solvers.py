@@ -348,24 +348,16 @@ def _diag_print_info(solver_name, info, verbose=1):
         if info['done']:
             flags.append("Converged")
 
-        core.print_out("  {name} iter {ni:3d}:   {m_de:-11.5e} {m_r:12.5e} {flgs}\n".format(
-            name=solver_name,
-            ni=info['count'],
-            m_de=np.max(info['delta_val']),
-            m_r=np.max(info['res_norm']),
-            flgs="/".join(flags)))
+        m_de = np.max(info['delta_val'])
+        m_r = np.max(info['res_norm'])
+        flgs = "/".join(flags)
+        core.print_out(f"  {solver_name} iter {info['count']:3d}:   {m_de:-11.5e} {m_r:12.5e} {flgs}\n")
     else:
         # print iter / ssdim folowed by de/|R| for each root
-        core.print_out("  {name} iter {ni:3d}: {nv:4d} guess vectors\n".format(name=solver_name,
-                                                                               ni=info['count'],
-                                                                               nv=info['nvec']))
+        core.print_out(f"  {solver_name} iter {info['count']:3d}: {info['nvec']:4d} guess vectors\n")
         for i, (e, de, rn) in enumerate(zip(info['val'], info['delta_val'], info['res_norm'])):
-            core.print_out("     {nr:2d}: {s:} {e:-11.5f} {de:-11.5e} {rn:12.5e}\n".format(nr=i + 1,
-                                                                                           s=" " *
-                                                                                           (len(solver_name) - 8),
-                                                                                           e=e,
-                                                                                           de=de,
-                                                                                           rn=rn))
+            s = " " * len(solver_name)
+            core.print_out(f"     {i+1:2d}: {s:} {e:-11.5f} {de:-11.5e} {rn:12.5e}\n")
         if info['done']:
             core.print_out("  Solver Converged! all roots\n\n")
         elif info['collapse']:
@@ -379,12 +371,12 @@ def _diag_print_converged(solver_name, stats, vals, verbose=1, **kwargs):
         return
     if verbose >= 1:
         # print values summary + number of iterations + # of "big" product evals
-        core.print_out(" {} converged in {} iterations\n".format(solver_name, stats[-1]['count']))
+        core.print_out(f" {solver_name} converged in {stats[-1]['count']} iterations\n")
         core.print_out("  Root #    eigenvalue\n")
         for (i, vi) in enumerate(vals):
-            core.print_out("  {:^6}    {:20.12f}\n".format(i + 1, vi))
+            core.print_out(f"  {i+1:^6}    {vi:20.12f}\n")
         max_nvec = max(istat['nvec'] for istat in stats)
-        core.print_out("  Computed a total of {} Large products\n\n".format(stats[-1]['product_count']))
+        core.print_out(f"  Computed a total of {stats[-1]['product_count']} Large products\n\n")
 
 
 def _print_array(name, arr, verbose):
@@ -765,10 +757,9 @@ def davidson_solver(engine,
             iter_info['val'][k] = lam_k
             iter_info['delta_val'][k] = abs(old_vals[k] - lam_k)
             iter_info['res_norm'][k] = norm
-            converged = (norm < r_tol) and (abs(old_vals[k] - lam_k) < e_tol)
 
             # augment guess vector for non-converged roots
-            if (not converged):
+            if (norm > r_tol):
                 iter_info['done'] = False
                 Qk = engine.precondition(Rk, lam_k)
                 new_vecs.append(Qk)
@@ -986,15 +977,15 @@ def hamiltonian_solver(engine,
         # Extract Lss = (H1 R)/ w
         Lss = np.dot(H1_ss, Rss).dot(np.diag(1.0 / w))
 
+        # Biorthonormalize R/L solution vectors
+        inners = np.einsum("ix,ix->x", Rss, Lss)
+        Rss = np.einsum("x,ix->ix", 1. / np.sqrt(inners), Rss)
+        Lss = np.einsum("x,ix->ix", 1. / np.sqrt(inners), Lss)
+
         # Save best R/L vectors and eigenvalues
         best_R = _best_vectors(engine, Rss[:, :nk], vecs)
         best_L = _best_vectors(engine, Lss[:, :nk], vecs)
         best_vals = w[:nk]
-
-        # Biorthonormalize best R/L vectors
-        binorms = [1. / np.sqrt(engine.vector_dot(R, L)) for R, L in zip(best_R, best_L)]
-        best_R = [engine.vector_scale(factor, R) for factor, R in zip(binorms, best_R)]
-        best_L = [engine.vector_scale(factor, L) for factor, L in zip(binorms, best_L)]
 
         # check convergence of each solution
         new_vecs = []
@@ -1026,7 +1017,7 @@ def hamiltonian_solver(engine,
             iter_info['val'][k] = w[k]
 
             # augment the guess space for non-converged roots
-            if (iter_info['res_norm'][k] > r_tol) or (iter_info['delta_val'][k] > e_tol):
+            if (iter_info['res_norm'][k] > r_tol):
                 iter_info['done'] = False
                 new_vecs.append(engine.precondition(WR_k, w[k]))
                 new_vecs.append(engine.precondition(WL_k, w[k]))
