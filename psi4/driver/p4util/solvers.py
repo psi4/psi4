@@ -683,7 +683,7 @@ def davidson_solver(engine,
     title_lines = ["Generalized Davidson Solver", "By Ruhee Dcunha"]
     max_ss_size = max_vecs_per_root * nk
 
-    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, e_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, e_tol, r_tol, maxiter, verbose)
 
     vecs = guess
     stats = []
@@ -890,7 +890,7 @@ def hamiltonian_solver(engine,
     title_lines = ["Generalized Hamiltonian Solver", "By Andrew M. James"]
     ss_max = max_vecs_per_root * nk
 
-    _diag_print_heading(title_lines, print_name, ss_max, nroot, r_tol, e_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, ss_max, nroot, e_tol, r_tol, maxiter, verbose)
 
     vecs = guess
     best_L = []
