@@ -33,8 +33,6 @@ import numpy as np
 from psi4 import core
 
 from .exceptions import ValidationError
-
-
 """
 Generalized iterative solvers for Psi4.
 
@@ -126,8 +124,8 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
         resid = printer(0, x_vec, r_vec)
     elif printlvl:
         # core.print_out('         CG Iteration Guess:    Rel. RMS = %1.5e\n' %  np.mean(resid))
-        core.print_out("    %5s %14.3e %12.3e %7d %9d\n" % ("Guess", np.mean(resid), np.max(resid), len(z_vec),
-                                                            time.time() - tstart))
+        core.print_out("    %5s %14.3e %12.3e %7d %9d\n" %
+                       ("Guess", np.mean(resid), np.max(resid), len(z_vec), time.time() - tstart))
 
     rms = np.mean(resid)
     rz_old = [0.0 for x in range(nrhs)]
@@ -167,8 +165,8 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
 
         # Print out if requested
         if printlvl:
-            core.print_out("    %5d %14.3e %12.3e %7d %9d\n" % (rot_iter + 1, np.mean(resid), np.max(resid),
-                                                                sum(active_mask), time.time() - tstart))
+            core.print_out("    %5d %14.3e %12.3e %7d %9d\n" %
+                           (rot_iter + 1, np.mean(resid), np.max(resid), sum(active_mask), time.time() - tstart))
 
         active = np.where(active_mask)[0]
 
@@ -188,11 +186,10 @@ def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, pr
     return x_vec, r_vec
 
 
-class DIIS(object):
+class DIIS:
     """
     An object to assist in the DIIS extrpolation procedure.
     """
-
     def __init__(self, max_vec=6, removal_policy="OLDEST"):
         """
         An object to assist in the DIIS extrpolation procedure.
@@ -359,11 +356,16 @@ def _diag_print_info(solver_name, info, verbose=1):
             flgs="/".join(flags)))
     else:
         # print iter / ssdim folowed by de/|R| for each root
-        core.print_out("  {name} iter {ni:3d}: {nv:4d} guess vectors\n".format(
-            name=solver_name, ni=info['count'], nv=info['nvec']))
+        core.print_out("  {name} iter {ni:3d}: {nv:4d} guess vectors\n".format(name=solver_name,
+                                                                               ni=info['count'],
+                                                                               nv=info['nvec']))
         for i, (e, de, rn) in enumerate(zip(info['val'], info['delta_val'], info['res_norm'])):
-            core.print_out("     {nr:2d}: {s:} {e:-11.5f} {de:-11.5e} {rn:12.5e}\n".format(
-                nr=i + 1, s=" " * (len(solver_name) - 8), e=e, de=de, rn=rn))
+            core.print_out("     {nr:2d}: {s:} {e:-11.5f} {de:-11.5e} {rn:12.5e}\n".format(nr=i + 1,
+                                                                                           s=" " *
+                                                                                           (len(solver_name) - 8),
+                                                                                           e=e,
+                                                                                           de=de,
+                                                                                           rn=rn))
         if info['done']:
             core.print_out("  Solver Converged! all roots\n\n")
         elif info['collapse']:
@@ -474,7 +476,6 @@ class SolverEngine(ABC):
               such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
               len(list) returns the number of vector-like objects.
     """
-
     @abstractmethod
     def compute_products(self, X):
         r"""Compute a Matrix * trial vector products
@@ -792,8 +793,8 @@ def davidson_solver(engine,
             # Regular subspace update, orthonormalize preconditioned residuals and add to the trial set
             vecs = _gs_orth(engine, vecs, new_vecs, schmidt_tol)
 
-    # always return, the caller should check stats[-1]['done'] == True for convergence
-    return best_eigvals, best_eigvecs, stats
+    # always return, the caller should check ret["stats"][-1]['done'] == True for convergence
+    return {"eigvals": best_eigvals, "eigvecs": list(zip(best_eigvecs, best_eigvecs)), "stats": stats}
 
 
 def hamiltonian_solver(engine,
@@ -923,7 +924,7 @@ def hamiltonian_solver(engine,
         if l >= ss_max:
             iter_info['collapse'] = True
 
-        # compute [A+B]*v(H1x) and [A-B]*v (H2x)
+        # compute [A+B]*v (H1x) and [A-B]*v (H2x)
         H1x, H2x, nprod = engine.compute_products(vecs)
         iter_info['product_count'] += nprod
 
@@ -990,6 +991,11 @@ def hamiltonian_solver(engine,
         best_L = _best_vectors(engine, Lss[:, :nk], vecs)
         best_vals = w[:nk]
 
+        # Biorthonormalize best R/L vectors
+        binorms = [1. / np.sqrt(engine.vector_dot(R, L)) for R, L in zip(best_R, best_L)]
+        best_R = [engine.vector_scale(factor, R) for factor, R in zip(binorms, best_R)]
+        best_L = [engine.vector_scale(factor, L) for factor, L in zip(binorms, best_L)]
+
         # check convergence of each solution
         new_vecs = []
         for k in range(nk):
@@ -1046,5 +1052,5 @@ def hamiltonian_solver(engine,
             # Regular subspace update, orthonormalize preconditioned residuals and add to the trial set
             vecs = _gs_orth(engine, vecs, new_vecs, schmidt_tol)
 
-    # always return the caller should check stats[-1]['done'] == True for convergence
-    return best_vals, best_R, best_L, stats
+    # always return, the caller should check ret["stats"][-1]['done'] == True for convergence
+    return {"eigvals": best_vals, "eigvecs": list(zip(best_R, best_L)), "stats": stats}

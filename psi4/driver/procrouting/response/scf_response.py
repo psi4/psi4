@@ -365,21 +365,26 @@ def tdscf_excitations(wfn, **kwargs):
 
         vecs_per_root = max_ss_vec // nstates
 
-        # ret = (ee, rvecs, stats) (TDA)
-        # ret = (ee, rvecs, lvecs, stats) (full TDSCF)
-        ret = solve_function(
-            engine=engine,
-            e_tol=e_tol,
-            r_tol=r_tol,
-            max_vecs_per_root=vecs_per_root,
-            nroot=nstates,
-            guess=guess_,
-            verbose=verbose)
+        # ret = {"eigvals": ee, "eigvecs": (rvecs, [None]), "stats": stats} (TDA)
+        # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (full TDSCF)
+        ret = solve_function(engine=engine,
+                             e_tol=e_tol,
+                             r_tol=r_tol,
+                             max_vecs_per_root=vecs_per_root,
+                             nroot=nstates,
+                             guess=guess_,
+                             verbose=verbose)
+        for root, (R, L) in enumerate(ret["eigvecs"]):
+            R = engine.vector_scale(np.sqrt(2.0), R)
+            L = engine.vector_scale(np.sqrt(2.0), L)
+            ret["eigvecs"][root] = (R, L)
 
         # store excitation energies tagged with final state symmetry (for printing)
         # TODO: handle R eigvecs (TDA) R/L eigvecs(full TDSCF): solver maybe should return dicts
-        for ee in ret[0]:
-            solver_results.append((ee, state_sym))
+
+        for r in zip(ret["eigvals"], ret["eigvecs"]):
+            # FIXME Ugly, maybe the return value from the solver should be namedtuple?
+            solver_results.append((r[0], r[1], state_sym))
 
     # sort by energy symmetry is just meta data
     solver_results.sort(key=lambda x: x[0])
@@ -392,18 +397,17 @@ def tdscf_excitations(wfn, **kwargs):
     core.print_out("    {:->4} {:->20} {:->15} {:->15} {:->15}\n".format("-", "-", "-", "-", "-"))
 
     irrep_GS = wfn.molecule().irrep_labels()[engine.G_gs]
-    for i, (E_ex_au, final_sym) in enumerate(solver_results):
+    for i, (E_ex_au, _, final_sym) in enumerate(solver_results):
         irrep_ES = wfn.molecule().irrep_labels()[final_sym]
         irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ final_sym]
-        sym_descr = "{}->{} ({})".format(irrep_GS, irrep_ES, irrep_trans)
+        sym_descr = f"{irrep_GS}->{irrep_ES} ({irrep_trans})"
 
         #TODO: psivars/wfnvars
 
         E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
 
         E_tot_au = wfn.energy() + E_ex_au
-        core.print_out("    {:^4} {:^20} {:< 15.5f} {:< 15.5f} {:< 15.5f}\n".format(
-            i + 1, sym_descr, E_ex_au, E_ex_ev, E_tot_au))
+        core.print_out(f"    {i+1:^4} {sym_descr:^20} {E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f}\n")
 
         wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {irrep_ES} SYMMETRY", E_tot_au)
         wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
@@ -413,6 +417,34 @@ def tdscf_excitations(wfn, **kwargs):
     #TODO: output table
 
     #TODO: oscillator strengths
+    # Get integrals
+    #ndocc = wfn.nalpha()
+    #Ca_left = wfn.Ca_subset("SO", "OCC")
+    #Ca_right = wfn.Ca_subset("SO", "VIR")
+    #mints = core.MintsHelper(wfn.basisset())
+    #def compute_ints(C_L, C_R, so_computer):
+    #    return [psi4.core.triplet(C_L, x, C_R, True, False, False) for x in so_computer()]
+    #property_integrals = {
+    #    "length gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_dipole),
+    #    "velocity gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_nabla),
+    #    "magnetic dipole": compute_ints(Ca_left, Ca_right, mints.so_angular_momentum)
+    #}
+
+    #for omega, (XpY, XmY), _ in res:
+    #    edtm_length = np.array([XpY.vector_dot(prop) for prop in property_integrals["length gauge electric dipole"]])
+    #    f_length = 2/3 * omega * np.sum(edtm_length**2)
+
+    #    edtm_velocity = np.array([XmY.vector_dot(prop) for prop in property_integrals["velocity gauge electric dipole"]])
+    #    f_velocity = 2/3 * np.sum(edtm_velocity**2) / omega
+
+    #    # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
+    #    # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
+    #    # 1/2 is the Bohr magneton in atomic units
+    #    mdtm = 0.5 * np.array([XmY.vector_dot(prop) for prop in property_integrals["magnetic dipole"]])
+    #    # From Equation (1) in Chem. Phys Lett. 388 (2004) 110
+    #    R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / omega
+    #    # From Equation (2) in Chem. Phys Lett. 388 (2004) 110
+    #    R_length = np.einsum("i,i", edtm_length, mdtm)
 
     #TODO: check/handle convergence failures
 
