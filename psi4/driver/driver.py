@@ -872,24 +872,17 @@ def properties(*args, **kwargs):
     else:
         return core.variable('CURRENT ENERGY')
 
+
 def optimize_geometric(name, **kwargs):
 
     # will move imports to top of file when i'm sure where this method goes
-    # TODO: check if GeomeTRIC is installed at the start
     import qcengine as qcng
     import qcelemental as qcel
-    from qcelemental.models import OptimizationInput
+    import geometric
 
-    core.print_out('\n  Optimizing system with GeomeTRIC through QCEngine\n')
-
-    # TODO: return dummy wavefunction? Or run gradient at optimized geometry to get a wfn?
-    return_wfn = kwargs.pop('return_wfn', False)
-    if return_wfn:
-        raise ValidationError(f"return_wfn=True is not supported with GeomeTRIC.")
-
-    # TODO: fully account for basis being in name, and/or composite methods
+    # TODO: account for basis being in name, and/or composite methods (might wait until DD)
     if '/' in name:
-        raise ValidationError(f'Composite methods like {name} are not yet supported with GeomeTRIC')
+        raise ValidationError(f'Composite methods like {name} are not yet supported with geomeTRIC')
                                  
     # Collect all user-specified keywords
     keywords = {}
@@ -899,7 +892,7 @@ def optimize_geometric(name, **kwargs):
     basis = keywords['BASIS']
 
     # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
+    molecule = kwargs.get('molecule', core.get_active_molecule())
 
     # If we are freezing cartesian, do not orient or COM
     if core.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
@@ -907,35 +900,134 @@ def optimize_geometric(name, **kwargs):
         molecule.fix_com(True)
     molecule.update_geometry()
 
-    input_data = OptimizationInput(**{
-            'initial_molecule' : molecule.to_schema(dtype=2),
-            'input_specification' : {
-                'model' : { 'method' : name,
-                            'basis' : basis,
-                },
-                'keywords' : keywords,
+    # TODO: allow constrained optimization
+    # TODO: handle users setting individual convergence criteria
+    # TODO: geomeTRIC specific options (like enforce) in Psi4 options?
+    # TODO: double check difference between get_global and get_local
+    input_data = {
+        "keywords": {
+            "convergence_set": core.get_global_option("G_CONVERGENCE"),
+            "maxiter": core.get_global_option("GEOM_MAXITER"),
+            "coordsys": "tric",
+            "enforce": 0.1,
+            "constraints": {
+                #"set": [
+                #    {"type": "distance",
+                #     "indices": [0, 1],
+                #     "value": 1
+                #    },
+                #]
             },
-            'keywords' : {'program' : 'psi4'},
-    })
+            "program": "psi4",
+        },
+        "input_specification": {
+            "driver": "gradient",
+            "model": {
+                "method": name,
+                "basis" : basis,
+            },
+            "keywords" : keywords,
+        },
+        "initial_molecule": molecule.to_schema(dtype=2),
+    }
 
-    # TODO: return history if requested
-    ret = qcng.compute_procedure(input_data, "geometric", raise_error=True, local_options={})
-    last_iteration = ret.trajectory[-1]
-    return_energy = last_iteration.properties.return_energy
+    if input_data["keywords"]["convergence_set"] in ["CFOUR", "QCHEM", "MOLPRO"]:
+        input_data["keywords"]["convergence_set"] = "GAU_TIGHT"
 
-    # Update molecule with optimized geometry
-    # is there a better way to do this?
-    molecule_opt = last_iteration.molecule # qcelemental.models.molecule.Molecule
-    molecule_opt = core.Molecule.from_schema(molecule_opt.dict())
-    molecule.set_geometry(molecule_opt.geometry())
+    # Parse JSON
+    input_opts = geometric.run_json.parse_input_json_dict(input_data)
+    M, engine = geometric.optimize.get_molecule_engine(**input_opts)
+    
+    # Handle constraints
+    constraints_dict = input_opts.get('constraints', {})
+    constraints_string = geometric.run_json.make_constraints_string(constraints_dict)
+    Cons, CVals = None, None
+    if constraints_string:
+        if 'scan' in constraints_dict:
+            raise ValueError("No scan!")
+        Cons, CVals = geometric.optimize.ParseConstraints(M, constraints_string)
+    
+    # Set up the internal coordinate system
+    coordsys = input_opts.get('coordsys', 'tric')
+    CoordSysDict = {
+        'cart': (geometric.internal.CartesianCoordinates, False, False),
+        'prim': (geometric.internal.PrimitiveInternalCoordinates, True, False),
+        'dlc': (geometric.internal.DelocalizedInternalCoordinates, True, False),
+        'hdlc': (geometric.internal.DelocalizedInternalCoordinates, False, True),
+        'tric': (geometric.internal.DelocalizedInternalCoordinates, False, False)
+    }
+    
+    # Build internal coordinates
+    CoordClass, connect, addcart = CoordSysDict[coordsys.lower()]
+    IC = CoordClass(
+        M,
+        build=True,
+        connect=connect,
+        addcart=addcart,
+        constraints=Cons,
+        cvals=CVals[0] if CVals is not None else None)
+    
+    # Get initial coordinates in bohr
+    coords = M.xyzs[0].flatten() / qcel.constants.bohr2angstroms
 
+    # Setup an optimizer object
+    params = geometric.optimize.OptParams(**input_opts)
+    optimizer = geometric.optimize.Optimizer(coords, M, IC, engine, None, params)
+    
+    # TODO: print constraints
+    # IC.printConstraints(coords, thre=-1)
+    optimizer.calcEnergyForce()
+    optimizer.prepareFirstStep()
+    rms_grad, max_grad = optimizer.calcGradNorm()
+    rms_gconv = '*' if rms_grad < params.Convergence_grms else ' '
+    max_gconv = '*' if max_grad < params.Convergence_gmax else ' '
+    core.print_out('\n')
+    core.print_out("\n  ==> geomeTRIC Optimizer <==\n")
+    core.print_out("\n  Measures of convergence in internal coordinates in au.")
+    core.print_out("\n  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).")
+    core.print_out("\n  ---------------------------------------------------------------------------------------------")
+    core.print_out("\n   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ")
+    core.print_out("\n  ---------------------------------------------------------------------------------------------")
+    core.print_out((f"\n    Convergence Criteria  {params.Convergence_energy:10.2e}    "
+                    f"{params.Convergence_gmax:10.2e}    {params.Convergence_grms:10.2e}    "
+                    f"{params.Convergence_dmax:10.2e}    {params.Convergence_drms:10.2e}"))
+    core.print_out("\n  ---------------------------------------------------------------------------------------------")
 
-    core.print_out('\n  Optimization Complete!\n')
-    core.print_out(f'\n  Final Energy : {last_iteration.properties.return_energy} \n')
+    core.print_out((f"\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}    --------    "
+                    f"{max_grad:10.2e} *  {rms_grad:10.2e} *    -------- *    -------- *"))
+    while True:
+        if optimizer.state in [geometric.optimize.OPT_STATE.CONVERGED, geometric.optimize.OPT_STATE.FAILED]:
+            core.print_out("\n\n  Optmization converged!\n")
+            break
+        optimizer.step()
+        optimizer.calcEnergyForce()
+        optimizer.evaluateStep()
+        rms_grad, max_grad = optimizer.calcGradNorm()
+        rms_disp, max_disp = geometric.optimize.calc_drms_dmax(optimizer.X, optimizer.Xprev)
+        energy_conv = '*' if np.abs(optimizer.E - optimizer.Eprev) < params.Convergence_energy else ' '
+        rms_g_conv = '*' if rms_grad < params.Convergence_grms else ' '
+        max_g_conv = '*' if max_grad < params.Convergence_gmax else ' '
+        rms_d_conv = '*' if rms_disp < params.Convergence_drms else ' '
+        max_d_conv = '*' if max_disp < params.Convergence_dmax else ' '
+        core.print_out((f'\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}  '
+                        f'{optimizer.E-optimizer.Eprev:10.2e} {energy_conv}  {max_grad:10.2e} {max_g_conv}  '
+                        f'{rms_grad:10.2e} {rms_g_conv}  {max_disp:10.2e} {max_d_conv}  {rms_disp:10.2e} {rms_d_conv}'))
+
+    return_energy = optimizer.E
+    opt_geometry = core.Matrix.from_array(optimizer.X.reshape(-1,3))
+    molecule.set_geometry(opt_geometry)
+    core.print_out(f'\n  Final Energy : {return_energy} \n')
     core.print_out('\n  Final Geometry : \n')
     molecule.print_in_input_format()
 
-    return return_energy
+    # run gradient at optimized geometry to get a wfn
+    if kwargs.get('return_wfn', False):
+        return gradient(name, **kwargs)
+    # should we always run gradient to fill in qcvars?
+    else:
+        return return_energy
+
+
 
 def optimize(name, **kwargs):
     r"""Function to perform a geometry optimization.
