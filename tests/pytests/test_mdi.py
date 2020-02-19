@@ -88,12 +88,6 @@ def test_mdi_water():
     dimensions = engine.send_dimensions()
     assert compare_values(expected, dimensions, atol=1.e-7)
 
-    # Test the <NCOMMANDS command
-    ncommands = engine.send_ncommands()
-
-    # Test the <COMMANDS command
-    commands = engine.send_commands()
-
     # Test the <TOTCHARGE command
     totcharge = engine.send_total_charge()
     expected = 0.0

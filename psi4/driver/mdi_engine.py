@@ -35,8 +35,9 @@ import numpy as np
 import qcelemental as qcel
 
 from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
-from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_DOUBLE_NUMPY
+from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command
 from MDI_Library.mdi import MDI_INT, MDI_DOUBLE, MDI_CHAR, MDI_COMMAND_LENGTH
+from MDI_Library.mdi import MDI_Register_Node, MDI_Register_Command
 
 try:
     from mpi4py import MPI
@@ -117,14 +118,17 @@ class MDIEngine():
             ">MASSES": self.recv_masses,
             "SCF": self.run_scf,
             "<DIMENSIONS": self.send_dimensions,
-            "<NCOMMANDS": self.send_ncommands,
-            "<COMMANDS": self.send_commands,
             "<TOTCHARGE": self.send_total_charge,
             ">TOTCHARGE": self.recv_total_charge,
             "<ELEC_MULT": self.send_multiplicity,
             ">ELEC_MULT": self.recv_multiplicity,
             "EXIT": self.exit
         }
+
+        # Register all the supported commands
+        MDI_Register_Node("@DEFAULT")
+        for command in self.commands.keys():
+            MDI_Register_Command("@DEFAULT", command)
 
     def length_conversion(self):
         """ Obtain the conversion factor between the geometry specification units and bohr
@@ -154,7 +158,7 @@ class MDIEngine():
         """ Send the nuclear coordinates through MDI
         """
         coords = self.molecule.geometry().np.ravel()
-        MDI_Send(coords, len(coords), MDI_DOUBLE_NUMPY, self.comm)
+        MDI_Send(coords, len(coords), MDI_DOUBLE, self.comm)
         return coords
 
     # Respond to the <CHARGES command
@@ -177,7 +181,7 @@ class MDIEngine():
         natom = self.molecule.natom()
         molecule_dict = self.molecule.to_dict()
         masses = molecule_dict['mass']
-        MDI_Send(masses, natom, MDI_DOUBLE_NUMPY, self.comm)
+        MDI_Send(masses, natom, MDI_DOUBLE, self.comm)
         return masses
 
     # Respond to the <ELEMENTS command
@@ -209,7 +213,7 @@ class MDIEngine():
         """
         force_matrix = psi4.driver.gradient(self.scf_method, molecule=self.molecule)
         forces = force_matrix.np.ravel()
-        MDI_Send(forces, len(forces), MDI_DOUBLE_NUMPY, self.comm)
+        MDI_Send(forces, len(forces), MDI_DOUBLE, self.comm)
         return forces
 
     # Respond to the >CHARGES command
@@ -338,31 +342,6 @@ class MDIEngine():
         dimensions = [1, 1, 1]
         MDI_Send(dimensions, 3, MDI_INT, self.comm)
         return dimensions
-
-    # Respond to the <NCOMMANDS command
-    def send_ncommands(self):
-        """ Send the number of supported MDI commands through MDI
-
-        :returns: *ncommands* Number of supported commands
-        """
-        ncommands = len(self.commands)
-        MDI_Send(ncommands, 1, MDI_INT, self.comm)
-        return ncommands
-
-    # Respond to the <COMMANDS command
-    def send_commands(self):
-        """ Send the supported MDI commands through MDI
-
-        :returns: *command_string* String containing the name of each supported command
-        """
-        command_string = "".join([f"{c:{MDI_COMMAND_LENGTH}}" for c in self.commands.keys()])
-
-        # confirm that command_string is the correct length
-        if len(command_string) != len(self.commands) * MDI_COMMAND_LENGTH:
-            raise Exception('Programming error: MDI command_string is incorrect length')
-
-        MDI_Send(command_string, len(command_string), MDI_CHAR, self.comm)
-        return command_string
 
     # Respond to the <TOTCHARGE command
     def send_total_charge(self):
