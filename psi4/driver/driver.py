@@ -910,14 +910,7 @@ def optimize_geometric(name, **kwargs):
             "maxiter": core.get_global_option("GEOM_MAXITER"),
             "coordsys": "tric",
             "enforce": 0.1,
-            "constraints": {
-                #"set": [
-                #    {"type": "distance",
-                #     "indices": [0, 1],
-                #     "value": 1
-                #    },
-                #]
-            },
+            "constraints": {},
             "program": "psi4",
         },
         "input_specification": {
@@ -978,9 +971,9 @@ def optimize_geometric(name, **kwargs):
     # IC.printConstraints(coords, thre=-1)
     optimizer.calcEnergyForce()
     optimizer.prepareFirstStep()
-    rms_grad, max_grad = optimizer.calcGradNorm()
-    rms_gconv = '*' if rms_grad < params.Convergence_grms else ' '
-    max_gconv = '*' if max_grad < params.Convergence_gmax else ' '
+    grms, gmax = optimizer.calcGradNorm()
+    conv_gmax = '*' if gmax < params.Convergence_gmax else ' '
+    conv_grms = '*' if grms < params.Convergence_grms else ' '
     core.print_out('\n')
     core.print_out("\n  ==> geomeTRIC Optimizer <==\n")
     core.print_out("\n  Measures of convergence in internal coordinates in au.")
@@ -993,8 +986,8 @@ def optimize_geometric(name, **kwargs):
                     f"{params.Convergence_dmax:10.2e}    {params.Convergence_drms:10.2e}"))
     core.print_out("\n  ---------------------------------------------------------------------------------------------")
 
-    core.print_out((f"\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}    --------    "
-                    f"{max_grad:10.2e} *  {rms_grad:10.2e} *    -------- *    -------- *"))
+    core.print_out((f"\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}    -------- *  "
+                    f"{gmax:10.2e} {conv_gmax}  {grms:10.2e} {conv_grms}    -------- *    -------- *"))
     while True:
         if optimizer.state in [geometric.optimize.OPT_STATE.CONVERGED, geometric.optimize.OPT_STATE.FAILED]:
             core.print_out("\n\n  Optmization converged!\n")
@@ -1002,16 +995,16 @@ def optimize_geometric(name, **kwargs):
         optimizer.step()
         optimizer.calcEnergyForce()
         optimizer.evaluateStep()
-        rms_grad, max_grad = optimizer.calcGradNorm()
-        rms_disp, max_disp = geometric.optimize.calc_drms_dmax(optimizer.X, optimizer.Xprev)
-        energy_conv = '*' if np.abs(optimizer.E - optimizer.Eprev) < params.Convergence_energy else ' '
-        rms_g_conv = '*' if rms_grad < params.Convergence_grms else ' '
-        max_g_conv = '*' if max_grad < params.Convergence_gmax else ' '
-        rms_d_conv = '*' if rms_disp < params.Convergence_drms else ' '
-        max_d_conv = '*' if max_disp < params.Convergence_dmax else ' '
+        grms, gmax = optimizer.calcGradNorm()
+        drms, dmax = geometric.optimize.calc_drms_dmax(optimizer.X, optimizer.Xprev)
+        conv_energy = '*' if np.abs(optimizer.E - optimizer.Eprev) < params.Convergence_energy else ' '
+        conv_gmax = '*' if gmax < params.Convergence_gmax else ' '
+        conv_grms = '*' if grms < params.Convergence_grms else ' '
+        conv_dmax = '*' if dmax < params.Convergence_dmax else ' '
+        conv_drms = '*' if drms < params.Convergence_drms else ' '
         core.print_out((f'\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}  '
-                        f'{optimizer.E-optimizer.Eprev:10.2e} {energy_conv}  {max_grad:10.2e} {max_g_conv}  '
-                        f'{rms_grad:10.2e} {rms_g_conv}  {max_disp:10.2e} {max_d_conv}  {rms_disp:10.2e} {rms_d_conv}'))
+                        f'{optimizer.E-optimizer.Eprev:10.2e} {conv_energy}  {gmax:10.2e} {conv_gmax}  '
+                        f'{grms:10.2e} {conv_grms}  {dmax:10.2e} {conv_dmax}  {drms:10.2e} {conv_drms}'))
 
     return_energy = optimizer.E
     opt_geometry = core.Matrix.from_array(optimizer.X.reshape(-1,3))
@@ -1022,7 +1015,8 @@ def optimize_geometric(name, **kwargs):
 
     # run gradient at optimized geometry to get a wfn
     if kwargs.get('return_wfn', False):
-        return gradient(name, **kwargs)
+        g, wfn = gradient(name, **kwargs)
+        return return_energy, wfn
     # should we always run gradient to fill in qcvars?
     else:
         return return_energy
