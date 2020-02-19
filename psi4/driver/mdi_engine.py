@@ -36,7 +36,7 @@ import qcelemental as qcel
 
 from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
 from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command
-from MDI_Library.mdi import MDI_INT, MDI_DOUBLE, MDI_CHAR, MDI_COMMAND_LENGTH
+from MDI_Library.mdi import MDI_INT, MDI_DOUBLE
 from MDI_Library.mdi import MDI_Register_Node, MDI_Register_Command
 
 try:
