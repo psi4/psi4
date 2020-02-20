@@ -880,7 +880,6 @@ def optimize_geometric(name, **kwargs):
     import qcelemental as qcel
     import geometric
 
-    # TODO: account for basis being in name, and/or composite methods (might wait until DD)
     if '/' in name:
         raise ValidationError(f'Composite methods like {name} are not yet supported with geomeTRIC')
                                  
@@ -900,10 +899,6 @@ def optimize_geometric(name, **kwargs):
         molecule.fix_com(True)
     molecule.update_geometry()
 
-    # TODO: allow constrained optimization
-    # TODO: handle users setting individual convergence criteria
-    # TODO: geomeTRIC specific options (like enforce) in Psi4 options?
-    # TODO: double check difference between get_global and get_local
     input_data = {
         "keywords": {
             "convergence_set": core.get_global_option("G_CONVERGENCE"),
@@ -1017,7 +1012,6 @@ def optimize_geometric(name, **kwargs):
     if kwargs.get('return_wfn', False):
         g, wfn = gradient(name, **kwargs)
         return return_energy, wfn
-    # should we always run gradient to fill in qcvars?
     else:
         return return_energy
 
@@ -1172,7 +1166,7 @@ def optimize(name, **kwargs):
     engine = kwargs.pop('engine', 'optking')
     if engine == 'geometric':
         return optimize_geometric(name, **kwargs)
-    elif engine is not 'optking':
+    elif engine != 'optking':
         raise ValidationError(f"Optimizer {engine} is not supported.")
 
     if hasattr(name, '__call__'):

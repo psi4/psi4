@@ -254,6 +254,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_dertype.py
               ../tests/pytests/test_mp2.py
               ../tests/pytests/test_qcng_dftd3_mp2d.py
+              ../tests/pytests/test_geometric.py
               ../tests/pytests/test_mp2d.py
               ../tests/pytests/test_testing.py
               ../tests/pytests/test_mints.py
