@@ -874,6 +874,10 @@ void DFHelper::StreamStruct::close_stream() {
     fclose(fp_);
 }
 
+void DFHelper::StreamStruct::flush_stream() {
+    fflush(fp_);
+}
+
 void DFHelper::put_tensor(std::string file, double* b, std::pair<size_t, size_t> i0, std::pair<size_t, size_t> i1,
                           std::pair<size_t, size_t> i2, std::string op) {
     // collapse to 2D, assume file has form (i1 | i2 i3)
@@ -3372,6 +3376,13 @@ void DFHelper::compute_wK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         }
         bcount += block_size;
     }
+}
+
+void DFHelper::flush_tensor(std::string name) {
+
+    FILE* fp = stream_check(name, "wb");
+    fflush(fp);
+    
 }
 
 }  // End namespaces

@@ -37,6 +37,9 @@ from psi4.driver import psifiles as psif
 
 from .sapt_util import print_sapt_var
 
+def _symmetrize(mat):
+    tmp = 0.5 * (mat + mat.transpose())
+    return tmp
 
 def _compute_fxc(PQrho, half_Saux, halfp_Saux, x_alpha, rho_thresh=1.e-8):
     """
@@ -101,6 +104,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache, is_hybrid)
 
+    matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' 
+    arQ_test = fdds_obj.get_tensor_pqQ("arQ", (5, 50, 167)).to_array().flatten()
+    np.savetxt(matdir + "arQ_test.dat", arQ_test)
+
     # Aux Densities
     D = fdds_obj.project_densities([cache["D_A"], cache["D_B"]])
 
@@ -114,28 +121,23 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
     # Builds potentials
     W_A = fdds_obj.metric().clone()
     W_A.axpy(1.0, _compute_fxc(D[0], half_Saux, halfp_Saux, x_alpha, rho_thresh=rho_thresh))
+    W_A = W_A.to_array()
 
     W_B = fdds_obj.metric().clone()
     W_B.axpy(1.0, _compute_fxc(D[1], half_Saux, halfp_Saux, x_alpha, rho_thresh=rho_thresh))
+    W_B = W_B.to_array()
 
     # Nuke the densities
     del D
 
-    metric = fdds_obj.metric().clone()
-    metric_inv = fdds_obj.metric_inv().clone()
-
-    # Debug
-    # matdir = '/theoryfs2/ds/xie/Projects/hybrid_DFT_SAPT/hybridxy/'
-    # np.savetxt(matdir + 'W.dat', W_A.to_array().flatten())        
-    # np.savetxt(matdir + 'S.dat', metric.to_array().flatten())        
-    # np.savetxt(matdir + 'Sinv.dat', metric_inv.to_array().flatten())        
+    metric = fdds_obj.metric().clone().to_array()
+    metric_inv = fdds_obj.metric_inv().clone().to_array()
 
     # Integrate
     core.print_out("\n   => Time Integration <= \n\n")
 
     val_pack = ("Omega", "Weight", "Disp20,u", "Disp20", "time [s]")
     core.print_out("% 12s % 12s % 14s % 14s % 10s\n" % val_pack)
-    # print("% 12s % 12s % 14s % 14s % 10s" % val_pack)
     start_time = time.time()
 
     total_uc = 0
@@ -144,11 +146,24 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     # Read R
     if is_hybrid:
-        R_A = fdds_obj.R_A();
-        R_B = fdds_obj.R_B();
+        R_A = fdds_obj.R_A().to_array()
+        R_B = fdds_obj.R_B().to_array()
+        Rtinv_A = np.linalg.pinv(R_A, rcond=1.e-13).transpose()
+        Rtinv_B = np.linalg.pinv(R_B, rcond=1.e-13).transpose()
 
     # Debug
     omega_count = 0
+    matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' 
+    # np.savetxt(matdir + 'Sinv.dat', metric_inv.flatten())
+    # np.savetxt(matdir + 'W_A.dat', W_A.flatten())
+    # np.savetxt(matdir + 'W_B.dat', W_B.flatten())
+    # np.savetxt(matdir + 'R_A.dat', R_A.flatten())
+    # np.savetxt(matdir + 'R_B.dat', R_B.flatten())
+    # np.savetxt(matdir + 'Rtinv_A.dat', Rtinv_A.flatten())
+    # np.savetxt(matdir + 'Rtinv_B.dat', Rtinv_B.flatten())
+    # np.savetxt(matdir + 'D_A.dat', D[0].to_array().flatten())
+    # np.savetxt(matdir + 'D_B.dat', D[1].to_array().flatten())
+
 
     for point, weight in zip(*np.polynomial.legendre.leggauss(leg_points)):
 
@@ -157,95 +172,101 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
         # Monomer A
         if is_hybrid:
-            [X_A, K1LD, K2LD, K2L, K21L] = fdds_obj.form_aux_matrices("A", omega)
-            X_A_uc = X_A.clone()
-            X_A.axpy(-1.0 * x_alpha, K2L)
+            aux_list = fdds_obj.form_aux_matrices("A", omega)
+            aux_length = len(aux_list)
+            for i in range(aux_length):
+                aux_list[i] = aux_list[i].to_array()
+            X_A_uc = aux_list[0].copy() 
+            X_A = X_A_uc - x_alpha * aux_list[3]
 
             # K matrices
-            K_A = K1LD.clone()
-            K_A.scale(-1.0 * x_alpha)
-            K_A.axpy(-1.0 * x_alpha, K2LD)
-            K_A.axpy(x_alpha * x_alpha, K21L)
+            K_A = - x_alpha * aux_list[1] - x_alpha * aux_list[2] + x_alpha * x_alpha * aux_list[4] 
+            KRS_A = K_A.dot(Rtinv_A).dot(metric)
         else:
             X_A = fdds_obj.form_unc_amplitude("A", omega)
             X_A.scale(-1.0)
-            X_A_uc = X_A.clone()
+            X_A = X_A.to_array()
+            X_A_uc = X_A.copy()
 
         # Coupled A
-        X_A_coupled = X_A.clone()
-        XSW_A = core.triplet(X_A, metric_inv, W_A, False, False, False)
+        XSW_A = X_A.dot(metric_inv).dot(W_A)
         if is_hybrid:
-            XSW_A.axpy(0.25, core.triplet(K_A, R_A, metric, False, False, False))
+            XSW_A += 0.25 * KRS_A
 
-        amplitude_inv = metric.clone()
-        amplitude_inv.axpy(-1.0, XSW_A)
-        amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        # amplitude.transpose_this()
-        tmp = core.triplet(XSW_A, amplitude, X_A, False, False, False)
-        X_A_coupled.axpy(1.0, core.triplet(XSW_A, amplitude, X_A, False, False, False))
+        amplitude = np.linalg.pinv(metric - XSW_A, rcond=1.e-13)
+        X_A_coupled = X_A + XSW_A.dot(amplitude).dot(X_A)
 
         # Debug
-        # matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' + str(omega_count) + '/'
-        # np.savetxt(matdir + 'XSWA_c.dat', XSW_A.to_array().flatten())        
-        # np.savetxt(matdir + 'amp_c.dat', amplitude.to_array().flatten())        
-        # np.savetxt(matdir + 'ampi_c.dat', amplitude_inv.to_array().flatten())        
-        # np.savetxt(matdir + 'XA0_c.dat', X_A.to_array().flatten())        
-        # np.savetxt(matdir + 'tmp_c.dat', tmp.to_array().flatten())        
-        # omega_count += 1
+        matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' + str(omega_count) + '/'
+        for i in range(aux_length):
+            np.savetxt(matdir + 'aux_' + str(i) + '.dat', aux_list[i].flatten())
+        # np.savetxt(matdir + 'X_A.dat', X_A.flatten())        
+        # np.savetxt(matdir + 'XSW0_A.dat', XSW_0.flatten())        
+        # np.savetxt(matdir + 'XSW_A.dat', XSW_A.flatten())        
+        # np.savetxt(matdir + 'K_A.dat', K_A.flatten())        
+        # np.savetxt(matdir + 'KRS_A.dat', KRS_A.flatten())
+        # np.savetxt(matdir + 'amp.dat', amplitude.flatten())
+        # np.savetxt(matdir + 'Xcoup_A.dat', X_A_coupled.flatten())
+        omega_out = [omega]
+        np.savetxt(matdir + 'omega.dat', omega_out)
+        omega_count += 1
 
-        del XSW_A, amplitude
+        del X_A, XSW_A, amplitude
         if is_hybrid:
-            del K_A
+            del K_A, KRS_A, aux_list
 
         # Monomer B
         if is_hybrid:
-            [X_B, K1LD, K2LD, K2L, K21L] = fdds_obj.form_aux_matrices("B", omega)
-            X_B_uc = X_B.clone()
-            X_B.axpy(-1.0 * x_alpha, K2L)
-            
+            aux_list = fdds_obj.form_aux_matrices("B", omega)
+            for i in range(5):
+                aux_list[i] = aux_list[i].to_array()
+            X_B_uc = aux_list[0].copy()
+            X_B = X_B_uc - x_alpha * aux_list[3]
+
             # K matrices
-            K_B = K1LD.clone()
-            K_B.scale(-1.0 * x_alpha)
-            K_B.axpy(-1.0 * x_alpha, K2LD)
-            K_B.axpy(x_alpha * x_alpha, K21L)
+            K_B = - x_alpha * aux_list[1] - x_alpha * aux_list[2] + x_alpha * x_alpha * aux_list[4] 
+            KRS_B = K_B.dot(Rtinv_B).dot(metric)
         else:
             X_B = fdds_obj.form_unc_amplitude("B", omega)
             X_B.scale(-1.0)
-            X_B_uc = X_B.clone()
+            X_B = X_B.to_array()
+            X_B_uc = X_B.copy()
 
         # Coupled B
-        X_B_coupled = X_B.clone()
-        XSW_B = core.triplet(X_B, metric_inv, W_B, False, False, False)
+        XSW_B = X_B.dot(metric_inv).dot(W_B)
         if is_hybrid:
-            XSW_B.axpy(0.25, core.triplet(K_B, R_B, metric, False, False, False))
+            XSW_B += 0.25 * KRS_B
 
-        amplitude_inv = metric.clone()
-        amplitude_inv.axpy(-1.0, XSW_B)
-        amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        # amplitude.transpose_this()
-        X_B_coupled.axpy(1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))
+        amplitude = np.linalg.pinv(metric - XSW_B, rcond=1.e-13)
+        X_B_coupled = X_B + XSW_B.dot(amplitude).dot(X_B)
 
         # Debug
-        # np.savetxt(matdir + 'XB_c.dat', X_B_coupled.to_array().flatten())        
-        omega_count += 1
+        # np.savetxt(matdir + 'X_B.dat', X_B.flatten())        
+        # np.savetxt(matdir + 'XSW0_B.dat', XSW_0.flatten())        
+        # np.savetxt(matdir + 'XSW_B.dat', XSW_B.flatten())        
+        # np.savetxt(matdir + 'K_B.dat', K_B.flatten())        
+        # np.savetxt(matdir + 'KRS_B.dat', KRS_B.flatten())        
+        # np.savetxt(matdir + 'Xcoup_B.dat', X_B_coupled.flatten())
+        # omega_count += 1
 
-        del XSW_B, amplitude
+        del X_B, XSW_B, amplitude
         if is_hybrid:
-            del K_B
+            del K_B, KRS_B, aux_list
+
 
         # Make sure the results are symmetrized
-        for tensor in [X_A_uc, X_B_uc, X_A_coupled, X_B_coupled]:
-            tensor.add(tensor.transpose())
-            tensor.scale(0.5)
+        X_A_uc = _symmetrize(X_A_uc)
+        X_B_uc = _symmetrize(X_B_uc)
+        X_A_coupled = _symmetrize(X_A_coupled)
+        X_B_coupled = _symmetrize(X_B_coupled)
 
         # Combine
-        tmp_uc = core.triplet(metric_inv, X_A_uc, metric_inv, False, False, False)
-        value_uc = tmp_uc.vector_dot(X_B_uc)
+        tmp_uc = metric_inv.dot(X_A_uc).dot(metric_inv)
+        value_uc = np.dot(tmp_uc.flatten(), X_B_uc.flatten())
         del tmp_uc
 
-        tmp_c = core.triplet(metric_inv, X_A_coupled, metric_inv, False, False, False)
-        value_c = tmp_c.vector_dot(X_B_coupled)
-        del tmp_c
+        tmp_c = metric_inv.dot(X_A_coupled).dot(metric_inv)
+        value_c = np.dot(tmp_c.flatten(), X_B_coupled.flatten())
 
         # Tally
         total_uc += value_uc * weight * lambda_scale
@@ -258,7 +279,6 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
             val_pack = (omega, weight, tmp_disp_unc, tmp_disp, fdds_time)
             core.print_out("% 12.3e % 12.3e % 14.3e % 14.3e %10d\n" % val_pack)
-            # print("% 12.3e % 12.3e % 14.3e % 14.3e %10d" % val_pack)
 
     Disp20_uc = -1.0 / (2.0 * np.pi) * total_uc
     Disp20_c = -1.0 / (2.0 * np.pi) * total_c

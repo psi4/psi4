@@ -305,6 +305,10 @@ class PSI_API DFHelper {
                   std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, std::vector<SharedMatrix> wK,
                   size_t max_nocc, bool do_J, bool do_K, bool do_wK, bool lr_symmetric);
 
+
+    /// flush tensor file
+    void flush_tensor(std::string name);
+
    protected:
     // => basis sets <=
     std::shared_ptr<BasisSet> primary_;
@@ -452,6 +456,7 @@ class PSI_API DFHelper {
         FILE* get_stream(std::string op);
         void change_stream(std::string op);
         void close_stream();
+        void flush_stream();
 
         FILE* fp_;
         std::string op_;
