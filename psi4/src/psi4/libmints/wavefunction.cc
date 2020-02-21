@@ -67,6 +67,7 @@
 #include <brian_common.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern brianInt brianRestrictionType;
 #endif
 
 using namespace psi;
@@ -664,20 +665,19 @@ void Wavefunction::common_init() {
         brianCOMSetBasis(&brianCookie, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data(), &basisSetNameID);
         checkBrian();
         
-        brianInt restrictionType;
         if (options_.get_str("REFERENCE") == "RHF" or options_.get_str("REFERENCE") == "RKS") {
-            restrictionType = BRIAN_RESTRICTION_TYPE_RHF;
+            brianRestrictionType = BRIAN_RESTRICTION_TYPE_RHF;
         }
         else if (options_.get_str("REFERENCE") == "UHF" or options_.get_str("REFERENCE") == "UKS" or options_.get_str("REFERENCE") == "CUHF") {
             // CUHF is different from UHF, but Fock building works the same, so for the time being we just set BrianQC to UHF
-            restrictionType = BRIAN_RESTRICTION_TYPE_UHF;
+            brianRestrictionType = BRIAN_RESTRICTION_TYPE_UHF;
         }
         // BrianQC computes ROHF in a way that is completely incompatible with Psi4, so ROHF is disabled for the time being
         else {
             throw PSIEXCEPTION("Currently, BrianQC can only handle RHF, RKS, UHF, UKS and CUHF calculations");
         }
         
-        brianCOMSetRestriction(&brianCookie, &restrictionType);
+        brianCOMSetRestriction(&brianCookie, &brianRestrictionType);
         checkBrian();
         
         brianCOMInitIntegrator(&brianCookie);

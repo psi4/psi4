@@ -76,6 +76,7 @@ using namespace pybind11::literals;
 #include <brian_macros.h>
 
 BrianCookie brianCookie = 0;
+brianInt brianRestrictionType = 0;
 bool brianCPHFFlag = false;
 
 void checkBrian() {
