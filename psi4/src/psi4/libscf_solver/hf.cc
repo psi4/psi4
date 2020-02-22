@@ -710,9 +710,9 @@ void HF::form_Shalf() {
     double lindep_tolerance = options_.get_double("S_TOLERANCE");
     double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
 
-    // Compute <r^2> for Cholesky
+    // Compute <r^2> for Cholesky (may be also triggered by auto mode)
     SharedVector rsq;
-    if (method == BasisSetOrthogonalization::PartialCholesky) {
+    if (method == BasisSetOrthogonalization::Automatic || method == BasisSetOrthogonalization::PartialCholesky) {
         // Integral factory
         IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
         auto quad = (QuadrupoleInt*)integral.ao_quadrupole();
