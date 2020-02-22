@@ -247,6 +247,18 @@ std::vector<std::vector<int>> BasisSetOrthogonalization::sort_indices() const {
 void BasisSetOrthogonalization::compute_partial_cholesky_orthog() {
     // Original dimensions
     const Dimension& nbf = normalized_overlap_->rowspi();
+    // Make sure we got passed the right size data
+    if (rsq_->nirrep() != normalized_overlap_->nirrep()) {
+        throw PSIEXCEPTION("BasisSetOrthogonalization::compute_partial_cholesky_orthog: incorrect size of rsq vector.");
+    }
+    for (int h = 0; h < rsq_->nirrep(); h++) {
+        if (rsq_->dim(h) != normalized_overlap_->rowspi(h)) {
+            std::ostringstream oss;
+            oss << "BasisSetOrthogonalization::compute_partial_cholesky_orthog: incorrect size of symmetry " << h
+                << " of rsq vector.";
+            throw PSIEXCEPTION(oss.str());
+        }
+    }
 
     // Order basis functions from tight to diffuse
     std::vector<std::vector<int>> order = sort_indices();
