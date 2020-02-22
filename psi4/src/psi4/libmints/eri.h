@@ -197,9 +197,9 @@ class ErfComplementERI : public TwoElectronInt {
 
 class GiaoERI : public TwoElectronInt {
    public:
-    // may need to increase deriv values
     GiaoERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false, int increment = 0);
     ~GiaoERI() override;
+    void prepare_pure_transform(int M, int N, int P, int Q, double *, double *);
 };
 
 }  // namespace psi

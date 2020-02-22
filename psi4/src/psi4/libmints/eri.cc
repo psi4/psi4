@@ -29,6 +29,7 @@
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/twobody.h"
 #include "psi4/libmints/fjt.h"
 ;
 using namespace psi;
@@ -152,3 +153,17 @@ GiaoERI::GiaoERI(const IntegralFactory *integral, int deriv, bool use_shell_pair
 }
 
 GiaoERI::~GiaoERI() { delete fjt_; }
+
+void GiaoERI::prepare_pure_transform(int M, int N, int P, int Q, double * source, double * target){
+ double *osource, *otarget;
+ osource = source_;
+ otarget = target_;
+
+ source_ = source;
+ target_ = target;
+
+ pure_transform(M, N, P, Q, 1);
+
+ source_ = osource;
+ target_ = otarget;
+}

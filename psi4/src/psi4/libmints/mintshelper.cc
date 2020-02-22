@@ -46,6 +46,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "electricfield.h"
+#include "eri.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -3324,6 +3325,7 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
 
     // 0, true, 1 ==> deriv, use_shell_pairs, increment
     std::shared_ptr<TwoBodyAOInt> ints(integral_->giao_eri_deriv(0,true,1));
+    std::shared_ptr<GiaoERI> giao = std::dynamic_pointer_cast<GiaoERI> (ints);
     // only cartesian, no transformation to spherical harmonics basis
     ints->set_force_cartesian(true);
     
@@ -3355,6 +3357,9 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
     double* dgdBx_buf = new double[max_cart_size];
     double* dgdBy_buf = new double[max_cart_size];
     double* dgdBz_buf = new double[max_cart_size];
+    double* dgdBx_buf_sorted = new double[max_cart_size];
+    double* dgdBy_buf_sorted = new double[max_cart_size];
+    double* dgdBz_buf_sorted = new double[max_cart_size];
 
 
     const std::vector<int> AM_increments_abcd {0, 0, 0, 0};
@@ -3443,7 +3448,7 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                    
 
                     if (AB2 != 0) {
-                       /// (a+1b|cd) integrals (ab|c+1d)
+                       /// (a+1b|cd) integrals 
                        ints->compute_shell(M, N, P, Q, AM_increments_ap1bcd);
                        const double *buffer = ints->buffer();
 
@@ -3540,6 +3545,10 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                          }
                        }      
                     }
+
+                    giao->prepare_pure_transform(M, N, P, Q, dgdBx_buf, dgdBx_buf_sorted); 
+                    giao->prepare_pure_transform(M, N, P, Q, dgdBy_buf, dgdBy_buf_sorted);
+                    giao->prepare_pure_transform(M, N, P, Q, dgdBz_buf, dgdBz_buf_sorted);
         
                     for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
                         for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
@@ -3547,9 +3556,9 @@ std::vector<SharedMatrix> MintsHelper::giao_tei_deriv1() {
                                 for (int q = 0; q < bs4->shell(Q).nfunction(); q++, index++) {
                                     int mn = (bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n;          
                                     int pq = (bs3->shell(P).function_index() + p) * nbf4 + bs4->shell(Q).function_index() + q;          
-                                    ptrx[mn][pq] =  dgdBx_buf[index]; 
-                                    ptry[mn][pq] =  dgdBy_buf[index]; 
-                                    ptrz[mn][pq] =  dgdBz_buf[index]; 
+                                    ptrx[mn][pq] =  dgdBx_buf_sorted[index]; 
+                                    ptry[mn][pq] =  dgdBy_buf_sorted[index]; 
+                                    ptrz[mn][pq] =  dgdBz_buf_sorted[index]; 
                                 }
                             }
                         }
