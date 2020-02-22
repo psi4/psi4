@@ -2033,7 +2033,6 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
     }
     // Switch to the properly sized matrix
     *this = *L;
-    print();
 }
 
 SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative) {
