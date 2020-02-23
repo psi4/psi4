@@ -23,9 +23,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sunday, 23 February 2020 11:57PM
+    Psi4 started on: Monday, 24 February 2020 12:22AM
 
-    Process ID: 1032012
+    Process ID: 1053589
     Host:       dx7-lehtola.chem.helsinki.fi
     PSIDATADIR: /home/work/psi4/install.susi/share/psi4
     Memory:     500.0 MiB
@@ -34,6 +34,9 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+# Reference HF energy
+reference_energy = -40.2170789282755266
+
 molecule {
 0 1
 C    0.000000000000   0.000000000000   0.000000000000
@@ -431,17 +434,18 @@ G 1 1.0
 ****
 }
 
-energy('hf')
+e_test = energy('hf')
+compare_values(e_test, reference_energy, 8, "HF energy with auto Cholesky")                                        #TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /home/work/scratch//
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Sun Feb 23 23:57:21 2020
+*** at Mon Feb 24 00:22:47 2020
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUSAFCF3CC4
+    Name: ANONYMOUS1FF35BA2
     Role: ORBITAL
     Keyword: BASIS
     atoms 1   entry C          line   151 inputblock complete 
@@ -496,7 +500,7 @@ Scratch directory: /home/work/scratch//
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUSAFCF3CC4
+  Basis Set: ANONYMOUS1FF35BA2
     Blend: COMPLETE
     Number of shells: 404
     Number of basis function: 1540
@@ -506,7 +510,7 @@ Scratch directory: /home/work/scratch//
 
    => Loading Basis Set <=
 
-    Name: (ANONYMOUSAFCF3CC4 AUX)
+    Name: (ANONYMOUS1FF35BA2 AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
     atoms 1   entry C          line   198 file /home/work/psi4/install.susi/share/psi4/basis/def2-universal-jkfit.gbs 
@@ -542,7 +546,7 @@ Scratch directory: /home/work/scratch//
 
    => Auxiliary Basis Set <=
 
-  Basis Set: (ANONYMOUSAFCF3CC4 AUX)
+  Basis Set: (ANONYMOUS1FF35BA2 AUX)
     Blend: DEF2-UNIVERSAL-JKFIT
     Number of shells: 49
     Number of basis function: 147
@@ -570,13 +574,13 @@ Scratch directory: /home/work/scratch//
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -39.63383294704467   -3.96338e+01   0.00000e+00 
-   @DF-RHF iter   1:   -40.14005292260128   -5.06220e-01   5.62745e-04 DIIS
-   @DF-RHF iter   2:   -40.20466886775569   -6.46159e-02   2.35221e-04 DIIS
-   @DF-RHF iter   3:   -40.21630982275513   -1.16410e-02   3.63632e-05 DIIS
-   @DF-RHF iter   4:   -40.21706792121926   -7.58098e-04   4.48425e-06 DIIS
-   @DF-RHF iter   5:   -40.21707882046694   -1.08992e-05   4.31008e-07 DIIS
-   @DF-RHF iter   6:   -40.21707892827553   -1.07809e-07   3.85781e-08 DIIS
+   @DF-RHF iter SAD:   -39.63383294719504   -3.96338e+01   0.00000e+00 
+   @DF-RHF iter   1:   -40.14005292261817   -5.06220e-01   5.62745e-04 DIIS
+   @DF-RHF iter   2:   -40.20466886770244   -6.46159e-02   2.35221e-04 DIIS
+   @DF-RHF iter   3:   -40.21630982276879   -1.16410e-02   3.63632e-05 DIIS
+   @DF-RHF iter   4:   -40.21706792122037   -7.58098e-04   4.48425e-06 DIIS
+   @DF-RHF iter   5:   -40.21707882046714   -1.08992e-05   4.31008e-07 DIIS
+   @DF-RHF iter   6:   -40.21707892827531   -1.07808e-07   3.85784e-08 DIIS
   Energy and wave function converged.
 
 
@@ -1011,7 +1015,7 @@ Scratch directory: /home/work/scratch//
      427A1  57160.876641   428A1  88556.662635   309B1  88556.681542  
      308B2  88556.707573   429A1  88556.787321   430A1  110519.622660  
      431A1  177662.296690   310B1  177662.315129   309B2  177662.340532  
-     432A1  177662.418277   433A1  213575.988752   434A1  377351.715567  
+     432A1  177662.418277   433A1  213575.988753   434A1  377351.715567  
      311B1  377351.733504   310B2  377351.758225   435A1  377351.833841  
      436A1  412826.053498   437A1  799071.317902   438A1  1552501.474077  
      439A1  3042189.492136   440A1  6085369.585514   441A1  12886998.492619  
@@ -1020,14 +1024,14 @@ Scratch directory: /home/work/scratch//
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RHF Final Energy:   -40.21707892827553
+  @DF-RHF Final Energy:   -40.21707892827531
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             13.4720345810174766
-    One-Electron Energy =                 -79.8091155449764500
-    Two-Electron Energy =                  26.1200020356834450
-    Total Energy =                        -40.2170789282755266
+    One-Electron Energy =                 -79.8091155458470496
+    Two-Electron Energy =                  26.1200020365542507
+    Total Energy =                        -40.2170789282753134
 
 Computation Completed
 
@@ -1049,17 +1053,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sun Feb 23 23:57:46 2020
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Mon Feb 24 00:23:12 2020
 Module time:
-	user time   =      62.41 seconds =       1.04 minutes
-	system time =       4.26 seconds =       0.07 minutes
+	user time   =      62.20 seconds =       1.04 minutes
+	system time =       4.17 seconds =       0.07 minutes
 	total time  =         25 seconds =       0.42 minutes
 Total time:
-	user time   =      62.41 seconds =       1.04 minutes
-	system time =       4.26 seconds =       0.07 minutes
+	user time   =      62.20 seconds =       1.04 minutes
+	system time =       4.17 seconds =       0.07 minutes
 	total time  =         25 seconds =       0.42 minutes
+    HF energy with auto Cholesky......................................PASSED
 
-    Psi4 stopped on: Sunday, 23 February 2020 11:57PM
-    Psi4 wall time for execution: 0:00:24.96
+    Psi4 stopped on: Monday, 24 February 2020 12:23AM
+    Psi4 wall time for execution: 0:00:24.92
 
 *** Psi4 exiting successfully. Buy a developer a beer!

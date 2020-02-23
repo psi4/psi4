@@ -1,3 +1,6 @@
+# Reference HF energy
+reference_energy = -40.2170789282755266
+
 molecule {
 0 1
 C    0.000000000000   0.000000000000   0.000000000000
@@ -395,4 +398,5 @@ G 1 1.0
 ****
 }
 
-energy('hf')
+e_test = energy('hf')
+compare_values(e_test, reference_energy, 8, "HF energy with auto Cholesky")                                        #TEST
