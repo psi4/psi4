@@ -291,10 +291,10 @@ void BasisSetOrthogonalization::compute_partial_cholesky_orthog() {
     Dimension nchol(nbf);
     for (int h = 0; h < normalized_overlap_->nirrep(); h++) {
         nchol[h] = pivots[h].size();
-        if(print_ > 2) outfile->Printf("  Cholesky: irrep %d, %d of %d possible MOs eliminated.\n", h, nbf[h] - nchol[h], nbf[h]);
+        if(print_ > 2) outfile->Printf("  Cholesky: irrep %d, %d of %d possible AOs eliminated.\n", h, nbf[h] - nchol[h], nbf[h]);
     }
     if (nchol.sum() != nbf.sum() && print_)
-        outfile->Printf("  Cholesky: overall, %d of %d possible MOs eliminated.\n\n", nbf.sum() - nchol.sum(),
+        outfile->Printf("  Cholesky: overall, %d of %d possible AOs eliminated.\n\n", nbf.sum() - nchol.sum(),
                         nbf.sum());
 
     // Copy over data
