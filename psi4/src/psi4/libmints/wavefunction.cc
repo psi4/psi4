@@ -660,9 +660,11 @@ void Wavefunction::common_init() {
             }
         }
         
+        brianInt basisRole = BRIAN_BASIS_ROLE_ORBITAL;
+        
         // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and map it to the macro value
-        brianInt basisSetNameID = BRIAN_BASIS_SET_NAME_CUSTOM_BASIS_SET;
-        brianCOMSetBasis(&brianCookie, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data(), &basisSetNameID);
+        brianInt basisSetID = BRIAN_BASIS_SET_CUSTOM;
+        brianCOMSetBasis(&brianCookie, &basisRole, &basisSetID, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data());
         checkBrian();
         
         if (options_.get_str("REFERENCE") == "RHF" or options_.get_str("REFERENCE") == "RKS") {
