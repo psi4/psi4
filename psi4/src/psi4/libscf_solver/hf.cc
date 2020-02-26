@@ -1223,19 +1223,19 @@ std::shared_ptr<Vector> HF::occupation_b() const {
 void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm) {
 #ifdef USING_BrianQC
     if (brianCookie != 0) {
+        brianInt basisSize = basisset_->nbf();
         brianInt basisRank = X_->coldim(0);
         
         // BrianQC needs the matrices in a column-major memory layout,
         // so we construct a temporary transposed version of the X matrix,
-        // and transpose the shape of C, so that we can transpose back after BrianQC filled it
+        // and allocate a transposed C matrix for BrianQC to fill
         std::shared_ptr<Matrix> orthonormalizationMatrix = X_->transpose();
-        Cm->transpose_this();
+        std::shared_ptr<Matrix> C = std::make_shared<Matrix>(basisRank, basisSize);
         
-        std::vector<double> buffer(X_->rowdim(0) * X_->coldim(0));
-        brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), orthonormalizationMatrix->get_pointer(0), Cm->get_pointer(0), epsm->pointer(0));
+        brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), orthonormalizationMatrix->get_pointer(0), C->get_pointer(0), epsm->pointer(0));
         checkBrian();
         
-        Cm->transpose_this();
+        Cm->copy(C->transpose());
         
         return;
     }
