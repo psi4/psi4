@@ -1,5 +1,5 @@
-#! CONV SCF 6-31G analytical vs finite-difference tests
-#! Tests UHF hessian code for Ca != Cb
+#! DF SCF 6-31G UHFl vs RHF test
+#! Tests DF UHF hessian code for Ca = Cb
 
 
 rhf_hess = np.array([
