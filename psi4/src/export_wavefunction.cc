@@ -393,6 +393,8 @@ void export_wavefunction(py::module& m) {
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
         .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
         .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
+        .def("opdm_add_inactive", &detci::CIWavefunction::opdm_add_inactive, "docstring",
+	     "opdm"_a, "value"_a, "virt"_a = false)
         .def("ci_nat_orbs", &detci::CIWavefunction::ci_nat_orbs, "docstring")
         .def("semicanonical_orbs", &detci::CIWavefunction::semicanonical_orbs, "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")

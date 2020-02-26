@@ -299,6 +299,9 @@ class CIWavefunction : public Wavefunction {
      */
     SharedMatrix hamiltonian(size_t hsize = 0);
 
+    /// adds the inactive part(s) to OPDM
+    SharedMatrix opdm_add_inactive(SharedMatrix opdm, double value, bool virt = false);
+
    private:
     /// => General Helper Functions <= ///
 
@@ -451,7 +454,6 @@ class CIWavefunction : public Wavefunction {
     /// => Density Matrix helpers <= //
     std::vector<std::vector<SharedMatrix> > opdm(SharedCIVector Ivec, SharedCIVector Jvec,
                                                  std::vector<std::tuple<int, int> > states_vec);
-    SharedMatrix opdm_add_inactive(SharedMatrix opdm, double value, bool virt = false);
     void opdm_block(struct stringwr **alplist, struct stringwr **betlist, double **onepdm_a, double **onepdm_b,
                     double **CJ, double **CI, int Ja_list, int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
                     int Inas, int Inbs);

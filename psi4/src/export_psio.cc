@@ -29,12 +29,18 @@
 #include "psi4/pybind11.h"
 
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/config.h"
 
 using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_psio(py::module &m) {
+    py::class_<psio_address>(m, "psio_address", "docstring")
+        .def(py::init<>())
+        .def_readwrite("page", &psio_address::page, "docstring")
+        .def_readwrite("offset", &psio_address::offset, "docstring");
+	
     py::class_<PSIO, std::shared_ptr<PSIO> >(m, "IO", "docstring")
         .def("state", &PSIO::state, "Return 1 if PSIO library is activated")
         .def("open", &PSIO::open,
@@ -56,6 +62,12 @@ void export_psio(py::module &m) {
         .def("tocscan", &PSIO::tocscan,
              "Seek string in binary file. This export is only good for catching None, as returned success object not "
              "exported.")
+	.def("read", &PSIO::read, "Reads data from within a TOC entry from a PSI file", "unit"_a,
+	     "key"_a, "buffer"_a, "size"_a, "start"_a, "end"_a)
+	.def("write", &PSIO::write, "Writes data to a TOC entry in a PSI file", "unit"_a,
+	     "key"_a, "buffer"_a, "size"_a, "start"_a, "end"_a)
+	.def("read_entry", &PSIO::read_entry, "docstring", "unit"_a, "key"_a, "buffer"_a, "size"_a)
+	.def("write_entry", &PSIO::write_entry, "docstring", "unit"_a, "key"_a, "buffer"_a, "size"_a)
         .def("getpid", &PSIO::getpid, "Lookup process id")
         .def("set_pid", &PSIO::set_pid, "Set process id", "pid"_a)
         .def_static("shared_object", &PSIO::shared_object, "Return the global shared object")
