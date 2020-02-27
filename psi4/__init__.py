@@ -50,6 +50,9 @@ if not os.path.isdir(data_dir):
     raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
                     "      Current value of PSIDATADIR is %s" % data_dir)
 
+if "KMP_AFFINITY" not in os.environ:
+    os.environ["KMP_AFFINITY"] = "compact"
+
 # Init core
 try:
     from . import core
