@@ -32,7 +32,7 @@ jobs:
         C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        API_REPOSITORY: 'http://azure.archive.ubuntu.com/ubuntu bionic/universe amd64 Packages'
+        APT_REPOSITORY: 'http://azure.archive.ubuntu.com/ubuntu bionic/universe amd64 Packages'
         APT_INSTALL: 'gfortran clang libomp-dev'
 
   steps:
