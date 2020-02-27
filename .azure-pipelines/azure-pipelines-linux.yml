@@ -32,8 +32,9 @@ jobs:
         C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_REPOSITORY: 'http://azure.archive.ubuntu.com/ubuntu bionic/universe amd64 Packages'
-        APT_INSTALL: 'gfortran clang libomp-dev'
+        #APT_REPOSITORY: 'http://azure.archive.ubuntu.com/ubuntu bionic/universe amd64 Packages'
+        #APT_INSTALL: 'gfortran clang libomp-dev'
+        APT_INSTALL: 'gfortran clang-6.0'
 
   steps:
   - bash: |
