@@ -55,9 +55,6 @@ class QuadrupoleInt : public OneBodyAOInt {
     ~QuadrupoleInt() override;
 
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
-
-    /// Compute <r^2> for all basis functions
-    std::vector<double> compute_R_squared();
 };
 
 }  // namespace psi

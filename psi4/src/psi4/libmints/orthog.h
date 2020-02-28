@@ -56,8 +56,6 @@ class PSI_API BasisSetOrthogonalization {
     SharedMatrix eigvec_;
     /// and eigenvalues
     SharedVector eigval_;
-    /// Basis function <r^2> values
-    SharedVector rsq_;
 
     /** The tolerance for linearly independent basis functions.
      * The interpretation depends on the orthogonalization
@@ -106,8 +104,8 @@ class PSI_API BasisSetOrthogonalization {
     std::vector<std::vector<int>> sort_indices() const;
 
    public:
-    BasisSetOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap, SharedVector rsq,
-                              double lindep_tolerance, double cholesky_tolerance, int print = 0);
+    BasisSetOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap, double lindep_tolerance,
+                              double cholesky_tolerance, int print = 0);
 
     OrthogonalizationMethod orthog_method() const { return orthog_method_; }
 
