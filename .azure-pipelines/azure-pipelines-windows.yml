@@ -2,9 +2,9 @@ jobs:
 
   # Configure, build, install, and test job
   - job: 'windows_build'
-    displayName: 'Windows VS2015'
+    displayName: 'Windows VS2017'
     pool:
-      vmImage: 'vs2015-win2012r2'
+      vmImage: 'vs2017-win2016'
     timeoutInMinutes: 360
     variables:
       llvm.version: '7.0.1' # Note: LLVM 8.0.0 fails to build the optimized libint

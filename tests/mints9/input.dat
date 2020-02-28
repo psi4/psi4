@@ -199,7 +199,7 @@ except qcdb.BasisSetNotFound:
 compare_integers(1, error_tripped, 'squashed 4z aux for 5z orb')  #TEST
 
 df_basis_scf uggh {
-    assign he DEF2-UNIVERSAL-JKFIT
+    assign he DEF2-QZVPP-JKFIT
 }
 
 print('[15]   <<<  forced JK for cc-pV5Z on HeNe  >>>')
@@ -207,7 +207,7 @@ wert = psi4.core.BasisSet.build(hene, 'DF_BASIS_SCF', '', 'JKFIT', get_global_op
 compare_integers(169, wert.nbf(), 'nbf()')  #TEST
 compare_integers(241, wert.nao(), 'nao()')  #TEST
 compare_strings('UGGH', wert.name(), 'callby')  #TEST
-compare_strings('CC-PV5Z-JKFIT + DEF2-UNIVERSAL-JKFIT', wert.blend(), 'blend')  #TEST
+compare_strings('CC-PV5Z-JKFIT + DEF2-QZVPP-JKFIT', wert.blend(), 'blend')  #TEST
 hene.print_out()
 
 
