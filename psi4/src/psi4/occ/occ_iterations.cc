@@ -172,7 +172,8 @@ void OCCWave::occ_iterations() {
         }  // pcg if
     }      // orb_resp if
 
-    // Construct initial orbital gradient
+    // Construct initial orbital gradient. Assume the necessary intermediates were
+    // constructed earlier. (From the computation with the starting orbitals.)
     response_pdms();
     gfock();
     mograd();
@@ -358,6 +359,8 @@ void OCCWave::occ_iterations() {
         // Handle any needed resorts of amplitudes, after the DIIS.
         if (wfn_type_ == "OCEPA") {
             cepa_chemist();
+        } else if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
+            iterative_mp_postdiis_amplitudes();
         }
 
     } while (true); // TODO: This is a very silly do while loop.

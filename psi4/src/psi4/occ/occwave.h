@@ -129,6 +129,7 @@ class OCCWave : public Wavefunction {
     void omp2_ea_poles();
     void ep2_ip();
     void iterate_t2o1_amplitudes(); // Used by all OMP methods, as all need T2(1)
+    void iterative_mp_postdiis_amplitudes(); // Used by OMP methods higher than OMP2
 
     // OMP3
     void omp3_manager();
