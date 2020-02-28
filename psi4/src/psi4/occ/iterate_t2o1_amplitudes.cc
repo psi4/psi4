@@ -36,9 +36,7 @@
 namespace psi {
 namespace occwave {
 
-void OCCWave::omp2_t2_1st_general() {
-    // outfile->Printf("\n omp2_t2_1st_general is starting... \n");
-
+void OCCWave::iterate_t2o1_amplitudes() {
     //===========================================================================================
     //========================= RHF =============================================================
     //===========================================================================================
@@ -50,16 +48,25 @@ void OCCWave::omp2_t2_1st_general() {
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
+        std::string temp = wfn_type_ == "OMP2" ? "" : "2_1";
+        std::string Told_name = "T" + temp + " <OO|VV>";
+        std::string Tnew_name = "T" + temp + "new <OO|VV>";
+        std::string TAA_name = "T" + temp + "AA <OO|VV>";
+        std::string Tjiab_name = "T" + temp + "jiab <OO|VV>";
+        temp = wfn_type_ == "OMP2" ? "" : "_1";
+        std::string tau_name = "Tau" + temp + " <OO|VV>";
+
         // T_ij^ab = <ij|ab>
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "MO Ints <OO|VV>");
-        global_dpd_->buf4_copy(&K, PSIF_OCC_DPD, "Tnew <OO|VV>");
+        global_dpd_->buf4_copy(&K, PSIF_OCC_DPD, Tnew_name.c_str());
         global_dpd_->buf4_close(&K);
 
         // initialize Tnew and Told
         global_dpd_->buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Tnew <OO|VV>");
-        global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
+                               Tnew_name.c_str());
+        global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                               Told_name.c_str());
 
         // T_ij^ab = \sum_{e} T_ij^ae * F_be + \sum_{e} T_ij^eb * F_ae
         global_dpd_->file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
@@ -79,21 +86,21 @@ void OCCWave::omp2_t2_1st_general() {
         global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "D <OO|VV>");
         global_dpd_->buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Tnew <OO|VV>");
+                               Tnew_name.c_str());
         global_dpd_->buf4_dirprd(&D, &Tnew);
         global_dpd_->buf4_close(&D);
 
         // Build Tau(ij,ab) = 2*T(ij,ab) - T(ji,ab)
         // Build TAA(ij,ab) = T(ij,ab) - T(ji,ab)
-        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "Tau <OO|VV>");
-        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "TAA <OO|VV>");
-        global_dpd_->buf4_sort(&Tnew, PSIF_OCC_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
+        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, tau_name.c_str());
+        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, TAA_name.c_str());
+        global_dpd_->buf4_sort(&Tnew, PSIF_OCC_DPD, qprs, ID("[O,O]"), ID("[V,V]"), Tjiab_name.c_str());
         global_dpd_->buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Tau <OO|VV>");
+                               tau_name.c_str());
         global_dpd_->buf4_init(&Tss, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "TAA <OO|VV>");
+                               TAA_name.c_str());
         global_dpd_->buf4_init(&Ttemp, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Tjiab <OO|VV>");
+                               Tjiab_name.c_str());
         global_dpd_->buf4_scm(&Tau, 2.0);
         global_dpd_->buf4_axpy(&Ttemp, &Tau, -1.0);  // -1.0*Ttemp + Tau -> Tau
         global_dpd_->buf4_axpy(&Ttemp, &Tss, -1.0);  // -1.0*Ttemp + Tss -> Tss
@@ -102,9 +109,9 @@ void OCCWave::omp2_t2_1st_general() {
         global_dpd_->buf4_close(&Tss);
 
         // Compute amplitude residual to Check Convergence
-        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "Residual_T <OO|VV>");
+        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "RT2_1 <OO|VV>");
         global_dpd_->buf4_init(&R, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Residual_T <OO|VV>");
+                               "RT2_1 <OO|VV>");
         global_dpd_->buf4_axpy(&T, &R, -1.0);  // -1.0*T + R -> R
         global_dpd_->buf4_close(&T);
 
@@ -116,11 +123,27 @@ void OCCWave::omp2_t2_1st_general() {
         rms_t2 = std::sqrt(rms_t2 / nElements);
 
         // Reset
-        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T <OO|VV>");
-        if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
-
-        // close
+        global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, Told_name.c_str());
+        if (print_ > 2) global_dpd_->buf4_print(&Tnew, "outfile", 1);
         global_dpd_->buf4_close(&Tnew);
+
+        if (wfn_type_ != "OMP2") {
+            // Build amplitudes in chemist notation
+            // T_IJ^AB => T'(IA,JB), T"(JA,IB)
+            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "T2_1 <OO|VV>");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "T2_1 (OV|OV)");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, qrps, ID("[O,V]"), ID("[O,V]"), "T2_1pp (OV|OV)");
+            global_dpd_->buf4_close(&T);
+
+            // Tau(IJ,AB) => Tau'(IA,JB), Tau"(JA,IB)
+            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "Tau_1 <OO|VV>");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Tau_1 (OV|OV)");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, qrps, ID("[O,V]"), ID("[O,V]"), "Tau_1pp (OV|OV)");
+            global_dpd_->buf4_close(&T);
+        }
+
         psio_->close(PSIF_LIBTRANS_DPD, 1);
         psio_->close(PSIF_OCC_DPD, 1);
 
@@ -310,13 +333,39 @@ void OCCWave::omp2_t2_1st_general() {
         if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
         global_dpd_->buf4_close(&Tnew);
 
+        if (wfn_type_ != "OMP2") {
+            // Build amplitudes in chemist notation
+            // T_IJ^AB => T(IA,JB)
+            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "T2_1 <OO|VV>");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "T2_1 (OV|OV)");
+            global_dpd_->buf4_close(&T);
+
+            // T_ij^ab => T(ia,jb)
+            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
+                                   "T2_1 <oo|vv>");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[o,v]"), ID("[o,v]"), "T2_1 (ov|ov)");
+            global_dpd_->buf4_close(&T);
+
+            // T_Ij^Ab => T(IA,jb), T(jA,Ib)
+            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                                   "T2_1 <Oo|Vv>");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[o,v]"), "T2_1 (OV|ov)");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, qrps, ID("[o,V]"), ID("[O,v]"), "T2_1 (oV|Ov)");
+            global_dpd_->buf4_close(&T);
+
+            // T(IA,jb) => T(jb,IA)
+            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
+                                   "T2_1 (OV|ov)");
+            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, rspq, ID("[o,v]"), ID("[O,V]"), "T2_1 (ov|OV)");
+            global_dpd_->buf4_close(&T);
+        }
+
         // close files
         psio_->close(PSIF_LIBTRANS_DPD, 1);
         psio_->close(PSIF_OCC_DPD, 1);
-
     }  // end if (reference_ == "UNRESTRICTED")
 
-    // outfile->Printf("\n omp2_t2_1st_general done. \n");
-}  // end omp2_t2_1st_general
+}  // end iterate_t2o1_amplitudes
 }
 }  // End Namespaces

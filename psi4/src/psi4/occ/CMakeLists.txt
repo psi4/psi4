@@ -17,6 +17,7 @@ list(APPEND sources
   gfock_ea.cc
   idp.cc
   idp2.cc
+  iterate_t2o1_amplitudes.cc
   kappa_msd.cc
   kappa_orb_resp.cc
   kappa_orb_resp_iter.cc
@@ -28,11 +29,9 @@ list(APPEND sources
   ocepa_response_pdms.cc
   omp2_ip_poles.cc
   omp2_response_pdms.cc
-  omp2_t2_1st.cc
   omp3_g_int.cc
   omp3_ip_poles.cc
   omp3_response_pdms.cc
-  omp3_t2_1st_general.cc
   postprocessing.cc
   second_order_opdm.cc
   semi_canonic.cc

@@ -37,6 +37,7 @@ namespace occwave {
 
 void OCCWave::omp3_g_int() {
     // outfile->Printf("\n G_int is starting... \n");
+    double omp2p5_factor = (wfn_type_ == "OMP2.5") ? 0.5 : 1.0;
 
     if (reference_ == "RESTRICTED") {
         // initialize
@@ -68,7 +69,7 @@ void OCCWave::omp3_g_int() {
 
         // G_IJ = \sum{M,E,F} t_IM^EF(2) * (2l_EF^JM(1) - l_FE^JM(1))
         // G_IJ = \sum{M,E,F} t_IM^EF(2) * (2t_JM^EF(1) - t_MJ^EF(1))
-        global_dpd_->contract442(&T2_2, &Tau_1, &G, 0, 0, 1.0, 1.0);
+        global_dpd_->contract442(&T2_2, &Tau_1, &G, 0, 0, 1.0 * omp2p5_factor, 1.0);
         global_dpd_->file2_close(&G);
 
         // Virtual-Virtual block
@@ -79,7 +80,7 @@ void OCCWave::omp3_g_int() {
 
         // G_AB = -\sum{M,N,E} t_MN^BE(2) * (2l_AE^MN(1) - l_EA^MN(1))
         // G_AB = -\sum{M,N,E} t_MN^BE(2) * (2t_MN^AE(1) - t_MN^EA(1))
-        global_dpd_->contract442(&Tau_1, &T2_2, &G, 2, 2, -1.0, 1.0);
+        global_dpd_->contract442(&Tau_1, &T2_2, &G, 2, 2, -1.0 * omp2p5_factor, 1.0);
         global_dpd_->file2_close(&G);
 
         // Close amplitude files
@@ -91,31 +92,13 @@ void OCCWave::omp3_g_int() {
         // Load dpd_file2 to Matrix (Goo)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < aoccpiA[h]; ++i) {
-                for (int j = 0; j < aoccpiA[h]; ++j) {
-                    GooA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GooA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Load dpd_file2 to Matrix (Gvv)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < avirtpiA[h]; ++i) {
-                for (int j = 0; j < avirtpiA[h]; ++j) {
-                    GvvA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GvvA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         psio_->close(PSIF_OCC_DPD, 1);
@@ -177,19 +160,19 @@ void OCCWave::omp3_g_int() {
         global_dpd_->contract442(&T2_1AA, &L2_1AA, &G, 0, 0, 0.5, 0.0);
 
         // G_IM += 1/2 \sum{N,E,F} t_IN^EF(2) * l_EF^MN(1) = 1/2 \sum{N,E,F} t_IN^EF(2) * t_MN^EF(1)
-        global_dpd_->contract442(&T2_2AA, &L2_1AA, &G, 0, 0, 0.5, 1.0);
+        global_dpd_->contract442(&T2_2AA, &L2_1AA, &G, 0, 0, 0.5 * omp2p5_factor, 1.0);
 
         // G_IM += 1/2 \sum{N,E,F} t_IN^EF(1) * l_EF^MN(2) = 1/2 \sum{N,E,F} t_IN^EF(1) * t_MN^EF(2)
-        global_dpd_->contract442(&T2_1AA, &L2_2AA, &G, 0, 0, 0.5, 1.0);
+        global_dpd_->contract442(&T2_1AA, &L2_2AA, &G, 0, 0, 0.5 * omp2p5_factor, 1.0);
 
         // G_IM += \sum{n,E,f} t_In^Ef(1) * l_Ef^Mn(1) = \sum{N,E,F} t_In^Ef(1) * t_Mn^Ef(1)
         global_dpd_->contract442(&T2_1AB, &L2_1AB, &G, 0, 0, 1.0, 1.0);
 
         // G_IM += \sum{n,E,f} t_In^Ef(2) * l_Ef^Mn(1) = \sum{N,E,F} t_In^Ef(2) * t_Mn^Ef(1)
-        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 0, 0, 1.0, 1.0);
+        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 0, 0, 1.0 * omp2p5_factor, 1.0);
 
         // G_IM += \sum{n,E,f} t_In^Ef(1) * l_Ef^Mn(2) = \sum{N,E,F} t_In^Ef(1) * t_Mn^Ef(2)
-        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 0, 0, 1.0, 1.0);
+        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 0, 0, 1.0 * omp2p5_factor, 1.0);
         global_dpd_->file2_close(&G);
 
         // Beta-Beta spin case
@@ -198,19 +181,19 @@ void OCCWave::omp3_g_int() {
         global_dpd_->contract442(&T2_1BB, &L2_1BB, &G, 0, 0, 0.5, 0.0);
 
         // G_im += 1/2 \sum{n,e,f} t_in^ef(2) * l_ef^mn(1) = 1/2 \sum{n,e,f} t_in^ef(2) * t_mn^ef(1)
-        global_dpd_->contract442(&T2_2BB, &L2_1BB, &G, 0, 0, 0.5, 1.0);
+        global_dpd_->contract442(&T2_2BB, &L2_1BB, &G, 0, 0, 0.5 * omp2p5_factor, 1.0);
 
         // G_im += 1/2 \sum{n,e,f} t_in^ef(1) * l_ef^mn(2) = 1/2 \sum{n,e,f} t_in^ef(1) * t_mn^ef(2)
-        global_dpd_->contract442(&T2_1BB, &L2_2BB, &G, 0, 0, 0.5, 1.0);
+        global_dpd_->contract442(&T2_1BB, &L2_2BB, &G, 0, 0, 0.5 * omp2p5_factor, 1.0);
 
         // G_im  += \sum{N,e,F} t_Ni^Fe(1) * l_Fe^Nm(1) = \sum{N,e,F} t_Ni^Fe(1) * t_Nm^Fe(1)
         global_dpd_->contract442(&T2_1AB, &L2_1AB, &G, 1, 1, 1.0, 1.0);
 
         // G_im  += \sum{N,e,F} t_Ni^Fe(2) * l_Fe^Nm(1) = \sum{N,e,F} t_Ni^Fe(2) * t_Nm^Fe(1)
-        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 1, 1, 1.0, 1.0);
+        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 1, 1, 1.0 * omp2p5_factor, 1.0);
 
         // G_im  += \sum{N,e,F} t_Ni^Fe(1) * l_Fe^Nm(2) = \sum{N,e,F} t_Ni^Fe(1) * t_Nm^Fe(2)
-        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 1, 1, 1.0, 1.0);
+        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 1, 1, 1.0 * omp2p5_factor, 1.0);
         global_dpd_->file2_close(&G);
 
         // Virtual-Virtual block
@@ -220,19 +203,19 @@ void OCCWave::omp3_g_int() {
         global_dpd_->contract442(&T2_1AA, &L2_1AA, &G, 2, 2, -0.5, 0.0);
 
         // G_EA += -1/2 \sum{M,N,F} t_MN^AF(2) * l_EF^MN(1) = -1/2 \sum{M,N,F} t_MN^AF(2) * t_MN^EF(1)
-        global_dpd_->contract442(&T2_2AA, &L2_1AA, &G, 2, 2, -0.5, 1.0);
+        global_dpd_->contract442(&T2_2AA, &L2_1AA, &G, 2, 2, -0.5 * omp2p5_factor, 1.0);
 
         // G_EA += -1/2 \sum{M,N,F} t_MN^AF(1) * l_EF^MN(2) = -1/2 \sum{M,N,F} t_MN^AF(1) * t_MN^EF(2)
-        global_dpd_->contract442(&T2_1AA, &L2_2AA, &G, 2, 2, -0.5, 1.0);
+        global_dpd_->contract442(&T2_1AA, &L2_2AA, &G, 2, 2, -0.5 * omp2p5_factor, 1.0);
 
         // G_EA += - \sum{M,n,f} t_Mn^Af(1) * l_Ef^Mn(1) = - \sum{M,n,f} t_Mn^Af(1) * t_Mn^Ef(1)
         global_dpd_->contract442(&T2_1AB, &L2_1AB, &G, 2, 2, -1.0, 1.0);
 
         // G_EA += - \sum{M,n,f} t_Mn^Af(2) * l_Ef^Mn(1) = - \sum{M,n,f} t_Mn^Af(2) * t_Mn^Ef(1)
-        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 2, 2, -1.0, 1.0);
+        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 2, 2, -1.0 * omp2p5_factor, 1.0);
 
         // G_EA += - \sum{M,n,f} t_Mn^Af(1) * l_Ef^Mn(2) = - \sum{M,n,f} t_Mn^Af(1) * t_Mn^Ef(2)
-        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 2, 2, -1.0, 1.0);
+        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 2, 2, -1.0 * omp2p5_factor, 1.0);
         global_dpd_->file2_close(&G);
 
         // Beta-Beta spin case
@@ -241,19 +224,19 @@ void OCCWave::omp3_g_int() {
         global_dpd_->contract442(&T2_1BB, &L2_1BB, &G, 2, 2, -0.5, 0.0);
 
         // G_ea += -1/2 \sum{m,n,f} t_mn^af(2) * l_ef^mn(1) = -1/2 \sum{m,n,f} t_mn^af(2) * t_mn^ef(1)
-        global_dpd_->contract442(&T2_2BB, &L2_1BB, &G, 2, 2, -0.5, 1.0);
+        global_dpd_->contract442(&T2_2BB, &L2_1BB, &G, 2, 2, -0.5 * omp2p5_factor, 1.0);
 
         // G_ea += -1/2 \sum{m,n,f} t_mn^af(1) * l_ef^mn(2) = -1/2 \sum{m,n,f} t_mn^af(1) * t_mn^ef(2)
-        global_dpd_->contract442(&T2_1BB, &L2_2BB, &G, 2, 2, -0.5, 1.0);
+        global_dpd_->contract442(&T2_1BB, &L2_2BB, &G, 2, 2, -0.5 * omp2p5_factor, 1.0);
 
         // G_ea += - \sum{M,n,F} t_Mn^Fa(1) * l_Fe^Mn(1) = - \sum{M,n,F} t_Mn^Fa(1) * t_Mn^Fe(1)
         global_dpd_->contract442(&T2_1AB, &L2_1AB, &G, 3, 3, -1.0, 1.0);
 
         // G_ea += - \sum{M,n,F} t_Mn^Fa(2) * l_Fe^Mn(1) = - \sum{M,n,F} t_Mn^Fa(2) * t_Mn^Fe(1)
-        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 3, 3, -1.0, 1.0);
+        global_dpd_->contract442(&T2_2AB, &L2_1AB, &G, 3, 3, -1.0 * omp2p5_factor, 1.0);
 
         // G_ea += - \sum{M,n,F} t_Mn^Fa(1) * l_Fe^Mn(2) = - \sum{M,n,F} t_Mn^Fa(1) * t_Mn^Fe(2)
-        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 3, 3, -1.0, 1.0);
+        global_dpd_->contract442(&T2_1AB, &L2_2AB, &G, 3, 3, -1.0 * omp2p5_factor, 1.0);
         global_dpd_->file2_close(&G);
 
         // Close amplitude files
@@ -274,59 +257,23 @@ void OCCWave::omp3_g_int() {
         // Load dpd_file2 to Matrix (Goo)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < aoccpiA[h]; ++i) {
-                for (int j = 0; j < aoccpiA[h]; ++j) {
-                    GooA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GooA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Beta-Beta spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('o'), ID('o'), "G <o|o>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < aoccpiB[h]; ++i) {
-                for (int j = 0; j < aoccpiB[h]; ++j) {
-                    GooB->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GooB = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Load dpd_file2 to Matrix (Gvv)
         // Alpha-Alpha spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < avirtpiA[h]; ++i) {
-                for (int j = 0; j < avirtpiA[h]; ++j) {
-                    GvvA->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GvvA = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         // Beta-Beta spin case
         global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('v'), ID('v'), "G <v|v>");
-        global_dpd_->file2_mat_init(&G);
-        global_dpd_->file2_mat_rd(&G);
-#pragma omp parallel for
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < avirtpiB[h]; ++i) {
-                for (int j = 0; j < avirtpiB[h]; ++j) {
-                    GvvB->set(h, i, j, G.matrix[h][i][j]);
-                }
-            }
-        }
+        GvvB = std::make_shared<Matrix>(&G);
         global_dpd_->file2_close(&G);
 
         psio_->close(PSIF_OCC_DPD, 1);

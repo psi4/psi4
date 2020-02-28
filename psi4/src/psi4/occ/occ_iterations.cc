@@ -181,13 +181,13 @@ void OCCWave::occ_iterations() {
         /********************************************************************************************/
         if (wfn_type_ == "OMP2") {
             timer_on("T2(1)");
-            omp2_t2_1st_general();
+            iterate_t2o1_amplitudes();
             timer_off("T2(1)");
         }
 
         else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
             timer_on("T2(1)");
-            omp3_t2_1st_general();
+            iterate_t2o1_amplitudes();
             timer_off("T2(1)");
             timer_on("T2(2)");
             t2_2nd_general();
