@@ -38,6 +38,18 @@ compare_integers(13, wfn.nalpha(), "nalpha")  #TEST
 compare_integers(28, wfn.basisset().n_ecp_core(), "n_ecp_core")  #TEST
 compare_values(-296.7441153128044107, ene, 5, "cast-up with ecp after all e- basis")  #TEST
 
+clean()
+
+basis {
+   assign I def2-tzvppd
+}
+set basis_guess def2-SV(P)
+
+ene, wfn = energy('scf', return_wfn=True)
+compare_integers(25, wfn.molecule().Z(0), "Zeff")  #TEST
+compare_integers(13, wfn.nalpha(), "nalpha")  #TEST
+compare_integers(28, wfn.basisset().n_ecp_core(), "n_ecp_core")  #TEST
+compare_values(-296.7441153128044107, ene, 5, "cast-up with ecp custom basis and explicit basis_guess")  #TEST
 
 clean()
 
