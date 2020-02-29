@@ -73,6 +73,7 @@ class OCCWave : public Wavefunction {
     void kappa_msd();
     void kappa_orb_resp();
     void kappa_orb_resp_iter();
+    void compute_sigma_vector();
     void orb_resp_pcg_rhf();
     void orb_resp_pcg_uhf();
     void dump_ints();

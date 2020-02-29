@@ -92,88 +92,8 @@ void OCCWave::kappa_orb_resp_iter() {
         global_dpd_->file2_mat_wrt(&P);
         global_dpd_->file2_close(&P);
 
-        // Build sigma = A * p
-        // sigma_ai = 8 \sum_{bj} (ai|bj) P_bj
-        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (VO|VO)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 0.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (aj|bi)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints <VO|VO>");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-        global_dpd_->file2_close(&S);
-
-        // Read sigma vector from dpdfile2
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_mat_init(&P);
-        global_dpd_->file2_mat_rd(&P);
-        idp_idx = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int a = 0; a < virtpiA[h]; ++a) {
-                for (int i = 0; i < occpiA[h]; ++i) {
-                    sigma_pcgA->set(idp_idx, P.matrix[h][a][i]);
-                    idp_idx++;
-                }
-            }
-        }
-        global_dpd_->file2_close(&P);
-
-        // Add Fock contribution
-        for (int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int h = idpirrA[x];
-            double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
-            sigma_pcgA->add(x, 2.0 * value * kappaA->get(x));
-        }
-
-        /*
-        // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && i == j) {
-                    value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * kappaA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, 2.0 * value);
-        }
-
-        // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && a == b) {
-                    value = FockA->get(ha, i, j) * kappaA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, -2.0 * value);
-        }
-        */
+        // We are computing Ax, but storing x as d.
+        compute_sigma_vector();
 
         // Build r0
         r_pcgA->zero();
@@ -348,189 +268,8 @@ void OCCWave::kappa_orb_resp_iter() {
         global_dpd_->file2_mat_wrt(&P);
         global_dpd_->file2_close(&P);
 
-        // Start to alpha spin case
-        // Build sigma = A * p
-        // sigma_AI = 4 \sum_{BJ} (AI|BJ) P_BJ
-        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (VO|VO)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_AI -= 2 \sum_{BJ} (AJ|BI) P_BJ
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (AJ|BI)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_AI -= 2 \sum_{BJ} <AI|BJ> P_BJ
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints <VO|VO>");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-
-        // sigma_AI += 4 \sum_{bj} (AI|bj) P_bj
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"), ID("[V,O]"), ID("[v,o]"), 0,
-                               "MO Ints (VO|vo)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-        global_dpd_->file2_close(&S);
-
-        // Read sigma vector from dpdfile2
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_mat_init(&P);
-        global_dpd_->file2_mat_rd(&P);
-        idp_idx = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int a = 0; a < virtpiA[h]; ++a) {
-                for (int i = 0; i < occpiA[h]; ++i) {
-                    sigma_pcgA->set(idp_idx, P.matrix[h][a][i]);
-                    idp_idx++;
-                }
-            }
-        }
-        global_dpd_->file2_close(&P);
-
-        // Add Fock contribution
-        for (int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int h = idpirrA[x];
-            double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
-            sigma_pcgA->add(x, 2.0 * value * kappaA->get(x));
-        }
-
-        /*
-        // \sigma_AI += 2.0 * \sum_{B} F_AB * p_BI
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && i == j) {
-                    value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * kappaA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, 2.0 * value);
-        }
-
-        // \sigma_AI -= 2.0 * \sum_{J} F_IJ * p_AJ
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && a == b) {
-                    value = FockA->get(ha, i, j) * kappaA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, -2.0 * value);
-        }
-        */
-
-        // Start to beta spin case
-        // Build sigma = A * p
-        // sigma_ai = 4 \sum_{bj} (ai|bj) P_bj
-        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints (vo|vo)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints (aj|bi)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints <vo|vo>");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-
-        // sigma_ai += 4 \sum_{BJ} (ai|BJ) P_BJ
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[V,O]"), ID("[v,o]"), ID("[V,O]"), 0,
-                               "MO Ints (vo|VO)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-        global_dpd_->file2_close(&S);
-
-        // Read sigma vector from dpdfile2
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");
-        global_dpd_->file2_mat_init(&P);
-        global_dpd_->file2_mat_rd(&P);
-        idp_idx = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int a = 0; a < virtpiB[h]; ++a) {
-                for (int i = 0; i < occpiB[h]; ++i) {
-                    sigma_pcgB->set(idp_idx, P.matrix[h][a][i]);
-                    idp_idx++;
-                }
-            }
-        }
-        global_dpd_->file2_close(&P);
-
-        // Add Fock contribution
-        for (int x = 0; x < nidpB; x++) {
-            int a = idprowB[x];
-            int i = idpcolB[x];
-            int h = idpirrB[x];
-            double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);
-            sigma_pcgB->add(x, 2.0 * value * kappaB->get(x));
-        }
-
-        /*
-        // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
-        for(int x = 0; x < nidpB; x++) {
-            int a = idprowB[x];
-            int i = idpcolB[x];
-            int ha = idpirrB[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpB; y++) {
-                int b = idprowB[y];
-                int j = idpcolB[y];
-                int hb = idpirrB[y];
-                if (ha == hb && i == j) {
-                    value = FockB->get(ha, a + occpiB[ha], b + occpiB[ha]) * kappaB->get(y);
-                }
-            }
-            sigma_pcgB->add(x, 2.0 * value);
-        }
-
-        // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
-        for(int x = 0; x < nidpB; x++) {
-            int a = idprowB[x];
-            int i = idpcolB[x];
-            int ha = idpirrB[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpB; y++) {
-                int b = idprowB[y];
-                int j = idpcolB[y];
-                int hb = idpirrB[y];
-                if (ha == hb && a == b) {
-                    value = FockB->get(ha, i, j) * kappaB->get(y);
-                }
-            }
-            sigma_pcgB->add(x, -2.0 * value);
-        }
-        */
+        // We are computing Ax, but storing x as d.
+        compute_sigma_vector();
 
         // Build r0
         r_pcgA->zero();
@@ -648,10 +387,7 @@ void OCCWave::orb_resp_pcg_rhf() {
 
     // Head of the loop
     do {
-        // outfile->Printf( "pcg iter: %3d \n", itr_pcg);
-        // Open dpd files
-        dpdbuf4 K;
-        dpdfile2 P, S, F;
+        dpdfile2 P;
 
         // Write p vector to dpdfile2
         global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
@@ -668,89 +404,8 @@ void OCCWave::orb_resp_pcg_rhf() {
         global_dpd_->file2_mat_wrt(&P);
         global_dpd_->file2_close(&P);
 
-        // Build sigma = A * p
-        // sigma_ai = 8 \sum_{bj} (ai|bj) P_bj
-        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (VO|VO)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 0.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (aj|bi)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints <VO|VO>");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-        global_dpd_->file2_close(&S);
-
-        // Read sigma vector from dpdfile2
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_mat_init(&P);
-        global_dpd_->file2_mat_rd(&P);
-        idp_idx = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int a = 0; a < virtpiA[h]; ++a) {
-                for (int i = 0; i < occpiA[h]; ++i) {
-                    sigma_pcgA->set(idp_idx, P.matrix[h][a][i]);
-                    idp_idx++;
-                }
-            }
-        }
-        global_dpd_->file2_close(&P);
-
-        // Addd Fock contribution
-        for (int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int h = idpirrA[x];
-            double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
-            sigma_pcgA->add(x, 2.0 * value * p_pcgA->get(x));
-        }
-
-        /*
-        // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && i == j) {
-                    value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * p_pcgA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, 2.0 * value);
-        }
-
-        // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && a == b) {
-                    value = FockA->get(ha, i, j) * p_pcgA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, -2.0 * value);
-        }
-        */
-
+        compute_sigma_vector();
+        
         // Build line search parameter alpha
         a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
 
@@ -827,10 +482,7 @@ void OCCWave::orb_resp_pcg_uhf() {
 
     // Head of the loop
     do {
-        // outfile->Printf( "pcg iter: %3d \n", itr_pcg);
-        // Open dpd files
-        dpdbuf4 K;
-        dpdfile2 P, S, F;
+        dpdfile2 P;
 
         // Write alpha p vector to dpdfile2
         global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
@@ -862,189 +514,7 @@ void OCCWave::orb_resp_pcg_uhf() {
         global_dpd_->file2_mat_wrt(&P);
         global_dpd_->file2_close(&P);
 
-        // Start to alpha spin case
-        // Build sigma = A * p
-        // sigma_AI = 4 \sum_{BJ} (AI|BJ) P_BJ
-        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (VO|VO)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_AI -= 2 \sum_{BJ} (AJ|BI) P_BJ
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (AJ|BI)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_AI -= 2 \sum_{BJ} <AI|BJ> P_BJ
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints <VO|VO>");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-
-        // sigma_AI += 4 \sum_{bj} (AI|bj) P_bj
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"), ID("[V,O]"), ID("[v,o]"), 0,
-                               "MO Ints (VO|vo)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-        global_dpd_->file2_close(&S);
-
-        // Read sigma vector from dpdfile2
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
-        global_dpd_->file2_mat_init(&P);
-        global_dpd_->file2_mat_rd(&P);
-        idp_idx = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int a = 0; a < virtpiA[h]; ++a) {
-                for (int i = 0; i < occpiA[h]; ++i) {
-                    sigma_pcgA->set(idp_idx, P.matrix[h][a][i]);
-                    idp_idx++;
-                }
-            }
-        }
-        global_dpd_->file2_close(&P);
-
-        // Add Fock contribution
-        for (int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int h = idpirrA[x];
-            double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
-            sigma_pcgA->add(x, 2.0 * value * p_pcgA->get(x));
-        }
-
-        /*
-        // \sigma_AI += 2.0 * \sum_{B} F_AB * p_BI
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && i == j) {
-                    value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * p_pcgA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, 2.0 * value);
-        }
-
-        // \sigma_AI -= 2.0 * \sum_{J} F_IJ * p_AJ
-        for(int x = 0; x < nidpA; x++) {
-            int a = idprowA[x];
-            int i = idpcolA[x];
-            int ha = idpirrA[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpA; y++) {
-                int b = idprowA[y];
-                int j = idpcolA[y];
-                int hb = idpirrA[y];
-                if (ha == hb && a == b) {
-                    value = FockA->get(ha, i, j) * p_pcgA->get(y);
-                }
-            }
-            sigma_pcgA->add(x, -2.0 * value);
-        }
-        */
-
-        // Start to beta spin case
-        // Build sigma = A * p
-        // sigma_ai = 4 \sum_{bj} (ai|bj) P_bj
-        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints (vo|vo)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints (aj|bi)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-
-        // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints <vo|vo>");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-
-        // sigma_ai += 4 \sum_{BJ} (ai|BJ) P_BJ
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[V,O]"), ID("[v,o]"), ID("[V,O]"), 0,
-                               "MO Ints (vo|VO)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-        global_dpd_->buf4_close(&K);
-        global_dpd_->file2_close(&P);
-        global_dpd_->file2_close(&S);
-
-        // Read sigma vector from dpdfile2
-        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");
-        global_dpd_->file2_mat_init(&P);
-        global_dpd_->file2_mat_rd(&P);
-        idp_idx = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int a = 0; a < virtpiB[h]; ++a) {
-                for (int i = 0; i < occpiB[h]; ++i) {
-                    sigma_pcgB->set(idp_idx, P.matrix[h][a][i]);
-                    idp_idx++;
-                }
-            }
-        }
-        global_dpd_->file2_close(&P);
-
-        // Add Fock contribution
-        for (int x = 0; x < nidpB; x++) {
-            int a = idprowB[x];
-            int i = idpcolB[x];
-            int h = idpirrB[x];
-            double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);
-            sigma_pcgB->add(x, 2.0 * value * p_pcgB->get(x));
-        }
-
-        /*
-        // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
-        for(int x = 0; x < nidpB; x++) {
-            int a = idprowB[x];
-            int i = idpcolB[x];
-            int ha = idpirrB[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpB; y++) {
-                int b = idprowB[y];
-                int j = idpcolB[y];
-                int hb = idpirrB[y];
-                if (ha == hb && i == j) {
-                    value = FockB->get(ha, a + occpiB[ha], b + occpiB[ha]) * p_pcgB->get(y);
-                }
-            }
-            sigma_pcgB->add(x, 2.0 * value);
-        }
-
-        // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
-        for(int x = 0; x < nidpB; x++) {
-            int a = idprowB[x];
-            int i = idpcolB[x];
-            int ha = idpirrB[x];
-            double value = 0.0;
-            for(int y = 0; y < nidpB; y++) {
-                int b = idprowB[y];
-                int j = idpcolB[y];
-                int hb = idpirrB[y];
-                if (ha == hb && a == b) {
-                    value = FockB->get(ha, i, j) * p_pcgB->get(y);
-                }
-            }
-            sigma_pcgB->add(x, -2.0 * value);
-        }
-        */
+        compute_sigma_vector();
 
         // Build line search parameter alpha
         a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
@@ -1140,5 +610,174 @@ void OCCWave::orb_resp_pcg_uhf() {
     } while (std::fabs(rms_pcg) >= tol_pcg);
 
 }  // end orb_resp_pcg_uhf
+
+// Computes the product of the HF MO hessian and the conjugate direction vector, P.
+// P is assumed to be stored in the D PCG dpdfile. Result is written to S.
+void OCCWave::compute_sigma_vector() {
+    dpdbuf4 K;
+    dpdfile2 S, P;
+
+    if (reference_ == "RESTRICTED") {
+        // Build sigma = A * p
+        // sigma_ai = 8 \sum_{bj} (ai|bj) P_bj
+        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
+                               "MO Ints (VO|VO)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 0.0);
+        global_dpd_->buf4_close(&K);
+
+        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
+                               "MO Ints (aj|bi)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        global_dpd_->buf4_close(&K);
+
+        // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
+                               "MO Ints <VO|VO>");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        global_dpd_->buf4_close(&K);
+        global_dpd_->file2_close(&P);
+        global_dpd_->file2_close(&S);
+
+        // Read sigma vector from dpdfile2
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
+        global_dpd_->file2_mat_init(&P);
+        global_dpd_->file2_mat_rd(&P);
+        idp_idx = 0;
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int a = 0; a < virtpiA[h]; ++a) {
+                for (int i = 0; i < occpiA[h]; ++i) {
+                    sigma_pcgA->set(idp_idx, P.matrix[h][a][i]);
+                    idp_idx++;
+                }
+            }
+        }
+        global_dpd_->file2_close(&P);
+
+        // Add Fock contribution
+        for (int x = 0; x < nidpA; x++) {
+            int a = idprowA[x];
+            int i = idpcolA[x];
+            int h = idpirrA[x];
+            double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
+            sigma_pcgA->add(x, 2.0 * value * kappaA->get(x));
+        }
+    } else if (reference_ == "UNRESTRICTED") {
+        // Start to alpha spin case
+        // Build sigma = A * p
+        // sigma_AI = 4 \sum_{BJ} (AI|BJ) P_BJ
+        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
+                               "MO Ints (VO|VO)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
+        global_dpd_->buf4_close(&K);
+
+        // sigma_AI -= 2 \sum_{BJ} (AJ|BI) P_BJ
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
+                               "MO Ints (AJ|BI)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        global_dpd_->buf4_close(&K);
+
+        // sigma_AI -= 2 \sum_{BJ} <AI|BJ> P_BJ
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
+                               "MO Ints <VO|VO>");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        global_dpd_->buf4_close(&K);
+        global_dpd_->file2_close(&P);
+
+        // sigma_AI += 4 \sum_{bj} (AI|bj) P_bj
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"), ID("[V,O]"), ID("[v,o]"), 0,
+                               "MO Ints (VO|vo)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
+        global_dpd_->buf4_close(&K);
+        global_dpd_->file2_close(&P);
+        global_dpd_->file2_close(&S);
+
+        // Read sigma vector from dpdfile2
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
+        global_dpd_->file2_mat_init(&P);
+        global_dpd_->file2_mat_rd(&P);
+        idp_idx = 0;
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int a = 0; a < virtpiA[h]; ++a) {
+                for (int i = 0; i < occpiA[h]; ++i) {
+                    sigma_pcgA->set(idp_idx, P.matrix[h][a][i]);
+                    idp_idx++;
+                }
+            }
+        }
+        global_dpd_->file2_close(&P);
+
+        // Add Fock contribution
+        for (int x = 0; x < nidpA; x++) {
+            int a = idprowA[x];
+            int i = idpcolA[x];
+            int h = idpirrA[x];
+            double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
+            sigma_pcgA->add(x, 2.0 * value * kappaA->get(x));
+        }
+    
+        // Start to beta spin case
+        // Build sigma = A * p
+        // sigma_ai = 4 \sum_{bj} (ai|bj) P_bj
+        global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
+                               "MO Ints (vo|vo)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
+        global_dpd_->buf4_close(&K);
+
+        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
+                               "MO Ints (aj|bi)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        global_dpd_->buf4_close(&K);
+
+        // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
+                               "MO Ints <vo|vo>");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        global_dpd_->buf4_close(&K);
+        global_dpd_->file2_close(&P);
+
+        // sigma_ai += 4 \sum_{BJ} (ai|BJ) P_BJ
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[V,O]"), ID("[v,o]"), ID("[V,O]"), 0,
+                               "MO Ints (vo|VO)");
+        global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
+        global_dpd_->buf4_close(&K);
+        global_dpd_->file2_close(&P);
+        global_dpd_->file2_close(&S);
+
+        // Read sigma vector from dpdfile2
+        global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");
+        global_dpd_->file2_mat_init(&P);
+        global_dpd_->file2_mat_rd(&P);
+        idp_idx = 0;
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int a = 0; a < virtpiB[h]; ++a) {
+                for (int i = 0; i < occpiB[h]; ++i) {
+                    sigma_pcgB->set(idp_idx, P.matrix[h][a][i]);
+                    idp_idx++;
+                }
+            }
+        }
+        global_dpd_->file2_close(&P);
+
+        // Add Fock contribution
+        for (int x = 0; x < nidpB; x++) {
+            int a = idprowB[x];
+            int i = idpcolB[x];
+            int h = idpirrB[x];
+            double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);
+            sigma_pcgB->add(x, 2.0 * value * kappaB->get(x));
+        }
+    }
+}
+
 }
 }  // End Namespaces
