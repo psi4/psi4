@@ -407,18 +407,18 @@ void OCCWave::orb_resp_pcg_rhf() {
         compute_sigma_vector();
         
         // Build line search parameter alpha
-        double alpha_A = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
+        double alpha = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
 
         // Build kappa-new
         kappa_newA->zero();
         kappa_newA->copy(p_pcgA);
-        kappa_newA->scale(alpha_A);
+        kappa_newA->scale(alpha);
         kappa_newA->add(kappaA);
 
         // Build r-new
         r_pcg_newA->zero();
         r_pcg_newA->copy(sigma_pcgA);
-        r_pcg_newA->scale(-alpha_A);
+        r_pcg_newA->scale(-alpha);
         r_pcg_newA->add(r_pcgA);
         rms_r_pcgA = r_pcg_newA->rms();
 
@@ -517,28 +517,27 @@ void OCCWave::orb_resp_pcg_uhf() {
         compute_sigma_vector();
 
         // Build line search parameter alpha
-        double alpha_A = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
-        double alpha_B = r_pcgB->dot(z_pcgB) / p_pcgB->dot(sigma_pcgB);
+        double alpha = (r_pcgA->dot(z_pcgA) + r_pcgB->dot(z_pcgB)) / (p_pcgA->dot(sigma_pcgA) + p_pcgB->dot(sigma_pcgB));
 
         // Build kappa-new
         kappa_newA->zero();
         kappa_newA->copy(p_pcgA);
-        kappa_newA->scale(alpha_A);
+        kappa_newA->scale(alpha);
         kappa_newA->add(kappaA);
         kappa_newB->zero();
         kappa_newB->copy(p_pcgB);
-        kappa_newB->scale(alpha_B);
+        kappa_newB->scale(alpha);
         kappa_newB->add(kappaB);
 
         // Build r-new
         r_pcg_newA->zero();
         r_pcg_newA->copy(sigma_pcgA);
-        r_pcg_newA->scale(-alpha_A);
+        r_pcg_newA->scale(-alpha);
         r_pcg_newA->add(r_pcgA);
         rms_r_pcgA = r_pcg_newA->rms();
         r_pcg_newB->zero();
         r_pcg_newB->copy(sigma_pcgB);
-        r_pcg_newB->scale(-alpha_B);
+        r_pcg_newB->scale(-alpha);
         r_pcg_newB->add(r_pcgB);
         rms_r_pcgB = r_pcg_newB->rms();
         rms_r_pcg = MAX0(rms_r_pcgA, rms_r_pcgB);
