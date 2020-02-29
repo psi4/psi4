@@ -383,6 +383,7 @@ void OCCWave::orb_resp_pcg_rhf() {
     itr_pcg = 0;
     idp_idx = 0;
     double rms_r_pcgA = 0.0;
+    double beta;
     pcg_conver = 1;  // assuming pcg will converge
 
     // Head of the loop
@@ -427,19 +428,19 @@ void OCCWave::orb_resp_pcg_rhf() {
 
         // Build line search parameter beta
         if (pcg_beta_type_ == "FLETCHER_REEVES") {
-            b_pcgA = r_pcg_newA->dot(z_pcg_newA) / r_pcgA->dot(z_pcgA);
+            beta = r_pcg_newA->dot(z_pcg_newA) / r_pcgA->dot(z_pcgA);
         }
 
         else if (pcg_beta_type_ == "POLAK_RIBIERE") {
             dr_pcgA->copy(r_pcg_newA);
             dr_pcgA->subtract(r_pcgA);
-            b_pcgA = z_pcg_newA->dot(dr_pcgA) / z_pcgA->dot(r_pcgA);
+            beta = z_pcg_newA->dot(dr_pcgA) / z_pcgA->dot(r_pcgA);
         }
 
         // Build p-new
         p_pcg_newA->zero();
         p_pcg_newA->copy(p_pcgA);
-        p_pcg_newA->scale(b_pcgA);
+        p_pcg_newA->scale(beta);
         p_pcg_newA->add(z_pcg_newA);
 
         // Reset
@@ -478,6 +479,7 @@ void OCCWave::orb_resp_pcg_uhf() {
     double rms_r_pcgA = 0.0;
     double rms_r_pcgB = 0.0;
     double rms_r_pcg = 0.0;
+    double beta;
     pcg_conver = 1;  // assuming pcg will converge
 
     // Head of the loop
@@ -548,8 +550,7 @@ void OCCWave::orb_resp_pcg_uhf() {
 
         // Build line search parameter beta
         if (pcg_beta_type_ == "FLETCHER_REEVES") {
-            b_pcgA = r_pcg_newA->dot(z_pcg_newA) / r_pcgA->dot(z_pcgA);
-            b_pcgB = r_pcg_newB->dot(z_pcg_newB) / r_pcgB->dot(z_pcgB);
+            beta = (r_pcg_newA->dot(z_pcg_newA) + r_pcg_newB->dot(z_pcg_newB)) / (r_pcgA->dot(z_pcgA) + r_pcgB->dot(z_pcgB));
         }
 
         else if (pcg_beta_type_ == "POLAK_RIBIERE") {
@@ -557,18 +558,17 @@ void OCCWave::orb_resp_pcg_uhf() {
             dr_pcgA->subtract(r_pcgA);
             dr_pcgB->copy(r_pcg_newB);
             dr_pcgB->subtract(r_pcgB);
-            b_pcgA = z_pcg_newA->dot(dr_pcgA) / z_pcgA->dot(r_pcgA);
-            b_pcgB = z_pcg_newB->dot(dr_pcgB) / z_pcgB->dot(r_pcgB);
+            beta = (z_pcg_newA->dot(dr_pcgA) + z_pcg_newB->dot(dr_pcgB)) / (z_pcgA->dot(r_pcgA) + z_pcgB->dot(r_pcgB));
         }
 
         // Build p-new
         p_pcg_newA->zero();
         p_pcg_newA->copy(p_pcgA);
-        p_pcg_newA->scale(b_pcgA);
+        p_pcg_newA->scale(beta);
         p_pcg_newA->add(z_pcg_newA);
         p_pcg_newB->zero();
         p_pcg_newB->copy(p_pcgB);
-        p_pcg_newB->scale(b_pcgB);
+        p_pcg_newB->scale(beta);
         p_pcg_newB->add(z_pcg_newB);
 
         // Reset
