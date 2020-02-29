@@ -299,8 +299,6 @@ class OCCWave : public Wavefunction {
     double cutoff;
     double os_scale;
     double ss_scale;
-    double a_pcgA;
-    double a_pcgB;
     double b_pcgA;
     double b_pcgB;
     double rms_pcgA;
