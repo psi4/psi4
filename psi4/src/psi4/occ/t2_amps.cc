@@ -704,7 +704,7 @@ void OCCWave::t2_amps() {
             rms_t2AB = 0.0;
             rms_t2AB = global_dpd_->buf4_dot_self(&R);
             global_dpd_->buf4_close(&R);
-            rms_t2AB = std::sqrt(rms_t2AA) / nElements;
+            rms_t2AB = std::sqrt(rms_t2AB) / nElements;
         } else {
             rms_t2AB = 0.0;
         }
