@@ -166,11 +166,6 @@ def scf_initialize(self):
     self.memory_jk_ = int(total_memory - collocation_memory)
     self.memory_collocation_ = int(collocation_memory)
 
-    # Print out initial docc/socc/etc data
-    if self.get_print():
-        core.print_out("  ==> Pre-Iterations <==\n\n")
-        self.print_preiterations()
-
     if self.get_print():
         core.print_out("  ==> Integral Setup <==\n\n")
 
@@ -198,7 +193,6 @@ def scf_initialize(self):
         self.initialize_jk(self.memory_jk_, jk=jk)
         if self.V_potential():
             self.V_potential().build_collocation_cache(self.memory_collocation_)
-
         core.timer_on("HF: Form core H")
         self.form_H()
         core.timer_off("HF: Form core H")
@@ -219,9 +213,19 @@ def scf_initialize(self):
         self.form_Shalf()
         core.timer_off("HF: Form S/X")
 
+        core.print_out("\n  ==> Pre-Iterations <==\n\n")
+
         core.timer_on("HF: Guess")
         self.guess()
         core.timer_off("HF: Guess")
+        # Print out initial docc/socc/etc data
+        if self.get_print():                    
+            lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['SAD']
+            if core.get_global_option('GUESS') in ['SAD']:
+                lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['AUTO']
+                self.print_preiterations(small=lack_occupancy)
+            else:
+                self.print_preiterations(small=lack_occupancy)
 
     else:
         # We're reading the orbitals from the previous set of iterations.
@@ -696,23 +700,41 @@ def scf_print_energies(self):
     self.set_variable('SCF ITERATIONS', self.iteration_)
 
 
-def scf_print_preiterations(self):
+def scf_print_preiterations(self,small=False):
+    # small version does not print Nalpha,Nbeta,Ndocc,Nsocc, e.g. for SAD guess where they are not
+    # available
     ct = self.molecule().point_group().char_table()
 
-    core.print_out("   -------------------------------------------------------\n")
-    core.print_out("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n")
-    core.print_out("   -------------------------------------------------------\n")
+    if not small:
+        core.print_out("   -------------------------------------------------------\n")
+        core.print_out("    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n")
+        core.print_out("   -------------------------------------------------------\n")
 
-    for h in range(self.nirrep()):
+        for h in range(self.nirrep()):
+            core.print_out(
+                f"     {ct.gamma(h).symbol():<3s}   {self.nsopi()[h]:6d}  {self.nmopi()[h]:6d}  {self.nalphapi()[h]:6d}  {self.nbetapi()[h]:6d}  {self.doccpi()[h]:6d}  {self.soccpi()[h]:6d}\n"
+            )
+
+        core.print_out("   -------------------------------------------------------\n")
         core.print_out(
-            f"     {ct.gamma(h).symbol():<3s}   {self.nsopi()[h]:6d}  {self.nmopi()[h]:6d}  {self.nalphapi()[h]:6d}  {self.nbetapi()[h]:6d}  {self.doccpi()[h]:6d}  {self.soccpi()[h]:6d}\n"
+            f"    Total  {self.nso():6d}  {self.nmo():6d}  {self.nalpha():6d}  {self.nbeta():6d}  {self.nbeta():6d}  {self.nalpha() - self.nbeta():6d}\n"
         )
+        core.print_out("   -------------------------------------------------------\n\n")
+    else:
+        core.print_out("   -------------------------\n")
+        core.print_out("    Irrep   Nso     Nmo    \n")
+        core.print_out("   -------------------------\n")
 
-    core.print_out("   -------------------------------------------------------\n")
-    core.print_out(
-        f"    Total  {self.nso():6d}  {self.nmo():6d}  {self.nalpha():6d}  {self.nbeta():6d}  {self.nbeta():6d}  {self.nalpha() - self.nbeta():6d}\n"
-    )
-    core.print_out("   -------------------------------------------------------\n\n")
+        for h in range(self.nirrep()):
+            core.print_out(
+                f"     {ct.gamma(h).symbol():<3s}   {self.nsopi()[h]:6d}  {self.nmopi()[h]:6d} \n"
+            )
+
+        core.print_out("   -------------------------\n")
+        core.print_out(
+            f"    Total  {self.nso():6d}  {self.nmo():6d}\n"
+        )
+        core.print_out("   -------------------------\n\n")
 
 
 # Bind functions to core.HF class
