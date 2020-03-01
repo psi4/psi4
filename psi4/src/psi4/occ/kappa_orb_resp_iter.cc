@@ -386,6 +386,8 @@ void OCCWave::orb_resp_pcg_rhf() {
     double beta;
     pcg_conver = 1;  // assuming pcg will converge
 
+    double delta_new = r_pcgA->dot(z_pcgA);
+
     // Head of the loop
     do {
         dpdfile2 P;
@@ -408,7 +410,7 @@ void OCCWave::orb_resp_pcg_rhf() {
         compute_sigma_vector();
         
         // Build line search parameter alpha
-        double alpha = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
+        double alpha = delta_new / p_pcgA->dot(sigma_pcgA);
 
         // Build kappa-new
         kappa_newA->zero();
@@ -426,15 +428,18 @@ void OCCWave::orb_resp_pcg_rhf() {
         // Build z-new
         z_pcg_newA->dirprd(Minv_pcgA, r_pcg_newA);
 
+        double delta_old = delta_new;
+        delta_new = r_pcg_newA->dot(z_pcg_newA);
+
         // Build line search parameter beta
         if (pcg_beta_type_ == "FLETCHER_REEVES") {
-            beta = r_pcg_newA->dot(z_pcg_newA) / r_pcgA->dot(z_pcgA);
+            beta = delta_new / delta_old;
         }
 
         else if (pcg_beta_type_ == "POLAK_RIBIERE") {
             dr_pcgA->copy(r_pcg_newA);
             dr_pcgA->subtract(r_pcgA);
-            beta = z_pcg_newA->dot(dr_pcgA) / z_pcgA->dot(r_pcgA);
+            beta = z_pcg_newA->dot(dr_pcgA) / delta_old;
         }
 
         // Build p-new
@@ -482,6 +487,8 @@ void OCCWave::orb_resp_pcg_uhf() {
     double beta;
     pcg_conver = 1;  // assuming pcg will converge
 
+    double delta_new = r_pcgA->dot(z_pcgA) + r_pcgB->dot(z_pcgB);
+
     // Head of the loop
     do {
         dpdfile2 P;
@@ -519,7 +526,7 @@ void OCCWave::orb_resp_pcg_uhf() {
         compute_sigma_vector();
 
         // Build line search parameter alpha
-        double alpha = (r_pcgA->dot(z_pcgA) + r_pcgB->dot(z_pcgB)) / (p_pcgA->dot(sigma_pcgA) + p_pcgB->dot(sigma_pcgB));
+        double alpha = delta_new / (p_pcgA->dot(sigma_pcgA) + p_pcgB->dot(sigma_pcgB));
 
         // Build kappa-new
         kappa_newA->zero();
@@ -548,9 +555,12 @@ void OCCWave::orb_resp_pcg_uhf() {
         z_pcg_newA->dirprd(Minv_pcgA, r_pcg_newA);
         z_pcg_newB->dirprd(Minv_pcgB, r_pcg_newB);
 
+        double delta_old = delta_new;
+        delta_new = r_pcg_newA->dot(z_pcg_newA) + r_pcg_newB->dot(z_pcg_newB);
+
         // Build line search parameter beta
         if (pcg_beta_type_ == "FLETCHER_REEVES") {
-            beta = (r_pcg_newA->dot(z_pcg_newA) + r_pcg_newB->dot(z_pcg_newB)) / (r_pcgA->dot(z_pcgA) + r_pcgB->dot(z_pcgB));
+            beta = delta_new / delta_old;
         }
 
         else if (pcg_beta_type_ == "POLAK_RIBIERE") {
@@ -558,7 +568,7 @@ void OCCWave::orb_resp_pcg_uhf() {
             dr_pcgA->subtract(r_pcgA);
             dr_pcgB->copy(r_pcg_newB);
             dr_pcgB->subtract(r_pcgB);
-            beta = (z_pcg_newA->dot(dr_pcgA) + z_pcg_newB->dot(dr_pcgB)) / (z_pcgA->dot(r_pcgA) + z_pcgB->dot(r_pcgB));
+            beta = (z_pcg_newA->dot(dr_pcgA) + z_pcg_newB->dot(dr_pcgB)) / delta_old;
         }
 
         // Build p-new
