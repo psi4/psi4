@@ -100,15 +100,14 @@ void OCCWave::occ_iterations() {
         // PCG
         else if (orb_resp_solver_ == "PCG") {
             r_pcgA = new Array1d("Alpha PCG r vector", nidpA);
-            z_pcgA = new Array1d("Alpha PCG z vector", nidpA);
+            S_pcgA = new Array1d("Alpha PCG search direction vector", nidpA);
             p_pcgA = new Array1d("Alpha PCG p vector", nidpA);
             r_pcg_newA = new Array1d("Alpha New PCG r vector", nidpA);
-            z_pcg_newA = new Array1d("Alpha New PCG z vector", nidpA);
             p_pcg_newA = new Array1d("Alpha New PCG p vector", nidpA);
             sigma_pcgA = new Array1d("Alpha PCG sigma vector", nidpA);
             Minv_pcgA = new Array1d("Alpha PCG inverse of M matrix", nidpA);
             r_pcgA->zero();
-            z_pcgA->zero();
+            S_pcgA->zero();
             sigma_pcgA->zero();
             p_pcgA->zero();
             Minv_pcgA->zero();
@@ -120,15 +119,14 @@ void OCCWave::occ_iterations() {
 
             if (reference_ == "UNRESTRICTED") {
                 r_pcgB = new Array1d("Beta PCG r vector", nidpB);
-                z_pcgB = new Array1d("Beta PCG z vector", nidpB);
+                S_pcgB = new Array1d("Beta PCG search direction vector", nidpB);
                 p_pcgB = new Array1d("Beta PCG p vector", nidpB);
                 r_pcg_newB = new Array1d("Beta New PCG r vector", nidpB);
-                z_pcg_newB = new Array1d("Beta New PCG z vector", nidpB);
                 p_pcg_newB = new Array1d("Beta New PCG p vector", nidpB);
                 sigma_pcgB = new Array1d("Beta PCG sigma vector", nidpB);
                 Minv_pcgB = new Array1d("Beta PCG inverse of M matrix", nidpB);
                 r_pcgB->zero();
-                z_pcgB->zero();
+                S_pcgB->zero();
                 sigma_pcgB->zero();
                 p_pcgB->zero();
                 Minv_pcgB->zero();
@@ -396,22 +394,20 @@ void OCCWave::occ_iterations() {
         // PCG
         else if (orb_resp_solver_ == "PCG") {
             delete r_pcgA;
-            delete z_pcgA;
+            delete S_pcgA;
             delete p_pcgA;
             delete sigma_pcgA;
             delete Minv_pcgA;
             delete r_pcg_newA;
-            delete z_pcg_newA;
             delete p_pcg_newA;
             if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgA;
             if (reference_ == "UNRESTRICTED") {
                 delete r_pcgB;
-                delete z_pcgB;
+                delete S_pcgB;
                 delete p_pcgB;
                 delete sigma_pcgB;
                 delete Minv_pcgB;
                 delete r_pcg_newB;
-                delete z_pcg_newB;
                 delete p_pcg_newB;
                 if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgB;
             }

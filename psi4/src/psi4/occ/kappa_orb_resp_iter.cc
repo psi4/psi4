@@ -101,11 +101,11 @@ void OCCWave::kappa_orb_resp_iter() {
         r_pcgA->scale(lambda_damping);  // new
         r_pcgA->subtract(sigma_pcgA);
 
-        // Build z0
-        z_pcgA->dirprd(Minv_pcgA, r_pcgA);
+        // Construct initial S
+        S_pcgA->dirprd(Minv_pcgA, r_pcgA);
 
         // Build p0
-        p_pcgA->copy(z_pcgA);
+        p_pcgA->copy(S_pcgA);
 
         // Call Orbital Response Solver
         orb_resp_pcg_rhf();
@@ -281,13 +281,13 @@ void OCCWave::kappa_orb_resp_iter() {
         r_pcgB->scale(lambda_damping);  // new
         r_pcgB->subtract(sigma_pcgB);
 
-        // Build z0
-        z_pcgA->dirprd(Minv_pcgA, r_pcgA);
-        z_pcgB->dirprd(Minv_pcgB, r_pcgB);
+        // Construct initial S
+        S_pcgA->dirprd(Minv_pcgA, r_pcgA);
+        S_pcgB->dirprd(Minv_pcgB, r_pcgB);
 
         // Build p0
-        p_pcgA->copy(z_pcgA);
-        p_pcgB->copy(z_pcgB);
+        p_pcgA->copy(S_pcgA);
+        p_pcgB->copy(S_pcgB);
 
         // Call Orbital Response Solver
         orb_resp_pcg_uhf();
@@ -386,7 +386,7 @@ void OCCWave::orb_resp_pcg_rhf() {
     double beta;
     pcg_conver = 1;  // assuming pcg will converge
 
-    double delta_new = r_pcgA->dot(z_pcgA);
+    double delta_new = r_pcgA->dot(S_pcgA);
 
     // Head of the loop
     do {
@@ -425,11 +425,11 @@ void OCCWave::orb_resp_pcg_rhf() {
         r_pcg_newA->add(r_pcgA);
         rms_r_pcgA = r_pcg_newA->rms();
 
-        // Build z-new
-        z_pcg_newA->dirprd(Minv_pcgA, r_pcg_newA);
+        // Update S
+        S_pcgA->dirprd(Minv_pcgA, r_pcg_newA);
 
         double delta_old = delta_new;
-        delta_new = r_pcg_newA->dot(z_pcg_newA);
+        delta_new = r_pcg_newA->dot(S_pcgA);
 
         // Build line search parameter beta
         if (pcg_beta_type_ == "FLETCHER_REEVES") {
@@ -439,23 +439,21 @@ void OCCWave::orb_resp_pcg_rhf() {
         else if (pcg_beta_type_ == "POLAK_RIBIERE") {
             dr_pcgA->copy(r_pcg_newA);
             dr_pcgA->subtract(r_pcgA);
-            beta = z_pcg_newA->dot(dr_pcgA) / delta_old;
+            beta = S_pcgA->dot(dr_pcgA) / delta_old;
         }
 
         // Build p-new
         p_pcg_newA->zero();
         p_pcg_newA->copy(p_pcgA);
         p_pcg_newA->scale(beta);
-        p_pcg_newA->add(z_pcg_newA);
+        p_pcg_newA->add(S_pcgA);
 
         // Reset
         kappaA->zero();
         r_pcgA->zero();
-        z_pcgA->zero();
         p_pcgA->zero();
         kappaA->copy(kappa_newA);
         r_pcgA->copy(r_pcg_newA);
-        z_pcgA->copy(z_pcg_newA);
         p_pcgA->copy(p_pcg_newA);
 
         // RMS kappa
@@ -487,7 +485,7 @@ void OCCWave::orb_resp_pcg_uhf() {
     double beta;
     pcg_conver = 1;  // assuming pcg will converge
 
-    double delta_new = r_pcgA->dot(z_pcgA) + r_pcgB->dot(z_pcgB);
+    double delta_new = r_pcgA->dot(S_pcgA) + r_pcgB->dot(S_pcgB);
 
     // Head of the loop
     do {
@@ -551,12 +549,12 @@ void OCCWave::orb_resp_pcg_uhf() {
         rms_r_pcgB = r_pcg_newB->rms();
         rms_r_pcg = MAX0(rms_r_pcgA, rms_r_pcgB);
 
-        // Build z-new
-        z_pcg_newA->dirprd(Minv_pcgA, r_pcg_newA);
-        z_pcg_newB->dirprd(Minv_pcgB, r_pcg_newB);
+        // Update S
+        S_pcgA->dirprd(Minv_pcgA, r_pcg_newA);
+        S_pcgB->dirprd(Minv_pcgB, r_pcg_newB);
 
         double delta_old = delta_new;
-        delta_new = r_pcg_newA->dot(z_pcg_newA) + r_pcg_newB->dot(z_pcg_newB);
+        delta_new = r_pcg_newA->dot(S_pcgA) + r_pcg_newB->dot(S_pcgB);
 
         // Build line search parameter beta
         if (pcg_beta_type_ == "FLETCHER_REEVES") {
@@ -568,35 +566,31 @@ void OCCWave::orb_resp_pcg_uhf() {
             dr_pcgA->subtract(r_pcgA);
             dr_pcgB->copy(r_pcg_newB);
             dr_pcgB->subtract(r_pcgB);
-            beta = (z_pcg_newA->dot(dr_pcgA) + z_pcg_newB->dot(dr_pcgB)) / delta_old;
+            beta = (S_pcgA->dot(dr_pcgA) + S_pcgB->dot(dr_pcgB)) / delta_old;
         }
 
         // Build p-new
         p_pcg_newA->zero();
         p_pcg_newA->copy(p_pcgA);
         p_pcg_newA->scale(beta);
-        p_pcg_newA->add(z_pcg_newA);
+        p_pcg_newA->add(S_pcgA);
         p_pcg_newB->zero();
         p_pcg_newB->copy(p_pcgB);
         p_pcg_newB->scale(beta);
-        p_pcg_newB->add(z_pcg_newB);
+        p_pcg_newB->add(S_pcgB);
 
         // Reset
         kappaA->zero();
         r_pcgA->zero();
-        z_pcgA->zero();
         p_pcgA->zero();
         kappaA->copy(kappa_newA);
         r_pcgA->copy(r_pcg_newA);
-        z_pcgA->copy(z_pcg_newA);
         p_pcgA->copy(p_pcg_newA);
         kappaB->zero();
         r_pcgB->zero();
-        z_pcgB->zero();
         p_pcgB->zero();
         kappaB->copy(kappa_newB);
         r_pcgB->copy(r_pcg_newB);
-        z_pcgB->copy(z_pcg_newB);
         p_pcgB->copy(p_pcg_newB);
 
         // RMS kappa

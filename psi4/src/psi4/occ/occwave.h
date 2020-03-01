@@ -441,8 +441,8 @@ class OCCWave : public Wavefunction {
     Array1d *kappa_newB;
     Array1d *r_pcgA;
     Array1d *r_pcgB;
-    Array1d *z_pcgA;
-    Array1d *z_pcgB;
+    Array1d *S_pcgA;
+    Array1d *S_pcgB;
     Array1d *p_pcgA;
     Array1d *p_pcgB;
     Array1d *sigma_pcgA;
@@ -451,8 +451,6 @@ class OCCWave : public Wavefunction {
     Array1d *Minv_pcgB;
     Array1d *r_pcg_newA;
     Array1d *r_pcg_newB;
-    Array1d *z_pcg_newA;
-    Array1d *z_pcg_newB;
     Array1d *p_pcg_newA;
     Array1d *p_pcg_newB;
     Array1d *dr_pcgA;
