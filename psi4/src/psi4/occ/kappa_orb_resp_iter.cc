@@ -104,8 +104,8 @@ void OCCWave::kappa_orb_resp_iter() {
         // Construct initial S
         S_pcgA->dirprd(Minv_pcgA, r_pcgA);
 
-        // Build p0
-        p_pcgA->copy(S_pcgA);
+        // Construct initial D
+        D_pcgA->copy(S_pcgA);
 
         // Call Orbital Response Solver
         orb_resp_pcg_rhf();
@@ -285,9 +285,9 @@ void OCCWave::kappa_orb_resp_iter() {
         S_pcgA->dirprd(Minv_pcgA, r_pcgA);
         S_pcgB->dirprd(Minv_pcgB, r_pcgB);
 
-        // Build p0
-        p_pcgA->copy(S_pcgA);
-        p_pcgB->copy(S_pcgB);
+        // Construct initial D
+        D_pcgA->copy(S_pcgA);
+        D_pcgB->copy(S_pcgB);
 
         // Call Orbital Response Solver
         orb_resp_pcg_uhf();
@@ -399,7 +399,7 @@ void OCCWave::orb_resp_pcg_rhf() {
         for (int h = 0; h < nirrep_; ++h) {
             for (int a = 0; a < virtpiA[h]; ++a) {
                 for (int i = 0; i < occpiA[h]; ++i) {
-                    P.matrix[h][a][i] = p_pcgA->get(idp_idx);
+                    P.matrix[h][a][i] = D_pcgA->get(idp_idx);
                     idp_idx++;
                 }
             }
@@ -410,11 +410,11 @@ void OCCWave::orb_resp_pcg_rhf() {
         compute_sigma_vector();
         
         // Build line search parameter alpha
-        double alpha = delta_new / p_pcgA->dot(sigma_pcgA);
+        double alpha = delta_new / D_pcgA->dot(sigma_pcgA);
 
         // Build kappa-new
         kappa_newA->zero();
-        kappa_newA->copy(p_pcgA);
+        kappa_newA->copy(D_pcgA);
         kappa_newA->scale(alpha);
         kappa_newA->add(kappaA);
 
@@ -442,19 +442,15 @@ void OCCWave::orb_resp_pcg_rhf() {
             beta = S_pcgA->dot(dr_pcgA) / delta_old;
         }
 
-        // Build p-new
-        p_pcg_newA->zero();
-        p_pcg_newA->copy(p_pcgA);
-        p_pcg_newA->scale(beta);
-        p_pcg_newA->add(S_pcgA);
+        // Update D
+        D_pcgA->scale(beta);
+        D_pcgA->add(S_pcgA);
 
         // Reset
         kappaA->zero();
         r_pcgA->zero();
-        p_pcgA->zero();
         kappaA->copy(kappa_newA);
         r_pcgA->copy(r_pcg_newA);
-        p_pcgA->copy(p_pcg_newA);
 
         // RMS kappa
         rms_kappaA = 0.0;
@@ -498,7 +494,7 @@ void OCCWave::orb_resp_pcg_uhf() {
         for (int h = 0; h < nirrep_; ++h) {
             for (int a = 0; a < virtpiA[h]; ++a) {
                 for (int i = 0; i < occpiA[h]; ++i) {
-                    P.matrix[h][a][i] = p_pcgA->get(idp_idx);
+                    P.matrix[h][a][i] = D_pcgA->get(idp_idx);
                     idp_idx++;
                 }
             }
@@ -513,7 +509,7 @@ void OCCWave::orb_resp_pcg_uhf() {
         for (int h = 0; h < nirrep_; ++h) {
             for (int a = 0; a < virtpiB[h]; ++a) {
                 for (int i = 0; i < occpiB[h]; ++i) {
-                    P.matrix[h][a][i] = p_pcgB->get(idp_idx);
+                    P.matrix[h][a][i] = D_pcgB->get(idp_idx);
                     idp_idx++;
                 }
             }
@@ -524,15 +520,15 @@ void OCCWave::orb_resp_pcg_uhf() {
         compute_sigma_vector();
 
         // Build line search parameter alpha
-        double alpha = delta_new / (p_pcgA->dot(sigma_pcgA) + p_pcgB->dot(sigma_pcgB));
+        double alpha = delta_new / (D_pcgA->dot(sigma_pcgA) + D_pcgB->dot(sigma_pcgB));
 
         // Build kappa-new
         kappa_newA->zero();
-        kappa_newA->copy(p_pcgA);
+        kappa_newA->copy(D_pcgA);
         kappa_newA->scale(alpha);
         kappa_newA->add(kappaA);
         kappa_newB->zero();
-        kappa_newB->copy(p_pcgB);
+        kappa_newB->copy(D_pcgB);
         kappa_newB->scale(alpha);
         kappa_newB->add(kappaB);
 
@@ -569,29 +565,21 @@ void OCCWave::orb_resp_pcg_uhf() {
             beta = (S_pcgA->dot(dr_pcgA) + S_pcgB->dot(dr_pcgB)) / delta_old;
         }
 
-        // Build p-new
-        p_pcg_newA->zero();
-        p_pcg_newA->copy(p_pcgA);
-        p_pcg_newA->scale(beta);
-        p_pcg_newA->add(S_pcgA);
-        p_pcg_newB->zero();
-        p_pcg_newB->copy(p_pcgB);
-        p_pcg_newB->scale(beta);
-        p_pcg_newB->add(S_pcgB);
+        // Update D
+        D_pcgA->scale(beta);
+        D_pcgA->add(S_pcgA);
+        D_pcgB->scale(beta);
+        D_pcgB->add(S_pcgB);
 
         // Reset
         kappaA->zero();
         r_pcgA->zero();
-        p_pcgA->zero();
         kappaA->copy(kappa_newA);
         r_pcgA->copy(r_pcg_newA);
-        p_pcgA->copy(p_pcg_newA);
         kappaB->zero();
         r_pcgB->zero();
-        p_pcgB->zero();
         kappaB->copy(kappa_newB);
         r_pcgB->copy(r_pcg_newB);
-        p_pcgB->copy(p_pcg_newB);
 
         // RMS kappa
         rms_kappaA = kappaA->rms();
