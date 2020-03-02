@@ -1336,10 +1336,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             It is recommended to leave damping on until convergence, which is the default.
         **Cfour Interface:** Keyword translates into |cfour__cfour_scf_damping|. -*/
         options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
-        /*- Accelerate convergence by performing a preliminary scf with
+        /*- Accelerate convergence by performing a preliminary SCF with
         this small basis set followed by projection into the full target
-        basis. A value of ``TRUE`` turns on projection using the 3-21G
-        small basis set. -*/
+        basis. A value of ``TRUE`` turns on projection using the
+        :ref:`Defaults <apdx:basisFamily>` small basis set 3-21G, pcseg-0, or def2-SV(P). -*/
         options.add_str("BASIS_GUESS", "FALSE", "");
         /*- When |scf__basis_guess| is active, run the preliminary scf in
         density-fitted mode with this as fitting basis for the small basis

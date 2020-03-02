@@ -47,6 +47,7 @@ from psi4.driver import qcdb
 from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, ValidationError
 #from psi4.driver.molutil import *
+from psi4.driver.qcdb.basislist import corresponding_basis
 # never import driver, wrappers, or aliases into this file
 
 from .roa import run_roa
@@ -1283,7 +1284,9 @@ def scf_helper(name, post_scf=True, **kwargs):
 
         # A user can set "BASIS_GUESS" to True and we default to 3-21G
         if cast is True:
-            guessbasis = '3-21G'
+            guessbasis = corresponding_basis(core.get_global_option('BASIS'), 'GUESS')[0]
+            if guessbasis is None:
+                guessbasis = '3-21G'  # guess of last resort
         else:
             guessbasis = cast
         core.set_global_option('BASIS', guessbasis)
