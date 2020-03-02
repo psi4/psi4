@@ -295,32 +295,6 @@ Tarball from GitHub Repository
 
   Not applicable as source not under git control.
 
-
-.. _`faq:psi3sourceforge`:
-
-Psi3 from SourceForge
----------------------
-
-* **Get Initially**
-
-  A tarball of the most recent version of Psi3 (3.4.0 circa 2009) is
-  available from `SourceForge
-  <http://sourceforge.net/projects/psicode/files/psi/3.4.0/>`_
-
-* **Build**
-
-  Follow the ``INSTALL`` file that comes with the distribution. An old
-  computer is probably handy for generating a working executable.
-
-* **Get Updates**
-
-  Updates are not forthcoming.
-
-* **Contribute Back**
-
-  This code is not under any development.
-
-
 .. _`faq:githubworkflow`:
 
 What is the suggested GitHub workflow
