@@ -222,7 +222,7 @@ void VBase::build_collocation_cache(size_t memory) {
     }
 
     // Figure out stride as closest whole number to amount we need
-    size_t stride = (size_t)(1.0 / ((double)memory / collocation_size));
+    size_t stride = (size_t)(std::ceil(collocation_size / (double)memory));
 
     // More memory than needed
     if (stride == 0) {
@@ -281,10 +281,10 @@ void VBase::build_collocation_cache(size_t memory) {
     size_t saved_size = std::accumulate(saved_size_rank.begin(), saved_size_rank.end(), 0.0);
     size_t ncomputed = std::accumulate(ncomputed_rank.begin(), ncomputed_rank.end(), 0.0);
 
-    double mib_saved = 8.0 * (double)saved_size / 1024.0 / 1024.0 / 1024.0;
+    double gib_saved = 8.0 * (double)saved_size / 1024.0 / 1024.0 / 1024.0;
     double fraction = (double)ncomputed / grid_->blocks().size() * 100;
     if (print_) {
-        outfile->Printf("  Cached %.1lf%% of DFT collocation blocks in %.3lf [GiB].\n\n", fraction, mib_saved);
+        outfile->Printf("  Cached %.1lf%% of DFT collocation blocks in %.3lf [GiB].\n\n", fraction, gib_saved);
     }
 }
 void VBase::prepare_vv10_cache(DFTGrid& nlgrid, SharedMatrix D,
