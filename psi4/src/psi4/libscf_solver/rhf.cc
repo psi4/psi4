@@ -200,17 +200,23 @@ void RHF::form_G() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-    if (alpha != 0.0) {
-        G_->axpy(-alpha, K_);
+    if (jk_->name() == "MemDFJK") {
+        G_->axpy(-1.0, K_);
     } else {
-        K_->zero();
+        if (alpha != 0.0) {
+            G_->axpy(-alpha, K_);
+        } else {
+            K_->zero();
+        }
+    
+        if (functional_->is_x_lrc()) {
+            G_->axpy(-beta, wK_);
+        } else {
+            wK_->zero();
+        }
     }
 
-    if (functional_->is_x_lrc()) {
-        G_->axpy(-beta, wK_);
-    } else {
-        wK_->zero();
-    }
+
 }
 
 double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
@@ -313,11 +319,16 @@ double RHF::compute_E() {
     double exchange_E = 0.0;
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-    if (functional_->is_x_hybrid()) {
-        exchange_E -= alpha * Da_->vector_dot(K_);
-    }
-    if (functional_->is_x_lrc()) {
-        exchange_E -= beta * Da_->vector_dot(wK_);
+
+    if (jk_->name() == "MemDFJK"){
+        exchange_E -= Da_->vector_dot(K_);
+    } else {
+        if (functional_->is_x_hybrid()) {
+            exchange_E -= alpha * Da_->vector_dot(K_);
+        }
+        if (functional_->is_x_lrc()) {
+            exchange_E -= beta * Da_->vector_dot(wK_);
+        }
     }
 
     double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;

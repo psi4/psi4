@@ -570,6 +570,7 @@ void DFHelper::prepare_AO_wK_core() {
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 1, psteps);
 
     wPpq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
+    /* I don't think I'm going to need Ppq_ in the long term, but in the short term, I need it to build J*/
     Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
     m1Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
 
@@ -578,7 +579,9 @@ void DFHelper::prepare_AO_wK_core() {
     double* m1ppq = m1Ppq_.get();
 
     std::unique_ptr<double[]> Qpq(new double[std::get<0>(plargest)]);
+    std::unique_ptr<double[]> Qpq2(new double[std::get<0>(plargest)]);
     double* M1p = Qpq.get();
+    double* M2p = Qpq2.get();
     std::unique_ptr<double[]> metric1;
     double* met1p;
     std::unique_ptr<double[]> metric;
@@ -604,21 +607,15 @@ void DFHelper::prepare_AO_wK_core() {
         size_t begin = pshell_aggs_[start];
         size_t end = pshell_aggs_[stop + 1] - 1;
 
+/*
         // compute (A|mn)
-        timer_on("DFH: AO Construction");
         compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
-        timer_off("DFH: AO Construction");
 
         // contract full metric inverse
-        timer_on("DFH: AO-Met. Contraction");
         contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
-        timer_off("DFH: AO-Met. Contraction");
+*/
 
-        // contract half metric inverse
-        timer_on("DFH: AO-Met. Contraction");
-        contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
-        timer_off("DFH: AO-Met. Contraction");
-
+/*
         // compute (A|w|mn)
         timer_on("DFH: wAO Construction");
         compute_sparse_pQq_blocking_p_symm(start, stop, M1p, weri);
@@ -627,6 +624,25 @@ void DFHelper::prepare_AO_wK_core() {
         timer_on("DFH: wAO Copy");
         copy_upper_lower_wAO_core_symm(M1p, wppq, begin, end);
         timer_off("DFH: wAO Copy");
+*/
+
+        // computes (Q|mn) and (Q|w|mn)
+        timer_on("DFH: AO Construction");
+        compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
+        timer_off("DFH: AO Construction");
+
+        // contract half metric inverse I'm planning to get rid of this
+        timer_on("DFH: AO-Met. Contraction");
+        contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
+        timer_off("DFH: AO-Met. Contraction");
+
+
+        // computes  [J^{-1.0}](Q|mn)
+        timer_on("DFH: AO-Met. Contraction");
+        contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
+        timer_off("DFH: AO-Met. Contraction");
+
+        copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
     }
 
     // no more need for metrics
@@ -1270,7 +1286,77 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
                 }
             }
         }
+    } // ends MU loop
+}
+
+void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const size_t stop, double* just_Mp, double* param_Mp,
+                                                  std::vector<std::shared_ptr<TwoBodyAOInt>> eri,
+                                                  std::vector<std::shared_ptr<TwoBodyAOInt>> weri
+) {
+    size_t begin = pshell_aggs_[start];
+    size_t end = pshell_aggs_[stop + 1] - 1;
+    size_t block_size = end - begin + 1;
+    size_t startind = symm_big_skips_[begin];
+    //    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
+    //    outfile->Printf(", nbf_ index: (%zu, %zu), size: %zu\n", begin, end, block_size);
+
+    // prepare eri buffers
+    size_t nthread = nthreads_;
+    if (eri.size() != nthreads_) nthread = eri.size();
+
+    std::vector<const double*> buffer(nthread);
+    std::vector<const double*> wbuffer(nthread);
+#pragma omp parallel num_threads(nthread)
+    {
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        buffer[rank] = eri[rank]->buffer();
+        wbuffer[rank] = weri[rank]->buffer();
     }
+
+#pragma omp parallel for schedule(guided) num_threads(nthread)
+    for (size_t MU = start; MU <= stop; MU++) {
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        size_t nummu = primary_->shell(MU).nfunction();
+        for (size_t NU = MU; NU < pshells_; NU++) {
+            size_t numnu = primary_->shell(NU).nfunction();
+            if (!schwarz_shell_mask_[MU * pshells_ + NU]) {
+                continue;
+            }
+
+            // Loop over Auxiliary index
+            for (size_t Pshell = 0; Pshell < Qshells_; Pshell++) {
+                size_t PHI = aux_->shell(Pshell).function_index();
+                size_t numP = aux_->shell(Pshell).nfunction();
+                eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                weri[rank]->compute_shell(Pshell, 0, MU, NU);
+
+                for (size_t mu = 0; mu < nummu; mu++) {
+                    size_t omu = primary_->shell(MU).function_index() + mu;
+                    for (size_t nu = 0; nu < numnu; nu++) {
+                        size_t onu = primary_->shell(NU).function_index() + nu;
+
+                        // Remove sieved integrals or lower triangular
+                        if (!schwarz_fun_mask_[omu * nbf_ + onu] || omu > onu) {
+                            continue;
+                        }
+
+                        for (size_t P = 0; P < numP; P++) {
+                            size_t jump = schwarz_fun_mask_[omu * nbf_ + onu] - schwarz_fun_mask_[omu * nbf_ + omu];
+                            size_t ind1 = symm_big_skips_[omu] - startind + (PHI + P) * symm_small_skips_[omu] + jump;
+                            just_Mp[ind1] = buffer[rank][P * nummu * numnu + mu * numnu + nu];
+                            param_Mp[ind1] = omega_alpha_ * buffer[rank][P * nummu * numnu + mu * numnu + nu] + omega_beta_ * wbuffer[rank][P * nummu * numnu + mu * numnu + nu];
+                        }
+                    }
+                }
+            }
+        }
+    } // ends MU loop
 }
 void DFHelper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     size_t begin = Qshell_aggs_[start];
@@ -1360,7 +1446,11 @@ std::string DFHelper::compute_metric(double m_pow) {
 
         // get and compute
         get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
-        metric->power(m_pow, condition_);
+        if (std::fabs(m_pow + 1.0) < 1e-13) { 
+            metric->general_invert();
+        } else { 
+            metric->power(m_pow, condition_);
+        }
 
         // make new file
         std::string name = "metric";
@@ -2859,6 +2949,8 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
     if (debug_) {
         outfile->Printf("Entering DFHelper::build_JK\n");
     }
+    bool store_k = do_K;
+    if ( do_wK ) { do_K = false;} 
 
     // This was an if-else statement. Presumably, we could manage J construction
     //   to more effectively manage memory, so I think that was what was going on.
@@ -2871,9 +2963,11 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
 
     if (do_wK_) {
         timer_on("DFH: compute_wK()");
-        compute_wK(Cleft, Cright, wK, max_nocc, do_J, do_K, do_wK);
+        compute_wK(Cleft, Cright, K, max_nocc, do_J, do_K, do_wK);
         timer_off("DFH: compute_wK()");
     }
+
+    if (store_k) { do_K = true;}
 
     if (debug_) {
         outfile->Printf("Exiting DFHelper::build_JK\n");
