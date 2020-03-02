@@ -43,11 +43,9 @@
 namespace psi {
 
 BasisSetOrthogonalization::BasisSetOrthogonalization(OrthogonalizationMethod method, SharedMatrix overlap,
-                                                     SharedVector rsq, double lindep_tolerance,
-                                                     double cholesky_tolerance, int print)
+                                                     double lindep_tolerance, double cholesky_tolerance, int print)
     : orthog_method_(method),
       overlap_(overlap),
-      rsq_(rsq),
       lindep_tol_(lindep_tolerance),
       cholesky_tol_(cholesky_tolerance),
       print_(print) {
@@ -230,15 +228,25 @@ void BasisSetOrthogonalization::compute_canonical_orthog() {
 }
 
 std::vector<std::vector<int>> BasisSetOrthogonalization::sort_indices() const {
-    std::vector<std::vector<int>> order(rsq_->nirrep());
-    for (int h = 0; h < rsq_->nirrep(); h++) {
+    std::vector<std::vector<int>> order(normalized_overlap_->nirrep());
+    for (int h = 0; h < normalized_overlap_->nirrep(); h++) {
         // initialize ordering as 0, 1, 2, ..., n-1
-        order[h].resize(rsq_->dim(h));
+        order[h].resize(normalized_overlap_->coldim(h));
         iota(order[h].begin(), order[h].end(), 0);
 
-        // and then sort the indices by rsq
-        std::stable_sort(order[h].begin(), order[h].end(),
-                         [this, h](int i1, int i2) { return rsq_->get(h, i1) < rsq_->get(h, i2); });
+        // Collect off-diagonal overlap
+        std::vector<double> od(normalized_overlap_->coldim(h));
+        for (size_t i = 0; i < od.size(); i++) {
+            double sum = 0.0;
+            for (size_t j = 0; j < od.size(); j++) {
+                if (i == j) continue;
+                sum += std::abs(normalized_overlap_->get(h, i, j));
+            }
+            od[i] = sum;
+        }
+
+        // and then sort the indices by increasing off-diagonal overlap
+        std::stable_sort(order[h].begin(), order[h].end(), [&od](int i1, int i2) { return od[i1] < od[i2]; });
     }
 
     return order;
@@ -247,20 +255,8 @@ std::vector<std::vector<int>> BasisSetOrthogonalization::sort_indices() const {
 void BasisSetOrthogonalization::compute_partial_cholesky_orthog() {
     // Original dimensions
     const Dimension& nbf = normalized_overlap_->rowspi();
-    // Make sure we got passed the right size data
-    if (rsq_->nirrep() != normalized_overlap_->nirrep()) {
-        throw PSIEXCEPTION("BasisSetOrthogonalization::compute_partial_cholesky_orthog: incorrect size of rsq vector.");
-    }
-    for (int h = 0; h < rsq_->nirrep(); h++) {
-        if (rsq_->dim(h) != normalized_overlap_->rowspi(h)) {
-            std::ostringstream oss;
-            oss << "BasisSetOrthogonalization::compute_partial_cholesky_orthog: incorrect size of symmetry " << h
-                << " of rsq vector.";
-            throw PSIEXCEPTION(oss.str());
-        }
-    }
 
-    // Order basis functions from tight to diffuse
+    // Get the best initial order for the basis functions
     std::vector<std::vector<int>> order = sort_indices();
     // Reorder overlap matrix
     auto Stmp = std::make_shared<Matrix>(nbf, nbf);
@@ -291,7 +287,8 @@ void BasisSetOrthogonalization::compute_partial_cholesky_orthog() {
     Dimension nchol(nbf);
     for (int h = 0; h < normalized_overlap_->nirrep(); h++) {
         nchol[h] = pivots[h].size();
-        if(print_ > 2) outfile->Printf("  Cholesky: irrep %d, %d of %d possible AOs eliminated.\n", h, nbf[h] - nchol[h], nbf[h]);
+        if (print_ > 2)
+            outfile->Printf("  Cholesky: irrep %d, %d of %d possible AOs eliminated.\n", h, nbf[h] - nchol[h], nbf[h]);
     }
     if (nchol.sum() != nbf.sum() && print_)
         outfile->Printf("  Cholesky: overall, %d of %d possible AOs eliminated.\n\n", nbf.sum() - nchol.sum(),

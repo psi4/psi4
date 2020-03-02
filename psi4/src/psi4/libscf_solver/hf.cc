@@ -710,35 +710,7 @@ void HF::form_Shalf() {
     double lindep_tolerance = options_.get_double("S_TOLERANCE");
     double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
 
-    // Compute <r^2> for Cholesky (may be also triggered by auto mode)
-    SharedVector rsq;
-    if (method == BasisSetOrthogonalization::Automatic || method == BasisSetOrthogonalization::PartialCholesky) {
-        // Integral factory
-        IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-        auto quad = (QuadrupoleInt*)integral.ao_quadrupole();
-        // Basis funtion r^2 values
-        std::vector<double> bf_rsq = quad->compute_R_squared();
-
-        const Dimension& nao = AO2SO_->rowspi();
-        const Dimension& nso = AO2SO_->colspi();
-
-        // AO2SO has the info we need for the translation
-        rsq = std::make_shared<Vector>(nso);
-        for (int h = 0; h < nirrep_; h++) {
-            for (int so = 0; so < nso[h]; so++) {
-                // Find an AO that contributes to the SO
-                int ao;
-                for (ao = 0; ao < nao[h]; ao++)
-                    if (AO2SO_->get(h, ao, so) != 0.0) {
-                        rsq->set(h, so, bf_rsq[ao]);
-                        break;
-                    }
-                if (ao == nao[h]) throw PSIEXCEPTION("Did not find atomic orbital!");
-            }
-        }
-    }
-
-    BasisSetOrthogonalization orthog(method, S_, rsq, lindep_tolerance, cholesky_tolerance, print_);
+    BasisSetOrthogonalization orthog(method, S_, lindep_tolerance, cholesky_tolerance, print_);
 
     // Transform
     X_ = orthog.basis_to_orthog_basis();

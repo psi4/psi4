@@ -190,37 +190,3 @@ void QuadrupoleInt::compute_pair(const GaussianShell &s1, const GaussianShell &s
         }
     }
 }
-
-std::vector<double> QuadrupoleInt::compute_R_squared() {
-    if (bs1_ != bs2_) throw PSIEXCEPTION("QuadrupoleInt::compute_R_squared needs bs1_ == bs2_.");
-
-    std::vector<double> rsq(bs1_->nbf());
-    int ns1 = bs1_->nshell();
-    int offset = 0;
-    for (int is = 0; is < ns1; ++is) {
-        // Get shell
-        const auto &shell = bs1_->shell(is);
-        // Set origin to nucleus
-        set_origin(shell.center());
-        // Compute the integrals
-        compute_shell(is, is);
-
-        // Number of functions on shell
-        int ni = force_cartesian_ ? bs1_->shell(is).ncartesian() : bs1_->shell(is).nfunction();
-        // Lenght of one shell
-        size_t length = std::pow((size_t)ni, 2);
-        for (int i = 0; i < ni; i++) {
-            int ioff = i * ni + i;
-            double xx = buffer_[ioff];
-            double yy = buffer_[ioff + 3 * length];
-            double zz = buffer_[ioff + 5 * length];
-
-            // Looks like the quadrupoles are computed with a minus sign
-            rsq[offset + i] = -(xx + yy + zz);
-        }
-
-        offset += ni;
-    }
-
-    return rsq;
-}
