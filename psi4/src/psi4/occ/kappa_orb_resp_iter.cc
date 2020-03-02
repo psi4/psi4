@@ -64,10 +64,10 @@ void OCCWave::kappa_orb_resp_iter() {
         global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
         global_dpd_->buf4_close(&K);
 
-        // (ai|bj) -> (aj|bi)
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (VO|VO)");
-        global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (aj|bi)");
+        // <OO|VV> -> <OV|VO>
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                               "MO Ints <OO|VV>");
+        global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[V,O]"), "MO Ints <OV|VO>");
         global_dpd_->buf4_close(&K);
 
         // <OV|OV> -> <VO|VO>
@@ -201,16 +201,16 @@ void OCCWave::kappa_orb_resp_iter() {
         global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints (vo|vo)");
         global_dpd_->buf4_close(&K);
 
-        // (AI|BJ) -> (AJ|BI)
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (VO|VO)");
-        global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (AJ|BI)");
+        // <OO|VV> -> <OV|VO>
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                               "MO Ints <OO|VV>");
+        global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, psrq, ID("[O,V]"), ID("[V,O]"), "MO Ints <OV|VO>");
         global_dpd_->buf4_close(&K);
 
-        // (ai|bj) -> (aj|bi)
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints (vo|vo)");
-        global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, psrq, ID("[v,o]"), ID("[v,o]"), "MO Ints (aj|bi)");
+        // <oo|vv> -> <ov|vo>
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
+                               "MO Ints <oo|vv>");
+        global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD, psrq, ID("[o,v]"), ID("[v,o]"), "MO Ints <ov|vo>");
         global_dpd_->buf4_close(&K);
 
         // <OV|OV> -> <VO|VO>
@@ -632,10 +632,10 @@ void OCCWave::compute_sigma_vector() {
         global_dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 1.0);
         global_dpd_->buf4_close(&K);
 
-        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (aj|bi)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        // sigma_ai -= 2 \sum_{bj} <ia|bj> P_bj
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,O]"), ID("[O,V]"), ID("[V,O]"), 0,
+                               "MO Ints <OV|VO>");
+        global_dpd_->contract422(&K, &P, &S, 0, 1, -2.0, 1.0);
         global_dpd_->buf4_close(&K);
 
         // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
@@ -687,10 +687,10 @@ void OCCWave::compute_sigma_vector() {
         global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
         global_dpd_->buf4_close(&K);
 
-        // sigma_AI -= 2 \sum_{BJ} (AJ|BI) P_BJ
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
-                               "MO Ints (AJ|BI)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        // sigma_AI -= 2 \sum_{BJ} <IA|BJ> P_BJ
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,O]"), ID("[O,V]"), ID("[V,O]"), 0,
+                               "MO Ints <OV|VO>");
+        global_dpd_->contract422(&K, &P, &S, 0, 1, -2.0, 1.0);
         global_dpd_->buf4_close(&K);
 
         // sigma_AI -= 2 \sum_{BJ} <AI|BJ> P_BJ
@@ -745,10 +745,10 @@ void OCCWave::compute_sigma_vector() {
         global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
         global_dpd_->buf4_close(&K);
 
-        // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
-                               "MO Ints (aj|bi)");
-        global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+        // sigma_ai -= 2 \sum_{bj} <ia|bj> P_bj
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,o]"), ID("[o,v]"), ID("[v,o]"), 0,
+                               "MO Ints <ov|vo>");
+        global_dpd_->contract422(&K, &P, &S, 0, 1, -2.0, 1.0);
         global_dpd_->buf4_close(&K);
 
         // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
