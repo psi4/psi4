@@ -154,6 +154,21 @@ class PSI_API DFHelper {
     size_t get_omega() { return omega_; }
 
     ///
+    /// sets the coefficient for (pq|rs) integrals
+    /// @param omega double indicating coefficient for eri
+    ///
+    void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
+    size_t get_omega_alpha() { return omega_alpha_; }
+    
+    ///
+    /// sets the parameter for the other type of integrals
+    /// @param omega double indicating parameter for other type
+    ///
+    void set_omega_beta(double beta) { omega_beta_ = beta; }
+    size_t get_omega_beta() { return omega_beta_; }
+
+
+    ///
     /// set the printing verbosity parameter
     /// @param print_lvl indicating verbosity
     ///
@@ -313,6 +328,8 @@ class PSI_API DFHelper {
     bool ordered_ = false;
     bool do_wK_ = false;
     double omega_;
+    double omega_alpha_;
+    double omega_beta_;
     bool debug_ = false;
     bool sparsity_prepared_ = false;
     int print_lvl_ = 1;
@@ -337,6 +354,12 @@ class PSI_API DFHelper {
                                        std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_sparse_pQq_blocking_p_symm(const size_t start, const size_t stop, double* Mp,
                                             std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const size_t stop, double* just_Mp, double* param_Mp,
+                                        std::vector<std::shared_ptr<TwoBodyAOInt>> eri,
+                                        std::vector<std::shared_ptr<TwoBodyAOInt>> weri);
+
+
+
     void contract_metric_AO_core_symm(double* Qpq, double* Ppq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
