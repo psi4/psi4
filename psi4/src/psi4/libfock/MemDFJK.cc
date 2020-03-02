@@ -80,6 +80,8 @@ void MemDFJK::preiterations() {
     dfh_->set_memory(memory_ - memory_overhead());
     dfh_->set_do_wK(do_wK_);
     dfh_->set_omega(omega_);
+    dfh_->set_omega_alpha(omega_alpha_);
+    dfh_->set_omega_beta(omega_beta_);
 
     // we need to prepare the AOs here, and that's it.
     // DFHelper takes care of all the housekeeping
@@ -93,6 +95,8 @@ void MemDFJK::compute_JK() {
         if (do_wK_) {
             for (size_t N = 0; N < wK_ao_.size(); N++) {
                 wK_ao_[N]->hermitivitize();
+                K_ao_[N]->hermitivitize();
+                wK_ao_[N]->zero();
             }
         }
     }

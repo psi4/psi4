@@ -257,6 +257,12 @@ class PSI_API JK {
     /// Omega, defaults to 0.0
     double omega_;
 
+    /// omega alpha, defaults to 1.0
+    double omega_alpha_;
+
+    /// omega beta , defaults to 0.0
+    double omega_beta_;
+
     /// Left-right symmetric? Determined in each call of compute()
     bool lr_symmetric_;
 
@@ -435,6 +441,10 @@ class PSI_API JK {
     * @param omega range-separation parameter
     */
     void set_omega(double omega) { omega_ = omega; }
+
+    void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
+
+    void set_omega_beta(double beta) { omega_beta_ = beta; }
 
     // => Computers <= //
 
@@ -990,6 +1000,7 @@ class PSI_API CDJK : public DiskDFJK {
  */
 class PSI_API MemDFJK : public JK {
    protected:
+
     // => DF-Specific stuff <= //
 
     std::string name() override { return "MemDFJK"; }
@@ -1063,6 +1074,9 @@ class PSI_API MemDFJK : public JK {
     * type on output file
     */
     void print_header() const override;
+
+    void set_omega_alpha(double alpha);
+    void set_omega_beta(double beta);
 
     /**
      * Returns the DFHelper object
