@@ -203,7 +203,17 @@ void RHF::form_G() {
     if (alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK") ) {
         G_->axpy(-alpha, K_);
     } else {
-        K_->zero();
+        if (alpha != 0.0) {
+            G_->axpy(-alpha, K_);
+        } else {
+            K_->zero();
+        }
+    
+        if (functional_->is_x_lrc()) {
+            G_->axpy(-beta, wK_);
+        } else {
+            wK_->zero();
+        }
     }
 
     if (functional_->is_x_lrc()) {
@@ -215,7 +225,6 @@ void RHF::form_G() {
     } else {
         wK_->zero();
     }
-
 
 }
 
