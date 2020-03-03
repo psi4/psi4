@@ -457,5 +457,5 @@ Bibliography
 
 .. [Herbst2020]
    M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw.
-   *WIREs Comput. Mol. Sci.*, **DOI: 10.1002/wcms.1462**, Preprint https://adc-connect.org/q/publications
+   *WIREs Comput. Mol. Sci.*, (2020) **DOI: 10.1002/wcms.1462**, Preprint https://adc-connect.org/q/publications
 
