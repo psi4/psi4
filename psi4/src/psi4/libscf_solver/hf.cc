@@ -1000,7 +1000,7 @@ void HF::guess() {
         guess_E = compute_initial_E();
 
     } else if (guess_type == "SAD") {
-        if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
+        if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).\n\n");
 
         // Superposition of Atomic Density. Modified by Susi Lehtola
         // 2018-12-15 to work also for ROHF, as well as to allow using
