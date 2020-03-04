@@ -2349,6 +2349,56 @@ void DirectJKGrad::compute_gradient()
 
     if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_))
         throw PSIEXCEPTION("Occupation/Density not set");
+    
+#ifdef USING_BrianQC
+    if (brianCookie != 0) {
+        // TODO: handle do_wK_
+        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
+        brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
+        
+        // TODO: need a more reliable way to know what BrianQC has been set to
+        bool unrestrictedFlag = (Da_->get_pointer() != Db_->get_pointer());
+        
+        std::shared_ptr<Matrix> Jgrad, Kgrada, Kgradb;
+        if (do_J_) {
+            Jgrad = std::make_shared<Matrix>("JGrad", primary_->molecule()->natom(), 3);
+        }
+        if (do_K_) {
+            Kgrada = std::make_shared<Matrix>("KGrada", primary_->molecule()->natom(), 3);
+            if (unrestrictedFlag) {
+                Kgradb = std::make_shared<Matrix>("KGradb", primary_->molecule()->natom(), 3);
+            }
+        }
+        
+        brianOPTBuildGradientRepulsionDeriv(&brianCookie,
+            &computeCoulomb,
+            &computeExchange,
+            Da_->get_pointer(),
+            (unrestrictedFlag ? Db_->get_pointer() : nullptr),
+            (do_J_ ? Jgrad->get_pointer() : nullptr),
+            (do_K_ ? Kgrada->get_pointer() : nullptr),
+            ((do_K_ && unrestrictedFlag) ? Kgradb->get_pointer() : nullptr)
+        );
+        
+        if (do_K_) {
+            if (unrestrictedFlag) {
+                Kgrada->add(Kgradb);
+            } else {
+                Kgrada->scale(2.0);
+            }
+        }
+        
+        gradients_.clear();
+        if (do_J_) {
+            gradients_["Coulomb"] = Jgrad;
+        }
+        if (do_K_) {
+            gradients_["Exchange"] = Kgrada;
+        }
+        
+        return;
+    }
+#endif
 
     // => Set up gradients <= //
     int natom = primary_->molecule()->natom();
@@ -2395,55 +2445,6 @@ void DirectJKGrad::compute_gradient()
 }
 std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints)
 {
-#ifdef USING_BrianQC
-    if (brianCookie != 0) {
-        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
-        brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
-        
-        // TODO: need a more reliable way to know what BrianQC has been set to
-        bool unrestrictedFlag = (Da_->get_pointer() != Db_->get_pointer());
-        
-        std::shared_ptr<Matrix> Jgrad, Kgrada, Kgradb;
-        if (do_J_) {
-            Jgrad = std::make_shared<Matrix>("JGrad", primary_->molecule()->natom(), 3);
-        }
-        if (do_K_) {
-            Kgrada = std::make_shared<Matrix>("KGrada", primary_->molecule()->natom(), 3);
-            if (unrestrictedFlag) {
-                Kgradb = std::make_shared<Matrix>("KGradb", primary_->molecule()->natom(), 3);
-            }
-        }
-        
-        brianOPTBuildGradientRepulsionDeriv(&brianCookie,
-            &computeCoulomb,
-            &computeExchange,
-            Da_->get_pointer(),
-            (unrestrictedFlag ? Db_->get_pointer() : nullptr),
-            (do_J_ ? Jgrad->get_pointer() : nullptr),
-            (do_K_ ? Kgrada->get_pointer() : nullptr),
-            ((do_K_ && unrestrictedFlag) ? Kgradb->get_pointer() : nullptr)
-        );
-        
-        if (do_K_) {
-            if (unrestrictedFlag) {
-                Kgrada->add(Kgradb);
-            } else {
-                Kgrada->scale(2.0);
-            }
-        }
-        
-        std::map<std::string, std::shared_ptr<Matrix>> val;
-        if (do_J_) {
-            val["J"] = Jgrad;
-        }
-        if (do_K_) {
-            val["K"] = Kgrada;
-        }
-        
-        return val;
-    }
-#endif
-    
     int nthreads = ints.size();
 
     int natom = primary_->molecule()->natom();

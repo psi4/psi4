@@ -105,6 +105,82 @@ void DirectJK::preiterations() {
 #endif
 }
 void DirectJK::compute_JK() {
+#ifdef USING_BrianQC
+    if (brianCookie != 0) {
+        // TODO: handle do_wK_
+        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
+        brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
+        
+        if (not brianCPHFFlag) {
+            brianSCFBuildFockRepulsion(&brianCookie,
+                &computeCoulomb,
+                &computeExchange,
+                D_ao_[0]->get_pointer(0),
+                (D_ao_.size() > 1 ? D_ao_[1]->get_pointer() : nullptr),
+                (do_J_ ? J_ao_[0]->get_pointer() : nullptr),
+                (do_K_ ? K_ao_[0]->get_pointer() : nullptr),
+                ((D_ao_.size() > 1 && do_K_) ? K_ao_[1]->get_pointer() : nullptr)
+            );
+            checkBrian();
+            
+            // BrianQC only computes the total (alpha + beta) Coulomb matrix
+            if (do_J_) {
+                J_ao_[0]->scale(0.5);
+                for (size_t ind = 1; ind < J_ao_.size(); ind++) {
+                    J_ao_[ind]->copy(J_ao_[0].get());
+                }
+            }
+        } else {
+            // WARNING: the current implementation only works with RHF
+            brianInt maxSegmentSize;
+            brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+            
+            for (brianInt segmentStartIndex = 0; segmentStartIndex < D_ao_.size(); segmentStartIndex += maxSegmentSize) {
+                brianInt segmentSize = std::min(maxSegmentSize, (brianInt)D_ao_.size() - segmentStartIndex);
+                
+                std::vector<std::shared_ptr<Matrix>> Dsymm(segmentSize);
+                std::vector<const double*> pseudoDensityAlphas(segmentSize);
+                std::vector<double*> pseudoCoulombTotals(segmentSize);
+                std::vector<double*> pseudoExchangeAlphas(segmentSize);
+                for (brianInt i = 0; i < segmentSize; i++) {
+                    Dsymm[i] = D_ao_[i + segmentStartIndex]->clone();
+                    Dsymm[i]->add(D_ao_[i + segmentStartIndex]->transpose());
+                    Dsymm[i]->scale(0.5);
+                    pseudoDensityAlphas[i] = Dsymm[i]->get_pointer();
+                    
+                    if (do_J_) {
+                        pseudoCoulombTotals[i] = J_ao_[i + segmentStartIndex]->get_pointer();
+                    }
+                    
+                    if (do_K_) {
+                        pseudoExchangeAlphas[i] = K_ao_[i + segmentStartIndex]->get_pointer();
+                    }
+                }
+                
+                brianCPHFBuildRepulsion(&brianCookie,
+                    &computeCoulomb,
+                    &computeExchange,
+                    &segmentSize,
+                    pseudoDensityAlphas.data(),
+                    nullptr,
+                    pseudoCoulombTotals.data(),
+                    pseudoExchangeAlphas.data(),
+                    nullptr
+                );
+                checkBrian();
+                
+                if (do_J_) {
+                    for (brianInt i = 0; i < segmentSize; i++) {
+                        J_ao_[i + segmentStartIndex]->scale(0.5);
+                    }
+                }
+            }
+        }
+        
+        return;
+    }
+#endif
+
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
 
     if (do_wK_) {
@@ -153,82 +229,6 @@ void DirectJK::compute_JK() {
 void DirectJK::postiterations() { sieve_.reset(); }
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
                         std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K) {
-    
-#ifdef USING_BrianQC
-    if (brianCookie != 0) {
-        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
-        brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
-        
-        if (not brianCPHFFlag) {
-            brianSCFBuildFockRepulsion(&brianCookie,
-                &computeCoulomb,
-                &computeExchange,
-                D[0]->get_pointer(0),
-                (D.size() > 1 ? D[1]->get_pointer() : nullptr),
-                (do_J_ ? J[0]->get_pointer() : nullptr),
-                (do_K_ ? K[0]->get_pointer() : nullptr),
-                ((D.size() > 1 && do_K_) ? K[1]->get_pointer() : nullptr)
-            );
-            checkBrian();
-            
-            // BrianQC only computes the total (alpha + beta) Coulomb matrix
-            if (do_J_) {
-                J[0]->scale(0.5);
-                for (size_t ind = 1; ind < J.size(); ind++) {
-                    J[ind]->copy(J[0].get());
-                }
-            }
-        } else {
-            // WARNING: the current implementation only works with RHF
-            brianInt maxSegmentSize;
-            brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
-            
-            for (brianInt segmentStartIndex = 0; segmentStartIndex < D.size(); segmentStartIndex += maxSegmentSize) {
-                brianInt segmentSize = std::min(maxSegmentSize, (brianInt)D.size() - segmentStartIndex);
-                
-                std::vector<std::shared_ptr<Matrix>> Dsymm(segmentSize);
-                std::vector<const double*> pseudoDensityAlphas(segmentSize);
-                std::vector<double*> pseudoCoulombTotals(segmentSize);
-                std::vector<double*> pseudoExchangeAlphas(segmentSize);
-                for (brianInt i = 0; i < segmentSize; i++) {
-                    Dsymm[i] = D[i + segmentStartIndex]->clone();
-                    Dsymm[i]->add(D[i + segmentStartIndex]->transpose());
-                    Dsymm[i]->scale(0.5);
-                    pseudoDensityAlphas[i] = Dsymm[i]->get_pointer();
-                    
-                    if (do_J_) {
-                        pseudoCoulombTotals[i] = J[i + segmentStartIndex]->get_pointer();
-                    }
-                    
-                    if (do_K_) {
-                        pseudoExchangeAlphas[i] = K[i + segmentStartIndex]->get_pointer();
-                    }
-                }
-                
-                brianCPHFBuildRepulsion(&brianCookie,
-                    &computeCoulomb,
-                    &computeExchange,
-                    &segmentSize,
-                    pseudoDensityAlphas.data(),
-                    nullptr,
-                    pseudoCoulombTotals.data(),
-                    pseudoExchangeAlphas.data(),
-                    nullptr
-                );
-                checkBrian();
-                
-                if (do_J_) {
-                    for (brianInt i = 0; i < segmentSize; i++) {
-                        J[i + segmentStartIndex]->scale(0.5);
-                    }
-                }
-            }
-        }
-        
-        return;
-    }
-#endif
-    
     // => Zeroing <= //
 
     for (size_t ind = 0; ind < J.size(); ind++) {
