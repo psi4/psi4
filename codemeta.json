@@ -410,10 +410,74 @@
             "longitude": -83.37482,
             "@id": "https://orcid.org/0000-0002-6425-9551",
             "@id": "https://github.com/JonathonMisiewicz"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Maximilian",
+            "familyName": "Scheurer",
+            "affiliation": "Interdisciplinary Center for Scientific Computing, Heidelberg University",
+            "latitude": blah,
+            "longitude": blah,
+            "@id": "https://orcid.org/0000-0003-0592-3464",
+            "@id": "https://github.com/maxscheurer"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Jeffrey",
+            "additionalName": "B.",
+            "familyName": "Schriber",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0001-6906-8191",
+            "@id": "https://github.com/jeffschriber"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Yi",
+            "familyName": "Xie",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/blah",
+            "@id": "https://github.com/yxie326"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Dominic",
+            "additionalName": "A.",
+            "familyName": "Sirianni",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0002-6464-0213",
+            "@id": "https://github.com/dsirianni"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Joseph",
+            "additionalName": "Senan",
+            "familyName": "O'Brien",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0002-8753-1861",
+            "@id": "https://github.com/obrien951"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Jonathan",
+            "additionalName": "M.",
+            "familyName": "Waldrop",
+            "affiliation": "Department of Chemistry and Biochemistry, Auburn University",
+            "latitude": 32.5997,
+            "longitude": -85.4852,
+            "@id": "https://orcid.org/0000-0003-0442-193X",
+            "@id": "https://github.com/jwaldrop107"
         }
     ],
     "developmentStatus": "active",
-    "downloadUrl": "http://psicode.org/downloads.html",
+    "downloadUrl": "http://psicode.org/downloads",
     "keywords": [
         "quantum-chemistry",
         "computational-chemistry",
