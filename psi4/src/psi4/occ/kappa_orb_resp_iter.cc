@@ -614,9 +614,8 @@ void OCCWave::compute_sigma_vector() {
         // sigma_AI = 2 \sum_{B} F_AB P_BJ
         global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
         global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        // CAUTION! "Fock" libdpd entries are the Fock elements, as you expect, defined in
-        // fock_[alpha/beta]a. "F" is defined in trans_ints_[r/u]hf and is off-diagonal Fock elements.
-        // We need all Fock elements, so we use "Fock", not "F".
+        // CAUTION! "FD" libdpd entries are the Fock elements. "F" is off-diagonal only.
+        // We need all Fock elements, so use "FD", and not "F".
         global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "FD <V|V>");
         global_dpd_->contract222(&F, &P, &S, 0, 1, 2.0, 0.0);
         global_dpd_->file2_close(&F);
@@ -669,9 +668,8 @@ void OCCWave::compute_sigma_vector() {
         // sigma_AI = 2 \sum_{B} F_AB P_BI
         global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");
         global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");
-        // CAUTION! "Fock" libdpd entries are the Fock elements, as you expect, defined in
-        // fock_[alpha/beta]a. "F" is defined in trans_ints_[r/u]hf and is off-diagonal Fock elements.
-        // We need all Fock elements, so we use "Fock", not "F".
+        // CAUTION! "FD" libdpd entries are the Fock elements. "F" is off-diagonal only.
+        // We need all Fock elements, so use "FD", and not "F".
         global_dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "FD <V|V>");
         global_dpd_->contract222(&F, &P, &S, 0, 1, 2.0, 0.0);
         global_dpd_->file2_close(&F);
