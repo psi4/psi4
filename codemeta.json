@@ -416,8 +416,8 @@
             "givenName": "Maximilian",
             "familyName": "Scheurer",
             "affiliation": "Interdisciplinary Center for Scientific Computing, Heidelberg University",
-            "latitude": blah,
-            "longitude": blah,
+            "latitude": 49.417312,
+            "longitude": 8.675617,
             "@id": "https://orcid.org/0000-0003-0592-3464",
             "@id": "https://github.com/maxscheurer"
         },
