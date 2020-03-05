@@ -907,9 +907,9 @@ units au
     ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS'])
 def test_harmonic_analysis_vs_cfour(subject, request):
     # one of the ch4 degen modes has slight noise (when geom is properly bohr, so 4->2)
-    digits = 2 if subject in ['ch4'] else 4
+    tol = 1.e-2 if subject in ['ch4'] else 1.e-4
     # IR matches to 4 when scale factor tuned, but have to loosen to 1 since Cfour using 974.868 and we're using ~974.880
-    toldict = {'IR_intensity': 1}
+    toldict = {'IR_intensity': 1.e-1}
     verbose = 2
     forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries
     if subject in ['nh3', 'hooh']:
@@ -925,7 +925,7 @@ def test_harmonic_analysis_vs_cfour(subject, request):
     rvibonly = _cfour_ref[subject]['vibonly']
 
     assert qcdb.compare_vibinfos(
-        rvibonly, pvibonly, digits, request.node.name, verbose=verbose, forgive=forgive, toldict=toldict)
+        rvibonly, pvibonly, tol, request.node.name, verbose=verbose, forgive=forgive, toldict=toldict)
 
 
 # <<<  Section II: testing Psi4 findif-by-grad Hessians vs Cfour  >>>
@@ -949,11 +949,27 @@ def test_harmonic_analysis_vs_cfour(subject, request):
         pytest.param('hooh'),
     ],
     ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS'])
-def test_hessian_vs_cfour(subject, dertype, request):
+@pytest.mark.parametrize(
+    "scf_type", [
+        "pk",
+        "df",
+    ])
+def test_hessian_vs_cfour(scf_type, subject, dertype, request):
     """compare analytic, findif by G, findif by E vibrational analyses for several mols"""
 
-    digits = 2
-    toldict = {'IR_intensity': 1} if subject in ['nh3'] else {}
+    tol = 1.e-2
+    if scf_type == "pk":
+        toldict = {'IR_intensity': 1.e-1} if subject in ['nh3'] else {}
+    elif scf_type == "df":
+        # comparing df calc against pk ref, so relax tol
+        toldict = {
+            "omega": 0.9,
+            "IR_intensity": 0.3,
+            "k": 0.02,
+        }
+        if subject in ['hooh']:
+            toldict["omega"] = 2.0
+
     verbose = 2
     forgive = ['gamma'] if subject in ['co2', 'ch4', 'nh3'] else []  # since Psi can't classify degen symmetries
     if dertype != 2:
@@ -968,7 +984,7 @@ def test_hessian_vs_cfour(subject, dertype, request):
         'e_convergence': 10,
         'd_convergence': 10,
         'points': 5,
-        'scf_type': 'pk',
+        'scf_type': scf_type,
     })
 
     E, pwfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=apmol, dertype=dertype)
@@ -977,7 +993,7 @@ def test_hessian_vs_cfour(subject, dertype, request):
     rvibonly = _cfour_ref[subject]['vibonly']
 
     assert qcdb.compare_vibinfos(
-        rvibonly, pvibonly, digits, request.node.name, verbose=verbose, forgive=forgive, toldict=toldict)
+        rvibonly, pvibonly, tol, request.node.name, verbose=verbose, forgive=forgive, toldict=toldict)
 
 
 # <<<  Section V: Thermo  >>>
@@ -1071,7 +1087,7 @@ def test_thermochemistry():
         'G_tot'   :   qcel.Datum('', '', -39.94617572),
     }  # yapf: disable
 
-    assert qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 4, 'asdf', forgive=['omega', 'IR_intensity'])
+    assert qcdb.compare_vibinfos(ch4_hf_321g_thermoinfo, therminfo, 1.e-4, 'asdf', forgive=['omega', 'IR_intensity'])
 
 
 c4_neqh2o_xyz = """
@@ -1237,7 +1253,7 @@ def test_nonequilibrium_harmonic_analysis():
     assert compare_values(w_right, block['vibonly']['findifrot']['omega'].data[-2].real, 0.2,
                           'Cfour G-findif-T-projected, analysis-T-projected mode')
 
-    assert qcdb.compare_vibinfos(block['vibonly']['analytic'], block['vibonly']['findifrot'], 3,
+    assert qcdb.compare_vibinfos(block['vibonly']['analytic'], block['vibonly']['findifrot'], 1.e-3,
                                  'Cfour analytic vs. Cfour G-findif-T-projected')
 
     h2o = psi4.geometry(block['xyz'])
@@ -1254,21 +1270,21 @@ def test_nonequilibrium_harmonic_analysis():
     e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=1)
     pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
 
-    assert qcdb.compare_vibinfos(block['vibonly']['analytic'], pvibonly, 3,
+    assert qcdb.compare_vibinfos(block['vibonly']['analytic'], pvibonly, 1.e-3,
                                  'Cfour analytic vs. Psi4 G-findif-T-projected')
 
     # 2. analytic, always include rot dof
     e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=2)
     pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
 
-    assert qcdb.compare_vibinfos(block['vibonly']['analytic'], pvibonly, 3, 'Cfour analytic vs. Psi4 analytic')
+    assert qcdb.compare_vibinfos(block['vibonly']['analytic'], pvibonly, 1.e-3, 'Cfour analytic vs. Psi4 analytic')
 
     # 3. even though same non-eq geometry, forcibly turn off rot dof
     psi4.set_options({'fd_project': True})
     e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=1)
     pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
 
-    assert qcdb.compare_vibinfos(block['vibonly']['findifproj'], pvibonly, 3,
+    assert qcdb.compare_vibinfos(block['vibonly']['findifproj'], pvibonly, 1.e-3,
                                  'Cfour G-findif-TR-projected vs. Psi4 G-findif-TR-projected')
 
 
@@ -1295,4 +1311,4 @@ def test_nonequilibrium_harmonic_analysis():
 #    e, wfn = psi4.frequency('hf/cc-pvdz', return_wfn=True, molecule=h2o, dertype=dertype)
 #    pvibonly = qcdb.vib.filter_nonvib(wfn.frequency_analysis)
 #
-#    assert qcdb.compare_vibinfos(block['vibonly'][ref], pvibonly, 3, 'Cfour analytic vs. Psi4 G-findif-T-projected')
+#    assert qcdb.compare_vibinfos(block['vibonly'][ref], pvibonly, 1.e-3, 'Cfour analytic vs. Psi4 G-findif-T-projected')

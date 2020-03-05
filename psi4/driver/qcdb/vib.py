@@ -45,8 +45,8 @@ LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 
 def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, required=None, toldict=None):
     """Compare two dictionaries of vibration Datum objects. All items in
-    `expected` must be present in `computed` and agree to `tol` (outright
-    (<1) or decimal places (>=1)). At minimum, both must contain items in
+    `expected` must be present in `computed` and agree to `tol`
+    At minimum, both must contain items in
     `required` ('omega' recc. for vibs).  Failed items in `forgive` will
     not count against passing.
 
@@ -74,9 +74,6 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
                 except TypeError:
                     print('\tdif: Different, inspect arrays')
 
-    if tol >= 1.0:
-        tol = 10.**-tol
-
     if forgive is None:
         forgive = []
 
@@ -92,7 +89,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
             continue
 
         if toldict is not None and asp in toldict:
-            ktol = 10.**-toldict[asp]
+            ktol = toldict[asp]
         else:
             ktol = tol
 
