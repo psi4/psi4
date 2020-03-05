@@ -447,6 +447,14 @@ Bibliography
    S. Lehtola
    *Phys. Rev. A.* **101**, 012516 (2020), doi: 10.1103/PhysRevA.101.012516.
 
+.. [Lehtola:2020:032504]
+   S. Lehtola
+   *Phys. Rev. A.* **101**, 032504 (2020), doi: 10.1103/PhysRevA.101.032504.
+
+.. [Lehtola:2020:04224]
+   S. Lehtola
+   *arXiv* 2001:04224.
+
 .. [Olsen:2010:3721]
    J. M. Olsen, K. Aidas, and J. Kongsted.
    *J. Chem. Theory Comput.* **6**, 3721–3734 (2010).
