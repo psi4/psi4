@@ -64,6 +64,25 @@
 #include <brian_scf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+
+struct brianGrid {
+    std::vector<brianInt> atomBlockCounts;
+    std::vector<brianInt> atomBlockOffsets;
+
+    std::vector<brianInt> blockRadialCounts;
+    std::vector<brianInt> blockRadialOffsets;
+    std::vector<double> radialCoordinates;
+    std::vector<double> radialWeights;
+
+    std::vector<brianInt> blockAngularCounts;
+    std::vector<brianInt> blockAngularOffsets;
+    std::vector<double> angularCoordinates;
+    std::vector<double> angularWeights;
+
+    std::vector<double> atomRotationMatrices;
+};
+
+extern brianGrid brianDFTGrid;
 #endif
 
 namespace psi {
@@ -167,6 +186,7 @@ void VBase::initialize() {
             {"XC_GGA_X_PBE", BRIAN_FUNCTIONAL_GGA_PBE_X},
             {"XC_GGA_C_PBE", BRIAN_FUNCTIONAL_GGA_PBE_C},
             {"XC_HYB_GGA_XC_B3LYP", BRIAN_FUNCTIONAL_HGGA_B3LYP_XC},
+            {"XC_HYB_GGA_XC_WB97X", BRIAN_FUNCTIONAL_HGGA_WB97X_XC},
             {"XC_HYB_GGA_XC_WB97X_V", BRIAN_FUNCTIONAL_HGGA_WB97X_V_XC},
             {"XC_MGGA_C_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_C},
             {"XC_MGGA_X_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_X},
@@ -231,6 +251,24 @@ void VBase::initialize() {
             functionalParameterValues.data()
         );
         checkBrian();
+        
+        if (functional_->needs_vv10()) {
+            // Psi4 doesn't have a separate NLC grid, it always uses the DFT grid
+            brianCOMSetNLCGrid(&brianCookie,
+                brianDFTGrid.atomBlockCounts.data(),
+                brianDFTGrid.atomBlockOffsets.data(),
+                brianDFTGrid.blockRadialCounts.data(),
+                brianDFTGrid.blockRadialOffsets.data(),
+                brianDFTGrid.radialCoordinates.data(),
+                brianDFTGrid.radialWeights.data(),
+                brianDFTGrid.blockAngularCounts.data(),
+                brianDFTGrid.blockAngularOffsets.data(),
+                brianDFTGrid.angularCoordinates.data(),
+                brianDFTGrid.angularWeights.data(),
+                brianDFTGrid.atomRotationMatrices.data()
+            );
+            checkBrian();
+        }
         
         brianCOMInitDFT(&brianCookie);
         checkBrian();
