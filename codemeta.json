@@ -285,7 +285,7 @@
             "@type": "Person",
             "givenName": "Peter",
             "familyName": "Kraus",
-            "affiliation": "Fritz Haber Institute of the Max Planck Society, Berlin, Germany",
+            "affiliation": "School of Molecular and Life Sciences, Curtin University",
             "latitude": 52.4485,
             "longitude": 13.2827,
             "@id": "https://orcid.org/0000-0002-4359-5003",
@@ -388,6 +388,7 @@
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
             "latitude": 33.780,
             "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0003-0900-2849",
             "@id": "https://github.com/zachglick"
         },
         {
@@ -439,7 +440,7 @@
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
             "latitude": 33.780,
             "longitude": -84.3965,
-            "@id": "https://orcid.org/blah",
+            "@id": "https://orcid.org/0000-0003-4251-6219",
             "@id": "https://github.com/yxie326"
         },
         {
