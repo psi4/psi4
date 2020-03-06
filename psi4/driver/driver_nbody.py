@@ -872,7 +872,7 @@ class ManyBodyComputer(BaseComputer):
 
         with p4util.hold_options_state():
             for k, t in self.task_list.items():
-                t.compute(client)
+                t.compute(client=client)
 
         if self.embedding_charges:
             core.set_global_option_python('EXTERN', None)
