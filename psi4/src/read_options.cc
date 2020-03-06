@@ -2690,9 +2690,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("ORTH_TYPE", "MGS", "GS MGS");
         /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step
          with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital
-         rotation parameters by solving the orbital-reponse (coupled-perturbed CC) equations. Additionally, for both
+         rotation parameters with a crude approximation to all elements of the MO Hessian. Additionally, for both
          methods a DIIS extrapolation will be performed with the DO_DIIS = TRUE option. -*/
-        options.add_str("OPT_METHOD", "ORB_RESP", "MSD ORB_RESP");
+        options.add_str("OPT_METHOD", "MSD", "MSD ORB_RESP");
         /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO
           Hessian and solve the simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG
           option does not create the MO Hessian explicitly, instead it solves the simultaneous equations iteratively

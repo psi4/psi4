@@ -194,7 +194,7 @@ void OCCWave::trans_ints_rhf() {
 void OCCWave::denominators_rhf() {
     // outfile->Printf("\n denominators is starting... \n");
     dpdbuf4 D;
-    dpdfile2 Fo, Fv;
+    dpdfile2 Fo, Fv, Fd;
 
     auto *aOccEvals = new double[nacooA];
     auto *aVirEvals = new double[nacvoA];
@@ -294,6 +294,16 @@ void OCCWave::denominators_rhf() {
         global_dpd_->file2_mat_print(&Fv, "outfile");
         global_dpd_->file2_close(&Fv);
     }
+
+    auto zero = Dimension(nirrep_);
+
+    global_dpd_->file2_init(&Fd, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "FD <O|O>");
+    FockA->get_block({zero, nalphapi_}, {zero, nalphapi_})->write_to_dpdfile2(&Fd);
+    global_dpd_->file2_close(&Fd);
+
+    global_dpd_->file2_init(&Fd, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "FD <V|V>");
+    FockA->get_block({nalphapi_, nmopi_}, {nalphapi_, nmopi_})->write_to_dpdfile2(&Fd);
+    global_dpd_->file2_close(&Fd);
 
     // outfile->Printf("\n denominators done. \n");
 }  // end denominators
