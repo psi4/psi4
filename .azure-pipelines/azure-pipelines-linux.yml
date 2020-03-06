@@ -97,6 +97,7 @@ jobs:
         pybind11 \
         -c conda-forge
       conda install adcc -c adcc -c conda-forge
+      conda remove qcelemental --force
       conda list
     displayName: 'Build Environment'
 
