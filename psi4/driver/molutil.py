@@ -117,10 +117,10 @@ def molecule_from_arrays(cls,
                          provenance=None,
                          connectivity=None,
                          missing_enabled_return='error',
-                         tooclose=0.1,
+                         tooclose=1e-6,
                          zero_ghost_fragments=False,
                          nonphysical=False,
-                         mtol=1.e-3,
+                         mtol=1.e-8,
                          verbose=1,
                          return_dict=False):
     """Construct Molecule from unvalidated arrays and variables.
