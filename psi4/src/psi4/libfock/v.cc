@@ -173,7 +173,7 @@ void VBase::initialize() {
     
 #ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
     if (brianCookie != 0 and brianPsi4DFT)
     {
         static const std::map<std::string, brianInt> functionalIDMap = {
@@ -877,7 +877,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     
 #ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
     if (brianCookie != 0 and brianPsi4DFT) {
         double DFTEnergy;
         
@@ -890,7 +890,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         );
         checkBrian();
         
-        quad_values_["VV10"] = 0.0; // TODO: we cannot compute the VV10 term, must assert that the functional doesn't need it (functional_->needs_vv10())
+        quad_values_["VV10"] = 0.0; // NOTE: BrianQC doesn't compute the VV10 term separately, it just includes it in the DFT energy term
         quad_values_["FUNCTIONAL"] = DFTEnergy;
         quad_values_["RHO_A"] = 0.0;
         quad_values_["RHO_AX"] = 0.0;
@@ -2017,7 +2017,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     
 #ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
     if (brianCookie != 0 and brianPsi4DFT) {
         double DFTEnergy;
         brianSCFBuildFockDFT(&brianCookie,
@@ -2029,7 +2029,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         );
         checkBrian();
         
-        quad_values_["VV10"] = 0.0; // TODO: can we compute the VV10 term?
+        quad_values_["VV10"] = 0.0; // NOTE: BrianQC doesn't compute the VV10 term separately, it just includes it in the DFT energy term
         quad_values_["FUNCTIONAL"] = DFTEnergy;
         quad_values_["RHO_A"] = 0.0;
         quad_values_["RHO_AX"] = 0.0;

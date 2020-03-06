@@ -210,7 +210,7 @@ void RHF::form_G() {
     
 #ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
     if (brianCookie != 0 and brianPsi4DFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
@@ -340,7 +340,7 @@ double RHF::compute_E() {
     
 #ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
     if (brianCookie != 0 and brianPsi4DFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
@@ -525,7 +525,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     
 #ifdef USING_BrianQC
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
     if (brianCookie != 0 and brianPsi4DFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;

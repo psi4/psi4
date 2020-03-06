@@ -2662,7 +2662,12 @@ void StandardGridMgr::Initialize_SG0() {
     // clang-format on
 
 #ifdef USING_BrianQC
-    brianStandardGrids[0].resize(18);
+    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
+    
+    if (brianPsi4DFT) {
+        brianStandardGrids[0].resize(18);
+    }
 #endif
 
     for (int Z = 0; Z < 18; Z++) {
@@ -2671,14 +2676,18 @@ void StandardGridMgr::Initialize_SG0() {
             SG0_sizes_[Z] = 0;
         } else {
 #ifdef USING_BrianQC
-            brianStoreGridDataInto = &(brianStandardGrids[0][Z]);
+            if (brianPsi4DFT) {
+                brianStoreGridDataInto = &(brianStandardGrids[0][Z]);
+            }
 #endif
             MassPoint *grid = (MassPoint *)malloc(SG0specs[Z].npts * sizeof(MassPoint));
             makeCubatureGridFromPruneSpec(SG0specs[Z], RadialGridMgr::WhichScheme("MULTIEXP"), grid);
             SG0_grids_[Z] = grid;
             SG0_sizes_[Z] = SG0specs[Z].npts;
 #ifdef USING_BrianQC
-            brianStoreGridDataInto = nullptr;
+            if (brianPsi4DFT) {
+                brianStoreGridDataInto = nullptr;
+            }
 #endif
         }
     }
@@ -2728,12 +2737,19 @@ void StandardGridMgr::Initialize_SG1() {
         {row1spec, 50, 3752, 0}, {row2spec, 50, 3816, 0}, {row3spec, 50, 3760, 0}, {row4spec, 50, 7828, 0}};
 
 #ifdef USING_BrianQC
-    brianStandardGrids[1].resize(19);
+    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
+    
+    if (brianPsi4DFT) {
+        brianStandardGrids[1].resize(19);
+    }
 #endif
 
     for (int Z = 1; Z <= 18; Z++) {
 #ifdef USING_BrianQC
-        brianStoreGridDataInto = &(brianStandardGrids[1][Z]);
+        if (brianPsi4DFT) {
+            brianStoreGridDataInto = &(brianStandardGrids[1][Z]);
+        }
 #endif
         int whichRow = rows[Z];  // Which row of the periodic table are we looking at?
         PruneSpec spec = SG1specs[whichRow - 1];
@@ -2744,7 +2760,9 @@ void StandardGridMgr::Initialize_SG1() {
         SG1_grids_[Z] = grid;
         SG1_sizes_[Z] = spec.npts;
 #ifdef USING_BrianQC
-        brianStoreGridDataInto = nullptr;
+        if (brianPsi4DFT) {
+            brianStoreGridDataInto = nullptr;
+        }
 #endif
     }
 }
@@ -3727,7 +3745,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     std::vector<std::vector<brianBlock>> atomBlocks(molecule_->natom());
     
     const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : false;
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
 #endif
 
 // Iterate over atoms
@@ -3800,7 +3818,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         } else {
             assert(opt.namedGrid == 0 || opt.namedGrid == 1);
 #ifdef USING_BrianQC
-            atomBlocks[A] = brianStandardGrids.at(opt.namedGrid).at(Z);
+            if (brianCookie != 0 and brianPsi4DFT) {
+                atomBlocks[A] = brianStandardGrids.at(opt.namedGrid).at(Z);
+            }
 #endif
             int npts = (opt.namedGrid == 0) ? StandardGridMgr::GetSG0size(Z) : StandardGridMgr::GetSG1size(Z);
             const MassPoint *sg =
