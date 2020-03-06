@@ -1474,7 +1474,7 @@ class Molecule(LibmintsMolecule):
             )
             molrec['fragment_charges'] = [None] * len(fragments)
             molrec['fragment_multiplicities'] = [None] * len(fragments)
-            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
+            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', tooclose=1e-6, **molrec)
             forgive.append('fragment_charges')
             forgive.append('fragment_multiplicities')
         compare_molrecs(validated_molrec, molrec, 'to_dict', atol=1.e-6, forgive=forgive, verbose=0)
