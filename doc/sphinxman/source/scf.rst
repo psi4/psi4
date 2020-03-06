@@ -363,8 +363,11 @@ When the basis set is too overcomplete, the eigendecomposition of the
 overlap matrix is no longer numerically stable. In this case the
 partial Cholesky decomposition can be used to pick a subset of basis
 functions that span a sufficiently complete set, see
-[Lehtola:2019:241102]. This subset can then be orthonormalized as
-usual, and the rest of the functions hidden from the calculation.
+[Lehtola:2019:241102] and [Lehtola:2020:032504]. This subset can then
+be orthonormalized as usual; the rest of the basis functions are
+hidden from the calculation. The Cholesky approach allows reaching
+accurate energies even in the presence of significant linear
+dependencies [Lehtola:2020:04224].
 
 In |PSIfour|, symmetric orthogonalization is used by default, unless
 the smallest overlap eigenvalue falls below the user-supplied double
