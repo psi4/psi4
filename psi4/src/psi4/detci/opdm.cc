@@ -628,6 +628,8 @@ void CIWavefunction::ci_nat_orbs() {
 /*- Process::environment.globals["CI ROOT n DIPOLE X"] -*/
 /*- Process::environment.globals["CI ROOT n DIPOLE Y"] -*/
 /*- Process::environment.globals["CI ROOT n DIPOLE Z"] -*/
+/*- Process::environment.globals["CI ROOT n DIPOLE"] -*/
+/*- Process::environment.globals["CI ROOT n QUADRUPOLE"] -*/
 /*- Process::environment.globals["CI ROOT n QUADRUPOLE XX"] -*/
 /*- Process::environment.globals["CI ROOT n QUADRUPOLE XY"] -*/
 /*- Process::environment.globals["CI ROOT n QUADRUPOLE XZ"] -*/

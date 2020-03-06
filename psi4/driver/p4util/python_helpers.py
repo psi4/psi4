@@ -31,6 +31,8 @@ import re
 import sys
 import uuid
 import warnings
+from collections import Counter
+from itertools import product
 
 import numpy as np
 
@@ -76,8 +78,13 @@ def _pybuild_basis(mol,
     # if a string, they search for a gbs file with that name.
     # if a function, it needs to apply a basis to each atom.
 
-    bs, basisdict = qcdb.BasisSet.pyconstruct(
-        mol.to_dict(), key, resolved_target, fitrole, other, return_dict=True, return_atomlist=return_atomlist)
+    bs, basisdict = qcdb.BasisSet.pyconstruct(mol.to_dict(),
+                                              key,
+                                              resolved_target,
+                                              fitrole,
+                                              other,
+                                              return_dict=True,
+                                              return_atomlist=return_atomlist)
 
     if return_atomlist:
         atom_basis_list = []
@@ -123,6 +130,7 @@ def _core_wavefunction_build(mol, basis=None):
 
 core.Wavefunction.build = _core_wavefunction_build
 
+
 def _core_wavefunction_get_scratch_filename(self, filenumber):
     """ Given a wavefunction and a scratch file number, canonicalizes the name
         so that files can be consistently written and read """
@@ -130,7 +138,9 @@ def _core_wavefunction_get_scratch_filename(self, filenumber):
     psi_scratch = core.IOManager.shared_object().get_default_path()
     return os.path.join(psi_scratch, fname + '.' + str(filenumber))
 
+
 core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
+
 
 @staticmethod
 def _core_wavefunction_from_file(wfn_data):
@@ -605,6 +615,130 @@ core.set_global_option_python = _core_set_global_option_python
 ## QCvar helps
 
 
+def _qcvar_warnings(key):
+    if any([key.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]]):
+        warnings.warn(
+            f"Using scalar QCVariable `{key.upper()}` [D] instead of array `{key.upper()[:-2]}` [e a0] is deprecated, and in 1.5 it will stop working\n",
+            category=FutureWarning,
+            stacklevel=3)
+
+    if any([key.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]]):
+        warnings.warn(
+            f"Using scalar QCVariable `{key.upper()}` [D A] instead of array `{key.upper()[:-3]}` [e a0^2] is deprecated, and in 1.5 it will stop working\n",
+            category=FutureWarning,
+            stacklevel=3)
+
+
+_multipole_order = ["dummy", "dummy", "QUADRUPOLE", "OCTUPOLE", "HEXADECAPOLE"]
+for order in range(5, 10):
+    _multipole_order.append(f"{int(2**order)}-POLE")
+
+
+def _qcvar_reshape_set(key, val):
+    """Reverse `_qcvar_reshape_get` for internal psi4.core.Matrix storage."""
+
+    reshaper = None
+    if key.upper().endswith("DIPOLE"):
+        reshaper = (1, 3)
+    elif any(key.upper().endswith(p) for p in _multipole_order):
+        val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
+        reshaper = (1, -1)
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+        reshaper = (1, -1)
+
+    if reshaper:
+        return val.reshape(reshaper)
+    else:
+        return val
+
+
+def _qcvar_reshape_get(key, val):
+    """For QCVariables where the 2D psi4.core.Matrix shape is unnatural, convert to natural shape in ndarray."""
+
+    reshaper = None
+    if key.upper().endswith("DIPOLE"):
+        reshaper = (3, )
+    elif any(key.upper().endswith(p) for p in _multipole_order):
+        return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+        reshaper = (-1, )
+
+    if reshaper:
+        return val.np.reshape(reshaper)
+    else:
+        return val
+
+
+def _multipole_compressor(complete, order):
+    """Form flat unique components multipole array from complete Cartesian array.
+
+    Parameters
+    ----------
+    order : int
+        Multipole order. e.g., 1 for dipole, 4 for hexadecapole.
+    complete : ndarray
+        Multipole array, order-dimensional Cartesian array expanded to complete components.
+
+    Returns
+    -------
+    compressed : ndarray
+        Multipole array, length (order + 1) * (order + 2) / 2 compressed to unique components.
+
+    """
+    compressed = []
+    for ii in range(order + 1):
+        lx = order - ii
+        for lz in range(ii + 1):
+            ly = ii - lz
+
+            np_index = []
+            for xval in range(lx):
+                np_index.append(0)
+            for yval in range(ly):
+                np_index.append(1)
+            for zval in range(lz):
+                np_index.append(2)
+            compressed.append(complete[tuple(np_index)])
+
+    assert len(compressed) == ((order + 1) * (order + 2) / 2)
+    return np.array(compressed)
+
+
+def _multipole_plumper(compressed, order):
+    """Form multidimensional multipole array from unique components array.
+
+    Parameters
+    ----------
+    order : int
+        Multipole order. e.g., 1 for dipole, 4 for hexadecapole.
+    compressed : ndarray
+        Multipole array, length (order + 1) * (order + 2) / 2 compressed to unique components.
+
+    Returns
+    -------
+    complete : ndarray
+        Multipole array, order-dimensional Cartesian array expanded to complete components.
+        
+    """
+    shape = tuple([3] * order)
+    complete = np.zeros(shape)
+
+    def compound_index(counter):
+        # thanks, https://www.pamoc.it/tpc_cart_mom.html Eqn 2.2!
+        # jn = nz + (ny + nz)(ny + nz + 1) / 2
+        return int(
+            counter.get("2", 0) + (counter.get("1", 0) + counter.get("2", 0)) *
+            (counter.get("1", 0) + counter.get("2", 0) + 1) / 2)
+
+    for idx in product("012", repeat=order):
+        xyz_counts = Counter(idx)  # "010" --> {"0": 2, "1": 1}
+        np_index = tuple(int(x) for x in idx)  # ('0', '1') --> (0, 1)
+
+        complete[np_index] = compressed[compound_index(xyz_counts)]
+
+    return complete
+
+
 def _core_has_variable(key):
     return core.has_scalar_variable(key) or core.has_array_variable(key)
 
@@ -614,19 +748,23 @@ def _core_wavefunction_has_variable(cls, key):
 
 
 def _core_variable(key):
+    _qcvar_warnings(key)
+
     if core.has_scalar_variable(key):
         return core.scalar_variable(key)
     elif core.has_array_variable(key):
-        return core.array_variable(key)
+        return _qcvar_reshape_get(key, core.array_variable(key))
     else:
         raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
 
 
 def _core_wavefunction_variable(cls, key):
+    _qcvar_warnings(key)
+
     if cls.has_scalar_variable(key):
         return cls.scalar_variable(key)
     elif cls.has_array_variable(key):
-        return cls.array_variable(key)
+        return _qcvar_reshape_get(key, cls.array_variable(key))
     else:
         raise KeyError("psi4.core.Wavefunction.variable: Requested variable " + key + " was not set!\n")
 
@@ -641,12 +779,14 @@ def _core_set_variable(key, val):
         if core.has_scalar_variable(key):
             raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
         else:
-            core.set_array_variable(key, core.Matrix.from_array(val))
+            core.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if core.has_array_variable(key):
             raise ValidationError("psi4.core.set_variable: Target variable " + key + " already an array variable!")
         else:
             core.set_scalar_variable(key, val)
+
+    # TODO _qcvar_warnings(key)
 
 
 def _core_wavefunction_set_variable(cls, key, val):
@@ -661,13 +801,15 @@ def _core_wavefunction_set_variable(cls, key, val):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
                                   " already a scalar variable!")
         else:
-            cls.set_array_variable(key, core.Matrix.from_array(val))
+            cls.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if cls.has_array_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
                                   " already an array variable!")
         else:
             cls.set_scalar_variable(key, val)
+
+    # TODO _qcvar_warnings(key)
 
 
 def _core_del_variable(key):
@@ -685,11 +827,11 @@ def _core_wavefunction_del_variable(cls, key):
 
 
 def _core_variables():
-    return {**core.scalar_variables(), **core.array_variables()}
+    return {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
 
 
 def _core_wavefunction_variables(cls):
-    return {**cls.scalar_variables(), **cls.array_variables()}
+    return {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
 
 
 core.has_variable = _core_has_variable

@@ -87,7 +87,7 @@ _qcschema_translation = {
     "scf": {
         "scf_one_electron_energy": {"variables": "ONE-ELECTRON ENERGY"},
         "scf_two_electron_energy": {"variables": "TWO-ELECTRON ENERGY"},
-        "scf_dipole_moment": {"variables": ["SCF DIPOLE X", "SCF DIPOLE Y", "SCF DIPOLE Z"], "conversion_factor": (1 / qcel.constants.dipmom_au2debye)},
+        "scf_dipole_moment": {"variables": "SCF DIPOLE"},
         "scf_iterations": {"variables": "SCF ITERATIONS", "cast": int},
         "scf_total_energy": {"variables": "SCF TOTAL ENERGY"},
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
@@ -175,8 +175,8 @@ def _convert_variables(data, context=None, json=False):
         # Get the actual variables
         if isinstance(var["variables"], str):
             value = data.get(var["variables"], None)
-            if value and conversion_factor:
-                if isinstance(value, (int, float)):
+            if value is not None and conversion_factor:
+                if isinstance(value, (int, float, np.ndarray)):
                     value *= conversion_factor
                 elif isinstance(value, (core.Matrix, core.Vector)):
                     value.scale(conversion_factor)
@@ -566,9 +566,9 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
         # Dipole/quadrupole still special case
         if "dipole" in kwargs["properties"]:
-            ret["dipole"] = [psi_props[mtd + " DIPOLE " + x] for x in ["X", "Y", "Z"]]
+            ret["dipole"] = _serial_translation(psi_props[mtd + " DIPOLE"], json=json_serialization)
         if "quadrupole" in kwargs["properties"]:
-            ret["quadrupole"] = [psi_props[mtd + " QUADRUPOLE " + x] for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]]
+            ret["quadrupole"] = _serial_translation(psi_props[mtd + " QUADRUPOLE"], json=json_serialization)
         ret.update(_convert_variables(wfn.variables(), context="properties", json=json_serialization))
 
         json_data["return_result"] = ret
