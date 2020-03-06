@@ -19,8 +19,7 @@ else()
 
     ExternalProject_Add(qcelemental_external
         BUILD_ALWAYS 1
-        #URL https://github.com/MolSSI/QCElemental/archive/v0.14.0.tar.gz
-        URL https://github.com/MolSSI/QCElemental/archive/loriab-patch-1.tar.gz
+        URL https://github.com/MolSSI/QCElemental/archive/v0.14.0.tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
