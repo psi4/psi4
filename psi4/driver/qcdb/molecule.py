@@ -80,10 +80,10 @@ class Molecule(LibmintsMolecule):
                  missing_enabled_return_qm='none',
                  missing_enabled_return_efp='none',
                  missing_enabled_return='error',
-                 tooclose=0.1,
+                 tooclose=1e-6,
                  zero_ghost_fragments=False,
                  nonphysical=False,
-                 mtol=1.e-3,
+                 mtol=1.e-8,
                  verbose=1):
         """Initialize Molecule object from LibmintsMolecule"""
         super(Molecule, self).__init__()
@@ -1465,7 +1465,7 @@ class Molecule(LibmintsMolecule):
         #   to_dict, but is included as a check. in practice, only fills in mass
         #   numbers and heals user chgmult.
         try:
-            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', **molrec)
+            validated_molrec = qcel.molparse.from_arrays(speclabel=False, verbose=0, domain='qm', tooclose=1e-6, **molrec)
         except qcel.ValidationError as err:
             # * this can legitimately happen if total chg or mult has been set
             #   independently b/c fragment chg/mult not reset. so try again.

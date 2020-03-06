@@ -505,7 +505,7 @@ class PSI_API Molecule {
      * Force the molecule to have the symmetry specified in pg_.
      * This is to handle noise coming in from optking.
      */
-    void symmetrize(double tol = 0.05, bool suppress_mol_print_in_exc = false);
+    void symmetrize(double tol = 5e-7, bool suppress_mol_print_in_exc = false);
     /// @}
 
     /**
@@ -668,7 +668,7 @@ class PSI_API Molecule {
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
-    bool valid_atom_map(double tol = 0.05) const;
+    bool valid_atom_map(double tol = 1e-6) const;
     /// Return point group name such as C3v or S8.
     std::string full_point_group() const;
     /// Return point group name such as Cnv or Sn.
