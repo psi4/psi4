@@ -277,7 +277,7 @@ class MultipolePropCalc : public Prop {
    public:
     /// Common initialization
     MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const& origin);
-    // Output Type of multipole function, name, elec, nuc, tot
+    // Output Type of multipole function: name, elec, nuc, tot, order
     typedef std::vector<std::tuple<std::string, double, double, double, int>> MultipoleOutputTypeBase;
     typedef std::shared_ptr<MultipoleOutputTypeBase> MultipoleOutputType;
     /// Compute arbitrary-order multipoles up to (and including) l=order. returns name, elec, nuc and tot as vector_ptr

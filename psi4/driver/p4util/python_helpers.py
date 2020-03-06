@@ -629,27 +629,19 @@ def _qcvar_warnings(key):
             stacklevel=3)
 
 
+_multipole_order = ["dummy", "dummy", "QUADRUPOLE", "OCTUPOLE", "HEXADECAPOLE"]
+for order in range(5, 10):
+    _multipole_order.append(f"{int(2**order)}-POLE")
+
+
 def _qcvar_reshape_set(key, val):
+    """Reverse `_qcvar_reshape_get` for internal psi4.core.Matrix storage."""
+
     reshaper = None
     if key.upper().endswith("DIPOLE"):
         reshaper = (1, 3)
-    elif key.upper().endswith("QUADRUPOLE"):
-        val = _multipole_slimmer(val, 2)
-        reshaper = (1, -1)
-    elif key.upper().endswith("OCTUPOLE"):
-        val = _multipole_slimmer(val, 3)
-        reshaper = (1, -1)
-    elif key.upper().endswith("HEXADECAPOLE"):
-        val = _multipole_slimmer(val, 4)
-        reshaper = (1, -1)
-    elif key.upper().endswith("32-POLE"):
-        val = _multipole_slimmer(val, 5)
-        reshaper = (1, -1)
-    elif key.upper().endswith("64-POLE"):
-        val = _multipole_slimmer(val, 6)
-        reshaper = (1, -1)
-    elif key.upper().endswith("128-POLE"):
-        val = _multipole_slimmer(val, 7)
+    elif any(key.upper().endswith(p) for p in _multipole_order):
+        val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
         reshaper = (1, -1)
     elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
         reshaper = (1, -1)
@@ -661,21 +653,13 @@ def _qcvar_reshape_set(key, val):
 
 
 def _qcvar_reshape_get(key, val):
+    """For QCVariables where the 2D psi4.core.Matrix shape is unnatural, convert to natural shape in ndarray."""
+
     reshaper = None
     if key.upper().endswith("DIPOLE"):
         reshaper = (3, )
-    elif key.upper().endswith("QUADRUPOLE"):
-        return _multipole_plumper(val.np.reshape((-1, )), 2)
-    elif key.upper().endswith("OCTUPOLE"):
-        return _multipole_plumper(val.np.reshape((-1, )), 3)
-    elif key.upper().endswith("HEXADECAPOLE"):
-        return _multipole_plumper(val.np.reshape((-1, )), 4)
-    elif key.upper().endswith("32-POLE"):
-        return _multipole_plumper(val.np.reshape((-1, )), 5)
-    elif key.upper().endswith("64-POLE"):
-        return _multipole_plumper(val.np.reshape((-1, )), 6)
-    elif key.upper().endswith("128-POLE"):
-        return _multipole_plumper(val.np.reshape((-1, )), 7)
+    elif any(key.upper().endswith(p) for p in _multipole_order):
+        return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
     elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
         reshaper = (-1, )
 
@@ -685,7 +669,7 @@ def _qcvar_reshape_get(key, val):
         return val
 
 
-def _multipole_slimmer(complete, order):
+def _multipole_compressor(complete, order):
     """Form flat unique components multipole array from complete Cartesian array.
 
     Parameters
