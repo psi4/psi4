@@ -976,19 +976,19 @@ void OCCWave::denominators_uhf() {
     auto zero = Dimension(nirrep_);
 
     global_dpd_->file2_init(&Fd, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "FD <O|O>");
-    FockA->get_block({zero, nalphapi_}, {zero, nalphapi_})->write_to_dpdfile2(&Fd);
+    FockA->get_block({frzcpi_, nalphapi_}, {frzcpi_, nalphapi_})->write_to_dpdfile2(&Fd);
     global_dpd_->file2_close(&Fd);
 
     global_dpd_->file2_init(&Fd, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "FD <o|o>");
-    FockB->get_block({zero, nbetapi_}, {zero, nbetapi_})->write_to_dpdfile2(&Fd);
+    FockB->get_block({frzcpi_, nbetapi_}, {frzcpi_, nbetapi_})->write_to_dpdfile2(&Fd);
     global_dpd_->file2_close(&Fd);
 
     global_dpd_->file2_init(&Fd, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "FD <V|V>");
-    FockA->get_block({nalphapi_, nmopi_}, {nalphapi_, nmopi_})->write_to_dpdfile2(&Fd);
+    FockA->get_block({nalphapi_, nmopi_ - frzvpi_}, {nalphapi_, nmopi_ - frzvpi_})->write_to_dpdfile2(&Fd);
     global_dpd_->file2_close(&Fd);
 
     global_dpd_->file2_init(&Fd, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "FD <v|v>");
-    FockB->get_block({nbetapi_, nmopi_}, {nbetapi_, nmopi_})->write_to_dpdfile2(&Fd);
+    FockB->get_block({nbetapi_, nmopi_ - frzvpi_}, {nbetapi_, nmopi_ - frzvpi_})->write_to_dpdfile2(&Fd);
     global_dpd_->file2_close(&Fd);
 
     // outfile->Printf("\n denominators done. \n");
