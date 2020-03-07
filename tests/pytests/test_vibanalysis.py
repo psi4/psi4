@@ -789,6 +789,44 @@ ref_form_vibonly = {
     ).T),
 }
 
+
+# <<<  Generic Atom  >>>
+
+ne_xyz = """
+     Ne                 0.00000000     0.00000000     0.00000000
+     units au
+"""
+
+ne_mass = [19.9924401762]
+
+ne_dipder = [
+     [  0.0000000000,       0.0000000000,       0.0000000000],
+
+     [  0.0000000000,       0.0000000000,       0.0000000000],
+
+     [  0.0000000000,       0.0000000000,       0.0000000000]]
+
+
+ne_fcm = """
+    1    9
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+"""
+
+ref_ne_vibonly = {
+
+    'omega': qcel.Datum('', '', np.array([], dtype=np.float64)),
+    'gamma': qcel.Datum('', '', np.array([], dtype=np.object), numeric=False),
+    'IR_intensity': qcel.Datum('', '', np.array([], dtype=np.float64)),
+    'mu': qcel.Datum('', '', np.array([], dtype=np.float64)),
+    'k': qcel.Datum('', '', np.array([], dtype=np.float64)),
+    'Qtp0': qcel.Datum('', '', np.array([], dtype=np.float64)),
+    'DQ0': qcel.Datum('', '', np.array([], dtype=np.float64)),
+    'q': qcel.Datum('', '', np.array([], dtype=np.float64).reshape((3, 0))),
+}
+
+
 # yapf:enable
 
 _cfour_ref = {
@@ -833,6 +871,13 @@ _cfour_ref = {
         'dipder': c4_form_dipder,
         'fcm': c4_form_fcm,
         'vibonly': ref_form_vibonly
+    },
+    'ne': {
+        'xyz': ne_xyz,
+        'mass': ne_mass,
+        'dipder': ne_dipder,
+        'fcm': ne_fcm,
+        'vibonly': ref_ne_vibonly
     },
 }
 
@@ -889,6 +934,11 @@ units au
      H                  0.00000000     1.76217215     2.22504227
      H                  0.00000000    -1.76217215     2.22504227
 """,
+    "ne":
+    """
+units au
+     Ne                 0.00000000     0.00000000     0.00000000
+""",
 }
 
 # <<<  Section I: testing vibrational analysis vs Cfour  >>>
@@ -903,8 +953,9 @@ units au
         'nh3',
         'h2co',
         'hooh',
+        'ne',
     ],
-    ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS'])
+    ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS', 'atom'])
 def test_harmonic_analysis_vs_cfour(subject, request):
     # one of the ch4 degen modes has slight noise (when geom is properly bohr, so 4->2)
     tol = 1.e-2 if subject in ['ch4'] else 1.e-4
@@ -947,8 +998,9 @@ def test_harmonic_analysis_vs_cfour(subject, request):
         pytest.param('nh3'),
         pytest.param('h2co', marks=pytest.mark.quick),
         pytest.param('hooh'),
+        pytest.param('ne'),
     ],
-    ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS'])
+    ids=['CO2', 'ethene', 'methane', 'ammonia', 'formaldehyde', 'HOOH_TS', 'atom'])
 @pytest.mark.parametrize(
     "scf_type", [
         "pk",
@@ -956,6 +1008,9 @@ def test_harmonic_analysis_vs_cfour(subject, request):
     ])
 def test_hessian_vs_cfour(scf_type, subject, dertype, request):
     """compare analytic, findif by G, findif by E vibrational analyses for several mols"""
+
+    if 'atom' in request.node.name and 'H_by' in request.node.name:
+        pytest.skip("fix atomic findif Hessian in ddd")
 
     tol = 1.e-2
     if scf_type == "pk":
