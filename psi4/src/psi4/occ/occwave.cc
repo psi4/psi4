@@ -367,23 +367,23 @@ void OCCWave::title() {
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf("\n");
     if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OMP2 (OO-MP2)   \n");
+        outfile->Printf("                             OMP2 (OO-MP2)   \n");
     else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE")
-        outfile->Printf("                       MP2   \n");
+        outfile->Printf("                             MP2   \n");
     else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OMP3 (OO-MP3)   \n");
+        outfile->Printf("                             OMP3 (OO-MP3)   \n");
     else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE")
-        outfile->Printf("                       MP3   \n");
+        outfile->Printf("                             MP3   \n");
     else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OCEPA (OO-CEPA)   \n");
+        outfile->Printf("                             OCEPA (OO-CEPA)   \n");
     else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE")
-        outfile->Printf("                       CEPA   \n");
+        outfile->Printf("                             CEPA   \n");
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OMP2.5 (OO-MP2.5)   \n");
+        outfile->Printf("                             OMP2.5 (OO-MP2.5)   \n");
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE")
-        outfile->Printf("                       MP2.5  \n");
-    outfile->Printf("              Program Written by Ugur Bozkaya,\n");
-    outfile->Printf("              Latest Revision June 25, 2014.\n");
+        outfile->Printf("                             MP2.5  \n");
+    outfile->Printf("                    Program Written by Ugur Bozkaya,\n");
+    outfile->Printf("              Additional Contributions by J. P. Misiewicz\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");
