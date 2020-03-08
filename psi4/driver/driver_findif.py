@@ -68,7 +68,9 @@ def _displace_cart(mol, geom, salc_list, i_m, step_size):
     # This for loop and tuple unpacking is why the function can handle
     # an arbitrary number of SALCs.
     for salc_index, disp_steps in i_m:
-        for component in salc_list[salc_index]:
+        # * Python error if iterate through `salc_list`
+        for i in range(len(salc_list[salc_index])):
+            component = salc_list[salc_index][i]
             geom[component.atom, component.xyz] += (
                 disp_steps * step_size * component.coef / np.sqrt(mol.mass(component.atom)))
         # salc_index is in descending order. We want the label in ascending order, so...
@@ -168,8 +170,9 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
             raise ValidationError("FINDIF: Irrep value not in valid range.")
 
     # Populate salc_indices_pi for all irreps.
-    for i, salc in enumerate(salc_list):
-        salc_indices_pi[salc.irrep_index()].append(i)
+    # * Python error if iterate through `salc_list`
+    for i in range(len(salc_list)):
+        salc_indices_pi[salc_list[i].irrep_index()].append(i)
 
     # If the method allows more than one irrep, print how the irreps partition the SALCS.
     if print_lvl and method_allowed_irreps != 0x1 and verbose:
@@ -208,8 +211,8 @@ def _initialize_findif(mol, freq_irrep_only, mode, initialize_string, verbose=0)
                 core.print_out(f"      Irrep {i}: {ndisp}\n")
 
     if print_lvl > 1 and verbose:
-        for salc in salc_list:
-            salc.print_out()
+        for i in range(len(salc_list)):
+            salc_list[i].print_out()
 
     data.update({
         "n_disp_pi": n_disp_pi,
