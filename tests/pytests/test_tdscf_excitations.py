@@ -5,8 +5,7 @@ import pytest
 
 import psi4
 from psi4.driver.p4util.solvers import davidson_solver, hamiltonian_solver
-from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
-                                                           TDUSCFEngine)
+from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine, TDUSCFEngine)
 from .utils import *
 
 ## marks
@@ -61,7 +60,7 @@ def wfn_factory(tddft_systems):
         if nosym:
             mol.reset_point_group('c1')
         psi4.set_options({'scf_type': 'pk', 'e_convergence': 8, 'd_convergence': 8, 'save_jk': True})
-        e, wfn = psi4.energy("{}/{}".format(func, basis), return_wfn=True, molecule=mol)
+        e, wfn = psi4.energy(f"{func}/{basis}", return_wfn=True, molecule=mol)
         return wfn
 
     return _build_wfn
@@ -1248,7 +1247,7 @@ def test_tdscf(ref, func, ptype, basis, expected, wfn_factory, solver_funcs, eng
 
     ### setup
     # Look up expected in fixture (easier to read)
-    exp_lookup = "{}-{}-{}-{}".format(ref, func, ptype, basis)
+    exp_lookup = f"{ref}-{func}-{ptype}-{basis}"
     exp_low_per_sym = {'A1': 100, 'A2': 100, 'B1': 100, "B2": 100}
     for x in expected[exp_lookup]:
         exp_low_per_sym[x['sym']] = min(x['e'], exp_low_per_sym[x['sym']])
@@ -1265,21 +1264,20 @@ def test_tdscf(ref, func, ptype, basis, expected, wfn_factory, solver_funcs, eng
     engine = engines[ref](wfn, ptype)
 
     # skipping the entrypoint, just call the solver
-    out = solver(
-        engine=engine,
-        guess=engine.generate_guess(16),
-        max_vecs_per_root=10,
-        nroot=4,
-        verbose=1,
-        maxiter=30,
-        e_tol=1.0e-7,
-        r_tol=1.0e-5,
-        schmidt_tol=1.0e-12)
+    out = solver(engine=engine,
+                 guess=engine.generate_guess(16),
+                 max_vecs_per_root=10,
+                 nroot=4,
+                 verbose=1,
+                 maxiter=30,
+                 e_tol=1.0e-7,
+                 r_tol=1.0e-5,
+                 schmidt_tol=1.0e-12)
 
-    test_vals = out[0]
-    stats = out[-1]
+    test_vals = out["eigvals"]
+    stats = out["stats"]
     assert stats[-1]['done'], "Solver did not converge"
 
     for i, my_v in enumerate(test_vals):
         ref_v = exp_energy_sorted[i]
-        assert compare_values(ref_v, my_v, 4, "{}-{}-{}-ROOT-{}".format(ref, func, ptype, i + 1))
+        assert compare_values(ref_v, my_v, 4, f"{ref}-{func}-{ptype}-ROOT-{i+1}")

@@ -176,8 +176,7 @@ def name_doublet_test(ni, Ga, Gb, at, bt, sq_or_rec):
         b_name = "B^T"
     else:
         b_name = "B  "
-    return "  N(G){} || G(A): {} || G(B): {} || doublet({} x {}) || {}".format(gsz, Ga, Gb, a_name, b_name,
-                                                                               sq_or_rec.upper())
+    return f"  N(G){gsz} || G(A): {Ga} || G(B): {Gb} || doublet({a_name} x {b_name}) || {sq_or_rec.upper()}"
 
 
 dim_choices1 = [2, 3, 4, 5, 6, 7, 8, 9]
@@ -217,11 +216,11 @@ def test_doublets(adl, adr, Ga, bdl, bdr, Gb, at, bt):
     b = build_random_mat(bdl, bdr, Gb)
     res = doublet(a, b, at, bt)
     expected = generate_result(a, b, at, bt)
-    assert res.symmetry() == a.symmetry() ^ b.symmetry(), "Symm mismatch {} x {} != {}".format(
-        a.symmetry(), b.symemtry(), res.symmetry())
+    assert res.symmetry(
+    ) == a.symmetry() ^ b.symmetry(), f"Symm mismatch {a.symmetry()} x {b.symmetry()} != {res.symmetry()}"
     res_blocks = res.to_array()
     if isinstance(res_blocks, np.ndarray):
         res_blocks = [res_blocks]
     block_checks = []
     for blk_idx in range(res.nirrep()):
-        assert compare_arrays(expected[blk_idx], res_blocks[blk_idx], 8, "Block[{}]".format(blk_idx))
+        assert compare_arrays(expected[blk_idx], res_blocks[blk_idx], 8, f"Block[{blk_idx}]")
