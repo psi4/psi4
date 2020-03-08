@@ -596,6 +596,11 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
         The Hessian in non-mass weighted cartesians.
     """
 
+    # Handle empty case (atom)
+    if not H_blocks and not B_blocks:
+        nat3 = massweighter.size
+        return np.zeros((nat3, nat3), dtype=np.float64)
+
     # We have the Hessian in each irrep! The final task is to perform coordinate transforms.
     H = p4util.block_diagonal_array(*H_blocks)
     B = np.vstack(B_blocks)
@@ -903,7 +908,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
     ref_energy = findifrec["reference"]["energy"]
 
     def init_string(data):
-        max_label_len = str(max([len(label) for label in displacements]))
+        max_label_len = str(max([len(label) for label in displacements], default=3))
         out_str = ""
         for label, disp_data in displacements.items():
             out_str += ("    {:" + max_label_len + "s} : {:20.10f}\n").format(label, disp_data["energy"])

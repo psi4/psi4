@@ -1009,9 +1009,6 @@ def test_harmonic_analysis_vs_cfour(subject, request):
 def test_hessian_vs_cfour(scf_type, subject, dertype, request):
     """compare analytic, findif by G, findif by E vibrational analyses for several mols"""
 
-    if 'atom' in request.node.name and 'H_by' in request.node.name:
-        pytest.skip("fix atomic findif Hessian in ddd")
-
     tol = 1.e-2
     if scf_type == "pk":
         toldict = {'IR_intensity': 1.e-1} if subject in ['nh3'] else {}
