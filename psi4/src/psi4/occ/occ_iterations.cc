@@ -76,7 +76,7 @@ void OCCWave::occ_iterations() {
     // If diis?
     // if (nooA + nooB != 1) {
     if (do_diis_ == 1) {
-        orbitalDiis = new DIISManager(num_vecs, "Orbital Optimized DIIS", DIISManager::LargestError, DIISManager::OnDisk);
+        orbitalDiis = new DIISManager(maxdiis_, "Orbital Optimized DIIS", DIISManager::LargestError, DIISManager::OnDisk);
         std::string tensor_name = (wfn_type_ == "OCEPA") ? "T2" : (wfn_type_ == "OMP2" ? "T" : "T2_1");
         if (reference_ == "RESTRICTED") {
             dpdbuf4 T;
@@ -495,7 +495,7 @@ void OCCWave::oo_diis() {
             global_dpd_->buf4_init(&R, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "RT2_1 <OO|VV>");
             orbitalDiis->add_entry(4, wogA_vec.get(), &R, kappa_bar_[SpinType::Alpha].get(), &T);
-            if (orbitalDiis->subspace_size() >= cc_mindiis_) {
+            if (orbitalDiis->subspace_size() >= mindiis_) {
                 orbitalDiis->extrapolate(2, kappa_bar_[SpinType::Alpha].get(), &T);
             }
         } else if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
@@ -509,7 +509,7 @@ void OCCWave::oo_diis() {
             global_dpd_->buf4_init(&R2, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "RT2_2 <OO|VV>");
             orbitalDiis->add_entry(6, wogA_vec.get(), &R1, &R2, kappa_bar_[SpinType::Alpha].get(), &T1, &T2);
-            if (orbitalDiis->subspace_size() >= cc_mindiis_) {
+            if (orbitalDiis->subspace_size() >= mindiis_) {
                 orbitalDiis->extrapolate(3, kappa_bar_[SpinType::Alpha].get(), &T1, &T2);
             }
         } else if (wfn_type_ == "OCEPA") {
@@ -519,7 +519,7 @@ void OCCWave::oo_diis() {
             global_dpd_->buf4_init(&R, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "RT2 <OO|VV>");
             orbitalDiis->add_entry(4, wogA_vec.get(), &R, kappa_bar_[SpinType::Alpha].get(), &T);
-            if (orbitalDiis->subspace_size() >= cc_mindiis_) {
+            if (orbitalDiis->subspace_size() >= mindiis_) {
                 orbitalDiis->extrapolate(2, kappa_bar_[SpinType::Alpha].get(), &T);
             }
         }
@@ -541,7 +541,7 @@ void OCCWave::oo_diis() {
                                "RT2_1 <oo|vv>");
             orbitalDiis->add_entry(10, wogA_vec.get(), wogB_vec.get(), &R1aa, &R1ab, &R1bb,
                     kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb);
-            if (orbitalDiis->subspace_size() >= cc_mindiis_) {
+            if (orbitalDiis->subspace_size() >= mindiis_) {
                 orbitalDiis->extrapolate(5, kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb);
             }
             global_dpd_->buf4_close(&T1aa);
@@ -578,7 +578,7 @@ void OCCWave::oo_diis() {
                                "RT2_2 <oo|vv>");
             orbitalDiis->add_entry(16, wogA_vec.get(), wogB_vec.get(), &R1aa, &R1ab, &R1bb, &R2aa, &R2ab, &R2bb,
                     kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb, &T2aa, &T2ab, &T2bb);
-            if (orbitalDiis->subspace_size() >= cc_mindiis_) {
+            if (orbitalDiis->subspace_size() >= mindiis_) {
                 orbitalDiis->extrapolate(8, kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb, &T2aa, &T2ab, &T2bb);
             }
             global_dpd_->buf4_close(&T1aa);
@@ -609,7 +609,7 @@ void OCCWave::oo_diis() {
                                "RT2 <oo|vv>");
             orbitalDiis->add_entry(10, wogA_vec.get(), wogB_vec.get(), &Raa, &Rab, &Rbb,
                     kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &Taa, &Tab, &Tbb);
-            if (orbitalDiis->subspace_size() >= cc_mindiis_) {
+            if (orbitalDiis->subspace_size() >= mindiis_) {
                 orbitalDiis->extrapolate(5, kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &Taa, &Tab, &Tbb);
             }
             global_dpd_->buf4_close(&Taa);

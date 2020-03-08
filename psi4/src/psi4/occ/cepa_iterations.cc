@@ -59,7 +59,7 @@ void OCCWave::cepa_iterations() {
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "T2 <OO|VV>");
             t2DiisManager =
-                new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::OnDisk);
+                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::OnDisk);
             t2DiisManager->set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
             t2DiisManager->set_vector_size(1, DIISEntry::DPDBuf4, &T);
             global_dpd_->buf4_close(&T);
@@ -76,7 +76,7 @@ void OCCWave::cepa_iterations() {
             global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                    "T2 <Oo|Vv>");
             t2DiisManager =
-                new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
             t2DiisManager->set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tbb,
                                                  DIISEntry::DPDBuf4, &Tab);
             t2DiisManager->set_vector_size(3, DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tbb, DIISEntry::DPDBuf4,
@@ -151,7 +151,7 @@ void OCCWave::cepa_diis() {
         global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "T2 <OO|VV>");
         t2DiisManager->add_entry(2, &R, &T);
-        if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(1, &T);
+        if (t2DiisManager->subspace_size() >= mindiis_) t2DiisManager->extrapolate(1, &T);
         global_dpd_->buf4_close(&R);
         global_dpd_->buf4_close(&T);
     } else if (reference_ == "UNRESTRICTED") {
@@ -169,7 +169,7 @@ void OCCWave::cepa_diis() {
         global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "T2 <Oo|Vv>");
         t2DiisManager->add_entry(6, &Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
-        if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(3, &Taa, &Tbb, &Tab);
+        if (t2DiisManager->subspace_size() >= mindiis_) t2DiisManager->extrapolate(3, &Taa, &Tbb, &Tab);
         global_dpd_->buf4_close(&Raa);
         global_dpd_->buf4_close(&Rbb);
         global_dpd_->buf4_close(&Rab);

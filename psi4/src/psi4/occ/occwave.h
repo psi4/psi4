@@ -208,7 +208,6 @@ class OCCWave : public Wavefunction {
     int idp_return;
     int idp_returnA;
     int idp_returnB;
-    int num_vecs;  // Number of vectors used in diis (diis order)
     int multp;
     int charge;
     int print_;
@@ -226,8 +225,8 @@ class OCCWave : public Wavefunction {
     int do_diis_;
     int itr_diis;
     int time4grad;         // If 0 it is not the time for grad, if 1 it is the time for grad
-    int cc_maxdiis_;       // MAX Number of vectors used in CC diis
-    int cc_mindiis_;       // MIN Number of vectors used in CC diis
+    int maxdiis_;          // MAX Number of vectors used in diis
+    int mindiis_;          // MIN Number of vectors used in diis
     int incore_iabc_;      // 1 means do incore, 0 means do out of core
     int incore_abcd_;      // 1 means do incore, 0 means do out of core
     int orbs_already_opt;  // 1 means true, 0 means false

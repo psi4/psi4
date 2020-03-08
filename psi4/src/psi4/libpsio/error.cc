@@ -126,7 +126,7 @@ void psio_error(size_t unit, size_t errval) {
         case PSIO_ERROR_UNOPENED:
             fprintf(stderr, "PSIO_ERROR: %d (File not opened)\n", PSIO_ERROR_UNOPENED);
             fprintf(stderr, "You need to open file %zu before you attempt this operation,\n", unit);
-            fprintf(stderr, "If you're an user, contact developers immediately. This is a bug.\n");
+            fprintf(stderr, "If you're a user, contact developers immediately. This is a bug.\n");
             fprintf(stderr, "If you're a developer, get yourself some coffee.\n");
             break;
     }

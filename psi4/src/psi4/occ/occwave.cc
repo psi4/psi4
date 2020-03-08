@@ -70,9 +70,8 @@ void OCCWave::common_init() {
     exp_cutoff = options_.get_int("CUTOFF");
     tol_pcg = options_.get_double("PCG_CONVERGENCE");
     pcg_maxiter = options_.get_int("PCG_MAXITER");
-    num_vecs = options_.get_int("MO_DIIS_NUM_VECS");
-    cc_maxdiis_ = options_.get_int("CC_DIIS_MAX_VECS");
-    cc_mindiis_ = options_.get_int("CC_DIIS_MIN_VECS");
+    maxdiis_ = options_.get_int("DIIS_MAX_VECS");
+    mindiis_ = options_.get_int("DIIS_MIN_VECS");
     ep_maxiter = options_.get_int("EP_MAXITER");
 
     step_max = options_.get_double("MO_STEP_MAX");
@@ -126,6 +125,11 @@ void OCCWave::common_init() {
         outfile->Printf(
             "\tSpin-scaling in OCC changed in 1.4. Leave options to the energy call. Just pass in the method name, "
             "like scs-mp2.\n\n");
+    }
+    if (options_["MO_DIIS_NUM_VECS"].has_changed() || options_["CC_DIIS_MIN_VECS"].has_changed() ||
+        options_["CC_DIIS_MAX_VECS"].has_changed()) {
+        outfile->Printf(
+            "\tDIIS keywords in OCC simplified in 1.4. DIIS_MIN_VECS and DIIS_MAX_VECS are the ones to use.\n\n");
     }
 
     //   Given default orbital convergence, set the criteria by what should
