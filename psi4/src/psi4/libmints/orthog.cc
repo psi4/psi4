@@ -336,7 +336,7 @@ void BasisSetOrthogonalization::compute_orthog_trans() {
     // Determine what method to use
     if (orthog_method_ == Automatic) {
         compute_overlap_eig();
-        if (rcond_ <= DBL_EPSILON)
+        if (rcond_ <= DBL_EPSILON || !std::isnormal(rcond_))
             orthog_method_ = PartialCholesky;
         else if (min_S_ < lindep_tol_)
             orthog_method_ = Canonical;
@@ -354,7 +354,7 @@ void BasisSetOrthogonalization::compute_orthog_trans() {
             compute_canonical_orthog();
             break;
         case PartialCholesky:
-            if (print_) outfile->Printf("    Using partial Cholesky orthogonalization (doi:10.1063/1.5139948).\n");
+            if (print_) outfile->Printf("    Using partial Cholesky orthogonalization (doi:10.1063/1.5139948, doi:10.1103/PhysRevA.101.032504).\n");
             compute_partial_cholesky_orthog();
             break;
         default:
