@@ -39,7 +39,7 @@ def test_xtpl_gold_fn_error():
     with pytest.raises(psi4.UpgradeHelper) as e:
         psi4.energy(sherrill_gold_standard, scf_basis='cc-pvdz')
 
-    assert 'Replace `energy(sherrill_gold_standard)' in str(e.value)
+    assert 'Replace function `energy(sherrill_gold_standard)' in str(e.value)
 
 
 def test_qmmm_class_error():

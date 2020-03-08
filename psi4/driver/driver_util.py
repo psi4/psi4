@@ -101,8 +101,8 @@ def upgrade_interventions(method):
                                 ' Replace cbs or complete_basis_set function with cbs string.')
         elif method.__name__ in ['sherrill_gold_standard', 'allen_focal_point']:
             raise UpgradeHelper(
-                'argument ' + method.__name__, 'function ' + method.__name__, 1.4,
-                ' Replace `energy(sherrill_gold_standard)` with `energy("sherrill_gold_standard")` or similar.')
+                method.__name__, '"' + method.__name__ + '"', 1.4,
+                f' Replace function `energy({method.__name__})` with string `energy("{method.__name__}")` or similar.')
         else:
             raise e
 
