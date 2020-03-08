@@ -56,6 +56,11 @@ struct RankDependentImpl<Matrix_<T>> {
     void set(size_t h, size_t i, size_t j, T val) { static_cast<Matrix_<T>*>(this)->store_[h](i, j) = val; }
     void set(size_t i, size_t j, T val) { this->set(0, i, j, val); }
 
+    void set_symmetric(size_t h, size_t i, size_t j, T val) {
+        static_cast<Matrix_<T>*>(this)->store_[h](i, j) = static_cast<Matrix_<T>*>(this)->store_[h](j, i) = val;
+    }
+    void set_symmetric(size_t i, size_t j, T val) { this->set_symmetric(0, i, j, val); }
+
     /*! C++ string representation of type */
     std::string cxxClassName() const noexcept { return "Matrix<" + detail::Type2String<T>::full() + ">"; }
     /*! Python string representation of type */

@@ -29,11 +29,13 @@
 #ifndef _psi_src_lib_libmints_helper_h
 #define _psi_src_lib_libmints_helper_h
 
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/multipolesymmetry.h"
+#include <vector>
+
 #include "psi4/libpsi4util/process.h"
 
-#include <vector>
+#include "multipolesymmetry.h"
+#include "tensor.h"
+#include "wavefunction.h"
 
 namespace psi {
 
@@ -89,7 +91,9 @@ class PSI_API MintsHelper {
 
     void common_init();
 
-    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
+    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm) const;
+    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix_<double> out,
+                              bool symm) const;
     void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
     /// Helper function to convert ao integrals to so and cache them
     void cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string& label, bool include_perturbation);
@@ -261,8 +265,10 @@ class PSI_API MintsHelper {
     SharedMatrix mo_spin_eri(SharedMatrix Co, SharedMatrix Cv);
 
     /// AO Overlap Integrals
-    SharedMatrix ao_overlap();
-    SharedMatrix ao_overlap(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    SharedMatrix ao_overlap() const;
+    SharedMatrix ao_overlap(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const;
+    auto ao_overlap_() const -> SharedMatrix_<double>;
+    auto ao_overlap_(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const -> SharedMatrix_<double>;
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic();
     SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
