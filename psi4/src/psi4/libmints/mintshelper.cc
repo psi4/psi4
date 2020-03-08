@@ -1335,7 +1335,7 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
 
 void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
     std::string perturb_with = options_.get_str("PERTURB_WITH");
-    Vector3 lambda(0.0, 0.0, 0.0);
+    Vector3<double> lambda{0.0, 0.0, 0.0};
 
     if (perturb_with == "DIPOLE_X")
         lambda[0] = options_.get_double("PERTURB_MAGNITUDE");

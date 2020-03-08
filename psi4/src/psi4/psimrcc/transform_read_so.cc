@@ -34,7 +34,6 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/matrix.h"
 
-#include "algebra_interface.h"
 #include "blas.h"
 #include "transform.h"
 #include "matrix.h"
