@@ -1070,11 +1070,13 @@ void export_mints(py::module& m) {
         .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
              "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
         .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
-             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices");
+             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices")
         
         // First derivatives of electric dipole integrals in AO and MO basis.
         .def("ao_elec_dip_deriv1", &MintsHelper::ao_elec_dip_deriv1,
              "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices")
+        .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
+             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices");
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "

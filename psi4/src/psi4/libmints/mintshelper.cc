@@ -2682,6 +2682,230 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
     return grad;
 }
 
+/* 1st derivatives of electric dipole integrals in the AO basis */
+std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
+    std::vector<std::string> cartcomp;
+    cartcomp.push_back("X");
+    cartcomp.push_back("Y");
+    cartcomp.push_back("Z");
+
+    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
+
+    std::shared_ptr<BasisSet> bs1 = Dint->basis1();
+    std::shared_ptr<BasisSet> bs2 = Dint->basis2();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+
+    std::vector<SharedMatrix> grad;
+    for (int p = 0; p < 3; p++) {
+        std::stringstream sstream;
+        sstream << "ao_mu" << cartcomp[p] << "_deriv1_";
+        for (int q = 0; q < 3; q++) {
+            sstream << atom << cartcomp[q];
+            grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1, nbf2)));
+        }
+    }
+
+    const double *buffer = Dint->buffer();
+
+    for (int P = 0; P < bs1->nshell(); P++) {
+        for (int Q = 0; Q < bs2->nshell(); Q++) {
+            int nP = basisset_->shell(P).nfunction();
+            int oP = basisset_->shell(P).function_index();
+            int aP = basisset_->shell(P).ncenter();
+
+            int nQ = basisset_->shell(Q).nfunction();
+            int oQ = basisset_->shell(Q).function_index();
+            int aQ = basisset_->shell(Q).ncenter();
+
+            if (aP != atom && aQ != atom) continue;
+
+            Dint->compute_shell_deriv1(P, Q);
+
+//            for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
+//                for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
+//                    int offset = (6 * mu_cart * nP * nQ) + (atom_cart * nP * nQ) + (3 * (atom == aQ) * nP * nQ);
+//                    for (int p = 0; p < nP; p++) {
+//                        for (int q = 0; q < nQ; q++) {
+//                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+//                            if (aP == aQ) grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, buffer[p * nQ + q + offset - (3 * nP * nQ)]);
+//                        }
+//                    }
+//                }
+//            }
+
+            int offset = 0;
+            if (aP == atom) {
+                /*
+                 * Mu X derivatives
+                 */
+                // Px
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[0]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Py
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[1]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Pz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[2]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += 4 * nP * nQ;
+
+                /*
+                 * Mu Y derivatives
+                 */
+                // Px
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[3]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Py
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[4]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Pz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[5]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += 4 * nP * nQ;
+
+                /*
+                 * Mu Z derivatives
+                 */
+                // Px
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[6]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Py
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[7]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Pz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[8]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+            }
+
+            offset = 3 * nP * nQ;
+            if (aQ == atom) {
+                /*
+                 * Mu X derivatives
+                 */
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[0]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[1]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[2]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += 4 * nP * nQ;
+
+                /*
+                 * Mu Y derivatives
+                 */
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[3]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[4]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[5]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += 4 * nP * nQ;
+
+                /*
+                 * Mu Z derivatives
+                 */
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[6]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[7]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+                offset += nP * nQ;
+
+                // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        grad[8]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                    }
+                }
+            }
+        }
+    }
+
+    return grad;
+}
+
 /* 1st and 2nd derivatives of TEI in AO basis  */
 
 std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, double omega,
@@ -3230,13 +3454,14 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1(int atom) {
     return ao_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix C1, SharedMatrix, C2) {
+std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix C1, SharedMatrix C2) {
     std::vector<std::string> cartcomp;
     cartcomp.push_back("X");
     cartcomp.push_back("Y");
     cartcomp.push_back("Z");
 
     std::vector<SharedMatrix> ao_grad;
+    std::vector<SharedMatrix> mo_grad;
     ao_grad = ao_elec_dip_deriv1(atom);
 
     // Assuming C1 symmetry
@@ -3244,13 +3469,14 @@ std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix
     int nbf2 = ao_grad[0]->coldim();
 
     std::vector<SharedMatrix> mo_grad;
-    for (int p = 0; p < 3; p++) {
+    for (int p = 0; p < 9; p++) {
         std::stringstream sstream;
         sstream << "mo_elec_dip_deriv1_" << atom << cartcomp[p];
         SharedMatrix temp(new Matrix(sstream.str(), nbf1, nbf2));
         temp->transform(C1, ao_grad[p], C2);
         mo_grad.push_back(temp);
     }
+
     return mo_grad;
 }
 
