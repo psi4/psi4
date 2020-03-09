@@ -85,6 +85,15 @@ struct is_tensorisable : std::integral_constant<bool, std::is_arithmetic<T>::val
 template <typename T>
 constexpr bool is_tensorisable_v = is_tensorisable<T>::value;
 
+using rank0 = std::integral_constant<size_t, 0>;
+
+template <size_t Rank>
+struct is_rank0 : std::integral_constant<bool, std::is_same<std::integral_constant<size_t, Rank>, rank0>::value> {};
+
+// NOTE for posterity this can be declared inline in C++17
+template <size_t Rank>
+constexpr bool is_rank0_v = is_rank0<Rank>::value;
+
 using rank1 = std::integral_constant<size_t, 1>;
 
 template <size_t Rank>

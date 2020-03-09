@@ -93,7 +93,10 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
                 throw PSIEXCEPTION("In Tensor CTOR axes_dimpi do NOT have same size");
             }
             if (nirrep != ax0_n) {
-                throw PSIEXCEPTION("In Tensor CTOR axes dimensions and number of irreps do not match");
+                std::ostringstream err;
+                err << "In Tensor CTOR axes dimensions (" << std::to_string(ax0_n) << ") and numbe of irreps ("
+                    << std::to_string(nirrep) << ") do not match";
+                throw PSIEXCEPTION(err.str());
             }
         }
         for (int h = 0; h < store_.size(); ++h) {
@@ -121,7 +124,10 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
                 throw PSIEXCEPTION("In Tensor CTOR axes_dimpi do NOT have same size");
             }
             if (nirrep != ax0_n) {
-                throw PSIEXCEPTION("In Tensor CTOR axes dimensions and number of irreps do not match");
+                std::ostringstream err;
+                err << "In Tensor CTOR axes dimensions (" << std::to_string(ax0_n) << ") and numbe of irreps ("
+                    << std::to_string(nirrep) << ") do not match";
+                throw PSIEXCEPTION(err.str());
             }
         }
         for (int h = 0; h < store_.size(); ++h) {

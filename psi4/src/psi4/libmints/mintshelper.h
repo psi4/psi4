@@ -29,6 +29,9 @@
 #ifndef _psi_src_lib_libmints_helper_h
 #define _psi_src_lib_libmints_helper_h
 
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "psi4/libpsi4util/process.h"
@@ -86,6 +89,9 @@ class PSI_API MintsHelper {
     SharedMatrix ao_helper(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints);
     SharedMatrix ao_shell_getter(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
                                  int Q);
+    auto ao_helper_(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints) const -> SharedTensor<double, 4>;
+    auto ao_shell_getter_(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
+                          int Q) const -> SharedMatrix_<double>;
 
     SharedMatrix ao_3coverlap_helper(const std::string& label, std::shared_ptr<ThreeCenterOverlapInt> ints);
 
@@ -175,8 +181,12 @@ class PSI_API MintsHelper {
     SharedMatrix ao_eri(std::shared_ptr<IntegralFactory> = nullptr);
     SharedMatrix ao_eri(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                         std::shared_ptr<BasisSet> bs4);
+    auto ao_eri_(std::shared_ptr<IntegralFactory> = nullptr) const -> SharedTensor<double, 4>;
+    auto ao_eri_(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
+                 std::shared_ptr<BasisSet> bs4) const -> SharedTensor<double, 4>;
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
+    auto ao_eri_shell_(int M, int N, int P, int Q) const -> SharedTensor<double, 4>;
 
     // Derivatives of OEI in AO and MO basis
     std::vector<SharedMatrix> ao_oei_deriv1(const std::string& oei_type, int atom);
@@ -270,11 +280,15 @@ class PSI_API MintsHelper {
     auto ao_overlap_() const -> SharedMatrix_<double>;
     auto ao_overlap_(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const -> SharedMatrix_<double>;
     /// AO Kinetic Integrals
-    SharedMatrix ao_kinetic();
-    SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    SharedMatrix ao_kinetic() const;
+    SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const;
+    auto ao_kinetic_() const -> SharedMatrix_<double>;
+    auto ao_kinetic_(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const -> SharedMatrix_<double>;
     /// AO Potential Integrals
-    SharedMatrix ao_potential();
-    SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    SharedMatrix ao_potential() const;
+    SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const;
+    auto ao_potential_() const -> SharedMatrix_<double>;
+    auto ao_potential_(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const -> SharedMatrix_<double>;
     /// AO ECP Integrals
     SharedMatrix ao_ecp();
     SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);

@@ -964,11 +964,27 @@ void export_mints(py::module& m) {
                                                                                      py::const_),
              "AO mixed basis overlap integrals")
         .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals", "include_perturbations"_a = true)
-        .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "AO basis kinetic integrals")
-        .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "AO mixed basis kinetic integrals")
+        .def("ao_kinetic", py::overload_cast<>(&MintsHelper::ao_kinetic, py::const_), "AO basis kinetic integrals")
+        .def("ao_kinetic",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_kinetic,
+                                                                                     py::const_),
+             "AO mixed basis kinetic integrals")
+        .def("ao_kinetic_", py::overload_cast<>(&MintsHelper::ao_kinetic_, py::const_), "AO basis kinetic integrals")
+        .def("ao_kinetic_",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_kinetic_,
+                                                                                     py::const_),
+             "AO mixed basis kinetic integrals")
         .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals", "include_perturbations"_a = true)
-        .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
-        .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
+        .def("ao_potential", py::overload_cast<>(&MintsHelper::ao_potential, py::const_), "AO potential integrals")
+        .def("ao_potential",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_potential,
+                                                                                     py::const_),
+             "AO mixed basis potential integrals")
+        .def("ao_potential_", py::overload_cast<>(&MintsHelper::ao_potential_, py::const_), "AO potential_ integrals")
+        .def("ao_potential_",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_potential_,
+                                                                                     py::const_),
+             "AO mixed basis potential_ integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
              "include_perturbations"_a = true)
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
@@ -1007,6 +1023,13 @@ void export_mints(py::module& m) {
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a)
+        .def("ao_eri_", py::overload_cast<std::shared_ptr<IntegralFactory>>(&MintsHelper::ao_eri_, py::const_),
+             "AO ERI integrals", "factory"_a = nullptr)
+        .def("ao_eri_",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                               std::shared_ptr<BasisSet>>(&MintsHelper::ao_eri_, py::const_),
+             "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
+        //.def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a)
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", "omega"_a, "factory"_a = nullptr)
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a)
         .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a, "bs1"_a, "bs2"_a, "bs3"_a,
