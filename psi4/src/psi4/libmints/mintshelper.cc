@@ -3460,9 +3460,7 @@ std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix
     cartcomp.push_back("Y");
     cartcomp.push_back("Z");
 
-    std::vector<SharedMatrix> ao_grad;
-    std::vector<SharedMatrix> mo_grad;
-    ao_grad = ao_elec_dip_deriv1(atom);
+    std::vector<SharedMatrix> ao_grad = ao_elec_dip_deriv1(atom);
 
     // Assuming C1 symmetry
     int nbf1 = ao_grad[0]->rowdim();
