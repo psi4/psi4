@@ -747,6 +747,8 @@ void CIWavefunction::semicanonical_orbs() {
 
     // Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
     auto U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
+    // zero U otherwise we get small errors
+    U->zero();
 
     // Diagonalize each block of Favg
     Dimension offset_start(nirrep_);
