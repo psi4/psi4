@@ -306,6 +306,7 @@ void DFOCC::ccsd_mp2_low() {
         K.reset();
         Emp2 = Eref + Ecorr;
         Eccsd = Emp2;
+        Emp2_t1 = 0.0;
 
     }  // end if (reference_ == "RESTRICTED")
 
@@ -415,6 +416,7 @@ void DFOCC::ccd_mp2() {
         U.reset();
         K.reset();
         Emp2 = Eref + Ecorr;
+        Emp2_t1 = 0.0;
 
     }  // end if (reference_ == "RESTRICTED")
 
@@ -562,6 +564,7 @@ void DFOCC::ccd_mp2_low() {
         U.reset();
         K.reset();
         Emp2 = Eref + Ecorr;
+        Emp2_t1 = 0.0;
 
     }  // end if (reference_ == "RESTRICTED")
 

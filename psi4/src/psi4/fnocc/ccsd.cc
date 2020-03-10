@@ -165,6 +165,8 @@ double CoupledCluster::compute_energy() {
         WriteBanner();
         AllocateMemory();
         MP2();
+        Process::environment.globals["MP2 SINGLES ENERGY"] = 0.0;  // fnocc RHF only
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = emp2_os + emp2_ss;
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
         Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
@@ -173,6 +175,8 @@ double CoupledCluster::compute_energy() {
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = emp2;
 
         energy_ = emp2 + escf;
+        set_scalar_variable("MP2 SINGLES ENERGY", 0.0);
+        set_scalar_variable("MP2 DOUBLES ENERGY", emp2_os + emp2_ss);
         set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
         set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
         set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
