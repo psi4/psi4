@@ -32,5 +32,4 @@ set globals{
 }
 
 Ecas, wfn = energy('casscf', return_wfn=True)
-compare_values(-229.495450424187453, get_variable('CURRENT ENERGY'), 8, 'CASSCF Energy')  #TEST
-
+compare_values(-229.495450424187453, get_variable('CURRENT ENERGY'), 9, 'CASSCF Energy')  #TEST
