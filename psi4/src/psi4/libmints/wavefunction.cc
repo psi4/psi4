@@ -1151,6 +1151,8 @@ SharedMatrix Wavefunction::Fb() const { return Fb_; }
 
 SharedMatrix Wavefunction::Lagrangian() const { return Lagrangian_; }
 
+void Wavefunction::set_Lagrangian(SharedMatrix L) { Lagrangian_ = L; }
+
 SharedVector Wavefunction::epsilon_a() const { return epsilon_a_; }
 
 SharedVector Wavefunction::epsilon_b() const { return epsilon_b_; }

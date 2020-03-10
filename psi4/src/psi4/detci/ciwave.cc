@@ -745,15 +745,15 @@ void CIWavefunction::semicanonical_orbs() {
     Dimension nactpi = get_dimension("ACT");
     Dimension nvirpi = get_dimension("VIR");
 
-    // Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
-    auto U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
-    // zero U otherwise we get small errors
-    U->zero();
-
     // Diagonalize each block of Favg
     Dimension offset_start(nirrep_);
     Dimension offset_end(nirrep_);
-    for (Dimension block : {noccpi, nactpi, nvirpi}) {
+
+    std::vector<std::pair<std::string, Dimension>> spaces = {{"DOCC", noccpi}, {"ACT", nactpi}, {"VIR", nvirpi}};
+
+    for (auto& label_block : spaces) {
+        auto label = label_block.first;
+        auto block = label_block.second;
         offset_end += block;
 
         // Grab a block of Favg
@@ -765,15 +765,12 @@ void CIWavefunction::semicanonical_orbs() {
         auto evecs = std::make_shared<Matrix>("F Evecs", block, block);
         F->diagonalize(evecs, evals, ascending);
 
-        // Put block in U
-        U->set_block(slice, slice, evecs);
-
+        SharedMatrix Cblock = get_orbitals(label);
+        SharedMatrix Cblock_semi = linalg::doublet(Cblock, evecs);
+        set_orbitals(label, Cblock);
         offset_start += block;
     }
 
-    // rotate MOs and push them to the ciwfn
-    SharedMatrix Cnew = linalg::doublet(get_orbitals("ROT"), U, false, false);
-    set_orbitals("ROT", Cnew);
     Cb_ = Ca_;
 }
 }  // namespace detci
