@@ -751,9 +751,9 @@ void CIWavefunction::semicanonical_orbs() {
 
     std::vector<std::pair<std::string, Dimension>> spaces = {{"DOCC", noccpi}, {"ACT", nactpi}, {"VIR", nvirpi}};
 
-    for (auto& label_block : spaces) {
-        auto label = label_block.first;
-        auto block = label_block.second;
+    for (const auto& label_block : spaces) {
+        const auto label = label_block.first;
+        const auto block = label_block.second;
         offset_end += block;
 
         // Grab a block of Favg
@@ -765,9 +765,11 @@ void CIWavefunction::semicanonical_orbs() {
         auto evecs = std::make_shared<Matrix>("F Evecs", block, block);
         F->diagonalize(evecs, evals, ascending);
 
+        // Rotate the orbital block
         SharedMatrix Cblock = get_orbitals(label);
         SharedMatrix Cblock_semi = linalg::doublet(Cblock, evecs);
         set_orbitals(label, Cblock);
+
         offset_start += block;
     }
 
