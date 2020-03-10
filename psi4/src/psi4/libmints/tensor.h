@@ -50,9 +50,19 @@
 #include "tensor_impl_vector.h"
 
 namespace psi {
+template <typename T, size_t Rank, typename Enable = void>
+class Tensor {};
+
+namespace detail {
 template <typename T, size_t Rank>
-class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::enable_shared_from_this<Tensor<T, Rank>> {
-    friend struct detail::RankDependentImpl<Tensor<T, Rank>>;
+using Valid = std::enable_if_t<!detail::is_rank0_v<Rank> && detail::is_tensorisable_v<T>>;
+}
+
+template <typename T, size_t Rank>
+class Tensor<T, Rank, detail::Valid<T, Rank>>
+    : public detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>,
+      public std::enable_shared_from_this<Tensor<T, Rank, detail::Valid<T, Rank>>> {
+    friend struct detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
 
    public:
     /*! Access rank of Tensor as Tensor<T, Rank>::rank */
@@ -69,7 +79,7 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
     using block_type = xt::xtensor<T, Rank>;
     using store_type = std::vector<block_type>;
 
-    using crtp_base = detail::RankDependentImpl<Tensor<T, Rank>>;
+    using crtp_base = detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
 
     /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
      *  \param[in] label name of the tensor
@@ -81,7 +91,6 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
      *  This is the only CTOR that does actual work. All other CTORs delegate to
      *  this one and returns an tensor with all zero blocks.
      */
-    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor(const std::string& label, size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi,
                     unsigned int symmetry, T fill_value = static_cast<T>(0))
         : symmetry_(symmetry), label_(label), axes_dimpi_(axes_dimpi), shapes_(nirrep), store_(nirrep) {
@@ -99,7 +108,7 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
                 throw PSIEXCEPTION(err.str());
             }
         }
-        for (int h = 0; h < store_.size(); ++h) {
+        for (auto h = 0; h < store_.size(); ++h) {
             shapes_[h][0] = axes_dimpi[0][h];
             for (int ax = 1; ax < Rank; ++ax) shapes_[h][ax] = axes_dimpi[ax][h ^ symmetry];
             store_[h] = xt::full<T>(shapes_[h], fill_value);
@@ -112,7 +121,6 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
      *  \param[in] axes_dimpi dimension of each axis
      *  \param[in] symmetry overall symmetry of the tensor
      */
-    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor(const std::string& label, size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi,
                     unsigned int symmetry)
         : symmetry_(symmetry), label_(label), axes_dimpi_(axes_dimpi), shapes_(nirrep), store_(nirrep) {
@@ -130,13 +138,12 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
                 throw PSIEXCEPTION(err.str());
             }
         }
-        for (int h = 0; h < store_.size(); ++h) {
+        for (auto h = 0; h < store_.size(); ++h) {
             shapes_[h][0] = axes_dimpi[0][h];
             for (int ax = 1; ax < Rank; ++ax) shapes_[h][ax] = axes_dimpi[ax][h ^ symmetry];
         }
     }
 
-    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor()
         : Tensor("empty", 1, std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{0})}}, 0,
                  static_cast<T>(0)) {}
@@ -147,7 +154,6 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
      *  \param[in] axes_dimpi
      *  \param[in] fill_value
      */
-    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor(const std::string& label, const std::array<Dimension, Rank>& axes_dimpi,
                     T fill_value = static_cast<T>(0))
         : Tensor(label, 1, axes_dimpi, 0, fill_value) {}
@@ -157,7 +163,6 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
      *  \param[in] symmetry
      *  \param[in] fill_value
      */
-    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor(size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi, unsigned int symmetry,
                     T fill_value = static_cast<T>(0))
         : Tensor("", nirrep, axes_dimpi, symmetry, fill_value) {}
@@ -165,13 +170,11 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
      *  \param[in] nirrep
      *  \param[in] axes_dimpi
      */
-    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor(size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi, T fill_value = static_cast<T>(0))
         : Tensor("", nirrep, axes_dimpi, 0, fill_value) {}
     /*! Unlabeled, 1-irrep, rank-n CTOR
      *  \param[in] axes_dimpi
      */
-    template <typename T_ = T, typename = std::enable_if_t<detail::is_tensorisable_v<T_>>>
     explicit Tensor(const std::array<Dimension, Rank>& axes_dimpi, T fill_value = static_cast<T>(0))
         : Tensor("", 1, axes_dimpi, 0, fill_value) {}
     /*! @}*/
@@ -378,7 +381,7 @@ class Tensor : public detail::RankDependentImpl<Tensor<T, Rank>>, public std::en
             retval << "  ## " << label_ << " " << extra << " (Symmetry " << symmetry_ << ") ##\n" << std::endl;
         }
         // Blocks
-        for (size_t h = 0; h < store_.size(); ++h) {
+        for (auto h = 0; h < store_.size(); ++h) {
             retval << "  Irrep: " << h + 1 << " Shape: " << detail::print_shape(store_[h].shape()) << std::endl;
             if (store_[h].size() == 0) {
                 retval << "    (empty)" << std::endl;

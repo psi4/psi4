@@ -113,7 +113,7 @@ template <size_t Rank>
 constexpr bool is_rank2_v = is_rank2<Rank>::value;
 
 template <size_t Rank>
-struct is_rankn : std::integral_constant<bool, !is_rank1_v<Rank> || !is_rank2_v<Rank>> {};
+struct is_rankn : std::integral_constant<bool, !is_rank0_v<Rank> || !is_rank1_v<Rank> || !is_rank2_v<Rank>> {};
 
 // NOTE for posterity this can be declared inline in C++17
 template <size_t Rank>

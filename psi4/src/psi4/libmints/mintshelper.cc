@@ -838,7 +838,7 @@ SharedMatrix MintsHelper::ao_eri(std::shared_ptr<BasisSet> bs1, std::shared_ptr<
 }
 
 SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q) {
-    if (eriInts_ == 0) {
+    if (eriInts_ == nullptr) {
         eriInts_ = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
     }
     return ao_shell_getter("AO ERI Tensor", eriInts_, M, N, P, Q);

@@ -91,7 +91,7 @@ class PSI_API MintsHelper {
                                  int Q);
     auto ao_helper_(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints) const -> SharedTensor<double, 4>;
     auto ao_shell_getter_(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
-                          int Q) const -> SharedMatrix_<double>;
+                          int Q) const -> SharedTensor<double, 4>;
 
     SharedMatrix ao_3coverlap_helper(const std::string& label, std::shared_ptr<ThreeCenterOverlapInt> ints);
 
@@ -186,7 +186,7 @@ class PSI_API MintsHelper {
                  std::shared_ptr<BasisSet> bs4) const -> SharedTensor<double, 4>;
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
-    auto ao_eri_shell_(int M, int N, int P, int Q) const -> SharedTensor<double, 4>;
+    auto ao_eri_shell_(int M, int N, int P, int Q) -> SharedTensor<double, 4>;
 
     // Derivatives of OEI in AO and MO basis
     std::vector<SharedMatrix> ao_oei_deriv1(const std::string& oei_type, int atom);

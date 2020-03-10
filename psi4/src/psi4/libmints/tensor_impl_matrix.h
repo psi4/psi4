@@ -38,11 +38,11 @@
 #include "tensor_impl.h"
 
 namespace psi {
-template <typename T, size_t Rank>
+template <typename T, size_t Rank, typename Enable>
 class Tensor;
 
 template <typename T>
-using Matrix_ = Tensor<T, 2>;
+using Matrix_ = Tensor<T, 2, std::enable_if_t<detail::is_tensorisable_v<T>>>;
 
 template <typename T>
 using SharedMatrix_ = std::shared_ptr<Matrix_<T>>;

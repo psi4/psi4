@@ -184,12 +184,12 @@ auto MintsHelper::ao_eri_(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSe
     return ao_helper_("AO ERI Tensor", ints);
 }
 
-// auto MintsHelper::ao_eri_shell_(int M, int N, int P, int Q) const -> SharedTensor<double, 4> {
-//    if (eriInts_ == 0) {
-//        eriInts_ = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
-//    }
-//    return ao_shell_getter_("AO ERI Tensor", eriInts_, M, N, P, Q);
-//}
+auto MintsHelper::ao_eri_shell_(int M, int N, int P, int Q) -> SharedTensor<double, 4> {
+    if (eriInts_ == nullptr) {
+        eriInts_ = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    }
+    return ao_shell_getter_("AO ERI Tensor", eriInts_, M, N, P, Q);
+}
 
 auto MintsHelper::ao_helper_(const std::string &label, std::shared_ptr<TwoBodyAOInt> ints) const
     -> SharedTensor<double, 4> {
@@ -237,32 +237,33 @@ auto MintsHelper::ao_helper_(const std::string &label, std::shared_ptr<TwoBodyAO
     return I;
 }
 
-// auto MintsHelper::ao_shell_getter_(const std::string &label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
-//                                   int Q) const -> SharedMatrix_<double> {
-//    int mfxn = basisset_->shell(M).nfunction();
-//    int nfxn = basisset_->shell(N).nfunction();
-//    int pfxn = basisset_->shell(P).nfunction();
-//    int qfxn = basisset_->shell(Q).nfunction();
-//    auto I = std::make_shared<Matrix>(label, mfxn * nfxn, pfxn * qfxn);
-//    double **Ip = I->pointer();
-//    const double *buffer = ints->buffer();
-//
-//    ints->compute_shell(M, N, P, Q);
-//
-//    for (int m = 0, index = 0; m < mfxn; m++) {
-//        for (int n = 0; n < nfxn; n++) {
-//            for (int p = 0; p < pfxn; p++) {
-//                for (int q = 0; q < qfxn; q++, index++) {
-//                    Ip[m * nfxn + n][p * qfxn + q] = buffer[index];
-//                }
-//            }
-//        }
-//    }
-//
-//    // Build numpy and final matrix shape
-//    std::vector<int> nshape{mfxn, nfxn, pfxn, qfxn};
-//    I->set_numpy_shape(nshape);
-//
-//    return I;
-//}
+auto MintsHelper::ao_shell_getter_(const std::string &label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
+                                   int Q) const -> SharedTensor<double, 4> {
+    auto mfxn = basisset_->shell(M).nfunction();
+    auto nfxn = basisset_->shell(N).nfunction();
+    auto pfxn = basisset_->shell(P).nfunction();
+    auto qfxn = basisset_->shell(Q).nfunction();
+
+    std::array<Dimension, 4> dimpi{
+        Dimension(std::vector<Dimension::value_type>{mfxn}), Dimension(std::vector<Dimension::value_type>{nfxn}),
+        Dimension(std::vector<Dimension::value_type>{pfxn}), Dimension(std::vector<Dimension::value_type>{qfxn})};
+    auto I = std::make_shared<Tensor<double, 4>>(label, dimpi);
+    const double *buffer = ints->buffer();
+
+    ints->compute_shell(M, N, P, Q);
+
+    for (auto m = 0, index = 0; m < mfxn; m++) {
+        for (auto n = 0; n < nfxn; n++) {
+            for (auto p = 0; p < pfxn; p++) {
+                for (auto q = 0; q < qfxn; q++, index++) {
+                    std::array<size_t, 4> fourtet{static_cast<size_t>(m), static_cast<size_t>(n),
+                                                  static_cast<size_t>(p), static_cast<size_t>(q)};
+                    I->set(fourtet, buffer[index]);
+                }
+            }
+        }
+    }
+
+    return I;
+}
 }  // namespace psi
