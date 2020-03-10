@@ -1,0 +1,36 @@
+molecule pbenzyne{
+  0 1
+   C   0.0000000000  -2.5451795941   0.0000000000
+   C   0.0000000000   2.5451795941   0.0000000000
+   C  -2.2828001669  -1.3508352528   0.0000000000
+   C   2.2828001669  -1.3508352528   0.0000000000
+   C   2.2828001669   1.3508352528   0.0000000000
+   C  -2.2828001669   1.3508352528   0.0000000000
+   H  -4.0782187459  -2.3208602146   0.0000000000
+   H   4.0782187459  -2.3208602146   0.0000000000
+   H   4.0782187459   2.3208602146   0.0000000000
+   H  -4.0782187459   2.3208602146   0.0000000000
+
+  units bohr
+}
+
+set globals{
+  basis                  cc-pvdz
+  df_basis_scf           cc-pvdz-jkfit
+  reference              rhf
+  scf_type               df
+  d_convergence          8
+  e_convergence          12
+  mcscf_type             df
+  mcscf_e_convergence    12
+  mcscf_r_convergence    10
+  mcscf_diis_start       8
+  mcscf_max_rot          0.1
+  docc                   [5,3,1,1,0,1,5,4]
+  restricted_docc        [5,3,0,0,0,0,4,4]
+  active                 [1,0,1,2,1,2,1,0]
+}
+
+Ecas, wfn = energy('casscf', return_wfn=True)
+compare_values(-229.495450424187453, get_variable('CURRENT ENERGY'), 8, 'CASSCF Energy')  #TEST
+
