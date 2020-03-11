@@ -13,6 +13,9 @@ set {
   guess sad
   mo_maxiter 200
 }
+
+# Test values come from 3-point finite difference of analytic gradients from #TEST
+# Jonathon's Psi4Numpy code, run 03/20, e_convergence 10, orbital convergence 7. #TEST
 grad_freqs = psi4.Vector(7)  #TEST
 grad_freqs.set(0, 0, 513.982) #TEST
 grad_freqs.set(0, 1, 513.982) #TEST

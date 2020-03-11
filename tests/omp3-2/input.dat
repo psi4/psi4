@@ -1,5 +1,6 @@
 #! OMP3 cc-pCVDZ energy with ROHF initial guess for the NO radical
 
+# OMP3 energy from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
 refnuc      =   25.59060766929188  #TEST
 refscf      = -129.25292774594956 #TEST
 refomp3     = -129.66096119399774 #TEST
