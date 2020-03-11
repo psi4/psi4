@@ -127,23 +127,6 @@ void OCCWave::iterate_t2o1_amplitudes() {
         if (print_ > 2) global_dpd_->buf4_print(&Tnew, "outfile", 1);
         global_dpd_->buf4_close(&Tnew);
 
-        if (wfn_type_ != "OMP2") {
-            // Build amplitudes in chemist notation
-            // T_IJ^AB => T'(IA,JB), T"(JA,IB)
-            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "T2_1 <OO|VV>");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "T2_1 (OV|OV)");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, qrps, ID("[O,V]"), ID("[O,V]"), "T2_1pp (OV|OV)");
-            global_dpd_->buf4_close(&T);
-
-            // Tau(IJ,AB) => Tau'(IA,JB), Tau"(JA,IB)
-            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "Tau_1 <OO|VV>");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Tau_1 (OV|OV)");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, qrps, ID("[O,V]"), ID("[O,V]"), "Tau_1pp (OV|OV)");
-            global_dpd_->buf4_close(&T);
-        }
-
         psio_->close(PSIF_LIBTRANS_DPD, 1);
         psio_->close(PSIF_OCC_DPD, 1);
 
@@ -332,34 +315,6 @@ void OCCWave::iterate_t2o1_amplitudes() {
         global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <Oo|Vv>");
         if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
         global_dpd_->buf4_close(&Tnew);
-
-        if (wfn_type_ != "OMP2") {
-            // Build amplitudes in chemist notation
-            // T_IJ^AB => T(IA,JB)
-            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "T2_1 <OO|VV>");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "T2_1 (OV|OV)");
-            global_dpd_->buf4_close(&T);
-
-            // T_ij^ab => T(ia,jb)
-            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                                   "T2_1 <oo|vv>");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[o,v]"), ID("[o,v]"), "T2_1 (ov|ov)");
-            global_dpd_->buf4_close(&T);
-
-            // T_Ij^Ab => T(IA,jb), T(jA,Ib)
-            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                                   "T2_1 <Oo|Vv>");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, prqs, ID("[O,V]"), ID("[o,v]"), "T2_1 (OV|ov)");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, qrps, ID("[o,V]"), ID("[O,v]"), "T2_1 (oV|Ov)");
-            global_dpd_->buf4_close(&T);
-
-            // T(IA,jb) => T(jb,IA)
-            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
-                                   "T2_1 (OV|ov)");
-            global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, rspq, ID("[o,v]"), ID("[O,V]"), "T2_1 (ov|OV)");
-            global_dpd_->buf4_close(&T);
-        }
 
         // close files
         psio_->close(PSIF_LIBTRANS_DPD, 1);

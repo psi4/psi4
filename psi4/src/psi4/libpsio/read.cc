@@ -49,6 +49,11 @@ void PSIO::read(size_t unit, const char *key, char *buffer, size_t size, psio_ad
     psio_address start_toc, start_data, end_data; /* global addresses */
     size_t tocentry_size;
 
+    if (!open_check(unit)) {
+        fprintf(stderr, "PSIO_ERROR: Must open file %zu before reading it\n", unit);
+        psio_error(unit, PSIO_ERROR_UNOPENED);
+    }
+
     this_unit = &(psio_unit[unit]);
 
     /* Find the entry in the TOC */

@@ -112,9 +112,7 @@ void DIISManager::set_vector_size(int numQuantities, ...) {
                 break;
             case DIISEntry::Vector:
                 vector = va_arg(args, Vector *);
-                for (int h = 0; h < vector->nirrep(); ++h) {
-                    size += vector->dimpi()[h];
-                }
+                size = vector->dimpi().sum();
                 break;
             default:
                 throw SanityCheckError("Unknown input type", __FILE__, __LINE__);
@@ -166,9 +164,7 @@ void DIISManager::set_error_vector_size(int numQuantities, ...) {
                 break;
             case DIISEntry::Vector:
                 vector = va_arg(args, Vector *);
-                for (int h = 0; h < vector->nirrep(); ++h) {
-                    size += vector->dimpi()[h];
-                }
+                size = vector->dimpi().sum();
                 break;
             default:
                 throw SanityCheckError("Unknown input type", __FILE__, __LINE__);

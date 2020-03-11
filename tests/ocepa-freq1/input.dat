@@ -13,15 +13,17 @@ set {
   guess sad
   mo_maxiter 200
 }
-# Test against Analytic second derivatives from PSI3. #TEST
+
+# Test values come from 3-point finite difference of analytic gradients from #TEST
+# Jonathon's Psi4Numpy code, run 03/20, e_convergence 10, orbital convergence 7. #TEST
 grad_freqs = psi4.Vector(7)  #TEST
-grad_freqs.set(0, 0, 513.956) #TEST
-grad_freqs.set(0, 1, 513.956) #TEST
-grad_freqs.set(0, 2, 722.308) #TEST
-grad_freqs.set(0, 3, 722.308) #TEST
-grad_freqs.set(0, 4, 1977.857) #TEST
-grad_freqs.set(0, 5, 3406.952) #TEST
-grad_freqs.set(0, 6, 3497.387) #TEST
+grad_freqs.set(0, 0, 513.982) #TEST
+grad_freqs.set(0, 1, 513.982) #TEST
+grad_freqs.set(0, 2, 722.325) #TEST
+grad_freqs.set(0, 3, 722.325) #TEST
+grad_freqs.set(0, 4, 1977.865) #TEST
+grad_freqs.set(0, 5, 3406.975) #TEST
+grad_freqs.set(0, 6, 3497.404) #TEST
 
 
 cepa_e, cepa_wfn = frequencies('olccd', dertype=0, return_wfn=True)

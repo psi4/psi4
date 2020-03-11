@@ -35,37 +35,6 @@
 namespace psi {
 namespace occwave {
 
-void OCCWave::update_mo() {
-    if (do_diis_) {
-        // Convert the Array1d of the orbital amplitude update to a Vector, then add it to the total orbital amplitude
-        // Vector, and DIIS extrapolate.
-        const auto kappaA_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Alpha], *kappaA);
-        kappa_bar_[SpinType::Alpha]->add(kappaA_vec);
-        const auto wogA_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Alpha], *wogA);
-        if (reference_ == "RESTRICTED") {
-            orbitalDiis->add_entry(2, wogA_vec.get(), kappa_bar_[SpinType::Alpha].get());
-            // Choosing to DIIS extrapolate ONLY when you have all error vectors seems un-wise, but this will be changing in
-            // the next commit.
-            if (orbitalDiis->subspace_size() >= num_vecs) {
-                orbitalDiis->extrapolate(1, kappa_bar_[SpinType::Alpha].get());
-            }
-        } else if (reference_ == "UNRESTRICTED") {
-            const auto kappaB_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Beta], *kappaB);
-            kappa_bar_[SpinType::Beta]->add(kappaB_vec);
-            const auto wogB_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Beta], *wogB);
-            orbitalDiis->add_entry(4, wogA_vec.get(), wogB_vec.get(), kappa_bar_[SpinType::Alpha].get(),
-                                   kappa_bar_[SpinType::Beta].get());
-            if (orbitalDiis->subspace_size() >= num_vecs) {
-                orbitalDiis->extrapolate(2, kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get());
-            }
-        }
-    }
-
-    // Now that we have DIIS'd amplitudes (if needed), perform the actual updates.
-    update_mo_spincase(SpinType::Alpha);
-    if (reference_ == "UNRESTRICTED") update_mo_spincase(SpinType::Beta);
-}
-
 void OCCWave::update_mo_spincase(const SpinType spin) {
     const auto& kappa_bar = kappa_bar_[spin];
 

@@ -55,6 +55,7 @@ OCCWave::~OCCWave() {}  //
 
 void OCCWave::common_init() {
     // print title and options
+    print_ = options_.get_int("PRINT");
     if (print_ > 0) options_.print();
     wfn_type_ = options_.get_str("WFN_TYPE");
     orb_opt_ = options_.get_str("ORB_OPT");
@@ -65,14 +66,12 @@ void OCCWave::common_init() {
 
     cc_maxiter = options_.get_int("CC_MAXITER");
     mo_maxiter = options_.get_int("MO_MAXITER");
-    print_ = options_.get_int("PRINT");
     cachelev = options_.get_int("CACHELEVEL");
     exp_cutoff = options_.get_int("CUTOFF");
     tol_pcg = options_.get_double("PCG_CONVERGENCE");
     pcg_maxiter = options_.get_int("PCG_MAXITER");
-    num_vecs = options_.get_int("MO_DIIS_NUM_VECS");
-    cc_maxdiis_ = options_.get_int("CC_DIIS_MAX_VECS");
-    cc_mindiis_ = options_.get_int("CC_DIIS_MIN_VECS");
+    maxdiis_ = options_.get_int("DIIS_MAX_VECS");
+    mindiis_ = options_.get_int("DIIS_MIN_VECS");
     ep_maxiter = options_.get_int("EP_MAXITER");
 
     step_max = options_.get_double("MO_STEP_MAX");
@@ -126,6 +125,11 @@ void OCCWave::common_init() {
         outfile->Printf(
             "\tSpin-scaling in OCC changed in 1.4. Leave options to the energy call. Just pass in the method name, "
             "like scs-mp2.\n\n");
+    }
+    if (options_["MO_DIIS_NUM_VECS"].has_changed() || options_["CC_DIIS_MIN_VECS"].has_changed() ||
+        options_["CC_DIIS_MAX_VECS"].has_changed()) {
+        outfile->Printf(
+            "\tDIIS keywords in OCC simplified in 1.4. DIIS_MIN_VECS and DIIS_MAX_VECS are the ones to use.\n\n");
     }
 
     //   Given default orbital convergence, set the criteria by what should
@@ -367,23 +371,23 @@ void OCCWave::title() {
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf("\n");
     if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OMP2 (OO-MP2)   \n");
+        outfile->Printf("                             OMP2 (OO-MP2)   \n");
     else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE")
-        outfile->Printf("                       MP2   \n");
+        outfile->Printf("                             MP2   \n");
     else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OMP3 (OO-MP3)   \n");
+        outfile->Printf("                             OMP3 (OO-MP3)   \n");
     else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE")
-        outfile->Printf("                       MP3   \n");
+        outfile->Printf("                             MP3   \n");
     else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OCEPA (OO-CEPA)   \n");
+        outfile->Printf("                             OCEPA (OO-CEPA)   \n");
     else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE")
-        outfile->Printf("                       CEPA   \n");
+        outfile->Printf("                             CEPA   \n");
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE")
-        outfile->Printf("                       OMP2.5 (OO-MP2.5)   \n");
+        outfile->Printf("                             OMP2.5 (OO-MP2.5)   \n");
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE")
-        outfile->Printf("                       MP2.5  \n");
-    outfile->Printf("              Program Written by Ugur Bozkaya,\n");
-    outfile->Printf("              Latest Revision June 25, 2014.\n");
+        outfile->Printf("                             MP2.5  \n");
+    outfile->Printf("                    Program Written by Ugur Bozkaya,\n");
+    outfile->Printf("              Additional Contributions by J. P. Misiewicz\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");

@@ -58,7 +58,7 @@ class OCCWave : public Wavefunction {
     // General
     void mem_release();
     void mograd();
-    void update_mo();
+    void compute_orbital_step();
     void update_mo_spincase(SpinType);
     void ccl_energy();
     void nbo();
@@ -95,6 +95,7 @@ class OCCWave : public Wavefunction {
     void coord_grad();
     void dump_pdms();
     void occ_iterations();
+    void response_pdms();
     void tei_sort_iabc();
     void ekt_ip();
     void ekt_ea();
@@ -108,6 +109,7 @@ class OCCWave : public Wavefunction {
     void second_order_opdm();
     void set_t2_amplitudes_mp2();
     void mp2_energy(bool include_singles = false);
+    void oo_diis();
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
@@ -127,6 +129,7 @@ class OCCWave : public Wavefunction {
     void omp2_ea_poles();
     void ep2_ip();
     void iterate_t2o1_amplitudes(); // Used by all OMP methods, as all need T2(1)
+    void iterative_mp_postdiis_amplitudes(); // Used by OMP methods higher than OMP2
 
     // OMP3
     void omp3_manager();
@@ -149,6 +152,8 @@ class OCCWave : public Wavefunction {
     void ocepa_manager();
     void cepa_manager();
     void cepa_iterations();
+    void cepa_diis();
+    void cepa_chemist();
     void ocepa_tpdm_vvvv();
     void ocepa_response_pdms();
     void t2_amps();
@@ -203,7 +208,6 @@ class OCCWave : public Wavefunction {
     int idp_return;
     int idp_returnA;
     int idp_returnB;
-    int num_vecs;  // Number of vectors used in diis (diis order)
     int multp;
     int charge;
     int print_;
@@ -221,8 +225,8 @@ class OCCWave : public Wavefunction {
     int do_diis_;
     int itr_diis;
     int time4grad;         // If 0 it is not the time for grad, if 1 it is the time for grad
-    int cc_maxdiis_;       // MAX Number of vectors used in CC diis
-    int cc_mindiis_;       // MIN Number of vectors used in CC diis
+    int maxdiis_;          // MAX Number of vectors used in diis
+    int mindiis_;          // MIN Number of vectors used in diis
     int incore_iabc_;      // 1 means do incore, 0 means do out of core
     int incore_abcd_;      // 1 means do incore, 0 means do out of core
     int orbs_already_opt;  // 1 means true, 0 means false
@@ -294,7 +298,6 @@ class OCCWave : public Wavefunction {
     double rms_t2AB;
     double rms_t2BB;
     double rms_l2;
-    double mu_ls;
     double sc_ls;
     double cutoff;
     double os_scale;

@@ -123,6 +123,10 @@ compare_values(df_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')             
 compare_values(df_mp2tot, val, 5, 'mp2 return')                                              #TEST
 clean()
 
+# OCC has different keyword names from DFOCC. OCC's behavior should be the standard.
+set os_scale 0.5
+set ss_scale 0.5
+
 set mp2_type conv
 
 print('   Testing user-def scs mp2 (conv) ...')
