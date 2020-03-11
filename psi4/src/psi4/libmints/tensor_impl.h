@@ -119,6 +119,18 @@ struct is_rankn : std::integral_constant<bool, !is_rank0_v<Rank> || !is_rank1_v<
 template <size_t Rank>
 constexpr bool is_rankn_v = is_rankn<Rank>::value;
 
+template <typename T, size_t Rank>
+using Valid = std::enable_if_t<!detail::is_rank0_v<Rank> && detail::is_tensorisable_v<T>>;
+
+template <std::size_t, typename T>
+using HomTs = T;
+
+template <typename T, size_t Rank>
+using Valid = std::enable_if_t<!detail::is_rank0_v<Rank> && detail::is_tensorisable_v<T>>;
+
+template <typename T, size_t Rank, typename Index = std::make_integer_sequence<std::ptrdiff_t, Rank>>
+struct Accessor;
+
 template <typename T>
 struct Type2String final {
     static std::string full() { return ""; }
@@ -152,10 +164,6 @@ struct Type2String<std::complex<double>> final {
 /// Implements rank-dependent functions
 template <typename T>
 struct RankDependentImpl {
-    // Here to satisfy the compiler
-    T get() const {}
-    void set() {}
-
     /*! C++ string representation of type */
     std::string cxxClassName() const noexcept {
         return "Tensor" + std::to_string(T::rank) + "<" + Type2String<typename T::value_type>::full() + ">";

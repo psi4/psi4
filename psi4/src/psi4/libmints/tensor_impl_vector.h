@@ -50,12 +50,6 @@ using SharedVector_ = std::shared_ptr<Vector_<T>>;
 namespace detail {
 template <typename T>
 struct RankDependentImpl<Vector_<T>> {
-    T get(size_t h, size_t i) const { return static_cast<const Vector_<T>*>(this)->store_[h](i); }
-    T get(size_t i) const { return this->get(0, i); }
-
-    void set(size_t h, size_t i, T val) { static_cast<Vector_<T>*>(this)->store_[h](i) = val; }
-    void set(size_t i, T val) { this->set(0, i, val); }
-
     /// Returns the dimension array for a rank-1 tensor aka a vector
     const Dimension& dimpi() const { return static_cast<const Vector_<T>*>(this)->axes_dimpi_[0]; }
 

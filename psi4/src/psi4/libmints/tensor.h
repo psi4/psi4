@@ -54,14 +54,26 @@ template <typename T, size_t Rank, typename Enable = void>
 class Tensor {};
 
 namespace detail {
-template <typename T, size_t Rank>
-using Valid = std::enable_if_t<!detail::is_rank0_v<Rank> && detail::is_tensorisable_v<T>>;
-}
+template <typename T, size_t Rank, std::ptrdiff_t... indices>
+struct Accessor<T, Rank, std::integer_sequence<std::ptrdiff_t, indices...>> {
+    inline auto get(size_t h, HomTs<indices, std::ptrdiff_t>... vs) const -> T {
+        return static_cast<const Tensor<T, Rank>*>(this)->store_[h][{vs...}];
+    }
+    inline auto get(HomTs<indices, std::ptrdiff_t>... vs) const -> T { return this->get(0, vs...); }
+
+    inline auto set(size_t h, HomTs<indices, std::ptrdiff_t>... vs, T val) -> void {
+        static_cast<Tensor<T, Rank>*>(this)->store_[h][{vs...}] = val;
+    }
+    inline auto set(HomTs<indices, std::ptrdiff_t>... vs, T val) -> void { this->set(0, vs..., val); }
+};
+}  // namespace detail
 
 template <typename T, size_t Rank>
 class Tensor<T, Rank, detail::Valid<T, Rank>>
-    : public detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>,
+    : public detail::Accessor<T, Rank>,
+      public detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>,
       public std::enable_shared_from_this<Tensor<T, Rank, detail::Valid<T, Rank>>> {
+    friend struct detail::Accessor<T, Rank>;
     friend struct detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
 
    public:
@@ -72,6 +84,7 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     using value_type = T;
 
     using shape_type = std::array<size_t, Rank>;
+    using index_type = std::array<std::ptrdiff_t, Rank>;
     /*! Basic linear algebra storage object for a block
      * \tparam T the underlying numerical type
      * \tparam Rank rank of the object, i.e. 1 for a vector, 2 for a matrix, etc.
@@ -79,6 +92,7 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     using block_type = xt::xtensor<T, Rank>;
     using store_type = std::vector<block_type>;
 
+    using accessor = detail::Accessor<T, Rank>;
     using crtp_base = detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
 
     /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
@@ -329,13 +343,15 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     void set_block(const block_type& block) { this->set_block(0, block); }
     block_type& operator[](size_t h) { return store_[h]; }
 
-    using crtp_base::get;  // NOTE This is to make the rank-dependent get-s are accessible
-    T get(size_t h, std::array<size_t, Rank> idxs) const { return store_[h][idxs]; }
-    T get(std::array<size_t, Rank> idxs) const { return store_[0][idxs]; }
+    // using crtp_base::get;  // NOTE This is to make the rank-dependent get-s are accessible
+    using accessor::get;
+    T get(size_t h, index_type idxs) const { return store_[h][idxs]; }
+    T get(index_type idxs) const { return store_[0][idxs]; }
 
-    using crtp_base::set;  // NOTE This is to make the rank-dependent set-s are accessible
-    void set(size_t h, std::array<size_t, Rank> idxs, T val) { store_[h][idxs] = val; }
-    void set(std::array<size_t, Rank> idxs, T val) { store_[0][idxs] = val; }
+    // using crtp_base::set;  // NOTE This is to make the rank-dependent set-s are accessible
+    using accessor::set;
+    void set(size_t h, index_type idxs, T val) { store_[h][idxs] = val; }
+    void set(index_type idxs, T val) { store_[0][idxs] = val; }
 
     std::string label() const noexcept { return label_; }
     void set_label(const std::string& label) noexcept { label_ = label; }

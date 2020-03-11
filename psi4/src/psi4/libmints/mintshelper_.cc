@@ -219,12 +219,9 @@ auto MintsHelper::ao_helper_(const std::string &label, std::shared_ptr<TwoBodyAO
                         for (auto n = 0; n < bs2->shell(N).nfunction(); n++) {
                             for (auto p = 0; p < bs3->shell(P).nfunction(); p++) {
                                 for (auto q = 0; q < bs4->shell(Q).nfunction(); q++, index++) {
-                                    std::array<size_t, 4> fourtet{
-                                        static_cast<size_t>(bs1->shell(M).function_index() + m),
-                                        static_cast<size_t>(bs2->shell(N).function_index() + n),
-                                        static_cast<size_t>(bs3->shell(P).function_index() + p),
-                                        static_cast<size_t>(bs4->shell(Q).function_index() + q)};
-                                    I->set(fourtet, buffer[index]);
+                                    I->set(bs1->shell(M).function_index() + m, bs2->shell(N).function_index() + n,
+                                           bs3->shell(P).function_index() + p, bs4->shell(Q).function_index() + q,
+                                           buffer[index]);
                                 }
                             }
                         }
@@ -256,9 +253,7 @@ auto MintsHelper::ao_shell_getter_(const std::string &label, std::shared_ptr<Two
         for (auto n = 0; n < nfxn; n++) {
             for (auto p = 0; p < pfxn; p++) {
                 for (auto q = 0; q < qfxn; q++, index++) {
-                    std::array<size_t, 4> fourtet{static_cast<size_t>(m), static_cast<size_t>(n),
-                                                  static_cast<size_t>(p), static_cast<size_t>(q)};
-                    I->set(fourtet, buffer[index]);
+                    I->set(m, n, p, q, buffer[index]);
                 }
             }
         }

@@ -50,12 +50,6 @@ using SharedMatrix_ = std::shared_ptr<Matrix_<T>>;
 namespace detail {
 template <typename T>
 struct RankDependentImpl<Matrix_<T>> {
-    T get(size_t h, size_t i, size_t j) const { return static_cast<const Matrix_<T>*>(this)->store_[h](i, j); }
-    T get(size_t i, size_t j) const { return this->get(0, i, j); }
-
-    void set(size_t h, size_t i, size_t j, T val) { static_cast<Matrix_<T>*>(this)->store_[h](i, j) = val; }
-    void set(size_t i, size_t j, T val) { this->set(0, i, j, val); }
-
     void set_symmetric(size_t h, size_t i, size_t j, T val) {
         static_cast<Matrix_<T>*>(this)->store_[h](i, j) = static_cast<Matrix_<T>*>(this)->store_[h](j, i) = val;
     }
