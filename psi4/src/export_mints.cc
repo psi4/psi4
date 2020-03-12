@@ -320,9 +320,9 @@ void export_mints(py::module& m) {
     typedef double (Vector::*vector_getitem_2)(int, int) const;
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
-        .def(py::init<int>())
-        .def(py::init<int, const std::string&>())
-        .def(py::init<const std::vector<int>&>())
+        .def(py::init<Dimension::value_type>())
+        .def(py::init<Dimension::value_type, const std::string&>())
+        .def(py::init<const std::vector<Dimension::value_type>&>())
         .def("print_out", &Dimension::print, "Print out the dimension object to the output file")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
         .def("sum", &Dimension::sum, "Gets the sum of the values in the dimension object")

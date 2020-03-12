@@ -39,6 +39,8 @@
 
 #include <xtensor/xtensor.hpp>
 
+#include "dimension.h"
+
 namespace xt {
 template <class T, class S>
 inline auto full(S shape, T fill_value) noexcept {
@@ -218,6 +220,15 @@ struct is_2arity_mixable
 // NOTE for posterity this can be declared inline in C++17
 template <typename T, typename U>
 constexpr bool is_2arity_mixable_v = is_2arity_mixable<T, U>::value;
+
+template <size_t Rank>
+auto axes_dimpi(const std::array<Dimension::value_type, Rank> &axes_dims) -> std::array<Dimension, Rank> {
+    using value_type = Dimension::value_type;
+    auto retval = std::array<Dimension, Rank>();
+    std::transform(axes_dims.cbegin(), axes_dims.cend(), retval.begin(),
+                   [](value_type dim) -> Dimension { return Dimension(std::vector<value_type>{dim}); });
+    return retval;
+}
 }  // namespace detail
 
 template <typename T, size_t N>

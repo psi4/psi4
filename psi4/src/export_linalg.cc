@@ -256,6 +256,8 @@ void bind_tensor(py::module& mod) {
             "symmetry"_a, "fill_value"_a = static_cast<T>(0));
     cls.def(py::init<const std::string&, const std::array<Dimension, Rank>&, T>(), ("Labeled, 1-irrep " + name).c_str(),
             "label"_a, "axes_dimpi"_a, "fill_value"_a = static_cast<T>(0));
+    cls.def(py::init<const std::string&, const std::array<Dimension::value_type, Rank>&, T>(),
+            ("Labeled, 1-irrep " + name).c_str(), "label"_a, "axes_dims"_a, "fill_value"_a = static_cast<T>(0));
     cls.def(py::init<size_t, const std::array<Dimension, Rank>&, unsigned int, T>(),
             ("Unlabeled, blocked, symmetry-assigned " + name).c_str(), "nirrep"_a, "axes_dimpi"_a, "symmetry"_a,
             "fill_value"_a = static_cast<T>(0));
@@ -263,6 +265,8 @@ void bind_tensor(py::module& mod) {
             "nirrep"_a, "axes_dimpi"_a, "fill_value"_a = static_cast<T>(0));
     cls.def(py::init<const std::array<Dimension, Rank>&, T>(), ("Unlabeled, 1-irrep " + name).c_str(), "axes_dimpi"_a,
             "fill_value"_a = static_cast<T>(0));
+    cls.def(py::init<const std::array<Dimension::value_type, Rank>&, T>(), ("Unlabeled, 1-irrep " + name).c_str(),
+            "axes_dims"_a, "fill_value"_a = static_cast<T>(0));
 
     // Member functions shared by all ranks
     cls.def_property_readonly("dim", [](const Class& obj) { return obj.dim(); }, "Total number of elements");

@@ -71,14 +71,14 @@ class PSI_API Dimension {
     void set_name(const std::string& name) { name_ = name; }
 
     /// Blocks access
-    value_type& operator[](size_t i) { return blocks_[i]; }
-    const value_type& operator[](size_t i) const { return blocks_[i]; }
+    value_type& operator[](value_type i) { return blocks_[i]; }
+    const value_type& operator[](value_type i) const { return blocks_[i]; }
     const storage& blocks() const { return blocks_; }
 
     /// Casting operator to int*
-    operator int*() { return blocks_.data(); }
+    operator value_type*() { return blocks_.data(); }
     /// Casting operator to const int*
-    operator const int*() const { return blocks_.data(); }
+    operator const value_type*() const { return blocks_.data(); }
 
     /// Return the sum of constituent dimensions
     value_type sum() const { return std::accumulate(blocks_.begin(), blocks_.end(), 0); }
@@ -93,8 +93,8 @@ class PSI_API Dimension {
     void print() const;
 
     // Only used for python
-    const value_type& get(size_t i) const { return blocks_[i]; }
-    void set(size_t i, value_type val) { blocks_[i] = val; }
+    const value_type& get(value_type i) const { return blocks_[i]; }
+    void set(value_type i, value_type val) { blocks_[i] = val; }
 
     PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
     PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);

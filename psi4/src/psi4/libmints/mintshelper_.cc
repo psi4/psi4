@@ -203,10 +203,8 @@ auto MintsHelper::ao_helper_(const std::string &label, std::shared_ptr<TwoBodyAO
     int nbf3 = bs3->nbf();
     int nbf4 = bs4->nbf();
 
-    std::array<Dimension, 4> dimpi{
-        Dimension(std::vector<Dimension::value_type>{nbf1}), Dimension(std::vector<Dimension::value_type>{nbf2}),
-        Dimension(std::vector<Dimension::value_type>{nbf3}), Dimension(std::vector<Dimension::value_type>{nbf4})};
-    auto I = std::make_shared<Tensor<double, 4>>(label, dimpi);
+    auto dims = std::array<Dimension::value_type, 4>{nbf1, nbf2, nbf3, nbf4};
+    auto I = std::make_shared<Tensor<double, 4>>(label, dims);
     const double *buffer = ints->buffer();
 
     for (auto M = 0; M < bs1->nshell(); M++) {
@@ -241,10 +239,8 @@ auto MintsHelper::ao_shell_getter_(const std::string &label, std::shared_ptr<Two
     auto pfxn = basisset_->shell(P).nfunction();
     auto qfxn = basisset_->shell(Q).nfunction();
 
-    std::array<Dimension, 4> dimpi{
-        Dimension(std::vector<Dimension::value_type>{mfxn}), Dimension(std::vector<Dimension::value_type>{nfxn}),
-        Dimension(std::vector<Dimension::value_type>{pfxn}), Dimension(std::vector<Dimension::value_type>{qfxn})};
-    auto I = std::make_shared<Tensor<double, 4>>(label, dimpi);
+    auto dims = std::array<Dimension::value_type, 4>{mfxn, nfxn, pfxn, qfxn};
+    auto I = std::make_shared<Tensor<double, 4>>(label, dims);
     const double *buffer = ints->buffer();
 
     ints->compute_shell(M, N, P, Q);

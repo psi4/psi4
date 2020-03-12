@@ -31,6 +31,7 @@
 #include <array>
 #include <complex>
 #include <cstddef>
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -60,11 +61,19 @@ struct Accessor<T, Rank, std::integer_sequence<std::ptrdiff_t, indices...>> {
         return static_cast<const Tensor<T, Rank>*>(this)->store_[h][{vs...}];
     }
     inline auto get(HomTs<indices, std::ptrdiff_t>... vs) const -> T { return this->get(0, vs...); }
+    inline auto get(size_t h, std::initializer_list<std::ptrdiff_t> idxs) const -> T {
+        return static_cast<const Tensor<T, Rank>*>(this)->store_[h][idxs];
+    }
+    inline auto get(std::initializer_list<std::ptrdiff_t> idxs) const -> T { return this->get(0, idxs); }
 
     inline auto set(size_t h, HomTs<indices, std::ptrdiff_t>... vs, T val) -> void {
         static_cast<Tensor<T, Rank>*>(this)->store_[h][{vs...}] = val;
     }
     inline auto set(HomTs<indices, std::ptrdiff_t>... vs, T val) -> void { this->set(0, vs..., val); }
+    inline auto set(size_t h, std::initializer_list<std::ptrdiff_t> idxs, T val) -> void {
+        static_cast<Tensor<T, Rank>*>(this)->store_[h][idxs] = val;
+    }
+    inline auto set(std::initializer_list<std::ptrdiff_t> idxs, T val) -> void { this->set(0, idxs, val); }
 };
 }  // namespace detail
 
@@ -95,15 +104,15 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     using accessor = detail::Accessor<T, Rank>;
     using crtp_base = detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
 
-    /*! Labeled, blocked, symmetry-assigned, rank-n CTOR
+    /*! @{ Main constructors */
+    /*! Labeled, blocked, symmetry-assigned, rank-n CTOR with non-zero fill value
      *  \param[in] label name of the tensor
      *  \param[in] nirrep number of irreps (a.k.a. blocks) in the tensor
      *  \param[in] axes_dimpi dimension of each axis
      *  \param[in] symmetry overall symmetry of the tensor
      *  \param[in] fill_value value of all elements in each block
      *
-     *  This is the only CTOR that does actual work. All other CTORs delegate to
-     *  this one and returns an tensor with all zero blocks.
+     *  \note This CTOR initializes the storage with the given fill value (zero by default)
      */
     explicit Tensor(const std::string& label, size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi,
                     unsigned int symmetry, T fill_value = static_cast<T>(0))
@@ -134,6 +143,8 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
      *  \param[in] nirrep number of irreps (a.k.a. blocks) in the tensor
      *  \param[in] axes_dimpi dimension of each axis
      *  \param[in] symmetry overall symmetry of the tensor
+     *
+     *  \note This CTOR _does not_ initialize the storage
      */
     explicit Tensor(const std::string& label, size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi,
                     unsigned int symmetry)
@@ -158,9 +169,11 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
         }
     }
 
+    /*! Empty tensor */
     explicit Tensor()
         : Tensor("empty", 1, std::array<Dimension, Rank>{{Dimension(std::vector<Dimension::value_type>{0})}}, 0,
                  static_cast<T>(0)) {}
+    /*! @} */
 
     /*! @{ Rank-n CTORs */
     /*! Labeled, 1-irrep, rank-n CTOR
@@ -171,6 +184,14 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     explicit Tensor(const std::string& label, const std::array<Dimension, Rank>& axes_dimpi,
                     T fill_value = static_cast<T>(0))
         : Tensor(label, 1, axes_dimpi, 0, fill_value) {}
+    /*! Labeled, 1-irrep, rank-n CTOR
+     *  \param[in] label
+     *  \param[in] axes_dims
+     *  \param[in] fill_value
+     */
+    explicit Tensor(const std::string& label, const std::array<Dimension::value_type, Rank>& axes_dims,
+                    T fill_value = static_cast<T>(0))
+        : Tensor(label, 1, detail::axes_dimpi(axes_dims), 0, fill_value) {}
     /*! Unlabeled, blocked, symmetry-assigned rank-n CTOR
      *  \param[in] nirrep
      *  \param[in] axes_dimpi
@@ -183,14 +204,23 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     /*! Unlabeled, blocked, rank-n CTOR
      *  \param[in] nirrep
      *  \param[in] axes_dimpi
+     *  \param[in] fill_value
      */
     explicit Tensor(size_t nirrep, const std::array<Dimension, Rank>& axes_dimpi, T fill_value = static_cast<T>(0))
         : Tensor("", nirrep, axes_dimpi, 0, fill_value) {}
     /*! Unlabeled, 1-irrep, rank-n CTOR
      *  \param[in] axes_dimpi
+     *  \param[in] fill_value
      */
     explicit Tensor(const std::array<Dimension, Rank>& axes_dimpi, T fill_value = static_cast<T>(0))
         : Tensor("", 1, axes_dimpi, 0, fill_value) {}
+    /*! Unlabeled, 1-irrep, rank-n CTOR
+     *  \param[in] axes_dims
+     *  \param[in] fill_value
+     */
+    explicit Tensor(const std::string& label, const std::array<Dimension::value_type, Rank>& axes_dims,
+                    T fill_value = static_cast<T>(0))
+        : Tensor("", 1, detail::axes_dimpi(axes_dims), 0, fill_value) {}
     /*! @}*/
 
     /*! @{ Rank-1 CTORs */
