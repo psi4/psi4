@@ -39,6 +39,7 @@
 #include "multipolesymmetry.h"
 #include "tensor.h"
 #include "wavefunction.h"
+#include "xthelper.h"
 
 namespace psi {
 
@@ -53,7 +54,9 @@ class OneBodyAOInt;
  * The MintsHelper object, places molecular integrals
  * (and later derivative integrals) on disk
  **/
-class PSI_API MintsHelper {
+class PSI_API MintsHelper final : public xtHelper<MintsHelper> {
+    friend class xtHelper<MintsHelper>;
+
    private:
     /// The Options reference for basis sets and things
     Options& options_;
@@ -89,17 +92,12 @@ class PSI_API MintsHelper {
     SharedMatrix ao_helper(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints);
     SharedMatrix ao_shell_getter(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
                                  int Q);
-    auto ao_helper_(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints) const -> SharedTensor<double, 4>;
-    auto ao_shell_getter_(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P,
-                          int Q) const -> SharedTensor<double, 4>;
 
     SharedMatrix ao_3coverlap_helper(const std::string& label, std::shared_ptr<ThreeCenterOverlapInt> ints);
 
     void common_init();
 
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm) const;
-    void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix_<double> out,
-                              bool symm) const;
     void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
     /// Helper function to convert ao integrals to so and cache them
     void cache_ao_to_so_ints(SharedMatrix ao_ints, const std::string& label, bool include_perturbation);
@@ -132,7 +130,7 @@ class PSI_API MintsHelper {
     /// Constructor, using wavefunction
     MintsHelper(std::shared_ptr<Wavefunction> wavefunction);
     /// Destructor, does nothing
-    ~MintsHelper();
+    ~MintsHelper() {}
 
     OperatorSymmetry operator_symmetry(int order) { return OperatorSymmetry(order, molecule_, integral_, factory_); }
 
@@ -181,12 +179,8 @@ class PSI_API MintsHelper {
     SharedMatrix ao_eri(std::shared_ptr<IntegralFactory> = nullptr);
     SharedMatrix ao_eri(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                         std::shared_ptr<BasisSet> bs4);
-    auto ao_eri_(std::shared_ptr<IntegralFactory> = nullptr) const -> SharedTensor<double, 4>;
-    auto ao_eri_(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
-                 std::shared_ptr<BasisSet> bs4) const -> SharedTensor<double, 4>;
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
-    auto ao_eri_shell_(int M, int N, int P, int Q) -> SharedTensor<double, 4>;
 
     // Derivatives of OEI in AO and MO basis
     std::vector<SharedMatrix> ao_oei_deriv1(const std::string& oei_type, int atom);
@@ -277,18 +271,12 @@ class PSI_API MintsHelper {
     /// AO Overlap Integrals
     SharedMatrix ao_overlap() const;
     SharedMatrix ao_overlap(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const;
-    auto ao_overlap_() const -> SharedMatrix_<double>;
-    auto ao_overlap_(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const -> SharedMatrix_<double>;
     /// AO Kinetic Integrals
     SharedMatrix ao_kinetic() const;
     SharedMatrix ao_kinetic(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const;
-    auto ao_kinetic_() const -> SharedMatrix_<double>;
-    auto ao_kinetic_(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const -> SharedMatrix_<double>;
     /// AO Potential Integrals
     SharedMatrix ao_potential() const;
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const;
-    auto ao_potential_() const -> SharedMatrix_<double>;
-    auto ao_potential_(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>) const -> SharedMatrix_<double>;
     /// AO ECP Integrals
     SharedMatrix ao_ecp();
     SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);

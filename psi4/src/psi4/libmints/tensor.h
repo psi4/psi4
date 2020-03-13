@@ -218,8 +218,7 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
      *  \param[in] axes_dims
      *  \param[in] fill_value
      */
-    explicit Tensor(const std::string& label, const std::array<Dimension::value_type, Rank>& axes_dims,
-                    T fill_value = static_cast<T>(0))
+    explicit Tensor(const std::array<Dimension::value_type, Rank>& axes_dims, T fill_value = static_cast<T>(0))
         : Tensor("", 1, detail::axes_dimpi(axes_dims), 0, fill_value) {}
     /*! @}*/
 

@@ -960,38 +960,17 @@ void export_mints(py::module& m) {
              py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_overlap,
                                                                                      py::const_),
              "AO mixed basis overlap integrals")
-        .def("ao_overlap_",
-             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_overlap_()->block(0); },
-             "AO basis overlap integrals")
-        .def("ao_overlap_",
-             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
-                 -> xt::pytensor<double, 2> { return obj.ao_overlap_(bs1, bs2)->block(0); },
-             "AO mixed basis overlap integrals")
         .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals", "include_perturbations"_a = true)
         .def("ao_kinetic", py::overload_cast<>(&MintsHelper::ao_kinetic, py::const_), "AO basis kinetic integrals")
         .def("ao_kinetic",
              py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_kinetic,
                                                                                      py::const_),
              "AO mixed basis kinetic integrals")
-        .def("ao_kinetic_",
-             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_kinetic_()->block(0); },
-             "AO basis kinetic integrals")
-        .def("ao_kinetic_",
-             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
-                 -> xt::pytensor<double, 2> { return obj.ao_kinetic_(bs1, bs2)->block(0); },
-             "AO mixed basis kinetic integrals")
         .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals", "include_perturbations"_a = true)
         .def("ao_potential", py::overload_cast<>(&MintsHelper::ao_potential, py::const_), "AO potential integrals")
         .def("ao_potential",
              py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_potential,
                                                                                      py::const_),
-             "AO mixed basis potential integrals")
-        .def("ao_potential_",
-             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_potential_()->block(0); },
-             "AO basis potential integrals")
-        .def("ao_potential_",
-             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
-                 -> xt::pytensor<double, 2> { return obj.ao_potential_(bs1, bs2)->block(0); },
              "AO mixed basis potential integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
              "include_perturbations"_a = true)
@@ -1031,22 +1010,6 @@ void export_mints(py::module& m) {
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a)
-        .def("ao_eri_",
-             [](const MintsHelper& obj, std::shared_ptr<IntegralFactory> factory) -> xt::pytensor<double, 4> {
-                 return obj.ao_eri_(factory)->block(0);
-             },
-             "AO ERI integrals", "factory"_a = nullptr)
-        .def("ao_eri_",
-             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) -> xt::pytensor<double, 4> {
-                 return obj.ao_eri_(bs1, bs2, bs3, bs4)->block(0);
-             },
-             "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
-        .def("ao_eri_shell_",
-             [](MintsHelper& obj, int M, int N, int P, int Q) -> xt::pytensor<double, 4> {
-                 return obj.ao_eri_shell_(M, N, P, Q)->block(0);
-             },
-             "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a)
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", "omega"_a, "factory"_a = nullptr)
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a)
         .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a, "bs1"_a, "bs2"_a, "bs3"_a,
@@ -1125,6 +1088,45 @@ void export_mints(py::module& m) {
              "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a)
         .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
              "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
+
+        // Methods returning objects with xtensor-based storage (implementation in mintshelper_.cc)
+        .def("ao_overlap_",
+             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_overlap_()->block(0); },
+             "AO basis overlap integrals")
+        .def("ao_overlap_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
+                 -> xt::pytensor<double, 2> { return obj.ao_overlap_(bs1, bs2)->block(0); },
+             "AO mixed basis overlap integrals")
+        .def("ao_kinetic_",
+             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_kinetic_()->block(0); },
+             "AO basis kinetic integrals")
+        .def("ao_kinetic_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
+                 -> xt::pytensor<double, 2> { return obj.ao_kinetic_(bs1, bs2)->block(0); },
+             "AO mixed basis kinetic integrals")
+        .def("ao_potential_",
+             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_potential_()->block(0); },
+             "AO basis potential integrals")
+        .def("ao_potential_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
+                 -> xt::pytensor<double, 2> { return obj.ao_potential_(bs1, bs2)->block(0); },
+             "AO mixed basis potential integrals")
+        .def("ao_eri_",
+             [](const MintsHelper& obj, std::shared_ptr<IntegralFactory> factory) -> xt::pytensor<double, 4> {
+                 return obj.ao_eri_(factory)->block(0);
+             },
+             "AO ERI integrals", "factory"_a = nullptr)
+        .def("ao_eri_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) -> xt::pytensor<double, 4> {
+                 return obj.ao_eri_(bs1, bs2, bs3, bs4)->block(0);
+             },
+             "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
+        .def("ao_eri_shell_",
+             [](MintsHelper& obj, int M, int N, int P, int Q) -> xt::pytensor<double, 4> {
+                 return obj.ao_eri_shell_(M, N, P, Q)->block(0);
+             },
+             "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a);
 
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);

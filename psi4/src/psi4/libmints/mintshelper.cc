@@ -131,8 +131,6 @@ MintsHelper::MintsHelper(std::shared_ptr<Wavefunction> wavefunction)
     init_helper(wavefunction);
 }
 
-MintsHelper::~MintsHelper() {}
-
 void MintsHelper::init_helper(std::shared_ptr<Wavefunction> wavefunction) {
     if (wavefunction->basisset().get() == 0) {
         outfile->Printf("  Wavefunction does not have a basisset!");
