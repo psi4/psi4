@@ -96,8 +96,7 @@ jobs:
         qcengine \
         pybind11 \
         -c conda-forge
-      # currently disabled to heal tests
-      conda install adcc -c adcc/label/dev -c conda-forge
+      conda install adcc -c adcc -c conda-forge
       conda list
     displayName: 'Build Environment'
 
