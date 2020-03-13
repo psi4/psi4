@@ -7,32 +7,20 @@ import numpy as np
 # "nh2" "aug-cc-pvdz"
 # "nh2" "qz2p"
 
-_scf_hf_dz_df_rhf = -100.019400605629
-_scf_bh3p_dz_df_uhf = -25.945130559147
-_scf_bh3p_dz_df_rohf = -25.943606522029
 _scf_hf_dz_pk_rhf = -100.01941126902270
 _scf_bh3p_dz_pk_uhf = -25.94513842869638
 _scf_bh3p_dz_pk_rohf = -25.943614318546
 
+_scf_hf_dz_df_rhf = -100.019400605629
+_scf_bh3p_dz_df_uhf = -25.945130559147
+_scf_bh3p_dz_df_rohf = -25.943606522029
+
+_scf_hf_dz_cd_rhf = -100.01939270219628
+_scf_bh3p_dz_cd_uhf = -25.94511891510799
+_scf_bh3p_dz_cd_rohf = -25.943595251664313
+
 _std_suite = [
     # <<<  scf DF, fc  >>>
-    {
-        "meta": {
-            "system": "hf",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rhf",
-            "fc": "fc",
-            "mp2_type": "conv",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
-            "MP2 CORRELATION ENERGY": -0.201612517228,
-            #            "MP2 TOTAL ENERGY": -100.221013122857,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -0.05348507322421174,
-        },
-    },
     {
         "meta": {
             "system": "hf",
@@ -58,40 +46,6 @@ _std_suite = [
                     -0.00314716362539,
                 ]
             ).reshape((-1, 3)),
-        },
-    },
-    {
-        "meta": {
-            "system": "hf",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rhf",
-            "fc": "fc",
-            "mp2_type": "cd",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
-            "MP2 CORRELATION ENERGY": -0.201609396752,
-            #            "MP2 TOTAL ENERGY": -100.221010002381,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -0.4,
-        },
-    },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "uhf",
-            "fc": "fc",
-            "mp2_type": "conv",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
-            "MP2 CORRELATION ENERGY": -0.058421122206,
-            #            "MP2 TOTAL ENERGY": -26.003551681354,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -0.5,
         },
     },
     {
@@ -132,40 +86,6 @@ _std_suite = [
             "system": "bh3p",
             "basis": "cc-pvdz",
             "scf_type": "df",
-            "reference": "uhf",
-            "fc": "fc",
-            "mp2_type": "cd",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
-            "MP2 CORRELATION ENERGY": -0.058409837177,
-            #            "MP2 TOTAL ENERGY": -26.003540396324,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -0.7,
-        },
-    },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rohf",
-            "fc": "fc",
-            "mp2_type": "conv",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
-            "MP2 CORRELATION ENERGY": -0.060939211739,
-            #            "MP2 TOTAL ENERGY": -26.004545733768,
-            "MP2 SINGLES ENERGY": 1.1,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -1.1,
-        },
-    },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
             "reference": "rohf",
             "fc": "fc",
             "mp2_type": "df",
@@ -178,40 +98,7 @@ _std_suite = [
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.0018535174789756292,
         },
     },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rohf",
-            "fc": "fc",
-            "mp2_type": "cd",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
-            "MP2 CORRELATION ENERGY": -0.059393510962,
-            #            "MP2 TOTAL ENERGY": -26.003000032991,
-            "MP2 SINGLES ENERGY": 1.3,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -1.3,
-        },
-    },
     # <<<  scf DF, ae  >>>
-    {
-        "meta": {
-            "system": "hf",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rhf",
-            "fc": "ae",
-            "mp2_type": "conv",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
-            "MP2 CORRELATION ENERGY": -0.2037668844651997,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -0.05427252944164894,
-        },
-    },
     {
         "meta": {
             "system": "hf",
@@ -237,38 +124,6 @@ _std_suite = [
                     -0.00279211492833,
                 ]
             ).reshape((-1, 3)),
-        },
-    },
-    {
-        "meta": {
-            "system": "hf",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rhf",
-            "fc": "ae",
-            "mp2_type": "cd",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -2.3,
-            "MP2 CORRELATION ENERGY": -2.3,
-        },
-    },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "uhf",
-            "fc": "ae",
-            "mp2_type": "conv",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -2.4,
-            "MP2 CORRELATION ENERGY": -2.4,
         },
     },
     {
@@ -309,38 +164,6 @@ _std_suite = [
             "system": "bh3p",
             "basis": "cc-pvdz",
             "scf_type": "df",
-            "reference": "uhf",
-            "fc": "ae",
-            "mp2_type": "cd",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
-            "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -2.5,
-            "MP2 CORRELATION ENERGY": -2.5,
-        },
-    },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rohf",
-            "fc": "ae",
-            "mp2_type": "conv",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
-            "MP2 SINGLES ENERGY": -2.7,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -2.7,
-            "MP2 CORRELATION ENERGY": -2.7,
-        },
-    },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
             "reference": "rohf",
             "fc": "ae",
             "mp2_type": "df",
@@ -367,22 +190,6 @@ _std_suite = [
                     -0.00023478905531,
                 ]
             ).reshape((-1, 3)),
-        },
-    },
-    {
-        "meta": {
-            "system": "bh3p",
-            "basis": "cc-pvdz",
-            "scf_type": "df",
-            "reference": "rohf",
-            "fc": "ae",
-            "mp2_type": "cd",
-        },
-        "data": {
-            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
-            "MP2 SINGLES ENERGY": -2.8,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -2.8,
-            "MP2 CORRELATION ENERGY": -2.8,
         },
     },
     # <<<  scf CONV, fc  >>>
@@ -442,7 +249,7 @@ _std_suite = [
             "HF TOTAL ENERGY": _scf_hf_dz_pk_rhf,
             "MP2 SINGLES ENERGY": 0.0,
             "MP2 SAME-SPIN CORRELATION ENERGY": -2.9,
-            "MP2 CORRELATION ENERGY": -2.9,
+            "MP2 CORRELATION ENERGY": -0.20162439774,
         },
     },
     {
@@ -505,8 +312,8 @@ _std_suite = [
         "data": {
             "HF TOTAL ENERGY": _scf_bh3p_dz_pk_uhf,
             "MP2 SINGLES ENERGY": 0.0,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -2.33,
-            "MP2 CORRELATION ENERGY": -2.33,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.0017676971,
+            "MP2 CORRELATION ENERGY": -0.05841222894,
         },
     },
     {
@@ -522,7 +329,8 @@ _std_suite = [
             "HF TOTAL ENERGY": _scf_bh3p_dz_pk_rohf,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.001851937488,
             "MP2 SINGLES ENERGY": -0.000688368657,
-            "MP2 CORRELATION ENERGY": -0.058718885599,
+            # "MP2 CORRELATION ENERGY": -0.058718885599,  # actually, doubles
+            "MP2 CORRELATION ENERGY": -0.059407254257,
             "MP2 TOTAL GRADIENT": np.array(
                 [
                     0.000000000000000,
@@ -568,9 +376,9 @@ _std_suite = [
         },
         "data": {
             "HF TOTAL ENERGY": _scf_bh3p_dz_pk_rohf,
-            "MP2 SINGLES ENERGY": -2.2,
-            "MP2 SAME-SPIN CORRELATION ENERGY": -2.2,
-            "MP2 CORRELATION ENERGY": -2.2,
+            "MP2 SINGLES ENERGY": -0.00068836865,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.001852162877,
+            "MP2 CORRELATION ENERGY": -0.059395907176,
         },
     },
     # <<<  scf CONV, ae  >>>
@@ -626,7 +434,12 @@ _std_suite = [
             "fc": "ae",
             "mp2_type": "cd",
         },
-        "data": {},
+        "data": {
+            "HF TOTAL ENERGY": _scf_hf_dz_pk_rhf,
+            "MP2 CORRELATION ENERGY": -0.203778449,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": 0.13,
+        },
     },
     {
         "meta": {
@@ -686,7 +499,12 @@ _std_suite = [
             "fc": "ae",
             "mp2_type": "cd",
         },
-        "data": {},
+        "data": {
+            "HF TOTAL ENERGY": _scf_bh3p_dz_pk_uhf,
+            "MP2 CORRELATION ENERGY": -0.059477703268,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.001918940186,
+        },
     },
     {
         "meta": {
@@ -701,7 +519,8 @@ _std_suite = [
             "HF TOTAL ENERGY": _scf_bh3p_dz_pk_rohf,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.002004909679,
             "MP2 SINGLES ENERGY": -0.000694049865,
-            "MP2 CORRELATION ENERGY": -0.059784065292,
+            #            "MP2 CORRELATION ENERGY": -0.059784065292,  # doubles
+            "MP2 CORRELATION ENERGY": -0.060478115157,
             "MP2 TOTAL GRADIENT": np.array(
                 [
                     0.000000000000000,
@@ -745,8 +564,422 @@ _std_suite = [
             "fc": "ae",
             "mp2_type": "cd",
         },
-        "data": {},
+        "data": {
+            "HF TOTAL ENERGY": _scf_bh3p_dz_pk_rohf,
+            "MP2 CORRELATION ENERGY": -0.0604664810,
+            "MP2 SINGLES ENERGY": -0.000694049858,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.002005152902,
+        },
     },
+    # <<<  scf CD, fc  >>>
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rhf",
+            "fc": "fc",
+            "mp2_type": "df",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_hf_dz_cd_rhf,
+            "MP2 CORRELATION ENERGY": -0.2016205147678,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.0535243575,
+        },
+    },
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rhf",
+            "fc": "fc",
+            "mp2_type": "cd",
+        },
+        "data": {  # added cd/cd
+            "HF TOTAL ENERGY": _scf_hf_dz_cd_rhf,
+            "MP2 CORRELATION ENERGY": -0.201619244596,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.46,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "uhf",
+            "fc": "fc",
+            "mp2_type": "df",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_uhf,
+            "MP2 CORRELATION ENERGY": -0.05839103061,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.00176895897,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "uhf",
+            "fc": "fc",
+            "mp2_type": "cd",
+        },
+        "data": {  # added cd/cd
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_uhf,
+            "MP2 CORRELATION ENERGY": -0.058410863785614,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.001767642489,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rohf",
+            "fc": "fc",
+            "mp2_type": "df",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_rohf,
+            "MP2 CORRELATION ENERGY": -0.05937342969795,
+            "MP2 SINGLES ENERGY": -0.0006881934,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.001853561678,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rohf",
+            "fc": "fc",
+            "mp2_type": "cd",
+        },
+        "data": {  # added cd/cd
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_rohf,
+            "MP2 CORRELATION ENERGY": -0.05939419492939635,
+            "MP2 SINGLES ENERGY": -0.0006881934,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.0018520881544,
+        },
+    },
+    # <<<  scf CD, ae  >>>
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rhf",
+            "fc": "ae",
+            "mp2_type": "df",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_hf_dz_cd_rhf,
+            "MP2 CORRELATION ENERGY": -0.2037748110768,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.054311870576,
+        },
+    },
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rhf",
+            "fc": "ae",
+            "mp2_type": "cd",
+        },
+        "data": {  # added cd/cd
+            "HF TOTAL ENERGY": _scf_hf_dz_cd_rhf,
+            "MP2 CORRELATION ENERGY": -0.20377328786815951,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.87,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "uhf",
+            "fc": "ae",
+            "mp2_type": "df",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_uhf,
+            "MP2 CORRELATION ENERGY": -0.059456828193,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.00192025457659,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "uhf",
+            "fc": "ae",
+            "mp2_type": "cd",
+        },
+        "data": {  # added cd/cd
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_uhf,
+            "MP2 CORRELATION ENERGY": -0.059476326350818454,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.0019188791023,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rohf",
+            "fc": "ae",
+            "mp2_type": "df",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_rohf,
+            "MP2 CORRELATION ENERGY": -0.06044431529,
+            "MP2 SINGLES ENERGY": -0.00069387098844,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.0020066063,
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rohf",
+            "fc": "ae",
+            "mp2_type": "cd",
+        },
+        "data": {  # added cd/cd
+            "HF TOTAL ENERGY": _scf_bh3p_dz_cd_rohf,
+            "MP2 CORRELATION ENERGY": -0.06046475293245379,
+            "MP2 SINGLES ENERGY": -0.00069387098844,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.002005071400,
+        },
+    },
+    # <<<  lopsided SCF/CORL algorithms  >>>
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "df",
+            "reference": "rhf",
+            "fc": "fc",
+            "mp2_type": "conv",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
+            "MP2 CORRELATION ENERGY": -0.201612517228,
+            #            "MP2 TOTAL ENERGY": -100.221013122857,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.05348507322421174,
+        },
+    },
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rhf",
+            "fc": "fc",
+            "mp2_type": "conv",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_hf_dz_cd_rhf,
+            "MP2 CORRELATION ENERGY": -0.20162236483,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.053488165399,
+        },
+    },
+    # {
+    #    "meta": {
+    #        "system": "hf",
+    #        "basis": "cc-pvdz",
+    #        "scf_type": "df",
+    #        "reference": "rhf",
+    #        "fc": "fc",
+    #        "mp2_type": "cd",
+    #    },
+    #    "data": {
+    #        "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
+    #        "MP2 CORRELATION ENERGY": -0.201609396752,
+    #        #            "MP2 TOTAL ENERGY": -100.221010002381,
+    #        "MP2 SINGLES ENERGY": 0.0,
+    #        "MP2 SAME-SPIN CORRELATION ENERGY": -0.4,
+    #    },
+    # },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "uhf",
+    #            "fc": "fc",
+    #            "mp2_type": "conv",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
+    #            "MP2 CORRELATION ENERGY": -0.058421122206,
+    #            #            "MP2 TOTAL ENERGY": -26.003551681354,
+    #            "MP2 SINGLES ENERGY": 0.0,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -0.5,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "uhf",
+    #            "fc": "fc",
+    #            "mp2_type": "cd",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
+    #            "MP2 CORRELATION ENERGY": -0.058409837177,
+    #            #            "MP2 TOTAL ENERGY": -26.003540396324,
+    #            "MP2 SINGLES ENERGY": 0.0,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -0.7,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "rohf",
+    #            "fc": "fc",
+    #            "mp2_type": "conv",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
+    #            "MP2 CORRELATION ENERGY": -0.060939211739,
+    #            #            "MP2 TOTAL ENERGY": -26.004545733768,
+    #            "MP2 SINGLES ENERGY": 1.1,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -1.1,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "rohf",
+    #            "fc": "fc",
+    #            "mp2_type": "cd",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
+    #            "MP2 CORRELATION ENERGY": -0.059393510962,
+    #            #            "MP2 TOTAL ENERGY": -26.003000032991,
+    #            "MP2 SINGLES ENERGY": 1.3,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -1.3,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "hf",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "rhf",
+    #            "fc": "ae",
+    #            "mp2_type": "conv",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
+    #            "MP2 CORRELATION ENERGY": -0.2037668844651997,
+    #            "MP2 SINGLES ENERGY": 0.0,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -0.05427252944164894,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "hf",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "rhf",
+    #            "fc": "ae",
+    #            "mp2_type": "cd",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
+    #            "MP2 SINGLES ENERGY": 0.0,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -2.3,
+    #            "MP2 CORRELATION ENERGY": -2.3,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "uhf",
+    #            "fc": "ae",
+    #            "mp2_type": "conv",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
+    #            "MP2 SINGLES ENERGY": 0.0,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -2.4,
+    #            "MP2 CORRELATION ENERGY": -2.4,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "uhf",
+    #            "fc": "ae",
+    #            "mp2_type": "cd",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_uhf,
+    #            "MP2 SINGLES ENERGY": 0.0,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -2.5,
+    #            "MP2 CORRELATION ENERGY": -2.5,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "rohf",
+    #            "fc": "ae",
+    #            "mp2_type": "conv",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
+    #            "MP2 SINGLES ENERGY": -2.7,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -2.7,
+    #            "MP2 CORRELATION ENERGY": -2.7,
+    #        },
+    #    },
+    #    {
+    #        "meta": {
+    #            "system": "bh3p",
+    #            "basis": "cc-pvdz",
+    #            "scf_type": "df",
+    #            "reference": "rohf",
+    #            "fc": "ae",
+    #            "mp2_type": "cd",
+    #        },
+    #        "data": {
+    #            "HF TOTAL ENERGY": _scf_bh3p_dz_df_rohf,
+    #            "MP2 SINGLES ENERGY": -2.8,
+    #            "MP2 SAME-SPIN CORRELATION ENERGY": -2.8,
+    #            "MP2 CORRELATION ENERGY": -2.8,
+    #        },
+    #    },
 ]
 
 
@@ -758,6 +991,14 @@ for calc in _std_suite:
             calc["data"]["MP2 CORRELATION ENERGY"]
             - calc["data"]["MP2 SAME-SPIN CORRELATION ENERGY"]
             - calc["data"]["MP2 SINGLES ENERGY"]
+        )
+        calc["data"]["SCS-MP2 CORRELATION ENERGY"] = (
+            (1 / 3) * calc["data"]["MP2 SAME-SPIN CORRELATION ENERGY"]
+            + (6 / 5) * calc["data"]["MP2 OPPOSITE-SPIN CORRELATION ENERGY"]
+            + calc["data"]["MP2 SINGLES ENERGY"]
+        )
+        calc["data"]["SCS-MP2 TOTAL ENERGY"] = (
+            calc["data"]["SCS-MP2 CORRELATION ENERGY"] + calc["data"]["HF TOTAL ENERGY"]
         )
 
 

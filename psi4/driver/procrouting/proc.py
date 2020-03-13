@@ -1677,12 +1677,12 @@ def run_dfocc(name, **kwargs):
         ['DFOCC', 'CC_LAMBDA'])
 
     def set_cholesky_from(mtd_type):
-        type_val = core.get_global_option(mtd_type)
-        if type_val in ['DISK_DF', 'DF']:
+        corl_type = core.get_global_option(mtd_type)
+        if corl_type == 'DF':
             core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
             proc_util.check_disk_df(name.upper(), optstash)
 
-        elif type_val == 'CD':
+        elif corl_type == 'CD':
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
             # Alter default algorithm
             if not core.has_global_option_changed('SCF_TYPE'):
@@ -1692,37 +1692,36 @@ def run_dfocc(name, **kwargs):
             if core.get_global_option('SCF_TYPE') != 'CD':
                 core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
         else:
-            raise ValidationError("""Invalid type '%s' for DFOCC""" % type_val)
+            raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
 
-        return type_val
-
+        return corl_type
 
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-        type_val = set_cholesky_from('MP2_TYPE')
+        set_cholesky_from('MP2_TYPE')
     elif name in ['mp2.5', 'omp2.5']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        type_val = set_cholesky_from('MP_TYPE')
+        set_cholesky_from('MP_TYPE')
     elif name in ['mp3', 'omp3']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        type_val = set_cholesky_from('MP_TYPE')
+        set_cholesky_from('MP_TYPE')
     elif name in ['lccd', 'olccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
 
     elif name == 'ccd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'ccsd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(t)':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(at)':
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'dfocc':
         pass
     else:
@@ -4431,7 +4430,7 @@ def run_fnodfcc(name, **kwargs):
 
     # throw an exception for open-shells
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
+        raise ValidationError(f"""Error: {name} requires 'reference rhf'.""")
 
     def set_cholesky_from(mtd_type):
         type_val = core.get_global_option(mtd_type)
@@ -4591,7 +4590,7 @@ def run_fnocc(name, **kwargs):
 
     # throw an exception for open-shells
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
+        raise ValidationError(f"""Error: {name} requires 'reference rhf'.""")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)

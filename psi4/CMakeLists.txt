@@ -263,6 +263,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_mp2d.py
               ../tests/pytests/test_testing.py
               ../tests/pytests/test_mints.py
+              ../tests/pytests/standard_suite_ref.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>

@@ -195,6 +195,10 @@ void DFOCC::omp2_manager() {
     if (reference_ == "UNRESTRICTED") {
         variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -524,6 +528,10 @@ void DFOCC::mp2_manager() {
     if (reference_ == "UNRESTRICTED") {
         variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -799,6 +807,10 @@ void DFOCC::ccsd_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -1152,6 +1164,10 @@ void DFOCC::ccsd_t_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -1554,6 +1570,10 @@ void DFOCC::ccsdl_t_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -1852,6 +1872,10 @@ void DFOCC::ccd_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -2080,6 +2104,10 @@ void DFOCC::omp3_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -2403,6 +2431,10 @@ void DFOCC::mp3_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -2621,6 +2653,10 @@ void DFOCC::omp2_5_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -2925,6 +2961,10 @@ void DFOCC::mp2_5_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -3144,6 +3184,10 @@ void DFOCC::olccd_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 
@@ -3418,6 +3462,10 @@ void DFOCC::lccd_manager() {
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
 

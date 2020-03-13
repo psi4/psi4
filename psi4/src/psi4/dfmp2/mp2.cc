@@ -175,6 +175,7 @@ void DFMP2::common_init() {
     name_ = "DF-MP2";
 
     variables_["MP2 SINGLES ENERGY"] = 0.0;
+    variables_["MP2 DOUBLES ENERGY"] = 0.0;
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
     variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->energy();
@@ -751,6 +752,8 @@ void DFMP2::apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t nav
     psio_->close(file, 1);
 }
 void DFMP2::print_energies() {
+    variables_["MP2 DOUBLES ENERGY"] = variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+                                       variables_["MP2 SAME-SPIN CORRELATION ENERGY"];
     variables_["MP2 CORRELATION ENERGY"] = variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
                                            variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
                                            variables_["MP2 SINGLES ENERGY"];

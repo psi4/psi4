@@ -126,6 +126,8 @@ void OCCWave::mp2_postprocessing(bool include_singles) {
 
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
+    variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
 }
 
 void OCCWave::mp3_postprocessing() {
