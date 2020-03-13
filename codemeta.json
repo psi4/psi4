@@ -183,6 +183,7 @@
             "affiliation": "The Molecular Sciences Software Institute",
             "latitude": 37.20015,
             "longitude": -80.4106,
+            "@id": "https://orcid.org/0000-0003-2136-0606",
             "@id": "https://github.com/bennybp"
         },
         {
@@ -286,8 +287,8 @@
             "givenName": "Peter",
             "familyName": "Kraus",
             "affiliation": "School of Molecular and Life Sciences, Curtin University",
-            "latitude": 52.4485,
-            "longitude": 13.2827,
+            "latitude": 115.8929,
+            "longitude": -32.0117,
             "@id": "https://orcid.org/0000-0002-4359-5003",
             "@id": "https://github.com/PeterKraus"
         },
