@@ -151,14 +151,29 @@ def clsd_open_pmols():
 
 
 _e1 = (psi4.ValidationError, "please use SCF_TYPE = DF to automatically choose the correct DFJK implementation")
-_e2 = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF' and REFERENCE 'UHF' not directable to QC_MODULE 'DFMP2'")
-_e3 = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF' and REFERENCE 'ROHF' not directable to QC_MODULE 'DFMP2'")
-_e4 = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF' and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
-_e5 = (RuntimeError, "Frozen core/virtual not implemented in OCC module analytic gradients")
-_e6 = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CONV' and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
-_e7 = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD' and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
-_e8 = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD' and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
-_e9 = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD' and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+_e2f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'DFMP2'")
+_e2a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'False', and REFERENCE 'UHF' not directable to QC_MODULE 'DFMP2'")
+_e3f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'True', and REFERENCE 'ROHF' not directable to QC_MODULE 'DFMP2'")
+_e3a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'False', and REFERENCE 'ROHF' not directable to QC_MODULE 'DFMP2'")
+_e4f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'True', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+_e4a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'False', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+_e5_old = (RuntimeError, "Frozen core/virtual not implemented in OCC module analytic gradients")  # this, if you leave it to occ to raise NYI for RHF/UHF
+_e5f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
+_e5u = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_e6f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+_e6a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CONV', FREEZE_CORE 'False', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+_e7f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
+_e7a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'False', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
+_e8f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_e8a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'False', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_e9f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'True', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+_e9a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'False', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+
+_nyi1 = "fc conv mp2 gradients NYI"
+_nyi2 = "rohf mp2 gradients NYI"
+_nyi3 = "cd mp2 gradients NYI"
+_nyi4 = "spin components rhf mp2 energies NYI"
+
 
 @pytest.mark.parametrize(
     "dertype", [
@@ -326,43 +341,72 @@ def test_mp2_module_energy(inp, dertype, clsd_open_pmols, request):
 @pytest.mark.parametrize(
     "dertype", [
         1,
-        0,
-        #pytest.param(0, marks=pytest.mark.long),
+        pytest.param(0, marks=pytest.mark.long),
     ], ids=['grd1', 'grd0'])
 @pytest.mark.parametrize(
     "inp",
     [
         ###### dfmp2
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   },                   }, id="mp2  rhf    df   fc: * dfmp2",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   }, "error": {1: _e2},}, id="mp2  uhf    df   fc: * dfmp2",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   }, "error": {1: _e3},}, id="mp2 rohf    df   fc: * dfmp2",),
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  },                   }, id="mp2  rhf    df   ae: * dfmp2",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  }, "error": {1: _e2},}, id="mp2  uhf    df   ae: * dfmp2",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  }, "error": {1: _e3},}, id="mp2 rohf    df   ae: * dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   },                    }, id="mp2  rhf    df   fc: * dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   }, "error": {1: _e2f},}, id="mp2  uhf    df   fc: * dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   }, "error": {1: _e3f},}, id="mp2 rohf    df   fc: * dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  },                    }, id="mp2  rhf    df   ae: * dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  }, "error": {1: _e2a},}, id="mp2  uhf    df   ae: * dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  }, "error": {1: _e3a},}, id="mp2 rohf    df   ae: * dfmp2",),
 
         ###### occ/dfocc
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e5},}, id="mp2  rhf    conv fc: * occ  ",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e5},}, id="mp2  uhf    conv fc: * occ  ",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e6},}, id="mp2 rohf    conv fc: * occ  ",),
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },                   }, id="mp2  rhf    conv ae: * occ  ",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },                   }, id="mp2  uhf    conv ae: * occ  ",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e6},}, id="mp2 rohf    conv ae: * occ  ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e5f},}, id="mp2  rhf    conv fc: * occ  ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e5u},}, id="mp2  uhf    conv fc: * occ  ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e6f},}, id="mp2 rohf    conv fc: * occ  ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },                    }, id="mp2  rhf    conv ae: * occ  ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },                    }, id="mp2  uhf    conv ae: * occ  ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e6a},}, id="mp2 rohf    conv ae: * occ  ",),
         ####
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                   }, id="mp2  rhf    df   fc:   dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                   }, id="mp2  uhf    df   fc:   dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e4},}, id="mp2 rohf    df   fc:   dfocc",),
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                   }, id="mp2  rhf    df   ae:   dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                   }, id="mp2  uhf    df   ae:   dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e4},}, id="mp2 rohf    df   ae:   dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                    }, id="mp2  rhf    df   fc:   dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                    }, id="mp2  uhf    df   fc:   dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e4f},}, id="mp2 rohf    df   fc:   dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                    }, id="mp2  rhf    df   ae:   dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                    }, id="mp2  uhf    df   ae:   dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e4a},}, id="mp2 rohf    df   ae:   dfocc",),
         ####
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e7},}, id="mp2  rhf    cd   fc: * dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e8},}, id="mp2  uhf    cd   fc: * dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e9},}, id="mp2 rohf    cd   fc: * dfocc",),
-        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e7},}, id="mp2  rhf    cd   ae: * dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e8},}, id="mp2  uhf    cd   ae: * dfocc",),
-        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e9},}, id="mp2 rohf    cd   ae: * dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e7f},}, id="mp2  rhf    cd   fc: * dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e8f},}, id="mp2  uhf    cd   fc: * dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _e9f},}, id="mp2 rohf    cd   fc: * dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e7a},}, id="mp2  rhf    cd   ae: * dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e8a},}, id="mp2  uhf    cd   ae: * dfocc",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e9a},}, id="mp2 rohf    cd   ae: * dfocc",),
 
+        ######## Does the simple interface (default qc_module, scf_type, mp2_type) work? Here we xfail the NYI rather than catch graceful exit.
 
+        ###### default qc_module
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv",                     "freeze_core": "true",                     }, "marks": {1: _nyi1},          }, id="mp2  rhf    conv fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "conv",                     "freeze_core": "true",                     }, "marks": {1: _nyi1},          }, id="mp2  uhf    conv fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv",                     "freeze_core": "true",                     }, "marks": {1: _nyi2},          }, id="mp2 rohf    conv fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv",                     "freeze_core": "false",                    },                               }, id="mp2  rhf    conv ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "conv",                     "freeze_core": "false",                    },                               }, id="mp2  uhf    conv ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv",                     "freeze_core": "false",                    }, "marks": {1: _nyi2},          }, id="mp2 rohf    conv ae: dd     ",),
+        ####
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",                       "freeze_core": "true",                     },                               }, id="mp2  rhf    df   fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",                       "freeze_core": "true",                     },                               }, id="mp2  uhf    df   fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",                       "freeze_core": "true",                     }, "marks": {1: _nyi2},          }, id="mp2 rohf    df   fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",                       "freeze_core": "false",                    },                               }, id="mp2  rhf    df   ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",                       "freeze_core": "false",                    },                               }, id="mp2  uhf    df   ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "df",                       "freeze_core": "false",                    }, "marks": {1: _nyi2},          }, id="mp2 rohf    df   ae: dd     ",),
+        ####
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",                       "freeze_core": "true",                     }, "marks": {1: _nyi3, 0: _nyi4},}, id="mp2  rhf    cd   fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",                       "freeze_core": "true",                     }, "marks": {1: _nyi3},          }, id="mp2  uhf    cd   fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",                       "freeze_core": "true",                     }, "marks": {1: _nyi3},          }, id="mp2 rohf    cd   fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3, 0: _nyi4},}, id="mp2  rhf    cd   ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3},          }, id="mp2  uhf    cd   ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3},          }, id="mp2 rohf    cd   ae: dd     ",),
+
+        ###### default qc_module, mp2_type
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",                                          "freeze_core": "true",                     },                               }, id="mp2  rhf         fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",                                          "freeze_core": "true",                     },                               }, id="mp2  uhf         fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf",                                         "freeze_core": "true",                     }, "marks": {1: _nyi2},          }, id="mp2 rohf         fc: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",                                          "freeze_core": "false",                    },                               }, id="mp2  rhf         ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",                                          "freeze_core": "false",                    },                               }, id="mp2  uhf         ae: dd     ",),
+        pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf",                                         "freeze_core": "false",                    }, "marks": {1: _nyi2},          }, id="mp2 rohf         ae: dd     ",),
     ],
 )  # yapf: disable
 def test_mp2_module_gradient(inp, dertype, clsd_open_pmols, request):
@@ -375,6 +419,9 @@ def test_mp2_module_gradient(inp, dertype, clsd_open_pmols, request):
         else:
             # remove e.g. grd1 errors from grd0
             inp.pop("error")
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        pytest.xfail(inp["marks"][dertype])
+
     _asserter_mp2(inp, subject, tnm, dertype=dertype)
 
 

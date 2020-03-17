@@ -140,28 +140,31 @@ def select_mp2_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP2_TYPE')
     module = core.get_global_option('QC_MODULE')
+    all_electron = core.get_global_option('FREEZE_CORE') == "FALSE"
     # Considering only [df]occ/dfmp2
 
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module == 'OCC':
-                func = run_dfocc_gradient
-            elif module in ['', 'DFMP2']:
-                func = run_dfmp2_gradient
+                if module == 'OCC':
+                    func = run_dfocc_gradient
+                elif module in ['', 'DFMP2']:
+                    func = run_dfmp2_gradient
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                func = run_dfocc_gradient
+                if module in ['', 'OCC']:
+                    func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return

@@ -171,10 +171,14 @@ class MissingMethodError(ValidationError):
 class ManagedMethodError(PsiException):
     def __init__(self, circs):
         if circs[5] == '':
-            msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not available{5}""".format(*circs)
+            modulemsg = "not available"
         else:
-            msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not directable to QC_MODULE '{5}'""".format(
-                *circs)
+            modulemsg = f"not directable to QC_MODULE '{circs[5]}'"
+
+        if len(circs) == 7:
+            msg = f"""{circs[0]}: Method '{circs[1]}' with {circs[2]} '{circs[3]}', FREEZE_CORE '{not circs[6]}', and REFERENCE '{circs[4]}' {modulemsg}"""
+        else:
+            msg = f"""{circs[0]}: Method '{circs[1]}' with {circs[2]} '{circs[3]}' and REFERENCE '{circs[4]}' {modulemsg}"""
         PsiException.__init__(self, msg)
         self.message = '\nPsiException: %s\n\n' % msg
 
