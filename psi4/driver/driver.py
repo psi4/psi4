@@ -746,6 +746,8 @@ def gradient(name, **kwargs):
         wfn.set_gradient(grad_psi_matrix)
 
         # Explicitly set the current energy..
+        core.set_variable(f"{lowername.upper()} TOTAL GRADIENT", grad_psi_matrix)
+        wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", grad_psi_matrix)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 

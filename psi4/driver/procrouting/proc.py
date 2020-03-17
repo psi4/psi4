@@ -1845,6 +1845,7 @@ def run_dfocc_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
+    dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
     # Shove variables into global space
     if name in ['mp2', 'omp2']:
@@ -2181,6 +2182,7 @@ def run_occ_gradient(name, **kwargs):
     grad = derivobj.compute()
 
     occ_wfn.set_gradient(grad)
+    occ_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", grad)
 
     # Shove variables into global space
     keep_custom_spin_scaling = core.has_option_changed("OCC", "SS_SCALE") or core.has_option_changed("OCC", "OS_SCALE")
@@ -2453,6 +2455,7 @@ def run_dfmp2_gradient(name, **kwargs):
     dfmp2_wfn.set_gradient(grad)
 
     # Shove variables into global space
+    dfmp2_wfn.set_variable('MP2 TOTAL GRADIENT', grad)
     dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('MP2 TOTAL ENERGY'))
     dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY'))
     for k, v in dfmp2_wfn.variables().items():

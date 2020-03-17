@@ -403,18 +403,22 @@ double OCCWave::compute_energy() {
 
     // Warnings
     if (nfrzc != 0 && orb_opt_ == "TRUE") {
+        mem_release();
         throw FeatureNotImplemented("Orbital-optimized methods", "Frozen core/virtual", __FILE__, __LINE__);
     }
 
     else if (nfrzv != 0 && orb_opt_ == "TRUE") {
+        mem_release();
         throw FeatureNotImplemented("Orbital-optimized methods", "Frozen core/virtual", __FILE__, __LINE__);
     }
 
     else if (nfrzv != 0 && orb_opt_ == "FALSE") {
+        mem_release();
         throw FeatureNotImplemented("OCC module standard methods", "Frozen virtual", __FILE__, __LINE__);
     }
 
     else if (nfrzc != 0 && dertype != "NONE") {
+        mem_release();
         throw FeatureNotImplemented("OCC module analytic gradients", "Frozen core/virtual", __FILE__, __LINE__);
     }
 
