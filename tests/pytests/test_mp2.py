@@ -75,7 +75,7 @@ for mp2type in ["df", "conv"]:
             id="user-def scs mp2 (conv)",
         ),
     ],
-)  # yapf: disable
+)
 def test_scsmp2(inp):
     """Formerly known as dfmp2-4"""
 
@@ -150,6 +150,7 @@ def clsd_open_pmols():
     return mols
 
 
+# yapf: disable
 _e1 = (psi4.ValidationError, "please use SCF_TYPE = DF to automatically choose the correct DFJK implementation")
 _e2f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'DFMP2'")
 _e2a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'DF', FREEZE_CORE 'False', and REFERENCE 'UHF' not directable to QC_MODULE 'DFMP2'")
@@ -168,6 +169,10 @@ _e8f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE '
 _e8a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'False', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
 _e9f = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'True', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
 _e9a = (psi4.ManagedMethodError, "Method 'mp2' with MP2_TYPE 'CD', FREEZE_CORE 'False', and REFERENCE 'ROHF' not directable to QC_MODULE 'OCC'")
+_e10 = (psi4.ValidationError, "No analytic derivatives for SCF_TYPE CD.")
+_e11 = (psi4.ValidationError, "gradients need DF-SCF reference.")
+_e12 = (psi4.ValidationError, "gradients need conventional SCF reference.")
+# yapf: enable
 
 _nyi1 = "fc conv mp2 gradients NYI"
 _nyi2 = "rohf mp2 gradients NYI"
@@ -175,51 +180,61 @@ _nyi3 = "cd mp2 gradients NYI"
 _nyi4 = "spin components rhf mp2 energies NYI"
 
 
-@pytest.mark.parametrize(
-    "dertype", [
-        0,
-    ], ids=['ene0'])
+@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
 @pytest.mark.parametrize(
     "inp",
     [
+        # yapf: disable
         ######## Are scf_types managed properly by proc.py?
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",  "scf_type": "pk",     },             }, id="mp2  rhf   pk/df   rr dfmp2",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",  "scf_type": "direct", },             }, id="mp2  rhf drct/df   rr dfmp2",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",  "scf_type": "df",     },             }, id="mp2  rhf   df/df   rr dfmp2",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",  "scf_type": "mem_df", },             }, id="mp2  rhf  mem/df   rr dfmp2",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",  "scf_type": "disk_df",},             }, id="mp2  rhf disk/df   rr dfmp2",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",  "scf_type": "cd",     },             }, id="mp2  rhf   cd/df   rr dfmp2",),
 
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "true",  "scf_type": "pk",     },             }, id="mp2  rhf   pk/df   rr dfocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "true",  "scf_type": "direct", },             }, id="mp2  rhf drct/df   rr dfocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "true",  "scf_type": "df",     },             }, id="mp2  rhf   df/df   rr dfocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "true",  "scf_type": "mem_df", }, "error": _e1}, id="mp2  rhf  mem/df   rr dfocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "true",  "scf_type": "disk_df",},             }, id="mp2  rhf disk/df   rr dfocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "true",  "scf_type": "cd",     },             }, id="mp2  rhf   cd/df   rr dfocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "pk",     },             }, id="mp2  rhf   pk/df   rr dfmp2",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "direct", },             }, id="mp2  rhf drct/df   rr dfmp2",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "df",     },             }, id="mp2  rhf   df/df   rr dfmp2",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "mem_df", },             }, id="mp2  rhf  mem/df   rr dfmp2",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "disk_df",},             }, id="mp2  rhf disk/df   rr dfmp2",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "cd",     },             }, id="mp2  rhf   cd/df   rr dfmp2",),
 
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "pk",     },}, id="mp2  rhf   pk/conv rr occ  ",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "direct", },}, id="mp2  rhf drct/conv rr occ  ",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "df",     },}, id="mp2  rhf   df/conv rr occ  ",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "mem_df", },}, id="mp2  rhf  mem/conv rr occ  ",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "disk_df",},}, id="mp2  rhf disk/conv rr occ  ",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "cd",     },}, id="mp2  rhf   cd/conv rr occ  ",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "pk",     },             }, id="mp2  rhf   pk/df   rr dfocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "direct", },             }, id="mp2  rhf drct/df   rr dfocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     },             }, id="mp2  rhf   df/df   rr dfocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", }, "error": _e1}, id="mp2  rhf  mem/df   rr dfocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",},             }, id="mp2  rhf disk/df   rr dfocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     },             }, id="mp2  rhf   cd/df   rr dfocc",),
 
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "true",  "scf_type": "pk",     },}, id="mp2  rhf   pk/conv rr fnocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "true",  "scf_type": "direct", },}, id="mp2  rhf drct/conv rr fnocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "true",  "scf_type": "df",     },}, id="mp2  rhf   df/conv rr fnocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "true",  "scf_type": "mem_df", },}, id="mp2  rhf  mem/conv rr fnocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "true",  "scf_type": "disk_df",},}, id="mp2  rhf disk/conv rr fnocc",),
-        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "true",  "scf_type": "cd",     },}, id="mp2  rhf   cd/conv rr fnocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "pk",     },             }, id="mp2  rhf   pk/conv rr occ  ",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "direct", },             }, id="mp2  rhf drct/conv rr occ  ",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     },             }, id="mp2  rhf   df/conv rr occ  ",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", },             }, id="mp2  rhf  mem/conv rr occ  ",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",},             }, id="mp2  rhf disk/conv rr occ  ",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     },             }, id="mp2  rhf   cd/conv rr occ  ",),
 
-        # below work fine but have to be careful b/c detci can't do fc, then ae w/o psio error
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "pk",     },}, id="mp2  rhf   pk/conv rr detci",),
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "direct", },}, id="mp2  rhf drct/conv rr detci",),
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "df",     },}, id="mp2  rhf   df/conv rr detci",),
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "mem_df", },}, id="mp2  rhf  mem/conv rr detci",),
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "disk_df",},}, id="mp2  rhf disk/conv rr detci",),
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "cd",     },}, id="mp2  rhf   cd/conv rr detci",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "false",  "scf_type": "pk",     },             }, id="mp2  rhf   pk/conv rr fnocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "false",  "scf_type": "direct", },             }, id="mp2  rhf drct/conv rr fnocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "false",  "scf_type": "df",     },             }, id="mp2  rhf   df/conv rr fnocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "false",  "scf_type": "mem_df", },             }, id="mp2  rhf  mem/conv rr fnocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "false",  "scf_type": "disk_df",},             }, id="mp2  rhf disk/conv rr fnocc",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "fnocc", "freeze_core": "false",  "scf_type": "cd",     },             }, id="mp2  rhf   cd/conv rr fnocc",),
+        # below work fine but have to be careful b/c detci can't do fc, then ae w/o psio error, interfere w/detci lines below
+        # pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "pk",     },}, id="mp2  rhf   pk/conv rr detci",),
+        # pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "direct", },}, id="mp2  rhf drct/conv rr detci",),
+        # pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "df",     },}, id="mp2  rhf   df/conv rr detci",),
+        # pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "mem_df", },}, id="mp2  rhf  mem/conv rr detci",),
+        # pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "disk_df",},}, id="mp2  rhf disk/conv rr detci",),
+        # pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",  "scf_type": "cd",     },}, id="mp2  rhf   cd/conv rr detci",),
+        # yapf: enable
+    ],
+)
+def test_mp2_energy_scftype(inp, dertype, clsd_open_pmols, request):
+    tnm = request.node.name
+    subject = clsd_open_pmols[inp["subject"]]
+    _asserter_mp2(inp, subject, tnm)
 
 
+@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
         ######## Are all possible ways of computing <method> working?
 
         ###### dfmp2
@@ -251,10 +266,10 @@ _nyi4 = "spin components rhf mp2 energies NYI"
         ###### detci
         # * detci must have ae before fc to avoid psio error. cleaning doesn't help
         # * detci rohf mp2 does not match other programs in the stored reference
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "false",                  },}, id="mp2  rhf    conv ae:   detci"),
-        #pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",                   },}, id="mp2  rhf    conv fc:   detci",),
-        #pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",                   },}, id="mp2 rohf    conv fc:   detci",),
-        #pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "detci", "freeze_core": "false",                  },}, id="mp2 rohf    conv ae:   detci",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "false",                  },}, id="mp2  rhf    conv ae:   detci"),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",                   },}, id="mp2  rhf    conv fc:   detci",),
+        pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "detci", "freeze_core": "true",                   },}, id="mp2 rohf    conv fc:   detci", marks=pytest.mark.xfail(reason="detci rohf mp2 diff ans", raises=AssertionError)),
+        pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "conv", "qc_module": "detci", "freeze_core": "false",                  },}, id="mp2 rohf    conv ae:   detci", marks=pytest.mark.xfail(reason="detci rohf mp2 diff ans", raises=AssertionError)),
 
         ###### occ/dfocc
         pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     },}, id="mp2  rhf    conv fc: * occ  ",),
@@ -298,7 +313,20 @@ _nyi4 = "spin components rhf mp2 energies NYI"
         pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false", "scf_type": "pk",  },}, id="mp2  rhf pk/cd   ae: * dfocc",),
         pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false", "scf_type": "pk",  },}, id="mp2  uhf pk/cd   ae: * dfocc",),
         pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false", "scf_type": "pk",  },}, id="mp2 rohf pk/cd   ae: * dfocc",),
+        # yapf: enable
+    ],
+)
+def test_mp2_energy_module(inp, dertype, clsd_open_pmols, request):
+    tnm = request.node.name
+    subject = clsd_open_pmols[inp["subject"]]
+    _asserter_mp2(inp, subject, tnm)
 
+
+@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
         ######## Does the simple interface (default qc_module, scf_type, mp2_type) work?
 
         ###### default qc_module
@@ -330,22 +358,69 @@ _nyi4 = "spin components rhf mp2 energies NYI"
         pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",                                          "freeze_core": "false",                    },}, id="mp2  rhf         ae: dd     ",),
         pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "uhf",                                          "freeze_core": "false",                    },}, id="mp2  uhf         ae: dd     ",),
         pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf",                                         "freeze_core": "false",                    },}, id="mp2 rohf         ae: dd     ",),
+        # yapf: enable
     ],
-)  # yapf: disable
-def test_mp2_module_energy(inp, dertype, clsd_open_pmols, request):
+)
+def test_mp2_energy_default(inp, dertype, clsd_open_pmols, request):
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
     _asserter_mp2(inp, subject, tnm)
 
 
-@pytest.mark.parametrize(
-    "dertype", [
-        1,
-        pytest.param(0, marks=pytest.mark.long),
-    ], ids=['grd1', 'grd0'])
+@pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
 @pytest.mark.parametrize(
     "inp",
     [
+        # yapf: disable
+        ######## Are scf_types managed properly by proc.py?
+        # * test ae and sole fc that differs
+
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "pk",     }, "error": {1: _e11},       }, id="mp2  rhf   pk/df   rr dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "direct", }, "error": {1: _e11},       }, id="mp2  rhf drct/df   rr dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "df",     },                           }, id="mp2  rhf   df/df   rr dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "mem_df", },                           }, id="mp2  rhf  mem/df   rr dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "disk_df",},                           }, id="mp2  rhf disk/df   rr dfmp2",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",  "scf_type": "cd",     }, "error": {1: _e10},       }, id="mp2  rhf   cd/df   rr dfmp2",),
+
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "pk",     }, "error": {1: _e11},       }, id="mp2  rhf   pk/df   rr dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "direct", }, "error": {1: _e11},       }, id="mp2  rhf drct/df   rr dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     },                           }, id="mp2  rhf   df/df   rr dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", }, "error": {1: _e1, 0: _e1},}, id="mp2  rhf  mem/df   rr dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",},                           }, id="mp2  rhf disk/df   rr dfocc",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     }, "error": {1: _e10},       }, id="mp2  rhf   cd/df   rr dfocc",),
+
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "pk",      }, "error": {1: _e5f},       }, id="mp2 rhf fc pk/conv rr occ  ",),
+        ##
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "pk",     },                           }, id="mp2  rhf   pk/conv rr occ  ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "direct", },                           }, id="mp2  rhf drct/conv rr occ  ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     }, "error": {1: _e12},       }, id="mp2  rhf   df/conv rr occ  ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", }, "error": {1: _e12},       }, id="mp2  rhf  mem/conv rr occ  ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",}, "error": {1: _e12},       }, id="mp2  rhf disk/conv rr occ  ",),
+        pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     }, "error": {1: _e10},       }, id="mp2  rhf   cd/conv rr occ  ",),
+        # yapf: enable
+    ],
+)
+def test_mp2_gradient_scftype(inp, dertype, clsd_open_pmols, request):
+    tnm = request.node.name
+    subject = clsd_open_pmols[inp["subject"]]
+
+    inpcopy = {k: v for k, v in inp.items() if k is not "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        pytest.xfail(inp["marks"][dertype])
+
+    _asserter_mp2(inpcopy, subject, tnm, dertype=dertype)
+
+
+@pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+        # * no mixed-type gradients available (like pk+df) so no grad tests
+
         ###### dfmp2
         pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   },                    }, id="mp2  rhf    df   fc: * dfmp2",),
         pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   }, "error": {1: _e2f},}, id="mp2  uhf    df   fc: * dfmp2",),
@@ -375,7 +450,27 @@ def test_mp2_module_energy(inp, dertype, clsd_open_pmols, request):
         pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e7a},}, id="mp2  rhf    cd   ae: * dfocc",),
         pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e8a},}, id="mp2  uhf    cd   ae: * dfocc",),
         pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _e9a},}, id="mp2 rohf    cd   ae: * dfocc",),
+        # yapf: enable
+    ],
+)
+def test_mp2_gradient_module(inp, dertype, clsd_open_pmols, request):
+    tnm = request.node.name
+    subject = clsd_open_pmols[inp["subject"]]
 
+    inpcopy = {k: v for k, v in inp.items() if k is not "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        pytest.xfail(inp["marks"][dertype])
+
+    _asserter_mp2(inpcopy, subject, tnm, dertype=dertype)
+
+
+@pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
         ######## Does the simple interface (default qc_module, scf_type, mp2_type) work? Here we xfail the NYI rather than catch graceful exit.
 
         ###### default qc_module
@@ -407,22 +502,20 @@ def test_mp2_module_energy(inp, dertype, clsd_open_pmols, request):
         pytest.param({"driver": "gradient", "subject": "hf",   "options": {"reference": "rhf",                                          "freeze_core": "false",                    },                               }, id="mp2  rhf         ae: dd     ",),
         pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "uhf",                                          "freeze_core": "false",                    },                               }, id="mp2  uhf         ae: dd     ",),
         pytest.param({"driver": "gradient", "subject": "bh3p", "options": {"reference": "rohf",                                         "freeze_core": "false",                    }, "marks": {1: _nyi2},          }, id="mp2 rohf         ae: dd     ",),
+        # yapf: enable
     ],
-)  # yapf: disable
-def test_mp2_module_gradient(inp, dertype, clsd_open_pmols, request):
+)
+def test_mp2_gradient_default(inp, dertype, clsd_open_pmols, request):
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
-    if "error" in inp:
-        if dertype in inp["error"]:
-            err = inp["error"][dertype]
-            inp["error"] = err
-        else:
-            # remove e.g. grd1 errors from grd0
-            inp.pop("error")
+
+    inpcopy = {k: v for k, v in inp.items() if k is not "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
     if inp.get("marks", False) and inp["marks"].get(dertype, False):
         pytest.xfail(inp["marks"][dertype])
 
-    _asserter_mp2(inp, subject, tnm, dertype=dertype)
+    _asserter_mp2(inpcopy, subject, tnm, dertype=dertype)
 
 
 def _asserter_mp2(inp, subject, tnm, *, dertype=None):
@@ -447,8 +540,6 @@ def _asserter_mp2(inp, subject, tnm, *, dertype=None):
         reference=inp["options"]["reference"],
         mp2_type=mp2_type,
     )
-    print("BLOCK", chash, inp["options"].get("scf_type"), scf_type)
-    ref_block = std_suite[chash]
 
     # check all calcs against conventional reference to looser tolerance
     atol_conv = 1.0e-4
@@ -469,10 +560,10 @@ def _asserter_mp2(inp, subject, tnm, *, dertype=None):
         {
             "basis": basis,
             "guess": "sad",
-            #'e_convergence': 8,
-            #'d_convergence': 7,
-            "e_convergence": 10,
-            "d_convergence": 9,
+            "e_convergence": 8,
+            "d_convergence": 7,
+            # "e_convergence": 10,
+            # "d_convergence": 9,
             "points": 5,
         }
     )
@@ -490,14 +581,17 @@ def _asserter_mp2(inp, subject, tnm, *, dertype=None):
     ret, wfn = driver_call[inp["driver"]]("mp2", molecule=subject, return_wfn=True, **extra_kwargs)
 
     # qcvars
+    print("BLOCK", chash, inp["options"].get("scf_type"), scf_type)
+    ref_block = std_suite[chash]
+
     contractual_qcvars = [
-            "HF TOTAL ENERGY",
-            "MP2 CORRELATION ENERGY",
-            "MP2 TOTAL ENERGY",
-            "MP2 SINGLES ENERGY",
-            "MP2 SAME-SPIN CORRELATION ENERGY",
-            "MP2 OPPOSITE-SPIN CORRELATION ENERGY",
-            "MP2 DOUBLES ENERGY",
+        "HF TOTAL ENERGY",
+        "MP2 CORRELATION ENERGY",
+        "MP2 TOTAL ENERGY",
+        "MP2 SINGLES ENERGY",
+        "MP2 SAME-SPIN CORRELATION ENERGY",
+        "MP2 OPPOSITE-SPIN CORRELATION ENERGY",
+        "MP2 DOUBLES ENERGY",
     ]
     if inp["driver"] == "gradient":
         contractual_qcvars.append("MP2 TOTAL GRADIENT")
@@ -506,8 +600,19 @@ def _asserter_mp2(inp, subject, tnm, *, dertype=None):
         for pv in contractual_qcvars:
             # known contract violators
             if (
-                (qc_module == "detci" and pv in ["MP2 SINGLES ENERGY", "MP2 SAME-SPIN CORRELATION ENERGY", "MP2 OPPOSITE-SPIN CORRELATION ENERGY"]) or
-                (qc_module == "occ" and inp["options"]["reference"] == "rhf" and inp["options"]["mp2_type"] in ["df", "cd"] and pv in ["MP2 SAME-SPIN CORRELATION ENERGY", "MP2 OPPOSITE-SPIN CORRELATION ENERGY"])
+                qc_module == "detci"
+                and pv
+                in [
+                    "MP2 SINGLES ENERGY",
+                    "MP2 DOUBLES ENERGY",
+                    "MP2 SAME-SPIN CORRELATION ENERGY",
+                    "MP2 OPPOSITE-SPIN CORRELATION ENERGY",
+                ]
+            ) or (
+                qc_module == "occ"
+                and inp["options"]["reference"] == "rhf"
+                and inp["options"]["mp2_type"] in ["df", "cd"]
+                and pv in ["MP2 SAME-SPIN CORRELATION ENERGY", "MP2 OPPOSITE-SPIN CORRELATION ENERGY"]
             ):
                 continue
             assert compare_values(ref_block[pv], obj.variable(pv), tnm + " " + pv, atol=atol)

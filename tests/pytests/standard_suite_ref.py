@@ -250,6 +250,9 @@ _std_suite = [
             "MP2 SINGLES ENERGY": 0.0,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.05352569481658172,
             "MP2 CORRELATION ENERGY": -0.20162566806258586,
+            "MP2 TOTAL GRADIENT": np.array(
+                [0.0, 0.0, 0.00315485, 0.0, 0.0, -0.00315485]  # dfmp2 findif-5 fc pk+df
+            ).reshape((-1, 3)),
         },
     },
     {
@@ -441,6 +444,9 @@ _std_suite = [
             "MP2 SINGLES ENERGY": 0.0,
             "MP2 CORRELATION ENERGY": -0.20377997248921056,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.05431321036920538,
+            "MP2 TOTAL GRADIENT": np.array(
+                [0.0, 0.0, 0.0027998, 0.0, 0.0, -0.0027998]  # dfmp2 findif-5 ae pk+df
+            ).reshape((-1, 3)),
         },
     },
     {
@@ -605,6 +611,10 @@ _std_suite = [
             "MP2 CORRELATION ENERGY": -0.2016205147678,
             "MP2 SINGLES ENERGY": 0.0,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.0535243575,
+            "MP2 TOTAL GRADIENT": np.array(
+                # dfmp2 findif-5 fc cd+df
+                [0.0, 0.0, 0.00314686, 0.0, 0.0, -0.00314686]
+            ).reshape((-1, 3)),
         },
     },
     {
@@ -740,6 +750,10 @@ _std_suite = [
             "MP2 CORRELATION ENERGY": -0.2037748110768,
             "MP2 SINGLES ENERGY": 0.0,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.054311870576,
+            "MP2 TOTAL GRADIENT": np.array(
+                # dfmp2 findif-5 ae cd+df
+                [0.0, 0.0, 0.00279182, 0.0, 0.0, -0.00279182]
+            ).reshape((-1, 3)),
         },
     },
     {
@@ -863,6 +877,9 @@ _std_suite = [
             #            "MP2 TOTAL ENERGY": -100.221013122857,
             "MP2 SINGLES ENERGY": 0.0,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.05348507322421174,
+            "MP2 TOTAL GRADIENT": np.array(
+                [0.0, 0.0, 0.00316682, 0.0, 0.0, -0.00316682]  # occ findif-5 fc df+conv
+            ).reshape((-1, 3)),
         },
     },
     {
@@ -879,6 +896,9 @@ _std_suite = [
             "MP2 CORRELATION ENERGY": -0.20162236483,
             "MP2 SINGLES ENERGY": 0.0,
             "MP2 SAME-SPIN CORRELATION ENERGY": -0.053488165399,
+            "MP2 TOTAL GRADIENT": np.array(
+                [0.0, 0.0, 0.00316652, 0.0, 0.0, -0.00316652]  # occ findif-5 fc cd+conv
+            ).reshape((-1, 3)),
         },
     },
     # {
@@ -966,22 +986,44 @@ _std_suite = [
     #            "MP2 SAME-SPIN CORRELATION ENERGY": -1.3,
     #        },
     #    },
-    #    {
-    #        "meta": {
-    #            "system": "hf",
-    #            "basis": "cc-pvdz",
-    #            "scf_type": "df",
-    #            "reference": "rhf",
-    #            "fc": "ae",
-    #            "mp2_type": "conv",
-    #        },
-    #        "data": {
-    #            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
-    #            "MP2 CORRELATION ENERGY": -0.2037668844651997,
-    #            "MP2 SINGLES ENERGY": 0.0,
-    #            "MP2 SAME-SPIN CORRELATION ENERGY": -0.05427252944164894,
-    #        },
-    #    },
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "df",
+            "reference": "rhf",
+            "fc": "ae",
+            "mp2_type": "conv",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_hf_dz_df_rhf,
+            "MP2 CORRELATION ENERGY": -0.2037668844651997,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.05427252944164894,
+            "MP2 TOTAL GRADIENT": np.array(
+                [0.0, 0.0, 0.00281165, 0.0, 0.0, -0.00281165]  # occ findif-5 ae df+conv
+            ).reshape((-1, 3)),
+        },
+    },
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "cd",
+            "reference": "rhf",
+            "fc": "ae",
+            "mp2_type": "conv",
+        },
+        "data": {
+            "HF TOTAL ENERGY": _scf_hf_dz_cd_rhf,
+            "MP2 CORRELATION ENERGY": -0.2037767503537,
+            "MP2 SINGLES ENERGY": 0.0,
+            "MP2 SAME-SPIN CORRELATION ENERGY": -0.05427563053,
+            "MP2 TOTAL GRADIENT": np.array(
+                [0.0, 0.0, 0.00281136, 0.0, 0.0, -0.00281136]  # occ findif-5 ae cd+conv
+            ).reshape((-1, 3)),
+        },
+    },
     #    {
     #        "meta": {
     #            "system": "hf",

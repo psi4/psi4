@@ -1794,6 +1794,9 @@ def run_dfocc_gradient(name, **kwargs):
 
     proc_util.check_disk_df(name.upper(), optstash)
 
+    if core.get_global_option('SCF_TYPE') != 'DISK_DF':
+        raise ValidationError('DFOCC gradients need DF-SCF reference.')
+
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
     elif name in ['mp2.5', 'omp2.5']:
@@ -2130,6 +2133,9 @@ def run_occ_gradient(name, **kwargs):
         ['OCC', 'DO_SCS'],
         ['OCC', 'DO_SOS'],
         ['GLOBALS', 'DERTYPE'])
+
+    if core.get_global_option('SCF_TYPE') in ['CD', 'DF', 'MEM_DF', 'DISK_DF']:
+        raise ValidationError('OCC gradients need conventional SCF reference.')
 
     if name == 'mp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
