@@ -2684,10 +2684,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
 
 /* 1st derivatives of electric dipole integrals in the AO basis */
 std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
-    std::vector<std::string> cartcomp;
-    cartcomp.push_back("X");
-    cartcomp.push_back("Y");
-    cartcomp.push_back("Z");
+    std::vector<std::string> cartcomp{ "X", "Y", "Z" };
 
     std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
 

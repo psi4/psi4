@@ -42,4 +42,4 @@ def test_export_ao_elec_dip_deriv():
 
     PSI4_MU_Grad = mints.dipole_grad(D)
     G_python_MU_mat = psi4.core.Matrix.from_array(MU_Gradient)
-    psi4.compare_matrices(PSI4_MU_Grad, G_python_MU_mat, 10, "DIPOLE_GRADIENT_TEST")  # TEST
+    assert psi4.compare_matrices(PSI4_MU_Grad, G_python_MU_mat, 10, "DIPOLE_GRADIENT_TEST")  # TEST
