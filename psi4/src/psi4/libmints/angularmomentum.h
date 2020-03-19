@@ -55,7 +55,7 @@ class AngularMomentumInt : public OneBodyAOInt {
     //! Computes the dipole between two gaussian shells.
     void compute_pair(const GaussianShell&, const GaussianShell&) override;
     //! Computes the dipole derivative between two gaussian shells.
-    //    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
+        void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
