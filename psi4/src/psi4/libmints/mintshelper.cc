@@ -3286,10 +3286,7 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1(int atom) {
 }
 
 std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix C1, SharedMatrix C2) {
-    std::vector<std::string> cartcomp;
-    cartcomp.push_back("X");
-    cartcomp.push_back("Y");
-    cartcomp.push_back("Z");
+    std::vector<std::string> cartcomp{ "X", "Y", "Z" };
 
     std::vector<SharedMatrix> ao_grad = ao_elec_dip_deriv1(atom);
 
