@@ -123,6 +123,10 @@ def select_mp2(name, **kwargs):
             if module in ['', 'DFMP2']:
                 func = run_dfmp2
 
+    if module == 'DETCI':
+        core.print_out("""\nDETCI is ill-advised for method MP2 as it is available inefficiently as a """
+                       """byproduct of a CISD computation.\n  DETCI ROHF MP2 will produce non-standard results.\n""")
+
     if func is None:
         raise ManagedMethodError(['select_mp2', name, 'MP2_TYPE', mtd_type, reference, module])
 
