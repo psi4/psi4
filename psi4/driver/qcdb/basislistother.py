@@ -39,9 +39,11 @@ def load_basfam_other():
 
     # Pople
     basis_sto3g = BasisFamily('STO-3G', zeta=1)
+    basis_sto6g = BasisFamily('STO-6G', zeta=1)
     basis_321g = BasisFamily('3-21G', zeta=1)
 
     basisfamily_list.append(basis_sto3g)
+    basisfamily_list.append(basis_sto6g)
     basisfamily_list.append(basis_321g)
 
     basis_631g = BasisFamily('6-31G', zeta=2)
@@ -426,6 +428,8 @@ def load_basfam_other():
 
     basis_sto3g.add_jkfit('def2-universal-JKFIT')
     basis_sto3g.add_rifit('def2-SVP-RIFIT')
+    basis_sto6g.add_jkfit('def2-universal-JKFIT')
+    basis_sto6g.add_rifit('def2-SVP-RIFIT')
     # sto3g too small for add_guess
     basis_321g.add_jkfit('def2-universal-JKFIT')
     basis_321g.add_rifit('def2-SVP-RIFIT')
