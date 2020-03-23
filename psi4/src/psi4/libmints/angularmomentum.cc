@@ -399,7 +399,7 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                                 // (a|Lx|b-1_z)
                                 //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(j,l) = (y,x) = 0
                             }
-                            buffer_[ao12+xaxdisp] += -1.0 * m2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+                            buffer_[ao12+xaxdisp] += -1.0 * n2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
                             
                             v1 = v2 = v3 = v4 = v5 = 0.0;
                             // (a+1_z+1_x|Lx|b+1_y)
@@ -431,13 +431,76 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                                 // (a|Lx|b-1_y)
                                 //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,x) = 0
                             }
-                            buffer_[ao12+xaxdisp] += -1.0 * l2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+                            buffer_[ao12+xaxdisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
 
                             //
                             // Ay derivatives with Lx
                             //
 
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            // (a+1_y+1_y|Lx|b+1_z)
+                            v1 = x[l1][l2] * y[m1+2][m2] * z[n1][n2+1];
+                            // (a+1_y|Lx|b+1_z)
+                            v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2+1];
+                            // (a+1_y-1_y|Lx|b+1_z)
+                            v3 = x[l1][l2] * y[m1][m2] * z[n1][n2+1];
+                            if (m1) {
+                                // (a-1_y|Lx|b+1_z)
+                                v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2+1];
+                            }
+                            // (a|Lx|b+1_z)
+                            v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(j,l) = (y,y) = 1
+                            buffer_[ao12+xaydisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
 
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            if (n2) {
+                                // (a+1_y+1_y|Lx|b-1_z)
+                                v1 = x[l1][l2] * y[m1+2][m2] * z[n1][n2-1];
+                                // (a+1_y|Lx|b-1_z)
+                                v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2-1];
+                                // (a+1_y-1_y|Lx|b-1_z)
+                                v3 = x[l1][l2] * y[m1][m2] * z[n1][n2-1];
+                                if (m1) {
+                                    // (a-1_y|Lx|b-1_z)
+                                    v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2-1];
+                                }
+                                // (a|Lx|b-1_z)
+                                v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(j,l) = (y,y) = 1
+                            }
+                            buffer_[ao12+xaydisp] += -1.0 * n2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            // (a+1_z+1_y|Lx|b+1_y)
+                            v1 = x[l1][l2] * y[m1+1][m2+1] * z[n1+1][n2];
+                            // (a+1_y|Lx|b+1_y)
+                            v2 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2];
+                            if (m1) {
+                                // (a+1_z-1_y|Lx|b+1_y)
+                                v3 = x[l1][l2] * y[m1-1][m2+1] * z[n1+1][n2];
+                                // (a-1_y|Lx|b+1_y)
+                                v4 = x[l1][l2] * y[m1-1][m2+1] * z[n1][n2];
+                            }
+                            // (a|Lx|b+1_y)
+                            //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,y) = 0
+                            buffer_[ao12+xaydisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            if (m2) {
+                                // (a+1_z+1_y|Lx|b-1_y)
+                                v1 = x[l1][l2] * y[m1+1][m2-1] * z[n1+1][n2];
+                                // (a+1_y|Lx|b-1_y)
+                                v2 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2];
+                                if (m1) {
+                                    // (a+1_z-1_y|Lx|b-1_y)
+                                    v3 = x[l1][l2] * y[m1-1][m2-1] * z[n1+1][n2];
+                                    // (a-1_y|Lx|b-1_y)
+                                    v4 = x[l1][l2] * y[m1-1][m2-1] * z[n1][n2];
+                                }
+                                // (a|Lx|b-1_y)
+                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,y) = 0
+                            }
+                            buffer_[ao12+xaydisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+                            
 
 
 
