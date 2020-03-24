@@ -94,8 +94,7 @@ void MemDFJK::compute_JK() {
     if (lr_symmetric_) {
         if (do_wK_) {
             for (size_t N = 0; N < wK_ao_.size(); N++) {
-                if (do_wK_) { wK_ao_[N]->hermitivitize();}
-                if (do_K_) { K_ao_[N]->hermitivitize();}
+                 wK_ao_[N]->hermitivitize();
             }
         }
     }
