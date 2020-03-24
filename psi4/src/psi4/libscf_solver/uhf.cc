@@ -170,6 +170,7 @@ void UHF::form_V() {
     // Vb_ = Va_;
 }
 void UHF::form_G() {
+
     if (functional_->needs_xc()) {
         form_V();
         Ga_->copy(Va_);
@@ -184,10 +185,8 @@ void UHF::form_G() {
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-
     // Run the JK object
     jk_->compute();
-
     // Pull the J and K matrices off
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
@@ -204,21 +203,25 @@ void UHF::form_G() {
     }
     Ga_->add(J_);
     Gb_->add(J_);
-
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-    if (alpha != 0.0) {
+    if (alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK")){
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
         Ka_->zero();
         Kb_->zero();
     }
-
     if (functional_->is_x_lrc()) {
-        Ga_->axpy(-beta, wKa_);
-        Gb_->axpy(-beta, wKb_);
+        if (jk_->name() == "MemDFJK") {
+            Ga_->axpy(-1.0, wKa_);
+            Gb_->axpy(-1.0, wKb_);
+        }
+        else {
+            Ga_->axpy(-beta, wKa_);
+            Gb_->axpy(-beta, wKb_);
+        }
     } else {
         wKa_->zero();
         wKb_->zero();

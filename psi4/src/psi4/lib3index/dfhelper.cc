@@ -141,7 +141,6 @@ void DFHelper::initialize() {
     if (debug_) {
         outfile->Printf("Entering DFHelper::initialize\n");
     }
-
     timer_on("DFH: initialize()");
 
     // have the algorithm specified before init
@@ -2963,7 +2962,7 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
 
     if (do_wK_) {
         timer_on("DFH: compute_wK()");
-        compute_wK(Cleft, Cright, K, max_nocc, do_J, do_K, do_wK);
+        compute_wK(Cleft, Cright, wK, max_nocc, do_J, do_K, do_wK);
         timer_off("DFH: compute_wK()");
     }
 
