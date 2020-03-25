@@ -366,13 +366,11 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             int m2 = kk - ll;
                             int n2 = ll;
 
-                            // Lx derivatives
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-
                             //
                             // Ax derivatives with Lx
                             //
 
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
                             // (a+1_y+1_x|Lx|b+1_z)
                             v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2+1];
                             // (a+1_x|Lx|b+1_z)
@@ -571,6 +569,66 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                                 v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,z) = 1
                             }
                             buffer_[ao12+xazdisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - n1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+
+                            //
+                            // Bx derivatives with Lx
+                            //
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            // (a+1_y|Lx|b+1_z+1_x)
+                            v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2+1];
+                            // (a|Lx|b+1_z+1_x)
+                            v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
+                            if (l2) {
+                                // (a+1_y|Lx|b+1_z-1_x)
+                                v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2+1];
+                                // (a|Lx|b+1_z-1_x)
+                                v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
+                            }
+                            buffer_[ao12+xbxdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            if (n2) {
+                                // (a+1_y|Lx|b-1_z+1_x)
+                                v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
+                                // (a|Lx|b+1_z-1_x)
+                                v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
+                                if (l2) {
+                                    // (a+1_y|Lx|b-1_z-1_x)
+                                    v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2-1];
+                                    // (a|Lx|b-1_z-1_x)
+                                    v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
+                                }
+                            }
+                            buffer_[ao12+xbxdisp] += -1.0 * n2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            // (a+1_z|Lx|b+1_y+1_x)
+                            v1 = x[l1][l2+1] * y[m1][m2+1] * z[n1+1][n2];
+                            // (a|Lx|b+1_y+1_x)
+                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
+                            if (l2) {
+                                // (a+1_z|Lx|b+1_y-1_x)
+                                v3 = x[l1][l2-1] * y[m1][m2+1] * z[n1+1][n2];
+                                // (a|Lx|b+1_y-1_x)
+                                v4 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
+                            }
+                            buffer_[ao12+xbxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            if (m2) {
+                                // (a+1_z|Lx|b-1_y+1_x)
+                                v1 = x[l1][l2+1] * y[m1][m2-1] * z[n1+1][n2];
+                                // (a|Lx|b-1_y+1_x)
+                                v2 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
+                                if (l2) {
+                                    // (a+1_z|Lx|b-1_y-1_x)
+                                    v3 = x[l1][l2-1] * y[m1][m2-1] * z[n1+1][n2];
+                                    // (a|Lx|b-1_y-1_x)
+                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
+                                }
+                            }
+                            buffer_[ao12+xbxdisp] += 1.0 * m2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
 
                             //
                             // Ax derivatives with Ly
