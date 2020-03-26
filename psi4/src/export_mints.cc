@@ -1085,7 +1085,13 @@ void export_mints(py::module& m) {
         .def("ao_elec_dip_deriv1", &MintsHelper::ao_elec_dip_deriv1,
              "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a)
         .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
-             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
+             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a)
+
+        // First derivatives of magnetic dipole integrals in AO and MO basis.
+        .def("ao_mag_dip_deriv1", &MintsHelper::ao_mag_dip_deriv1,
+             "Gradient of AO basis magnetic dipole integrals: returns (3 * natoms) matrices")
+        .def("mo_mag_dip_deriv1", &MintsHelper::mo_mag_dip_deriv1,
+             "Gradient of MO basis magnetic dipole integrals: returns (3 * natoms) matrices");
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "

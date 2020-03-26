@@ -1357,7 +1357,7 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             // (a|Lz|b+1_x+1_x)
                             v2 = x[l1][l2+2] * y[m1][m2] * z[n1][n2];
                             // (a+1_y|Lz|b+1_x-1_x)
-                            v3 = x[l1+][l2] * y[m1+1][m2] * z[n1][n2];
+                            v3 = x[l1][l2] * y[m1+1][m2] * z[n1][n2];
                             // (a|Lz|b+1_x-1_x)
                             v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
                             buffer_[ao12+zbxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
@@ -1410,7 +1410,7 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
                             if (m2) {
                                 // (a+1_y|Lz|b+1_x-1_y)
-                                v3 = x[l1+][l2+1] * y[m1+1][m2-1] * z[n1][n2];
+                                v3 = x[l1][l2+1] * y[m1+1][m2-1] * z[n1][n2];
                                 // (a|Lz|b+1_x-1_y)
                                 v4 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
                             }
@@ -1470,7 +1470,7 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
                             if (n2) {
                                 // (a+1_y|Lz|b+1_x-1_z)
-                                v3 = x[l1+][l2+1] * y[m1+1][m2] * z[n1][n2-1];
+                                v3 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
                                 // (a|Lz|b+1_x-1_z)
                                 v4 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
                             }
