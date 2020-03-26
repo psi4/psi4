@@ -192,7 +192,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
     int nprim1 = s1.nprimitive();
     int nprim2 = s2.nprimitive();
     size_t length = INT_NCART(am1) * INT_NCART(am2);
-    double A[3], B[3];
+    double A[3], B[3], C[3];
 
     A[0] = s1.center()[0];
     A[1] = s1.center()[1];
@@ -200,6 +200,9 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
     B[0] = s2.center()[0];
     B[1] = s2.center()[1];
     B[2] = s2.center()[2];
+    C[0] = origin_[0];
+    C[1] = origin_[1];
+    C[2] = origin_[2];
 
     size_t xaxdisp = 0;
     size_t xaydisp = 1 * length;
@@ -291,7 +294,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_x|mx|b)
                                 v4 = x[l1 - 1][l2] * y[m1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + xaxdisp] -= (2.0 * a1 * (v1 + B[0] * v2) - l1 * (v3 + B[0] * v4)) * over_pf;
+                            buffer_[ao12 + xaxdisp] -= (2.0 * a1 * (v1 + (B[0] - C[0]) * v2) - l1 * (v3 + (B[0] - C[0]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_y|mx|b+1_x)
@@ -304,7 +307,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_y|mx|b)
                                 v4 = x[l1][l2] * y[m1 - 1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + xaydisp] -= (2.0 * a1 * (v1 + B[0] * v2) - m1 * (v3 + B[0] * v4)) * over_pf;
+                            buffer_[ao12 + xaydisp] -= (2.0 * a1 * (v1 + (B[0] - C[0]) * v2) - m1 * (v3 + (B[0] - C[0]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_z|mx|b+1_x)
@@ -317,7 +320,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_z|mx|b)
                                 v4 = x[l1][l2] * y[m1][m2] * z[n1 - 1][n2];
                             }
-                            buffer_[ao12 + xazdisp] -= (2.0 * a1 * (v1 + B[0] * v2) - n1 * (v3 + B[0] * v4)) * over_pf;
+                            buffer_[ao12 + xazdisp] -= (2.0 * a1 * (v1 + (B[0] - C[0]) * v2) - n1 * (v3 + (B[0] - C[0]) * v4)) * over_pf;
 
                             //
                             // B derivatives with mu-x
@@ -334,7 +337,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|mx|b-1_x)
                                 v4 = x[l1][l2 - 1] * y[m1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + xbxdisp] -= (2.0 * a2 * (v1 + A[0] * v2) - l2 * (v3 + A[0] * v4)) * over_pf;
+                            buffer_[ao12 + xbxdisp] -= (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_x|mx|b+1_y)
@@ -347,7 +350,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|mx|b-1_y)
                                 v4 = x[l1][l2] * y[m1][m2 - 1] * z[n1][n2];
                             }
-                            buffer_[ao12 + xbydisp] -= (2.0 * a2 * (v1 + A[0] * v2) - m2 * (v3 + A[0] * v4)) * over_pf;
+                            buffer_[ao12 + xbydisp] -= (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_x|mx|b+1_z)
@@ -360,7 +363,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|mx|b-1_z)
                                 v4 = x[l1][l2] * y[m1][m2] * z[n1][n2 - 1];
                             }
-                            buffer_[ao12 + xbzdisp] -= (2.0 * a2 * (v1 + A[0] * v2) - n2 * (v3 + A[0] * v4)) * over_pf;
+                            buffer_[ao12 + xbzdisp] -= (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
                             //
                             // A derivatives with mu-y
@@ -377,7 +380,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_x|my|b)
                                 v4 = x[l1 - 1][l2] * y[m1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + yaxdisp] -= (2.0 * a1 * (v1 + B[1] * v2) - l1 * (v3 + B[1] * v4)) * over_pf;
+                            buffer_[ao12 + yaxdisp] -= (2.0 * a1 * (v1 + (B[1] - C[1]) * v2) - l1 * (v3 + (B[1] - C[1]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_y|my|b+1_y)
@@ -390,7 +393,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_y|my|b)
                                 v4 = x[l1][l2] * y[m1 - 1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + yaydisp] -= (2.0 * a1 * (v1 + B[1] * v2) - m1 * (v3 + B[1] * v4)) * over_pf;
+                            buffer_[ao12 + yaydisp] -= (2.0 * a1 * (v1 + (B[1] - C[1]) * v2) - m1 * (v3 + (B[1] - C[1]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_z|my|b+1_y)
@@ -403,7 +406,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_z|my|b)
                                 v4 = x[l1][l2] * y[m1][m2] * z[n1 - 1][n2];
                             }
-                            buffer_[ao12 + yazdisp] -= (2.0 * a1 * (v1 + B[1] * v2) - n1 * (v3 + B[1] * v4)) * over_pf;
+                            buffer_[ao12 + yazdisp] -= (2.0 * a1 * (v1 + (B[1] - C[1]) * v2) - n1 * (v3 + (B[1] - C[1]) * v4)) * over_pf;
 
                             //
                             // B derivatives with mu-y
@@ -420,7 +423,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|my|b-1_x)
                                 v4 = x[l1][l2 - 1] * y[m1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + ybxdisp] -= (2.0 * a2 * (v1 + A[1] * v2) - l2 * (v3 + A[1] * v4)) * over_pf;
+                            buffer_[ao12 + ybxdisp] -= (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_y|my|b+1_y)
@@ -433,7 +436,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|my|b-1_y)
                                 v4 = x[l1][l2] * y[m1][m2 - 1] * z[n1][n2];
                             }
-                            buffer_[ao12 + ybydisp] -= (2.0 * a2 * (v1 + A[1] * v2) - m2 * (v3 + A[1] * v4)) * over_pf;
+                            buffer_[ao12 + ybydisp] -= (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_y|my|b+1_z)
@@ -446,7 +449,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|my|b-1_z)
                                 v4 = x[l1][l2] * y[m1][m2] * z[n1][n2 - 1];
                             }
-                            buffer_[ao12 + ybzdisp] -= (2.0 * a2 * (v1 + A[1] * v2) - n2 * (v3 + A[1] * v4)) * over_pf;
+                            buffer_[ao12 + ybzdisp] -= (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - n2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
 
                             //
                             // A derivatives with mu-z
@@ -463,7 +466,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_x|mz|b)
                                 v4 = x[l1 - 1][l2] * y[m1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + zaxdisp] -= (2.0 * a1 * (v1 + B[2] * v2) - l1 * (v3 + B[2] * v4)) * over_pf;
+                            buffer_[ao12 + zaxdisp] -= (2.0 * a1 * (v1 + (B[2] - C[2]) * v2) - l1 * (v3 + (B[2] - C[2]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_y|mz|b+1_z)
@@ -476,7 +479,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_y|mz|b)
                                 v4 = x[l1][l2] * y[m1 - 1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + zaydisp] -= (2.0 * a1 * (v1 + B[2] * v2) - m1 * (v3 + B[2] * v4)) * over_pf;
+                            buffer_[ao12 + zaydisp] -= (2.0 * a1 * (v1 + (B[2] - C[2]) * v2) - m1 * (v3 + (B[2] - C[2]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_z|mz|b+1_z)
@@ -489,7 +492,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a-1_z|mz|b)
                                 v4 = x[l1][l2] * y[m1][m2] * z[n1 - 1][n2];
                             }
-                            buffer_[ao12 + zazdisp] -= (2.0 * a1 * (v1 + B[2] * v2) - n1 * (v3 + B[2] * v4)) * over_pf;
+                            buffer_[ao12 + zazdisp] -= (2.0 * a1 * (v1 + (B[2] - C[2]) * v2) - n1 * (v3 + (B[2] - C[2]) * v4)) * over_pf;
 
                             //
                             // B derivates with mu-z
@@ -506,7 +509,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|mz|b-1_x)
                                 v4 = x[l1][l2 - 1] * y[m1][m2] * z[n1][n2];
                             }
-                            buffer_[ao12 + zbxdisp] -= (2.0 * a2 * (v1 + A[2] * v2) - l2 * (v3 + A[2] * v4)) * over_pf;
+                            buffer_[ao12 + zbxdisp] -= (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_z|mz|b+1_y)
@@ -519,7 +522,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|mz|b-1_y)
                                 v4 = x[l1][l2] * y[m1][m2 - 1] * z[n1][n2];
                             }
-                            buffer_[ao12 + zbydisp] -= (2.0 * a2 * (v1 + A[2] * v2) - m2 * (v3 + A[2] * v4)) * over_pf;
+                            buffer_[ao12 + zbydisp] -= (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
 
                             v1 = v2 = v3 = v4 = 0.0;
                             // (a+1_z|mz|b+1_z)
@@ -532,7 +535,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
                                 // (a|mz|b-1_z)
                                 v4 = x[l1][l2] * y[m1][m2] * z[n1][n2 - 1];
                             }
-                            buffer_[ao12 + zbzdisp] -= (2.0 * a2 * (v1 + A[2] * v2) - n2 * (v3 + A[2] * v4)) * over_pf;
+                            buffer_[ao12 + zbzdisp] -= (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - n2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
 
                             ao12++;
                         }
