@@ -886,31 +886,53 @@ void USAPT0::fock_terms() {
 
     // => ExchInd perturbations <= //
 
-    std::shared_ptr<Matrix> C_Oa_B = linalg::triplet(Da_A, S, Cocca_B_);
-    std::shared_ptr<Matrix> C_Ob_B = linalg::triplet(Db_A, S, Coccb_B_);
-    std::shared_ptr<Matrix> C_Pa_B = linalg::triplet(linalg::triplet(Da_B, S, Da_A), S, Cocca_B_);
-    std::shared_ptr<Matrix> C_Pb_B = linalg::triplet(linalg::triplet(Db_B, S, Db_A), S, Coccb_B_);
-    std::shared_ptr<Matrix> C_Pa_A = linalg::triplet(linalg::triplet(Da_A, S, Da_B), S, Cocca_A_);
-    std::shared_ptr<Matrix> C_Pb_A = linalg::triplet(linalg::triplet(Db_A, S, Db_B), S, Coccb_A_);
+    std::shared_ptr<Matrix> C_Oa_B;
+    std::shared_ptr<Matrix> C_Ob_B;
+    std::shared_ptr<Matrix> C_Pa_B;
+    std::shared_ptr<Matrix> C_Pb_B;
+    std::shared_ptr<Matrix> C_Pa_A;
+    std::shared_ptr<Matrix> C_Pb_A;
+    if (alpha_exchange_) {
+        C_Oa_B = linalg::triplet(Da_A, S, Cocca_B_);
+        C_Pa_B = linalg::triplet(linalg::triplet(Da_B, S, Da_A), S, Cocca_B_);
+        C_Pa_A = linalg::triplet(linalg::triplet(Da_A, S, Da_B), S, Cocca_A_);
+    }
+    if (beta_exchange_) {
+        C_Ob_B = linalg::triplet(Db_A, S, Coccb_B_);
+        C_Pb_B = linalg::triplet(linalg::triplet(Db_B, S, Db_A), S, Coccb_B_);
+        C_Pb_A = linalg::triplet(linalg::triplet(Db_A, S, Db_B), S, Coccb_A_);
+    }
 
     Cl.clear();
     Cr.clear();
 
     // J/K[O]
-    Cl.push_back(C_Oa_B);
-    Cr.push_back(Cocca_B_);
-    Cl.push_back(C_Ob_B);
-    Cr.push_back(Coccb_B_);
+    if (alpha_exchange_) {
+        Cl.push_back(C_Oa_B);
+        Cr.push_back(Cocca_B_);
+    }
+    if (beta_exchange_) {
+        Cl.push_back(C_Ob_B);
+        Cr.push_back(Coccb_B_);
+    }
     // J/K[P_B]
-    Cl.push_back(C_Pa_B);
-    Cr.push_back(Cocca_B_);
-    Cl.push_back(C_Pb_B);
-    Cr.push_back(Coccb_B_);
+    if (alpha_exchange_) {
+        Cl.push_back(C_Pa_B);
+        Cr.push_back(Cocca_B_);
+    }
+    if (beta_exchange_) {
+        Cl.push_back(C_Pb_B);
+        Cr.push_back(Coccb_B_);
+    }
     // J/K[P_A]
-    Cl.push_back(C_Pa_A);
-    Cr.push_back(Cocca_A_);
-    Cl.push_back(C_Pb_A);
-    Cr.push_back(Coccb_A_);
+    if (alpha_exchange_) {
+        Cl.push_back(C_Pa_A);
+        Cr.push_back(Cocca_A_);
+    }
+    if (beta_exchange_) {
+        Cl.push_back(C_Pb_A);
+        Cr.push_back(Coccb_A_);
+    }
 
     // => Compute the JK matrices <= //
 
@@ -918,15 +940,42 @@ void USAPT0::fock_terms() {
 
     // => Unload the JK Object <= //
 
-    std::shared_ptr<Matrix> Ja_O = J[0];
-    std::shared_ptr<Matrix> Jb_O = J[1];
-    std::shared_ptr<Matrix> J_Pa_B = J[2];
-    std::shared_ptr<Matrix> J_Pb_B = J[3];
-    std::shared_ptr<Matrix> J_Pa_A = J[4];
-    std::shared_ptr<Matrix> J_Pb_A = J[5];
+    std::shared_ptr<Matrix> Ja_O = nullptr;
+    std::shared_ptr<Matrix> Ka_O = nullptr;
+    std::shared_ptr<Matrix> Jb_O = nullptr;
+    std::shared_ptr<Matrix> Kb_O = nullptr;
+    std::shared_ptr<Matrix> J_Pa_B = nullptr;
+    std::shared_ptr<Matrix> J_Pb_B = nullptr;
+    std::shared_ptr<Matrix> J_Pa_A = nullptr;
+    std::shared_ptr<Matrix> J_Pb_A = nullptr;
 
-    std::shared_ptr<Matrix> Ka_O = K[0];
-    std::shared_ptr<Matrix> Kb_O = K[1];
+    jk_id = 0;
+    if (alpha_exchange_) {
+        Ja_O = J[jk_id];
+        Ka_O = K[jk_id];
+        jk_id++;
+    }
+    if (beta_exchange_) {
+        Jb_O = J[jk_id];
+        Kb_O = K[jk_id];
+        jk_id++;
+    }
+    if (alpha_exchange_) {
+        J_Pa_B = J[jk_id];
+        jk_id++;
+    }
+    if (beta_exchange_) {
+        J_Pb_B = J[jk_id];
+        jk_id++;
+    }
+    if (alpha_exchange_) {
+        J_Pa_A = J[jk_id];
+        jk_id++;
+    }
+    if (beta_exchange_) {
+        J_Pb_A = J[jk_id];
+    }
+
 
     // ==> Generalized ESP (Flat and Exchange) <== //
 
@@ -969,8 +1018,12 @@ void USAPT0::fock_terms() {
     std::shared_ptr<Matrix> wbB = build_ind_pot(mapA);
     std::shared_ptr<Matrix> ubB = build_exch_ind_pot(mapA);
 
-    Ka_O->transpose_this();
-    Kb_O->transpose_this();
+    if (alpha_exchange_) {
+        Ka_O->transpose_this();
+    }
+    if (beta_exchange_) {
+        Kb_O->transpose_this();
+    }
 
     std::map<std::string, std::shared_ptr<Matrix> > mapB;
     mapB["Cocc_A"] = Cocca_B_;
@@ -1011,8 +1064,12 @@ void USAPT0::fock_terms() {
     std::shared_ptr<Matrix> wbA = build_ind_pot(mapB);
     std::shared_ptr<Matrix> ubA = build_exch_ind_pot(mapB);
 
-    Ka_O->transpose_this();
-    Kb_O->transpose_this();
+    if (alpha_exchange_) {
+        Ka_O->transpose_this();
+    }
+    if (beta_exchange_) {
+        Kb_O->transpose_this();
+    }
 
     // ==> Uncoupled Induction <== //
 
@@ -1196,19 +1253,29 @@ std::shared_ptr<Matrix> USAPT0::build_exch_ind_pot(std::map<std::string, std::sh
     W->scale(-1.0);
 
     // 2
-    W->subtract(Ja_O);
+    if (Ja_O != nullptr) {
+        W->subtract(Ja_O);
+    }
 
     // 3
-    W->subtract(Jb_O);
+    if (Jb_O != nullptr) {
+        W->subtract(Jb_O);
+    }
 
     // 4
-    W->add(K_O);
+    if (K_O != nullptr) {
+        W->add(K_O);
+    }
 
     // 5
-    W->add(Ja_P);
+    if (Ja_P != nullptr) {
+        W->add(Ja_P);
+    }
 
     // 6
-    W->add(Jb_P);
+    if (Jb_P != nullptr) {
+        W->add(Jb_P);
+    }
 
     // 7 Use T to compute intermediate
 
@@ -1216,7 +1283,9 @@ std::shared_ptr<Matrix> USAPT0::build_exch_ind_pot(std::map<std::string, std::sh
     T->scale(-1.0);
     T->add(linalg::triplet(S, D_A, El_pot_B));
     T->add(linalg::triplet(El_pot_A, D_B, S));
-    T->subtract(K_O->transpose());
+    if (K_O != nullptr) {
+        T->subtract(K_O->transpose());
+    }
 
     W->add(linalg::triplet(S, D_B, T));
 
@@ -1225,7 +1294,9 @@ std::shared_ptr<Matrix> USAPT0::build_exch_ind_pot(std::map<std::string, std::sh
     T = h_B->clone();
     T->scale(-1.0);
     T->add(linalg::triplet(El_pot_B, D_A, S));
-    T->subtract(K_O);
+    if (K_O != nullptr) {
+        T->subtract(K_O);
+    }
 
     W->add(linalg::triplet(T, D_B, S));
 
