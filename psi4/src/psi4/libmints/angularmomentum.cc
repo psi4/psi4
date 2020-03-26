@@ -591,7 +591,7 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             if (n2) {
                                 // (a+1_y|Lx|b-1_z+1_x)
                                 v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
-                                // (a|Lx|b+1_z-1_x)
+                                // (a|Lx|b-1_z+1_x)
                                 v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
                                 if (l2) {
                                     // (a+1_y|Lx|b-1_z-1_x)
@@ -962,7 +962,7 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             v1 = v2 = v3 = v4 = v5 = 0.0;
                             // (a+1_z|Ly|b-1_x+1_x)
                             v1 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
-                            // (a|Ly|b+1_x-1_x)
+                            // (a|Ly|b-1_x+1_x)
                             v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
                             if (l2 || l2-1) {
                                 // (a+1_z|Ly|b-1_x-1_x)
@@ -999,6 +999,66 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                                 }
                             }
                             buffer_[ao12+ybxdisp] += 1.0 * n2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+
+                            //
+                            // By derivatives with Ly
+                            //
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            // (a+1_z|Ly|b+1_x+1_y)
+                            v1 = x[l1][l2+1] * y[m1][m2+1] * z[n1+1][n2];
+                            // (a|Ly|b+1_x+1_y)
+                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
+                            if (m2) {
+                                // (a+1_z|Ly|b+1_x-1_y)
+                                v3 = x[l1][l2+1] * y[m1][m2-1] * z[n1+1][n2];
+                                // (a|Ly|b+1_x-1_y)
+                                v4 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
+                            }
+                            buffer_[ao12+ybydisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            if (l2) {
+                                // (a+1_z|Ly|b-1_x+1_y)
+                                v1 = x[l1][l2-1] * y[m1][m2+1] * z[n1+1][n2];
+                                // (a|Ly|b-1_x+1_y)
+                                v2 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
+                                if (m2) {
+                                    // (a+1_z|Ly|b-1_x-1_y)
+                                    v3 = x[l1][l2-1] * y[m1][m2-1] * z[n1+1][n2];
+                                    // (a|Ly|b-1_x-1_y)
+                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
+                                }
+                            }
+                            buffer_[ao12+ybydisp] += -1.0 * l2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            // (a+1_x|Ly|b+1_z+1_y)
+                            v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2+1];
+                            // (a|Ly|b+1_z+1_y)
+                            v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2+1];
+                            if (m2) {
+                                // (a+1_x|Ly|b+1_z-1_y)
+                                v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2+1];
+                                // (a|Ly|b+1_z-1_y)
+                                v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
+                            }
+                            buffer_[ao12+ybydisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+
+                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            if (n2) {
+                                // (a+1_x|Ly|b-1_z+1_y)
+                                v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2-1];
+                                // (a|Ly|b-1_z+1_y)
+                                v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2-1];
+                                if (m2) {
+                                    // (a+1_x|Ly|b-1_z-1_y)
+                                    v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2-1];
+                                    // (a|Ly|b-1_z-1_y)
+                                    v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
+                                }
+                            }
+                            buffer_[ao12+ybydisp] += 1.0 * n2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
                             //
                             // Ax derivatives with Lz
