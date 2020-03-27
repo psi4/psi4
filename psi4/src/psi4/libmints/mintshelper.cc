@@ -2823,14 +2823,14 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
     return grad;
 }
 
-/* 1st derivatives of magnetic dipole integrals in the AO basis */
-std::vector<SharedMatrix> MintsHelper::ao_mag_dip_deriv1_helper(int atom) {
+/* 1st derivatives of angular momentum integrals in the AO basis */
+std::vector<SharedMatrix> MintsHelper::ao_ang_mom_deriv1_helper(int atom) {
     std::vector<std::string> cartcomp{ "X", "Y", "Z" };
 
-    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_angular_momentum(1));
+    std::shared_ptr<OneBodyAOInt> Lint(integral_->ao_angular_momentum(1));
 
-    std::shared_ptr<BasisSet> bs1 = Dint->basis1();
-    std::shared_ptr<BasisSet> bs2 = Dint->basis2();
+    std::shared_ptr<BasisSet> bs1 = Lint->basis1();
+    std::shared_ptr<BasisSet> bs2 = Lint->basis2();
 
     int nbf1 = bs1->nbf();
     int nbf2 = bs2->nbf();
@@ -2838,14 +2838,14 @@ std::vector<SharedMatrix> MintsHelper::ao_mag_dip_deriv1_helper(int atom) {
     std::vector<SharedMatrix> grad;
     for (int p = 0; p < 3; p++) {
         std::stringstream sstream;
-        sstream << "ao_mag_dip" << cartcomp[p] << "_deriv1_";
+        sstream << "ao_ang_mom" << cartcomp[p] << "_deriv1_";
         for (int q = 0; q < 3; q++) {
             sstream << atom << cartcomp[q];
             grad.push_back(SharedMatrix(new Matrix(sstream.str(), nbf1, nbf2)));
         }
     }
 
-    const double *buffer = Dint->buffer();
+    const double *buffer = Lint->buffer();
 
     for (int P = 0; P < bs1->nshell(); P++) {
         for (int Q = 0; Q < bs2->nshell(); Q++) {
@@ -2859,7 +2859,7 @@ std::vector<SharedMatrix> MintsHelper::ao_mag_dip_deriv1_helper(int atom) {
 
             if (aP != atom && aQ != atom) continue;
 
-            Dint->compute_shell_deriv1(P, Q);
+            Lint->compute_shell_deriv1(P, Q);
 
             for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
                 for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
@@ -3468,18 +3468,18 @@ std::vector<SharedMatrix> MintsHelper::mo_elec_dip_deriv1(int atom, SharedMatrix
     return mo_grad;
 }
 
-/* Magnetic dipole moment derivatives in both AO and MO basis */
+/* Angular momentum derivatives in both AO and MO basis */
 
-std::vector<SharedMatrix> MintsHelper::ao_mag_dip_deriv1(int atom) {
-    std::vector<SharedMatrix> ao_grad = ao_mag_dip_deriv1_helper(atom);
+std::vector<SharedMatrix> MintsHelper::ao_ang_mom_deriv1(int atom) {
+    std::vector<SharedMatrix> ao_grad = ao_ang_mom_deriv1_helper(atom);
 
     return ao_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_mag_dip_deriv1(int atom, SharedMatrix C1, SharedMatrix C2) {
+std::vector<SharedMatrix> MintsHelper::mo_ang_mom_deriv1(int atom, SharedMatrix C1, SharedMatrix C2) {
     std::vector<std::string> cartcomp{ "X", "Y", "Z" };
 
-    std::vector<SharedMatrix> ao_grad = ao_mag_dip_deriv1(atom);
+    std::vector<SharedMatrix> ao_grad = ao_ang_mom_deriv1(atom);
 
     // Assuming C1 symmetry
     int nbf1 = ao_grad[0]->rowdim();
@@ -3488,7 +3488,7 @@ std::vector<SharedMatrix> MintsHelper::mo_mag_dip_deriv1(int atom, SharedMatrix 
     std::vector<SharedMatrix> mo_grad;
     for (int p = 0; p < 9; p++) {
         std::stringstream sstream;
-        sstream << "mo_mag_dip_deriv1_" << atom << cartcomp[p];
+        sstream << "mo_ang_mom_deriv1_" << atom << cartcomp[p];
         SharedMatrix temp(new Matrix(sstream.str(), nbf1, nbf2));
         temp->transform(C1, ao_grad[p], C2);
         mo_grad.push_back(temp);
