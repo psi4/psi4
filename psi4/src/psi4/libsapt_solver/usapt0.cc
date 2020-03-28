@@ -1724,10 +1724,20 @@ void CPKS_USAPT0::preconditioner(std::shared_ptr<Matrix> r, std::shared_ptr<Matr
 
 std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
     std::map<std::string, std::shared_ptr<Matrix> >& b) {
+
     std::map<std::string, std::shared_ptr<Matrix> > s;
 
     bool do_A = b.count("Aa") || b.count("Ab");
     bool do_B = b.count("Ba") || b.count("Bb");
+    bool alpha_A, alpha_B, beta_A, beta_B;
+    if (do_A) {
+        alpha_A = (b["Aa"]->nrow() > 0) && (b["Aa"]->ncol() > 0);
+        beta_A = (b["Ab"]->nrow() > 0) && (b["Ab"]->ncol() > 0);
+    }
+    if (do_B) {
+        alpha_B = (b["Ba"]->nrow() > 0) && (b["Ba"]->ncol() > 0);
+        beta_B = (b["Bb"]->nrow() > 0) && (b["Bb"]->ncol() > 0);
+    }
 
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
@@ -1735,49 +1745,57 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
     Cr.clear();
 
     if (do_A) {
-        Cl.push_back(Cocca_A_);
-        Cl.push_back(Coccb_A_);
-        size_t no = b["Aa"]->nrow();
-        size_t nv = b["Aa"]->ncol();
-        size_t nso = Cvira_A_->nrow();
-        double** Cp = Cvira_A_->pointer();
-        double** bp = b["Aa"]->pointer();
-        auto T = std::make_shared<Matrix>("T", nso, no);
-        double** Tp = T->pointer();
-        C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
-        Cr.push_back(T);
-        no = b["Ab"]->nrow();
-        nv = b["Ab"]->ncol();
-        nso = Cvirb_A_->nrow();
-        Cp = Cvirb_A_->pointer();
-        bp = b["Ab"]->pointer();
-        T = std::make_shared<Matrix>("T", nso, no);
-        Tp = T->pointer();
-        C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
-        Cr.push_back(T);
+        if (alpha_A) {
+            Cl.push_back(Cocca_A_);
+            size_t no = b["Aa"]->nrow();
+            size_t nv = b["Aa"]->ncol();
+            size_t nso = Cvira_A_->nrow();
+            double** Cp = Cvira_A_->pointer();
+            double** bp = b["Aa"]->pointer();
+            auto T = std::make_shared<Matrix>("T", nso, no);
+            double** Tp = T->pointer();
+            C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
+            Cr.push_back(T);
+        }
+        if (beta_A) {
+            Cl.push_back(Coccb_A_);
+            size_t no = b["Ab"]->nrow();
+            size_t nv = b["Ab"]->ncol();
+            size_t nso = Cvirb_A_->nrow();
+            double** Cp = Cvirb_A_->pointer();
+            double** bp = b["Ab"]->pointer();
+            auto T = std::make_shared<Matrix>("T", nso, no);
+            double** Tp = T->pointer();
+            C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
+            Cr.push_back(T);
+        }
     }
 
     if (do_B) {
-        Cl.push_back(Cocca_B_);
-        Cl.push_back(Coccb_B_);
-        size_t no = b["Ba"]->nrow();
-        size_t nv = b["Ba"]->ncol();
-        size_t nso = Cvira_B_->nrow();
-        double** Cp = Cvira_B_->pointer();
-        double** bp = b["Ba"]->pointer();
-        auto T = std::make_shared<Matrix>("T", nso, no);
-        double** Tp = T->pointer();
-        C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
-        Cr.push_back(T);
-        no = b["Bb"]->nrow();
-        nv = b["Bb"]->ncol();
-        nso = Cvirb_B_->nrow();
-        Cp = Cvirb_B_->pointer();
-        bp = b["Bb"]->pointer();
-        T = std::make_shared<Matrix>("T", nso, no);
-        Tp = T->pointer();
-        C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
-        Cr.push_back(T);
+        if (alpha_B) {
+            Cl.push_back(Cocca_B_);
+            size_t no = b["Ba"]->nrow();
+            size_t nv = b["Ba"]->ncol();
+            size_t nso = Cvira_B_->nrow();
+            double** Cp = Cvira_B_->pointer();
+            double** bp = b["Ba"]->pointer();
+            auto T = std::make_shared<Matrix>("T", nso, no);
+            double** Tp = T->pointer();
+            C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
+            Cr.push_back(T);
+        }
+        if (beta_B) {
+            Cl.push_back(Coccb_B_);
+            size_t no = b["Bb"]->nrow();
+            size_t nv = b["Bb"]->ncol();
+            size_t nso = Cvirb_B_->nrow();
+            double** Cp = Cvirb_B_->pointer();
+            double** bp = b["Bb"]->pointer();
+            auto T = std::make_shared<Matrix>("T", nso, no);
+            double** Tp = T->pointer();
+            C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
+            Cr.push_back(T);
+        }
     }
 
     jk_->compute();
@@ -1789,102 +1807,144 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
     int indB = (do_A ? 2 : 0);
 
     if (do_A) {
-        std::shared_ptr<Matrix> Jva = J[indA];
-        std::shared_ptr<Matrix> Jvb = J[indA + 1];
-        std::shared_ptr<Matrix> Kva = K[indA];
-        std::shared_ptr<Matrix> Kvb = K[indA + 1];
-        Jva->scale(2.0);
-        Jvb->scale(2.0);
-        std::shared_ptr<Matrix> T(Jva->clone());
-        T->add(Jvb);
-        Jva->copy(T);
-        Jva->subtract(Kva);
-        Jva->subtract(Kva->transpose());
-        Jvb->copy(T);
-        Jvb->subtract(Kvb);
-        Jvb->subtract(Kvb->transpose());
+        std::shared_ptr<Matrix> Jva;
+        std::shared_ptr<Matrix> Jvb;
+        std::shared_ptr<Matrix> Kva;
+        std::shared_ptr<Matrix> Kvb;
+        std::shared_ptr<Matrix> T;
+        if (alpha_A) {
+            Jva = J[indA];
+            Kva = K[indA];
+            ++indA;
+            Jva->scale(2.0);
+            T = Jva->clone();
+        }
+        if (beta_A) {
+            Jvb = J[indA];
+            Kvb = K[indA];
+            Jvb->scale(2.0);
+            if (alpha_A) {
+                T->add(Jvb);
+            } else {
+                T = Jvb->clone();
+            }
+        }
+        if (alpha_A) {
+            Jva->copy(T);
+            Jva->subtract(Kva);
+            Jva->subtract(Kva->transpose());
+        }
+        if (beta_A) {
+            Jvb->copy(T);
+            Jvb->subtract(Kvb);
+            Jvb->subtract(Kvb->transpose());
+        }
 
         int no = b["Aa"]->nrow();
         int nv = b["Aa"]->ncol();
-        int nso = Cvira_A_->nrow();
-        T = std::make_shared<Matrix>("T", no, nso);
         s["Aa"] = std::make_shared<Matrix>("SAa", no, nv);
-        double** Cop = Cocca_A_->pointer();
-        double** Cvp = Cvira_A_->pointer();
-        double** Jp = Jva->pointer();
-        double** Tp = T->pointer();
-        double** Sp = s["Aa"]->pointer();
-        C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
-        C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
+        if (alpha_A) {
+            int nso = Cvira_A_->nrow();
+            T = std::make_shared<Matrix>("T", no, nso);
+            double** Cop = Cocca_A_->pointer();
+            double** Cvp = Cvira_A_->pointer();
+            double** Jp = Jva->pointer();
+            double** Tp = T->pointer();
+            double** Sp = s["Aa"]->pointer();
+            C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
+            C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
 
-        double** bp = b["Aa"]->pointer();
-        double* op = eps_occa_A_->pointer();
-        double* vp = eps_vira_A_->pointer();
-        for (int i = 0; i < no; i++) {
-            for (int a = 0; a < nv; a++) {
-                Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+            double** bp = b["Aa"]->pointer();
+            double* op = eps_occa_A_->pointer();
+            double* vp = eps_vira_A_->pointer();
+            for (int i = 0; i < no; i++) {
+                for (int a = 0; a < nv; a++) {
+                    Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+                }
             }
         }
         // Reproduce the above for the beta part.
 
         no = b["Ab"]->nrow();
         nv = b["Ab"]->ncol();
-        nso = Cvirb_A_->nrow();
-        T = std::make_shared<Matrix>("T", no, nso);
         s["Ab"] = std::make_shared<Matrix>("SAb", no, nv);
-        Cop = Coccb_A_->pointer();
-        Cvp = Cvirb_A_->pointer();
-        Jp = Jvb->pointer();
-        Tp = T->pointer();
-        Sp = s["Ab"]->pointer();
-        C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
-        C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
+        if (beta_A) {
+            int nso = Cvirb_A_->nrow();
+            T = std::make_shared<Matrix>("T", no, nso);
+            double** Cop = Coccb_A_->pointer();
+            double** Cvp = Cvirb_A_->pointer();
+            double** Jp = Jvb->pointer();
+            double** Tp = T->pointer();
+            double** Sp = s["Ab"]->pointer();
+            C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
+            C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
 
-        bp = b["Ab"]->pointer();
-        op = eps_occb_A_->pointer();
-        vp = eps_virb_A_->pointer();
-        for (int i = 0; i < no; i++) {
-            for (int a = 0; a < nv; a++) {
-                Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+            double** bp = b["Ab"]->pointer();
+            double* op = eps_occb_A_->pointer();
+            double* vp = eps_virb_A_->pointer();
+            for (int i = 0; i < no; i++) {
+                for (int a = 0; a < nv; a++) {
+                    Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+                }
             }
         }
     }
 
     if (do_B) {
-        std::shared_ptr<Matrix> Jva = J[indB];
-        std::shared_ptr<Matrix> Jvb = J[indB + 1];
-        std::shared_ptr<Matrix> Kva = K[indB];
-        std::shared_ptr<Matrix> Kvb = K[indB + 1];
-        Jva->scale(2.0);
-        Jvb->scale(2.0);
-        std::shared_ptr<Matrix> T(Jva->clone());
-        T->add(Jvb);
-        Jva->copy(T);
-        Jva->subtract(Kva);
-        Jva->subtract(Kva->transpose());
-        Jvb->copy(T);
-        Jvb->subtract(Kvb);
-        Jvb->subtract(Kvb->transpose());
+        std::shared_ptr<Matrix> Jva;
+        std::shared_ptr<Matrix> Kva;
+        std::shared_ptr<Matrix> Jvb;
+        std::shared_ptr<Matrix> Kvb;
+        std::shared_ptr<Matrix> T;
+        if (alpha_B) {
+            Jva = J[indB];
+            Kva = K[indB];
+            indB++;
+            Jva->scale(2.0);
+            T = Jva->clone();
+        }
+        if (beta_B) {
+            Jvb = J[indB];
+            Kvb = K[indB];
+            Jvb->scale(2.0);
+            if (alpha_B) {
+                T->add(Jvb);
+            } else {
+                T = Jvb->clone();
+            }
+        }
+        if (alpha_B) {
+            Jva->copy(T);
+            Jva->subtract(Kva);
+            Jva->subtract(Kva->transpose());
+        }
+        if (beta_B) {
+            Jvb->copy(T);
+            Jvb->subtract(Kvb);
+            Jvb->subtract(Kvb->transpose());
+        }
 
         int no = b["Ba"]->nrow();
         int nv = b["Ba"]->ncol();
-        int nso = Cvira_B_->nrow();
-        T = std::make_shared<Matrix>("T", no, nso);
         s["Ba"] = std::make_shared<Matrix>("SBa", no, nv);
-        double** Cop = Cocca_B_->pointer();
-        double** Cvp = Cvira_B_->pointer();
-        double** Jp = Jva->pointer();
-        double** Tp = T->pointer();
-        double** Sp = s["Ba"]->pointer();
-        C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
-        C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
+        if (alpha_B) {
+            int nso = Cvira_B_->nrow();
+            T = std::make_shared<Matrix>("T", no, nso);
+            double** Cop = Cocca_B_->pointer();
+            double** Cvp = Cvira_B_->pointer();
+            double** Jp = Jva->pointer();
+            double** Tp = T->pointer();
+            double** Sp = s["Ba"]->pointer();
+            C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
+            C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
 
-        double** bp = b["Ba"]->pointer();
-        double* op = eps_occa_B_->pointer();
-        double* vp = eps_vira_B_->pointer();
-        for (int i = 0; i < no; i++) {
-            for (int a = 0; a < nv; a++) {
-                Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+            double** bp = b["Ba"]->pointer();
+            double* op = eps_occa_B_->pointer();
+            double* vp = eps_vira_B_->pointer();
+            for (int i = 0; i < no; i++) {
+                for (int a = 0; a < nv; a++) {
+                    Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+                }
             }
         }
 
@@ -1892,23 +1952,25 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
 
         no = b["Bb"]->nrow();
         nv = b["Bb"]->ncol();
-        nso = Cvirb_B_->nrow();
-        T = std::make_shared<Matrix>("T", no, nso);
         s["Bb"] = std::make_shared<Matrix>("SBb", no, nv);
-        Cop = Coccb_B_->pointer();
-        Cvp = Cvirb_B_->pointer();
-        Jp = Jvb->pointer();
-        Tp = T->pointer();
-        Sp = s["Bb"]->pointer();
-        C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
-        C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
+        if (beta_B) {
+            int nso = Cvirb_B_->nrow();
+            T = std::make_shared<Matrix>("T", no, nso);
+            double** Cop = Coccb_B_->pointer();
+            double** Cvp = Cvirb_B_->pointer();
+            double** Jp = Jvb->pointer();
+            double** Tp = T->pointer();
+            double** Sp = s["Bb"]->pointer();
+            C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
+            C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
 
-        bp = b["Bb"]->pointer();
-        op = eps_occb_B_->pointer();
-        vp = eps_virb_B_->pointer();
-        for (int i = 0; i < no; i++) {
-            for (int a = 0; a < nv; a++) {
-                Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+            double** bp = b["Bb"]->pointer();
+            double* op = eps_occb_B_->pointer();
+            double* vp = eps_virb_B_->pointer();
+            for (int i = 0; i < no; i++) {
+                for (int a = 0; a < nv; a++) {
+                    Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+                }
             }
         }
     }
