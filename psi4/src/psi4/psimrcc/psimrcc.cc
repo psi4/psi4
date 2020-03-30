@@ -66,13 +66,14 @@ void mrccsd(SharedWavefunction ref_wfn, Options& options) {
 
 /*!
  * Runs a CCSD_MP2 computation
+ * For some reason, this code is never called. You can't run MP2 CCSD in Psi4.
  */
 void mp2_ccsd(SharedWavefunction ref_wfn, Options& options) {
     // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
     MP2_CCSD mp2_ccsd(ref_wfn, options);
 
     // Compute the initial amplitudes and CCSD_MP2 energy
-    mp2_ccsd.compute_mp2_ccsd_energy();
+    mp2_ccsd.compute_energy();
 
     DEBUGGING(1, blas->print_memory();)
 }
