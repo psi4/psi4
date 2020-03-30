@@ -56,9 +56,12 @@ extern MOInfo* moinfo;
 /**
  * This is a generic coupled cluster cycle. By specifying the updater object you can get all the flavors of CC,
  * single-reference, Mukherjee MRCC,...
- * @param updater the pointer to a Updater object
  */
-void CCMRCC::compute_energy(Updater* updater) {
+double CCMRCC::compute_energy() {
+    if (options_.get_bool("PERTURB_CBS") && options_.get_bool("PERTURB_CBS_COUPLING")) {
+        compute_first_order_amps();
+    }
+
     blas->diis_add("t1[o][v]{u}", "t1_delta[o][v]{u}");
     blas->diis_add("t1[O][V]{u}", "t1_delta[O][V]{u}");
     blas->diis_add("t2[oo][vv]{u}", "t2_delta[oo][vv]{u}");
@@ -70,7 +73,7 @@ void CCMRCC::compute_energy(Updater* updater) {
     // Start CC cycle
     int cycle = 0;
     while (!converged) {
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
 
         synchronize_amps();
         build_tau_intermediates();
@@ -92,8 +95,8 @@ void CCMRCC::compute_energy(Updater* updater) {
 
         if (!converged) {
             blas->diis_save_t_amps(cycle);
-            updater->update(cycle, &h_eff);
-            updater->zero_internal_delta_amps();
+            updater_->update(cycle, &h_eff);
+            updater_->zero_internal_delta_amps();
             compute_delta_amps();
             blas->diis(cycle, delta_energy, DiisCC);
         }
@@ -115,7 +118,7 @@ void CCMRCC::compute_energy(Updater* updater) {
 
     // Compute the apBWCCSD energy
     if (ap_correction) {
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
 
         synchronize_amps();
 
@@ -127,9 +130,9 @@ void CCMRCC::compute_energy(Updater* updater) {
         build_t1_amplitudes();
         build_t2_amplitudes();
 
-        updater->update(cycle, &h_eff);
+        updater_->update(cycle, &h_eff);
 
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
 
         synchronize_amps();
 
@@ -141,7 +144,7 @@ void CCMRCC::compute_energy(Updater* updater) {
         build_t1_amplitudes();
         build_t2_amplitudes();
 
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
 
         converged = build_diagonalize_Heff(-1, cc_timer.get());
     }
@@ -149,6 +152,12 @@ void CCMRCC::compute_energy(Updater* updater) {
     DEBUGGING(1, blas->print_memory(););
 
     CCOperation::print_timing();
+
+    if (options_.get_bool("PERTURB_CBS")) {
+        perturbative_cbs();
+    }
+
+    return ref_wfn_->scalar_variable("CURRENT ENERGY");
 }
 
 }  // namespace psimrcc
