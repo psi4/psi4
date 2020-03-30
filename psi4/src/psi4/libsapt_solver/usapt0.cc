@@ -1602,18 +1602,24 @@ void CPKS_USAPT0::compute_cpks() {
             double** rp = ra_A->pointer();
             double** pp = pa_A->pointer();
             double** sp = sa_A->pointer();
-            C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
-            C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
-            r2A = C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
+                C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
+                r2A = C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            } else {
+                r2A = 0.0;
+            }
             no = xb_A_->nrow();
             nv = xb_A_->ncol();
             xp = xb_A_->pointer();
             rp = rb_A->pointer();
             pp = pb_A->pointer();
             sp = sb_A->pointer();
-            C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
-            C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
-            r2A += C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
+                C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
+                r2A += C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            }
             r2A = sqrt(r2A) / b2A;
         }
 
@@ -1631,18 +1637,24 @@ void CPKS_USAPT0::compute_cpks() {
             double** rp = ra_B->pointer();
             double** pp = pa_B->pointer();
             double** sp = sa_B->pointer();
-            C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
-            C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
-            r2B = C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
+                C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
+                r2B = C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            } else {
+                r2B = 0.0;
+            }
             no = xb_B_->nrow();
             nv = xb_B_->ncol();
             xp = xb_B_->pointer();
             rp = rb_B->pointer();
             pp = pb_B->pointer();
             sp = sb_B->pointer();
-            C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
-            C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
-            r2B += C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DAXPY(no * nv, alpha, pp[0], 1, xp[0], 1);
+                C_DAXPY(no * nv, -alpha, sp[0], 1, rp[0], 1);
+                r2B += C_DDOT(no * nv, rp[0], 1, rp[0], 1);
+            }
             r2B = sqrt(r2B) / b2B;
         }
 
@@ -1666,14 +1678,18 @@ void CPKS_USAPT0::compute_cpks() {
             size_t nv = pa_A->ncol();
             double** pp = pa_A->pointer();
             double** zp = za_A->pointer();
-            C_DSCAL(no * nv, beta, pp[0], 1);
-            C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DSCAL(no * nv, beta, pp[0], 1);
+                C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            }
             no = pb_A->nrow();
             nv = pb_A->ncol();
             pp = pb_A->pointer();
             zp = zb_A->pointer();
-            C_DSCAL(no * nv, beta, pp[0], 1);
-            C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DSCAL(no * nv, beta, pp[0], 1);
+                C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            }
         }
 
         if (r2B > delta_) {
@@ -1688,14 +1704,18 @@ void CPKS_USAPT0::compute_cpks() {
             size_t nv = pa_B->ncol();
             double** pp = pa_B->pointer();
             double** zp = za_B->pointer();
-            C_DSCAL(no * nv, beta, pp[0], 1);
-            C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DSCAL(no * nv, beta, pp[0], 1);
+                C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            }
             no = pb_B->nrow();
             nv = pb_B->ncol();
             pp = pb_B->pointer();
             zp = zb_B->pointer();
-            C_DSCAL(no * nv, beta, pp[0], 1);
-            C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            if (no > 0 && nv > 0) {
+                C_DSCAL(no * nv, beta, pp[0], 1);
+                C_DAXPY(no * nv, 1.0, zp[0], 1, pp[0], 1);
+            }
         }
     }
 
@@ -2107,10 +2127,14 @@ void USAPT0::mp2_terms() {
     Ta_br->subtract(ha_A);
     Tb_br->subtract(hb_A);
 
-    Ta_as->subtract(Ka_O);
-    Tb_as->subtract(Kb_O);
-    Ta_br->subtract(Ka_O->transpose());
-    Tb_br->subtract(Kb_O->transpose());
+    if (alpha_exchange_) {
+        Ta_as->subtract(Ka_O);
+        Ta_br->subtract(Ka_O->transpose());
+    }
+    if (beta_exchange_) {
+        Tb_as->subtract(Kb_O);
+        Tb_br->subtract(Kb_O->transpose());
+    }
 
     std::shared_ptr<Matrix> Sa_as = linalg::triplet(Caocca_A_, S, Cavira_B_, true, false, false);
     std::shared_ptr<Matrix> Sb_as = linalg::triplet(Caoccb_A_, S, Cavirb_B_, true, false, false);
