@@ -58,10 +58,6 @@ extern MOInfo* moinfo;
  * single-reference, Mukherjee MRCC,...
  */
 double CCMRCC::compute_energy() {
-    if (options_.get_bool("PERTURB_CBS") && options_.get_bool("PERTURB_CBS_COUPLING")) {
-        compute_first_order_amps();
-    }
-
     blas->diis_add("t1[o][v]{u}", "t1_delta[o][v]{u}");
     blas->diis_add("t1[O][V]{u}", "t1_delta[O][V]{u}");
     blas->diis_add("t2[oo][vv]{u}", "t2_delta[oo][vv]{u}");
@@ -152,10 +148,6 @@ double CCMRCC::compute_energy() {
     DEBUGGING(1, blas->print_memory(););
 
     CCOperation::print_timing();
-
-    if (options_.get_bool("PERTURB_CBS")) {
-        perturbative_cbs();
-    }
 
     return ref_wfn_->scalar_variable("CURRENT ENERGY");
 }

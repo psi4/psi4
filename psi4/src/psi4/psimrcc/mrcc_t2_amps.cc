@@ -248,21 +248,6 @@ void CCMRCC::build_t2_iJaB_amplitudes() {
 
     DEBUGGING(3, blas->print("t2_eqns[oO][vV]{c}"); blas->print("t2_eqns[oO][vV]{o}");)
 
-    if (pert_cbs && pert_cbs_coupling) {
-        outfile->Printf("\n Computing frozen-virtual contribution to H(iJaB)");
-
-        blas->append("t2_eqns[oO][vV]{u} +=  t2_1[oO][vF]{u} 2@1 <[vf]|[vv]>");
-        blas->append("t2_eqns[oO][vV]{u} +=  t2_1[oO][fV]{u} 2@1 <[fv]|[vv]>");
-        blas->append("t2_eqns[oO][vV]{u} +=  t2_1[oO][fF]{u} 2@1 <[ff]|[vv]>");
-
-        blas->append("t2_eqns[oO][vV]{u} += #1342#   t2_1[ov][of]{u} 2@2 ([vo]|[of])");
-        blas->append("t2_eqns[oO][vV]{u} += #1342#   t2_1[ov][OF]{u} 2@2 ([vo]:[of])");
-        blas->append("t2_eqns[oO][vV]{u} += #1423# - t2_1[oV][Of]{u} 2@2 <[ov]|[of]>");
-        blas->append("t2_eqns[oO][vV]{u} += #2314# - t2_1[oF][Ov]{u} 1@2 <[ov]|[of]>");
-        blas->append("t2_eqns[oO][vV]{u} += #2431#   t2_1[OV][OF]{u} 2@2 ([vo]|[of])");
-        blas->append("t2_eqns[oO][vV]{u} += #2431#   t2_1[of][OV]{u} 1@2 ([vo]:[of])");
-    }
-
     DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
 
     )

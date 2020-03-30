@@ -89,19 +89,6 @@ void CCMRCC::build_t1_ia_amplitudes() {
     blas->append("t1_eqns[o][v]{o} += -1/2 <[o]:[voo]> 2@2 t2[v][voo]{o}");
     blas->append("t1_eqns[o][v]{o} += - <[o]|[voo]> 2@2 t2[v][VoO]{o}");
 
-    if (pert_cbs && pert_cbs_coupling) {
-        outfile->Printf("\n Computing frozen-virtual contribution to H(ia)");
-        blas->append("t1_eqns[o][v]{u} +=     t2_1[o][ovf]{u} 2@2 <[v]:[ovf]>");
-        blas->append("t1_eqns[o][v]{u} +=     t2_1[o][OvF]{u} 2@2 <[v]|[ovf]>");
-        blas->append("t1_eqns[o][v]{u} +=     t2_1[o][OfV]{u} 2@2 <[v]|[ofv]>");
-
-        blas->append("t1_eqns[o][v]{u} += 1/2 t2_1[o][off]{u} 2@2 <[v]:[off]>");
-        blas->append("t1_eqns[o][v]{u} +=     t2_1[o][OfF]{u} 2@2 <[v]|[off]>");
-
-        blas->append("t1_eqns[o][v]{u} += -1/2 <[o]:[foo]> 2@2 t2_1[v][foo]{u}");
-        blas->append("t1_eqns[o][v]{u} += -    <[o]|[foo]> 2@2 t2_1[v][FoO]{u}");
-    }
-
     DEBUGGING(3, blas->print("t1_eqns[o][v]{u}"););
 
     DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());

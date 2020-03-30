@@ -69,8 +69,6 @@ CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options& options) : ref_wfn_(
     allocate2(double, Heff, moinfo->get_nrefs(), moinfo->get_nrefs());
     allocate2(double, Heff_mrpt2, moinfo->get_nrefs(), moinfo->get_nrefs());
 
-    pert_cbs = false;
-    pert_cbs_coupling = false;
     huge = 1.0e100;
     norm_amps = 0.0;
     delta_t1_amps = 0.0;
