@@ -50,10 +50,6 @@ class CCMRCC : public CCManyBody {
     // CCSD(T)
     void compute_perturbative_triples();
 
-    // Perturbative correction for CBS
-    void compute_first_order_amps();
-    void perturbative_cbs();
-
    private:
     Options &options_;
 
