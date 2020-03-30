@@ -147,6 +147,7 @@ _addons_ = {
     "forte": which_import("forte", return_bool=True),
     "snsmp2": which_import("snsmp2", return_bool=True),
     "resp": which_import("resp", return_bool=True),
+    "psi4fockci": which_import("psi4fockci", return_bool=True),
     "adcc": which_import("adcc", return_bool=True),
 }
 
