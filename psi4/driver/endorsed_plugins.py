@@ -61,3 +61,9 @@ try:
     import adcc
 except ImportError:
     pass
+
+try:
+    import psi4fockci
+except ImportError:
+    pass
+
