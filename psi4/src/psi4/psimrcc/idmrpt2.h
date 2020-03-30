@@ -36,6 +36,7 @@
  ***************************************************************************/
 
 #include "manybody.h"
+#include "updater.h"
 #include "psi4/liboptions/liboptions.h"
 
 namespace psi {
@@ -50,12 +51,14 @@ class IDMRPT2 : public CCManyBody {
    public:
     IDMRPT2(SharedWavefunction ref_wfn, Options& options);
     ~IDMRPT2() override;
-    void compute_mrpt2_energy(Updater* updater);
+    double compute_energy();
 
    private:
+    std::shared_ptr<Updater> updater_;
+
     void add_matrices();
     void read_mrpt2_integrals();
-    void update_amps_mkpt2(Updater* updater);
+    void update_amps_mkpt2();
     void synchronize_amps();
     void build_amplitudes();
     void build_t1_ia_amplitudes();

@@ -49,12 +49,13 @@ extern MOInfo* moinfo;
 
 IDMRPT2::IDMRPT2(SharedWavefunction ref_wfn, Options& options) : CCManyBody(ref_wfn, options) {
     triples_type = pt2;
+    updater_ = std::make_shared<MkUpdater>(options);
     add_matrices();
 }
 
 IDMRPT2::~IDMRPT2() {}
 
-void IDMRPT2::compute_mrpt2_energy(Updater* updater) {
+double IDMRPT2::compute_energy() {
     read_mrpt2_integrals();
     generate_denominators();
     compute_reference_energy();
@@ -99,10 +100,10 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater) {
     int cycle = 0;
     while (!converged) {
         // Iterate the amps equation
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
         build_amplitudes();
-        update_amps_mkpt2(updater);
-        updater->zero_internal_amps();
+        update_amps_mkpt2();
+        updater_->zero_internal_amps();
         synchronize_amps();
 
         // Compute the effective Hamiltonian
@@ -181,6 +182,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater) {
     }
 
     //   print_eigensystem(moinfo->get_nrefs(),Heff_mrpt2,right_eigenvector);
+    return ref_wfn_->scalar_variable("CURRENT ENERGY");
 }
 
 void IDMRPT2::build_Heff_mrpt2_diagonal() {
@@ -295,7 +297,7 @@ void IDMRPT2::build_amplitudes() {
     build_t2_IJAB_amplitudes();
 }
 
-void IDMRPT2::update_amps_mkpt2(Updater* updater) {
+void IDMRPT2::update_amps_mkpt2() {
     for (int i = 0; i < moinfo->get_nunique(); i++) {
         int unique_i = moinfo->get_ref_number(i, UniqueRefs);
         std::string i_str = to_string(unique_i);
@@ -319,7 +321,7 @@ void IDMRPT2::update_amps_mkpt2(Updater* updater) {
         // Update t1 for reference i
         blas->solve("t1[o][v]{" + i_str + "} = t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "}");
         blas->solve("t1[O][V]{" + i_str + "} = t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "}");
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
 
         // Add the contribution from the other references
         for (int j = 0; j < moinfo->get_nrefs(); j++) {
