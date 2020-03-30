@@ -105,7 +105,7 @@ PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
 
     moinfo->setup_model_space();  // The is a bug here DELETEME
 
-    if (options_["PERTURB_CBS"].has_changed() || options_["PERTURB_CBS_COUPLING"].has_changed()) {
+    if (options["PERTURB_CBS"].has_changed() || options["PERTURB_CBS_COUPLING"].has_changed()) {
         outfile->Printf("\tPerturbative CBS was removed in 1.4. Using unpublished features is a bad habit.\n\n");
     }
 
