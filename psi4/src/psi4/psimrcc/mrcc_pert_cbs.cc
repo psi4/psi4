@@ -247,6 +247,10 @@ void CCMRCC::perturbative_cbs() {
 
     double E_ff_3_s = blas->get_scalar("ECCSD", 0);
 
+    // TODO: Update CURRENT ENERGY and MRCC TOTAL ENERGY variables with these values when FAE gives guidance
+    // on which should be taken as the default.
+    // TODO: Presumably, update ref_wfn->current_energy so CCMRCC::compute_energy can return the right energy?
+    // The rest of the code may assume this is attached to a Hamiltonian. If so, things become more complex.
     outfile->Printf("\n\n        CBS third-order  correction (vf) = %20.12f (no singles)", E_vf_3);
     outfile->Printf("\n        CBS third-order  correction (fv) = %20.12f (no singles)", E_vf_3);
     outfile->Printf("\n        CBS third-order  correction (ff) = %20.12f (no singles)", E_ff_3);

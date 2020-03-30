@@ -58,26 +58,10 @@ void mrccsd(SharedWavefunction ref_wfn, Options& options) {
     // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
     CCMRCC mrcc(ref_wfn, options);
 
-    if (options.get_bool("PERTURB_CBS") && options.get_bool("PERTURB_CBS_COUPLING")) {
-        mrcc.compute_first_order_amps();
-    }
-
     options.print();
-    // Initialize the appropriate updater
-    Updater* updater = nullptr;
-    //  if(options_get_str("CORR_ANSATZ")=="SR")
-    //    updater = static_cast<Updater*>(new MkUpdater());
-    if (options.get_str("CORR_ANSATZ") == "MK") updater = dynamic_cast<Updater*>(new MkUpdater(options));
-    if (options.get_str("CORR_ANSATZ") == "BW") updater = dynamic_cast<Updater*>(new BWUpdater(options));
 
     // Compute the energy
-    mrcc.compute_energy(updater);
-
-    if (options.get_bool("PERTURB_CBS")) {
-        mrcc.perturbative_cbs();
-    }
-
-    delete updater;
+    mrcc.compute_energy();
 }
 
 /*!
