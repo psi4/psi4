@@ -467,3 +467,16 @@ Bibliography
    M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw.
    *WIREs Comput. Mol. Sci.*, (2020) **DOI: 10.1002/wcms.1462**, Preprint https://adc-connect.org/q/publications
 
+.. [Houck:2019:2278]
+   S. E. Houck and N. J. Mayhall,
+   *J. Chem. Theory Comput.* **15**, 2278-2290 (2019).
+
+.. [Krylov:2001:522]
+   A. I. Krylov, 
+   *Chem. Phys. Lett.* **350**, 522-530 (2001).
+
+.. [Nooijen:1995:3629]
+   M. Nooijen and R. J. Bartlett, 
+   *J. Chem. Phys.* **102**, 3629 (1995).
+
+
