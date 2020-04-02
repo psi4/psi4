@@ -60,9 +60,6 @@ combined RAS-SF-IP/EA calculations, through the DETCI (:ref:`CI`) module.
 Installation
 ~~~~~~~~~~~~
 
-* .. image:: https://img.shields.io/github/tag/shannonhouck/psi4fockci.svg?maxAge=2592000
-   :target: https://github.com/shannonhouck/psi4fockci
-
 * Download the plugin from the GitHub repository:
 
   .. code-block:: bash
