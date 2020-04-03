@@ -41,12 +41,12 @@ class MP2_CCSD : public CCManyBody {
    public:
     MP2_CCSD(SharedWavefunction ref_wfn, Options &options);
     ~MP2_CCSD() override;
-    void compute_mp2_ccsd_energy();
+    double compute_energy();
 
    private:
     void add_matrices();
     void read_mp2_ccsd_integrals();
-    double compute_energy();
+    double compute_iteration_energy();
     void compute_mp2_components();
     void compute_mp2_ccsd_components();
     void synchronize_amps();

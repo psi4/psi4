@@ -45,18 +45,15 @@ class CCMRCC : public CCManyBody {
     CCMRCC(SharedWavefunction ref_wfn, Options &options);
     ~CCMRCC() override;
 
-    // CCSD
-    void compute_energy(Updater *updater);
+    double compute_energy();
 
     // CCSD(T)
     void compute_perturbative_triples();
 
-    // Perturbative correction for CBS
-    void compute_first_order_amps();
-    void perturbative_cbs();
-
    private:
     Options &options_;
+
+    std::shared_ptr<Updater> updater_;
 
     bool ap_correction;
 

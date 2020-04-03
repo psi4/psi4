@@ -58,37 +58,22 @@ void mrccsd(SharedWavefunction ref_wfn, Options& options) {
     // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
     CCMRCC mrcc(ref_wfn, options);
 
-    if (options.get_bool("PERTURB_CBS") && options.get_bool("PERTURB_CBS_COUPLING")) {
-        mrcc.compute_first_order_amps();
-    }
-
     options.print();
-    // Initialize the appropriate updater
-    Updater* updater = nullptr;
-    //  if(options_get_str("CORR_ANSATZ")=="SR")
-    //    updater = static_cast<Updater*>(new MkUpdater());
-    if (options.get_str("CORR_ANSATZ") == "MK") updater = dynamic_cast<Updater*>(new MkUpdater(options));
-    if (options.get_str("CORR_ANSATZ") == "BW") updater = dynamic_cast<Updater*>(new BWUpdater(options));
 
     // Compute the energy
-    mrcc.compute_energy(updater);
-
-    if (options.get_bool("PERTURB_CBS")) {
-        mrcc.perturbative_cbs();
-    }
-
-    delete updater;
+    mrcc.compute_energy();
 }
 
 /*!
  * Runs a CCSD_MP2 computation
+ * For some reason, this code is never called. You can't run MP2 CCSD in Psi4.
  */
 void mp2_ccsd(SharedWavefunction ref_wfn, Options& options) {
     // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
     MP2_CCSD mp2_ccsd(ref_wfn, options);
 
     // Compute the initial amplitudes and CCSD_MP2 energy
-    mp2_ccsd.compute_mp2_ccsd_energy();
+    mp2_ccsd.compute_energy();
 
     DEBUGGING(1, blas->print_memory();)
 }
@@ -100,12 +85,8 @@ void mrpt2(SharedWavefunction ref_wfn, Options& options) {
     // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
     IDMRPT2 idmrpt2(ref_wfn, options);
 
-    auto* updater = dynamic_cast<Updater*>(new MkUpdater(options));
-
     // Compute the initial amplitudes and MP2 energy
-    idmrpt2.compute_mrpt2_energy(updater);
-
-    delete updater;
+    idmrpt2.compute_energy();
 
     DEBUGGING(1, blas->print_memory();)
 }
