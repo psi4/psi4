@@ -873,61 +873,69 @@ def properties(*args, **kwargs):
         return core.variable('CURRENT ENERGY')
 
 
+
 def optimize_geometric(name, **kwargs):
 
-    # will move imports to top of file when i'm sure where this method goes
-    import qcengine as qcng
-    import qcelemental as qcel
     import geometric
+    import qcelemental as qcel
+
+    class Psi4NativeEngine(geometric.engine.Engine):
+        """
+        Run a Psi4 energy and gradient calculation for geometric without any I/O
+        """
+        def __init__(self, p4_name, p4_mol, **p4_kwargs):
+    
+            self.p4_name = p4_name
+            self.p4_mol = p4_mol
+            self.p4_kwargs = p4_kwargs
+    
+            molecule = geometric.molecule.Molecule()
+            molecule.elem = [p4_mol.symbol(i) for i in range(p4_mol.natom())]
+            molecule.xyzs = [p4_mol.geometry().np * qcel.constants.bohr2angstroms] # reshape?
+            molecule.build_bonds()
+                                 
+            super(Psi4NativeEngine, self).__init__(molecule)
+    
+        def calc(self, coords, dirname):
+            self.p4_mol.set_geometry(core.Matrix.from_array(coords.reshape(-1,3)))
+            self.p4_mol.update_geometry()
+            g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
+            e = core.variable('CURRENT ENERGY')
+            return {'energy': e, 'gradient': (g.np).reshape(-1)}
 
     if '/' in name:
         raise ValidationError(f'Composite methods like {name} are not yet supported with geomeTRIC')
                                  
-    # Collect all user-specified keywords
-    keywords = {}
-    for opt in core.get_global_option_list():
-        if core.has_global_option_changed(opt):
-            keywords[opt] = core.get_global_option(opt)
-    basis = keywords['BASIS']
+    return_wfn = kwargs.pop('return_wfn', False)
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.get('molecule', core.get_active_molecule())
 
-    # If we are freezing cartesian, do not orient or COM
-    if core.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
-        molecule.fix_orientation(True)
-        molecule.fix_com(True)
+    # Do not fix orientation or COM
+    molecule.fix_orientation(True)
+    molecule.fix_com(True)
     molecule.update_geometry()
 
-    input_data = {
-        "keywords": {
-            "convergence_set": core.get_global_option("G_CONVERGENCE"),
-            "maxiter": core.get_global_option("GEOM_MAXITER"),
-            "coordsys": "tric",
-            "enforce": 0.1,
-            "constraints": {},
-            "program": "psi4",
-        },
-        "input_specification": {
-            "driver": "gradient",
-            "model": {
-                "method": name,
-                "basis" : basis,
-            },
-            "keywords" : keywords,
-        },
-        "initial_molecule": molecule.to_schema(dtype=2),
-    }
+    # Get geometric-specific options
+    geometric_opts = kwargs.get('geometric_opts', {})
 
-    if input_data["keywords"]["convergence_set"] in ["CFOUR", "QCHEM", "MOLPRO"]:
-        input_data["keywords"]["convergence_set"] = "GAU_TIGHT"
+    # Default to Psi4 maxiter unless overridden
+    if 'maxiter' not in geometric_opts:
+        geometric_opts['maxiter'] = core.get_global_option('GEOM_MAXITER')
 
-    # Parse JSON
-    input_opts = geometric.run_json.parse_input_json_dict(input_data)
-    M, engine = geometric.optimize.get_molecule_engine(**input_opts)
+    # Default to Psi4 geometry convergence criteria unless overridden 
+    if 'convergence_set' not in geometric_opts:
+        geometric_opts['convergence_set'] = core.get_global_option('G_CONVERGENCE')
+
+        # GeomeTRIC doesn't know these convergence criterion
+        if geometric_opts['convergence_set'] in ['CFOUR', 'QCHEM', 'MOLPRO']:
+            geometric_opts['convergence_set'] = 'GAU_TIGHT'
+
+    engine = Psi4NativeEngine(name, molecule, **kwargs)
+    M = engine.M
     
     # Handle constraints
-    constraints_dict = input_opts.get('constraints', {})
+    constraints_dict = geometric_opts.get('constraints', {})
     constraints_string = geometric.run_json.make_constraints_string(constraints_dict)
     Cons, CVals = None, None
     if constraints_string:
@@ -936,7 +944,7 @@ def optimize_geometric(name, **kwargs):
         Cons, CVals = geometric.optimize.ParseConstraints(M, constraints_string)
     
     # Set up the internal coordinate system
-    coordsys = input_opts.get('coordsys', 'tric')
+    coordsys = geometric_opts.get('coordsys', 'tric')
     CoordSysDict = {
         'cart': (geometric.internal.CartesianCoordinates, False, False),
         'prim': (geometric.internal.PrimitiveInternalCoordinates, True, False),
@@ -959,7 +967,7 @@ def optimize_geometric(name, **kwargs):
     coords = M.xyzs[0].flatten() / qcel.constants.bohr2angstroms
 
     # Setup an optimizer object
-    params = geometric.optimize.OptParams(**input_opts)
+    params = geometric.optimize.OptParams(**geometric_opts)
     optimizer = geometric.optimize.Optimizer(coords, M, IC, engine, None, params)
     
     # TODO: print constraints
@@ -1004,17 +1012,17 @@ def optimize_geometric(name, **kwargs):
     return_energy = optimizer.E
     opt_geometry = core.Matrix.from_array(optimizer.X.reshape(-1,3))
     molecule.set_geometry(opt_geometry)
+    molecule.update_geometry()
     core.print_out(f'\n  Final Energy : {return_energy} \n')
     core.print_out('\n  Final Geometry : \n')
     molecule.print_in_input_format()
 
     # run gradient at optimized geometry to get a wfn
-    if kwargs.get('return_wfn', False):
-        g, wfn = gradient(name, **kwargs)
+    if return_wfn:
+        g, wfn = gradient(name, return_wfn=True, **kwargs)
         return return_energy, wfn
     else:
         return return_energy
-
 
 
 def optimize(name, **kwargs):
