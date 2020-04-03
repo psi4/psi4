@@ -173,6 +173,9 @@ void OCCWave::common_init() {
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF")
         reference_ = "UNRESTRICTED";
 
+    if (!psio_) {
+        throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing OCC. See GitHub issue #1851.");
+    }
     // Only UHF is allowed for the standard methods, except for MP2
     if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ != "OMP2") {
         throw PSIEXCEPTION("The ROHF reference is not available for the standard methods (except for MP2)!");

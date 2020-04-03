@@ -106,6 +106,10 @@ void DFOCC::common_init() {
     triples_iabc_type_ = options_.get_str("TRIPLES_IABC_TYPE");
     do_cd = options_.get_str("CHOLESKY");
 
+    if (!psio_) {
+        throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing DFOCC. See GitHub issue #1851.");
+    }
+
     // title
     title();
 
