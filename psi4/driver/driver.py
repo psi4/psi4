@@ -891,7 +891,7 @@ def optimize_geometric(name, **kwargs):
     
             molecule = geometric.molecule.Molecule()
             molecule.elem = [p4_mol.symbol(i) for i in range(p4_mol.natom())]
-            molecule.xyzs = [p4_mol.geometry().np * qcel.constants.bohr2angstroms] # reshape?
+            molecule.xyzs = [p4_mol.geometry().np * qcel.constants.bohr2angstroms] 
             molecule.build_bonds()
                                  
             super(Psi4NativeEngine, self).__init__(molecule)
@@ -901,12 +901,16 @@ def optimize_geometric(name, **kwargs):
             self.p4_mol.update_geometry()
             g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
             e = core.variable('CURRENT ENERGY')
-            return {'energy': e, 'gradient': (g.np).reshape(-1)}
+            return {'energy': e, 'gradient': g.np.ravel()}
 
-    if '/' in name:
-        raise ValidationError(f'Composite methods like {name} are not yet supported with geomeTRIC')
-                                 
     return_wfn = kwargs.pop('return_wfn', False)
+    return_history = kwargs.pop('return_history', False)
+
+    if return_history:
+        step_energies = []
+        step_gradients = []
+        step_coordinates = []
+
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.get('molecule', core.get_active_molecule())
@@ -919,6 +923,9 @@ def optimize_geometric(name, **kwargs):
     # Get geometric-specific options
     geometric_opts = kwargs.get('geometric_opts', {})
 
+    core.print_out('\n')
+    core.print_out("\n  ==> GeomeTRIC Optimizer <==                                                                   ~\n")
+                                 
     # Default to Psi4 maxiter unless overridden
     if 'maxiter' not in geometric_opts:
         geometric_opts['maxiter'] = core.get_global_option('GEOM_MAXITER')
@@ -929,6 +936,7 @@ def optimize_geometric(name, **kwargs):
 
         # GeomeTRIC doesn't know these convergence criterion
         if geometric_opts['convergence_set'] in ['CFOUR', 'QCHEM', 'MOLPRO']:
+            core.print_out(f"\n  Psi4 convergence criteria {geometric_opts['convergence_set']:6s} not recognized by GeomeTRIC, switching to GAU_TIGHT          ~")
             geometric_opts['convergence_set'] = 'GAU_TIGHT'
 
     engine = Psi4NativeEngine(name, molecule, **kwargs)
@@ -940,7 +948,7 @@ def optimize_geometric(name, **kwargs):
     Cons, CVals = None, None
     if constraints_string:
         if 'scan' in constraints_dict:
-            raise ValueError("No scan!")
+            raise ValueError("Coordinate scans are not yet available through the Psi4-GeomeTRIC interface")
         Cons, CVals = geometric.optimize.ParseConstraints(M, constraints_string)
     
     # Set up the internal coordinate system
@@ -977,23 +985,24 @@ def optimize_geometric(name, **kwargs):
     grms, gmax = optimizer.calcGradNorm()
     conv_gmax = '*' if gmax < params.Convergence_gmax else ' '
     conv_grms = '*' if grms < params.Convergence_grms else ' '
-    core.print_out('\n')
-    core.print_out("\n  ==> geomeTRIC Optimizer <==\n")
-    core.print_out("\n  Measures of convergence in internal coordinates in au.")
-    core.print_out("\n  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).")
-    core.print_out("\n  ---------------------------------------------------------------------------------------------")
-    core.print_out("\n   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ")
-    core.print_out("\n  ---------------------------------------------------------------------------------------------")
+    core.print_out("\n  Measures of convergence in internal coordinates in au.                                        ~")
+    core.print_out("\n  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).                    ~")
+    core.print_out("\n  --------------------------------------------------------------------------------------------- ~")
+    core.print_out("\n   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp    ~")
+    core.print_out("\n  --------------------------------------------------------------------------------------------- ~")
     core.print_out((f"\n    Convergence Criteria  {params.Convergence_energy:10.2e}    "
                     f"{params.Convergence_gmax:10.2e}    {params.Convergence_grms:10.2e}    "
-                    f"{params.Convergence_dmax:10.2e}    {params.Convergence_drms:10.2e}"))
-    core.print_out("\n  ---------------------------------------------------------------------------------------------")
+                    f"{params.Convergence_dmax:10.2e}    {params.Convergence_drms:10.2e}    ~"))
+    core.print_out("\n  --------------------------------------------------------------------------------------------- ~")
 
-    core.print_out((f"\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}    -------- *  "
-                    f"{gmax:10.2e} {conv_gmax}  {grms:10.2e} {conv_grms}    -------- *    -------- *"))
+    core.print_out((f"\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}    --------    "
+                    f"{gmax:10.2e} {conv_gmax}  {grms:10.2e} {conv_grms}    --------      --------    ~"))
     while True:
-        if optimizer.state in [geometric.optimize.OPT_STATE.CONVERGED, geometric.optimize.OPT_STATE.FAILED]:
-            core.print_out("\n\n  Optmization converged!\n")
+        if optimizer.state == geometric.optimize.OPT_STATE.CONVERGED:
+            core.print_out("\n\n  Optimization converged!                                                                       ~\n")
+            break
+        elif optimizer.state == geometric.optimize.OPT_STATE.FAILED:
+            core.print_out("\n\n  Optimization failed to converge!                                                              ~\n")
             break
         optimizer.step()
         optimizer.calcEnergyForce()
@@ -1007,7 +1016,12 @@ def optimize_geometric(name, **kwargs):
         conv_drms = '*' if drms < params.Convergence_drms else ' '
         core.print_out((f'\n   {optimizer.Iteration:4d} {optimizer.E:16.8e}  '
                         f'{optimizer.E-optimizer.Eprev:10.2e} {conv_energy}  {gmax:10.2e} {conv_gmax}  '
-                        f'{grms:10.2e} {conv_grms}  {dmax:10.2e} {conv_dmax}  {drms:10.2e} {conv_drms}'))
+                        f'{grms:10.2e} {conv_grms}  {dmax:10.2e} {conv_dmax}  {drms:10.2e} {conv_drms}  ~'))
+
+        if return_history:
+            step_energies.append(optimizer.E)
+            step_coordinates.append(core.Matrix.from_array(optimizer.X.reshape(-1,3)))
+            step_gradients.append(core.Matrix.from_array(optimizer.gradx.reshape(-1,3)))
 
     return_energy = optimizer.E
     opt_geometry = core.Matrix.from_array(optimizer.X.reshape(-1,3))
@@ -1017,12 +1031,27 @@ def optimize_geometric(name, **kwargs):
     core.print_out('\n  Final Geometry : \n')
     molecule.print_in_input_format()
 
+    if return_history:
+        history = {
+            'energy': step_energies,
+            'gradient': step_gradients,
+            'coordinates': step_coordinates,
+        }
+
     # run gradient at optimized geometry to get a wfn
     if return_wfn:
         g, wfn = gradient(name, return_wfn=True, **kwargs)
-        return return_energy, wfn
+
+    if return_wfn and return_history:
+        return (return_energy, wfn, history)
+    elif return_wfn and not return_history:
+        return (return_energy, wfn)
+    elif return_history and not return_wfn:
+        return (return_energy, history)
     else:
         return return_energy
+
+
 
 
 def optimize(name, **kwargs):
