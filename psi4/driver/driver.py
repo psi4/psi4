@@ -876,12 +876,15 @@ def properties(*args, **kwargs):
 
 def optimize_geometric(name, **kwargs):
 
-    import geometric
+    try:
+        import geometric
+    except ImportError:
+        raise ImportError('Python module geometric not found')
     import qcelemental as qcel
 
     class Psi4NativeEngine(geometric.engine.Engine):
         """
-        Run a Psi4 energy and gradient calculation for geometric without any I/O
+        Internally run an energy and gradient calculation for geometric 
         """
         def __init__(self, p4_name, p4_mol, **p4_kwargs):
     
