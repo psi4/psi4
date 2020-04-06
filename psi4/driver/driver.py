@@ -1096,6 +1096,18 @@ def optimize(name, **kwargs):
         Indicate to additionally return dictionary of lists of geometries,
         energies, and gradients at each step in the optimization.
 
+    :type engine: string
+    :param engine: |dl| ``'optking'`` |dr| || ``'geometric'``
+
+        Indicates the optimization engine to use, which can be either Psi4's
+        native Optking optimizer or the GeomeTRIC program.
+
+    :type geometric_opts: dict
+    :param geometric_opts: Options passed to the GeomeTRIC optimizer
+
+        Indicates additional options to be passed to the GeomeTRIC optimizer if
+        chosen as the optimization engine.
+
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
