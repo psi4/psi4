@@ -41,6 +41,7 @@
 #include "psi4/detci/slaterd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
 
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
@@ -65,6 +66,8 @@ CIWavefunction::~CIWavefunction() {
 }
 
 void CIWavefunction::common_init() {
+    psio_ = _default_psio_lib_; // We can't assume the incoming ref_wfn had its own psio
+
     title((options_.get_str("WFN") == "CASSCF") || (options_.get_str("WFN") == "RASSCF"));
 
     // Build and set structs
