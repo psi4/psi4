@@ -887,10 +887,11 @@ def optimize_geometric(name, **kwargs):
         """
         Internally run an energy and gradient calculation for geometric 
         """
-        def __init__(self, p4_name, p4_mol, **p4_kwargs):
+        def __init__(self, p4_name, p4_mol, p4_return_wfn, **p4_kwargs):
     
             self.p4_name = p4_name
             self.p4_mol = p4_mol
+            self.p4_return_wfn = p4_return_wfn
             self.p4_kwargs = p4_kwargs
     
             molecule = geometric.molecule.Molecule()
@@ -903,7 +904,11 @@ def optimize_geometric(name, **kwargs):
         def calc(self, coords, dirname):
             self.p4_mol.set_geometry(core.Matrix.from_array(coords.reshape(-1,3)))
             self.p4_mol.update_geometry()
-            g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
+            if self.p4_return_wfn:
+                g, wfn = gradient(self.p4_name, return_wfn=True, molecule=self.p4_mol, **self.p4_kwargs)
+                self.p4_wfn = wfn
+            else:
+                g = gradient(self.p4_name, return_wfn=False, molecule=self.p4_mol, **self.p4_kwargs)
             e = core.variable('CURRENT ENERGY')
             return {'energy': e, 'gradient': g.np.ravel()}
 
@@ -914,7 +919,6 @@ def optimize_geometric(name, **kwargs):
         step_energies = []
         step_gradients = []
         step_coordinates = []
-
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.get('molecule', core.get_active_molecule())
@@ -943,7 +947,7 @@ def optimize_geometric(name, **kwargs):
             core.print_out(f"\n  Psi4 convergence criteria {geometric_opts['convergence_set']:6s} not recognized by GeomeTRIC, switching to GAU_TIGHT          ~")
             geometric_opts['convergence_set'] = 'GAU_TIGHT'
 
-    engine = Psi4NativeEngine(name, molecule, **kwargs)
+    engine = Psi4NativeEngine(name, molecule, return_wfn, **kwargs)
     M = engine.M
     
     # Handle constraints
@@ -1042,9 +1046,8 @@ def optimize_geometric(name, **kwargs):
             'coordinates': step_coordinates,
         }
 
-    # run gradient at optimized geometry to get a wfn
     if return_wfn:
-        g, wfn = gradient(name, return_wfn=True, **kwargs)
+        wfn = engine.p4_wfn
 
     if return_wfn and return_history:
         return (return_energy, wfn, history)
