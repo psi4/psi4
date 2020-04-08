@@ -876,11 +876,12 @@ def properties(*args, **kwargs):
 
 def optimize_geometric(name, **kwargs):
 
-    try:
-        import geometric
-    except ImportError:
-        raise ImportError('Python module geometric not found')
     import qcelemental as qcel
+    from qcelemental.util import which_import
+
+    if not which_import('geometric', return_bool=True):
+        raise ModuleNotFoundError('Python module geometric not found. Solve by installing it: `conda install -c conda-forge geometric` or `pip install geometric`')
+    import geometric
 
     class Psi4NativeEngine(geometric.engine.Engine):
         """

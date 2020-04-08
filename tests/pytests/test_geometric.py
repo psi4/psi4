@@ -6,8 +6,10 @@ import psi4
 from qcengine.testing import using
 
 
-@using('geometric')
-@pytest.mark.parametrize('engine', ['optking', 'geometric']) 
+@pytest.mark.parametrize('engine', [
+    pytest.param('optking'),
+    pytest.param('geometric', marks=using('geometric')),
+])  # yapf: disable
 @pytest.mark.parametrize('inp', [
     pytest.param({'name': 'hf', 'options': {'scf_type': 'df'}, 'ref_ene' : -76.027032783717, 'ref_nuc': 9.300794299874}, id='rhf(df)'),
     pytest.param({'name': 'hf', 'options': {'scf_type': 'pk'}, 'ref_ene' : -76.027053512764, 'ref_nuc': 9.300838770294}, id='rhf(pk)'),
