@@ -442,16 +442,16 @@ achieve convergence. To avoid this revokation, turn on keyword |optking__flexibl
    pair: geometry optimization; output
 
 Interface to GeomeTRIC
-^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 The GeomeTRIC optimizer developed by Wang and Song [Wang:2016:214108]_ may be used in place of
 Psi4's native Optking optimizer. GeomeTRIC uses a translation-rotation-internal coordinate (TRIC)
 system that works well for optimizing geometries of systems containing noncovalent interactions.
 
-Use of the GeomeTRIC optimizer is specified with the `engine` argument to
+Use of the GeomeTRIC optimizer is specified with the ``engine`` argument to
 :py:func:`~psi4.optimize`. The optimization will respect the keywords |optking__g_convergence|
 and |optking__geom_maxiter|. Any other GeomeTRIC-specific options (including constraints)
-may be specified with the `geometric_opts` argument to :py:func:`~psi4.optimize`.
+may be specified with the ``geometric_opts`` argument to :py:func:`~psi4.optimize`.
 
 Output
 ^^^^^^
