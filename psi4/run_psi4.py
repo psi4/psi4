@@ -355,7 +355,7 @@ except Exception as exception:
 
     # extact expection message and print it in a box for attention.
     ex = ','.join(traceback.format_exception_only(type(exception), exception))
-    ex_list = ex.split(":", 1)[1:]
+    ex_list = ex.split(":", 1)[-1]
     error = ''.join(ex_list)
     psi4.core.print_out(psi4.extras.error_box(error))
     if psi4.core.get_output_file() != "stdout":
