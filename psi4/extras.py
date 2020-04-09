@@ -204,3 +204,23 @@ def test(extent='full', extras=None):
 
     retcode = pytest.main(command)
     return retcode
+
+def error_box(message: str = None):
+    """ put a message string into a box for extra attention
+
+    Parameters
+    -----------
+    message
+       message string to be boxed
+
+    Returns
+    --------
+    str
+       box containing the message as a multiline string
+    """
+    error_str = '\n!' + '-' * len(message) + ' !\n'
+    error_str += '!' + ' ' * len(message) + ' !\n'
+    error_str += '! ' + message.rstrip() + ' !' + '\n'
+    error_str += '!' + ' ' * len(message) + ' !\n'
+    error_str += '!' + '-' * len(message) + ' !\n'
+    return error_str
