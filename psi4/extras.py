@@ -205,7 +205,7 @@ def test(extent='full', extras=None):
     retcode = pytest.main(command)
     return retcode
 
-def error_box(message: str = None):
+def message_box(message: str = None, max_width: int = 80):
     """ put a message string into a box for extra attention
 
     Parameters
@@ -213,14 +213,29 @@ def error_box(message: str = None):
     message
        message string to be boxed
 
+    max_width
+        maximal character width of the box
+
     Returns
     --------
     str
        box containing the message as a multiline string
     """
-    error_str = '\n!' + '-' * len(message) + ' !\n'
-    error_str += '!' + ' ' * len(message) + ' !\n'
-    error_str += '! ' + message.rstrip() + ' !' + '\n'
-    error_str += '!' + ' ' * len(message) + ' !\n'
-    error_str += '!' + '-' * len(message) + ' !\n'
+    from textwrap import wrap
+    
+    is_long = (len(message) > max_width)
+    box_width = max_width if is_long else len(message)
+
+    message = " ".join(message.split("\n"))
+    message = wrap(message, box_width, break_long_words=False)
+    error_str = []
+    error_str.append('\n!' + '-' * box_width + '--!\n')
+
+    fmt = "! {:" + str(box_width) + "} !\n"
+    for line in message:
+        error_str.append(fmt.format(line))
+
+    error_str.append('!' + '-' * box_width + '--!\n')
+    error_str = ''.join(error_str)
+
     return error_str
