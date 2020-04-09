@@ -252,11 +252,13 @@ def message_box(message: str = None, max_width: int = 80):
     message = wrap(message, box_width, break_long_words=False)
     error_str = []
     error_str.append('\n!' + '-' * box_width + '--!\n')
+    error_str.append('!' + ' ' * box_width + '  !\n')
 
     fmt = "! {:" + str(box_width) + "} !\n"
     for line in message:
         error_str.append(fmt.format(line))
 
+    error_str.append('!' + ' ' * box_width + '  !\n')
     error_str.append('!' + '-' * box_width + '--!\n')
     error_str = ''.join(error_str)
 
