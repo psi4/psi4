@@ -353,7 +353,13 @@ except Exception as exception:
         in_str += mark + lines[lineno] + "\n"
     psi4.core.print_out(in_str)
 
+    # extact expection message and print it in a box for attention.
+    ex = ','.join(traceback.format_exception_only(type(exception), exception))
+    ex_list = ex.split(":", 1)[-1]
+    error = ''.join(ex_list)
+    psi4.core.print_out(psi4.driver.p4util.text.message_box(error))
     if psi4.core.get_output_file() != "stdout":
         print(tb_str)
         print(in_str)
+        print(psi4.driver.p4util.text.message_box(error))
     sys.exit(1)
