@@ -106,8 +106,8 @@ _qcschema_translation = {
     "mp2": {
         "mp2_same_spin_correlation_energy": {"variables": "MP2 SAME-SPIN CORRELATION ENERGY"},
         "mp2_opposite_spin_correlation_energy": {"variables": "MP2 OPPOSITE-SPIN CORRELATION ENERGY"},
-        "mp2_singles_energy": {"variables": "NYI", "default": 0.0},
-        "mp2_doubles_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_singles_energy": {"variables": "MP2 SINGLES ENERGY"},
+        "mp2_doubles_energy": {"variables": "MP2 DOUBLES ENERGY"},
         "mp2_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
         "mp2_total_energy": {"variables": "MP2 TOTAL ENERGY"},
         "mp2_dipole_moment": {"variables": "NYI"}
@@ -116,8 +116,8 @@ _qcschema_translation = {
     "ccsd": {
         "ccsd_same_spin_correlation_energy": {"variables": "CCSD SAME-SPIN CORRELATION ENERGY"},
         "ccsd_opposite_spin_correlation_energy": {"variables": "CCSD OPPOSITE-SPIN CORRELATION ENERGY"},
-        "ccsd_singles_energy": {"variables": "NYI", "default": 0.0},
-        "ccsd_doubles_energy": {"variables": "CCSD CORRELATION ENERGY"},
+        "ccsd_singles_energy": {"variables": "CCSD SINGLES ENERGY"},
+        "ccsd_doubles_energy": {"variables": "CCSD DOUBLES ENERGY"},
         "ccsd_correlation_energy": {"variables": "CCSD CORRELATION ENERGY"},
         "ccsd_total_energy": {"variables": "CCSD TOTAL ENERGY"},
         "ccsd_dipole_moment": {"variables": "NYI"},
@@ -130,6 +130,7 @@ _qcschema_translation = {
         "ccsd_prt_pr_dipole_moment": {"variables": "NYI"},
     }
 
+#        "ccsd_singles_energy": {"variables": "NYI", "default": 0.0},
 #    "": {"variables": },
 
 } # yapf: disable
@@ -553,7 +554,19 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     # Still a bit of a mess at the moment add in local vars as well.
     for k, v in wfn.variables().items():
         if k not in json_data["extras"]["qcvars"]:
-            json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
+            # interpreting wfn_qcvars_only as no deprecated qcvars either
+            if json_data["extras"].get("wfn_qcvars_only", False) and not (
+                any([k.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]])
+                or any([k.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]])
+                or k.upper()
+                in [
+                    "SOS-MP2 CORRELATION ENERGY",
+                    "SOS-MP2 TOTAL ENERGY",
+                    "SOS-PI-MP2 CORRELATION ENERGY",
+                    "SOS-PI-MP2 TOTAL ENERGY",
+                ]
+            ):
+                json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
     # Handle the return result
     if json_data["driver"] == "energy":

@@ -99,14 +99,14 @@ void DFOCC::cd_omp2_manager() {
     variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
 
     variables_["CURRENT REFERENCE ENERGY"] = Escf;
     variables_["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
     variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
 
     if (reference_ == "UNRESTRICTED") {
         variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
@@ -315,14 +315,14 @@ void DFOCC::cd_mp2_manager() {
     variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
 
     variables_["CURRENT REFERENCE ENERGY"] = Escf;
     variables_["CURRENT CORRELATION ENERGY"] = Emp2 - Escf;
     variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
 
     if (reference_ == "UNRESTRICTED") {
         variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
@@ -563,11 +563,11 @@ void DFOCC::ccsd_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -907,11 +907,11 @@ void DFOCC::ccsd_t_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -1286,11 +1286,11 @@ void DFOCC::ccsdl_t_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -1576,11 +1576,11 @@ void DFOCC::ccd_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -1801,11 +1801,11 @@ void DFOCC::omp3_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -2115,11 +2115,11 @@ void DFOCC::mp3_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -2312,11 +2312,11 @@ void DFOCC::omp2_5_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -2607,11 +2607,11 @@ void DFOCC::mp2_5_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -2798,11 +2798,11 @@ void DFOCC::olccd_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
@@ -3068,11 +3068,11 @@ void DFOCC::lccd_manager_cd() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;

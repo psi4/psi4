@@ -171,8 +171,12 @@ double CCEnergyWavefunction::compute_energy() {
         psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *)&(moinfo_.emp2), sizeof(double));
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.emp2 + moinfo_.eref;
+        Process::environment.globals["MP2 SINGLES ENERGY"] = 0.0;
+        Process::environment.globals["MP2 DOUBLES ENERGY"] = moinfo_.emp2;
         set_scalar_variable("MP2 CORRELATION ENERGY", moinfo_.emp2);
         set_scalar_variable("MP2 TOTAL ENERGY", moinfo_.emp2 + moinfo_.eref);
+        set_scalar_variable("MP2 SINGLES ENERGY", 0.0);
+        set_scalar_variable("MP2 DOUBLES ENERGY", moinfo_.emp2);
     }
 
     if (params_.print_mp2_amps) amp_write();
@@ -410,16 +414,21 @@ double CCEnergyWavefunction::compute_energy() {
 
         outfile->Printf("\n    Opposite-spin CCSD correlation energy     = %20.15f\n", moinfo_.ecc_os);
         outfile->Printf("    Same-spin CCSD correlation energy         = %20.15f\n", moinfo_.ecc_ss);
+        outfile->Printf("    Singles CCSD correlation energy           = %20.15f\n", moinfo_.ecc_s);
         outfile->Printf("    CCSD correlation energy                   = %20.15f\n", moinfo_.ecc);
         outfile->Printf("      * CCSD total energy                     = %20.15f\n", moinfo_.eref + moinfo_.ecc);
 
         Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo_.ecc_os;
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo_.ecc_ss;
+        Process::environment.globals["CCSD SINGLES ENERGY"] = moinfo_.ecc_s;
+        Process::environment.globals["CCSD DOUBLES ENERGY"] = moinfo_.ecc_os + moinfo_.ecc_ss;
         Process::environment.globals["CCSD CORRELATION ENERGY"] = moinfo_.ecc;
         Process::environment.globals["CCSD TOTAL ENERGY"] = moinfo_.ecc + moinfo_.eref;
         Process::environment.globals["CCSD ITERATIONS"] = moinfo_.iter;
         set_scalar_variable("CCSD OPPOSITE-SPIN CORRELATION ENERGY", moinfo_.ecc_os);
         set_scalar_variable("CCSD SAME-SPIN CORRELATION ENERGY", moinfo_.ecc_ss);
+        set_scalar_variable("CCSD SINGLES ENERGY", moinfo_.ecc_s);
+        set_scalar_variable("CCSD DOUBLES ENERGY", moinfo_.ecc_os + moinfo_.ecc_ss);
         set_scalar_variable("CCSD CORRELATION ENERGY", moinfo_.ecc);
         set_scalar_variable("CCSD TOTAL ENERGY", moinfo_.ecc + moinfo_.eref);
         set_scalar_variable("CCSD ITERATIONS", moinfo_.iter);

@@ -106,6 +106,7 @@ struct MOInfo {
     double ecc;        /* Current coupled cluster correlation energy */
     double ecc_ss;     /* Same-spin coupled cluster correlation energy*/
     double ecc_os;     /* Opposite-spin coupled cluster energy*/
+    double ecc_s;      /* Singles coupled cluster energy */
     double t1diag;     /* Standard open- or closed-shell T1 diagnostic */
     double d1diag;     /* Janssen and Nielsen's D1 Diagnostic */
     double new_d1diag; /* Lee's modified D1 Diagnostic */

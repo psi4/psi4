@@ -76,6 +76,7 @@ double CCEnergyWavefunction::rhf_energy() {
 
     moinfo_.ecc_ss = ss_energy;
     moinfo_.ecc_os = os_energy;
+    moinfo_.ecc_s = 0.0;
 
     global_dpd_->buf4_close(&S);
     global_dpd_->buf4_close(&tauIjAb);
@@ -133,6 +134,7 @@ double CCEnergyWavefunction::rohf_energy() {
     // (not including singles here)
     moinfo_.ecc_ss = tauIJAB_energy + tauijab_energy;
     moinfo_.ecc_os = tauIjAb_energy;
+    moinfo_.ecc_s = tIA_energy + tia_energy;
 
     return (tIA_energy + tia_energy + tauIJAB_energy + tauijab_energy + tauIjAb_energy);
 }
@@ -191,6 +193,7 @@ double CCEnergyWavefunction::uhf_energy() {
     // (not including singles here)
     moinfo_.ecc_ss = E2AA + E2BB;
     moinfo_.ecc_os = E2AB;
+    moinfo_.ecc_s = T1A + T1B;
 
     return (T1A + T1B + E2AA + E2BB + E2AB);
 }
