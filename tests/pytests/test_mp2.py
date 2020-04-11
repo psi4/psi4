@@ -225,9 +225,10 @@ _nyi4 = "spin components rhf mp2 energies NYI"
     ],
 )
 def test_mp2_energy_scftype(inp, dertype, clsd_open_pmols, request):
+    method = "mp2"
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
-    _asserter_mp2(inp, subject, tnm)
+    _runner_asserter(inp, subject, method, tnm)
 
 
 @pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
@@ -317,9 +318,34 @@ def test_mp2_energy_scftype(inp, dertype, clsd_open_pmols, request):
     ],
 )
 def test_mp2_energy_module(inp, dertype, clsd_open_pmols, request):
+    method = "mp2"
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
-    _asserter_mp2(inp, subject, tnm)
+    _runner_asserter(inp, subject, method, tnm)
+
+
+@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+
+        ###### ccenergy
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true",                   },}, id="ccsd  rhf conv fc: * ccenergy",),
+        pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "uhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true",                   },}, id="ccsd  uhf conv fc: * ccenergy",),
+        pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf", "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true",                   },}, id="ccsd rohf conv fc: * ccenergy",),
+        pytest.param({"driver": "energy", "subject": "hf",   "options": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",                  },}, id="ccsd  rhf conv ae: * ccenergy",),
+        pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "uhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",                  },}, id="ccsd  uhf conv ae: * ccenergy",),
+        pytest.param({"driver": "energy", "subject": "bh3p", "options": {"reference": "rohf", "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",                  },}, id="ccsd rohf conv ae: * ccenergy",),
+        # yapf: enable
+    ],
+)
+def test_ccsd_energy_module(inp, dertype, clsd_open_pmols, request):
+    method = "ccsd"
+    tnm = request.node.name
+    subject = clsd_open_pmols[inp["subject"]]
+    _runner_asserter(inp, subject, method, tnm)
 
 
 @pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
@@ -362,9 +388,10 @@ def test_mp2_energy_module(inp, dertype, clsd_open_pmols, request):
     ],
 )
 def test_mp2_energy_default(inp, dertype, clsd_open_pmols, request):
+    method = "mp2"
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
-    _asserter_mp2(inp, subject, tnm)
+    _runner_asserter(inp, subject, method, tnm)
 
 
 @pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
@@ -401,16 +428,17 @@ def test_mp2_energy_default(inp, dertype, clsd_open_pmols, request):
     ],
 )
 def test_mp2_gradient_scftype(inp, dertype, clsd_open_pmols, request):
+    method = "mp2"
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
 
-    inpcopy = {k: v for k, v in inp.items() if k is not "error"}
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
     if inp.get("error", False) and inp["error"].get(dertype, False):
         inpcopy["error"] = inp["error"][dertype]
     if inp.get("marks", False) and inp["marks"].get(dertype, False):
         pytest.xfail(inp["marks"][dertype])
 
-    _asserter_mp2(inpcopy, subject, tnm, dertype=dertype)
+    _runner_asserter(inpcopy, subject, method, tnm, dertype=dertype)
 
 
 @pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
@@ -454,16 +482,17 @@ def test_mp2_gradient_scftype(inp, dertype, clsd_open_pmols, request):
     ],
 )
 def test_mp2_gradient_module(inp, dertype, clsd_open_pmols, request):
+    method = "mp2"
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
 
-    inpcopy = {k: v for k, v in inp.items() if k is not "error"}
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
     if inp.get("error", False) and inp["error"].get(dertype, False):
         inpcopy["error"] = inp["error"][dertype]
     if inp.get("marks", False) and inp["marks"].get(dertype, False):
         pytest.xfail(inp["marks"][dertype])
 
-    _asserter_mp2(inpcopy, subject, tnm, dertype=dertype)
+    _runner_asserter(inpcopy, subject, method, tnm, dertype=dertype)
 
 
 @pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
@@ -506,136 +535,14 @@ def test_mp2_gradient_module(inp, dertype, clsd_open_pmols, request):
     ],
 )
 def test_mp2_gradient_default(inp, dertype, clsd_open_pmols, request):
+    method = "mp2"
     tnm = request.node.name
     subject = clsd_open_pmols[inp["subject"]]
 
-    inpcopy = {k: v for k, v in inp.items() if k is not "error"}
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
     if inp.get("error", False) and inp["error"].get(dertype, False):
         inpcopy["error"] = inp["error"][dertype]
     if inp.get("marks", False) and inp["marks"].get(dertype, False):
         pytest.xfail(inp["marks"][dertype])
 
-    _asserter_mp2(inpcopy, subject, tnm, dertype=dertype)
-
-
-def _asserter_mp2(inp, subject, tnm, *, dertype=None):
-    basis = "cc-pvdz"
-    atol = 1.0e-6
-
-    mp2_type = inp["options"].get("mp2_type", "df")  # hard-code of read_options.cc MP2_TYPE
-    natural_ref = {"conv": "pk", "df": "df", "cd": "cd"}
-    scf_type = inp["options"].get("scf_type", natural_ref[mp2_type])
-    natural_values = {"pk": "pk", "direct": "pk", "df": "df", "mem_df": "df", "disk_df": "df", "cd": "cd"}
-    scf_type = natural_values[scf_type]
-
-    fcae = {"true": "fc", "false": "ae"}
-    frz = fcae[inp["options"]["freeze_core"]]
-
-    qc_module = inp["options"].get("qc_module", "")
-    chash = answer_hash(
-        system=inp["subject"],
-        basis=basis,
-        fc=frz,
-        scf_type=scf_type,
-        reference=inp["options"]["reference"],
-        mp2_type=mp2_type,
-    )
-
-    # check all calcs against conventional reference to looser tolerance
-    atol_conv = 1.0e-4
-    chash_conv = answer_hash(
-        system=inp["subject"],
-        basis=basis,
-        fc=frz,
-        reference=inp["options"]["reference"],
-        mp2_type="conv",
-        scf_type="pk",
-    )
-    ref_block_conv = std_suite[chash_conv]
-
-    # prepare calculation and call psi4
-    driver_call = {"energy": psi4.energy, "gradient": psi4.gradient}
-
-    psi4.set_options(
-        {
-            "basis": basis,
-            "guess": "sad",
-            "e_convergence": 8,
-            "d_convergence": 7,
-            # "e_convergence": 10,
-            # "d_convergence": 9,
-            "points": 5,
-        }
-    )
-    psi4.set_options(inp["options"])
-    extra_kwargs = {"dertype": dertype} if dertype is not None else {}
-
-    if "error" in inp:
-        errtype, errmsg = inp["error"]
-        with pytest.raises(errtype) as e:
-            driver_call[inp["driver"]]("mp2", molecule=subject, **extra_kwargs)
-
-        assert errmsg in str(e.value)
-        return
-
-    ret, wfn = driver_call[inp["driver"]]("mp2", molecule=subject, return_wfn=True, **extra_kwargs)
-
-    # qcvars
-    print("BLOCK", chash, inp["options"].get("scf_type"), scf_type)
-    ref_block = std_suite[chash]
-
-    contractual_qcvars = [
-        "HF TOTAL ENERGY",
-        "MP2 CORRELATION ENERGY",
-        "MP2 TOTAL ENERGY",
-        "MP2 SINGLES ENERGY",
-        "MP2 SAME-SPIN CORRELATION ENERGY",
-        "MP2 OPPOSITE-SPIN CORRELATION ENERGY",
-        "MP2 DOUBLES ENERGY",
-    ]
-    if inp["driver"] == "gradient":
-        contractual_qcvars.append("MP2 TOTAL GRADIENT")
-
-    for obj in [psi4.core, wfn]:
-        for pv in contractual_qcvars:
-            # known contract violators
-            if (
-                qc_module == "detci"
-                and pv
-                in [
-                    "MP2 SINGLES ENERGY",
-                    "MP2 DOUBLES ENERGY",
-                    "MP2 SAME-SPIN CORRELATION ENERGY",
-                    "MP2 OPPOSITE-SPIN CORRELATION ENERGY",
-                ]
-            ) or (
-                qc_module == "occ"
-                and inp["options"]["reference"] == "rhf"
-                and inp["options"]["mp2_type"] in ["df", "cd"]
-                and pv in ["MP2 SAME-SPIN CORRELATION ENERGY", "MP2 OPPOSITE-SPIN CORRELATION ENERGY"]
-            ):
-                continue
-            assert compare_values(ref_block[pv], obj.variable(pv), tnm + " " + pv, atol=atol)
-            assert compare_values(ref_block_conv[pv], obj.variable(pv), tnm + " " + pv, atol=atol_conv)
-
-        # TODO check CUSTOM SCS-MP2 _absent_
-
-        # aliases
-        pv = "SCF TOTAL ENERGY"
-        assert compare_values(ref_block["HF TOTAL ENERGY"], obj.variable(pv), tnm + " " + pv, atol=atol)
-
-        pv = "CURRENT REFERENCE ENERGY"
-        assert compare_values(ref_block["HF TOTAL ENERGY"], obj.variable(pv), tnm + " " + pv, atol=atol)
-
-        pv = "CURRENT CORRELATION ENERGY"
-        assert compare_values(ref_block["MP2 CORRELATION ENERGY"], obj.variable(pv), tnm + " " + pv, atol=atol)
-
-    # returns
-    assert compare_values(ref_block["MP2 TOTAL ENERGY"], wfn.energy(), tnm + " wfn", atol=atol)
-
-    if inp["driver"] == "energy":
-        assert compare_values(ref_block["MP2 TOTAL ENERGY"], ret, tnm + " return")
-
-    elif inp["driver"] == "gradient":
-        assert compare_values(ref_block["MP2 TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn", atol=atol)
-        assert compare_values(ref_block["MP2 TOTAL GRADIENT"], ret.np, tnm + " grad return", atol=atol)
+    _runner_asserter(inpcopy, subject, method, tnm, dertype=dertype)
