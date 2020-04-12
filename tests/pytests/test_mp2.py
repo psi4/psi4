@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 
 from .utils import *
-from .standard_suite_ref import std_suite, answer_hash
 
 import psi4
 

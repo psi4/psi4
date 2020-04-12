@@ -92,11 +92,15 @@ double DFCoupledCluster::compute_energy() {
     Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
     Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
     Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
+    Process::environment.globals["MP2 SINGLES ENERGY"] = 0.0;  // fnocc is RHF only
+    Process::environment.globals["MP2 DOUBLES ENERGY"] = emp2_os + emp2_ss;
 
     // ccsd energy
     Process::environment.globals["CCSD CORRELATION ENERGY"] = eccsd;
     Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
     Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = eccsd_ss;
+    Process::environment.globals["CCSD SINGLES ENERGY"] = 0.0;  // fnocc is RHF only
+    Process::environment.globals["CCSD DOUBLES ENERGY"] = eccsd_os + eccsd_ss;
     Process::environment.globals["CCSD TOTAL ENERGY"] = eccsd + escf;
     Process::environment.globals["CCSD ITERATIONS"] = iter;
     Process::environment.globals["CURRENT ENERGY"] = eccsd + escf;

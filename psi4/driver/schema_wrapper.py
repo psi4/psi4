@@ -555,7 +555,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     for k, v in wfn.variables().items():
         if k not in json_data["extras"]["qcvars"]:
             # interpreting wfn_qcvars_only as no deprecated qcvars either
-            if json_data["extras"].get("wfn_qcvars_only", False) and not (
+            if not (json_data["extras"].get("wfn_qcvars_only", False) and (
                 any([k.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]])
                 or any([k.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]])
                 or k.upper()
@@ -565,7 +565,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
                     "SOS-PI-MP2 CORRELATION ENERGY",
                     "SOS-PI-MP2 TOTAL ENERGY",
                 ]
-            ):
+            )):
                 json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
     # Handle the return result

@@ -1,12 +1,12 @@
 import pytest
-from qcengine.programs.tests.standard_suite_contracts import (
-    contractual_ccsd,
-    contractual_current,
-    contractual_mp2,
-    query_has_qcvar,
-    query_qcvar,
-)
-from qcengine.programs.tests.standard_suite_ref import answer_hash, std_suite
+#from qcengine.programs.tests.standard_suite_contracts import (
+#    contractual_ccsd,
+#    contractual_current,
+#    contractual_mp2,
+#    query_has_qcvar,
+#    query_qcvar,
+#)  # skip is temporary until references in place at qcng
+#from qcengine.programs.tests.standard_suite_ref import answer_hash, std_suite  # skip is temporary until references in place at qcng
 
 import psi4
 

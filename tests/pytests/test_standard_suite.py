@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from qcengine.programs.tests.standard_suite_ref import std_molecules, std_refs
+#from qcengine.programs.tests.standard_suite_ref import std_molecules, std_refs  # skip is temporary until references in place at qcng
 
 import psi4
 
