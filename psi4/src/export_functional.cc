@@ -312,6 +312,8 @@ void export_functional(py::module &m) {
              "Forms the uncoupled amplitudes for either monomer.")
         .def("get_tensor_pqQ", &sapt::FDDS_Dispersion::get_tensor_pqQ,
              "Debug feature")
+        .def("print_tensor_pqQ", &sapt::FDDS_Dispersion::print_tensor_pqQ,
+             "Debug feature")
         .def("form_aux_matrices", &sapt::FDDS_Dispersion::form_aux_matrices,
              "Forms the uncoupled amplitudes and other matrices for either monomer.")
         .def("R_A", &sapt::FDDS_Dispersion::R_A, "Obtains (R^t)^-1 for monomer A.")

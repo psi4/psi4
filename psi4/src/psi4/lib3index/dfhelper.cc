@@ -3378,11 +3378,4 @@ void DFHelper::compute_wK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     }
 }
 
-void DFHelper::flush_tensor(std::string name) {
-
-    FILE* fp = stream_check(name, "wb");
-    fflush(fp);
-    
-}
-
 }  // End namespaces

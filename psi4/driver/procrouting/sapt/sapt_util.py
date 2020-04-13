@@ -144,10 +144,12 @@ def print_sapt_dft_summary(data, name, short=False):
     core.set_variable("SAPT IND ENERGY", ind)
 
     # Dispersion
-    disp = data["Disp20"] + data["Exch-Disp20,u"]
+    # disp = data["Disp20"] + data["Exch-Disp20,u"]
+    disp = data["Disp20"] + data["Exch-Disp20,r"]
     ret += print_sapt_var("Dispersion", disp) + "\n"
     ret += print_sapt_var("  Disp2,r", data["Disp20"]) + "\n"
     ret += print_sapt_var("  Disp2,u", data["Disp20,u"]) + "\n"
+    ret += print_sapt_var("  Exch-Disp2,r", data["Exch-Disp20,r"]) + "\n"
     ret += print_sapt_var("  Exch-Disp2,u", data["Exch-Disp20,u"]) + "\n"
     ret += "\n"
     core.set_variable("SAPT DISP ENERGY", disp)

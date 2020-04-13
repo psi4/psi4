@@ -104,10 +104,6 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache, is_hybrid)
 
-    matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' 
-    arQ_test = fdds_obj.get_tensor_pqQ("arQ", (5, 50, 167)).to_array().flatten()
-    np.savetxt(matdir + "arQ_test.dat", arQ_test)
-
     # Aux Densities
     D = fdds_obj.project_densities([cache["D_A"], cache["D_B"]])
 
@@ -151,20 +147,6 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         Rtinv_A = np.linalg.pinv(R_A, rcond=1.e-13).transpose()
         Rtinv_B = np.linalg.pinv(R_B, rcond=1.e-13).transpose()
 
-    # Debug
-    omega_count = 0
-    matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' 
-    # np.savetxt(matdir + 'Sinv.dat', metric_inv.flatten())
-    # np.savetxt(matdir + 'W_A.dat', W_A.flatten())
-    # np.savetxt(matdir + 'W_B.dat', W_B.flatten())
-    # np.savetxt(matdir + 'R_A.dat', R_A.flatten())
-    # np.savetxt(matdir + 'R_B.dat', R_B.flatten())
-    # np.savetxt(matdir + 'Rtinv_A.dat', Rtinv_A.flatten())
-    # np.savetxt(matdir + 'Rtinv_B.dat', Rtinv_B.flatten())
-    # np.savetxt(matdir + 'D_A.dat', D[0].to_array().flatten())
-    # np.savetxt(matdir + 'D_B.dat', D[1].to_array().flatten())
-
-
     for point, weight in zip(*np.polynomial.legendre.leggauss(leg_points)):
 
         omega = leg_lambda * (1.0 - point) / (1.0 + point)
@@ -196,21 +178,6 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         amplitude = np.linalg.pinv(metric - XSW_A, rcond=1.e-13)
         X_A_coupled = X_A + XSW_A.dot(amplitude).dot(X_A)
 
-        # Debug
-        matdir = '/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/' + str(omega_count) + '/'
-        for i in range(aux_length):
-            np.savetxt(matdir + 'aux_' + str(i) + '.dat', aux_list[i].flatten())
-        # np.savetxt(matdir + 'X_A.dat', X_A.flatten())        
-        # np.savetxt(matdir + 'XSW0_A.dat', XSW_0.flatten())        
-        # np.savetxt(matdir + 'XSW_A.dat', XSW_A.flatten())        
-        # np.savetxt(matdir + 'K_A.dat', K_A.flatten())        
-        # np.savetxt(matdir + 'KRS_A.dat', KRS_A.flatten())
-        # np.savetxt(matdir + 'amp.dat', amplitude.flatten())
-        # np.savetxt(matdir + 'Xcoup_A.dat', X_A_coupled.flatten())
-        omega_out = [omega]
-        np.savetxt(matdir + 'omega.dat', omega_out)
-        omega_count += 1
-
         del X_A, XSW_A, amplitude
         if is_hybrid:
             del K_A, KRS_A, aux_list
@@ -240,19 +207,9 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         amplitude = np.linalg.pinv(metric - XSW_B, rcond=1.e-13)
         X_B_coupled = X_B + XSW_B.dot(amplitude).dot(X_B)
 
-        # Debug
-        # np.savetxt(matdir + 'X_B.dat', X_B.flatten())        
-        # np.savetxt(matdir + 'XSW0_B.dat', XSW_0.flatten())        
-        # np.savetxt(matdir + 'XSW_B.dat', XSW_B.flatten())        
-        # np.savetxt(matdir + 'K_B.dat', K_B.flatten())        
-        # np.savetxt(matdir + 'KRS_B.dat', KRS_B.flatten())        
-        # np.savetxt(matdir + 'Xcoup_B.dat', X_B_coupled.flatten())
-        # omega_count += 1
-
         del X_B, XSW_B, amplitude
         if is_hybrid:
             del K_B, KRS_B, aux_list
-
 
         # Make sure the results are symmetrized
         X_A_uc = _symmetrize(X_A_uc)
@@ -366,4 +323,6 @@ def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, ca
     ret = {}
     ret["Exch-Disp20,u"] = svars["E EXCH-DISP20"]
     ret["Disp20,u"] = svars["E DISP20"]
+    # Using the 0.686 scaling factor from Hesselmann:2014:094107, subject to change in later version
+    ret["Exch-Disp20,r"] = 0.686 * svars["E EXCH-DISP20"] 
     return ret

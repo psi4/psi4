@@ -163,7 +163,8 @@ class FDDS_Dispersion {
     SharedMatrix QR(std::string monomer);
 
     SharedMatrix get_tensor_pqQ(std::string name, std::tuple<size_t, size_t, size_t> dimensions);
-    
+    void print_tensor_pqQ(std::string tensor_name, std::string file_name, std::tuple<size_t, size_t, size_t> dimensions);
+
 };  // End FDDS_Dispersion
 }  // namespace sapt
 }  // namespace psi

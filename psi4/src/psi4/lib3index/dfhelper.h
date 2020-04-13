@@ -305,10 +305,6 @@ class PSI_API DFHelper {
                   std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, std::vector<SharedMatrix> wK,
                   size_t max_nocc, bool do_J, bool do_K, bool do_wK, bool lr_symmetric);
 
-
-    /// flush tensor file
-    void flush_tensor(std::string name);
-
    protected:
     // => basis sets <=
     std::shared_ptr<BasisSet> primary_;
