@@ -227,7 +227,7 @@ def find_approximate_string_matches(seq1, options, max_distance):
 
     return [seq2 for seq2 in options if (levenshtein(seq1, seq2) <= max_distance)]
 
-def message_box(message: str = None, max_width: int = 80):
+def message_box(message: str = None, max_width: int = 80, min_width: int = 30):
     """ put a message string into a box for extra attention
 
     Parameters
@@ -244,19 +244,19 @@ def message_box(message: str = None, max_width: int = 80):
        box containing the message as a multiline string
     """
     from textwrap import wrap
-    
-    is_long = (len(message) > max_width)
-    box_width = max_width if is_long else len(message)
 
-    message = " ".join(message.split("\n"))
-    message = wrap(message, box_width, break_long_words=False)
+    # ensure box is within min/max boundaries
+    msg = message.splitlines()
+    max_line = len(max(msg, key=len))
+    box_width = max(min(max_width, max_line), min_width)
+
     error_str = []
     error_str.append('\n!' + '-' * box_width + '--!\n')
     error_str.append('!' + ' ' * box_width + '  !\n')
 
     fmt = "! {:" + str(box_width) + "} !\n"
-    for line in message:
-        error_str.append(fmt.format(line))
+    for line in msg[:]:
+        error_str.extend([fmt.format(x) for x in wrap(line, box_width)])
 
     error_str.append('!' + ' ' * box_width + '  !\n')
     error_str.append('!' + '-' * box_width + '--!\n')
