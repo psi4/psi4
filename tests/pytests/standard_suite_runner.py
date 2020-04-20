@@ -39,7 +39,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     )
 
     # check all calcs against conventional reference to looser tolerance
-    atol_conv = 1.0e-4
+    atol_conv = 3.0e-4  # for df-ccsd. mp2 ok with 1.e-4
     chash_conv = answer_hash(
         system=subject.name(), basis=basis, fcae=fcae, reference=reference, corl_type="conv", scf_type="pk",
     )
@@ -52,12 +52,15 @@ def runner_asserter(inp, subject, method, basis, tnm):
     psi4.set_options(
         {
             # "guess": "sad",
-            "e_convergence": 8,
-            "d_convergence": 7,
-            "r_convergence": 7,
+            # "e_convergence": 8,
+            # "d_convergence": 7,
+            # "r_convergence": 7,
+
             # "e_convergence": 10,
             # "d_convergence": 9,
             # "r_convergence": 9,
+            # "pcg_convergence": 9,
+            "pcg_convergence": 7,
             "points": 5,
         }
     )

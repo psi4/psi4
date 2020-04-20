@@ -208,10 +208,10 @@ void FrozenNO::ComputeNaturalOrbitals() {
     global_dpd_->buf4_close(&amps1);
 
     double escf = Process::environment.globals["SCF TOTAL ENERGY"];
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2_os + emp2_ss;
-    Process::environment.globals["MP2 TOTAL ENERGY"] = emp2_os + emp2_ss + escf;
+    set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
+    set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
+    set_scalar_variable("MP2 CORRELATION ENERGY", emp2_os + emp2_ss);
+    set_scalar_variable("MP2 TOTAL ENERGY", emp2_os + emp2_ss + escf);
 
     // build amps1(ij,ab) = 2*T(ij,ab) - T(ji,ab)
     global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
@@ -801,10 +801,10 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     outfile->Printf("        Doubles contribution to MP2 energy in full space: %20.12lf\n", emp2);
     outfile->Printf("\n");
 
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
-    Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + Process::environment.globals["SCF TOTAL ENERGY"];
+    set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
+    set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
+    set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
+    set_scalar_variable("MP2 TOTAL ENERGY", emp2 + Process::environment.globals["SCF TOTAL ENERGY"]);
 
     ijab = 0;
     for (long int a = o; a < o + v; a++) {

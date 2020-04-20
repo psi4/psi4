@@ -4517,6 +4517,10 @@ def run_fnodfcc(name, **kwargs):
 
     fnocc_wfn = core.fnocc(ref_wfn)
 
+    # Shove variables into global space
+    for k, v in fnocc_wfn.variables().items():
+        core.set_variable(k, v)
+
     optstash.restore()
     return fnocc_wfn
 
@@ -4634,36 +4638,19 @@ def run_fnocc(name, **kwargs):
     fnocc_wfn = core.fnocc(ref_wfn)
 
     # set current correlation energy and total energy.  only need to treat mpn here.
-    if name == 'mp3':
-        emp3 = core.variable("MP3 TOTAL ENERGY")
-        cemp3 = core.variable("MP3 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp3)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
-    elif name == 'fno-mp3':
-        emp3 = core.variable("MP3 TOTAL ENERGY")
-        cemp3 = core.variable("MP3 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp3)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
-    elif name == 'mp4(sdq)':
-        emp4sdq = core.variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = core.variable("MP4(SDQ) CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4sdq)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
-    elif name == 'fno-mp4(sdq)':
-        emp4sdq = core.variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = core.variable("MP4(SDQ) CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4sdq)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
-    elif name == 'fno-mp4':
-        emp4 = core.variable("MP4 TOTAL ENERGY")
-        cemp4 = core.variable("MP4 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
-    elif name == 'mp4':
-        emp4 = core.variable("MP4 TOTAL ENERGY")
-        cemp4 = core.variable("MP4 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
+    if name in ["mp3", "fno-mp3"]:
+        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP3 TOTAL ENERGY"))
+        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP3 CORRELATION ENERGY"))
+    elif name in ["mp4(sdq)", "fno-mp4(sdq)"]:
+        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP4(SDQ) TOTAL ENERGY"))
+        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP4(SDQ) CORRELATION ENERGY"))
+    elif name in ["mp4", "fno-mp4"]:
+        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP4 TOTAL ENERGY"))
+        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP4 CORRELATION ENERGY"))
+
+    # Shove variables into global space
+    for k, v in fnocc_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return fnocc_wfn
@@ -4745,6 +4732,10 @@ def run_cepa(name, **kwargs):
             core.print_out("""\n    Error: one-electron properties not implemented for %s\n\n""" % name)
         else:
             p4util.oeprop(fnocc_wfn, 'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'NO_OCCUPATIONS', title=cepa_level.upper())
+
+    # Shove variables into global space
+    for k, v in fnocc_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return fnocc_wfn
