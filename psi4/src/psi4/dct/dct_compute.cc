@@ -82,6 +82,9 @@ double DCTSolver::compute_energy() {
         }
     }
 
+    if (options_.get_str("DCT_FUNCTIONAL") == "CEPA0")
+        throw PSIEXCEPTION("CEPA0 was removed from the DCT module in 1.4. Please use the lccd method in OCC, DFOCC, or FNOCC.");
+
     if (same_a_b_orbs_ == true)
         total_energy = compute_energy_RHF();
     else {
