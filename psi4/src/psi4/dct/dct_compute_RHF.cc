@@ -83,13 +83,9 @@ double DCTSolver::compute_energy_RHF() {
     // Things that are not implemented yet...
     if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCT_FUNCTIONAL") == "DC-12"))
         throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" &&
         options_.get_str("QC_TYPE") == "SIMULTANEOUS")
         throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "Requested DCT algorithm", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" || options_.get_str("ALGORITHM") == "TWOSTEP")
         throw FeatureNotImplemented("RHF-reference DCT", "ALGORITHM = QC/TWOSTEP", __FILE__, __LINE__);
     if (options_.get_str("DCT_FUNCTIONAL") == "ODC-13")

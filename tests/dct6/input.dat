@@ -47,7 +47,3 @@ energy('dct')
 compare_values(refdctxscf, variable("DCT SCF ENERGY"), 10, "DC-12 SCF Energy (two-step, ao_basis=none)");     #TEST
 compare_values(refdctx, variable("DCT TOTAL ENERGY"), 10, "DC-12 Energy (two-step, ao_basis=none)");                #TEST
 
-set dct_functional cepa0
-energy('dct')
-
-compare_values(refdctcepa, variable("DCT TOTAL ENERGY"), 10, "CEPA0 Energy (two-step, ao_basis=none)");                #TEST

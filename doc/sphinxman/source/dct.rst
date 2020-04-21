@@ -162,13 +162,7 @@ For the detailed comparison of the quality of these methods, we refer
 users to our :ref:`publications <intro:dctcitations>`.
 
 The DCT functional can be specified by the |dct__dct_functional| option. The
-default choice is the ODC-12 functional. In addition to five methods listed
-above, |dct__dct_functional| option can be set to CEPA0 (coupled electron
-pair approximation zero, equivalent to linearized coupled cluster doubles
-method, LCCD). CEPA0 can be considered as a particular case of the DC-06 and DC-12
-methods in the limit of zero non-idempotency of :math:`\boldsymbol{\gamma_1}`. This option has a limited
-functionality and should only be used for test purposes. For the production-level CEPA0 code, see the
-:ref:`OCC module <sec:occ_nonoo>`. The DCT code can also be used to
+default choice is the ODC-12 functional. The DCT code can also be used to
 compute the :math:`(\lambda_3)` energy correction that perturbatively accounts
 for three-particle correlation effects, similarly to the (T) correction in coupled
 cluster theory. Computation of the :math:`(\lambda_3)` correction can be
