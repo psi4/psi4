@@ -59,7 +59,7 @@ def test_h2o_constrained(inp):
     psi4.set_options(inp['options'])
 
     # geometric specific options 
-    geometric_opts = {
+    geometric_keywords = {
         'coordsys' : 'tric',
         'enforce' : 0.0,
         'constraints' : { 
@@ -69,7 +69,7 @@ def test_h2o_constrained(inp):
         }
     }
 
-    e, wfn = psi4.optimize(inp['name'], return_wfn=True, engine='geometric', geometric_opts=geometric_opts)
+    e, wfn = psi4.optimize(inp['name'], return_wfn=True, engine='geometric', optimizer_keywords=geometric_keywords)
     assert compare_values(inp['ref_ene'], e, 6)
     assert compare_values(inp['ref_nuc'], h2o.nuclear_repulsion_energy(), 3)
 
