@@ -923,35 +923,35 @@ def optimize_geometric(name, **kwargs):
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.get('molecule', core.get_active_molecule())
 
-    # Do not fix orientation or COM
+    # Do not change orientation or COM
     molecule.fix_orientation(True)
     molecule.fix_com(True)
     molecule.update_geometry()
 
     # Get geometric-specific options
-    geometric_opts = kwargs.get('geometric_opts', {})
+    optimizer_keywords = {k.lower(): v for k, v in kwargs.get("optimizer_keywords", {}).items()}
 
     core.print_out('\n')
     core.print_out("\n  ==> GeomeTRIC Optimizer <==                                                                   ~\n")
                                  
     # Default to Psi4 maxiter unless overridden
-    if 'maxiter' not in geometric_opts:
-        geometric_opts['maxiter'] = core.get_global_option('GEOM_MAXITER')
+    if 'maxiter' not in optimizer_keywords:
+        optimizer_keywords['maxiter'] = core.get_global_option('GEOM_MAXITER')
 
     # Default to Psi4 geometry convergence criteria unless overridden 
-    if 'convergence_set' not in geometric_opts:
-        geometric_opts['convergence_set'] = core.get_global_option('G_CONVERGENCE')
+    if 'convergence_set' not in optimizer_keywords:
+        optimizer_keywords['convergence_set'] = core.get_global_option('G_CONVERGENCE')
 
         # GeomeTRIC doesn't know these convergence criterion
-        if geometric_opts['convergence_set'] in ['CFOUR', 'QCHEM', 'MOLPRO']:
-            core.print_out(f"\n  Psi4 convergence criteria {geometric_opts['convergence_set']:6s} not recognized by GeomeTRIC, switching to GAU_TIGHT          ~")
-            geometric_opts['convergence_set'] = 'GAU_TIGHT'
+        if optimizer_keywords['convergence_set'] in ['CFOUR', 'QCHEM', 'MOLPRO']:
+            core.print_out(f"\n  Psi4 convergence criteria {optimizer_keywords['convergence_set']:6s} not recognized by GeomeTRIC, switching to GAU_TIGHT          ~")
+            optimizer_keywords['convergence_set'] = 'GAU_TIGHT'
 
     engine = Psi4NativeEngine(name, molecule, return_wfn, **kwargs)
     M = engine.M
     
     # Handle constraints
-    constraints_dict = geometric_opts.get('constraints', {})
+    constraints_dict = {k.lower(): v for k, v in optimizer_keywords.get("constraints", {}).items()}
     constraints_string = geometric.run_json.make_constraints_string(constraints_dict)
     Cons, CVals = None, None
     if constraints_string:
@@ -960,7 +960,7 @@ def optimize_geometric(name, **kwargs):
         Cons, CVals = geometric.optimize.ParseConstraints(M, constraints_string)
     
     # Set up the internal coordinate system
-    coordsys = geometric_opts.get('coordsys', 'tric')
+    coordsys = optimizer_keywords.get('coordsys', 'tric')
     CoordSysDict = {
         'cart': (geometric.internal.CartesianCoordinates, False, False),
         'prim': (geometric.internal.PrimitiveInternalCoordinates, True, False),
@@ -983,7 +983,7 @@ def optimize_geometric(name, **kwargs):
     coords = M.xyzs[0].flatten() / qcel.constants.bohr2angstroms
 
     # Setup an optimizer object
-    params = geometric.optimize.OptParams(**geometric_opts)
+    params = geometric.optimize.OptParams(**optimizer_keywords)
     optimizer = geometric.optimize.Optimizer(coords, M, IC, engine, None, params)
     
     # TODO: print constraints
@@ -1109,8 +1109,8 @@ def optimize(name, **kwargs):
         Indicates the optimization engine to use, which can be either Psi4's
         native Optking optimizer or the GeomeTRIC program.
 
-    :type geometric_opts: dict
-    :param geometric_opts: Options passed to the GeomeTRIC optimizer
+    :type optimizer_keywords: dict
+    :param optimizer_keywords: Options passed to the GeomeTRIC optimizer
 
         Indicates additional options to be passed to the GeomeTRIC optimizer if
         chosen as the optimization engine.
