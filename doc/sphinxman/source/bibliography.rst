@@ -468,6 +468,5 @@ Bibliography
    *WIREs Comput. Mol. Sci.*, (2020) **DOI: 10.1002/wcms.1462**, Preprint https://adc-connect.org/q/publications
 
 .. [Wang:2016:214108]
-   L. Wang and C. Song,
+   L.-P. Wang and C. Song,
    *J. Chem. Phys.* **144**, 214108 (2016).
-
