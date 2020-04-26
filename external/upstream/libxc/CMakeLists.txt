@@ -1,4 +1,4 @@
-find_package(Libxc 4.3.0 CONFIG QUIET)
+find_package(Libxc 5.0.0 CONFIG QUIET)
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
