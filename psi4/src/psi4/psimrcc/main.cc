@@ -46,16 +46,10 @@
 #include <cstdlib>
 
 // PSI libraries
-#include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/process.h"
-
-// PSI C++
-#include "psi4/libpsio/psio.hpp"
 
 #include "blas.h"
 #include "main.h"
@@ -71,14 +65,11 @@ using namespace psi;
 namespace psi {
 
 namespace psimrcc {
-// Global variables
-CCBLAS *blas;
+// Global variables - created in compute_energy
 MemoryManager *memory_manager;
 
 SharedWavefunction psimrcc(SharedWavefunction ref_wfn, Options &options) {
     using namespace psi::psimrcc;
-    tstart();
-    _default_psio_lib_->open(PSIF_PSIMRCC_INTEGRALS, PSIO_OPEN_NEW);
 
     outfile->Printf("\n  MRCC          MRCC");
     outfile->Printf("\n   MRCC  MRCC  MRCC");
@@ -91,20 +82,11 @@ SharedWavefunction psimrcc(SharedWavefunction ref_wfn, Options &options) {
 
     auto wfn = std::make_shared<PSIMRCCWfn>(ref_wfn, options);
 
-    memory_manager = new MemoryManager(Process::environment.get_memory());
-
     if (options["PERTURB_CBS"].has_changed() || options["PERTURB_CBS_COUPLING"].has_changed()) {
         outfile->Printf("\tPerturbative CBS was removed in 1.4. Using unpublished features is a bad habit.\n\n");
     }
 
     wfn->compute_energy();
-
-    memory_manager->MemCheck("outfile");
-
-    delete memory_manager;
-
-    _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
-    tstop();
 
     return wfn;
 }

@@ -26,9 +26,13 @@
  * @END LICENSE
  */
 
+#include "psi4/psifiles.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/memory_manager.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsio/psio.hpp"
 
 #include "blas.h"
 #include "idmrpt2.h"
@@ -66,6 +70,22 @@ void PSIMRCCWfn::active_space_warning() const {
 }
 
 double PSIMRCCWfn::compute_energy() {
+    _default_psio_lib_->open(PSIF_PSIMRCC_INTEGRALS, PSIO_OPEN_NEW);
+
+    // Some historical context to understand what you're looking at. PSIMRCC was written around 2006.
+    // At the time, it was on the cutting edge of multireference methods. By 2009 and 2010, the main
+    // theory-developer decided that Mk-MRCC (which this module exists to compute) wasn't likely to be
+    // a viable method, so he stopped development. 2009 was also when the Psi3 -> Psi4 transition started.
+    // Accordingly, some aspects of the original module design don't make much sense from the perspective
+    // of Psi4, and they were never modernized thoroughly.
+    // What you have now is a clumsy attempt to modernize the module from one of the developers brave(?)/foolish
+    // enough to hazard dealing with this code. Modernizing here means "uses Wavefunction."
+    // Let this serve as a warning against contributing a new module to Psi. New methods should be
+    // plugins so you don't create a maintainability problem when you're no longer working on the code.
+    // Look on this module, ye mighty, and despair.
+
+    auto memory_manager = std::make_shared<MemoryManager>(Process::environment.get_memory());
+
     // Ideally, this would go in the constructor, but shared_from_this won't work until after construction.
     if (blas_ == nullptr) {
         blas_ = std::make_shared<CCBLAS>(std::dynamic_pointer_cast<PSIMRCCWfn>(shared_from_this()), options_);
@@ -93,6 +113,10 @@ double PSIMRCCWfn::compute_energy() {
     outfile->Printf("\n\n  PSIMRCC job completed.");
     outfile->Printf("\n  Wall Time = %20.6f s", global_timer);
     outfile->Printf("\n  GEMM Time = %20.6f s", moinfo_->get_dgemm_timing());
+    
+    memory_manager->MemCheck("outfile");
+
+    _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
 
     return energy;
 }
