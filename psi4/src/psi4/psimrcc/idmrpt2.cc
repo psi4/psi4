@@ -39,7 +39,7 @@
 #include "blas.h"
 #include "sort.h"
 #include "updater.h"
-#include "psimrcc.h"
+#include "psimrcc_wfn.h"
 
 namespace psi {
 namespace psimrcc {

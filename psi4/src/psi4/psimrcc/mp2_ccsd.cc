@@ -35,7 +35,7 @@
 #include "blas.h"
 #include "mp2_ccsd.h"
 #include "matrix.h"
-#include "psimrcc.h"
+#include "psimrcc_wfn.h"
 #include "sort.h"
 
 namespace psi {

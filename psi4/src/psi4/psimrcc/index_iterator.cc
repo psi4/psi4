@@ -33,7 +33,7 @@
 namespace psi {
 namespace psimrcc {
 
-CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str) : tuples(blas->get_index(str)->get_tuples()){
+CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str) : tuples(wfn->blas()->get_index(str)->get_tuples()){
     nirreps = wfn->nirrep();
     ccindex = wfn->blas()->get_index(str);
     startup(0, nirreps);
@@ -45,7 +45,7 @@ CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, CCIndex* index
     startup(0, nirreps);
 }
 
-CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str, int select_irrep) : tuples(blas->get_index(str)->get_tuples()) {
+CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str, int select_irrep) : tuples(wfn->blas()->get_index(str)->get_tuples()) {
     nirreps = wfn->nirrep();
     ccindex = wfn->blas()->get_index(str);
     startup(select_irrep, select_irrep + 1);

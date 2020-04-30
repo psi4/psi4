@@ -133,7 +133,7 @@ void MRCCSD_T::startup() {
         //  Unique references
         if (mu == unique_mu) {
             // Setup the denominators
-            auto F_oo = wfn_->blas->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
+            auto F_oo = wfn_->blas()->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
                 CCIndexIterator i(wfn_, "[o]");
@@ -145,7 +145,7 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            auto F_OO = wfn_->blas->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
+            auto F_OO = wfn_->blas()->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
                 CCIndexIterator i(wfn_, "[o]");
@@ -157,7 +157,7 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            auto F_vv = wfn_->blas->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
+            auto F_vv = wfn_->blas()->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
                 CCIndexIterator a(wfn_, "[v]");
@@ -169,7 +169,7 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            auto F_VV = wfn_->blas->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
+            auto F_VV = wfn_->blas()->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
                 CCIndexIterator a(wfn_, "[v]");
@@ -215,7 +215,7 @@ void MRCCSD_T::startup() {
             is_bvir.push_back(wfn_->moinfo()->get_is_bvir(mu, AllRefs));
         } else {
             // Setup the denominators
-            auto F_oo = wfn_->blas->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
+            auto F_oo = wfn_->blas()->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
                 CCIndexIterator i(wfn_, "[o]");
@@ -227,7 +227,7 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            auto F_OO = wfn_->blas->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
+            auto F_OO = wfn_->blas()->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
                 CCIndexIterator i(wfn_, "[o]");
@@ -239,7 +239,7 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            auto F_vv = wfn_->blas->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
+            auto F_vv = wfn_->blas()->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
                 CCIndexIterator a(wfn_, "[v]");
@@ -251,7 +251,7 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            auto F_VV = wfn_->blas->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
+            auto F_VV = wfn_->blas()->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
                 CCIndexIterator a(wfn_, "[v]");

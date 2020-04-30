@@ -44,7 +44,7 @@
 #include "blas.h"
 #include "manybody.h"
 #include "matrix.h"
-#include "psimrcc.h"
+#include "psimrcc_wfn.h"
 #include "sort.h"
 
 namespace psi {
@@ -69,7 +69,7 @@ void CCManyBody::generate_denominators() {
 
         if (str.find("d1") != std::string::npos) {
             // Load the temporary matrix
-            CCMatTmp MatTmp = wfn_->blas->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
+            CCMatTmp MatTmp = wfn_->blas()->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
             auto matrix = MatTmp->get_matrix();
 
             // Get the reference number
@@ -170,7 +170,7 @@ void CCManyBody::generate_denominators() {
 
         if (str.find("d2") != std::string::npos) {
             // Load the temporary matrix
-            CCMatTmp MatTmp = wfn_->blas->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
+            CCMatTmp MatTmp = wfn_->blas()->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
             auto matrix = MatTmp->get_matrix();
 
             // Get the reference number

@@ -164,8 +164,8 @@ void CCMRCC::update_t3_iJKaBC_amps() {
         int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
-        auto TiJKaBCMatTmp = wfn_->blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
-        auto HiJKaBCMatTmp = wfn_->blas->get_MatTmp("t3_eqns[oOO][vVV]", unique_ref, none);
+        auto TiJKaBCMatTmp = wfn_->blas()->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
+        auto HiJKaBCMatTmp = wfn_->blas()->get_MatTmp("t3_eqns[oOO][vVV]", unique_ref, none);
 
         // Grab the indexing for t3[ijk][abc]
         auto& left_tuples = TiJKaBCMatTmp->get_left()->get_tuples();
@@ -195,8 +195,8 @@ void CCMRCC::update_t3_IJKABC_amps() {
         int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
-        auto TIJKABCMatTmp = wfn_->blas->get_MatTmp("t3[OOO][VVV]", unique_ref, none);
-        auto HIJKABCMatTmp = wfn_->blas->get_MatTmp("t3_eqns[OOO][VVV]", unique_ref, none);
+        auto TIJKABCMatTmp = wfn_->blas()->get_MatTmp("t3[OOO][VVV]", unique_ref, none);
+        auto HIJKABCMatTmp = wfn_->blas()->get_MatTmp("t3_eqns[OOO][VVV]", unique_ref, none);
 
         // Grab the indexing for t3[ijk][abc]
         auto& left_tuples = TIJKABCMatTmp->get_left()->get_tuples();

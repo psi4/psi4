@@ -83,7 +83,7 @@ double CCMRCC::compute_energy() {
         converged = build_diagonalize_Heff(cycle, cc_timer.get());
 
         h_eff.set_eigenvalue(current_energy);
-        h_eff.set_matrix(Heff, wfn_->moinfo->get_nrefs());
+        h_eff.set_matrix(Heff, wfn_->moinfo()->get_nrefs());
         h_eff.set_right_eigenvector(right_eigenvector);
         h_eff.set_left_eigenvector(left_eigenvector);
 

@@ -90,7 +90,7 @@ void CCTransform::read_tei_so_integrals() {
         if (indexing->get_pairpi(h) > 0) {
             size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
             tei_so[h] = std::vector<double>(block_size, 0);
-            outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu", wfn_->moinfo->get_irr_labs(h).c_str(),
+            outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu", wfn_->moinfo()->get_irr_labs(h).c_str(),
                             block_size);
         }
     }
@@ -498,11 +498,11 @@ void CCTransform::transform_oei_so_integrals() {
 
     allocate_oei_mo();
 
-    int nso = wfn_>nso();
-    int nmo = wfn_>nmo();
+    int nso = wfn_->nso();
+    int nmo = wfn_->nmo();
 
     std::vector<std::vector<double>> A(nso, std::vector<double>(nmo, 0));
-    auto C = wfn_->moinfo->get_scf_mos();
+    auto C = wfn_->moinfo()->get_scf_mos();
 
     // A(q,i) = H(q,p) * C(p,i)
     /*#ifdef CCTRANSFORM_USE_BLAS

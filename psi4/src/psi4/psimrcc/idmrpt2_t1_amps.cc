@@ -37,7 +37,6 @@
 
 #include "idmrpt2.h"
 #include "blas.h"
-#include "psimrcc.h"
 
 namespace psi {
 

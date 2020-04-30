@@ -31,7 +31,6 @@
 
 #include "mp2_ccsd.h"
 #include "blas.h"
-#include "psimrcc.h"
 
 namespace psi {
 namespace psimrcc {
@@ -171,21 +170,21 @@ void MP2_CCSD::build_t2_iJaB_amplitudes() {
 
     wfn_->blas()->solve("t2_delta[oO][vV]{u} = t2_eqns[oO][vV]{u} / d2[oO][vV]{u} - t2[oO][vV]{u}");
 
-    wfn_->blas->solve("t2[oO][vV]{u}  = t2_eqns[oO][vV]{u} / d2[oO][vV]{u}");
+    wfn_->blas()->solve("t2[oO][vV]{u}  = t2_eqns[oO][vV]{u} / d2[oO][vV]{u}");
     END_TIMER("Building the T2_iJaB Amplitudes");
 }
 
 void MP2_CCSD::build_t2_ijab_amplitudes() {
     START_TIMER("Building the T2_ijab Amplitudes");
-    wfn_->blas->solve("t2_eqns[oo][vv]{u}  = t2_eqns[oO][vV]{u}");
-    wfn_->blas->solve("t2_eqns[oo][vv]{u} += #2134# - t2_eqns[oO][vV]{u}");
-    wfn_->blas->solve("t2[oo][vv]{u}  = t2_eqns[oo][vv]{u} / d2[oo][vv]{u}");
+    wfn_->blas()->solve("t2_eqns[oo][vv]{u}  = t2_eqns[oO][vV]{u}");
+    wfn_->blas()->solve("t2_eqns[oo][vv]{u} += #2134# - t2_eqns[oO][vV]{u}");
+    wfn_->blas()->solve("t2[oo][vv]{u}  = t2_eqns[oo][vv]{u} / d2[oo][vv]{u}");
     END_TIMER("Building the T2_ijab Amplitudes");
 }
 
 void MP2_CCSD::build_t2_IJAB_amplitudes() {
     START_TIMER("Building the T2_IJAB Amplitudes");
-    wfn_->blas->solve("t2[OO][VV]{u}  = t2[oo][vv]{u}");
+    wfn_->blas()->solve("t2[OO][VV]{u}  = t2[oo][vv]{u}");
     END_TIMER("Building the T2_IJAB Amplitudes");
 }
 

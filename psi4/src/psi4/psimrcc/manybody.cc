@@ -59,11 +59,11 @@ namespace psimrcc {
  */
 CCManyBody::CCManyBody(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_(wfn), options_(options) {
     // Allocate memory for the eigenvector and the effective Hamiltonian
-    zeroth_order_eigenvector = std::vector<double>(wfn_->moinfo->get_nrefs(), 0);
-    right_eigenvector = std::vector<double>(wfn_->moinfo->get_nrefs(), 0);
-    left_eigenvector = std::vector<double>(wfn_->moinfo->get_nrefs(), 0);
-    Heff = block_matrix(wfn_->moinfo->get_nrefs(), wfn_->moinfo->get_nrefs());
-    Heff_mrpt2 = block_matrix(wfn_->moinfo->get_nrefs(), wfn_->moinfo->get_nrefs());
+    zeroth_order_eigenvector = std::vector<double>(wfn_->moinfo()->get_nrefs(), 0);
+    right_eigenvector = std::vector<double>(wfn_->moinfo()->get_nrefs(), 0);
+    left_eigenvector = std::vector<double>(wfn_->moinfo()->get_nrefs(), 0);
+    Heff = block_matrix(wfn_->moinfo()->get_nrefs(), wfn_->moinfo()->get_nrefs());
+    Heff_mrpt2 = block_matrix(wfn_->moinfo()->get_nrefs(), wfn_->moinfo()->get_nrefs());
 
     huge = 1.0e100;
     norm_amps = 0.0;
@@ -120,8 +120,8 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
         for (size_t i = 0; i < bocc.size(); i++) is_bocc[bocc[i]] = true;
 
         // Read the Fock matrices
-        auto f_oo_Matrix = wfn_->blas->get_MatTmp("fock[oo]", reference, none);
-        auto f_OO_Matrix = wfn_->blas->get_MatTmp("fock[OO]", reference, none);
+        auto f_oo_Matrix = wfn_->blas()->get_MatTmp("fock[oo]", reference, none);
+        auto f_OO_Matrix = wfn_->blas()->get_MatTmp("fock[OO]", reference, none);
 
         CCMatrix* f_ii_Matrix;
         CCMatrix* f_jj_Matrix;
@@ -142,7 +142,7 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
         else
             f_kk_Matrix = f_OO_Matrix.get_CCMatrix();
 
-        auto ooo_indexing = wfn_->blas->get_index("[ooo]");
+        auto ooo_indexing = wfn_->blas()->get_index("[ooo]");
         auto& ooo_tuples = ooo_indexing->get_tuples();
 
         for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
@@ -186,8 +186,8 @@ void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& 
         for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
         // Read the Fock matrices
-        auto f_vv_Matrix = wfn_->blas->get_MatTmp("fock[vv]", reference, none);
-        auto f_VV_Matrix = wfn_->blas->get_MatTmp("fock[VV]", reference, none);
+        auto f_vv_Matrix = wfn_->blas()->get_MatTmp("fock[vv]", reference, none);
+        auto f_VV_Matrix = wfn_->blas()->get_MatTmp("fock[VV]", reference, none);
 
         CCMatrix* f_aa_Matrix;
         CCMatrix* f_bb_Matrix;
@@ -208,7 +208,7 @@ void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& 
         else
             f_cc_Matrix = f_VV_Matrix.get_CCMatrix();
 
-        auto vvv_indexing = wfn_->blas->get_index("[vvv]");
+        auto vvv_indexing = wfn_->blas()->get_index("[vvv]");
         auto& vvv_tuples = vvv_indexing->get_tuples();
 
         for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
@@ -250,10 +250,10 @@ void CCManyBody::compute_reference_energy() {
         auto bocc = wfn_->moinfo()->get_bocc(n, UniqueRefs);
 
         // Read these matrices
-        auto f_oo_Matrix = wfn_->blas->get_MatTmp("fock[o][o]", unique_n, none);
-        auto f_OO_Matrix = wfn_->blas->get_MatTmp("fock[O][O]", unique_n, none);
-        auto V_oooo_Matrix = wfn_->blas->get_MatTmp("<[oo]:[oo]>", none);
-        auto V_oOoO_Matrix = wfn_->blas->get_MatTmp("<[oo]|[oo]>", none);
+        auto f_oo_Matrix = wfn_->blas()->get_MatTmp("fock[o][o]", unique_n, none);
+        auto f_OO_Matrix = wfn_->blas()->get_MatTmp("fock[O][O]", unique_n, none);
+        auto V_oooo_Matrix = wfn_->blas()->get_MatTmp("<[oo]:[oo]>", none);
+        auto V_oOoO_Matrix = wfn_->blas()->get_MatTmp("<[oo]|[oo]>", none);
 
         for (size_t i = 0; i < aocc.size(); i++) ref_energy += f_oo_Matrix->get_two_address_element(aocc[i], aocc[i]);
         for (size_t i = 0; i < bocc.size(); i++) ref_energy += f_OO_Matrix->get_two_address_element(bocc[i], bocc[i]);
@@ -268,7 +268,7 @@ void CCManyBody::compute_reference_energy() {
             for (size_t j = 0; j < bocc.size(); j++)
                 ref_energy -= V_oOoO_Matrix->get_four_address_element(aocc[i], bocc[j], aocc[i], bocc[j]);
         // Write the energy to the ERef
-        auto ERef_Matrix = wfn_->blas->get_MatTmp("ERef", unique_n, none);
+        auto ERef_Matrix = wfn_->blas()->get_MatTmp("ERef", unique_n, none);
         ERef_Matrix->set_scalar(ref_energy);
     }
 }

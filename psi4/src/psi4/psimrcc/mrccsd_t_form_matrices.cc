@@ -150,7 +150,7 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
     // <bc||ek> = <ek||bc>
     CCIndexIterator k(wfn_, "[o]");
 
-    auto V = wfn_->blas->get_MatTmp("<[vo]|[vv]>", none)->get_matrix();
+    auto V = wfn_->blas()->get_MatTmp("<[vo]|[vv]>", none)->get_matrix();
     for (k.first(); !k.end(); k.next()) {
         BlockMatrix* block_matrix = new BlockMatrix(wfn_, vv->get_tuplespi(), v->get_tuplespi(), k.sym());
         //    ebc.reset();
@@ -176,7 +176,7 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
 void MRCCSD_T::form_V_jk_c_m(IndexMatrix* V_jk_c_m, double direct, double exchange) {
     CCIndexIterator jk(wfn_, "[oo]");
 
-    auto V = wfn_->blas->get_MatTmp("<[oo]|[ov]>", none)->get_matrix();
+    auto V = wfn_->blas()->get_MatTmp("<[oo]|[ov]>", none)->get_matrix();
 
     for (jk.first(); !jk.end(); jk.next()) {
         BlockMatrix* block_matrix = new BlockMatrix(wfn_, v->get_tuplespi(), o->get_tuplespi(), jk.sym());

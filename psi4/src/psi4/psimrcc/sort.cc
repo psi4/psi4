@@ -118,7 +118,6 @@ void CCSort::init() {
     nfzc = wfn_->moinfo()->get_nfocc();
     intvec focc = wfn_->moinfo()->get_focc();
     intvec mopi = wfn_->moinfo()->get_mopi();
-    allocate1(int, frozen_core, nfzc);
     int count1 = 0;
     int count2 = 0;
     frozen_core = std::vector<int>(nfzc, 0);
