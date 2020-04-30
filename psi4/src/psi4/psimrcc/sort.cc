@@ -49,14 +49,13 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
-CCSort::CCSort(SharedWavefunction wfn, SortAlgorithm algorithm)
-    : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0) {
+CCSort::CCSort(std::shared_ptr<PSIMRCCWfn> wfn, SortAlgorithm algorithm)
+    : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0), wfn_(wfn) {
     init();
 
-    trans = std::make_shared<CCTransform>(wfn);
+    trans = std::make_shared<CCTransform>(wfn_);
 
     IntegralTransform* ints;
     // Use libtrans to generate MO basis integrals in Pitzer order
@@ -67,12 +66,12 @@ CCSort::CCSort(SharedWavefunction wfn, SortAlgorithm algorithm)
         // O represents occ+act, V represents act+vir and A is all orbitals.
         std::shared_ptr<MOSpace> aocc;
         std::shared_ptr<MOSpace> avir;
-        int nirrep = wfn->nirrep();
+        int nirrep = wfn_->nirrep();
         std::vector<int> aocc_orbs;
         std::vector<int> avir_orbs;
-        std::vector<int> actv = moinfo->get_actv();
-        std::vector<int> mopi = moinfo->get_mopi();
-        std::vector<int> occ = moinfo->get_occ();
+        std::vector<int> actv = wfn_->moinfo()->get_actv();
+        std::vector<int> mopi = wfn_->moinfo()->get_mopi();
+        std::vector<int> occ = wfn_->moinfo()->get_occ();
         int offset = 0;
         for (int h = 0; h < nirrep; ++h) {
             for (int i = 0; i < occ[h] + actv[h]; ++i) aocc_orbs.push_back(i + offset);
@@ -104,7 +103,7 @@ CCSort::CCSort(SharedWavefunction wfn, SortAlgorithm algorithm)
         build_integrals_out_of_core();
     }
 
-    moinfo->set_fzcore_energy(efzc);
+    wfn_->moinfo()->set_fzcore_energy(efzc);
     outfile->Printf("\n\n    Frozen-core energy                     = %20.9f", efzc);
     delete ints;
 }
@@ -116,13 +115,14 @@ CCSort::~CCSort() {}
  */
 void CCSort::init() {
     // Find the frozen core orbitals in Pitzer ordering
-    nfzc = moinfo->get_nfocc();
-    intvec focc = moinfo->get_focc();
-    intvec mopi = moinfo->get_mopi();
+    nfzc = wfn_->moinfo()->get_nfocc();
+    intvec focc = wfn_->moinfo()->get_focc();
+    intvec mopi = wfn_->moinfo()->get_mopi();
+    allocate1(int, frozen_core, nfzc);
     int count1 = 0;
     int count2 = 0;
     frozen_core = std::vector<int>(nfzc, 0);
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+    for (int h = 0; h < wfn_->nirrep(); ++h) {
         for (int i = 0; i < focc[h]; ++i) frozen_core[count1++] = count2 + i;
         count2 += mopi[h];
     }

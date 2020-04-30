@@ -61,6 +61,13 @@ CCOperation::CCOperation(double in_factor, std::string in_assignment, std::strin
       A_Matrix(in_A_Matrix),
       B_Matrix(in_B_Matrix),
       C_Matrix(in_C_Matrix) {
+    if (in_B_Matrix != nullptr && in_A_Matrix->wfn() != in_B_Matrix->wfn()) {
+        throw PSIEXCEPTION("\nError in CCOperation construction. Matrices A and B must have the same wavefunction.");
+    } else if (in_C_Matrix != nullptr && in_A_Matrix->wfn() != in_C_Matrix->wfn()) {
+        throw PSIEXCEPTION("\nError in CCOperation construction. Matrices A and C must have the same wavefunction.");
+    } else {
+        wfn_ = in_A_Matrix->wfn();
+    }
     local_work = work;
     out_of_core_buffer = buffer;
 }

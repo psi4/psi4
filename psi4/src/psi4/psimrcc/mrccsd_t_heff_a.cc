@@ -49,7 +49,7 @@ double MRCCSD_T::compute_A_ooo_contribution_to_Heff(int u_abs, int x_abs, int i_
     size_t jk_rel = oo->get_tuple_rel_index(j_abs, k_abs);
 
     if (i_abs == u_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
             size_t ef_rel = vv->get_tuple_rel_index(ef.ind_abs<0>(), ef.ind_abs<1>());
@@ -76,7 +76,7 @@ double MRCCSD_T::compute_A_ooO_contribution_to_Heff(int u_abs, int x_abs, int i_
     size_t jk_rel = oo->get_tuple_rel_index(j_abs, k_abs);
 
     if (i_abs == u_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
             size_t ef_rel = vv->get_tuple_rel_index(ef.ind_abs<0>(), ef.ind_abs<1>());
@@ -103,7 +103,7 @@ double MRCCSD_T::compute_A_oOO_contribution_to_Heff(int u_abs, int x_abs, int i_
     size_t jk_rel = oo->get_tuple_rel_index(j_abs, k_abs);
 
     if (i_abs == u_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
             size_t ef_rel = vv->get_tuple_rel_index(ef.ind_abs<0>(), ef.ind_abs<1>());

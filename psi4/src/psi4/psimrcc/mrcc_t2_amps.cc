@@ -41,7 +41,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCMRCC::build_t2_amplitudes() {
     build_t2_iJaB_amplitudes();
@@ -50,7 +49,7 @@ void CCMRCC::build_t2_amplitudes() {
 }
 
 void CCMRCC::build_t2_ijab_amplitudes() {
-    if (moinfo->get_ref_size(UniqueOpenShellRefs) == 0) {
+    if (wfn_->moinfo()->get_ref_size(UniqueOpenShellRefs) == 0) {
         wfn_->blas()->append("t2_eqns[oo][vv]{c}  = t2_eqns[oO][vV]{c}");
         wfn_->blas()->append("t2_eqns[oo][vv]{c} += #2134# - t2_eqns[oO][vV]{c}");
     } else {
@@ -298,8 +297,8 @@ void CCMRCC::build_t2_amplitudes_triples() {
  */
 void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto TijkabcMatTmp = wfn_->blas->get_MatTmp("t3[ooo][vvv]", unique_ref, none);
@@ -323,10 +322,10 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
         auto& jkc_tuples = jkc_indexing->get_tuples();
 
         // PART A: Sort T[ijk][abc]->T[iab][jkc]
-        std::vector<double **> T_iabjkc(moinfo->get_nirreps(), nullptr);
-        std::vector<double **> H_iabj(moinfo->get_nirreps(), nullptr);
+        std::vector<double **> T_iabjkc(wfn_->nirrep(), nullptr);
+        std::vector<double **> H_iabj(wfn_->nirrep(), nullptr);
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
             T_iabjkc[h] = block_matrix(iab_indexing->get_pairpi(h), jkc_indexing->get_pairpi(h));
             H_iabj[h] = block_matrix(iab_indexing->get_pairpi(h), j_indexing->get_pairpi(h));
@@ -427,8 +426,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
  */
 void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         CCMatTmp TijKabCMatTmp = wfn_->blas->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
@@ -474,7 +473,7 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
         std::vector<double **> T_iackjb(wfn_->nirrep(), nullptr);
         std::vector<double **> H_iabj(wfn_->nirrep());
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
             T_iackjb[h] = block_matrix(iac_indexing->get_pairpi(h), kjb_indexing->get_pairpi(h));
             H_iabj[h] = block_matrix(iab_indexing->get_pairpi(h), j_indexing->get_pairpi(h));
@@ -652,8 +651,8 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
  */
 void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram1() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto TiJKaBCMatTmp = wfn_->blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
@@ -680,10 +679,10 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram1() {
         auto& jia_tuples = jia_indexing->get_tuples();
         auto& jkc_tuples = jkc_indexing->get_tuples();
 
-        std::vector<double**> T_iabjkc(moinfo->get_nirreps(), nullptr);
-        std::vector<double**> H_iabj(moinfo->get_nirreps(), nullptr);
+        std::vector<double**> T_iabjkc(wfn_->nirrep(), nullptr);
+        std::vector<double**> H_iabj(wfn_->nirrep(), nullptr);
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
             T_iabjkc[h] = block_matrix(kbc_indexing->get_pairpi(h), jia_indexing->get_pairpi(h));
             H_iabj[h] = block_matrix(kbc_indexing->get_pairpi(h), j_indexing->get_pairpi(h));
@@ -784,8 +783,8 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram1() {
  */
 void CCMRCC::build_t2_ijab_amplitudes_triples_diagram2() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto TijkabcMatTmp = wfn_->blas->get_MatTmp("t3[ooo][vvv]", unique_ref, none);
@@ -808,10 +807,10 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram2() {
         auto& ovv_tuples = ovv_indexing->get_tuples();
         auto& oov_tuples = oov_indexing->get_tuples();
 
-        std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
-        std::vector<double**> H_ijab(moinfo->get_nirreps(), nullptr);
+        std::vector<double**> T_oovovv(wfn_->nirrep(), nullptr);
+        std::vector<double**> H_ijab(wfn_->nirrep(), nullptr);
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
             T_oovovv[h] = block_matrix(oov_indexing->get_pairpi(h), ovv_indexing->get_pairpi(h));
             H_ijab[h] = block_matrix(oov_indexing->get_pairpi(h), v_indexing->get_pairpi(h));
@@ -908,8 +907,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram2() {
  */
 void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram2() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto TijKabCMatTmp = wfn_->blas->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
@@ -936,10 +935,10 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram2() {
         auto& ovv_tuples = ovv_indexing->get_tuples();
         auto& oov_tuples = oov_indexing->get_tuples();
 
-        std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
-        std::vector<double**> H_ijab(moinfo->get_nirreps(), nullptr);
+        std::vector<double**> T_oovovv(wfn_->nirrep(), nullptr);
+        std::vector<double**> H_ijab(wfn_->nirrep(), nullptr);
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
             T_oovovv[h] = block_matrix(oov_indexing->get_pairpi(h), ovv_indexing->get_pairpi(h));
             H_ijab[h] = block_matrix(oov_indexing->get_pairpi(h), v_indexing->get_pairpi(h));
@@ -1102,8 +1101,8 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram2() {
  */
 void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram2() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto TiJKaBCMatTmp = wfn_->blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
@@ -1126,10 +1125,10 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram2() {
         auto& ovv_tuples = ovv_indexing->get_tuples();
         auto& oov_tuples = oov_indexing->get_tuples();
 
-        std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
-        std::vector<double**> H_ijab(moinfo->get_nirreps());
+        std::vector<double**> T_oovovv(wfn_->nirrep(), nullptr);
+        std::vector<double**> H_ijab(wfn_->nirrep());
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
             T_oovovv[h] = block_matrix(oov_indexing->get_pairpi(h), ovv_indexing->get_pairpi(h));
             H_ijab[h] = block_matrix(oov_indexing->get_pairpi(h), v_indexing->get_pairpi(h));
@@ -1225,8 +1224,8 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram2() {
  */
 void CCMRCC::build_t2_ijab_amplitudes_triples_diagram3() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto HijabMatTmp = wfn_->blas->get_MatTmp("t2_eqns[oo][vv]", unique_ref, none);
@@ -1249,7 +1248,7 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram3() {
         auto ijkIndex = wfn_->blas->get_index("[ooo]");
         auto abcIndex = wfn_->blas->get_index("[vvv]");
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             size_t ij_offset = HijabMatTmp->get_left()->get_first(h);
             size_t ab_offset = HijabMatTmp->get_right()->get_first(h);
             for (int ab = 0; ab < HijabMatTmp->get_right_pairpi(h); ab++) {
@@ -1258,7 +1257,7 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram3() {
                 for (int ij = 0; ij < HijabMatTmp->get_left_pairpi(h); ij++) {
                     int i = ij_tuples[ij_offset + ij][0];
                     int j = ij_tuples[ij_offset + ij][1];
-                    for (int m_sym = 0; m_sym < moinfo->get_nirreps(); m_sym++) {
+                    for (int m_sym = 0; m_sym < wfn_->moinfo()->get_nirreps(); m_sym++) {
                         size_t m_offset = FmeMatTmp->get_left()->get_first(m_sym);
                         size_t e_offset = FmeMatTmp->get_right()->get_first(m_sym);
                         for (int e = 0; e < FmeMatTmp->get_right_pairpi(m_sym); e++) {
@@ -1288,8 +1287,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram3() {
  */
 void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram3() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto HiJaBMatTmp = wfn_->blas->get_MatTmp("t2_eqns[oO][vV]", unique_ref, none);
@@ -1312,7 +1311,7 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram3() {
         auto ijkIndex = wfn_->blas->get_index("[ooo]");
         auto abcIndex = wfn_->blas->get_index("[vvv]");
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             size_t ij_offset = HiJaBMatTmp->get_left()->get_first(h);
             size_t ab_offset = HiJaBMatTmp->get_right()->get_first(h);
             for (int ab = 0; ab < HiJaBMatTmp->get_right_pairpi(h); ab++) {
@@ -1321,7 +1320,7 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram3() {
                 for (int ij = 0; ij < HiJaBMatTmp->get_left_pairpi(h); ij++) {
                     int i = ij_tuples[ij_offset + ij][0];
                     int j = ij_tuples[ij_offset + ij][1];
-                    for (int m_sym = 0; m_sym < moinfo->get_nirreps(); m_sym++) {
+                    for (int m_sym = 0; m_sym < wfn_->moinfo()->get_nirreps(); m_sym++) {
                         size_t m_offset = FmeMatTmp->get_left()->get_first(m_sym);
                         size_t e_offset = FmeMatTmp->get_right()->get_first(m_sym);
                         for (int e = 0; e < FmeMatTmp->get_right_pairpi(m_sym); e++) {
@@ -1354,8 +1353,8 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram3() {
  */
 void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram3() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto HIJABMatTmp = wfn_->blas->get_MatTmp("t2_eqns[OO][VV]", unique_ref, none);
@@ -1378,7 +1377,7 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram3() {
         auto ijkIndex = wfn_->blas->get_index("[ooo]");
         auto abcIndex = wfn_->blas->get_index("[vvv]");
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             size_t ij_offset = HIJABMatTmp->get_left()->get_first(h);
             size_t ab_offset = HIJABMatTmp->get_right()->get_first(h);
             for (int ab = 0; ab < HIJABMatTmp->get_right_pairpi(h); ab++) {
@@ -1387,7 +1386,7 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram3() {
                 for (int ij = 0; ij < HIJABMatTmp->get_left_pairpi(h); ij++) {
                     int i = ij_tuples[ij_offset + ij][0];
                     int j = ij_tuples[ij_offset + ij][1];
-                    for (int m_sym = 0; m_sym < moinfo->get_nirreps(); m_sym++) {
+                    for (int m_sym = 0; m_sym < wfn_->moinfo()->get_nirreps(); m_sym++) {
                         size_t m_offset = FmeMatTmp->get_left()->get_first(m_sym);
                         size_t e_offset = FmeMatTmp->get_right()->get_first(m_sym);
                         for (int e = 0; e < FmeMatTmp->get_right_pairpi(m_sym); e++) {
@@ -1423,8 +1422,8 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram3() {
 void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1()
 {
   // Loop over references
-  for(int ref=0;ref<moinfo->get_nunique();ref++){
-    int unique_ref  = moinfo->get_ref_number("u",ref);
+  for(int ref=0;ref<wfn_->moinfo()->get_nunique();ref++){
+    int unique_ref  = wfn_->moinfo()->get_ref_number("u",ref);
 
     // Grab the temporary matrices
     CCMatTmp  TijkabcMatTmp = wfn_->blas()->get_MatTmp("t3[ooo][vvv]",unique_ref,none);
@@ -1452,10 +1451,10 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1()
     double ***T_iabjkc;
     double ***H_iabj;
 
-    init_matrix<double**>(T_iabjkc,moinfo->get_nirreps());
-    init_matrix<double**>(H_iabj,moinfo->get_nirreps());
+    init_matrix<double**>(T_iabjkc,wfn_->moinfo()->get_nirreps());
+    init_matrix<double**>(H_iabj,wfn_->moinfo()->get_nirreps());
 
-    for(int h =0; h < moinfo->get_nirreps();h++){
+    for(int h =0; h < wfn_->moinfo()->get_nirreps();h++){
       // Allocate a block of T_iabjkc
       init_matrix<double>(T_iabjkc[h],iab_indexing->get_pairpi(h),jkc_indexing->get_pairpi(h));
       init_matrix<double>(H_iabj[h],iab_indexing->get_pairpi(h),j_indexing->get_pairpi(h));
@@ -1541,8 +1540,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1()
       free_matrix<double>(H_iabj[h],iab_indexing->get_pairpi(h),j_indexing->get_pairpi(h));
       free_matrix<double>(T_iabjkc[h],iab_indexing->get_pairpi(h),jkc_indexing->get_pairpi(h));
     }
-    free_matrix<double**>(H_iabj,moinfo->get_nirreps());
-    free_matrix<double**>(T_iabjkc,moinfo->get_nirreps());
+    free_matrix<double**>(H_iabj,wfn_->moinfo()->get_nirreps());
+    free_matrix<double**>(T_iabjkc,wfn_->moinfo()->get_nirreps());
   }
 //   wfn_->blas()->print("t2_test[oo][vv]{u}");
 //   wfn_->blas()->solve("ERROR{u} = 1000000.0 t2_test[oo][vv]{u} . t2_test[oo][vv]{u}");

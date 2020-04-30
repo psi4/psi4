@@ -133,6 +133,9 @@ SharedWavefunction occwave(SharedWavefunction, Options&);
 namespace mcscf {
 SharedWavefunction mcscf(SharedWavefunction, Options&);
 }
+namespace psimrcc {
+SharedWavefunction psimrcc(SharedWavefunction, Options&);
+}
 
 #ifdef USING_gdma
 namespace gdma_interface {
@@ -150,9 +153,6 @@ SharedMatrix scfhess(SharedWavefunction, Options&);
 
 // Does not create a wavefunction
 // namespace fisapt { PsiReturnType fisapt(SharedWavefunction, Options&); }
-namespace psimrcc {
-PsiReturnType psimrcc(SharedWavefunction, Options&);
-}
 namespace sapt {
 PsiReturnType sapt(SharedWavefunction, SharedWavefunction, SharedWavefunction, Options&);
 }
@@ -446,10 +446,9 @@ double py_psi_cceom(SharedWavefunction ref_wfn) {
         return 0.0;
 }
 
-double py_psi_psimrcc(SharedWavefunction ref_wfn) {
+SharedWavefunction py_psi_psimrcc(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("PSIMRCC");
-    psimrcc::psimrcc(ref_wfn, Process::environment.options);
-    return 0.0;
+    return psimrcc::psimrcc(ref_wfn, Process::environment.options);
 }
 
 SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn) {

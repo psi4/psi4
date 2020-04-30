@@ -41,7 +41,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
     build_Heff_uv();
@@ -50,19 +49,19 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
     build_Heff_uvxy();
     build_Heff_UVXY();
 
-    intvec occ_to_act = moinfo->get_occ_to_actv();
-    intvec vir_to_act = moinfo->get_vir_to_actv();
+    intvec occ_to_act = wfn_->moinfo()->get_occ_to_actv();
+    intvec vir_to_act = wfn_->moinfo()->get_vir_to_actv();
 
-    for (int i = 0; i < moinfo->get_ref_size(AllRefs); ++i) {
-        int i_unique = moinfo->get_ref_number(i);
+    for (int i = 0; i < wfn_->moinfo()->get_ref_size(AllRefs); ++i) {
+        int i_unique = wfn_->moinfo()->get_ref_number(i);
         // Find the off_diagonal elements for reference i
         // Loop over reference j (in a safe way)
-        for (int j = 0; j < moinfo->get_ref_size(AllRefs); j++) {
+        for (int j = 0; j < wfn_->moinfo()->get_ref_size(AllRefs); j++) {
             if (i != j) {
                 std::vector<std::pair<int, int> > alpha_internal_excitation =
-                    moinfo->get_alpha_internal_excitation(i, j);
-                std::vector<std::pair<int, int> > beta_internal_excitation = moinfo->get_beta_internal_excitation(i, j);
-                double sign_internal_excitation = moinfo->get_sign_internal_excitation(i, j);
+                    wfn_->moinfo()->get_alpha_internal_excitation(i, j);
+                std::vector<std::pair<int, int> > beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(i, j);
+                double sign_internal_excitation = wfn_->moinfo()->get_sign_internal_excitation(i, j);
 
                 double element = 0.0;
                 if (i == i_unique) {

@@ -40,7 +40,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
 void CCBLAS::add_index(const char* cstr) {
@@ -48,18 +47,18 @@ void CCBLAS::add_index(const char* cstr) {
     std::string str(cstr);
     to_lower(str);
     if (indices.find(str) == indices.end()) {
-        indices.insert(make_pair(str, new CCIndex(str)));
+        indices.insert(make_pair(str, new CCIndex(wfn_, str)));
     }
 }
 
 void CCBLAS::add_Matrix(const char* cstr) {
     std::string str(cstr);
-    std::vector<std::string> names = moinfo->get_matrix_names(str);
+    std::vector<std::string> names = wfn_->moinfo()->get_matrix_names(str);
     for (size_t n = 0; n < names.size(); ++n) add_Matrix_ref(names[n]);
 }
 
 void CCBLAS::add_Matrix(std::string str) {
-    std::vector<std::string> names = moinfo->get_matrix_names(str);
+    std::vector<std::string> names = wfn_->moinfo()->get_matrix_names(str);
     for (size_t n = 0; n < names.size(); ++n) add_Matrix_ref(names[n]);
 }
 

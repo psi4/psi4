@@ -31,6 +31,8 @@
 
 #include <string>
 
+#include "psimrcc_wfn.h"
+
 namespace psi {
 namespace psimrcc {
 
@@ -66,6 +68,7 @@ class CCOperation {
     CCMatrix* A_Matrix;
     CCMatrix* B_Matrix;
     CCMatrix* C_Matrix;
+    std::shared_ptr<PSIMRCCWfn> wfn_;
 
    private:
     // Check that an operation can be performed

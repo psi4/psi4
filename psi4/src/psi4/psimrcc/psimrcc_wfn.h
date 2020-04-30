@@ -42,6 +42,9 @@ namespace psi {
 class MOInfo;
 
 namespace psimrcc {
+
+class CCBLAS;
+
 class PSIMRCCWfn : public Wavefunction {
     public:
      PSIMRCCWfn(SharedWavefunction ref_wfn, Options &options);

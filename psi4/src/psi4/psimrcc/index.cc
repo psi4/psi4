@@ -47,15 +47,15 @@ namespace psi {
 namespace psimrcc {
 
 extern MemoryManager* memory_manager;
-extern MOInfo* moinfo;
 
-CCIndex::CCIndex(std::string str)
+CCIndex::CCIndex(std::shared_ptr<PSIMRCCWfn> wfn, std::string str)
     : label(str),
+      wfn_(wfn),
       nelements(0),
       greater_than_or_equal(false),
       greater_than(false),
       ntuples(0) {
-    nirreps = moinfo->get_nirreps();
+    nirreps = wfn_->nirrep();
     init();
 }
 
@@ -71,21 +71,21 @@ void CCIndex::init() {
     // Get the orbital spaces data pointers
     for (size_t i = 0; i < label.size(); ++i) {
         if (label[i] == 'o') {
-            mospi.push_back(moinfo->get_occ());
-            indices_to_pitzer.push_back(moinfo->get_occ_to_mo());
+            mospi.push_back(wfn_->moinfo()->get_occ());
+            indices_to_pitzer.push_back(wfn_->moinfo()->get_occ_to_mo());
         } else if (label[i] == 'v') {
-            mospi.push_back(moinfo->get_vir());
-            indices_to_pitzer.push_back(moinfo->get_vir_to_mo());
+            mospi.push_back(wfn_->moinfo()->get_vir());
+            indices_to_pitzer.push_back(wfn_->moinfo()->get_vir_to_mo());
         } else if (label[i] == 'a') {
-            mospi.push_back(moinfo->get_actv());
-            indices_to_pitzer.push_back(moinfo->get_actv_to_mo());
+            mospi.push_back(wfn_->moinfo()->get_actv());
+            indices_to_pitzer.push_back(wfn_->moinfo()->get_actv_to_mo());
         } else if (label[i] == 'f') {
-            mospi.push_back(moinfo->get_fvir());
-            indices_to_pitzer.push_back(moinfo->get_fvir_to_mo());
+            mospi.push_back(wfn_->moinfo()->get_fvir());
+            indices_to_pitzer.push_back(wfn_->moinfo()->get_fvir_to_mo());
         } else if (label[i] == 's') {
-            mospi.push_back(moinfo->get_sopi());
+            mospi.push_back(wfn_->moinfo()->get_sopi());
         } else if (label[i] == 'n') {
-            mospi.push_back(moinfo->get_mopi());
+            mospi.push_back(wfn_->moinfo()->get_mopi());
         }
     }
     for (int i = 0; i < nelements; i++) {
@@ -376,7 +376,7 @@ void CCIndex::print() {
     outfile->Printf("\n---------------------------------");
     int index = 0;
     for (int h = 0; h < nirreps; h++) {
-        if (tuplespi[h] > 0) outfile->Printf("\n\t%s", moinfo->get_irr_labs(h).c_str());
+        if (tuplespi[h] > 0) outfile->Printf("\n\t%s", wfn_->moinfo()->get_irr_labs(h).c_str());
         for (size_t tuple = 0; tuple < tuplespi[h]; ++tuple) {
             outfile->Printf("\n\t\t( ");
             for (int k = 0; k < nelements; k++) outfile->Printf("%d ", tuples[index][k]);

@@ -41,7 +41,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCMRCC::synchronize_amps() {
     wfn_->blas()->solve("t1[ov]{u}     = #12# t1[o][v]{u}");
@@ -89,10 +88,10 @@ void CCMRCC::compute_delta_amps() {
     // Compute the T-AMPS difference
     delta_t1_amps = 0.0;
     delta_t2_amps = 0.0;
-    for (int n = 0; n < moinfo->get_ref_size(AllRefs); n++) {
+    for (int n = 0; n < wfn_->moinfo()->get_ref_size(AllRefs); n++) {
         double c_n2 = std::pow(h_eff.get_right_eigenvector(n), 2.0);
-        delta_t1_amps += c_n2 * wfn_->blas()->get_scalar("||Delta_t1||", moinfo->get_ref_number(n));
-        delta_t2_amps += c_n2 * wfn_->blas()->get_scalar("||Delta_t2||", moinfo->get_ref_number(n));
+        delta_t1_amps += c_n2 * wfn_->blas()->get_scalar("||Delta_t1||", wfn_->moinfo()->get_ref_number(n));
+        delta_t2_amps += c_n2 * wfn_->blas()->get_scalar("||Delta_t2||", wfn_->moinfo()->get_ref_number(n));
     }
     delta_t1_amps = std::sqrt(delta_t1_amps);
     delta_t2_amps = std::sqrt(delta_t2_amps);
@@ -107,8 +106,8 @@ void CCMRCC::update_t3_amps() {
 
 void CCMRCC::update_t3_ijkabc_amps() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         CCMatTmp TijkabcMatTmp = wfn_->blas()->get_MatTmp("t3[ooo][vvv]", unique_ref, none);
@@ -117,7 +116,7 @@ void CCMRCC::update_t3_ijkabc_amps() {
         auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
         auto Hijkabc_matrix = HijkabcMatTmp->get_matrix();
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             for (size_t abc = 0; abc < TijkabcMatTmp->get_right_pairpi(h); abc++) {
                 double delta_abc = d3_vvv[ref][h][abc];
                 for (size_t ijk = 0; ijk < TijkabcMatTmp->get_left_pairpi(h); ijk++) {
@@ -134,8 +133,8 @@ void CCMRCC::update_t3_ijkabc_amps() {
 
 void CCMRCC::update_t3_ijKabC_amps() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         CCMatTmp TijKabCMatTmp = wfn_->blas()->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
@@ -144,7 +143,7 @@ void CCMRCC::update_t3_ijKabC_amps() {
         auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
         auto HijKabC_matrix = HijKabCMatTmp->get_matrix();
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             for (size_t abc = 0; abc < TijKabCMatTmp->get_right_pairpi(h); abc++) {
                 double delta_abc = d3_vvV[ref][h][abc];
                 for (size_t ijk = 0; ijk < TijKabCMatTmp->get_left_pairpi(h); ijk++) {
@@ -161,8 +160,8 @@ void CCMRCC::update_t3_ijKabC_amps() {
 
 void CCMRCC::update_t3_iJKaBC_amps() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto TiJKaBCMatTmp = wfn_->blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
@@ -175,7 +174,7 @@ void CCMRCC::update_t3_iJKaBC_amps() {
         auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
         auto HiJKaBC_matrix = HiJKaBCMatTmp->get_matrix();
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             for (int abc = 0; abc < TiJKaBCMatTmp->get_right_pairpi(h); abc++) {
                 double delta_abc = d3_vVV[ref][h][abc];
                 for (int ijk = 0; ijk < TiJKaBCMatTmp->get_left_pairpi(h); ijk++) {
@@ -192,8 +191,8 @@ void CCMRCC::update_t3_iJKaBC_amps() {
 
 void CCMRCC::update_t3_IJKABC_amps() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         auto TIJKABCMatTmp = wfn_->blas->get_MatTmp("t3[OOO][VVV]", unique_ref, none);
@@ -206,7 +205,7 @@ void CCMRCC::update_t3_IJKABC_amps() {
         auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
         auto HIJKABC_matrix = HIJKABCMatTmp->get_matrix();
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             for (int abc = 0; abc < TIJKABCMatTmp->get_right_pairpi(h); abc++) {
                 double delta_abc = d3_VVV[ref][h][abc];
                 for (int ijk = 0; ijk < TIJKABCMatTmp->get_left_pairpi(h); ijk++) {
@@ -224,8 +223,8 @@ void CCMRCC::update_t3_IJKABC_amps() {
 // void CCMRCC::update_t3_ijkabc_amps()
 // {
 //   // Loop over references
-//   for(int ref=0;ref<moinfo->get_nunique();ref++){
-//     int unique_ref  = moinfo->get_ref_number("u",ref);
+//   for(int ref=0;ref<wfn_->moinfo()->get_nunique();ref++){
+//     int unique_ref  = wfn_->moinfo()->get_ref_number("u",ref);
 //
 //     // Grab the temporary matrices
 //     CCMatTmp  TijkabcMatTmp = wfn_->blas()->get_MatTmp("t3[ooo][vvv]",unique_ref,none);
@@ -242,7 +241,7 @@ void CCMRCC::update_t3_IJKABC_amps() {
 //     double*** Fockmn_matrix  = FockmnMatTmp->get_matrix();
 //     double*** Fockef_matrix  = FockefMatTmp->get_matrix();
 //
-//     for(int h =0; h < moinfo->get_nirreps();h++){
+//     for(int h =0; h < wfn_->moinfo()->get_nirreps();h++){
 //       size_t left_offset  = TijkabcMatTmp->get_left()->get_first(h);
 //       size_t right_offset = TijkabcMatTmp->get_right()->get_first(h);
 //       for(int abc = 0;abc<TijkabcMatTmp->get_right_pairpi(h);abc++){
@@ -275,8 +274,8 @@ void CCMRCC::update_t3_IJKABC_amps() {
 // void CCMRCC::update_t3_ijKabC_amps()
 // {
 //   // Loop over references
-//   for(int ref=0;ref<moinfo->get_nunique();ref++){
-//     int unique_ref  = moinfo->get_ref_number("u",ref);
+//   for(int ref=0;ref<wfn_->moinfo()->get_nunique();ref++){
+//     int unique_ref  = wfn_->moinfo()->get_ref_number("u",ref);
 //
 //     // Grab the temporary matrices
 //     CCMatTmp  TijKabCMatTmp = wfn_->blas()->get_MatTmp("t3[ooO][vvV]",unique_ref,none);
@@ -297,7 +296,7 @@ void CCMRCC::update_t3_IJKABC_amps() {
 //     double*** Fockef_matrix  = FockefMatTmp->get_matrix();
 //     double*** FockEF_matrix  = FockEFMatTmp->get_matrix();
 //
-//     for(int h =0; h < moinfo->get_nirreps();h++){
+//     for(int h =0; h < wfn_->moinfo()->get_nirreps();h++){
 //       size_t left_offset  = TijKabCMatTmp->get_left()->get_first(h);
 //       size_t right_offset = TijKabCMatTmp->get_right()->get_first(h);
 //       for(int abc = 0;abc<TijKabCMatTmp->get_right_pairpi(h);abc++){
@@ -328,8 +327,8 @@ void CCMRCC::update_t3_IJKABC_amps() {
 // void CCMRCC::update_t3_iJKaBC_amps()
 // {
 //   // Loop over references
-//   for(int ref=0;ref<moinfo->get_nunique();ref++){
-//     int unique_ref  = moinfo->get_ref_number("u",ref);
+//   for(int ref=0;ref<wfn_->moinfo()->get_nunique();ref++){
+//     int unique_ref  = wfn_->moinfo()->get_ref_number("u",ref);
 //
 //     // Grab the temporary matrices
 //     CCMatTmp  TiJKaBCMatTmp = wfn_->blas()->get_MatTmp("t3[oOO][vVV]",unique_ref,none);
@@ -350,7 +349,7 @@ void CCMRCC::update_t3_IJKABC_amps() {
 //     double*** Fockef_matrix  = FockefMatTmp->get_matrix();
 //     double*** FockEF_matrix  = FockEFMatTmp->get_matrix();
 //
-//     for(int h =0; h < moinfo->get_nirreps();h++){
+//     for(int h =0; h < wfn_->moinfo()->get_nirreps();h++){
 //       size_t left_offset  = TiJKaBCMatTmp->get_left()->get_first(h);
 //       size_t right_offset = TiJKaBCMatTmp->get_right()->get_first(h);
 //       for(int abc = 0;abc<TiJKaBCMatTmp->get_right_pairpi(h);abc++){
@@ -381,8 +380,8 @@ void CCMRCC::update_t3_IJKABC_amps() {
 // void CCMRCC::update_t3_IJKABC_amps()
 // {
 //   // Loop over references
-//   for(int ref=0;ref<moinfo->get_nunique();ref++){
-//     int unique_ref  = moinfo->get_ref_number("u",ref);
+//   for(int ref=0;ref<wfn_->moinfo()->get_nunique();ref++){
+//     int unique_ref  = wfn_->moinfo()->get_ref_number("u",ref);
 //
 //     // Grab the temporary matrices
 //     CCMatTmp  TIJKABCMatTmp = wfn_->blas()->get_MatTmp("t3[OOO][VVV]",unique_ref,none);
@@ -399,7 +398,7 @@ void CCMRCC::update_t3_IJKABC_amps() {
 //     double*** FockMN_matrix  = FockMNMatTmp->get_matrix();
 //     double*** FockEF_matrix  = FockEFMatTmp->get_matrix();
 //
-//     for(int h =0; h < moinfo->get_nirreps();h++){
+//     for(int h =0; h < wfn_->moinfo()->get_nirreps();h++){
 //       size_t left_offset  = TIJKABCMatTmp->get_left()->get_first(h);
 //       size_t right_offset = TIJKABCMatTmp->get_right()->get_first(h);
 //       for(int abc = 0;abc<TIJKABCMatTmp->get_right_pairpi(h);abc++){

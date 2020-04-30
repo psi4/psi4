@@ -54,7 +54,6 @@ PRAGMA_WARNING_POP
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo *moinfo;
 extern MemoryManager *memory_manager;
 
 /*********************************************************
@@ -66,7 +65,7 @@ extern MemoryManager *memory_manager;
  * @return
  */
 bool CCMatrix::is_out_of_core() {
-    for (int h = 0; h < moinfo->get_nirreps(); ++h)
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h)
         if (!out_of_core[h] && (block_sizepi[h] > 0)) return (false);
     return (true);
 }
@@ -76,7 +75,7 @@ bool CCMatrix::is_out_of_core() {
  * @return
  */
 bool CCMatrix::is_allocated() {
-    for (int h = 0; h < moinfo->get_nirreps(); ++h)
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h)
         if (!is_block_allocated(h) && (block_sizepi[h] > 0)) return (false);
     return (true);
 }
@@ -137,7 +136,7 @@ void CCMatrix::free_block(int h) {
 /**
  * Write the matrix to disk and free the memory.
  */
-void CCMatrix::dump_to_disk() { dump_to_disk(0, moinfo->get_nirreps()); }
+void CCMatrix::dump_to_disk() { dump_to_disk(0, wfn_->moinfo()->get_nirreps()); }
 
 /**
  * Write the matrix to disk and free the memory
@@ -239,7 +238,7 @@ void CCMatrix::load_irrep(int h) {
 /**
  * Read a matrix from disk.
  */
-void CCMatrix::read_from_disk() { read_from_disk(0, moinfo->get_nirreps()); }
+void CCMatrix::read_from_disk() { read_from_disk(0, wfn_->moinfo()->get_nirreps()); }
 
 /**
  * Read irrep blocks from disk

@@ -53,16 +53,15 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
-CCTransform::CCTransform(std::shared_ptr<Wavefunction> wfn) : fraction_of_memory_for_presorting(0.75), wfn_(wfn) {
-    blas->add_index("[s>=s]");
-    blas->add_index("[n>=n]");
-    blas->add_index("[s]");
-    tei_mo_indexing = blas->get_index("[n>=n]");
-    tei_so_indexing = blas->get_index("[s>=s]");
-    oei_so_indexing = blas->get_index("[s]");
+CCTransform::CCTransform(std::shared_ptr<PSIMRCCWfn> wfn) : fraction_of_memory_for_presorting(0.75), wfn_(wfn) {
+    wfn_->blas()->add_index("[s>=s]");
+    wfn_->blas()->add_index("[n>=n]");
+    wfn_->blas()->add_index("[s]");
+    tei_mo_indexing = wfn_->blas()->get_index("[n>=n]");
+    tei_so_indexing = wfn_->blas()->get_index("[s>=s]");
+    oei_so_indexing = wfn_->blas()->get_index("[s]");
     first_irrep_in_core = 0;
     last_irrep_in_core = 0;
 }
@@ -82,16 +81,16 @@ void CCTransform::read_so_integrals() { read_tei_so_integrals(); }
 void CCTransform::read_tei_so_integrals() {
     // Read all the (frozen + non-frozen) TEI in Pitzer order
     // and store them in a in-core block-matrix
-    CCIndex* indexing = blas->get_index("[s>=s]");
+    CCIndex* indexing = wfn_->blas()->get_index("[s>=s]");
 
     // Allocate the tei_so matrix blocks
-    tei_so = std::vector<std::vector<double>>(moinfo->get_nirreps());
+    tei_so = std::vector<std::vector<double>>(wfn_->nirrep());
 
-    for (int h = 0; h < moinfo->get_nirreps(); h++) {
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
         if (indexing->get_pairpi(h) > 0) {
             size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
             tei_so[h] = std::vector<double>(block_size, 0);
-            outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu", moinfo->get_irr_labs(h).c_str(),
+            outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu", wfn_->moinfo->get_irr_labs(h).c_str(),
                             block_size);
         }
     }
@@ -127,13 +126,13 @@ void CCTransform::read_tei_so_integrals() {
     outfile->Printf("\n    CCTransform: read %d non-zero integrals", elements);
     iwl_buf_close(&ERIIN, 1);
 
-    //   for(int h=0;h<moinfo->get_nirreps();h++){
+    //   for(int h=0;h<wfn_->moinfo()->get_nirreps();h++){
     //     char label[80];
     //     sprintf(label,"tei_so_%d",h);
     //     psio_write_entry(MRCC_SO_INTS,label,(char*)&tei_so[h][0],INDEX(indexing->get_pairpi(h)-1,indexing->get_pairpi(h)-1)+1*sizeof(double));
     //   }
     //
-    //   for(int h=0;h<moinfo->get_nirreps();h++){
+    //   for(int h=0;h<wfn_->moinfo()->get_nirreps();h++){
     //     if(indexing->get_pairpi(h)>0){
     //       delete[] tei_so[h];
     //     }
@@ -147,7 +146,7 @@ void CCTransform::read_tei_so_integrals() {
 void CCTransform::transform_tei_so_integrals() {
     double alpha = 1.0;
     double beta = 0.0;
-    int nirreps = moinfo->get_nirreps();
+    int nirreps = wfn_->moinfo()->get_nirreps();
     int pq, rs;
     int p_abs, q_abs, r_abs, s_abs, pqrs;
     int kl, i_abs, j_abs, k_abs, l_abs;
@@ -155,9 +154,9 @@ void CCTransform::transform_tei_so_integrals() {
     double** B;
     double** D;
     double** C;
-    CCIndex* rsindx = blas->get_index("[s>=s]");
-    CCIndex* ijindx = blas->get_index("[n>=n]");
-    CCIndex* elemindx = blas->get_index("[s]");
+    CCIndex* rsindx = wfn_->blas()->get_index("[s>=s]");
+    CCIndex* ijindx = wfn_->blas()->get_index("[n>=n]");
+    CCIndex* elemindx = wfn_->blas()->get_index("[s]");
 
     // First-half transform
     outfile->Printf("\n\tCCTransform: beginning first-half integral trasform");
@@ -169,10 +168,10 @@ void CCTransform::transform_tei_so_integrals() {
 
             int rows_A = elemindx->get_pairpi(h_q);
             int cols_A = elemindx->get_pairpi(h_p);
-            int rows_B = moinfo->get_mopi(h_p);
+            int rows_B = wfn_->moinfo()->get_mopi(h_p);
             int cols_B = elemindx->get_pairpi(h_q);
-            int rows_D = moinfo->get_mopi(h_q);
-            int cols_D = moinfo->get_mopi(h_p);
+            int rows_D = wfn_->moinfo()->get_mopi(h_q);
+            int cols_D = wfn_->moinfo()->get_mopi(h_p);
 
             if (rows_A * cols_A * rows_B * cols_B * rows_D * cols_D > 0) {
                 A = block_matrix(rows_A, cols_A);
@@ -196,7 +195,7 @@ void CCTransform::transform_tei_so_integrals() {
                     }
 
                     // First transform
-                    C = moinfo->get_scf_mos(h_p);
+                    C = wfn_->moinfo()->get_scf_mos(h_p);
 // B(i,q)=C(p,i)*A(q,p)
 #ifdef CCTRANSFORM_USE_BLAS
                     if (rows_B * cols_B * cols_A != 0)
@@ -209,7 +208,7 @@ void CCTransform::transform_tei_so_integrals() {
 #endif
 
                     // Second transform
-                    C = moinfo->get_scf_mos(h_q);
+                    C = wfn_->moinfo()->get_scf_mos(h_q);
 // D(j,i)+=C(q,j)*B(i,q);
 #ifdef CCTRANSFORM_USE_BLAS
                     if (rows_D * cols_D * cols_B != 0)
@@ -221,8 +220,8 @@ void CCTransform::transform_tei_so_integrals() {
                             for (int j = 0; j < rows_D; j++) D[j][i] += C[q][j] * B[i][q];
 #endif
                     // Store the half-transformed integrals
-                    for (int i = 0; i < moinfo->get_mopi(h_p); i++) {
-                        for (int j = 0; j < moinfo->get_mopi(h_q); j++) {
+                    for (int i = 0; i < wfn_->moinfo()->get_mopi(h_p); i++) {
+                        for (int j = 0; j < wfn_->moinfo()->get_mopi(h_q); j++) {
                             i_abs = i + elemindx->get_first(h_p);
                             j_abs = j + elemindx->get_first(h_q);
                             if (i_abs >= j_abs) {
@@ -249,10 +248,10 @@ void CCTransform::transform_tei_so_integrals() {
 
             int rows_A = elemindx->get_pairpi(h_s);
             int cols_A = elemindx->get_pairpi(h_r);
-            int rows_B = moinfo->get_mopi(h_r);
+            int rows_B = wfn_->moinfo()->get_mopi(h_r);
             int cols_B = elemindx->get_pairpi(h_s);
-            int rows_D = moinfo->get_mopi(h_s);
-            int cols_D = moinfo->get_mopi(h_r);
+            int rows_D = wfn_->moinfo()->get_mopi(h_s);
+            int cols_D = wfn_->moinfo()->get_mopi(h_r);
 
             if (rows_A * cols_A * rows_B * cols_B * rows_D * cols_D > 0) {
                 A = block_matrix(rows_A, cols_A);
@@ -274,7 +273,7 @@ void CCTransform::transform_tei_so_integrals() {
                     }
 
                     // First transform
-                    C = moinfo->get_scf_mos(h_r);
+                    C = wfn_->moinfo()->get_scf_mos(h_r);
 // B(k,s)=C(r,k)*A(s,r)
 #ifdef CCTRANSFORM_USE_BLAS
                     if (rows_B * cols_B * cols_A != 0)
@@ -287,7 +286,7 @@ void CCTransform::transform_tei_so_integrals() {
 #endif
 
                     // Second transform
-                    C = moinfo->get_scf_mos(h_s);
+                    C = wfn_->moinfo()->get_scf_mos(h_s);
 // D(l,k)+=C(s,l)*B(k,s);
 #ifdef CCTRANSFORM_USE_BLAS
                     if (rows_D * cols_D * cols_B != 0)
@@ -300,8 +299,8 @@ void CCTransform::transform_tei_so_integrals() {
 #endif
 
                     // Store the half-transformed integrals
-                    for (int k = 0; k < moinfo->get_mopi(h_r); k++) {
-                        for (int l = 0; l < moinfo->get_mopi(h_s); l++) {
+                    for (int k = 0; k < wfn_->moinfo()->get_mopi(h_r); k++) {
+                        for (int l = 0; l < wfn_->moinfo()->get_mopi(h_s); l++) {
                             k_abs = k + elemindx->get_first(h_r);
                             l_abs = l + elemindx->get_first(h_s);
                             if (k_abs >= l_abs) {
@@ -339,7 +338,7 @@ void CCTransform::transform_tei_so_integrals() {
 void CCTransform::read_tei_mo_integrals() {
     // Read all the (frozen + non-frozen) TEI in Pitzer order
     // and store them in a in-core block-matrix
-    CCIndex* mo_indexing = blas->get_index("[n>=n]");
+    CCIndex* mo_indexing = wfn_->blas()->get_index("[n>=n]");
 
     allocate_tei_mo();
 
@@ -382,7 +381,7 @@ void CCTransform::read_oei_mo_integrals() {
     // Read all the (frozen + non-frozen) OEI in Pitzer order
     allocate_oei_mo();
 
-    int nmo = moinfo->get_nmo();
+    int nmo = wfn_->moinfo()->get_nmo();
 
     std::vector<double> H(INDEX(nmo - 1, nmo - 1) + 1, 0);
 
@@ -406,7 +405,7 @@ void CCTransform::free_memory() {
  */
 void CCTransform::allocate_oei_mo() {
     if (oei_mo.size() == 0) {
-        int nmo = moinfo->get_nmo();
+        int nmo = wfn_->nmo();
         oei_mo = std::vector<std::vector<double>>(nmo, std::vector<double>(nmo, 0));
     }
 }
@@ -416,7 +415,7 @@ void CCTransform::allocate_oei_mo() {
  */
 void CCTransform::allocate_oei_so() {
     if (oei_mo.size() == 0) {
-        int nso = moinfo->get_nso();
+        int nso = wfn_->nso();
         oei_so = std::vector<std::vector<double>>(nso, std::vector<double>(nso, 0));
     }
 }
@@ -426,17 +425,17 @@ void CCTransform::allocate_oei_so() {
  */
 void CCTransform::allocate_tei_mo() {
     if (tei_mo.size() == 0) {
-        CCIndex* indexing = blas->get_index("[n>=n]");
+        CCIndex* indexing = wfn_->blas()->get_index("[n>=n]");
 
         // Allocate the tei_mo matrix blocks
-        tei_mo = std::vector<std::vector<double>>(moinfo->get_nirreps());
+        tei_mo = std::vector<std::vector<double>>(wfn_->nirrep());
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->nirrep(); h++) {
             if (indexing->get_pairpi(h) > 0) {
                 size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
                 tei_mo[h] = std::vector<double>(block_size, 0);
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",
-                                moinfo->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
+                                wfn_->moinfo()->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
             }
         }
     }
@@ -444,17 +443,17 @@ void CCTransform::allocate_tei_mo() {
 
 void CCTransform::allocate_tei_so() {
     if (tei_so.size() == 0) {
-        CCIndex* indexing = blas->get_index("[s>=s]");
+        CCIndex* indexing = wfn_->blas()->get_index("[s>=s]");
 
         // Allocate the tei_so matrix blocks
-        tei_so = std::vector<std::vector<double>>(moinfo->get_nirreps());
+        tei_so = std::vector<std::vector<double>>(wfn_->nirrep());
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->nirrep(); h++) {
             if (indexing->get_pairpi(h) > 0) {
                 int block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
                 tei_so[h] = std::vector<double>(block_size, 0);
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",
-                                moinfo->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
+                                wfn_->moinfo()->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
             }
         }
     }
@@ -462,20 +461,20 @@ void CCTransform::allocate_tei_so() {
 
 void CCTransform::allocate_tei_half_transformed() {
     if (tei_half_transformed.size() == 0) {
-        CCIndex* so_indexing = blas->get_index("[s>=s]");
-        CCIndex* mo_indexing = blas->get_index("[n>=n]");
+        CCIndex* so_indexing = wfn_->blas()->get_index("[s>=s]");
+        CCIndex* mo_indexing = wfn_->blas()->get_index("[n>=n]");
 
-        tei_half_transformed = std::vector<std::vector<std::vector<double>>>(moinfo->get_nirreps());
+        tei_half_transformed = std::vector<std::vector<std::vector<double>>>(wfn_->nirrep());
 
         bool failed = false;
         size_t required_size = 0;
         size_t matrix_size = 0;
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             if (so_indexing->get_pairpi(h) * mo_indexing->get_pairpi(h) > 0) {
                 tei_half_transformed[h] = std::vector<std::vector<double>>(mo_indexing->get_pairpi(h), std::vector<double>(so_indexing->get_pairpi(h), 0));
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu*%lu",
-                                moinfo->get_irr_labs(h).c_str(), mo_indexing->get_pairpi(h),
+                                wfn_->moinfo()->get_irr_labs(h).c_str(), mo_indexing->get_pairpi(h),
                                 so_indexing->get_pairpi(h));
             }
         }
@@ -499,11 +498,11 @@ void CCTransform::transform_oei_so_integrals() {
 
     allocate_oei_mo();
 
-    int nso = moinfo->get_nso();
-    int nmo = moinfo->get_nmo();
+    int nso = wfn_>nso();
+    int nmo = wfn_>nmo();
 
     std::vector<std::vector<double>> A(nso, std::vector<double>(nmo, 0));
-    double** C = moinfo->get_scf_mos();
+    auto C = wfn_->moinfo->get_scf_mos();
 
     // A(q,i) = H(q,p) * C(p,i)
     /*#ifdef CCTRANSFORM_USE_BLAS

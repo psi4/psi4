@@ -26,36 +26,33 @@
  * @END LICENSE
  */
 
-#include "psi4/libmoinfo/libmoinfo.h"
-
 #include "blas.h"
 #include "index.h"
 #include "index_iterator.h"
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
-CCIndexIterator::CCIndexIterator(std::string str) : tuples(blas->get_index(str)->get_tuples()) {
-    nirreps = moinfo->get_nirreps();
-    ccindex = wfn_->blas()->get_index(str);
+CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str) : tuples(blas->get_index(str)->get_tuples()){
+    nirreps = wfn->nirrep();
+    ccindex = wfn->blas()->get_index(str);
     startup(0, nirreps);
 }
 
-CCIndexIterator::CCIndexIterator(CCIndex* index_) : tuples(index_->get_tuples()) {
-    nirreps = moinfo->get_nirreps();
+CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, CCIndex* index_) : tuples(index_->get_tuples()) {
+    nirreps = wfn->nirrep();
     ccindex = index_;
     startup(0, nirreps);
 }
 
-CCIndexIterator::CCIndexIterator(std::string str, int select_irrep) : tuples(blas->get_index(str)->get_tuples()) {
-    nirreps = moinfo->get_nirreps();
-    ccindex = wfn_->blas()->get_index(str);
+CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str, int select_irrep) : tuples(blas->get_index(str)->get_tuples()) {
+    nirreps = wfn->nirrep();
+    ccindex = wfn->blas()->get_index(str);
     startup(select_irrep, select_irrep + 1);
 }
 
-CCIndexIterator::CCIndexIterator(CCIndex* index_, int select_irrep) : tuples(index_->get_tuples()) {
-    nirreps = moinfo->get_nirreps();
+CCIndexIterator::CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, CCIndex* index_, int select_irrep) : tuples(index_->get_tuples()) {
+    nirreps = wfn->nirrep();
     ccindex = index_;
     startup(select_irrep, select_irrep + 1);
 }

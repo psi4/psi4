@@ -41,10 +41,9 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
-CCBLAS::CCBLAS(Options& options) : options_(options), full_in_core(false), work_size(0), buffer_size(0) { init(); }
+CCBLAS::CCBLAS(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_(wfn), options_(options), full_in_core(false), work_size(0), buffer_size(0) { init(); }
 
 CCBLAS::~CCBLAS() { cleanup(); }
 
@@ -67,7 +66,7 @@ void CCBLAS::allocate_work() {
     CCIndex* ff_pair = get_index("[ff]");
 
     work_size = 0;
-    for (int h = 0; h < moinfo->get_nirreps(); h++) {
+    for (int h = 0; h < wfn_->nirrep(); h++) {
         std::vector<size_t> dimension;
         dimension.push_back(oo_pair->get_pairpi(h));
         dimension.push_back(vv_pair->get_pairpi(h));
@@ -101,7 +100,7 @@ void CCBLAS::allocate_buffer() {
 
 void CCBLAS::free_sortmap() {
     for (SortMap::iterator iter = sortmap.begin(); iter != sortmap.end(); ++iter) {
-        for (int irrep = 0; irrep < moinfo->get_nirreps(); irrep++) delete[] iter->second[irrep];
+        for (int irrep = 0; irrep < wfn_->nirrep(); irrep++) delete[] iter->second[irrep];
         delete[] iter->second;
     }
 }
@@ -195,7 +194,7 @@ void CCBLAS::add_indices() {
 
 void CCBLAS::print(const char* cstr) {
     std::string str(cstr);
-    std::vector<std::string> names = moinfo->get_matrix_names(str);
+    std::vector<std::string> names = wfn_->moinfo()->get_matrix_names(str);
     for (size_t n = 0; n < names.size(); ++n) print_ref(names[n]);
 }
 
@@ -265,7 +264,7 @@ int CCBLAS::compute_storage_strategy() {
     std::vector<std::pair<size_t, std::pair<CCMatrix*, int> > > fock;
     std::vector<std::pair<size_t, std::pair<CCMatrix*, int> > > others;
     for (MatrixMap::iterator it = matrices.begin(); it != matrices.end(); ++it) {
-        for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+        for (int h = 0; h < wfn_->nirrep(); ++h) {
             size_t block_memory = it->second->get_memorypi2(h);
             if (it->second->is_integral()) {
                 integrals.push_back(std::make_pair(block_memory, std::make_pair(it->second, h)));

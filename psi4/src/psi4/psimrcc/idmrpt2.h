@@ -35,6 +35,7 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
+#include "blas.h"
 #include "manybody.h"
 #include "psimrcc_wfn.h"
 #include "updater.h"

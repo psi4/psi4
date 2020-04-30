@@ -35,9 +35,8 @@
 
 #include "psi4/libpsi4util/libpsi4util.h"
 
-#include "idmrpt2.h"
 #include "blas.h"
-#include "psimrcc.h"
+#include "idmrpt2.h"
 
 namespace psi {
 namespace psimrcc {

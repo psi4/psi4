@@ -44,7 +44,6 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 bool CCMRCC::build_diagonalize_Heff(int cycle, double time) {
     total_time = time;
@@ -55,17 +54,17 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time) {
 
     if (cycle == 0) {
         current_energy =
-            diagonalize_Heff(moinfo->get_root(), moinfo->get_nrefs(), Heff, right_eigenvector, left_eigenvector, true);
+            diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff, right_eigenvector, left_eigenvector, true);
         old_energy = current_energy;
-        print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);
+        print_eigensystem(wfn_->moinfo()->get_nrefs(), Heff, right_eigenvector);
     }
     if ((cycle > 0) || (cycle == -1)) {
         // Compute the energy difference
         old_energy = current_energy;
         current_energy =
-            diagonalize_Heff(moinfo->get_root(), moinfo->get_nrefs(), Heff, right_eigenvector, left_eigenvector, false);
+            diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff, right_eigenvector, left_eigenvector, false);
 
-        if (options_.get_bool("HEFF_PRINT")) print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);
+        if (options_.get_bool("HEFF_PRINT")) print_eigensystem(wfn_->moinfo()->get_nrefs(), Heff, right_eigenvector);
         double delta_energy = current_energy - old_energy;
         converged = (delta_t1_amps < options_.get_double("R_CONVERGENCE") &&
                      delta_t2_amps < options_.get_double("R_CONVERGENCE") &&
@@ -73,17 +72,17 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time) {
 
         ///    TODO fix this code which is temporarly not working
         //     if(options_get_int("DAMPING_FACTOR")>0){
-        //       if(std::fabs(delta_energy) < moinfo->get_no_damp_convergence()){
-        //         double damping_factor = moinfo->get_damping_factor();
+        //       if(std::fabs(delta_energy) < wfn_->moinfo()->get_no_damp_convergence()){
+        //         double damping_factor = wfn_->moinfo()->get_damping_factor();
         //         damping_factor *= 0.95;
         //         outfile->Printf("\n\t# Scaling damp factor to zero, damping_factor =
-        //         %lf",moinfo->get_damping_factor()); moinfo->set_damping_factor(damping_factor);
+        //         %lf",wfn_->moinfo()->get_damping_factor()); wfn_->moinfo()->set_damping_factor(damping_factor);
         //       }
         //     }
     }
     print_mrccsd_energy(cycle);
     if (converged) {
-        print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);
+        print_eigensystem(wfn_->moinfo()->get_nrefs(), Heff, right_eigenvector);
         wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
         wfn_->set_scalar_variable("MRCC TOTAL ENERGY", current_energy);
     }
@@ -102,20 +101,20 @@ void CCMRCC::build_Heff_diagonal() {
 
     wfn_->blas()->solve("ECCSD{u}  = Eaa{u} + Ebb{u} + Eaaaa{u} + Eabab{u} + Ebbbb{u} + ERef{u}");
 
-    for (int n = 0; n < moinfo->get_nrefs(); n++) Heff[n][n] = wfn_->blas()->get_scalar("ECCSD", moinfo->get_ref_number(n));
+    for (int n = 0; n < wfn_->moinfo()->get_nrefs(); n++) Heff[n][n] = wfn_->blas()->get_scalar("ECCSD", wfn_->moinfo()->get_ref_number(n));
 }
 
 void CCMRCC::build_Heff_offdiagonal() {
-    for (int i = 0; i < moinfo->get_ref_size(AllRefs); i++) {
-        int i_unique = moinfo->get_ref_number(i);
+    for (int i = 0; i < wfn_->moinfo()->get_ref_size(AllRefs); i++) {
+        int i_unique = wfn_->moinfo()->get_ref_number(i);
         // Find the off_diagonal elements for reference i
         // Loop over reference j (in a safe way)
-        for (int j = 0; j < moinfo->get_ref_size(AllRefs); j++) {
+        for (int j = 0; j < wfn_->moinfo()->get_ref_size(AllRefs); j++) {
             if (i != j) {
                 std::vector<std::pair<int, int> > alpha_internal_excitation =
-                    moinfo->get_alpha_internal_excitation(i, j);
-                std::vector<std::pair<int, int> > beta_internal_excitation = moinfo->get_beta_internal_excitation(i, j);
-                double sign_internal_excitation = moinfo->get_sign_internal_excitation(i, j);
+                    wfn_->moinfo()->get_alpha_internal_excitation(i, j);
+                std::vector<std::pair<int, int> > beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(i, j);
+                double sign_internal_excitation = wfn_->moinfo()->get_sign_internal_excitation(i, j);
 
                 double element = 0.0;
                 if (i == i_unique) {

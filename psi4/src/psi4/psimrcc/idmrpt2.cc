@@ -46,7 +46,7 @@ namespace psimrcc {
 
 IDMRPT2::IDMRPT2(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : CCManyBody(wfn, options) {
     triples_type = pt2;
-    updater_ = std::make_shared<MkUpdater>(options);
+    updater_ = std::make_shared<MkUpdater>(wfn, options);
     add_matrices();
 }
 
@@ -175,7 +175,7 @@ double IDMRPT2::compute_energy() {
     }
     wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
     wfn_->set_scalar_variable("MRPT TOTAL ENERGY", current_energy);
-    outfile->Printf("\n\n  Wrote %ssecond order energy to wavefunction");
+    outfile->Printf("\n\n  Wrote %ssecond order energy to wavefunction", energy_string.c_str());
 
     //   print_eigensystem(wfn_->moinfo()->get_nrefs(),Heff_mrpt2,right_eigenvector);
     return wfn_->scalar_variable("CURRENT ENERGY");

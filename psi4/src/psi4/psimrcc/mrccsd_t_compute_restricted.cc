@@ -45,14 +45,13 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void MRCCSD_T::compute_restricted() {
     outfile->Printf("\n\n  Computing (T) correction using the restricted loop algorithm.\n");
 
     bool closed_shell_case = false;
     double closed_shell_factor = 1.0;
-    if (moinfo->get_ref_size(UniqueOpenShellRefs) == 0) {
+    if (wfn_->moinfo()->get_ref_size(UniqueOpenShellRefs) == 0) {
         closed_shell_case = true;
         closed_shell_factor = 2.0;
     }
@@ -149,7 +148,7 @@ void MRCCSD_T::compute_restricted() {
 }
 
 void MRCCSD_T::compute_ooo_triples_restricted() {
-    CCIndexIterator ijk("[ooo]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
 
     size_t tot_cycles = 0;
     size_t tot_triplets = 0;
@@ -242,7 +241,7 @@ void MRCCSD_T::compute_ooo_triples_restricted() {
                         std::vector<double>& e_vv_mu = e_vv[mu];
                         std::vector<bool>& is_avir_mu = is_avir[mu];
 
-                        CCIndexIterator abc(vvv, ijk_sym);
+                        CCIndexIterator abc(wfn_, vvv, ijk_sym);
                         //          abc.reset();
                         //          abc.set_irrep();
                         // Loop over abc
@@ -317,7 +316,7 @@ void MRCCSD_T::compute_ooo_triples_restricted() {
 }
 
 void MRCCSD_T::compute_OOO_triples_restricted() {
-    CCIndexIterator ijk("[ooo]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
 
     for (ijk.first(); !ijk.end(); ijk.next()) {
         size_t i_abs = o->get_tuple_abs_index(ijk.ind_abs<0>());
@@ -405,7 +404,7 @@ void MRCCSD_T::compute_OOO_triples_restricted() {
                         std::vector<double>& e_VV_mu = e_VV[mu];
                         std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                        CCIndexIterator abc(vvv, ijk_sym);
+                        CCIndexIterator abc(wfn_, vvv, ijk_sym);
                         //          abc.reset();
                         //          abc.set_irrep();
                         // Loop over abc
@@ -480,7 +479,7 @@ void MRCCSD_T::compute_OOO_triples_restricted() {
 }
 
 void MRCCSD_T::compute_ooO_triples_restricted() {
-    CCIndexIterator ijk("[ooo]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
 
     for (ijk.first(); !ijk.end(); ijk.next()) {
         size_t i_abs = o->get_tuple_abs_index(ijk.ind_abs<0>());
@@ -587,7 +586,7 @@ void MRCCSD_T::compute_ooO_triples_restricted() {
                         std::vector<bool>& is_avir_mu = is_avir[mu];
                         std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                        CCIndexIterator abc(vvv, ijk_sym);
+                        CCIndexIterator abc(wfn_, vvv, ijk_sym);
                         //          abc.reset();
                         //          abc.set_irrep();
                         // Loop over abc
@@ -664,7 +663,7 @@ void MRCCSD_T::compute_ooO_triples_restricted() {
 }
 
 void MRCCSD_T::compute_oOO_triples_restricted() {
-    CCIndexIterator ijk("[ooo]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
 
     for (ijk.first(); !ijk.end(); ijk.next()) {
         size_t i_abs = o->get_tuple_abs_index(ijk.ind_abs<0>());
@@ -769,7 +768,7 @@ void MRCCSD_T::compute_oOO_triples_restricted() {
                         std::vector<bool>& is_avir_mu = is_avir[mu];
                         std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                        CCIndexIterator abc(vvv, ijk_sym);
+                        CCIndexIterator abc(wfn_, vvv, ijk_sym);
                         //          abc.reset();
                         //          abc.set_irrep();
                         // Loop over abc

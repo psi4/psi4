@@ -75,7 +75,7 @@ namespace psimrcc {
 CCBLAS *blas;
 MemoryManager *memory_manager;
 
-PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
+SharedWavefunction psimrcc(SharedWavefunction ref_wfn, Options &options) {
     using namespace psi::psimrcc;
     tstart();
     _default_psio_lib_->open(PSIF_PSIMRCC_INTEGRALS, PSIO_OPEN_NEW);
@@ -97,10 +97,7 @@ PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
         outfile->Printf("\tPerturbative CBS was removed in 1.4. Using unpublished features is a bad habit.\n\n");
     }
 
-    blas = new CCBLAS(options);
     wfn->compute_energy();
-
-    delete blas;
 
     memory_manager->MemCheck("outfile");
 
@@ -109,7 +106,7 @@ PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
     _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
     tstop();
 
-    return Success;
+    return wfn;
 }
 
 }  // namespace psimrcc

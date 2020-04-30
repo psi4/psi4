@@ -33,7 +33,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 /**
  * Read and compute an expression
@@ -69,7 +68,7 @@ void CCBLAS::append(const char* cstr) {
 void CCBLAS::append(std::string str) {
     // Main driver for solving expressions
     int noperations_added = 0;
-    std::vector<std::string> names = moinfo->get_matrix_names(str);
+    std::vector<std::string> names = wfn_->moinfo()->get_matrix_names(str);
     for (int n = 0; n < names.size(); n++) {
         noperations_added += parse(names[n]);
     }
@@ -219,7 +218,7 @@ void CCBLAS::compute() {
 void CCBLAS::append_zero_two_diagonal(const char* cstr) {
     std::string str(cstr);
     // To zero diagonals of things like "Fae[v][v]{u}"
-    std::vector<std::string> names = moinfo->get_matrix_names(str);
+    std::vector<std::string> names = wfn_->moinfo()->get_matrix_names(str);
     for (int n = 0; n < names.size(); n++) {
         CCMatrix* Matrix = get_Matrix(names[n]);
         CCOperation op(0.0, "", "", "zero_two_diagonal", Matrix, nullptr, nullptr, work[0].data(), buffer[0].data());

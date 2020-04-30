@@ -45,15 +45,14 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 // Creates the matrix T2[ij][a][b] with irreps ordered according to b
 void MRCCSD_T::form_T2_ij_a_b(IndexMatrix* T2_ij_a_b, bool spin1, bool spin2, bool transpose) {
-    CCIndexIterator ij("[oo]");
+    CCIndexIterator ij(wfn_, "[oo]");
 
     // Copy the matrix elements
     for (int ref = 0; ref < nrefs; ++ref) {
-        int unique_ref = moinfo->get_ref_number(ref, AllRefs);
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, AllRefs);
 
         std::vector<double**> Tijab;
 
@@ -76,8 +75,8 @@ void MRCCSD_T::form_T2_ij_a_b(IndexMatrix* T2_ij_a_b, bool spin1, bool spin2, bo
         }
 
         for (ij.first(); !ij.end(); ij.next()) {
-            BlockMatrix* block_matrix = new BlockMatrix(nirreps, v->get_tuplespi(), v->get_tuplespi(), ij.sym());
-            CCIndexIterator ab("[vv]", ij.sym());
+            BlockMatrix* block_matrix = new BlockMatrix(wfn_, v->get_tuplespi(), v->get_tuplespi(), ij.sym());
+            CCIndexIterator ab(wfn_, "[vv]", ij.sym());
             //      ab.reset();
             //      ab.set_irrep(ij.sym());
             for (ab.first(); !ab.end(); ab.next()) {
@@ -96,11 +95,11 @@ void MRCCSD_T::form_T2_ij_a_b(IndexMatrix* T2_ij_a_b, bool spin1, bool spin2, bo
 }
 
 void MRCCSD_T::form_T2_i_ab_j(IndexMatrix* T2_i_ab_j, bool spin1, bool spin2, bool transpose) {
-    CCIndexIterator i("[o]");
+    CCIndexIterator i(wfn_, "[o]");
 
     // Copy the matrix elements
     for (int ref = 0; ref < nrefs; ++ref) {
-        int unique_ref = moinfo->get_ref_number(ref, AllRefs);
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, AllRefs);
 
         std::vector<double**> Tijab;
 
@@ -123,10 +122,10 @@ void MRCCSD_T::form_T2_i_ab_j(IndexMatrix* T2_i_ab_j, bool spin1, bool spin2, bo
         }
 
         for (i.first(); !i.end(); i.next()) {
-            BlockMatrix* block_matrix = new BlockMatrix(nirreps, vv->get_tuplespi(), o->get_tuplespi(), i.sym());
+            BlockMatrix* block_matrix = new BlockMatrix(wfn_, vv->get_tuplespi(), o->get_tuplespi(), i.sym());
             //      abj.reset();
             //      abj.set_irrep(i.sym());
-            CCIndexIterator abj("[vvo]", i.sym());
+            CCIndexIterator abj(wfn_, "[vvo]", i.sym());
             for (abj.first(); !abj.end(); abj.next()) {
                 int ij_sym = oo->get_tuple_irrep(i.ind_abs<0>(), abj.ind_abs<2>());
                 size_t ij_rel = oo->get_tuple_rel_index(i.ind_abs<0>(), abj.ind_abs<2>());
@@ -149,14 +148,14 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
     // (v_k)_{bc,e} = <bc||ek> and (v_k)_{bc,e} = <bc|ek>
     // from the integrals <ek||bc>
     // <bc||ek> = <ek||bc>
-    CCIndexIterator k("[o]");
+    CCIndexIterator k(wfn_, "[o]");
 
     auto V = wfn_->blas->get_MatTmp("<[vo]|[vv]>", none)->get_matrix();
     for (k.first(); !k.end(); k.next()) {
-        BlockMatrix* block_matrix = new BlockMatrix(nirreps, vv->get_tuplespi(), v->get_tuplespi(), k.sym());
+        BlockMatrix* block_matrix = new BlockMatrix(wfn_, vv->get_tuplespi(), v->get_tuplespi(), k.sym());
         //    ebc.reset();
         //    ebc.set_irrep(k.sym());
-        CCIndexIterator ebc("[vvv]", k.sym());
+        CCIndexIterator ebc(wfn_, "[vvv]", k.sym());
         for (ebc.first(); !ebc.end(); ebc.next()) {
             size_t e_rel = v->get_tuple_rel_index(ebc.ind_abs<0>());
 
@@ -175,15 +174,15 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
 }
 
 void MRCCSD_T::form_V_jk_c_m(IndexMatrix* V_jk_c_m, double direct, double exchange) {
-    CCIndexIterator jk("[oo]");
+    CCIndexIterator jk(wfn_, "[oo]");
 
     auto V = wfn_->blas->get_MatTmp("<[oo]|[ov]>", none)->get_matrix();
 
     for (jk.first(); !jk.end(); jk.next()) {
-        BlockMatrix* block_matrix = new BlockMatrix(nirreps, v->get_tuplespi(), o->get_tuplespi(), jk.sym());
+        BlockMatrix* block_matrix = new BlockMatrix(wfn_, v->get_tuplespi(), o->get_tuplespi(), jk.sym());
         //    mc.reset();
         //    mc.set_irrep(jk.sym());
-        CCIndexIterator mc("[ov]", jk.sym());
+        CCIndexIterator mc(wfn_, "[ov]", jk.sym());
         for (mc.first(); !mc.end(); mc.next()) {
             size_t m_rel = o->get_tuple_rel_index(mc.ind_abs<0>());
             int c_sym = v->get_tuple_irrep(mc.ind_abs<1>());

@@ -43,12 +43,11 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCOperation::setup_contractions() {
     Timer PartA;
 
-    CCMatTmp AMatTmp = blas->get_MatTmp(A_Matrix, none);
+    CCMatTmp AMatTmp = wfn_->blas()->get_MatTmp(A_Matrix, none);
     check_and_zero_target();
 
     bool need_sort = false;
@@ -70,8 +69,8 @@ void CCOperation::setup_contractions() {
             T_right = C_Matrix->get_left();
         }
         size_t T_matrix_offset = 0;
-        T_matrix = std::vector<double**>(moinfo->get_nirreps(), nullptr);
-        for (int irrep = 0; irrep < moinfo->get_nirreps(); irrep++) {
+        T_matrix = std::vector<double**>(wfn_->nirrep(), nullptr);
+        for (int irrep = 0; irrep < wfn_->nirrep(); irrep++) {
             T_matrix[irrep] = new double*[T_left->get_pairpi(irrep)];
             size_t block_size = T_left->get_pairpi(irrep) * T_right->get_pairpi(irrep);
             for (size_t i = 0; i < T_left->get_pairpi(irrep); i++) {
@@ -89,7 +88,7 @@ void CCOperation::setup_contractions() {
     double** B_matrix;
     double** C_matrix;
 
-    for (int h = 0; h < moinfo->get_nirreps(); h++) {
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
         bool B_on_disk = false;
         bool C_on_disk = false;
         if (!B_Matrix->is_block_allocated(h)) {
@@ -130,7 +129,7 @@ void CCOperation::setup_contractions() {
             contract_in_core(A_matrix, B_matrix, C_matrix, B_on_disk, C_on_disk, rows_A, rows_B, rows_C, cols_A, cols_B,
                              cols_C, offset);
             // Store the timing in moinfo
-            moinfo->add_dgemm_timing(timer.get());
+            wfn_->moinfo()->add_dgemm_timing(timer.get());
         }
 
         //////////////////////////////////////////////////////////
@@ -167,7 +166,7 @@ void CCOperation::setup_contractions() {
                     contract_in_core(A_matrix, B_matrix, C_matrix, B_on_disk, C_on_disk, rows_A, rows_B, rows_C, cols_A,
                                      cols_B, cols_C, offset);
                     // Store the timing in moinfo
-                    moinfo->add_dgemm_timing(timer.get());
+                    wfn_->moinfo()->add_dgemm_timing(timer.get());
                     offset += strip_length;
                 }
                 strip++;
@@ -208,7 +207,7 @@ void CCOperation::setup_contractions() {
                     contract_in_core(A_matrix, B_matrix, C_matrix, B_on_disk, C_on_disk, rows_A, rows_B, rows_C, cols_A,
                                      cols_B, cols_C, offset);
                     // Store the timing in moinfo
-                    moinfo->add_dgemm_timing(timer.get());
+                    wfn_->moinfo()->add_dgemm_timing(timer.get());
                     offset += strip_length;
                 }
                 strip++;
@@ -221,7 +220,7 @@ void CCOperation::setup_contractions() {
     Timer PartC;
     if (need_sort) {
         sort(T_left, T_right, T_matrix, 1.0);
-        for (int h = 0; h < moinfo->get_nirreps(); h++)
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++)
             //       if(T_left->get_pairpi(h)*T_right->get_pairpi(h)>0)
             delete[] T_matrix[h];
     }

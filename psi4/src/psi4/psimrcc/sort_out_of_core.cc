@@ -41,7 +41,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
 /**
@@ -56,7 +55,7 @@ void CCSort::build_integrals_out_of_core() {
         efzc += 2.0 * trans->oei(ii, ii);
     }
 
-    MatrixMap matrix_map = blas->get_MatrixMap();
+    MatrixMap matrix_map = wfn_->blas()->get_MatrixMap();
     MatMapIt mat_it = matrix_map.begin();
     MatMapIt mat_end = matrix_map.end();
     int mat_irrep = 0;
@@ -81,7 +80,7 @@ void CCSort::build_integrals_out_of_core() {
         // The one-particle integrals are added at the beginning to avoid interfering with the
         // way the transformation code handles the process
         form_fock_one_out_of_core(to_be_processed);
-        while (last_irrep < moinfo->get_nirreps()) {
+        while (last_irrep < wfn_->moinfo()->get_nirreps()) {
             last_irrep = trans->read_tei_mo_integrals_block(first_irrep);
             if (cycle == 0) frozen_core_energy_out_of_core();
             sort_integrals_out_of_core(first_irrep, last_irrep, to_be_processed);
@@ -104,7 +103,7 @@ void CCSort::setup_out_of_core_list(MatMapIt& mat_it, int& mat_irrep, MatMapIt& 
     while ((mat_it != mat_end) && !out_of_memory) {
         if (mat_it->second->is_integral() || mat_it->second->is_fock()) {
             CCMatrix* Matrix = mat_it->second;
-            while (mat_irrep < moinfo->get_nirreps() && !out_of_memory) {
+            while (mat_irrep < wfn_->moinfo()->get_nirreps() && !out_of_memory) {
                 size_t block_memory = Matrix->get_memorypi2(mat_irrep);
                 if (block_memory < ccintegrals_memory) {
                     to_be_processed.push_back(std::make_pair(Matrix, mat_irrep));
@@ -162,7 +161,7 @@ void CCSort::form_fock_out_of_core(CCMatrix* Matrix, int h) {
         std::string label = Matrix->get_label();
         auto matrix = Matrix->get_matrix();
         auto* pq = new short[2];
-        const intvec& oa2p = moinfo->get_occ_to_mo();
+        const intvec& oa2p = wfn_->moinfo()->get_occ_to_mo();
 
         bool alpha = true;
         if ((label.find("O") != std::string::npos) || (label.find("V") != std::string::npos) ||
@@ -171,8 +170,8 @@ void CCSort::form_fock_out_of_core(CCMatrix* Matrix, int h) {
             alpha = false;
 
         // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-        std::vector<int> aocc = moinfo->get_aocc(Matrix->get_reference(), AllRefs);
-        std::vector<int> bocc = moinfo->get_bocc(Matrix->get_reference(), AllRefs);
+        std::vector<int> aocc = wfn_->moinfo()->get_aocc(Matrix->get_reference(), AllRefs);
+        std::vector<int> bocc = wfn_->moinfo()->get_bocc(Matrix->get_reference(), AllRefs);
 
         for (size_t i = 0; i < Matrix->get_left_pairpi(h); ++i)
             for (size_t j = 0; j < Matrix->get_right_pairpi(h); ++j) {

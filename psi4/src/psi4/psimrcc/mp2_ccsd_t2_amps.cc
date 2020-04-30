@@ -35,7 +35,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void MP2_CCSD::build_mp2_t2_iJaB_amplitudes() {
     wfn_->blas()->solve("t2_eqns[oO][vV]{u}   = <[oo]|[vv]>");

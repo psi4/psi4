@@ -37,6 +37,8 @@
 #include <array>
 #include <string>
 
+#include "psimrcc_wfn.h"
+
 namespace psi {
 namespace psimrcc {
 
@@ -45,10 +47,10 @@ class CCIndex;
 class CCIndexIterator {
    public:
     // Class Constructor and Destructor
-    explicit CCIndexIterator(std::string str);
-    explicit CCIndexIterator(std::string str, int select_irrep);
-    explicit CCIndexIterator(CCIndex* index);
-    explicit CCIndexIterator(CCIndex* index, int select_irrep);
+    explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str);
+    explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str, int select_irrep);
+    explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn ,CCIndex* index);
+    explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, CCIndex* index, int select_irrep);
     ~CCIndexIterator();
 
     // Class Public Methods

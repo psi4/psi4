@@ -31,6 +31,8 @@
 
 #include <map>
 
+#include "psimrcc_wfn.h"
+
 namespace psi {
 
 class IntegralTransform;
@@ -44,7 +46,7 @@ class CCIndex;
 */
 class CCTransform {
    public:
-    CCTransform(std::shared_ptr<Wavefunction> wfn);
+    CCTransform(std::shared_ptr<PSIMRCCWfn> wfn);
     ~CCTransform();
     void print();
     // Presorting
@@ -69,7 +71,7 @@ class CCTransform {
     CCIndex* oei_so_indexing;
     CCIndex* tei_so_indexing;
     CCIndex* tei_mo_indexing;
-    std::shared_ptr<Wavefunction> wfn_;
+    std::shared_ptr<PSIMRCCWfn> wfn_;
 
     void read_mo_integrals();
     void read_so_integrals();

@@ -111,7 +111,7 @@ void MRCCSD_T::compute_spin_adapted() {
 }
 
 void MRCCSD_T::compute_ooO_triples_spin_adapted() {
-    CCIndexIterator ijk(ooo);
+    CCIndexIterator ijk(wfn_, ooo);
 
     for (ijk.first(); !ijk.end(); ijk.next()) {
         size_t i_abs = o->get_tuple_abs_index(ijk.ind_abs<0>());
@@ -346,7 +346,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted() {
                             std::vector<bool>& is_avir_mu = is_avir[mu];
                             std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                            CCIndexIterator abc(vvv, ijk_sym);
+                            CCIndexIterator abc(wfn_, vvv, ijk_sym);
                             // Loop over abc
                             for (abc.first(); !abc.end(); abc.next()) {
                                 size_t a_abs = v->get_tuple_abs_index(abc.ind_abs<0>());
@@ -461,7 +461,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted() {
                             std::vector<bool>& is_avir_mu = is_avir[mu];
                             std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                            CCIndexIterator abc(vvv, ijk_sym);
+                            CCIndexIterator abc(wfn_, vvv, ijk_sym);
                             // Loop over abc
                             for (abc.first(); !abc.end(); abc.next()) {
                                 size_t a_abs = v->get_tuple_abs_index(abc.ind_abs<0>());
@@ -576,7 +576,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted() {
                             std::vector<bool>& is_avir_mu = is_avir[mu];
                             std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                            CCIndexIterator abc(vvv, ijk_sym);
+                            CCIndexIterator abc(wfn_, vvv, ijk_sym);
                             // Loop over abc
                             for (abc.first(); !abc.end(); abc.next()) {
                                 size_t a_abs = v->get_tuple_abs_index(abc.ind_abs<0>());
@@ -693,7 +693,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted() {
                             std::vector<bool>& is_avir_mu = is_avir[mu];
                             std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                            CCIndexIterator abc(vvv, ijk_sym);
+                            CCIndexIterator abc(wfn_, vvv, ijk_sym);
                             // Loop over abc
                             for (abc.first(); !abc.end(); abc.next()) {
                                 size_t a_abs = v->get_tuple_abs_index(abc.ind_abs<0>());

@@ -41,7 +41,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo *moinfo;
 
 /**
  * \brief Computes the contribution
@@ -79,7 +78,7 @@ void IDMRPT2::build_t2_iJaB_amplitudes() {
  */
 void IDMRPT2::build_t2_ijab_amplitudes() {
     START_TIMER("Building the T2_ijab Amplitudes");
-    if (moinfo->get_ref_size(UniqueOpenShellRefs) == 0) {
+    if (wfn_->moinfo()->get_ref_size(UniqueOpenShellRefs) == 0) {
         wfn_->blas()->solve("t2_eqns[oo][vv]{c}  = t2_eqns[oO][vV]{c}");
         wfn_->blas()->solve("t2_eqns[oo][vv]{c} += #2134# - t2_eqns[oO][vV]{c}");
     } else {

@@ -52,7 +52,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 /**
  * Allocate the effective Hamiltonian matrices and eigenvectors
@@ -60,11 +59,11 @@ extern MOInfo* moinfo;
  */
 CCManyBody::CCManyBody(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_(wfn), options_(options) {
     // Allocate memory for the eigenvector and the effective Hamiltonian
-    zeroth_order_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
-    right_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
-    left_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
-    Heff = block_matrix(moinfo->get_nrefs(), moinfo->get_nrefs());
-    Heff_mrpt2 = block_matrix(moinfo->get_nrefs(), moinfo->get_nrefs());
+    zeroth_order_eigenvector = std::vector<double>(wfn_->moinfo->get_nrefs(), 0);
+    right_eigenvector = std::vector<double>(wfn_->moinfo->get_nrefs(), 0);
+    left_eigenvector = std::vector<double>(wfn_->moinfo->get_nrefs(), 0);
+    Heff = block_matrix(wfn_->moinfo->get_nrefs(), wfn_->moinfo->get_nrefs());
+    Heff_mrpt2 = block_matrix(wfn_->moinfo->get_nrefs(), wfn_->moinfo->get_nrefs());
 
     huge = 1.0e100;
     norm_amps = 0.0;
@@ -105,18 +104,18 @@ void CCManyBody::generate_triples_denominators() {
 }
 
 void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_i, bool alpha_j, bool alpha_k) {
-    d3 = std::vector<std::vector<std::vector<double>>>(moinfo->get_nunique(), std::vector<std::vector<double>>(moinfo->get_nirreps()));
+    d3 = std::vector<std::vector<std::vector<double>>>(wfn_->moinfo()->get_nunique(), std::vector<std::vector<double>>(wfn_->nirrep()));
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int reference = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int reference = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-        auto aocc = moinfo->get_aocc(reference, AllRefs);
-        auto bocc = moinfo->get_bocc(reference, AllRefs);
+        auto aocc = wfn_->moinfo()->get_aocc(reference, AllRefs);
+        auto bocc = wfn_->moinfo()->get_bocc(reference, AllRefs);
 
         // Build the is_ arrays for reference ref
-        std::vector<bool> is_aocc(moinfo->get_nocc(), false);
-        std::vector<bool> is_bocc(moinfo->get_nocc(), false);
+        std::vector<bool> is_aocc(wfn_->moinfo()->get_nocc(), false);
+        std::vector<bool> is_bocc(wfn_->moinfo()->get_nocc(), false);
         for (size_t i = 0; i < aocc.size(); i++) is_aocc[aocc[i]] = true;
         for (size_t i = 0; i < bocc.size(); i++) is_bocc[bocc[i]] = true;
 
@@ -146,7 +145,7 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
         auto ooo_indexing = wfn_->blas->get_index("[ooo]");
         auto& ooo_tuples = ooo_indexing->get_tuples();
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             size_t ooo_offset = ooo_indexing->get_first(h);
             d3[ref][h] = std::vector<double>(ooo_indexing->get_pairpi(h), 0);
             for (size_t ijk = 0; ijk < ooo_indexing->get_pairpi(h); ijk++) {
@@ -171,18 +170,18 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
 }
 
 void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_a, bool alpha_b, bool alpha_c) {
-    d3 = std::vector<std::vector<std::vector<double>>>(moinfo->get_nunique(), std::vector<std::vector<double>>(moinfo->get_nirreps()));
+    d3 = std::vector<std::vector<std::vector<double>>>(wfn_->moinfo()->get_nunique(), std::vector<std::vector<double>>(wfn_->nirrep()));
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int reference = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int reference = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-        auto avir = moinfo->get_avir(reference, AllRefs);
-        auto bvir = moinfo->get_bvir(reference, AllRefs);
+        auto avir = wfn_->moinfo()->get_avir(reference, AllRefs);
+        auto bvir = wfn_->moinfo()->get_bvir(reference, AllRefs);
 
         // Build the is_ arrays for reference ref
-        std::vector<bool> is_avir(moinfo->get_nvir(), false);
-        std::vector<bool> is_bvir(moinfo->get_nvir(), false);
+        std::vector<bool> is_avir(wfn_->moinfo()->get_nvir(), false);
+        std::vector<bool> is_bvir(wfn_->moinfo()->get_nvir(), false);
         for (size_t i = 0; i < avir.size(); i++) is_avir[avir[i]] = true;
         for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
@@ -212,7 +211,7 @@ void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& 
         auto vvv_indexing = wfn_->blas->get_index("[vvv]");
         auto& vvv_tuples = vvv_indexing->get_tuples();
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             size_t vvv_offset = vvv_indexing->get_first(h);
             d3[ref][h] = std::vector<double>(vvv_indexing->get_pairpi(h), 0);
             for (size_t abc = 0; abc < vvv_indexing->get_pairpi(h); abc++) {
@@ -243,12 +242,12 @@ void CCManyBody::compute_reference_energy() {
     Timer timer;
 
     // Compute the zeroth-order energy for the unique references
-    for (int n = 0; n < moinfo->get_nunique(); n++) {
-        int unique_n = moinfo->get_ref_number(n, UniqueRefs);
-        double ref_energy = moinfo->get_nuclear_energy() + moinfo->get_fzcore_energy();
+    for (int n = 0; n < wfn_->moinfo()->get_nunique(); n++) {
+        int unique_n = wfn_->moinfo()->get_ref_number(n, UniqueRefs);
+        double ref_energy = wfn_->moinfo()->get_nuclear_energy() + wfn_->moinfo()->get_fzcore_energy();
         // Grab reference n and the list of occupied orbitals
-        auto aocc = moinfo->get_aocc(n, UniqueRefs);
-        auto bocc = moinfo->get_bocc(n, UniqueRefs);
+        auto aocc = wfn_->moinfo()->get_aocc(n, UniqueRefs);
+        auto bocc = wfn_->moinfo()->get_bocc(n, UniqueRefs);
 
         // Read these matrices
         auto f_oo_Matrix = wfn_->blas->get_MatTmp("fock[o][o]", unique_n, none);
@@ -302,7 +301,7 @@ void CCManyBody::print_eigensystem(int ndets, double** Heff, std::vector<double>
     for (int i = 0; i < max_size_list; ++i) {
         outfile->Printf("\n  %11d   %9.6f    %9.6f  %s", eigenvector_index_pair[i].second,
                         eigenvector[eigenvector_index_pair[i].second], eigenvector_index_pair[i].first,
-                        moinfo->get_determinant_label(eigenvector_index_pair[i].second).c_str());
+                        wfn_->moinfo()->get_determinant_label(eigenvector_index_pair[i].second).c_str());
     }
 }
 
@@ -469,12 +468,12 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //{
 //  if(options_get_bool("ZERO_INTERNAL_AMPS")){
 //    // Zero internal amplitudes for unique reference i
-//    for(int i=0;i<moinfo->get_nunique();i++){
-//      int unique_i = moinfo->get_ref_number(i,UniqueRefs);
+//    for(int i=0;i<wfn_->moinfo()->get_nunique();i++){
+//      int unique_i = wfn_->moinfo()->get_ref_number(i,UniqueRefs);
 //      // Loop over reference j
-//      for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
-//        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
-//        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
+//      for(int j=0;j<wfn_->moinfo()->get_ref_size(AllRefs);j++){
+//        vector<pair<int,int> >  alpha_internal_excitation = wfn_->moinfo()->get_alpha_internal_excitation(unique_i,j);
+//        vector<pair<int,int> >   beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(unique_i,j);
 //
 //        // Zero alpha-alpha single excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0)){
@@ -569,12 +568,12 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //{
 //  if(options_get_bool("ZERO_INTERNAL_AMPS")){
 //    // Zero internal amplitudes for unique reference i
-//    for(int i=0;i<moinfo->get_nunique();i++){
-//      int unique_i = moinfo->get_ref_number(i,UniqueRefs);
+//    for(int i=0;i<wfn_->moinfo()->get_nunique();i++){
+//      int unique_i = wfn_->moinfo()->get_ref_number(i,UniqueRefs);
 //      // Loop over reference j
-//      for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
-//        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
-//        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
+//      for(int j=0;j<wfn_->moinfo()->get_ref_size(AllRefs);j++){
+//        vector<pair<int,int> >  alpha_internal_excitation = wfn_->moinfo()->get_alpha_internal_excitation(unique_i,j);
+//        vector<pair<int,int> >   beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(unique_i,j);
 //
 //        // Zero alpha-alpha single excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0))
@@ -601,12 +600,12 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //{
 //  if(options_get_bool("ZERO_INTERNAL_AMPS")){
 //    // Zero internal amplitudes for unique reference i
-//    for(int i=0;i<moinfo->get_nunique();i++){
-//      int unique_i = moinfo->get_ref_number(i,UniqueRefs);
+//    for(int i=0;i<wfn_->moinfo()->get_nunique();i++){
+//      int unique_i = wfn_->moinfo()->get_ref_number(i,UniqueRefs);
 //      // Loop over reference j
-//      for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
-//        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(unique_i,j);
-//        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(unique_i,j);
+//      for(int j=0;j<wfn_->moinfo()->get_ref_size(AllRefs);j++){
+//        vector<pair<int,int> >  alpha_internal_excitation = wfn_->moinfo()->get_alpha_internal_excitation(unique_i,j);
+//        vector<pair<int,int> >   beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(unique_i,j);
 //
 //        // Zero alpha-alpha single excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0))

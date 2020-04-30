@@ -39,7 +39,9 @@
 namespace psi {
 namespace psimrcc {
 
-CCMRCC::CCMRCC(std::shared_ptr<PSIMRCCWfn> wfn, Options &options) : CCManyBody(wfn, options), options_(options) {
+CCMRCC::CCMRCC(std::shared_ptr<PSIMRCCWfn> wfn, Options &options) : CCManyBody(wfn, options), options_(options),
+    h_eff(Hamiltonian(wfn)) {
+
     triples_type = ccsd;
     triples_coupling_type = cubic;
     ap_correction = false;  // Set tu true when computing the a posteriori correction
@@ -72,8 +74,8 @@ CCMRCC::CCMRCC(std::shared_ptr<PSIMRCCWfn> wfn, Options &options) : CCManyBody(w
     compute_reference_energy();
 
     // Initialize the appropriate updater
-    if (options.get_str("CORR_ANSATZ") == "MK") updater_ = std::make_shared<MkUpdater>(options);
-    else if (options.get_str("CORR_ANSATZ") == "BW") updater_ = std::make_shared<BWUpdater>(options);
+    if (options.get_str("CORR_ANSATZ") == "MK") updater_ = std::make_shared<MkUpdater>(wfn, options);
+    else if (options.get_str("CORR_ANSATZ") == "BW") updater_ = std::make_shared<BWUpdater>(wfn, options);
     else throw PSIEXCEPTION("I don't know what updater goes with CORR_ANSATZ " + options.get_str("CORR_ANSATZ"));
 }
 

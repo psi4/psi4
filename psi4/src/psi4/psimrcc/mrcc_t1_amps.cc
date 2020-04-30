@@ -41,7 +41,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCMRCC::build_t1_amplitudes() {
     build_t1_ia_amplitudes();
@@ -120,8 +119,8 @@ void CCMRCC::build_t1_amplitudes_triples() {
  */
 void CCMRCC::build_t1_ia_amplitudes_triples() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         CCMatTmp HiaMatTmp = wfn_->blas()->get_MatTmp("t1_eqns[o][v]", unique_ref, none);
@@ -144,7 +143,7 @@ void CCMRCC::build_t1_ia_amplitudes_triples() {
         CCIndex* ijkIndex = wfn_->blas()->get_index("[ooo]");
         CCIndex* abcIndex = wfn_->blas()->get_index("[vvv]");
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             size_t i_offset = HiaMatTmp->get_left()->get_first(h);
             size_t a_offset = HiaMatTmp->get_right()->get_first(h);
             for (int a = 0; a < HiaMatTmp->get_right_pairpi(h); a++) {
@@ -152,7 +151,7 @@ void CCMRCC::build_t1_ia_amplitudes_triples() {
                 for (int i = 0; i < HiaMatTmp->get_left_pairpi(h); i++) {
                     int i_abs = i + i_offset;
                     // <mn||ef> contribution
-                    for (int mn_sym = 0; mn_sym < moinfo->get_nirreps(); mn_sym++) {
+                    for (int mn_sym = 0; mn_sym < wfn_->moinfo()->get_nirreps(); mn_sym++) {
                         size_t mn_offset = ImnefMatTmp->get_left()->get_first(mn_sym);
                         size_t ef_offset = ImnefMatTmp->get_right()->get_first(mn_sym);
                         for (int ef = 0; ef < ImnefMatTmp->get_right_pairpi(mn_sym); ef++) {
@@ -191,8 +190,8 @@ void CCMRCC::build_t1_ia_amplitudes_triples() {
  */
 void CCMRCC::build_t1_IA_amplitudes_triples() {
     // Loop over references
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
-        int unique_ref = moinfo->get_ref_number(ref, UniqueRefs);
+    for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
+        int unique_ref = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
 
         // Grab the temporary matrices
         CCMatTmp HIAMatTmp = wfn_->blas()->get_MatTmp("t1_eqns[O][V]", unique_ref, none);
@@ -215,7 +214,7 @@ void CCMRCC::build_t1_IA_amplitudes_triples() {
         CCIndex* ijkIndex = wfn_->blas()->get_index("[ooo]");
         CCIndex* abcIndex = wfn_->blas()->get_index("[vvv]");
 
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             size_t i_offset = HIAMatTmp->get_left()->get_first(h);
             size_t a_offset = HIAMatTmp->get_right()->get_first(h);
             for (int a = 0; a < HIAMatTmp->get_right_pairpi(h); a++) {
@@ -223,7 +222,7 @@ void CCMRCC::build_t1_IA_amplitudes_triples() {
                 for (int i = 0; i < HIAMatTmp->get_left_pairpi(h); i++) {
                     int i_abs = i + i_offset;
                     // <mn||ef> contribution
-                    for (int mn_sym = 0; mn_sym < moinfo->get_nirreps(); mn_sym++) {
+                    for (int mn_sym = 0; mn_sym < wfn_->moinfo()->get_nirreps(); mn_sym++) {
                         size_t mn_offset = ImnefMatTmp->get_left()->get_first(mn_sym);
                         size_t ef_offset = ImnefMatTmp->get_right()->get_first(mn_sym);
                         for (int ef = 0; ef < ImnefMatTmp->get_right_pairpi(mn_sym); ef++) {

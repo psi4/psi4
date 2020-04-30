@@ -54,13 +54,12 @@
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 /*!
     \fn CCTransform::read_oei_integrals()
  */
 void CCTransform::read_oei_so_integrals() {
-    int nso = moinfo->get_nso();
+    int nso = wfn_->moinfo()->get_nso();
     // Read all the (frozen + non-frozen) OEI in Pitzer order
     allocate_oei_so();
 

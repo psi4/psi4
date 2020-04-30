@@ -45,6 +45,7 @@
 #include "matrixtmp.h"
 #include "operation.h"
 
+#include "psimrcc_wfn.h"
 #include "index_types.h"
 #include "matrix_types.h"
 #include "types.h"
@@ -67,7 +68,7 @@ class CCBLAS {
     typedef std::vector<std::pair<int, int> > intpairvec;
     typedef std::deque<CCOperation> OpDeque;
 
-    CCBLAS(Options& options);
+    CCBLAS(std::shared_ptr<PSIMRCCWfn> wfn, Options& options);
     ~CCBLAS();
 
     Options& options_;
@@ -136,6 +137,7 @@ class CCBLAS {
     MatCnt matrices_in_deque_target;
     MatCnt matrices_in_deque_source;
     SortMap sortmap;
+    std::shared_ptr<PSIMRCCWfn> wfn_;
 
    private:
     IndexMap& get_IndexMap() { return (indices); }

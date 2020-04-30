@@ -30,6 +30,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include "blas.h"
 #include "idmrpt2.h"
 #include "manybody.h"
 #include "mrcc.h"
@@ -45,7 +46,6 @@ PSIMRCCWfn::PSIMRCCWfn(SharedWavefunction ref_wfn, Options &options) : Wavefunct
 	shallow_copy(ref_wfn);
     moinfo_ = std::make_shared<MOInfo>(*(ref_wfn.get()), options);
     moinfo_->setup_model_space();
-    blas_ = std::make_shared<CCBLAS>(options);
 }
 
 void PSIMRCCWfn::active_space_warning() const {
@@ -66,6 +66,11 @@ void PSIMRCCWfn::active_space_warning() const {
 }
 
 double PSIMRCCWfn::compute_energy() {
+    // Ideally, this would go in the constructor, but shared_from_this won't work until after construction.
+    if (blas_ == nullptr) {
+        blas_ = std::make_shared<CCBLAS>(std::dynamic_pointer_cast<PSIMRCCWfn>(shared_from_this()), options_);
+    }
+    
     auto global_timer = std::make_shared<Timer>;
     active_space_warning();
 

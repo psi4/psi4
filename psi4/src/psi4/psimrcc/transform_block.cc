@@ -34,7 +34,6 @@ PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #define CCTRANSFORM_USE_BLAS
@@ -57,7 +56,6 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 namespace psimrcc {
-extern MOInfo *moinfo;
 extern MemoryManager *memory_manager;
 
 /**
@@ -83,7 +81,7 @@ int CCTransform::read_tei_mo_integrals_block(int first_irrep) {
  * Allocate as many blocks of the tei_mo array and exit(EXIT_FAILURE) if there is not enough space
  */
 int CCTransform::allocate_tei_mo_block(int first_irrep) {
-    if (first_irrep > moinfo->get_nirreps()) {
+    if (first_irrep > wfn_->nirrep()) {
         outfile->Printf("\n    Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !");
 
         exit(EXIT_FAILURE);
@@ -94,11 +92,11 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
 
     int last_irrep = first_irrep;
     
-    tei_mo = std::vector<std::vector<double>>(moinfo->get_nirreps());
+    tei_mo = std::vector<std::vector<double>>(wfn_->nirrep());
 
     // Find how many irreps we can store in 95% of the free memory
     std::vector<size_t> pairpi = tei_mo_indexing->get_pairpi();
-    for (int h = first_irrep; h < moinfo->get_nirreps(); ++h) {
+    for (int h = first_irrep; h < wfn_->nirrep(); ++h) {
         size_t required_memory = (INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1) * static_cast<size_t>(sizeof(double));
         if (required_memory != 0) {
             if (required_memory < available_transform_memory) {
