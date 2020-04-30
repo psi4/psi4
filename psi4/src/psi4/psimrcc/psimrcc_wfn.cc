@@ -97,6 +97,8 @@ double PSIMRCCWfn::compute_energy() {
     // TODO: CCManyBody is ancient. Nowadays, they should be wavefunction subclasses.
     std::shared_ptr<CCManyBody> ccmanybody;
 
+    // The astute will notice another method, MP2_CCSD, that is not included here.
+    // That is intentional. The method is unpublished, but Francesco is considering finishing it.
     if (options_.get_str("CORR_WFN") == "PT2") {
         ccmanybody = std::make_shared<IDMRPT2>(std::dynamic_pointer_cast<PSIMRCCWfn>(shared_from_this()), options_);
     } else {
