@@ -126,15 +126,6 @@ void BWUpdater::update(int cycle, Hamiltonian* heff) {
     blas->solve("t2[oO][vV]{u} = t2_eqns[oO][vV]{u} / d'2[oO][vV]{u}");
     blas->solve("t2[OO][VV]{u} = t2_eqns[OO][VV]{u} / d'2[OO][VV]{u}");
 
-    //  DEBUGGING(3,
-    //    blas->print("t2_eqns[oo][vv]{u}");
-    //    blas->print("t2[oo][vv]{u}");
-    //    blas->print("t2_eqns[oO][vV]{u}");
-    //    blas->print("t2[oO][vV]{u}");
-    //    blas->print("t2_eqns[OO][VV]{u}");
-    //    blas->print("t2[OO][VV]{u}");
-    //  );
-
     blas->solve("d'1[o][v]{u}  = d1[o][v]{u}");
     blas->solve("d'1[O][V]{u}  = d1[O][V]{u}");
 
@@ -166,11 +157,6 @@ void BWUpdater::update(int cycle, Hamiltonian* heff) {
     blas->solve("||Delta_t2||{u}  = t2_delta[oo][vv]{u} . t2_delta[oo][vv]{u}");
     blas->solve("||Delta_t2||{u} += t2_delta[oO][vV]{u} . t2_delta[oO][vV]{u}");
     blas->solve("||Delta_t2||{u} += t2_delta[OO][VV]{u} . t2_delta[OO][VV]{u}");
-
-    //    DEBUGGING(3,
-    //      blas->print("t1[o][v]{u}");
-    //      blas->print("t1[O][V]{u}");
-    //    );
 }
 
 }  // namespace psimrcc

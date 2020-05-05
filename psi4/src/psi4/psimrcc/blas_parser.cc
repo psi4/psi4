@@ -108,7 +108,6 @@ int CCBLAS::parse(std::string& str) {
         CCOperation op(factor, assignment, reindexing, operation, A_Matrix, B_Matrix, C_Matrix, work[0], buffer[0]);
         operations.push_back(op);
         noperations_added++;
-        DEBUGGING(5, op.print();)
     }
     return (noperations_added);
 }

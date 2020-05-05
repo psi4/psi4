@@ -365,66 +365,11 @@ int CCBLAS::compute_storage_strategy() {
         }
     }
 
-    //  DEBUGGING(1,
-    //    outfile->Printf("\n    -------------------- Fock matrices -------------------------");
-    //    for(int i=0;i<fock.size();i++){
-    //      if(fock[i].first > 1.0e-5){
-    //        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb --> ",fock[i].second.first->get_label().c_str(),
-    //                                                      fock[i].second.second,
-    //                                                      fock[i].first);
-    //        outfile->Printf("%s",fock[i].second.first->is_block_allocated(fock[i].second.second) ? "in-core" :
-    //        "out-of-core");
-    //      }
-    //    }
-    //    outfile->Printf("\n    -------------------- Other matrices ------------------------");
-    //    for(int i=0;i<others.size();i++){
-    //      if(others[i].first > 1.0e-5){
-    //        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb --> ",others[i].second.first->get_label().c_str(),
-    //                                                      others[i].second.second,
-    //                                                      others[i].first);
-    //        outfile->Printf("%s",others[i].second.first->is_block_allocated(others[i].second.second) ? "in-core" :
-    //        "out-of-core");
-    //      }
-    //    }
-    //    outfile->Printf("\n    -------------------- Integrals -----------------------------");
-    //    for(int i=0;i<integrals.size();i++){
-    //      if(integrals[i].first > 1.0e-5){
-    //        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb --> ",integrals[i].second.first->get_label().c_str(),
-    //                                                      integrals[i].second.second,
-    //                                                      integrals[i].first);
-    //        outfile->Printf("%s",integrals[i].second.first->is_block_allocated(integrals[i].second.second) ? "in-core"
-    //        : "out-of-core");
-    //      }
-    //    }
-    //    outfile->Printf("\n\n");
-    //  );
-
     if (!full_in_core) {
         outfile->Printf("\n    Out-of-core algorithm will store %d other matrices on disk", number_of_others_on_disk);
         outfile->Printf("\n    Out-of-core algorithm will store %d integrals on disk", number_of_integrals_on_disk);
     }
     return (strategy);
-}
-
-/**
- * This routine computes which quantities have to be initially stored in memory and which on disk
- */
-void CCBLAS::show_storage() {
-    //  DEBUGGING(1,
-    //    outfile->Printf("\n    ----------------------------------");
-    //    outfile->Printf("\n               Show Storage ");
-    //    outfile->Printf("\n    ----------------------------------");
-
-    //    for(MatrixMap::iterator it=matrices.begin();it!=matrices.end();++it){
-    //      for(int h=0;h<moinfo->get_nirreps();++h){
-    //        double block_memory = it->second->get_memorypi(h);
-    //        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb",it->second->get_label().c_str(),h,block_memory);
-    //        outfile->Printf(" is %s",it->second->is_block_allocated(h) ? "allocated" : "not allocated");
-    //        outfile->Printf("%s",it->second->is_out_of_core(h) ? "(out-of-core)" : "");
-
-    //      }
-    //    }
-    //  )
 }
 
 }  // namespace psimrcc

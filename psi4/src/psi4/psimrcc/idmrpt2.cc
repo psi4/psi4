@@ -109,7 +109,6 @@ double IDMRPT2::compute_energy() {
         // Compute the effective Hamiltonian
         build_Heff_mrpt2_diagonal();
         build_Heff_mrpt2_offdiagonal();
-        DEBUGGING(3, print_eigensystem(moinfo->get_nrefs(), Heff_mrpt2, zeroth_order_eigenvector););
 
         // Compute the energy
         current_energy = c_H_c(moinfo->get_nrefs(), Heff_mrpt2, zeroth_order_eigenvector);
@@ -364,7 +363,6 @@ void IDMRPT2::update_amps_mkpt2() {
         blas->solve("t2[oO][vV]{" + i_str + "} = t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "}");
         blas->solve("t2[OO][VV]{" + i_str + "} = t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "}");
     }
-    DEBUGGING(3, blas->print("t2[oo][vv]{u}"); blas->print("t2[oO][vV]{u}"); blas->print("t2[OO][VV]{u}"););
 }
 
 void IDMRPT2::read_mrpt2_integrals() {

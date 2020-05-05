@@ -72,8 +72,6 @@ void CCBLAS::append(const char* cstr) {
 void CCBLAS::append(std::string str) {
     // Main driver for solving expressions
     int noperations_added = 0;
-    DEBUGGING(5, outfile->Printf("\n\nYou have requested the following operation :\n\t\"%s\"", str.c_str());
-              outfile->Printf("\n\nCCBLAS::append() has parsed the following:");)
     std::vector<std::string> names = moinfo->get_matrix_names(str);
     for (int n = 0; n < names.size(); n++) {
         noperations_added += parse(names[n]);

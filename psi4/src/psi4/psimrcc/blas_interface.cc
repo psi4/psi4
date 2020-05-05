@@ -210,31 +210,20 @@ double CCBLAS::get_scalar(std::string str) {
 }
 
 void CCBLAS::load(CCMatrix* Matrix) {
-    if (Matrix->is_allocated()) {
-        DEBUGGING(2, outfile->Printf("\nCCBLAS::load(%s): matrix is in core.", Matrix->get_label().c_str()););
-    } else {
-        DEBUGGING(2, outfile->Printf("\nCCBLAS::load(%s): matrix is not in core. Loading it :[",
-                                     Matrix->get_label().c_str()););
+    if (!Matrix->is_allocated()) {
         // Do we have enough memory to fit the entire matrix in core?
         size_t memory_required = Matrix->get_memory2();
         make_space(memory_required);
         Matrix->load();
-        DEBUGGING(2, outfile->Printf("\n] <- done."););
     }
 }
 
 void CCBLAS::load_irrep(CCMatrix* Matrix, int h) {
-    if (Matrix->is_block_allocated(h)) {
-        DEBUGGING(2, outfile->Printf("\nCCBLAS::load_irrep(%s,%d): matrix block is in core.",
-                                     Matrix->get_label().c_str(), h);)
-    } else {
-        DEBUGGING(2, outfile->Printf("\nCCBLAS::load_irrep(%s,%d): matrix block is not in core. Loading it : [",
-                                     Matrix->get_label().c_str(), h);)
+    if (!Matrix->is_block_allocated(h)) {
         // Do we have enough memory to fit the entire matrix in core?
         size_t memory_required = Matrix->get_memorypi2(h);
         make_space(memory_required);
         Matrix->load_irrep(h);
-        DEBUGGING(2, outfile->Printf("\n] <- done.");)
     }
 }
 

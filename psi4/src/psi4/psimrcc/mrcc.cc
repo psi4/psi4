@@ -72,8 +72,6 @@ CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options) : CCManyBody(ref_wf
 
     compute_reference_energy();
 
-    DEBUGGING(1, blas->print_memory();)
-
     // Initialize the appropriate updater
     if (options.get_str("CORR_ANSATZ") == "MK") updater_ = std::make_shared<MkUpdater>(options);
     else if (options.get_str("CORR_ANSATZ") == "BW") updater_ = std::make_shared<BWUpdater>(options);

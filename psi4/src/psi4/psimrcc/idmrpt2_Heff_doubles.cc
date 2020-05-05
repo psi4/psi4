@@ -122,8 +122,6 @@ void IDMRPT2::build_Heff_uvxy() {
     blas->solve("Hijab[aa][aa]{o} += #3412# - t1_ov[o][a]{o} 1@1 <[o]:[aaa]>");
     blas->solve("Hijab[aa][aa]{o} += #4312#   t1_ov[o][a]{o} 1@1 <[o]:[aaa]>");
 
-    DEBUGGING(3, blas->print("Hijab[aa][aa]{u}"););
-
     END_TIMER(1);
 }
 
@@ -172,7 +170,6 @@ void IDMRPT2::build_Heff_uVxY() {
     blas->solve("HiJaB[aA][aA]{o} += #3412# - t1_ov[o][a]{o} 1@1 <[o]|[aaa]>");
     blas->solve("HiJaB[aA][aA]{o} += #4321# - t1_OV[O][A]{o} 1@1 <[o]|[aaa]>");
 
-    DEBUGGING(3, blas->print("HiJaB[aA][aA]{u}"););
     END_TIMER(1);
 }
 
@@ -203,7 +200,6 @@ void IDMRPT2::build_Heff_UVXY() {
     blas->solve("HIJAB[AA][AA]{o} += #3412# - t1_OV[O][A]{o} 1@1 <[o]:[aaa]>");
     blas->solve("HIJAB[AA][AA]{o} += #4312#   t1_OV[O][A]{o} 1@1 <[o]:[aaa]>");
 
-    DEBUGGING(3, blas->print("HIJAB[AA][AA]{u}"););
     END_TIMER(1);
 }
 

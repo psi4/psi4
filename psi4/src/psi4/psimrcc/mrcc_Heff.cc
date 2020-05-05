@@ -69,7 +69,6 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time) {
             diagonalize_Heff(moinfo->get_root(), moinfo->get_nrefs(), Heff, right_eigenvector, left_eigenvector, false);
 
         if (options_.get_bool("HEFF_PRINT")) print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);
-        DEBUGGING(3, print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);)
         double delta_energy = current_energy - old_energy;
         converged = (delta_t1_amps < options_.get_double("R_CONVERGENCE") &&
                      delta_t2_amps < options_.get_double("R_CONVERGENCE") &&

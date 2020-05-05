@@ -87,8 +87,6 @@ void IDMRPT2::build_Heff_uv() {
     blas->solve("Hia[a][a]{o} += -1/2 <[a]:[voo]> 2@2 t2_vvoo[a][voo]{o}");
     blas->solve("Hia[a][a]{o} += - <[a]|[voo]> 2@2 t2_vVoO[a][VoO]{o}");
 
-    DEBUGGING(3, blas->print("Hia[a][a]{u}"););
-
     END_TIMER(1);
 }
 
@@ -123,8 +121,6 @@ void IDMRPT2::build_Heff_UV() {
     blas->solve("HIA[A][A]{o} +=     t2_OoVv[A][oVv]{o} 2@2 <[a]|[ovv]>");
     blas->solve("HIA[A][A]{o} += -1/2 <[a]:[voo]> 2@2 t2_VVOO[A][VOO]{o}");
     blas->solve("HIA[A][A]{o} += - <[a]|[voo]> 2@2 t2_VvOo[A][vOo]{o}");
-
-    DEBUGGING(3, blas->print("HIA[A][A]{u}"););
 
     END_TIMER(1);
 }

@@ -63,7 +63,6 @@ void IDMRPT2::build_F_ae_intermediates() {
     blas->solve_zero_two_diagonal("F_ae[v][v]{u}");
     blas->zero_non_external("F_ae[v][v]{u}");
 
-    DEBUGGING(3, blas->print("F_ae[v][v]{u}"););
     END_TIMER(1);
 }
 
@@ -80,7 +79,6 @@ void IDMRPT2::build_F_AE_intermediates() {
     blas->solve_zero_two_diagonal("F_AE[V][V]{u}");
     blas->zero_non_external("F_AE[V][V]{u}");
 
-    DEBUGGING(3, blas->print("F_AE[V][V]{u}"););
     END_TIMER(1);
 }
 
@@ -97,7 +95,6 @@ void IDMRPT2::build_F_mi_intermediates() {
     blas->solve_zero_two_diagonal("F_mi[o][o]{u}");
     blas->zero_non_doubly_occupied("F_mi[o][o]{u}");
 
-    DEBUGGING(3, blas->print("F_mi[o][o]{u}"););
     END_TIMER(1);
 }
 
@@ -114,7 +111,6 @@ void IDMRPT2::build_F_MI_intermediates() {
     blas->solve_zero_two_diagonal("F_MI[O][O]{u}");
     blas->zero_non_doubly_occupied("F_MI[O][O]{u}");
 
-    DEBUGGING(3, blas->print("F_MI[O][O]{u}"););
     END_TIMER(1);
 }
 

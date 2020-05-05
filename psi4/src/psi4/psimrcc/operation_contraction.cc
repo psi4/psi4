@@ -264,9 +264,6 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
             F_DGEMM("n", "t", &n, &m, &k, &factor, &(C_matrix[(B_on_disk ? offset : 0)][0]), &n,
                     &(B_matrix[(C_on_disk ? offset : 0)][0]), &m, &beta, &(A_matrix[0][0]), &n);
         }
-        DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
-                         A_matrix[i][j] +=
-                     factor * B_matrix[(C_on_disk ? l + offset : l)][i] * C_matrix[(B_on_disk ? l + offset : l)][j];);
     }
     // CASE B
     //
@@ -291,9 +288,6 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
             F_DGEMM("t", "t", &n, &m, &k, &factor, &(C_matrix[0][(B_on_disk ? offset : 0)]), &cols_C, &(B_matrix[0][0]),
                     &m, &beta, &(A_matrix[0][(C_on_disk ? offset : 0)]), &cols_A);
         }
-        DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
-                         A_matrix[i][(C_on_disk ? offset + j : j)] +=
-                     factor * B_matrix[l][i] * C_matrix[j][(B_on_disk ? offset + l : l)];);
     }
     // CASE C,
     //
@@ -314,9 +308,6 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
             F_DGEMM("n", "n", &n, &m, &k, &factor, &(C_matrix[0][0]), &n, &(B_matrix[0][(C_on_disk ? offset : 0)]),
                     &cols_B, &beta, &(A_matrix[(B_on_disk ? offset : 0)][0]), &n);
         }
-        DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
-                         A_matrix[(B_on_disk ? offset + i : i)][j] +=
-                     factor * B_matrix[i][(C_on_disk ? l + offset : l)] * C_matrix[l][j];);
     }
     // CASE D, best case scenario
     //
@@ -338,9 +329,6 @@ void CCOperation::contract_in_core(double** A_matrix, double** B_matrix, double*
             F_DGEMM("t", "n", &n, &m, &k, &factor, &(C_matrix[0][0]), &k, &(B_matrix[0][0]), &k, &beta,
                     &(A_matrix[(B_on_disk ? offset : 0)][(C_on_disk ? offset : 0)]), &cols_A);
         }
-        DEBUGGING(5, for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) for (int l = 0; l < k; l++)
-                         A_matrix[(B_on_disk ? offset + i : i)][(C_on_disk ? offset + j : j)] +=
-                     factor * B_matrix[i][l] * C_matrix[j][l];);
     }
 }
 
@@ -587,12 +575,6 @@ C_on_disk,int rows_A,int rows_B,int rows_C,int cols_A,int cols_B,int cols_C,int 
     if(!B_on_disk &&  C_on_disk){
       k = rows_C;
     }
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[i][j]+=factor*B_matrix[(C_on_disk ? l+offset : l)][i]*C_matrix[(B_on_disk ? l+offset : l)][j];
-    }
     else if (k != 0){
       F_DGEMM("n","t",&n,&m,&k,&factor,&(C_matrix[(B_on_disk ? offset : 0)][0]),&n,&(B_matrix[(C_on_disk ? offset :
 0)][0]),&m,&beta,&(A_matrix[0][0]),&n);
@@ -617,12 +599,6 @@ C_on_disk,int rows_A,int rows_B,int rows_C,int cols_A,int cols_B,int cols_C,int 
     int k;
     if(m*n == 0) return;
     k = rows_B;
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[i][(C_on_disk ? offset+j : j)]+=factor*B_matrix[l][i]*C_matrix[j][(B_on_disk ? offset+l : l)];
-    }
     else if (k != 0){
       F_DGEMM("t","t",&n,&m,&k,&factor,&(C_matrix[0][(B_on_disk ? offset :
 0)]),&cols_C,&(B_matrix[0][0]),&m,&beta,&(A_matrix[0][(C_on_disk ? offset : 0)]),&cols_A);
@@ -643,12 +619,6 @@ C_on_disk,int rows_A,int rows_B,int rows_C,int cols_A,int cols_B,int cols_C,int 
     int k = rows_C;
     if(m*n == 0) return;
     double beta = 1.0;
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[(B_on_disk ? offset+i : i)][j]+=factor*B_matrix[i][(C_on_disk ? l+offset : l)]*C_matrix[l][j];
-    }
     else if (k != 0){
       F_DGEMM("n","n",&n,&m,&k,&factor,&(C_matrix[0][0]),&n,&(B_matrix[0][(C_on_disk ? offset :
 0)]),&cols_B,&beta,&(A_matrix[(B_on_disk ? offset : 0)][0]),&n);
@@ -670,12 +640,6 @@ C_on_disk,int rows_A,int rows_B,int rows_C,int cols_A,int cols_B,int cols_C,int 
     int k = cols_C;
     if(m*n == 0) return;
     double beta = 1.0;
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[(B_on_disk ? offset+i : i)][(C_on_disk ? offset+j : j)]+=factor*B_matrix[i][l]*C_matrix[j][l];
-    }
     else if (k != 0){
       F_DGEMM("t","n",&n,&m,&k,&factor,&(C_matrix[0][0]),&k,&(B_matrix[0][0]),&k,&beta,&(A_matrix[(B_on_disk ? offset :
 0)][(C_on_disk ? offset : 0)]),&cols_A);
@@ -805,12 +769,6 @@ rows_C,int cols_A,int cols_B,int cols_C)
     int n = cols_A;
     int k = rows_B;
     if(m*n == 0) return;
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[i][j]+=factor*B_matrix[l][i]*C_matrix[l][j];
-    }
     else if (k != 0){
       F_DGEMM("n","t",&n,&m,&k,&factor,&(C_matrix[0][0]),&n,&(B_matrix[0][0]),&m,&beta,&(A_matrix[0][0]),&n);
     }
@@ -833,12 +791,6 @@ rows_C,int cols_A,int cols_B,int cols_C)
     int n = rows_C;
     int k = rows_B;
     if(m*n == 0) return;
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[i][j]+=factor*B_matrix[l][i]*C_matrix[j][l];
-    }
     else if (k != 0){
       F_DGEMM("t","t",&n,&m,&k,&factor,&(C_matrix[0][0]),&cols_C,&(B_matrix[0][0]),&m,&beta,&(A_matrix[0][0]),&cols_A);
     }
@@ -858,12 +810,6 @@ rows_C,int cols_A,int cols_B,int cols_C)
     int k = rows_C;
     if(m*n == 0) return;
     double beta = 1.0;
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[i][j]+=factor*B_matrix[i][l]*C_matrix[l][j];
-    }
     else if (k != 0){
       F_DGEMM("n","n",&n,&m,&k,&factor,&(C_matrix[0][0]),&n,&(B_matrix[0][0]),&cols_B,&beta,&(A_matrix[0][0]),&n);
     }
@@ -884,12 +830,6 @@ rows_C,int cols_A,int cols_B,int cols_C)
     int k = cols_C;
     if(m*n == 0) return;
     double beta = 1.0;
-    DEBUGGING(5,
-      for(int i=0;i<m;i++)
-        for(int j=0;j<n;j++)
-          for(int l=0;l<k;l++)
-            A_matrix[i][j]+=factor*B_matrix[i][l]*C_matrix[j][l];
-    }
     else if (k != 0){
       F_DGEMM("t","n",&n,&m,&k,&factor,&(C_matrix[0][0]),&k,&(B_matrix[0][0]),&k,&beta,&(A_matrix[0][0]),&cols_A);
     }

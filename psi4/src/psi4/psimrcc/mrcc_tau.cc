@@ -55,7 +55,6 @@ namespace psimrcc {
  * See J. Phys. Chem. vol. 127, 024102 (2007) supplementary material for the spin-factored equations.
  */
 void CCMRCC::build_tau_intermediates() {
-    Timer timer;
     // t1t1[ov][ov]{u}, Ok
     blas->solve("t1t1_iame[ov][ov]{u} = #1432#   t1[o][v]{u} X t1[o][v]{u}");
     blas->solve("t1t1_IAME[OV][OV]{u} = #1432#   t1[O][V]{u} X t1[O][V]{u}");
@@ -141,14 +140,6 @@ void CCMRCC::build_tau_intermediates() {
     blas->solve("tau[oO][v>=V]{u} = #1234# tau[oO][vV]{u}");
     blas->solve("tau[oO][V>=v]{u} = #1243# tau[oO][vV]{u}");
     blas->zero_right_four_diagonal("tau[oO][V>=v]{u}");
-
-    DEBUGGING(6, blas->print("tau2[v][voo]{u}"); blas->print("tau2[V][VOO]{u}"); blas->print("tau2[v][VoO]{u}");
-              blas->print("tau2[V][vOo]{u}"); blas->print("tau2[o][ovv]{u}"); blas->print("tau2[o][OvV]{u}");
-              blas->print("tau2[O][oVv]{u}"); blas->print("tau2[O][OVV]{u}"); blas->print("tau3[ov][ov]{u}");
-              blas->print("tau3[OV][OV]{u}"););
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    );
 }
 
 }  // namespace psimrcc

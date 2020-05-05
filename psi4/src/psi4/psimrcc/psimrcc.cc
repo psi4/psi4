@@ -74,8 +74,6 @@ void mp2_ccsd(SharedWavefunction ref_wfn, Options& options) {
 
     // Compute the initial amplitudes and CCSD_MP2 energy
     mp2_ccsd.compute_energy();
-
-    DEBUGGING(1, blas->print_memory();)
 }
 
 /*!
@@ -87,8 +85,6 @@ void mrpt2(SharedWavefunction ref_wfn, Options& options) {
 
     // Compute the initial amplitudes and MP2 energy
     idmrpt2.compute_energy();
-
-    DEBUGGING(1, blas->print_memory();)
 }
 
 /*!
