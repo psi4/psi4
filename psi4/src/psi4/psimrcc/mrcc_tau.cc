@@ -35,7 +35,6 @@
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"
-#include "debugging.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
 extern FILE* outfile;

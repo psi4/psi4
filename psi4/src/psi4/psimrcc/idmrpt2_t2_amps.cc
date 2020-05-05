@@ -35,7 +35,7 @@
 
 #include "idmrpt2.h"
 #include "blas.h"
-#include "debugging.h"
+#include "psimrcc.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 
 namespace psi {
@@ -52,7 +52,7 @@ extern MOInfo *moinfo;
  * \f]
  */
 void IDMRPT2::build_t2_iJaB_amplitudes() {
-    START_TIMER(1, "Building the T2_iJaB Amplitudes");
+    START_TIMER("Building the T2_iJaB Amplitudes");
     // Closed-shell
     blas->solve("t2_eqns[oO][vV]{c}  = <[oo]|[vv]>");
     blas->solve("t2_eqns[oO][vV]{c} += #3214# t2[V][vOo]{c} 1@2 F_ae[v][v]{c}");
@@ -66,7 +66,7 @@ void IDMRPT2::build_t2_iJaB_amplitudes() {
     blas->solve("t2_eqns[oO][vV]{o} += #4123# t2[v][VoO]{o} 1@2 F_ae[v][v]{o}");
     blas->solve("t2_eqns[oO][vV]{o} += #1432# - t2[O][oVv]{o} 1@1 F_MI[O][O]{o}");
     blas->solve("t2_eqns[oO][vV]{o} += #2341# - t2[o][OvV]{o} 1@1 F_mi[o][o]{o}");
-    END_TIMER(1);
+    END_TIMER("Building the T2_iJaB Amplitudes");
 }
 
 /**
@@ -78,7 +78,7 @@ void IDMRPT2::build_t2_iJaB_amplitudes() {
  * \f]
  */
 void IDMRPT2::build_t2_ijab_amplitudes() {
-    START_TIMER(1, "Building the T2_ijab Amplitudes");
+    START_TIMER("Building the T2_ijab Amplitudes");
     if (moinfo->get_ref_size(UniqueOpenShellRefs) == 0) {
         blas->solve("t2_eqns[oo][vv]{c}  = t2_eqns[oO][vV]{c}");
         blas->solve("t2_eqns[oo][vv]{c} += #2134# - t2_eqns[oO][vV]{c}");
@@ -97,7 +97,7 @@ void IDMRPT2::build_t2_ijab_amplitudes() {
     blas->solve("t2_eqns[oo][vv]{o} += #4123#   t2[v][voo]{o} 1@2 F_ae[v][v]{o}");
     blas->solve("t2_eqns[oo][vv]{o} += #1342#   t2[o][ovv]{o} 1@1 F_mi[o][o]{o}");
     blas->solve("t2_eqns[oo][vv]{o} += #2341# - t2[o][ovv]{o} 1@1 F_mi[o][o]{o}");
-    END_TIMER(1);
+    END_TIMER("Building the T2_ijab Amplitudes");
 }
 
 /**
@@ -109,7 +109,7 @@ void IDMRPT2::build_t2_ijab_amplitudes() {
  * \f]
  */
 void IDMRPT2::build_t2_IJAB_amplitudes() {
-    START_TIMER(1, "Building the T2_IJAB Amplitudes");
+    START_TIMER("Building the T2_IJAB Amplitudes");
     // Closed-shell
     blas->solve("t2_eqns[OO][VV]{c}  = t2_eqns[oo][vv]{c}");
 
@@ -119,7 +119,7 @@ void IDMRPT2::build_t2_IJAB_amplitudes() {
     blas->solve("t2_eqns[OO][VV]{o} += #4123#   t2[V][VOO]{o} 1@2 F_AE[V][V]{o}");
     blas->solve("t2_eqns[OO][VV]{o} += #1342#   t2[O][OVV]{o} 1@1 F_MI[O][O]{o}");
     blas->solve("t2_eqns[OO][VV]{o} += #2341# - t2[O][OVV]{o} 1@1 F_MI[O][O]{o}");
-    END_TIMER(1);
+    END_TIMER("Building the T2_IJAB Amplitudes");
 }
 
 }  // namespace psimrcc

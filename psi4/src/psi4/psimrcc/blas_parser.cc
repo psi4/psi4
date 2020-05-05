@@ -29,7 +29,6 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include <cstdio>
 #include "blas.h"
-#include "debugging.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include <algorithm>
 

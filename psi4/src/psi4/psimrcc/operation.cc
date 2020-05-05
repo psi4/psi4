@@ -30,7 +30,6 @@
 #include <cstdio>
 
 #include "blas.h"
-#include "debugging.h"
 #include "matrix.h"
 #include "psi4/psi4-dec.h"
 namespace psi {

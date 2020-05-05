@@ -35,7 +35,6 @@
 
 #include "blas.h"
 #include "index.h"
-#include "debugging.h"
 #include "matrix.h"
 
 namespace psi {

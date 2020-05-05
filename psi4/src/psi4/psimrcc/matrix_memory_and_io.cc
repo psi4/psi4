@@ -48,7 +48,6 @@ PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include "debugging.h"
 #include "matrix.h"
 
 namespace psi {

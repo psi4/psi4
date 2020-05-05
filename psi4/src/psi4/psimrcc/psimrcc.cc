@@ -43,7 +43,6 @@
 #include "idmrpt2.h"
 #include "mp2_ccsd.h"
 #include "transform.h"
-#include "debugging.h"
 #include "psimrcc.h"
 #include "updater.h"
 

@@ -40,7 +40,6 @@
 
 #include "algebra_interface.h"
 #include "blas.h"
-#include "debugging.h"
 #include "matrix.h"
 #include "operation.h"
 

@@ -34,8 +34,8 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #include "blas.h"
-#include "debugging.h"
 #include "idmrpt2.h"
+#include "psimrcc.h"
 
 extern FILE* outfile;
 
@@ -57,13 +57,13 @@ void IDMRPT2::build_F_intermediates() {
  * \f]
  */
 void IDMRPT2::build_F_ae_intermediates() {
-    START_TIMER(1, "Building the F_ae Intermediates");
+    START_TIMER("Building the F_ae Intermediates");
 
     blas->solve("F_ae[v][v]{u} = fock[v][v]{u}");
     blas->solve_zero_two_diagonal("F_ae[v][v]{u}");
     blas->zero_non_external("F_ae[v][v]{u}");
 
-    END_TIMER(1);
+    END_TIMER("Building the F_ae Intermediates");
 }
 
 /**
@@ -73,13 +73,13 @@ void IDMRPT2::build_F_ae_intermediates() {
  * \f]
  */
 void IDMRPT2::build_F_AE_intermediates() {
-    START_TIMER(1, "Building the F_AE Intermediates");
+    START_TIMER("Building the F_AE Intermediates");
 
     blas->solve("F_AE[V][V]{u} = fock[V][V]{u}");
     blas->solve_zero_two_diagonal("F_AE[V][V]{u}");
     blas->zero_non_external("F_AE[V][V]{u}");
 
-    END_TIMER(1);
+    END_TIMER("Building the F_AE Intermediates");
 }
 
 /**
@@ -89,13 +89,13 @@ void IDMRPT2::build_F_AE_intermediates() {
  * \f]
  */
 void IDMRPT2::build_F_mi_intermediates() {
-    START_TIMER(1, "Building the F_mi Intermediates");
+    START_TIMER("Building the F_mi Intermediates");
 
     blas->solve("F_mi[o][o]{u} = fock[o][o]{u}");
     blas->solve_zero_two_diagonal("F_mi[o][o]{u}");
     blas->zero_non_doubly_occupied("F_mi[o][o]{u}");
 
-    END_TIMER(1);
+    END_TIMER("Building the F_mi Intermediates");
 }
 
 /**
@@ -105,13 +105,13 @@ void IDMRPT2::build_F_mi_intermediates() {
  * \f]
  */
 void IDMRPT2::build_F_MI_intermediates() {
-    START_TIMER(1, "Building the F_MI Intermediates");
+    START_TIMER("Building the F_MI Intermediates");
 
     blas->solve("F_MI[O][O]{u} = fock[O][O]{u}");
     blas->solve_zero_two_diagonal("F_MI[O][O]{u}");
     blas->zero_non_doubly_occupied("F_MI[O][O]{u}");
 
-    END_TIMER(1);
+    END_TIMER("Building the F_MI Intermediates");
 }
 
 }  // namespace psimrcc

@@ -38,7 +38,6 @@
 #include "index.h"
 #include "matrix.h"
 #include "mrcc.h"
-#include "debugging.h"
 
 extern FILE* outfile;
 

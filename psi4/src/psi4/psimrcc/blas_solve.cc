@@ -30,7 +30,6 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 
 #include "blas.h"
-#include "debugging.h"
 
 extern FILE* outfile;
 

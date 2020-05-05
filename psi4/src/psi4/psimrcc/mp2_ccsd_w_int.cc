@@ -31,7 +31,6 @@
 
 #include "blas.h"
 #include "mp2_ccsd.h"
-#include "debugging.h"
 #include "matrix.h"
 
 extern FILE* outfile;

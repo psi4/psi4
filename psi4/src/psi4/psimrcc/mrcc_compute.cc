@@ -45,7 +45,6 @@
 
 #include "blas.h"
 #include "mrcc.h"
-#include "debugging.h"
 #include "updater.h"
 
 namespace psi {

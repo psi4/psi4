@@ -46,7 +46,6 @@
 #include "algebra_interface.h"
 #include "blas.h"
 #include "index.h"
-#include "debugging.h"
 #include "manybody.h"
 #include "matrix.h"
 #include "sort.h"

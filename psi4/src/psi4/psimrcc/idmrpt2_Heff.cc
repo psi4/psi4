@@ -36,7 +36,6 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #include "blas.h"
-#include "debugging.h"
 #include "idmrpt2.h"
 #include "matrix.h"
 

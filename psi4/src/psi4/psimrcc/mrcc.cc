@@ -34,7 +34,6 @@
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"
-#include "debugging.h"
 #include "updater.h"
 
 namespace psi {

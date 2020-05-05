@@ -29,6 +29,10 @@
 #ifndef _psi_src_bin_psimrcc_psimrcc_h_
 #define _psi_src_bin_psimrcc_psimrcc_h_
 
+#include "psi4/libqt/qt.h"
+#define START_TIMER(a) timer_on((a));
+#define END_TIMER(a) timer_off((a));
+
 namespace psi {
 namespace psimrcc {
 
