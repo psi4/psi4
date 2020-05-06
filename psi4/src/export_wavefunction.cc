@@ -110,11 +110,10 @@ void export_wavefunction(py::module& m) {
 
               Parameters
               ----------
-              basis : string
-                  Should the subset be of symmetry orbitals or atomic orbitals, SO or AO?
-              subset : string
-                  Which subspace of orbitals should be returned. Options are:
-                  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+              basis : {'SO', AO'}
+                  Should the subset be of symmetry orbitals or atomic orbitals?
+              subset : {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+                  Which subspace of orbitals should be returned?
 
               Returns
               -------
@@ -126,11 +125,10 @@ void export_wavefunction(py::module& m) {
 
               Parameters
               ----------
-              basis : string
-                  Should the subset be of symmetry orbitals or atomic orbitals, SO or AO?
-              subset : string
-                  Which subspace of orbitals should be returned. Options are:
-                  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+              basis : {'SO', 'AO'}
+                  Should the subset be of symmetry orbitals or atomic orbitals?
+              subset : {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+                  Which subspace of orbitals should be returned?
 
               Returns
               -------
