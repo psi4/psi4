@@ -68,3 +68,17 @@ set dft_omega 0.6
 func_call = energy('SCF', dft_functional="wPBE") #TEST
 compare_values(reference_wpbe_6, func_call, 6, "wPBE0 omega=0.6")  #TEST
 
+clean()
+
+my_pbe = {
+    "name": "MY PBE",
+    "x_functionals": {"GGA_X_PBE": {}},
+    "c_functionals": {"GGA_C_PBE": {}}
+}
+
+reference_pbe = -76.3217615448049145
+
+set basis pcseg-1
+set basis_guess pcseg-0
+E_mypbe = energy('scf', dft_functional=my_pbe, mol=h2o)                               #TEST
+compare_values(reference_pbe, E_mypbe, 6, "PBE by dft_functional dict + basis_guess") #TEST
