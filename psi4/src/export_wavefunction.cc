@@ -105,10 +105,36 @@ void export_wavefunction(py::module& m) {
         .def("efzc", &Wavefunction::efzc, "Returns the frozen-core energy")
         .def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.")
         .def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.")
-        .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership,
-             "Returns the requested Alpha Orbital subset.")
-        .def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership,
-             "Returns the requested Beta Orbital subset.")
+        .def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, R"pbdoc(
+              Returns the requested Alpha orbital subset.
+
+              Parameters
+              ----------
+              basis : {'SO', AO'}
+                  Should the subset be of symmetry orbitals or atomic orbitals?
+              subset : {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+                  Which subspace of orbitals should be returned?
+
+              Returns
+              -------
+              Matrix
+                  A Pitzer-ordered matrix of the orbitals, (# basis functions, # orbitals in the subset).
+         )pbdoc")
+        .def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership, R"pbdoc(
+              Returns the requested Beta orbital subset.
+
+              Parameters
+              ----------
+              basis : {'SO', 'AO'}
+                  Should the subset be of symmetry orbitals or atomic orbitals?
+              subset : {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+                  Which subspace of orbitals should be returned?
+
+              Returns
+              -------
+              Matrix
+                  A Pitzer-ordered matrix of the orbitals, (# basis functions, # orbitals in the subset).
+         )pbdoc")
         .def("Fa", &Wavefunction::Fa, "Returns the Alpha Fock Matrix.")
         .def("Fa_subset", &Wavefunction::Fa_subset, "Returns the Alpha Fock Matrix in the requested basis (AO,SO).")
         .def("Fb", &Wavefunction::Fb, "Returns the Beta Fock Matrix.")
