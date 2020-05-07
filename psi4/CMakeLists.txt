@@ -203,6 +203,16 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor-python${ColourReset}: ${_loc} (version ${xtensor-python_VERSION})")
 find_package(NumPy REQUIRED)
 
+find_package(HighFive 2.2 CONFIG REQUIRED)
+get_property(_loc TARGET HighFive PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using HighFive${ColourReset}: ${_loc} (version ${xtensor-io_VERSION})")
+
+find_package(xtensor-io 0.9.0 CONFIG REQUIRED)
+get_property(_loc TARGET xtensor-io PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtensor-io${ColourReset}: ${_loc} (version ${xtensor-io_VERSION})")
+
 # Compile definitions not exported by xtensor proper
 if(USE_XSIMD)
   target_compile_definitions(xtensor

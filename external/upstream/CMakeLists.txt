@@ -32,3 +32,6 @@ endif()
 add_subdirectory(xtensor)
 add_subdirectory(xtensor-blas)
 add_subdirectory(xtensor-python)
+# TODO this depends on HighFive and HDF5
+add_subdirectory(HighFive)
+add_subdirectory(xtensor-io)

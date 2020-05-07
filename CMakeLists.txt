@@ -187,6 +187,7 @@ set(xsimd_pinned 7.4.5)
 set(xtensor_pinned 0.21.2)
 set(xtensor-blas_pinned 0.17.1)
 set(xtensor-python_pinned 0.24.1)
+set(xtensor-io_pinned 0.9.0)
 add_subdirectory(external/upstream)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
@@ -220,6 +221,8 @@ ExternalProject_Add(psi4-core
            xtensor_external
            xtensor-blas_external
            xtensor-python_external
+           HighFive_external
+           xtensor-io_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -277,6 +280,8 @@ ExternalProject_Add(psi4-core
               -Dxtensor_DIR=${xtensor_DIR}
               -Dxtensor-blas_DIR=${xtensor-blas_DIR}
               -Dxtensor-python_DIR=${xtensor-python_DIR}
+              -DHighFive_DIR=${HighFive_DIR}
+              -Dxtensor-io_DIR=${xtensor-io_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
