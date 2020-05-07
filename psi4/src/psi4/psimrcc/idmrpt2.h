@@ -76,11 +76,6 @@ class IDMRPT2 : public CCManyBody {
     void build_Heff_uvxy();
     void build_Heff_UVXY();
 
-    void build_Heff_ijkabc();
-    void build_Heff_ijKabC();
-    void build_Heff_iJKaBC();
-    void build_Heff_IJKABC();
-
     void build_F_intermediates();
     void build_F_ae_intermediates();
     void build_F_AE_intermediates();

@@ -7,7 +7,6 @@ list(APPEND sources
   blas_interface.cc
   blas_parser.cc
   blas_solve.cc
-  debugging.cc
   heff.cc
   heff_diagonalize.cc
   idmrpt2.cc

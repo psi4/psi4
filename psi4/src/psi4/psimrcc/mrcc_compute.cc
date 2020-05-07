@@ -45,7 +45,6 @@
 
 #include "blas.h"
 #include "mrcc.h"
-#include "debugging.h"
 #include "updater.h"
 
 namespace psi {
@@ -144,10 +143,6 @@ double CCMRCC::compute_energy() {
 
         converged = build_diagonalize_Heff(-1, cc_timer.get());
     }
-
-    DEBUGGING(1, blas->print_memory(););
-
-    CCOperation::print_timing();
 
     return ref_wfn_->scalar_variable("CURRENT ENERGY");
 }

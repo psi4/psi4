@@ -30,7 +30,6 @@
 #include <cstdio>
 
 #include "blas.h"
-#include "debugging.h"
 #include "matrix.h"
 #include "psi4/psi4-dec.h"
 namespace psi {
@@ -86,23 +85,6 @@ void CCOperation::print_operation() {
     if (B_Matrix != nullptr) outfile->Printf(" %s", B_Matrix->get_label().c_str());
     outfile->Printf(" %s", operation.c_str());
     if (C_Matrix != nullptr) outfile->Printf(" %s", C_Matrix->get_label().c_str());
-}
-
-void CCOperation::print_timing() {
-    DEBUGGING(1, outfile->Printf("\n-----------------------------------------");
-              outfile->Printf("\nzero_timing             = %f", zero_timing);
-              outfile->Printf("\nnumerical_timing        = %f", numerical_timing);
-              outfile->Printf("\ncontract_timing         = %f", contract_timing);
-              outfile->Printf("\ntensor_timing           = %f", tensor_timing);
-              outfile->Printf("\ndot_timing              = %f", dot_timing);
-              outfile->Printf("\nplus_timing             = %f", plus_timing);
-              outfile->Printf("\nproduct_timing          = %f", product_timing);
-              outfile->Printf("\ndivision_timing         = %f", division_timing);
-              outfile->Printf("\nsort_timing             = %f", sort_timing);
-              outfile->Printf("\nPartA_timing            = %f", PartA_timing);
-              outfile->Printf("\nPartB_timing            = %f", PartB_timing);
-              outfile->Printf("\nPartC_timing            = %f", PartC_timing);
-              outfile->Printf("\n-----------------------------------------\n"););
 }
 
 }  // namespace psimrcc

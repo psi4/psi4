@@ -42,9 +42,9 @@
 
 #include "algebra_interface.h"
 #include "blas.h"
-#include "debugging.h"
 #include "manybody.h"
 #include "matrix.h"
+#include "psimrcc.h"
 #include "sort.h"
 
 namespace psi {
@@ -58,7 +58,7 @@ extern MOInfo* moinfo;
  * where the excitations that are not allowed in reference \f$ \mu \f$ are set to a large value (see huge)
  */
 void CCManyBody::generate_denominators() {
-    START_TIMER(1, "Generating Denominators");
+    START_TIMER("Generating Denominators");
 
     bool keep_denominators_in_core = false;
     if (options_.get_str("CORR_WFN") == "PT2") keep_denominators_in_core = true;
@@ -274,7 +274,7 @@ void CCManyBody::generate_denominators() {
         }  // End "if d2"
 
     }  // End for each reference
-    END_TIMER(1);
+    END_TIMER("Generating Denominators");
 }
 
 }  // namespace psimrcc

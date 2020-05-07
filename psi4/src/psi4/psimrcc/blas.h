@@ -93,7 +93,6 @@ class CCBLAS {
     void append_zero_two_diagonal(const char* cstr);
     void compute();
     int compute_storage_strategy();
-    void show_storage();
     // DIIS
     void diis_add(std::string amps, std::string delta_amps);
     void diis_save_t_amps(int cycle);

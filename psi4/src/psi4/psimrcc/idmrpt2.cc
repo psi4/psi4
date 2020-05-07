@@ -38,8 +38,8 @@
 #include "matrix.h"
 #include "blas.h"
 #include "sort.h"
-#include "debugging.h"
 #include "updater.h"
+#include "psimrcc.h"
 
 extern FILE* outfile;
 
@@ -109,7 +109,6 @@ double IDMRPT2::compute_energy() {
         // Compute the effective Hamiltonian
         build_Heff_mrpt2_diagonal();
         build_Heff_mrpt2_offdiagonal();
-        DEBUGGING(3, print_eigensystem(moinfo->get_nrefs(), Heff_mrpt2, zeroth_order_eigenvector););
 
         // Compute the energy
         current_energy = c_H_c(moinfo->get_nrefs(), Heff_mrpt2, zeroth_order_eigenvector);
@@ -219,7 +218,7 @@ void IDMRPT2::build_Heff_scs_mrpt2_diagonal() {
 }
 
 void IDMRPT2::synchronize_amps() {
-    START_TIMER(1, "Synchronizing the Amplitudes");
+    START_TIMER("Synchronizing the Amplitudes");
 
     blas->solve("t1[ov]{u}     = #12# t1[o][v]{u}");
     blas->solve("t1[OV]{u}     = #12# t1[O][V]{u}");
@@ -285,7 +284,7 @@ void IDMRPT2::synchronize_amps() {
     blas->reduce_spaces("t2_oOvV[oA][aV]{u}", "t2[oO][vV]{u}");
     blas->solve("t2_oVOv[oV][Aa]{u} = #1342# t2_oOvV[oA][aV]{u}");
 
-    END_TIMER(1);
+    END_TIMER("Synchronizing the Amplitudes");
 }
 
 void IDMRPT2::build_amplitudes() {
@@ -364,17 +363,16 @@ void IDMRPT2::update_amps_mkpt2() {
         blas->solve("t2[oO][vV]{" + i_str + "} = t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "}");
         blas->solve("t2[OO][VV]{" + i_str + "} = t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "}");
     }
-    DEBUGGING(3, blas->print("t2[oo][vv]{u}"); blas->print("t2[oO][vV]{u}"); blas->print("t2[OO][VV]{u}"););
 }
 
 void IDMRPT2::read_mrpt2_integrals() {
-    START_TIMER(1, "Reading the MRPT2 integrals");
+    START_TIMER("Reading the MRPT2 integrals");
 
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
     sorter = new CCSort(ref_wfn_, mrpt2_sort);
 
-    END_TIMER(1);
+    END_TIMER("Reading the MRPT2 integrals");
 }
 
 }  // namespace psimrcc

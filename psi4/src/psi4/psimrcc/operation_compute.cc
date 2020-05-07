@@ -40,7 +40,6 @@
 
 #include "algebra_interface.h"
 #include "blas.h"
-#include "debugging.h"
 #include "matrix.h"
 #include "operation.h"
 
@@ -54,8 +53,6 @@ extern MOInfo *moinfo;
  */
 void CCOperation::compute() {
     // Here we distinguis between all the possible cases
-    DEBUGGING(2, outfile->Printf("\nPerforming "); print_operation(););
-
     Timer numerical_timer;
     // (1) Assignment of a number
     //     Expression of the type A = - 1/2
@@ -159,7 +156,6 @@ void CCOperation::element_by_element_division() {
 
 void CCOperation::element_by_element_addition() {
     if (compatible_element_by_element() && (reindexing.size() == 0)) {
-        DEBUGGING(4, outfile->Printf("\n...same indexing for the target and the output of this operation"););
         for (int h = 0; h < moinfo->get_nirreps(); ++h) {
             CCMatIrTmp AMatIrTmp = blas->get_MatIrTmp(A_Matrix, h, none);
             check_and_zero_target_block(h);
@@ -167,7 +163,6 @@ void CCOperation::element_by_element_addition() {
             AMatIrTmp->element_by_element_addition(factor, BMatIrTmp.get_CCMatrix(), h);
         }
     } else if (reindexing.size() != 0) {
-        DEBUGGING(4, outfile->Printf("\n...different indexing for the target and the output of this operation"););
         CCMatTmp AMatTmp = blas->get_MatTmp(A_Matrix, none);
         check_and_zero_target();
         CCMatTmp BMatTmp = blas->get_MatTmp(B_Matrix, none);
@@ -177,7 +172,6 @@ void CCOperation::element_by_element_addition() {
 }
 
 void CCOperation::tensor_product() {
-    DEBUGGING(4, outfile->Printf("\n...different indexing for the target and the output of this operation"););
     if (reindexing.size() == 0) reindexing = "1234";
     // Perform this for all the matrix at once
     CCMatTmp AMatTmp = blas->get_MatTmp(A_Matrix, none);
@@ -188,13 +182,6 @@ void CCOperation::tensor_product() {
 }
 
 void CCOperation::contract() {
-    if (compatible_contract() && (reindexing.size() == 0)) {
-        // Same indexing contract, let BLAS directly handle this (although we guide it)
-        DEBUGGING(4, outfile->Printf("\n...same indexing for the target and the output of this operation"););
-    } else {
-        // Different indexing contract, we work this by hand at first
-        DEBUGGING(4, outfile->Printf("\n...different indexing for the target and the output of this operation"););
-    }
     setup_contractions();
 }
 
@@ -227,11 +214,6 @@ void CCOperation::fail_to_compute() {
 
 //   Timer zero_timer;
 //   // Parse the assignment for "= >=" and in this case zero A_Matrix
-//   if(assignment=="=" || assignment==">="){
-//     DEBUGGING(4,
-//       outfile->Printf("\n...zero the target Matrix");
-//
-//   }
 //   zero_timing += zero_timer.get();
 
 // void CCBlas::compute(std::vector<double>& factors,std::vector<int>& types,std::vector<std::string>&
@@ -248,26 +230,6 @@ void CCOperation::fail_to_compute() {
 //     string operation = operations[group+1];
 //     if(operation!="plus")
 //       C_type    = types[group_index++];
-//
-//     if(operation!="plus"){
-//       DEBUGGING(4,
-//
-//         factor,matrix_labels(B_type).c_str(),operation.c_str(),matrix_labels(C_type).c_str(),matrix_labels(A_type).c_str());
-//     }else{
-//       DEBUGGING(4,
-//       outfile->Printf("\n\nPerforming %lf %s -> %s",
-//         factor,matrix_labels(B_type).c_str(),matrix_labels(A_type).c_str());
-//     }
-//
-//     // What is the size of the first operation? This determines whether
-//     // we are incrementing the existing array or assigning a new value
-//     if((group==0) && (operations[0]=="=")){
-//       DEBUGGING(4,
-//         outfile->Printf("\n...zero the target Matrix");
-//       zero_matrix(types[0]);
-//     }
-//
-//
 //   }
 // }
 

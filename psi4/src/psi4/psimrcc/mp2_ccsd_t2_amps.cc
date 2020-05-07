@@ -31,7 +31,7 @@
 
 #include "mp2_ccsd.h"
 #include "blas.h"
-#include "debugging.h"
+#include "psimrcc.h"
 
 extern FILE* outfile;
 
@@ -63,7 +63,7 @@ void MP2_CCSD::build_mp2_t2_iJaB_amplitudes() {
 }
 
 void MP2_CCSD::build_t2_iJaB_amplitudes() {
-    START_TIMER(1, "Building the T2_iJaB Amplitudes");
+    START_TIMER("Building the T2_iJaB Amplitudes");
 
     // AAAA case (CCSD)
     blas->solve("HiJaB[aA][aA]{u}  = <[aa]|[aa]>");
@@ -175,21 +175,21 @@ void MP2_CCSD::build_t2_iJaB_amplitudes() {
     blas->solve("t2_delta[oO][vV]{u} = t2_eqns[oO][vV]{u} / d2[oO][vV]{u} - t2[oO][vV]{u}");
 
     blas->solve("t2[oO][vV]{u}  = t2_eqns[oO][vV]{u} / d2[oO][vV]{u}");
-    END_TIMER(1);
+    END_TIMER("Building the T2_iJaB Amplitudes");
 }
 
 void MP2_CCSD::build_t2_ijab_amplitudes() {
-    START_TIMER(1, "Building the T2_ijab Amplitudes");
+    START_TIMER("Building the T2_ijab Amplitudes");
     blas->solve("t2_eqns[oo][vv]{u}  = t2_eqns[oO][vV]{u}");
     blas->solve("t2_eqns[oo][vv]{u} += #2134# - t2_eqns[oO][vV]{u}");
     blas->solve("t2[oo][vv]{u}  = t2_eqns[oo][vv]{u} / d2[oo][vv]{u}");
-    END_TIMER(1);
+    END_TIMER("Building the T2_ijab Amplitudes");
 }
 
 void MP2_CCSD::build_t2_IJAB_amplitudes() {
-    START_TIMER(1, "Building the T2_IJAB Amplitudes");
+    START_TIMER("Building the T2_IJAB Amplitudes");
     blas->solve("t2[OO][VV]{u}  = t2[oo][vv]{u}");
-    END_TIMER(1);
+    END_TIMER("Building the T2_IJAB Amplitudes");
 }
 
 }  // namespace psimrcc

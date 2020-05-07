@@ -37,7 +37,7 @@
 
 #include "idmrpt2.h"
 #include "blas.h"
-#include "debugging.h"
+#include "psimrcc.h"
 
 namespace psi {
 
@@ -54,13 +54,13 @@ namespace psimrcc {
  * \f]
  */
 void IDMRPT2::build_t1_ia_amplitudes() {
-    START_TIMER(1, "Building the T1_ia Amplitudes");
+    START_TIMER("Building the T1_ia Amplitudes");
     blas->solve("t1_eqns[o][v]{u}  =   fock[o][v]{u}");
     blas->solve("t1_eqns[o][v]{u} +=     t1[o][v]{u} 2@2 F_ae[v][v]{u}");
     blas->solve("t1_eqns[o][v]{u} += - F_mi[o][o]{u} 1@1 t1[o][v]{u}");
     blas->solve("t1_eqns[o][v]{u} += #12# t2_ovov[aa][ov]{u} 1@1 fock[aa]{u}");
     blas->solve("t1_eqns[o][v]{u} += #12# t2_ovOV[ov][AA]{u} 2@1 fock[AA]{u}");
-    END_TIMER(1);
+    END_TIMER("Building the T1_ia Amplitudes");
 }
 
 /**
@@ -74,7 +74,7 @@ void IDMRPT2::build_t1_ia_amplitudes() {
  * \f]
  */
 void IDMRPT2::build_t1_IA_amplitudes() {
-    START_TIMER(1, "Building the T1_IA Amplitudes");
+    START_TIMER("Building the T1_IA Amplitudes");
     // Closed-shell
     blas->solve("t1_eqns[O][V]{c} = t1_eqns[o][v]{c}");
     // Open-shell
@@ -83,7 +83,7 @@ void IDMRPT2::build_t1_IA_amplitudes() {
     blas->solve("t1_eqns[O][V]{o} += - F_MI[O][O]{o} 1@1 t1[O][V]{o}");
     blas->solve("t1_eqns[O][V]{o} += #12# t2_ovOV[aa][OV]{o} 1@1 fock[aa]{o}");
     blas->solve("t1_eqns[O][V]{o} += #12# t2_OVOV[AA][OV]{o} 1@1 fock[AA]{o}");
-    END_TIMER(1);
+    END_TIMER("Building the T1_IA Amplitudes");
 }
 
 }  // namespace psimrcc

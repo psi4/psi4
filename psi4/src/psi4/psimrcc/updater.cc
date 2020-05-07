@@ -127,15 +127,6 @@ void Updater::zero_internal_amps() {
                 }
             }
         }
-
-        // Print the t-amplitudes
-        //    DEBUGGING(3,
-        //      blas->print("t1[o][v]{u}");
-        //      blas->print("t1[O][V]{u}");
-        //      blas->print("t2[oo][vv]{u}");
-        //      blas->print("t2[oO][vV]{u}");
-        //      blas->print("t2[OO][VV]{u}");
-        //    )
     } else {
         outfile->Printf(
             "\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity "
@@ -168,12 +159,6 @@ void Updater::zero_t1_internal_amps() {
                                                   0.0);
             }
         }
-
-        // Print the t-amplitudes
-        //    DEBUGGING(3,
-        //      blas->print("t1[o][v]{u}");
-        //      blas->print("t1[O][V]{u}");
-        //    )
     } else {
         outfile->Printf(
             "\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity "
@@ -254,15 +239,6 @@ void Updater::zero_internal_delta_amps() {
                 }
             }
         }
-
-        // Print the t-amplitudes
-        //    DEBUGGING(3,
-        //      blas->print("t1_delta[o][v]{u}");
-        //      blas->print("t1_delta[O][V]{u}");
-        //      blas->print("t2_delta[oo][vv]{u}");
-        //      blas->print("t2_delta[oO][vV]{u}");
-        //      blas->print("t2_delta[OO][VV]{u}");
-        //    )
     } else {
         outfile->Printf(
             "\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity "

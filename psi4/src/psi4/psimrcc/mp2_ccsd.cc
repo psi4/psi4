@@ -34,8 +34,8 @@
 
 #include "blas.h"
 #include "mp2_ccsd.h"
-#include "debugging.h"
 #include "matrix.h"
+#include "psimrcc.h"
 #include "sort.h"
 
 extern FILE* outfile;
@@ -173,13 +173,13 @@ double MP2_CCSD::compute_iteration_energy() {
 }
 
 void MP2_CCSD::read_mp2_ccsd_integrals() {
-    START_TIMER(1, "Reading the integrals required by MP2-CCSD");
+    START_TIMER("Reading the integrals required by MP2-CCSD");
 
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
     sorter = new CCSort(ref_wfn_, out_of_core_sort);
 
-    END_TIMER(1);
+    END_TIMER("Reading the integrals required by MP2-CCSD");
 }
 
 void MP2_CCSD::build_amplitudes() {

@@ -37,7 +37,7 @@
 
 #include "idmrpt2.h"
 #include "blas.h"
-#include "debugging.h"
+#include "psimrcc.h"
 
 extern FILE* outfile;
 
@@ -62,7 +62,7 @@ namespace psimrcc {
  * \f]
  */
 void IDMRPT2::build_Heff_uvxy() {
-    START_TIMER(1, "Building the Heff_uvxy Matrix Elements");
+    START_TIMER("Building the Heff_uvxy Matrix Elements");
 
     // Closed-shell
     blas->solve("Hijab[aa][aa]{c}  = <[aa]:[aa]>");
@@ -122,13 +122,11 @@ void IDMRPT2::build_Heff_uvxy() {
     blas->solve("Hijab[aa][aa]{o} += #3412# - t1_ov[o][a]{o} 1@1 <[o]:[aaa]>");
     blas->solve("Hijab[aa][aa]{o} += #4312#   t1_ov[o][a]{o} 1@1 <[o]:[aaa]>");
 
-    DEBUGGING(3, blas->print("Hijab[aa][aa]{u}"););
-
-    END_TIMER(1);
+    END_TIMER("Building the Heff_uvxy Matrix Elements");
 }
 
 void IDMRPT2::build_Heff_uVxY() {
-    START_TIMER(1, "Building the Heff_uVxY Matrix Elements");
+    START_TIMER("Building the Heff_uVxY Matrix Elements");
 
     // Closed-shell
     blas->solve("HiJaB[aA][aA]{c}  = <[aa]|[aa]>");
@@ -172,12 +170,11 @@ void IDMRPT2::build_Heff_uVxY() {
     blas->solve("HiJaB[aA][aA]{o} += #3412# - t1_ov[o][a]{o} 1@1 <[o]|[aaa]>");
     blas->solve("HiJaB[aA][aA]{o} += #4321# - t1_OV[O][A]{o} 1@1 <[o]|[aaa]>");
 
-    DEBUGGING(3, blas->print("HiJaB[aA][aA]{u}"););
-    END_TIMER(1);
+    END_TIMER("Building the Heff_uVxY Matrix Elements");
 }
 
 void IDMRPT2::build_Heff_UVXY() {
-    START_TIMER(1, "Building the Heff_UVXY Matrix Elements");
+    START_TIMER("Building the Heff_UVXY Matrix Elements");
 
     // Closed-shell
     blas->solve("HIJAB[AA][AA]{c}  = Hijab[aa][aa]{c}");
@@ -203,8 +200,7 @@ void IDMRPT2::build_Heff_UVXY() {
     blas->solve("HIJAB[AA][AA]{o} += #3412# - t1_OV[O][A]{o} 1@1 <[o]:[aaa]>");
     blas->solve("HIJAB[AA][AA]{o} += #4312#   t1_OV[O][A]{o} 1@1 <[o]:[aaa]>");
 
-    DEBUGGING(3, blas->print("HIJAB[AA][AA]{u}"););
-    END_TIMER(1);
+    END_TIMER("Building the Heff_UVXY Matrix Elements");
 }
 
 }  // namespace psimrcc

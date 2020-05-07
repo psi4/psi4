@@ -36,7 +36,6 @@
 
 #include "algebra_interface.h"
 #include "blas.h"
-#include "debugging.h"
 #include "index.h"
 #include "matrix.h"
 #include "mrcc.h"
@@ -55,10 +54,6 @@ void CCMRCC::build_t2_amplitudes() {
 }
 
 void CCMRCC::build_t2_ijab_amplitudes() {
-    Timer timer;
-    DEBUGGING(1, outfile->Printf("\n\tBuilding the t2_ijab Amplitudes   ...");
-
-    )
     if (moinfo->get_ref_size(UniqueOpenShellRefs) == 0) {
         blas->append("t2_eqns[oo][vv]{c}  = t2_eqns[oO][vV]{c}");
         blas->append("t2_eqns[oo][vv]{c} += #2134# - t2_eqns[oO][vV]{c}");
@@ -147,19 +142,9 @@ void CCMRCC::build_t2_ijab_amplitudes() {
 
     blas->append("t2_eqns[oo][vv]{o} += #3412# - t1[o][v]{o} 1@1 <[o]:[voo]>");
     blas->append("t2_eqns[oo][vv]{o} += #4312#   t1[o][v]{o} 1@1 <[o]:[voo]>");
-
-    DEBUGGING(3, blas->print("t2_eqns[oo][vv]{c}"); blas->print("t2_eqns[oo][vv]{o}"););
-
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    );
 }
 
 void CCMRCC::build_t2_iJaB_amplitudes() {
-    Timer timer;
-    DEBUGGING(1, outfile->Printf("\n\tBuilding the t2_iJaB Amplitudes   ...");
-
-    );
     // Closed-shell
     blas->append("t2_eqns[oO][vV]{c}  = <[oo]|[vv]>");
 
@@ -245,19 +230,9 @@ void CCMRCC::build_t2_iJaB_amplitudes() {
 
     blas->append("t2_eqns[oO][vV]{o} += #3412# - t1[o][v]{o} 1@1 <[o]|[voo]>");
     blas->append("t2_eqns[oO][vV]{o} += #4321# - t1[O][V]{o} 1@1 <[o]|[voo]>");
-
-    DEBUGGING(3, blas->print("t2_eqns[oO][vV]{c}"); blas->print("t2_eqns[oO][vV]{o}");)
-
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    )
 }
 
 void CCMRCC::build_t2_IJAB_amplitudes() {
-    Timer timer;
-    DEBUGGING(1, outfile->Printf("\n\tBuilding the t2_IJAB Amplitudes   ...");
-
-    )
     // Closed-shell
     blas->append("t2_eqns[OO][VV]{c}  = t2_eqns[oo][vv]{c}");
 
@@ -301,19 +276,9 @@ void CCMRCC::build_t2_IJAB_amplitudes() {
 
     blas->append("t2_eqns[OO][VV]{o} += #3412# - t1[O][V]{o} 1@1 <[o]:[voo]>");
     blas->append("t2_eqns[OO][VV]{o} += #4312#   t1[O][V]{o} 1@1 <[o]:[voo]>");
-
-    DEBUGGING(3, blas->print("t2_eqns[OO][VV]{o}"););
-
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    )
 }
 
 void CCMRCC::build_t2_amplitudes_triples() {
-    Timer timer;
-    DEBUGGING(1, outfile->Printf("\n\tBuilding the T3->T2 Amplitudes   ...");
-
-    )
     build_t2_ijab_amplitudes_triples_diagram1();
     build_t2_iJaB_amplitudes_triples_diagram1();
     build_t2_IJAB_amplitudes_triples_diagram1();
@@ -325,9 +290,6 @@ void CCMRCC::build_t2_amplitudes_triples() {
     build_t2_ijab_amplitudes_triples_diagram3();
     build_t2_iJaB_amplitudes_triples_diagram3();
     build_t2_IJAB_amplitudes_triples_diagram3();
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    )
 }
 
 /**

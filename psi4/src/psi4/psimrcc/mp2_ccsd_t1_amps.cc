@@ -30,7 +30,6 @@
 
 #include "mp2_ccsd.h"
 #include "blas.h"
-#include "debugging.h"
 
 namespace psi {
 namespace psimrcc {
@@ -64,9 +63,6 @@ void MP2_CCSD::build_t1_ia_amplitudes() {
 }
 
 void MP2_CCSD::build_t1_IA_amplitudes() {
-    //   START_TIMER(1,"Building the T1_IA Amplitudes");
-    //   blas->solve("t1[O][V]{u} = fock[O][V]{u} / d1[O][V]{u}");
-    //   END_TIMER(1);
     blas->solve("t1[O][V]{u} = t1[o][v]{u}");
 }
 

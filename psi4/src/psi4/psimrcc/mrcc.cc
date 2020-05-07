@@ -34,7 +34,6 @@
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"
-#include "debugging.h"
 #include "updater.h"
 
 namespace psi {
@@ -71,8 +70,6 @@ CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options) : CCManyBody(ref_wf
     if (triples_type > ccsd) generate_triples_denominators();
 
     compute_reference_energy();
-
-    DEBUGGING(1, blas->print_memory();)
 
     // Initialize the appropriate updater
     if (options.get_str("CORR_ANSATZ") == "MK") updater_ = std::make_shared<MkUpdater>(options);

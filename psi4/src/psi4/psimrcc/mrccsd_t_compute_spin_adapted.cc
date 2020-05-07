@@ -38,7 +38,6 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 
 #include "blas.h"
-#include "debugging.h"
 #include "index_iterator.h"
 #include "mrcc.h"
 #include "mrccsd_t.h"
