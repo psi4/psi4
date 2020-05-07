@@ -78,6 +78,8 @@ class Functional {
     double lsda_cutoff_;
     // Tau-based cutoff
     double meta_cutoff_;
+    // LibXC Densty-based cutoff
+    double density_cutoff_;
 
     // Initialize null functional
     void common_init();
@@ -113,12 +115,13 @@ class Functional {
         omega_ = omega;
         lrc_ = (omega_ != 0.0);
     }
-    void set_name(const std::string& name) { name_ = name; }
-    void set_description(const std::string& description) { description_ = description; }
-    void set_citation(const std::string& citation) { citation_ = citation; }
+    void set_name(const std::string &name) { name_ = name; }
+    void set_description(const std::string &description) { description_ = description; }
+    void set_citation(const std::string &citation) { citation_ = citation; }
 
     void set_lsda_cutoff(double cut) { lsda_cutoff_ = cut; }
     void set_meta_cutoff(double cut) { meta_cutoff_ = cut; }
+    virtual void set_density_cutoff(double cut);
 
     // => Accessors <= //
 
@@ -136,6 +139,8 @@ class Functional {
 
     double lsda_cutoff() const { return lsda_cutoff_; }
     double meta_cutoff() const { return meta_cutoff_; }
+    double density_cutoff() const { return density_cutoff_; }
+    virtual double query_density_cutoff();
 
     // => Utility <= //
     virtual void print(std::string out_fname = "outfile", int print = 1) const;

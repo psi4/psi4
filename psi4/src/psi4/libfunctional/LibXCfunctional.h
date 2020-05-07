@@ -62,6 +62,8 @@ class LibXCFunctional : public Functional {
     bool needs_vv10_;
     double vv10_b_;
     double vv10_c_;
+    // LibXC density setting
+    double density_cutoff_;
 
     // User defined tweakers
     std::vector<double> user_tweakers_;
@@ -77,12 +79,14 @@ class LibXCFunctional : public Functional {
     std::shared_ptr<Functional> build_worker() override;
 
     // Setters and getters
+    void set_density_cutoff(double cut) override;
     void set_omega(double omega);
     void set_tweak(std::vector<double> values);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
     // Make queries to libxc
     std::map<std::string, double> query_libxc(const std::string& functional);
+    double query_density_cutoff() override;
 
     // Only used to pass information up the chain
     double global_exchange() { return global_exch_; }
@@ -90,6 +94,7 @@ class LibXCFunctional : public Functional {
     double needs_vv10() { return needs_vv10_; }
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
+    double density_cutoff() { return density_cutoff_; }
 };
 }
 

@@ -1536,6 +1536,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
         /*- grid weight cutoff. Disable with -1.0. !expert -*/
         options.add_double("DFT_WEIGHTS_TOLERANCE", 1.0E-15);
+        /*- density cutoff for LibXC. A negative value turns the feature off and LibXC defaults are used. !expert -*/
+        options.add_double("DFT_DENSITY_TOLERANCE", -1.0);
         /*- The DFT grid specification, such as SG1.!expert -*/
         options.add_str("DFT_GRID_NAME", "", "SG0 SG1");
         /*- Select approach for pruning. Options ``ROBUST`` and ``TREUTLER`` prune based on regions (proximity to nucleus) while
