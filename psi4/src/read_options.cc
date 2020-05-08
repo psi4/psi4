@@ -1596,9 +1596,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Run with Tamm-Dancoff approximation, uses RPA when false -*/ 
         options.add_bool("TDSCF_TDA", false);
         /*- Convergence threshold for excitation energies -*/
+        // NOTE: This option may do nothing
         options.add_double("TDSCF_E_TOL", 1E-6);
         /*- Convergence threshold for the norm of the residual vector -*/
-        options.add_double("TDSCF_R_TOL", 1E-8);
+        options.add_double("TDSCF_R_TOL", 1E-4);
         /*- Guess type, only 'denominators' currently supported -*/
         options.add_str("TDSCF_GUESS", "denominators");
         /*- Max number of vectors to store before collapsing -*/
