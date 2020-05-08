@@ -324,7 +324,7 @@ def tdscf_excitations(wfn, **kwargs):
 
     #TODO: guess types, user guess
     guess_type = kwargs.pop("guess", "denominators")
-    if guess_type != "denominators":
+    if guess_type.lower() != "denominators":
         raise ValidationError("Guess type {} is not valid".format(guess_type))
 
     # which problem
