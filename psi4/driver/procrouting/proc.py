@@ -2224,6 +2224,12 @@ def run_scf(name, **kwargs):
     if "dft_functional" in kwargs:
         dft_func = True
 
+    # See if we're doing TDSCF after, keep JK if so 
+    do_tdscf = False
+    if sum(core.get_global_option("TDSCF_STATES_PER_IRREP")) > 0:
+        core.set_global_option("SAVE_JK", True)
+        do_tdscf = True
+
     optstash_scf = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
     # Alter default algorithm
@@ -2305,6 +2311,11 @@ def run_scf(name, **kwargs):
     # Shove variables into global space
     for k, v in scf_wfn.variables().items():
         core.set_variable(k, v)
+
+
+    # optionally get excited states
+    if do_tdscf:
+        run_tdscf_energy(name, ref_wfn=scf_wfn)
 
     optstash_scf.restore()
     optstash_mp2.restore()
@@ -2710,6 +2721,32 @@ def run_bccd(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
+def run_tdscf_energy(name, **kwargs):
+
+    # Get a wfn in case we aren't given one
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)
+
+    states = core.get_global_option("TDSCF_STATES_PER_IRREP")
+
+    # some sanity checks
+    if sum(states) == 0:
+        raise ValidationError("TDSCF: No states requested in TDSCF_STATES_PER_IRREP") 
+
+    if len(states) != ref_wfn.nirrep():
+        raise ValidationError("TDSCF: Requested TDSCF_STATES_PER_IRREP do not match wave function symmetry") 
+         
+
+    ret = response.scf_response.tdscf_excitations(ref_wfn, states_per_irrep = states,
+                                                  triplets = core.get_global_option("TDSCF_TRIPLETS"),
+                                                  tda = core.get_global_option("TDSCF_TDA"),
+                                                  e_tol = core.get_global_option("TDSCF_E_TOL"),
+                                                  r_tol = core.get_global_option("TDSCF_R_TOL"),
+                                                  guess = core.get_global_option("TDSCF_GUESS"))
+
+    return ret
+    
 
 def run_scf_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
