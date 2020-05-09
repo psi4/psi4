@@ -2315,8 +2315,14 @@ def run_scf(name, **kwargs):
 
     # optionally get excited states
     if do_tdscf:
-        run_tdscf_energy(name, ref_wfn=scf_wfn)
-
+        excited_states = run_tdscf_energy(name, ref_wfn=scf_wfn)
+    
+        # This way of storing energies and states seems ... not ideal
+        for n, ex_pair in enumerate(excited_states): 
+            ex_en, ex_state = ex_pair
+            scf_wfn.set_variable(f'STATE {n + 1} EXCITATION ENERGY', ex_en) 
+            scf_wfn.set_variable(f'STATE {n + 1} IRREP', ex_state) 
+            
     optstash_scf.restore()
     optstash_mp2.restore()
     return scf_wfn
