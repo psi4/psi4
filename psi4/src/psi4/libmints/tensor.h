@@ -40,6 +40,7 @@
 
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xio.hpp>
+#include <xtensor-io/xhighfive.hpp>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
@@ -446,6 +447,12 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
         std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
         printer->Printf(format(extra));
         printer->Printf("\n");
+    }
+
+    void dump_hdf5(const std::string& fname, const std::string& path) const {
+        for (auto h = 0; h < store_.size(); ++h) {
+            xt::dump_hdf5(fname, path + "/irrep_" + std::to_string(h), store_[h]);
+        }
     }
 
    protected:

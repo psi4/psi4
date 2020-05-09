@@ -31,6 +31,10 @@
 #include <memory>
 #include <vector>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include "psi4/psifiles.h"
 
 #include "basisset.h"
