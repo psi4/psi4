@@ -541,7 +541,7 @@ int CCEnergyWavefunction::rotate() {
         Fvv = (double ***)malloc(nirreps * sizeof(double **));
         X = block_matrix(nmo, nmo);
         for (int h = 0; h < nirreps; h++) {
-            /* leave the frozen core orbitals alone */
+            /* leave the frozen orbitals alone */
             for (int i = offset[h]; i < offset[h] + moinfo_.frdocc[h]; i++) X[i][i] = 1.0;
             for (int end = offset[h] + moinfo_.orbspi[h], start = end - moinfo_.fruocc[h],
                  i = start; i < end; i++)
@@ -648,7 +648,7 @@ int CCEnergyWavefunction::rotate() {
         Fvv = (double ***)malloc(nirreps * sizeof(double **));
         X = block_matrix(nmo, nmo);
         for (int h = 0; h < nirreps; h++) {
-            /* leave the frozen core orbitals alone */
+            /* leave the frozen orbitals alone */
             for (int i = offset[h]; i < offset[h] + moinfo_.frdocc[h]; i++) X[i][i] = 1.0;
             for (int end = offset[h] + moinfo_.orbspi[h], start = end - moinfo_.fruocc[h],
                  i = start; i < end; i++)
