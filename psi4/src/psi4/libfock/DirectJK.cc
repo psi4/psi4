@@ -63,6 +63,7 @@
 extern void checkBrian();
 extern BrianCookie brianCookie;
 extern bool brianCPHFFlag;
+extern brianInt brianRestrictionType;
 #endif
 
 using namespace psi;
@@ -112,6 +113,21 @@ void DirectJK::compute_JK() {
         brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
         
         if (not brianCPHFFlag) {
+            if (!lr_symmetric_) {
+                throw PSIEXCEPTION("Currently, BrianQC's non-CPHF Fock building only works with symmetric densities");
+            }
+            
+            // BrianQC only computes the sum of all Coulomb contributions.
+            // For ROHF, the matrices are not the alpha and beta densities, but
+            // the doubly and singly occupied densities, and the weight of
+            // the first Coulomb contribution must be two. Currently, we
+            // achieve this by scaling the doubly occupied density
+            // before building, and doing the reverse for the results.
+            // We also restore the original density in case it is still needed.
+            if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_ROHF) {
+                D_ao_[0]->scale(2.0);
+            }
+                
             brianSCFBuildFockRepulsion(&brianCookie,
                 &computeCoulomb,
                 &computeExchange,
@@ -123,11 +139,24 @@ void DirectJK::compute_JK() {
             );
             checkBrian();
             
-            // BrianQC only computes the total (alpha + beta) Coulomb matrix
+            // BrianQC computes the sum of all Coulomb contributions into
+            // J_ao_[0], so all other contributions must be zeroed out for
+            // the sum to be correct
             if (do_J_) {
-                J_ao_[0]->scale(0.5);
                 for (size_t ind = 1; ind < J_ao_.size(); ind++) {
-                    J_ao_[ind]->copy(J_ao_[0].get());
+                    J_ao_[ind]->zero();
+                }
+            }
+            
+            if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_ROHF) {
+                D_ao_[0]->scale(0.5);
+                
+                if (do_J_) {
+                    J_ao_[0]->scale(0.5);
+                }
+                
+                if (do_K_) {
+                    K_ao_[0]->scale(0.5);
                 }
             }
         } else {
