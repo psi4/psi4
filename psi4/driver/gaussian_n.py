@@ -30,6 +30,7 @@ from psi4 import core
 from psi4.driver import driver
 from psi4.driver import p4util
 from psi4.driver import constants
+from psi4.driver.p4util.exceptions import ValidationError
 # never import aliases into this file
 
 # Gn theory.

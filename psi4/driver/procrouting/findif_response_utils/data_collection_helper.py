@@ -92,7 +92,7 @@ def parse_geometry_matrix_data(outfile, matrix_name, row_tot):
             try:
                 n_tries += 1
                 if n_tries > (row_tot + 13):
-                    raise ParsingError('{} Matrix was unreadable. Scanned {}'
+                    raise p4util.ParsingError('{} Matrix was unreadable. Scanned {}'
                                     'lines.'.format(matrix_name, n_tries))
                 else:
                     (index, x, y, z) = line.split()

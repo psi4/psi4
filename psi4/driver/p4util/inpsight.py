@@ -388,11 +388,11 @@ class InPsight:
 
         phi = math.pi*(-self.azimuth)/180.0
         theta = math.pi*(90.0 - self.elevation)/180.0
-        delta = [Rmax*cos(phi)*sin(theta), Rmax*sin(phi)*sin(theta), Rmax*cos(theta)]
+        delta = [Rmax*math.cos(phi)*math.sin(theta), Rmax*math.sin(phi)*math.sin(theta), Rmax*math.cos(theta)]
         self.location = [xc[0] + delta[0], xc[1] + delta[1], xc[2] + delta[2]]
         phi = math.pi*(-(self.azimuth + 30.0))/180.0
         theta = math.pi*(90.0 - (self.elevation + 30.0))/180.0
-        delta = [Rmax*cos(phi)*sin(theta), Rmax*sin(phi)*sin(theta), Rmax*cos(theta)]
+        delta = [Rmax*math.cos(phi)*math.sin(theta), Rmax*math.sin(phi)*math.sin(theta), Rmax*math.cos(theta)]
         self.light = [xc[0] + delta[0], xc[1] + delta[1], xc[2] + delta[2]]
 
     def set_view(self,azimuth, elevation, zoom = 0.7):
@@ -530,7 +530,9 @@ class InPsight:
         if (filename != ''):
             self.defines['Filename'] = filename
 
-        grid = GridProp()
+        # grid = GridProp()
+        # GridProp seems to have been retired
+        grid = None
         grid.set_n(n[0],n[1],n[2])
         grid.set_caxis(caxis[0],caxis[1])
         grid.set_filename(self.defines['Filename'])

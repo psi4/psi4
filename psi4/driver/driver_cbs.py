@@ -1456,11 +1456,8 @@ def cbs(func, label, **kwargs):
                     (delta["treatment"], delta["wfn_lo"]))
 
     # Build string of title banner
-    cbsbanners = ''
-    cbsbanners += """core.print_out('\\n')\n"""
-    cbsbanners += """p4util.banner(' CBS Setup: %s ' % label)\n"""
-    cbsbanners += """core.print_out('\\n')\n\n"""
-    exec(cbsbanners)
+    instructions = "\n" + p4util.banner(f" CBS Setup{':' + label if label else ''} ", strNotOutfile=True) + "\n"
+    core.print_out(instructions)
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
     d_fields = [
@@ -1641,11 +1638,9 @@ def cbs(func, label, **kwargs):
     psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
 
     # Build string of title banner
-    cbsbanners = ''
-    cbsbanners += """core.print_out('\\n')\n"""
-    cbsbanners += """p4util.banner(' CBS Results: %s ' % label)\n"""
-    cbsbanners += """core.print_out('\\n')\n\n"""
-    exec(cbsbanners)
+    instructions = "\n" + p4util.banner(f" CBS Results{':' + label if label else ''} ", strNotOutfile=True) + "\n"
+    core.print_out(instructions)
+
 
     # Insert obtained energies into the array that stores the cbs stages
     for stage in GRAND_NEED:

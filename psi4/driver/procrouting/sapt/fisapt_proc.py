@@ -73,7 +73,8 @@ def fisapt_compute_energy(self):
     core.timer_off("FISAPT:SAPT:ind")
     if not core.get_option("FISAPT", "FISAPT_DO_FSAPT"):
         core.timer_on("FISAPT:SAPT:disp")
-        self.disp(matrices_, vectors_, true)  # Expensive, only do if needed
+        self.disp(self.matrices(), self.vectors(), True)  # Expensive, only do if needed  # unteseted translation of below
+        # self.disp(matrices_, vectors_, true)  # Expensive, only do if needed
         core.timer_off("FISAPT:SAPT:disp")
 
     # => F-SAPT0 <=
