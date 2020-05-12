@@ -1,6 +1,7 @@
 import pytest
 #from qcengine.programs.tests.standard_suite_contracts import (
 #    contractual_ccsd,
+#    contractual_ccsd_prt_pr,
 #    contractual_current,
 #    contractual_mp2,
 #    query_has_qcvar,
@@ -25,7 +26,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # ? precedence on next two
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
-    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type}
+    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type}
     corl_type = corl_natural_values[method]
 
     natural_ref = {"conv": "pk", "df": "df", "cd": "cd"}
@@ -106,6 +107,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
         elif method == "ccsd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_ccsd)
+        elif method == "ccsd(t)":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_ccsd)
+            _asserter(asserter_args, contractual_args, contractual_ccsd_prt_pr)
 
     if "wrong" in inp:
         errmsg, reason = inp["wrong"]
@@ -122,7 +127,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
     _asserter(asserter_args, contractual_args, contractual_current)
 
     # returns
-    assert compare_values(ref_block[f"{method.upper()} TOTAL ENERGY"], wfn.energy(), tnm + " wfn", atol=atol)
+    tf, errmsg = compare_values(ref_block[f"{method.upper()} TOTAL ENERGY"], wfn.energy(), tnm + " wfn", atol=atol, return_message=True, quiet=True)
+    assert compare_values(ref_block[f"{method.upper()} TOTAL ENERGY"], wfn.energy(), tnm + " wfn", atol=atol), errmsg
 
     if driver == "energy":
         assert compare_values(ref_block[f"{method.upper()} TOTAL ENERGY"], ret, tnm + " return")

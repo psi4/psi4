@@ -101,6 +101,7 @@ struct MOInfo {
     double emp2;       /* MP2 energy */
     double emp2_ss;    /* Same-spin MP2 correlation energy*/
     double emp2_os;    /* Opposite-spin MP2 correlation energy*/
+    double emp2_s;     /* Singles MP2 correlation energy*/
     double escf;       /* SCF energy (from wfn) */
     double eref;       /* Reference energy (file100) */
     double ecc;        /* Current coupled cluster correlation energy */

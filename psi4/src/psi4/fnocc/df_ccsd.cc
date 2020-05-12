@@ -241,6 +241,7 @@ double DFCoupledCluster::compute_energy() {
         set_scalar_variable("(T) CORRECTION ENERGY", et);
         set_scalar_variable("CCSD(T) CORRELATION ENERGY", eccsd + et);
         set_scalar_variable("CCSD(T) TOTAL ENERGY", eccsd + et + escf);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", eccsd + et);
         set_scalar_variable("CURRENT ENERGY", eccsd + et + escf);
     } else {
         free(Qoo);

@@ -130,8 +130,7 @@ double CCEnergyWavefunction::rohf_energy() {
     outfile->Printf( "Two AB Energy = %20.14f\n", tauIjAb_energy);
     */
 
-    // Store the same-spin and opposite-spin pair energies
-    // (not including singles here)
+    // Store the same-spin and opposite-spin pair and (c. May 2020) singles energies
     moinfo_.ecc_ss = tauIJAB_energy + tauijab_energy;
     moinfo_.ecc_os = tauIjAb_energy;
     moinfo_.ecc_s = tIA_energy + tia_energy;
@@ -189,8 +188,7 @@ double CCEnergyWavefunction::uhf_energy() {
     outfile->Printf("    Same-spin energy  = %20.15f\n",E2AA+E2BB);
     */
 
-    // Store the same-spin and opposite-spin pair energies
-    // (not including singles here)
+    // Store the same-spin and opposite-spin pair and (c. May 2020) singles energies
     moinfo_.ecc_ss = E2AA + E2BB;
     moinfo_.ecc_os = E2AB;
     moinfo_.ecc_s = T1A + T1B;

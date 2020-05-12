@@ -97,6 +97,7 @@ double CCEnergyWavefunction::rhf_mp2_energy() {
 
     moinfo_.emp2_ss = ss_energy;
     moinfo_.emp2_os = os_energy;
+    moinfo_.emp2_s = T1_energy;
 
     global_dpd_->buf4_close(&T2);
     global_dpd_->buf4_close(&D);
@@ -189,6 +190,7 @@ double CCEnergyWavefunction::uhf_mp2_energy() {
     // opposite-spin pair energy (singles not included)
     moinfo_.emp2_ss = E2AA + E2BB;
     moinfo_.emp2_os = E2AB;
+    moinfo_.emp2_s = T1A + T1B;
 
     return (T1A + T1B + E2AA + E2BB + E2AB);
 }

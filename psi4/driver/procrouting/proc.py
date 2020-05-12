@@ -1253,7 +1253,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
     scf_molecule = kwargs.get('molecule', core.get_active_molecule())
-    read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
+    read_orbitals = core.get_option('SCF', 'GUESS') == "READ"
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
     if ref_wfn is not None:
@@ -1858,7 +1858,7 @@ def run_dfocc_gradient(name, **kwargs):
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2']:
+    if name in ['mp2', 'omp2', 'ccsd']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
 
@@ -2630,6 +2630,9 @@ def run_ccenergy_gradient(name, **kwargs):
     del derivobj
 
     ccwfn.set_gradient(grad)
+    ccwfn.set_variable(f"{name.upper()} TOTAL GRADIENT", grad)
+    core.set_variable(f"{name.upper()} TOTAL GRADIENT", grad)
+    core.set_variable("CURRENT GRADIENT", grad)
 
     optstash.restore()
     return ccwfn

@@ -39,13 +39,15 @@ _p12 = (psi4.ValidationError, "gradients need conventional SCF reference.")
 _p13 = (psi4.ManagedMethodError, "not directable to QC_MODULE 'FNOCC'")
 _p14 = (psi4.ManagedMethodError, "not directable to QC_MODULE 'OCC'")
 _p15 = (psi4.ValidationError, "Invalid scf_type for DFCC.")
+_p16 = (psi4.ValidationError, "Frozen core is not available for the CC gradients.")
 # yapf: enable
 
 _nyi1 = "fc conv mp2 gradients NYI"
 _nyi2 = "rohf mp2 gradients NYI"
 _nyi3 = "cd mp2 gradients NYI"
 _nyi4 = "spin components rhf mp2 energies NYI"
-
+_nyi5 = "df/cd open-shell ccsd energies NYI"
+_nyi6 = "rohf ccsd energies mp2 submethod NYI"
 
 # http://patorjk.com/software/taag/#p=display&c=bash&f=Soft&t=MP3
 
@@ -59,7 +61,7 @@ _nyi4 = "spin components rhf mp2 energies NYI"
 #                                                               `---' `---'
 
 
-@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
 )
@@ -119,7 +121,7 @@ def test_mp2_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, requ
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
     [
@@ -226,7 +228,7 @@ def test_mp2_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
 )
@@ -237,34 +239,34 @@ def test_mp2_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
         ######## Does the simple interface (default qc_module, scf_type, mp2_type) work?
 
         ###### default qc_module
-        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv",                     "freeze_core": "true",                     },}, id="mp2  rhf    conv fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "conv",                     "freeze_core": "true",                     },}, id="mp2  uhf    conv fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "conv",                     "freeze_core": "true",                     },}, id="mp2 rohf    conv fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv",                     "freeze_core": "false",                    },}, id="mp2  rhf    conv ae: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "conv",                     "freeze_core": "false",                    },}, id="mp2  uhf    conv ae: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "conv",                     "freeze_core": "false",                    },}, id="mp2 rohf    conv ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv",                     "freeze_core": "true",                     },               }, id="mp2  rhf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "conv",                     "freeze_core": "true",                     },               }, id="mp2  uhf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "conv",                     "freeze_core": "true",                     },               }, id="mp2 rohf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv",                     "freeze_core": "false",                    },               }, id="mp2  rhf    conv ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "conv",                     "freeze_core": "false",                    },               }, id="mp2  uhf    conv ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "conv",                     "freeze_core": "false",                    },               }, id="mp2 rohf    conv ae: dd     ",),
         ####
-        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",                       "freeze_core": "true",                     },}, id="mp2  rhf    df   fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",                       "freeze_core": "true",                     },}, id="mp2  uhf    df   fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",                       "freeze_core": "true",                     },}, id="mp2 rohf    df   fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",                       "freeze_core": "false",                    },}, id="mp2  rhf    df   ae: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",                       "freeze_core": "false",                    },}, id="mp2  uhf    df   ae: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",                       "freeze_core": "false",                    },}, id="mp2 rohf    df   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",                       "freeze_core": "true",                     },               }, id="mp2  rhf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",                       "freeze_core": "true",                     },               }, id="mp2  uhf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",                       "freeze_core": "true",                     },               }, id="mp2 rohf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",                       "freeze_core": "false",                    },               }, id="mp2  rhf    df   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",                       "freeze_core": "false",                    },               }, id="mp2  uhf    df   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",                       "freeze_core": "false",                    },               }, id="mp2 rohf    df   ae: dd     ",),
         ####
-        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "cd",                       "freeze_core": "true",                     },}, id="mp2  rhf    cd   fc: dd     ", marks=pytest.mark.xfail(reason="no spin for rhf dfocc")),
-        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "cd",                       "freeze_core": "true",                     },}, id="mp2  uhf    cd   fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "cd",                       "freeze_core": "true",                     },}, id="mp2 rohf    cd   fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "cd",                       "freeze_core": "false",                    },}, id="mp2  rhf    cd   ae: dd     ", marks=pytest.mark.xfail(reason="no spin for rhf dfocc")),
-        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "cd",                       "freeze_core": "false",                    },}, id="mp2  uhf    cd   ae: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "cd",                       "freeze_core": "false",                    },}, id="mp2 rohf    cd   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "cd",                       "freeze_core": "true",                     }, "marks": _nyi4}, id="mp2  rhf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "cd",                       "freeze_core": "true",                     },               }, id="mp2  uhf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "cd",                       "freeze_core": "true",                     },               }, id="mp2 rohf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "cd",                       "freeze_core": "false",                    }, "marks": _nyi4}, id="mp2  rhf    cd   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "cd",                       "freeze_core": "false",                    },               }, id="mp2  uhf    cd   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "cd",                       "freeze_core": "false",                    },               }, id="mp2 rohf    cd   ae: dd     ",),
 
         ###### default qc_module, mp2_type
-        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "true",                     },}, id="mp2  rhf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "true",                     },}, id="mp2  uhf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "true",                     },}, id="mp2 rohf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "false",                    },}, id="mp2  rhf         ae: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "false",                    },}, id="mp2  uhf         ae: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "false",                    },}, id="mp2 rohf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "true",                     },               }, id="mp2  rhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "true",                     },               }, id="mp2  uhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "true",                     },               }, id="mp2 rohf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "false",                    },               }, id="mp2  rhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "false",                    },               }, id="mp2  uhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "false",                    },               }, id="mp2 rohf         ae: dd     ",),
         # yapf: enable
     ],
 )
@@ -274,6 +276,8 @@ def test_mp2_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
     subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
 
     inpcopy = {k: v for k, v in inp.items()}
+    if inp.get("marks", False):
+        pytest.xfail(inp["marks"])
     inpcopy["driver"] = "energy"
     inpcopy["call"] = method
     inpcopy["keywords"]["basis"] = basis
@@ -290,7 +294,7 @@ def test_mp2_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
 #
 
 
-@pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
+@pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
 )
@@ -345,7 +349,7 @@ def test_mp2_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
+@pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
     [
@@ -412,7 +416,7 @@ def test_mp2_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.parametrize("dertype", [1, pytest.param(0, marks=pytest.mark.long),], ids=["grd1", "grd0"])
+@pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
 )
@@ -482,7 +486,7 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 #                                                                      `---' `---'
 
 
-@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
 )
@@ -498,6 +502,8 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
         # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "mem_df", },               }, id="ccsd  rhf  mem/conv rr ccenergy",),
         # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "disk_df",},               }, id="ccsd  rhf disk/conv rr ccenergy",),
         # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "cd",     },               }, id="ccsd  rhf   cd/conv rr ccenergy",),
+
+        # TODO reconcile dispute over whether df+conv ccsd directive returns df+conv energy (fnocc) or conv+conv energy (ccenergy)
 
         pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "pk",     },               }, id="ccsd  rhf   pk/conv rr fnocc   ",),
         pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "direct", },               }, id="ccsd  rhf drct/conv rr fnocc   ",),
@@ -534,7 +540,8 @@ def test_ccsd_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, req
 
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
-@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
     [
@@ -607,7 +614,7 @@ def test_ccsd_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, requ
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.parametrize("dertype", [0,], ids=["ene0"])
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
 )
@@ -618,34 +625,34 @@ def test_ccsd_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, requ
         ######## Does the simple interface (default qc_module, scf_type, cc_type) work?
 
         ###### default qc_module
-        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "true",                     },}, id="ccsd  rhf    conv fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "true",                     },}, id="ccsd  uhf    conv fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "true",                     },}, id="ccsd rohf    conv fc: dd     ", marks=pytest.mark.xfail(reason="no mp2 for rohf")),
-        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "false",                    },}, id="ccsd  rhf    conv ae: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "false",                    },}, id="ccsd  uhf    conv ae: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "false",                    },}, id="ccsd rohf    conv ae: dd     ", marks=pytest.mark.xfail(reason="no mp2 for rohf")),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "true",                     },                }, id="ccsd  rhf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "true",                     },                }, id="ccsd  uhf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "true",                     }, "marks": _nyi6,}, id="ccsd rohf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                }, id="ccsd  rhf    conv ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                }, id="ccsd  uhf    conv ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "false",                    }, "marks": _nyi6,}, id="ccsd rohf    conv ae: dd     ",),
         ####
-        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "true",                     },}, id="ccsd  rhf    df   fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "true",                     },}, id="ccsd  uhf    df   fc: dd     ", marks=pytest.mark.xfail(reason="no open-shell df")),
-        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "true",                     },}, id="ccsd rohf    df   fc: dd     ", marks=pytest.mark.xfail(reason="no open-shell df")),
-        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "false",                    },}, id="ccsd  rhf    df   ae: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "false",                    },}, id="ccsd  uhf    df   ae: dd     ", marks=pytest.mark.xfail(reason="no open-shell df")),
-        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "false",                    },}, id="ccsd rohf    df   ae: dd     ", marks=pytest.mark.xfail(reason="no open-shell df")),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "true",                     },                }, id="ccsd  rhf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd  uhf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd rohf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "false",                    },                }, id="ccsd  rhf    df   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd  uhf    df   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd rohf    df   ae: dd     ",),
         ####
-        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "true",                     },}, id="ccsd  rhf    cd   fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "true",                     },}, id="ccsd  uhf    cd   fc: dd     ", marks=pytest.mark.xfail(reason="no open-shell cd")),
-        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "true",                     },}, id="ccsd rohf    cd   fc: dd     ", marks=pytest.mark.xfail(reason="no open-shell cd")),
-        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "false",                    },}, id="ccsd  rhf    cd   ae: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "false",                    },}, id="ccsd  uhf    cd   ae: dd     ", marks=pytest.mark.xfail(reason="no open-shell cd")),
-        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "false",                    },}, id="ccsd rohf    cd   ae: dd     ", marks=pytest.mark.xfail(reason="no open-shell cd")),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "true",                     },                }, id="ccsd  rhf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd  uhf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd rohf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "false",                    },                }, id="ccsd  rhf    cd   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd  uhf    cd   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd rohf    cd   ae: dd     ",),
 
         ###### default qc_module, cc_type
-        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "true",                     },}, id="ccsd  rhf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "true",                     },}, id="ccsd  uhf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "true",                     },}, id="ccsd rohf         fc: dd     ", marks=pytest.mark.xfail(reason="no mp2 for rohf")),
-        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "false",                    },}, id="ccsd  rhf         ae: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "false",                    },}, id="ccsd  uhf         ae: dd     ",),
-        pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "false",                    },}, id="ccsd rohf         ae: dd     ", marks=pytest.mark.xfail(reason="no mp2 for rohf")),
+        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "true",                     },                }, id="ccsd  rhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "true",                     },                }, id="ccsd  uhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "true",                     }, "marks": _nyi6,}, id="ccsd rohf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "false",                    },                }, id="ccsd  rhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "false",                    },                }, id="ccsd  uhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "false",                    }, "marks": _nyi6,}, id="ccsd rohf         ae: dd     ",),
         # yapf: enable
     ],
 )
@@ -655,8 +662,262 @@ def test_ccsd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
     subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
 
     inpcopy = {k: v for k, v in inp.items()}
+    if inp.get("marks", False):
+        pytest.xfail(inp["marks"])
     inpcopy["driver"] = "energy"
     inpcopy["call"] = method
     inpcopy["keywords"]["basis"] = basis
 
     runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+#
+#   ,-----. ,-----. ,---.  ,------.       ,----.                     ,--.,--.                 ,--.
+#  '  .--./'  .--./'   .-' |  .-.  \     '  .-./   ,--.--. ,--,--. ,-|  |`--' ,---. ,--,--, ,-'  '-.
+#  |  |    |  |    `.  `-. |  |  \  :    |  | .---.|  .--'' ,-.  |' .-. |,--.| .-. :|      \'-.  .-'
+#  '  '--'\'  '--'\.-'    ||  '--'  /    '  '--'  ||  |   \ '-'  |\ `-' ||  |\   --.|  ||  |  |  |
+#   `-----' `-----'`-----' `-------'      `------' `--'    `--`--' `---' `--' `----'`--''--'  `--'
+#
+
+
+@pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
+@pytest.mark.parametrize(
+    "basis, subjects",
+    [
+        pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
+        pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
+        pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+    ],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+        # * no mixed-type gradients available (like pk+df) so no grad tests
+
+        ###### ccenergy
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true", }, "error": {1: _p16},}, id="ccsd  rhf  conv fc: * ccenergy",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true", }, "error": {1: _p16},}, id="ccsd  uhf  conv fc: * ccenergy",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true", }, "error": {1: _p16},}, id="ccsd rohf  conv fc: * ccenergy",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",},                    }, id="ccsd  rhf  conv ae: * ccenergy",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",},                    }, id="ccsd  uhf  conv ae: * ccenergy",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",},                    }, id="ccsd rohf  conv ae: * ccenergy",),
+
+        ###### dfocc
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "true", },                    }, id="ccsd  rhf    df fc: * occ     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false",},                    }, id="ccsd  rhf    df ae: * occ     ",),
+        # yapf: enable
+    ],
+)
+def test_ccsd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    method = "ccsd"
+    tnm = request.node.name
+    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        pytest.xfail(inp["marks"][dertype])
+
+    inpcopy["driver"] = "gradient"
+    inpcopy["call"] = method
+    inpcopy["keywords"]["basis"] = basis
+    inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
+
+    runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+#
+#   ,-----. ,-----. ,---.  ,------.    ,-.,--------.,-.      ,------.
+#  '  .--./'  .--./'   .-' |  .-.  \  / .''--.  .--''. \     |  .---',--,--,  ,---. ,--.--. ,---.,--. ,--.
+#  |  |    |  |    `.  `-. |  |  \  :|  |    |  |    |  |    |  `--, |      \| .-. :|  .--'| .-. |\  '  /
+#  '  '--'\'  '--'\.-'    ||  '--'  /|  |    |  |    |  |    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
+#   `-----' `-----'`-----' `-------'  \ '.   `--'   .' /     `------'`--''--' `----'`--'   .`-  /.-'  /
+#                                      `-'          `-'                                    `---' `---'
+
+
+#@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
+#@pytest.mark.parametrize(
+#    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+#)
+#@pytest.mark.parametrize(
+#    "inp",
+#    [
+#        # yapf: disable
+#        ######## Are scf_types managed properly by proc.py? Generally skip corl_type=cd, so df & conv only.
+#
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "pk",     },               }, id="ccsd_t_  rhf   pk/conv rr ccenergy",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "direct", },               }, id="ccsd_t_  rhf drct/conv rr ccenergy",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "df",     },               }, id="ccsd_t_  rhf   df/conv rr ccenergy",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "mem_df", },               }, id="ccsd_t_  rhf  mem/conv rr ccenergy",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "disk_df",},               }, id="ccsd_t_  rhf disk/conv rr ccenergy",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false", "scf_type": "cd",     },               }, id="ccsd_t_  rhf   cd/conv rr ccenergy",),
+#
+#        # TODO reconcile dispute over whether df+conv ccsd_t_ directive returns df+conv energy (fnocc) or conv+conv energy (ccenergy)
+#
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "pk",     },               }, id="ccsd_t_  rhf   pk/conv rr fnocc   ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "direct", },               }, id="ccsd_t_  rhf drct/conv rr fnocc   ",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "df",     },               }, id="ccsd_t_  rhf   df/conv rr fnocc   ",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "mem_df", },               }, id="ccsd_t_  rhf  mem/conv rr fnocc   ",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "disk_df",},               }, id="ccsd_t_  rhf disk/conv rr fnocc   ",),
+#        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "cd",     },               }, id="ccsd_t_  rhf   cd/conv rr fnocc   ",),
+#
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "pk",     }, "error": _p15,}, id="ccsd_t_  rhf   pk/df   rr fnocc   ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "direct", }, "error": _p15,}, id="ccsd_t_  rhf drct/df   rr fnocc   ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "df",     },               }, id="ccsd_t_  rhf   df/df   rr fnocc   ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "mem_df", }, "error": _p1, }, id="ccsd_t_  rhf  mem/df   rr fnocc   ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "disk_df",},               }, id="ccsd_t_  rhf disk/df   rr fnocc   ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "cd",     },               }, id="ccsd_t_  rhf   cd/df   rr fnocc   ",),
+#
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "pk",     },               }, id="ccsd_t_  rhf   pk/df   rr occ     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "direct", },               }, id="ccsd_t_  rhf drct/df   rr occ     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "df",     },               }, id="ccsd_t_  rhf   df/df   rr occ     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "mem_df", }, "error": _p1, }, id="ccsd_t_  rhf  mem/df   rr occ     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "disk_df",},               }, id="ccsd_t_  rhf disk/df   rr occ     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "cd",     },               }, id="ccsd_t_  rhf   cd/df   rr occ     ",),
+#        # yapf: enable
+#    ],
+#)
+#def test_ccsd_prt_pr_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, request):
+#    method = "ccsd(t)"
+#    tnm = request.node.name
+#    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+#
+#    inpcopy = {k: v for k, v in inp.items()}
+#    inpcopy["driver"] = "energy"
+#    inpcopy["call"] = method
+#    inpcopy["keywords"]["basis"] = basis
+#
+#    runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
+@pytest.mark.parametrize(
+    "basis, subjects",
+    [
+        pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
+        pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
+        pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+    ],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+
+        ###### ccenergy
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true",                   },               }, id="ccsd_t_  rhf  conv fc: * ccenergy",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true",                   },               }, id="ccsd_t_  uhf  conv fc: * ccenergy",),
+        # off from c4 by e-5/e-6 pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "true",                   },               }, id="ccsd_t_ rohf  conv fc: * ccenergy",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",                  },               }, id="ccsd_t_  rhf  conv ae: * ccenergy",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",                  },               }, id="ccsd_t_  uhf  conv ae: * ccenergy",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv", "qc_module": "ccenergy", "freeze_core": "false",                  },               }, id="ccsd_t_ rohf  conv ae: * ccenergy",),
+
+        ###### fnocc
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "true",                   },               }, id="ccsd_t_  rhf  conv fc:   fnocc   ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "fnocc",    "freeze_core": "false",                  },               }, id="ccsd_t_  rhf  conv ae:   fnocc   ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "true",                   },               }, id="ccsd_t_  rhf    df fc: * fnocc   ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false",                  },               }, id="ccsd_t_  rhf    df ae: * fnocc   ",),
+        ##
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "true",  "scf_type": "pk",}, "error": _p15,}, id="ccsd_t_  rhf pk/df fc:   fnocc   ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "pk",}, "error": _p15,}, id="ccsd_t_  rhf pk/df ae:   fnocc   ",),
+        ##
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "true",  "scf_type": "cd",},               }, id="ccsd_t_  rhf cd/df fc:   fnocc   ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "cd",},               }, id="ccsd_t_  rhf cd/df ae:   fnocc   ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "fnocc",    "freeze_core": "true",                   },               }, id="ccsd_t_  rhf    cd fc: * fnocc   ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "fnocc",    "freeze_core": "false",                  },               }, id="ccsd_t_  rhf    cd ae: * fnocc   ",),
+        ##
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "fnocc",    "freeze_core": "true",  "scf_type": "pk",}, "error": _p15,}, id="ccsd_t_  rhf pk/cd fc:   fnocc   ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "fnocc",    "freeze_core": "false", "scf_type": "pk",}, "error": _p15,}, id="ccsd_t_  rhf pk/cd ae:   fnocc   ",),
+
+        ###### dfocc
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "true",                   },               }, id="ccsd_t_  rhf    df fc:   occ     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false",                  },               }, id="ccsd_t_  rhf    df ae:   occ     ",),
+        ##
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "true",  "scf_type": "pk",},               }, id="ccsd_t_  rhf pk/df fc:   occ     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "pk",},               }, id="ccsd_t_  rhf pk/df ae:   occ     ",),
+        ##
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "true",  "scf_type": "cd",},               }, id="ccsd_t_  rhf cd/df fc:   occ     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "cd",},               }, id="ccsd_t_  rhf cd/df ae:   occ     ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "occ",      "freeze_core": "true",                   },               }, id="ccsd_t_  rhf    cd fc:   occ     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "occ",      "freeze_core": "false",                  },               }, id="ccsd_t_  rhf    cd ae:   occ     ",),
+        ##
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "occ",      "freeze_core": "true",  "scf_type": "pk",},               }, id="ccsd_t_  rhf pk/cd fc:   occ     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",   "qc_module": "occ",      "freeze_core": "false", "scf_type": "pk",},               }, id="ccsd_t_  rhf pk/cd ae:   occ     ",),
+        # yapf: enable
+    ],
+)
+def test_ccsd_prt_pr_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    method = "ccsd(t)"
+    tnm = request.node.name
+    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+
+    inpcopy = {k: v for k, v in inp.items()}
+    inpcopy["driver"] = "energy"
+    inpcopy["call"] = method
+    inpcopy["keywords"]["basis"] = basis
+
+    runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+#@pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
+#@pytest.mark.parametrize(
+#    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+#)
+#@pytest.mark.parametrize(
+#    "inp",
+#    [
+#        # yapf: disable
+#        ######## Does the simple interface (default qc_module, scf_type, cc_type) work?
+#
+#        ###### default qc_module
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "true",                     },                }, id="ccsd_t_  rhf    conv fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "true",                     },                }, id="ccsd_t_  uhf    conv fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "true",                     }, "marks": _nyi6,}, id="ccsd_t_ rohf    conv fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                }, id="ccsd_t_  rhf    conv ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                }, id="ccsd_t_  uhf    conv ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "false",                    }, "marks": _nyi6,}, id="ccsd_t_ rohf    conv ae: dd     ",),
+#        ####
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "true",                     },                }, id="ccsd_t_  rhf    df   fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd_t_  uhf    df   fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd_t_ rohf    df   fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "false",                    },                }, id="ccsd_t_  rhf    df   ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd_t_  uhf    df   ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd_t_ rohf    df   ae: dd     ",),
+#        ####
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "true",                     },                }, id="ccsd_t_  rhf    cd   fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd_t_  uhf    cd   fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "true",                     }, "marks": _nyi5,}, id="ccsd_t_ rohf    cd   fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "false",                    },                }, id="ccsd_t_  rhf    cd   ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd_t_  uhf    cd   ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "false",                    }, "marks": _nyi5,}, id="ccsd_t_ rohf    cd   ae: dd     ",),
+#
+#        ###### default qc_module, cc_type
+#        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "true",                     },                }, id="ccsd_t_  rhf         fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "true",                     },                }, id="ccsd_t_  uhf         fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "true",                     }, "marks": _nyi6,}, id="ccsd_t_ rohf         fc: dd     ",),
+#        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "false",                    },                }, id="ccsd_t_  rhf         ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "false",                    },                }, id="ccsd_t_  uhf         ae: dd     ",),
+#        pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "false",                    }, "marks": _nyi6,}, id="ccsd_t_ rohf         ae: dd     ",),
+#        # yapf: enable
+#    ],
+#)
+#def test_ccsd_prt_pr_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, request):
+#    method = "ccsd(t)"
+#    tnm = request.node.name
+#    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+#
+#    inpcopy = {k: v for k, v in inp.items()}
+#    if inp.get("marks", False):
+#        pytest.xfail(inp["marks"])
+#    inpcopy["driver"] = "energy"
+#    inpcopy["call"] = method
+#    inpcopy["keywords"]["basis"] = basis
+#
+#    runner_asserter(inpcopy, subject, method, basis, tnm)
