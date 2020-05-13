@@ -108,9 +108,14 @@ void DirectJK::preiterations() {
 void DirectJK::compute_JK() {
 #ifdef USING_BrianQC
     if (brianCookie != 0) {
-        // TODO: handle do_wK_
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
-        brianBool computeExchange = (do_K_ ? BRIAN_TRUE : BRIAN_FALSE);
+        brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
+        
+        const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+        bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
+        if (do_wK_ and not brianPsi4DFT) {
+            throw PSIEXCEPTION("Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
+        }
         
         if (not brianCPHFFlag) {
             if (!lr_symmetric_) {
@@ -127,6 +132,16 @@ void DirectJK::compute_JK() {
             if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_ROHF) {
                 D_ao_[0]->scale(2.0);
             }
+            
+            double* exchangeAlpha = nullptr;
+            double* exchangeBeta = nullptr;
+            if (do_K_) {
+                exchangeAlpha = K_ao_[0]->get_pointer();
+                exchangeBeta = (D_ao_.size() > 1) ? K_ao_[1]->get_pointer() : nullptr;
+            } else if (do_wK_) {
+                exchangeAlpha = wK_ao_[0]->get_pointer();
+                exchangeBeta = (D_ao_.size() > 1) ? wK_ao_[1]->get_pointer() : nullptr;
+            }
                 
             brianSCFBuildFockRepulsion(&brianCookie,
                 &computeCoulomb,
@@ -134,8 +149,8 @@ void DirectJK::compute_JK() {
                 D_ao_[0]->get_pointer(0),
                 (D_ao_.size() > 1 ? D_ao_[1]->get_pointer() : nullptr),
                 (do_J_ ? J_ao_[0]->get_pointer() : nullptr),
-                (do_K_ ? K_ao_[0]->get_pointer() : nullptr),
-                ((D_ao_.size() > 1 && do_K_) ? K_ao_[1]->get_pointer() : nullptr)
+                exchangeAlpha,
+                exchangeBeta
             );
             checkBrian();
             
@@ -164,6 +179,10 @@ void DirectJK::compute_JK() {
                 if (do_K_) {
                     K_ao_[0]->scale(0.5);
                 }
+                
+                if (do_wK_) {
+                    wK_ao_[0]->scale(0.5);
+                }
             }
         } else {
             // WARNING: the current implementation only works with RHF
@@ -174,9 +193,9 @@ void DirectJK::compute_JK() {
                 brianInt segmentSize = std::min(maxSegmentSize, (brianInt)D_ao_.size() - segmentStartIndex);
                 
                 std::vector<std::shared_ptr<Matrix>> Dsymm(segmentSize);
-                std::vector<const double*> pseudoDensityAlphas(segmentSize);
-                std::vector<double*> pseudoCoulombTotals(segmentSize);
-                std::vector<double*> pseudoExchangeAlphas(segmentSize);
+                std::vector<const double*> pseudoDensityAlphas(segmentSize, nullptr);
+                std::vector<double*> pseudoCoulombTotals(segmentSize, nullptr);
+                std::vector<double*> pseudoExchangeAlphas(segmentSize, nullptr);
                 for (brianInt i = 0; i < segmentSize; i++) {
                     Dsymm[i] = D_ao_[i + segmentStartIndex]->clone();
                     Dsymm[i]->add(D_ao_[i + segmentStartIndex]->transpose());
@@ -189,6 +208,8 @@ void DirectJK::compute_JK() {
                     
                     if (do_K_) {
                         pseudoExchangeAlphas[i] = K_ao_[i + segmentStartIndex]->get_pointer();
+                    } else if (do_wK_) {
+                        pseudoExchangeAlphas[i] = wK_ao_[i + segmentStartIndex]->get_pointer();
                     }
                 }
                 
