@@ -141,8 +141,14 @@ void DirectJK::compute_JK() {
             
             // BrianQC computes the sum of all Coulomb contributions into
             // J_ao_[0], so all other contributions must be zeroed out for
-            // the sum to be correct
+            // the sum to be correct. For RHF/RKS, Psi4 expects J_ao_[0]
+            // to contain the alpha contribution instead of the total, so
+            // we halve it.
             if (do_J_) {
+                if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) {
+                    J_ao_[0]->scale(0.5);
+                }
+                
                 for (size_t ind = 1; ind < J_ao_.size(); ind++) {
                     J_ao_[ind]->zero();
                 }
