@@ -198,7 +198,7 @@ if args['plugin_name']:
         args['plugin_template'] = 'basic'
 
     # This call does not return.
-    psi4.plugin.create_plugin(args['plugin_name'], args['plugin_template'])
+    psi4.pluginutil.create_plugin(args['plugin_name'], args['plugin_template'])
 
     sys.exit()
 

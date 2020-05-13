@@ -238,7 +238,7 @@ def _check_degen_modes(arr, freq, verbose=1):
 
     """
     arr2 = np.zeros_like(arr)
-    dfreq, didx, dinv, dcts = np.unique(np.around(freq, 2), return_index=True, return_inverse=True, return_counts=True)
+    dfreq, didx, dinv, dcts = np.unique(np.around(freq, 1), return_index=True, return_inverse=True, return_counts=True)
 
     # judging degen normco to only 2 decimals is probably sign need to resolve evec
     idx_max_elem_each_normco = np.argmax(np.around(arr, 2), axis=0)
@@ -472,7 +472,7 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, dipder=None, pro
     vibinfo['omega'] = Datum('frequency', 'cm^-1', frequency_cm_1)
 
     # degeneracies
-    ufreq, uinv, ucts = np.unique(np.around(frequency_cm_1, 2), return_inverse=True, return_counts=True)
+    ufreq, uinv, ucts = np.unique(np.around(frequency_cm_1, 1), return_inverse=True, return_counts=True)
     vibinfo['degeneracy'] = Datum('degeneracy', '', ucts[uinv])
 
     # look among the symmetry subspaces h for one to which the normco
