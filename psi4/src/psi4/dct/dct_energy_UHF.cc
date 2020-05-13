@@ -156,51 +156,5 @@ void DCTSolver::compute_dct_energy() {
     dct_timer_off("DCTSolver::compute_dct_energy()");
 }
 
-void DCTSolver::compute_cepa0_energy() {
-    dct_timer_on("DCTSolver::compute_dct_energy()");
-
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-    /*
-     * Compute the CEPA-0 correlation energy
-     * E = 1/4 L_IJAB <IJ||AB>
-     *        +L_IjAb <Ij|Ab>
-     *    +1/4 L_ijab <ij||ab>
-     */
-    dpdbuf4 I, L;
-    // Alpha - Alpha
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
-                           "MO Ints <OO|VV>");
-    global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
-    double eAA = 0.25 * global_dpd_->buf4_dot(&L, &I);
-    global_dpd_->buf4_close(&I);
-    global_dpd_->buf4_close(&L);
-
-    // Alpha - Beta
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "MO Ints <Oo|Vv>");
-    global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
-    double eAB = global_dpd_->buf4_dot(&L, &I);
-    global_dpd_->buf4_close(&I);
-    global_dpd_->buf4_close(&L);
-
-    // Beta - Beta
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 1,
-                           "MO Ints <oo|vv>");
-    global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
-    double eBB = 0.25 * global_dpd_->buf4_dot(&L, &I);
-    global_dpd_->buf4_close(&I);
-    global_dpd_->buf4_close(&L);
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
-
-    lambda_energy_ = eAA + eAB + eBB;
-
-    dct_timer_off("DCTSolver::compute_dct_energy()");
-}
-
 }  // namespace dct
 }  // namespace psi

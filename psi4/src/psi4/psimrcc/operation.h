@@ -54,7 +54,6 @@ class CCOperation {
     void print();
     void print_operation();
     void compute();
-    static void print_timing();
 
    private:
     //            Variable        Syntax (p,q,r,s=integers)

@@ -34,7 +34,7 @@
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"
-#include "debugging.h"
+#include "updater.h"
 
 namespace psi {
 namespace psimrcc {
@@ -60,10 +60,6 @@ CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options) : CCManyBody(ref_wf
         }
     }
 
-    // Parse the PERT_CBS parameter
-    pert_cbs = options.get_bool("PERTURB_CBS");
-    pert_cbs_coupling = options.get_bool("PERTURB_CBS_COUPLING");
-
     // Add the matrices that will store the intermediates
     add_matrices();
 
@@ -75,7 +71,10 @@ CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options) : CCManyBody(ref_wf
 
     compute_reference_energy();
 
-    DEBUGGING(1, blas->print_memory();)
+    // Initialize the appropriate updater
+    if (options.get_str("CORR_ANSATZ") == "MK") updater_ = std::make_shared<MkUpdater>(options);
+    else if (options.get_str("CORR_ANSATZ") == "BW") updater_ = std::make_shared<BWUpdater>(options);
+    else throw PSIEXCEPTION("I don't know what updater goes with CORR_ANSATZ " + options.get_str("CORR_ANSATZ"));
 }
 
 CCMRCC::~CCMRCC() {}

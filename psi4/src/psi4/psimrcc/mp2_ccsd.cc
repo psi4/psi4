@@ -34,8 +34,8 @@
 
 #include "blas.h"
 #include "mp2_ccsd.h"
-#include "debugging.h"
 #include "matrix.h"
+#include "psimrcc.h"
 #include "sort.h"
 
 extern FILE* outfile;
@@ -50,7 +50,7 @@ MP2_CCSD::MP2_CCSD(SharedWavefunction ref_wfn, Options& options) : CCManyBody(re
 
 MP2_CCSD::~MP2_CCSD() {}
 
-void MP2_CCSD::compute_mp2_ccsd_energy() {
+double MP2_CCSD::compute_energy() {
     generate_integrals();
     generate_denominators();
     compute_reference_energy();
@@ -70,7 +70,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy() {
     bool converged = false;
     int cycle = 0;
     delta_energy = 0.0;
-    current_energy = compute_energy();
+    current_energy = compute_iteration_energy();
     while (!converged) {
         outfile->Printf("\n    @MP2      %5d   %20.15f  %11.4e", cycle, current_energy, delta_energy);
         build_mp2_t2_iJaB_amplitudes();
@@ -84,7 +84,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy() {
         synchronize_amps();  // TODO: make this more efficient
         build_tau();
 
-        current_energy = compute_energy();
+        current_energy = compute_iteration_energy();
         delta_energy = current_energy - old_energy;
         old_energy = current_energy;
 
@@ -133,7 +133,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy() {
         synchronize_amps();
         build_tau();
 
-        current_energy = compute_energy();
+        current_energy = compute_iteration_energy();
 
         delta_energy = current_energy - old_energy;
         converged = (std::fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
@@ -152,10 +152,14 @@ void MP2_CCSD::compute_mp2_ccsd_energy() {
     outfile->Printf("\n\n   * MP2-CCSD total energy = %25.15f\n", current_energy);
 
     compute_mp2_ccsd_components();
+
+    ref_wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
+    ref_wfn_->set_scalar_variable("MP2-CCSD TOTAL ENERGY", current_energy);
+    return ref_wfn_->scalar_variable("CURRENT ENERGY");
 }
 
-double MP2_CCSD::compute_energy() {
-    // Compute the energy using a simple UCCSD energy expression
+double MP2_CCSD::compute_iteration_energy() {
+    // Compute the energy for this iteration using a simple UCCSD energy expression
     blas->solve("Eaa{u}   = t1[o][v]{u} . fock[o][v]{u}");
     blas->solve("Ebb{u}   = t1[O][V]{u} . fock[O][V]{u}");
 
@@ -169,13 +173,13 @@ double MP2_CCSD::compute_energy() {
 }
 
 void MP2_CCSD::read_mp2_ccsd_integrals() {
-    START_TIMER(1, "Reading the integrals required by MP2-CCSD");
+    START_TIMER("Reading the integrals required by MP2-CCSD");
 
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
     sorter = new CCSort(ref_wfn_, out_of_core_sort);
 
-    END_TIMER(1);
+    END_TIMER("Reading the integrals required by MP2-CCSD");
 }
 
 void MP2_CCSD::build_amplitudes() {

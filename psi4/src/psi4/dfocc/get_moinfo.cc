@@ -221,6 +221,25 @@ void DFOCC::get_moinfo() {
         ntri_abAA = 0.5 * navirA * (navirA + 1);
         ntri_abBB = 0.5 * navirB * (navirB + 1);
 
+        if (naoccA == 0 && naoccB == 0) {
+            throw PSIEXCEPTION("There are no occupied orbitals with alpha or beta spin.");
+        }
+        else if (naoccA == 0) {
+            throw PSIEXCEPTION("There are no occupied orbitals with alpha spin.");
+        }
+        else if (naoccB == 0) {
+            throw PSIEXCEPTION("There are no occupied orbitals with beta spin.");
+        }
+        if (navirA == 0 && navirB == 0) {
+            throw PSIEXCEPTION("There are no virtual orbitals with alpha or beta spin.");
+        }
+        else if (navirA == 0) {
+            throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
+        }
+        else if (navirB == 0) {
+            throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
+        }
+
         if (naoccA > 1)
             ntri_anti_ijAA = 0.5 * naoccA * (naoccA - 1);
         else

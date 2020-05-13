@@ -145,8 +145,9 @@ string(REGEX REPLACE "\\\\" "/" PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR})
 string(REGEX REPLACE "\\\\" "/" PYTHON_SITE_PACKAGES ${PYTHON_SITE_PACKAGES})
 
 if(CMAKE_HOST_WIN32)
+    # Compare https://github.com/pybind/pybind11/issues/2171
     set(PYTHON_LIBRARY
-        "${PYTHON_PREFIX}/libs/Python${PYTHON_LIBRARY_SUFFIX}.lib")
+        "${PYTHON_PREFIX}/libs/python${PYTHON_LIBRARY_SUFFIX}.lib")
 
     # when run in a venv, PYTHON_PREFIX points to it. But the libraries remain in the
     # original python installation. They may be found relative to PYTHON_INCLUDE_DIR.

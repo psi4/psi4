@@ -226,3 +226,40 @@ def find_approximate_string_matches(seq1, options, max_distance):
     """Find list of approximate (within `max_distance`) matches to string `seq1` among `options`."""
 
     return [seq2 for seq2 in options if (levenshtein(seq1, seq2) <= max_distance)]
+
+def message_box(message: str = None, max_width: int = 80, min_width: int = 30):
+    """ put a message string into a box for extra attention
+
+    Parameters
+    -----------
+    message
+       message string to be boxed
+
+    max_width
+        maximal character width of the box
+
+    Returns
+    --------
+    str
+       box containing the message as a multiline string
+    """
+    from textwrap import wrap
+
+    # ensure box is within min/max boundaries
+    msg = message.splitlines()
+    max_line = len(max(msg, key=len))
+    box_width = max(min(max_width, max_line), min_width)
+
+    error_str = []
+    error_str.append('\n!' + '-' * box_width + '--!\n')
+    error_str.append('!' + ' ' * box_width + '  !\n')
+
+    fmt = "! {:" + str(box_width) + "} !\n"
+    for line in msg[:]:
+        error_str.extend([fmt.format(x) for x in wrap(line, box_width)])
+
+    error_str.append('!' + ' ' * box_width + '  !\n')
+    error_str.append('!' + '-' * box_width + '--!\n')
+    error_str = ''.join(error_str)
+
+    return error_str

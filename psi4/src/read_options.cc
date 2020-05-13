@@ -2355,10 +2355,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("COUPLING_TERMS", true);
         /*- Do print the effective Hamiltonian? -*/
         options.add_bool("HEFF_PRINT", false);
-        /*- Do compute the perturbative corrections for basis set incompleteness? !expert -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_bool("PERTURB_CBS", false);
-        /*- Do include the terms that couple different reference determinants in
-            perturbative CBS correction computations? !expert -*/
+        /*- Removed in 1.4. Will raise an error in 1.5. -*/
         options.add_bool("PERTURB_CBS_COUPLING", true);
         /*- Do use Tikhonow regularization in (T) computations? !expert -*/
         options.add_bool("TIKHONOW_TRIPLES", false);

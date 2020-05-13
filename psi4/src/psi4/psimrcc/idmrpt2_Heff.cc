@@ -36,7 +36,6 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #include "blas.h"
-#include "debugging.h"
 #include "idmrpt2.h"
 #include "matrix.h"
 
@@ -155,85 +154,6 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
             }
         }
     }
-}
-
-void IDMRPT2::build_Heff_ijkabc() {
-    Timer timer;
-    DEBUGGING(1, outfile->Printf("\n\tBuilding the H_ijkabc Matrix Elements   ...");
-
-    );
-
-    blas->reduce_spaces("t2_oovv[aaa][v]{u}", "t2[oov][v]{u}");
-    blas->reduce_spaces("t2_ovvo[aaa][o]{u}", "t2[ovv][o]{u}");
-
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #124653#   t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #324651# - t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #134652# - t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #126453# - t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #326451#   t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #136452#   t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #125643# - t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #325641#   t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #135642#   t2_oovv[aaa][v]{u} 2@2 <[aaa]:[v]>");
-
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #145623#   t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #245613# - t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #345621# - t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #165423# - t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #265413#   t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #365421#   t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #146523# - t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #246513#   t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("Hijkabc[aaa][aaa]{u}  = #346521#   t2_ovvo[aaa][o]{u} 2@1 <[o]:[aaa]>");
-
-    DEBUGGING(3, blas->print("Hijkabc[aaa][aaa]{u}"););
-
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    );
-}
-
-void IDMRPT2::build_Heff_IJKABC() {
-    Timer timer;
-    DEBUGGING(1, outfile->Printf("\n\tBuilding the H_IJKABC Matrix Elements   ...");
-
-    );
-
-    blas->reduce_spaces("t2_OOVV[AAA][V]{u}", "t2[oov][v]{u}");
-
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #124653#   t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #324651# - t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #134652# - t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #126453# - t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #326451#   t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #136452#   t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #125643# - t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #325641#   t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #135642#   t2_OOVV[AAA][V]{u} 2@2 <[aaa]:[v]>");
-
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #145623#   t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #245613# - t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #345621# - t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #165423# - t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #265413#   t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #365421#   t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #146523# - t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #246513#   t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-    blas->solve("HIJKABC[AAA][AAA]{u}  = #346521#   t2_OVVO[AAA][O]{u} 2@1 <[o]:[aaa]>");
-
-    DEBUGGING(3, blas->print("HIJKABC[AAA][AAA]{u}"););
-
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    );
 }
 
 }  // namespace psimrcc

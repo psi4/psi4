@@ -79,14 +79,10 @@ double DCTSolver::compute_energy_UHF() {
     // Things that are not implemented yet...
     if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCT_FUNCTIONAL") == "DC-12"))
         throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCT_FUNCTIONAL") == "CEPA0")
-        throw FeatureNotImplemented("CEPA0", "Requested DCT algorithm", __FILE__, __LINE__);
     if (!(options_.get_str("DCT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCT_FUNCTIONAL") == "ODC-12" ||
           options_.get_str("DCT_FUNCTIONAL") == "DC-06" || options_.get_str("DCT_FUNCTIONAL") == "DC-12") &&
         options_.get_str("DCT_TYPE") == "DF")
-        throw FeatureNotImplemented("ODC-13/CEPA0", "Density Fitting", __FILE__, __LINE__);
+        throw FeatureNotImplemented("ODC-13", "Density Fitting", __FILE__, __LINE__);
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE" && options_.get_str("DCT_TYPE") == "DF")
         throw FeatureNotImplemented("Three-particle energy correction", "Density Fitting", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC") {
@@ -167,13 +163,6 @@ double DCTSolver::compute_energy_UHF() {
     if (options_.get_bool("TPDM")) dump_density();
     //    check_n_representability();
 
-    if (options_.get_str("DCT_FUNCTIONAL") == "CEPA0") {
-        compute_unrelaxed_density_OOOO();
-        compute_unrelaxed_density_OVOV();
-        compute_unrelaxed_density_VVVV();
-        compute_TPDM_trace();
-    }
-
     return (new_total_energy_);
 }
 
@@ -210,13 +199,6 @@ void DCTSolver::run_twostep_dct() {
             run_twostep_dct_cumulant_updates();
         } else
             outfile->Printf("\tSkipping the cumulant update to relax guess orbitals\n");
-        // Break if it's a CEPA0 computation
-        if (options_.get_str("DCT_FUNCTIONAL") == "CEPA0") {
-            orbitalsDone_ = true;
-            cumulantDone_ = true;
-            densityConverged_ = true;
-            break;
-        }
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
         build_tau();
         // Compute tau exactly if requested
@@ -255,30 +237,27 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
     while ((!cumulantDone_ || !energyConverged_) && nLambdaIterations++ < maxiter_) {
         std::string diisString;
         // Build new Tau from current Lambda
-        if (options_.get_str("DCT_FUNCTIONAL") != "CEPA0") {
-            // If not CEPA0
-            if (options_.get_bool("RELAX_TAU")) {
-                build_tau();
-                // Compute tau exactly if requested
-                if (exact_tau_) {
-                    refine_tau();
-                }
-                if (options_.get_str("AO_BASIS") == "DISK") {
-                    // Transform new Tau to the SO basis
-                    transform_tau();
-                    // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                    build_AO_tensors();
-                } else {
-                    // Compute GTau contribution for the Fock operator
-                    build_gtau();
-                }
-                // Update Fock operator for the F intermediate
-                update_fock();
+        if (options_.get_bool("RELAX_TAU")) {
+            build_tau();
+            // Compute tau exactly if requested
+            if (exact_tau_) {
+                refine_tau();
+            }
+            if (options_.get_str("AO_BASIS") == "DISK") {
+                // Transform new Tau to the SO basis
+                transform_tau();
+                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                build_AO_tensors();
             } else {
-                if (options_.get_str("AO_BASIS") == "DISK") {
-                    // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                    build_AO_tensors();
-                }
+                // Compute GTau contribution for the Fock operator
+                build_gtau();
+            }
+            // Update Fock operator for the F intermediate
+            update_fock();
+        } else {
+            if (options_.get_str("AO_BASIS") == "DISK") {
+                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                build_AO_tensors();
             }
         }
         // Build G and F intermediates needed for the density cumulant residual equations and DCT energy computation
@@ -320,11 +299,7 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
         // Save old DCT energy
         old_total_energy_ = new_total_energy_;
         // Compute new DCT energy (lambda contribution)
-        if (options_.get_str("DCT_FUNCTIONAL") == "CEPA0") {
-            compute_cepa0_energy();
-        } else {
-            compute_dct_energy();
-        }
+        compute_dct_energy();
         new_total_energy_ = scf_energy_ + lambda_energy_;
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;

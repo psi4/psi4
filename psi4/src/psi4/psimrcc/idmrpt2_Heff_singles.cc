@@ -36,8 +36,8 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 
 #include "blas.h"
-#include "debugging.h"
 #include "idmrpt2.h"
+#include "psimrcc.h"
 
 extern FILE* outfile;
 
@@ -57,7 +57,7 @@ namespace psimrcc {
  * \f]
  */
 void IDMRPT2::build_Heff_uv() {
-    START_TIMER(1, "Building the Heff_uv Matrix Elements");
+    START_TIMER("Building the Heff_uv Matrix Elements");
 
     // Closed-shell
     blas->solve("Hia[a][a]{c}  = fock[a][a]{c}");
@@ -87,9 +87,7 @@ void IDMRPT2::build_Heff_uv() {
     blas->solve("Hia[a][a]{o} += -1/2 <[a]:[voo]> 2@2 t2_vvoo[a][voo]{o}");
     blas->solve("Hia[a][a]{o} += - <[a]|[voo]> 2@2 t2_vVoO[a][VoO]{o}");
 
-    DEBUGGING(3, blas->print("Hia[a][a]{u}"););
-
-    END_TIMER(1);
+    END_TIMER("Building the Heff_uv Matrix Elements");
 }
 
 /**
@@ -105,7 +103,7 @@ void IDMRPT2::build_Heff_uv() {
  * \f]
  */
 void IDMRPT2::build_Heff_UV() {
-    START_TIMER(1, "Building the Heff_UV Matrix Elements");
+    START_TIMER("Building the Heff_UV Matrix Elements");
 
     // Closed-shell
     blas->solve("HIA[A][A]{c} = Hia[a][a]{c}");
@@ -124,9 +122,7 @@ void IDMRPT2::build_Heff_UV() {
     blas->solve("HIA[A][A]{o} += -1/2 <[a]:[voo]> 2@2 t2_VVOO[A][VOO]{o}");
     blas->solve("HIA[A][A]{o} += - <[a]|[voo]> 2@2 t2_VvOo[A][vOo]{o}");
 
-    DEBUGGING(3, blas->print("HIA[A][A]{u}"););
-
-    END_TIMER(1);
+    END_TIMER("Building the Heff_UV Matrix Elements");
 }
 
 }  // namespace psimrcc

@@ -46,7 +46,6 @@
 #include "algebra_interface.h"
 #include "blas.h"
 #include "index.h"
-#include "debugging.h"
 #include "manybody.h"
 #include "matrix.h"
 #include "sort.h"
@@ -69,8 +68,6 @@ CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options& options) : ref_wfn_(
     allocate2(double, Heff, moinfo->get_nrefs(), moinfo->get_nrefs());
     allocate2(double, Heff_mrpt2, moinfo->get_nrefs(), moinfo->get_nrefs());
 
-    pert_cbs = false;
-    pert_cbs_coupling = false;
     huge = 1.0e100;
     norm_amps = 0.0;
     delta_t1_amps = 0.0;
@@ -96,20 +93,12 @@ CCManyBody::~CCManyBody() {
  * Creates a CCSort object and stores the address in the global pointer sorter
  */
 void CCManyBody::generate_integrals() {
-    Timer timer;
-    DEBUGGING(1, outfile->Printf("\n\tvoid CCManyBody::generate_integrals()");
-
-    )
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
     sorter = new CCSort(ref_wfn_, out_of_core_sort);
     //   blas->show_storage();
     blas->compute_storage_strategy();
     //   blas->show_storage();
-
-    DEBUGGING(1, outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    )
 }
 
 void CCManyBody::generate_triples_denominators() {
@@ -296,9 +285,6 @@ void CCManyBody::deallocate_triples_denominators() {
  */
 void CCManyBody::compute_reference_energy() {
     Timer timer;
-    DEBUGGING(3, outfile->Printf("\n\tvoid CCManyBody::compute_reference_energy()");
-
-    )
 
     // Compute the zeroth-order energy for the unique references
     for (int n = 0; n < moinfo->get_nunique(); n++) {
@@ -330,10 +316,6 @@ void CCManyBody::compute_reference_energy() {
         CCMatTmp ERef_Matrix = blas->get_MatTmp("ERef", unique_n, none);
         ERef_Matrix->set_scalar(ref_energy);
     }
-
-    DEBUGGING(3, blas->print("ERef{u}"); outfile->Printf(" done. Timing %20.6f s", timer.get());
-
-    )
 }
 
 void CCManyBody::print_method(const char* text) {
@@ -634,15 +616,6 @@ void CCManyBody::sort_eigensystem(int ndets, double*& real, double*& imaginary, 
 //        }
 //      }
 //    }
-//
-//    // Print the t-amplitudes
-//    DEBUGGING(3,
-//      blas->print("t1[o][v]{u}");
-//      blas->print("t1[O][V]{u}");
-//      blas->print("t2[oo][vv]{u}");
-//      blas->print("t2[oO][vV]{u}");
-//      blas->print("t2[OO][VV]{u}");
-//    )
 //  }else{
 //    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC.
 //    Size-extensivity might be lost\n");
@@ -676,12 +649,6 @@ void CCManyBody::sort_eigensystem(int ndets, double*& real, double*& imaginary, 
 //                                            0.0);
 //      }
 //    }
-//
-//    // Print the t-amplitudes
-//    DEBUGGING(3,
-//      blas->print("t1[o][v]{u}");
-//      blas->print("t1[O][V]{u}");
-//    )
 //  }else{
 //    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC.
 //    Size-extensivity might be lost\n");
@@ -780,15 +747,6 @@ void CCManyBody::sort_eigensystem(int ndets, double*& real, double*& imaginary, 
 //        }
 //      }
 //    }
-//
-//    // Print the t-amplitudes
-//    DEBUGGING(3,
-//      blas->print("t1_delta[o][v]{u}");
-//      blas->print("t1_delta[O][V]{u}");
-//      blas->print("t2_delta[oo][vv]{u}");
-//      blas->print("t2_delta[oO][vV]{u}");
-//      blas->print("t2_delta[OO][VV]{u}");
-//    )
 //  }else{
 //    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC.
 //    Size-extensivity might be lost\n");

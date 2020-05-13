@@ -205,3 +205,4 @@ def test(extent='full', extras=None):
 
     retcode = pytest.main(command)
     return retcode
+    

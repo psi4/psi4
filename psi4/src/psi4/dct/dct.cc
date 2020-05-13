@@ -51,6 +51,10 @@ DCTSolver::DCTSolver(SharedWavefunction ref_wfn, Options &options) : Wavefunctio
     Fa_ = ref_wfn->Fa()->clone();
     Fb_ = ref_wfn->Fb()->clone();
 
+    if (!psio_) {
+        throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing DCT. See GitHub issue #1851.");
+    }
+
     maxiter_ = options.get_int("MAXITER");
     print_ = options.get_int("PRINT");
     maxdiis_ = options.get_int("DIIS_MAX_VECS");
@@ -115,10 +119,10 @@ void DCTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha) {
 }
 
 DCTSolver::~DCTSolver() {
-    delete []aocc_off_;
-    delete []avir_off_;
-    delete []bocc_off_;
-    delete []bvir_off_;
+    delete[] aocc_off_;
+    delete[] avir_off_;
+    delete[] bocc_off_;
+    delete[] bvir_off_;
 }
 
 }  // namespace dct

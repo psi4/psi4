@@ -479,4 +479,7 @@ Bibliography
    M. Nooijen and R. J. Bartlett, 
    *J. Chem. Phys.* **102**, 3629 (1995).
 
+.. [Wang:2016:214108]
+   L.-P. Wang and C. Song,
+   *J. Chem. Phys.* **144**, 214108 (2016).
 

@@ -38,8 +38,8 @@
 #include "matrix.h"
 #include "blas.h"
 #include "sort.h"
-#include "debugging.h"
 #include "updater.h"
+#include "psimrcc.h"
 
 extern FILE* outfile;
 
@@ -49,12 +49,13 @@ extern MOInfo* moinfo;
 
 IDMRPT2::IDMRPT2(SharedWavefunction ref_wfn, Options& options) : CCManyBody(ref_wfn, options) {
     triples_type = pt2;
+    updater_ = std::make_shared<MkUpdater>(options);
     add_matrices();
 }
 
 IDMRPT2::~IDMRPT2() {}
 
-void IDMRPT2::compute_mrpt2_energy(Updater* updater) {
+double IDMRPT2::compute_energy() {
     read_mrpt2_integrals();
     generate_denominators();
     compute_reference_energy();
@@ -99,16 +100,15 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater) {
     int cycle = 0;
     while (!converged) {
         // Iterate the amps equation
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
         build_amplitudes();
-        update_amps_mkpt2(updater);
-        updater->zero_internal_amps();
+        update_amps_mkpt2();
+        updater_->zero_internal_amps();
         synchronize_amps();
 
         // Compute the effective Hamiltonian
         build_Heff_mrpt2_diagonal();
         build_Heff_mrpt2_offdiagonal();
-        DEBUGGING(3, print_eigensystem(moinfo->get_nrefs(), Heff_mrpt2, zeroth_order_eigenvector););
 
         // Compute the energy
         current_energy = c_H_c(moinfo->get_nrefs(), Heff_mrpt2, zeroth_order_eigenvector);
@@ -181,6 +181,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater) {
     }
 
     //   print_eigensystem(moinfo->get_nrefs(),Heff_mrpt2,right_eigenvector);
+    return ref_wfn_->scalar_variable("CURRENT ENERGY");
 }
 
 void IDMRPT2::build_Heff_mrpt2_diagonal() {
@@ -217,7 +218,7 @@ void IDMRPT2::build_Heff_scs_mrpt2_diagonal() {
 }
 
 void IDMRPT2::synchronize_amps() {
-    START_TIMER(1, "Synchronizing the Amplitudes");
+    START_TIMER("Synchronizing the Amplitudes");
 
     blas->solve("t1[ov]{u}     = #12# t1[o][v]{u}");
     blas->solve("t1[OV]{u}     = #12# t1[O][V]{u}");
@@ -283,7 +284,7 @@ void IDMRPT2::synchronize_amps() {
     blas->reduce_spaces("t2_oOvV[oA][aV]{u}", "t2[oO][vV]{u}");
     blas->solve("t2_oVOv[oV][Aa]{u} = #1342# t2_oOvV[oA][aV]{u}");
 
-    END_TIMER(1);
+    END_TIMER("Synchronizing the Amplitudes");
 }
 
 void IDMRPT2::build_amplitudes() {
@@ -295,7 +296,7 @@ void IDMRPT2::build_amplitudes() {
     build_t2_IJAB_amplitudes();
 }
 
-void IDMRPT2::update_amps_mkpt2(Updater* updater) {
+void IDMRPT2::update_amps_mkpt2() {
     for (int i = 0; i < moinfo->get_nunique(); i++) {
         int unique_i = moinfo->get_ref_number(i, UniqueRefs);
         std::string i_str = to_string(unique_i);
@@ -319,7 +320,7 @@ void IDMRPT2::update_amps_mkpt2(Updater* updater) {
         // Update t1 for reference i
         blas->solve("t1[o][v]{" + i_str + "} = t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "}");
         blas->solve("t1[O][V]{" + i_str + "} = t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "}");
-        updater->zero_internal_amps();
+        updater_->zero_internal_amps();
 
         // Add the contribution from the other references
         for (int j = 0; j < moinfo->get_nrefs(); j++) {
@@ -362,17 +363,16 @@ void IDMRPT2::update_amps_mkpt2(Updater* updater) {
         blas->solve("t2[oO][vV]{" + i_str + "} = t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "}");
         blas->solve("t2[OO][VV]{" + i_str + "} = t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "}");
     }
-    DEBUGGING(3, blas->print("t2[oo][vv]{u}"); blas->print("t2[oO][vV]{u}"); blas->print("t2[OO][VV]{u}"););
 }
 
 void IDMRPT2::read_mrpt2_integrals() {
-    START_TIMER(1, "Reading the MRPT2 integrals");
+    START_TIMER("Reading the MRPT2 integrals");
 
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
     sorter = new CCSort(ref_wfn_, mrpt2_sort);
 
-    END_TIMER(1);
+    END_TIMER("Reading the MRPT2 integrals");
 }
 
 }  // namespace psimrcc

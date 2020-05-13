@@ -7,7 +7,6 @@ list(APPEND sources
   blas_interface.cc
   blas_parser.cc
   blas_solve.cc
-  debugging.cc
   heff.cc
   heff_diagonalize.cc
   idmrpt2.cc
@@ -41,7 +40,6 @@ list(APPEND sources
   mrcc_compute.cc
   mrcc_energy.cc
   mrcc_f_int.cc
-  mrcc_pert_cbs.cc
   mrcc_pert_triples.cc
   mrcc_t1_amps.cc
   mrcc_t2_amps.cc

@@ -62,7 +62,6 @@
 #include "main.h"
 #include "sort.h"
 #include "mrcc.h"
-#include "debugging.h"
 #include "psimrcc.h"
 #include "transform.h"
 
@@ -74,17 +73,16 @@ namespace psi {
 
 namespace psimrcc {
 // Global variables
-Timer *global_timer;
 CCBLAS *blas;
 CCSort *sorter;
 CCTransform *trans = nullptr;
 MOInfo *moinfo;
 ModelSpace *model_space;
-Debugging *debugging;
 MemoryManager *memory_manager;
 
 PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
     using namespace psi::psimrcc;
+    tstart();
     _default_psio_lib_->open(PSIF_PSIMRCC_INTEGRALS, PSIO_OPEN_NEW);
 
     outfile->Printf("\n  MRCC          MRCC");
@@ -96,14 +94,16 @@ PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
     outfile->Printf("\n         MRCC");
     outfile->Printf("\n       MRCCMRCC");
 
-    global_timer = new Timer;
-    debugging = new Debugging(options);
     moinfo = new MOInfo(*(ref_wfn.get()), options);
 
     memory_manager = new MemoryManager(Process::environment.get_memory());
     model_space = new ModelSpace(moinfo);
 
     moinfo->setup_model_space();  // The is a bug here DELETEME
+
+    if (options["PERTURB_CBS"].has_changed() || options["PERTURB_CBS_COUPLING"].has_changed()) {
+        outfile->Printf("\tPerturbative CBS was removed in 1.4. Using unpublished features is a bad habit.\n\n");
+    }
 
     int nactmo = moinfo->get_nactv();
     int nactel = moinfo->get_nactive_ael() + moinfo->get_nactive_bel();
@@ -143,19 +143,14 @@ PsiReturnType psimrcc(SharedWavefunction ref_wfn, Options &options) {
     delete trans;
     delete blas;
 
-    outfile->Printf("\n\n  PSIMRCC job completed.");
-    outfile->Printf("\n  Wall Time = %20.6f s", global_timer->get());
-    outfile->Printf("\n  GEMM Time = %20.6f s", moinfo->get_dgemm_timing());
-
     memory_manager->MemCheck("outfile");
 
     delete model_space;
     delete moinfo;
-    delete debugging;
     delete memory_manager;
-    delete global_timer;
 
     _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
+    tstop();
 
     return Success;
 }

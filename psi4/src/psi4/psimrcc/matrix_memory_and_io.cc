@@ -48,7 +48,6 @@ PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include "debugging.h"
 #include "matrix.h"
 
 namespace psi {
@@ -98,9 +97,6 @@ void CCMatrix::allocate_block(int h) {
         if (!is_block_allocated(h)) {
             if (memorypi2[h] < memory_manager->get_FreeMemory()) {
                 allocate2(double, matrix[h], left_pairpi[h], right_pairpi[h]);
-                DEBUGGING(2, outfile->Printf("\n  %s[%s] <- allocated", label.c_str(), moinfo->get_irr_labs(h).c_str());
-
-                )
             } else {
                 outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n", h, label.c_str());
 
@@ -128,9 +124,6 @@ void CCMatrix::free_block(int h) {
     if (block_sizepi[h] > 0) {
         if (is_block_allocated(h)) {
             release2(matrix[h]);
-            DEBUGGING(2, outfile->Printf("\n  %s[%s] <- deallocated", label.c_str(), moinfo->get_irr_labs(h).c_str());
-
-            )
         }
     }
 }

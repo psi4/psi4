@@ -1254,6 +1254,7 @@ def scf_helper(name, post_scf=True, **kwargs):
 
     # SCF Banner data
     banner = kwargs.pop('banner', None)
+    bannername = name
 
     # Did we pass in a DFT functional?
     dft_func = kwargs.pop('dft_functional', None)
@@ -1261,6 +1262,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         if name.lower() != "scf":
             raise ValidationError("dft_functional was supplied to SCF, but method name was not SCF ('%s')" % name)
         name = dft_func
+        bannername = name
+        if isinstance(name, dict):
+            bannername = name.get("name", "custom functional")
 
 
     # Setup the timer
@@ -1404,7 +1408,7 @@ def scf_helper(name, post_scf=True, **kwargs):
 
         # Print the banner for the standard operation
         core.print_out('\n')
-        p4util.banner(name.upper())
+        p4util.banner(bannername.upper())
         core.print_out('\n')
 
     # the SECOND scf call
