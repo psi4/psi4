@@ -1592,7 +1592,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             - also : lowest-energy triplets and singlets included
             - only : Only triplet states computed
              -*/
-        options.add_str("TDSCF_TRIPLETS", "none");
+        //options.add_str("TDSCF_TRIPLETS", "none");
+        //*- Computes spin-adapted products for triplets -*/
+        options.add_bool("TDSCF_TRIPLETS", false);
         /*- Run with Tamm-Dancoff approximation, uses RPA when false -*/ 
         options.add_bool("TDSCF_TDA", false);
         /*- Convergence threshold for excitation energies -*/
