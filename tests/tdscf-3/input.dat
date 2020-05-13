@@ -1,0 +1,44 @@
+# Excitation energies
+
+rhf_wB97X_RPA_cc_pvdz = [0.24721269233329,
+                         0.31319977578113,
+                         0.34444772468718,
+                         0.41038703401580,
+                         0.45278105243050,
+                         0.56744628843739,
+                         0.71909971752194,
+                         0.75183601398849,
+                         0.82952408171446,
+                         0.84003438794418]
+
+
+
+
+molecule water{
+0 1
+
+O           0.000000    0.000000    0.135446
+H          -0.000000    0.866812   -0.541782
+H          -0.000000   -0.866812   -0.541782
+no_reorient
+no_com
+symmetry c1
+}
+
+set {
+    reference rhf
+    scf_type pk
+    e_convergence 8
+    d_convergence 8
+    TDSCF_STATES_PER_IRREP [10]
+}
+
+
+e, wfn = energy('wb97x/cc-pvdz', return_wfn=True)
+
+ex_ens = np.asarray(wfn.array_variable("TD-WB97X EXCITATION ENERGIES")).flatten()
+ex_labels = np.asarray(wfn.array_variable("TD-WB97X SYMMETRY LABELS")).flatten()
+
+for n, ref in enumerate(rhf_wB97X_RPA_cc_pvdz):
+    compare_values(ref,ex_ens[n], 4, f"TD-wB97X/cc-pvdz (RPA) 0 A -> {n} A Excitation Energy")
+
