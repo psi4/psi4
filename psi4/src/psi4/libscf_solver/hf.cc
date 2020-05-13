@@ -715,6 +715,60 @@ void HF::form_Shalf() {
         method = BasisSetOrthogonalization::Automatic;
     else
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
+    
+#if USING_BrianQC
+    if (brianCookie != 0) {
+        double S_cutoff = options_.get_double("S_TOLERANCE");
+        if (print_) outfile->Printf("  BrianQC enabled, using Canonical Orthogonalization with cutoff of %14.10E.\n", S_cutoff);
+        
+        brianInt computeOverlapRoot = BRIAN_FALSE;
+        brianInt computeOverlapInverseRoot = BRIAN_TRUE;
+        brianInt basisRank;
+        SharedMatrix buffer = std::make_shared<Matrix>(nirrep_, nsopi_, nsopi_);
+        brianSCFComputeOverlapRoot(&brianCookie, &computeOverlapRoot, &computeOverlapInverseRoot, S_->get_pointer(), &S_cutoff, &basisRank, nullptr, buffer->get_pointer());
+        checkBrian();
+        
+        nmo_ = basisRank;
+        nmopi_[0] = basisRank;
+        
+        X_->init(nirrep_, nsopi_, nmopi_, "X (Canonical Orthogonalization)");
+        for (int i = 0; i < nso_; i++) {
+            for (int j = 0; j < nmo_; j++) {
+                X_->set(i, j, buffer->get(nmo_ - 1 - j, i));
+            }
+        }
+        
+        if (print_) outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", nso_ - nmo_, nso_);
+
+        // Double check occupation vectors
+        for (int h = 0; h < nirrep_; ++h) {
+            if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+                throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
+            }
+        }
+
+        // Refreshes twice in RHF, no big deal
+        epsilon_a_->init(nmopi_);
+        Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
+        epsilon_b_->init(nmopi_);
+        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+
+        // Extra matrix dimension changes for specific derived classes
+        prepare_canonical_orthogonalization();
+        
+        // Temporary variables needed by diagonalize_F
+        diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
+        diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+        diag_C_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+
+        if (print_ > 3) {
+            S_->print("outfile");
+            X_->print("outfile");
+        }
+
+        return;
+    }
+#endif
 
     double lindep_tolerance = options_.get_double("S_TOLERANCE");
     double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
