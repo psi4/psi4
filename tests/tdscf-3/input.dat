@@ -35,6 +35,7 @@ set {
 
 
 e, wfn = energy('wb97x/cc-pvdz', return_wfn=True)
+tdscf(wfn)
 
 ex_ens = np.asarray(wfn.array_variable("TD-WB97X EXCITATION ENERGIES")).flatten()
 ex_labels = np.asarray(wfn.array_variable("TD-WB97X SYMMETRY LABELS")).flatten()

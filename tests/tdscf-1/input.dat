@@ -30,6 +30,7 @@ set {
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+tdscf(wfn)
 
 ex_ens = np.asarray(wfn.array_variable("TD-HF EXCITATION ENERGIES")).flatten()
 ex_labels = np.asarray(wfn.array_variable("TD-HF SYMMETRY LABELS")).flatten()

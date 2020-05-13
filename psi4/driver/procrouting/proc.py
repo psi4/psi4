@@ -2314,8 +2314,8 @@ def run_scf(name, **kwargs):
 
 
     # optionally get excited states
-    if do_tdscf:
-        excited_states = run_tdscf_energy(name, ref_wfn=scf_wfn)
+   # if do_tdscf:
+   #     excited_states = run_tdscf_energy(name, ref_wfn=scf_wfn)
             
     optstash_scf.restore()
     optstash_mp2.restore()
@@ -2721,14 +2721,15 @@ def run_bccd(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
-def run_tdscf_energy(name, **kwargs):
-#def run_tdscf_energy(**kwargs):
+#def run_tdscf_energy(name, **kwargs):
+def run_tdscf_energy(**kwargs):
 
     # Get a wfn in case we aren't given one
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        name = kwargs.get('name',None)
-        ref_wfn = scf_helper(name, **kwargs)
+        raise ValidationError("TDSCF: No reference wave function passed!")
+#        name = kwargs.get('name',None)
+#        ref_wfn = scf_helper(name, **kwargs)
 
     states = core.get_global_option("TDSCF_STATES_PER_IRREP")
 
@@ -2751,7 +2752,7 @@ def run_tdscf_energy(name, **kwargs):
     ref_wfn.set_array_variable(f"TD-{ssuper_name} EXCITATION ENERGIES", core.Matrix.from_array(np.asarray(ret)[:,0].reshape(-1,1)))
     ref_wfn.set_array_variable(f"TD-{ssuper_name} SYMMETRY LABELS", core.Matrix.from_array(np.asarray(ret)[:,1].reshape(-1,1)))
 
-    return ret
+    return ref_wfn
     
 
 def run_scf_property(name, **kwargs):
