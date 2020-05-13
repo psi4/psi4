@@ -66,7 +66,7 @@ Installation
 
      >>> git clone https://github.com/shannonhouck/psi4fockci.git
 
-* Once dowloaded, the plugin can be installed as follows:
+* Once downloaded, the plugin can be installed as follows:
 
   .. code-block:: bash
 
