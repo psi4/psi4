@@ -2225,10 +2225,8 @@ def run_scf(name, **kwargs):
         dft_func = True
 
     # See if we're doing TDSCF after, keep JK if so 
-    do_tdscf = False
     if sum(core.get_global_option("TDSCF_STATES_PER_IRREP")) > 0:
         core.set_global_option("SAVE_JK", True)
-        do_tdscf = True
 
     optstash_scf = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
@@ -2312,11 +2310,6 @@ def run_scf(name, **kwargs):
     for k, v in scf_wfn.variables().items():
         core.set_variable(k, v)
 
-
-    # optionally get excited states
-   # if do_tdscf:
-   #     excited_states = run_tdscf_energy(name, ref_wfn=scf_wfn)
-            
     optstash_scf.restore()
     optstash_mp2.restore()
     return scf_wfn
@@ -2721,15 +2714,12 @@ def run_bccd(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
-#def run_tdscf_energy(name, **kwargs):
 def run_tdscf_energy(**kwargs):
 
     # Get a wfn in case we aren't given one
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         raise ValidationError("TDSCF: No reference wave function passed!")
-#        name = kwargs.get('name',None)
-#        ref_wfn = scf_helper(name, **kwargs)
 
     states = core.get_global_option("TDSCF_STATES_PER_IRREP")
 
