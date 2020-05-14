@@ -174,10 +174,8 @@ void sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& le
     for (int i = 0; i < ndets; i++) pairs.push_back(std::make_pair(real[i], i));
     sort(pairs.begin(), pairs.end());
 
-    double* tempv;
-    double** tempm;
-    allocate1(double, tempv, ndets);
-    allocate2(double, tempm, ndets, ndets);
+    std::vector<double> tempv(ndets, 0);
+    std::vector<std::vector<double>> tempm(ndets, std::vector<double>(ndets, 0));
 
     for (int i = 0; i < ndets; i++) tempv[i] = real[pairs[i].second];
     for (int i = 0; i < ndets; i++) real[i] = tempv[i];
@@ -194,9 +192,6 @@ void sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& le
         for (int j = 0; j < ndets; j++) tempm[i][j] = right[pairs[i].second][j];
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) right[i][j] = tempm[i][j];
-
-    release1(tempv);
-    release2(tempm);
 }
 
 }  // namespace psimrcc

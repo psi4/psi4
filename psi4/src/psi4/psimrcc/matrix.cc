@@ -69,9 +69,9 @@ CCMatrix::CCMatrix(std::string& str, CCIndex* left_index, CCIndex* right_index)
     // Compute the memory required to store the matrix in core
 
     allocate1(double***, matrix, nirreps);
-    allocate1(size_t, left_pairpi, nirreps);
-    allocate1(size_t, right_pairpi, nirreps);
-    allocate1(size_t, block_sizepi, nirreps);
+    left_pairpi = std::vector<size_t>(nirreps, 0);
+    right_pairpi = std::vector<size_t>(nirreps, 0);
+    block_sizepi = std::vector<size_t>(nirreps, 0);
 
     for (int h = 0; h < nirreps; h++) {
         matrix[h] = nullptr;
@@ -97,9 +97,6 @@ CCMatrix::CCMatrix(std::string& str, CCIndex* left_index, CCIndex* right_index)
 CCMatrix::~CCMatrix() {
     free_memory();
     release1(matrix);
-    release1(left_pairpi);
-    release1(right_pairpi);
-    release1(block_sizepi);
 }
 
 /*********************************************************

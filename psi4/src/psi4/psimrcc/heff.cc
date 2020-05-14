@@ -93,7 +93,7 @@ void Hamiltonian::set_matrix(double** M, int ndets_) {
     }
 }
 
-void Hamiltonian::set_left_eigenvector(double* v, int ndets_) {
+void Hamiltonian::set_left_eigenvector(std::vector<double> v, int ndets_) {
     ndets = ndets_;
     left_eigenvector.assign(ndets, 0.0);
     for (int mu = 0; mu < ndets; ++mu) {
@@ -101,7 +101,7 @@ void Hamiltonian::set_left_eigenvector(double* v, int ndets_) {
     }
 }
 
-void Hamiltonian::set_right_eigenvector(double* v, int ndets_) {
+void Hamiltonian::set_right_eigenvector(std::vector<double> v, int ndets_) {
     ndets = ndets_;
     right_eigenvector.assign(ndets, 0.0);
     for (int mu = 0; mu < ndets; ++mu) {
@@ -109,7 +109,7 @@ void Hamiltonian::set_right_eigenvector(double* v, int ndets_) {
     }
 }
 
-void Hamiltonian::set_zeroth_order_eigenvector(double* v, int ndets_) {
+void Hamiltonian::set_zeroth_order_eigenvector(std::vector<double> v, int ndets_) {
     ndets = ndets_;
     zeroth_order_eigenvector.assign(ndets, 0.0);
     for (int mu = 0; mu < ndets; ++mu) {

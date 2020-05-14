@@ -126,10 +126,9 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
     std::vector<size_t> pairpi = pair_index->get_pairpi();
 
     // Allocate the temporary space
-    double** tei_mo;
-    allocate1(double*, tei_mo, moinfo->get_nirreps());
+    std::vector<std::vector<double>> tei_mo(moinfo->get_nmo());
     for (int h = first_irrep; h < last_irrep; ++h) {
-        allocate1(double, tei_mo[h], INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1);
+        tei_mo[h] = std::vector<double>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1, 0);
     }
 
     // Read all the (frozen + non-frozen) TEI in Pitzer order
@@ -174,12 +173,6 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
             PSIF_PSIMRCC_INTEGRALS, data_label, (char*)&(tei_mo[h][0]),
             static_cast<size_t>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1) * static_cast<size_t>(sizeof(double)));
     }
-
-    // Deallocate the temporary space
-    for (int h = first_irrep; h < last_irrep; ++h) {
-        release1(tei_mo[h]);
-    }
-    release1(tei_mo);
 }
 
 }  // namespace psimrcc

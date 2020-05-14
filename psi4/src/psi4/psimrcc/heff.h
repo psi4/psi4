@@ -55,9 +55,9 @@ class Hamiltonian {
 
     void set_eigenvalue(double eigenvalue_) { eigenvalue = eigenvalue_; }
     void set_matrix(double** M, int ndets);
-    void set_zeroth_order_eigenvector(double* v, int ndets);
-    void set_left_eigenvector(double* v, int ndets);
-    void set_right_eigenvector(double* v, int ndets);
+    void set_zeroth_order_eigenvector(std::vector<double> v, int ndets);
+    void set_left_eigenvector(std::vector<double> v, int ndets);
+    void set_right_eigenvector(std::vector<double> v, int ndets);
     void print();
     void print_matrix();
 

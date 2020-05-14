@@ -85,15 +85,15 @@ class CCManyBody {
     Options& options_;
     SharedWavefunction ref_wfn_;
     // Effective Hamiltonian and the correpsonding eigenvectors
-    void print_eigensystem(int ndets, double** Heff, double*& eigenvector);
-    double diagonalize_Heff(int root, int ndets, double** Heff, double*& right_eigenvector, double*& left_eigenvector,
+    void print_eigensystem(int ndets, double** Heff, std::vector<double>& eigenvector);
+    double diagonalize_Heff(int root, int ndets, double** Heff, std::vector<double>& right_eigenvector, std::vector<double>& left_eigenvector,
                             bool initial);
     void sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& left, double**& right);
-    double c_H_c(int ndets, double** H, double*& c);
+    double c_H_c(int ndets, double** H, std::vector<double>& c);
 
-    double* zeroth_order_eigenvector;
-    double* right_eigenvector;
-    double* left_eigenvector;
+    std::vector<double> zeroth_order_eigenvector;
+    std::vector<double> right_eigenvector;
+    std::vector<double> left_eigenvector;
     double** Heff;
     double** Heff_mrpt2;
 

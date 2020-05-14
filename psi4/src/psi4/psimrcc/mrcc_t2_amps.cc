@@ -327,11 +327,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
         short** jkc_tuples = jkc_indexing->get_tuples();
 
         // PART A: Sort T[ijk][abc]->T[iab][jkc]
-        double*** T_iabjkc;
-        double*** H_iabj;
-
-        allocate1(double**, T_iabjkc, moinfo->get_nirreps());
-        allocate1(double**, H_iabj, moinfo->get_nirreps());
+        std::vector<double **> T_iabjkc(moinfo->get_nirreps(), nullptr);
+        std::vector<double **> H_iabj(moinfo->get_nirreps(), nullptr);
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
@@ -419,8 +416,6 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
             release2(H_iabj[h]);
             release2(T_iabjkc[h]);
         }
-        release1(H_iabj);
-        release1(T_iabjkc);
     }
     //   blas->print("t2_test[oo][vv]{u}");
     //   blas->solve("ERROR{u} = 1000000.0 t2_test[oo][vv]{u} . t2_test[oo][vv]{u}");
@@ -483,11 +478,8 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
         short** ijc_tuples = ijc_indexing->get_tuples();
         short** ijb_tuples = ijb_indexing->get_tuples();
 
-        double*** T_iackjb;
-        double*** H_iabj;
-
-        allocate1(double**, T_iackjb, moinfo->get_nirreps());
-        allocate1(double**, H_iabj, moinfo->get_nirreps());
+        std::vector<double **> T_iackjb(moinfo->get_nirreps(), nullptr);
+        std::vector<double **> H_iabj(moinfo->get_nirreps());
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
@@ -654,8 +646,6 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
             release2(T_iackjb[h]);
             release2(H_iabj[h]);
         }
-        release1(H_iabj);
-        release1(T_iackjb);
     }
     //   blas->print("t2_test[oO][vV]{u}");
     //   blas->solve("ERROR{u} = 1000000.0 t2_test[oO][vV]{u} . t2_test[oO][vV]{u}");
@@ -700,11 +690,8 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram1() {
         short** jia_tuples = jia_indexing->get_tuples();
         short** jkc_tuples = jkc_indexing->get_tuples();
 
-        double*** T_iabjkc;
-        double*** H_iabj;
-
-        allocate1(double**, T_iabjkc, moinfo->get_nirreps());
-        allocate1(double**, H_iabj, moinfo->get_nirreps());
+        std::vector<double**> T_iabjkc(moinfo->get_nirreps(), nullptr);
+        std::vector<double**> H_iabj(moinfo->get_nirreps(), nullptr);
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
@@ -794,8 +781,6 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram1() {
             release2(H_iabj[h]);
             release2(T_iabjkc[h]);
         }
-        release1(H_iabj);
-        release1(T_iabjkc);
     }
     //   blas->print("t2_test[OO][VV]{u}");
     //   blas->solve("ERROR{u} = 1000000.0 t2_test[OO][VV]{u} . t2_test[OO][VV]{u}");
@@ -836,11 +821,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram2() {
         short** ovv_tuples = ovv_indexing->get_tuples();
         short** oov_tuples = oov_indexing->get_tuples();
 
-        double*** T_oovovv;
-        double*** H_ijab;
-
-        allocate1(double**, T_oovovv, moinfo->get_nirreps());
-        allocate1(double**, H_ijab, moinfo->get_nirreps());
+        std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
+        std::vector<double**> H_ijab(moinfo->get_nirreps(), nullptr);
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
@@ -926,8 +908,6 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram2() {
             release2(H_ijab[h]);
             release2(T_oovovv[h]);
         }
-        release1(H_ijab);
-        release1(T_oovovv);
     }
     //   blas->print("t2_test[oo][vv]{u}");
     //   blas->solve("ERROR{u} = 1000000.0 t2_test[oo][vv]{u} . t2_test[oo][vv]{u}");
@@ -972,11 +952,8 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram2() {
         short** ovv_tuples = ovv_indexing->get_tuples();
         short** oov_tuples = oov_indexing->get_tuples();
 
-        double*** T_oovovv;
-        double*** H_ijab;
-
-        allocate1(double**, T_oovovv, moinfo->get_nirreps());
-        allocate1(double**, H_ijab, moinfo->get_nirreps());
+        std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
+        std::vector<double**> H_ijab(moinfo->get_nirreps(), nullptr);
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
@@ -1128,8 +1105,6 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram2() {
             release2(H_ijab[h]);
             release2(T_oovovv[h]);
         }
-        release1(H_ijab);
-        release1(T_oovovv);
     }
     //   blas->print("t2_test[oO][vV]{u}");
     //   blas->solve("ERROR{u} = 1000000.0 t2_test[oO][vV]{u} . t2_test[oO][vV]{u}");
@@ -1170,11 +1145,8 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram2() {
         short** ovv_tuples = ovv_indexing->get_tuples();
         short** oov_tuples = oov_indexing->get_tuples();
 
-        double*** T_oovovv;
-        double*** H_ijab;
-
-        allocate1(double**, T_oovovv, moinfo->get_nirreps());
-        allocate1(double**, H_ijab, moinfo->get_nirreps());
+        std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
+        std::vector<double**> H_ijab(moinfo->get_nirreps());
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
@@ -1260,8 +1232,6 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram2() {
             release2(H_ijab[h]);
             release2(T_oovovv[h]);
         }
-        release1(H_ijab);
-        release1(T_oovovv);
     }
     //   blas->print("t2_test[OO][VV]{u}");
     //   blas->solve("ERROR{u} = 1000000.0 t2_test[OO][VV]{u} . t2_test[OO][VV]{u}");

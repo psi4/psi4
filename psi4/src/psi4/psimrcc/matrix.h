@@ -191,9 +191,9 @@ class CCMatrix {
     CCIndex* left;            // Pointer to the left indexing scheme
     CCIndex* right;           // Pointer to the right indexing scheme
     int symmetry;             // Symmetry of the indices
-    size_t* block_sizepi;     // Size of a subblock of matrix per irrep
-    size_t* left_pairpi;      // Left indexing tuples per irrep
-    size_t* right_pairpi;     // Right indexing tuple per irrep
+    Size_tVec block_sizepi;   // Size of a subblock of matrix per irrep
+    Size_tVec left_pairpi;    // Left indexing tuples per irrep
+    Size_tVec right_pairpi;   // Right indexing tuple per irrep
     bool integral;            // Is this a two electron integral?
     bool chemist_notation;    // Is this a two electron integral in chemist notation?
     bool antisymmetric;       // Is this an antisymmetric two electron integral?

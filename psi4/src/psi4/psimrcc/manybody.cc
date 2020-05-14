@@ -62,9 +62,9 @@ extern MemoryManager* memory_manager;
  */
 CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options& options) : ref_wfn_(ref_wfn), options_(options) {
     // Allocate memory for the eigenvector and the effective Hamiltonian
-    allocate1(double, zeroth_order_eigenvector, moinfo->get_nrefs());
-    allocate1(double, right_eigenvector, moinfo->get_nrefs());
-    allocate1(double, left_eigenvector, moinfo->get_nrefs());
+    zeroth_order_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
+    right_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
+    left_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
     allocate2(double, Heff, moinfo->get_nrefs(), moinfo->get_nrefs());
     allocate2(double, Heff_mrpt2, moinfo->get_nrefs(), moinfo->get_nrefs());
 
@@ -80,9 +80,6 @@ CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options& options) : ref_wfn_(
  * @todo wrap the current operations in an cleanup() function
  */
 CCManyBody::~CCManyBody() {
-    release1(zeroth_order_eigenvector);
-    release1(left_eigenvector);
-    release1(right_eigenvector);
     release2(Heff);
     release2(Heff_mrpt2);
 
@@ -326,7 +323,7 @@ void CCManyBody::print_method(const char* text) {
     outfile->Printf("\n");
 }
 
-void CCManyBody::print_eigensystem(int ndets, double** Heff, double*& eigenvector) {
+void CCManyBody::print_eigensystem(int ndets, double** Heff, std::vector<double>& eigenvector) {
     if (ndets < 8) {
         outfile->Printf("\n\n  Heff Matrix\n");
         for (int i = 0; i < ndets; i++) {
@@ -357,7 +354,7 @@ void CCManyBody::print_eigensystem(int ndets, double** Heff, double*& eigenvecto
  * @param c the \f$ \mathbf{c} \f$ vector stored as a double*
  * @return \f$ E \f$
  */
-double CCManyBody::c_H_c(int ndets, double** H, double*& c) {
+double CCManyBody::c_H_c(int ndets, double** H, std::vector<double>& c) {
     double energy = 0.0;
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) energy += c[i] * H[i][j] * c[j];
@@ -374,8 +371,8 @@ double CCManyBody::c_H_c(int ndets, double** H, double*& c) {
  * largest overlap with the previous eigenvector
  * @return
  */
-double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, double*& right_eigenvector,
-                                    double*& left_eigenvector, bool initial) {
+double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, std::vector<double>& right_eigenvector,
+                                    std::vector<double>& left_eigenvector, bool initial) {
     double energy;
     double* real;
     double* imaginary;
