@@ -261,11 +261,6 @@ def _print_tdscf_header(**options):
                    '         {:^57}\n'.format('by Andrew M. James and Daniel G. A. Smith') +
                    '         ---------------------------------------------------------\n')
 
-    core.print_out("{}\n".format("*"*80) +
-                   "{}{:^60}{}\n".format("*"*10, "WARNING", "*"*10) +
-                   "{}{:^60}{}\n".format("*"*10, "TDSCF is experimental results may be inaccurate", "*"*10) +
-                   "{}\n".format("*"*80)) #yapf: disable
-
     core.print_out("\n  ==> Requested Excitations <==\n\n")
     state_info = options.pop('states')
     for nstate, state_sym in state_info:
