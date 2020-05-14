@@ -32,8 +32,7 @@ set {
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 tdscf(wfn)
 
-ex_ens = np.asarray(wfn.array_variable("TD-HF EXCITATION ENERGIES")).flatten()
-ex_labels = np.asarray(wfn.array_variable("TD-HF SYMMETRY LABELS")).flatten()
 
 for n, ref in enumerate(UHF_RPA_cc_pvdz):
-    compare_values(ref,ex_ens[n], 4, f"TD-UHF/cc-pvdz (RPA) 0 A -> {n} A Excitation Energy")
+    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")

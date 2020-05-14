@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {tddft_driver} a4538b2 
+                         Git: Rev {tddft_driver} 4c8caf2 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -23,9 +23,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 14 May 2020 09:15AM
+    Psi4 started on: Thursday, 14 May 2020 04:55PM
 
-    Process ID: 60979
+    Process ID: 70913
     Host:       jeffschriber.local
     PSIDATADIR: /Users/jeffschriber/src/psi4-debug-install/share/psi4
     Memory:     500.0 MiB
@@ -71,11 +71,9 @@ set {
 e, wfn = energy('wB97X/cc-pvdz', return_wfn=True)
 tdscf(wfn)
 
-ex_ens = np.asarray(wfn.array_variable("TD-WB97X EXCITATION ENERGIES")).flatten()
-ex_labels = np.asarray(wfn.array_variable("TD-WB97X SYMMETRY LABELS")).flatten()
-
 for n, ref in enumerate(rhf_wB97X_TDA_cc_pvdz):
-    compare_values(ref,ex_ens[n], 4, f"TD-wB97X/cc-pvdz (TDA) 0 A -> {n} A Excitation Energy")
+    ex_en = wfn.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    compare_values(ref,ex_en, 4, f"TD-wB97X/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
 
 --------------------------------------------------------------------------
 
@@ -84,7 +82,7 @@ Scratch directory: /tmp/
 Scratch directory: /tmp/
 
 *** tstart() called on jeffschriber.local
-*** at Thu May 14 09:15:46 2020
+*** at Thu May 14 16:55:28 2020
 
    => Loading Basis Set <=
 
@@ -244,17 +242,17 @@ Scratch directory: /tmp/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:   -75.82538727182802   -7.58254e+01   0.00000e+00 
-   @RKS iter   1:   -76.24870831810142   -4.23321e-01   2.28250e-02 DIIS
-   @RKS iter   2:   -76.24436550816517    4.34281e-03   2.48492e-02 DIIS
+   @RKS iter SAD:   -75.82538727182799   -7.58254e+01   0.00000e+00 
+   @RKS iter   1:   -76.24870831810135   -4.23321e-01   2.28250e-02 DIIS
+   @RKS iter   2:   -76.24436550816523    4.34281e-03   2.48492e-02 DIIS
    @RKS iter   3:   -76.37349533694241   -1.29130e-01   7.85221e-04 DIIS
-   @RKS iter   4:   -76.37369157088348   -1.96234e-04   2.76872e-04 DIIS
-   @RKS iter   5:   -76.37371552281120   -2.39519e-05   3.94776e-05 DIIS
-   @RKS iter   6:   -76.37371627474722   -7.51936e-07   6.41685e-06 DIIS
-   @RKS iter   7:   -76.37371632339119   -4.86440e-08   1.44046e-06 DIIS
-   @RKS iter   8:   -76.37371632570044   -2.30925e-09   1.37516e-07 DIIS
-   @RKS iter   9:   -76.37371632571877   -1.83320e-11   1.77274e-08 DIIS
-   @RKS iter  10:   -76.37371632571890   -1.27898e-13   1.26998e-09 DIIS
+   @RKS iter   4:   -76.37369157088355   -1.96234e-04   2.76872e-04 DIIS
+   @RKS iter   5:   -76.37371552281125   -2.39519e-05   3.94776e-05 DIIS
+   @RKS iter   6:   -76.37371627474725   -7.51936e-07   6.41685e-06 DIIS
+   @RKS iter   7:   -76.37371632339121   -4.86440e-08   1.44046e-06 DIIS
+   @RKS iter   8:   -76.37371632570043   -2.30922e-09   1.37516e-07 DIIS
+   @RKS iter   9:   -76.37371632571870   -1.82752e-11   1.77274e-08 DIIS
+   @RKS iter  10:   -76.37371632571889   -1.84741e-13   1.26998e-09 DIIS
   Energy and wave function converged.
 
 
@@ -282,17 +280,17 @@ Scratch directory: /tmp/
               A 
     DOCC [     5 ]
 
-  @RKS Final Energy:   -76.37371632571890
+  @RKS Final Energy:   -76.37371632571889
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.0023638541353055
     One-Electron Energy =                -121.0198712300131376
-    Two-Electron Energy =                  43.1406036034157907
-    DFT Exchange-Correlation Energy =      -6.4968125532568664
+    Two-Electron Energy =                  43.1406036034158191
+    DFT Exchange-Correlation Energy =      -6.4968125532568717
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3737163257189025
+    Total Energy =                        -76.3737163257188882
 
 Computation Completed
 
@@ -305,24 +303,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -1.1273
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:     0.3322
+     X:     0.0000      Y:     0.0000      Z:     0.3322
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:    -0.7951     Total:     0.7951
+     X:     0.0000      Y:     0.0000      Z:    -0.7951     Total:     0.7951
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:    -0.0000      Z:    -2.0208     Total:     2.0208
+     X:     0.0000      Y:     0.0000      Z:    -2.0208     Total:     2.0208
 
 
-*** tstop() called on jeffschriber.local at Thu May 14 09:15:49 2020
+*** tstop() called on jeffschriber.local at Thu May 14 16:55:30 2020
 Module time:
-	user time   =       2.40 seconds =       0.04 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.30 seconds =       0.04 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.40 seconds =       0.04 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.30 seconds =       0.04 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 
          ---------------------------------------------------------
@@ -360,18 +358,18 @@ Final Energetic Summary:
      9         A->A (A)        0.83260         22.65611       -75.54112      
      10        A->A (A)        0.84182         22.90705       -75.53190      
 
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 0 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 1 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 2 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 3 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 4 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 5 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 6 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 7 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 8 A Excitation Energy...............PASSED
-    TD-wB97X/cc-pvdz (TDA) 0 A -> 9 A Excitation Energy...............PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 1 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 2 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 3 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 4 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 5 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 6 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 7 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 8 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 9 EXCITATION ENERGY - A SYMMETRY..PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 10 EXCITATION ENERGY - A SYMMETRY.PASSED
 
-    Psi4 stopped on: Thursday, 14 May 2020 09:15AM
-    Psi4 wall time for execution: 0:00:07.40
+    Psi4 stopped on: Thursday, 14 May 2020 04:55PM
+    Psi4 wall time for execution: 0:00:06.28
 
 *** Psi4 exiting successfully. Buy a developer a beer!

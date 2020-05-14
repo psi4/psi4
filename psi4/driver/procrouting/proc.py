@@ -2732,6 +2732,7 @@ def run_tdscf_energy(**kwargs):
 
     ssuper_name = ref_wfn.functional().name()
 
+    # Do we need this return value? 
     ret = response.scf_response.tdscf_excitations(ref_wfn, states_per_irrep = states,
                                                   triplet = core.get_global_option("TDSCF_TRIPLETS"),
                                                   tda = core.get_global_option("TDSCF_TDA"),
@@ -2739,8 +2740,6 @@ def run_tdscf_energy(**kwargs):
                                                   r_tol = core.get_global_option("TDSCF_R_TOL"),
                                                   guess = core.get_global_option("TDSCF_GUESS"))
 
-    ref_wfn.set_array_variable(f"TD-{ssuper_name} EXCITATION ENERGIES", core.Matrix.from_array(np.asarray(ret)[:,0].reshape(-1,1)))
-    ref_wfn.set_array_variable(f"TD-{ssuper_name} SYMMETRY LABELS", core.Matrix.from_array(np.asarray(ret)[:,1].reshape(-1,1)))
 
     return ref_wfn
     

@@ -305,6 +305,7 @@ def tdscf_excitations(wfn, **kwargs):
     ..note:: The algorithm employed to solve the non-Hermitian eigenvalue problem
              (when ``tda`` is False) will fail when the SCF wavefunction has a triplet instability.
     """
+    ssuper_name = wfn.functional().name()
     # gather arguments
     e_tol = kwargs.pop('e_tol', 1.0e-6)
     r_tol = kwargs.pop('r_tol', 1.0e-8)
@@ -329,6 +330,7 @@ def tdscf_excitations(wfn, **kwargs):
         ptype = 'tda'
         solve_function = solvers.davidson_solver
 
+    #TODO: add the none/some/all handling of triplet states
     restricted = wfn.same_a_b_orbs()
     if restricted:
         triplet = kwargs.pop('triplet', False)
@@ -400,6 +402,9 @@ def tdscf_excitations(wfn, **kwargs):
         E_tot_au = wfn.energy() + E_ex_au
         core.print_out("    {:^4} {:^20} {:< 15.5f} {:< 15.5f} {:< 15.5f}\n".format(
             i + 1, sym_descr, E_ex_au, E_ex_ev, E_tot_au))
+
+        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {irrep_ES} SYMMETRY", E_tot_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
 
     core.print_out("\n")
 
