@@ -293,6 +293,10 @@ def spectrum(*,
         - Wavelength: :math:`gamma_{\lambda} = \frac{\lambda_{ij}^{2}}{2\pi c}\gamma_{\omega}`
         - Frequency: :math:`gamma_{\nu} = \frac{\gamma_{\omega}}{2\pi}`
         - Energy: :math:`gamma_{E} = \gamma_{\omega}\hbar`
+
+    References
+    ----------
+    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy.
     """
 
     # Transmute inputs to np.ndarray
