@@ -30,8 +30,6 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
-
-
 """
 This module provides ``engine`` objects that can be used by the :func:`~psi4.driver.p4util.solvers.davidson_solver` and
 :func:`~psi4.driver.p4util.solvers.hamiltonian_solver`
@@ -171,23 +169,22 @@ class ProductCache:
 class TDRSCFEngine(SingleMatPerVector):
     """Engine for R(HF/KS) products
 
-    Fulfills the API required by :class:`~psi4.driver.p4uitl.solvers.SolverEngine`
+    Fulfills the API required by :class:`~psi4.driver.p4util.solvers.SolverEngine`
 
 
     Parameters
     ----------
     wfn : :py:class:`psi4.core.Wavefunction`
         The converged SCF wfn
-    ptype : str {'rpa', 'tda'}
+    ptype : {'rpa', 'tda'}
         The product type to be evaluated. When ``ptype == 'rpa'``. The return of `compute_products` will be as
         expected by :func:`~psi4.driver.p4util.solvers.hamiltonian_solver`, when ``ptype == 'tda'`` the return of
         compute_products will be as expected by :func:`~psi4.driver.p4util.solvers.davidson_solver`.
     triplet : bool , optional
         Are products spin-adapted for triplet excitations?
-
     """
 
-    def __init__(self, wfn, ptype, triplet=False):
+    def __init__(self, wfn, *, ptype, triplet=False):
 
         # primary data
         self.wfn = wfn
@@ -195,7 +192,7 @@ class TDRSCFEngine(SingleMatPerVector):
         self.needs_K_like = self.wfn.functional().is_x_hybrid() or self.wfn.functional().is_x_lrc()
 
         if self.ptype not in ["rpa", "tda"]:
-            raise KeyError("Product type {} not understood".format(self.ptype))
+            raise KeyError(f"Product type {self.ptype} not understood")
 
         # product type
         self.singlet = not triplet
@@ -422,7 +419,7 @@ class TDUSCFEngine(PairedMatPerVector):
 
     """
 
-    def __init__(self, wfn, ptype):
+    def __init__(self, wfn, *, ptype):
 
         # Primary data
         self.wfn = wfn

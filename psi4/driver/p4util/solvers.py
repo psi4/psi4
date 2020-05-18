@@ -190,6 +190,7 @@ class DIIS:
     """
     An object to assist in the DIIS extrpolation procedure.
     """
+
     def __init__(self, max_vec=6, removal_policy="OLDEST"):
         """
         An object to assist in the DIIS extrpolation procedure.
@@ -307,7 +308,7 @@ class DIIS:
         return out
 
 
-def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, e_tol, r_tol, maxiter, verbose=1):
+def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, r_tol, maxiter, verbose=1):
     """Print a message to the output file when the solver has processed all options and is ready to begin"""
     if verbose < 1:
         # no printing
@@ -318,21 +319,20 @@ def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, e_tol, r_t
     core.print_out("\n")
     if verbose > 1:
         # summarize options for verbose
-        core.print_out("   " + "{} options".format(solver_name) + "\n")
+        core.print_out(f"   {solver_name} options\n")
         core.print_out("\n  -----------------------------------------------------\n")
-        core.print_out("    Maxiter                         = {:<5d}\n".format(maxiter))
-        core.print_out("    Eigenvalue tolerance            = {:11.5e}\n".format(e_tol))
-        core.print_out("    Eigenvector tolerance           = {:11.5e}\n".format(r_tol))
-        core.print_out("    Max number of expansion vectors = {:<5d}\n".format(max_ss_size))
+        core.print_out(f"    Maxiter                         = {maxiter:<5d}\n")
+        core.print_out(f"    Eigenvector tolerance           = {r_tol:11.5e}\n")
+        core.print_out(f"    Max number of expansion vectors = {max_ss_size:<5d}\n")
         core.print_out("\n")
     # show iteration info headings if not silent
     core.print_out("  => Iterations <=\n")
     if verbose == 1:
         # default printing one line per iter max delta value and max residual norm
-        core.print_out("  {}           {}      {}\n".format(" " * len(solver_name), "Max[D[value]]", "Max[|R|]"))
+        core.print_out(f"  {' ' * len(solver_name)}           Max[D[value]]     Max[|R|]\n")
     else:
         # verbose printing, value, delta, and |R| for each root
-        core.print_out("    {}       {}      {}      {}\n".format(" " * len(solver_name), "value", "D[value]", "|R|"))
+        core.print_out("    {' ' * len(solver_name)}       value      D[value]      |R|\n")
 
 
 def _diag_print_info(solver_name, info, verbose=1):
@@ -380,7 +380,7 @@ def _diag_print_converged(solver_name, stats, vals, verbose=1, **kwargs):
 
 
 def _print_array(name, arr, verbose):
-    """print an subspace quantity (numpy array) to the output file
+    """print a subspace quantity (numpy array) to the output file
 
     Parameters
     ----------
@@ -392,11 +392,11 @@ def _print_array(name, arr, verbose):
         The amount of information to print. Only prints for verbose > 2
     """
     if verbose > 2:
-        core.print_out("\n\n{}:\n{}\n".format(name, str(arr)))
+        core.print_out(f"\n\n{name}:\n{str(arr)}\n")
 
 
 def _gs_orth(engine, U, V, thresh):
-    """Perform GS orthonormalization of a set V against a previously orthonormalized set U
+    """Perform Gram-Schmidt orthonormalization of a set V against a previously orthonormalized set U
     Parameters
     ----------
     engine : object
@@ -428,7 +428,7 @@ def _best_vectors(engine, ss_vectors, basis_vectors):
 
     ..math:: V_{k} = \Sum_{i} \tilde{V}_{i,k}X_{i}
 
-    Where :math:`\tilde{V} is the matrix with columns that are eigenvectors of the subspace matrix. And
+    Where :math:`\tilde{V}` is the matrix with columns that are eigenvectors of the subspace matrix. And
     :math:`X_{i}` is a basis vector.
 
     Parameters
@@ -468,6 +468,7 @@ class SolverEngine(ABC):
               such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
               len(list) returns the number of vector-like objects.
     """
+
     @abstractmethod
     def compute_products(self, X):
         r"""Compute a Matrix * trial vector products
@@ -606,8 +607,7 @@ class SolverEngine(ABC):
 
 def davidson_solver(engine,
                     guess,
-                    e_tol=1.0E-6,
-                    r_tol=1.0E-8,
+                    r_tol=1.0E-4,
                     nroot=1,
                     max_vecs_per_root=20,
                     maxiter=100,
@@ -631,8 +631,6 @@ def davidson_solver(engine,
        The engine drive all operations involving data structures that have at least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
-    e_tol : float
-        Convergence tolerance for eigenvalues
     r_tol : float
         Convergence tolerance for residual vectors
     nroot : int
@@ -683,7 +681,7 @@ def davidson_solver(engine,
     title_lines = ["Generalized Davidson Solver", "By Ruhee Dcunha"]
     max_ss_size = max_vecs_per_root * nk
 
-    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, e_tol, r_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, maxiter, verbose)
 
     vecs = guess
     stats = []
@@ -790,11 +788,10 @@ def davidson_solver(engine,
 
 def hamiltonian_solver(engine,
                        guess,
-                       e_tol=1.0E-6,
-                       r_tol=1.0E-8,
+                       r_tol=1.0E-4,
                        nroot=1,
                        max_vecs_per_root=20,
-                       maxiter=100,
+                       maxiter=60,
                        verbose=1,
                        schmidt_tol=1.0e-8):
     """
@@ -830,8 +827,6 @@ def hamiltonian_solver(engine,
        The engine drive all operations involving data structures that have at least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
-    e_tol : float
-        Convergence tolerance for eigenvalues
     r_tol : float
         Convergence tolerance for residual vectors
     nroot : int
@@ -890,7 +885,7 @@ def hamiltonian_solver(engine,
     title_lines = ["Generalized Hamiltonian Solver", "By Andrew M. James"]
     ss_max = max_vecs_per_root * nk
 
-    _diag_print_heading(title_lines, print_name, ss_max, nroot, e_tol, r_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, ss_max, nroot, r_tol, maxiter, verbose)
 
     vecs = guess
     best_L = []
@@ -938,15 +933,16 @@ def hamiltonian_solver(engine,
         # Check H2 is PD
         # NOTE: If this triggers failure the SCF solution is not stable. A few ways to handle this
         # 1. Use davidson solver where product function evaluates (H2 * (H1 * X))
-        #    - Poor convergen
+        #    - Poor convergence
         # 2. Switch to CIS/TDA
         #    - User would probably not expect this
         # 3. Perform Stability update and restart with new reference
         if np.any(H2_ss_val < 0.0):
-            raise Exception("H2 is not Positive Definite")
+            msg = ("The H2 matrix is not Positive Definite. " "This means the reference state is not stable.")
+            raise RuntimeError(msg)
 
         # Build H2^(1/2)
-        H2_ss_half = np.dot(H2_ss_vec, np.diag(np.sqrt(H2_ss_val))).dot(H2_ss_vec.T)
+        H2_ss_half = np.einsum("ik,k,jk->ij", H2_ss_vec, np.sqrt(H2_ss_val), H2_ss_vec)
         _print_array("SS Transformed (A-B)^(1/2)", H2_ss_half, verbose)
 
         # Build Hermitian SS product (H2)^(1/2)(H1)(H2)^(1/2)
@@ -1008,9 +1004,6 @@ def hamiltonian_solver(engine,
             norm_L = np.sqrt(engine.vector_dot(WL_k, WL_k))
 
             norm = norm_R + norm_L
-
-            WL_k = engine.vector_scale(norm_L, WL_k)
-            WR_k = engine.vector_scale(norm_R, WR_k)
 
             iter_info['res_norm'][k] = norm
             iter_info['delta_val'][k] = np.abs(old_w[k] - w[k])

@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+from typing import Union, List, Dict
+
 import numpy as np
 
 from psi4 import core
@@ -256,108 +258,145 @@ def _print_output(complete_dict, output):
 
 
 def _print_tdscf_header(**options):
-    core.print_out('\n\n         ---------------------------------------------------------\n'
-                   '         {:^57}\n'.format('TDSCF excitation energies') +
-                   '         {:^57}\n'.format('by Andrew M. James and Daniel G. A. Smith') +
-                   '         ---------------------------------------------------------\n')
+    core.print_out("\n\n         ---------------------------------------------------------\n"
+                   f"         {'TDSCF excitation energies':^57}\n" +
+                   f"         {'by Andrew M. James and Daniel G. A. Smith':^57}\n" +
+                   "         ---------------------------------------------------------\n")
 
     core.print_out("\n  ==> Requested Excitations <==\n\n")
     state_info = options.pop('states')
     for nstate, state_sym in state_info:
-        core.print_out("      {} states with {} symmetry\n".format(nstate, state_sym))
+        core.print_out(f"      {nstate} states with {state_sym} symmetry\n")
 
     core.print_out("\n  ==> Options <==\n\n")
     for k, v in options.items():
-        core.print_out("     {:<10s}:              {}\n".format(k, v))
+        core.print_out(f"     {k:<10s}:              {v}\n")
 
     core.print_out("\n")
 
 
-def tdscf_excitations(wfn, **kwargs):
-    """Compute excitations from a scf(HF/KS) wavefunction:
+def tdscf_excitations(wfn,
+                      *,
+                      states: Union[int, List[int]],
+                      triplets: str = "none",
+                      tda: bool = False,
+                      r_tol: float = 1.0e-4,
+                      max_ss_vec: int = 50,
+                      guess: str = "denominators",
+                      print_lvl: int = 1):
+    """Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
     -----------
     wfn : :py:class:`psi4.core.Wavefunction`
        The reference wavefunction
-    states_per_irrep : list (int), {optional}
-       The solver will find this many lowest excitations for each irreducible representation of the computational point group.
-       The default is to find the lowest excitation of each symmetry. If this option is provided it must have the same number of elements
-       as the number of irreducible representations as the computational point group.
-    triplets : str {optional, ``none``, ``only``, ``also``}
-       The default ``none`` will solve for no triplet states, ``only`` will solve for triplet states only, and ``also``
-       will solve for the requested number of states of both triplet and singlet. This option is only valid for restricted references,
-       and is ignored otherwise. The triplet and singlet solutions are found separately so using the ``also`` option will roughly double
-       the computational cost of the calculation.
-    tda :  bool {optional ``False``}
-       If true the Tamm-Dancoff approximation (TDA) will be employed. For HF references this is equivalent to CIS.
-    e_tol : float, {optional, 1.0e-6}
-       The convergence threshold for the excitation energy
-    r_tol : float, {optional, 1.0e-8}
-       The convergence threshold for the norm of the residual vector
-    max_ss_vectors: int {optional}
-       The maximum number of ss vectors that will be stored before a collapse is done.
-    guess : str
-       If string the guess that will be used. Allowed choices:
-       - ``denominators``: {default} uses orbital energy differences to generate guess vectors.
+    states : Union[int, List[int]]
+       How many roots (excited states) should the solver seek to converge?
+       This function accepts either an integer or a list of integers:
+         - The list has :math:`n_{\mathrm{irrep}}` elements and is only
+           acceptable if the system has symmetry. It tells the solver how many
+           states per irrep to calculate.
+         - If an integer is given _and_ the system has symmetry, the states
+           will be distributed among irreps.
+           For example, ``states = 10`` for a D2h system will compute 10 states
+           distributed as ``[2, 2, 1, 1, 1, 1, 1, 1]`` among irreps.
+    triplets : {"none", "only", "also"}
+       Should the solver seek to converge states of triplet symmetry?
+       Default is `none`: do not seek to converge triplets.
+       Valid options are:
+         - `none`. Do not seek to converge triplets.
+         - `only`. Only seek to converge triplets.
+         - `also`. Seek to converge both triplets and singlets. This choice is
+           only valid for restricted reference wavefunction. Moreover, it will
+           **at least double** the cost of the response calculation: singlet
+           and triplet solutions are found separately and `also` will seek to
+           converge the same number of `states` for both spin symmetries.
+    tda :  bool, optional.
+       Should the solver use the Tamm-Dancoff approximation (TDA) or the
+       random-phase approximation (RPA)?
+       Default is ``False``: use RPA.
+       Note that TDA is equivalent to CID for HF references.
+    r_tol : float, optional.
+       The convergence threshold for the norm of the residual vector.
+       Default: 1.0e-4
+       Using a tighter convergence threshold here requires tighter SCF ground
+       state convergence threshold. As a rule of thumb, with the SCF ground
+       state density converged to :math:`10^{-N}` (``D_CONVERGENGE = 1.0e-N``),
+       you can afford converging a corresponding TDSCF calculation to
+       :math:`10^{-(N-2)}`.
+       The default value is consistent with the default value for
+       ``D_CONVERGENCE``.
+    max_ss_vec: int, optional.
+       The maximum number of trial vectors in the iterative subspace that will
+       be stored before a collapse is done.
+       Default: 50
+    guess : str, optional.
+       How should the starting trial vectors be generated?
+       Default: `denominators`, i.e. use orbital energy differences to generate
+       guess vectors.
+    print_lvl : int, optional.
+       How verbose should the solver be?
+       Default: 1
 
 
-    ..note:: The algorithm employed to solve the non-Hermitian eigenvalue problem
-             (when ``tda`` is False) will fail when the SCF wavefunction has a triplet instability.
+    Notes
+    -----
+    The algorithm employed to solve the non-Hermitian eigenvalue problem (``tda = False``)
+    will fail when the SCF wavefunction has a triplet instability.
     """
     ssuper_name = wfn.functional().name()
-    # gather arguments
-    e_tol = kwargs.pop('e_tol', 1.0e-6)
-    r_tol = kwargs.pop('r_tol', 1.0e-8)
-    max_ss_vec = kwargs.pop('max_ss_vectors', 50)
-    verbose = kwargs.pop('print_lvl', 0)
 
-    # how many states
-    passed_spi = kwargs.pop('states_per_irrep', [0 for _ in range(wfn.nirrep())])
+    # validate states
+    if not (isinstance(states, int) or isinstance(states, list)):
+        raise ValidationError("Number of states must be either an integer or a list of integers")
 
-    #TODO:states_per_irrep = _validate_states_args(wfn, passed_spi, nstates)
-    states_per_irrep = passed_spi
+    # determine how many singlet states per irrep to seek
+    singlets_per_irrep = []
+    if isinstance(states, list):
+        # list of states per irrep given, validate it
+        if len(states) != wfn.nirrep():
+            raise ValidationError(f"States requested ({states}) do not match with number of irreps ({wfn.nirrep()})")
+        else:
+            singlets_per_irrep = states
+    else:
+        # total number of states given, distribute them among irreps
+        singlets_per_irrep = [states // wfn.nirrep()] * wfn.nirrep()
+        for i in range(states % wfn.nirrep()):
+            singlets_per_irrep[i] += 1
 
-    #TODO: guess types, user guess
-    guess_type = kwargs.pop("guess", "denominators")
-    if guess_type.lower() != "denominators":
-        raise ValidationError("Guess type {} is not valid".format(guess_type))
+    # do triplets?
+    restricted = wfn.same_a_b_orbs()
+    do_triplets = False if triplets == "none" else True
+    triplets_per_irrep = singlets_per_irrep
+    if not restricted and do_triplets:
+        raise ValidationError("Cannot compute triplets with an unrestricted reference")
+
+    if guess.lower() != "denominators":
+        raise ValidationError(f"Guess type {guess} is not valid")
 
     # which problem
     ptype = 'rpa'
     solve_function = solvers.hamiltonian_solver
-    tda = bool(kwargs.pop('tda', False))
     if tda:
         ptype = 'tda'
         solve_function = solvers.davidson_solver
 
-    #TODO: add the none/some/all handling of triplet states
-    restricted = wfn.same_a_b_orbs()
-    if restricted:
-        triplet = kwargs.pop('triplet', False)
-    else:
-        triplet = False
-
-    _print_tdscf_header(
-        e_tol=e_tol,
-        r_tol=r_tol,
-        states=[(count, label) for count, label in zip(states_per_irrep,
-                                                       wfn.molecule().irrep_labels())],
-        guess=guess_type,
-        restricted=restricted,
-        triplets=triplet,
-        tda=tda,
-        ptype=ptype)
+    _print_tdscf_header(rtol=r_tol,
+                        states=[(count, label) for count, label in zip(singlets_per_irrep,
+                                                                       wfn.molecule().irrep_labels())],
+                        guess_type=guess,
+                        restricted=restricted,
+                        triplet=do_triplets,
+                        ptype=ptype)
 
     # construct the engine
     if restricted:
-        engine = TDRSCFEngine(wfn, triplet=triplet, ptype=ptype)
+        engine = TDRSCFEngine(wfn, ptype=ptype, triplet=do_triplets)
     else:
         engine = TDUSCFEngine(wfn, ptype=ptype)
 
-    # just energies for now
-    solver_results = []
-    for state_sym, nstates in enumerate(states_per_irrep):
+    _results = []
+    for state_sym, nstates in enumerate(singlets_per_irrep):
         if nstates == 0:
             continue
         engine.reset_for_state_symm(state_sym)
@@ -365,86 +404,96 @@ def tdscf_excitations(wfn, **kwargs):
 
         vecs_per_root = max_ss_vec // nstates
 
-        # ret = {"eigvals": ee, "eigvecs": (rvecs, [None]), "stats": stats} (TDA)
-        # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (full TDSCF)
+        # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
+        # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
         ret = solve_function(engine=engine,
-                             e_tol=e_tol,
                              r_tol=r_tol,
                              max_vecs_per_root=vecs_per_root,
                              nroot=nstates,
                              guess=guess_,
-                             verbose=verbose)
+                             verbose=print_lvl)
+        # TODO move rescaling by np.sqrt(2.0) to the solver
         for root, (R, L) in enumerate(ret["eigvecs"]):
             R = engine.vector_scale(np.sqrt(2.0), R)
             L = engine.vector_scale(np.sqrt(2.0), L)
             ret["eigvecs"][root] = (R, L)
+        # flatten dictionary: helps with sorting by energy
+        # also append state symmetry to return value
+        # TODO what to do with the stats?
+        for e, (R, L) in zip(ret["eigvals"], ret["eigvecs"]):
+            _results.append((e, R, L, state_sym))
 
-        # store excitation energies tagged with final state symmetry (for printing)
-        # TODO: handle R eigvecs (TDA) R/L eigvecs(full TDSCF): solver maybe should return dicts
-
-        for r in zip(ret["eigvals"], ret["eigvecs"]):
-            # FIXME Ugly, maybe the return value from the solver should be namedtuple?
-            solver_results.append((r[0], r[1], state_sym))
-
-    # sort by energy symmetry is just meta data
-    solver_results.sort(key=lambda x: x[0])
+    # sort by energy, symmetry is just meta data
+    _results = sorted(_results, key=lambda x: x[0])
 
     # print excitation energies
-    core.print_out("\n\nFinal Energetic Summary:\n")
-    core.print_out("        " + (" " * 20) + " " + "Excitation Energy".center(31) + " {:^15}\n".format("Total Energy"))
-    core.print_out("    {:^4} {:^20} {:^15} {:^15} {:^15}\n".format("#", "Sym: GS->ES (Trans)", "[au]", "[eV]",
-                                                                    "(au)"))
-    core.print_out("    {:->4} {:->20} {:->15} {:->15} {:->15}\n".format("-", "-", "-", "-", "-"))
+    core.print_out("\n\nFinal Summary:\n")
+    core.print_out("        " + (" " * 20) + " " + "Excitation Energy".center(31) + f" {'Total Energy':^15}" +
+                   "Oscillator Strength".center(31) + "\n")
+    core.print_out(
+        f"    {'#':^4} {'Sym: GS->ES (Trans)':^20} {'au':^15} {'eV':^15} {'au':^15} {'au (length)':^15} {'au (velocity)':^15}\n"
+    )
+    core.print_out(f"    {'-':->4} {'-':->20} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15}\n")
+
+    # compute some spectroscopic observables
+    # TODO generalize to UHF
+    # Get integrals
+    Ca_left = wfn.Ca_subset("SO", "OCC")
+    Ca_right = wfn.Ca_subset("SO", "VIR")
+    mints = core.MintsHelper(wfn.basisset())
+
+    def compute_ints(C_L, C_R, so_computer):
+        return [core.triplet(C_L, x, C_R, True, False, False) for x in so_computer()]
+
+    property_integrals = {
+        "length gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_dipole),
+        "velocity gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_nabla),
+        "magnetic dipole": compute_ints(Ca_left, Ca_right, mints.so_angular_momentum)
+    }
 
     irrep_GS = wfn.molecule().irrep_labels()[engine.G_gs]
-    for i, (E_ex_au, _, final_sym) in enumerate(solver_results):
+    # collect results into ExcitationData and return as List[ExcitationData]
+    solver_results = []
+    for i, (E_ex_au, R, L, final_sym) in enumerate(_results):
         irrep_ES = wfn.molecule().irrep_labels()[final_sym]
         irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ final_sym]
         sym_descr = f"{irrep_GS}->{irrep_ES} ({irrep_trans})"
 
-        #TODO: psivars/wfnvars
-
+        #TODO: stash in psivars/wfnvars
         E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
 
         E_tot_au = wfn.energy() + E_ex_au
-        core.print_out(f"    {i+1:^4} {sym_descr:^20} {E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f}\n")
 
         wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {irrep_ES} SYMMETRY", E_tot_au)
         wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
 
+        # length-gauge electric dipole transition moment
+        edtm_length = np.array([R.vector_dot(prop) for prop in property_integrals["length gauge electric dipole"]])
+        # lenght-gauge oscillator strength
+        f_length = 2 / 3 * E_ex_au * np.sum(edtm_length**2)
+        # velocity-gauge electric dipole transition moment
+        edtm_velocity = np.array([L.vector_dot(prop) for prop in property_integrals["velocity gauge electric dipole"]])
+        # velocity-gauge oscillator strength
+        f_velocity = 2 / 3 * np.sum(edtm_velocity**2) / E_ex_au
+        # length gauge magnetic dipole transition moment
+        mdtm = 0.5 * np.array([L.vector_dot(prop) for prop in property_integrals["magnetic dipole"]])
+        # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
+        # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
+        # 1/2 is the Bohr magneton in atomic units
+        # velocity gauge rotatory strength
+        # From Equation (1) in Chem. Phys Lett. 388 (2004) 110
+        R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / E_ex_au
+        # length gauge rotatory strength
+        # From Equation (2) in Chem. Phys Lett. 388 (2004) 110
+        R_length = np.einsum("i,i", edtm_length, mdtm)
+
+        core.print_out(
+            f"    {i+1:^4} {sym_descr:^20} {E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {f_length:< 15.5f} {f_velocity:< 15.5f}\n"
+        )
+
     core.print_out("\n")
 
     #TODO: output table
-
-    #TODO: oscillator strengths
-    # Get integrals
-    #ndocc = wfn.nalpha()
-    #Ca_left = wfn.Ca_subset("SO", "OCC")
-    #Ca_right = wfn.Ca_subset("SO", "VIR")
-    #mints = core.MintsHelper(wfn.basisset())
-    #def compute_ints(C_L, C_R, so_computer):
-    #    return [psi4.core.triplet(C_L, x, C_R, True, False, False) for x in so_computer()]
-    #property_integrals = {
-    #    "length gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_dipole),
-    #    "velocity gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_nabla),
-    #    "magnetic dipole": compute_ints(Ca_left, Ca_right, mints.so_angular_momentum)
-    #}
-
-    #for omega, (XpY, XmY), _ in res:
-    #    edtm_length = np.array([XpY.vector_dot(prop) for prop in property_integrals["length gauge electric dipole"]])
-    #    f_length = 2/3 * omega * np.sum(edtm_length**2)
-
-    #    edtm_velocity = np.array([XmY.vector_dot(prop) for prop in property_integrals["velocity gauge electric dipole"]])
-    #    f_velocity = 2/3 * np.sum(edtm_velocity**2) / omega
-
-    #    # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
-    #    # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
-    #    # 1/2 is the Bohr magneton in atomic units
-    #    mdtm = 0.5 * np.array([XmY.vector_dot(prop) for prop in property_integrals["magnetic dipole"]])
-    #    # From Equation (1) in Chem. Phys Lett. 388 (2004) 110
-    #    R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / omega
-    #    # From Equation (2) in Chem. Phys Lett. 388 (2004) 110
-    #    R_length = np.einsum("i,i", edtm_length, mdtm)
 
     #TODO: check/handle convergence failures
 
