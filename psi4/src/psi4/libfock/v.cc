@@ -596,6 +596,10 @@ void VBase::initialize() {
             }
         }
         
+        if (options_.exists("DFT_OMEGA") and options_.get_double("DFT_OMEGA") > 0) {
+            functionalParameterMap.insert({BRIAN_FUNCTIONAL_PARAMETER_RANGE, options_.get_double("DFT_OMEGA")});
+        }
+        
         std::vector<brianInt> functionalParameterIDs;
         std::vector<double> functionalParameterValues;
         for (const std::pair<brianInt, double>& parameter: functionalParameterMap) {
@@ -631,6 +635,24 @@ void VBase::initialize() {
                 brianDFTGrid.atomRotationMatrices.data()
             );
             checkBrian();
+            
+            std::vector<brianInt> NLCParameterIDs;
+            std::vector<double> NLCParameterValues;
+            if (options_.exists("DFT_VV10_B") and options_.get_double("DFT_VV10_B") > 0) {
+                NLCParameterIDs.push_back(BRIAN_NLC_PARAMETER_VV_B);
+                NLCParameterValues.push_back(options_.get_double("DFT_VV10_B"));
+            }
+            if (options_.exists("DFT_VV10_C") and options_.get_double("DFT_VV10_C") > 0) {
+                NLCParameterIDs.push_back(BRIAN_NLC_PARAMETER_VV_C);
+                NLCParameterValues.push_back(options_.get_double("DFT_VV10_C"));
+            }
+            
+            if (not NLCParameterIDs.empty()) {
+                brianInt NLCID = BRIAN_NLC_VV10;
+                double NLCWeight = 1.0;
+                brianInt NLCParameterCount = NLCParameterIDs.size();
+                brianCOMSetNLC(&brianCookie, &NLCID, &NLCWeight, &NLCParameterCount, NLCParameterIDs.data(), NLCParameterValues.data());
+            }
         }
         
         brianCOMInitDFT(&brianCookie);
