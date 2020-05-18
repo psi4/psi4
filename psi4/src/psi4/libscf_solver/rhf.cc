@@ -482,7 +482,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         std::vector<SharedMatrix> Dx;
         for (size_t i = 0; i < x_vec.size(); i++) {
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
-            Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi()));
+            Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi(), Dx[i]->symmetry()));
         }
         potential_->compute_Vx(Dx, Vx);
     }
