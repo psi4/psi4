@@ -82,7 +82,9 @@ struct brianGrid {
     std::vector<double> atomRotationMatrices;
 };
 
+extern bool brianBuildingNLCGrid;
 extern brianGrid brianDFTGrid;
+extern brianGrid brianNLCGrid;
 #endif
 
 namespace psi {
@@ -620,21 +622,21 @@ void VBase::initialize() {
         checkBrian();
         
         if (functional_->needs_vv10()) {
-            // Psi4 doesn't have a separate NLC grid, it always uses the DFT grid
-            brianCOMSetNLCGrid(&brianCookie,
-                brianDFTGrid.atomBlockCounts.data(),
-                brianDFTGrid.atomBlockOffsets.data(),
-                brianDFTGrid.blockRadialCounts.data(),
-                brianDFTGrid.blockRadialOffsets.data(),
-                brianDFTGrid.radialCoordinates.data(),
-                brianDFTGrid.radialWeights.data(),
-                brianDFTGrid.blockAngularCounts.data(),
-                brianDFTGrid.blockAngularOffsets.data(),
-                brianDFTGrid.angularCoordinates.data(),
-                brianDFTGrid.angularWeights.data(),
-                brianDFTGrid.atomRotationMatrices.data()
-            );
-            checkBrian();
+            // Psi4 would only generate the NLC grid when actually computing the NLC term
+            // (and that code path is not even called when BrianQC is active),
+            // but we need the NLC grid before initializing, so we replicate the grid building here
+            {
+                std::map<std::string, std::string> opt_map;
+                opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
+                
+                std::map<std::string, int> opt_int_map;
+                opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
+                opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
+                
+                brianBuildingNLCGrid = true;
+                DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
+                brianBuildingNLCGrid = false;
+            }
             
             std::vector<brianInt> NLCParameterIDs;
             std::vector<double> NLCParameterValues;

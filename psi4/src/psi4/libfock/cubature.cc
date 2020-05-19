@@ -96,7 +96,9 @@ struct brianGrid {
     std::vector<double> atomRotationMatrices;
 };
 
+bool brianBuildingNLCGrid = false;
 brianGrid brianDFTGrid;
+brianGrid brianNLCGrid;
 #endif
 
 using namespace psi;
@@ -3840,48 +3842,50 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 #ifdef USING_BrianQC
     // TODO: do the same for the other version of buildGridFromOptions below
     if (brianCookie != 0 and brianPsi4DFT) {
+        brianGrid* currentGrid = brianBuildingNLCGrid ? &brianNLCGrid : &brianDFTGrid;
+        
         brianInt atomBlockOffset = 0;
-        brianDFTGrid.atomBlockCounts.clear();
-        brianDFTGrid.atomBlockOffsets.clear();
+        currentGrid->atomBlockCounts.clear();
+        currentGrid->atomBlockOffsets.clear();
         
         brianInt radialOffset = 0;
-        brianDFTGrid.blockRadialCounts.clear();
-        brianDFTGrid.blockRadialOffsets.clear();
-        brianDFTGrid.radialCoordinates.clear();
-        brianDFTGrid.radialWeights.clear();
+        currentGrid->blockRadialCounts.clear();
+        currentGrid->blockRadialOffsets.clear();
+        currentGrid->radialCoordinates.clear();
+        currentGrid->radialWeights.clear();
         
         brianInt angularOffset = 0;
-        brianDFTGrid.blockAngularCounts.clear();
-        brianDFTGrid.blockAngularOffsets.clear();
-        brianDFTGrid.angularCoordinates.clear();
-        brianDFTGrid.angularWeights.clear();
+        currentGrid->blockAngularCounts.clear();
+        currentGrid->blockAngularOffsets.clear();
+        currentGrid->angularCoordinates.clear();
+        currentGrid->angularWeights.clear();
         
-        brianDFTGrid.atomRotationMatrices.clear();
+        currentGrid->atomRotationMatrices.clear();
         
         for (int A = 0; A < molecule_->natom(); A++) {
-            brianDFTGrid.atomRotationMatrices.insert(brianDFTGrid.atomRotationMatrices.end(), atomRotations[A].begin(), atomRotations[A].end());
+            currentGrid->atomRotationMatrices.insert(currentGrid->atomRotationMatrices.end(), atomRotations[A].begin(), atomRotations[A].end());
             
-            brianDFTGrid.atomBlockCounts.push_back(atomBlocks[A].size());
-            brianDFTGrid.atomBlockOffsets.push_back(atomBlockOffset);
+            currentGrid->atomBlockCounts.push_back(atomBlocks[A].size());
+            currentGrid->atomBlockOffsets.push_back(atomBlockOffset);
             for (int blockIndex = 0; blockIndex < atomBlocks[A].size(); blockIndex++) {
                 
-                brianDFTGrid.blockRadialCounts.push_back(atomBlocks[A][blockIndex].radialPoints.size());
-                brianDFTGrid.blockRadialOffsets.push_back(radialOffset);
+                currentGrid->blockRadialCounts.push_back(atomBlocks[A][blockIndex].radialPoints.size());
+                currentGrid->blockRadialOffsets.push_back(radialOffset);
                 for (int radialIndex = 0; radialIndex < atomBlocks[A][blockIndex].radialPoints.size(); radialIndex++)
                 {
-                    brianDFTGrid.radialCoordinates.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].r);
-                    brianDFTGrid.radialWeights.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].w);
+                    currentGrid->radialCoordinates.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].r);
+                    currentGrid->radialWeights.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].w);
                 }
                 radialOffset += atomBlocks[A][blockIndex].radialPoints.size();
                 
-                brianDFTGrid.blockAngularCounts.push_back(atomBlocks[A][blockIndex].angularPoints.size());
-                brianDFTGrid.blockAngularOffsets.push_back(angularOffset);
+                currentGrid->blockAngularCounts.push_back(atomBlocks[A][blockIndex].angularPoints.size());
+                currentGrid->blockAngularOffsets.push_back(angularOffset);
                 for (int angularIndex = 0; angularIndex < atomBlocks[A][blockIndex].angularPoints.size(); angularIndex++)
                 {
-                    brianDFTGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].x);
-                    brianDFTGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].y);
-                    brianDFTGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].z);
-                    brianDFTGrid.angularWeights.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].w);
+                    currentGrid->angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].x);
+                    currentGrid->angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].y);
+                    currentGrid->angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].z);
+                    currentGrid->angularWeights.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].w);
                 }
                 angularOffset += atomBlocks[A][blockIndex].angularPoints.size();
             }
@@ -3889,20 +3893,37 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             atomBlockOffset += atomBlocks[A].size();
         }
         
-        brianCOMSetDFTGrid(&brianCookie,
-            brianDFTGrid.atomBlockCounts.data(),
-            brianDFTGrid.atomBlockOffsets.data(),
-            brianDFTGrid.blockRadialCounts.data(),
-            brianDFTGrid.blockRadialOffsets.data(),
-            brianDFTGrid.radialCoordinates.data(),
-            brianDFTGrid.radialWeights.data(),
-            brianDFTGrid.blockAngularCounts.data(),
-            brianDFTGrid.blockAngularOffsets.data(),
-            brianDFTGrid.angularCoordinates.data(),
-            brianDFTGrid.angularWeights.data(),
-            brianDFTGrid.atomRotationMatrices.data()
-        );
-        checkBrian();
+        if (brianBuildingNLCGrid) {
+            brianCOMSetNLCGrid(&brianCookie,
+                currentGrid->atomBlockCounts.data(),
+                currentGrid->atomBlockOffsets.data(),
+                currentGrid->blockRadialCounts.data(),
+                currentGrid->blockRadialOffsets.data(),
+                currentGrid->radialCoordinates.data(),
+                currentGrid->radialWeights.data(),
+                currentGrid->blockAngularCounts.data(),
+                currentGrid->blockAngularOffsets.data(),
+                currentGrid->angularCoordinates.data(),
+                currentGrid->angularWeights.data(),
+                currentGrid->atomRotationMatrices.data()
+            );
+            checkBrian();
+        } else {
+            brianCOMSetDFTGrid(&brianCookie,
+                currentGrid->atomBlockCounts.data(),
+                currentGrid->atomBlockOffsets.data(),
+                currentGrid->blockRadialCounts.data(),
+                currentGrid->blockRadialOffsets.data(),
+                currentGrid->radialCoordinates.data(),
+                currentGrid->radialWeights.data(),
+                currentGrid->blockAngularCounts.data(),
+                currentGrid->blockAngularOffsets.data(),
+                currentGrid->angularCoordinates.data(),
+                currentGrid->angularWeights.data(),
+                currentGrid->atomRotationMatrices.data()
+            );
+            checkBrian();
+        }
     }
 #endif
 
