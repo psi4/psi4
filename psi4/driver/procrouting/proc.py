@@ -3417,7 +3417,8 @@ def run_adcc_property(name, **kwargs):
     #      Export of difference and transition density matrices for all states
 
     properties = [prop.upper() for prop in kwargs.pop('properties')]
-    valid_properties = ['DIPOLE', 'OSCILLATOR_STRENGTH', 'TRANSITION_DIPOLE']
+    valid_properties = ['DIPOLE', 'OSCILLATOR_STRENGTH', 'TRANSITION_DIPOLE',
+                        'ROTATIONAL_STRENGTH']
     unknown_properties = [prop for prop in properties if prop not in valid_properties]
 
     if unknown_properties:
@@ -3474,6 +3475,11 @@ def run_adcc_property(name, **kwargs):
         data = state.oscillator_strengths.reshape(-1, 1)
         computed["Oscillator strength (length gauge)"] = data
         adc_wfn.set_variable(name + " oscillator strengths", core.Matrix.from_array(data))
+
+    if "ROTATIONAL_STRENGTH" in properties:
+        data = state.rotatory_strengths.reshape(-1, 1)
+        computed["Rotational strength"] = data
+        adc_wfn.set_variable(name + " rotational strengths", core.Matrix.from_array(data))
 
     if "DIPOLE" in properties:
         data = state.state_dipole_moments
