@@ -2714,12 +2714,13 @@ def run_bccd(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
-def run_tdscf_energy(**kwargs):
+def run_tdscf_energy(name=None,**kwargs):
 
     # Get a wfn in case we aren't given one
     ref_wfn = kwargs.get('ref_wfn', None)
+
     if ref_wfn is None:
-        raise ValidationError("TDSCF: No reference wave function passed!")
+        raise ValidationError("TDSCF: No reference wave function!")
 
     states = core.get_global_option("TDSCF_STATES_PER_IRREP")
 
@@ -2739,7 +2740,6 @@ def run_tdscf_energy(**kwargs):
                                                   e_tol = core.get_global_option("TDSCF_E_TOL"),
                                                   r_tol = core.get_global_option("TDSCF_R_TOL"),
                                                   guess = core.get_global_option("TDSCF_GUESS"))
-
 
     return ref_wfn
     

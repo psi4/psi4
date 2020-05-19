@@ -36,9 +36,6 @@ from psi4 import core
 from psi4.driver.procrouting import *
 from .exceptions import ValidationError
 
-def tdscf(wfn,**kwargs):
-    return proc.run_tdscf_energy(ref_wfn = wfn)        
-
 def oeprop(wfn, *args, **kwargs):
     """Evaluate one-electron properties.
 
