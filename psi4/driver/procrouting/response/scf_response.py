@@ -282,6 +282,7 @@ def tdscf_excitations(wfn,
                       tda: bool = False,
                       r_tol: float = 1.0e-4,
                       max_ss_vec: int = 50,
+                      maxiter: int = 60,
                       guess: str = "denominators",
                       print_lvl: int = 1):
     """Compute excitations from a SCF(HF/KS) wavefunction
@@ -343,6 +344,12 @@ def tdscf_excitations(wfn,
     -----
     The algorithm employed to solve the non-Hermitian eigenvalue problem (``tda = False``)
     will fail when the SCF wavefunction has a triplet instability.
+
+    References
+    ----------
+    For the expression of the transition moments in length and velocity gauges:
+
+    .. [Pedersen1995-du] T. B. Pedersen, A. E. Hansen, "Ab Initio Calculation and Display of the Rotary Strength Tensor in the Random Phase Approximation. Method and Model Studies." Chem. Phys. Lett., 246, 1 (1995)
     """
     ssuper_name = wfn.functional().name()
 
@@ -407,9 +414,10 @@ def tdscf_excitations(wfn,
         # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
         # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
         ret = solve_function(engine=engine,
+                             nroot=nstates,
                              r_tol=r_tol,
                              max_vecs_per_root=vecs_per_root,
-                             nroot=nstates,
+                             maxiter=maxiter,
                              guess=guess_,
                              verbose=print_lvl)
         # TODO move rescaling by np.sqrt(2.0) to the solver
@@ -476,15 +484,13 @@ def tdscf_excitations(wfn,
         # velocity-gauge oscillator strength
         f_velocity = 2 / 3 * np.sum(edtm_velocity**2) / E_ex_au
         # length gauge magnetic dipole transition moment
+        # 1/2 is the Bohr magneton in atomic units
         mdtm = 0.5 * np.array([L.vector_dot(prop) for prop in property_integrals["magnetic dipole"]])
         # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
         # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
-        # 1/2 is the Bohr magneton in atomic units
         # velocity gauge rotatory strength
-        # From Equation (1) in Chem. Phys Lett. 388 (2004) 110
         R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / E_ex_au
         # length gauge rotatory strength
-        # From Equation (2) in Chem. Phys Lett. 388 (2004) 110
         R_length = np.einsum("i,i", edtm_length, mdtm)
 
         core.print_out(

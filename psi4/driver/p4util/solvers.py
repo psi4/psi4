@@ -607,15 +607,14 @@ class SolverEngine(ABC):
 
 def davidson_solver(engine,
                     guess,
+                    *,
+                    nroot,
                     r_tol=1.0E-4,
-                    nroot=1,
                     max_vecs_per_root=20,
-                    maxiter=100,
+                    maxiter=60,
                     verbose=1,
                     schmidt_tol=1.0e-8):
-    """
-
-    Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
+    """Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
 
 
     If the large matrix `A` has dimension `{NxN}` and N is very large, and only a small number of roots, `k`
@@ -749,15 +748,13 @@ def davidson_solver(engine,
                 Rk = engine.vector_axpy(alpha[i, k], Axi, Rk)
 
             Rk = engine.vector_axpy(-1.0 * lam_k, best_eigvecs[k], Rk)
-            norm = engine.vector_dot(Rk, Rk)
-            norm = np.sqrt(norm)
 
             iter_info['val'][k] = lam_k
             iter_info['delta_val'][k] = abs(old_vals[k] - lam_k)
-            iter_info['res_norm'][k] = norm
+            iter_info['res_norm'][k] = np.sqrt((engine.vector_dot(Rk, Rk)))
 
             # augment guess vector for non-converged roots
-            if (norm > r_tol):
+            if (iter_info["res_norm"][k] > r_tol):
                 iter_info['done'] = False
                 Qk = engine.precondition(Rk, lam_k)
                 new_vecs.append(Qk)
@@ -788,14 +785,14 @@ def davidson_solver(engine,
 
 def hamiltonian_solver(engine,
                        guess,
+                       *,
+                       nroot,
                        r_tol=1.0E-4,
-                       nroot=1,
                        max_vecs_per_root=20,
                        maxiter=60,
                        verbose=1,
                        schmidt_tol=1.0e-8):
-    """
-    Finds the smallest eigenvalues and associated right and left hand eigenvectors of a large real Hamiltonian eigenvalue problem
+    """Finds the smallest eigenvalues and associated right and left hand eigenvectors of a large real Hamiltonian eigenvalue problem
     emulated through an engine.
 
     A hamiltonian EVP has the structure with A, B of some large dimension N the problem is 2Nx2N:
