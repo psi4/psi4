@@ -13,7 +13,6 @@ molecule methyloxirane {
     H	-1.9883466588	-1.0759327249	-0.0005360999
     H	-1.1805969868	-0.2349473270	-1.3455182514
     symmetry c1
-    units au
 }
 
 set {
@@ -21,20 +20,26 @@ set {
     basis sto-3g
     guess core
     roots_per_irrep [5]
+    gauge velocity
+    qc_module adcc
 }
 
-# Run normal calculation of excitation energies (no properties)
-energy_adc, wfn = energy('adc(2)', return_wfn=True)
+# Computation for rotational strength
+energy_adc, wfn = properties('adc(2)', properties=["rotational_strength", "oscillator_strength"],
+                             return_wfn=True)
 
-# Run computation for rotational strength
-properties('adc(2)', properties=["rotational_strength"])
-
-ref_energies = [0.3445026270807671, 0.421995141295574, 0.493451104598284,                   #TEST
-                0.5154450390986003, 0.5425417856271944]                                     #TEST
-ref_rotation = [0.0014912001914335325, -0.003536718895805801, -0.026478680554497255,        #TEST
-                0.0006256875481719667, 0.00010890364731206006]                              #TEST
-                                                                                            #TEST
-compare_arrays(np.array([ref_energies]).T, wfn.variable("ADC(2) excitation energies").np,   #TEST
-               1e-5, "ADC(2) excitation energies")                                          #TEST
-compare_arrays(np.array([ref_rotation]).T, wfn.variable("ADC(2) rotational strength").np,   #TEST
-               1e-5, "ADC(2) rotational strength")                                          #TEST
+ref_energies = [0.3445026270807671, 0.421995141295574, 0.493451104598284,                     #TEST
+                0.5154450390986003, 0.5425417856271944]                                       #TEST
+ref_rotation = [0.0014912001914335325, -0.003536718895805801, -0.026478680554497255,          #TEST
+                0.0006256875481719667, 0.00010890364731206006]                                #TEST
+ref_oscillator = [2.463831622762142e-05, 0.018179783966461263, 0.13713182709903182,           #TEST
+                  0.02758536772042292, 0.0006998082723487991]                                 #TEST
+                                                                                              #TEST
+compare_arrays(np.array([ref_energies]).T, wfn.variable("ADC(2) excitation energies").np,     #TEST
+               1e-5, "ADC(2) excitation energies")                                            #TEST
+compare_arrays(np.array([ref_oscillator[:4]]).T,                                              #TEST
+               wfn.variable("ADC(2) oscillator strengths").np[:4],                            #TEST
+               5e-5, "ADC(2) oscillator strengts")                                            #TEST
+compare_arrays(np.array([ref_rotation[:4]]).T,                                                #TEST
+               wfn.variable("ADC(2) rotational strengths").np[:4],                            #TEST
+               3e-5, "ADC(2) rotational strengths")                                           #TEST
