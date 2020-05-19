@@ -277,7 +277,8 @@ available via the variable ``ADC(2) excitation energies``.
 * ``number of excited states``: The number of excited states, which were computed.
 * ``<method> excitation energies``: The obtained excitation energies as a :py:class:`~psi4.core.Matrix`.
 * ``MP2 dipole X`` and the other components: Ground state dipole moments at MP(2) level.
-* ``<method> transition dipoles``, ``<method> oscillator strengths`` and ``<method> dipoles``:
+* ``<method> transition dipoles``, ``<method> oscillator strengths``,
+  ``<method> rotational strengths`` and ``<method> dipoles``:
   The respective properties as :py:class:`~psi4.core.Matrix`
 
 The following attribute is set on returned wavefunctions:

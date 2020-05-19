@@ -523,9 +523,9 @@ the ADC backend used for most ADC methods available in |PSIfour|
 
 * "adcc: A versatile toolkit for rapid development of
   algebraic-diagrammatic construction methods,"
-  M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw,
-  *WIREs Comput. Mol. Sci.*, *submitted*,
-  Preprint https://adc-connect.org/q/publications
+  M. F. Herbst, M. Scheurer, T. Fransson, D. R. Rehn, and A. Dreuw.
+  *WIREs Comput. Mol. Sci.*, (2020).
+  (DOI: `10.1002/wcms.1462 <https://doi.org/10.1002/wcms.1462>`_, Preprint https://adc-connect.org/q/publications
 
 "Partially-renormalized" CIS(D) and ADC(2) [PR-CIS(D) and PR-ADC(2)]
 and the implementation for ADC(2) excitation energies within |PSIfour|
