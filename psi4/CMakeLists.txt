@@ -262,6 +262,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_solvers.py
               ../tests/pytests/test_tdscf_products.py
               ../tests/pytests/test_tdscf_excitations.py
+              ../tests/pytests/tdscf_reference_data.json
               ../tests/pytests/test_misc.py
               ../tests/pytests/test_multipole_potential.py
               ../tests/pytests/test_pyside_cubegen.py

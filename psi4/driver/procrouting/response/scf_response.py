@@ -26,7 +26,7 @@
 # @END LICENSE
 #
 
-from typing import Union, List, Dict
+from typing import Union, List
 
 import numpy as np
 
@@ -345,6 +345,11 @@ def tdscf_excitations(wfn,
     The algorithm employed to solve the non-Hermitian eigenvalue problem (``tda = False``)
     will fail when the SCF wavefunction has a triplet instability.
 
+    This function can be used for:
+      - restricted singlets: RPA or TDA, any functional
+      - restricted triplets: RPA or TDA, Hartree-Fock only
+      - unresctricted: RPA or TDA, Hartre-Fock and LDA only
+
     References
     ----------
     For the expression of the transition moments in length and velocity gauges:
@@ -377,6 +382,13 @@ def tdscf_excitations(wfn,
     triplets_per_irrep = singlets_per_irrep
     if not restricted and do_triplets:
         raise ValidationError("Cannot compute triplets with an unrestricted reference")
+
+    # validate calculation
+    if restricted and wfn.functional().needs_xc() and do_triplets:
+        raise ValidationError("Restricted Vx kernel only spin-adapted for singlets")
+
+    if not restricted and wfn.functional().is_gga():
+        raise ValidationError("Unrestricted Kohn-Sham Vx kernel currently limited to SVWN functional")
 
     if guess.lower() != "denominators":
         raise ValidationError(f"Guess type {guess} is not valid")
@@ -467,7 +479,6 @@ def tdscf_excitations(wfn,
         irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ final_sym]
         sym_descr = f"{irrep_GS}->{irrep_ES} ({irrep_trans})"
 
-        #TODO: stash in psivars/wfnvars
         E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
 
         E_tot_au = wfn.energy() + E_ex_au

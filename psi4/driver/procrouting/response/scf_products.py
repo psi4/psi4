@@ -406,7 +406,7 @@ class TDRSCFEngine(SingleMatPerVector):
 class TDUSCFEngine(PairedMatPerVector):
     """Engine for U(HF/KS) products
 
-    Fulfills the API required by :class:`~psi4.driver.p4uitl.solvers.SolverEngine`
+    Fulfills the API required by :class:`~psi4.driver.p4util.solvers.SolverEngine`
 
     Parameters
     ----------
@@ -497,8 +497,8 @@ class TDUSCFEngine(PairedMatPerVector):
 
         Fx = self._pair_onel(self.wfn.onel_Hx(vec_flat))
         twoel = self.wfn.twoel_Hx(vec_flat, False, "SO")
-
         Jx, Kx = self._split_twoel(twoel)
+
         if self.ptype == "rpa":
             H1X_new, H2X_new = self._combine_H1_H2(Fx, Jx, Kx)
             for H1x in H1X_new:

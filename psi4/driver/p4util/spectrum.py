@@ -78,6 +78,7 @@ class Gaussian(Lineshape):
     -----
     Use this profile to model inhomegenous broadening.
     """
+
     def lineshape(self, x_0: float) -> np.ndarray:
         """Gaussian function on `self.domain`, centered at `x_0` with broadening `self.gamma`.
 
@@ -115,6 +116,7 @@ class Lorentzian(Lineshape):
     -----
     Use this profile to model homogeneous broadening.
     """
+
     def lineshape(self, x_0: float) -> np.ndarray:
         """Lorentzian function on `self.domain`, centered at `x_0` with broadening `self.gamma`.
 
@@ -364,7 +366,7 @@ def spectrum(*,
     shape = Gaussian(x, gammas[out_units]) if lineshape == "gaussian" else Lorentzian(x, gammas[out_units])
 
     # Generate y axis, i.e. molar decadic absorption coefficient
-    prefactor = prefactor_opa("au") if kind == "opa" else prefactor_ecd("au")
+    prefactor = prefactor_opa() if kind == "opa" else prefactor_ecd()
     transform_residue = (lambda x: x**2) if kind == "opa" else (lambda x: x)
     y = prefactor * x * np.sum([transform_residue(r) * shape.lineshape(p) for p, r in zip(poles, residues)], axis=0)
 
