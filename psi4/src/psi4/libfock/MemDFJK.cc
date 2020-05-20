@@ -79,7 +79,10 @@ void MemDFJK::preiterations() {
     dfh_->set_fitting_condition(condition_);
     dfh_->set_memory(memory_ - memory_overhead());
     dfh_->set_do_wK(do_wK_);
+    printf("Omega given to dfhelper is %f \n", omega_);
     dfh_->set_omega(omega_);
+    double kappa = dfh_->get_omega();
+    printf("dfhelper gave us back %f as omega\n", kappa);
     dfh_->set_omega_alpha(omega_alpha_);
     dfh_->set_omega_beta(omega_beta_);
 
@@ -128,4 +131,8 @@ int MemDFJK::max_nocc() const {
     return max_nocc;
 }
 void MemDFJK::set_do_wK(bool tf) { do_wK_ = tf; dfh_->set_do_wK(tf); }
+void MemDFJK::set_wcombine(bool wcombine) { 
+    wcombine_ = wcombine; 
+    dfh_->set_wcombine(wcombine); 
+}
 }

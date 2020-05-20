@@ -606,42 +606,46 @@ void DFHelper::prepare_AO_wK_core() {
         size_t begin = pshell_aggs_[start];
         size_t end = pshell_aggs_[stop + 1] - 1;
 
-/*
-        // compute (A|mn)
-        compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
+        if ( wcombine_ ) {
+            // computes (Q|mn) and (Q|w|mn)
+            timer_on("DFH: AO Construction");
+            compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
+            timer_off("DFH: AO Construction");
+    
+            // contract half metric inverse I'm planning to get rid of this
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
+    
+            // computes  [J^{-1.0}](Q|mn)
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
+            copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
+        } else {
+            // compute (A|mn)
+            compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
+    
+            // contract full metric inverse
+            contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
 
-        // contract full metric inverse
-        contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
-*/
+            // contract half metric inverse I'm planning to get rid of this
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
+            timer_off("DFH: AO-Met. Contraction");                             
 
-/*
-        // compute (A|w|mn)
-        timer_on("DFH: wAO Construction");
-        compute_sparse_pQq_blocking_p_symm(start, stop, M1p, weri);
-        timer_off("DFH: wAO Construction");
+            // compute (A|w|mn)
+            timer_on("DFH: wAO Construction");
+            compute_sparse_pQq_blocking_p_symm(start, stop, M1p, weri);
+            timer_off("DFH: wAO Construction");
+    
+            timer_on("DFH: wAO Copy");
+            copy_upper_lower_wAO_core_symm(M1p, wppq, begin, end);
+            timer_off("DFH: wAO Copy");
+        }
 
-        timer_on("DFH: wAO Copy");
-        copy_upper_lower_wAO_core_symm(M1p, wppq, begin, end);
-        timer_off("DFH: wAO Copy");
-*/
-
-        // computes (Q|mn) and (Q|w|mn)
-        timer_on("DFH: AO Construction");
-        compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
-        timer_off("DFH: AO Construction");
-
-        // contract half metric inverse I'm planning to get rid of this
-        timer_on("DFH: AO-Met. Contraction");
-        contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
-        timer_off("DFH: AO-Met. Contraction");
-
-
-        // computes  [J^{-1.0}](Q|mn)
-        timer_on("DFH: AO-Met. Contraction");
-        contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
-        timer_off("DFH: AO-Met. Contraction");
-
-        copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
     }
 
     // no more need for metrics
@@ -2949,7 +2953,7 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         outfile->Printf("Entering DFHelper::build_JK\n");
     }
     bool store_k = do_K;
-    if ( do_wK ) { do_K = false;} 
+    if ( do_wK && wcombine_ ) { do_K = false;} 
 
     // This was an if-else statement. Presumably, we could manage J construction
     //   to more effectively manage memory, so I think that was what was going on.
@@ -2958,7 +2962,7 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         timer_on("DFH: compute_JK()");
         compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK, lr_symmetric);
         timer_off("DFH: compute_JK()");
-    }
+   }
 
     if (do_wK_) {
         timer_on("DFH: compute_wK()");
@@ -2966,7 +2970,7 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         timer_off("DFH: compute_wK()");
     }
 
-    if (store_k) { do_K = true;}
+    do_K = store_k;
 
     if (debug_) {
         outfile->Printf("Exiting DFHelper::build_JK\n");

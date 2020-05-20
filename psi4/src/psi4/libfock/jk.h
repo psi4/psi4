@@ -253,6 +253,8 @@ class PSI_API JK {
     bool do_K_;
     /// Do wK matrices? Defaults to false
     bool do_wK_;
+    // Are the different kinds of exchange calculated together?
+    bool wcombine_;
 
     /// Omega, defaults to 0.0
     double omega_;
@@ -436,6 +438,13 @@ class PSI_API JK {
     *        defaults to false
     */
     virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
+    /**
+    * Set to combine wK integral tensors
+    * @param wcombine do we combine wK matrices?
+    *        defaults to false unless MemDFJK
+    */
+    virtual void set_wcombine(bool wcombine) { wcombine_ = wcombine; }
+    bool get_wcombine() { return wcombine_; }
     /**
     * Set the omega value for wK
     * @param omega range-separation parameter
@@ -1066,6 +1075,7 @@ class PSI_API MemDFJK : public JK {
  * used to control wK workflow.
  */
     void set_do_wK(bool do_wK) override;
+    void set_wcombine(bool wcombine) override;
 
     // => Accessors <= //
 

@@ -139,6 +139,14 @@ class PSI_API DFHelper {
     void set_fitting_condition(double condition) { condition_ = condition; }
     bool get_fitting_condition() { return condition_; }
 
+
+    ///
+    /// Do we calculate omega exchange and regular hf exchange together?
+    /// @param wcombine boolean: all exchange in one matrix
+    /// 
+    void set_wcombine(bool wcombine) { wcombine_ = wcombine; }
+    bool get_wcombine() { return wcombine_; }
+
     ///
     /// Lets me know whether to compute those other type of integrals
     /// @param do_wK boolean indicating to compute other integrals
@@ -151,21 +159,21 @@ class PSI_API DFHelper {
     /// @param omega double indicating parameter for other type
     ///
     void set_omega(double omega) { omega_ = omega; }
-    size_t get_omega() { return omega_; }
+    double get_omega() { return omega_; }
 
     ///
     /// sets the coefficient for (pq|rs) integrals
     /// @param omega double indicating coefficient for eri
     ///
     void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
-    size_t get_omega_alpha() { return omega_alpha_; }
+    double get_omega_alpha() { return omega_alpha_; }
     
     ///
     /// sets the parameter for the other type of integrals
     /// @param omega double indicating parameter for other type
     ///
     void set_omega_beta(double beta) { omega_beta_ = beta; }
-    size_t get_omega_beta() { return omega_beta_; }
+    double get_omega_beta() { return omega_beta_; }
 
 
     ///
@@ -327,6 +335,7 @@ class PSI_API DFHelper {
     std::pair<size_t, size_t> info_;
     bool ordered_ = false;
     bool do_wK_ = false;
+    bool wcombine_ = false;
     double omega_;
     double omega_alpha_;
     double omega_beta_;
