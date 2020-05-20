@@ -85,16 +85,17 @@ def test_davidson_solver_numpy():
     nroot = 3
     guess = list(np.random.randn(BIGDIM, nroot).T)
     test_engine = DSProblemSimulate(BIGDIM)
-    test_vals, test_vectors, _ = davidson_solver(
+    ret = davidson_solver(
         engine=test_engine,
         guess=guess,
         nroot=nroot,
         #Don't let the ss grow to size of real thing
-        max_vecs_per_root=20,
+        max_ss_size=20,
         # Don't assault stdout with logging
         verbose=0,
         maxiter=100)
 
+    test_vals = ret["eigvals"]
     assert test_vals is not None, "Solver Failed to converge"
 
     ref_vals, ref_vectors = np.linalg.eigh(test_engine.A)
@@ -103,8 +104,9 @@ def test_davidson_solver_numpy():
     ref_vectors = ref_vectors[:, idx]
 
     compare_arrays(ref_vals, test_vals, 6, "Davidson eigenvalues")
-    # NOTE: The returned eigenvectors are a list of (whatever the engine used is using for a vector)
+    # NOTE: The returned eigenvectors are a list of tuples of (whatever the engine used is using for a vector)
     # So in this case, we need to put the columns together into a matrix to compare directly to the np.LA.eigh result
+    test_vectors = [x[0] for x in ret["eigvecs"]]
     compare_arrays(ref_vectors, np.column_stack(test_vectors), 8, "Davidson eigenvectors")
 
 
@@ -115,16 +117,17 @@ def test_hamiltonian_solver():
     nroot = 3
     guess = list(np.eye(BIGDIM)[:, :nroot * 2].T)
     test_engine = HSProblemSimulate(BIGDIM)
-    test_vals, test_rvecs, test_lvecs, _ = hamiltonian_solver(
+    ret = hamiltonian_solver(
         engine=test_engine,
         guess=guess,
         nroot=nroot,
         # Don't let the ss grow to size of real thing
-        max_vecs_per_root=20,
+        max_ss_size=20,
         # Don't assault stdout with logging
         verbose=0,
         maxiter=100)
 
+    test_vals = ret["eigvals"]
     assert test_vals is not None, "The solver failed to converge"
 
     # compute the reference values, Use the partially reduced non-hermitian form of the problem, solve for RH-eigenvectors
@@ -147,10 +150,12 @@ def test_hamiltonian_solver():
     # compare roots
     # NOTE: The returned eigenvectors are a list of (whatever the engine used is using for a vector)
     # So in this case, we need to put the columns together into a matrix to compare directly to the np.LA.eig result
+    test_rvecs = [x[0] for x in ret["eigvecs"]]
     compare_arrays(ref_rvecs, np.column_stack(test_rvecs), 6, "Hamiltonian Right Eigenvectors")
 
     #Can't compute LH eigenvectors with numpy but we have the RH, and the matrix
     # solver computed Vl^T * H
+    test_lvecs = [x[1] for x in ret["eigvecs"]]
     vl_T_H = np.column_stack([np.dot(test_lvecs[i], ref_H) for i in range(nroot)])
     # value * right_vector (should not matter which one since we just checked them equal)
     w_Vr = np.column_stack([test_rvecs[i] * test_vals[i] for i in range(nroot)])
