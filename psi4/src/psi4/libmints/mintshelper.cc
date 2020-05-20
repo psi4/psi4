@@ -3390,7 +3390,7 @@ std::vector<SharedMatrix> MintsHelper::mo_overlap_half_deriv1(int atom, SharedMa
     cartcomp.push_back("Z");
 
     std::vector<SharedMatrix> ao_grad;
-    ao_grad = ao_overlap_half_deriv1(oei_type, atom);
+    ao_grad = ao_overlap_half_deriv1(atom);
 
     // Assuming C1 symmetry
     int nbf1 = ao_grad[0]->rowdim();
