@@ -380,14 +380,15 @@ def tdscf_excitations(wfn,
     restricted = wfn.same_a_b_orbs()
     do_triplets = False if triplets == "none" else True
     triplets_per_irrep = singlets_per_irrep
-    if not restricted and do_triplets:
+    if (not restricted) and do_triplets:
         raise ValidationError("Cannot compute triplets with an unrestricted reference")
 
     # validate calculation
     if restricted and wfn.functional().needs_xc() and do_triplets:
         raise ValidationError("Restricted Vx kernel only spin-adapted for singlets")
 
-    if not restricted and wfn.functional().is_gga():
+    not_lda = wfn.functional().is_gga() or wfn.functional().is_meta()
+    if (not restricted) and not_lda:
         raise ValidationError("Unrestricted Kohn-Sham Vx kernel currently limited to SVWN functional")
 
     if guess.lower() != "denominators":
@@ -432,6 +433,13 @@ def tdscf_excitations(wfn,
                              maxiter=maxiter,
                              guess=guess_,
                              verbose=print_lvl)
+
+        if not ret["stats"][-1]["done"]:
+            # prepare and raise error
+            spin = "triplet" if do_triplets else "singlet"
+            irrep_ES = wfn.molecule().irrep_labels()[state_sym]
+            raise TDSCFConvergenceError(maxiter, wfn, f"{spin} excitations in irrep {irrep_ES}")
+
         # TODO move rescaling by np.sqrt(2.0) to the solver
         for root, (R, L) in enumerate(ret["eigvecs"]):
             R = engine.vector_scale(np.sqrt(2.0), R)
@@ -478,6 +486,7 @@ def tdscf_excitations(wfn,
         irrep_ES = wfn.molecule().irrep_labels()[final_sym]
         irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ final_sym]
         sym_descr = f"{irrep_GS}->{irrep_ES} ({irrep_trans})"
+        solver_results.append({"EXCITATION ENERGY": E_ex_au, "SYMMETRY": irrep_trans})
 
         E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
 

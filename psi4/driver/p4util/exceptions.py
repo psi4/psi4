@@ -100,7 +100,7 @@ class UpgradeHelper(PsiException):
 
 
 class ConvergenceError(PsiException):
-    """Error called for problems with converging and iterative method.
+    """Error called for problems with converging an iterative method.
 
     Parameters
     ----------
@@ -146,6 +146,23 @@ class SCFConvergenceError(ConvergenceError):
         self.e_conv = e_conv
         self.d_conv = d_conv
         self.wfn = wfn
+
+
+class TDSCFConvergenceError(ConvergenceError):
+    """Error called for problems with TDSCF iterations.
+
+    Parameters
+    ----------
+    wfn : psi4.core.Wavefunction
+        Wavefunction at time of exception
+    what : str
+        What we were trying to solve for (singlets/triplets, irrep) when we failed to converge
+    """
+
+    def __init__(self, iteration, wfn, what):
+        ConvergenceError.__init__(self, f"""TDSCF solver ({what})""", iteration)
+        self.wfn = wfn
+        self.what = what
 
 
 class CSXError(PsiException):
