@@ -317,22 +317,23 @@ def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, r_tol, max
     core.print_out("\n\n")
     core.print_out("\n".join([x.center(77) for x in title_lines]))
     core.print_out("\n")
-    if verbose > 1:
-        # summarize options for verbose
-        core.print_out(f"   {solver_name} options\n")
-        core.print_out("\n  -----------------------------------------------------\n")
-        core.print_out(f"    Maxiter                         = {maxiter:<5d}\n")
-        core.print_out(f"    Eigenvector tolerance           = {r_tol:11.5e}\n")
-        core.print_out(f"    Max number of expansion vectors = {max_ss_size:<5d}\n")
-        core.print_out("\n")
+    #if verbose > 1:
+    #    # summarize options for verbose
+    #    core.print_out(f"   {solver_name} options\n")
+
+    core.print_out("\n  ==> Options <==\n\n")
+    core.print_out(f"    Maxiter                         = {maxiter:<5d}\n")
+    core.print_out(f"    Eigenvector tolerance           = {r_tol:11.5e}\n")
+    core.print_out(f"    Max number of expansion vectors = {max_ss_size:<5d}\n")
+    core.print_out("\n")
     # show iteration info headings if not silent
     core.print_out("  => Iterations <=\n")
     if verbose == 1:
         # default printing one line per iter max delta value and max residual norm
-        core.print_out(f"  {' ' * len(solver_name)}           Max[D[value]]     Max[|R|]\n")
+        core.print_out(f"  {' ' * len(solver_name)}           Max[D[value]]     Max[|R|]   # vectors\n")
     else:
         # verbose printing, value, delta, and |R| for each root
-        core.print_out("    {' ' * len(solver_name)}       value      D[value]      |R|\n")
+        core.print_out("    {' ' * len(solver_name)}       value      D[value]      |R|   # vectors\n")
 
 
 def _diag_print_info(solver_name, info, verbose=1):
@@ -350,8 +351,10 @@ def _diag_print_info(solver_name, info, verbose=1):
 
         m_de = np.max(info['delta_val'])
         m_r = np.max(info['res_norm'])
+        nvec = info["nvec"]
         flgs = "/".join(flags)
-        core.print_out(f"  {solver_name} iter {info['count']:3d}:   {m_de:-11.5e} {m_r:12.5e} {flgs}\n")
+        core.print_out(
+            f"  {solver_name} iter {info['count']:3d}:   {m_de:-11.5e} {m_r:12.5e} {nvec:>6d}      {flgs}\n")
     else:
         # print iter / ssdim folowed by de/|R| for each root
         core.print_out(f"  {solver_name} iter {info['count']:3d}: {info['nvec']:4d} guess vectors\n")
@@ -369,14 +372,14 @@ def _diag_print_converged(solver_name, stats, vals, verbose=1, **kwargs):
     if verbose < 1:
         # no printing
         return
-    if verbose >= 1:
+    if verbose > 1:
         # print values summary + number of iterations + # of "big" product evals
-        core.print_out(f" {solver_name} converged in {stats[-1]['count']} iterations\n")
         core.print_out("  Root #    eigenvalue\n")
         for (i, vi) in enumerate(vals):
             core.print_out(f"  {i+1:^6}    {vi:20.12f}\n")
         max_nvec = max(istat['nvec'] for istat in stats)
-        core.print_out(f"  Computed a total of {stats[-1]['product_count']} Large products\n\n")
+        core.print_out(f"\n {solver_name} converged in {stats[-1]['count']} iterations\n")
+        core.print_out(f"  Computed a total of {stats[-1]['product_count']} large products\n\n")
 
 
 def _print_array(name, arr, verbose):
@@ -395,8 +398,9 @@ def _print_array(name, arr, verbose):
         core.print_out(f"\n\n{name}:\n{str(arr)}\n")
 
 
-def _gs_orth(engine, U, V, thresh):
+def _gs_orth(engine, U, V, thresh=1.0e-8):
     """Perform Gram-Schmidt orthonormalization of a set V against a previously orthonormalized set U
+
     Parameters
     ----------
     engine : object
@@ -645,15 +649,7 @@ class SolverEngine(ABC):
         pass
 
 
-def davidson_solver(engine,
-                    guess,
-                    *,
-                    nroot,
-                    r_tol=1.0E-4,
-                    max_vecs_per_root=20,
-                    maxiter=60,
-                    verbose=1,
-                    schmidt_tol=1.0e-8):
+def davidson_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
     """Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
 
 
@@ -674,14 +670,16 @@ def davidson_solver(engine,
        least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
-    r_tol : float
-        Convergence tolerance for residual vectors
     nroot : int
         Number of roots desired
+    r_tol : float
+        Convergence tolerance for residual vectors
+    max_ss_size: int, optional.
+       The maximum number of trial vectors in the iterative subspace that will
+       be stored before a collapse is done.
+       Default: 100
     maxiter : int
         The maximum number of iterations
-    schmidt_tol : float
-        Correction vectors must have norm larger than this value to be added to the guess space
     verbose : int
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
@@ -726,7 +724,6 @@ def davidson_solver(engine,
 
     print_name = "DavidsonSolver"
     title_lines = ["Generalized Davidson Solver", "By Ruhee Dcunha"]
-    max_ss_size = max_vecs_per_root * nk
 
     _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, maxiter, verbose)
 
@@ -825,21 +822,13 @@ def davidson_solver(engine,
         else:
 
             # Regular subspace update, orthonormalize preconditioned residuals and add to the trial set
-            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_tol)
+            vecs = _gs_orth(engine, vecs, new_vecs)
 
     # always return, the caller should check ret["stats"][-1]['done'] == True for convergence
     return {"eigvals": best_eigvals, "eigvecs": list(zip(best_eigvecs, best_eigvecs)), "stats": stats}
 
 
-def hamiltonian_solver(engine,
-                       guess,
-                       *,
-                       nroot,
-                       r_tol=1.0E-4,
-                       max_vecs_per_root=20,
-                       maxiter=60,
-                       verbose=1,
-                       schmidt_tol=1.0e-8):
+def hamiltonian_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
     """Finds the smallest eigenvalues and associated right and left hand
     eigenvectors of a large real Hamiltonian eigenvalue problem emulated
     through an engine.
@@ -877,14 +866,16 @@ def hamiltonian_solver(engine,
        least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
-    r_tol : float
-        Convergence tolerance for residual vectors
     nroot : int
         Number of roots desired
+    r_tol : float
+        Convergence tolerance for residual vectors
+    max_ss_size: int, optional.
+       The maximum number of trial vectors in the iterative subspace that will
+       be stored before a collapse is done.
+       Default: 100
     maxiter : int
         The maximum number of iterations
-    schmidt_tol : float
-        Correction vectors must have norm larger than this value to be added to the guess space
     verbose : int
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
@@ -936,9 +927,8 @@ def hamiltonian_solver(engine,
     }
     print_name = "HamiltonianSolver"
     title_lines = ["Generalized Hamiltonian Solver", "By Andrew M. James"]
-    ss_max = max_vecs_per_root * nk
 
-    _diag_print_heading(title_lines, print_name, ss_max, nroot, r_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, maxiter, verbose)
 
     vecs = guess
     best_L = []
@@ -960,7 +950,7 @@ def hamiltonian_solver(engine,
         iter_info['nvec'] = l
 
         # check if subspace dimension has exceeded limits
-        if l >= ss_max:
+        if l >= max_ss_size:
             iter_info['collapse'] = True
 
         # compute [A+B]*v (H1x) and [A-B]*v (H2x)
@@ -1083,11 +1073,11 @@ def hamiltonian_solver(engine,
         elif iter_info['collapse']:
 
             # need to orthonormalize union of the Left/Right solutions on restart
-            vecs = _gs_orth(engine, [], best_R + best_L, schmidt_tol)
+            vecs = _gs_orth(engine, [], best_R + best_L)
         else:
 
             # Regular subspace update, orthonormalize preconditioned residuals and add to the trial set
-            vecs = _gs_orth(engine, vecs, new_vecs, schmidt_tol)
+            vecs = _gs_orth(engine, vecs, new_vecs)
 
     # always return, the caller should check ret["stats"][-1]['done'] == True for convergence
     return {"eigvals": best_vals, "eigvecs": list(zip(best_R, best_L)), "stats": stats}

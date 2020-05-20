@@ -281,7 +281,7 @@ def tdscf_excitations(wfn,
                       triplets: str = "none",
                       tda: bool = False,
                       r_tol: float = 1.0e-4,
-                      max_ss_vec: int = 50,
+                      max_ss_size: int = 100,
                       maxiter: int = 60,
                       guess: str = "denominators",
                       print_lvl: int = 1):
@@ -327,10 +327,10 @@ def tdscf_excitations(wfn,
        :math:`10^{-(N-2)}`.
        The default value is consistent with the default value for
        ``D_CONVERGENCE``.
-    max_ss_vec: int, optional.
+    max_ss_size: int, optional.
        The maximum number of trial vectors in the iterative subspace that will
        be stored before a collapse is done.
-       Default: 50
+       Default: 100
     guess : str, optional.
        How should the starting trial vectors be generated?
        Default: `denominators`, i.e. use orbital energy differences to generate
@@ -423,16 +423,14 @@ def tdscf_excitations(wfn,
         if nstates == 0:
             continue
         engine.reset_for_state_symm(state_sym)
-        guess_ = engine.generate_guess(nstates * 2)
-
-        vecs_per_root = max_ss_vec // nstates
+        guess_ = engine.generate_guess(nstates * 4)
 
         # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
         # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
         ret = solve_function(engine=engine,
                              nroot=nstates,
                              r_tol=r_tol,
-                             max_vecs_per_root=vecs_per_root,
+                             max_ss_size=max_ss_size,
                              maxiter=maxiter,
                              guess=guess_,
                              verbose=print_lvl)
@@ -453,10 +451,10 @@ def tdscf_excitations(wfn,
     # sort by energy, symmetry is just meta data
     _results = sorted(_results, key=lambda x: x[0])
 
-    core.print_out("{}\n".format("*"*90) +
+    core.print_out("\n{}\n".format("*"*90) +
                    "{}{:^70}{}\n".format("*"*10, "WARNING", "*"*10) +
                    "{}{:^70}{}\n".format("*"*10, "Length-gauge rotatory strengths are **NOT** gauge-origin invariant", "*"*10) +
-                   "{}\n".format("*"*90)) #yapf: disable
+                   "{}\n\n".format("*"*90)) #yapf: disable
 
     # print results
     core.print_out("        " + (" " * 20) + " " + "Excitation Energy".center(31) + f" {'Total Energy':^15}" +
