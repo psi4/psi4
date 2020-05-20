@@ -185,8 +185,9 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> ao_potential_deriv2_helper(int atom1, int atom2);
     std::vector<SharedMatrix> mo_oei_deriv1(const std::string& oei_type, int atom, SharedMatrix C1, SharedMatrix C2);
     std::vector<SharedMatrix> mo_oei_deriv2(const std::string& oei_type, int atom1, int atom2, SharedMatrix C1,
-    std::vector<SharedMatrix> mo_overlap_half_deriv1(int atom, SharedMatrix C1, SharedMatrix C2);
                                             SharedMatrix C2);
+    std::vector<SharedMatrix> mo_overlap_half_deriv1(int atom, SharedMatrix C1, SharedMatrix C2);
+
     // Derivatives of electric dipole moment integrals in AO and MO basis
     std::vector<SharedMatrix> ao_elec_dip_deriv1(int atom);
     std::vector<SharedMatrix> ao_elec_dip_deriv1_helper(int atom);
