@@ -308,6 +308,11 @@ class TDRSCFEngine(SingleMatPerVector):
             guess_vectors.append(v)
         return guess_vectors
 
+    def residue(self, X, so_prop_ints):
+        prop = [core.triplet(self.Co, x, self.Cv, True, False, False) for x in so_prop_ints]
+
+        return np.sqrt(2.0) * np.array([X.vector_dot(u) for u in prop])
+
     ## Helper functions
 
     def _combine_H1_H2(self, Fx, Jx, Kx=None):
@@ -554,6 +559,12 @@ class TDUSCFEngine(PairedMatPerVector):
         self.G_es = symmetry
         self._build_prec()
         self.product_cache.reset()
+
+    def residue(self, X, so_prop_ints):
+        prop_a = [core.triplet(self.Co[0], x, self.Cv[0], True, False, False) for x in so_prop_ints]
+        prop_b = [core.triplet(self.Co[1], x, self.Cv[1], True, False, False) for x in so_prop_ints]
+
+        return np.array([X[0].vector_dot(u[0]) + X[1].vector_dot(u[1]) for u in zip(prop_a, prop_b)])
 
     ## Helper Functions
 

@@ -458,15 +458,20 @@ def _best_vectors(engine, ss_vectors, basis_vectors):
 class SolverEngine(ABC):
     """Abstract Base Class defining the API required by solver engines
 
-    Engines implement the correct product functions for iterative solvers that do not require the target matrix be stored directly.
-    Classes intended to be used as an `engine` for :func:`davidson_solver` or :func:`hamiltonian_solver` should inherit from this base class
-    to ensure that the required methods are defined.
+    Engines implement the correct product functions for iterative solvers that
+    do not require the target matrix be stored directly.
+    Classes intended to be used as an `engine` for :func:`davidson_solver` or
+    :func:`hamiltonian_solver` should inherit from this base class to ensure
+    that the required methods are defined.
 
 
-     ..note:: The `vector` referred to here is intentionally vague, the solver does not care what it is and only
-              holds individual or sets of them. In fact an individual `vector` could be split across two elements in a list,
-              such as for different spin. Whatever data type is used and individual vector should be a single element in a list such that
-              len(list) returns the number of vector-like objects.
+     ..note:: The `vector` referred to here is intentionally vague, the solver
+              does not care what it is and only holds individual or sets of
+              them. In fact an individual `vector` could be split across two
+              elements in a list, such as for different spin.
+              Whatever data type is used and individual vector should be a
+              single element in a list such that len(list) returns the number
+              of vector-like objects.
     """
 
     @abstractmethod
@@ -481,16 +486,23 @@ class SolverEngine(ABC):
         Expected by :func:`davidson_solver`
 
         AX : list of `vectors`
-           The product :math:`A x X_{i}` for each `X_{i}` in `X`, in that order. Where `A` is the hermitian matrix to be diagonalized. `len(AX) == len(X)`
+           The product :math:`A x X_{i}` for each `X_{i}` in `X`, in that
+           order. Where `A` is the hermitian matrix to be diagonalized.
+           `len(AX) == len(X)`
         n : int
-           The number of products that were evaluated. If the object implements product caching this may be less than len(X)
+           The number of products that were evaluated. If the object implements
+           product caching this may be less than len(X)
 
         Expected by :func:`hamiltonian_solver`
 
         H1X : list of `vectors`
-           The product :math:`H1 x X_{i}` for each `X_{i}` in `X`, in that order. Where H1 is described in :func:`hamiltonian_solver`. `len(H1X) == len(X)`
+           The product :math:`H1 x X_{i}` for each `X_{i}` in `X`, in that
+           order. Where H1 is described in :func:`hamiltonian_solver`.
+           `len(H1X) == len(X)`
         H2X : list of `vectors`
-           The product :math:`H2 x X_{i}` for each `X_{i}` in `X`, in that order. Where H2 is described in :func:`hamiltonian_solver`. `len(H2X) == len(X)`
+           The product :math:`H2 x X_{i}` for each `X_{i}` in `X`, in that
+           order. Where H2 is described in :func:`hamiltonian_solver`.
+           `len(H2X) == len(X)`
         """
         pass
 
@@ -498,8 +510,9 @@ class SolverEngine(ABC):
     def precondition(self, R_k, w_k):
         r"""Apply the preconditioner to a Residual vector
 
-        The preconditioner is usually defined as :math:`(w_k - D_{i})^-1` where `D` is an approximation of the diagonal of the
-        matrix that is being diagonalized.
+        The preconditioner is usually defined as :math:`(w_k - D_{i})^-1` where
+        `D` is an approximation of the diagonal of the matrix that is being
+        diagonalized.
 
         Parameters
         ----------
@@ -511,7 +524,8 @@ class SolverEngine(ABC):
         Returns
         -------
         new_X_k : single `vector`
-           The preconditioned residual vector, a correction vector that will be used to augment the guess space
+           The preconditioned residual vector, a correction vector that will be
+           used to augment the guess space
         """
         pass
 
@@ -519,17 +533,20 @@ class SolverEngine(ABC):
     def new_vector(self):
         """Return a new `vector` object.
 
-        The solver is oblivious to the data structure used for a `vector` this method provides the engine with a means to create `vector`
-        like quantities.
+        The solver is oblivious to the data structure used for a `vector` this
+        method provides the engine with a means to create `vector` like
+        quantities.
 
         Parameters
         ----------
-        The engine calls this method with no arguments. So any defined by the engine for its own use should be optional
+        The engine calls this method with no arguments. So any defined by the
+        engine for its own use should be optional
 
         Returns
         -------
         X : singlet `vector`
-           This should be a new vector object with the correct dimensions, assumed to be zeroed out
+           This should be a new vector object with the correct dimensions,
+           assumed to be zeroed out
         """
         pass
 
@@ -566,7 +583,8 @@ class SolverEngine(ABC):
         Returns
         -------
         Y : single `vector`
-          The solver assumes that Y is updated, and returned. So it is safe to avoid a copy of Y if possible
+          The solver assumes that Y is updated, and returned. So it is safe to
+          avoid a copy of Y if possible
         """
         pass
 
@@ -584,7 +602,8 @@ class SolverEngine(ABC):
         Returns
         -------
         X : single `vector`
-          The solver assumes that the passed vector is modifed. So it is save to avoid a copy of X if possible.
+          The solver assumes that the passed vector is modifed. So it is save
+          to avoid a copy of X if possible.
         """
         pass
 
@@ -600,7 +619,28 @@ class SolverEngine(ABC):
         Returns
         -------
         X' : single `vector`
-           A copy of `X` should be distinct object that can be modified independently of the passed object, Has the same data when returned.
+           A copy of `X` should be distinct object that can be modified
+           independently of the passed object, Has the same data when returned.
+        """
+        pass
+
+    @abstractmethod
+    def residue(self, X, so_prop_ints):
+        """Compute residue
+
+        Parameters
+        ----------
+        X : single `vector`
+          The `vector` to use to compute the property.
+        so_prop_ints :
+          Property integrals in SO basis for the desired transition property.
+        prefactor : float, optional
+          Scaling factor.
+
+        Returns
+        -------
+        residue :
+          The transition property.
         """
         pass
 
@@ -617,17 +657,21 @@ def davidson_solver(engine,
     """Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
 
 
-    If the large matrix `A` has dimension `{NxN}` and N is very large, and only a small number of roots, `k`
-    are desired this algorithm is preferable to standard methods as uses on the order of `N * k` memory.
-    One only needs to have the ability to compute the product of a times a vector.
+    If the large matrix `A` has dimension `{NxN}` and N is very large, and only
+    a small number of roots, `k` are desired this algorithm is preferable to
+    standard methods as uses on the order of `N * k` memory. One only needs to
+    have the ability to compute the product of a times a vector.
 
-    For non-hermitan `A` the basis of the algorithm breaks down. However in practice, for strongly diagonally-dominant `A`
-    such as the similarity transformed hamiltonian in EOM-CC this algorithm commonly still used.
+    For non-hermitan `A` the basis of the algorithm breaks down. However in
+    practice, for strongly diagonally-dominant `A` such as the
+    similarity-transformed Hamiltonian in EOM-CC this algorithm is commonly still
+    used.
 
     Parameters
     -----------
     engine : object (subclass of :class:`SolverEngine`)
-       The engine drive all operations involving data structures that have at least one "large" dimension. See :class:`SolverEngine` for requirements
+       The engine drive all operations involving data structures that have at
+       least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
     r_tol : float
@@ -658,8 +702,12 @@ def davidson_solver(engine,
        product_count : int, the running total of product evaluations that was performed
        done : bool, if all roots were converged
 
-    .. note:: The solver will return even when ``maxiter`` iterations are performed without convergence. The caller should check `stats[-1]['done']`
-       for convergence/ failure and handle each case accordingly.
+    Notes
+    -----
+    The solution vector is normalized to 1/2
+
+    The solver will return even when ``maxiter`` iterations are performed without convergence.
+    The caller **must check** `stats[-1]['done']` for failure and handle each case accordingly.
     """
     nk = nroot
 
@@ -792,16 +840,19 @@ def hamiltonian_solver(engine,
                        maxiter=60,
                        verbose=1,
                        schmidt_tol=1.0e-8):
-    """Finds the smallest eigenvalues and associated right and left hand eigenvectors of a large real Hamiltonian eigenvalue problem
-    emulated through an engine.
+    """Finds the smallest eigenvalues and associated right and left hand
+    eigenvectors of a large real Hamiltonian eigenvalue problem emulated
+    through an engine.
 
-    A hamiltonian EVP has the structure with A, B of some large dimension N the problem is 2Nx2N:
+    A Hamiltonian eigenvalue problem (EVP) has the following structure:
+
     [A  B][X]  = [1   0](w)[X]
     [B  A][Y]    [0  -1](w)[Y]
 
-    Which can be written as the NxN, non-hermitian EVP:
-    (A+B)(A-B)(X+Y) = w^2(X+Y)
+    with A, B of some large dimension N, the problem is of dimension 2Nx2N.
 
+    The real, Hamiltonian EVP can be rewritten as the NxN, non-hermitian EVP:
+    (A+B)(A-B)(X+Y) = w^2(X+Y)
 
     With left-hand eigenvectors:
     (X-Y)(A-B)(A+B) = w^2(X-Y)
@@ -811,17 +862,19 @@ def hamiltonian_solver(engine,
 
     Where T = (A-B)^-1/2(X+Y).
 
-    We use a Davidson like iteration where we transform (A+B) (H1) and (A-B) (H2) in to the subspace defined by the trial vectors.
-    The subspace analog of the NxN hermitian EVP is diagonalized and left (X-Y) and right (X+Y) eigenvectors of the NxN
-    non-hermitian EVP are approximated. Residual vectors are formed for both and the guess space is augmented with two
-    correction vectors per iteration. The advantages and properties of this algorithm are described in the literature [stratmann:1998]_ .
-
-
+    We use a Davidson like iteration where we transform (A+B) (H1) and (A-B)
+    (H2) in to the subspace defined by the trial vectors.
+    The subspace analog of the NxN hermitian EVP is diagonalized and left (X-Y)
+    and right (X+Y) eigenvectors of the NxN non-hermitian EVP are approximated.
+    Residual vectors are formed for both and the guess space is augmented with
+    two correction vectors per iteration. The advantages and properties of this
+    algorithm are described in the literature [stratmann:1998]_ .
 
     Parameters
     -----------
     engine : object (subclass of :class:`SolverEngine`)
-       The engine drive all operations involving data structures that have at least one "large" dimension. See :class:`SolverEngine` for requirements
+       The engine drive all operations involving data structures that have at
+       least one "large" dimension. See :class:`SolverEngine` for requirements
     guess : list {engine dependent}
        At least `nroot` initial expansion vectors
     r_tol : float
@@ -854,9 +907,12 @@ def hamiltonian_solver(engine,
        product_count : int, the running total of product evaluations that was performed
        done : bool, if all roots were converged
 
-    .. note:: The solver will return even when ``maxiter`` iterations are performed without convergence. The caller should check `stats[-1]['done']`
-       for convergence/ failure and handle each case accordingly.
+    Notes
+    -----
+    The solution vector is normalized to 1/2
 
+    The solver will return even when ``maxiter`` iterations are performed without convergence.
+    The caller **must check** `stats[-1]['done']` for failure and handle each case accordingly.
 
     References
     ----------

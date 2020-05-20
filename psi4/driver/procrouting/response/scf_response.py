@@ -355,6 +355,7 @@ def tdscf_excitations(wfn,
     For the expression of the transition moments in length and velocity gauges:
 
     .. [Pedersen1995-du] T. B. Pedersen, A. E. Hansen, "Ab Initio Calculation and Display of the Rotary Strength Tensor in the Random Phase Approximation. Method and Model Studies." Chem. Phys. Lett., 246, 1 (1995)
+    .. [Lestrange2015-xn] P. J. Lestrange, F. Egidi, X. Li, "The Consequences of Improperly Describing Oscillator Strengths beyond the Electric Dipole Approximation." J. Chem. Phys., 143, 234103 (2015)
     """
     ssuper_name = wfn.functional().name()
 
@@ -409,6 +410,8 @@ def tdscf_excitations(wfn,
                         triplet=do_triplets,
                         ptype=ptype)
 
+    # TODO when doing singlets and triplets, we have to generate TWO engines (in the solve loop)
+
     # construct the engine
     if restricted:
         engine = TDRSCFEngine(wfn, ptype=ptype, triplet=do_triplets)
@@ -434,17 +437,13 @@ def tdscf_excitations(wfn,
                              guess=guess_,
                              verbose=print_lvl)
 
+        # check whether all roots converged
         if not ret["stats"][-1]["done"]:
             # prepare and raise error
             spin = "triplet" if do_triplets else "singlet"
             irrep_ES = wfn.molecule().irrep_labels()[state_sym]
             raise TDSCFConvergenceError(maxiter, wfn, f"{spin} excitations in irrep {irrep_ES}")
 
-        # TODO move rescaling by np.sqrt(2.0) to the solver
-        for root, (R, L) in enumerate(ret["eigvecs"]):
-            R = engine.vector_scale(np.sqrt(2.0), R)
-            L = engine.vector_scale(np.sqrt(2.0), L)
-            ret["eigvecs"][root] = (R, L)
         # flatten dictionary: helps with sorting by energy
         # also append state symmetry to return value
         # TODO what to do with the stats?
@@ -454,39 +453,28 @@ def tdscf_excitations(wfn,
     # sort by energy, symmetry is just meta data
     _results = sorted(_results, key=lambda x: x[0])
 
-    # print excitation energies
-    core.print_out("\n\nFinal Summary:\n")
+    core.print_out("{}\n".format("*"*90) +
+                   "{}{:^70}{}\n".format("*"*10, "WARNING", "*"*10) +
+                   "{}{:^70}{}\n".format("*"*10, "Length-gauge rotatory strengths are **NOT** gauge-origin invariant", "*"*10) +
+                   "{}\n".format("*"*90)) #yapf: disable
+
+    # print results
     core.print_out("        " + (" " * 20) + " " + "Excitation Energy".center(31) + f" {'Total Energy':^15}" +
-                   "Oscillator Strength".center(31) + "\n")
+                   "Oscillator Strength".center(31) + "Rotatory Strength".center(31) + "\n")
     core.print_out(
-        f"    {'#':^4} {'Sym: GS->ES (Trans)':^20} {'au':^15} {'eV':^15} {'au':^15} {'au (length)':^15} {'au (velocity)':^15}\n"
+        f"    {'#':^4} {'Sym: GS->ES (Trans)':^20} {'au':^15} {'eV':^15} {'au':^15} {'au (length)':^15} {'au (velocity)':^15} {'au (length)':^15} {'au (velocity)':^15}\n"
     )
-    core.print_out(f"    {'-':->4} {'-':->20} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15}\n")
-
-    # compute some spectroscopic observables
-    # TODO generalize to UHF
-    # Get integrals
-    Ca_left = wfn.Ca_subset("SO", "OCC")
-    Ca_right = wfn.Ca_subset("SO", "VIR")
-    mints = core.MintsHelper(wfn.basisset())
-
-    def compute_ints(C_L, C_R, so_computer):
-        return [core.triplet(C_L, x, C_R, True, False, False) for x in so_computer()]
-
-    property_integrals = {
-        "length gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_dipole),
-        "velocity gauge electric dipole": compute_ints(Ca_left, Ca_right, mints.so_nabla),
-        "magnetic dipole": compute_ints(Ca_left, Ca_right, mints.so_angular_momentum)
-    }
+    core.print_out(
+        f"    {'-':->4} {'-':->20} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15}\n")
 
     irrep_GS = wfn.molecule().irrep_labels()[engine.G_gs]
-    # collect results into ExcitationData and return as List[ExcitationData]
+    # collect results and compute some spectroscopic observables
+    mints = core.MintsHelper(wfn.basisset())
     solver_results = []
     for i, (E_ex_au, R, L, final_sym) in enumerate(_results):
         irrep_ES = wfn.molecule().irrep_labels()[final_sym]
         irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ final_sym]
         sym_descr = f"{irrep_GS}->{irrep_ES} ({irrep_trans})"
-        solver_results.append({"EXCITATION ENERGY": E_ex_au, "SYMMETRY": irrep_trans})
 
         E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
 
@@ -496,31 +484,39 @@ def tdscf_excitations(wfn,
         wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
 
         # length-gauge electric dipole transition moment
-        edtm_length = np.array([R.vector_dot(prop) for prop in property_integrals["length gauge electric dipole"]])
+        edtm_length = engine.residue(R, mints.so_dipole())
         # lenght-gauge oscillator strength
-        f_length = 2 / 3 * E_ex_au * np.sum(edtm_length**2)
+        f_length = ((2 * E_ex_au) / 3) * np.sum(edtm_length**2)
         # velocity-gauge electric dipole transition moment
-        edtm_velocity = np.array([L.vector_dot(prop) for prop in property_integrals["velocity gauge electric dipole"]])
-        # velocity-gauge oscillator strength
-        f_velocity = 2 / 3 * np.sum(edtm_velocity**2) / E_ex_au
+        edtm_velocity = engine.residue(L, mints.so_nabla())
+        ## velocity-gauge oscillator strength
+        f_velocity = (2 / (3 * E_ex_au)) * np.sum(edtm_velocity**2)
         # length gauge magnetic dipole transition moment
-        # 1/2 is the Bohr magneton in atomic units
-        mdtm = 0.5 * np.array([L.vector_dot(prop) for prop in property_integrals["magnetic dipole"]])
+        mdtm = engine.residue(L, mints.so_angular_momentum())
         # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
         # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
-        # velocity gauge rotatory strength
-        R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / E_ex_au
+        # 1/2 is the Bohr magneton in atomic units
         # length gauge rotatory strength
-        R_length = np.einsum("i,i", edtm_length, mdtm)
+        R_length = np.einsum("i,i", edtm_length, 0.5 * mdtm)
+        # velocity gauge rotatory strength
+        R_velocity = -np.einsum("i,i", edtm_velocity, 0.5 * mdtm) / E_ex_au
+
+        solver_results.append({
+            "EXCITATION ENERGY": E_ex_au,
+            "LENGTH-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": edtm_length,
+            "LENGTH-GAUGE OSCILLATOR STRENGTH": f_length,
+            "VELOCITY-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": edtm_velocity,
+            "VELOCITY-GAUGE OSCILLATOR STRENGTH": f_velocity,
+            "MAGNETIC DIPOLE TRANSITION MOMENT": mdtm,
+            "LENGTH-GAUGE ROTATORY STRENGTH": R_length,
+            "VELOCITY-GAUGE ROTATORY STRENGTH": R_velocity,
+            "SYMMETRY": irrep_trans,
+        })
 
         core.print_out(
-            f"    {i+1:^4} {sym_descr:^20} {E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {f_length:< 15.5f} {f_velocity:< 15.5f}\n"
+            f"    {i+1:^4} {sym_descr:^20} {E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {f_length:< 15.4f} {f_velocity:< 15.4f} {R_length:< 15.4f} {R_velocity:< 15.4f}\n"
         )
 
     core.print_out("\n")
-
-    #TODO: output table
-
-    #TODO: check/handle convergence failures
 
     return solver_results

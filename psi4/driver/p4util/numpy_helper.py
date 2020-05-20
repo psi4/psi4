@@ -485,7 +485,7 @@ def _irrep_access(self, *args, **kwargs):
     Warns user when iterating/accessing an irreped object.
     """
     raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple"
-                          "irreps. Please use .np or .nph explicitly.")
+                          " irreps. Please use .np or .nph explicitly.")
 
 
 # Matrix attributes

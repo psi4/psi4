@@ -27,23 +27,37 @@ TDA = pytest.mark.TDA
 with open(Path(__file__).parent / "tdscf_reference_data.json") as f:
     reference_data = json.load(f)
 
-    # Canonical unrestricted system
-    ch2 = psi4.geometry("""0 3
-    C           0.000000    0.000000    0.159693
-    H          -0.000000    0.895527   -0.479080
-    H          -0.000000   -0.895527   -0.479080
-    no_reorient
-    no_com
-    """)
+# Canonical unrestricted system
+ch2 = psi4.geometry("""0 3
+C           0.000000    0.000000    0.159693
+H          -0.000000    0.895527   -0.479080
+H          -0.000000   -0.895527   -0.479080
+no_reorient
+no_com
+""")
 
-    # Canonical restricted system
-    h2o = psi4.geometry("""0 1
-    O           0.000000    0.000000    0.135446
-    H          -0.000000    0.866812   -0.541782
-    H          -0.000000   -0.866812   -0.541782
-    no_reorient
-    no_com
-    """)
+# Canonical restricted system
+h2o = psi4.geometry("""0 1
+O           0.000000    0.000000    0.135446
+H          -0.000000    0.866812   -0.541782
+H          -0.000000   -0.866812   -0.541782
+no_reorient
+no_com
+""")
+
+
+def _oscillator_strength(e: float, tm: np.ndarray, gauge: str = "L") -> float:
+    if gauge == "L":
+        return ((2 * e) / 3) * np.sum(tm**2)
+    else:
+        return (2 / (3 * e)) * np.sum(tm**2)
+
+
+def _rotatory_strength(e: float, etm: np.ndarray, mtm: np.ndarray, gauge: str = "L") -> float:
+    if gauge == "L":
+        return np.einsum("i,i", etm, 0.5 * mtm)
+    else:
+        return -np.einsum("i,i", etm, 0.5 * mtm) / e
 
 
 @pytest.mark.tdscf
@@ -96,7 +110,7 @@ def test_tdscf(mol, ref, func, ptype, basis):
     out = tdscf_excitations(wfn,
                             states=4,
                             maxiter=30,
-                            r_tol=1.0e-5,
+                            r_tol=1.0e-6,
                             triplets="only" if ref == "RHF-3" else "none",
                             tda=True if ptype == "TDA" else False)
 
@@ -104,5 +118,44 @@ def test_tdscf(mol, ref, func, ptype, basis):
     ref_v = reference_data[f"{mol}_{ref}_{func}_{ptype}"]
 
     for i, my_v in enumerate(out):
-        assert compare_values(ref_v[i]["EXCITATION ENERGY"], my_v["EXCITATION ENERGY"], 4,
-                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1}")
+
+        # compare excitation energies
+        ref_e = ref_v[i]["EXCITATION ENERGY"]
+        assert compare_values(ref_e, my_v["EXCITATION ENERGY"], 4,
+                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Excitation energy")
+
+        # compare length-gauge electric dipole transition moment, in absolute value
+        ref_edtm_L = np.array(ref_v[i]["LENGTH MU"])
+        assert compare_arrays(np.abs(ref_edtm_L), np.abs(my_v["LENGTH-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT"]), 3,
+                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Length-gauge electric dipole transition moment")
+
+        # compare length-gauge oscillator strength
+        ref_f_L = _oscillator_strength(ref_e, ref_edtm_L, "L")
+        assert compare_values(ref_f_L, my_v["LENGTH-GAUGE OSCILLATOR STRENGTH"], 3,
+                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Length-gauge oscillator strength")
+
+        # compare velocity-gauge electric dipole transition moment, in absolute value
+        ref_edtm_V = np.array(ref_v[i]["VELOCITY MU"])
+        assert compare_arrays(
+            np.abs(ref_edtm_V), np.abs(my_v["VELOCITY-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT"]), 3,
+            f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Velocity-gauge electric dipole transition moment")
+
+        # compare velocity-gauge oscillator strengths
+        ref_f_V = _oscillator_strength(ref_e, ref_edtm_V, "V")
+        assert compare_values(ref_f_L, my_v["VELOCITY-GAUGE OSCILLATOR STRENGTH"], 3,
+                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Velocity-gauge oscillator strength")
+
+        # compare magnetic dipole transition moment, in absolute value
+        ref_mdtm = np.array(ref_v[i]["M"])
+        assert compare_arrays(np.abs(ref_mdtm), np.abs(my_v["MAGNETIC DIPOLE TRANSITION MOMENT"]), 3,
+                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Magnetic dipole transition moment")
+
+        # compare length-gauge rotatory strengths
+        ref_R_L = _rotatory_strength(ref_e, ref_edtm_L, ref_mdtm, "L")
+        assert compare_values(ref_f_L, my_v["LENGTH-GAUGE ROTATORY STRENGTH"], 3,
+                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Length-gauge rotatory strength")
+
+        # compare velocity-gauge rotatory strengths
+        ref_R_V = _rotatory_strength(ref_e, ref_edtm_V, ref_mdtm, "V")
+        assert compare_values(ref_R_L, my_v["VELOCITY-GAUGE ROTATORY STRENGTH"], 3,
+                              f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Velocity-gauge rotatory strength")
