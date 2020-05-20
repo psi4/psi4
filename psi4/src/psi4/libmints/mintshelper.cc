@@ -2337,7 +2337,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv1_helper(int atom) {
     return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(int atom) {
+std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::string &half_der_side, int atom) {
     std::vector<std::string> cartcomp;
     cartcomp.push_back("X");
     cartcomp.push_back("Y");
@@ -2375,7 +2375,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(int atom) {
             GInt->compute_shell_deriv1(P, Q);
             int offset = 0;
 
-            if (aP == atom) {
+            if (aP == atom && half_der_side == "LEFT") {
                 // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
@@ -2403,11 +2403,11 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(int atom) {
                 offset += 3 * nP * nQ;
             }
 
-            if (aQ == atom) {
+            if (aQ == atom && half_der_side == "RIGHT") {
                 // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        //grad[0]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                        grad[0]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
                     }
                 }
                 offset += nP * nQ;
@@ -2415,7 +2415,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(int atom) {
                 // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        //grad[1]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                        grad[1]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
                     }
                 }
                 offset += nP * nQ;
@@ -2423,7 +2423,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(int atom) {
                 // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        //grad[2]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
+                        grad[2]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
                     }
                 }
                 offset += nP * nQ;
@@ -3293,8 +3293,15 @@ std::vector<SharedMatrix> MintsHelper::ao_oei_deriv1(const std::string &oei_type
     return ao_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1(int atom) {
-    std::vector<SharedMatrix> ao_grad = ao_overlap_half_deriv1_helper(atom);
+std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1(const std::string &half_der_side, int atom) {
+    std::vector<SharedMatrix> ao_grad;
+
+    if (half_der_side == "LEFT")
+        ao_grad = ao_overlap_half_deriv1_helper("LEFT", atom);
+    else if (half_der_side == "RIGHT")
+        ao_grad = ao_overlap_half_deriv1_helper("RIGHT", atom);
+    else
+        throw PSIEXCEPTION("Not a valid choice of half derivative side: must be LEFT or RIGHT");
 
     return ao_grad;
 }
@@ -3383,14 +3390,14 @@ std::vector<SharedMatrix> MintsHelper::mo_oei_deriv2(const std::string &oei_type
     return mo_grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_overlap_half_deriv1(int atom, SharedMatrix C1, SharedMatrix C2) {
+std::vector<SharedMatrix> MintsHelper::mo_overlap_half_deriv1(const std::string &half_der_side, int atom, SharedMatrix C1, SharedMatrix C2) {
     std::vector<std::string> cartcomp;
     cartcomp.push_back("X");
     cartcomp.push_back("Y");
     cartcomp.push_back("Z");
 
     std::vector<SharedMatrix> ao_grad;
-    ao_grad = ao_overlap_half_deriv1(atom);
+    ao_grad = ao_overlap_half_deriv1(half_der_side, atom);
 
     // Assuming C1 symmetry
     int nbf1 = ao_grad[0]->rowdim();

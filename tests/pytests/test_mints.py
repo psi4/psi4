@@ -66,15 +66,33 @@ def test_export_ao_overlap_half_deriv():
     deriv1_mat = {}
     deriv1_np = {}
 
-    # Get overlap derivative and half-derivative integrals
+    # Get total overlap derivative integrals along with both left and right half-derivative integrals
     for atom in range(natoms):
-        deriv1_mat["S_HALF_" + str(atom)] = mints.mo_overlap_half_deriv1(atom, C, C)
+        deriv1_mat["S_LEFT_HALF_" + str(atom)] = mints.mo_overlap_half_deriv1("LEFT", atom, C, C)
+        deriv1_mat["S_RIGHT_HALF_" + str(atom)] = mints.mo_overlap_half_deriv1("RIGHT", atom, C, C)
         deriv1_mat["S_" + str(atom)] = mints.mo_oei_deriv1("OVERLAP", atom, C, C)
         for atom_cart in range(3):
-            map_key1 = "S_HALF_" + str(atom) + cart[atom_cart]
-            map_key2 = "S_" + str(atom) + cart[atom_cart]
-            deriv1_np[map_key1] = np.asarray(deriv1_mat["S_HALF_" + str(atom)][atom_cart])
-            deriv1_np[map_key2] = np.asarray(deriv1_mat["S_" + str(atom)][atom_cart])
+            map_key1 = "S_LEFT_HALF_" + str(atom) + cart[atom_cart]
+            map_key2 = "S_RIGHT_HALF_" + str(atom) + cart[atom_cart]
+            map_key3 = "S_" + str(atom) + cart[atom_cart]
+            deriv1_np[map_key1] = np.asarray(deriv1_mat["S_LEFT_HALF_" + str(atom)][atom_cart])
+            deriv1_np[map_key2] = np.asarray(deriv1_mat["S_RIGHT_HALF_" + str(atom)][atom_cart])
+            deriv1_np[map_key3] = np.asarray(deriv1_mat["S_" + str(atom)][atom_cart])
 
-            # Test the half-derivative integrals to make sure that (S_ii)^x = 2 * < i^x | i >
-            assert np.allclose(deriv1_np[map_key1].diagonal(), (deriv1_np[map_key2].diagonal())/2)
+            # Test (S_ii)^x = 2 * < i^x | i >
+            assert np.allclose(deriv1_np[map_key1].diagonal(), (deriv1_np[map_key3].diagonal())/2)
+
+            # Test (S_ii)^x = 2 * < i | i^x >
+            assert np.allclose(deriv1_np[map_key2].diagonal(), (deriv1_np[map_key3].diagonal())/2)
+
+            # Test (S_ij)^x = < i^x | j > + < j^x | i >
+            r, c = deriv1_np[map_key1].shape
+            for i in range(r):
+                for j in range(c):
+                    assert np.allclose(deriv1_np[map_key1][i][j] + deriv1_np[map_key1][j][i], deriv1_np[map_key3][i][j])
+
+            # Test (S_ij)^x = < i^x | j > + < i | j^x >
+            r, c = deriv1_np[map_key1].shape
+            for i in range(r):
+                for j in range(c):
+                    assert np.allclose(deriv1_np[map_key1][i][j] + deriv1_np[map_key2][i][j], deriv1_np[map_key3][i][j])
