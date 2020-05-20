@@ -2720,7 +2720,10 @@ def run_tdscf_energy(name=None,**kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
 
     if ref_wfn is None:
-        raise ValidationError("TDSCF: No reference wave function!")
+        if name is None:
+            raise ValidationError("TDSCF: No reference wave function!")
+        else:
+            ref_wfn = run_scf(name.strip('td-'), **kwargs)
 
     states = core.get_option("SCF","TDSCF_STATES_PER_IRREP")
 
@@ -2736,10 +2739,14 @@ def run_tdscf_energy(name=None,**kwargs):
     # Do we need this return value? 
     ret = response.scf_response.tdscf_excitations(ref_wfn, states_per_irrep = states,
                                                   triplet = core.get_option("SCF","TDSCF_TRIPLETS"),
-                                                  tda = core.get_global_option("SCF","TDSCF_TDA"),
-                                                  e_tol = core.get_global_option("SCF","TDSCF_E_TOL"),
-                                                  r_tol = core.get_global_option("SCF","TDSCF_R_TOL"),
-                                                  guess = core.get_global_option("SCF","TDSCF_GUESS"))
+                                                  tda = core.get_option("SCF","TDSCF_TDA"),
+                                                  e_tol = core.get_option("SCF","TDSCF_E_TOL"),
+                                                  r_tol = core.get_option("SCF","TDSCF_R_TOL"),
+                                                  guess = core.get_option("SCF","TDSCF_GUESS"))
+
+    # Shove variables into global space
+    for k, v in ref_wfn.variables().items():
+        core.set_variable(k, v)
 
     return ref_wfn
     

@@ -2069,11 +2069,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
         mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, dovirt)
 
 def tdscf(name=None, **kwargs):
-    if name is not None:
-        e, wfn = energy(name, return_wfn=True)
-        return proc.run_tdscf_energy(name = name,ref_wfn = wfn, **kwargs)
-    else:
-        return proc.run_tdscf_energy(name = name,**kwargs)
+    return proc.run_tdscf_energy(name = name,**kwargs)
 
 # Aliases
 opt = optimize
