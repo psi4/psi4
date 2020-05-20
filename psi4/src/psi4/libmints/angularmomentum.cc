@@ -35,6 +35,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <iostream>
 
 using namespace psi;
 
@@ -42,7 +43,7 @@ using namespace psi;
 // to compute the dipole derivatives
 AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherical_transforms,
                                        std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am() + 1, bs2->max_am() + 1) {
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am() + 2, bs2->max_am() + 2) {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
@@ -55,8 +56,10 @@ AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherica
         set_chunks(3);
     } else if (deriv_ == 1) {
         natom_ = bs1_->molecule()->natom();
-        buffer_ = new double[3 * 3 * natom_ * maxnao1 * maxnao2];  // 3 * 3 * N * maxnao1 * maxnao2
-        set_chunks(3 * 3 * natom_);
+        //buffer_ = new double[3 * 3 * natom_ * maxnao1 * maxnao2];  // 3 * 3 * N * maxnao1 * maxnao2
+        //set_chunks(3 * 3 * natom_);
+        buffer_ = new double[6 * 3 * maxnao1 * maxnao2];
+        set_chunks(6 * 3);
     }
 }
 
@@ -244,15 +247,21 @@ void AngularMomentumInt::compute_pair(const GaussianShell& s1, const GaussianShe
 
                             /* (a|Lx|b) = 2 a2 * (a|(y-Cy)|b+1z) - B.z * (a|(y-Cy)|b-1z)
                                - 2 a2 * (a|(z-Cz)|b+1y) + B.y * (a|(z-Cz)|b-1y) */
+//                            muyz1 = muyz2 = muzy2 = 0.0;
                             double Lx = (2.0 * a2 * muyz1 - n2 * muyz2 - 2.0 * a2 * muzy1 + m2 * muzy2) /* * over_pf*/;
+//                            double Lx = 0.0;
 
                             /* (a|Ly|b) = 2 a2 * (a|(z-Cz)|b+1x) - B.x * (a|(z-Cz)|b-1x)
                                - 2 a2 * (a|(x-Cx)|b+1z) + B.z * (a|(x-Cx)|b-1z) */
+//                            muzx1 = muzx2 = muxz1 = 0.0;
                             double Ly = (2.0 * a2 * muzx1 - l2 * muzx2 - 2.0 * a2 * muxz1 + n2 * muxz2) /* * over_pf*/;
+//                            double Ly = 0.0;
 
                             /* (a|Lz|b) = 2 a2 * (a|(x-Cx)|b+1y) - B.y * (a|(x-Cx)|b-1y)
                                - 2 a2 * (a|(y-Cy)|b+1x) + B.x * (a|(y-Cy)|b-1x) */
+//                            muxy1 = muxy2 = muyx1 = 0.0;
                             double Lz = (2.0 * a2 * muxy1 - m2 * muxy2 - 2.0 * a2 * muyx1 + l2 * muyx2) /* * over_pf*/;
+//                            double Lz = 0.0;
 
                             // Electrons have a negative charge
                             buffer_[ao12] += (Lx);
@@ -291,25 +300,68 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
     C[1] = origin_[1];
     C[2] = origin_[2];
 
-    size_t xaxdisp = at1 * length * 9;
-    size_t xaydisp = xaxdisp + length;
-    size_t xazdisp = xaydisp + length;
-    size_t yaxdisp = xazdisp + length;
-    size_t yaydisp = yaxdisp + length;
-    size_t yazdisp = yaydisp + length;
-    size_t zaxdisp = yazdisp + length;
-    size_t zaydisp = zaxdisp + length;
-    size_t zazdisp = zaydisp + length;
+    //size_t xaxdisp = at1 * length * 9;
+    //size_t xaydisp = xaxdisp + length;
+    //size_t xazdisp = xaydisp + length;
+    //size_t yaxdisp = xazdisp + length;
+    //size_t yaydisp = yaxdisp + length;
+    //size_t yazdisp = yaydisp + length;
+    //size_t zaxdisp = yazdisp + length;
+    //size_t zaydisp = zaxdisp + length;
+    //size_t zazdisp = zaydisp + length;
 
-    size_t xbxdisp = at2 * length * 9;
-    size_t xbydisp = xbxdisp + length;
-    size_t xbzdisp = xbydisp + length;
-    size_t ybxdisp = xbzdisp + length;
-    size_t ybydisp = ybxdisp + length;
-    size_t ybzdisp = ybydisp + length;
-    size_t zbxdisp = ybzdisp + length;
-    size_t zbydisp = zbxdisp + length;
-    size_t zbzdisp = zbydisp + length;
+    //size_t xbxdisp = at2 * length * 9;
+    //size_t xbydisp = xbxdisp + length;
+    //size_t xbzdisp = xbydisp + length;
+    //size_t ybxdisp = xbzdisp + length;
+    //size_t ybydisp = ybxdisp + length;
+    //size_t ybzdisp = ybydisp + length;
+    //size_t zbxdisp = ybzdisp + length;
+    //size_t zbydisp = zbxdisp + length;
+    //size_t zbzdisp = zbydisp + length;
+
+    size_t xaxdisp = 0;
+    size_t xaydisp = 1 * length;
+    size_t xazdisp = 2 * length;
+    size_t xbxdisp = 3 * length;
+    size_t xbydisp = 4 * length;
+    size_t xbzdisp = 5 * length;
+    size_t yaxdisp = 6 * length;
+    size_t yaydisp = 7 * length;
+    size_t yazdisp = 8 * length;
+    size_t ybxdisp = 9 * length;
+    size_t ybydisp = 10 * length;
+    size_t ybzdisp = 11 * length;
+    size_t zaxdisp = 12 * length;
+    size_t zaydisp = 13 * length;
+    size_t zazdisp = 14 * length;
+    size_t zbxdisp = 15 * length;
+    size_t zbydisp = 16 * length;
+    size_t zbzdisp = 17 * length;
+
+    //std::cout << "at1 = " << at1 << std::endl;
+    //std::cout << "length = " << length << std::endl;
+    //std::cout << "xaxdisp = " << xaxdisp << std::endl;
+    //std::cout << "xaydisp = " << xaydisp << std::endl;
+    //std::cout << "xazdisp = " << xazdisp << std::endl;
+    //std::cout << "yaxdisp = " << yaxdisp << std::endl;
+    //std::cout << "yaydisp = " << yaydisp << std::endl;
+    //std::cout << "yazdisp = " << yazdisp << std::endl;
+    //std::cout << "zaxdisp = " << zaxdisp << std::endl;
+    //std::cout << "zaydisp = " << zaydisp << std::endl;
+    //std::cout << "zazdisp = " << zazdisp << std::endl;
+
+    //std::cout << "at2 = " << at2 << std::endl;
+    //std::cout << "length = " << length << std::endl;
+    //std::cout << "xbxdisp = " << xbxdisp << std::endl;
+    //std::cout << "xbydisp = " << xbydisp << std::endl;
+    //std::cout << "xbzdisp = " << xbzdisp << std::endl;
+    //std::cout << "ybxdisp = " << ybxdisp << std::endl;
+    //std::cout << "ybydisp = " << ybydisp << std::endl;
+    //std::cout << "ybzdisp = " << ybzdisp << std::endl;
+    //std::cout << "zbxdisp = " << zbxdisp << std::endl;
+    //std::cout << "zbydisp = " << zbydisp << std::endl;
+    //std::cout << "zbzdisp = " << zbzdisp << std::endl;
 
     // compute intermediates
     double AB2 = 0.0;
@@ -318,13 +370,17 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
     // Zero out the buffer
-    memset(buffer_, 0, 3 * 3 * natom_ * length * sizeof(double));
+    //memset(buffer_, 0, 3 * 3 * natom_ * length * sizeof(double));
+    memset(buffer_, 0, 6 * 3 * length * sizeof(double));
 
     double **x = overlap_recur_.x();
     double **y = overlap_recur_.y();
     double **z = overlap_recur_.z();
     double v1, v2, v3, v4, v5;      // temporary value storage
+    double v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20;      // temporary value storage
 
+    //std::printf("%5s \t %5s \t %5s \t %5s \t %5s \t %5s \t %5s \t %5s \t %5s \t %10s \t %10s \n", "p1", "p2", "ao12", "am1", "am2", "ii", "jj", "kk", "ll", "xaxdisp", "xaydisp");
+    //std::printf("--------------------------------------------------------------------------------------------------------- \n");
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1.exp(p1);
         double c1 = s1.coef(p1);
@@ -350,7 +406,8 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
             double over_pf = exp(-a1 * a2 * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * c1 * c2;
 
             // Do recursion, this is sufficient information to compute dipole derivatives
-            overlap_recur_.compute(PA, PB, gamma, am1+1, am2+1);
+            //overlap_recur_.compute(PA, PB, gamma, am1+1, am2+1);
+            overlap_recur_.compute(PA, PB, gamma, am1+2, am2+2);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {
@@ -365,141 +422,144 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             int m2 = kk - ll;
                             int n2 = ll;
 
-                            //
-                            // Ax derivatives with Lx
-                            //
+                            //std::cout << "am1 = " << am1 << "\t am2 = " << am2 << "\t ao12 = " << ao12 << std::endl;
+                            //std::printf("%5d \t %5d \t %5d \t %5d \t %5d \t %5d \t %5d \t %5d \t %5d \n", p1, p2, ao12, am1, am2, ii, jj, kk, ll);
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y+1_x|Lx|b+1_z)
-                            v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2+1];
-                            // (a+1_x|Lx|b+1_z)
-                            v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2+1];
-                            if (l1) {
-                                // (a+1_y-1_x|Lx|b+1_z)
-                                v3 = x[l1-1][l2] * y[m1+1][m2] * z[n1][n2+1];
-                                // (a-1_x|Lx|b+1_z)
-                                v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2+1];
-                            }
-                            // (a|Lx|b+1_z)
-                            //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(j,l) = (y,x) = 0
-                            buffer_[ao12+xaxdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (n2) {
-                                // (a+1_y+1_x|Lx|b-1_z)
-                                v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2-1];
-                                // (a+1_x|Lx|b-1_z)
-                                v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2-1];
-                                if (l1) {
-                                    // (a+1_y-1_x|Lx|b-1_z)
-                                    v3 = x[l1-1][l2] * y[m1+1][m2] * z[n1][n2-1];
-                                    // (a-1_x|Lx|b-1_z)
-                                    v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2-1];
-                                }
-                                // (a|Lx|b-1_z)
-                                //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(j,l) = (y,x) = 0
-                            }
-                            buffer_[ao12+xaxdisp] += -1.0 * n2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
-                            
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z+1_x|Lx|b+1_y)
-                            v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1+1][n2];
-                            // (a+1_x|Lx|b+1_y)
-                            v2 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2];
-                            if (l1) {
-                                // (a+1_z-1_x|Lx|b+1_y)
-                                v3 = x[l1-1][l2] * y[m1+1][m2+1] * z[n1+1][n2];
-                                // (a-1_x|Lx|b+1_y)
-                                v4 = x[l1-1][l2] * y[m1][m2+1] * z[n1][n2];
-                            }
-                            // (a|Lx|b+1_y)
-                            //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,x) = 0
-                            buffer_[ao12+xaxdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (m2) {
-                                // (a+1_z+1_x|Lx|b-1_y)
-                                v1 = x[l1+1][l2] * y[m1][m2-1] * z[n1+1][n2];
-                                // (a+1_x|Lx|b-1_y)
-                                v2 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2];
-                                if (l1) {
-                                    // (a+1_z-1_x|Lx|b-1_y)
-                                    v3 = x[l1-1][l2] * y[m1+1][m2-1] * z[n1+1][n2];
-                                    // (a-1_x|Lx|b-1_y)
-                                    v4 = x[l1-1][l2] * y[m1][m2-1] * z[n1][n2];
-                                }
-                                // (a|Lx|b-1_y)
-                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,x) = 0
-                            }
-                            buffer_[ao12+xaxdisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
-
-                            //
-                            // Ay derivatives with Lx
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y+1_y|Lx|b+1_z)
-                            v1 = x[l1][l2] * y[m1+2][m2] * z[n1][n2+1];
-                            // (a+1_y|Lx|b+1_z)
-                            v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2+1];
-                            // (a+1_y-1_y|Lx|b+1_z)
-                            v3 = x[l1][l2] * y[m1][m2] * z[n1][n2+1];
-                            if (m1) {
-                                // (a-1_y|Lx|b+1_z)
-                                v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2+1];
-                            }
-                            // (a|Lx|b+1_z)
-                            v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(j,l) = (y,y) = 1
-                            buffer_[ao12+xaydisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (n2) {
-                                // (a+1_y+1_y|Lx|b-1_z)
-                                v1 = x[l1][l2] * y[m1+2][m2] * z[n1][n2-1];
-                                // (a+1_y|Lx|b-1_z)
-                                v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2-1];
-                                // (a+1_y-1_y|Lx|b-1_z)
-                                v3 = x[l1][l2] * y[m1][m2] * z[n1][n2-1];
-                                if (m1) {
-                                    // (a-1_y|Lx|b-1_z)
-                                    v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2-1];
-                                }
-                                // (a|Lx|b-1_z)
-                                v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(j,l) = (y,y) = 1
-                            }
-                            buffer_[ao12+xaydisp] += -1.0 * n2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z+1_y|Lx|b+1_y)
-                            v1 = x[l1][l2] * y[m1+1][m2+1] * z[n1+1][n2];
-                            // (a+1_y|Lx|b+1_y)
-                            v2 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2];
-                            if (m1) {
-                                // (a+1_z-1_y|Lx|b+1_y)
-                                v3 = x[l1][l2] * y[m1-1][m2+1] * z[n1+1][n2];
-                                // (a-1_y|Lx|b+1_y)
-                                v4 = x[l1][l2] * y[m1-1][m2+1] * z[n1][n2];
-                            }
-                            // (a|Lx|b+1_y)
-                            //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,y) = 0
-                            buffer_[ao12+xaydisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (m2) {
-                                // (a+1_z+1_y|Lx|b-1_y)
-                                v1 = x[l1][l2] * y[m1+1][m2-1] * z[n1+1][n2];
-                                // (a+1_y|Lx|b-1_y)
-                                v2 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2];
-                                if (m1) {
-                                    // (a+1_z-1_y|Lx|b-1_y)
-                                    v3 = x[l1][l2] * y[m1-1][m2-1] * z[n1+1][n2];
-                                    // (a-1_y|Lx|b-1_y)
-                                    v4 = x[l1][l2] * y[m1-1][m2-1] * z[n1][n2];
-                                }
-                                // (a|Lx|b-1_y)
-                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,y) = 0
-                            }
-                            buffer_[ao12+xaydisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//                            //
+//                            // Ax derivatives with Lx
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y+1_x|Lx|b+1_z)
+//                            v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2+1];
+//                            // (a+1_x|Lx|b+1_z)
+//                            v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2+1];
+//                            if (l1) {
+//                                // (a+1_y-1_x|Lx|b+1_z)
+//                                v3 = x[l1-1][l2] * y[m1+1][m2] * z[n1][n2+1];
+//                                // (a-1_x|Lx|b+1_z)
+//                                v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2+1];
+//                            }
+//                            // (a|Lx|b+1_z)
+//                            //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(j,l) = (y,x) = 0
+//                            buffer_[ao12+xaxdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_y+1_x|Lx|b-1_z)
+//                                v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2-1];
+//                                // (a+1_x|Lx|b-1_z)
+//                                v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2-1];
+//                                if (l1) {
+//                                    // (a+1_y-1_x|Lx|b-1_z)
+//                                    v3 = x[l1-1][l2] * y[m1+1][m2] * z[n1][n2-1];
+//                                    // (a-1_x|Lx|b-1_z)
+//                                    v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2-1];
+//                                }
+//                                // (a|Lx|b-1_z)
+//                                //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(j,l) = (y,x) = 0
+//                            }
+//                            buffer_[ao12+xaxdisp] += -1.0 * n2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+//                            
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z+1_x|Lx|b+1_y)
+//                            v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1+1][n2];
+//                            // (a+1_x|Lx|b+1_y)
+//                            v2 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2];
+//                            if (l1) {
+//                                // (a+1_z-1_x|Lx|b+1_y)
+//                                v3 = x[l1-1][l2] * y[m1+1][m2+1] * z[n1+1][n2];
+//                                // (a-1_x|Lx|b+1_y)
+//                                v4 = x[l1-1][l2] * y[m1][m2+1] * z[n1][n2];
+//                            }
+//                            // (a|Lx|b+1_y)
+//                            //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,x) = 0
+//                            buffer_[ao12+xaxdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (m2) {
+//                                // (a+1_z+1_x|Lx|b-1_y)
+//                                v1 = x[l1+1][l2] * y[m1][m2-1] * z[n1+1][n2];
+//                                // (a+1_x|Lx|b-1_y)
+//                                v2 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2];
+//                                if (l1) {
+//                                    // (a+1_z-1_x|Lx|b-1_y)
+//                                    v3 = x[l1-1][l2] * y[m1+1][m2-1] * z[n1+1][n2];
+//                                    // (a-1_x|Lx|b-1_y)
+//                                    v4 = x[l1-1][l2] * y[m1][m2-1] * z[n1][n2];
+//                                }
+//                                // (a|Lx|b-1_y)
+//                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,x) = 0
+//                            }
+//                            buffer_[ao12+xaxdisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//
+//                            //
+//                            // Ay derivatives with Lx
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y+1_y|Lx|b+1_z)
+//                            v1 = x[l1][l2] * y[m1+2][m2] * z[n1][n2+1];
+//                            // (a+1_y|Lx|b+1_z)
+//                            v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2+1];
+//                            // (a+1_y-1_y|Lx|b+1_z)
+//                            v3 = x[l1][l2] * y[m1][m2] * z[n1][n2+1];
+//                            if (m1) {
+//                                // (a-1_y|Lx|b+1_z)
+//                                v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2+1];
+//                            }
+//                            // (a|Lx|b+1_z)
+//                            v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(j,l) = (y,y) = 1
+//                            buffer_[ao12+xaydisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_y+1_y|Lx|b-1_z)
+//                                v1 = x[l1][l2] * y[m1+2][m2] * z[n1][n2-1];
+//                                // (a+1_y|Lx|b-1_z)
+//                                v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2-1];
+//                                // (a+1_y-1_y|Lx|b-1_z)
+//                                v3 = x[l1][l2] * y[m1][m2] * z[n1][n2-1];
+//                                if (m1) {
+//                                    // (a-1_y|Lx|b-1_z)
+//                                    v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2-1];
+//                                }
+//                                // (a|Lx|b-1_z)
+//                                v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(j,l) = (y,y) = 1
+//                            }
+//                            buffer_[ao12+xaydisp] += -1.0 * n2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z+1_y|Lx|b+1_y)
+//                            v1 = x[l1][l2] * y[m1+1][m2+1] * z[n1+1][n2];
+//                            // (a+1_y|Lx|b+1_y)
+//                            v2 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2];
+//                            if (m1) {
+//                                // (a+1_z-1_y|Lx|b+1_y)
+//                                v3 = x[l1][l2] * y[m1-1][m2+1] * z[n1+1][n2];
+//                                // (a-1_y|Lx|b+1_y)
+//                                v4 = x[l1][l2] * y[m1-1][m2+1] * z[n1][n2];
+//                            }
+//                            // (a|Lx|b+1_y)
+//                            //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,y) = 0
+//                            buffer_[ao12+xaydisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (m2) {
+//                                // (a+1_z+1_y|Lx|b-1_y)
+//                                v1 = x[l1][l2] * y[m1+1][m2-1] * z[n1+1][n2];
+//                                // (a+1_y|Lx|b-1_y)
+//                                v2 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2];
+//                                if (m1) {
+//                                    // (a+1_z-1_y|Lx|b-1_y)
+//                                    v3 = x[l1][l2] * y[m1-1][m2-1] * z[n1+1][n2];
+//                                    // (a-1_y|Lx|b-1_y)
+//                                    v4 = x[l1][l2] * y[m1-1][m2-1] * z[n1][n2];
+//                                }
+//                                // (a|Lx|b-1_y)
+//                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(k,l) = (z,y) = 0
+//                            }
+//                            buffer_[ao12+xaydisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
                             
                             //
                             // Az derivatives with Lx
@@ -569,121 +629,121 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             }
                             buffer_[ao12+xazdisp] += 1.0 * m2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - n1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
 
-                            //
-                            // Bx derivatives with Lx
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y|Lx|b+1_z+1_x)
-                            v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2+1];
-                            // (a|Lx|b+1_z+1_x)
-                            v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
-                            if (l2) {
-                                // (a+1_y|Lx|b+1_z-1_x)
-                                v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2+1];
-                                // (a|Lx|b+1_z-1_x)
-                                v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
-                            }
-                            buffer_[ao12+xbxdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (n2) {
-                                // (a+1_y|Lx|b-1_z+1_x)
-                                v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
-                                // (a|Lx|b-1_z+1_x)
-                                v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
-                                if (l2) {
-                                    // (a+1_y|Lx|b-1_z-1_x)
-                                    v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2-1];
-                                    // (a|Lx|b-1_z-1_x)
-                                    v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
-                                }
-                            }
-                            buffer_[ao12+xbxdisp] += -1.0 * n2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z|Lx|b+1_y+1_x)
-                            v1 = x[l1][l2+1] * y[m1][m2+1] * z[n1+1][n2];
-                            // (a|Lx|b+1_y+1_x)
-                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
-                            if (l2) {
-                                // (a+1_z|Lx|b+1_y-1_x)
-                                v3 = x[l1][l2-1] * y[m1][m2+1] * z[n1+1][n2];
-                                // (a|Lx|b+1_y-1_x)
-                                v4 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
-                            }
-                            buffer_[ao12+xbxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (m2) {
-                                // (a+1_z|Lx|b-1_y+1_x)
-                                v1 = x[l1][l2+1] * y[m1][m2-1] * z[n1+1][n2];
-                                // (a|Lx|b-1_y+1_x)
-                                v2 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
-                                if (l2) {
-                                    // (a+1_z|Lx|b-1_y-1_x)
-                                    v3 = x[l1][l2-1] * y[m1][m2-1] * z[n1+1][n2];
-                                    // (a|Lx|b-1_y-1_x)
-                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
-                                }
-                            }
-                            buffer_[ao12+xbxdisp] += 1.0 * m2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
-
-                            //
-                            // By derivatives with Lx
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y|Lx|b+1_z+1_y)
-                            v1 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2+1];
-                            // (a|Lx|b+1_z+1_y)
-                            v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2+1];
-                            if (m2) {
-                                // (a+1_y|Lx|b+1_z-1_y)
-                                v3 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2+1];
-                                // (a|Lx|b+1_z-1_y)
-                                v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
-                            }
-                            buffer_[ao12+xbydisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (n2) {
-                                // (a+1_y|Lx|b-1_z+1_y)
-                                v1 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2-1];
-                                // (a|Lx|b-1_z+1_y)
-                                v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2-1];
-                                if (m2) {
-                                    // (a+1_y|Lx|b-1_z-1_y)
-                                    v3 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2-1];
-                                    // (a|Lx|b-1_z-1_y)
-                                    v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
-                                }
-                            }
-                            buffer_[ao12+xbydisp] += -1.0 * n2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z|Lx|b+1_y+1_y)
-                            v1 = x[l1][l2] * y[m1][m2+2] * z[n1+1][n2];
-                            // (a|Lx|b+1_y+1_y)
-                            v2 = x[l1][l2] * y[m1][m2+2] * z[n1][n2];
-                            // (a+1_z|Lx|b+1_y-1_y)
-                            v3 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
-                            // (a|Lx|b+1_y-1_y)
-                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            buffer_[ao12+xbydisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z|Lx|b-1_y+1_y)
-                            v1 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
-                            // (a|Lx|b-1_y+1_y)
-                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            if (m2 || m2-1) {
-                                // (a+1_z|Lx|b-1_y-1_y)
-                                v3 = x[l1][l2] * y[m1][m2-2] * z[n1+1][n2];
-                                // (a|Lx|b-1_y-1_y)
-                                v4 = x[l1][l2] * y[m1][m2-2] * z[n1][n2];
-                            }
-                            buffer_[ao12+xbydisp] += 1.0 * m2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//                            //
+//                            // Bx derivatives with Lx
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y|Lx|b+1_z+1_x)
+//                            v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2+1];
+//                            // (a|Lx|b+1_z+1_x)
+//                            v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
+//                            if (l2) {
+//                                // (a+1_y|Lx|b+1_z-1_x)
+//                                v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2+1];
+//                                // (a|Lx|b+1_z-1_x)
+//                                v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
+//                            }
+//                            buffer_[ao12+xbxdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_y|Lx|b-1_z+1_x)
+//                                v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
+//                                // (a|Lx|b-1_z+1_x)
+//                                v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
+//                                if (l2) {
+//                                    // (a+1_y|Lx|b-1_z-1_x)
+//                                    v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2-1];
+//                                    // (a|Lx|b-1_z-1_x)
+//                                    v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
+//                                }
+//                            }
+//                            buffer_[ao12+xbxdisp] += -1.0 * n2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z|Lx|b+1_y+1_x)
+//                            v1 = x[l1][l2+1] * y[m1][m2+1] * z[n1+1][n2];
+//                            // (a|Lx|b+1_y+1_x)
+//                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
+//                            if (l2) {
+//                                // (a+1_z|Lx|b+1_y-1_x)
+//                                v3 = x[l1][l2-1] * y[m1][m2+1] * z[n1+1][n2];
+//                                // (a|Lx|b+1_y-1_x)
+//                                v4 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+xbxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (m2) {
+//                                // (a+1_z|Lx|b-1_y+1_x)
+//                                v1 = x[l1][l2+1] * y[m1][m2-1] * z[n1+1][n2];
+//                                // (a|Lx|b-1_y+1_x)
+//                                v2 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
+//                                if (l2) {
+//                                    // (a+1_z|Lx|b-1_y-1_x)
+//                                    v3 = x[l1][l2-1] * y[m1][m2-1] * z[n1+1][n2];
+//                                    // (a|Lx|b-1_y-1_x)
+//                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
+//                                }
+//                            }
+//                            buffer_[ao12+xbxdisp] += 1.0 * m2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//
+//                            //
+//                            // By derivatives with Lx
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y|Lx|b+1_z+1_y)
+//                            v1 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2+1];
+//                            // (a|Lx|b+1_z+1_y)
+//                            v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2+1];
+//                            if (m2) {
+//                                // (a+1_y|Lx|b+1_z-1_y)
+//                                v3 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2+1];
+//                                // (a|Lx|b+1_z-1_y)
+//                                v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
+//                            }
+//                            buffer_[ao12+xbydisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_y|Lx|b-1_z+1_y)
+//                                v1 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2-1];
+//                                // (a|Lx|b-1_z+1_y)
+//                                v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2-1];
+//                                if (m2) {
+//                                    // (a+1_y|Lx|b-1_z-1_y)
+//                                    v3 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2-1];
+//                                    // (a|Lx|b-1_z-1_y)
+//                                    v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
+//                                }
+//                            }
+//                            buffer_[ao12+xbydisp] += -1.0 * n2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z|Lx|b+1_y+1_y)
+//                            v1 = x[l1][l2] * y[m1][m2+2] * z[n1+1][n2];
+//                            // (a|Lx|b+1_y+1_y)
+//                            v2 = x[l1][l2] * y[m1][m2+2] * z[n1][n2];
+//                            // (a+1_z|Lx|b+1_y-1_y)
+//                            v3 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
+//                            // (a|Lx|b+1_y-1_y)
+//                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            buffer_[ao12+xbydisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z|Lx|b-1_y+1_y)
+//                            v1 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
+//                            // (a|Lx|b-1_y+1_y)
+//                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            if (m2 || m2-1) {
+//                                // (a+1_z|Lx|b-1_y-1_y)
+//                                v3 = x[l1][l2] * y[m1][m2-2] * z[n1+1][n2];
+//                                // (a|Lx|b-1_y-1_y)
+//                                v4 = x[l1][l2] * y[m1][m2-2] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+xbydisp] += 1.0 * m2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
 
                             //
                             // Bz derivatives with Lx
@@ -741,139 +801,141 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             }
                             buffer_[ao12+xbzdisp] += 1.0 * m2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - n2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
 
-                            //
-                            // Ax derivatives with Ly
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z+1_x|Ly|b+1_x)
-                            v1 = x[l1+1][l2+1] * y[m1][m2] * z[n1+1][n2];
-                            // (a+1_x|Ly|b+1_x)
-                            v2 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2];
-                            if (l1) {
-                                // (a+1_z-1_x|Ly|b+1_x)
-                                v3 = x[l1-1][l2+1] * y[m1][m2] * z[n1+1][n2];
-                                // (a-1_x|Ly|b+1_x)
-                                v4 = x[l1-1][l2+1] * y[m1][m2] * z[n1][n2];
-                            }
-                            // (a|Ly|b+1_x)
-                            //v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,x) = 0
-                            buffer_[ao12+yaxdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (l2) {
-                                // (a+1_z+1_x|Ly|b-1_x)
-                                v1 = x[l1+1][l2-1] * y[m1][m2] * z[n1+1][n2];
-                                // (a+1_x|Ly|b-1_x)
-                                v2 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2];
-                                if (l1) {
-                                    // (a+1_z-1_x|Ly|b-1_x)
-                                    v3 = x[l1-1][l2-1] * y[m1][m2] * z[n1+1][n2];
-                                    // (a-1_x|Ly|b-1_x)
-                                    v4 = x[l1-1][l2-1] * y[m1][m2] * z[n1][n2];
-                                }
-                                // (a|Ly|b-1_x)
-                                //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,x) = 0
-                            }
-                            buffer_[ao12+yaxdisp] += -1.0 * l2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x+1_x|Ly|b+1_z)
-                            v1 = x[l1+2][l2] * y[m1][m2] * z[n1][n2+1];
-                            // (a+1_x|Ly|b+1_z)
-                            v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2+1];
-                            // (a+1_x-1_x|Ly|b+1_z)
-                            v3 = x[l1][l2] * y[m1][m2] * z[n1][n2+1];
-                            if (l1) {
-                                // (a-1_x|Ly|b+1_z)
-                                v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2+1];
-                            }
-                            // (a|Ly|b+1_z)
-                            v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(k,l) = (x,x) = 1
-                            buffer_[ao12+yaxdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x+1_x|Ly|b-1_z)
-                            v1 = x[l1+2][l2] * y[m1][m2] * z[n1][n2-1];
-                            // (a+1_x|Ly|b-1_z)
-                            v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2-1];
-                            // (a+1_x-1_x|Ly|b-1_z)
-                            v3 = x[l1][l2] * y[m1][m2] * z[n1][n2-1];
-                            if (l1) {
-                                // (a-1_x|Ly|b-1_z)
-                                v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2-1];
-                            }
-                            // (a|Ly|b-1_z)
-                            v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(k,l) = (x,x) = 1
-                            buffer_[ao12+yaxdisp] += 1.0 * n2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
-
-                            //
-                            // Ay derivatives with Ly
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z+1_y|Ly|b+1_x)
-                            v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1+1][n2];
-                            // (a+1_y|Ly|b+1_x)
-                            v2 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2];
-                            if (m1) {
-                                // (a+1_z-1_y|Ly|b+1_x)
-                                v3 = x[l1][l2+1] * y[m1-1][m2] * z[n1+1][n2];
-                                // (a-1_y|Ly|b+1_x)
-                                v4 = x[l1][l2+1] * y[m1-1][m2] * z[n1][n2];
-                            }
-                            // (a|Ly|b+1_x)
-                            //v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,y) = 0
-                            buffer_[ao12+yaydisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (l2) {
-                                // (a+1_z+1_y|Ly|b-1_x)
-                                v1 = x[l1][l2-1] * y[m1+1][m2] * z[n1+1][n2];
-                                // (a+1_y|Ly|b-1_x)
-                                v2 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2];
-                                if (m1) {
-                                    // (a+1_z-1_y|Ly|b-1_x)
-                                    v3 = x[l1][l2-1] * y[m1-1][m2] * z[n1+1][n2];
-                                    // (a-1_y|Ly|b-1_x)
-                                    v4 = x[l1][l2-1] * y[m1-1][m2] * z[n1][n2];
-                                }
-                                // (a|Ly|b-1_x)
-                                //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,y) = 0
-                            }
-                            buffer_[ao12+yaydisp] += -1.0 * l2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x+1_y|Ly|b+1_z)
-                            v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2+1];
-                            // (a+1_y|Ly|b+1_z)
-                            v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2+1];
-                            if (m1) {
-                                // (a+1_x-1_y|Ly|b+1_z)
-                                v3 = x[l1+1][l2] * y[m1-1][m2] * z[n1][n2+1];
-                                // (a-1_y|Ly|b+1_z)
-                                v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2+1];
-                            }
-                            // (a|Ly|b+1_z)
-                            //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(k,l) = (x,y) = 0
-                            buffer_[ao12+yaydisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (n2) {
-                                // (a+1_x+1_y|Ly|b-1_z)
-                                v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2-1];
-                                // (a+1_y|Ly|b-1_z)
-                                v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2-1];
-                                if (m1) {
-                                    // (a+1_x-1_y|Ly|b-1_z)
-                                    v3 = x[l1+1][l2] * y[m1-1][m2] * z[n1][n2-1];
-                                    // (a-1_y|Ly|b-1_z)
-                                    v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2-1];
-                                }
-                                // (a|Ly|b-1_z)
-                                //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(k,l) = (x,y) = 0
-                            }
-                            buffer_[ao12+yaydisp] += 1.0 * n2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//                            //
+//                            // Ax derivatives with Ly
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z+1_x|Ly|b+1_x)
+//                            v1 = x[l1+1][l2+1] * y[m1][m2] * z[n1+1][n2];
+//                            // (a+1_x|Ly|b+1_x)
+//                            v2 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2];
+//                            if (l1) {
+//                                // (a+1_z-1_x|Ly|b+1_x)
+//                                v3 = x[l1-1][l2+1] * y[m1][m2] * z[n1+1][n2];
+//                                // (a-1_x|Ly|b+1_x)
+//                                v4 = x[l1-1][l2+1] * y[m1][m2] * z[n1][n2];
+//                            }
+//                            // (a|Ly|b+1_x)
+//                            //v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,x) = 0
+//                            buffer_[ao12+yaxdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (l2) {
+//                                // (a+1_z+1_x|Ly|b-1_x)
+//                                v1 = x[l1+1][l2-1] * y[m1][m2] * z[n1+1][n2];
+//                                // (a+1_x|Ly|b-1_x)
+//                                v2 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2];
+//                                if (l1) {
+//                                    // (a+1_z-1_x|Ly|b-1_x)
+//                                    v3 = x[l1-1][l2-1] * y[m1][m2] * z[n1+1][n2];
+//                                    // (a-1_x|Ly|b-1_x)
+//                                    v4 = x[l1-1][l2-1] * y[m1][m2] * z[n1][n2];
+//                                }
+//                                // (a|Ly|b-1_x)
+//                                //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,x) = 0
+//                            }
+//                            buffer_[ao12+yaxdisp] += -1.0 * l2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - l1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x+1_x|Ly|b+1_z)
+//                            v1 = x[l1+2][l2] * y[m1][m2] * z[n1][n2+1];
+//                            // (a+1_x|Ly|b+1_z)
+//                            v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2+1];
+//                            // (a+1_x-1_x|Ly|b+1_z)
+//                            v3 = x[l1][l2] * y[m1][m2] * z[n1][n2+1];
+//                            if (l1) {
+//                                // (a-1_x|Ly|b+1_z)
+//                                v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2+1];
+//                            }
+//                            // (a|Ly|b+1_z)
+//                            v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(k,l) = (x,x) = 1
+//                            buffer_[ao12+yaxdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_x+1_x|Ly|b-1_z)
+//                                v1 = x[l1+2][l2] * y[m1][m2] * z[n1][n2-1];
+//                                // (a+1_x|Ly|b-1_z)
+//                                v2 = x[l1+1][l2] * y[m1][m2] * z[n1][n2-1];
+//                                // (a+1_x-1_x|Ly|b-1_z)
+//                                v3 = x[l1][l2] * y[m1][m2] * z[n1][n2-1];
+//                                if (l1) {
+//                                    // (a-1_x|Ly|b-1_z)
+//                                    v4 = x[l1-1][l2] * y[m1][m2] * z[n1][n2-1];
+//                                }
+//                                // (a|Ly|b-1_z)
+//                                v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(k,l) = (x,x) = 1
+//                            }
+//                            buffer_[ao12+yaxdisp] += 1.0 * n2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//
+//                            //
+//                            // Ay derivatives with Ly
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z+1_y|Ly|b+1_x)
+//                            v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1+1][n2];
+//                            // (a+1_y|Ly|b+1_x)
+//                            v2 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2];
+//                            if (m1) {
+//                                // (a+1_z-1_y|Ly|b+1_x)
+//                                v3 = x[l1][l2+1] * y[m1-1][m2] * z[n1+1][n2];
+//                                // (a-1_y|Ly|b+1_x)
+//                                v4 = x[l1][l2+1] * y[m1-1][m2] * z[n1][n2];
+//                            }
+//                            // (a|Ly|b+1_x)
+//                            //v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,y) = 0
+//                            buffer_[ao12+yaydisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (l2) {
+//                                // (a+1_z+1_y|Ly|b-1_x)
+//                                v1 = x[l1][l2-1] * y[m1+1][m2] * z[n1+1][n2];
+//                                // (a+1_y|Ly|b-1_x)
+//                                v2 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2];
+//                                if (m1) {
+//                                    // (a+1_z-1_y|Ly|b-1_x)
+//                                    v3 = x[l1][l2-1] * y[m1-1][m2] * z[n1+1][n2];
+//                                    // (a-1_y|Ly|b-1_x)
+//                                    v4 = x[l1][l2-1] * y[m1-1][m2] * z[n1][n2];
+//                                }
+//                                // (a|Ly|b-1_x)
+//                                //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(j,l) = (z,y) = 0
+//                            }
+//                            buffer_[ao12+yaydisp] += -1.0 * l2 * (2.0 * a1 * (v1 + (A[2] - C[2]) * v2) - m1 * (v3 + (A[2] - C[2]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x+1_y|Ly|b+1_z)
+//                            v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2+1];
+//                            // (a+1_y|Ly|b+1_z)
+//                            v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2+1];
+//                            if (m1) {
+//                                // (a+1_x-1_y|Ly|b+1_z)
+//                                v3 = x[l1+1][l2] * y[m1-1][m2] * z[n1][n2+1];
+//                                // (a-1_y|Ly|b+1_z)
+//                                v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2+1];
+//                            }
+//                            // (a|Ly|b+1_z)
+//                            //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2+1]; // because kronecker_delta(k,l) = (x,y) = 0
+//                            buffer_[ao12+yaydisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_x+1_y|Ly|b-1_z)
+//                                v1 = x[l1+1][l2] * y[m1+1][m2] * z[n1][n2-1];
+//                                // (a+1_y|Ly|b-1_z)
+//                                v2 = x[l1][l2] * y[m1+1][m2] * z[n1][n2-1];
+//                                if (m1) {
+//                                    // (a+1_x-1_y|Ly|b-1_z)
+//                                    v3 = x[l1+1][l2] * y[m1-1][m2] * z[n1][n2-1];
+//                                    // (a-1_y|Ly|b-1_z)
+//                                    v4 = x[l1][l2] * y[m1-1][m2] * z[n1][n2-1];
+//                                }
+//                                // (a|Ly|b-1_z)
+//                                //v5 = x[l1][l2] * y[m1][m2] * z[n1][n2-1]; // because kronecker_delta(k,l) = (x,y) = 0
+//                            }
+//                            buffer_[ao12+yaydisp] += 1.0 * n2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
 
                             //
                             // Az derivatives with Ly
@@ -943,121 +1005,121 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             }
                             buffer_[ao12+yazdisp] += 1.0 * n2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - n1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
 
-                            //
-                            // Bx derivatives with Ly
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z|Ly|b+1_x+1_x)
-                            v1 = x[l1][l2+2] * y[m1][m2] * z[n1+1][n2];
-                            // (a|Ly|b+1_x+1_x)
-                            v2 = x[l1][l2+2] * y[m1][m2] * z[n1][n2];
-                            // (a+1_z|Ly|b+1_x-1_x)
-                            v3 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
-                            // (a|Ly|b+1_x-1_x)
-                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            buffer_[ao12+ybxdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z|Ly|b-1_x+1_x)
-                            v1 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
-                            // (a|Ly|b-1_x+1_x)
-                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            if (l2 || l2-1) {
-                                // (a+1_z|Ly|b-1_x-1_x)
-                                v3 = x[l1][l2-2] * y[m1][m2] * z[n1+1][n2];
-                                // (a|Ly|b-1_x-1_x)
-                                v4 = x[l1][l2-2] * y[m1][m2] * z[n1][n2];
-                            }
-                            buffer_[ao12+ybxdisp] += -1.0 * l2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x|Ly|b+1_z+1_x)
-                            v1 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2+1];
-                            // (a|Ly|b+1_z+1_x)
-                            v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
-                            if (l2) {
-                                // (a+1_x|Ly|b+1_z-1_x)
-                                v3 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2+1];
-                                // (a|Ly|b+1_z-1_x)
-                                v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
-                            }
-                            buffer_[ao12+ybxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (n2) {
-                                // (a+1_x|Ly|b-1_z+1_x)
-                                v1 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2-1];
-                                // (a|Ly|b-1_z+1_x)
-                                v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
-                                if (l2) {
-                                    // (a+1_x|Ly|b-1_z-1_x)
-                                    v3 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2-1];
-                                    // (a|Ly|b-1_z-1_x)
-                                    v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
-                                }
-                            }
-                            buffer_[ao12+ybxdisp] += 1.0 * n2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
-
-                            //
-                            // By derivatives with Ly
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_z|Ly|b+1_x+1_y)
-                            v1 = x[l1][l2+1] * y[m1][m2+1] * z[n1+1][n2];
-                            // (a|Ly|b+1_x+1_y)
-                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
-                            if (m2) {
-                                // (a+1_z|Ly|b+1_x-1_y)
-                                v3 = x[l1][l2+1] * y[m1][m2-1] * z[n1+1][n2];
-                                // (a|Ly|b+1_x-1_y)
-                                v4 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
-                            }
-                            buffer_[ao12+ybydisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (l2) {
-                                // (a+1_z|Ly|b-1_x+1_y)
-                                v1 = x[l1][l2-1] * y[m1][m2+1] * z[n1+1][n2];
-                                // (a|Ly|b-1_x+1_y)
-                                v2 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
-                                if (m2) {
-                                    // (a+1_z|Ly|b-1_x-1_y)
-                                    v3 = x[l1][l2-1] * y[m1][m2-1] * z[n1+1][n2];
-                                    // (a|Ly|b-1_x-1_y)
-                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
-                                }
-                            }
-                            buffer_[ao12+ybydisp] += -1.0 * l2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x|Ly|b+1_z+1_y)
-                            v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2+1];
-                            // (a|Ly|b+1_z+1_y)
-                            v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2+1];
-                            if (m2) {
-                                // (a+1_x|Ly|b+1_z-1_y)
-                                v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2+1];
-                                // (a|Ly|b+1_z-1_y)
-                                v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
-                            }
-                            buffer_[ao12+ybydisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (n2) {
-                                // (a+1_x|Ly|b-1_z+1_y)
-                                v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2-1];
-                                // (a|Ly|b-1_z+1_y)
-                                v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2-1];
-                                if (m2) {
-                                    // (a+1_x|Ly|b-1_z-1_y)
-                                    v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2-1];
-                                    // (a|Ly|b-1_z-1_y)
-                                    v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
-                                }
-                            }
-                            buffer_[ao12+ybydisp] += 1.0 * n2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//                            //
+//                            // Bx derivatives with Ly
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z|Ly|b+1_x+1_x)
+//                            v1 = x[l1][l2+2] * y[m1][m2] * z[n1+1][n2];
+//                            // (a|Ly|b+1_x+1_x)
+//                            v2 = x[l1][l2+2] * y[m1][m2] * z[n1][n2];
+//                            // (a+1_z|Ly|b+1_x-1_x)
+//                            v3 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
+//                            // (a|Ly|b+1_x-1_x)
+//                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            buffer_[ao12+ybxdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z|Ly|b-1_x+1_x)
+//                            v1 = x[l1][l2] * y[m1][m2] * z[n1+1][n2];
+//                            // (a|Ly|b-1_x+1_x)
+//                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            if (l2 || l2-1) {
+//                                // (a+1_z|Ly|b-1_x-1_x)
+//                                v3 = x[l1][l2-2] * y[m1][m2] * z[n1+1][n2];
+//                                // (a|Ly|b-1_x-1_x)
+//                                v4 = x[l1][l2-2] * y[m1][m2] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+ybxdisp] += -1.0 * l2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - l2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x|Ly|b+1_z+1_x)
+//                            v1 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2+1];
+//                            // (a|Ly|b+1_z+1_x)
+//                            v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
+//                            if (l2) {
+//                                // (a+1_x|Ly|b+1_z-1_x)
+//                                v3 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2+1];
+//                                // (a|Ly|b+1_z-1_x)
+//                                v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
+//                            }
+//                            buffer_[ao12+ybxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_x|Ly|b-1_z+1_x)
+//                                v1 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2-1];
+//                                // (a|Ly|b-1_z+1_x)
+//                                v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
+//                                if (l2) {
+//                                    // (a+1_x|Ly|b-1_z-1_x)
+//                                    v3 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2-1];
+//                                    // (a|Ly|b-1_z-1_x)
+//                                    v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
+//                                }
+//                            }
+//                            buffer_[ao12+ybxdisp] += 1.0 * n2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//
+//                            //
+//                            // By derivatives with Ly
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_z|Ly|b+1_x+1_y)
+//                            v1 = x[l1][l2+1] * y[m1][m2+1] * z[n1+1][n2];
+//                            // (a|Ly|b+1_x+1_y)
+//                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
+//                            if (m2) {
+//                                // (a+1_z|Ly|b+1_x-1_y)
+//                                v3 = x[l1][l2+1] * y[m1][m2-1] * z[n1+1][n2];
+//                                // (a|Ly|b+1_x-1_y)
+//                                v4 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+ybydisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (l2) {
+//                                // (a+1_z|Ly|b-1_x+1_y)
+//                                v1 = x[l1][l2-1] * y[m1][m2+1] * z[n1+1][n2];
+//                                // (a|Ly|b-1_x+1_y)
+//                                v2 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
+//                                if (m2) {
+//                                    // (a+1_z|Ly|b-1_x-1_y)
+//                                    v3 = x[l1][l2-1] * y[m1][m2-1] * z[n1+1][n2];
+//                                    // (a|Ly|b-1_x-1_y)
+//                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
+//                                }
+//                            }
+//                            buffer_[ao12+ybydisp] += -1.0 * l2 * (2.0 * a2 * (v1 + (A[2] - C[2]) * v2) - m2 * (v3 + (A[2] - C[2]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x|Ly|b+1_z+1_y)
+//                            v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2+1];
+//                            // (a|Ly|b+1_z+1_y)
+//                            v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2+1];
+//                            if (m2) {
+//                                // (a+1_x|Ly|b+1_z-1_y)
+//                                v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2+1];
+//                                // (a|Ly|b+1_z-1_y)
+//                                v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
+//                            }
+//                            buffer_[ao12+ybydisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (n2) {
+//                                // (a+1_x|Ly|b-1_z+1_y)
+//                                v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2-1];
+//                                // (a|Ly|b-1_z+1_y)
+//                                v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2-1];
+//                                if (m2) {
+//                                    // (a+1_x|Ly|b-1_z-1_y)
+//                                    v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2-1];
+//                                    // (a|Ly|b-1_z-1_y)
+//                                    v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
+//                                }
+//                            }
+//                            buffer_[ao12+ybydisp] += 1.0 * n2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
                             //
                             // Bz derivatives with Ly
@@ -1115,147 +1177,393 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             }
                             buffer_[ao12+ybzdisp] += 1.0 * n2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
-                            //
-                            // Ax derivatives with Lz
-                            //
+//                            //
+//                            // Ax derivatives with Lz
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x+1_x|Lz|b+1_y)
+//                            v1 = x[l1+2][l2] * y[m1][m2+1] * z[n1][n2];
+//                            // (a+1_x|Lz|b+1_y)
+//                            v2 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2];
+//                            // (a+1_x-1_x|Lz|b+1_y)
+//                            v3 = x[l1][l2] * y[m1][m2+1] * z[n1][n2];
+//                            if (l1) {
+//                                // (a-1_x|Lz|b+1_y)
+//                                v4 = x[l1-1][l2] * y[m1][m2+1] * z[n1][n2];
+//                            }
+//                            // (a|Lz|b+1_y)
+//                            v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,x) = 1
+//                            buffer_[ao12+zaxdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (m2) {
+//                                // (a+1_x+1_x|Lz|b-1_y)
+//                                v1 = x[l1+2][l2] * y[m1][m2-1] * z[n1][n2];
+//                                // (a+1_x|Lz|b-1_y)
+//                                v2 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2];
+//                                // (a+1_x-1_x|Lz|b-1_y)
+//                                v3 = x[l1][l2] * y[m1][m2-1] * z[n1][n2];
+//                                if (l1) {
+//                                    // (a-1_x|Lz|b-1_y)
+//                                    v4 = x[l1-1][l2] * y[m1][m2-1] * z[n1][n2];
+//                                }
+//                                // (a|Lz|b-1_y)
+//                                v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,x) = 1
+//                            }
+//                            buffer_[ao12+zaxdisp] += -1.0 * m2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y+1_x|Lz|b+1_x)
+//                            v1 = x[l1+1][l2+1] * y[m1+1][m2] * z[n1][n2];
+//                            // (a+1_x|Lz|b+1_x)
+//                            v2 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2];
+//                            if (l1) {
+//                                // (a+1_y-1_x|Lz|b+1_x)
+//                                v3 = x[l1-1][l2+1] * y[m1+1][m2] * z[n1][n2];
+//                                // (a-1_x|Lz|b+1_x)
+//                                v4 = x[l1-1][l2+1] * y[m1][m2] * z[n1][n2];
+//                            }
+//                            // (a|Lz|b+1_x)
+//                            //v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,x) = 0
+//                            buffer_[ao12+zaxdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (l2) {
+//                                // (a+1_y+1_x|Lz|b-1_x)
+//                                v1 = x[l1+1][l2-1] * y[m1+1][m2] * z[n1][n2];
+//                                // (a+1_x|Lz|b-1_x)
+//                                v2 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2];
+//                                if (l1) {
+//                                    // (a+1_y-1_x|Lz|b-1_x)
+//                                    v3 = x[l1-1][l2-1] * y[m1+1][m2] * z[n1][n2];
+//                                    // (a-1_x|Lz|b-1_x)
+//                                    v4 = x[l1-1][l2-1] * y[m1][m2] * z[n1][n2];
+//                                }
+//                                // (a|Lz|b-1_x)
+//                                //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,x) = 0
+//                            }
+//                            buffer_[ao12+zaxdisp] += 1.0 * l2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+//
+//                            //
+//                            // Ay derivatives with Lz
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x+1_y|Lz|b+1_y)
+//                            v1 = x[l1+1][l2] * y[m1+1][m2+1] * z[n1][n2];
+//                            // (a+1_y|Lz|b+1_y)
+//                            v2 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2];
+//                            if (m1) {
+//                                // (a+1_x-1_y|Lz|b+1_y)
+//                                v3 = x[l1+1][l2] * y[m1-1][m2+1] * z[n1][n2];
+//                                // (a-1_y|Lz|b+1_y)
+//                                v4 = x[l1][l2] * y[m1-1][m2+1] * z[n1][n2];
+//                            }
+//                            // (a|Lz|b+1_y)
+//                            //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,y) = 0
+//                            buffer_[ao12+zaydisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (m2) {
+//                                // (a+1_x+1_y|Lz|b-1_y)
+//                                v1 = x[l1+1][l2] * y[m1+1][m2-1] * z[n1][n2];
+//                                // (a+1_y|Lz|b-1_y)
+//                                v2 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2];
+//                                if (m1) {
+//                                    // (a+1_x-1_y|Lz|b-1_y)
+//                                    v3 = x[l1+1][l2] * y[m1-1][m2-1] * z[n1][n2];
+//                                    // (a-1_y|Lz|b-1_y)
+//                                    v4 = x[l1][l2] * y[m1-1][m2-1] * z[n1][n2];
+//                                }
+//                                // (a|Lz|b-1_y)
+//                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,y) = 0
+//                            }
+//                            buffer_[ao12+zaydisp] += -1.0 * m2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y+1_y|Lz|b+1_x)
+//                            v1 = x[l1][l2+1] * y[m1+2][m2] * z[n1][n2];
+//                            // (a+1_y|Lz|b+1_x)
+//                            v2 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2];
+//                            // (a+1_y-1_y|Lz|b+1_x)
+//                            v3 = x[l1][l2+1] * y[m1][m2] * z[n1][n2];
+//                            if (m1) {
+//                                // (a-1_y|Lz|b+1_x)
+//                                v4 = x[l1][l2+1] * y[m1-1][m2] * z[n1][n2];
+//                            }
+//                            // (a|Lz|b+1_x)
+//                            v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,y) = 1
+//                            buffer_[ao12+zaydisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (l2) {
+//                                // (a+1_y+1_y|Lz|b-1_x)
+//                                v1 = x[l1][l2-1] * y[m1+2][m2] * z[n1][n2];
+//                                // (a+1_y|Lz|b-1_x)
+//                                v2 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2];
+//                                // (a+1_y-1_y|Lz|b-1_x)
+//                                v3 = x[l1][l2-1] * y[m1][m2] * z[n1][n2];
+//                                if (m1) {
+//                                    // (a-1_y|Lz|b-1_x)
+//                                    v4 = x[l1][l2-1] * y[m1-1][m2] * z[n1][n2];
+//                                }
+//                                // (a|Lz|b-1_x)
+//                                v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,y) = 1
+//                            }
+//                            buffer_[ao12+zaydisp] += 1.0 * l2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x+1_x|Lz|b+1_y)
-                            v1 = x[l1+2][l2] * y[m1][m2+1] * z[n1][n2];
-                            // (a+1_x|Lz|b+1_y)
-                            v2 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2];
-                            // (a+1_x-1_x|Lz|b+1_y)
-                            v3 = x[l1][l2] * y[m1][m2+1] * z[n1][n2];
-                            if (l1) {
-                                // (a-1_x|Lz|b+1_y)
-                                v4 = x[l1-1][l2] * y[m1][m2+1] * z[n1][n2];
-                            }
-                            // (a|Lz|b+1_y)
-                            v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,x) = 1
-                            buffer_[ao12+zaxdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+                            ////
+                            //// Az derivatives with Lz
+                            ////
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (m2) {
-                                // (a+1_x+1_x|Lz|b-1_y)
-                                v1 = x[l1+2][l2] * y[m1][m2-1] * z[n1][n2];
-                                // (a+1_x|Lz|b-1_y)
-                                v2 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2];
-                                // (a+1_x-1_x|Lz|b-1_y)
-                                v3 = x[l1][l2] * y[m1][m2-1] * z[n1][n2];
-                                if (l1) {
-                                    // (a-1_x|Lz|b-1_y)
-                                    v4 = x[l1-1][l2] * y[m1][m2-1] * z[n1][n2];
-                                }
-                                // (a|Lz|b-1_y)
-                                v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,x) = 1
-                            }
-                            buffer_[ao12+zaxdisp] += -1.0 * m2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - l1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //// (a+1_x+1_z|Lz|b+1_y)
+                            //v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1+1][n2];
+                            //// (a+1_z|Lz|b+1_y)
+                            //v2 = x[l1][l2] * y[m1][m2+1] * z[n1+1][n2];
+                            //if (n1) {
+                            //    // (a+1_x-1_z|Lz|b+1_y)
+                            //    v3 = x[l1+1][l2] * y[m1][m2+1] * z[n1-1][n2];
+                            //    // (a-1_z|Lz|b+1_y)
+                            //    v4 = x[l1][l2] * y[m1][m2+1] * z[n1-1][n2];
+                            //}
+                            //// (a|Lz|b+1_y)
+                            ////v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,z) = 0
+                            //buffer_[ao12+zazdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - n1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y+1_x|Lz|b+1_x)
-                            v1 = x[l1+1][l2+1] * y[m1+1][m2] * z[n1][n2];
-                            // (a+1_x|Lz|b+1_x)
-                            v2 = x[l1+1][l2+1] * y[m1][m2] * z[n1][n2];
-                            if (l1) {
-                                // (a+1_y-1_x|Lz|b+1_x)
-                                v3 = x[l1-1][l2+1] * y[m1+1][m2] * z[n1][n2];
-                                // (a-1_x|Lz|b+1_x)
-                                v4 = x[l1-1][l2+1] * y[m1][m2] * z[n1][n2];
-                            }
-                            // (a|Lz|b+1_x)
-                            //v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,x) = 0
-                            buffer_[ao12+zaxdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //if (m2) {
+                            //    // (a+1_x+1_z|Lz|b-1_y)
+                            //    v1 = x[l1+1][l2] * y[m1][m2-1] * z[n1+1][n2];
+                            //    // (a+1_z|Lz|b-1_y)
+                            //    v2 = x[l1][l2] * y[m1][m2-1] * z[n1+1][n2];
+                            //    if (n1) {
+                            //        // (a+1_x-1_z|Lz|b-1_y)
+                            //        v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1-1][n2];
+                            //        // (a-1_z|Lz|b-1_y)
+                            //        v4 = x[l1][l2] * y[m1][m2-1] * z[n1-1][n2];
+                            //    }
+                            //    // (a|Lz|b-1_y)
+                            //    //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,z) = 0
+                            //}
+                            //buffer_[ao12+zazdisp] += -1.0 * m2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - n1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (l2) {
-                                // (a+1_y+1_x|Lz|b-1_x)
-                                v1 = x[l1+1][l2-1] * y[m1+1][m2] * z[n1][n2];
-                                // (a+1_x|Lz|b-1_x)
-                                v2 = x[l1+1][l2-1] * y[m1][m2] * z[n1][n2];
-                                if (l1) {
-                                    // (a+1_y-1_x|Lz|b-1_x)
-                                    v3 = x[l1-1][l2-1] * y[m1+1][m2] * z[n1][n2];
-                                    // (a-1_x|Lz|b-1_x)
-                                    v4 = x[l1-1][l2-1] * y[m1][m2] * z[n1][n2];
-                                }
-                                // (a|Lz|b-1_x)
-                                //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,x) = 0
-                            }
-                            buffer_[ao12+zaxdisp] += 1.0 * l2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - l1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //// (a+1_y+1_z|Lz|b+1_x)
+                            //v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1+1][n2];
+                            //// (a+1_z|Lz|b+1_x)
+                            //v2 = x[l1][l2+1] * y[m1][m2] * z[n1+1][n2];
+                            //if (n1) {
+                            //    // (a+1_y-1_z|Lz|b+1_x)
+                            //    v3 = x[l1][l2+1] * y[m1+1][m2] * z[n1-1][n2];
+                            //    // (a-1_z|Lz|b+1_x)
+                            //    v4 = x[l1][l2+1] * y[m1][m2] * z[n1-1][n2];
+                            //}
+                            //// (a|Lz|b+1_x)
+                            ////v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,z) = 0
+                            //buffer_[ao12+zazdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - n1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
 
-                            //
-                            // Ay derivatives with Lz
-                            //
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //if (l2) {
+                            //    // (a+1_y+1_z|Lz|b-1_x)
+                            //    v1 = x[l1][l2-1] * y[m1+1][m2] * z[n1+1][n2];
+                            //    // (a+1_z|Lz|b-1_x)
+                            //    v2 = x[l1][l2-1] * y[m1][m2] * z[n1+1][n2];
+                            //    if (n1) {
+                            //        // (a+1_y-1_z|Lz|b-1_x)
+                            //        v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1-1][n2];
+                            //        // (a-1_z|Lz|b-1_x)
+                            //        v4 = x[l1][l2-1] * y[m1][m2] * z[n1-1][n2];
+                            //    }
+                            //    // (a|Lz|b-1_x)
+                            //    //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,z) = 0
+                            //}
+                            //buffer_[ao12+zazdisp] += 1.0 * l2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - n1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+                            
+//                            //
+//                            // Bx derivatives with Lz
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x|Lz|b+1_y+1_x)
+//                            v1 = x[l1+1][l2+1] * y[m1][m2+1] * z[n1][n2];
+//                            // (a|Lz|b+1_y+1_x)
+//                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
+//                            if (l2) {
+//                                // (a+1_x|Lz|b+1_y-1_x)
+//                                v3 = x[l1+1][l2-1] * y[m1][m2+1] * z[n1][n2];
+//                                // (a|Lz|b+1_y-1_x)
+//                                v4 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+zbxdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (m2) {
+//                                // (a+1_x|Lz|b-1_y+1_x)
+//                                v1 = x[l1+1][l2+1] * y[m1][m2-1] * z[n1][n2];
+//                                // (a|Lz|b-1_y+1_x)
+//                                v2 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
+//                                if (l2) {
+//                                    // (a+1_x|Lz|b-1_y-1_x)
+//                                    v3 = x[l1+1][l2-1] * y[m1][m2-1] * z[n1][n2];
+//                                    // (a|Lz|b-1_y-1_x)
+//                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
+//                                }
+//                            }
+//                            buffer_[ao12+zbxdisp] += -1.0 * m2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y|Lz|b+1_x+1_x)
+//                            v1 = x[l1][l2+2] * y[m1+1][m2] * z[n1][n2];
+//                            // (a|Lz|b+1_x+1_x)
+//                            v2 = x[l1][l2+2] * y[m1][m2] * z[n1][n2];
+//                            // (a+1_y|Lz|b+1_x-1_x)
+//                            v3 = x[l1][l2] * y[m1+1][m2] * z[n1][n2];
+//                            // (a|Lz|b+1_x-1_x)
+//                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            buffer_[ao12+zbxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y|Lz|b-1_x+1_x)
+//                            v1 = x[l1][l2] * y[m1+1][m2] * z[n1][n2];
+//                            // (a|Lz|b-1_x+1_x)
+//                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            if (l2 || l2-1) {
+//                                // (a+1_y|Lz|b-1_x-1_x)
+//                                v3 = x[l1][l2-2] * y[m1+1][m2] * z[n1][n2];
+//                                // (a|Lz|b-1_x-1_x)
+//                                v4 = x[l1][l2-2] * y[m1][m2] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+zbxdisp] += 1.0 * l2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+//
+//                            //
+//                            // By derivatives with Lz
+//                            //
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x|Lz|b+1_y+1_y)
+//                            v1 = x[l1+1][l2] * y[m1][m2+2] * z[n1][n2];
+//                            // (a|Lz|b+1_y+1_y)
+//                            v2 = x[l1][l2] * y[m1][m2+2] * z[n1][n2];
+//                            // (a+1_x|Lz|b+1_y-1_y)
+//                            v3 = x[l1+1][l2] * y[m1][m2] * z[n1][n2];
+//                            // (a|Lz|b+1_y-1_y)
+//                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            buffer_[ao12+zbydisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_x|Lz|b-1_y+1_y)
+//                            v1 = x[l1+1][l2] * y[m1][m2] * z[n1][n2];
+//                            // (a|Lz|b-1_y+1_y)
+//                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
+//                            if (m2 || m2-1) {
+//                                // (a+1_x|Lz|b-1_y-1_y)
+//                                v3 = x[l1+1][l2] * y[m1][m2-2] * z[n1][n2];
+//                                // (a|Lz|b-1_y-1_y)
+//                                v4 = x[l1][l2] * y[m1][m2-2] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+zbydisp] += -1.0 * m2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            // (a+1_y|Lz|b+1_x+1_y)
+//                            v1 = x[l1][l2+1] * y[m1+1][m2+1] * z[n1][n2];
+//                            // (a|Lz|b+1_x+1_y)
+//                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
+//                            if (m2) {
+//                                // (a+1_y|Lz|b+1_x-1_y)
+//                                v3 = x[l1][l2+1] * y[m1+1][m2-1] * z[n1][n2];
+//                                // (a|Lz|b+1_x-1_y)
+//                                v4 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
+//                            }
+//                            buffer_[ao12+zbydisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+//
+//                            v1 = v2 = v3 = v4 = v5 = 0.0;
+//                            if (l2) {
+//                                // (a+1_y|Lz|b-1_x+1_y)
+//                                v1 = x[l1][l2-1] * y[m1+1][m2+1] * z[n1][n2];
+//                                // (a|Lz|b-1_x+1_y)
+//                                v2 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
+//                                if (m2) {
+//                                    // (a+1_y|Lz|b-1_x-1_y)
+//                                    v3 = x[l1][l2-1] * y[m1+1][m2-1] * z[n1][n2];
+//                                    // (a|Lz|b-1_x-1_y)
+//                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
+//                                }
+//                            }
+//                            buffer_[ao12+zbydisp] += 1.0 * l2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x+1_y|Lz|b+1_y)
-                            v1 = x[l1+1][l2] * y[m1+1][m2+1] * z[n1][n2];
-                            // (a+1_y|Lz|b+1_y)
-                            v2 = x[l1][l2] * y[m1+1][m2+1] * z[n1][n2];
-                            if (m1) {
-                                // (a+1_x-1_y|Lz|b+1_y)
-                                v3 = x[l1+1][l2] * y[m1-1][m2+1] * z[n1][n2];
-                                // (a-1_y|Lz|b+1_y)
-                                v4 = x[l1][l2] * y[m1-1][m2+1] * z[n1][n2];
-                            }
-                            // (a|Lz|b+1_y)
-                            //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,y) = 0
-                            buffer_[ao12+zaydisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+                            ////
+                            //// Bz derivatives with Lz
+                            ////
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (m2) {
-                                // (a+1_x+1_y|Lz|b-1_y)
-                                v1 = x[l1+1][l2] * y[m1+1][m2-1] * z[n1][n2];
-                                // (a+1_y|Lz|b-1_y)
-                                v2 = x[l1][l2] * y[m1+1][m2-1] * z[n1][n2];
-                                if (m1) {
-                                    // (a+1_x-1_y|Lz|b-1_y)
-                                    v3 = x[l1+1][l2] * y[m1-1][m2-1] * z[n1][n2];
-                                    // (a-1_y|Lz|b-1_y)
-                                    v4 = x[l1][l2] * y[m1-1][m2-1] * z[n1][n2];
-                                }
-                                // (a|Lz|b-1_y)
-                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,y) = 0
-                            }
-                            buffer_[ao12+zaydisp] += -1.0 * m2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - m1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //// (a+1_x|Lz|b+1_y+1_z)
+                            //v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2+1];
+                            //// (a|Lz|b+1_y+1_z)
+                            //v2 = x[l1][l2] * y[m1][m2+1] * z[n1][n2+1];
+                            //if (n2) {
+                            //    // (a+1_x|Lz|b+1_y-1_z)
+                            //    v3 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2-1];
+                            //    // (a|Lz|b+1_y-1_z)
+                            //    v4 = x[l1][l2] * y[m1][m2+1] * z[n1][n2-1];
+                            //}
+                            //buffer_[ao12+zbzdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y+1_y|Lz|b+1_x)
-                            v1 = x[l1][l2+1] * y[m1+2][m2] * z[n1][n2];
-                            // (a+1_y|Lz|b+1_x)
-                            v2 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2];
-                            // (a+1_y-1_y|Lz|b+1_x)
-                            v3 = x[l1][l2+1] * y[m1][m2] * z[n1][n2];
-                            if (m1) {
-                                // (a-1_y|Lz|b+1_x)
-                                v4 = x[l1][l2+1] * y[m1-1][m2] * z[n1][n2];
-                            }
-                            // (a|Lz|b+1_x)
-                            v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,y) = 1
-                            buffer_[ao12+zaydisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //if (m2) {
+                            //    // (a+1_x|Lz|b-1_y+1_z)
+                            //    v1 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2+1];
+                            //    // (a|Lz|b-1_y+1_z)
+                            //    v2 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
+                            //    if (n2) {
+                            //        // (a+1_x|Lz|b-1_y-1_z)
+                            //        v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2-1];
+                            //        // (a|Lz|b-1_y-1_z)
+                            //        v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
+                            //    }
+                            //}
+                            //buffer_[ao12+zbzdisp] += -1.0 * m2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (l2) {
-                                // (a+1_y+1_y|Lz|b-1_x)
-                                v1 = x[l1][l2-1] * y[m1+2][m2] * z[n1][n2];
-                                // (a+1_y|Lz|b-1_x)
-                                v2 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2];
-                                // (a+1_y-1_y|Lz|b-1_x)
-                                v3 = x[l1][l2-1] * y[m1][m2] * z[n1][n2];
-                                if (m1) {
-                                    // (a-1_y|Lz|b-1_x)
-                                    v4 = x[l1][l2-1] * y[m1-1][m2] * z[n1][n2];
-                                }
-                                // (a|Lz|b-1_x)
-                                v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,y) = 1
-                            }
-                            buffer_[ao12+zaydisp] += 1.0 * l2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - m1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //// (a+1_y|Lz|b+1_x+1_z)
+                            //v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2+1];
+                            //// (a|Lz|b+1_x+1_z)
+                            //v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
+                            //if (n2) {
+                            //    // (a+1_y|Lz|b+1_x-1_z)
+                            //    v3 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
+                            //    // (a|Lz|b+1_x-1_z)
+                            //    v4 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
+                            //}
+                            //buffer_[ao12+zbzdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - n2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+
+                            //v1 = v2 = v3 = v4 = v5 = 0.0;
+                            //if (l2) {
+                            //    // (a+1_y|Lz|b-1_x+1_z)
+                            //    v1 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2+1];
+                            //    // (a|Lz|b-1_x+1_z)
+                            //    v2 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
+                            //    if (n2) {
+                            //        // (a+1_y|Lz|b-1_x-1_z)
+                            //        v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2-1];
+                            //        // (a|Lz|b-1_x-1_z)
+                            //        v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
+                            //    }
+                            //}
+                            //buffer_[ao12+zbzdisp] += 1.0 * l2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - n2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+
+
+
+
+                            //TEST
 
                             //
                             // Az derivatives with Lz
                             //
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            v1 = v2 = v3 = v4 = v5 = v6 = v7 = v8 = v9 = v10 = v11 = v12 = v13 = v14 = v15 = v16 = v17 = v18 = v19 = v20 = 0.0;
+
                             // (a+1_x+1_z|Lz|b+1_y)
                             v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1+1][n2];
                             // (a+1_z|Lz|b+1_y)
@@ -1268,174 +1576,65 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                             }
                             // (a|Lz|b+1_y)
                             //v5 = x[l1][l2] * y[m1][m2+1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,z) = 0
-                            buffer_[ao12+zazdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - n1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
                             if (m2) {
                                 // (a+1_x+1_z|Lz|b-1_y)
-                                v1 = x[l1+1][l2] * y[m1][m2-1] * z[n1+1][n2];
+                                v6 = x[l1+1][l2] * y[m1][m2-1] * z[n1+1][n2];
                                 // (a+1_z|Lz|b-1_y)
-                                v2 = x[l1][l2] * y[m1][m2-1] * z[n1+1][n2];
+                                v7 = x[l1][l2] * y[m1][m2-1] * z[n1+1][n2];
                                 if (n1) {
                                     // (a+1_x-1_z|Lz|b-1_y)
-                                    v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1-1][n2];
+                                    v8 = x[l1+1][l2] * y[m1][m2-1] * z[n1-1][n2];
                                     // (a-1_z|Lz|b-1_y)
-                                    v4 = x[l1][l2] * y[m1][m2-1] * z[n1-1][n2];
+                                    v9 = x[l1][l2] * y[m1][m2-1] * z[n1-1][n2];
                                 }
                                 // (a|Lz|b-1_y)
-                                //v5 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,z) = 0
+                                //v10 = x[l1][l2] * y[m1][m2-1] * z[n1][n2]; // because kronecker_delta(j,l) = (x,z) = 0
                             }
-                            buffer_[ao12+zazdisp] += -1.0 * m2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - n1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
                             // (a+1_y+1_z|Lz|b+1_x)
-                            v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1+1][n2];
+                            v11 = x[l1][l2+1] * y[m1+1][m2] * z[n1+1][n2];
                             // (a+1_z|Lz|b+1_x)
-                            v2 = x[l1][l2+1] * y[m1][m2] * z[n1+1][n2];
+                            v12 = x[l1][l2+1] * y[m1][m2] * z[n1+1][n2];
                             if (n1) {
                                 // (a+1_y-1_z|Lz|b+1_x)
-                                v3 = x[l1][l2+1] * y[m1+1][m2] * z[n1-1][n2];
+                                v13 = x[l1][l2+1] * y[m1+1][m2] * z[n1-1][n2];
                                 // (a-1_z|Lz|b+1_x)
-                                v4 = x[l1][l2+1] * y[m1][m2] * z[n1-1][n2];
+                                v14 = x[l1][l2+1] * y[m1][m2] * z[n1-1][n2];
                             }
                             // (a|Lz|b+1_x)
-                            //v5 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,z) = 0
-                            buffer_[ao12+zazdisp] += -2.0 * a2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - n1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
+                            //v15 = x[l1][l2+1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,z) = 0
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
                             if (l2) {
                                 // (a+1_y+1_z|Lz|b-1_x)
-                                v1 = x[l1][l2-1] * y[m1+1][m2] * z[n1+1][n2];
+                                v16 = x[l1][l2-1] * y[m1+1][m2] * z[n1+1][n2];
                                 // (a+1_z|Lz|b-1_x)
-                                v2 = x[l1][l2-1] * y[m1][m2] * z[n1+1][n2];
+                                v17 = x[l1][l2-1] * y[m1][m2] * z[n1+1][n2];
                                 if (n1) {
                                     // (a+1_y-1_z|Lz|b-1_x)
-                                    v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1-1][n2];
+                                    v18 = x[l1][l2-1] * y[m1+1][m2] * z[n1-1][n2];
                                     // (a-1_z|Lz|b-1_x)
-                                    v4 = x[l1][l2-1] * y[m1][m2] * z[n1-1][n2];
+                                    v19 = x[l1][l2-1] * y[m1][m2] * z[n1-1][n2];
                                 }
                                 // (a|Lz|b-1_x)
-                                //v5 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,z) = 0
+                                //v20 = x[l1][l2-1] * y[m1][m2] * z[n1][n2]; // because kronecker_delta(k,l) = (y,z) = 0
                             }
-                            buffer_[ao12+zazdisp] += 1.0 * l2 * (2.0 * a1 * (v1 + (A[1] - C[1]) * v2) - n1 * (v3 + (A[1] - C[1]) * v4) + v5) * over_pf;
-                            
-                            //
-                            // Bx derivatives with Lz
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x|Lz|b+1_y+1_x)
-                            v1 = x[l1+1][l2+1] * y[m1][m2+1] * z[n1][n2];
-                            // (a|Lz|b+1_y+1_x)
-                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
-                            if (l2) {
-                                // (a+1_x|Lz|b+1_y-1_x)
-                                v3 = x[l1+1][l2-1] * y[m1][m2+1] * z[n1][n2];
-                                // (a|Lz|b+1_y-1_x)
-                                v4 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
-                            }
-                            buffer_[ao12+zbxdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (m2) {
-                                // (a+1_x|Lz|b-1_y+1_x)
-                                v1 = x[l1+1][l2+1] * y[m1][m2-1] * z[n1][n2];
-                                // (a|Lz|b-1_y+1_x)
-                                v2 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
-                                if (l2) {
-                                    // (a+1_x|Lz|b-1_y-1_x)
-                                    v3 = x[l1+1][l2-1] * y[m1][m2-1] * z[n1][n2];
-                                    // (a|Lz|b-1_y-1_x)
-                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
-                                }
-                            }
-                            buffer_[ao12+zbxdisp] += -1.0 * m2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - l2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y|Lz|b+1_x+1_x)
-                            v1 = x[l1][l2+2] * y[m1+1][m2] * z[n1][n2];
-                            // (a|Lz|b+1_x+1_x)
-                            v2 = x[l1][l2+2] * y[m1][m2] * z[n1][n2];
-                            // (a+1_y|Lz|b+1_x-1_x)
-                            v3 = x[l1][l2] * y[m1+1][m2] * z[n1][n2];
-                            // (a|Lz|b+1_x-1_x)
-                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            buffer_[ao12+zbxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y|Lz|b-1_x+1_x)
-                            v1 = x[l1][l2] * y[m1+1][m2] * z[n1][n2];
-                            // (a|Lz|b-1_x+1_x)
-                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            if (l2 || l2-1) {
-                                // (a+1_y|Lz|b-1_x-1_x)
-                                v3 = x[l1][l2-2] * y[m1+1][m2] * z[n1][n2];
-                                // (a|Lz|b-1_x-1_x)
-                                v4 = x[l1][l2-2] * y[m1][m2] * z[n1][n2];
-                            }
-                            buffer_[ao12+zbxdisp] += 1.0 * l2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - l2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
-
-                            //
-                            // By derivatives with Lz
-                            //
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x|Lz|b+1_y+1_y)
-                            v1 = x[l1+1][l2] * y[m1][m2+2] * z[n1][n2];
-                            // (a|Lz|b+1_y+1_y)
-                            v2 = x[l1][l2] * y[m1][m2+2] * z[n1][n2];
-                            // (a+1_x|Lz|b+1_y-1_y)
-                            v3 = x[l1+1][l2] * y[m1][m2] * z[n1][n2];
-                            // (a|Lz|b+1_y-1_y)
-                            v4 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            buffer_[ao12+zbydisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_x|Lz|b-1_y+1_y)
-                            v1 = x[l1+1][l2] * y[m1][m2] * z[n1][n2];
-                            // (a|Lz|b-1_y+1_y)
-                            v2 = x[l1][l2] * y[m1][m2] * z[n1][n2];
-                            if (m2 || m2-1) {
-                                // (a+1_x|Lz|b-1_y-1_y)
-                                v3 = x[l1+1][l2] * y[m1][m2-2] * z[n1][n2];
-                                // (a|Lz|b-1_y-1_y)
-                                v4 = x[l1][l2] * y[m1][m2-2] * z[n1][n2];
-                            }
-                            buffer_[ao12+zbydisp] += -1.0 * m2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - m2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            // (a+1_y|Lz|b+1_x+1_y)
-                            v1 = x[l1][l2+1] * y[m1+1][m2+1] * z[n1][n2];
-                            // (a|Lz|b+1_x+1_y)
-                            v2 = x[l1][l2+1] * y[m1][m2+1] * z[n1][n2];
-                            if (m2) {
-                                // (a+1_y|Lz|b+1_x-1_y)
-                                v3 = x[l1][l2+1] * y[m1+1][m2-1] * z[n1][n2];
-                                // (a|Lz|b+1_x-1_y)
-                                v4 = x[l1][l2+1] * y[m1][m2-1] * z[n1][n2];
-                            }
-                            buffer_[ao12+zbxdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
-
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
-                            if (l2) {
-                                // (a+1_y|Lz|b-1_x+1_y)
-                                v1 = x[l1][l2-1] * y[m1+1][m2+1] * z[n1][n2];
-                                // (a|Lz|b-1_x+1_y)
-                                v2 = x[l1][l2-1] * y[m1][m2+1] * z[n1][n2];
-                                if (m2) {
-                                    // (a+1_y|Lz|b-1_x-1_y)
-                                    v3 = x[l1][l2-1] * y[m1+1][m2-1] * z[n1][n2];
-                                    // (a|Lz|b-1_x-1_y)
-                                    v4 = x[l1][l2-1] * y[m1][m2-1] * z[n1][n2];
-                                }
-                            }
-                            buffer_[ao12+zbydisp] += 1.0 * l2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - m2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+                            //std::cout << "Az derivatives with Lz:" << std::endl;
+                            buffer_[ao12+zazdisp] += 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - n1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf;
+                            //std::cout << "buffer_[ao12+zazdisp] += " << 2.0 * a2 * (2.0 * a1 * (v1 + (A[0] - C[0]) * v2) - n1 * (v3 + (A[0] - C[0]) * v4) + v5) * over_pf << std::endl;
+                            buffer_[ao12+zazdisp] += -1.0 * m2 * (2.0 * a1 * (v6 + (A[0] - C[0]) * v7) - n1 * (v3 + (A[0] - C[0]) * v9) + v10) * over_pf;
+                            //std::cout << "buffer_[ao12+zazdisp] += " << -1.0 * m2 * (2.0 * a1 * (v6 + (A[0] - C[0]) * v7) - n1 * (v3 + (A[0] - C[0]) * v9) + v10) * over_pf << std::endl;
+                            buffer_[ao12+zazdisp] += -2.0 * a2 * (2.0 * a1 * (v11 + (A[1] - C[1]) * v12) - n1 * (v13 + (A[1] - C[1]) * v14) + v15) * over_pf;
+                            //std::cout << "buffer_[ao12+zazdisp] += " << -2.0 * a2 * (2.0 * a1 * (v11 + (A[1] - C[1]) * v12) - n1 * (v13 + (A[1] - C[1]) * v14) + v15) * over_pf << std::endl;
+                            buffer_[ao12+zazdisp] += 1.0 * l2 * (2.0 * a1 * (v16 + (A[1] - C[1]) * v17) - n1 * (v18 + (A[1] - C[1]) * v19) + v20) * over_pf;
+                            //std::cout << "buffer_[ao12+zazdisp] += " << 1.0 * l2 * (2.0 * a1 * (v16 + (A[1] - C[1]) * v17) - n1 * (v18 + (A[1] - C[1]) * v19) + v20) * over_pf << std::endl;
 
                             //
                             // Bz derivatives with Lz
                             //
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
+                            v1 = v2 = v3 = v4 = v5 = v6 = v7 = v8 = v9 = v10 = v11 = v12 = v13 = v14 = v15 = v16 = v17 = v18 = v19 = v20 = 0.0;
+
                             // (a+1_x|Lz|b+1_y+1_z)
                             v1 = x[l1+1][l2] * y[m1][m2+1] * z[n1][n2+1];
                             // (a|Lz|b+1_y+1_z)
@@ -1446,56 +1645,61 @@ void AngularMomentumInt::compute_pair_deriv1(const GaussianShell& s1, const Gaus
                                 // (a|Lz|b+1_y-1_z)
                                 v4 = x[l1][l2] * y[m1][m2+1] * z[n1][n2-1];
                             }
-                            buffer_[ao12+zbzdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
                             if (m2) {
                                 // (a+1_x|Lz|b-1_y+1_z)
-                                v1 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2+1];
+                                v6 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2+1];
                                 // (a|Lz|b-1_y+1_z)
-                                v2 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
+                                v7 = x[l1][l2] * y[m1][m2-1] * z[n1][n2+1];
                                 if (n2) {
                                     // (a+1_x|Lz|b-1_y-1_z)
-                                    v3 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2-1];
+                                    v8 = x[l1+1][l2] * y[m1][m2-1] * z[n1][n2-1];
                                     // (a|Lz|b-1_y-1_z)
-                                    v4 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
+                                    v9 = x[l1][l2] * y[m1][m2-1] * z[n1][n2-1];
                                 }
                             }
-                            buffer_[ao12+zbzdisp] += -1.0 * m2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
                             // (a+1_y|Lz|b+1_x+1_z)
-                            v1 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2+1];
+                            v11 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2+1];
                             // (a|Lz|b+1_x+1_z)
-                            v2 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
+                            v12 = x[l1][l2+1] * y[m1][m2] * z[n1][n2+1];
                             if (n2) {
                                 // (a+1_y|Lz|b+1_x-1_z)
-                                v3 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
+                                v13 = x[l1][l2+1] * y[m1+1][m2] * z[n1][n2-1];
                                 // (a|Lz|b+1_x-1_z)
-                                v4 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
+                                v14 = x[l1][l2+1] * y[m1][m2] * z[n1][n2-1];
                             }
-                            buffer_[ao12+zbzdisp] += -2.0 * a2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - n2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
 
-                            v1 = v2 = v3 = v4 = v5 = 0.0;
                             if (l2) {
                                 // (a+1_y|Lz|b-1_x+1_z)
-                                v1 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2+1];
+                                v16 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2+1];
                                 // (a|Lz|b-1_x+1_z)
-                                v2 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
+                                v17 = x[l1][l2-1] * y[m1][m2] * z[n1][n2+1];
                                 if (n2) {
                                     // (a+1_y|Lz|b-1_x-1_z)
-                                    v3 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2-1];
+                                    v18 = x[l1][l2-1] * y[m1+1][m2] * z[n1][n2-1];
                                     // (a|Lz|b-1_x-1_z)
-                                    v4 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
+                                    v19 = x[l1][l2-1] * y[m1][m2] * z[n1][n2-1];
                                 }
                             }
-                            buffer_[ao12+zbzdisp] += 1.0 * l2 * (2.0 * a2 * (v1 + (A[1] - C[1]) * v2) - n2 * (v3 + (A[1] - C[1]) * v4)) * over_pf;
+                            //std::cout << "Bz derivatives with Lz:" << std::endl;
+                            buffer_[ao12+zbzdisp] += 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf;
+                            //std::cout << "buffer_[ao12+zbzdisp] += " << 2.0 * a2 * (2.0 * a2 * (v1 + (A[0] - C[0]) * v2) - n2 * (v3 + (A[0] - C[0]) * v4)) * over_pf << std::endl;
+                            buffer_[ao12+zbzdisp] += -1.0 * m2 * (2.0 * a2 * (v6 + (A[0] - C[0]) * v7) - n2 * (v8 + (A[0] - C[0]) * v9)) * over_pf;
+                            //std::cout << "buffer_[ao12+zbzdisp] += " << -1.0 * m2 * (2.0 * a2 * (v6 + (A[0] - C[0]) * v7) - n2 * (v8 + (A[0] - C[0]) * v9)) * over_pf << std::endl;
+                            buffer_[ao12+zbzdisp] += -2.0 * a2 * (2.0 * a2 * (v11 + (A[1] - C[1]) * v12) - n2 * (v13 + (A[1] - C[1]) * v14)) * over_pf;
+                            //std::cout << "buffer_[ao12+zbzdisp] += " << -2.0 * a2 * (2.0 * a2 * (v11 + (A[1] - C[1]) * v12) - n2 * (v13 + (A[1] - C[1]) * v14)) * over_pf << std::endl;
+                            buffer_[ao12+zbzdisp] += 1.0 * l2 * (2.0 * a2 * (v16 + (A[1] - C[1]) * v17) - n2 * (v18 + (A[1] - C[1]) * v19)) * over_pf;
+                            //std::cout << "buffer_[ao12+zbzdisp] += " << 1.0 * l2 * (2.0 * a2 * (v16 + (A[1] - C[1]) * v17) - n2 * (v18 + (A[1] - C[1]) * v19)) * over_pf << std::endl;
+                            //std::printf("\n");
 
                             ao12++;
                         }
                     }
                 }
             }
+            //std::printf("\n\n\n");
         }
     }
+    //std::printf("\n\n\n\n\n");
 }

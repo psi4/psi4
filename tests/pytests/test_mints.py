@@ -84,3 +84,24 @@ def test_export_ao_overlap_half_deriv():
 
             # Test (S_ij)^x = < i^x | j > + < i | j^x >
             assert compare_arrays(deriv1_np[map_key1] + deriv1_np[map_key2], deriv1_np[map_key3])
+
+def test_ang_mom_deriv1():
+    h2o = psi4.geometry("""
+        O      0.000000000000     0.000000000000     R
+        H      0.000000000000    -0.866811832375     0.601435781623
+        H      0.000000000000     0.866811832375     0.601435781623
+    """)
+
+    psi4.set_options({'basis': 'cc-pVDZ'})
+
+    dz = 0.01
+    o_z = -0.075791843897
+    #z_list = [o_z - 2 * dz, o_z - dz, o_z, o_z + dz, o_z + 2 * dz]
+
+    energies = dict()
+    for l in [-2, -1, 0, 1, 2]:
+        h2o.R = o_z + l * dz
+        psi4.core.set_active_molecule(h2o)
+        energies[l] = psi4.energy('SCF')
+    print(energies)
+

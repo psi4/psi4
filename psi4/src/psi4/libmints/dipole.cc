@@ -34,6 +34,7 @@
 #include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/physconst.h"
+#include <iostream>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -222,6 +223,27 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell
     size_t zbxdisp = 15 * length;
     size_t zbydisp = 16 * length;
     size_t zbzdisp = 17 * length;
+
+    std::cout << "length = " << length << std::endl;
+    std::cout << "xaxdisp = " << xaxdisp << std::endl;
+    std::cout << "xaydisp = " << xaydisp << std::endl;
+    std::cout << "xazdisp = " << xazdisp << std::endl;
+    std::cout << "yaxdisp = " << yaxdisp << std::endl;
+    std::cout << "yaydisp = " << yaydisp << std::endl;
+    std::cout << "yazdisp = " << yazdisp << std::endl;
+    std::cout << "zaxdisp = " << zaxdisp << std::endl;
+    std::cout << "zaydisp = " << zaydisp << std::endl;
+    std::cout << "zazdisp = " << zazdisp << std::endl;
+
+    std::cout << "xbxdisp = " << xbxdisp << std::endl;
+    std::cout << "xbydisp = " << xbydisp << std::endl;
+    std::cout << "xbzdisp = " << xbzdisp << std::endl;
+    std::cout << "ybxdisp = " << ybxdisp << std::endl;
+    std::cout << "ybydisp = " << ybydisp << std::endl;
+    std::cout << "ybzdisp = " << ybzdisp << std::endl;
+    std::cout << "zbxdisp = " << zbxdisp << std::endl;
+    std::cout << "zbydisp = " << zbydisp << std::endl;
+    std::cout << "zbzdisp = " << zbzdisp << std::endl;
 
     // compute intermediates
     double AB2 = 0.0;
