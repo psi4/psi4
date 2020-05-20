@@ -1024,10 +1024,12 @@ bool psi4_python_module_initialize() {
 }
 
 void psi4_python_module_finalize() {
+#ifdef USING_BrianQC
     if (brianCookie != 0) {
         outfile->Printf("Releasing the BrianQC module\n");
         brianAPIRelease(&brianCookie);
     }
+#endif
     
 #ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
