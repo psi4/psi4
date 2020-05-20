@@ -2224,11 +2224,11 @@ def run_scf(name, **kwargs):
     if "dft_functional" in kwargs:
         dft_func = True
 
-    # See if we're doing TDSCF after, keep JK if so 
-    if sum(core.get_global_option("TDSCF_STATES_PER_IRREP")) > 0:
-        core.set_global_option("SAVE_JK", True)
-
     optstash_scf = proc_util.scf_set_reference_local(name, is_dft=dft_func)
+
+    # See if we're doing TDSCF after, keep JK if so 
+    if sum(core.get_option("SCF","TDSCF_STATES_PER_IRREP")) > 0:
+        core.set_local_option("SCF","SAVE_JK", True)
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -2722,7 +2722,7 @@ def run_tdscf_energy(name=None,**kwargs):
     if ref_wfn is None:
         raise ValidationError("TDSCF: No reference wave function!")
 
-    states = core.get_global_option("TDSCF_STATES_PER_IRREP")
+    states = core.get_option("SCF","TDSCF_STATES_PER_IRREP")
 
     # some sanity checks
     if sum(states) == 0:
@@ -2735,11 +2735,11 @@ def run_tdscf_energy(name=None,**kwargs):
 
     # Do we need this return value? 
     ret = response.scf_response.tdscf_excitations(ref_wfn, states_per_irrep = states,
-                                                  triplet = core.get_global_option("TDSCF_TRIPLETS"),
-                                                  tda = core.get_global_option("TDSCF_TDA"),
-                                                  e_tol = core.get_global_option("TDSCF_E_TOL"),
-                                                  r_tol = core.get_global_option("TDSCF_R_TOL"),
-                                                  guess = core.get_global_option("TDSCF_GUESS"))
+                                                  triplet = core.get_option("SCF","TDSCF_TRIPLETS"),
+                                                  tda = core.get_global_option("SCF","TDSCF_TDA"),
+                                                  e_tol = core.get_global_option("SCF","TDSCF_E_TOL"),
+                                                  r_tol = core.get_global_option("SCF","TDSCF_R_TOL"),
+                                                  guess = core.get_global_option("SCF","TDSCF_GUESS"))
 
     return ref_wfn
     

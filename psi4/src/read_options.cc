@@ -1583,8 +1583,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
 
-        /*- SUB-SUBSECTION TDDFT -*/
-
+        /*- SUBSECTION TDDFT -*/
         /*- Get the number of desired states per irrep -*/
         options.add("TDSCF_STATES_PER_IRREP", new ArrayType());
         /*- Controls inclusion of triplet states, valid options:
