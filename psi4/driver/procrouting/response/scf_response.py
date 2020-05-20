@@ -326,7 +326,8 @@ def tdscf_excitations(wfn, **kwargs):
     # which problem
     ptype = 'rpa'
     solve_function = solvers.hamiltonian_solver
-    if kwargs.pop('tda', False):
+    tda = bool(kwargs.pop('tda', False))
+    if tda:
         ptype = 'tda'
         solve_function = solvers.davidson_solver
 
@@ -335,16 +336,17 @@ def tdscf_excitations(wfn, **kwargs):
     if restricted:
         triplet = kwargs.pop('triplet', False)
     else:
-        triplet = None
+        triplet = False
 
     _print_tdscf_header(
-        etol=e_tol,
-        rtol=r_tol,
+        e_tol=e_tol,
+        r_tol=r_tol,
         states=[(count, label) for count, label in zip(states_per_irrep,
                                                        wfn.molecule().irrep_labels())],
-        guess_type=guess_type,
+        guess=guess_type,
         restricted=restricted,
-        triplet=triplet,
+        triplets=triplet,
+        tda=tda,
         ptype=ptype)
 
     # construct the engine

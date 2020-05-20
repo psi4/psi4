@@ -28,14 +28,14 @@ set {
     scf_type pk
     e_convergence 8
     d_convergence 8
-    TDSCF_STATES_PER_IRREP [10]
-    TDSCF_TDA true
 }
 
-e, wfn = energy('wB97X/cc-pvdz', return_wfn=True)
-tdscf(wfn)
+set TDSCF_STATES_PER_IRREP [10]
+set TDSCF_TDA true
+
+energy('td-wB97X/cc-pvdz')
 
 for n, ref in enumerate(rhf_wB97X_TDA_cc_pvdz):
-    ex_en = wfn.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    ex_en = psi4.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
     compare_values(ref,ex_en, 4, f"TD-wB97X/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
 

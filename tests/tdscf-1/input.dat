@@ -14,8 +14,8 @@ molecule ch2 {
 C           0.000000    0.000000    0.159693
 H          -0.000000    0.895527   -0.479080
 H          -0.000000   -0.895527   -0.479080
-no_reorient
-no_com
+#no_reorient
+#no_com
 symmetry c1
 }
 
@@ -25,14 +25,13 @@ set {
     e_convergence 8
     d_convergence 8
     TDSCF_E_TOL 5
-    TDSCF_STATES_PER_IRREP [9]
     TDSCF_TRIPLETS true
 }
 
-e, wfn = energy('hf/cc-pvdz', return_wfn=True)
-tdscf(wfn)
+set scf tdscf_states_per_irrep [9]
 
+energy('td-hf/cc-pvdz')
 
 for n, ref in enumerate(UHF_RPA_cc_pvdz):
-    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    ex_en = psi4.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
     compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")

@@ -35,7 +35,7 @@ set {
 
 
 e, wfn = energy('wb97x/cc-pvdz', return_wfn=True)
-tdscf(wfn)
+tdscf(ref_wfn = wfn)
 
 for n, ref in enumerate(rhf_wB97X_RPA_cc_pvdz):
     ex_en = wfn.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
