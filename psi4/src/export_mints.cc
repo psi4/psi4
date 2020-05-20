@@ -1058,6 +1058,8 @@ void export_mints(py::module& m) {
              "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices")
         .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2,
              "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("ao_overlap_half_deriv1", &MintsHelper::ao_overlap_half_deriv1,
+             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices")
         .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1,
              "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices", "atom"_a, "omega"_a = 0.0,
              "factory"_a = nullptr)
@@ -1067,6 +1069,8 @@ void export_mints(py::module& m) {
              "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
         .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2,
              "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")
+        .def("mo_overlap_half_deriv1", &MintsHelper::mo_overlap_half_deriv1,
+             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices")
         .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
              "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
         .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
