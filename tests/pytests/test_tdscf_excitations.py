@@ -142,7 +142,7 @@ def _test_id(val):
 ], ids=_test_id) # yapf: disable
 def test_tdscf(mol, ref, func, ptype, basis):
     # expected failures
-    if (ref == 'RHF-3'):
+    if (ref == 'RHF-3') and (func != "HF"):
         pytest.xfail("RKS Vx kernel only Spin Adapted for Singlet")
     elif (ref == 'UHF' and func != 'SVWN'):
         pytest.xfail("UKS Vx kernel bug for non-LDA")
@@ -170,7 +170,7 @@ def test_tdscf(mol, ref, func, ptype, basis):
         assert compare_values(ref_e,
                               my_v["EXCITATION ENERGY"],
                               f"{mol.name()}_{ref}_{func}_{ptype}-ROOT_{i+1} Excitation energy",
-                              atol=1.0e-4)
+                              atol=2.0e-4)
 
         ref_edtm_L = np.array(ref_v[i]["LENGTH MU"])
         # compare length-gauge oscillator strength

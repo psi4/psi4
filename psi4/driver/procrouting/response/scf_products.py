@@ -211,6 +211,9 @@ class TDRSCFEngine(SingleMatPerVector):
         # ground state symmetry
         self.G_gs = 0
 
+        # ground state spin multiplicity
+        self.mult_gs = wfn.molecule().multiplicity()
+
         # excited state symmetry
         self.G_es = None
 
@@ -309,6 +312,10 @@ class TDRSCFEngine(SingleMatPerVector):
         return guess_vectors
 
     def residue(self, X, so_prop_ints):
+        # return zeros if spin multiplicity of GS and ES differ
+        if not self.singlet and (self.mult_gs == 1):
+            return np.zeros(len(so_prop_ints))
+
         prop = [core.triplet(self.Co, x, self.Cv, True, False, False) for x in so_prop_ints]
 
         return np.sqrt(2.0) * np.array([X.vector_dot(u) for u in prop])
