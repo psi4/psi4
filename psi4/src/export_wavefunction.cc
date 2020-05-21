@@ -119,6 +119,7 @@ void export_wavefunction(py::module& m) {
               -------
               Matrix
                   A Pitzer-ordered matrix of the orbitals, (# basis functions, # orbitals in the subset).
+                  Pitzer-ordering is with respect to c1 symmetry if basis is AO.
          )pbdoc")
         .def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership, R"pbdoc(
               Returns the requested Beta orbital subset.
@@ -134,6 +135,7 @@ void export_wavefunction(py::module& m) {
               -------
               Matrix
                   A Pitzer-ordered matrix of the orbitals, (# basis functions, # orbitals in the subset).
+                  Pitzer-ordering is with respect to c1 symmetry if basis is AO.
          )pbdoc")
         .def("Fa", &Wavefunction::Fa, "Returns the Alpha Fock Matrix.")
         .def("Fa_subset", &Wavefunction::Fa_subset, "Returns the Alpha Fock Matrix in the requested basis (AO,SO).")
@@ -415,8 +417,46 @@ void export_wavefunction(py::module& m) {
         .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
         .def("form_opdm", &detci::CIWavefunction::form_opdm, "docstring")
         .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
-        .def("get_opdm", &detci::CIWavefunction::get_opdm, "docstring")
-        .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
+        .def("get_opdm", &detci::CIWavefunction::get_opdm, R"pbdoc(
+              Returns the one-particle density or transition matrix.
+
+              Parameters
+              ----------
+              Iroot : int
+                  The index of the root in the bra. If Iroot and Jroot are -1, return the density matrix of root 0.
+                  Always use -1 for single-state calculations.
+              Jroot : int
+                  The index of the root in the ket. Select -1 for the same as Iroot.
+                  Always use -1 for single-state calculations.
+              spin : {'A', 'B', 'SUM'}
+                  Return the alpha density matrix, the beta density matrix, or their sum?
+              full_space : bool
+                  Return a density matrix in the space of all orbitals (true) or the active orbitals (false)?
+
+              Returns
+              -------
+              Matrix
+                  The selected one-particle density/transition matrix with Pitzer-ordered orbitals.
+                  Irrep h of the matrix corresponds to orbitals of irrep h.
+                  Element pq is <ψ|a^p a_q|ψ>.
+         )pbdoc")
+        .def("get_tpdm", &detci::CIWavefunction::get_tpdm, R"pbdoc(
+              Returns the two-particle density matrix.
+
+              Parameters
+              ----------
+              spin : {'AA', 'AB', 'BB', 'SUM'}
+                  Which spin-block of the TPDM should be returned? SUM sums over all possible spin cases.
+              symmetrize : bool
+                  Return a genuine TPDM element (false) or an "average" of TPDM elements that contract with the same integral (true)?
+
+              Returns
+              -------
+              np.ndarray
+                  The two-particle density matrix with Pitzer-ordered orbitals, restricted to the active space.
+                  If symmetrize is false, element pqrs is <ψ|a^p a^r a_s a_q|ψ>.
+                  If symmetrize is true, element pqrs is obtained by summing over all "flips" of p/s, q/r, and multiplying by 0.5.
+         )pbdoc")
         .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
         .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
         .def("ci_nat_orbs", &detci::CIWavefunction::ci_nat_orbs, "docstring")
