@@ -239,6 +239,10 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     // The external potential
     std::shared_ptr<ExternalPotential> external_pot_;
+    // Temporary stashing for FISAPT external potentials
+    std::shared_ptr<ExternalPotential> external_pot_a_;
+    std::shared_ptr<ExternalPotential> external_pot_b_;
+    std::shared_ptr<ExternalPotential> external_pot_c_;
 
     // Collection of scalar variables
     std::map<std::string, double> variables_;
@@ -667,9 +671,15 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     // Get the external potential
     std::shared_ptr<ExternalPotential> external_pot() const;
+    std::shared_ptr<ExternalPotential> external_pot_a() const;
+    std::shared_ptr<ExternalPotential> external_pot_b() const;
+    std::shared_ptr<ExternalPotential> external_pot_c() const;
 
     // Set the external potential
     void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
+    void set_external_potential_a(std::shared_ptr<ExternalPotential> external) { external_pot_a_ = external; }
+    void set_external_potential_b(std::shared_ptr<ExternalPotential> external) { external_pot_b_ = external; }
+    void set_external_potential_c(std::shared_ptr<ExternalPotential> external) { external_pot_c_ = external; }
 
     /// Get and set variables and arrays dictionaries
     bool has_scalar_variable(const std::string& key);

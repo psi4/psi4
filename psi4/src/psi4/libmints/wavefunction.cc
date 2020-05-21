@@ -248,6 +248,9 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
     external_pot_ = other->external_pot_;
+    external_pot_a_ = other->external_pot_a_;
+    external_pot_b_ = other->external_pot_b_;
+    external_pot_c_ = other->external_pot_c_;
 
     variables_ = other->variables_;
     arrays_ = other->arrays_;
@@ -334,6 +337,9 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
 
     // Not sure...
     external_pot_ = other->external_pot_;
+    external_pot_a_ = other->external_pot_a_;
+    external_pot_b_ = other->external_pot_b_;
+    external_pot_c_ = other->external_pot_c_;
 
     // Copy assignment
     variables_ = other->variables_;
@@ -447,6 +453,9 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->variables_ = variables_;
     // ok for deep copy?
     wfn->external_pot_ = external_pot_;
+    wfn->external_pot_a_ = external_pot_a_;
+    wfn->external_pot_b_ = external_pot_b_;
+    wfn->external_pot_c_ = external_pot_c_;
 
     // Need to explicitly call copy
     for (auto const &kv : arrays_) {
@@ -1264,6 +1273,9 @@ void Wavefunction::set_frequencies(std::shared_ptr<Vector> freqs) { frequencies_
 void Wavefunction::save() const {}
 
 std::shared_ptr<ExternalPotential> Wavefunction::external_pot() const { return external_pot_; }
+std::shared_ptr<ExternalPotential> Wavefunction::external_pot_a() const { return external_pot_a_; }
+std::shared_ptr<ExternalPotential> Wavefunction::external_pot_b() const { return external_pot_b_; }
+std::shared_ptr<ExternalPotential> Wavefunction::external_pot_c() const { return external_pot_c_; }
 
 std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
     std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
