@@ -264,15 +264,80 @@ def _print_tdscf_header(**options):
                    "         ---------------------------------------------------------\n")
 
     core.print_out("\n  ==> Requested Excitations <==\n\n")
+    triplets = options.pop('triplets')
     state_info = options.pop('states')
-    for nstate, state_sym in state_info:
-        core.print_out(f"      {nstate} states with {state_sym} symmetry\n")
+    if triplets == "also":
+        for nstate, state_sym in state_info:
+            core.print_out(f"      {nstate} singlet states with {state_sym} symmetry\n")
+            core.print_out(f"      {nstate} triplet states with {state_sym} symmetry\n")
+    elif triplets == "only":
+        for nstate, state_sym in state_info:
+            core.print_out(f"      {nstate} triplet states with {state_sym} symmetry\n")
+    elif triplets == "none":
+        for nstate, state_sym in state_info:
+            core.print_out(f"      {nstate} singlet states with {state_sym} symmetry\n")
 
     core.print_out("\n  ==> Options <==\n\n")
     for k, v in options.items():
         core.print_out(f"     {k:<10s}:              {v}\n")
 
     core.print_out("\n")
+
+
+def _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted: bool = True, spin_mult: str = "singlet"):
+
+    # collect results and compute some spectroscopic observables
+    mints = core.MintsHelper(wfn.basisset())
+    results = []
+    # construct the engine
+    engine = TDRSCFEngine(wfn, ptype=ptype, triplet=True
+                          if spin_mult == "triplet" else False) if restricted else TDUSCFEngine(wfn, ptype=ptype)
+    irrep_GS = wfn.molecule().irrep_labels()[engine.G_gs]
+    for state_sym, nstates in enumerate(states_per_irrep):
+        if nstates == 0:
+            continue
+        engine.reset_for_state_symm(state_sym)
+        guess_ = engine.generate_guess(nstates * 4)
+
+        # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
+        # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
+        ret = solve_function(engine, nstates, guess_)
+
+        # check whether all roots converged
+        if not ret["stats"][-1]["done"]:
+            # prepare and raise error
+            irrep_ES = wfn.molecule().irrep_labels()[state_sym]
+            raise TDSCFConvergenceError(maxiter, wfn, f"singlet excitations in irrep {irrep_ES}")
+
+        # flatten dictionary: helps with sorting by energy
+        # also append state symmetry to return value
+        for e, (R, L) in zip(ret["eigvals"], ret["eigvecs"]):
+            irrep_ES = wfn.molecule().irrep_labels()[state_sym]
+            irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ state_sym]
+            sym_descr = f"{irrep_GS}->{irrep_ES} ({1 if spin_mult== 'singlet' else 3} {irrep_trans})"
+
+            # length-gauge electric dipole transition moment
+            edtm_length = engine.residue(R, mints.so_dipole())
+            # lenght-gauge oscillator strength
+            f_length = ((2 * e) / 3) * np.sum(edtm_length**2)
+            # velocity-gauge electric dipole transition moment
+            edtm_velocity = engine.residue(L, mints.so_nabla())
+            ## velocity-gauge oscillator strength
+            f_velocity = (2 / (3 * e)) * np.sum(edtm_velocity**2)
+            # length gauge magnetic dipole transition moment
+            # 1/2 is the Bohr magneton in atomic units
+            mdtm = 0.5 * engine.residue(L, mints.so_angular_momentum())
+            # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
+            # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
+            # length gauge rotatory strength
+            R_length = np.einsum("i,i", edtm_length, mdtm)
+            # velocity gauge rotatory strength
+            R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / e
+
+            results.append((e, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity, mdtm,
+                            R_length, R_velocity, spin_mult))
+
+    return results
 
 
 def tdscf_excitations(wfn,
@@ -284,7 +349,7 @@ def tdscf_excitations(wfn,
                       max_ss_size: int = 100,
                       maxiter: int = 60,
                       guess: str = "denominators",
-                      print_lvl: int = 1):
+                      verbose: int = 1):
     """Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
@@ -335,7 +400,7 @@ def tdscf_excitations(wfn,
        How should the starting trial vectors be generated?
        Default: `denominators`, i.e. use orbital energy differences to generate
        guess vectors.
-    print_lvl : int, optional.
+    verbose : int, optional.
        How verbose should the solver be?
        Default: 1
 
@@ -357,30 +422,29 @@ def tdscf_excitations(wfn,
     .. [Pedersen1995-du] T. B. Pedersen, A. E. Hansen, "Ab Initio Calculation and Display of the Rotary Strength Tensor in the Random Phase Approximation. Method and Model Studies." Chem. Phys. Lett., 246, 1 (1995)
     .. [Lestrange2015-xn] P. J. Lestrange, F. Egidi, X. Li, "The Consequences of Improperly Describing Oscillator Strengths beyond the Electric Dipole Approximation." J. Chem. Phys., 143, 234103 (2015)
     """
-    ssuper_name = wfn.functional().name()
 
     # validate states
     if not (isinstance(states, int) or isinstance(states, list)):
         raise ValidationError("Number of states must be either an integer or a list of integers")
 
-    # determine how many singlet states per irrep to seek
-    singlets_per_irrep = []
+    # determine how many states per irrep to seek
+    states_per_irrep = []
     if isinstance(states, list):
         # list of states per irrep given, validate it
         if len(states) != wfn.nirrep():
             raise ValidationError(f"States requested ({states}) do not match with number of irreps ({wfn.nirrep()})")
         else:
-            singlets_per_irrep = states
+            states_per_irrep = states
     else:
         # total number of states given, distribute them among irreps
-        singlets_per_irrep = [states // wfn.nirrep()] * wfn.nirrep()
+        states_per_irrep = [states // wfn.nirrep()] * wfn.nirrep()
         for i in range(states % wfn.nirrep()):
-            singlets_per_irrep[i] += 1
+            states_per_irrep[i] += 1
 
     # do triplets?
     restricted = wfn.same_a_b_orbs()
+    triplets = triplets.lower()
     do_triplets = False if triplets == "none" else True
-    triplets_per_irrep = singlets_per_irrep
     if (not restricted) and do_triplets:
         raise ValidationError("Cannot compute triplets with an unrestricted reference")
 
@@ -397,58 +461,35 @@ def tdscf_excitations(wfn,
 
     # which problem
     ptype = 'rpa'
-    solve_function = solvers.hamiltonian_solver
+    solve_function = lambda e, n, g: solvers.hamiltonian_solver(
+        engine=e, nroot=n, guess=g, r_tol=r_tol, max_ss_size=max_ss_size, maxiter=maxiter, verbose=verbose)
     if tda:
         ptype = 'tda'
-        solve_function = solvers.davidson_solver
+        solve_function = lambda e, n, g: solvers.davidson_solver(
+            engine=e, nroot=n, guess=g, r_tol=r_tol, max_ss_size=max_ss_size, maxiter=maxiter, verbose=verbose)
 
     _print_tdscf_header(rtol=r_tol,
-                        states=[(count, label) for count, label in zip(singlets_per_irrep,
+                        states=[(count, label) for count, label in zip(states_per_irrep,
                                                                        wfn.molecule().irrep_labels())],
                         guess_type=guess,
                         restricted=restricted,
-                        triplet=do_triplets,
+                        triplets=triplets,
                         ptype=ptype)
 
-    # TODO when doing singlets and triplets, we have to generate TWO engines (in the solve loop)
-
-    # construct the engine
-    if restricted:
-        engine = TDRSCFEngine(wfn, ptype=ptype, triplet=do_triplets)
-    else:
-        engine = TDUSCFEngine(wfn, ptype=ptype)
-
+    # collect solver results into a list
     _results = []
-    for state_sym, nstates in enumerate(singlets_per_irrep):
-        if nstates == 0:
-            continue
-        engine.reset_for_state_symm(state_sym)
-        guess_ = engine.generate_guess(nstates * 4)
 
-        # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
-        # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
-        ret = solve_function(engine=engine,
-                             nroot=nstates,
-                             r_tol=r_tol,
-                             max_ss_size=max_ss_size,
-                             maxiter=maxiter,
-                             guess=guess_,
-                             verbose=print_lvl)
+    # singlets solve loop
+    if triplets == "none" or triplets == "also":
+        singlets = _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted, "singlet")
+        _results.extend(singlets)
 
-        # check whether all roots converged
-        if not ret["stats"][-1]["done"]:
-            # prepare and raise error
-            spin = "triplet" if do_triplets else "singlet"
-            irrep_ES = wfn.molecule().irrep_labels()[state_sym]
-            raise TDSCFConvergenceError(maxiter, wfn, f"{spin} excitations in irrep {irrep_ES}")
+    # triplets solve loop
+    if triplets == "also" or triplets == "only":
+        triplets = _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted, "triplet")
+        _results.extend(triplets)
 
-        # flatten dictionary: helps with sorting by energy
-        # also append state symmetry to return value
-        # TODO what to do with the stats?
-        for e, (R, L) in zip(ret["eigvals"], ret["eigvecs"]):
-            _results.append((e, R, L, state_sym))
-
-    # sort by energy, symmetry is just meta data
+    # sort by energy
     _results = sorted(_results, key=lambda x: x[0])
 
     core.print_out("\n{}\n".format("*"*90) +
@@ -465,39 +506,16 @@ def tdscf_excitations(wfn,
     core.print_out(
         f"    {'-':->4} {'-':->20} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15}\n")
 
-    irrep_GS = wfn.molecule().irrep_labels()[engine.G_gs]
-    # collect results and compute some spectroscopic observables
+    # collect results
     mints = core.MintsHelper(wfn.basisset())
     solver_results = []
-    for i, (E_ex_au, R, L, final_sym) in enumerate(_results):
-        irrep_ES = wfn.molecule().irrep_labels()[final_sym]
-        irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ final_sym]
-        sym_descr = f"{irrep_GS}->{irrep_ES} ({irrep_trans})"
+    for i, (E_ex_au, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity, mdtm, R_length,
+            R_velocity, spin_mult) in enumerate(_results):
+        sym_descr = f"{irrep_GS}->{irrep_ES} ({1 if spin_mult== 'singlet' else 3} {irrep_trans})"
 
         E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
 
         E_tot_au = wfn.energy() + E_ex_au
-
-        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {irrep_ES} SYMMETRY", E_tot_au)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
-
-        # length-gauge electric dipole transition moment
-        edtm_length = engine.residue(R, mints.so_dipole())
-        # lenght-gauge oscillator strength
-        f_length = ((2 * E_ex_au) / 3) * np.sum(edtm_length**2)
-        # velocity-gauge electric dipole transition moment
-        edtm_velocity = engine.residue(L, mints.so_nabla())
-        ## velocity-gauge oscillator strength
-        f_velocity = (2 / (3 * E_ex_au)) * np.sum(edtm_velocity**2)
-        # length gauge magnetic dipole transition moment
-        # 1/2 is the Bohr magneton in atomic units
-        mdtm = 0.5 * engine.residue(L, mints.so_angular_momentum())
-        # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
-        # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
-        # length gauge rotatory strength
-        R_length = np.einsum("i,i", edtm_length, mdtm)
-        # velocity gauge rotatory strength
-        R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / E_ex_au
 
         # prepare return dictionary for this root
         solver_results.append({
@@ -510,6 +528,7 @@ def tdscf_excitations(wfn,
             "LENGTH-GAUGE ROTATORY STRENGTH": R_length,
             "VELOCITY-GAUGE ROTATORY STRENGTH": R_velocity,
             "SYMMETRY": irrep_trans,
+            "SPIN": spin_mult,
         })
 
         # stash in psivars/wfnvars
