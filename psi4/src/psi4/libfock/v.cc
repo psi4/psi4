@@ -657,6 +657,10 @@ void VBase::initialize() {
             }
         }
         
+        // BrianQC's DFT takes the required precision into account
+        double SCFConvergenceThreshold = std::min(options_.get_double("E_CONVERGENCE"), options_.get_double("D_CONVERGENCE"));
+        brianSCFSetThresholds(&brianCookie, &SCFConvergenceThreshold);
+        
         brianCOMInitDFT(&brianCookie);
         checkBrian();
     }
