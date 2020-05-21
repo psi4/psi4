@@ -38,6 +38,8 @@ import sys
 import traceback
 import uuid
 import warnings
+import pprint
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 import numpy as np
 import qcelemental as qcel
@@ -381,10 +383,17 @@ def run_qcschema(input_data, clean=True):
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
     print_header()
+
     start_time = datetime.datetime.now()
 
     try:
         input_model = qcng.util.model_wrapper(input_data, qcel.models.AtomicInput)
+
+        # Echo the infile on the outfile
+        core.print_out("\n  ==> Input QCSchema <==\n")
+        core.print_out("\n--------------------------------------------------------------------------\n")
+        core.print_out(pp.pformat(json.loads(input_model.json())))
+        core.print_out("\n--------------------------------------------------------------------------\n")
 
         keep_wfn = input_model.protocols.wavefunction != 'none'
 
