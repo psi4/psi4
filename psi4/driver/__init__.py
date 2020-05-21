@@ -40,7 +40,7 @@ from psi4.driver.p4util.testing import *
 from psi4.driver.p4util.fcidump import *
 from psi4.driver.p4util.text import *
 from psi4.driver.qmmm import QMMM
-from psi4.driver.plugin import *
+from psi4.driver.pluginutil import *
 
 from psi4.driver import gaussian_n
 from psi4.driver import aliases

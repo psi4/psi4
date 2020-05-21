@@ -50,7 +50,7 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
         if isinstance(sfunc, core.SuperFunctional):
             sup = (sfunc, False)
         # With Dispersion
-        elif isinstance(sup[0], core.SuperFunctional):
+        elif isinstance(sfunc[0], core.SuperFunctional):
             sup = sfunc
             # Can we validate dispersion?
         else:

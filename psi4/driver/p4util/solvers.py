@@ -539,8 +539,6 @@ class SolverEngine(ABC):
         """
         pass
 
-    @staticmethod
-    @abstractmethod
     def vector_dot(X, Y):
         """Compute a dot product between two `vectors`
 
@@ -555,6 +553,8 @@ class SolverEngine(ABC):
            The dot product  (X x Y)
         """
         pass
+    # cython doesn't like static+ decorators https://github.com/cython/cython/issues/1434#issuecomment-608975116
+    vector_dot = staticmethod(abstractmethod(vector_dot))
 
     @abstractmethod
     def vector_axpy(a, X, Y):

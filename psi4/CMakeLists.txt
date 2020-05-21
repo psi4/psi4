@@ -185,6 +185,9 @@ endif()
 include_directories(include)
 include_directories(src)
 add_subdirectory(src)
+if(ENABLE_CYTHONIZE)
+    add_subdirectory(driver)
+endif()
 
 # <<<  Version  >>>
 # * computes version from metadata.py and git info
@@ -216,9 +219,11 @@ if(WIN32)
 endif()
 
     # <<<  install lib/  >>>
-install(DIRECTORY driver
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
-        FILES_MATCHING PATTERN "*.py")
+if(NOT ENABLE_CYTHONIZE)
+    install(DIRECTORY driver
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+            FILES_MATCHING PATTERN "*.py")
+endif()
 
 install(FILES header.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
