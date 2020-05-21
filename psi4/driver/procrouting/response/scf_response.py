@@ -490,15 +490,16 @@ def tdscf_excitations(wfn,
         ## velocity-gauge oscillator strength
         f_velocity = (2 / (3 * E_ex_au)) * np.sum(edtm_velocity**2)
         # length gauge magnetic dipole transition moment
-        mdtm = engine.residue(L, mints.so_angular_momentum())
+        # 1/2 is the Bohr magneton in atomic units
+        mdtm = 0.5 * engine.residue(L, mints.so_angular_momentum())
         # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
         # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
-        # 1/2 is the Bohr magneton in atomic units
         # length gauge rotatory strength
-        R_length = np.einsum("i,i", edtm_length, 0.5 * mdtm)
+        R_length = np.einsum("i,i", edtm_length, mdtm)
         # velocity gauge rotatory strength
-        R_velocity = -np.einsum("i,i", edtm_velocity, 0.5 * mdtm) / E_ex_au
+        R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / E_ex_au
 
+        # prepare return dictionary for this root
         solver_results.append({
             "EXCITATION ENERGY": E_ex_au,
             "LENGTH-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": edtm_length,
@@ -510,6 +511,30 @@ def tdscf_excitations(wfn,
             "VELOCITY-GAUGE ROTATORY STRENGTH": R_velocity,
             "SYMMETRY": irrep_trans,
         })
+
+        # stash in psivars/wfnvars
+        ssuper_name = wfn.functional().name()
+        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {irrep_ES} SYMMETRY", E_tot_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
+        wfn.set_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE OSCILLATOR STRENGTH - {irrep_ES} SYMMETRY", f_length)
+        wfn.set_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE OSCILLATOR STRENGTH - {irrep_ES} SYMMETRY",
+            f_velocity)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ROTATORY STRENGTH - {irrep_ES} SYMMETRY",
+                         R_length)
+        wfn.set_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ROTATORY STRENGTH - {irrep_ES} SYMMETRY",
+            R_velocity)
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {irrep_ES} SYMMETRY",
+            core.Matrix.from_array(edtm_length.reshape((1, 3))))
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {irrep_ES} SYMMETRY",
+            core.Matrix.from_array(edtm_velocity.reshape((1, 3))))
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {irrep_ES} SYMMETRY",
+            core.Matrix.from_array(mdtm.reshape((1, 3))))
 
         core.print_out(
             f"    {i+1:^4} {sym_descr:^20} {E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {f_length:< 15.4f} {f_velocity:< 15.4f} {R_length:< 15.4f} {R_velocity:< 15.4f}\n"
