@@ -52,10 +52,7 @@ def test_export_ao_overlap_half_deriv():
         symmetry c1
     """)
 
-    psi4.core.set_active_molecule(h2o)
-    psi4.set_options({'basis': 'STO-3G'})
-
-    rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
+    rhf_e, wfn = psi4.energy('SCF/STO-3G', molecule=h2o, return_wfn=True)
     C = wfn.Ca_subset("AO", "ALL")
 
     mints = psi4.core.MintsHelper(wfn.basisset())
