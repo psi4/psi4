@@ -3466,6 +3466,13 @@ def run_adcc_property(name, **kwargs):
         core.print_out("\n".join(lines) + "\n")
 
     gauge = core.get_option("ADC", "GAUGE").lower()
+    if gauge == "velocity":
+        gauge_short = "VEL"
+    elif gauge == "length":
+        gauge_short = "LEN"
+    else:
+        raise ValidationError(f"Gauge {gauge} not recognised for ADC calculations.")
+
     computed = {}
     if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
         data = state.transition_dipole_moments
@@ -3478,7 +3485,8 @@ def run_adcc_property(name, **kwargs):
         else:
             data = state.oscillator_strengths.reshape(-1, 1)
         computed[f"Oscillator strength ({gauge} gauge)"] = data
-        adc_wfn.set_variable(f"{name} oscillator strengths", core.Matrix.from_array(data))
+        adc_wfn.set_variable(f"{name} oscillator strengths ({gauge_short})",
+                             core.Matrix.from_array(data))
 
     if "ROTATIONAL_STRENGTH" in properties:
         data = state.rotatory_strengths.reshape(-1, 1)

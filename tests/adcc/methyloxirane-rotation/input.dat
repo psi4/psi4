@@ -38,8 +38,8 @@ ref_oscillator = [2.463831622762142e-05, 0.018179783966461263, 0.137131827099031
 compare_arrays(np.array([ref_energies]).T, wfn.variable("ADC(2) excitation energies").np,     #TEST
                1e-5, "ADC(2) excitation energies")                                            #TEST
 compare_arrays(np.array([ref_oscillator[:4]]).T,                                              #TEST
-               wfn.variable("ADC(2) oscillator strengths").np[:4],                            #TEST
-               5e-5, "ADC(2) oscillator strengts")                                            #TEST
+               wfn.variable("ADC(2) oscillator strengths (VEL)").np[:4],                      #TEST
+               5e-5, "ADC(2) oscillator strengts (VEL)")                                      #TEST
 compare_arrays(np.array([ref_rotation[:4]]).T,                                                #TEST
                wfn.variable("ADC(2) rotational strengths").np[:4],                            #TEST
                3e-5, "ADC(2) rotational strengths")                                           #TEST

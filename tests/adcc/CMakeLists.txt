@@ -20,4 +20,4 @@ add_subdirectory(cn-adc2)
 add_subdirectory(hf-adc2-spin-flip)
 
 # Specific properties
-add_subdirectory(methyloxirane_rotation)
+add_subdirectory(methyloxirane-rotation)
