@@ -50,7 +50,7 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
         if isinstance(sfunc, core.SuperFunctional):
             sup = (sfunc, False)
         # With Dispersion
-        elif isinstance(sfunc[0], core.SuperFunctional):  # first arg was sup[0] but I guess this was never hit?
+        elif isinstance(sfunc[0], core.SuperFunctional):
             sup = sfunc
             # Can we validate dispersion?
         else:
