@@ -3490,8 +3490,9 @@ def run_adcc_property(name, **kwargs):
 
     if "ROTATIONAL_STRENGTH" in properties:
         data = state.rotatory_strengths.reshape(-1, 1)
-        computed["Rotational strength"] = data
-        adc_wfn.set_variable(f"{name} rotational strengths", core.Matrix.from_array(data))
+        computed["Rotational strength (velocity gauge)"] = data
+        adc_wfn.set_variable(f"{name} rotational strengths (VEL)",
+                             core.Matrix.from_array(data))
 
     if "DIPOLE" in properties:
         data = state.state_dipole_moments

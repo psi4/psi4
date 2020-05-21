@@ -41,5 +41,5 @@ compare_arrays(np.array([ref_oscillator[:4]]).T,                                
                wfn.variable("ADC(2) oscillator strengths (VEL)").np[:4],                      #TEST
                5e-5, "ADC(2) oscillator strengts (VEL)")                                      #TEST
 compare_arrays(np.array([ref_rotation[:4]]).T,                                                #TEST
-               wfn.variable("ADC(2) rotational strengths").np[:4],                            #TEST
-               3e-5, "ADC(2) rotational strengths")                                           #TEST
+               wfn.variable("ADC(2) rotational strengths (VEL)").np[:4],                      #TEST
+               3e-5, "ADC(2) rotational strengths (VEL)")                                     #TEST
