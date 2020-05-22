@@ -58,6 +58,22 @@ no_com
 """,
                      name="H2O2")
 
+moxy = psi4.geometry("""0 1
+C  0.152133 -0.035800  0.485797
+C -1.039475  0.615938 -0.061249
+C  1.507144  0.097806 -0.148460
+O -0.828215 -0.788248 -0.239431
+H  0.153725 -0.249258  1.552136
+H -1.863178  0.881921  0.593333
+H -0.949807  1.214210 -0.962771
+H  2.076806 -0.826189 -0.036671
+H  2.074465  0.901788  0.325106
+H  1.414895  0.315852 -1.212218
+no_reorient
+no_com
+""",
+                     name="METHYLOXIRANE")
+
 
 def _oscillator_strength(e: float, tm: np.ndarray, gauge: str = "L") -> float:
     if gauge == "L":
@@ -89,16 +105,20 @@ def _test_id(val):
 
 @pytest.mark.tdscf
 @pytest.mark.parametrize("mol,ref,func,ptype,basis", [
-    pytest.param(  ch2,   'UHF',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, UHF, RPA]),
-    pytest.param(  ch2,   'UHF',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, UHF, TDA]),
-    pytest.param(  h2o, 'RHF-1',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_singlet, RPA]),
-    pytest.param(  h2o, 'RHF-1',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_singlet, TDA]),
-    pytest.param(  h2o, 'RHF-3',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_triplet, RPA]),
-    pytest.param(  h2o, 'RHF-3',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_triplet, TDA]),
-    pytest.param( h2o2, 'RHF-1',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_singlet, RPA]),
-    pytest.param( h2o2, 'RHF-1',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_singlet, TDA]),
-    pytest.param( h2o2, 'RHF-3',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_triplet, RPA]),
-    pytest.param( h2o2, 'RHF-3',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_triplet, TDA]),
+    pytest.param(  ch2,   'UHF',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, UHF, RPA, pytest.mark.quick]),
+    pytest.param(  ch2,   'UHF',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, UHF, TDA, pytest.mark.quick]),
+    pytest.param(  h2o, 'RHF-1',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_singlet, RPA, pytest.mark.quick]),
+    pytest.param(  h2o, 'RHF-1',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_singlet, TDA, pytest.mark.quick]),
+    pytest.param(  h2o, 'RHF-3',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_triplet, RPA, pytest.mark.quick]),
+    pytest.param(  h2o, 'RHF-3',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_triplet, TDA, pytest.mark.quick]),
+    pytest.param( h2o2, 'RHF-1',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_singlet, RPA, pytest.mark.quick]),
+    pytest.param( h2o2, 'RHF-1',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_singlet, TDA, pytest.mark.quick]),
+    pytest.param( h2o2, 'RHF-3',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_triplet, RPA, pytest.mark.quick]),
+    pytest.param( h2o2, 'RHF-3',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_triplet, TDA, pytest.mark.quick]),
+    pytest.param( moxy, 'RHF-1',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_singlet, RPA, pytest.mark.quick]),
+    pytest.param( moxy, 'RHF-1',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_singlet, TDA, pytest.mark.quick]),
+    pytest.param( moxy, 'RHF-3',      'SVWN',  'RPA',  'cc-pvdz', marks=[lda, RHF_triplet, RPA, pytest.mark.quick]),
+    pytest.param( moxy, 'RHF-3',      'SVWN',  'TDA',  'cc-pvdz', marks=[lda, RHF_triplet, TDA, pytest.mark.quick]),
     pytest.param(  ch2,   'UHF',        'HF',  'RPA',  'cc-pvdz', marks=[hf, UHF, RPA, pytest.mark.quick]),
     pytest.param(  ch2,   'UHF',        'HF',  'TDA',  'cc-pvdz', marks=[hf, UHF, TDA, pytest.mark.quick]),
     pytest.param(  h2o, 'RHF-1',        'HF',  'RPA',  'cc-pvdz', marks=[hf, RHF_singlet, RPA, pytest.mark.quick]),
@@ -109,6 +129,10 @@ def _test_id(val):
     pytest.param( h2o2, 'RHF-1',        'HF',  'TDA',  'cc-pvdz', marks=[hf, RHF_singlet, TDA, pytest.mark.quick]),
     pytest.param( h2o2, 'RHF-3',        'HF',  'RPA',  'cc-pvdz', marks=[hf, RHF_triplet, RPA, pytest.mark.quick]),
     pytest.param( h2o2, 'RHF-3',        'HF',  'TDA',  'cc-pvdz', marks=[hf, RHF_triplet, TDA, pytest.mark.quick]),
+    pytest.param( moxy, 'RHF-1',        'HF',  'RPA',  'cc-pvdz', marks=[hf, RHF_singlet, RPA]),
+    pytest.param( moxy, 'RHF-1',        'HF',  'TDA',  'cc-pvdz', marks=[hf, RHF_singlet, TDA]),
+    pytest.param( moxy, 'RHF-3',        'HF',  'RPA',  'cc-pvdz', marks=[hf, RHF_triplet, RPA]),
+    pytest.param( moxy, 'RHF-3',        'HF',  'TDA',  'cc-pvdz', marks=[hf, RHF_triplet, TDA]),
     pytest.param(  ch2,   'UHF',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, UHF, RPA]),
     pytest.param(  ch2,   'UHF',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, UHF, TDA]),
     pytest.param(  h2o, 'RHF-1',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, RHF_singlet, RPA]),
@@ -119,6 +143,10 @@ def _test_id(val):
     pytest.param( h2o2, 'RHF-1',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, RHF_singlet, TDA]),
     pytest.param( h2o2, 'RHF-3',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, RHF_triplet, RPA]),
     pytest.param( h2o2, 'RHF-3',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, RHF_triplet, TDA]),
+    pytest.param( moxy, 'RHF-1',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, RHF_singlet, RPA]),
+    pytest.param( moxy, 'RHF-1',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, RHF_singlet, TDA]),
+    pytest.param( moxy, 'RHF-3',    'HCTH93',  'RPA',  'cc-pvdz', marks=[gga, RHF_triplet, RPA]),
+    pytest.param( moxy, 'RHF-3',    'HCTH93',  'TDA',  'cc-pvdz', marks=[gga, RHF_triplet, TDA]),
     pytest.param(  ch2,   'UHF',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, UHF, RPA]),
     pytest.param(  ch2,   'UHF',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, UHF, TDA]),
     pytest.param(  h2o, 'RHF-1',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, RHF_singlet, RPA]),
@@ -129,6 +157,10 @@ def _test_id(val):
     pytest.param( h2o2, 'RHF-1',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, RHF_singlet, TDA]),
     pytest.param( h2o2, 'RHF-3',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, RHF_triplet, RPA]),
     pytest.param( h2o2, 'RHF-3',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, RHF_triplet, TDA]),
+    pytest.param( moxy, 'RHF-1',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, RHF_singlet, RPA]),
+    pytest.param( moxy, 'RHF-1',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, RHF_singlet, TDA]),
+    pytest.param( moxy, 'RHF-3',      'PBE0',  'RPA',  'cc-pvdz', marks=[hyb_gga, RHF_triplet, RPA]),
+    pytest.param( moxy, 'RHF-3',      'PBE0',  'TDA',  'cc-pvdz', marks=[hyb_gga, RHF_triplet, TDA]),
     pytest.param(  ch2,   'UHF',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, UHF, RPA]),
     pytest.param(  ch2,   'UHF',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, UHF, TDA]),
     pytest.param(  h2o, 'RHF-1',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_singlet, RPA]),
@@ -139,6 +171,10 @@ def _test_id(val):
     pytest.param( h2o2, 'RHF-1',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_singlet, TDA]),
     pytest.param( h2o2, 'RHF-3',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, RPA]),
     pytest.param( h2o2, 'RHF-3',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, TDA]),
+    pytest.param( moxy, 'RHF-1',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_singlet, RPA]),
+    pytest.param( moxy, 'RHF-1',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_singlet, TDA]),
+    pytest.param( moxy, 'RHF-3',     'wB97X',  'RPA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, RPA]),
+    pytest.param( moxy, 'RHF-3',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, TDA]),
 ], ids=_test_id) # yapf: disable
 def test_tdscf(mol, ref, func, ptype, basis):
     # expected failures
@@ -194,7 +230,7 @@ def test_tdscf(mol, ref, func, ptype, basis):
         assert compare_values(ref_R_L,
                               my_v["LENGTH-GAUGE ROTATORY STRENGTH"],
                               f"{mol.name()}_{ref}_{func}_{ptype}-ROOT_{i+1} Length-gauge rotatory strength",
-                              atol=1.0e-3)
+                              atol=2.0e-3)
 
         # compare velocity-gauge rotatory strengths
         ref_R_V = _rotatory_strength(ref_e, ref_edtm_V, ref_mdtm, "V")
