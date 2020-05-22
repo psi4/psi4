@@ -111,7 +111,7 @@ void CCBLAS::reduce_spaces(const char* out, const char* in) {
 }
 
 void CCBLAS::process_reduce_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
-    double*** out_matrix = out_Matrix->get_matrix();
+    auto out_matrix = out_Matrix->get_matrix();
     const intvec& act_to_occ = moinfo->get_actv_to_occ();
     const intvec& act_to_vir = moinfo->get_actv_to_vir();
 
@@ -179,7 +179,7 @@ void CCBLAS::expand_spaces(const char* out, const char* in) {
 }
 
 void CCBLAS::process_expand_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
-    double*** out_matrix = out_Matrix->get_matrix();
+    auto out_matrix = out_Matrix->get_matrix();
     const intvec& act_to_occ = moinfo->get_actv_to_occ();
     const intvec& act_to_vir = moinfo->get_actv_to_vir();
 

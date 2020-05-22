@@ -144,7 +144,7 @@ void CCSort::form_fock_one_out_of_core(MatrixBlks& to_be_processed) {
         CCMatrix* Matrix = block_it->first;
         if (Matrix->is_fock()) {
             int h = block_it->second;
-            double*** matrix = Matrix->get_matrix();
+            auto matrix = Matrix->get_matrix();
             short* pq = new short[2];
 
             for (size_t i = 0; i < Matrix->get_left_pairpi(h); ++i) {
@@ -163,7 +163,7 @@ void CCSort::form_fock_one_out_of_core(MatrixBlks& to_be_processed) {
 void CCSort::form_fock_out_of_core(CCMatrix* Matrix, int h) {
     if (Matrix->is_fock()) {
         std::string label = Matrix->get_label();
-        double*** matrix = Matrix->get_matrix();
+        auto matrix = Matrix->get_matrix();
         auto* pq = new short[2];
         const intvec& oa2p = moinfo->get_occ_to_mo();
 
@@ -209,7 +209,7 @@ void CCSort::form_fock_out_of_core(CCMatrix* Matrix, int h) {
 void CCSort::form_two_electron_integrals_out_of_core(CCMatrix* Matrix, int h) {
     if (Matrix->is_integral()) {
         auto* pqrs = new short[4];
-        double*** matrix = Matrix->get_matrix();
+        auto matrix = Matrix->get_matrix();
         bool antisymmetric = Matrix->is_antisymmetric();
         if (Matrix->is_chemist()) {
             for (size_t i = 0; i < Matrix->get_left_pairpi(h); ++i)

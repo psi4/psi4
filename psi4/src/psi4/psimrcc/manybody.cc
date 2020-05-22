@@ -374,17 +374,14 @@ double CCManyBody::c_H_c(int ndets, double** H, std::vector<double>& c) {
 double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, std::vector<double>& right_eigenvector,
                                     std::vector<double>& left_eigenvector, bool initial) {
     double energy;
-    double* real;
-    double* imaginary;
-    double* work;
     double** left;
     double** right;
     double** H;
 
     int lwork = 6 * ndets * ndets;
-    allocate1(double, work, lwork);
-    allocate1(double, real, ndets);
-    allocate1(double, imaginary, ndets);
+    std::vector<double> work(lwork, 0);
+    std::vector<double> real(ndets, 0);
+    std::vector<double> imaginary(ndets, 0);
 
     allocate2(double, H, ndets, ndets);
     allocate2(double, left, ndets, ndets);
@@ -395,8 +392,8 @@ double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, std::vec
 
     int info;
 
-    F_DGEEV("V", "V", &ndets, &(H[0][0]), &ndets, &(real[0]), &(imaginary[0]), &(left[0][0]), &ndets, &(right[0][0]),
-            &ndets, &(work[0]), &lwork, &info);
+    F_DGEEV("V", "V", &ndets, &(H[0][0]), &ndets, real.data(), imaginary.data(), &(left[0][0]), &ndets, &(right[0][0]),
+            &ndets, work.data(), &lwork, &info);
 
     sort_eigensystem(ndets, real, imaginary, left, right);
 
@@ -481,24 +478,19 @@ double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, std::vec
         left_eigenvector[m] = left_eigenvector[m] / lnorm;
     }
 
-    release1(work);
-    release1(real);
-    release1(imaginary);
     release2(H);
     release2(left);
     release2(right);
     return (energy);
 }
 
-void CCManyBody::sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& left, double**& right) {
+void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right) {
     std::vector<std::pair<double, int> > pairs;
     for (int i = 0; i < ndets; i++) pairs.push_back(std::make_pair(real[i], i));
     sort(pairs.begin(), pairs.end());
 
-    double* tempv;
-    double** tempm;
-    allocate1(double, tempv, ndets);
-    allocate2(double, tempm, ndets, ndets);
+    std::vector<double> tempv(ndets, 0);
+    std::vector<std::vector<double>> tempm(ndets, std::vector<double>(ndets, 0));
 
     for (int i = 0; i < ndets; i++) tempv[i] = real[pairs[i].second];
     for (int i = 0; i < ndets; i++) real[i] = tempv[i];
@@ -515,9 +507,6 @@ void CCManyBody::sort_eigensystem(int ndets, double*& real, double*& imaginary, 
         for (int j = 0; j < ndets; j++) tempm[i][j] = right[pairs[i].second][j];
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) right[i][j] = tempm[i][j];
-
-    release1(tempv);
-    release2(tempm);
 }
 
 // void CCManyBody::zero_internal_amps()

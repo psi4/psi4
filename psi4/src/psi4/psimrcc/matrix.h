@@ -89,7 +89,7 @@ class CCMatrix {
     size_t get_right_pairpi(int h) const { return (right_pairpi[h]); }
     size_t get_block_sizepi(int h) const { return (block_sizepi[h]); }
     double** operator[](int h) const { return (matrix[h]); }
-    double*** get_matrix() {
+    std::vector<double**> get_matrix() {
         naccess++;
         return (matrix);
     }
@@ -186,7 +186,7 @@ class CCMatrix {
     std::string index_label;  // The index label
     int nirreps;              // The number of irreps
     int reference;            // The reference zeroth-order wavefunction
-    double*** matrix;         // Pointer to the allocated memory
+    std::vector<double**> matrix;         // Pointer to the allocated memory
                               // matrix[irrep][left_pair][right_pair]
     CCIndex* left;            // Pointer to the left indexing scheme
     CCIndex* right;           // Pointer to the right indexing scheme

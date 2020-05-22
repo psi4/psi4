@@ -116,8 +116,8 @@ void CCMRCC::update_t3_ijkabc_amps() {
         CCMatTmp TijkabcMatTmp = blas->get_MatTmp("t3[ooo][vvv]", unique_ref, none);
         CCMatTmp HijkabcMatTmp = blas->get_MatTmp("t3_eqns[ooo][vvv]", unique_ref, none);
 
-        double*** Tijkabc_matrix = TijkabcMatTmp->get_matrix();
-        double*** Hijkabc_matrix = HijkabcMatTmp->get_matrix();
+        auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
+        auto Hijkabc_matrix = HijkabcMatTmp->get_matrix();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (size_t abc = 0; abc < TijkabcMatTmp->get_right_pairpi(h); abc++) {
@@ -143,8 +143,8 @@ void CCMRCC::update_t3_ijKabC_amps() {
         CCMatTmp TijKabCMatTmp = blas->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
         CCMatTmp HijKabCMatTmp = blas->get_MatTmp("t3_eqns[ooO][vvV]", unique_ref, none);
 
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
-        double*** HijKabC_matrix = HijKabCMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto HijKabC_matrix = HijKabCMatTmp->get_matrix();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (size_t abc = 0; abc < TijKabCMatTmp->get_right_pairpi(h); abc++) {
@@ -174,8 +174,8 @@ void CCMRCC::update_t3_iJKaBC_amps() {
         short** left_tuples = TiJKaBCMatTmp->get_left()->get_tuples();
         short** right_tuples = TiJKaBCMatTmp->get_right()->get_tuples();
 
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
-        double*** HiJKaBC_matrix = HiJKaBCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto HiJKaBC_matrix = HiJKaBCMatTmp->get_matrix();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (int abc = 0; abc < TiJKaBCMatTmp->get_right_pairpi(h); abc++) {
@@ -205,8 +205,8 @@ void CCMRCC::update_t3_IJKABC_amps() {
         short** left_tuples = TIJKABCMatTmp->get_left()->get_tuples();
         short** right_tuples = TIJKABCMatTmp->get_right()->get_tuples();
 
-        double*** TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
-        double*** HIJKABC_matrix = HIJKABCMatTmp->get_matrix();
+        auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
+        auto HIJKABC_matrix = HIJKABCMatTmp->get_matrix();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             for (int abc = 0; abc < TIJKABCMatTmp->get_right_pairpi(h); abc++) {

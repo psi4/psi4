@@ -84,7 +84,7 @@ class CCIndexIterator {
 
     // Properties of the tuples
     int nelements;
-    int** element_irrep;
+    std::vector<std::vector<int>> element_irrep;
     short** tuples;
     std::vector<size_t> block_last;
     std::vector<int> block_symmetry;

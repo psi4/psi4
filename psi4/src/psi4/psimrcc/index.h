@@ -121,14 +121,14 @@ class CCIndex {
 
     vecvecint& get_indices_to_pitzer() { return (indices_to_pitzer); }
 
-    size_t* get_one_index_to_tuple_rel_index() { return (one_index_to_tuple_rel_index); };
+    std::vector<size_t> get_one_index_to_tuple_rel_index() { return (one_index_to_tuple_rel_index); };
     size_t** get_two_index_to_tuple_rel_index() { return (two_index_to_tuple_rel_index); };
     size_t*** get_three_index_to_tuple_rel_index() { return (three_index_to_tuple_rel_index); };
-    int* get_one_index_to_irrep() { return (one_index_to_irrep); };
+    std::vector<int> get_one_index_to_irrep() { return (one_index_to_irrep); };
     int** get_two_index_to_irrep() { return (two_index_to_irrep); };
     int*** get_three_index_to_irrep() { return (three_index_to_irrep); };
 
-    int** get_element_irrep() { return (element_irrep); }
+    std::vector<std::vector<int>> get_element_irrep() { return (element_irrep); }
 
    private:
     ///////////////////////////////////////////////////////////////////////////////
@@ -158,13 +158,13 @@ class CCIndex {
     Size_tVec first;                           // First pair of irrep
     Size_tVec last;                            // Last  pair of irrep
     Size_tVec tuplespi;                        // Number of tuples for irrep
-    size_t* one_index_to_tuple_rel_index;      // 1->tuple mapping array
+    Size_tVec one_index_to_tuple_rel_index;    // 1->tuple mapping array
     size_t** two_index_to_tuple_rel_index;     // 2->tuple mapping array
     size_t*** three_index_to_tuple_rel_index;  // 3->tuple mapping array
-    int* one_index_to_irrep;                   // 1->irrep mapping array
+    std::vector<int> one_index_to_irrep;       // 1->irrep mapping array
     int** two_index_to_irrep;                  // 2->irrep mapping array
     int*** three_index_to_irrep;               // 3->irrep mapping array
-    int** element_irrep;                       // Irrep of each element
+    std::vector<std::vector<int>> element_irrep;                     // Irrep of each element
 };
 
 }  // namespace psimrcc

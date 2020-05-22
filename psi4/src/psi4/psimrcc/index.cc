@@ -56,10 +56,8 @@ CCIndex::CCIndex(std::string str)
       greater_than(false),
       ntuples(0),
       tuples(nullptr),
-      one_index_to_tuple_rel_index(nullptr),
       two_index_to_tuple_rel_index(nullptr),
       three_index_to_tuple_rel_index(nullptr),
-      one_index_to_irrep(nullptr),
       two_index_to_irrep(nullptr),
       three_index_to_irrep(nullptr) {
     nirreps = moinfo->get_nirreps();
@@ -106,9 +104,9 @@ void CCIndex::init() {
         }
     }
     // Set the irrep of each individual element
-    allocate1(int*, element_irrep, nelements);
+    element_irrep = std::vector<std::vector<int>>(nelements);
     for (int i = 0; i < nelements; ++i) {
-        allocate1(int, element_irrep[i], dimension[i]);
+        element_irrep[i] = std::vector<int>(dimension[i], 0);
         int j_abs = 0;
         for (int h = 0; h < nirreps; ++h)
             for (int j = 0; j < mospi[i][h]; ++j) {
@@ -141,16 +139,10 @@ void CCIndex::init() {
 
 void CCIndex::cleanup() {
     if (tuples != 0) release2(tuples);
-    if (one_index_to_tuple_rel_index != 0) release1(one_index_to_tuple_rel_index);
-    if (one_index_to_irrep != 0) release1(one_index_to_irrep);
     if (two_index_to_tuple_rel_index != 0) release2(two_index_to_tuple_rel_index);
     if (two_index_to_irrep != 0) release2(two_index_to_irrep);
     if (three_index_to_tuple_rel_index != 0) release3(three_index_to_tuple_rel_index);
     if (three_index_to_irrep != 0) release3(three_index_to_irrep);
-    if (element_irrep != nullptr) {
-        for (int i = 0; i < nelements; ++i) release1(element_irrep[i]);
-        release1(element_irrep);
-    }
 }
 
 void CCIndex::make_zero_index() {
@@ -176,8 +168,8 @@ void CCIndex::make_one_index() {
     std::vector<std::vector<short> > pairs;
 
     // Allocate the 1->tuple mapping array and set them to -1
-    allocate1(size_t, one_index_to_tuple_rel_index, dimension[0]);
-    allocate1(int, one_index_to_irrep, dimension[0]);
+    one_index_to_tuple_rel_index = std::vector<size_t>(dimension[0], 0);
+    one_index_to_irrep = std::vector<int>(dimension[0], 0);
 
     for (size_t i = 0; i < dimension[0]; ++i) {
         one_index_to_tuple_rel_index[i] = 0;

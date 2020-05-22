@@ -139,12 +139,12 @@ void CCMRCC::build_t1_ia_amplitudes_triples() {
         short** mn_tuples = ImnefMatTmp->get_left()->get_tuples();
         short** ef_tuples = ImnefMatTmp->get_right()->get_tuples();
 
-        double*** Tijkabc_matrix = TijkabcMatTmp->get_matrix();
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
-        double*** Hia_matrix = HiaMatTmp->get_matrix();
-        double*** Imnef_matrix = ImnefMatTmp->get_matrix();
-        double*** ImNeF_matrix = ImNeFMatTmp->get_matrix();
+        auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto Hia_matrix = HiaMatTmp->get_matrix();
+        auto Imnef_matrix = ImnefMatTmp->get_matrix();
+        auto ImNeF_matrix = ImNeFMatTmp->get_matrix();
         CCIndex* ijkIndex = blas->get_index("[ooo]");
         CCIndex* abcIndex = blas->get_index("[vvv]");
 
@@ -207,17 +207,17 @@ void CCMRCC::build_t1_IA_amplitudes_triples() {
         CCMatTmp ImNeFMatTmp = blas->get_MatTmp("<[oo]|[vv]>", none);
 
         // Grab the indexing for t3[ijk][abc]
-        short** I_tuples = HIAMatTmp->get_left()->get_tuples();
-        short** A_tuples = HIAMatTmp->get_right()->get_tuples();
-        short** mn_tuples = ImnefMatTmp->get_left()->get_tuples();
-        short** ef_tuples = ImnefMatTmp->get_right()->get_tuples();
+        auto I_tuples = HIAMatTmp->get_left()->get_tuples();
+        auto A_tuples = HIAMatTmp->get_right()->get_tuples();
+        auto mn_tuples = ImnefMatTmp->get_left()->get_tuples();
+        auto ef_tuples = ImnefMatTmp->get_right()->get_tuples();
 
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
-        double*** TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
-        double*** HIA_matrix = HIAMatTmp->get_matrix();
-        double*** Imnef_matrix = ImnefMatTmp->get_matrix();
-        double*** ImNeF_matrix = ImNeFMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
+        auto HIA_matrix = HIAMatTmp->get_matrix();
+        auto Imnef_matrix = ImnefMatTmp->get_matrix();
+        auto ImNeF_matrix = ImNeFMatTmp->get_matrix();
         CCIndex* ijkIndex = blas->get_index("[ooo]");
         CCIndex* abcIndex = blas->get_index("[vvv]");
 

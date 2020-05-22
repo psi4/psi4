@@ -307,14 +307,14 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
 
         // Grab the temporary matrices
         CCMatTmp TijkabcMatTmp = blas->get_MatTmp("t3[ooo][vvv]", unique_ref, none);
-        double*** Tijkabc_matrix = TijkabcMatTmp->get_matrix();
+        auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
         CCMatTmp TijKabCMatTmp = blas->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
 
         CCMatTmp WkijaMatTmp = blas->get_MatTmp("W_kija[o][oov]", unique_ref, none);
         CCMatTmp WkiJAMatTmp = blas->get_MatTmp("W_kiJA[o][oOV]", unique_ref, none);
-        double*** Wkija_matrix = WkijaMatTmp->get_matrix();
-        double*** WkiJA_matrix = WkiJAMatTmp->get_matrix();
+        auto Wkija_matrix = WkijaMatTmp->get_matrix();
+        auto WkiJA_matrix = WkiJAMatTmp->get_matrix();
 
         CCMatTmp HijabMatTmp = blas->get_MatTmp("t2_eqns[oo][vv]", unique_ref, none);
 
@@ -439,33 +439,33 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
 
         // Grab the temporary matrices
         CCMatTmp TijKabCMatTmp = blas->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
         CCMatTmp TiJKaBCMatTmp = blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
 
         CCMatTmp WkijaMatTmp = blas->get_MatTmp("W_kija[o][oov]", unique_ref, none);
-        double*** Wkija_matrix = WkijaMatTmp->get_matrix();
+        auto Wkija_matrix = WkijaMatTmp->get_matrix();
         CCMatTmp WKIjaMatTmp = blas->get_MatTmp("W_KIja[O][Oov]", unique_ref, none);
-        double*** WKIja_matrix = WKIjaMatTmp->get_matrix();
+        auto WKIja_matrix = WKIjaMatTmp->get_matrix();
         CCMatTmp WkiJAMatTmp = blas->get_MatTmp("W_kiJA[o][oOV]", unique_ref, none);
-        double*** WkiJA_matrix = WkiJAMatTmp->get_matrix();
+        auto WkiJA_matrix = WkiJAMatTmp->get_matrix();
         CCMatTmp WKIJAMatTmp = blas->get_MatTmp("W_KIJA[O][OOV]", unique_ref, none);
-        double*** WKIJA_matrix = WKIJAMatTmp->get_matrix();
+        auto WKIJA_matrix = WKIJAMatTmp->get_matrix();
 
         CCMatTmp HiJaBMatTmp = blas->get_MatTmp("t2_eqns[oO][vV]", unique_ref, none);
 
         // Grab the indexing for t3[iab][jkc]
-        CCIndex* jab_indexing = blas->get_index("[ovv]");
-        CCIndex* kac_indexing = blas->get_index("[ovv]");
-        CCIndex* iab_indexing = blas->get_index("[ovv]");
-        CCIndex* iac_indexing = blas->get_index("[ovv]");
-        CCIndex* kab_indexing = blas->get_index("[ovv]");
-        CCIndex* kjb_indexing = blas->get_index("[oov]");
-        CCIndex* kjc_indexing = blas->get_index("[oov]");
-        CCIndex* ijc_indexing = blas->get_index("[oov]");
-        CCIndex* ijb_indexing = blas->get_index("[oov]");
-        CCIndex* j_indexing = blas->get_index("[o]");
-        CCIndex* i_indexing = blas->get_index("[o]");
+        auto jab_indexing = blas->get_index("[ovv]");
+        auto kac_indexing = blas->get_index("[ovv]");
+        auto iab_indexing = blas->get_index("[ovv]");
+        auto iac_indexing = blas->get_index("[ovv]");
+        auto kab_indexing = blas->get_index("[ovv]");
+        auto kjb_indexing = blas->get_index("[oov]");
+        auto kjc_indexing = blas->get_index("[oov]");
+        auto ijc_indexing = blas->get_index("[oov]");
+        auto ijb_indexing = blas->get_index("[oov]");
+        auto j_indexing = blas->get_index("[o]");
+        auto i_indexing = blas->get_index("[o]");
 
         short** iab_tuples = iab_indexing->get_tuples();
         short** jab_tuples = jab_indexing->get_tuples();
@@ -667,14 +667,14 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram1() {
 
         // Grab the temporary matrices
         CCMatTmp TiJKaBCMatTmp = blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
         CCMatTmp TIJKABCMatTmp = blas->get_MatTmp("t3[OOO][VVV]", unique_ref, none);
-        double*** TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
+        auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
 
         CCMatTmp WKIjaMatTmp = blas->get_MatTmp("W_KIja[O][Oov]", unique_ref, none);
         CCMatTmp WKIJAMatTmp = blas->get_MatTmp("W_KIJA[O][OOV]", unique_ref, none);
-        double*** WKIja_matrix = WKIjaMatTmp->get_matrix();
-        double*** WKIJA_matrix = WKIJAMatTmp->get_matrix();
+        auto WKIja_matrix = WKIjaMatTmp->get_matrix();
+        auto WKIJA_matrix = WKIJAMatTmp->get_matrix();
 
         CCMatTmp HIJABMatTmp = blas->get_MatTmp("t2_eqns[OO][VV]", unique_ref, none);
 
@@ -802,14 +802,14 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram2() {
 
         // Grab the temporary matrices
         CCMatTmp TijkabcMatTmp = blas->get_MatTmp("t3[ooo][vvv]", unique_ref, none);
-        double*** Tijkabc_matrix = TijkabcMatTmp->get_matrix();
+        auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
         CCMatTmp TijKabCMatTmp = blas->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
 
         CCMatTmp WaibcMatTmp = blas->get_MatTmp("W_aibc[v][ovv]", unique_ref, none);
-        double*** Waibc_matrix = WaibcMatTmp->get_matrix();
+        auto Waibc_matrix = WaibcMatTmp->get_matrix();
         CCMatTmp WaIbCMatTmp = blas->get_MatTmp("W_aIbC[v][OvV]", unique_ref, none);
-        double*** WaIbC_matrix = WaIbCMatTmp->get_matrix();
+        auto WaIbC_matrix = WaIbCMatTmp->get_matrix();
 
         CCMatTmp HijabMatTmp = blas->get_MatTmp("t2_eqns[oo][vv]", unique_ref, none);
 
@@ -929,18 +929,18 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram2() {
 
         // Grab the temporary matrices
         CCMatTmp TijKabCMatTmp = blas->get_MatTmp("t3[ooO][vvV]", unique_ref, none);
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
         CCMatTmp TiJKaBCMatTmp = blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
 
         CCMatTmp WaibcMatTmp = blas->get_MatTmp("W_aibc[v][ovv]", unique_ref, none);
-        double*** Waibc_matrix = WaibcMatTmp->get_matrix();
+        auto Waibc_matrix = WaibcMatTmp->get_matrix();
         CCMatTmp WaIbCMatTmp = blas->get_MatTmp("W_aIbC[v][OvV]", unique_ref, none);
-        double*** WaIbC_matrix = WaIbCMatTmp->get_matrix();
+        auto WaIbC_matrix = WaIbCMatTmp->get_matrix();
         CCMatTmp WAiBcMatTmp = blas->get_MatTmp("W_AiBc[V][oVv]", unique_ref, none);
-        double*** WAiBc_matrix = WAiBcMatTmp->get_matrix();
+        auto WAiBc_matrix = WAiBcMatTmp->get_matrix();
         CCMatTmp WAIBCMatTmp = blas->get_MatTmp("W_AIBC[V][OVV]", unique_ref, none);
-        double*** WAIBC_matrix = WAIBCMatTmp->get_matrix();
+        auto WAIBC_matrix = WAIBCMatTmp->get_matrix();
 
         CCMatTmp HiJaBMatTmp = blas->get_MatTmp("t2_eqns[oO][vV]", unique_ref, none);
 
@@ -1126,14 +1126,14 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram2() {
 
         // Grab the temporary matrices
         CCMatTmp TiJKaBCMatTmp = blas->get_MatTmp("t3[oOO][vVV]", unique_ref, none);
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
         CCMatTmp TIJKABCMatTmp = blas->get_MatTmp("t3[OOO][VVV]", unique_ref, none);
-        double*** TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
+        auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
 
         CCMatTmp WAiBcMatTmp = blas->get_MatTmp("W_AiBc[V][oVv]", unique_ref, none);
-        double*** WAiBc_matrix = WAiBcMatTmp->get_matrix();
+        auto WAiBc_matrix = WAiBcMatTmp->get_matrix();
         CCMatTmp WAIBCMatTmp = blas->get_MatTmp("W_AIBC[V][OVV]", unique_ref, none);
-        double*** WAIBC_matrix = WAIBCMatTmp->get_matrix();
+        auto WAIBC_matrix = WAIBCMatTmp->get_matrix();
 
         CCMatTmp HIJABMatTmp = blas->get_MatTmp("t2_eqns[OO][VV]", unique_ref, none);
 
@@ -1263,11 +1263,11 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram3() {
         short** m_tuples = FmeMatTmp->get_left()->get_tuples();
         short** e_tuples = FmeMatTmp->get_right()->get_tuples();
 
-        double*** Tijkabc_matrix = TijkabcMatTmp->get_matrix();
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
-        double*** Hijab_matrix = HijabMatTmp->get_matrix();
-        double*** Fme_matrix = FmeMatTmp->get_matrix();
-        double*** FME_matrix = FMEMatTmp->get_matrix();
+        auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto Hijab_matrix = HijabMatTmp->get_matrix();
+        auto Fme_matrix = FmeMatTmp->get_matrix();
+        auto FME_matrix = FMEMatTmp->get_matrix();
         CCIndex* ijkIndex = blas->get_index("[ooo]");
         CCIndex* abcIndex = blas->get_index("[vvv]");
 
@@ -1329,11 +1329,11 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram3() {
         short** m_tuples = FmeMatTmp->get_left()->get_tuples();
         short** e_tuples = FmeMatTmp->get_right()->get_tuples();
 
-        double*** TijKabC_matrix = TijKabCMatTmp->get_matrix();
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
-        double*** HiJaB_matrix = HiJaBMatTmp->get_matrix();
-        double*** Fme_matrix = FmeMatTmp->get_matrix();
-        double*** FME_matrix = FMEMatTmp->get_matrix();
+        auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto HiJaB_matrix = HiJaBMatTmp->get_matrix();
+        auto Fme_matrix = FmeMatTmp->get_matrix();
+        auto FME_matrix = FMEMatTmp->get_matrix();
         CCIndex* ijkIndex = blas->get_index("[ooo]");
         CCIndex* abcIndex = blas->get_index("[vvv]");
 
@@ -1395,11 +1395,11 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram3() {
         short** m_tuples = FmeMatTmp->get_left()->get_tuples();
         short** e_tuples = FmeMatTmp->get_right()->get_tuples();
 
-        double*** TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
-        double*** TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
-        double*** HIJAB_matrix = HIJABMatTmp->get_matrix();
-        double*** Fme_matrix = FmeMatTmp->get_matrix();
-        double*** FME_matrix = FMEMatTmp->get_matrix();
+        auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
+        auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
+        auto HIJAB_matrix = HIJABMatTmp->get_matrix();
+        auto Fme_matrix = FmeMatTmp->get_matrix();
+        auto FME_matrix = FMEMatTmp->get_matrix();
         CCIndex* ijkIndex = blas->get_index("[ooo]");
         CCIndex* abcIndex = blas->get_index("[vvv]");
 

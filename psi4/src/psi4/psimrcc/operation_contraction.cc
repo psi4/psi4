@@ -55,7 +55,7 @@ void CCOperation::setup_contractions() {
     if (reindexing.size() > 0) need_sort = true;
     CCIndex* T_left = A_Matrix->get_left();
     CCIndex* T_right = A_Matrix->get_right();
-    double*** T_matrix = A_Matrix->get_matrix();
+    auto T_matrix = A_Matrix->get_matrix();
 
     // Determine the target indexing if sorting is needed
     if (need_sort) {
@@ -70,7 +70,7 @@ void CCOperation::setup_contractions() {
             T_right = C_Matrix->get_left();
         }
         size_t T_matrix_offset = 0;
-        T_matrix = new double**[moinfo->get_nirreps()];
+        T_matrix = std::vector<double**>(moinfo->get_nirreps(), nullptr);
         for (int irrep = 0; irrep < moinfo->get_nirreps(); irrep++) {
             T_matrix[irrep] = new double*[T_left->get_pairpi(irrep)];
             size_t block_size = T_left->get_pairpi(irrep) * T_right->get_pairpi(irrep);
@@ -224,7 +224,6 @@ void CCOperation::setup_contractions() {
         for (int h = 0; h < moinfo->get_nirreps(); h++)
             //       if(T_left->get_pairpi(h)*T_right->get_pairpi(h)>0)
             delete[] T_matrix[h];
-        delete[] T_matrix;
     }
     PartC_timing += PartC.get();
 }

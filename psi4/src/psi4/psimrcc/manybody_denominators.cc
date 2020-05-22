@@ -71,7 +71,7 @@ void CCManyBody::generate_denominators() {
         if (str.find("d1") != std::string::npos) {
             // Load the temporary matrix
             CCMatTmp MatTmp = blas->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
-            double*** matrix = MatTmp->get_matrix();
+            auto matrix = MatTmp->get_matrix();
 
             // Get the reference number
             int reference = MatTmp->get_reference();
@@ -172,7 +172,7 @@ void CCManyBody::generate_denominators() {
         if (str.find("d2") != std::string::npos) {
             // Load the temporary matrix
             CCMatTmp MatTmp = blas->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
-            double*** matrix = MatTmp->get_matrix();
+            auto matrix = MatTmp->get_matrix();
 
             // Get the reference number
             int reference = MatTmp->get_reference();

@@ -133,7 +133,7 @@ void MRCCSD_T::startup() {
         //  Unique references
         if (mu == unique_mu) {
             // Setup the denominators
-            double*** F_oo = blas->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
+            auto F_oo = blas->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
                 CCIndexIterator i("[o]");
@@ -145,7 +145,7 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            double*** F_OO = blas->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
+            auto F_OO = blas->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
                 CCIndexIterator i("[o]");
@@ -157,7 +157,7 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            double*** F_vv = blas->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
+            auto F_vv = blas->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
                 CCIndexIterator a("[v]");
@@ -169,7 +169,7 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            double*** F_VV = blas->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
+            auto F_VV = blas->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
                 CCIndexIterator a("[v]");
@@ -215,7 +215,7 @@ void MRCCSD_T::startup() {
             is_bvir.push_back(moinfo->get_is_bvir(mu, AllRefs));
         } else {
             // Setup the denominators
-            double*** F_oo = blas->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
+            auto F_oo = blas->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
                 CCIndexIterator i("[o]");
@@ -227,7 +227,7 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            double*** F_OO = blas->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
+            auto F_OO = blas->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
                 CCIndexIterator i("[o]");
@@ -239,7 +239,7 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            double*** F_vv = blas->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
+            auto F_vv = blas->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
                 CCIndexIterator a("[v]");
@@ -251,7 +251,7 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            double*** F_VV = blas->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
+            auto F_VV = blas->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
                 CCIndexIterator a("[v]");

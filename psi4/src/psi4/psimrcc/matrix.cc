@@ -68,13 +68,12 @@ CCMatrix::CCMatrix(std::string& str, CCIndex* left_index, CCIndex* right_index)
     // Copy the pairpi arrays from the CCIndex object
     // Compute the memory required to store the matrix in core
 
-    allocate1(double***, matrix, nirreps);
+    matrix = std::vector<double**>(nirreps, nullptr);
     left_pairpi = std::vector<size_t>(nirreps, 0);
     right_pairpi = std::vector<size_t>(nirreps, 0);
     block_sizepi = std::vector<size_t>(nirreps, 0);
 
     for (int h = 0; h < nirreps; h++) {
-        matrix[h] = nullptr;
         left_pairpi[h] = left->get_pairpi(h);
         right_pairpi[h] = right->get_pairpi(h);
         block_sizepi[h] = left_pairpi[h] * right_pairpi[h];
@@ -96,7 +95,6 @@ CCMatrix::CCMatrix(std::string& str, CCIndex* left_index, CCIndex* right_index)
 
 CCMatrix::~CCMatrix() {
     free_memory();
-    release1(matrix);
 }
 
 /*********************************************************
@@ -247,8 +245,8 @@ void CCMatrix::tensor_product(std::string& reindexing, double factor, CCMatrix* 
     auto* pqrs = new short[4];
     auto* pq = new short[2];
     auto* rs = new short[2];
-    double*** B_matrix = B_Matrix->get_matrix();
-    double*** C_matrix = C_Matrix->get_matrix();
+    auto B_matrix = B_Matrix->get_matrix();
+    auto C_matrix = C_Matrix->get_matrix();
     double value;
     for (int b_n = 0; b_n < moinfo->get_nirreps(); b_n++) {
         for (int c_n = 0; c_n < moinfo->get_nirreps(); c_n++) {

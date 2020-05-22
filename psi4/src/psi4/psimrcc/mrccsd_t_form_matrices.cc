@@ -57,7 +57,7 @@ void MRCCSD_T::form_T2_ij_a_b(IndexMatrix* T2_ij_a_b, bool spin1, bool spin2, bo
     for (int ref = 0; ref < nrefs; ++ref) {
         int unique_ref = moinfo->get_ref_number(ref, AllRefs);
 
-        double*** Tijab;
+        std::vector<double**> Tijab;
 
         if (unique_ref == ref) {
             if (spin1 && spin2) {
@@ -104,7 +104,7 @@ void MRCCSD_T::form_T2_i_ab_j(IndexMatrix* T2_i_ab_j, bool spin1, bool spin2, bo
     for (int ref = 0; ref < nrefs; ++ref) {
         int unique_ref = moinfo->get_ref_number(ref, AllRefs);
 
-        double*** Tijab;
+        std::vector<double**> Tijab;
 
         if (unique_ref == ref) {
             if (spin1 && spin2) {
@@ -153,7 +153,7 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
     // <bc||ek> = <ek||bc>
     CCIndexIterator k("[o]");
 
-    double*** V = blas->get_MatTmp("<[vo]|[vv]>", none)->get_matrix();
+    auto V = blas->get_MatTmp("<[vo]|[vv]>", none)->get_matrix();
     for (k.first(); !k.end(); k.next()) {
         BlockMatrix* block_matrix = new BlockMatrix(nirreps, vv->get_tuplespi(), v->get_tuplespi(), k.sym());
         //    ebc.reset();
@@ -179,7 +179,7 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
 void MRCCSD_T::form_V_jk_c_m(IndexMatrix* V_jk_c_m, double direct, double exchange) {
     CCIndexIterator jk("[oo]");
 
-    double*** V = blas->get_MatTmp("<[oo]|[ov]>", none)->get_matrix();
+    auto V = blas->get_MatTmp("<[oo]|[ov]>", none)->get_matrix();
 
     for (jk.first(); !jk.end(); jk.next()) {
         BlockMatrix* block_matrix = new BlockMatrix(nirreps, v->get_tuplespi(), o->get_tuplespi(), jk.sym());
