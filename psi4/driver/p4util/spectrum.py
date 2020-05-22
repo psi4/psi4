@@ -48,7 +48,7 @@ class Lineshape:
 
     Notes
     -----
-    Why do we use a vector of broadening factors?
+    Why do we use a callable broadening factor?
     For plots in the _wavelength domain_, the broadening factor depends on the location of the band's maximum.
     """
     domain: Union[np.ndarray, List[float]]
@@ -64,7 +64,7 @@ class Lineshape:
 
 
 class Gaussian(Lineshape):
-    """Gaussian function on `domain`, centered at `x_0` with broadening `gamma`.
+    r"""Gaussian function on `domain`, centered at `x_0` with broadening `gamma`.
 
     Parameters
     ----------
@@ -141,7 +141,7 @@ class Lorentzian(Lineshape):
 
 
 def prefactor_opa() -> float:
-    """Prefactor for converting microscopic observable to decadic molar
+    r"""Prefactor for converting microscopic observable to decadic molar
     extinction coefficient in one-photon absorption.
 
     Returns
@@ -223,7 +223,7 @@ def spectrum(*,
              gamma: float = 0.2,
              npoints: int = 5000,
              out_units: str = "nm") -> Dict[str, np.ndarray]:
-    """One-photon absorption (OPA) or electronic circular dichroism (ECD)
+    r"""One-photon absorption (OPA) or electronic circular dichroism (ECD)
     spectra with phenomenological line broadening.
 
     This function gives arrays of values ready to be plotted as OPA spectrum:
@@ -308,7 +308,7 @@ def spectrum(*,
         residues = np.array(residues)
     # Validate input arrays
     if poles.shape != residues.shape:
-        raise ValueError(f"Shapes of poles and residues vectors do not match!")
+        raise ValueError(f"Shapes of poles ({poles.shape}) and residues ({residues.shape}) vectors do not match!")
 
     # Validate kind of spectrum
     kind = kind.lower()

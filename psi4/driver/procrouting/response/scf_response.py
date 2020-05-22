@@ -346,7 +346,6 @@ def tdscf_excitations(wfn,
                       triplets: str = "none",
                       tda: bool = False,
                       r_tol: float = 1.0e-4,
-                      max_ss_size: int = 100,
                       maxiter: int = 60,
                       guess: str = "denominators",
                       verbose: int = 1):
@@ -392,10 +391,9 @@ def tdscf_excitations(wfn,
        :math:`10^{-(N-2)}`.
        The default value is consistent with the default value for
        ``D_CONVERGENCE``.
-    max_ss_size: int, optional.
-       The maximum number of trial vectors in the iterative subspace that will
-       be stored before a collapse is done.
-       Default: 100
+    maxiter : int, optional
+       Maximum number of iterations.
+       Default: 60
     guess : str, optional.
        How should the starting trial vectors be generated?
        Default: `denominators`, i.e. use orbital energy differences to generate
@@ -414,6 +412,21 @@ def tdscf_excitations(wfn,
       - restricted singlets: RPA or TDA, any functional
       - restricted triplets: RPA or TDA, Hartree-Fock only
       - unresctricted: RPA or TDA, Hartre-Fock and LDA only
+
+    Tighter convergence thresholds will require a larger iterative subspace.
+    The maximum size of the iterative subspace is calculated based on `r_tol`:
+
+       max_vecs_per_root = -np.log10(r_tol) * 25
+
+    for the default converegence threshold this gives 100 trial vectors per root and a maximum subspace size
+    of:
+
+       max_ss_size = max_vecs_per_root * n
+
+    where `n` are the number of roots to seek in the given irrep.
+    For each irrep, the algorithm will store up to `max_ss_size` trial vectors
+    before collapsing (restarting) the iterations from the `n` best
+    approximations.
 
     References
     ----------
@@ -459,14 +472,23 @@ def tdscf_excitations(wfn,
     if guess.lower() != "denominators":
         raise ValidationError(f"Guess type {guess} is not valid")
 
+    # tie maximum number of vectors per root to requested residual tolerance
+    # This gives 100 vectors per root with default tolerance
+    max_vecs_per_root = int(-np.log10(r_tol) * 25)
+
     # which problem
     ptype = 'rpa'
     solve_function = lambda e, n, g: solvers.hamiltonian_solver(
-        engine=e, nroot=n, guess=g, r_tol=r_tol, max_ss_size=max_ss_size, maxiter=maxiter, verbose=verbose)
+        engine=e, nroot=n, guess=g, r_tol=r_tol, max_ss_size=max_vecs_per_root * n, maxiter=maxiter, verbose=verbose)
     if tda:
         ptype = 'tda'
-        solve_function = lambda e, n, g: solvers.davidson_solver(
-            engine=e, nroot=n, guess=g, r_tol=r_tol, max_ss_size=max_ss_size, maxiter=maxiter, verbose=verbose)
+        solve_function = lambda e, n, g: solvers.davidson_solver(engine=e,
+                                                                 nroot=n,
+                                                                 guess=g,
+                                                                 r_tol=r_tol,
+                                                                 max_ss_size=max_vecs_per_root * n,
+                                                                 maxiter=maxiter,
+                                                                 verbose=verbose)
 
     _print_tdscf_header(rtol=r_tol,
                         states=[(count, label) for count, label in zip(states_per_irrep,

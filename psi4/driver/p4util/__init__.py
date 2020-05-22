@@ -37,4 +37,5 @@ from .numpy_helper import *
 from .p4regex import *
 from .python_helpers import *
 from .solvers import *
+from .spectrum import spectrum
 from . import writer
