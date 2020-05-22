@@ -314,7 +314,6 @@ def _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted: bool =
         for e, (R, L) in zip(ret["eigvals"], ret["eigvecs"]):
             irrep_ES = wfn.molecule().irrep_labels()[state_sym]
             irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ state_sym]
-            sym_descr = f"{irrep_GS}->{irrep_ES} ({1 if spin_mult== 'singlet' else 3} {irrep_trans})"
 
             # length-gauge electric dipole transition moment
             edtm_length = engine.residue(R, mints.so_dipole())
@@ -529,7 +528,6 @@ def tdscf_excitations(wfn,
         f"    {'-':->4} {'-':->20} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15} {'-':->15}\n")
 
     # collect results
-    mints = core.MintsHelper(wfn.basisset())
     solver_results = []
     for i, (E_ex_au, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity, mdtm, R_length,
             R_velocity, spin_mult) in enumerate(_results):
