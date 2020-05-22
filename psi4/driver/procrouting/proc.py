@@ -1231,6 +1231,11 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     # Deal with the EXTERN issues
     if hasattr(core, "EXTERN"):
         wfn.set_external_potential(core.EXTERN)
+    elif 'external_potentials' in kwargs and list(kwargs['external_potentials'].keys()) == ['A', 'B', 'C']:
+        wfn.set_external_potential_a(kwargs['external_potentials']['A'].extern)
+        wfn.set_external_potential_b(kwargs['external_potentials']['B'].extern)
+        wfn.set_external_potential_c(kwargs['external_potentials']['C'].extern)
+        wfn.set_external_potential(kwargs['external_potentials']['C'].extern)  # for the SCF
 
     return wfn
 
@@ -4445,6 +4450,11 @@ def run_fisapt(name, **kwargs):
         core.timer_on("FISAPT: Dimer SCF")
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
         core.timer_off("FISAPT: Dimer SCF")
+
+#    print("pots?", ref_wfn.external_pot(), ref_wfn.external_pot_a(), ref_wfn.external_pot_b(), ref_wfn.external_pot_c())
+#    if ref_wfn.external_pot():
+#        print("clearing pot")
+#        ref_wfn.external_pot().clear()
 
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(),

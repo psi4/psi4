@@ -106,6 +106,23 @@ void FISAPT::print_header() {
 }
 
 void FISAPT::localize() {
+    if (reference_->external_pot()) {
+        printf("pot\n");
+        reference_->external_pot()->print();
+    }
+    if (reference_->external_pot_a()) {
+        printf("pot A\n");
+        reference_->external_pot_a()->print();
+    }
+    if (reference_->external_pot_b()) {
+        printf("pot B\n");
+        reference_->external_pot_b()->print();
+    }
+    if (reference_->external_pot_c()) {
+        printf("pot C\n");
+        reference_->external_pot_c()->print();
+    }
+
     outfile->Printf("  ==> Localization (IBO) <==\n\n");
 
     std::shared_ptr<Matrix> Focc =

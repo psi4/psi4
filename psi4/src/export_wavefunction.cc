@@ -224,6 +224,13 @@ void export_wavefunction(py::module& m) {
         .def("compute_gradient", &Wavefunction::compute_gradient, "Computes the gradient of the Wavefunction")
         .def("compute_hessian", &Wavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.")
         .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
+        .def("set_external_potential_a", &Wavefunction::set_external_potential_a, "Sets the requested external potential.")
+        .def("set_external_potential_b", &Wavefunction::set_external_potential_b, "Sets the requested external potential.")
+        .def("set_external_potential_c", &Wavefunction::set_external_potential_c, "Sets the requested external potential.")
+        .def("external_pot", &Wavefunction::external_pot, "Gets the requested external potential.")
+        .def("external_pot_a", &Wavefunction::external_pot_a, "Gets the requested external potential.")
+        .def("external_pot_b", &Wavefunction::external_pot_b, "Gets the requested external potential.")
+        .def("external_pot_c", &Wavefunction::external_pot_c, "Gets the requested external potential.")
         .def("has_scalar_variable", &Wavefunction::has_scalar_variable,
              "Is the double QC variable (case-insensitive) set?")
         .def("has_array_variable", &Wavefunction::has_array_variable,
