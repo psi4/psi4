@@ -32,7 +32,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-import qcelemental as qcel
+from psi4.driver import constants
 
 
 @dataclass
@@ -163,12 +163,12 @@ def prefactor_opa() -> float:
     assume it to be constant and equal to 1.
     """
 
-    N_A = qcel.constants.get("Avogadro constant")
-    c = qcel.constants.get("speed of light in vacuum")
-    hbar = qcel.constants.get("Planck constant over 2 pi")
-    e_0 = qcel.constants.get("electric constant")
-    au_to_Coulomb_centimeter = qcel.constants.get("elementary charge") * qcel.constants.get(
-        "Bohr radius") * qcel.constants.conversion_factor("m", "cm")
+    N_A = constants.get("Avogadro constant")
+    c = constants.get("speed of light in vacuum")
+    hbar = constants.get("Planck constant over 2 pi")
+    e_0 = constants.get("electric constant")
+    au_to_Coulomb_centimeter = constants.get("elementary charge") * constants.get(
+        "Bohr radius") * constants.conversion_factor("m", "cm")
 
     numerator = 4.0 * np.pi**2 * N_A
     denominator = 3 * 1000 * np.log(10) * (4 * np.pi * e_0) * hbar * c
@@ -199,14 +199,14 @@ def prefactor_ecd() -> float:
     assume it to be constant and equal to 1.
     """
 
-    N_A = qcel.constants.get("Avogadro constant")
-    c = qcel.constants.get("speed of light in vacuum")
-    hbar = qcel.constants.get("Planck constant over 2 pi")
-    e_0 = qcel.constants.get("electric constant")
+    N_A = constants.get("Avogadro constant")
+    c = constants.get("speed of light in vacuum")
+    hbar = constants.get("Planck constant over 2 pi")
+    e_0 = constants.get("electric constant")
 
-    au_to_Coulomb_centimeter = qcel.constants.get("elementary charge") * qcel.constants.get(
-        "Bohr radius") * qcel.constants.conversion_factor("m", "cm")
-    au_to_Joule_inverse_Tesla = 2.0 * qcel.constants.get("Bohr magneton") * qcel.constants.conversion_factor("m", "cm")
+    au_to_Coulomb_centimeter = constants.get("elementary charge") * constants.get(
+        "Bohr radius") * constants.conversion_factor("m", "cm")
+    au_to_Joule_inverse_Tesla = 2.0 * constants.get("Bohr magneton") * constants.conversion_factor("m", "cm")
     conversion = au_to_Coulomb_centimeter * au_to_Joule_inverse_Tesla
 
     numerator = 16.0 * np.pi**2 * N_A
@@ -322,14 +322,14 @@ def spectrum(*,
     if out_units not in valid_out_units:
         raise ValueError(f"Output units {out_units} not among recognized ({valid_out_units})")
 
-    c = qcel.constants.get("speed of light in vacuum")
-    c_nm = c * qcel.constants.conversion_factor("m", "nm")
-    hbar = qcel.constants.get("Planck constant over 2 pi")
-    h = qcel.constants.get("Planck constant")
-    Eh = qcel.constants.get("Hartree energy")
+    c = constants.get("speed of light in vacuum")
+    c_nm = c * constants.conversion_factor("m", "nm")
+    hbar = constants.get("Planck constant over 2 pi")
+    h = constants.get("Planck constant")
+    Eh = constants.get("Hartree energy")
     au_to_nm = 2.0 * np.pi * c_nm * hbar / Eh
-    au_to_THz = (Eh / h) * qcel.constants.conversion_factor("Hz", "THz")
-    au_to_eV = qcel.constants.get("Hartree energy in eV")
+    au_to_THz = (Eh / h) * constants.conversion_factor("Hz", "THz")
+    au_to_eV = constants.get("Hartree energy in eV")
 
     converters = {
         "au": lambda x: x,  # Angular frequency in atomic units
