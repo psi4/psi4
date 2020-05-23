@@ -68,7 +68,6 @@ reference_esps = [ 4.62483342e+01,  1.54804313e-01,  4.13685593e-02,  1.99074762
                    2.29358229e-03]
 
 # Comparison
-for i in range(0, len(points)):
-    psi4.compare_values(esps_1threads[i],esps_4threads[i],3,"Reference value for ESP calculation, 1 thread vs. 4 threads.")
-    psi4.compare_values(esps_1threads[i],reference_esps[i],3,"Reference value for ESP calculation, 1 thread vs. reference calculation.")
+psi4.compare_arrays(esps_1threads, esps_4threads, 3, "Reference value for ESP calculation, 1 thread vs. 4 threads.")
+psi4.compare_arrays(esps_1threads, reference_esps, 3, "Reference value for ESP calculation, 1 thread vs. reference calculation.")
 
