@@ -986,11 +986,11 @@ def hamiltonian_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_siz
             raise RuntimeError(msg)
 
         # Build H2^(1/2)
-        H2_ss_half = np.einsum("ik,k,jk->ij", H2_ss_vec, np.sqrt(H2_ss_val), H2_ss_vec)
+        H2_ss_half = np.einsum("ik,k,jk->ij", H2_ss_vec, np.sqrt(H2_ss_val), H2_ss_vec, optimize=True)
         _print_array("SS Transformed (A-B)^(1/2)", H2_ss_half, verbose)
 
         # Build Hermitian SS product (H2)^(1/2)(H1)(H2)^(1/2)
-        Hss = np.einsum('ij,jk,km->im', H2_ss_half, H1_ss, H2_ss_half)
+        Hss = np.einsum('ij,jk,km->im', H2_ss_half, H1_ss, H2_ss_half, optimize=True)
         _print_array("(H2)^(1/2)(H1)(H2)^(1/2)", Hss, verbose)
 
         #diagonalize Hss -> w^2, Tss
@@ -1018,9 +1018,9 @@ def hamiltonian_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_siz
         Lss = np.dot(H1_ss, Rss).dot(np.diag(1.0 / w))
 
         # Biorthonormalize R/L solution vectors
-        inners = np.einsum("ix,ix->x", Rss, Lss)
-        Rss = np.einsum("x,ix->ix", 1. / np.sqrt(inners), Rss)
-        Lss = np.einsum("x,ix->ix", 1. / np.sqrt(inners), Lss)
+        inners = np.einsum("ix,ix->x", Rss, Lss, optimize=True)
+        Rss = np.einsum("x,ix->ix", 1. / np.sqrt(inners), Rss, optimize=True)
+        Lss = np.einsum("x,ix->ix", 1. / np.sqrt(inners), Lss, optimize=True)
 
         # Save best R/L vectors and eigenvalues
         best_R = _best_vectors(engine, Rss[:, :nk], vecs)
