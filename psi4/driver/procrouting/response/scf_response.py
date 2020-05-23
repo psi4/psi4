@@ -344,7 +344,7 @@ def tdscf_excitations(wfn,
                       states: Union[int, List[int]],
                       triplets: str = "none",
                       tda: bool = False,
-                      r_tol: float = 1.0e-4,
+                      r_convergence: float = 1.0e-4,
                       maxiter: int = 60,
                       guess: str = "denominators",
                       verbose: int = 1):
@@ -380,7 +380,7 @@ def tdscf_excitations(wfn,
        random-phase approximation (RPA)?
        Default is ``False``: use RPA.
        Note that TDA is equivalent to CID for HF references.
-    r_tol : float, optional.
+    r_convergence : float, optional.
        The convergence threshold for the norm of the residual vector.
        Default: 1.0e-4
        Using a tighter convergence threshold here requires tighter SCF ground
@@ -413,9 +413,9 @@ def tdscf_excitations(wfn,
       - unresctricted: RPA or TDA, Hartre-Fock and LDA only
 
     Tighter convergence thresholds will require a larger iterative subspace.
-    The maximum size of the iterative subspace is calculated based on `r_tol`:
+    The maximum size of the iterative subspace is calculated based on `r_convergence`:
 
-       max_vecs_per_root = -np.log10(r_tol) * 25
+       max_vecs_per_root = -np.log10(r_convergence) * 25
 
     for the default converegence threshold this gives 100 trial vectors per root and a maximum subspace size
     of:
@@ -473,23 +473,28 @@ def tdscf_excitations(wfn,
 
     # tie maximum number of vectors per root to requested residual tolerance
     # This gives 100 vectors per root with default tolerance
-    max_vecs_per_root = int(-np.log10(r_tol) * 25)
+    max_vecs_per_root = int(-np.log10(r_convergence) * 25)
 
     # which problem
     ptype = 'rpa'
-    solve_function = lambda e, n, g: solvers.hamiltonian_solver(
-        engine=e, nroot=n, guess=g, r_tol=r_tol, max_ss_size=max_vecs_per_root * n, maxiter=maxiter, verbose=verbose)
+    solve_function = lambda e, n, g: solvers.hamiltonian_solver(engine=e,
+                                                                nroot=n,
+                                                                guess=g,
+                                                                r_convergence=r_convergence,
+                                                                max_ss_size=max_vecs_per_root * n,
+                                                                maxiter=maxiter,
+                                                                verbose=verbose)
     if tda:
         ptype = 'tda'
         solve_function = lambda e, n, g: solvers.davidson_solver(engine=e,
                                                                  nroot=n,
                                                                  guess=g,
-                                                                 r_tol=r_tol,
+                                                                 r_convergence=r_convergence,
                                                                  max_ss_size=max_vecs_per_root * n,
                                                                  maxiter=maxiter,
                                                                  verbose=verbose)
 
-    _print_tdscf_header(rtol=r_tol,
+    _print_tdscf_header(r_convergence=r_convergence,
                         states=[(count, label) for count, label in zip(states_per_irrep,
                                                                        wfn.molecule().irrep_labels())],
                         guess_type=guess,

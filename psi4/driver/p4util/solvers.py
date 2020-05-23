@@ -308,7 +308,7 @@ class DIIS:
         return out
 
 
-def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, r_tol, maxiter, verbose=1):
+def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, r_convergence, maxiter, verbose=1):
     """Print a message to the output file when the solver has processed all options and is ready to begin"""
     if verbose < 1:
         # no printing
@@ -323,7 +323,7 @@ def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, r_tol, max
 
     core.print_out("\n  ==> Options <==\n\n")
     core.print_out(f"    Maxiter                         = {maxiter:<5d}\n")
-    core.print_out(f"    Eigenvector tolerance           = {r_tol:11.5e}\n")
+    core.print_out(f"    Eigenvector tolerance           = {r_convergence:11.5e}\n")
     core.print_out(f"    Max number of expansion vectors = {max_ss_size:<5d}\n")
     core.print_out("\n")
     # show iteration info headings if not silent
@@ -568,6 +568,7 @@ class SolverEngine(ABC):
            The dot product  (X x Y)
         """
         pass
+
     # cython doesn't like static+ decorators https://github.com/cython/cython/issues/1434#issuecomment-608975116
     vector_dot = staticmethod(abstractmethod(vector_dot))
 
@@ -649,7 +650,7 @@ class SolverEngine(ABC):
         pass
 
 
-def davidson_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
+def davidson_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
     """Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
 
 
@@ -672,7 +673,7 @@ def davidson_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxi
        At least `nroot` initial expansion vectors
     nroot : int
         Number of roots desired
-    r_tol : float
+    r_convergence : float
         Convergence tolerance for residual vectors
     max_ss_size: int, optional.
        The maximum number of trial vectors in the iterative subspace that will
@@ -725,7 +726,7 @@ def davidson_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxi
     print_name = "DavidsonSolver"
     title_lines = ["Generalized Davidson Solver", "By Ruhee Dcunha"]
 
-    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_convergence, maxiter, verbose)
 
     vecs = guess
     stats = []
@@ -799,7 +800,7 @@ def davidson_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxi
             iter_info['res_norm'][k] = np.sqrt((engine.vector_dot(Rk, Rk)))
 
             # augment guess vector for non-converged roots
-            if (iter_info["res_norm"][k] > r_tol):
+            if (iter_info["res_norm"][k] > r_convergence):
                 iter_info['done'] = False
                 Qk = engine.precondition(Rk, lam_k)
                 new_vecs.append(Qk)
@@ -828,7 +829,7 @@ def davidson_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxi
     return {"eigvals": best_eigvals, "eigvecs": list(zip(best_eigvecs, best_eigvecs)), "stats": stats}
 
 
-def hamiltonian_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
+def hamiltonian_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
     """Finds the smallest eigenvalues and associated right and left hand
     eigenvectors of a large real Hamiltonian eigenvalue problem emulated
     through an engine.
@@ -868,7 +869,7 @@ def hamiltonian_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, m
        At least `nroot` initial expansion vectors
     nroot : int
         Number of roots desired
-    r_tol : float
+    r_convergence : float
         Convergence tolerance for residual vectors
     max_ss_size: int, optional.
        The maximum number of trial vectors in the iterative subspace that will
@@ -928,7 +929,7 @@ def hamiltonian_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, m
     print_name = "HamiltonianSolver"
     title_lines = ["Generalized Hamiltonian Solver", "By Andrew M. James"]
 
-    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_tol, maxiter, verbose)
+    _diag_print_heading(title_lines, print_name, max_ss_size, nroot, r_convergence, maxiter, verbose)
 
     vecs = guess
     best_L = []
@@ -1053,7 +1054,7 @@ def hamiltonian_solver(engine, guess, *, nroot, r_tol=1.0E-4, max_ss_size=100, m
             iter_info['val'][k] = w[k]
 
             # augment the guess space for non-converged roots
-            if (iter_info['res_norm'][k] > r_tol):
+            if (iter_info['res_norm'][k] > r_convergence):
                 iter_info['done'] = False
                 new_vecs.append(engine.precondition(WR_k, w[k]))
                 new_vecs.append(engine.precondition(WL_k, w[k]))
