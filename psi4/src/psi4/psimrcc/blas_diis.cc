@@ -117,8 +117,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
         // Do a DIIS step
         if (do_diis_extrapolation) {
             double** diis_B;
-            double* diis_A;
-            allocate1(double, diis_A, options_.get_int("DIIS_MAX_VECS") + 1);
+            std::vector<double> diis_A(options_.get_int("DIIS_MAX_VECS") + 1, 0);
             allocate2(double, diis_B, options_.get_int("DIIS_MAX_VECS") + 1, options_.get_int("DIIS_MAX_VECS") + 1);
             bool singularities_found = false;
             for (std::vector<std::pair<std::string, std::string> >::iterator it = diis_matrices.begin();
@@ -137,17 +136,15 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                     CCMatIrTmp Amps = get_MatIrTmp(it->first, h, none);
                     size_t block_sizepi = Amps->get_block_sizepi(h);
                     if (block_sizepi > 0) {
-                        double* i_matrix;
-                        double* j_matrix;
-                        allocate1(double, i_matrix, block_sizepi);
-                        allocate1(double, j_matrix, block_sizepi);
+                        std::vector<double> i_matrix(block_sizepi, 0);
+                        std::vector<double> j_matrix(block_sizepi, 0);
 
                         // Build the diis_B matrix
                         for (int i = 0; i < options_.get_int("DIIS_MAX_VECS"); i++) {
                             // Load vector i irrep h
                             char i_data_label[80];
                             sprintf(i_data_label, "%s_%s_%d_%d", (it->second).c_str(), "DIIS", h, i);
-                            _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, i_data_label, (char*)&(i_matrix[0]),
+                            _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, i_data_label, reinterpret_cast<char*>(i_matrix.data()),
                                                            block_sizepi * sizeof(double));
 
                             for (int j = i; j < options_.get_int("DIIS_MAX_VECS"); j++) {
@@ -155,31 +152,28 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                                 char j_data_label[80];
                                 sprintf(j_data_label, "%s_%s_%d_%d", (it->second).c_str(), "DIIS", h, j);
                                 _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, j_data_label,
-                                                               (char*)&(j_matrix[0]), block_sizepi * sizeof(double));
+                                                               reinterpret_cast<char*>(j_matrix.data()), block_sizepi * sizeof(double));
 
                                 int dx = 1;
-                                int lenght = block_sizepi;
+                                int length = block_sizepi;
                                 if (block_sizepi < static_cast<size_t>(std::numeric_limits<int>::max())) {
-                                    diis_B[i][j] += F_DDOT(&lenght, i_matrix, &dx, j_matrix, &dx);
+                                    diis_B[i][j] += F_DDOT(&length, i_matrix.data(), &dx, j_matrix.data(), &dx);
                                     diis_B[j][i] = diis_B[i][j];
                                 } else {
                                     throw PSIEXCEPTION("The numeric limits for int was reached for F_DDOT");
                                 }
                             }
                         }
-                        release1(i_matrix);
-                        release1(j_matrix);
                     }
                 }
 
                 // Solve B x = A
                 int matrix_size = options_.get_int("DIIS_MAX_VECS") + 1;
-                int* IPIV = new int[matrix_size];
+                std::vector<int> IPIV(matrix_size);
                 int nrhs = 1;
                 int info = 0;
-                F_DGESV(&matrix_size, &nrhs, &(diis_B[0][0]), &matrix_size, &(IPIV[0]), &(diis_A[0]), &matrix_size,
+                F_DGESV(&matrix_size, &nrhs, &(diis_B[0][0]), &matrix_size, IPIV.data(), diis_A.data(), &matrix_size,
                         &info);
-                delete[] IPIV;
 
                 // Update T = sum t(i) * A(i);
                 if (!info) {
@@ -213,7 +207,6 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
             }
             outfile->Printf("/E");
             if (singularities_found) outfile->Printf(" (singularities found)");
-            release1(diis_A);
             release2(diis_B);
         }
     }
