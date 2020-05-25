@@ -15,13 +15,14 @@ e_canonical   = -230.64152543331906
 # indices. Since there's no guarantee that the same functions get
 # picked every time, we need to allow for changes in the energy that
 # go to zero when the tolerance is tightened.
+# MKL 2020.1 can use alternate code path, necessitating relaxing the tolerance from 1.e-8 to 2.e-8, incl. canonical
 
 tol_4 = 3
 tol_5 = 4
 tol_6 = 5
-tol_7 = 2.e-8
-tol_8 = 2.e-8
-tol_9 = 2.e-8
+tol_7 = 8
+tol_8 = 8
+tol_9 = 8
 tol_10 = 8
 tol_11 = 8
 tol_can = 8
