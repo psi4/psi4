@@ -9,6 +9,10 @@ extraction:
       packages:
         - python3-pint
         - python3-numpy
+  javascript:
+    index:
+      filters:
+        - exclude: "tests/pytests/*.json"
 path_classifiers:
   library:
     - psi4/versioner.py
