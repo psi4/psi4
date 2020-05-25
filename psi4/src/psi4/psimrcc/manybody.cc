@@ -40,7 +40,6 @@
 #include <vector>
 
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 
 #include "algebra_interface.h"
@@ -54,7 +53,6 @@ namespace psi {
 
 namespace psimrcc {
 extern MOInfo* moinfo;
-extern MemoryManager* memory_manager;
 
 /**
  * Allocate the effective Hamiltonian matrices and eigenvectors
@@ -335,18 +333,15 @@ double CCManyBody::c_H_c(int ndets, double** H, std::vector<double>& c) {
 double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, std::vector<double>& right_eigenvector,
                                     std::vector<double>& left_eigenvector, bool initial) {
     double energy;
-    double** left;
-    double** right;
-    double** H;
 
     int lwork = 6 * ndets * ndets;
     std::vector<double> work(lwork, 0);
     std::vector<double> real(ndets, 0);
     std::vector<double> imaginary(ndets, 0);
 
-    allocate2(double, H, ndets, ndets);
-    allocate2(double, left, ndets, ndets);
-    allocate2(double, right, ndets, ndets);
+    auto H = block_matrix(ndets, ndets);
+    auto left = block_matrix(ndets, ndets);
+    auto right = block_matrix(ndets, ndets);
 
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) H[j][i] = Heff[i][j];
@@ -439,9 +434,9 @@ double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, std::vec
         left_eigenvector[m] = left_eigenvector[m] / lnorm;
     }
 
-    release2(H);
-    release2(left);
-    release2(right);
+    free_block(H);
+    free_block(left);
+    free_block(right);
     return (energy);
 }
 

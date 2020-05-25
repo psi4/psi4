@@ -53,8 +53,8 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
     auto* reindexing_array = new short[6];
     for (size_t i = 0; i < reindexing.size(); i++) reindexing_array[i] = to_integer(reindexing.substr(i, 1)) - 1;
 
-    CCIndex* A_left = A_Matrix->get_left();
-    CCIndex* A_right = A_Matrix->get_right();
+    auto A_left = A_Matrix->get_left();
+    auto A_right = A_Matrix->get_right();
     auto A_matrix = A_Matrix->get_matrix();
 
     int A_left_nelements = A_left->get_nelements();
@@ -64,14 +64,14 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
     Size_tVec& A_right_pairpi = A_right->get_pairpi();
     Size_tVec& A_left_first = A_left->get_first();
     Size_tVec& A_right_first = A_right->get_first();
-    short** A_left_tuples = A_left->get_tuples();
-    short** A_right_tuples = A_right->get_tuples();
+    auto A_left_tuples = A_left->get_tuples();
+    auto A_right_tuples = A_right->get_tuples();
     Size_tVec& T_left_first = T_left->get_first();
     Size_tVec& T_right_first = T_right->get_first();
     Size_tVec& T_left_pairpi = T_left->get_pairpi();
     Size_tVec& T_right_pairpi = T_right->get_pairpi();
-    short** T_left_tuples = T_left->get_tuples();
-    short** T_right_tuples = T_right->get_tuples();
+    auto T_left_tuples = T_left->get_tuples();
+    auto T_right_tuples = T_right->get_tuples();
 
     // Zero the target matrix (A) if the assignment operator requires it
 

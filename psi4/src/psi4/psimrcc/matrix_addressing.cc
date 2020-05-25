@@ -120,18 +120,18 @@ void CCMatrix::add_two_address_element(short p, short q, double value) {
 void CCMatrix::get_two_indices(short*& pq, int irrep, int i, int j) {
     // Returns the two indices of tuples i and j belonging to irrep
     if (left->get_nelements() == 2) {
-        short* left_tuple = left->get_tuple(i + left->get_first(irrep));
+        auto left_tuple = left->get_tuple(i + left->get_first(irrep));
         pq[0] = left_tuple[0];
         pq[1] = left_tuple[1];
     } else if (left->get_nelements() == 0) {
         // Case B
-        short* right_tuple = right->get_tuple(j + right->get_first(irrep));
+        auto right_tuple = right->get_tuple(j + right->get_first(irrep));
         pq[0] = right_tuple[0];
         pq[1] = right_tuple[1];
     } else if (left->get_nelements() == 1) {
         // Case C
-        short* left_tuple = left->get_tuple(i + left->get_first(irrep));
-        short* right_tuple = right->get_tuple(j + right->get_first(irrep));
+        auto left_tuple = left->get_tuple(i + left->get_first(irrep));
+        auto right_tuple = right->get_tuple(j + right->get_first(irrep));
         pq[0] = left_tuple[0];
         pq[1] = right_tuple[0];
     }
@@ -141,21 +141,21 @@ void CCMatrix::get_two_indices_pitzer(short*& pq, int irrep, int i, int j) {
     // Returns the two indices of tuples i and j belonging to irrep
     if (left->get_nelements() == 2) {
         vecvecint& left_tuple_to_pitzer = left->get_indices_to_pitzer();
-        short* left_tuple = left->get_tuple(i + left->get_first(irrep));
+        auto left_tuple = left->get_tuple(i + left->get_first(irrep));
         pq[0] = left_tuple_to_pitzer[0][left_tuple[0]];
         pq[1] = left_tuple_to_pitzer[1][left_tuple[1]];
     } else if (left->get_nelements() == 0) {
         // Case B
         vecvecint& right_tuple_to_pitzer = right->get_indices_to_pitzer();
-        short* right_tuple = right->get_tuple(j + right->get_first(irrep));
+        auto right_tuple = right->get_tuple(j + right->get_first(irrep));
         pq[0] = right_tuple_to_pitzer[0][right_tuple[0]];
         pq[1] = right_tuple_to_pitzer[1][right_tuple[1]];
     } else if (left->get_nelements() == 1) {
         // Case C
         vecvecint& left_tuple_to_pitzer = left->get_indices_to_pitzer();
         vecvecint& right_tuple_to_pitzer = right->get_indices_to_pitzer();
-        short* left_tuple = left->get_tuple(i + left->get_first(irrep));
-        short* right_tuple = right->get_tuple(j + right->get_first(irrep));
+        auto left_tuple = left->get_tuple(i + left->get_first(irrep));
+        auto right_tuple = right->get_tuple(j + right->get_first(irrep));
         pq[0] = left_tuple_to_pitzer[0][left_tuple[0]];
         pq[1] = right_tuple_to_pitzer[0][right_tuple[0]];
     }
@@ -219,8 +219,8 @@ void CCMatrix::add_four_address_element(short p, short q, short r, short s, doub
 }
 
 void CCMatrix::get_four_indices(short*& pqrs, int irrep, int i, int j) {
-    short* left_tuple = left->get_tuple(i + left->get_first(irrep));
-    short* right_tuple = right->get_tuple(j + right->get_first(irrep));
+    auto left_tuple = left->get_tuple(i + left->get_first(irrep));
+    auto right_tuple = right->get_tuple(j + right->get_first(irrep));
     // Returns the two indices of pairs i and j belonging to irrep
     if (left->get_nelements() == 1) {
         pqrs[0] = left_tuple[0];
@@ -241,8 +241,8 @@ void CCMatrix::get_four_indices(short*& pqrs, int irrep, int i, int j) {
 }
 
 void CCMatrix::get_four_indices_pitzer(short*& pqrs, int irrep, int i, int j) {
-    short* left_tuple = left->get_tuple(i + left->get_first(irrep));
-    short* right_tuple = right->get_tuple(j + right->get_first(irrep));
+    auto left_tuple = left->get_tuple(i + left->get_first(irrep));
+    auto right_tuple = right->get_tuple(j + right->get_first(irrep));
 
     vecvecint& left_tuple_to_pitzer = left->get_indices_to_pitzer();
     vecvecint& right_tuple_to_pitzer = right->get_indices_to_pitzer();

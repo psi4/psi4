@@ -180,9 +180,9 @@ void CCTransform::transform_tei_so_integrals() {
             int cols_D = moinfo->get_mopi(h_p);
 
             if (rows_A * cols_A * rows_B * cols_B * rows_D * cols_D > 0) {
-                allocate2(double, A, rows_A, cols_A);
-                allocate2(double, B, rows_B, cols_B);
-                allocate2(double, D, rows_D, cols_D);
+                A = block_matrix(rows_A, cols_A);
+                B = block_matrix(rows_B, cols_B);
+                D = block_matrix(rows_D, cols_D);
                 for (int rs = 0; rs < rsindx->get_pairpi(h_rs); rs++) {
                     zero_arr(&(A[0][0]), rows_A * cols_A);
                     zero_arr(&(B[0][0]), rows_B * cols_B);
@@ -237,15 +237,15 @@ void CCTransform::transform_tei_so_integrals() {
                         }
                     }
                 }
-                release2(A);
-                release2(B);
-                release2(D);
+                free_block(A);
+                free_block(B);
+                free_block(D);
             }
         }
     }
 
     // Second-half transform
-    outfile->Printf("\n\tCCTransform: beginning second-half integral trasform");
+    outfile->Printf("\n\tCCTransform: beginning second-half integral transform");
 
     for (int h_ij = 0; h_ij < nirreps; h_ij++) {
         for (int h_r = 0; h_r < nirreps; h_r++) {
@@ -260,9 +260,9 @@ void CCTransform::transform_tei_so_integrals() {
             int cols_D = moinfo->get_mopi(h_r);
 
             if (rows_A * cols_A * rows_B * cols_B * rows_D * cols_D > 0) {
-                allocate2(double, A, rows_A, cols_A);
-                allocate2(double, B, rows_B, cols_B);
-                allocate2(double, D, rows_D, cols_D);
+                A = block_matrix(rows_A, cols_A);
+                B = block_matrix(rows_B, cols_B);
+                D = block_matrix(rows_D, cols_D);
                 for (int ij = 0; ij < ijindx->get_pairpi(h_ij); ij++) {
                     zero_arr(&(A[0][0]), rows_A * cols_A);
                     zero_arr(&(B[0][0]), rows_B * cols_B);
@@ -316,9 +316,9 @@ void CCTransform::transform_tei_so_integrals() {
                         }
                     }
                 }
-                release2(A);
-                release2(B);
-                release2(D);
+                free_block(A);
+                free_block(B);
+                free_block(D);
             }
         }
     }
