@@ -55,7 +55,6 @@ CCIndex::CCIndex(std::string str)
       greater_than_or_equal(false),
       greater_than(false),
       ntuples(0),
-      tuples(nullptr),
       two_index_to_tuple_rel_index(nullptr),
       two_index_to_irrep(nullptr) {
     nirreps = moinfo->get_nirreps();
@@ -136,7 +135,6 @@ void CCIndex::init() {
 }
 
 void CCIndex::cleanup() {
-    if (tuples != 0) release2(tuples);
     if (two_index_to_tuple_rel_index != 0) release2(two_index_to_tuple_rel_index);
     if (two_index_to_irrep != 0) release2(two_index_to_irrep);
 }
@@ -155,8 +153,7 @@ void CCIndex::make_zero_index() {
         tuplespi.push_back(last[h] - first[h]);
     }
     // Allocate the memory for the tuples and store them
-    allocate2(short, tuples, 1, 1);
-    tuples[0][0] = 0;
+    tuples = std::vector<std::vector<short>> {{0}};
 }
 
 void CCIndex::make_one_index() {
@@ -187,7 +184,7 @@ void CCIndex::make_one_index() {
         tuplespi.push_back(last[h] - first[h]);
     }
 
-    allocate2(short, tuples, ntuples, 1);
+    tuples = std::vector<std::vector<short>>(ntuples, std::vector<short>(1));
     for (size_t n = 0; n < pairs.size(); ++n) tuples[n][0] = pairs[n][0];
 }
 
@@ -290,7 +287,7 @@ void CCIndex::make_two_index() {
     }
 
     // Allocate the memory for the tuples and store them
-    allocate2(short, tuples, ntuples, 2);
+    tuples = std::vector<std::vector<short>>(ntuples, std::vector<short>(2));
     for (size_t n = 0; n < pairs.size(); ++n) {
         tuples[n][0] = pairs[n][0];
         tuples[n][1] = pairs[n][1];
@@ -379,7 +376,7 @@ void CCIndex::make_three_index() {
     }
 
     // Allocate the memory for the tuples and store them
-    allocate2(short, tuples, ntuples, 3);
+    tuples = std::vector<std::vector<short>>(ntuples, std::vector<short>(3));
     for (size_t n = 0; n < pairs.size(); ++n) {
         tuples[n][0] = pairs[n][0];
         tuples[n][1] = pairs[n][1];
