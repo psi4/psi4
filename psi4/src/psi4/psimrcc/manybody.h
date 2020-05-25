@@ -115,18 +115,17 @@ class CCManyBody {
     TriplesCouplingType triples_coupling_type;
 
     void generate_triples_denominators();
-    void generate_d3_ijk(double***& d3, bool alpha_i, bool alpha_j, bool alpha_k);
-    void generate_d3_abc(double***& d3, bool alpha_a, bool alpha_b, bool alpha_c);
-    void deallocate_triples_denominators();
+    void generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_i, bool alpha_j, bool alpha_k);
+    void generate_d3_abc(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_a, bool alpha_b, bool alpha_c);
 
-    double*** d3_ooo;
-    double*** d3_ooO;
-    double*** d3_oOO;
-    double*** d3_OOO;
-    double*** d3_vvv;
-    double*** d3_vvV;
-    double*** d3_vVV;
-    double*** d3_VVV;
+    std::vector<std::vector<std::vector<double>>> d3_ooo;
+    std::vector<std::vector<std::vector<double>>> d3_ooO;
+    std::vector<std::vector<std::vector<double>>> d3_oOO;
+    std::vector<std::vector<std::vector<double>>> d3_OOO;
+    std::vector<std::vector<std::vector<double>>> d3_vvv;
+    std::vector<std::vector<std::vector<double>>> d3_vvV;
+    std::vector<std::vector<std::vector<double>>> d3_vVV;
+    std::vector<std::vector<std::vector<double>>> d3_VVV;
 };
 
 }  // namespace psimrcc

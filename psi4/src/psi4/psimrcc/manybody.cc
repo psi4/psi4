@@ -65,14 +65,13 @@ CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options& options) : ref_wfn_(
     zeroth_order_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
     right_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
     left_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
-    allocate2(double, Heff, moinfo->get_nrefs(), moinfo->get_nrefs());
-    allocate2(double, Heff_mrpt2, moinfo->get_nrefs(), moinfo->get_nrefs());
+    Heff = block_matrix(moinfo->get_nrefs(), moinfo->get_nrefs());
+    Heff_mrpt2 = block_matrix(moinfo->get_nrefs(), moinfo->get_nrefs());
 
     huge = 1.0e100;
     norm_amps = 0.0;
     delta_t1_amps = 0.0;
     delta_t2_amps = 0.0;
-    d3_ooo = d3_ooO = d3_oOO = d3_OOO = d3_vvv = d3_vvV = d3_vVV = d3_VVV = nullptr;
 }
 
 /**
@@ -80,10 +79,8 @@ CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options& options) : ref_wfn_(
  * @todo wrap the current operations in an cleanup() function
  */
 CCManyBody::~CCManyBody() {
-    release2(Heff);
-    release2(Heff_mrpt2);
-
-    if (triples_type > ccsd) deallocate_triples_denominators();
+    free_block(Heff);
+    free_block(Heff_mrpt2);
 }
 
 /**
@@ -109,29 +106,25 @@ void CCManyBody::generate_triples_denominators() {
     generate_d3_abc(d3_VVV, false, false, false);
 }
 
-void CCManyBody::generate_d3_ijk(double***& d3, bool alpha_i, bool alpha_j, bool alpha_k) {
-    allocate2(double*, d3, moinfo->get_nunique(), moinfo->get_nirreps());
+void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_i, bool alpha_j, bool alpha_k) {
+    d3 = std::vector<std::vector<std::vector<double>>>(moinfo->get_nunique(), std::vector<std::vector<double>>(moinfo->get_nirreps()));
     // Loop over references
     for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
         int reference = moinfo->get_ref_number(ref, UniqueRefs);
 
         // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-        std::vector<int> aocc = moinfo->get_aocc(reference, AllRefs);
-        std::vector<int> bocc = moinfo->get_bocc(reference, AllRefs);
+        auto aocc = moinfo->get_aocc(reference, AllRefs);
+        auto bocc = moinfo->get_bocc(reference, AllRefs);
 
         // Build the is_ arrays for reference ref
-        auto* is_aocc = new bool[moinfo->get_nocc()];
-        auto* is_bocc = new bool[moinfo->get_nocc()];
-        for (int i = 0; i < moinfo->get_nocc(); i++) {
-            is_aocc[i] = false;
-            is_bocc[i] = false;
-        }
+        std::vector<bool> is_aocc(moinfo->get_nocc(), false);
+        std::vector<bool> is_bocc(moinfo->get_nocc(), false);
         for (size_t i = 0; i < aocc.size(); i++) is_aocc[aocc[i]] = true;
         for (size_t i = 0; i < bocc.size(); i++) is_bocc[bocc[i]] = true;
 
         // Read the Fock matrices
-        CCMatTmp f_oo_Matrix = blas->get_MatTmp("fock[oo]", reference, none);
-        CCMatTmp f_OO_Matrix = blas->get_MatTmp("fock[OO]", reference, none);
+        auto f_oo_Matrix = blas->get_MatTmp("fock[oo]", reference, none);
+        auto f_OO_Matrix = blas->get_MatTmp("fock[OO]", reference, none);
 
         CCMatrix* f_ii_Matrix;
         CCMatrix* f_jj_Matrix;
@@ -152,12 +145,12 @@ void CCManyBody::generate_d3_ijk(double***& d3, bool alpha_i, bool alpha_j, bool
         else
             f_kk_Matrix = f_OO_Matrix.get_CCMatrix();
 
-        CCIndex* ooo_indexing = blas->get_index("[ooo]");
-        short** ooo_tuples = ooo_indexing->get_tuples();
+        auto ooo_indexing = blas->get_index("[ooo]");
+        auto ooo_tuples = ooo_indexing->get_tuples();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             size_t ooo_offset = ooo_indexing->get_first(h);
-            allocate1(double, d3[ref][h], ooo_indexing->get_pairpi(h));
+            d3[ref][h] = std::vector<double>(ooo_indexing->get_pairpi(h), 0);
             for (size_t ijk = 0; ijk < ooo_indexing->get_pairpi(h); ijk++) {
                 short i = ooo_tuples[ooo_offset + ijk][0];
                 short j = ooo_tuples[ooo_offset + ijk][1];
@@ -176,34 +169,28 @@ void CCManyBody::generate_d3_ijk(double***& d3, bool alpha_i, bool alpha_j, bool
                     d3[ref][h][ijk] = huge;
             }  // End loop over h,ijk
         }
-        delete[] is_aocc;
-        delete[] is_bocc;
     }
 }
 
-void CCManyBody::generate_d3_abc(double***& d3, bool alpha_a, bool alpha_b, bool alpha_c) {
-    allocate2(double*, d3, moinfo->get_nunique(), moinfo->get_nirreps());
+void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_a, bool alpha_b, bool alpha_c) {
+    d3 = std::vector<std::vector<std::vector<double>>>(moinfo->get_nunique(), std::vector<std::vector<double>>(moinfo->get_nirreps()));
     // Loop over references
     for (int ref = 0; ref < moinfo->get_nunique(); ref++) {
         int reference = moinfo->get_ref_number(ref, UniqueRefs);
 
         // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-        std::vector<int> avir = moinfo->get_avir(reference, AllRefs);
-        std::vector<int> bvir = moinfo->get_bvir(reference, AllRefs);
+        auto avir = moinfo->get_avir(reference, AllRefs);
+        auto bvir = moinfo->get_bvir(reference, AllRefs);
 
         // Build the is_ arrays for reference ref
-        auto* is_avir = new bool[moinfo->get_nvir()];
-        auto* is_bvir = new bool[moinfo->get_nvir()];
-        for (int i = 0; i < moinfo->get_nvir(); i++) {
-            is_avir[i] = false;
-            is_bvir[i] = false;
-        }
+        std::vector<bool> is_avir(moinfo->get_nvir(), false);
+        std::vector<bool> is_bvir(moinfo->get_nvir(), false);
         for (size_t i = 0; i < avir.size(); i++) is_avir[avir[i]] = true;
         for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
         // Read the Fock matrices
-        CCMatTmp f_vv_Matrix = blas->get_MatTmp("fock[vv]", reference, none);
-        CCMatTmp f_VV_Matrix = blas->get_MatTmp("fock[VV]", reference, none);
+        auto f_vv_Matrix = blas->get_MatTmp("fock[vv]", reference, none);
+        auto f_VV_Matrix = blas->get_MatTmp("fock[VV]", reference, none);
 
         CCMatrix* f_aa_Matrix;
         CCMatrix* f_bb_Matrix;
@@ -224,12 +211,12 @@ void CCManyBody::generate_d3_abc(double***& d3, bool alpha_a, bool alpha_b, bool
         else
             f_cc_Matrix = f_VV_Matrix.get_CCMatrix();
 
-        CCIndex* vvv_indexing = blas->get_index("[vvv]");
-        short** vvv_tuples = vvv_indexing->get_tuples();
+        auto vvv_indexing = blas->get_index("[vvv]");
+        auto vvv_tuples = vvv_indexing->get_tuples();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             size_t vvv_offset = vvv_indexing->get_first(h);
-            allocate1(double, d3[ref][h], vvv_indexing->get_pairpi(h));
+            d3[ref][h] = std::vector<double>(vvv_indexing->get_pairpi(h), 0);
             for (size_t abc = 0; abc < vvv_indexing->get_pairpi(h); abc++) {
                 short a = vvv_tuples[vvv_offset + abc][0];
                 short b = vvv_tuples[vvv_offset + abc][1];
@@ -248,33 +235,7 @@ void CCManyBody::generate_d3_abc(double***& d3, bool alpha_a, bool alpha_b, bool
                     d3[ref][h][abc] = -huge;
             }  // End lvvp over h,ijk
         }
-        delete[] is_avir;
-        delete[] is_bvir;
     }
-}
-
-void CCManyBody::deallocate_triples_denominators() {
-    for (int ref = 0; ref < moinfo->get_nunique(); ref++)
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
-            release1(d3_ooo[ref][h]);
-            release1(d3_ooO[ref][h]);
-            release1(d3_oOO[ref][h]);
-            release1(d3_OOO[ref][h]);
-
-            release1(d3_vvv[ref][h]);
-            release1(d3_vvV[ref][h]);
-            release1(d3_vVV[ref][h]);
-            release1(d3_VVV[ref][h]);
-        }
-
-    release2(d3_ooo);
-    release2(d3_ooO);
-    release2(d3_oOO);
-    release2(d3_OOO);
-    release2(d3_vvv);
-    release2(d3_vvV);
-    release2(d3_vVV);
-    release2(d3_VVV);
 }
 
 /**
@@ -288,14 +249,14 @@ void CCManyBody::compute_reference_energy() {
         int unique_n = moinfo->get_ref_number(n, UniqueRefs);
         double ref_energy = moinfo->get_nuclear_energy() + moinfo->get_fzcore_energy();
         // Grab reference n and the list of occupied orbitals
-        std::vector<int> aocc = moinfo->get_aocc(n, UniqueRefs);
-        std::vector<int> bocc = moinfo->get_bocc(n, UniqueRefs);
+        auto aocc = moinfo->get_aocc(n, UniqueRefs);
+        auto bocc = moinfo->get_bocc(n, UniqueRefs);
 
         // Read these matrices
-        CCMatTmp f_oo_Matrix = blas->get_MatTmp("fock[o][o]", unique_n, none);
-        CCMatTmp f_OO_Matrix = blas->get_MatTmp("fock[O][O]", unique_n, none);
-        CCMatTmp V_oooo_Matrix = blas->get_MatTmp("<[oo]:[oo]>", none);
-        CCMatTmp V_oOoO_Matrix = blas->get_MatTmp("<[oo]|[oo]>", none);
+        auto f_oo_Matrix = blas->get_MatTmp("fock[o][o]", unique_n, none);
+        auto f_OO_Matrix = blas->get_MatTmp("fock[O][O]", unique_n, none);
+        auto V_oooo_Matrix = blas->get_MatTmp("<[oo]:[oo]>", none);
+        auto V_oOoO_Matrix = blas->get_MatTmp("<[oo]|[oo]>", none);
 
         for (size_t i = 0; i < aocc.size(); i++) ref_energy += f_oo_Matrix->get_two_address_element(aocc[i], aocc[i]);
         for (size_t i = 0; i < bocc.size(); i++) ref_energy += f_OO_Matrix->get_two_address_element(bocc[i], bocc[i]);
@@ -310,7 +271,7 @@ void CCManyBody::compute_reference_energy() {
             for (size_t j = 0; j < bocc.size(); j++)
                 ref_energy -= V_oOoO_Matrix->get_four_address_element(aocc[i], bocc[j], aocc[i], bocc[j]);
         // Write the energy to the ERef
-        CCMatTmp ERef_Matrix = blas->get_MatTmp("ERef", unique_n, none);
+        auto ERef_Matrix = blas->get_MatTmp("ERef", unique_n, none);
         ERef_Matrix->set_scalar(ref_energy);
     }
 }

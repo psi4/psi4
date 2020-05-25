@@ -37,7 +37,6 @@ PRAGMA_WARNING_POP
 #include "psi4/psifiles.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
@@ -50,7 +49,6 @@ namespace psi {
 
 namespace psimrcc {
 extern MOInfo* moinfo;
-extern MemoryManager* memory_manager;
 
 std::vector<std::pair<std::string, std::string> > diis_matrices;
 const double diis_singular_tollerance = 1.0e-12;
@@ -116,9 +114,8 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
 
         // Do a DIIS step
         if (do_diis_extrapolation) {
-            double** diis_B;
             std::vector<double> diis_A(options_.get_int("DIIS_MAX_VECS") + 1, 0);
-            allocate2(double, diis_B, options_.get_int("DIIS_MAX_VECS") + 1, options_.get_int("DIIS_MAX_VECS") + 1);
+            auto diis_B = block_matrix(options_.get_int("DIIS_MAX_VECS") + 1, options_.get_int("DIIS_MAX_VECS") + 1);
             bool singularities_found = false;
             for (std::vector<std::pair<std::string, std::string> >::iterator it = diis_matrices.begin();
                  it != diis_matrices.end(); ++it) {
@@ -182,23 +179,18 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                         size_t block_sizepi = Amps->get_block_sizepi(h);
                         if (block_sizepi > 0) {
                             // Update the amplitudes
-                            double* i_matrix;
-                            double* j_matrix;
-                            allocate1(double, i_matrix, block_sizepi);
-                            allocate1(double, j_matrix, block_sizepi);
+                            std::vector<double> i_matrix(block_sizepi, 0);
                             double* t_matrix = &(Amps->get_matrix()[h][0][0]);
                             Amps->zero_matrix_block(h);
                             for (int i = 0; i < options_.get_int("DIIS_MAX_VECS"); i++) {
                                 char i_data_label[80];
                                 sprintf(i_data_label, "%s_%s_%d_%d", (it->first).c_str(), "DIIS", h, i);
                                 _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, i_data_label,
-                                                               (char*)&(i_matrix[0]), block_sizepi * sizeof(double));
+                                                               reinterpret_cast<char*>(i_matrix.data()), block_sizepi * sizeof(double));
                                 for (size_t n = 0; n < block_sizepi; n++) {
                                     t_matrix[n] += diis_A[i] * i_matrix[n];
                                 }
                             }
-                            release1(i_matrix);
-                            release1(j_matrix);
                         }
                     }
                 } else {
@@ -207,7 +199,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
             }
             outfile->Printf("/E");
             if (singularities_found) outfile->Printf(" (singularities found)");
-            release2(diis_B);
+            free_block(diis_B);
         }
     }
 }

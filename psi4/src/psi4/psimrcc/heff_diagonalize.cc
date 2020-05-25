@@ -28,8 +28,8 @@
 
 #include <cmath>
 #include <cstdio>
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/memory_manager.h"
 
 #include "algebra_interface.h"
 #include "heff.h"
@@ -41,24 +41,20 @@
 namespace psi {
 
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right);
 
 double Hamiltonian::diagonalize(int root) {
     double energy;
-    double** left;
-    double** right;
-    double** H;
 
     int lwork = 6 * ndets * ndets;
     std::vector<double> work(lwork, 0);
     std::vector<double> real(lwork, 0);
     std::vector<double> imaginary(lwork, 0);
 
-    allocate2(double, H, ndets, ndets);
-    allocate2(double, left, ndets, ndets);
-    allocate2(double, right, ndets, ndets);
+    auto H = block_matrix(ndets, ndets);
+    auto left = block_matrix(ndets, ndets);
+    auto right = block_matrix(ndets, ndets);
 
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) H[j][i] = matrix[i][j];
@@ -157,9 +153,9 @@ double Hamiltonian::diagonalize(int root) {
         left_eigenvector[m] = left_eigenvector[m] / lnorm;
     }
 
-    release2(H);
-    release2(left);
-    release2(right);
+    free_block(H);
+    free_block(left);
+    free_block(right);
     return (energy);
 }
 

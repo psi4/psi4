@@ -388,9 +388,9 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
             auto* pqrstu = new short[6];
             // A[xxx][xxx] <- T[xxx][xxx]
             if ((A_left_nelements == 3) && (T_left_nelements == 3)) {
-                int*** T_left_three_index_to_irrep = T_left->get_three_index_to_irrep();
-                size_t*** T_left_three_index_to_tuple = T_left->get_three_index_to_tuple_rel_index();
-                size_t*** T_right_three_index_to_tuple = T_right->get_three_index_to_tuple_rel_index();
+                auto T_left_three_index_to_irrep = T_left->get_three_index_to_irrep();
+                auto T_left_three_index_to_tuple = T_left->get_three_index_to_tuple_rel_index();
+                auto T_right_three_index_to_tuple = T_right->get_three_index_to_tuple_rel_index();
                 for (int n = 0; n < moinfo->get_nirreps(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Get the pqr indices

@@ -57,9 +57,7 @@ CCIndex::CCIndex(std::string str)
       ntuples(0),
       tuples(nullptr),
       two_index_to_tuple_rel_index(nullptr),
-      three_index_to_tuple_rel_index(nullptr),
-      two_index_to_irrep(nullptr),
-      three_index_to_irrep(nullptr) {
+      two_index_to_irrep(nullptr) {
     nirreps = moinfo->get_nirreps();
     init();
 }
@@ -141,8 +139,6 @@ void CCIndex::cleanup() {
     if (tuples != 0) release2(tuples);
     if (two_index_to_tuple_rel_index != 0) release2(two_index_to_tuple_rel_index);
     if (two_index_to_irrep != 0) release2(two_index_to_irrep);
-    if (three_index_to_tuple_rel_index != 0) release3(three_index_to_tuple_rel_index);
-    if (three_index_to_irrep != 0) release3(three_index_to_irrep);
 }
 
 void CCIndex::make_zero_index() {
@@ -311,16 +307,8 @@ void CCIndex::make_three_index() {
     std::vector<std::vector<short> > pairs;  // The pairs ordered as a vector
 
     // Allocate the 3->tuple mapping array and set them to -1
-    allocate3(size_t, three_index_to_tuple_rel_index, dimension[0], dimension[1], dimension[2]);
-    allocate3(int, three_index_to_irrep, dimension[0], dimension[1], dimension[2]);
-    for (size_t i = 0; i < dimension[0]; ++i) {
-        for (size_t j = 0; j < dimension[1]; ++j) {
-            for (size_t k = 0; k < dimension[2]; ++k) {
-                three_index_to_tuple_rel_index[i][j][k] = 0;
-                three_index_to_irrep[i][j][k] = -1;
-            }
-        }
-    }
+    three_index_to_tuple_rel_index = std::vector<std::vector<std::vector<size_t>>>(dimension[0], std::vector<std::vector<size_t>>(dimension[1], std::vector<size_t>(dimension[2], 0)));
+    three_index_to_irrep = std::vector<std::vector<std::vector<int>>>(dimension[0], std::vector<std::vector<int>>(dimension[1], std::vector<int>(dimension[2], -1)));
 
     if (label[2] == '>' && label[4] == '>') {
         ntuples = 0;

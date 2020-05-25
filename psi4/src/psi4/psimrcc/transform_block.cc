@@ -95,12 +95,8 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
         static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory()) * fraction_of_memory_for_presorting);
 
     int last_irrep = first_irrep;
-
-    if (tei_mo == nullptr) {
-        // Allocate the tei_mo matrix blocks
-        allocate1(double *, tei_mo, moinfo->get_nirreps());
-        for (int h = 0; h < moinfo->get_nirreps(); ++h) tei_mo[h] = nullptr;
-    }
+    
+    tei_mo = std::vector<std::vector<double>>(moinfo->get_nirreps());
 
     // Find how many irreps we can store in 95% of the free memory
     std::vector<size_t> pairpi = tei_mo_indexing->get_pairpi();
@@ -109,8 +105,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
         if (required_memory != 0) {
             if (required_memory < available_transform_memory) {
                 available_transform_memory -= required_memory;
-                allocate1(double, tei_mo[h], INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1)
-                    zero_arr(tei_mo[h], INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1);
+                tei_mo[h] = std::vector<double>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1, 0);
                 last_irrep++;
             }
         } else {
@@ -126,21 +121,6 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
     first_irrep_in_core = first_irrep;
     last_irrep_in_core = last_irrep;
     return (last_irrep);
-}
-
-/**
- * Free the blocks included in the first_irrep->last_irrep range
- */
-void CCTransform::free_tei_mo_integrals_block(int first_irrep, int last_irrep) {
-    for (int h = first_irrep; h < last_irrep; ++h) {
-        if (tei_mo[h] != nullptr) {
-            release1(tei_mo[h]);
-        }
-    }
-    if (last_irrep >= moinfo->get_nirreps()) {
-        release1(tei_mo);
-        tei_mo = nullptr;
-    }
 }
 
 double CCTransform::tei_block(int p, int q, int r, int s) {
