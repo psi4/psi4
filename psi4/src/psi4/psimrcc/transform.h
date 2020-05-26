@@ -64,7 +64,7 @@ class CCTransform {
     double** oei_mo;
     double** oei_so;
     std::vector<std::vector<double>> tei_so;
-    double*** tei_half_transformed;
+    std::vector<std::vector<std::vector<double>>> tei_half_transformed;
     std::vector<std::vector<double>> tei_mo;
     CCIndex* oei_so_indexing;
     CCIndex* tei_so_indexing;
@@ -91,8 +91,6 @@ class CCTransform {
     void allocate_tei_so();
     void allocate_tei_mo();
     void allocate_tei_half_transformed();
-
-    void free_tei_half_transformed();
 
     // Block
     int first_irrep_in_core;
