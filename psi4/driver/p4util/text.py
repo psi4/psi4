@@ -256,7 +256,7 @@ def message_box(message: str = None, max_width: int = 80, min_width: int = 30):
 
     fmt = "! {:" + str(box_width) + "} !\n"
     for line in msg[:]:
-        error_str.extend([fmt.format(x) for x in wrap(line, box_width)])
+        error_str.extend([fmt.format(x) for x in wrap(line, box_width, subsequent_indent="    ")])
 
     error_str.append('!' + ' ' * box_width + '  !\n')
     error_str.append('!' + '-' * box_width + '--!\n')

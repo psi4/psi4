@@ -88,20 +88,25 @@ double DFCoupledCluster::compute_energy() {
     tstop();
 
     // mp2 energy
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
-    Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
+    set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
+    set_scalar_variable("MP2 TOTAL ENERGY", emp2 + escf);
+    set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
+    set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
+    set_scalar_variable("MP2 SINGLES ENERGY", 0.0);  // fnocc is RHF only
+    set_scalar_variable("MP2 DOUBLES ENERGY", emp2_os + emp2_ss);
 
     // ccsd energy
-    Process::environment.globals["CCSD CORRELATION ENERGY"] = eccsd;
-    Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
-    Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = eccsd_ss;
-    Process::environment.globals["CCSD TOTAL ENERGY"] = eccsd + escf;
-    Process::environment.globals["CCSD ITERATIONS"] = iter;
-    Process::environment.globals["CURRENT ENERGY"] = eccsd + escf;
+    set_scalar_variable("CCSD CORRELATION ENERGY", eccsd);
+    set_scalar_variable("CCSD OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
+    set_scalar_variable("CCSD SAME-SPIN CORRELATION ENERGY", eccsd_ss);
+    set_scalar_variable("CCSD SINGLES ENERGY", 0.0);  // fnocc is RHF only
+    set_scalar_variable("CCSD DOUBLES ENERGY", eccsd_os + eccsd_ss);
+    set_scalar_variable("CCSD TOTAL ENERGY", eccsd + escf);
+    set_scalar_variable("CCSD ITERATIONS", iter);
+    set_scalar_variable("CURRENT CORRELATION ENERGY", eccsd);
+    set_scalar_variable("CURRENT ENERGY", eccsd + escf);
     /* updates the wavefunction for checkpointing */
-    energy_ = Process::environment.globals["CCSD TOTAL ENERGY"];
+    set_energy(eccsd + escf);
     name_ = "DF-CCSD";
 
     if (options_.get_bool("COMPUTE_TRIPLES")) {
@@ -233,10 +238,11 @@ double DFCoupledCluster::compute_energy() {
         }
 
         // ccsd(t) energy
-        Process::environment.globals["(T) CORRECTION ENERGY"] = et;
-        Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = eccsd + et;
-        Process::environment.globals["CCSD(T) TOTAL ENERGY"] = eccsd + et + escf;
-        Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
+        set_scalar_variable("(T) CORRECTION ENERGY", et);
+        set_scalar_variable("CCSD(T) CORRELATION ENERGY", eccsd + et);
+        set_scalar_variable("CCSD(T) TOTAL ENERGY", eccsd + et + escf);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", eccsd + et);
+        set_scalar_variable("CURRENT ENERGY", eccsd + et + escf);
     } else {
         free(Qoo);
         free(Qov);
@@ -251,7 +257,7 @@ double DFCoupledCluster::compute_energy() {
         free(tb);
     }
 
-    return Process::environment.globals["CURRENT ENERGY"];
+    return scalar_variable("CURRENT ENERGY");
 }
 
 void DFCoupledCluster::WriteBanner() {
@@ -411,8 +417,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     double t1diag = C_DNRM2(o * v, t1, 1) / sqrt(2.0 * o);
     outfile->Printf("        T1 diagnostic:                  %20.12lf\n", t1diag);
 
-    // add T1 diagnostic to globals
-    Process::environment.globals["CC T1 DIAGNOSTIC"] = t1diag;
+    // add T1 diagnostic to qcvars
+    set_scalar_variable("CC T1 DIAGNOSTIC", t1diag);
 
     auto T = std::make_shared<Matrix>(o, o);
     auto eigvec = std::make_shared<Matrix>(o, o);
@@ -431,14 +437,14 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     outfile->Printf("        D1 diagnostic:                  %20.12lf\n", sqrt(eigval->pointer()[0]));
     outfile->Printf("\n");
 
-    // add D1 diagnostic to globals
-    Process::environment.globals["CC D1 DIAGNOSTIC"] = sqrt(eigval->pointer()[0]);
+    // add D1 diagnostic to qcvars
+    set_scalar_variable("CC D1 DIAGNOSTIC", sqrt(eigval->pointer()[0]));
 
     // delta mp2 correction for fno computations:
     if (options_.get_bool("NAT_ORBS")) {
-        double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
-        double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
-        double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
+        double delta_emp2 = scalar_variable("MP2 CORRELATION ENERGY") - emp2;
+        double delta_emp2_os = scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY") - emp2_os;
+        double delta_emp2_ss = scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY") - emp2_ss;
 
         emp2 += delta_emp2;
         emp2_os += delta_emp2_os;

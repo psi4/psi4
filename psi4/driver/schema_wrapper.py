@@ -38,6 +38,8 @@ import sys
 import traceback
 import uuid
 import warnings
+import pprint
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 import numpy as np
 import qcelemental as qcel
@@ -106,8 +108,8 @@ _qcschema_translation = {
     "mp2": {
         "mp2_same_spin_correlation_energy": {"variables": "MP2 SAME-SPIN CORRELATION ENERGY"},
         "mp2_opposite_spin_correlation_energy": {"variables": "MP2 OPPOSITE-SPIN CORRELATION ENERGY"},
-        "mp2_singles_energy": {"variables": "NYI", "default": 0.0},
-        "mp2_doubles_energy": {"variables": "MP2 CORRELATION ENERGY"},
+        "mp2_singles_energy": {"variables": "MP2 SINGLES ENERGY"},
+        "mp2_doubles_energy": {"variables": "MP2 DOUBLES ENERGY"},
         "mp2_correlation_energy": {"variables": "MP2 CORRELATION ENERGY"},
         "mp2_total_energy": {"variables": "MP2 TOTAL ENERGY"},
         "mp2_dipole_moment": {"variables": "NYI"}
@@ -116,8 +118,8 @@ _qcschema_translation = {
     "ccsd": {
         "ccsd_same_spin_correlation_energy": {"variables": "CCSD SAME-SPIN CORRELATION ENERGY"},
         "ccsd_opposite_spin_correlation_energy": {"variables": "CCSD OPPOSITE-SPIN CORRELATION ENERGY"},
-        "ccsd_singles_energy": {"variables": "NYI", "default": 0.0},
-        "ccsd_doubles_energy": {"variables": "CCSD CORRELATION ENERGY"},
+        "ccsd_singles_energy": {"variables": "CCSD SINGLES ENERGY"},
+        "ccsd_doubles_energy": {"variables": "CCSD DOUBLES ENERGY"},
         "ccsd_correlation_energy": {"variables": "CCSD CORRELATION ENERGY"},
         "ccsd_total_energy": {"variables": "CCSD TOTAL ENERGY"},
         "ccsd_dipole_moment": {"variables": "NYI"},
@@ -130,6 +132,7 @@ _qcschema_translation = {
         "ccsd_prt_pr_dipole_moment": {"variables": "NYI"},
     }
 
+#        "ccsd_singles_energy": {"variables": "NYI", "default": 0.0},
 #    "": {"variables": },
 
 } # yapf: disable
@@ -380,10 +383,17 @@ def run_qcschema(input_data, clean=True):
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
     print_header()
+
     start_time = datetime.datetime.now()
 
     try:
         input_model = qcng.util.model_wrapper(input_data, qcel.models.AtomicInput)
+
+        # Echo the infile on the outfile
+        core.print_out("\n  ==> Input QCSchema <==\n")
+        core.print_out("\n--------------------------------------------------------------------------\n")
+        core.print_out(pp.pformat(json.loads(input_model.json())))
+        core.print_out("\n--------------------------------------------------------------------------\n")
 
         keep_wfn = input_model.protocols.wavefunction != 'none'
 
@@ -553,7 +563,19 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     # Still a bit of a mess at the moment add in local vars as well.
     for k, v in wfn.variables().items():
         if k not in json_data["extras"]["qcvars"]:
-            json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
+            # interpreting wfn_qcvars_only as no deprecated qcvars either
+            if not (json_data["extras"].get("wfn_qcvars_only", False) and (
+                any([k.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]])
+                or any([k.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]])
+                or k.upper()
+                in [
+                    "SOS-MP2 CORRELATION ENERGY",
+                    "SOS-MP2 TOTAL ENERGY",
+                    "SOS-PI-MP2 CORRELATION ENERGY",
+                    "SOS-PI-MP2 TOTAL ENERGY",
+                ]
+            )):
+                json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
     # Handle the return result
     if json_data["driver"] == "energy":

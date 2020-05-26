@@ -744,8 +744,14 @@ def gradient(name, **kwargs):
         grad_psi_matrix = core.Matrix.from_array(G)
         grad_psi_matrix.print_out()
         wfn.set_gradient(grad_psi_matrix)
+        core.set_variable('CURRENT GRADIENT', grad_psi_matrix)
 
         # Explicitly set the current energy..
+        if isinstance(lowername, str) and lowername in procedures['energy']:
+            # this correctly filters out cbs fn and "hf/cc-pvtz"
+            # it probably incorrectly filters out mp5, but reconsider in DDD
+            core.set_variable(f"{lowername.upper()} TOTAL GRADIENT", grad_psi_matrix)
+            wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", grad_psi_matrix)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 

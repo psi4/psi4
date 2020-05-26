@@ -112,7 +112,7 @@ void OCCWave::mp2_postprocessing(bool include_singles) {
     variables_["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"] = os_scale * Emp2AB + ss_scale * (Emp2AA + Emp2BB) + Emp2_t1;
     variables_["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
-    variables_["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+    variables_["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     variables_["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
     variables_["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
@@ -120,12 +120,14 @@ void OCCWave::mp2_postprocessing(bool include_singles) {
     variables_["SCS-MP2 TOTAL ENERGY"] = Escf + variables_["SCS-MP2 CORRELATION ENERGY"];
     variables_["CUSTOM SCS-MP2 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-MP2 CORRELATION ENERGY"];
     variables_["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
-    variables_["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+    variables_["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
     variables_["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
     variables_["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
     variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
+    variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
 }
 
 void OCCWave::mp3_postprocessing() {

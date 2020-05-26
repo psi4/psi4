@@ -125,15 +125,13 @@ def check_disk_df(name, optstash):
     optstash.add_option(['SCF_TYPE'])
 
     # Alter default algorithm
-    if not core.has_global_option_changed('SCF_TYPE'):
+    if not core.has_global_option_changed('SCF_TYPE') or core.get_global_option('SCF_TYPE') == "DF":
         core.set_global_option('SCF_TYPE', 'DISK_DF')
-        core.print_out("""    Method '%s' requires SCF_TYPE = DISK_DF, setting.\n""" % name)
-    elif core.get_global_option('SCF_TYPE') == "DF":
-        core.set_global_option('SCF_TYPE', 'DISK_DF')
-        core.print_out("""    Method '%s' requires SCF_TYPE = DISK_DF, setting.\n""" % name)
+        core.print_out(f"""    For method '{name}', SCF Algorithm Type (re)set to DISK_DF.\n""")
     else:
-        if core.get_global_option('SCF_TYPE') != "DISK_DF":
-            raise ValidationError("  %s requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation." % name)
+        if core.get_global_option('SCF_TYPE') == "MEM_DF":
+            raise ValidationError(f"    Method '{name}' requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation.")
+
 
 def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     """

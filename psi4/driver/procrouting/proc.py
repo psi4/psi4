@@ -123,6 +123,10 @@ def select_mp2(name, **kwargs):
             if module in ['', 'DFMP2']:
                 func = run_dfmp2
 
+    if module == 'DETCI':
+        core.print_out("""\nDETCI is ill-advised for method MP2 as it is available inefficiently as a """
+                       """byproduct of a CISD computation.\n  DETCI ROHF MP2 will produce non-standard results.\n""")
+
     if func is None:
         raise ManagedMethodError(['select_mp2', name, 'MP2_TYPE', mtd_type, reference, module])
 
@@ -140,28 +144,31 @@ def select_mp2_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP2_TYPE')
     module = core.get_global_option('QC_MODULE')
+    all_electron = core.get_global_option('FREEZE_CORE') == "FALSE"
     # Considering only [df]occ/dfmp2
 
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module == 'OCC':
-                func = run_dfocc_gradient
-            elif module in ['', 'DFMP2']:
-                func = run_dfmp2_gradient
+                if module == 'OCC':
+                    func = run_dfocc_gradient
+                elif module in ['', 'DFMP2']:
+                    func = run_dfmp2_gradient
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                func = run_dfocc_gradient
+                if module in ['', 'OCC']:
+                    func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -1246,7 +1253,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
     scf_molecule = kwargs.get('molecule', core.get_active_molecule())
-    read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
+    read_orbitals = core.get_option('SCF', 'GUESS') == "READ"
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
     if ref_wfn is not None:
@@ -1677,12 +1684,12 @@ def run_dfocc(name, **kwargs):
         ['DFOCC', 'CC_LAMBDA'])
 
     def set_cholesky_from(mtd_type):
-        type_val = core.get_global_option(mtd_type)
-        if type_val in ['DISK_DF', 'DF']:
+        corl_type = core.get_global_option(mtd_type)
+        if corl_type == 'DF':
             core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
             proc_util.check_disk_df(name.upper(), optstash)
 
-        elif type_val == 'CD':
+        elif corl_type == 'CD':
             core.set_local_option('DFOCC', 'CHOLESKY', 'TRUE')
             # Alter default algorithm
             if not core.has_global_option_changed('SCF_TYPE'):
@@ -1692,37 +1699,36 @@ def run_dfocc(name, **kwargs):
             if core.get_global_option('SCF_TYPE') != 'CD':
                 core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
         else:
-            raise ValidationError("""Invalid type '%s' for DFOCC""" % type_val)
+            raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
 
-        return type_val
-
+        return corl_type
 
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-        type_val = set_cholesky_from('MP2_TYPE')
+        set_cholesky_from('MP2_TYPE')
     elif name in ['mp2.5', 'omp2.5']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        type_val = set_cholesky_from('MP_TYPE')
+        set_cholesky_from('MP_TYPE')
     elif name in ['mp3', 'omp3']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        type_val = set_cholesky_from('MP_TYPE')
+        set_cholesky_from('MP_TYPE')
     elif name in ['lccd', 'olccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
 
     elif name == 'ccd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'ccsd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(t)':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'ccsd(at)':
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
-        type_val = set_cholesky_from('CC_TYPE')
+        set_cholesky_from('CC_TYPE')
     elif name == 'dfocc':
         pass
     else:
@@ -1792,6 +1798,9 @@ def run_dfocc_gradient(name, **kwargs):
 
     proc_util.check_disk_df(name.upper(), optstash)
 
+    if core.get_global_option('SCF_TYPE') != 'DISK_DF':
+        raise ValidationError('DFOCC gradients need DF-SCF reference.')
+
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
     elif name in ['mp2.5', 'omp2.5']:
@@ -1846,9 +1855,10 @@ def run_dfocc_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
+    dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2']:
+    if name in ['mp2', 'omp2', 'ccsd']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
 
@@ -2128,6 +2138,9 @@ def run_occ_gradient(name, **kwargs):
         ['OCC', 'DO_SOS'],
         ['GLOBALS', 'DERTYPE'])
 
+    if core.get_global_option('SCF_TYPE') in ['CD', 'DF', 'MEM_DF', 'DISK_DF']:
+        raise ValidationError('OCC gradients need conventional SCF reference.')
+
     if name == 'mp2':
         core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
@@ -2182,6 +2195,7 @@ def run_occ_gradient(name, **kwargs):
     grad = derivobj.compute()
 
     occ_wfn.set_gradient(grad)
+    occ_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", grad)
 
     # Shove variables into global space
     keep_custom_spin_scaling = core.has_option_changed("OCC", "SS_SCALE") or core.has_option_changed("OCC", "OS_SCALE")
@@ -2454,6 +2468,7 @@ def run_dfmp2_gradient(name, **kwargs):
     dfmp2_wfn.set_gradient(grad)
 
     # Shove variables into global space
+    dfmp2_wfn.set_variable('MP2 TOTAL GRADIENT', grad)
     dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('MP2 TOTAL ENERGY'))
     dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY'))
     for k, v in dfmp2_wfn.variables().items():
@@ -2615,6 +2630,9 @@ def run_ccenergy_gradient(name, **kwargs):
     del derivobj
 
     ccwfn.set_gradient(grad)
+    ccwfn.set_variable(f"{name.upper()} TOTAL GRADIENT", grad)
+    core.set_variable(f"{name.upper()} TOTAL GRADIENT", grad)
+    core.set_variable("CURRENT GRADIENT", grad)
 
     optstash.restore()
     return ccwfn
@@ -4431,7 +4449,7 @@ def run_fnodfcc(name, **kwargs):
 
     # throw an exception for open-shells
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
+        raise ValidationError(f"""Error: {name} requires 'reference rhf'.""")
 
     def set_cholesky_from(mtd_type):
         type_val = core.get_global_option(mtd_type)
@@ -4501,6 +4519,10 @@ def run_fnodfcc(name, **kwargs):
         ref_wfn.set_basisset('BASIS_RELATIVISTIC',rel_bas)
 
     fnocc_wfn = core.fnocc(ref_wfn)
+
+    # Shove variables into global space
+    for k, v in fnocc_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return fnocc_wfn
@@ -4591,7 +4613,7 @@ def run_fnocc(name, **kwargs):
 
     # throw an exception for open-shells
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
+        raise ValidationError(f"""Error: {name} requires 'reference rhf'.""")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -4619,36 +4641,19 @@ def run_fnocc(name, **kwargs):
     fnocc_wfn = core.fnocc(ref_wfn)
 
     # set current correlation energy and total energy.  only need to treat mpn here.
-    if name == 'mp3':
-        emp3 = core.variable("MP3 TOTAL ENERGY")
-        cemp3 = core.variable("MP3 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp3)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
-    elif name == 'fno-mp3':
-        emp3 = core.variable("MP3 TOTAL ENERGY")
-        cemp3 = core.variable("MP3 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp3)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp3)
-    elif name == 'mp4(sdq)':
-        emp4sdq = core.variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = core.variable("MP4(SDQ) CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4sdq)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
-    elif name == 'fno-mp4(sdq)':
-        emp4sdq = core.variable("MP4(SDQ) TOTAL ENERGY")
-        cemp4sdq = core.variable("MP4(SDQ) CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4sdq)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4sdq)
-    elif name == 'fno-mp4':
-        emp4 = core.variable("MP4 TOTAL ENERGY")
-        cemp4 = core.variable("MP4 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
-    elif name == 'mp4':
-        emp4 = core.variable("MP4 TOTAL ENERGY")
-        cemp4 = core.variable("MP4 CORRELATION ENERGY")
-        core.set_variable("CURRENT ENERGY", emp4)
-        core.set_variable("CURRENT CORRELATION ENERGY", cemp4)
+    if name in ["mp3", "fno-mp3"]:
+        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP3 TOTAL ENERGY"))
+        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP3 CORRELATION ENERGY"))
+    elif name in ["mp4(sdq)", "fno-mp4(sdq)"]:
+        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP4(SDQ) TOTAL ENERGY"))
+        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP4(SDQ) CORRELATION ENERGY"))
+    elif name in ["mp4", "fno-mp4"]:
+        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP4 TOTAL ENERGY"))
+        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP4 CORRELATION ENERGY"))
+
+    # Shove variables into global space
+    for k, v in fnocc_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return fnocc_wfn
@@ -4730,6 +4735,10 @@ def run_cepa(name, **kwargs):
             core.print_out("""\n    Error: one-electron properties not implemented for %s\n\n""" % name)
         else:
             p4util.oeprop(fnocc_wfn, 'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'NO_OCCUPATIONS', title=cepa_level.upper())
+
+    # Shove variables into global space
+    for k, v in fnocc_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return fnocc_wfn

@@ -209,11 +209,12 @@ void OCCWave::mp2_energy(bool include_singles) {
 
     Ecorr = Emp2AA + Emp2AB + Emp2BB + Emp2_t1;
     Emp2 = Eref + Ecorr;
-    // TODO: Double-check whether SCSMP2 is defined to include T1 terms. Grimme's paper is ambiguous.
+    // Grimme states that T1 not considered for SCSMP2. We'll take advantage of that ambiguity
+    //  to _include_ T1 for consistency with SCSCCSD definition.
     Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB + Emp2_t1;
     Esosmp2 = Eref + Esosmp2AB;
-    Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
-    Escsmp2vdw = Eref + Escsmp2vdwAA + Escsmp2vdwAB + Escsmp2vdwBB;
+    Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB + Emp2_t1;
+    Escsmp2vdw = Eref + Escsmp2vdwAA + Escsmp2vdwAB + Escsmp2vdwBB + Emp2_t1;
     Esospimp2 = Eref + Esospimp2AB;
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
