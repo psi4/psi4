@@ -91,7 +91,7 @@ COPYING.LESSER file of this repository, and can also be found
 [here](https://www.gnu.org/licenses/lgpl.txt).
 
 
-Citation [![doi](https://img.shields.io/badge/doi-10.1021/acs.jctc.7b00174-5077AB.svg)](https://doi.org/10.1021/acs.jctc.7b00174)
+Citation [![doi](https://img.shields.io/badge/doi-10.1063/5.0006002-5077AB.svg)](https://doi.org/10.1063/5.0006002)
 ========
 
 The journal article reference describing Psi4 is:
@@ -105,14 +105,9 @@ B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
 K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
 F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
 "Psi4 1.4: Open-Source Software for High-Throughput Quantum Chemistry",
-J. Chem. Phys. (2020).
+J. Chem. Phys. 152(18) 184108 (2020).
 
-R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-"Psi4 1.1: An Open-Source Electronic Structure Program
-Emphasizing Automation, Advanced Libraries, and Interoperability",
-J. Chem. Theory Comput. 13(7) 3185&ndash;3197 (2017).
+* [![doi](https://img.shields.io/badge/doi-10.1021/acs.jctc.7b00174-5077AB.svg)](https://doi.org/10.1021/acs.jctc.7b00174) for Psi4 1.1
+* [![doi](https://img.shields.io/badge/doi-10.1021/acs.jctc.8b00286-5077AB.svg)](https://doi.org/10.1021/acs.jctc.8b00286) for Psi4NumPy
+* [![doi](https://img.shields.io/badge/doi-10.1002/wcms.93-5077AB.svg)](https://doi.org/10.1002/wcms.93) for Psi4 alpha releases
+* [![doi](https://img.shields.io/badge/doi-10.1002/jcc.20573-5077AB.svg)](https://doi.org/10.1002/jcc.20573) for Psi3
