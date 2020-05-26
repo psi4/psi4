@@ -143,7 +143,6 @@ class CCBLAS {
     CCMatrix* get_Matrix(const char* cstr);
     CCMatrix* get_Matrix(const char* cstr, int reference);
     CCMatrix* get_Matrix(std::string& str, std::string& expression);  // Prints a clear error message
-    double* get_work(int n) { return (work[n]); }
     //   double***  get_sortmap(CCIndex* T_left,CCIndex* T_right,int thread);
 
     void allocate_matrices_in_core();
@@ -170,10 +169,8 @@ class CCBLAS {
     void allocate_work();
     void allocate_buffer();
     void free_sortmap();
-    void free_work();
     void free_indices();
     void free_matrices();
-    void free_buffer();
 };
 
 extern CCBLAS* blas;

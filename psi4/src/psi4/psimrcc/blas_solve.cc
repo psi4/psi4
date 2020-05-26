@@ -224,7 +224,7 @@ void CCBLAS::append_zero_two_diagonal(const char* cstr) {
     std::vector<std::string> names = moinfo->get_matrix_names(str);
     for (int n = 0; n < names.size(); n++) {
         CCMatrix* Matrix = get_Matrix(names[n]);
-        CCOperation op(0.0, "", "", "zero_two_diagonal", Matrix, nullptr, nullptr, work[0], buffer[0]);
+        CCOperation op(0.0, "", "", "zero_two_diagonal", Matrix, nullptr, nullptr, work[0].data(), buffer[0].data());
         operations.push_back(op);
     }
 }
