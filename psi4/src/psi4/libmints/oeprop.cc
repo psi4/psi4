@@ -1080,7 +1080,6 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
 
     bool convert = mol->units() == Molecule::Angstrom;
 
-#pragma omp parallel for
     for (int i = 0; i < number_of_grid_points; ++i) {
         Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
         if (convert) origin /= pc_bohr2angstroms;
