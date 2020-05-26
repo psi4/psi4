@@ -333,7 +333,7 @@ void MRCCSD_T::startup() {
     V_oOvV = blas->get_MatTmp("<[oo]|[vv]>", none)->get_matrix();
 
     // Allocate Z, this will hold the results
-    allocate2(BlockMatrix**, Z, nrefs, nirreps);
+    Z = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
     for (int mu = 0; mu < nrefs; ++mu) {
         for (int h = 0; h < nirreps; ++h) {
             Z[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
@@ -342,16 +342,16 @@ void MRCCSD_T::startup() {
 
     // Allocate W
     if ((triples_algorithm == UnrestrictedTriples) || (triples_algorithm == RestrictedTriples)) {
-        allocate2(BlockMatrix**, W, nrefs, nirreps);
+        W = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
                 W[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
             }
         }
     } else if (triples_algorithm == SpinAdaptedTriples) {
-        allocate2(BlockMatrix**, W_ijk, nrefs, nirreps);
-        allocate2(BlockMatrix**, W_ikj, nrefs, nirreps);
-        allocate2(BlockMatrix**, W_jki, nrefs, nirreps);
+        W_ijk = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
+        W_ikj = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
+        W_jki = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
                 W_ijk[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
@@ -362,7 +362,7 @@ void MRCCSD_T::startup() {
     }
 
     // Allocate T
-    allocate2(BlockMatrix**, T, nrefs, nirreps);
+    T = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
     for (int mu = 0; mu < nrefs; ++mu) {
         for (int h = 0; h < nirreps; ++h) {
             T[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
@@ -645,7 +645,6 @@ void MRCCSD_T::cleanup() {
             delete Z[mu][h];
         }
     }
-    release2(Z);
 
     // Deallocate W
     if ((triples_algorithm == UnrestrictedTriples) || (triples_algorithm == RestrictedTriples)) {
@@ -654,7 +653,6 @@ void MRCCSD_T::cleanup() {
                 delete W[mu][h];
             }
         }
-        release2(W);
     } else if (triples_algorithm == SpinAdaptedTriples) {
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
@@ -663,9 +661,6 @@ void MRCCSD_T::cleanup() {
                 delete W_jki[mu][h];
             }
         }
-        release2(W_ijk);
-        release2(W_ikj);
-        release2(W_jki);
     }
 
     // Deallocate T
@@ -674,7 +669,6 @@ void MRCCSD_T::cleanup() {
             delete T[mu][h];
         }
     }
-    release2(T);
 }
 
 }  // namespace psimrcc

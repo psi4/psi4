@@ -189,12 +189,12 @@ class MRCCSD_T {
     CCIndex* ovv;
     CCIndex* ooo;
 
-    BlockMatrix*** Z;
-    BlockMatrix*** W;
-    BlockMatrix*** W_ijk;
-    BlockMatrix*** W_ikj;
-    BlockMatrix*** W_jki;
-    BlockMatrix*** T;
+    std::vector<std::vector<BlockMatrix*>> Z;
+    std::vector<std::vector<BlockMatrix*>> W;
+    std::vector<std::vector<BlockMatrix*>> W_ijk;
+    std::vector<std::vector<BlockMatrix*>> W_ikj;
+    std::vector<std::vector<BlockMatrix*>> W_jki;
+    std::vector<std::vector<BlockMatrix*>> T;
 
     IndexMatrix* T2_ij_a_b;
     IndexMatrix* T2_iJ_a_B;
