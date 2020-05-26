@@ -83,9 +83,11 @@ class CCIndexIterator {
     int current_block;
 
     // Properties of the tuples
+    // These come from the Index object. Which should outlast the iterator, and which should
+    // not be changing these values as logn as this iterator is alive.
     int nelements;
     std::vector<std::vector<int>> element_irrep;
-    std::vector<std::vector<short>> tuples;
+    const std::vector<std::vector<short>>& tuples;
     std::vector<size_t> block_last;
     std::vector<int> block_symmetry;
 };

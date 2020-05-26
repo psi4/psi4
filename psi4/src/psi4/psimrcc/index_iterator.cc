@@ -36,25 +36,25 @@ namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;
 
-CCIndexIterator::CCIndexIterator(std::string str) {
+CCIndexIterator::CCIndexIterator(std::string str) : tuples(blas->get_index(str)->get_tuples()) {
     nirreps = moinfo->get_nirreps();
     ccindex = blas->get_index(str);
     startup(0, nirreps);
 }
 
-CCIndexIterator::CCIndexIterator(CCIndex* index_) {
+CCIndexIterator::CCIndexIterator(CCIndex* index_) : tuples(index_->get_tuples()) {
     nirreps = moinfo->get_nirreps();
     ccindex = index_;
     startup(0, nirreps);
 }
 
-CCIndexIterator::CCIndexIterator(std::string str, int select_irrep) {
+CCIndexIterator::CCIndexIterator(std::string str, int select_irrep) : tuples(blas->get_index(str)->get_tuples()) {
     nirreps = moinfo->get_nirreps();
     ccindex = blas->get_index(str);
     startup(select_irrep, select_irrep + 1);
 }
 
-CCIndexIterator::CCIndexIterator(CCIndex* index_, int select_irrep) {
+CCIndexIterator::CCIndexIterator(CCIndex* index_, int select_irrep) : tuples(index_->get_tuples()) {
     nirreps = moinfo->get_nirreps();
     ccindex = index_;
     startup(select_irrep, select_irrep + 1);
@@ -64,7 +64,6 @@ CCIndexIterator::~CCIndexIterator() {}
 
 void CCIndexIterator::startup(int min_sym, int max_sym) {
     nelements = ccindex->get_nelements();
-    tuples = ccindex->get_tuples();
     element_irrep = ccindex->get_element_irrep();
     min_abs = ccindex->get_first(min_sym);
     max_abs = ccindex->get_last(max_sym - 1);
