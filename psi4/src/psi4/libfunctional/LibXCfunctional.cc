@@ -90,6 +90,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     }
 
     // Extract variables
+#if XC_MAJOR_VERSION < 6
     if (xc_functional_->info->family == XC_FAMILY_HYB_GGA || xc_functional_->info->family == XC_FAMILY_HYB_MGGA
 #ifdef XC_FAMILY_HYB_LDA
         || xc_functional_->info->family == XC_FAMILY_HYB_LDA
@@ -142,22 +143,77 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
             global_exch_ = alpha + beta;
             lr_exch_ = -1.0 * beta;
         }
-
         if (!lrc_) {
             // Global hybrid
             global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
         }
     }
+#else
+    switch (xc_hyb_type(xc_functional_.get())) {
+        case (XC_HYB_SEMILOCAL):
+            lrc_ = false;
+            global_exch_ = 0.0;
+            lr_exch_ = 0.0;
+            break;
+
+        case (XC_HYB_HYBRID):
+            lrc_ = false;
+            global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
+            lr_exch_ = 0.0;
+            break;
+
+        case (XC_HYB_CAM):
+            lrc_ = true;
+            double alpha, beta;
+            xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
+            /*
+              The values alpha and beta have a different meaning in
+              psi4 and libxc.
+
+              In libxc, alpha is the contribution from full exact
+              exchange (at all ranges), and beta is the contribution
+              from short-range only exchange, yielding alpha exact
+              exchange at the long range and alpha+beta in the short
+              range in total.
+
+              In Psi4, alpha is the amount of exchange at all ranges,
+              while beta is the difference between the amount of
+              exchange in the long range and in the short range,
+              meaning alpha+beta at the long range, and alpha only at
+              the short range.
+
+              These differences amount to the transform
+
+              SR      = LibXC_ALPHA + LibXC_BETA = Psi4_ALPHA
+              LR      = LibXC_ALPHA              = Psi4_ALPHA + Psi4_BETA
+              LR - SR =             - LibXC_BETA =              Psi4_BETA
+            */
+
+            global_exch_ = alpha + beta;
+            lr_exch_ = -1.0 * beta;
+            break;
+
+        default:
+            outfile->Printf("Functional '%s' is a type of functional which is not supported in Psi4\n",
+                            xc_name.c_str());
+            throw PSIEXCEPTION("Not all types of functionals are supported in Psi4 at present");
+    }
+#endif
 
     // Figure out the family
     int family = xc_functional_->info->family;
 
+#if XC_MAJOR_VERSION < 6
     std::vector<int> gga_vec = {XC_FAMILY_GGA, XC_FAMILY_HYB_GGA};
+    std::vector<int> meta_vec = {XC_FAMILY_MGGA, XC_FAMILY_HYB_MGGA};
+#else
+    std::vector<int> gga_vec = {XC_FAMILY_GGA};
+    std::vector<int> meta_vec = {XC_FAMILY_MGGA};
+#endif
     if (std::find(gga_vec.begin(), gga_vec.end(), family) != gga_vec.end()) {
         gga_ = true;
     }
 
-    std::vector<int> meta_vec = {XC_FAMILY_MGGA, XC_FAMILY_HYB_MGGA};
     if (std::find(meta_vec.begin(), meta_vec.end(), family) != meta_vec.end()) {
         gga_ = true;
         meta_ = true;
@@ -178,7 +234,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         xc_nlc_coef(xc_functional_.get(), &vv10_b_, &vv10_c_);
         needs_vv10_ = true;
     }
-}
+}  // namespace psi
 LibXCFunctional::~LibXCFunctional() { xc_func_end(xc_functional_.get()); }
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     // Build functional
@@ -260,48 +316,6 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
     }
 
     return params;
-}
-void LibXCFunctional::set_tweak(std::vector<double> values, bool quiet) {
-    size_t vsize = values.size();
-    int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
-    if (npars == 0) {
-        throw PSIEXCEPTION(
-            "LibXCfunctional: set_tweak: There are no known tweaks for this functional, please double check "
-            "the functional form and add them if required.");
-    } else if (npars != vsize) {
-        std::ostringstream oss;
-        oss << "got " << vsize << ", expected " << npars;
-        throw PSIEXCEPTION(
-            "LibXCfunctional: set_tweak: Mismatch in size of tweaker vector and expected number of "
-            "input parameters:" +
-            oss.str() + "\n");
-    }
-
-    std::vector<double> tweakers_list = values;
-    std::map<std::string, double> tweakers_dict;
-    std::string allowed_keys_join;
-
-    for (int par = 0; par < npars; par++) {
-        std::string key = xc_func_info_get_ext_params_name(const_cast<xc_func_info_type*>(xc_functional_->info), par);
-        allowed_keys_join += key;
-        if (par + 1 != npars) allowed_keys_join += ", ";
-        double default_value =
-            xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
-        if (!quiet)
-            outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par + 1,
-                            npars, key.c_str(), tweakers_list[par], default_value);
-        tweakers_dict.insert(std::pair<std::string, double>(key, tweakers_list[par]));
-    }
-
-    outfile->Printf(
-        "Using `LibXCFunctional.set_tweak(std::vector<double>)` instead of "
-        "`LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and as soon as 1.5 it will stop "
-        "working. "
-        "Allowed keys are: %s\n",
-        allowed_keys_join.c_str());
-
-    xc_func_set_ext_params(xc_functional_.get(), tweakers_list.data());
-    user_tweakers_ = tweakers_dict;
 }
 void LibXCFunctional::set_tweak(std::map<std::string, double> values, bool quiet) {
     int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
