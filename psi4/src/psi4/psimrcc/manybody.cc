@@ -144,7 +144,7 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
             f_kk_Matrix = f_OO_Matrix.get_CCMatrix();
 
         auto ooo_indexing = blas->get_index("[ooo]");
-        auto ooo_tuples = ooo_indexing->get_tuples();
+        auto& ooo_tuples = ooo_indexing->get_tuples();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             size_t ooo_offset = ooo_indexing->get_first(h);
@@ -210,7 +210,7 @@ void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& 
             f_cc_Matrix = f_VV_Matrix.get_CCMatrix();
 
         auto vvv_indexing = blas->get_index("[vvv]");
-        auto vvv_tuples = vvv_indexing->get_tuples();
+        auto& vvv_tuples = vvv_indexing->get_tuples();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             size_t vvv_offset = vvv_indexing->get_first(h);

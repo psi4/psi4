@@ -171,8 +171,8 @@ void CCMRCC::update_t3_iJKaBC_amps() {
         auto HiJKaBCMatTmp = blas->get_MatTmp("t3_eqns[oOO][vVV]", unique_ref, none);
 
         // Grab the indexing for t3[ijk][abc]
-        auto left_tuples = TiJKaBCMatTmp->get_left()->get_tuples();
-        auto right_tuples = TiJKaBCMatTmp->get_right()->get_tuples();
+        auto& left_tuples = TiJKaBCMatTmp->get_left()->get_tuples();
+        auto& right_tuples = TiJKaBCMatTmp->get_right()->get_tuples();
 
         auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
         auto HiJKaBC_matrix = HiJKaBCMatTmp->get_matrix();
@@ -202,8 +202,8 @@ void CCMRCC::update_t3_IJKABC_amps() {
         auto HIJKABCMatTmp = blas->get_MatTmp("t3_eqns[OOO][VVV]", unique_ref, none);
 
         // Grab the indexing for t3[ijk][abc]
-        auto left_tuples = TIJKABCMatTmp->get_left()->get_tuples();
-        auto right_tuples = TIJKABCMatTmp->get_right()->get_tuples();
+        auto& left_tuples = TIJKABCMatTmp->get_left()->get_tuples();
+        auto& right_tuples = TIJKABCMatTmp->get_right()->get_tuples();
 
         auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();
         auto HIJKABC_matrix = HIJKABCMatTmp->get_matrix();

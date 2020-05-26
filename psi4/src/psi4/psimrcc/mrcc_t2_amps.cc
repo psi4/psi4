@@ -321,8 +321,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
         auto jkc_indexing = blas->get_index("[oov]");
         auto j_indexing = blas->get_index("[o]");
 
-        auto iab_tuples = iab_indexing->get_tuples();
-        auto jkc_tuples = jkc_indexing->get_tuples();
+        auto& iab_tuples = iab_indexing->get_tuples();
+        auto& jkc_tuples = jkc_indexing->get_tuples();
 
         // PART A: Sort T[ijk][abc]->T[iab][jkc]
         std::vector<double **> T_iabjkc(moinfo->get_nirreps(), nullptr);
@@ -462,16 +462,16 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
         auto j_indexing = blas->get_index("[o]");
         auto i_indexing = blas->get_index("[o]");
 
-        auto iab_tuples = iab_indexing->get_tuples();
-        auto jab_tuples = jab_indexing->get_tuples();
-        auto iac_tuples = iac_indexing->get_tuples();
-        auto kab_tuples = kab_indexing->get_tuples();
-        auto kac_tuples = kac_indexing->get_tuples();
+        auto& iab_tuples = iab_indexing->get_tuples();
+        auto& jab_tuples = jab_indexing->get_tuples();
+        auto& iac_tuples = iac_indexing->get_tuples();
+        auto& kab_tuples = kab_indexing->get_tuples();
+        auto& kac_tuples = kac_indexing->get_tuples();
 
-        auto kjb_tuples = kjb_indexing->get_tuples();
-        auto kjc_tuples = kjc_indexing->get_tuples();
-        auto ijc_tuples = ijc_indexing->get_tuples();
-        auto ijb_tuples = ijb_indexing->get_tuples();
+        auto& kjb_tuples = kjb_indexing->get_tuples();
+        auto& kjc_tuples = kjc_indexing->get_tuples();
+        auto& ijc_tuples = ijc_indexing->get_tuples();
+        auto& ijb_tuples = ijb_indexing->get_tuples();
 
         std::vector<double **> T_iackjb(moinfo->get_nirreps(), nullptr);
         std::vector<double **> H_iabj(moinfo->get_nirreps());
@@ -677,10 +677,10 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram1() {
         auto jkc_indexing = blas->get_index("[oov]");
         auto j_indexing = blas->get_index("[o]");
 
-        auto iab_tuples = iab_indexing->get_tuples();
-        auto kbc_tuples = kbc_indexing->get_tuples();
-        auto jia_tuples = jia_indexing->get_tuples();
-        auto jkc_tuples = jkc_indexing->get_tuples();
+        auto& iab_tuples = iab_indexing->get_tuples();
+        auto& kbc_tuples = kbc_indexing->get_tuples();
+        auto& jia_tuples = jia_indexing->get_tuples();
+        auto& jkc_tuples = jkc_indexing->get_tuples();
 
         std::vector<double**> T_iabjkc(moinfo->get_nirreps(), nullptr);
         std::vector<double**> H_iabj(moinfo->get_nirreps(), nullptr);
@@ -807,8 +807,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram2() {
         auto oov_indexing = blas->get_index("[oov]");
         auto v_indexing = blas->get_index("[v]");
 
-        auto ovv_tuples = ovv_indexing->get_tuples();
-        auto oov_tuples = oov_indexing->get_tuples();
+        auto& ovv_tuples = ovv_indexing->get_tuples();
+        auto& oov_tuples = oov_indexing->get_tuples();
 
         std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
         std::vector<double**> H_ijab(moinfo->get_nirreps(), nullptr);
@@ -935,8 +935,8 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram2() {
         auto oov_indexing = blas->get_index("[oov]");
         auto v_indexing = blas->get_index("[v]");
 
-        auto ovv_tuples = ovv_indexing->get_tuples();
-        auto oov_tuples = oov_indexing->get_tuples();
+        auto& ovv_tuples = ovv_indexing->get_tuples();
+        auto& oov_tuples = oov_indexing->get_tuples();
 
         std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
         std::vector<double**> H_ijab(moinfo->get_nirreps(), nullptr);
@@ -1125,8 +1125,8 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram2() {
         auto oov_indexing = blas->get_index("[oov]");
         auto v_indexing = blas->get_index("[v]");
 
-        auto ovv_tuples = ovv_indexing->get_tuples();
-        auto oov_tuples = oov_indexing->get_tuples();
+        auto& ovv_tuples = ovv_indexing->get_tuples();
+        auto& oov_tuples = oov_indexing->get_tuples();
 
         std::vector<double**> T_oovovv(moinfo->get_nirreps(), nullptr);
         std::vector<double**> H_ijab(moinfo->get_nirreps());
@@ -1238,10 +1238,10 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram3() {
         auto FMEMatTmp = blas->get_MatTmp("F2_ME[O][V]", unique_ref, none);
 
         // Grab the indexing for t3[ijk][abc]
-        auto ij_tuples = HijabMatTmp->get_left()->get_tuples();
-        auto ab_tuples = HijabMatTmp->get_right()->get_tuples();
-        auto m_tuples = FmeMatTmp->get_left()->get_tuples();
-        auto e_tuples = FmeMatTmp->get_right()->get_tuples();
+        auto& ij_tuples = HijabMatTmp->get_left()->get_tuples();
+        auto& ab_tuples = HijabMatTmp->get_right()->get_tuples();
+        auto& m_tuples = FmeMatTmp->get_left()->get_tuples();
+        auto& e_tuples = FmeMatTmp->get_right()->get_tuples();
 
         auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
         auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
@@ -1301,10 +1301,10 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram3() {
         auto FMEMatTmp = blas->get_MatTmp("F2_ME[O][V]", unique_ref, none);
 
         // Grab the indexing for t3[ijk][abc]
-        auto ij_tuples = HiJaBMatTmp->get_left()->get_tuples();
-        auto ab_tuples = HiJaBMatTmp->get_right()->get_tuples();
-        auto m_tuples = FmeMatTmp->get_left()->get_tuples();
-        auto e_tuples = FmeMatTmp->get_right()->get_tuples();
+        auto& ij_tuples = HiJaBMatTmp->get_left()->get_tuples();
+        auto& ab_tuples = HiJaBMatTmp->get_right()->get_tuples();
+        auto& m_tuples = FmeMatTmp->get_left()->get_tuples();
+        auto& e_tuples = FmeMatTmp->get_right()->get_tuples();
 
         auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
         auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
@@ -1367,10 +1367,10 @@ void CCMRCC::build_t2_IJAB_amplitudes_triples_diagram3() {
         auto FMEMatTmp = blas->get_MatTmp("F2_ME[O][V]", unique_ref, none);
 
         // Grab the indexing for t3[ijk][abc]
-        auto ij_tuples = HIJABMatTmp->get_left()->get_tuples();
-        auto ab_tuples = HIJABMatTmp->get_right()->get_tuples();
-        auto m_tuples = FmeMatTmp->get_left()->get_tuples();
-        auto e_tuples = FmeMatTmp->get_right()->get_tuples();
+        auto& ij_tuples = HIJABMatTmp->get_left()->get_tuples();
+        auto& ab_tuples = HIJABMatTmp->get_right()->get_tuples();
+        auto& m_tuples = FmeMatTmp->get_left()->get_tuples();
+        auto& e_tuples = FmeMatTmp->get_right()->get_tuples();
 
         auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();
         auto TIJKABC_matrix = TIJKABCMatTmp->get_matrix();

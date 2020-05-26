@@ -134,10 +134,8 @@ void CCMRCC::build_t1_ia_amplitudes_triples() {
         CCMatTmp ImNeFMatTmp = blas->get_MatTmp("<[oo]|[vv]>", none);
 
         // Grab the indexing for t3[ijk][abc]
-        auto i_tuples = HiaMatTmp->get_left()->get_tuples();
-        auto a_tuples = HiaMatTmp->get_right()->get_tuples();
-        auto mn_tuples = ImnefMatTmp->get_left()->get_tuples();
-        auto ef_tuples = ImnefMatTmp->get_right()->get_tuples();
+        auto& mn_tuples = ImnefMatTmp->get_left()->get_tuples();
+        auto& ef_tuples = ImnefMatTmp->get_right()->get_tuples();
 
         auto Tijkabc_matrix = TijkabcMatTmp->get_matrix();
         auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
@@ -207,10 +205,8 @@ void CCMRCC::build_t1_IA_amplitudes_triples() {
         CCMatTmp ImNeFMatTmp = blas->get_MatTmp("<[oo]|[vv]>", none);
 
         // Grab the indexing for t3[ijk][abc]
-        auto I_tuples = HIAMatTmp->get_left()->get_tuples();
-        auto A_tuples = HIAMatTmp->get_right()->get_tuples();
-        auto mn_tuples = ImnefMatTmp->get_left()->get_tuples();
-        auto ef_tuples = ImnefMatTmp->get_right()->get_tuples();
+        auto& mn_tuples = ImnefMatTmp->get_left()->get_tuples();
+        auto& ef_tuples = ImnefMatTmp->get_right()->get_tuples();
 
         auto TijKabC_matrix = TijKabCMatTmp->get_matrix();
         auto TiJKaBC_matrix = TiJKaBCMatTmp->get_matrix();

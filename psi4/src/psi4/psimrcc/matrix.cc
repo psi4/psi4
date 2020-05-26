@@ -311,7 +311,7 @@ L200:
     ll = 2 * (nn - ii + 1) + 1;
     printer->Printf("\n            ");
     for (i = ii; i <= nn; i++) {
-        auto right_indices = right->get_tuple(i + right_offset - 1);
+        auto& right_indices = right->get_tuple(i + right_offset - 1);
         printer->Printf("(");
         for (int p = 0; p < right->get_nelements(); p++) printer->Printf("%3d", right_indices[p]);
         printer->Printf(")");
@@ -320,7 +320,7 @@ L200:
     }
     printer->Printf("\n");
     for (i = 0; i < m; i++) {
-        auto left_indices = left->get_tuple(i + left_offset);
+        auto& left_indices = left->get_tuple(i + left_offset);
         printer->Printf("\n(");
         for (int p = 0; p < left->get_nelements(); p++) printer->Printf("%3d", left_indices[p]);
         printer->Printf(")  ");
