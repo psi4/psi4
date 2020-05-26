@@ -811,8 +811,8 @@ def properties(*args, **kwargs):
     | casscf, rasscf     | Multi-configurational SCF                     | RHF/ROHF       | Listed :ref:`here <sec:oeprop>`, transition_dipole,           |
     |                    |                                               |                | transition_quadrupole                                         |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
-    | adc(0), adc(1),    | Algebraic-diagrammatic construction methods   | RHF/UHF        | dipole, transition_dipole, oscillator_strength                |
-    | ..., adc(3),       | :ref:`[manual] <sec:adc>`                     |                |                                                               |
+    | adc(0), adc(1),    | Algebraic-diagrammatic construction methods   | RHF/UHF        | dipole, transition_dipole, oscillator_strength,               |
+    | ..., adc(3),       | :ref:`[manual] <sec:adc>`                     |                | rotational_strength                                           |
     | cvs-adc(0), ...    |                                               |                |                                                               |
     | cvs-adc(3)         |                                               |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+

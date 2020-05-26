@@ -3417,7 +3417,8 @@ def run_adcc_property(name, **kwargs):
     #      Export of difference and transition density matrices for all states
 
     properties = [prop.upper() for prop in kwargs.pop('properties')]
-    valid_properties = ['DIPOLE', 'OSCILLATOR_STRENGTH', 'TRANSITION_DIPOLE']
+    valid_properties = ['DIPOLE', 'OSCILLATOR_STRENGTH', 'TRANSITION_DIPOLE',
+                        'ROTATIONAL_STRENGTH']
     unknown_properties = [prop for prop in properties if prop not in valid_properties]
 
     if unknown_properties:
@@ -3464,21 +3465,39 @@ def run_adcc_property(name, **kwargs):
         lines += [""]
         core.print_out("\n".join(lines) + "\n")
 
+    gauge = core.get_option("ADC", "GAUGE").lower()
+    if gauge == "velocity":
+        gauge_short = "VEL"
+    elif gauge == "length":
+        gauge_short = "LEN"
+    else:
+        raise ValidationError(f"Gauge {gauge} not recognised for ADC calculations.")
+
     computed = {}
     if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
         data = state.transition_dipole_moments
         computed["Transition dipole moment (in a.u.)"] = data
-        adc_wfn.set_variable(name + " transition dipoles", core.Matrix.from_array(data))
+        adc_wfn.set_variable(f"{name} transition dipoles", core.Matrix.from_array(data))
 
     if "OSCILLATOR_STRENGTH" in properties:
-        data = state.oscillator_strengths.reshape(-1, 1)
-        computed["Oscillator strength (length gauge)"] = data
-        adc_wfn.set_variable(name + " oscillator strengths", core.Matrix.from_array(data))
+        if gauge == "velocity":
+            data = state.oscillator_strengths_velocity.reshape(-1, 1)
+        else:
+            data = state.oscillator_strengths.reshape(-1, 1)
+        computed[f"Oscillator strength ({gauge} gauge)"] = data
+        adc_wfn.set_variable(f"{name} oscillator strengths ({gauge_short})",
+                             core.Matrix.from_array(data))
+
+    if "ROTATIONAL_STRENGTH" in properties:
+        data = state.rotatory_strengths.reshape(-1, 1)
+        computed["Rotational strength (velocity gauge)"] = data
+        adc_wfn.set_variable(f"{name} rotational strengths (VEL)",
+                             core.Matrix.from_array(data))
 
     if "DIPOLE" in properties:
         data = state.state_dipole_moments
         computed["State dipole moment (in a.u.)"] = data
-        adc_wfn.set_variable(name + " state dipoles", core.Matrix.from_array(data))
+        adc_wfn.set_variable(f"{name} state dipoles", core.Matrix.from_array(data))
 
     core.print_out("\nExcited state properties:\n")
     n_states = adc_wfn.variable("number of excited states")

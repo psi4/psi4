@@ -1834,6 +1834,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Maximum number of subspace vectors. A negative value uses 
          *  the adcc default (roughly between 20 and 5 * N_GUESSES). This option is only available for the adcc backend. -*/
         options.add_int("MAX_NUM_VECS", -1);
+        /*- Specifies the choice of representation of the electric dipole operator.
+         *  Acceptable values are ``LENGTH`` (default) and ``VELOCITY``. -*/
+        options.add_str("GAUGE", "LENGTH", "LENGTH VELOCITY");
     }
     if (name == "CCHBAR" || options.read_globals()) {
         /*- MODULEDESCRIPTION Assembles the coupled cluster effective Hamiltonian. Called whenever CC

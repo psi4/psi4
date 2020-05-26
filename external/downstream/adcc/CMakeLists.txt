@@ -1,7 +1,7 @@
 if(${ENABLE_adcc})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_adcc}))
         include(FindPythonModule)
-        find_python_module(adcc ATLEAST 0.13.2 QUIET)
+        find_python_module(adcc ATLEAST 0.14.3 QUIET)
     endif()
 
     if(${adcc_FOUND})
@@ -18,7 +18,7 @@ if(${ENABLE_adcc})
 
         ExternalProject_Add(adcc_external
             BUILD_ALWAYS 1
-            URL https://github.com/adc-connect/adcc/archive/v0.14.1.tar.gz
+            URL https://github.com/adc-connect/adcc/archive/v0.14.3.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
@@ -31,6 +31,3 @@ if(${ENABLE_adcc})
 else()
     add_library(adcc_external INTERFACE)  # dummy
 endif()
-                                                          #--install-scripts=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-                                                          #--install-data=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}
-                                                          #--install-headers=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}

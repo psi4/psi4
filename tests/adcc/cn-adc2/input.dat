@@ -15,11 +15,9 @@ set {
     roots_per_irrep [6]
 }
 
-# Run normal calculation of excitation energies (no properties)
-energy_adc, wfn = energy('adc(2)', return_wfn=True)
-
-# Alternative: Run computation of properties as well
-properties('adc(2)', properties=["oscillator_strength", "dipole"])
+# Run calculation of excitation energies and properties
+energy_adc, wfn = properties('adc(2)', properties=["oscillator_strength", "dipole"],
+                             return_wfn=True)
 
 ref_gs = -92.4393443893764                                                                 #TEST
 ref_energies = [0.07889574351228804, 0.0788957435122895, 0.14056160788035324,              #TEST
@@ -29,3 +27,6 @@ ref_oscillator = [0.004008231200836354, 0.004008231200823993, 0.0221978763104213
 compare_values(ref_gs, energy_adc, 6, "ADC(2) GS energy")                                  #TEST
 compare_arrays(np.array([ref_energies]).T, wfn.variable("ADC(2) excitation energies").np,  #TEST
                1e-5, "ADC(2) excitation energies")                                         #TEST
+compare_arrays(np.array([ref_oscillator]).T,                                               #TEST
+               wfn.variable("ADC(2) oscillator strengths (LEN)").np,                       #TEST
+               5e-5, "ADC(2) oscillator strengts (LEN)")                                   #TEST
