@@ -4,6 +4,7 @@ import numpy as np
 import psi4
 
 from .utils import compare_values
+from .utils import compare_arrays
 
 def test_export_ao_elec_dip_deriv():
     h2o = psi4.geometry("""
@@ -77,19 +78,13 @@ def test_export_ao_overlap_half_deriv():
             deriv1_np[map_key3] = np.asarray(deriv1_mat["S_" + str(atom)][atom_cart])
 
             # Test (S_ii)^x = 2 * < i^x | i >
-            assert np.allclose(deriv1_np[map_key1].diagonal(), (deriv1_np[map_key3].diagonal())/2)
+            assert compare_arrays(deriv1_np[map_key1].diagonal(), deriv1_np[map_key3].diagonal()/2)
 
             # Test (S_ii)^x = 2 * < i | i^x >
-            assert np.allclose(deriv1_np[map_key2].diagonal(), (deriv1_np[map_key3].diagonal())/2)
+            assert compare_arrays(deriv1_np[map_key2].diagonal(), deriv1_np[map_key3].diagonal()/2)
 
             # Test (S_ij)^x = < i^x | j > + < j^x | i >
-            r, c = deriv1_np[map_key1].shape
-            for i in range(r):
-                for j in range(c):
-                    assert np.allclose(deriv1_np[map_key1][i][j] + deriv1_np[map_key1][j][i], deriv1_np[map_key3][i][j])
+            assert compare_arrays(deriv1_np[map_key1] + deriv1_np[map_key1].transpose(), deriv1_np[map_key3])
 
             # Test (S_ij)^x = < i^x | j > + < i | j^x >
-            r, c = deriv1_np[map_key1].shape
-            for i in range(r):
-                for j in range(c):
-                    assert np.allclose(deriv1_np[map_key1][i][j] + deriv1_np[map_key2][i][j], deriv1_np[map_key3][i][j])
+            assert compare_arrays(deriv1_np[map_key1] + deriv1_np[map_key2], deriv1_np[map_key3])
