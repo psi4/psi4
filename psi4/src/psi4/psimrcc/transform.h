@@ -61,8 +61,8 @@ class CCTransform {
     double tei_mrpt2(int p, int q, int r, int s);
 
    private:
-    double** oei_mo;
-    double** oei_so;
+    std::vector<std::vector<double>> oei_mo;
+    std::vector<std::vector<double>> oei_so;
     std::vector<std::vector<double>> tei_so;
     std::vector<std::vector<std::vector<double>>> tei_half_transformed;
     std::vector<std::vector<double>> tei_mo;
@@ -85,7 +85,6 @@ class CCTransform {
 
     void allocate_oei_so();
     void allocate_oei_mo();
-    void free_oei_mo();
     void free_oei_so();
 
     void allocate_tei_so();

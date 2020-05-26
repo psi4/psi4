@@ -54,14 +54,12 @@ CCIndex::CCIndex(std::string str)
       nelements(0),
       greater_than_or_equal(false),
       greater_than(false),
-      ntuples(0),
-      two_index_to_tuple_rel_index(nullptr),
-      two_index_to_irrep(nullptr) {
+      ntuples(0) {
     nirreps = moinfo->get_nirreps();
     init();
 }
 
-CCIndex::~CCIndex() { cleanup(); }
+CCIndex::~CCIndex() { }
 
 void CCIndex::init() {
     // New orbital spaces must be added here
@@ -134,11 +132,6 @@ void CCIndex::init() {
     }
 }
 
-void CCIndex::cleanup() {
-    if (two_index_to_tuple_rel_index != 0) release2(two_index_to_tuple_rel_index);
-    if (two_index_to_irrep != 0) release2(two_index_to_irrep);
-}
-
 void CCIndex::make_zero_index() {
     std::vector<std::vector<short> > pairs;  // The pairs ordered as a vector
     ntuples = 0;
@@ -192,15 +185,8 @@ void CCIndex::make_two_index() {
     std::vector<std::vector<short> > pairs;  // The pairs ordered as a vector
 
     // Allocate the 2->tuple mapping array and set them to -1
-    allocate2(size_t, two_index_to_tuple_rel_index, dimension[0], dimension[1]);
-    allocate2(int, two_index_to_irrep, dimension[0], dimension[1]);
-
-    for (size_t i = 0; i < dimension[0]; ++i) {
-        for (size_t j = 0; j < dimension[1]; ++j) {
-            two_index_to_tuple_rel_index[i][j] = 0;
-            two_index_to_irrep[i][j] = -1;
-        }
-    }
+    two_index_to_tuple_rel_index = std::vector<std::vector<size_t>>(dimension[0], std::vector<size_t>(dimension[1], 0));
+    two_index_to_irrep = std::vector<std::vector<int>>(dimension[0], std::vector<int>(dimension[1], -1));
 
     // [X>=Y]
     if (label.find(">=") != std::string::npos) {

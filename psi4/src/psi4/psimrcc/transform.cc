@@ -67,8 +67,6 @@ CCTransform::CCTransform(std::shared_ptr<Wavefunction> wfn) : fraction_of_memory
     oei_so_indexing = blas->get_index("[s]");
     first_irrep_in_core = 0;
     last_irrep_in_core = 0;
-    oei_so = nullptr;
-    oei_mo = nullptr;
 }
 
 CCTransform::~CCTransform() { free_memory(); }
@@ -402,8 +400,6 @@ void CCTransform::read_oei_mo_integrals() {
  * Free all the memory allocated by CCTransform
  */
 void CCTransform::free_memory() {
-    free_oei_so();
-    free_oei_mo();
     integral_map.clear();
 }
 
@@ -411,20 +407,9 @@ void CCTransform::free_memory() {
  * Allocate the oei_mo array
  */
 void CCTransform::allocate_oei_mo() {
-    if (oei_mo == nullptr) {
+    if (oei_mo.size() == 0) {
         int nmo = moinfo->get_nmo();
-        allocate2(double, oei_mo, nmo, nmo);
-    }
-}
-
-/**
- * Free the oei_mo array
- */
-void CCTransform::free_oei_mo() {
-    if (oei_mo != nullptr) {
-        int nmo = moinfo->get_nmo();
-        release2(oei_mo);
-        oei_mo = nullptr;
+        oei_mo = std::vector<std::vector<double>>(nmo, std::vector<double>(nmo, 0));
     }
 }
 
@@ -432,19 +417,9 @@ void CCTransform::free_oei_mo() {
  * Allocate the oei_so array
  */
 void CCTransform::allocate_oei_so() {
-    if (oei_so == nullptr) {
+    if (oei_mo.size() == 0) {
         int nso = moinfo->get_nso();
-        allocate2(double, oei_so, nso, nso);
-    }
-}
-
-/**
- * Free the oei_so array
- */
-void CCTransform::free_oei_so() {
-    if (oei_so != nullptr) {
-        release2(oei_so);
-        oei_so = nullptr;
+        oei_so = std::vector<std::vector<double>>(nso, std::vector<double>(nso, 0));
     }
 }
 

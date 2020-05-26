@@ -121,12 +121,12 @@ class CCIndex {
 
     vecvecint& get_indices_to_pitzer() { return (indices_to_pitzer); }
 
-    std::vector<size_t> get_one_index_to_tuple_rel_index() { return (one_index_to_tuple_rel_index); };
-    size_t** get_two_index_to_tuple_rel_index() { return (two_index_to_tuple_rel_index); };
-    std::vector<std::vector<std::vector<size_t>>> get_three_index_to_tuple_rel_index() { return (three_index_to_tuple_rel_index); };
-    std::vector<int> get_one_index_to_irrep() { return (one_index_to_irrep); };
-    int** get_two_index_to_irrep() { return (two_index_to_irrep); };
-    std::vector<std::vector<std::vector<int>>> get_three_index_to_irrep() { return (three_index_to_irrep); };
+    const std::vector<size_t>& get_one_index_to_tuple_rel_index() { return (one_index_to_tuple_rel_index); };
+    const std::vector<std::vector<size_t>>& get_two_index_to_tuple_rel_index() { return (two_index_to_tuple_rel_index); };
+    const std::vector<std::vector<std::vector<size_t>>>& get_three_index_to_tuple_rel_index() { return (three_index_to_tuple_rel_index); };
+    const std::vector<int>& get_one_index_to_irrep() { return (one_index_to_irrep); };
+    const std::vector<std::vector<int>>& get_two_index_to_irrep() { return (two_index_to_irrep); };
+    const std::vector<std::vector<std::vector<int>>>& get_three_index_to_irrep() { return (three_index_to_irrep); };
 
     std::vector<std::vector<int>> get_element_irrep() { return (element_irrep); }
 
@@ -135,7 +135,6 @@ class CCIndex {
     // Class private functions
     ///////////////////////////////////////////////////////////////////////////////
     void init();
-    void cleanup();
     void make_zero_index();
     void make_one_index();
     void make_two_index();
@@ -159,10 +158,10 @@ class CCIndex {
     Size_tVec last;                            // Last  pair of irrep
     Size_tVec tuplespi;                        // Number of tuples for irrep
     Size_tVec one_index_to_tuple_rel_index;    // 1->tuple mapping array
-    size_t** two_index_to_tuple_rel_index;     // 2->tuple mapping array
+    std::vector<std::vector<size_t>> two_index_to_tuple_rel_index;     // 2->tuple mapping array
     std::vector<std::vector<std::vector<size_t>>> three_index_to_tuple_rel_index;  // 3->tuple mapping array
     std::vector<int> one_index_to_irrep;       // 1->irrep mapping array
-    int** two_index_to_irrep;                  // 2->irrep mapping array
+    std::vector<std::vector<int>> two_index_to_irrep;                  // 2->irrep mapping array
     std::vector<std::vector<std::vector<int>>> three_index_to_irrep;               // 3->irrep mapping array
     std::vector<std::vector<int>> element_irrep;                     // Irrep of each element
 };

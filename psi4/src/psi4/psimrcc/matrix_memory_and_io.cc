@@ -43,6 +43,7 @@ PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsio/psio.hpp"
@@ -96,7 +97,7 @@ void CCMatrix::allocate_block(int h) {
     if (block_sizepi[h] > 0) {
         if (!is_block_allocated(h)) {
             if (memorypi2[h] < memory_manager->get_FreeMemory()) {
-                allocate2(double, matrix[h], left_pairpi[h], right_pairpi[h]);
+                matrix[h] = block_matrix(left_pairpi[h], right_pairpi[h]);
             } else {
                 outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n", h, label.c_str());
 
@@ -123,7 +124,8 @@ void CCMatrix::free_memory() {
 void CCMatrix::free_block(int h) {
     if (block_sizepi[h] > 0) {
         if (is_block_allocated(h)) {
-            release2(matrix[h]);
+            psi::free_block(matrix[h]);
+            matrix[h] = nullptr; // Needed for is_block_allocated
         }
     }
 }
