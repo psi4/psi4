@@ -84,7 +84,7 @@ class CCIndexIterator {
 
     // Properties of the tuples
     // These come from the Index object. Which should outlast the iterator, and which should
-    // not be changing these values as logn as this iterator is alive.
+    // not be changing these values as long as this iterator is alive.
     int nelements;
     std::vector<std::vector<int>> element_irrep;
     const std::vector<std::vector<short>>& tuples;
