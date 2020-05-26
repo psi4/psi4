@@ -3275,7 +3275,7 @@ std::vector<SharedMatrix> MintsHelper::ao_oei_deriv1(const std::string &oei_type
 std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1(const std::string &half_der_side, int atom) {
     std::vector<SharedMatrix> ao_grad;
 
-    if (half_der_side == "LEFT" || half_der_side == "RIGHT") {
+    if (half_der_side == "LEFT" || half_der_side == "RIGHT")
         ao_grad = ao_overlap_half_deriv1_helper(half_der_side, atom);
     else
         throw PSIEXCEPTION("Not a valid choice of half derivative side: must be LEFT or RIGHT");
