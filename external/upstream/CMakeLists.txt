@@ -17,6 +17,7 @@ foreach(dir
   qcengine
   simint
   libxc
+  brianqc
   )
   add_subdirectory(${dir})
 endforeach()

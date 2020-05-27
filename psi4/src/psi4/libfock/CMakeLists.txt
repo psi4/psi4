@@ -33,7 +33,7 @@ target_link_libraries(fock
     gau2grid::gg
   )
 
-if(ENABLE_BrianQC)
+if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(fock
     PUBLIC
       USING_BrianQC

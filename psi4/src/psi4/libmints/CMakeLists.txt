@@ -115,7 +115,7 @@ if(TARGET erd::erd)
     )
 endif()
 
-if(ENABLE_BrianQC)
+if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(mints
     PUBLIC
       USING_BrianQC

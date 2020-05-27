@@ -156,7 +156,6 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
-option_with_default(BrianQC_DEV "Build with a dev BrianQC if BrianQC is enabled" OFF)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
@@ -208,6 +207,7 @@ ExternalProject_Add(psi4-core
            simint_external
            libxc_external
            mdi_external
+           brianqc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -260,7 +260,6 @@ ExternalProject_Add(psi4-core
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
-              -DBrianQC_DEV=${BrianQC_DEV}
               -DBrianQC_DIR=${BrianQC_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}

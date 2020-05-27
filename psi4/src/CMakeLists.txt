@@ -51,11 +51,14 @@ target_link_libraries(core
     tgt::lapack # OpenMP flags to core.cc
   )
 
-if(ENABLE_BrianQC)
-  target_link_libraries(core PRIVATE static_wrapper)
+if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(core
     PUBLIC
       USING_BrianQC
+    )
+  target_link_libraries(core
+    PRIVATE
+      BrianQC::static_wrapper
     )
 endif()
 

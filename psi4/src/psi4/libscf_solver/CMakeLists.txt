@@ -14,7 +14,7 @@ if(ENABLE_GTFOCK)
     add_dependencies(scf_solver INTERFACE GTFockInt GTFockCInt)
 endif()
 
-if(ENABLE_BrianQC)
+if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(scf_solver
     PUBLIC
       USING_BrianQC
