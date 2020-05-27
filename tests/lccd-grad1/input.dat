@@ -1,4 +1,4 @@
-#! CEPA0 cc-pVDZ gradient for the H2O molecule.
+#! LCCD cc-pVDZ gradient for the H2O molecule.
 
 ref = psi4.Matrix.from_list([                                      #TEST
              [ 0.000000000000,  0.000000000000,  0.012757420477],  #TEST

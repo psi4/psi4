@@ -1,4 +1,4 @@
-#! CEPA cc-pVDZ gradient for the NO radical
+#! LCCD cc-pVDZ gradient for the NO radical
 
 ref = psi4.Matrix.from_list([                                      #TEST
              [ 0.000000000000,  0.000000000000, -0.138608787991],  #TEST

@@ -1,4 +1,4 @@
-#! OCEPA cc-pVDZ gradient for the H2O molecule.
+#! OLCCD cc-pVDZ gradient for the H2O molecule.
 
 # Test values are analytic from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
 ref = psi4.core.Matrix.from_array(np.array(                         #TEST
