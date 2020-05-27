@@ -542,14 +542,14 @@ void OCCWave::ocepa_manager() {
 
         outfile->Printf("\n");
         outfile->Printf("\t============================================================================== \n");
-        outfile->Printf("\t================ OCEPA FINAL RESULTS ========================================= \n");
+        outfile->Printf("\t================ OLCCD [OCEPA(0)] FINAL RESULTS ============================== \n");
         outfile->Printf("\t============================================================================== \n");
         outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
         outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
         outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-        outfile->Printf("\tOCEPA(0) Correlation Energy (a.u.) : %20.14f\n", EcepaL - Escf);
-        outfile->Printf("\tEocepa - Eref (a.u.)               : %20.14f\n", EcepaL - Eref);
-        outfile->Printf("\tOCEPA(0) Total Energy (a.u.)       : %20.14f\n", EcepaL);
+        outfile->Printf("\tOLCCD Correlation Energy (a.u.)    : %20.14f\n", EcepaL - Escf);
+        outfile->Printf("\tEolccd - Eref (a.u.)               : %20.14f\n", EcepaL - Eref);
+        outfile->Printf("\tOLCCD Total Energy (a.u.)          : %20.14f\n", EcepaL);
         outfile->Printf("\t============================================================================== \n");
         outfile->Printf("\n");
 
@@ -610,13 +610,13 @@ void OCCWave::cepa_manager() {
 
     outfile->Printf("\n");
     outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\t================ CEPA FINAL RESULTS ========================================== \n");
+    outfile->Printf("\t================ LCCD [CEPA(0)] FINAL RESULTS ================================ \n");
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
     outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
-    outfile->Printf("\tCEPA(0) Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
-    outfile->Printf("\tCEPA(0) Total Energy (a.u.)        : %20.14f\n", Ecepa);
+    outfile->Printf("\tLCCD Correlation Energy (a.u.)     : %20.14f\n", Ecorr);
+    outfile->Printf("\tLCCD Total Energy (a.u.)           : %20.14f\n", Ecepa);
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\n");
 

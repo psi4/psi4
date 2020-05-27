@@ -40,7 +40,7 @@ namespace occwave {
 void OCCWave::cepa_iterations() {
     outfile->Printf("\n  \n");
     outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ================ Performing CEPA iterations... =============================== \n");
+    outfile->Printf(" ================ Performing LCCD iterations... =============================== \n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf("\n");
     outfile->Printf("  Iter    E_corr           E_total            DE           T2 RMS        \n");
@@ -116,7 +116,7 @@ void OCCWave::cepa_iterations() {
         }
 
         if (rms_t2 >= DIVERGE) {
-            throw PSIEXCEPTION("CEPA iterations are diverging");
+            throw PSIEXCEPTION("LCCD iterations are diverging");
         }
 
     } while (std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
@@ -128,16 +128,16 @@ void OCCWave::cepa_iterations() {
         EcepaL = Ecepa;
         outfile->Printf("\n");
         outfile->Printf(" ============================================================================== \n");
-        outfile->Printf(" ======================== CEPA ITERATIONS ARE CONVERGED ======================= \n");
+        outfile->Printf(" ======================== LCCD ITERATIONS ARE CONVERGED ======================= \n");
         outfile->Printf(" ============================================================================== \n");
 
     }
 
     else if (conver == 0) {
-        outfile->Printf("\n ======================= CEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n",
+        outfile->Printf("\n ======================= LCCD IS NOT CONVERGED IN %2d ITERATIONS ============ \n",
                         cc_maxiter);
 
-        throw PSIEXCEPTION("CEPA iterations did not converge");
+        throw PSIEXCEPTION("LCCD iterations did not converge");
     }
 
 }  // end main

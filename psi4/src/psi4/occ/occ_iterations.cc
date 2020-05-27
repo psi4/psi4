@@ -49,7 +49,7 @@ void OCCWave::occ_iterations() {
     else if (wfn_type_ == "OMP3")
         outfile->Printf(" ================ Performing OMP3 iterations... =============================== \n");
     else if (wfn_type_ == "OCEPA")
-        outfile->Printf(" ================ Performing OCEPA iterations... ============================== \n");
+        outfile->Printf(" ================ Performing OLCCD iterations... ============================== \n");
     else if (wfn_type_ == "OMP2.5")
         outfile->Printf(" ================ Performing OMP2.5 iterations... ============================= \n");
     outfile->Printf(" ============================================================================== \n");
@@ -58,7 +58,7 @@ void OCCWave::occ_iterations() {
     else if (wfn_type_ == "OMP3")
         outfile->Printf("\t            Minimizing MP3-L Functional \n");
     else if (wfn_type_ == "OCEPA")
-        outfile->Printf("\t            Minimizing CEPA-L Functional \n");
+        outfile->Printf("\t            Minimizing LCCD-L Functional \n");
     else if (wfn_type_ == "OMP2.5")
         outfile->Printf("\t            Minimizing MP2.5-L Functional \n");
     outfile->Printf("\t            --------------------------- \n");
@@ -376,7 +376,7 @@ void OCCWave::occ_iterations() {
         else if (wfn_type_ == "OMP3")
             outfile->Printf(" ======================== OMP3 ITERATIONS ARE CONVERGED ======================= \n");
         else if (wfn_type_ == "OCEPA")
-            outfile->Printf(" ======================== OCEPA ITERATIONS ARE CONVERGED ====================== \n");
+            outfile->Printf(" ======================== OLCCD ITERATIONS ARE CONVERGED ====================== \n");
         else if (wfn_type_ == "OMP2.5")
             outfile->Printf(" ======================== OMP2.5 ITERATIONS ARE CONVERGED ===================== \n");
         outfile->Printf(" ============================================================================== \n");
@@ -391,7 +391,7 @@ void OCCWave::occ_iterations() {
             outfile->Printf("\n ======================== OMP3 IS NOT CONVERGED IN %2d ITERATIONS ============= \n",
                             mo_maxiter);
         else if (wfn_type_ == "OCEPA")
-            outfile->Printf("\n ======================== OCEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n",
+            outfile->Printf("\n ======================== OLCCD IS NOT CONVERGED IN %2d ITERATIONS ============ \n",
                             mo_maxiter);
         else if (wfn_type_ == "OMP2.5")
             outfile->Printf("\n ======================== OMP2.5 IS NOT CONVERGED IN %2d ITERATIONS =========== \n",
