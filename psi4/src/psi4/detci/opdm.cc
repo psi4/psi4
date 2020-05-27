@@ -112,14 +112,16 @@ void CIWavefunction::form_opdm() {
     // Transition-OPDM's
     if (Parameters_->transdens) {
         states_vec.clear();
-        for (int i = 0; i < Parameters_->num_roots - 1; ++i) {
-            states_vec.push_back(std::make_tuple(0, i + 1));
+        for (int i = 0; i < Parameters_->num_roots; ++i) {
+            for (int j = i + 1; j < Parameters_->num_roots; ++j) {
+                states_vec.push_back(std::make_tuple(i, j));
+            }
         }
         opdm_list = opdm(Ivec, Jvec, states_vec);
-        for (int i = 0; i < Parameters_->num_roots - 1; i++) {
-            opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
-            opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
-            opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
+        for (const auto& tdm : opdm_list) {
+            opdm_map_[tdm[0]->name()] = tdm[0];
+            opdm_map_[tdm[1]->name()] = tdm[1];
+            opdm_map_[tdm[2]->name()] = tdm[2];
         }
     }
 
