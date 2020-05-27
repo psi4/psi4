@@ -3,7 +3,6 @@ import pytest
 import numpy as np
 import psi4
 
-from .utils import compare_values
 from .utils import compare_arrays
 
 def test_export_ao_elec_dip_deriv():

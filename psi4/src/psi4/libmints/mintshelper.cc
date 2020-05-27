@@ -2429,7 +2429,8 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int atom2) {
-    std::array<std::string, 3> cartcomp{ {"X", "Y", "Z"} };
+    /* NOTE: the x, y, and z in this vector must remain lowercase for this function */
+    std::array<std::string, 3> cartcomp{ {"x", "y", "z"} };
 
     std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
 
@@ -2972,7 +2973,8 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, double omega,
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
-    std::array<std::string, 3> cartcomp{ {"X", "Y", "Z"} };
+    /* NOTE: the x, y, and z in this vector must remain lowercase for this function */
+    std::array<std::string, 3> cartcomp{ {"x", "y", "z"} };
 
     int nthreads = 1;
 #ifdef _OPENMP
