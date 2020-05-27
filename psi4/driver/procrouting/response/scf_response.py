@@ -27,6 +27,7 @@
 #
 
 from typing import Union, List
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -284,7 +285,30 @@ def _print_tdscf_header(**options):
     core.print_out("\n")
 
 
-def _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted: bool = True, spin_mult: str = "singlet"):
+@dataclass
+class _TDSCFResults:
+    E_ex_au: float
+    irrep_GS: str
+    irrep_ES: str
+    irrep_trans: str
+    edtm_length: np.ndarray
+    f_length: float
+    edtm_velocity: np.ndarray
+    f_velocity: float
+    mdtm: np.ndarray
+    R_length: float
+    R_velocity: float
+    spin_mult: str
+    R_eigvec: Union[core.Matrix, List[core.Matrix]]
+    L_eigvec: Union[core.Matrix, List[core.Matrix]]
+
+
+def _solve_loop(wfn,
+                ptype,
+                solve_function,
+                states_per_irrep: List[int],
+                restricted: bool = True,
+                spin_mult: str = "singlet") -> List[_TDSCFResults]:
 
     # collect results and compute some spectroscopic observables
     mints = core.MintsHelper(wfn.basisset())
@@ -333,8 +357,9 @@ def _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted: bool =
             # velocity gauge rotatory strength
             R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / e
 
-            results.append((e, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity, mdtm,
-                            R_length, R_velocity, spin_mult))
+            results.append(
+                _TDSCFResults(e, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity,
+                              mdtm, R_length, R_velocity, spin_mult, R, L))
 
     return results
 
@@ -516,7 +541,7 @@ def tdscf_excitations(wfn,
         _results.extend(triplets)
 
     # sort by energy
-    _results = sorted(_results, key=lambda x: x[0])
+    _results = sorted(_results, key=lambda x: x.E_ex_au)
 
     core.print_out("\n{}\n".format("*"*90) +
                    "{}{:^70}{}\n".format("*"*10, "WARNING", "*"*10) +
@@ -534,54 +559,68 @@ def tdscf_excitations(wfn,
 
     # collect results
     solver_results = []
-    for i, (E_ex_au, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity, mdtm, R_length,
-            R_velocity, spin_mult) in enumerate(_results):
-        sym_descr = f"{irrep_GS}->{irrep_ES} ({1 if spin_mult== 'singlet' else 3} {irrep_trans})"
+    for i, x in enumerate(_results):
+        sym_descr = f"{x.irrep_GS}->{x.irrep_ES} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_trans})"
 
-        E_ex_ev = constants.conversion_factor('hartree', 'eV') * E_ex_au
+        E_ex_ev = constants.conversion_factor('hartree', 'eV') * x.E_ex_au
 
-        E_tot_au = wfn.energy() + E_ex_au
+        E_tot_au = wfn.energy() + x.E_ex_au
 
         # prepare return dictionary for this root
         solver_results.append({
-            "EXCITATION ENERGY": E_ex_au,
-            "LENGTH-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": edtm_length,
-            "LENGTH-GAUGE OSCILLATOR STRENGTH": f_length,
-            "VELOCITY-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": edtm_velocity,
-            "VELOCITY-GAUGE OSCILLATOR STRENGTH": f_velocity,
-            "MAGNETIC DIPOLE TRANSITION MOMENT": mdtm,
-            "LENGTH-GAUGE ROTATORY STRENGTH": R_length,
-            "VELOCITY-GAUGE ROTATORY STRENGTH": R_velocity,
-            "SYMMETRY": irrep_trans,
-            "SPIN": spin_mult,
+            "EXCITATION ENERGY": x.E_ex_au,
+            "LENGTH-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": x.edtm_length,
+            "LENGTH-GAUGE OSCILLATOR STRENGTH": x.f_length,
+            "VELOCITY-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": x.edtm_velocity,
+            "VELOCITY-GAUGE OSCILLATOR STRENGTH": x.f_velocity,
+            "MAGNETIC DIPOLE TRANSITION MOMENT": x.mdtm,
+            "LENGTH-GAUGE ROTATORY STRENGTH": x.R_length,
+            "VELOCITY-GAUGE ROTATORY STRENGTH": x.R_velocity,
+            "SYMMETRY": x.irrep_trans,
+            "SPIN": x.spin_mult,
+            "RIGHT EIGENVECTOR ALPHA": x.R_eigvec if restricted else x.R_eigvec[0],
+            "LEFT EIGENVECTOR ALPHA": x.L_eigvec if restricted else x.L_eigvec[0],
+            "RIGHT EIGENVECTOR BETA": x.R_eigvec if restricted else x.R_eigvec[1],
+            "LEFT EIGENVECTOR BETA": x.L_eigvec if restricted else x.L_eigvec[1],
         })
 
         # stash in psivars/wfnvars
         ssuper_name = wfn.functional().name()
-        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {irrep_ES} SYMMETRY", E_tot_au)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {x.irrep_ES} SYMMETRY", E_tot_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {x.irrep_ES} SYMMETRY", x.E_ex_au)
         wfn.set_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE OSCILLATOR STRENGTH - {irrep_ES} SYMMETRY", f_length)
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE OSCILLATOR STRENGTH - {x.irrep_ES} SYMMETRY",
+            x.f_length)
         wfn.set_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE OSCILLATOR STRENGTH - {irrep_ES} SYMMETRY",
-            f_velocity)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ROTATORY STRENGTH - {irrep_ES} SYMMETRY",
-                         R_length)
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE OSCILLATOR STRENGTH - {x.irrep_ES} SYMMETRY",
+            x.f_velocity)
         wfn.set_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ROTATORY STRENGTH - {irrep_ES} SYMMETRY",
-            R_velocity)
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ROTATORY STRENGTH - {x.irrep_ES} SYMMETRY",
+            x.R_length)
+        wfn.set_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ROTATORY STRENGTH - {x.irrep_ES} SYMMETRY",
+            x.R_velocity)
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {irrep_ES} SYMMETRY",
-            core.Matrix.from_array(edtm_length.reshape((1, 3))))
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
+            core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {irrep_ES} SYMMETRY",
-            core.Matrix.from_array(edtm_velocity.reshape((1, 3))))
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
+            core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {irrep_ES} SYMMETRY",
-            core.Matrix.from_array(mdtm.reshape((1, 3))))
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
+            core.Matrix.from_array(x.mdtm.reshape((1, 3))))
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+            x.R_eigvec if restricted else x.R_eigvec[0])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+                               x.L_eigvec if restricted else x.L_eigvec[0])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
+                               x.R_eigvec if restricted else x.R_eigvec[1])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+                               x.L_eigvec if restricted else x.L_eigvec[1])
 
         core.print_out(
-            f"    {i+1:^4} {sym_descr:^20} {E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {f_length:< 15.4f} {f_velocity:< 15.4f} {R_length:< 15.4f} {R_velocity:< 15.4f}\n"
+            f"    {i+1:^4} {sym_descr:^20} {x.E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {x.f_length:< 15.4f} {x.f_velocity:< 15.4f} {x.R_length:< 15.4f} {x.R_velocity:< 15.4f}\n"
         )
 
     core.print_out("\n")
