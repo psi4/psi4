@@ -1576,6 +1576,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("UHF_NOONS", "3");
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
+        /* combine omega exchange and HF exchange into one matrix */
+        options.add_bool("WCOMBINE", false);
     }
     if (name == "CPHF" || options.read_globals()) {
         /*- The amount of information printed

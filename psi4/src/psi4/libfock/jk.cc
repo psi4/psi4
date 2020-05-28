@@ -103,7 +103,9 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "MEM_DF") {
         MemDFJK* jk = new MemDFJK(primary, auxiliary);
+        jk->set_wcombine(true);
         _set_dfjk_options<MemDFJK>(jk, options);
+        if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 
         return std::shared_ptr<JK>(jk);
     } else if (jk_type == "PK") {
@@ -619,6 +621,14 @@ void JK::compute() {
 
     if (lr_symmetric_) {
         C_right_.clear();
+    }
+}
+void JK::set_wcombine(bool wcombine) {
+    wcombine_ = wcombine;
+    if (wcombine) {
+        throw PSIEXCEPTION("To combine exchange terms, use MemDFJK\n");
+    } else {
+        wcombine_ = false;
     }
 }
 void JK::finalize() { postiterations(); }

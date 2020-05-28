@@ -200,6 +200,7 @@ void RHF::form_G() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
+
     if (alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) ) {
         G_->axpy(-alpha, K_);
     } else {
@@ -320,16 +321,21 @@ double RHF::compute_E() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-    if (jk_->name() == "MemDFJK" && jk_->get_wcombine()){
-        exchange_E -= Da_->vector_dot(K_);
-    } else {
-        if (functional_->is_x_hybrid()) {
-            exchange_E -= alpha * Da_->vector_dot(K_);
-        }
-        if (functional_->is_x_lrc()) {
+
+/*    if (jk_->get_do_wK() && jk_->name() == "MemDFJK" && jk_->get_wcombine()){
+        exchange_E -= Da_->vector_dot(wK_);
+    } else { */
+    if (functional_->is_x_hybrid()) {
+        exchange_E -= alpha * Da_->vector_dot(K_);
+    }
+    if (functional_->is_x_lrc()) {
+        if (jk_->get_do_wK() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) {
+            exchange_E -= Da_->vector_dot(wK_);
+        } else {
             exchange_E -= beta * Da_->vector_dot(wK_);
         }
     }
+/*    }  */
 
     double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
@@ -513,6 +519,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             ret.push_back(J[i]);
         }
     } else {
+        if (jk_->get_wcombine()) {
+            throw PSIEXCEPTION("SCF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
+        }
         for (size_t i = 0; i < x_vec.size(); i++) {
             // always have a J-like piece (optionally include Xc)
             if (functional_->needs_xc()) {
