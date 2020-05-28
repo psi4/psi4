@@ -1001,6 +1001,7 @@ class FiniteDifferenceComputer(BaseComputer):
     task_list: Dict[str, BaseComputer] = {}
     findifrec: Dict[str, Any] = {}
     computer: BaseComputer = AtomicComputer
+    method: str
 
     @pydantic.validator('driver')
     def set_driver(cls, driver):
@@ -1050,6 +1051,8 @@ class FiniteDifferenceComputer(BaseComputer):
         #   after the findif control ones are removed, not this by-name procedure
         data['keywords']['PARENT_SYMMETRY'] = self.molecule.point_group().full_name()
 
+        self.method = data['method']
+
         self.metameta['mode'] = str(data['findif_mode'][0]) + '_' + str(data['findif_mode'][1])
         self.metameta['irrep'] = data.pop('findif_irrep', -1)
 
@@ -1091,7 +1094,7 @@ class FiniteDifferenceComputer(BaseComputer):
         packet = {
             "molecule": self.molecule,
             "driver": self.metameta['proxy_driver'],
-            "method": data["method"],
+            "method": self.method,
             "basis": data["basis"],
             "keywords": data["keywords"] or {},
         }
@@ -1123,7 +1126,7 @@ class FiniteDifferenceComputer(BaseComputer):
             packet = {
                 "molecule": clone,
                 "driver": self.metameta['proxy_driver'],
-                "method": data["method"],
+                "method": self.method,
                 "basis": data["basis"],
                 "keywords": data["keywords"] or {},
             }
@@ -1260,21 +1263,24 @@ class FiniteDifferenceComputer(BaseComputer):
         DD0 = self.findifrec['reference'].get('dipole derivative')
         if DD0 is not None:
             qcvars['CURRENT DIPOLE GRADIENT'] = DD0
+            qcvars[f"{self.method.upper()} DIPOLE GRADIENT"] = DD0
 
         G0 = self.findifrec['reference'].get('gradient')
         if G0 is not None:
             qcvars['CURRENT GRADIENT'] = G0
+            qcvars[f"{self.method.upper()} TOTAL GRADIENT"] = G0
 
         H0 = self.findifrec['reference'].get('hessian')
         if H0 is not None:
             qcvars['CURRENT HESSIAN'] = H0
+            qcvars[f"{self.method.upper()} TOTAL HESSIAN"] = H0
 
         findifjob = AtomicResult(
             **{
                 'driver': self.driver,
                 'model': {
                     'basis': '(auto)',  #self.basis,
-                    'method': '(auto)',  #self.method,
+                    'method': self.method,
                 },
                 'molecule': self.molecule.to_schema(dtype=2),
                 'properties': {
@@ -1319,27 +1325,11 @@ def _findif_schema_to_wfn(findifjob):
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 
-    # wfn.set_energy(findifjob['extras']['qcvars'].get('CURRENT ENERGY'))  # catches Wfn.energy_
+    # setting CURRENT E/G/H on wfn below catches Wfn.energy_, gradient_, hessian_
+    # setting CURRENT E/G/H on core below is authoritative P::e record
     for qcv, val in findifjob.extras['qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, val)
-
-
-#    flat_grad = findifjob['extras']['qcvars'].get('CURRENT GRADIENT')
-#    if flat_grad is not None:
-#        wfn.set_gradient(flat_grad)
-#
-#        if flat_grad.rows(0) < 20:
-#            core.print_out('CURRENT GRADIENT')
-#            finalgradient.print_out()
-#
-#    flat_hess = findifjob['extras']['qcvars'].get('CURRENT HESSIAN')
-#    if flat_hess is not None:
-#        wfn.set_hessian(flat_hess)
-#
-#        if flat_hess.rows(0) < 20:
-#            core.print_out('CURRENT HESSIAN')
-#            finalhessian.print_out()
 
     return wfn
 

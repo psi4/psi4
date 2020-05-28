@@ -232,7 +232,7 @@ def parse_cotton_irreps(irrep: Union[str, int], point_group: str) -> int:
 
 def highest_analytic_derivative_available(method: str,
                                           proc: Optional[Dict] = None,
-                                          managed_keywords: Optional[Dict] = None) -> int:
+                                          managed_keywords: Optional[Dict] = None) -> Tuple[int, Dict[int,str]]:
     """Find the highest dertype program can provide for method, as encoded in procedures and managed methods.
 
     Managed methods return finer grain "is available" info. For example, "is analytic ROHF DF HF gradient available?"
@@ -246,6 +246,13 @@ def highest_analytic_derivative_available(method: str,
         For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
     managed_keywords : dict
         Keywords that influence managed methods.
+
+    Returns
+    -------
+    int
+        Highest available analytic derivative for `method`.
+    dict
+        Detailed error messages to be passed along. Keys are dertype.
 
     Raises
     ------
@@ -269,18 +276,21 @@ def highest_analytic_derivative_available(method: str,
         proc = procedures
 
     dertype = "(auto)"
+    proc_messages = {}
 
     if method in proc['hessian']:
         dertype = 2
         if proc['hessian'][method].__name__.startswith('select_'):
             try:
                 proc['hessian'][method](method, probe=True, **managed_keywords)
-            except ManagedMethodError:
+            except ManagedMethodError as e:
+                proc_messages[2] = e.message
                 dertype = 1
                 if proc['gradient'][method].__name__.startswith('select_'):
                     try:
                         proc['gradient'][method](method, probe=True, **managed_keywords)
-                    except ManagedMethodError:
+                    except ManagedMethodError as e:
+                        proc_messages[1] = e.message
                         dertype = 0
                         if proc['energy'][method].__name__.startswith('select_'):
                             try:
@@ -293,7 +303,8 @@ def highest_analytic_derivative_available(method: str,
         if proc['gradient'][method].__name__.startswith('select_'):
             try:
                 proc['gradient'][method](method, probe=True, **managed_keywords)
-            except ManagedMethodError:
+            except ManagedMethodError as e:
+                proc_messages[1] = e.message
                 dertype = 0
                 if proc['energy'][method].__name__.startswith('select_'):
                     try:
@@ -312,7 +323,7 @@ def highest_analytic_derivative_available(method: str,
     if dertype == '(auto)':
         raise MissingMethodError(_alternative_methods_message(method, 'any', proc))
 
-    return dertype
+    return dertype, proc_messages
 
 
 def negotiate_derivative_type(target_dertype: str,
@@ -355,17 +366,17 @@ def negotiate_derivative_type(target_dertype: str,
 
     """
     if isinstance(method, list):
-        #highest_analytic_dertype = min([highest_analytic_derivative_available(mtd, proc) for mtd in method])
         anal = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
         if verbose > 1:
             print(method, anal, '->', min(anal))
-        highest_analytic_dertype = min(anal)
+        highest_analytic_dertype, proc_messages = min(anal)
     else:
-        highest_analytic_dertype = highest_analytic_derivative_available(method, proc)
-    return sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, verbose)
+        highest_analytic_dertype, proc_messages = highest_analytic_derivative_available(method, proc)
+
+    return sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages, verbose)
 
 
-def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, verbose) -> Tuple[int, int]:
+def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages: Dict[int, str], verbose: int=1) -> Tuple[int, int]:
     r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
     to achieve `target_dertype` within constraints of `user_dertype` and `highest_analytic_dertype`.
 
@@ -375,6 +386,8 @@ def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype,
         Type of calculation targeted by driver.
     user_dertype : int or None
         User input on which derivative level should be employed to achieve `target_dertype`. 
+    proc_messages
+        Dertype-indexed detailed message to be appended to user error.
     verbose : int, optional
         Control amount of output printing.
 
@@ -421,6 +434,8 @@ def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype,
             dertype = user_dertype
         else:
             msg = f"""Derivative level requested ({user_dertype}) exceeds that available ({highest_analytic_dertype})."""
+            if proc_messages.get(user_dertype, False):
+                msg += f""" Details: {proc_messages[user_dertype]}."""
             raise MissingMethodError(msg)
 
     # hack section

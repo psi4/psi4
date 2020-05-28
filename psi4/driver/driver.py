@@ -935,8 +935,6 @@ def optimize_geometric(name, **kwargs):
         return return_energy
 
 
-
-
 def optimize(name, **kwargs):
     r"""Function to perform a geometry optimization.
 
