@@ -104,6 +104,11 @@ void CoupledPair::WriteBanner() {
     if (options_.get_str("CEPA_LEVEL") == "CEPA(0)") {
         outfile->Printf("        *                       CEPA(0)                       *\n");
         outfile->Printf("        *        Coupled Electron Pair Approximation          *\n");
+        if (options_.get_bool("CEPA_NO_SINGLES")) {
+            outfile->Printf("        *                  (Linearized CCD)                   *\n");
+        } else {
+            outfile->Printf("        *                  (Linearized CCSD)                  *\n");
+        }
     } else if (options_.get_str("CEPA_LEVEL") == "CEPA(1)") {
         outfile->Printf("        *                       CEPA(1)                       *\n");
         outfile->Printf("        *        Coupled Electron Pair Approximation          *\n");

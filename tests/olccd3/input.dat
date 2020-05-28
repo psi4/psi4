@@ -1,8 +1,8 @@
-#! OCEPA cc-pVDZ energy with B3LYP initial guess for the NO radical
+#! OLCCD cc-pVDZ energy with ROHF initial guess for the NO radical
 
-# OCEPA energy from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
+# OLCCD energy from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
 refnuc      =   25.59060766929188  #TEST
-refscf      = -129.90365333160776 #TEST
+refscf      = -129.25292774600291 #TEST
 refocepa    = -129.67618875068277 #TEST
 
 molecule no {
@@ -13,10 +13,10 @@ o 1 1.158
 
 set {
   basis cc-pcvdz
-  reference uks
-  e_convergence 8
+  reference rohf
+  guess gwh
 }
-energy('olccd', dft_functional='b3lyp')
+energy('olccd')
 
 compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
 compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST

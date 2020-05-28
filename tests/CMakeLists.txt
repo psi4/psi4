@@ -42,7 +42,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a
                   cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc7 cc8 cc8a cc8b cc8c
-                  cc9 cc9a cdomp2-1 cdomp2-2 cepa0-grad1 cepa0-grad2 cepa1
+                  cc9 cc9a cdomp2-1 cdomp2-2 cepa1
                   cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
@@ -63,15 +63,15 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   fcidump
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient
                   fd-freq-gradient-large fd-gradient freq-isotope1 freq-isotope2 fnocc1 fnocc2
-                  fnocc3 fnocc4 fnocc5 frac frac-ip-fitting frac-traverse ghosts gibbs matrix1
-                  mcscf1 mcscf2 mcscf3
+                  fnocc3 fnocc4 fnocc5 frac frac-ip-fitting frac-traverse ghosts gibbs
+                  lccd-grad1 lccd-grad2 matrix1 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 molden1 molden2 mom mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h
                   mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
                   mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient 
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-convergence
                   nbody-freq nbody-multi-level numpy-array-interface
-                  ocepa-freq1 ocepa-grad1 ocepa-grad2 ocepa1 ocepa2 ocepa3
+                  olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
                   omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2
                   omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2
                   omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change
