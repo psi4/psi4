@@ -569,13 +569,13 @@ def tdscf_excitations(wfn,
         # prepare return dictionary for this root
         solver_results.append({
             "EXCITATION ENERGY": x.E_ex_au,
-            "LENGTH-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": x.edtm_length,
-            "LENGTH-GAUGE OSCILLATOR STRENGTH": x.f_length,
-            "VELOCITY-GAUGE ELECTRIC DIPOLE TRANSITION MOMENT": x.edtm_velocity,
-            "VELOCITY-GAUGE OSCILLATOR STRENGTH": x.f_velocity,
+            "ELECTRIC DIPOLE TRANSITION MOMENT (LEN)": x.edtm_length,
+            "OSCILLATOR STRENGTH (LEN)": x.f_length,
+            "ELECTRIC DIPOLE TRANSITION MOMENT (VEL)": x.edtm_velocity,
+            "OSCILLATOR STRENGTH (VEL)": x.f_velocity,
             "MAGNETIC DIPOLE TRANSITION MOMENT": x.mdtm,
-            "LENGTH-GAUGE ROTATORY STRENGTH": x.R_length,
-            "VELOCITY-GAUGE ROTATORY STRENGTH": x.R_velocity,
+            "ROTATORY STRENGTH (LEN)": x.R_length,
+            "ROTATORY STRENGTH (VEL)": x.R_velocity,
             "SYMMETRY": x.irrep_trans,
             "SPIN": x.spin_mult,
             "RIGHT EIGENVECTOR ALPHA": x.R_eigvec if restricted else x.R_eigvec[0],
@@ -588,23 +588,19 @@ def tdscf_excitations(wfn,
         ssuper_name = wfn.functional().name()
         wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {x.irrep_ES} SYMMETRY", E_tot_au)
         wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {x.irrep_ES} SYMMETRY", x.E_ex_au)
-        wfn.set_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE OSCILLATOR STRENGTH - {x.irrep_ES} SYMMETRY",
-            x.f_length)
-        wfn.set_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE OSCILLATOR STRENGTH - {x.irrep_ES} SYMMETRY",
-            x.f_velocity)
-        wfn.set_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ROTATORY STRENGTH - {x.irrep_ES} SYMMETRY",
-            x.R_length)
-        wfn.set_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ROTATORY STRENGTH - {x.irrep_ES} SYMMETRY",
-            x.R_velocity)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - {x.irrep_ES} SYMMETRY",
+                         x.f_length)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (VEL) - {x.irrep_ES} SYMMETRY",
+                         x.f_velocity)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (LEN) - {x.irrep_ES} SYMMETRY",
+                         x.R_length)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (VEL) - {x.irrep_ES} SYMMETRY",
+                         x.R_velocity)
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LENGTH-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - {x.irrep_ES} SYMMETRY",
             core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} VELOCITY-GAUGE ELECTRIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - {x.irrep_ES} SYMMETRY",
             core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
         wfn.set_array_variable(
             f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",

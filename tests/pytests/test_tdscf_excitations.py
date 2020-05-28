@@ -215,7 +215,7 @@ def test_tdscf(mol, ref, func, ptype, basis, molecules, reference_data):
         # compare length-gauge oscillator strength
         ref_f_L = _oscillator_strength(ref_e, ref_edtm_L, "L")
         assert compare_values(ref_f_L,
-                              my_v["LENGTH-GAUGE OSCILLATOR STRENGTH"],
+                              my_v["OSCILLATOR STRENGTH (LEN)"],
                               f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Length-gauge oscillator strength",
                               atol=1.0e-3)
 
@@ -223,7 +223,7 @@ def test_tdscf(mol, ref, func, ptype, basis, molecules, reference_data):
         # compare velocity-gauge oscillator strengths
         ref_f_V = _oscillator_strength(ref_e, ref_edtm_V, "V")
         assert compare_values(ref_f_V,
-                              my_v["VELOCITY-GAUGE OSCILLATOR STRENGTH"],
+                              my_v["OSCILLATOR STRENGTH (VEL)"],
                               f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Velocity-gauge oscillator strength",
                               atol=1.0e-2)
 
@@ -231,13 +231,13 @@ def test_tdscf(mol, ref, func, ptype, basis, molecules, reference_data):
         # compare length-gauge rotatory strengths
         ref_R_L = _rotatory_strength(ref_e, ref_edtm_L, ref_mdtm, "L")
         assert compare_values(ref_R_L,
-                              my_v["LENGTH-GAUGE ROTATORY STRENGTH"],
+                              my_v["ROTATORY STRENGTH (LEN)"],
                               f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Length-gauge rotatory strength",
                               atol=2.0e-3)
 
         # compare velocity-gauge rotatory strengths
         ref_R_V = _rotatory_strength(ref_e, ref_edtm_V, ref_mdtm, "V")
         assert compare_values(ref_R_V,
-                              my_v["VELOCITY-GAUGE ROTATORY STRENGTH"],
+                              my_v["ROTATORY STRENGTH (VEL)"],
                               f"{mol}_{ref}_{func}_{ptype}-ROOT_{i+1} Velocity-gauge rotatory strength",
                               atol=2.0e-3)
