@@ -177,6 +177,21 @@ class PSI_API DFHelper {
 
 
     ///
+    /// sets the coefficient for (pq|rs) integrals
+    /// @param omega double indicating coefficient for eri
+    ///
+    void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
+    size_t get_omega_alpha() { return omega_alpha_; }
+    
+    ///
+    /// sets the parameter for the other type of integrals
+    /// @param omega double indicating parameter for other type
+    ///
+    void set_omega_beta(double beta) { omega_beta_ = beta; }
+    size_t get_omega_beta() { return omega_beta_; }
+
+
+    ///
     /// set the printing verbosity parameter
     /// @param print_lvl indicating verbosity
     ///

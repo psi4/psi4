@@ -1330,7 +1330,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
         wbuffer[rank] = weri[rank]->buffer();
     }
 
-
 #pragma omp parallel for schedule(guided) num_threads(nthread)
     for (size_t MU = start; MU <= stop; MU++) {
         int rank = 0;

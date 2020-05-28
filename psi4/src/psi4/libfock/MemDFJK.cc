@@ -82,12 +82,14 @@ void MemDFJK::preiterations() {
     dfh_->set_memory(memory_ - memory_overhead());
     dfh_->set_do_wK(do_wK_);
     dfh_->set_omega(omega_);
+
     if (do_wK_) { 
         dfh_->set_wcombine(wcombine_); 
     } else {
         dfh_->set_wcombine(false);
         wcombine_ = false;
     }
+
     dfh_->set_omega_alpha(omega_alpha_);
     dfh_->set_omega_beta(omega_beta_);
 

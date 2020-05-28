@@ -200,7 +200,6 @@ void RHF::form_G() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-
     if (alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) ) {
         G_->axpy(-alpha, K_);
     } else {
@@ -320,7 +319,6 @@ double RHF::compute_E() {
     double exchange_E = 0.0;
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-
 
 /*    if (jk_->get_do_wK() && jk_->name() == "MemDFJK" && jk_->get_wcombine()){
         exchange_E -= Da_->vector_dot(wK_);
