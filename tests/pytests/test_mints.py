@@ -13,10 +13,7 @@ def test_export_ao_elec_dip_deriv():
         symmetry c1
     """)
 
-    psi4.core.set_active_molecule(h2o)
-    psi4.set_options({'basis': 'cc-pVDZ'})
-
-    rhf_e, wfn = psi4.energy('SCF', return_wfn=True)
+    rhf_e, wfn = psi4.energy('SCF/cc-pVDZ', molecule=h2o, return_wfn=True)
 
     mints = psi4.core.MintsHelper(wfn.basisset())
 
@@ -52,7 +49,7 @@ def test_export_ao_overlap_half_deriv():
         symmetry c1
     """)
 
-    rhf_e, wfn = psi4.energy('SCF/STO-3G', molecule=h2o, return_wfn=True)
+    rhf_e, wfn = psi4.energy('SCF/cc-PVDZ', molecule=h2o, return_wfn=True)
     C = wfn.Ca_subset("AO", "ALL")
 
     mints = psi4.core.MintsHelper(wfn.basisset())
