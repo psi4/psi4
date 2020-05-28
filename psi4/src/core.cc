@@ -32,6 +32,8 @@
 #include <sstream>
 #include <sys/stat.h>
 
+#include <highfive/H5Easy.hpp>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
@@ -104,6 +106,8 @@ char* psi_file_prefix;
 std::string outfile_name;
 std::string restart_id;
 std::shared_ptr<PsiOutStream> outfile;
+std::string h5file_name;
+std::shared_ptr<H5Easy::File> h5file;
 
 // Wavefunction returns
 namespace adc {
@@ -222,6 +226,15 @@ void py_reopen_outfile() {
     }
 }
 
+void py_reopen_h5file() {
+    auto mode = H5Easy::File::ReadWrite;
+    try {
+        h5file = std::make_shared<H5Easy::File>(h5file_name, mode);
+    } catch (H5Easy::Exception& err) {
+        throw PSIEXCEPTION("Psi4: ");  // + err.what());
+    }
+}
+
 void py_be_quiet() {
     py_close_outfile();
     auto mode = std::ostream::app;
@@ -230,6 +243,8 @@ void py_be_quiet() {
 }
 
 std::string py_get_outfile_name() { return outfile_name; }
+
+std::string py_get_h5file_name() { return h5file_name; }
 
 void py_psi_prepare_options_for_module(std::string const& name) {
     // Tell the options object which module is about to run
@@ -962,6 +977,8 @@ bool psi4_python_module_initialize() {
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
     psi_file_prefix = strdup(fprefix.c_str());
 
+    h5file = std::make_shared<H5Easy::File>("psi4.h5", H5Easy::File::Overwrite);
+
     // There is only one timer:
     timer_init();
 
@@ -1003,6 +1020,9 @@ void psi4_python_module_finalize() {
 
     outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = nullptr;
+
+    int A = 10000;
+    H5Easy::dump(*h5file, "/path/to/A", A);
 }
 
 PYBIND11_MODULE(core, core) {

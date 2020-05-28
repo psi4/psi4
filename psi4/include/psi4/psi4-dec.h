@@ -29,9 +29,12 @@
 #ifndef psi_include_psi4_dec_h
 #define psi_include_psi4_dec_h
 
-#include "psi4/pragma.h"
 #include <string>
 #include <memory>
+
+#include <highfive/H5Easy.hpp>
+
+#include "psi4/pragma.h"
 
 /// This is all defined in python.cc initialize
 namespace psi {
@@ -39,6 +42,9 @@ namespace psi {
 class PsiOutStream;
 extern PSI_API std::shared_ptr<PsiOutStream> outfile;
 extern std::string outfile_name;
+
+extern PSI_API std::shared_ptr<H5Easy::File> h5file;
+extern std::string h5file_name;
 
 extern char *psi_file_prefix;
 extern std::string restart_id;  // Does not have a default
