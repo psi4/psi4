@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <chrono>
 #include <cstdio>
 #include <iomanip>
 #include <map>
@@ -227,9 +228,8 @@ void py_reopen_outfile() {
 }
 
 void py_reopen_h5file() {
-    auto mode = H5Easy::File::ReadWrite;
     try {
-        h5file = std::make_shared<H5Easy::File>(h5file_name, mode);
+        h5file = std::make_shared<H5Easy::File>(h5file_name, H5Easy::File::ReadWrite);
     } catch (H5Easy::Exception& err) {
         throw PSIEXCEPTION("Psi4: ");  // + err.what());
     }
@@ -961,6 +961,15 @@ void py_psi_print_variable_map() {
 
 std::string py_psi_top_srcdir() { return TOSTRING(PSI_TOP_SRCDIR); }
 
+std::string get_date_string(std::chrono::system_clock::time_point t) {
+    auto as_time_t = std::chrono::system_clock::to_time_t(t);
+    char buf[128];
+    if (std::strftime(buf, sizeof(buf), "%T %F", std::localtime(&as_time_t))) {
+        return std::string{buf};
+    }
+    throw PSIEXCEPTION("Failed to get current date as string");
+}
+
 bool psi4_python_module_initialize() {
     static bool initialized = false;
 
@@ -978,6 +987,7 @@ bool psi4_python_module_initialize() {
     psi_file_prefix = strdup(fprefix.c_str());
 
     h5file = std::make_shared<H5Easy::File>("psi4.h5", H5Easy::File::Overwrite);
+    H5Easy::dump(*h5file, "/initialized", get_date_string(std::chrono::system_clock::now()));
 
     // There is only one timer:
     timer_init();
@@ -1021,8 +1031,7 @@ void psi4_python_module_finalize() {
     outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = nullptr;
 
-    int A = 10000;
-    H5Easy::dump(*h5file, "/path/to/A", A);
+    H5Easy::dump(*h5file, "/done", get_date_string(std::chrono::system_clock::now()));
 }
 
 PYBIND11_MODULE(core, core) {
