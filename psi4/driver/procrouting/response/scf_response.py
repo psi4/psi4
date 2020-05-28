@@ -309,6 +309,15 @@ def _solve_loop(wfn,
                 states_per_irrep: List[int],
                 restricted: bool = True,
                 spin_mult: str = "singlet") -> List[_TDSCFResults]:
+    """
+
+    References
+    ----------
+    For the expression of the transition moments in length and velocity gauges:
+
+    .. [Pedersen1995-du] T. B. Pedersen, A. E. Hansen, "Ab Initio Calculation and Display of the Rotary Strength Tensor in the Random Phase Approximation. Method and Model Studies." Chem. Phys. Lett., 246, 1 (1995)
+    .. [Lestrange2015-xn] P. J. Lestrange, F. Egidi, X. Li, "The Consequences of Improperly Describing Oscillator Strengths beyond the Electric Dipole Approximation." J. Chem. Phys., 143, 234103 (2015)
+    """
 
     # collect results and compute some spectroscopic observables
     mints = core.MintsHelper(wfn.basisset())
@@ -451,13 +460,6 @@ def tdscf_excitations(wfn,
     For each irrep, the algorithm will store up to `max_ss_size` trial vectors
     before collapsing (restarting) the iterations from the `n` best
     approximations.
-
-    References
-    ----------
-    For the expression of the transition moments in length and velocity gauges:
-
-    .. [Pedersen1995-du] T. B. Pedersen, A. E. Hansen, "Ab Initio Calculation and Display of the Rotary Strength Tensor in the Random Phase Approximation. Method and Model Studies." Chem. Phys. Lett., 246, 1 (1995)
-    .. [Lestrange2015-xn] P. J. Lestrange, F. Egidi, X. Li, "The Consequences of Improperly Describing Oscillator Strengths beyond the Electric Dipole Approximation." J. Chem. Phys., 143, 234103 (2015)
     """
 
     # validate states
@@ -495,6 +497,11 @@ def tdscf_excitations(wfn,
 
     if guess.lower() != "denominators":
         raise ValidationError(f"Guess type {guess} is not valid")
+
+    if core.has_option_changed('SCF', 'TDSCF_R_CONVERGENCE'):
+        r_convergence = core.get_option('SCF', 'TDSCF_R_CONVERGENCE')
+    else:
+        r_convergence = min(1.e-4, core.get_option('SCF', 'D_CONVERGENCE') * 1.e2)
 
     # tie maximum number of vectors per root to requested residual tolerance
     # This gives 100 vectors per root with default tolerance
