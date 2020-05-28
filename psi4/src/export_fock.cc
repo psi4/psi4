@@ -69,6 +69,7 @@ void export_fock(py::module &m) {
         .def("set_omega", &JK::set_omega)
         .def("set_omega_alpha", &JK::set_omega_alpha)
         .def("set_omega_beta", &JK::set_omega_beta)
+        .def("set_wcombine", &JK::set_wcombine)
         .def("compute", &JK::compute)
         .def("finalize", &JK::finalize)
         .def("C_clear",

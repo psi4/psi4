@@ -166,7 +166,7 @@ void DFHelper::initialize() {
     // if metric power is not zero, prepare it
     if (!(std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
 
-    // if metric power for omega integrals, prepare its metric
+    // if metric power for omega integrals is not zero, prepare its metric
     if (do_wK_) {
         if (!(std::fabs(wmpower_ - 0.0) < 1e-13) && (std::fabs(mpower_ - 0.0) < 1e-13))
             (hold_met_ ? prepare_metric_core() : prepare_metric());
@@ -218,7 +218,8 @@ void DFHelper::AO_core() {
         required_core_size_ = naux_ * nbf_ * nbf_;
     } else {
         // total size of sparse AOs.
-        required_core_size_ = (do_wK_ ? 3 * big_skips_[nbf_] : big_skips_[nbf_]);
+        // yes, a nested ternary operator
+        required_core_size_ = (do_wK_ ? ( wcombine_ ? 2 * big_skips_[nbf_] : 3 * big_skips_[nbf_] ) : big_skips_[nbf_]);
     }
 
     // Auxiliary metric
@@ -570,11 +571,15 @@ void DFHelper::prepare_AO_wK_core() {
 
     wPpq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
     /* I don't think I'm going to need Ppq_ in the long term, but in the short term, I need it to build J*/
-    Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
+    if (!wcombine_) Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
+
     m1Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
 
     double* wppq = wPpq_.get();
-    double* ppq = Ppq_.get();
+
+    double* ppq;
+    if (!wcombine_) ppq = Ppq_.get();
+
     double* m1ppq = m1Ppq_.get();
 
     std::unique_ptr<double[]> Qpq(new double[std::get<0>(plargest)]);
@@ -606,44 +611,54 @@ void DFHelper::prepare_AO_wK_core() {
         size_t begin = pshell_aggs_[start];
         size_t end = pshell_aggs_[stop + 1] - 1;
 
-/*
-        // compute (A|mn)
-        compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
-
-        // contract full metric inverse
-        contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
-*/
-
-/*
-        // compute (A|w|mn)
-        timer_on("DFH: wAO Construction");
-        compute_sparse_pQq_blocking_p_symm(start, stop, M1p, weri);
-        timer_off("DFH: wAO Construction");
-
-        timer_on("DFH: wAO Copy");
-        copy_upper_lower_wAO_core_symm(M1p, wppq, begin, end);
-        timer_off("DFH: wAO Copy");
-*/
-
-        // computes (Q|mn) and (Q|w|mn)
-        timer_on("DFH: AO Construction");
-        compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
-        timer_off("DFH: AO Construction");
-
-        // contract half metric inverse I'm planning to get rid of this
-        timer_on("DFH: AO-Met. Contraction");
-        contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
-        timer_off("DFH: AO-Met. Contraction");
-
-
-        // computes  [J^{-1.0}](Q|mn)
-        timer_on("DFH: AO-Met. Contraction");
-        contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
-        timer_off("DFH: AO-Met. Contraction");
-
-        copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
+        if ( wcombine_ ) {
+            // computes (Q|mn) and (Q|w|mn)
+            timer_on("DFH: AO Construction");
+            compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
+            timer_off("DFH: AO Construction");
+    
+            // contract half metric inverse I'm planning to get rid of this
+            /* timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
+            timer_off("DFH: AO-Met. Contraction"); */
+    
+            // computes  [J^{-1.0}](Q|mn)
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
+            copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
+        } else {
+    /*
+            // compute (A|w|mn)
+            timer_on("DFH: wAO Construction");
+            compute_sparse_pQq_blocking_p_symm(start, stop, M1p, weri);
+            timer_off("DFH: wAO Construction");
+    
+            timer_on("DFH: wAO Copy");
+            copy_upper_lower_wAO_core_symm(M1p, wppq, begin, end);
+            timer_off("DFH: wAO Copy");
+    */
+    
+            // computes (Q|mn) and (Q|w|mn)
+            timer_on("DFH: AO Construction");
+            compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
+            timer_off("DFH: AO Construction");
+    
+            // contract half metric inverse I'm planning to get rid of this
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
+    
+            // computes  [J^{-1.0}](Q|mn)
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
+            copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
+        }
     }
-
     // no more need for metrics
     if (hold_met_) metrics_.clear();
 }
@@ -664,7 +679,12 @@ std::pair<size_t, size_t> DFHelper::pshell_blocks_for_AO_build(const size_t mem,
             // the second buffer is accounted for with full AO_core
             current = symm_big_skips_[end + 1] - symm_big_skips_[begin];
             if (do_wK_) {
-                current *= 3;
+                if (wcombine_) {
+                    current *= 2; 
+                }
+                else {
+                    current *= 3;
+                } 
             }
             total += current;
         } else {
@@ -1315,6 +1335,7 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
         wbuffer[rank] = weri[rank]->buffer();
     }
 
+
 #pragma omp parallel for schedule(guided) num_threads(nthread)
     for (size_t MU = start; MU <= stop; MU++) {
         int rank = 0;
@@ -1392,13 +1413,14 @@ double* DFHelper::metric_prep_core(double m_pow) {
         power = m_pow;
         SharedMatrix J = metrics_[1.0];
         if (fabs(m_pow + 1.0) < 1e-13) {
-            J->invert();
+            J->general_invert();
+        } else if ( fabs(m_pow - 1.0) < 1e-13 ) {
+            return J->pointer()[0];
         } else {
             J->power(power, condition_);
         }
         metrics_[power] = J;
     }
-
     return metrics_[power]->pointer()[0];
 }
 void DFHelper::prepare_metric() {
@@ -2949,17 +2971,24 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         outfile->Printf("Entering DFHelper::build_JK\n");
     }
     bool store_k = do_K;
+<<<<<<< HEAD
     if ( do_wK ) { do_K = false;} 
+=======
+    if ( do_wK && wcombine_ ) { do_K = false; } 
+>>>>>>> 3e6d62869... Fixes ctest failures and includes reduced memory wJK build algorithm
 
     // This was an if-else statement. Presumably, we could manage J construction
     //   to more effectively manage memory, so I think that was what was going on.
-
     if (do_J || do_K) {
         timer_on("DFH: compute_JK()");
         compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK, lr_symmetric);
         timer_off("DFH: compute_JK()");
+<<<<<<< HEAD
     }
 
+=======
+   }
+>>>>>>> 3e6d62869... Fixes ctest failures and includes reduced memory wJK build algorithm
     if (do_wK_) {
         timer_on("DFH: compute_wK()");
         compute_wK(Cleft, Cright, K, max_nocc, do_J, do_K, do_wK);
@@ -3016,8 +3045,13 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     // allocate first Ktmp
     size_t Ktmp_size = (!max_nocc ? totsb * 1 : totsb * max_nocc);
     Ktmp_size = std::max(Ktmp_size * nbf_, nthreads_ * naux_);  // max necessary
+    Ktmp_size = std::max(Ktmp_size, nbf_ * nbf_); 
+    Ktmp_size = std::max(Ktmp_size, nthreads_ * naux_);
     T1 = std::unique_ptr<double[]>(new double[Ktmp_size]);
     double* T1p = T1.get();
+
+
+
 
     // if lr_symmetric, we can be more clever with mem usage. T2 is used for both the
     // second tmp in the K build, as well as the completed, pruned J build.
@@ -3027,6 +3061,10 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         Ktmp_size = std::max(nbf_ * nbf_, Ktmp_size);  // max necessary
     }
 
+    // necessary for wcombine case for small molecules
+    Ktmp_size = std::max(Ktmp_size, nbf_ * nbf_); 
+    Ktmp_size = std::max(Ktmp_size, nthreads_ * naux_);
+
     T2 = std::unique_ptr<double[]>(new double[Ktmp_size]);
     double* T2p = T2.get();
 
@@ -3035,7 +3073,14 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         M = std::unique_ptr<double[]>(new double[tots]);
         Mp = M.get();
     } else
-        Mp = Ppq_.get();
+        if (!wcombine_) Mp = Ppq_.get();
+
+    double* M1p;
+    if (wcombine_) {
+        M1p = m1Ppq_.get();
+    } else {
+        //M1p = nullptr;
+    }
 
     // transform in steps (blocks of Q)
     for (size_t j = 0, bcount = 0; j < Qsteps.size(); j++) {
@@ -3056,13 +3101,16 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
             grab_AO(start, stop, Mp);
         }
         timer_off("DFH: Grabbing AOs");
-
         if (do_J) {
             timer_on("DFH: compute_J");
-            if (lr_symmetric) {
-                compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+            if (wcombine_ && do_wK_) {
+                compute_J_combined(D, J, M1p, T1p, T2p, C_buffers, bcount, block_size);
             } else {
-                compute_J(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+                if (lr_symmetric) {
+                    compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+                } else {
+                    compute_J(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
+                }
             }
             timer_off("DFH: compute_J");
         }
@@ -3195,6 +3243,71 @@ void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> 
                 if (schwarz_fun_mask_[k * nbf_ + m]) {
                     count++;
                     Jp[k * nbf_ + m] += T2p[k * nbf_ + count];
+                }
+            }
+        }
+    }
+}
+void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p, std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size) {
+//    double* coul_metp = metric_prep_core(1.0);
+    double ZERO[16] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double* zerop = &ZERO[0];
+    double* coul_metp;
+    std::unique_ptr<double[]> metric;
+
+
+    if (!hold_met_) {
+        metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+        coul_metp = metric.get();
+        std::string filename = return_metfile(1.0);
+        get_tensor_(std::get<0>(files_[filename]), coul_metp, 0, naux_ - 1, 0, naux_ - 1);
+    } else
+        coul_metp = metric_prep_core(1.0);
+
+
+    for (size_t i = 0; i < J.size(); i++) {
+        double* Dp = D[i]->pointer()[0];
+        double* Jp = J[i]->pointer()[0];
+        C_DCOPY(naux_ *  nthreads_, zerop, 0, T1p, 1);
+        C_DCOPY(naux_, zerop, 0, T2p, 1);
+
+#pragma omp parallel for schedule(guided) num_threads(nthreads_)
+        for (size_t k = 0; k < nbf_; k++) {
+            size_t sp_size = small_skips_[k];
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux_ );
+            int rank = 0;
+#ifdef _OPENMP 
+            rank = omp_get_thread_num();
+#endif
+            for (size_t m = 0, sp_count = -1; m < nbf_; m++) {
+                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                    sp_count++;
+                    D_buffers[rank][sp_count] = Dp[nbf_ * m + k];
+                }
+            }
+            C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, &D_buffers[rank][0], 1, 1.0, &T1p[rank * naux_], 1);
+        }
+        //reduce
+        for (size_t k = 1; k < nthreads_; k++) {
+            for (size_t l = 0; l < naux_; l++) { T1p[l] += T1p[ k * naux_ + l ]; }
+        }
+        //metric contraction
+        C_DGEMV('N', naux_, naux_, 1.0, coul_metp, naux_, T1p, 1, 0.0, T2p, 1);
+
+        C_DCOPY(nbf_ * nbf_, zerop, 0, T1p, 1);
+        // comute pruned J
+#pragma omp parallel for schedule(guided) num_threads(nthreads_)
+        for (size_t k = 0; k < nbf_; k++ ) {
+            size_t sp_size = small_skips_[k];
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux_ );
+            C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, T2p, 1, 0.0, &T1p[k*nbf_], 1);
+        }
+
+        for (size_t k = 0; k < nbf_; k++) {
+            for (size_t m = 0, count = -1; m < nbf_; m++) {
+                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                    count++;
+                    Jp[k * nbf_ + m ] += T1p[k * nbf_ + count];
                 }
             }
         }

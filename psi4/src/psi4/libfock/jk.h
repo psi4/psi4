@@ -436,6 +436,15 @@ class PSI_API JK {
     *        defaults to false
     */
     virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
+    bool get_do_wK() {return do_wK_;}
+    /**
+    * Set to combine wK integral tensors
+    * @param wcombine do we combine wK matrices?
+    *        defaults to false unless MemDFJK
+    */
+    virtual void set_wcombine(bool wcombine); //{ wcombine_ = wcombine; }
+    bool get_wcombine() { return wcombine_; }
+
     /**
     * Set the omega value for wK
     * @param omega range-separation parameter

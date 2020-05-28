@@ -206,7 +206,7 @@ void UHF::form_G() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-    if (alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK")){
+    if ( alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) ){
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
@@ -214,7 +214,7 @@ void UHF::form_G() {
         Kb_->zero();
     }
     if (functional_->is_x_lrc()) {
-        if (jk_->name() == "MemDFJK") {
+        if (jk_->name() == "MemDFJK" && jk_->get_wcombine()) {
             Ga_->axpy(-1.0, wKa_);
             Gb_->axpy(-1.0, wKb_);
         }
@@ -337,8 +337,13 @@ double UHF::compute_E() {
         exchange_E -= alpha * Db_->vector_dot(Kb_);
     }
     if (functional_->is_x_lrc()) {
-        exchange_E -= beta * Da_->vector_dot(wKa_);
-        exchange_E -= beta * Db_->vector_dot(wKb_);
+        if (jk_->get_do_wK() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) {
+            exchange_E -=  Da_->vector_dot(wKa_);
+            exchange_E -=  Db_->vector_dot(wKb_);
+        } else {
+            exchange_E -= beta * Da_->vector_dot(wKa_);
+            exchange_E -= beta * Db_->vector_dot(wKb_);
+        }
     }
 
     energies_["Nuclear"] = nuclearrep_;
@@ -556,9 +561,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             Dx.push_back(Dx_b);
         }
         potential_->compute_Vx(Dx, Vx);
-    }
-
-    Cl.clear();
+    } Cl.clear();
     Cr.clear();
 
     // Build return vector
@@ -592,6 +595,9 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             ret.push_back(J[nvecs + i]);
         }
     } else {
+        if (jk_->get_wcombine()) {
+            throw PSIEXCEPTION("SCF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
+        }
         for (size_t i = 0; i < nvecs; i++) {
             J[i]->add(J[nvecs + i]);
             J[nvecs + i]->copy(J[i]);

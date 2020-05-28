@@ -1606,6 +1606,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Max number of vectors to store before collapsing -*/
         options.add_int("TDSCF_MAX_SS_VECTORS",50);
 
+        /* combine omega exchange and HF exchange into one matrix */
+        options.add_bool("WCOMBINE", false);
     }
     if (name == "CPHF" || options.read_globals()) {
         /*- The amount of information printed

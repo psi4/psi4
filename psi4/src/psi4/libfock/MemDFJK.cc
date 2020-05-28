@@ -72,6 +72,8 @@ void MemDFJK::preiterations() {
     // Initialize calls your derived class's preiterations member
     // knobs are set and state variables assigned
 
+    //printf("wcombine_ is %s \n", (wcombine_? "True" : "False" ));
+
     // use previously set state variables to dfh instance
     dfh_->set_nthreads(omp_nthread_);
     dfh_->set_schwarz_cutoff(cutoff_);
@@ -80,6 +82,12 @@ void MemDFJK::preiterations() {
     dfh_->set_memory(memory_ - memory_overhead());
     dfh_->set_do_wK(do_wK_);
     dfh_->set_omega(omega_);
+    if (do_wK_) { 
+        dfh_->set_wcombine(wcombine_); 
+    } else {
+        dfh_->set_wcombine(false);
+        wcombine_ = false;
+    }
     dfh_->set_omega_alpha(omega_alpha_);
     dfh_->set_omega_beta(omega_beta_);
 
@@ -128,4 +136,10 @@ int MemDFJK::max_nocc() const {
     return max_nocc;
 }
 void MemDFJK::set_do_wK(bool tf) { do_wK_ = tf; dfh_->set_do_wK(tf); }
+void MemDFJK::set_wcombine(bool wcombine) { 
+    wcombine_ = wcombine;
+    if (dfh_) {
+        dfh_->set_wcombine(wcombine); 
+    }
+}
 }
