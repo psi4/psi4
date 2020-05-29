@@ -4,6 +4,7 @@ import pytest
 #    contractual_ccsd_prt_pr,
 #    contractual_current,
 #    contractual_lccd,
+#    contractual_lccsd,
 #    contractual_mp2,
 #    query_has_qcvar,
 #    query_qcvar,
@@ -27,7 +28,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # ? precedence on next two
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
-    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type, "lccd": cc_type}
+    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type, "lccd": cc_type, "lccsd": cc_type}
     corl_type = corl_natural_values[method]
 
     natural_ref = {"conv": "pk", "df": "df", "cd": "cd"}
@@ -107,6 +108,9 @@ def runner_asserter(inp, subject, method, basis, tnm):
         elif method == "lccd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_lccd)
+        elif method == "lccsd":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_lccsd)
         elif method == "ccsd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_ccsd)

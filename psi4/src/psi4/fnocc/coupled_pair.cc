@@ -173,10 +173,14 @@ double CoupledPair::compute_energy() {
             set_scalar_variable("LCCD SAME-SPIN CORRELATION ENERGY", eccsd_ss);
             set_scalar_variable("LCCD TOTAL ENERGY", eccsd + escf);
         } else {
+            set_scalar_variable("LCCSD SINGLES ENERGY", 0.0);  // fnocc RHF only
+            set_scalar_variable("LCCSD DOUBLES ENERGY", eccsd_os + eccsd_ss);
             set_scalar_variable("LCCSD CORRELATION ENERGY", eccsd);
             set_scalar_variable("LCCSD OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
             set_scalar_variable("LCCSD SAME-SPIN CORRELATION ENERGY", eccsd_ss);
             set_scalar_variable("LCCSD TOTAL ENERGY", eccsd + escf);
+            set_scalar_variable("CEPA(0) SINGLES ENERGY", 0.0);  // fnocc RHF only
+            set_scalar_variable("CEPA(0) DOUBLES ENERGY", eccsd_os + eccsd_ss);
             set_scalar_variable("CEPA(0) CORRELATION ENERGY", eccsd);
             set_scalar_variable("CEPA(0) OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
             set_scalar_variable("CEPA(0) SAME-SPIN CORRELATION ENERGY", eccsd_ss);
