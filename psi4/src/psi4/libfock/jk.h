@@ -254,6 +254,9 @@ class PSI_API JK {
     /// Do wK matrices? Defaults to false
     bool do_wK_;
 
+    /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
+    bool wcombine_;
+
     /// Omega, defaults to 0.0
     double omega_;
 
@@ -1086,6 +1089,7 @@ class PSI_API MemDFJK : public JK {
 
     void set_omega_alpha(double alpha);
     void set_omega_beta(double beta);
+    void set_wcombine(bool wcombine);
 
     /**
      * Returns the DFHelper object

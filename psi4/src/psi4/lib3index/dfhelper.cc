@@ -570,14 +570,14 @@ void DFHelper::prepare_AO_wK_core() {
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 1, psteps);
 
     wPpq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
-    /* I don't think I'm going to need Ppq_ in the long term, but in the short term, I need it to build J*/
-    if (!wcombine_) Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
-
     m1Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
 
-    double* wppq = wPpq_.get();
+    if (!wcombine_) Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
 
+
+    double* wppq = wPpq_.get();
     double* ppq;
+
     if (!wcombine_) ppq = Ppq_.get();
 
     double* m1ppq = m1Ppq_.get();
@@ -629,7 +629,20 @@ void DFHelper::prepare_AO_wK_core() {
     
             copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
         } else {
-    /*
+            timer_on("DFH: AO Construction");
+            compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
+            timer_on("DFH: AO Construction");
+
+            // contract half metric inverse
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
+            // contract full metric inverse computes  [J^{-1.0}](Q|mn)
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
             // compute (A|w|mn)
             timer_on("DFH: wAO Construction");
             compute_sparse_pQq_blocking_p_symm(start, stop, M1p, weri);
@@ -638,25 +651,6 @@ void DFHelper::prepare_AO_wK_core() {
             timer_on("DFH: wAO Copy");
             copy_upper_lower_wAO_core_symm(M1p, wppq, begin, end);
             timer_off("DFH: wAO Copy");
-    */
-    
-            // computes (Q|mn) and (Q|w|mn)
-            timer_on("DFH: AO Construction");
-            compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
-            timer_off("DFH: AO Construction");
-    
-            // contract half metric inverse I'm planning to get rid of this
-            timer_on("DFH: AO-Met. Contraction");
-            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
-            timer_off("DFH: AO-Met. Contraction");
-    
-    
-            // computes  [J^{-1.0}](Q|mn)
-            timer_on("DFH: AO-Met. Contraction");
-            contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
-            timer_off("DFH: AO-Met. Contraction");
-    
-            copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
         }
     }
     // no more need for metrics
@@ -2971,11 +2965,7 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         outfile->Printf("Entering DFHelper::build_JK\n");
     }
     bool store_k = do_K;
-<<<<<<< HEAD
-    if ( do_wK ) { do_K = false;} 
-=======
     if ( do_wK && wcombine_ ) { do_K = false; } 
->>>>>>> 3e6d62869... Fixes ctest failures and includes reduced memory wJK build algorithm
 
     // This was an if-else statement. Presumably, we could manage J construction
     //   to more effectively manage memory, so I think that was what was going on.
@@ -2983,15 +2973,11 @@ void DFHelper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         timer_on("DFH: compute_JK()");
         compute_JK(Cleft, Cright, D, J, K, max_nocc, do_J, do_K, do_wK, lr_symmetric);
         timer_off("DFH: compute_JK()");
-<<<<<<< HEAD
     }
 
-=======
-   }
->>>>>>> 3e6d62869... Fixes ctest failures and includes reduced memory wJK build algorithm
     if (do_wK_) {
         timer_on("DFH: compute_wK()");
-        compute_wK(Cleft, Cright, K, max_nocc, do_J, do_K, do_wK);
+        compute_wK(Cleft, Cright, wK, max_nocc, do_J, do_K, do_wK);
         timer_off("DFH: compute_wK()");
     }
 

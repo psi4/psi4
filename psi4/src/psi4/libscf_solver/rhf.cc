@@ -203,21 +203,11 @@ void RHF::form_G() {
     if (alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) ) {
         G_->axpy(-alpha, K_);
     } else {
-        if (alpha != 0.0) {
-            G_->axpy(-alpha, K_);
-        } else {
-            K_->zero();
-        }
-    
-        if (functional_->is_x_lrc()) {
-            G_->axpy(-beta, wK_);
-        } else {
-            wK_->zero();
-        }
+        K_->zero();
     }
 
     if (functional_->is_x_lrc()) {
-        if (jk_->name() == "MemDFJK") {
+        if (jk_->name() == "MemDFJK" && jk_->get_wcombine()) {
             G_->axpy(-1.0, wK_);
         } else {
             G_->axpy(-beta, wK_);
@@ -328,7 +318,6 @@ double RHF::compute_E() {
     double exchange_E = 0.0;
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-
 
     if (functional_->is_x_hybrid()) {
         exchange_E -= alpha * Da_->vector_dot(K_);

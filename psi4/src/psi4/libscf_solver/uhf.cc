@@ -213,6 +213,7 @@ void UHF::form_G() {
         Ka_->zero();
         Kb_->zero();
     }
+
     if (functional_->is_x_lrc()) {
         if (jk_->name() == "MemDFJK" && jk_->get_wcombine()) {
             Ga_->axpy(-1.0, wKa_);
