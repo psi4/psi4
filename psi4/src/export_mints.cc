@@ -964,10 +964,10 @@ void export_mints(py::module& m) {
         // One-electron
         .def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "AO basis overlap integrals")
         .def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "AO mixed basis overlap integrals")
-        .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals")
+        .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals", "include_perturbations"_a = true)
         .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "AO basis kinetic integrals")
         .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "AO mixed basis kinetic integrals")
-        .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals")
+        .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals", "include_perturbations"_a = true)
         .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",

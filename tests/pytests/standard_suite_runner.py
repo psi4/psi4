@@ -3,6 +3,7 @@ import pytest
 #    contractual_ccsd,
 #    contractual_ccsd_prt_pr,
 #    contractual_current,
+#    contractual_lccd,
 #    contractual_mp2,
 #    query_has_qcvar,
 #    query_qcvar,
@@ -26,7 +27,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # ? precedence on next two
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
-    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type}
+    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type, "lccd": cc_type}
     corl_type = corl_natural_values[method]
 
     natural_ref = {"conv": "pk", "df": "df", "cd": "cd"}
@@ -53,14 +54,13 @@ def runner_asserter(inp, subject, method, basis, tnm):
     psi4.set_options(
         {
             # "guess": "sad",
-            # "e_convergence": 8,
-            # "d_convergence": 7,
-            # "r_convergence": 7,
-
             # "e_convergence": 10,
             # "d_convergence": 9,
             # "r_convergence": 9,
             # "pcg_convergence": 9,
+
+            # runtime conv crit, solely for occ/dfocc needs
+            "e_convergence": 7,
             "pcg_convergence": 7,
             "points": 5,
         }
@@ -104,6 +104,9 @@ def runner_asserter(inp, subject, method, basis, tnm):
         print("BLOCK", chash, contractual_args)
         if method == "mp2":
             _asserter(asserter_args, contractual_args, contractual_mp2)
+        elif method == "lccd":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_lccd)
         elif method == "ccsd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_ccsd)
@@ -138,6 +141,12 @@ def runner_asserter(inp, subject, method, basis, tnm):
             ref_block[f"{method.upper()} TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn", atol=atol
         )
         assert compare_values(ref_block[f"{method.upper()} TOTAL GRADIENT"], ret.np, tnm + " grad return", atol=atol)
+
+    # generics
+    assert compare(ref_block["N BASIS FUNCTIONS"], wfn.nso(), tnm + " nbasis wfn"), f"nbasis {wfn.nso()} != {ref_block['N BASIS FUNCTIONS']}"
+    assert compare(ref_block["N MOLECULAR ORBITALS"], wfn.nmo(), tnm + " nmo wfn"), f"nmo {wfn.nmo()} != {ref_block['N MOLECULAR ORBITALS']}"
+    assert compare(ref_block["N ALPHA ELECTRONS"], wfn.nalpha(), tnm + " nalpha wfn"), f"nalpha {wfn.nalpha()} != {ref_block['N ALPHA ELECTRONS']}"
+    assert compare(ref_block["N BETA ELECTRONS"], wfn.nbeta(), tnm + " nbeta wfn"), f"nbeta {wfn.nbeta()} != {ref_block['N BETA ELECTRONS']}"
 
 
 def _asserter(asserter_args, contractual_args, contractual_fn):

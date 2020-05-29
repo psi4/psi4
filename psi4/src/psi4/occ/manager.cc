@@ -615,6 +615,9 @@ void OCCWave::cepa_manager() {
     outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
     outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", EcepaAA);
+    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", EcepaAB);
+    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", EcepaBB);
     outfile->Printf("\tLCCD Correlation Energy (a.u.)     : %20.14f\n", Ecorr);
     outfile->Printf("\tLCCD Total Energy (a.u.)           : %20.14f\n", Ecepa);
     outfile->Printf("\t============================================================================== \n");
@@ -623,6 +626,11 @@ void OCCWave::cepa_manager() {
     // Set the global variables with the energies
     variables_["LCCD TOTAL ENERGY"] = Ecepa;
     variables_["LCCD CORRELATION ENERGY"] = Ecorr;
+    variables_["LCCD SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+    variables_["LCCD OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
+    variables_["LCCD SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+    variables_["LCCD SINGLES ENERGY"] = 0.0;  // CEPA is RHF/UHF only
+    variables_["LCCD DOUBLES ENERGY"] = EcepaAB + EcepaAA + EcepaBB;
     variables_["CURRENT REFERENCE ENERGY"] = Eref;
     variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
     variables_["CUSTOM SCS-LCCD TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"];
@@ -632,6 +640,7 @@ void OCCWave::cepa_manager() {
                                                          {"NONE", Ecepa}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+    energy_ = variables_["CURRENT ENERGY"];
 
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {

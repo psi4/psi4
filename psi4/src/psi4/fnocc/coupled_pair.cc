@@ -155,6 +155,8 @@ double CoupledPair::compute_energy() {
     tstop();
 
     // mp2 energy
+    set_scalar_variable("MP2 SINGLES ENERGY", 0.0);  // fnocc RHF only
+    set_scalar_variable("MP2 DOUBLES ENERGY", emp2_os + emp2_ss);
     set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
     set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
     set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
@@ -164,6 +166,8 @@ double CoupledPair::compute_energy() {
     char *cepatype = (char *)malloc(100 * sizeof(char));
     if (cepa_level == 0) {
         if (options_.get_bool("CEPA_NO_SINGLES")) {
+            set_scalar_variable("LCCD SINGLES ENERGY", 0.0);  // fnocc RHF only
+            set_scalar_variable("LCCD DOUBLES ENERGY", eccsd_os + eccsd_ss);
             set_scalar_variable("LCCD CORRELATION ENERGY", eccsd);
             set_scalar_variable("LCCD OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
             set_scalar_variable("LCCD SAME-SPIN CORRELATION ENERGY", eccsd_ss);
