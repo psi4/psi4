@@ -331,8 +331,6 @@ void DFOCC::tei_grad_corr() {
 
     // gradients["3-Index:Corr"]->print_atom_vector();
     timer_off("Grad: 3-Index:Corr");
-
-    // outfile->Printf("\tref_grad is done. \n");
 }  // end
 
 }  // namespace dfoccwave

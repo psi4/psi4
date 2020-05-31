@@ -89,7 +89,6 @@ list(APPEND sources
   prepare4grad.cc
   properties.cc
   qchf.cc
-  ref_grad.cc
   s2_response.cc
   semi_canonic.cc
   separable_tpdm.cc
