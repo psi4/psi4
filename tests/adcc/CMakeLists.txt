@@ -21,3 +21,7 @@ add_subdirectory(hf-adc2-spin-flip)
 
 # Specific properties
 add_subdirectory(methyloxirane-rotation)
+
+if(ENABLE_cppe)
+    add_subdirectory(formaldehyde-pe-adc2)
+endif()
