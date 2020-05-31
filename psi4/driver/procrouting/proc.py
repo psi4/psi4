@@ -1086,7 +1086,7 @@ def select_adc2(name, **kwargs):
     # TODO Actually one should do selection on a couple of other options here
     #      as well, e.g. adcc supports frozen-core and frozen-virtual,
     #      spin-specific states or spin-flip methods.
-    #      But as far as I know the BUILTIN ADC routine only supports
+    #      But as far as I (mfherbst) know the BUILTIN ADC routine only supports
     #      singlet states and without freezing some core or some virtual orbitals.
 
     func = None
@@ -3401,8 +3401,8 @@ def run_adcc(name, **kwargs):
     # adc_wfn.set_variable("excitation kind", state.kind)
     adc_wfn.set_variable("number of iterations", state.n_iter)
     adc_wfn.set_variable(name + " excitation energies",
-                         core.Matrix.from_array(state.excitation_energies.reshape(-1, 1)))
-    adc_wfn.set_variable("number of excited states", len(state.excitation_energies))
+                         core.Matrix.from_array(state.excitation_energy.reshape(-1, 1)))
+    adc_wfn.set_variable("number of excited states", len(state.excitation_energy))
 
     core.print_out("\n\n  ==> Excited states summary <==  \n")
     core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")
@@ -3493,27 +3493,27 @@ def run_adcc_property(name, **kwargs):
 
     computed = {}
     if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
-        data = state.transition_dipole_moments
+        data = state.transition_dipole_moment
         computed["Transition dipole moment (in a.u.)"] = data
         adc_wfn.set_variable(f"{name} transition dipoles", core.Matrix.from_array(data))
 
     if "OSCILLATOR_STRENGTH" in properties:
         if gauge == "velocity":
-            data = state.oscillator_strengths_velocity.reshape(-1, 1)
+            data = state.oscillator_strength_velocity.reshape(-1, 1)
         else:
-            data = state.oscillator_strengths.reshape(-1, 1)
+            data = state.oscillator_strength.reshape(-1, 1)
         computed[f"Oscillator strength ({gauge} gauge)"] = data
         adc_wfn.set_variable(f"{name} oscillator strengths ({gauge_short})",
                              core.Matrix.from_array(data))
 
     if "ROTATIONAL_STRENGTH" in properties:
-        data = state.rotatory_strengths.reshape(-1, 1)
+        data = state.rotatory_strength.reshape(-1, 1)
         computed["Rotational strength (velocity gauge)"] = data
         adc_wfn.set_variable(f"{name} rotational strengths (VEL)",
                              core.Matrix.from_array(data))
 
     if "DIPOLE" in properties:
-        data = state.state_dipole_moments
+        data = state.state_dipole_moment
         computed["State dipole moment (in a.u.)"] = data
         adc_wfn.set_variable(f"{name} state dipoles", core.Matrix.from_array(data))
 
