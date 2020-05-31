@@ -6,6 +6,7 @@ import pytest
 #    contractual_lccd,
 #    contractual_lccsd,
 #    contractual_mp2,
+#    contractual_olccd,
 #    query_has_qcvar,
 #    query_qcvar,
 #)  # skip is temporary until references in place at qcng
@@ -28,7 +29,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # ? precedence on next two
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
-    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type, "lccd": cc_type, "lccsd": cc_type}
+    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type, "lccd": cc_type, "lccsd": cc_type, "olccd": cc_type}
     corl_type = corl_natural_values[method]
 
     natural_ref = {"conv": "pk", "df": "df", "cd": "cd"}
@@ -118,6 +119,9 @@ def runner_asserter(inp, subject, method, basis, tnm):
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_ccsd)
             _asserter(asserter_args, contractual_args, contractual_ccsd_prt_pr)
+        elif method == "olccd":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_olccd)
 
     if "wrong" in inp:
         errmsg, reason = inp["wrong"]
@@ -178,4 +182,4 @@ def _asserter(asserter_args, contractual_args, contractual_fn):
                 #   If a plain bool is compared in the assert, the printed message will show booleans and not numbers.
             else:
                 # verify and forgive known contract violations
-                assert compare(False, query_has_qcvar(obj, pv), label + " SKIP")
+                assert compare(False, query_has_qcvar(obj, pv), label + " SKIP"), f"{label} wrongly present"
