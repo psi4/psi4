@@ -547,6 +547,9 @@ void OCCWave::ocepa_manager() {
         outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
         outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
         outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", EcepaAA);
+        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", EcepaAB);
+        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", EcepaBB);
         outfile->Printf("\tOLCCD Correlation Energy (a.u.)    : %20.14f\n", EcepaL - Escf);
         outfile->Printf("\tEolccd - Eref (a.u.)               : %20.14f\n", EcepaL - Eref);
         outfile->Printf("\tOLCCD Total Energy (a.u.)          : %20.14f\n", EcepaL);
@@ -557,7 +560,10 @@ void OCCWave::ocepa_manager() {
         variables_["OLCCD TOTAL ENERGY"] = EcepaL;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
 
+        variables_["OLCCD REFERENCE CORRECTION ENERGY"] = Eref - Escf;
         variables_["OLCCD CORRELATION ENERGY"] = EcepaL - Escf;
+        variables_["OLCCD SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+        variables_["OLCCD OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
 
         variables_["CUSTOM SCS-OLCCD CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
         variables_["CUSTOM SCS-OLCCD TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OLCCD CORRELATION ENERGY"];
@@ -567,6 +573,14 @@ void OCCWave::ocepa_manager() {
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+        energy_ = variables_["CURRENT ENERGY"];
+
+        // ordinary ROHF-MP2 not available in course of ROHF-OLCCD
+        if (reference == "ROHF") {
+            del_scalar_variable("MP2 CORRELATION ENERGY");
+            del_scalar_variable("MP2 SINGLES ENERGY");
+            del_scalar_variable("MP2 TOTAL ENERGY");
+        }
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -615,6 +629,9 @@ void OCCWave::cepa_manager() {
     outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
     outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+    outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", EcepaAA);
+    outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", EcepaAB);
+    outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", EcepaBB);
     outfile->Printf("\tLCCD Correlation Energy (a.u.)     : %20.14f\n", Ecorr);
     outfile->Printf("\tLCCD Total Energy (a.u.)           : %20.14f\n", Ecepa);
     outfile->Printf("\t============================================================================== \n");
@@ -623,6 +640,10 @@ void OCCWave::cepa_manager() {
     // Set the global variables with the energies
     variables_["LCCD TOTAL ENERGY"] = Ecepa;
     variables_["LCCD CORRELATION ENERGY"] = Ecorr;
+    variables_["LCCD SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+    variables_["LCCD OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
+    variables_["LCCD SINGLES ENERGY"] = 0.0;  // CEPA is RHF/UHF only
+    variables_["LCCD DOUBLES ENERGY"] = EcepaAB + EcepaAA + EcepaBB;
     variables_["CURRENT REFERENCE ENERGY"] = Eref;
     variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
     variables_["CUSTOM SCS-LCCD TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"];
@@ -632,6 +653,7 @@ void OCCWave::cepa_manager() {
                                                          {"NONE", Ecepa}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+    energy_ = variables_["CURRENT ENERGY"];
 
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {

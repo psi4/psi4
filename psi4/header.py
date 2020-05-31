@@ -59,19 +59,26 @@ def print_header():
                          Git: Rev {}
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
 
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
 
-                         Additional Contributions by
-    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
-    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
