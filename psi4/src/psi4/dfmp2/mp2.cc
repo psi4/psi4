@@ -346,14 +346,10 @@ void DFMP2::form_singles() {
     SharedVector eps_aocc_b = epsilon_b_subset("SO", "ACTIVE_OCC");
     SharedVector eps_avir_b = epsilon_b_subset("SO", "ACTIVE_VIR");
 
-    auto Fia_a = std::make_shared<Matrix>("Fia a", Caocc_a->colspi(), Cavir_a->colspi());
-    auto Fia_b = std::make_shared<Matrix>("Fia b", Caocc_b->colspi(), Cavir_b->colspi());
+    auto Fia_a = linalg::triplet(Caocc_a, Fa_, Cavir_a, true, false, false);
+    auto Fia_b = linalg::triplet(Caocc_b, Fb_, Cavir_b, true, false, false);
 
-    double* temp =
-        new double[Fa_->max_nrow() *
-                   (size_t)(Cavir_a->max_ncol() > Cavir_b->max_ncol() ? Cavir_a->max_ncol() : Cavir_b->max_ncol())];
-
-    // Fia a
+    // Alpha spin
     for (int h = 0; h < Caocc_a->nirrep(); h++) {
         int nso = Fa_->rowspi()[h];
         int naocc = Caocc_a->colspi()[h];
@@ -361,17 +357,12 @@ void DFMP2::form_singles() {
 
         if (!nso || !naocc || !navir) continue;
 
-        double** Fsop = Fa_->pointer(h);
         double** Fmop = Fia_a->pointer(h);
-        double** Cip = Caocc_a->pointer(h);
-        double** Cap = Cavir_a->pointer(h);
-
-        C_DGEMM('N', 'N', nso, navir, nso, 1.0, Fsop[0], nso, Cap[0], navir, 0.0, temp, navir);
-        C_DGEMM('T', 'N', naocc, navir, nso, 1.0, Cip[0], naocc, temp, navir, 0.0, Fmop[0], navir);
 
         double* eps_i = eps_aocc_a->pointer(h);
         double* eps_a = eps_avir_a->pointer(h);
 
+        // E_singles -= f^i_a f^a_i / (εa - εi)
         for (int i = 0; i < naocc; i++) {
             for (int a = 0; a < navir; a++) {
                 E_singles_a -= Fmop[i][a] * Fmop[i][a] / (eps_a[a] - eps_i[i]);
@@ -379,7 +370,7 @@ void DFMP2::form_singles() {
         }
     }
 
-    // Fia b
+    // Beta spin
     for (int h = 0; h < Caocc_b->nirrep(); h++) {
         int nso = Fb_->rowspi()[h];
         int naocc = Caocc_b->colspi()[h];
@@ -387,25 +378,18 @@ void DFMP2::form_singles() {
 
         if (!nso || !naocc || !navir) continue;
 
-        double** Fsop = Fb_->pointer(h);
         double** Fmop = Fia_b->pointer(h);
-        double** Cip = Caocc_b->pointer(h);
-        double** Cap = Cavir_b->pointer(h);
 
         double* eps_i = eps_aocc_b->pointer(h);
         double* eps_a = eps_avir_b->pointer(h);
 
-        C_DGEMM('N', 'N', nso, navir, nso, 1.0, Fsop[0], nso, Cap[0], navir, 0.0, temp, navir);
-        C_DGEMM('T', 'N', naocc, navir, nso, 1.0, Cip[0], naocc, temp, navir, 0.0, Fmop[0], navir);
-
+        // E_singles -= f^i_a f^a_i / (εa - εi)
         for (int i = 0; i < naocc; i++) {
             for (int a = 0; a < navir; a++) {
                 E_singles_b -= Fmop[i][a] * Fmop[i][a] / (eps_a[a] - eps_i[i]);
             }
         }
     }
-
-    delete[] temp;
 
     variables_["MP2 SINGLES ENERGY"] = E_singles_a + E_singles_b;
 
