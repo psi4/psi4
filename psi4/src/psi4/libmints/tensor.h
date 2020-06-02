@@ -38,6 +38,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <highfive/H5Easy.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor-io/xhighfive.hpp>
@@ -444,15 +445,9 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
         "Using `Tensor::print` instead of `print` is deprecated, and in 1.4 it will "
         "stop working")
     void print(std::string out = "outfile", const std::string extra = "") const noexcept {
-        std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+        auto printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
         printer->Printf(format(extra));
         printer->Printf("\n");
-    }
-
-    void dump_hdf5(const std::string& fname, const std::string& path) const {
-        for (auto h = 0; h < store_.size(); ++h) {
-            xt::dump_hdf5(fname, path + "/irrep_" + std::to_string(h), store_[h]);
-        }
     }
 
    protected:
@@ -468,15 +463,32 @@ using SharedTensor = std::shared_ptr<Tensor<T, Rank>>;
 
 template <typename T, size_t Rank>
 void print(const Tensor<T, Rank>& t, std::string out = "outfile", const std::string extra = "") noexcept {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    auto printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf(t.format(extra));
     printer->Printf("\n");
 }
 
 template <typename T, size_t Rank>
 void print(const SharedTensor<T, Rank>& t, std::string out = "outfile", const std::string extra = "") noexcept {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    auto printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf(t->format(extra));
     printer->Printf("\n");
+}
+
+template <typename T, size_t Rank>
+void to_hdf5(const Tensor<T, Rank>& t, std::string h5 = "h5file", const std::string& path = "tensors") {
+    auto h5dumper = (h5 == "h5file" ? h5file : std::make_shared<H5Easy::File>(h5));
+    for (auto h = 0; h < t.nirrep(); ++h) {
+        xt::dump(*h5dumper, path + "/" + t.label() + "/irrep_" + std::to_string(h), t[h], xt::dump_mode::create);
+    }
+}
+
+template <typename T, size_t Rank>
+void to_hdf5(const SharedTensor<T, Rank>& t, std::string h5 = "h5file", const std::string& path = "tensors") {
+    auto h5dumper = (h5 == "h5file" ? h5file : std::make_shared<H5Easy::File>(h5));
+    for (auto h = 0; h < t->nirrep(); ++h) {
+        xt::dump(*h5dumper, path + "/" + t->label() + "/irrep_" + std::to_string(h), t->operator[](h),
+                 xt::dump_mode::create);
+    }
 }
 }  // namespace psi

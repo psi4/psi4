@@ -231,7 +231,9 @@ void py_reopen_h5file() {
     try {
         h5file = std::make_shared<H5Easy::File>(h5file_name, H5Easy::File::ReadWrite);
     } catch (H5Easy::Exception& err) {
-        throw PSIEXCEPTION("Psi4: ");  // + err.what());
+        std::stringstream line;
+        line << "Psi4: " << err.what() << std::endl;
+        throw PSIEXCEPTION(line.str());
     }
 }
 
@@ -987,7 +989,10 @@ bool psi4_python_module_initialize() {
     psi_file_prefix = strdup(fprefix.c_str());
 
     h5file = std::make_shared<H5Easy::File>("psi4.h5", H5Easy::File::Overwrite);
-    H5Easy::dump(*h5file, "/initialized", get_date_string(std::chrono::system_clock::now()));
+
+    auto ini_date_time = get_date_string(std::chrono::system_clock::now());
+    auto i = h5file->createAttribute<std::string>("Psi4 initialized", HighFive::DataSpace::From(ini_date_time));
+    i.write(ini_date_time);
 
     // There is only one timer:
     timer_init();
@@ -1031,7 +1036,9 @@ void psi4_python_module_finalize() {
     outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = nullptr;
 
-    H5Easy::dump(*h5file, "/done", get_date_string(std::chrono::system_clock::now()));
+    auto fin_date_time = get_date_string(std::chrono::system_clock::now());
+    auto f = h5file->createAttribute<std::string>("Psi4 finalized", HighFive::DataSpace::From(fin_date_time));
+    f.write(fin_date_time);
 }
 
 PYBIND11_MODULE(core, core) {

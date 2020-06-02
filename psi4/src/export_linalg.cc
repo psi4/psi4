@@ -303,6 +303,8 @@ void bind_tensor(py::module& mod) {
     mod.def("real", &real<T, Rank>, "Return real part of tensor", "in"_a);
     mod.def("imag", &imag<T, Rank>, "Return imaginary part of tensor. For real tensors, returns zeros.", "in"_a);
     mod.def("conj", &conj<T, Rank>, "Return complex conjugate of tensor", "in"_a);
+    mod.def("to_hdf5", [](const SharedClass& A, std::string h5, const std::string& path) { to_hdf5(A, h5, path); },
+            "Write tensor to HDF5 file", "T"_a, "h5"_a = "h5file", "path"_a = "tensors");
 
     // Type-homogeneous operators
     cls.def("__add__", [](const SharedClass& A, const SharedClass& B) { return A + B; }, py::is_operator());
