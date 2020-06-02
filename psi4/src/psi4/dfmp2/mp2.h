@@ -81,7 +81,7 @@ class DFMP2 : public Wavefunction {
     virtual void form_AB_x_terms() = 0;
     // Form the (A|mn)^x contribution to the gradient; Term 1 of DiStasio 1
     virtual void form_Amn_x_terms() = 0;
-    // Form the Lma and Lmi matrices; DiStasio 19 and 20
+    // Form the L_μa and L_μi matrices; DiStasio 19 and 20
     virtual void form_L() = 0;
     // Form the unrelaxed correlation OPDM; Compute DiStasio 6 and 9; Assemble DiStasio 6-9 into one matrix
     virtual void form_P() = 0;

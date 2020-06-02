@@ -585,7 +585,7 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
     // block_status(ia_starts, __FILE__,__LINE__);
 
     // Tensor blocks
-    auto Gia = std::make_shared<Matrix>("G (ia|Q)", max_nia, naux);
+    auto Gia = std::make_shared<Matrix>("Γ(ia|Q)", max_nia, naux);
     auto Cia = std::make_shared<Matrix>("C (ia|Q)", max_nia, naux);
     auto G = std::make_shared<Matrix>("g", naux, naux);
     double** Giap = Gia->pointer();
@@ -603,20 +603,23 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
         size_t ncols = ia_stop - ia_start;
 
         timer_on("DFMP2 Gia Read");
-        psio_->read(file, "G (ia|Q)", (char*)Giap[0], sizeof(double) * ncols * naux, next_GIA, &next_GIA);
+        psio_->read(file, "Γ(ia|Q)", (char*)Giap[0], sizeof(double) * ncols * naux, next_GIA, &next_GIA);
         timer_off("DFMP2 Gia Read");
 
         timer_on("DFMP2 Cia Read");
         psio_->read(file, "C (ia|Q)", (char*)Ciap[0], sizeof(double) * ncols * naux, next_CIA, &next_CIA);
         timer_off("DFMP2 Cia Read");
 
-        // g_PQ = G_ia^P C_ia^Q
+        // DEFINITION: Γ_PQ := Γ(ia|P)C(ia|Q)
+        // Eq. 3, 23 of DiStasio
+        // This is spin-summed becuase Γ(ia|P) is
+        // This term is contracted against metric derivatives
         timer_on("DFMP2 g");
         C_DGEMM('T', 'N', naux, naux, ncols, 1.0, Giap[0], naux, Ciap[0], naux, 1.0, Gp[0], naux);
         timer_off("DFMP2 g");
     }
 
-    psio_->write_entry(file, "G_PQ", (char*)Gp[0], sizeof(double) * naux * naux);
+    psio_->write_entry(file, "Γ_PQ", (char*)Gp[0], sizeof(double) * naux * naux);
 
     psio_->close(file, 1);
 }
@@ -645,7 +648,7 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
     double* temp = new double[nia];
     ::memset((void*)temp, '\0', sizeof(double) * nia);
     for (int Q = 0; Q < naux; Q++) {
-        psio_->write(file, "G (Q|ia)", (char*)temp, sizeof(double) * nia, next_QIA, &next_QIA);
+        psio_->write(file, "Γ(Q|ia)", (char*)temp, sizeof(double) * nia, next_QIA, &next_QIA);
     }
     delete[] temp;
     next_QIA = PSIO_ZERO;
@@ -666,7 +669,7 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
 
         // Read Gia
         timer_on("DFMP2 Gia Read");
-        psio_->read(file, "G (ia|Q)", (char*)iaQp[0], sizeof(double) * ncols * naux, next_IAQ, &next_IAQ);
+        psio_->read(file, "Γ(ia|Q)", (char*)iaQp[0], sizeof(double) * ncols * naux, next_IAQ, &next_IAQ);
         timer_off("DFMP2 Gia Read");
 
         // Transpose
@@ -674,11 +677,13 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
             C_DCOPY(ncols, &iaQp[0][Q], naux, Qiap[Q], 1);
         }
 
+        // DEFINITION: Γ(Q|ia) := Γ(ia|Q)
+
         // Write Gia^\dagger
         timer_on("DFMP2 aiG Write");
         for (size_t Q = 0; Q < naux; Q++) {
             next_QIA = psio_get_address(PSIO_ZERO, sizeof(double) * (Q * nia + ia_start));
-            psio_->write(file, "G (Q|ia)", (char*)Qiap[Q], sizeof(double) * ncols, next_QIA, &next_QIA);
+            psio_->write(file, "Γ(Q|ia)", (char*)Qiap[Q], sizeof(double) * ncols, next_QIA, &next_QIA);
         }
         timer_off("DFMP2 aiG Write");
     }
@@ -1283,7 +1288,10 @@ void RDFMP2::form_Pab() {
             }
             timer_off("DFMP2 T2");
 
-            // Form the Gamma tensor G_ia^P = t_ia^jb C_jb^P
+            // DEFINITION: Γ(ia|Q) = t^ab_ij C(jb|Q)
+            // Eq. 22 (spin-summed case of Eq. 2) of DiStasio.
+            // The three-index intermediates that is contracted against derivatives of A integrals.
+            // Also used to construct the two-index intermediate contracted against metric derivatives.
             timer_on("DFMP2 G");
             C_DGEMM('N', 'N', ni * (size_t)navir, naux, nj * (size_t)navir, 2.0, Tp[0], nIv, Cjbp[0], naux, 1.0,
                     Giap[0], naux);
@@ -1299,7 +1307,10 @@ void RDFMP2::form_Pab() {
                 }
             }
 
-            // Form the virtual-virtual block of the density matrix
+            // DEFINITION: P_ab := + 1/2 t^ac_ij t^bc_ij
+            // Eq. 8 of DiStasio summed over both spin cases. We use spin-adapted intermediates.
+            // The *2 in DGEMM accounts for spin summation. The /2 in Eq. 8 is accounted for when defining T and I.
+            // This quantity is more commonly known as the Virt/Virt pure correlation OPDM.
             timer_on("DFMP2 Pab");
             C_DGEMM('T', 'N', navir, navir, ni * (size_t)nj * navir, 2.0, Tp[0], navir, Ip[0], navir, 1.0, Pabp[0],
                     navir);
@@ -1309,13 +1320,12 @@ void RDFMP2::form_Pab() {
         // Write iaG chunk
         timer_on("DFMP2 Gia Write");
         next_QIA = psio_get_address(PSIO_ZERO, sizeof(double) * (istart * navir * naux));
-        psio_->write(PSIF_DFMP2_AIA, "G (ia|Q)", (char*)Giap[0], sizeof(double) * (ni * navir * naux), next_QIA,
+        psio_->write(PSIF_DFMP2_AIA, "Γ(ia|Q)", (char*)Giap[0], sizeof(double) * (ni * navir * naux), next_QIA,
                      &next_QIA);
         timer_off("DFMP2 Gia Write");
     }
 
-    // Save the ab block of P
-    psio_->write_entry(PSIF_DFMP2_AIA, "Pab: Corr. OPDM VV", (char*)Pabp[0], sizeof(double) * navir * navir);
+    psio_->write_entry(PSIF_DFMP2_AIA, "P_ab", (char*)Pabp[0], sizeof(double) * navir * navir);
 
     psio_->close(PSIF_DFMP2_AIA, 1);
 
@@ -1470,7 +1480,10 @@ void RDFMP2::form_Pij() {
                 }
             }
 
-            // Form the virtual-virtual block of the density matrix
+            // DEFINITION: P_ij := - 1/2 * t^ab_ik t^ab_jk
+            // Eq. 7 of DiStasio summed over both spin cases. We use spin-adapted intermediates.
+            // The *2 in DGEMM accounts for spin summation. The /2 in Eq. 7 is accounted for when defining T and I.
+            // This quantity is more commonly known as the Occ/Occ pure correlation OPDM.
             timer_on("DFMP2 Pij");
             C_DGEMM('T', 'N', naocc, naocc, na * (size_t)nb * naocc, -2.0, Tp[0], naocc, Ip[0], naocc, 1.0, Pijp[0],
                     naocc);
@@ -1478,9 +1491,7 @@ void RDFMP2::form_Pij() {
         }
     }
 
-    // Save the ab block of P
-    psio_->write_entry(PSIF_DFMP2_AIA, "Pij: Corr. OPDM OO", (char*)Pijp[0], sizeof(double) * naocc * naocc);
-    // Pij->print();
+    psio_->write_entry(PSIF_DFMP2_AIA, "P_ij", (char*)Pijp[0], sizeof(double) * naocc * naocc);
 
     psio_->close(PSIF_DFMP2_AIA, 1);
 }
@@ -1506,7 +1517,7 @@ void RDFMP2::form_AB_x_terms() {
     auto V = std::make_shared<Matrix>("V", naux, naux);
     double** Vp = V->pointer();
     psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_OLD);
-    psio_->read_entry(PSIF_DFMP2_AIA, "G_PQ", (char*)Vp[0], sizeof(double) * naux * naux);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Γ_PQ", (char*)Vp[0], sizeof(double) * naux * naux);
     psio_->close(PSIF_DFMP2_AIA, 1);
 
     // => Thread Count <= //
@@ -1538,6 +1549,10 @@ void RDFMP2::form_AB_x_terms() {
             PQ_pairs.push_back(std::pair<int, int>(P, Q));
         }
     }
+
+    // On Prefactors:
+    // Combined, the permutational factor and 0.5 * (V_PQ + V_QP) account for us summing over ordered shell pairs. 
+    // Spin cases are accounted for because Γ_PQ is spin-summed
 
 #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
     for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
@@ -1707,7 +1722,7 @@ void RDFMP2::form_Amn_x_terms() {
 
         // > G_ia^P -> G_mn^P < //
 
-        psio_->read(PSIF_DFMP2_AIA, "G (Q|ia)", (char*)Giap[0], sizeof(double) * np * nia, next_AIA, &next_AIA);
+        psio_->read(PSIF_DFMP2_AIA, "Γ(Q|ia)", (char*)Giap[0], sizeof(double) * np * nia, next_AIA, &next_AIA);
 
 #pragma omp parallel for num_threads(num_threads)
         for (int p = 0; p < np; p++) {
@@ -1715,6 +1730,11 @@ void RDFMP2::form_Amn_x_terms() {
         }
 
         C_DGEMM('N', 'T', np * (size_t)nso, nso, naocc, 1.0, Gmip[0], naocc, Caoccp[0], naocc, 0.0, Gmnp[0], nso);
+
+        // On Prefactors:
+        // One factor of 2 is built into the definition of the term.
+        // Combined, the permutational factor and 0.5 * (Γ(P|μν) + Γ(P|νμ)) account for us summing over ordered shell pairs. 
+        // Spin cases are accounted for because Γ(Q|ia) is spin-summed
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
@@ -1870,8 +1890,8 @@ void RDFMP2::form_L() {
 
     // => Targets <= //
 
-    auto Lmi = std::make_shared<Matrix>("Lma", nso, naocc);
-    auto Lma = std::make_shared<Matrix>("Lmi", nso, navir);
+    auto Lmi = std::make_shared<Matrix>("L_μa", nso, naocc);
+    auto Lma = std::make_shared<Matrix>("L_μi", nso, navir);
     double** Lmip = Lmi->pointer();
     double** Lmap = Lma->pointer();
 
@@ -1911,7 +1931,7 @@ void RDFMP2::form_L() {
 
         // > G_ia^P Read < //
 
-        psio_->read(PSIF_DFMP2_AIA, "G (Q|ia)", (char*)Giap[0], sizeof(double) * np * nia, next_AIA, &next_AIA);
+        psio_->read(PSIF_DFMP2_AIA, "Γ(Q|ia)", (char*)Giap[0], sizeof(double) * np * nia, next_AIA, &next_AIA);
 
         // > Integrals < //
         Gmn->zero();
@@ -1949,7 +1969,11 @@ void RDFMP2::form_L() {
             }
         }
 
-// => L_ma <= //
+        // DEFINITION: L_μa := B(μi|Q)Γ(Q|ia)
+        // Eq. 20, 29 of DiStasio
+        // Used to construct Z-vector terms
+        // This is spin-summed because Γ(Q|ia) is
+        // N.B. Compared to DiStasio, this equation has an extra factor of -1. Adjust equations using this intermediate accordingly.
 
 #pragma omp parallel for
         for (int p = 0; p < np; p++) {
@@ -1966,7 +1990,10 @@ void RDFMP2::form_L() {
             }
         }
 
-// => L_mi <= //
+        // DEFINITION: L_μi := B(μa|Q)Γ(Q|ia)
+        // Eq. 19, 28 of DiStasio
+        // Used to construct Z-vector terms
+        // This is spin-summed because Γ(Q|ia) is
 
 #pragma omp parallel for
         for (int p = 0; p < np; p++) {
@@ -1978,11 +2005,8 @@ void RDFMP2::form_L() {
 
     delete[] temp;
 
-    // Lmi->print();
-    // Lma->print();
-
-    psio_->write_entry(PSIF_DFMP2_AIA, "Lmi", (char*)Lmip[0], sizeof(double) * nso * naocc);
-    psio_->write_entry(PSIF_DFMP2_AIA, "Lma", (char*)Lmap[0], sizeof(double) * nso * navir);
+    psio_->write_entry(PSIF_DFMP2_AIA, "L_μi", (char*)Lmip[0], sizeof(double) * nso * naocc);
+    psio_->write_entry(PSIF_DFMP2_AIA, "L_μa", (char*)Lmap[0], sizeof(double) * nso * navir);
 
     psio_->close(PSIF_DFMP2_AIA, 1);
 }
@@ -2010,8 +2034,8 @@ void RDFMP2::form_P() {
     double** PAbp = PAb->pointer();
     double** Ppqp = Ppq->pointer();
 
-    auto Lmi = std::make_shared<Matrix>("Lmi", nso, naocc);
-    auto Lma = std::make_shared<Matrix>("Lma", nso, navir);
+    auto Lmi = std::make_shared<Matrix>("L_μi", nso, naocc);
+    auto Lma = std::make_shared<Matrix>("L_μa", nso, navir);
 
     double** Lmip = Lmi->pointer();
     double** Lmap = Lma->pointer();
@@ -2019,10 +2043,10 @@ void RDFMP2::form_P() {
     // => Read-in <= //
 
     psio_->open(PSIF_DFMP2_AIA, 1);
-    psio_->read_entry(PSIF_DFMP2_AIA, "Pij: Corr. OPDM OO", (char*)Pijp[0], sizeof(double) * naocc * naocc);
-    psio_->read_entry(PSIF_DFMP2_AIA, "Pab: Corr. OPDM VV", (char*)Pabp[0], sizeof(double) * navir * navir);
-    psio_->read_entry(PSIF_DFMP2_AIA, "Lmi", (char*)Lmip[0], sizeof(double) * nso * naocc);
-    psio_->read_entry(PSIF_DFMP2_AIA, "Lma", (char*)Lmap[0], sizeof(double) * nso * navir);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P_ij", (char*)Pijp[0], sizeof(double) * naocc * naocc);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P_ab", (char*)Pabp[0], sizeof(double) * navir * navir);
+    psio_->read_entry(PSIF_DFMP2_AIA, "L_μi", (char*)Lmip[0], sizeof(double) * nso * naocc);
+    psio_->read_entry(PSIF_DFMP2_AIA, "L_μa", (char*)Lmap[0], sizeof(double) * nso * navir);
 
     // => Occ-Occ <= //
 
@@ -2039,6 +2063,9 @@ void RDFMP2::form_P() {
     // => Frozen-Core/Occ <= //
 
     if (nfocc) {
+        // P_iJ := C_μJ L_μi / (εi - εJ)
+        // This is spin-summed because L_μi is
+        // This is a block of the OPDM that is added directly to the entire OPDM
         double** Cfoccp = Cfocc_->pointer();
         double* eps_foccp = eps_focc_->pointer();
         double* eps_aoccp = eps_aocc_->pointer();
@@ -2059,6 +2086,9 @@ void RDFMP2::form_P() {
     // => Frozen-Virt/Virt <= //
 
     if (nfvir) {
+        // P_Ab := C_μA L_μb / (εb - εA)
+        // This is spin-summed because L_μb is
+        // This is a block of the OPDM that is added directly to the entire OPDM
         double** Cfvirp = Cfvir_->pointer();
         double* eps_fvirp = eps_fvir_->pointer();
         double* eps_avirp = eps_avir_->pointer();
@@ -2076,15 +2106,12 @@ void RDFMP2::form_P() {
         }
     }
 
-    // Pij->print();
-    // Pab->print();
-    // PIj->print();
-    // PAb->print();
-    // Ppq->print();
-
-    // => Write out <= //
-
-    psio_->write_entry(PSIF_DFMP2_AIA, "P: Corr. OPDM", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
+    // DEFINITION: P_pq
+    // This is the spin-summed density matrix, eq 6-10 of DiStasio, plus (later) the reference density.
+    // N.B. This matrix is incomplete! The occupied/virtual block, eq. 10, cannot be added until we solve for the Z-vector.
+    // Other formulations, differ in how they assign terms to the OPDM vs the Z-vector. The distinction isn't well-defined.
+    // Further, we will add the reference to this.
+    psio_->write_entry(PSIF_DFMP2_AIA, "P_pq", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
     psio_->close(PSIF_DFMP2_AIA, 1);
 }
 void RDFMP2::form_W() {
@@ -2105,8 +2132,8 @@ void RDFMP2::form_W() {
     auto Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
     double** Ppqp = Ppq->pointer();
 
-    auto Lmi = std::make_shared<Matrix>("Lmi", nso, naocc);
-    auto Lma = std::make_shared<Matrix>("Lma", nso, navir);
+    auto Lmi = std::make_shared<Matrix>("L_μi", nso, naocc);
+    auto Lma = std::make_shared<Matrix>("L_μa", nso, navir);
     auto Lia = std::make_shared<Matrix>("Lia", naocc + nfocc, navir + nfvir);
 
     double** Lmip = Lmi->pointer();
@@ -2121,42 +2148,51 @@ void RDFMP2::form_W() {
     // => Read-in <= //
 
     psio_->open(PSIF_DFMP2_AIA, 1);
-    psio_->read_entry(PSIF_DFMP2_AIA, "P: Corr. OPDM", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
-    psio_->read_entry(PSIF_DFMP2_AIA, "Lmi", (char*)Lmip[0], sizeof(double) * nso * naocc);
-    psio_->read_entry(PSIF_DFMP2_AIA, "Lma", (char*)Lmap[0], sizeof(double) * nso * navir);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P_pq", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
+    psio_->read_entry(PSIF_DFMP2_AIA, "L_μi", (char*)Lmip[0], sizeof(double) * nso * naocc);
+    psio_->read_entry(PSIF_DFMP2_AIA, "L_μa", (char*)Lmap[0], sizeof(double) * nso * navir);
 
     // => Term 1 <= //
-    // All formuals for Term 1 are given in the block of five unnumbered equations on pg. 842
-    // TODO: This is non-Hermitian. The core-occ block isn't populated, for instance.
-    // Further, I could not tell you why we have an Occ-Vir and a Vir-Occ term. What's going on?
+    // All formulas for Term 1 are given in the block of five unnumbered equations on pg. 842
+    // TODO: The prefactors don't look right. For instance, the Occ/Occ receives an overall -1.
+    // But the FrozenOcc/Occ block receives an overall -1/2.
 
     // It isn't clear why we divide by 1/2 to multiply by 2 later.
 
     // => Occ/Occ <= //
+    // W_ij := -1/2 * C_μi L_μj (DiStasio 11)
     C_DGEMM('T', 'N', naocc, naocc, nso, -0.5, Caoccp[0], naocc, Lmip[0], naocc, 0.0, &Wpq1p[nfocc][nfocc], nmo);
     // => Frozen-Core/Occ <= //
     if (nfocc) {
+        // W_Ij := -1/2 * C_μI L_μj (DiStasio 11)
         C_DGEMM('T', 'N', nfocc, naocc, nso, -0.5, Cfoccp[0], nfocc, Lmip[0], naocc, 0.0, &Wpq1p[0][nfocc], nmo);
     }
 
     // => Virt/Virt <= //
+    // W_ab := -1/2 * C_μa L_μb (DiStasio 12)
     C_DGEMM('T', 'N', navir, navir, nso, -0.5, Cavirp[0], navir, Lmap[0], navir, 0.0,
             &Wpq1p[nfocc + naocc][nfocc + naocc], nmo);
     // => Frozen-Virt/Virt <= //
     if (nfvir) {
+        // W_Ab := -1/2 * C_μA L_μb (DiStasio 12)
         C_DGEMM('T', 'N', nfvir, navir, nso, -0.5, Cfvirp[0], nfvir, Lmap[0], navir, 0.0,
                 &Wpq1p[nfocc + naocc + navir][nfocc + naocc], nmo);
     }
 
+    // Now we get to the more dangerous terms. The original DiStasio paper is in error here.
+
     // > Occ-Virt <= //
+    // W_ia := -1/2 C_μi L_μa (DiStasio 13)
     C_DGEMM('T', 'N', naocc, navir, nso, -0.5, Caoccp[0], naocc, Lmap[0], navir, 0.0, &Wpq1p[nfocc][nfocc + naocc],
             nmo);
     if (nfocc) {
+        // W_Ia := -1/2 C_μI L_μa (DiStasio 13)
         C_DGEMM('T', 'N', nfocc, navir, nso, -0.5, Cfoccp[0], nfocc, Lmap[0], navir, 0.0, &Wpq1p[0][nfocc + naocc],
                 nmo);
     }
 
     // > Vir-Occ < //
+    // 
     C_DGEMM('T', 'N', navir, naocc, nso, -0.5, Cavirp[0], navir, Lmip[0], naocc, 0.0, &Wpq1p[nfocc + naocc][nfocc],
             nmo);
     if (nfvir) {
@@ -2166,6 +2202,7 @@ void RDFMP2::form_W() {
 
     // => Lia (L contributions) <= //
     // First two terms of DiStasio 18
+    // TODO: Double-check that my reading of this is correct.
 
     // Multiply by 2 to remove factor of 0.5 applied above
     for (int i = 0; i < (nfocc + naocc); i++) {
@@ -2176,7 +2213,8 @@ void RDFMP2::form_W() {
 
     // > Symmetrize the result < //
     Wpq1->hermitivitize();
-    Wpq1->scale(2.0);  // Spin Integration
+    Wpq1->scale(2.0);  // TODO: The original comment says this was for spin-integration. That's wrong.
+    // These too lines together are Wpq + Wpq.T. That means blocks involving frozen orbitals have half the value of the others. Why!?
 
     // => Write-out <= //
 
@@ -2251,7 +2289,7 @@ void RDFMP2::form_Z() {
     // => Read-in <= //
 
     psio_->open(PSIF_DFMP2_AIA, 1);
-    psio_->read_entry(PSIF_DFMP2_AIA, "P: Corr. OPDM", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P_pq", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
 
     auto T = std::make_shared<Matrix>("T", nocc, nso);
     double** Tp = T->pointer();
@@ -2349,10 +2387,10 @@ void RDFMP2::form_Z() {
 
         Dtemp = Ppq->clone();
 
-        // Scale the correlated part of OPDM by 1/2 to make it consistent with OEPROP code
+        // Scale the OPDM so it's no longer spin-summed.
         Dtemp->scale(0.5);
 
-        // Add in the reference contribution
+        // Add in the reference density
         for (int i = 0; i < nocc; ++i) Dtemp->add(i, i, 1.0);
         Ca_ = std::make_shared<Matrix>("DF-MP2 Natural Orbitals", nsopi_, nmopi_);
         epsilon_a_ = std::make_shared<Vector>("DF-MP2 NO Occupations", nmopi_);
@@ -2362,11 +2400,10 @@ void RDFMP2::form_Z() {
         // Don't relax the OPDM
         Dtemp = Ppq->clone();
 
-        // Scale the correlated part of OPDM by 1/2 to make it consistent with OEPROP code
+        // Scale the OPDM so it's no longer spin-summed.
         Dtemp->scale(0.5);
 
-        // Add in the reference contribution
-
+        // Add in the reference density
         for (int i = 0; i < nocc; ++i) Dtemp->add(i, i, 1.0);
         Ca_ = std::make_shared<Matrix>("DF-MP2 (unrelaxed) Natural Orbitals", nsopi_, nmopi_);
         epsilon_a_ = std::make_shared<Vector>("DF-MP2 (unrelaxed) NO Occupations", nmopi_);
@@ -2380,7 +2417,7 @@ void RDFMP2::form_Z() {
 
     if (options_.get_bool("ONEPDM")) {
         // Shut everything down; only the OPDM was requested
-        psio_->write_entry(PSIF_DFMP2_AIA, "P: Corr. OPDM", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
+        psio_->write_entry(PSIF_DFMP2_AIA, "P_pq", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
         psio_->close(PSIF_DFMP2_AIA, 1);
         cphf->postiterations();
 
@@ -2445,12 +2482,24 @@ void RDFMP2::form_Z() {
     // occ-occ term
     C_DGEMM('N', 'N', nocc, nocc, nso, -1.0, Tp[0], nso, Coccp[0], nocc, 0.0, &Wpq3p[0][0], nmo);
 
+    // This next term is a very subtle trick.
+    // - 1/2 * A_ia,pq P_pq
+    // - 1/2 * A_ia,jb P_jb - 1/2 * A_ia,p'q' P_p'q' 
+    // - 1/2 * A_ia,jb Z_jb - 1/2 * A_ia,p'q' P_P'q'
+    // - 1/2 * (δ_ij δ_ab (ε_a - ε_i) + A_ia,jb) Z_jb + 1/2 * (δ_ij δ_ab (ε_a - ε_i)) Z_jb - 1/2 * A_ia,p'q' P_P'q'
+    // - 1/2 L_ia + 1/2 (ε_a - ε_i) Z_ia - 1/2 * A_ia,p'q' P_P'q' 
+    // ..This is compensating for the epsilon somehow, isn't it?
     // (RMP) what the frak is this interloper term doing in the plugin? Are the indices correct? why does this get 0.5,
     // and the above get 1.0?
     C_DGEMM('N', 'N', nocc, nvir, nso, -0.5, Tp[0], nso, Cvirp[0], nvir, 0.0, &Wpq3p[0][nocc], nmo);
     C_DGEMM('T', 'T', nvir, nocc, nso, -0.5, Cvirp[0], nvir, Tp[0], nso, 0.0, &Wpq3p[nocc][0], nmo);
 
     // => W Term 2 <= //
+    // Although the summation range includes some terms that don't appear in Term 2, they all have zero Ppq.
+    // The bigger concern is that for the occupied-virtual block, the correct formula should have a prefactor
+    // of -1 and exclude the virtual orbital.
+    // ...This reminds me of how Francesco's expressions ALSO don't add the orbitals the same way.
+    // I think step one is to show how the FAE and the DiStasio equations agree.
 
     for (int p = 0; p < nmo; p++) {
         for (int q = 0; q < nmo; q++) {
@@ -2476,7 +2525,7 @@ void RDFMP2::form_Z() {
 
     // Ppq->print();
 
-    psio_->write_entry(PSIF_DFMP2_AIA, "P: Corr. OPDM", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
+    psio_->write_entry(PSIF_DFMP2_AIA, "P_pq", (char*)Ppqp[0], sizeof(double) * nmo * nmo);
 
     // => Finalize <= //
 
@@ -2500,7 +2549,7 @@ void RDFMP2::form_gradient() {
     auto W = std::make_shared<Matrix>("W", nmo, nmo);
     double** Wp = W->pointer();
 
-    auto P2 = std::make_shared<Matrix>("P", nmo, nmo);
+    auto P2 = std::make_shared<Matrix>("P_pq", nmo, nmo);
     double** P2p = P2->pointer();
 
     SharedMatrix Cocc = reference_wavefunction_->Ca_subset("AO", "OCC");
@@ -2515,7 +2564,7 @@ void RDFMP2::form_gradient() {
     // => Read-in <= //
 
     psio_->open(PSIF_DFMP2_AIA, 1);
-    psio_->read_entry(PSIF_DFMP2_AIA, "P: Corr. OPDM", (char*)P2p[0], sizeof(double) * nmo * nmo);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P_pq", (char*)P2p[0], sizeof(double) * nmo * nmo);
     psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*)Wp[0], sizeof(double) * nmo * nmo);
 
     // => Dress for SCF <= //
@@ -2524,8 +2573,7 @@ void RDFMP2::form_gradient() {
     double** P2Fp = P2F->pointer();
     P2F->scale(2.0);
 
-    // W->zero();
-    // P2->zero();
+    // UPDATE: P_pq : The spin-summed RHF density matrix is added to P_pq.
     W->scale(-1.0);
     for (int i = 0; i < nocc; i++) {
         Wp[i][i] += 2.0 * epsp[i];
@@ -2535,8 +2583,7 @@ void RDFMP2::form_gradient() {
 
     // P2->print();
     // W->print();
-    // TODO: Replace Corr OPDM with Full OPDM when it changes
-    psio_->write_entry(PSIF_DFMP2_AIA, "P: Corr OPDM", (char*)P2p[0], sizeof(double) * nmo * nmo);
+    psio_->write_entry(PSIF_DFMP2_AIA, "P_pq", (char*)P2p[0], sizeof(double) * nmo * nmo);
     psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*)Wp[0], sizeof(double) * nmo * nmo);
 
     // => Factorize the P matrix <= //
