@@ -1055,28 +1055,37 @@ void export_mints(py::module& m) {
 
         // First and second derivatives of one and two electron integrals in AO and MO basis.
         .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1,
-             "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices")
+             "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices", "oei_type"_a, "atom"_a)
         .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2,
-             "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices")
+             "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices", "oei_type"_a, "atom1"_a, "atom2"_a)
+        .def("ao_overlap_half_deriv1", &MintsHelper::ao_overlap_half_deriv1,
+             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices","side"_a, "atom"_a)
         .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1,
-             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices", "atom"_a, "omega"_a = 0.0,
-             "factory"_a = nullptr)
+             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices",
+             "atom"_a, "omega"_a = 0.0, "factory"_a = nullptr)
         .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2,
-             "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices")
+             "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a)
         .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
-             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices")
+             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices",
+             "oei_type"_a, "atom"_a, "C1"_a, "C2"_a)
         .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2,
-             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices")
+             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices",
+             "oei_type"_a, "atom1"_a, "atom2"_a, "C1"_a, "C2"_a)
+        .def("mo_overlap_half_deriv1", &MintsHelper::mo_overlap_half_deriv1,
+             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices",
+             "side"_a, "atom"_a, "C1"_a, "C2"_a)
         .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
-             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices")
+             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices",
+             "atom"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
         .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
-             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices")
+             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices",
+             "atom1"_a, "atom2"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
         
         // First derivatives of electric dipole integrals in AO and MO basis.
         .def("ao_elec_dip_deriv1", &MintsHelper::ao_elec_dip_deriv1,
-             "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices")
+             "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a)
         .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
-             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices");
+             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
