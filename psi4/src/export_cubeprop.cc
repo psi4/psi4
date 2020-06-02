@@ -36,12 +36,15 @@
 
 using namespace psi;
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 void export_cubeprop(py::module& m) {
     py::class_<CubeProperties, std::shared_ptr<CubeProperties>>(m, "CubeProperties", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("compute_density", &CubeProperties::compute_density)
-        .def("compute_orbitals", &CubeProperties::compute_orbitals)
+        .def("compute_density", &CubeProperties::compute_density, "Compute and dump a cube file for a density matrix",
+             "D"_a, "key"_a)
+        .def("compute_orbitals", &CubeProperties::compute_orbitals,
+             "Compute and dump a cube file for a set of orbitals", "C"_a, "indices"_a, "labels"_a, "key"_a)
         .def("basisset", &CubeProperties::basisset, "Returns orbital/primary basis set associated with cubeprop.")
         .def("raw_compute_properties", &CubeProperties::raw_compute_properties,
              "Compute all relevant properties from options object specifications");
