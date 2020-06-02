@@ -367,7 +367,6 @@ class DFOCC : public Wavefunction {
     void trans_oei();
     void pair_index();
     void fock_so();
-    void ref_grad();
     void b_so_non_zero();  // form non-zero so-basis df ints
 
     // Cholesky
