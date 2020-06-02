@@ -32,6 +32,6 @@ def test_pyside_cubegen():
     occs_pm = psi4.core.Matrix.from_array(occs)
     cubegen.compute_orbitals(occs_pm, [0, 2], ["1", "3"], "orbital")
 
-    compare_cubes("Dt.cube", "Dtot.cube")
-    compare_cubes("Psi_a_5_5-A.cube", "orbital_3_3.cube")
-    compare_cubes("Psi_a_4_4-A.cube", "orbital_1_1.cube")
+    assert compare_cubes("Dt.cube", "Dtot.cube")
+    assert compare_cubes("Psi_a_5_5-A.cube", "orbital_3_3.cube")
+    assert compare_cubes("Psi_a_3_3-A.cube", "orbital_1_1.cube")
