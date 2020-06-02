@@ -1,10 +1,10 @@
 #! SAPT(DFT) aug-cc-pVDZ computation for the water dimer interaction energy.
 
-Eref = {"SAPT ELST ENERGY":  -12.86731900, #TEST
-        "SAPT EXCH ENERGY":   12.77393901, #TEST
-        "SAPT IND ENERGY":    -3.53895378, #TEST 
-        "SAPT DISP ENERGY":   -2.67884677, #TEST
-        "CURRENT ENERGY":     -6.31117998} #TEST
+Eref = {"SAPT ELST ENERGY":  -12.86733667, #TEST
+        "SAPT EXCH ENERGY":   12.77398997, #TEST
+        "SAPT IND ENERGY":    -3.53895908, #TEST 
+        "SAPT DISP ENERGY":   -3.24956342, #TEST
+        "CURRENT ENERGY":     -6.88186919} #TEST
 
 molecule dimer {
   O -2.930978458   -0.216411437    0.000000000

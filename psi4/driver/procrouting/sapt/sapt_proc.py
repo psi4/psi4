@@ -392,7 +392,9 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     core.print_out("\n")
     aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_MP2",
                                     core.get_option("DFMP2", "DF_BASIS_MP2"), "RIFIT", core.get_global_option('BASIS'))
-    is_hybrid = wfn_B.functional().is_x_hybrid()
+    is_hybrid = core.get_option("SAPT", "SAPT_DFT_DO_HYBRID")
+    if not wfn_B.functional().is_x_hybrid() or wfn_B.functional().is_x_lrc():
+        is_hybrid = False
     x_alpha = wfn_B.functional().x_alpha()
     fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache, is_hybrid, x_alpha)
     data.update(fdds_disp)

@@ -281,6 +281,8 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     ret = {}
     ret["Exch-Disp20,u"] = scalars["Exch-Disp20"]
     ret["Disp20,u"] = scalars["Disp20"]
+    # Using the 0.686 scaling factor from Hesselmann:2014:094107, subject to change in later version
+    ret["Exch-Disp20,r"] = 0.686 * scalars["Exch-Disp20"] 
 
     if core.get_option("SAPT", "DO_DISP_EXCH_SINF"):
         fisapt.sinf_disp(matrix_cache, vector_cache, False)
