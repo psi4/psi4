@@ -31,6 +31,7 @@
 #include "psi4/libcubeprop/cubeprop.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 
 using namespace psi;
@@ -39,6 +40,8 @@ namespace py = pybind11;
 void export_cubeprop(py::module& m) {
     py::class_<CubeProperties, std::shared_ptr<CubeProperties>>(m, "CubeProperties", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("compute_density", &CubeProperties::compute_density)
+        .def("compute_orbitals", &CubeProperties::compute_orbitals)
         .def("basisset", &CubeProperties::basisset, "Returns orbital/primary basis set associated with cubeprop.")
         .def("raw_compute_properties", &CubeProperties::raw_compute_properties,
              "Compute all relevant properties from options object specifications");
