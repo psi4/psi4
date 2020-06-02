@@ -15,4 +15,6 @@ else()
     endif()
     
     message(STATUS "Suitable BrianQC could not be located, please contact info@brianqc.com to obtain BrianQC")
+    
+    add_library(brianqc_external INTERFACE)  # ensuring that the dummy target exists anyway
 endif()
