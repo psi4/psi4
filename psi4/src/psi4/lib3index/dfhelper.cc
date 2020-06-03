@@ -632,7 +632,7 @@ void DFHelper::prepare_AO_wK_core() {
             timer_on("DFH: AO Construction");
             compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
             timer_off("DFH: AO Construction");
-printf("wcombine false\n");
+
             // contract half metric inverse
             timer_on("DFH: AO-Met. Contraction");
             contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
