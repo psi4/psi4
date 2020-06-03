@@ -416,6 +416,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         throw PSIEXCEPTION("RHF::twoel_Hx: JK object is not initialized, please set option SAVE_JK to True.");
     }
 
+    printf("jk is of type %s\n", jk_->name().c_str());
+    printf("jk_->wcombine() is %s\n", (jk_->get_wcombine() ? "true" : "false" ) );
+
     // This is a bypass for C1 input
     std::vector<bool> c1_input_;
 
@@ -513,7 +516,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         if (jk_->get_wcombine()) {
-            throw PSIEXCEPTION("SCF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
+            throw PSIEXCEPTION("RHF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
         }
         for (size_t i = 0; i < x_vec.size(); i++) {
             // always have a J-like piece (optionally include Xc)

@@ -597,7 +597,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         if (jk_->get_wcombine()) {
-            throw PSIEXCEPTION("SCF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
+            throw PSIEXCEPTION("UHF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
         }
         for (size_t i = 0; i < nvecs; i++) {
             J[i]->add(J[nvecs + i]);
