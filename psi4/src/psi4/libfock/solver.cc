@@ -90,7 +90,14 @@ std::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options, std::shared
         solver->set_bench(options.get_int("BENCH"));
     }
     if (options["SOLVER_PRECONDITION"].has_changed()) {
-        solver->set_precondition(options.get_str("SOLVER_PRECONDITION"));
+        if (options.get_str("SOLVER_PRECONDITION") == "SUBSPACE") {
+            outfile->Printf("  !!!Warning!!!\n")
+            outfile->Printf("  The subspace preconditioner has been broken for some time and was removed in Psi4 1.4.\n");
+            outfile->Printf("  Setting preconditioner to Jacobi instead.\n\n");
+            solver->set_precondition("JACOBI");
+        } else {
+            solver->set_precondition(options.get_str("SOLVER_PRECONDITION"));
+        }
     } else if (options["SOLVER_MAXITER"].has_changed()) {
         solver->set_maxiter(options.get_int("SOLVER_MAXITER"));
     }
@@ -208,113 +215,22 @@ void CGRSolver::finalize() {
 }
 void CGRSolver::setup() {
     if (shifts_.size() == 0) {
-        shifts_.resize(diag_->nirrep());
+        shifts_ = std::vector<std::vector<double>>(diag_->nirrep());
         for (int h = 0; h < diag_->nirrep(); h++) {
-            shifts_[h].clear();
-            for (size_t i = 0; i < b_.size(); i++) {
-                shifts_[h].push_back(0.0);
-            }
+            shifts_[h] = std::vector<double>(b_.size(), 0.0);
         }
     }
 
-    if ((precondition_ == "SUBSPACE") && !A_) {
-        // Find the nguess strongest diagonals in the A matrix
-        Dimension rank(diag_->nirrep());
-        A_inds_.clear();
-        A_inds_.resize(diag_->nirrep());
-        for (int h = 0; h < diag_->nirrep(); ++h) {
-            int n = diag_->dimpi()[h];
-            if (!n) continue;
-
-            std::vector<std::pair<double, int>> d;
-            for (int i = 0; i < n; ++i) {
-                d.push_back(std::make_pair(diag_->get(h, i), i));
-            }
-            std::sort(d.begin(), d.end());
-
-            int r = 0;
-            for (int i = 0; (i < nguess_) && (i < n); ++i) {
-                A_inds_[h].push_back(d[i].second);
-                r++;
-            }
-            rank[h] = r;
-        }
-
-        // Preconditioner submatrix and Guess Hamiltonian
-        A_ = std::make_shared<Matrix>("A_IJ (Preconditioner)", rank, rank);
-        for (size_t i = 0; i < (size_t)nguess_; i += b_.size()) {
-            x_.clear();
-            Ap_.clear();
-            size_t n = (b_.size() > (nguess_ - i) ? (nguess_ - i) : b_.size());
-            for (size_t j = 0; j < n; j++) {
-                size_t k = i + j;
-                x_.push_back(std::make_shared<Vector>("Delta Guess", diag_->dimpi()));
-                b_.push_back(std::make_shared<Vector>("Delta Sigma", diag_->dimpi()));
-                for (int h = 0; h < diag_->nirrep(); h++) {
-                    if (k >= A_inds_[h].size()) continue;
-                    b_[j]->set(h, A_inds_[h][k], 1.0);
-                }
-            }
-
-            // Low rank!
-            products_x();
-
-            for (size_t j = 0; j < n; j++) {
-                size_t k = i + j;
-                for (int h = 0; h < diag_->nirrep(); h++) {
-                    if (k >= A_inds_[h].size()) continue;
-                    double** Ap = A_->pointer(h);
-                    double* sp = Ap_[j]->pointer(h);
-                    for (int l = 0; l < rank[h]; l++) {
-                        Ap[k][l] = sp[A_inds_[h][l]];
-                    }
-                }
-            }
-        }
-
-        Ap_.clear();
-        x_.clear();
-    }
 }
 void CGRSolver::guess() {
     for (size_t N = 0; N < b_.size(); ++N) {
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
             int n = b_[N]->dimpi()[h];
             if (!n) continue;
-            double* bp = b_[N]->pointer();
-            double* xp = x_[N]->pointer();
-            double* dp = diag_->pointer();
-            if (precondition_ == "SUBSPACE") {
-                double lambda = shifts_[h][N];
-                for (int m = 0; m < n; m++) {
-                    xp[m] = bp[m] / (dp[m] - lambda);
-                }
-
-                int rank = A_inds_[h].size();
-                auto A2 = std::make_shared<Matrix>("A2", rank, rank);
-                double** A2p = A2->pointer();
-                double** Ap = A_->pointer(h);
-                ::memcpy((void*)A2p[0], (void*)Ap[0], sizeof(double) * rank * rank);
-                for (int i = 0; i < rank; i++) {
-                    A2p[i][i] -= lambda;
-                }
-
-                int* ipiv = new int[rank];
-                int info = C_DGETRF(rank, rank, A2p[0], rank, ipiv);
-                // Only apply the improved preconditioner if nonsingular
-                if (!info) {
-                    double* v = new double[rank];
-                    for (int i = 0; i < rank; i++) {
-                        v[i] = bp[A_inds_[h][i]];
-                    }
-                    C_DGETRS('N', rank, 1, A2p[0], rank, ipiv, v, rank);
-                    for (int i = 0; i < rank; i++) {
-                        xp[A_inds_[h][i]] = v[i];
-                    }
-                    delete[] v;
-                }
-                delete[] ipiv;
-            } else if (precondition_ == "JACOBI") {
+            auto bp = b_[N]->pointer();
+            auto xp = x_[N]->pointer();
+            auto dp = diag_->pointer();
+            if (precondition_ == "JACOBI") {
                 double lambda = shifts_[h][N];
                 for (int i = 0; i < n; ++i) {
                     xp[i] = bp[i] / (dp[i] - lambda);
@@ -496,37 +412,7 @@ void CGRSolver::update_z() {
             double* zp = z_[N]->pointer();
             double* rp = r_[N]->pointer();
             double* dp = diag_->pointer();
-            if (precondition_ == "SUBSPACE") {
-                double lambda = shifts_[h][N];
-                for (int m = 0; m < n; m++) {
-                    zp[m] = rp[m] / (dp[m] - lambda);
-                }
-
-                int rank = A_inds_[h].size();
-                auto A2 = std::make_shared<Matrix>("A2", rank, rank);
-                double** A2p = A2->pointer();
-                double** Ap = A_->pointer(h);
-                ::memcpy((void*)A2p[0], (void*)Ap[0], sizeof(double) * rank * rank);
-                for (int i = 0; i < rank; i++) {
-                    A2p[i][i] -= lambda;
-                }
-
-                int* ipiv = new int[rank];
-                int info = C_DGETRF(rank, rank, A2p[0], rank, ipiv);
-                // Only apply the improved preconditioner if nonsingular
-                if (!info) {
-                    double* v = new double[rank];
-                    for (int i = 0; i < rank; i++) {
-                        v[i] = rp[A_inds_[h][i]];
-                    }
-                    C_DGETRS('N', rank, 1, A2p[0], rank, ipiv, v, rank);
-                    for (int i = 0; i < rank; i++) {
-                        zp[A_inds_[h][i]] = v[i];
-                    }
-                    delete[] v;
-                }
-                delete[] ipiv;
-            } else if (precondition_ == "JACOBI") {
+            if (precondition_ == "JACOBI") {
                 double lambda = shifts_[h][N];
                 for (int i = 0; i < n; ++i) {
                     zp[i] = rp[i] / (dp[i] - lambda);
