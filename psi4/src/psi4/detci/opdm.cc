@@ -476,12 +476,31 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
             offset += CalcInfo_->ci_orbs[h];
         }
 
-        std::vector<SharedMatrix> opdm_root_vec;
-        opdm_root_vec.push_back(new_OPDM_a);
-        opdm_root_vec.push_back(new_OPDM_b);
-        opdm_root_vec.push_back(new_OPDM);
+        std::vector<SharedMatrix> opdm_root_vec = {new_OPDM_a, new_OPDM_b, new_OPDM};
 
         opdm_list.push_back(opdm_root_vec);
+
+        // Now for the other order.
+        if (Iroot != Jroot) {
+            auto alpha_transpose = new_OPDM_a->transpose();
+            opdm_name.str(std::string());
+            opdm_name << "MO-basis Alpha OPDM <" << Jroot << "| Etu |" << Iroot << ">";
+            alpha_transpose->set_name(opdm_name.str());
+
+            auto beta_transpose = new_OPDM_b->transpose();
+            opdm_name.str(std::string());
+            opdm_name << "MO-basis Beta OPDM <" << Jroot << "| Etu |" << Iroot << ">";
+            beta_transpose->set_name(opdm_name.str());
+
+            auto sum_transpose = new_OPDM->transpose();
+            opdm_name.str(std::string());
+            opdm_name << "MO-basis OPDM <" << Jroot << "| Etu |" << Iroot << ">";
+            sum_transpose->set_name(opdm_name.str());
+
+            opdm_root_vec = {alpha_transpose, beta_transpose, sum_transpose};
+            opdm_list.push_back(opdm_root_vec);
+        }
+
 
     } /* end loop over states_vec */
 
