@@ -91,7 +91,7 @@ std::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options, std::shared
     }
     if (options["SOLVER_PRECONDITION"].has_changed()) {
         if (options.get_str("SOLVER_PRECONDITION") == "SUBSPACE") {
-            outfile->Printf("  !!!Warning!!!\n")
+            outfile->Printf("  !!!Warning!!!\n");
             outfile->Printf("  The subspace preconditioner has been broken for some time and was removed in Psi4 1.4.\n");
             outfile->Printf("  Setting preconditioner to Jacobi instead.\n\n");
             solver->set_precondition("JACOBI");
