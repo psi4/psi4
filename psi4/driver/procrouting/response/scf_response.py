@@ -498,10 +498,12 @@ def tdscf_excitations(wfn,
     if guess.lower() != "denominators":
         raise ValidationError(f"Guess type {guess} is not valid")
 
-    if core.has_option_changed('SCF', 'TDSCF_R_CONVERGENCE'):
-        r_convergence = core.get_option('SCF', 'TDSCF_R_CONVERGENCE')
-    else:
-        r_convergence = min(1.e-4, core.get_option('SCF', 'D_CONVERGENCE') * 1.e2)
+    # TODO Switch to this form when Jeff's PR is merged
+    #if core.has_option_changed('SCF', 'TDSCF_R_CONVERGENCE'):
+    #    r_convergence = core.get_option('SCF', 'TDSCF_R_CONVERGENCE')
+    #else:
+    #    r_convergence = min(1.e-4, core.get_option('SCF', 'D_CONVERGENCE') * 1.e2)
+    r_convergence = min(1.e-4, core.get_option('SCF', 'D_CONVERGENCE') * 1.e2)
 
     # tie maximum number of vectors per root to requested residual tolerance
     # This gives 100 vectors per root with default tolerance
