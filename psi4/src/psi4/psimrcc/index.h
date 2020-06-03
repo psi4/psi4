@@ -52,6 +52,7 @@
 *********************************************************/
 
 #include "psi4/libpsi4util/libpsi4util.h"
+#include <array>
 #include <vector>
 
 namespace psi {
@@ -87,8 +88,8 @@ class CCIndex {
     std::string get_label() { return (label); }
 
     // Get the tuples
-    const std::vector<std::vector<short>>& get_tuples() { return (tuples); }
-    const std::vector<short>& get_tuple(int i) { return (tuples[i]); }
+    const std::vector<std::array<short, 3>>& get_tuples() { return (tuples); }
+    const std::array<short, 3>& get_tuple(int i) { return (tuples[i]); }
 
     // Get the tuples irrep structure
     size_t get_first(int i) { return (first[i]); }
@@ -153,7 +154,7 @@ class CCIndex {
     bool greater_than_or_equal;                // >= tuples
     bool greater_than;                         // >  tuples
     size_t ntuples;                            // Number of tuples
-    std::vector<std::vector<short>> tuples;                            // The tuples ordered as matrix : tuples[number][element]
+    std::vector<std::array<short, 3>> tuples;                            // The tuples ordered as matrix : tuples[number][element]
     Size_tVec first;                           // First pair of irrep
     Size_tVec last;                            // Last  pair of irrep
     Size_tVec tuplespi;                        // Number of tuples for irrep

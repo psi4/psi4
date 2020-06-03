@@ -146,7 +146,7 @@ void CCIndex::make_zero_index() {
         tuplespi.push_back(last[h] - first[h]);
     }
     // Allocate the memory for the tuples and store them
-    tuples = std::vector<std::vector<short>> {{0}};
+    tuples = std::vector<std::array<short, 3>> {{0, 0, 0}};
 }
 
 void CCIndex::make_one_index() {
@@ -177,7 +177,7 @@ void CCIndex::make_one_index() {
         tuplespi.push_back(last[h] - first[h]);
     }
 
-    tuples = std::vector<std::vector<short>>(ntuples, std::vector<short>(1));
+    tuples = std::vector<std::array<short, 3>>(ntuples, {0, 0, 0});
     for (size_t n = 0; n < pairs.size(); ++n) tuples[n][0] = pairs[n][0];
 }
 
@@ -273,7 +273,7 @@ void CCIndex::make_two_index() {
     }
 
     // Allocate the memory for the tuples and store them
-    tuples = std::vector<std::vector<short>>(ntuples, std::vector<short>(2));
+    tuples = std::vector<std::array<short, 3>>(ntuples, {0, 0, 0});
     for (size_t n = 0; n < pairs.size(); ++n) {
         tuples[n][0] = pairs[n][0];
         tuples[n][1] = pairs[n][1];
@@ -362,7 +362,7 @@ void CCIndex::make_three_index() {
     }
 
     // Allocate the memory for the tuples and store them
-    tuples = std::vector<std::vector<short>>(ntuples, std::vector<short>(3));
+    tuples = std::vector<std::array<short, 3>>(ntuples, {0, 0, 0});
     for (size_t n = 0; n < pairs.size(); ++n) {
         tuples[n][0] = pairs[n][0];
         tuples[n][1] = pairs[n][1];

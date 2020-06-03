@@ -34,6 +34,7 @@
     \brief   This class is used to iterate over n-tuples of MOs indices (p,q,r,..)
 */
 
+#include <array>
 #include <string>
 
 namespace psi {
@@ -87,7 +88,7 @@ class CCIndexIterator {
     // not be changing these values as long as this iterator is alive.
     int nelements;
     std::vector<std::vector<int>> element_irrep;
-    const std::vector<std::vector<short>>& tuples;
+    const std::vector<std::array<short, 3>>& tuples;
     std::vector<size_t> block_last;
     std::vector<int> block_symmetry;
 };
