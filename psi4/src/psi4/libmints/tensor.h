@@ -108,10 +108,10 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     using accessor = detail::Accessor<T, Rank>;
     using crtp_base = detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
 
-    using reference = block_type&;
-    using const_reference = const block_type&;
-    using pointer = block_type*;
-    using const_pointer = const block_type*;
+    using reference = typename store_type::reference;
+    using const_reference = typename store_type::const_reference;
+    using pointer = typename store_type::pointer;
+    using const_pointer = typename store_type::const_pointer;
     /*! @}*/
 
     /*! @{ Main constructors */

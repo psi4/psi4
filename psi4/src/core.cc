@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 
 #include <highfive/H5File.hpp>
+#include <xtensor-io/xhighfive.hpp>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
@@ -1018,6 +1019,20 @@ bool psi4_python_module_initialize() {
 #endif
 
     initialized = true;
+    std::cout << h5file->getNumberObjects() << std::endl;
+
+    xt::xtensor<double, 1> A = xt::ones<double>({10});
+    xt::dump(*h5file, "fuffff", A);
+    std::cout << "dumped A" << std::endl;
+    xt::xtensor<double, 2> B = xt::ones<double>({10, 5});
+    xt::dump(*h5file, "Buffff", B);
+
+    // xt::xtensor<double, 2> b = {{1., 2.}, {3., 4.}};
+    // auto bar = xt::dump(*h5file, "fufanu", b, xt::dump_mode::create);
+
+    auto mat = std::make_shared<Matrix_<double>>("foo", 10, 10);
+    // auto foo = xt::dump(*h5file, "babar", mat->block(0), xt::dump_mode::create);
+    // to_hdf5(mat);
 
     return true;
 }
