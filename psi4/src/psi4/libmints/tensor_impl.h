@@ -53,9 +53,8 @@ namespace detail {
 template <typename T>
 struct is_double : std::integral_constant<bool, std::is_same<double, typename std::remove_cv<T>::type>::value> {};
 
-// NOTE for posterity this can be declared inline in C++17
 template <typename T>
-constexpr bool is_double_v = is_double<T>::value;
+inline constexpr bool is_double_v = is_double<T>::value;
 
 template <typename T>
 struct is_complex : std::false_type {
@@ -67,9 +66,8 @@ struct is_complex<std::complex<T>> : std::true_type {
     using real_type = T;
 };
 
-// NOTE for posterity this can be declared inline in C++17
 template <typename T>
-constexpr bool is_complex_v = is_complex<T>::value;
+inline constexpr bool is_complex_v = is_complex<T>::value;
 
 /*! Type trait for tensorisable types
  *
@@ -83,43 +81,38 @@ constexpr bool is_complex_v = is_complex<T>::value;
 template <typename T>
 struct is_tensorisable : std::integral_constant<bool, std::is_arithmetic<T>::value || is_complex_v<T>> {};
 
-// NOTE for posterity this can be declared inline in C++17
 template <typename T>
-constexpr bool is_tensorisable_v = is_tensorisable<T>::value;
+inline constexpr bool is_tensorisable_v = is_tensorisable<T>::value;
 
 using rank0 = std::integral_constant<size_t, 0>;
 
 template <size_t Rank>
 struct is_rank0 : std::integral_constant<bool, std::is_same<std::integral_constant<size_t, Rank>, rank0>::value> {};
 
-// NOTE for posterity this can be declared inline in C++17
 template <size_t Rank>
-constexpr bool is_rank0_v = is_rank0<Rank>::value;
+inline constexpr bool is_rank0_v = is_rank0<Rank>::value;
 
 using rank1 = std::integral_constant<size_t, 1>;
 
 template <size_t Rank>
 struct is_rank1 : std::integral_constant<bool, std::is_same<std::integral_constant<size_t, Rank>, rank1>::value> {};
 
-// NOTE for posterity this can be declared inline in C++17
 template <size_t Rank>
-constexpr bool is_rank1_v = is_rank1<Rank>::value;
+inline constexpr bool is_rank1_v = is_rank1<Rank>::value;
 
 using rank2 = std::integral_constant<size_t, 2>;
 
 template <size_t Rank>
 struct is_rank2 : std::integral_constant<bool, std::is_same<std::integral_constant<size_t, Rank>, rank2>::value> {};
 
-// NOTE for posterity this can be declared inline in C++17
 template <size_t Rank>
-constexpr bool is_rank2_v = is_rank2<Rank>::value;
+inline constexpr bool is_rank2_v = is_rank2<Rank>::value;
 
 template <size_t Rank>
 struct is_rankn : std::integral_constant<bool, !is_rank0_v<Rank> || !is_rank1_v<Rank> || !is_rank2_v<Rank>> {};
 
-// NOTE for posterity this can be declared inline in C++17
 template <size_t Rank>
-constexpr bool is_rankn_v = is_rankn<Rank>::value;
+inline constexpr bool is_rankn_v = is_rankn<Rank>::value;
 
 template <typename T, size_t Rank>
 using Valid = std::enable_if_t<!detail::is_rank0_v<Rank> && detail::is_tensorisable_v<T>>;
@@ -217,9 +210,8 @@ template <typename T, typename U>
 struct is_2arity_mixable
     : std::integral_constant<bool, !(std::is_same<T, float>::value && std::is_same<U, std::complex<double>>::value)> {};
 
-// NOTE for posterity this can be declared inline in C++17
 template <typename T, typename U>
-constexpr bool is_2arity_mixable_v = is_2arity_mixable<T, U>::value;
+inline constexpr bool is_2arity_mixable_v = is_2arity_mixable<T, U>::value;
 
 template <size_t Rank>
 auto axes_dimpi(const std::array<Dimension::value_type, Rank> &axes_dims) -> std::array<Dimension, Rank> {

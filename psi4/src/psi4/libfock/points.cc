@@ -76,7 +76,7 @@ void SAPFunctions::print(std::string out, int print) const {
     for (const auto kv : point_values_) {
         printer->Printf("    %s\n", kv.first.c_str());
         if (print > 3) {
-            kv.second->print();
+            psi::print(kv.second);
         }
     }
     printer->Printf("\n\n");
@@ -357,7 +357,7 @@ void RKSFunctions::print(std::string out, int print) const {
     for (const auto kv : point_values_) {
         printer->Printf("    %s\n", kv.first.c_str());
         if (print > 3) {
-            kv.second->print();
+            psi::print(kv.second);
         }
     }
     printer->Printf("\n\n");
@@ -475,8 +475,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 
     // => Build LSDA quantities <= //
     double** phip = basis_value("PHI")->pointer();
-    double* rhoap = point_value("RHO_A")->pointer();
-    double* rhobp = point_value("RHO_B")->pointer();
+    double* rhoap = point_value("RHO_A")->data();
+    double* rhobp = point_value("RHO_B")->data();
     size_t coll_funcs = basis_value("PHI")->ncol();
 
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], coll_funcs, Da2p[0], nglobal, 0.0, Tap[0], nglobal);
@@ -494,15 +494,15 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* rhoaxp = point_value("RHO_AX")->pointer();
-        double* rhoayp = point_value("RHO_AY")->pointer();
-        double* rhoazp = point_value("RHO_AZ")->pointer();
-        double* rhobxp = point_value("RHO_BX")->pointer();
-        double* rhobyp = point_value("RHO_BY")->pointer();
-        double* rhobzp = point_value("RHO_BZ")->pointer();
-        double* gammaaap = point_value("GAMMA_AA")->pointer();
-        double* gammaabp = point_value("GAMMA_AB")->pointer();
-        double* gammabbp = point_value("GAMMA_BB")->pointer();
+        double* rhoaxp = point_value("RHO_AX")->data();
+        double* rhoayp = point_value("RHO_AY")->data();
+        double* rhoazp = point_value("RHO_AZ")->data();
+        double* rhobxp = point_value("RHO_BX")->data();
+        double* rhobyp = point_value("RHO_BY")->data();
+        double* rhobzp = point_value("RHO_BZ")->data();
+        double* gammaaap = point_value("GAMMA_AA")->data();
+        double* gammaabp = point_value("GAMMA_AB")->data();
+        double* gammabbp = point_value("GAMMA_BB")->data();
 
         for (int P = 0; P < npoints; P++) {
             // 2.0 for Px D P + P D Px
@@ -529,8 +529,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* tauap = point_value("TAU_A")->pointer();
-        double* taubp = point_value("TAU_B")->pointer();
+        double* tauap = point_value("TAU_A")->data();
+        double* taubp = point_value("TAU_B")->data();
 
         std::fill(tauap, tauap + npoints, 0.0);
         std::fill(taubp, taubp + npoints, 0.0);
@@ -642,7 +642,7 @@ void UKSFunctions::print(std::string out, int print) const {
     for (const auto& kv : point_values_) {
         printer->Printf("    %s\n", kv.first.c_str());
         if (print > 3) {
-            kv.second->print();
+            psi::print(kv.second);
         }
     }
     printer->Printf("\n\n");
@@ -724,8 +724,10 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     // Declare tmps
     std::vector<double> center(3, 0.0);
 
-    auto is_in_temps = [temps = this->basis_temps_](const std::string& k)->bool { return is_key_in_map(temps, k); };
-    auto is_in_values = [values = this->basis_values_](const std::string& k)->bool { return is_key_in_map(values, k); };
+    auto is_in_temps = [temps = this->basis_temps_](const std::string& k) -> bool { return is_key_in_map(temps, k); };
+    auto is_in_values = [values = this->basis_values_](const std::string& k) -> bool {
+        return is_key_in_map(values, k);
+    };
 
     // Declare pointers
     auto tmpp = is_in_temps("PHI") ? basis_temps_.at("PHI")->pointer()[0] : nullptr;

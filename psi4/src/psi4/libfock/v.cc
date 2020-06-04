@@ -523,9 +523,9 @@ SharedMatrix VBase::vv10_nlc_gradient(SharedMatrix D) {
 
         // => Grid gradient contributions <= //
         double** Gp = G_local[rank]->pointer();
-        const double* x_grid = fworker->vv_value("GRID_WX")->pointer();
-        const double* y_grid = fworker->vv_value("GRID_WY")->pointer();
-        const double* z_grid = fworker->vv_value("GRID_WZ")->pointer();
+        const double* x_grid = fworker->vv_value("GRID_WX")->data();
+        const double* y_grid = fworker->vv_value("GRID_WY")->data();
+        const double* z_grid = fworker->vv_value("GRID_WZ")->data();
         double** phi = pworker->basis_value("PHI")->pointer();
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
@@ -963,9 +963,9 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
         double** phi_z = pworker->basis_value("PHI_Z")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* v_rho_a = vals["V_RHO_A"]->pointer();
-        double* v_rho_aa = vals["V_RHO_A_RHO_A"]->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->data();
+        double* v_rho_a = vals["V_RHO_A"]->data();
+        double* v_rho_aa = vals["V_RHO_A_RHO_A"]->data();
         for (int P = 0; P < npoints; P++) {
             if (std::fabs(rho_a[P]) < v2_rho_cutoff_) {
                 v_rho_a[P] = 0.0;
@@ -1234,9 +1234,9 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         // => Grab quantities <= //
         // LDA
         double** phi = pworker->basis_value("PHI")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
-        double* rho_k = R_rho_k[rank]->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->data();
+        double* v2_rho2 = vals["V_RHO_A_RHO_A"]->data();
+        double* rho_k = R_rho_k[rank]->data();
         size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // GGA
@@ -1251,16 +1251,16 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         double* rho_y;
         double* rho_z;
         if (ansatz >= 1) {
-            rho_k_x = R_rho_k_x[rank]->pointer();
-            rho_k_y = R_rho_k_y[rank]->pointer();
-            rho_k_z = R_rho_k_z[rank]->pointer();
-            gamma_k = R_gamma_k[rank]->pointer();
+            rho_k_x = R_rho_k_x[rank]->data();
+            rho_k_y = R_rho_k_y[rank]->data();
+            rho_k_z = R_rho_k_z[rank]->data();
+            gamma_k = R_gamma_k[rank]->data();
             phi_x = pworker->basis_value("PHI_X")->pointer();
             phi_y = pworker->basis_value("PHI_Y")->pointer();
             phi_z = pworker->basis_value("PHI_Z")->pointer();
-            rho_x = pworker->point_value("RHO_AX")->pointer();
-            rho_y = pworker->point_value("RHO_AY")->pointer();
-            rho_z = pworker->point_value("RHO_AZ")->pointer();
+            rho_x = pworker->point_value("RHO_AX")->data();
+            rho_y = pworker->point_value("RHO_AY")->data();
+            rho_z = pworker->point_value("RHO_AZ")->data();
         }
 
         // Meta
@@ -1317,9 +1317,9 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             // => GGA contribution <= //
             // parallel_timer_on("GGA", rank);
             if (ansatz >= 1) {
-                double* v_gamma = vals["V_GAMMA_AA"]->pointer();
-                double* v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
-                double* v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
+                double* v_gamma = vals["V_GAMMA_AA"]->data();
+                double* v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->data();
+                double* v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->data();
                 double tmp_val = 0.0, v2_val = 0.0;
 
                 for (int P = 0; P < npoints; P++) {
@@ -1555,7 +1555,7 @@ SharedMatrix RV::compute_hessian() {
     }
 
     auto QT = std::make_shared<Vector_<double>>("Quadrature Temp", max_points);
-    double* QTp = QT->pointer();
+    double* QTp = QT->data();
     const std::vector<std::shared_ptr<BlockOPoints>>& blocks = grid_->blocks();
 
     for (size_t Q = 0; Q < blocks.size(); Q++) {
@@ -1567,7 +1567,7 @@ SharedMatrix RV::compute_hessian() {
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
         double** V2p = V_local[rank]->pointer();
-        double* QTp = Q_temp[rank]->pointer();
+        double* QTp = Q_temp[rank]->data();
         double** Dp = pworker->D_scratch()[0]->pointer();
         SharedMatrix tmpHXX = pworker->D_scratch()[0]->clone();
         SharedMatrix tmpHXY = pworker->D_scratch()[0]->clone();
@@ -1597,9 +1597,9 @@ SharedMatrix RV::compute_hessian() {
         auto Tmpx = std::make_shared<Vector_<double>>("Tx", max_functions);
         auto Tmpy = std::make_shared<Vector_<double>>("Ty", max_functions);
         auto Tmpz = std::make_shared<Vector_<double>>("Tz", max_functions);
-        double* pTx = Tmpx->pointer();
-        double* pTy = Tmpy->pointer();
-        double* pTz = Tmpz->pointer();
+        double* pTx = Tmpx->data();
+        double* pTy = Tmpy->data();
+        double* pTz = Tmpz->data();
         SharedMatrix Tx(U_local->clone());
         SharedMatrix Ty(U_local->clone());
         SharedMatrix Tz(U_local->clone());
@@ -1632,9 +1632,9 @@ SharedMatrix RV::compute_hessian() {
         double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
         double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
         double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* v_rho_a = vals["V_RHO_A"]->pointer();
-        double* v_rho_aa = vals["V_RHO_A_RHO_A"]->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->data();
+        double* v_rho_a = vals["V_RHO_A"]->data();
+        double* v_rho_aa = vals["V_RHO_A_RHO_A"]->data();
         size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // => LSDA Contribution <= //
@@ -1936,8 +1936,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
         double** Va2p = Va_local[rank]->pointer();
         double** Vb2p = Vb_local[rank]->pointer();
-        auto QTap = Qa_temp[rank]->pointer();
-        auto QTbp = Qb_temp[rank]->pointer();
+        auto QTap = Qa_temp[rank]->data();
+        auto QTbp = Qb_temp[rank]->data();
 
         // Scratch
         double** Tap = pworker->scratch()[0]->pointer();
@@ -2006,15 +2006,15 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* rho_bx = pworker->point_value("RHO_BX")->pointer();
-            double* rho_by = pworker->point_value("RHO_BY")->pointer();
-            double* rho_bz = pworker->point_value("RHO_BZ")->pointer();
-            double* v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
-            double* v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
-            double* v_sigma_bb = vals["V_GAMMA_BB"]->pointer();
+            double* rho_ax = pworker->point_value("RHO_AX")->data();
+            double* rho_ay = pworker->point_value("RHO_AY")->data();
+            double* rho_az = pworker->point_value("RHO_AZ")->data();
+            double* rho_bx = pworker->point_value("RHO_BX")->data();
+            double* rho_by = pworker->point_value("RHO_BY")->data();
+            double* rho_bz = pworker->point_value("RHO_BZ")->data();
+            double* v_sigma_aa = vals["V_GAMMA_AA"]->data();
+            double* v_sigma_ab = vals["V_GAMMA_AB"]->data();
+            double* v_sigma_bb = vals["V_GAMMA_BB"]->data();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_bx[P]), phix[P], 1,
@@ -2055,8 +2055,8 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
-            double* v_tau_a = vals["V_TAU_A"]->pointer();
-            double* v_tau_b = vals["V_TAU_B"]->pointer();
+            double* v_tau_a = vals["V_TAU_A"]->data();
+            double* v_tau_b = vals["V_TAU_B"]->data();
 
             double** phi[3];
             phi[0] = phix;
@@ -2287,15 +2287,15 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         // => Grab quantities <= //
         // LDA
         double** phi = pworker->basis_value("PHI")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* rho_b = pworker->point_value("RHO_B")->pointer();
-        double* v2_rho2_aa = vals["V_RHO_A_RHO_A"]->pointer();
-        double* v2_rho2_ab = vals["V_RHO_A_RHO_B"]->pointer();
-        double* v2_rho2_bb = vals["V_RHO_B_RHO_B"]->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->data();
+        double* rho_b = pworker->point_value("RHO_B")->data();
+        double* v2_rho2_aa = vals["V_RHO_A_RHO_A"]->data();
+        double* v2_rho2_ab = vals["V_RHO_A_RHO_B"]->data();
+        double* v2_rho2_bb = vals["V_RHO_B_RHO_B"]->data();
         size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
-        double* rho_ak = R_rho_ak[rank]->pointer();
-        double* rho_bk = R_rho_bk[rank]->pointer();
+        double* rho_ak = R_rho_ak[rank]->data();
+        double* rho_bk = R_rho_bk[rank]->data();
 
         // GGA
         double** phi_x;
@@ -2317,24 +2317,24 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             phi_z = pworker->basis_value("PHI_Z")->pointer();
 
             // Alpha
-            rho_ak_x = R_rho_ak_x[rank]->pointer();
-            rho_ak_y = R_rho_ak_y[rank]->pointer();
-            rho_ak_z = R_rho_ak_z[rank]->pointer();
-            gamma_aak = R_gamma_ak[rank]->pointer();
-            rho_ax = pworker->point_value("RHO_AX")->pointer();
-            rho_ay = pworker->point_value("RHO_AY")->pointer();
-            rho_az = pworker->point_value("RHO_AZ")->pointer();
+            rho_ak_x = R_rho_ak_x[rank]->data();
+            rho_ak_y = R_rho_ak_y[rank]->data();
+            rho_ak_z = R_rho_ak_z[rank]->data();
+            gamma_aak = R_gamma_ak[rank]->data();
+            rho_ax = pworker->point_value("RHO_AX")->data();
+            rho_ay = pworker->point_value("RHO_AY")->data();
+            rho_az = pworker->point_value("RHO_AZ")->data();
 
             // Beta
-            rho_bk_x = R_rho_bk_x[rank]->pointer();
-            rho_bk_y = R_rho_bk_y[rank]->pointer();
-            rho_bk_z = R_rho_bk_z[rank]->pointer();
-            gamma_bbk = R_gamma_bk[rank]->pointer();
-            rho_bx = pworker->point_value("RHO_AX")->pointer();
-            rho_by = pworker->point_value("RHO_AY")->pointer();
-            rho_bz = pworker->point_value("RHO_AZ")->pointer();
+            rho_bk_x = R_rho_bk_x[rank]->data();
+            rho_bk_y = R_rho_bk_y[rank]->data();
+            rho_bk_z = R_rho_bk_z[rank]->data();
+            gamma_bbk = R_gamma_bk[rank]->data();
+            rho_bx = pworker->point_value("RHO_AX")->data();
+            rho_by = pworker->point_value("RHO_AY")->data();
+            rho_bz = pworker->point_value("RHO_AZ")->data();
 
-            gamma_abk = R_gamma_abk[rank]->pointer();
+            gamma_abk = R_gamma_abk[rank]->data();
         }
 
         // Meta
@@ -2428,27 +2428,27 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
             // // => GGA contribution <= //
             if (ansatz >= 1) {
-                double* gamma_aa = pworker->point_value("GAMMA_AA")->pointer();
-                double* gamma_ab = pworker->point_value("GAMMA_AB")->pointer();
-                double* gamma_bb = pworker->point_value("GAMMA_BB")->pointer();
+                double* gamma_aa = pworker->point_value("GAMMA_AA")->data();
+                double* gamma_ab = pworker->point_value("GAMMA_AB")->data();
+                double* gamma_bb = pworker->point_value("GAMMA_BB")->data();
 
-                double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-                double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
-                double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+                double* v_gamma_aa = vals["V_GAMMA_AA"]->data();
+                double* v_gamma_ab = vals["V_GAMMA_AB"]->data();
+                double* v_gamma_bb = vals["V_GAMMA_BB"]->data();
 
-                double* v2_gamma_aa_gamma_aa = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
-                double* v2_gamma_aa_gamma_ab = vals["V_GAMMA_AA_GAMMA_AB"]->pointer();
-                double* v2_gamma_aa_gamma_bb = vals["V_GAMMA_AA_GAMMA_BB"]->pointer();
-                double* v2_gamma_ab_gamma_ab = vals["V_GAMMA_AB_GAMMA_AB"]->pointer();
-                double* v2_gamma_ab_gamma_bb = vals["V_GAMMA_AB_GAMMA_BB"]->pointer();
-                double* v2_gamma_bb_gamma_bb = vals["V_GAMMA_BB_GAMMA_BB"]->pointer();
+                double* v2_gamma_aa_gamma_aa = vals["V_GAMMA_AA_GAMMA_AA"]->data();
+                double* v2_gamma_aa_gamma_ab = vals["V_GAMMA_AA_GAMMA_AB"]->data();
+                double* v2_gamma_aa_gamma_bb = vals["V_GAMMA_AA_GAMMA_BB"]->data();
+                double* v2_gamma_ab_gamma_ab = vals["V_GAMMA_AB_GAMMA_AB"]->data();
+                double* v2_gamma_ab_gamma_bb = vals["V_GAMMA_AB_GAMMA_BB"]->data();
+                double* v2_gamma_bb_gamma_bb = vals["V_GAMMA_BB_GAMMA_BB"]->data();
 
-                double* v2_rho_a_gamma_aa = vals["V_RHO_A_GAMMA_AA"]->pointer();
-                double* v2_rho_a_gamma_ab = vals["V_RHO_A_GAMMA_AB"]->pointer();
-                double* v2_rho_a_gamma_bb = vals["V_RHO_A_GAMMA_BB"]->pointer();
-                double* v2_rho_b_gamma_aa = vals["V_RHO_B_GAMMA_AA"]->pointer();
-                double* v2_rho_b_gamma_ab = vals["V_RHO_B_GAMMA_AB"]->pointer();
-                double* v2_rho_b_gamma_bb = vals["V_RHO_B_GAMMA_BB"]->pointer();
+                double* v2_rho_a_gamma_aa = vals["V_RHO_A_GAMMA_AA"]->data();
+                double* v2_rho_a_gamma_ab = vals["V_RHO_A_GAMMA_AB"]->data();
+                double* v2_rho_a_gamma_bb = vals["V_RHO_A_GAMMA_BB"]->data();
+                double* v2_rho_b_gamma_aa = vals["V_RHO_B_GAMMA_AA"]->data();
+                double* v2_rho_b_gamma_ab = vals["V_RHO_B_GAMMA_AB"]->data();
+                double* v2_rho_b_gamma_bb = vals["V_RHO_B_GAMMA_BB"]->data();
 
                 double tmp_val = 0.0, v2_val_aa = 0.0, v2_val_ab = 0.0, v2_val_bb = 0.0;
 
@@ -2688,7 +2688,7 @@ SharedMatrix UV::compute_gradient() {
 
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
-        double* QTp = Q_temp[rank]->pointer();
+        double* QTp = Q_temp[rank]->data();
 
         double** Tap = pworker->scratch()[0]->pointer();
         double** Tbp = pworker->scratch()[1]->pointer();
@@ -2726,11 +2726,11 @@ SharedMatrix UV::compute_gradient() {
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
         double** phi_z = pworker->basis_value("PHI_Z")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* rho_b = pworker->point_value("RHO_B")->pointer();
-        double* zk = vals["V"]->pointer();
-        double* v_rho_a = vals["V_RHO_A"]->pointer();
-        double* v_rho_b = vals["V_RHO_B"]->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->data();
+        double* rho_b = pworker->point_value("RHO_B")->data();
+        double* zk = vals["V"]->data();
+        double* v_rho_a = vals["V_RHO_A"]->data();
+        double* v_rho_b = vals["V_RHO_B"]->data();
         size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // => Quadrature values <= //
@@ -2760,15 +2760,15 @@ SharedMatrix UV::compute_gradient() {
 
         // => GGA Contribution (Term 1) <= //
         if (fworker->is_gga()) {
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* rho_bx = pworker->point_value("RHO_BX")->pointer();
-            double* rho_by = pworker->point_value("RHO_BY")->pointer();
-            double* rho_bz = pworker->point_value("RHO_BZ")->pointer();
-            double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-            double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
-            double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+            double* rho_ax = pworker->point_value("RHO_AX")->data();
+            double* rho_ay = pworker->point_value("RHO_AY")->data();
+            double* rho_az = pworker->point_value("RHO_AZ")->data();
+            double* rho_bx = pworker->point_value("RHO_BX")->data();
+            double* rho_by = pworker->point_value("RHO_BY")->data();
+            double* rho_bz = pworker->point_value("RHO_BZ")->data();
+            double* v_gamma_aa = vals["V_GAMMA_AA"]->data();
+            double* v_gamma_ab = vals["V_GAMMA_AB"]->data();
+            double* v_gamma_bb = vals["V_GAMMA_BB"]->data();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]), phi_x[P],
@@ -2810,15 +2810,15 @@ SharedMatrix UV::compute_gradient() {
             double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
             double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
             double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* rho_bx = pworker->point_value("RHO_BX")->pointer();
-            double* rho_by = pworker->point_value("RHO_BY")->pointer();
-            double* rho_bz = pworker->point_value("RHO_BZ")->pointer();
-            double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-            double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
-            double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+            double* rho_ax = pworker->point_value("RHO_AX")->data();
+            double* rho_ay = pworker->point_value("RHO_AY")->data();
+            double* rho_az = pworker->point_value("RHO_AZ")->data();
+            double* rho_bx = pworker->point_value("RHO_BX")->data();
+            double* rho_by = pworker->point_value("RHO_BY")->data();
+            double* rho_bz = pworker->point_value("RHO_BZ")->data();
+            double* v_gamma_aa = vals["V_GAMMA_AA"]->data();
+            double* v_gamma_ab = vals["V_GAMMA_AB"]->data();
+            double* v_gamma_bb = vals["V_GAMMA_BB"]->data();
 
             C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dap[0], max_functions, 0.0, Uap[0],
                     max_functions);

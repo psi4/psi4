@@ -203,7 +203,7 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using xtensor-python${ColourReset}: ${_loc} (version ${xtensor-python_VERSION})")
 find_package(NumPy REQUIRED)
 
-find_package(HighFive 2.2 CONFIG REQUIRED)
+find_package(HighFive CONFIG REQUIRED)
 get_property(_loc TARGET HighFive PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using HighFive${ColourReset}: ${_loc} (version ${xtensor-io_VERSION})")

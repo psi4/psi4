@@ -433,8 +433,8 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     auto amp = std::make_shared<Matrix>(nocc, nvir);
 
     double** ampp = amp->pointer();
-    double* eoccp = eps_occ->pointer();
-    double* evirp = eps_vir->pointer();
+    double* eoccp = eps_occ->data();
+    double* evirp = eps_vir->data();
 
 #pragma omp parallel for
     for (size_t i = 0; i < nocc; i++) {

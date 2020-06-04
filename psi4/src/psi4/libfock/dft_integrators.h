@@ -66,7 +66,7 @@ inline std::vector<double> rks_quadrature_integrate(std::shared_ptr<BlockOPoints
     auto QTp = fworker->value("Q_TMP")->data();
 
     // Points data
-    auto rho_a = pworker->point_value("RHO_A")->pointer();
+    auto rho_a = pworker->point_value("RHO_A")->data();
 
     // Build quadrature
     std::vector<double> ret(5);
@@ -241,9 +241,9 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
 
     // => GGA Contribution (Term 1) <= //
     if (fworker->is_gga()) {
-        double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-        double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-        double* rho_az = pworker->point_value("RHO_AZ")->pointer();
+        double* rho_ax = pworker->point_value("RHO_AX")->data();
+        double* rho_ay = pworker->point_value("RHO_AY")->data();
+        double* rho_az = pworker->point_value("RHO_AZ")->data();
         auto v_gamma_aa = fworker->value("V_GAMMA_AA")->data();
 
         for (int P = 0; P < npoints; P++) {
@@ -272,9 +272,9 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
         double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
         double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
-        double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-        double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-        double* rho_az = pworker->point_value("RHO_AZ")->pointer();
+        double* rho_ax = pworker->point_value("RHO_AX")->data();
+        double* rho_ay = pworker->point_value("RHO_AY")->data();
+        double* rho_az = pworker->point_value("RHO_AZ")->data();
         auto v_gamma_aa = fworker->value("V_GAMMA_AA")->data();
 
         C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dp[0], max_functions, 0.0, Up[0],

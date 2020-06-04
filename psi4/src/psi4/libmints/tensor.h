@@ -38,13 +38,14 @@
 #include <type_traits>
 #include <vector>
 
-#include <highfive/H5Easy.hpp>
+#include <highfive/H5File.hpp>
 #include <xtensor/xtensor.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor-io/xhighfive.hpp>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/enumerate.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "dimension.h"
@@ -88,6 +89,7 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     friend struct detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
 
    public:
+    /*! @{ Typedefs */
     /*! Access rank of Tensor as Tensor<T, Rank>::rank */
     static constexpr size_t rank = Rank;
 
@@ -105,6 +107,12 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
 
     using accessor = detail::Accessor<T, Rank>;
     using crtp_base = detail::RankDependentImpl<Tensor<T, Rank, detail::Valid<T, Rank>>>;
+
+    using reference = block_type&;
+    using const_reference = const block_type&;
+    using pointer = block_type*;
+    using const_pointer = const block_type*;
+    /*! @}*/
 
     /*! @{ Main constructors */
     /*! Labeled, blocked, symmetry-assigned, rank-n CTOR with non-zero fill value
@@ -374,12 +382,12 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
     void set_block(const block_type& block) { this->set_block(0, block); }
     block_type& operator[](size_t h) { return store_[h]; }
 
-    // using crtp_base::get;  // NOTE This is to make the rank-dependent get-s are accessible
+    // NOTE This is to make the rank-dependent get-s accessible
     using accessor::get;
     T get(size_t h, index_type idxs) const { return store_[h][idxs]; }
     T get(index_type idxs) const { return store_[0][idxs]; }
 
-    // using crtp_base::set;  // NOTE This is to make the rank-dependent set-s are accessible
+    // NOTE This is to make the rank-dependent set-s accessible
     using accessor::set;
     void set(size_t h, index_type idxs, T val) { store_[h][idxs] = val; }
     void set(index_type idxs, T val) { store_[0][idxs] = val; }
@@ -400,18 +408,11 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
 
     /*! Returns pointer to given irrep
      *  \param[in] h
+     *
+     *  This method used to be called `pointer`, but that is not in line with the naming used in STL.
      */
     T* data(size_t h = 0) { return store_.at(h).data(); }
     const T* data(size_t h = 0) const { return store_.at(h).data(); }
-
-    PSI_DEPRECATED(
-        "Using `Tensor::pointer` instead of `Tensor::data` is deprecated, and in 1.4 it will "
-        "stop working")
-    T* pointer(size_t h = 0) { return store_.at(h).data(); }
-    PSI_DEPRECATED(
-        "Using `Tensor::pointer` instead of `Tensor::data` is deprecated, and in 1.4 it will "
-        "stop working")
-    const T* pointer(size_t h = 0) const { return store_.at(h).data(); }
 
     std::string repr() const noexcept { return crtp_base::cxxClassName(); }
 
@@ -441,15 +442,6 @@ class Tensor<T, Rank, detail::Valid<T, Rank>>
         return retval.str();
     }
 
-    PSI_DEPRECATED(
-        "Using `Tensor::print` instead of `print` is deprecated, and in 1.4 it will "
-        "stop working")
-    void print(std::string out = "outfile", const std::string extra = "") const noexcept {
-        auto printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-        printer->Printf(format(extra));
-        printer->Printf("\n");
-    }
-
    protected:
     unsigned int symmetry_{0};
     std::string label_;
@@ -477,18 +469,17 @@ void print(const SharedTensor<T, Rank>& t, std::string out = "outfile", const st
 
 template <typename T, size_t Rank>
 void to_hdf5(const Tensor<T, Rank>& t, std::string h5 = "h5file", const std::string& path = "tensors") {
-    auto h5dumper = (h5 == "h5file" ? h5file : std::make_shared<H5Easy::File>(h5));
-    for (auto h = 0; h < t.nirrep(); ++h) {
-        xt::dump(*h5dumper, path + "/" + t.label() + "/irrep_" + std::to_string(h), t[h], xt::dump_mode::create);
+    auto h5dumper = (h5 == "h5file" ? h5file : std::make_shared<HighFive::File>(h5));
+    for (const auto [h, blk] : en::enumerate(t)) {
+        xt::dump(*h5dumper, path + "/" + t.label() + "/irrep_" + std::to_string(h), blk, xt::dump_mode::create);
     }
 }
 
 template <typename T, size_t Rank>
 void to_hdf5(const SharedTensor<T, Rank>& t, std::string h5 = "h5file", const std::string& path = "tensors") {
-    auto h5dumper = (h5 == "h5file" ? h5file : std::make_shared<H5Easy::File>(h5));
-    for (auto h = 0; h < t->nirrep(); ++h) {
-        xt::dump(*h5dumper, path + "/" + t->label() + "/irrep_" + std::to_string(h), t->operator[](h),
-                 xt::dump_mode::create);
+    auto h5dumper = (h5 == "h5file" ? h5file : std::make_shared<HighFive::File>(h5));
+    for (const auto [h, blk] : en::enumerate(*t)) {
+        xt::dump(*h5dumper, path + "/" + t->label() + "/irrep_" + std::to_string(h), blk, xt::dump_mode::create);
     }
 }
 }  // namespace psi
