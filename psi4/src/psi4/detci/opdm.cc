@@ -112,14 +112,16 @@ void CIWavefunction::form_opdm() {
     // Transition-OPDM's
     if (Parameters_->transdens) {
         states_vec.clear();
-        for (int i = 0; i < Parameters_->num_roots - 1; ++i) {
-            states_vec.push_back(std::make_tuple(0, i + 1));
+        for (int i = 0; i < Parameters_->num_roots; ++i) {
+            for (int j = i + 1; j < Parameters_->num_roots; ++j) {
+                states_vec.push_back(std::make_tuple(i, j));
+            }
         }
         opdm_list = opdm(Ivec, Jvec, states_vec);
-        for (int i = 0; i < Parameters_->num_roots - 1; i++) {
-            opdm_map_[opdm_list[i][0]->name()] = opdm_list[i][0];
-            opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
-            opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
+        for (const auto& tdm : opdm_list) {
+            opdm_map_[tdm[0]->name()] = tdm[0];
+            opdm_map_[tdm[1]->name()] = tdm[1];
+            opdm_map_[tdm[2]->name()] = tdm[2];
         }
     }
 
@@ -474,12 +476,31 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
             offset += CalcInfo_->ci_orbs[h];
         }
 
-        std::vector<SharedMatrix> opdm_root_vec;
-        opdm_root_vec.push_back(new_OPDM_a);
-        opdm_root_vec.push_back(new_OPDM_b);
-        opdm_root_vec.push_back(new_OPDM);
+        std::vector<SharedMatrix> opdm_root_vec = {new_OPDM_a, new_OPDM_b, new_OPDM};
 
         opdm_list.push_back(opdm_root_vec);
+
+        // Now for the other order.
+        if (Iroot != Jroot) {
+            auto alpha_transpose = new_OPDM_a->transpose();
+            opdm_name.str(std::string());
+            opdm_name << "MO-basis Alpha OPDM <" << Jroot << "| Etu |" << Iroot << ">";
+            alpha_transpose->set_name(opdm_name.str());
+
+            auto beta_transpose = new_OPDM_b->transpose();
+            opdm_name.str(std::string());
+            opdm_name << "MO-basis Beta OPDM <" << Jroot << "| Etu |" << Iroot << ">";
+            beta_transpose->set_name(opdm_name.str());
+
+            auto sum_transpose = new_OPDM->transpose();
+            opdm_name.str(std::string());
+            opdm_name << "MO-basis OPDM <" << Jroot << "| Etu |" << Iroot << ">";
+            sum_transpose->set_name(opdm_name.str());
+
+            opdm_root_vec = {alpha_transpose, beta_transpose, sum_transpose};
+            opdm_list.push_back(opdm_root_vec);
+        }
+
 
     } /* end loop over states_vec */
 
