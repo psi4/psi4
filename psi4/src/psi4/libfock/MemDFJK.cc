@@ -102,7 +102,7 @@ void MemDFJK::compute_JK() {
     if (lr_symmetric_) {
         if (do_wK_) {
             for (size_t N = 0; N < wK_ao_.size(); N++) {
-                 wK_ao_[N]->hermitivitize();
+                wK_ao_[N]->hermitivitize();
             }
         }
     }
@@ -134,6 +134,14 @@ int MemDFJK::max_nocc() const {
         max_nocc = (C_left_ao_[N]->colspi()[0] > max_nocc ? C_left_ao_[N]->colspi()[0] : max_nocc);
     }
     return max_nocc;
+}
+void MemDFJK::set_omega_alpha(double alpha) {
+    omega_alpha_ = alpha;
+    dfh_->set_omega_alpha(omega_alpha_);
+}
+void MemDFJK::set_omega_beta(double beta){
+    omega_beta_ = beta;
+    dfh_->set_omega_beta(omega_beta_);
 }
 void MemDFJK::set_do_wK(bool tf) { do_wK_ = tf; dfh_->set_do_wK(tf); }
 void MemDFJK::set_wcombine(bool wcombine) { 

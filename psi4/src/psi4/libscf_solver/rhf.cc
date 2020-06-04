@@ -416,9 +416,6 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         throw PSIEXCEPTION("RHF::twoel_Hx: JK object is not initialized, please set option SAVE_JK to True.");
     }
 
-    printf("jk is of type %s\n", jk_->name().c_str());
-    printf("jk_->wcombine() is %s\n", (jk_->get_wcombine() ? "true" : "false" ) );
-
     // This is a bypass for C1 input
     std::vector<bool> c1_input_;
 

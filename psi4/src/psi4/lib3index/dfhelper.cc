@@ -616,12 +616,6 @@ void DFHelper::prepare_AO_wK_core() {
             timer_on("DFH: AO Construction");
             compute_sparse_pQq_blocking_p_symm_abw(start,stop, M1p, M2p, eri, weri);
             timer_off("DFH: AO Construction");
-    
-            // contract half metric inverse I'm planning to get rid of this
-            /* timer_on("DFH: AO-Met. Contraction");
-            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
-            timer_off("DFH: AO-Met. Contraction"); */
-    
             // computes  [J^{-1.0}](Q|mn)
             timer_on("DFH: AO-Met. Contraction");
             contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
@@ -632,7 +626,6 @@ void DFHelper::prepare_AO_wK_core() {
             timer_on("DFH: AO Construction");
             compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
             timer_off("DFH: AO Construction");
-
             // contract half metric inverse
             timer_on("DFH: AO-Met. Contraction");
             contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);

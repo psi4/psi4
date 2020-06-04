@@ -454,9 +454,17 @@ class PSI_API JK {
     */
     void set_omega(double omega) { omega_ = omega; }
 
-    void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
+    /**
+    * Set the alpha value for w exchange: weight for HF Term                
+    * @param omega_alpha HF-Exchange weight
+    */
+    virtual void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
 
-    void set_omega_beta(double beta) { omega_beta_ = beta; }
+    /**
+    * Set the alpha value for w exchange: weight for dampened Term                
+    * @param omega_beta Dampened Exchange weight
+    */
+    virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
 
     // => Computers <= //
 
