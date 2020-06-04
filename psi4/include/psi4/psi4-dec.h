@@ -32,7 +32,7 @@
 #include <string>
 #include <memory>
 
-#include <highfive/H5Easy.hpp>
+#include <highfive/H5File.hpp>
 
 #include "psi4/pragma.h"
 
@@ -43,7 +43,7 @@ class PsiOutStream;
 extern PSI_API std::shared_ptr<PsiOutStream> outfile;
 extern std::string outfile_name;
 
-extern PSI_API std::shared_ptr<H5Easy::File> h5file;
+extern PSI_API std::shared_ptr<HighFive::File> h5file;
 extern std::string h5file_name;
 
 extern char *psi_file_prefix;

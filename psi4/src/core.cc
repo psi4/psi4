@@ -33,7 +33,7 @@
 #include <sstream>
 #include <sys/stat.h>
 
-#include <highfive/H5Easy.hpp>
+#include <highfive/H5File.hpp>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
@@ -108,7 +108,7 @@ std::string outfile_name;
 std::string restart_id;
 std::shared_ptr<PsiOutStream> outfile;
 std::string h5file_name;
-std::shared_ptr<H5Easy::File> h5file;
+std::shared_ptr<HighFive::File> h5file;
 
 // Wavefunction returns
 namespace adc {
@@ -229,8 +229,8 @@ void py_reopen_outfile() {
 
 void py_reopen_h5file() {
     try {
-        h5file = std::make_shared<H5Easy::File>(h5file_name, H5Easy::File::ReadWrite);
-    } catch (H5Easy::Exception& err) {
+        h5file = std::make_shared<HighFive::File>(h5file_name, HighFive::File::ReadWrite);
+    } catch (HighFive::Exception& err) {
         std::stringstream line;
         line << "Psi4: " << err.what() << std::endl;
         throw PSIEXCEPTION(line.str());
@@ -988,7 +988,7 @@ bool psi4_python_module_initialize() {
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
     psi_file_prefix = strdup(fprefix.c_str());
 
-    h5file = std::make_shared<H5Easy::File>("psi4.h5", H5Easy::File::Overwrite);
+    h5file = std::make_shared<HighFive::File>("psi4.h5", HighFive::File::Overwrite);
 
     auto ini_date_time = get_date_string(std::chrono::system_clock::now());
     auto i = h5file->createAttribute<std::string>("Psi4 initialized", HighFive::DataSpace::From(ini_date_time));
