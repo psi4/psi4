@@ -187,6 +187,8 @@ class USolver : public Solver {
 
 // => APPLIED CLASSES <= //
 
+// Conjugate gradients with a spin-restricted Hamiltonian.
+// Solves the equations Hx=b.
 class CGRSolver : public RSolver {
    protected:
     /// Force vectors
@@ -220,14 +222,16 @@ class CGRSolver : public RSolver {
     SharedMatrix A_;
     /// A subspace indices
     std::vector<std::vector<int> > A_inds_;
-    /// Shifts (to solve (A-mI)
+    /// Shifts [to solve (A-mI)]; Outer vector indexes irreps, inner indexes basis vectors of that irrep
     std::vector<std::vector<double> > shifts_;
     /// Number of guess vectors to use for subspace preconditioner
     int nguess_;
 
+    /// Initializes shifts_ to 0
     void setup();
     void guess();
     void residual();
+    /// Write (H_-shifts_)*x_ to Ap_
     void products_x();
     void products_p();
     void alpha();
