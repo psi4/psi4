@@ -989,7 +989,8 @@ bool psi4_python_module_initialize() {
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
     psi_file_prefix = strdup(fprefix.c_str());
 
-    h5file = std::make_shared<HighFive::File>("psi4.h5", HighFive::File::Overwrite);
+    h5file = std::make_shared<HighFive::File>(
+        "psi4.h5", HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
 
     auto ini_date_time = get_date_string(std::chrono::system_clock::now());
     auto i = h5file->createAttribute<std::string>("Psi4 initialized", HighFive::DataSpace::From(ini_date_time));
@@ -1019,20 +1020,6 @@ bool psi4_python_module_initialize() {
 #endif
 
     initialized = true;
-    std::cout << h5file->getNumberObjects() << std::endl;
-
-    xt::xtensor<double, 1> A = xt::ones<double>({10});
-    xt::dump(*h5file, "fuffff", A);
-    std::cout << "dumped A" << std::endl;
-    xt::xtensor<double, 2> B = xt::ones<double>({10, 5});
-    xt::dump(*h5file, "Buffff", B);
-
-    // xt::xtensor<double, 2> b = {{1., 2.}, {3., 4.}};
-    // auto bar = xt::dump(*h5file, "fufanu", b, xt::dump_mode::create);
-
-    auto mat = std::make_shared<Matrix_<double>>("foo", 10, 10);
-    // auto foo = xt::dump(*h5file, "babar", mat->block(0), xt::dump_mode::create);
-    // to_hdf5(mat);
 
     return true;
 }
