@@ -2955,7 +2955,7 @@ void UDFMP2::form_Aia() {
 
         // Stripe (A|ia) out to disk
         timer_on("DFMP2 Aia Write");
-        psio_->write(PSIF_DFMP2_AIA, "(A|ia)", (char*)Aiap[0], sizeof(double) * nrows * naocc_a * navir_a, next_AIA,
+        psio_->write(PSIF_DFMP2_AIA, "A(Q|ia)", (char*)Aiap[0], sizeof(double) * nrows * naocc_a * navir_a, next_AIA,
                      &next_AIA);
         timer_off("DFMP2 Aia Write");
 
@@ -3188,7 +3188,7 @@ void UDFMP2::form_energy() {
             next_BIA = psio_get_address(PSIO_ZERO, sizeof(double) * (istart * navir * naux));
             psio_->read(PSIF_DFMP2_QIA, "B(ia|Q)", (char*)Biap[0], sizeof(double) * (ni * navir * naux), next_BIA,
                         &next_BIA);
-            timer_off("DFMP2 Qia Read");
+            timer_off("DFMP2 Bia Read");
 
             for (int block_j = 0; block_j <= block_i; block_j++) {
                 // Sizing
@@ -3334,11 +3334,11 @@ void UDFMP2::form_energy() {
                 size_t nj = jstop - jstart;
 
                 // Read iaQ chunk
-                timer_on("DFMP2 Qia Read");
+                timer_on("DFMP2 Bia Read");
                 next_BIAb = psio_get_address(PSIO_ZERO, sizeof(double) * (jstart * navir_b * naux));
                 psio_->read(PSIF_DFMP2_QIA, "B(ia|Q)", (char*)Bjbp[0], sizeof(double) * (nj * navir_b * naux), next_BIAb,
                             &next_BIAb);
-                timer_off("DFMP2 Qia Read");
+                timer_off("DFMP2 Bia Read");
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+ : e_os)
                 for (long int ij = 0L; ij < ni * nj; ij++) {
