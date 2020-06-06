@@ -2095,11 +2095,11 @@ void RDFMP2::form_P() {
         C_DGEMM('T', 'N', nfvir, navir, nso, 1.0, Cfvirp[0], nfvir, Lmap[0], navir, 0.0, PAbp[0], navir);
         for (int b = 0; b < navir; b++) {
             for (int A = 0; A < nfvir; A++) {
-                PAbp[A][b] /= -(eps_avirp[b] - eps_fvirp[A]);
+                PAbp[A][b] /= (eps_avirp[b] - eps_fvirp[A]);
             }
         }
 
-        for (int B = 0; B < nfocc; B++) {
+        for (int B = 0; B < nfvir; B++) {
             C_DCOPY(navir, PAbp[B], 1, &Ppqp[nfocc + naocc + navir + B][nfocc + naocc], 1);
             C_DCOPY(navir, PAbp[B], 1, &Ppqp[nfocc + naocc][nfocc + naocc + navir + B], nmo);
         }
