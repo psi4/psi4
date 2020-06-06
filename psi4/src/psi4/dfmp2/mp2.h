@@ -85,14 +85,14 @@ class DFMP2 : public Wavefunction {
     virtual void form_L() = 0;
     // Form the unrelaxed correlation OPDM; Compute DiStasio 6 and 9; Assemble DiStasio 6-9 into one matrix
     virtual void form_P() = 0;
-    // Form the unrelaxed correlation energy-weighted OPDM; DiStasio 11-17
+    // Form part of the unrelaxed correlation EWDM; DiStasio 11-13... plus fudge factors
     virtual void form_W() = 0;
     // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P (DiStasio 10, 16, 17)
     virtual void form_Z() = 0;
     // Manage the formation of W and P contributions to the gradient
     virtual void form_gradient() = 0;
 
-    // Compute singles correction [for ROHF-MBPT(2) or dual-basis]
+    // Compute singles correction [nonzero for ROHF-MBPT(2) or dual-basis]
     virtual void form_singles();
     // Apply the fitting and transposition to a given disk entry Aia tensor
     virtual void apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t nia);
@@ -137,7 +137,7 @@ class RDFMP2 : public DFMP2 {
 
     // Print additional header
     void print_header() override;
-    // Form the (A|ia) = (A|mn) C_mi C_na tensor(s)
+    // Form the (A|ia) = (A|mn) C_mi C_ma tensor(s)
     void form_Aia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia)
     void form_Bia() override;
