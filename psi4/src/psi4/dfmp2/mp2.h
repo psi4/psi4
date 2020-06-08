@@ -38,6 +38,8 @@ class PSIO;
 
 namespace dfmp2 {
 
+// References to DiStasio are to J Comput Chem 28: 839–856, 2007; DOI: 10.1002/jcc.20604
+
 class DFMP2 : public Wavefunction {
    protected:
     // Auxiliary basis
@@ -60,37 +62,37 @@ class DFMP2 : public Wavefunction {
     // Form the (A|ia) = (A|mn) C_mi C_na tensor(s)
     virtual void form_Aia() = 0;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia)
-    virtual void form_Qia() = 0;
+    virtual void form_Bia() = 0;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia) and J_QA^-1 (A|ia)
-    virtual void form_Qia_gradient() = 0;
-    // Transpose the integrals to (ai|Q)
-    virtual void form_Qia_transpose() = 0;
+    virtual void form_Bia_Cia() = 0;
+    // Transpose the B integrals to (ai|Q)
+    virtual void form_Bia_transpose() = 0;
     // Form the energy contributions
     virtual void form_energy() = 0;
-    // Form the energy contributions and gradients
+    // Form the VV block of the correlation OPDM (DiStasio 8) and Gamma_ia^Q (DiStasio 2)
     virtual void form_Pab() = 0;
-    // Form the energy contributions and gradients
+    // Form the OO block of the correlation OPDM (DiStasio 7)
     virtual void form_Pij() = 0;
-    // Form the small gamma
+    // Form the small gamma; Eq. 3 of DiStasio
     virtual void form_gamma() = 0;
     // Transpose the G
     virtual void form_G_transpose() = 0;
-    // Form the (A|B)^x contribution to the gradient
+    // Form the (A|B)^x contribution to the gradient; Term 2 of DiStasio 1
     virtual void form_AB_x_terms() = 0;
-    // Form the (A|mn)^x contribution to the gradient
+    // Form the (A|mn)^x contribution to the gradient; Term 1 of DiStasio 1
     virtual void form_Amn_x_terms() = 0;
-    // Form the Lma and Lmi matrices
+    // Form the L_μa and L_μi matrices; DiStasio 19 and 20
     virtual void form_L() = 0;
-    // Form the unrelaxed OPDM
+    // Form the unrelaxed correlation OPDM; Compute DiStasio 6 and 9; Assemble DiStasio 6-9 into one matrix
     virtual void form_P() = 0;
-    // Form the unrelaxed energy-weighted OPDM
+    // Form part of the unrelaxed correlation EWDM; DiStasio 11-13... plus fudge factors
     virtual void form_W() = 0;
-    // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P
+    // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P (DiStasio 10, 16, 17)
     virtual void form_Z() = 0;
     // Manage the formation of W and P contributions to the gradient
     virtual void form_gradient() = 0;
 
-    // Compute singles correction [for ROHF-MBPT(2) or dual-basis]
+    // Compute singles correction [nonzero for ROHF-MBPT(2) or dual-basis]
     virtual void form_singles();
     // Apply the fitting and transposition to a given disk entry Aia tensor
     virtual void apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t nia);
@@ -135,14 +137,14 @@ class RDFMP2 : public DFMP2 {
 
     // Print additional header
     void print_header() override;
-    // Form the (A|ia) = (A|mn) C_mi C_na tensor(s)
+    // Form the (A|ia) = (A|mn) C_mi C_ma tensor(s)
     void form_Aia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia)
-    void form_Qia() override;
+    void form_Bia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia) and J_QA^-1 (A|ia)
-    void form_Qia_gradient() override;
+    void form_Bia_Cia() override;
     // Transpose the integrals to (ai|Q)
-    void form_Qia_transpose() override;
+    void form_Bia_transpose() override;
     // Form the energy contributions
     void form_energy() override;
     // Form the energy contributions and gradients
@@ -192,11 +194,11 @@ class UDFMP2 : public DFMP2 {
     // Form the (A|ia) = (A|mn) C_mi C_na tensor(s)
     void form_Aia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia)
-    void form_Qia() override;
+    void form_Bia() override;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia) and J_QA^-1 (A|ia)
-    void form_Qia_gradient() override;
+    void form_Bia_Cia() override;
     // Transpose the integrals to (ai|Q)
-    void form_Qia_transpose() override;
+    void form_Bia_transpose() override;
     // Form the energy contributions
     void form_energy() override;
     // Form the energy contributions and gradients
