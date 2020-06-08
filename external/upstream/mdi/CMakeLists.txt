@@ -1,4 +1,4 @@
-find_package(mdi 1.1.4 CONFIG QUIET)
+find_package(mdi 1.1.5 CONFIG QUIET)
 
 if(${mdi_FOUND})
     get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
