@@ -267,14 +267,20 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Name of the potential file -*/
         options.add_str_i("POTFILE", "potfile.pot");
-        /*- Use DIIS acceleration to obtain induced moments -*/
-        options.add_bool("DIIS", true);
         /*- Threshold for induced moments convergence -*/
         options.add_double("INDUCED_CONVERGENCE", 1e-8);
         /*- Maximum number of iterations for induced moments -*/
         options.add_int("MAXITER", 50);
         /*- Make polarizabilities isotropic -*/
         options.add_bool("ISOTROPIC_POL", false);
+        /*- Enable Thole damping for induced moments -*/
+        options.add_bool("DAMP_INDUCED", false);
+        /*- Enable Thole damping for multipole fields -*/
+        options.add_bool("DAMP_MULTIPOLE", false);
+        /*- Thole damping factor for induced moments -*/
+        options.add_double("DAMPING_FACTOR_INDUCED", 2.1304);
+        /*- Thole damping factor for multipole fields -*/
+        options.add_double("DAMPING_FACTOR_MULTIPOLE", 2.1304);
 
         /*- Activate border options for sites in proximity to the QM/MM border -*/
         options.add_bool("BORDER", false);
