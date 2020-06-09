@@ -34,10 +34,17 @@ import psi4
 import numpy as np
 import qcelemental as qcel
 
-from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator
-from MDI_Library.mdi import MDI_Send, MDI_Recv, MDI_Recv_Command
-from MDI_Library.mdi import MDI_INT, MDI_DOUBLE
-from MDI_Library.mdi import MDI_Register_Node, MDI_Register_Command
+try:
+    # Attempt to use an internal build of MDI
+    from MDI_Library.mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator, \
+        MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
+        MDI_Register_Node, MDI_Register_Command
+except ImportError:
+    # Attempt to use an installed MDI package
+    from mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator, \
+        MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
+        MDI_Register_Node, MDI_Register_Command
+
 
 try:
     from mpi4py import MPI
